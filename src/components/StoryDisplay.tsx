@@ -2,8 +2,12 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { BookOpen, Home, RotateCcw, Volume2, VolumeX, TrendingUp, TrendingDown, Plus } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { BookOpen, Home, RotateCcw, Volume2, VolumeX, TrendingUp, TrendingDown, Plus, Wand2 } from "lucide-react";
 import type { UserInfo } from "./UserInfoForm";
+import { RunwareService } from "@/services/runwareService";
+import { toast } from "sonner";
 import ancientBookBg from "@/assets/ancient-book-bg.jpg";
 import illustration1 from "@/assets/story-illustration-1.jpg";
 import illustration2 from "@/assets/story-illustration-2.jpg"; 
@@ -68,6 +72,9 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
   const [currentDifficulty, setCurrentDifficulty] = useState<DifficultyLevel>(
     userInfo.difficultyLevel || (userInfo.age <= 6 ? "easy" : userInfo.age <= 9 ? "medium" : userInfo.age <= 12 ? "hard" : "expert")
   );
+  const [runwareApiKey, setRunwareApiKey] = useState("");
+  const [generatedImages, setGeneratedImages] = useState<{ [key: string]: string }>({});
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
 
   // Generate age-appropriate G/PG rated stories with calibrated length for 20-minute reading
   // Maximum reading level is capped at 12th grade (expert difficulty)
@@ -554,6 +561,74 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
       return categoryIllustrations[safeIndex];
     }
     
+    // Dynamic image generation function
+    const generateDynamicIllustration = async (content: string): Promise<string | null> => {
+      if (!runwareApiKey.trim()) {
+        toast.error("Please enter your Runware API key to generate custom illustrations");
+        return null;
+      }
+
+      try {
+        setIsGeneratingImage(true);
+        const runwareService = new RunwareService(runwareApiKey);
+        
+        // Create child-friendly prompt based on story content
+        const createChildFriendlyPrompt = (text: string) => {
+          const baseStyle = "beautiful children's book illustration, colorful, friendly, G-rated, wholesome, ";
+          const contentAnalysis = text.toLowerCase();
+          
+          let prompt = baseStyle;
+          
+          // Extract key elements from the story text
+          if (contentAnalysis.includes('basketball')) {
+            prompt += "child playing basketball in a bright playground, happy and energetic";
+          } else if (contentAnalysis.includes('soccer')) {
+            prompt += "children playing soccer on a green field, teamwork and fun";
+          } else if (contentAnalysis.includes('dragon')) {
+            prompt += "friendly magical dragon with sparkles, cute and non-scary";
+          } else if (contentAnalysis.includes('kitchen') || contentAnalysis.includes('cooking')) {
+            prompt += "magical kitchen with floating ingredients, warm and inviting";
+          } else if (contentAnalysis.includes('library') || contentAnalysis.includes('books')) {
+            prompt += "enchanted library with floating books and warm light";
+          } else if (contentAnalysis.includes('rainbow')) {
+            prompt += "beautiful rainbow over a magical landscape, bright colors";
+          } else if (contentAnalysis.includes('castle') || contentAnalysis.includes('kingdom')) {
+            prompt += "fairy tale castle with flags and towers, magical and welcoming";
+          } else if (contentAnalysis.includes('space') || contentAnalysis.includes('astronaut')) {
+            prompt += "child astronaut in colorful space suit exploring friendly planets";
+          } else if (contentAnalysis.includes('animal') || contentAnalysis.includes(userInfo.favoriteAnimal)) {
+            prompt += `cute ${userInfo.favoriteAnimal} in a natural setting, friendly and adorable`;
+          } else {
+            // Generic magical adventure scene
+            prompt += "magical adventure scene with ${userInfo.favoriteColor} colors, child-friendly and wonder-filled";
+          }
+          
+          return prompt + ", digital art style, high quality";
+        };
+
+        const prompt = createChildFriendlyPrompt(content);
+        const result = await runwareService.generateImage({
+          positivePrompt: prompt,
+          model: "runware:100@1",
+          numberResults: 1
+        });
+
+        return result.imageURL;
+      } catch (error) {
+        console.error("Failed to generate image:", error);
+        toast.error("Failed to generate illustration. Please check your API key.");
+        return null;
+      } finally {
+        setIsGeneratingImage(false);
+      }
+    };
+
+    // Check if we already have a generated image for this content
+    const contentKey = currentText.substring(0, 50); // Use first 50 chars as key
+    if (generatedImages[contentKey]) {
+      return generatedImages[contentKey];
+    }
+
     // Fallback: Use personalized illustration set based on user preferences and story progress
     const getPersonalizedIllustrations = () => {
       const personalizedSet = [];
@@ -661,14 +736,31 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
             </div>
           </div>
 
-          <div className="flex gap-2">
-            <Button variant="playful" size="lg" onClick={onNewStory}>
-              <RotateCcw className="w-5 h-5" />
-              New Story
-            </Button>
-            <Button variant="ghost" size="lg" onClick={onHome}>
-              <Home className="w-5 h-5" />
-            </Button>
+          <div className="flex items-center gap-4">
+            {/* API Key Input for Dynamic Illustration */}
+            <div className="flex flex-col gap-1">
+              <Label htmlFor="api-key" className="text-xs text-amber-700">
+                Runware API Key
+              </Label>
+              <Input
+                id="api-key"
+                type="password"
+                placeholder="Enter for custom illustrations..."
+                value={runwareApiKey}
+                onChange={(e) => setRunwareApiKey(e.target.value)}
+                className="w-48 h-8 text-xs bg-white/80"
+              />
+            </div>
+            
+            <div className="flex gap-2">
+              <Button variant="playful" size="lg" onClick={onNewStory}>
+                <RotateCcw className="w-5 h-5" />
+                New Story
+              </Button>
+              <Button variant="ghost" size="lg" onClick={onHome}>
+                <Home className="w-5 h-5" />
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -725,9 +817,87 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                     />
                     {/* Magical overlay effect */}
                     <div className="absolute inset-0 bg-gradient-to-t from-amber-100/20 via-transparent to-amber-100/20 pointer-events-none"></div>
-                  </div>
-                  
-                  {/* Decorative flourish below image */}
+                   </div>
+                   
+                   {/* Generate Custom Illustration Button */}
+                   <div className="mt-4 flex justify-center">
+                     <Button
+                       variant="outline"
+                       size="sm"
+                       onClick={async () => {
+                         if (!runwareApiKey.trim()) {
+                           toast.error("Please enter your Runware API key in the header first");
+                           return;
+                         }
+                         
+                         const currentText = storyParagraphs[currentParagraph];
+                         const contentKey = currentText.substring(0, 50);
+                         
+                         setIsGeneratingImage(true);
+                         try {
+                           const runwareService = new RunwareService(runwareApiKey);
+                           
+                           // Create child-friendly prompt based on story content
+                           const createPrompt = (text: string) => {
+                             const baseStyle = "beautiful children's book illustration, colorful, friendly, G-rated, wholesome, ";
+                             const contentAnalysis = text.toLowerCase();
+                             
+                             let prompt = baseStyle;
+                             
+                             if (contentAnalysis.includes('basketball')) {
+                               prompt += "child playing basketball in a bright playground, happy and energetic";
+                             } else if (contentAnalysis.includes('soccer')) {
+                               prompt += "children playing soccer on a green field, teamwork and fun";
+                             } else if (contentAnalysis.includes('dragon')) {
+                               prompt += "friendly magical dragon with sparkles, cute and non-scary";
+                             } else if (contentAnalysis.includes('kitchen') || contentAnalysis.includes('cooking')) {
+                               prompt += "magical kitchen with floating ingredients, warm and inviting";
+                             } else if (contentAnalysis.includes('library') || contentAnalysis.includes('books')) {
+                               prompt += "enchanted library with floating books and warm light";
+                             } else if (contentAnalysis.includes('rainbow')) {
+                               prompt += "beautiful rainbow over a magical landscape, bright colors";
+                             } else if (contentAnalysis.includes('castle') || contentAnalysis.includes('kingdom')) {
+                               prompt += "fairy tale castle with flags and towers, magical and welcoming";
+                             } else if (contentAnalysis.includes('space') || contentAnalysis.includes('astronaut')) {
+                               prompt += "child astronaut in colorful space suit exploring friendly planets";
+                             } else if (contentAnalysis.includes('animal') || contentAnalysis.includes(userInfo.favoriteAnimal)) {
+                               prompt += `cute ${userInfo.favoriteAnimal} in a natural setting, friendly and adorable`;
+                             } else {
+                               prompt += `magical adventure scene with ${userInfo.favoriteColor} colors, child-friendly and wonder-filled`;
+                             }
+                             
+                             return prompt + ", digital art style, high quality";
+                           };
+
+                           const prompt = createPrompt(currentText);
+                           const result = await runwareService.generateImage({
+                             positivePrompt: prompt,
+                             model: "runware:100@1",
+                             numberResults: 1
+                           });
+
+                           setGeneratedImages(prev => ({
+                             ...prev,
+                             [contentKey]: result.imageURL
+                           }));
+                           
+                           toast.success("Custom illustration generated!");
+                         } catch (error) {
+                           console.error("Failed to generate image:", error);
+                           toast.error("Failed to generate illustration. Please check your API key.");
+                         } finally {
+                           setIsGeneratingImage(false);
+                         }
+                       }}
+                       disabled={isGeneratingImage}
+                       className="bg-amber-50/90 border-2 border-amber-400 text-amber-800 hover:bg-amber-100/90"
+                     >
+                       <Wand2 className="w-4 h-4 mr-2" />
+                       {isGeneratingImage ? "Generating..." : "Generate Custom"}
+                     </Button>
+                   </div>
+                   
+                   {/* Decorative flourish below image */}
                   <div className="mt-4 flex justify-center">
                     <div className="w-24 h-1 bg-gradient-to-r from-transparent via-amber-500 to-transparent rounded-full"></div>
                   </div>
