@@ -13,6 +13,22 @@ import illustration5 from "@/assets/story-illustration-5.jpg";
 import illustration6 from "@/assets/story-illustration-6.jpg";
 import illustration7 from "@/assets/story-illustration-7.jpg";
 import illustration8 from "@/assets/story-illustration-8.jpg";
+import illustration9 from "@/assets/story-illustration-9.jpg";
+import illustration10 from "@/assets/story-illustration-10.jpg";
+import illustration11 from "@/assets/story-illustration-11.jpg";
+import illustration12 from "@/assets/story-illustration-12.jpg";
+import illustration13 from "@/assets/story-illustration-13.jpg";
+import illustration14 from "@/assets/story-illustration-14.jpg";
+import illustration15 from "@/assets/story-illustration-15.jpg";
+import illustration16 from "@/assets/story-illustration-16.jpg";
+import illustration17 from "@/assets/story-illustration-17.jpg";
+import illustration18 from "@/assets/story-illustration-18.jpg";
+import illustration19 from "@/assets/story-illustration-19.jpg";
+import illustration20 from "@/assets/story-illustration-20.jpg";
+import illustration21 from "@/assets/story-illustration-21.jpg";
+import illustration22 from "@/assets/story-illustration-22.jpg";
+import illustration23 from "@/assets/story-illustration-23.jpg";
+import illustration24 from "@/assets/story-illustration-24.jpg";
 import { FloatingTimer } from "./FloatingTimer";
 
 type DifficultyLevel = "easy" | "medium" | "hard";
@@ -268,70 +284,129 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
 
   const progress = ((currentParagraph + 1) / totalParagraphs) * 100;
 
-  // Get current illustration based on child's preferences and story progress
+  // Get current illustration based on child's comprehensive preferences and story progress
   const getCurrentIllustration = () => {
     const allIllustrations = [
-      illustration1, illustration2, illustration3, illustration4, 
-      illustration5, illustration6, illustration7, illustration8
+      illustration1, illustration2, illustration3, illustration4, illustration5, illustration6, 
+      illustration7, illustration8, illustration9, illustration10, illustration11, illustration12,
+      illustration13, illustration14, illustration15, illustration16, illustration17, illustration18,
+      illustration19, illustration20, illustration21, illustration22, illustration23, illustration24
     ];
     
-    // Create personalized illustration selection based on user preferences
+    // Create age-appropriate and interest-based illustration selection
     const getPersonalizedIllustrations = () => {
       const personalizedSet = [];
       
-      // Check for gaming/technology interests
-      const gamingKeywords = ['game', 'gaming', 'video', 'computer', 'technology', 'digital', 'minecraft', 'roblox', 'fortnite'];
-      const isGamingInterested = gamingKeywords.some(keyword => 
-        userInfo.hobbies.toLowerCase().includes(keyword) || 
-        userInfo.specialRequest?.toLowerCase().includes(keyword)
-      );
+      // Age-based categorization
+      const youngKidsIllustrations = [illustration9, illustration10, illustration12, illustration23]; // Ages 3-6: Unicorn, superhero dinosaur, woodland tea party, magical farm
+      const middleKidsIllustrations = [illustration11, illustration14, illustration16, illustration17, illustration18, illustration21, illustration22]; // Ages 6-10: Science lab, underwater kingdom, library, musical garden, sports arena, cooking kitchen, circus
+      const olderKidsIllustrations = [illustration13, illustration15, illustration19, illustration20, illustration24]; // Ages 11-16: Space station, cyberpunk academy, art studio, mountain adventure, gaming tournament
       
-      // Check for dragon/fantasy creature interests
-      const dragonKeywords = ['dragon', 'dinosaur', 'monster', 'creature', 'beast'];
-      const isDragonInterested = dragonKeywords.some(keyword => 
-        userInfo.favoriteAnimal.toLowerCase().includes(keyword) ||
-        userInfo.hobbies.toLowerCase().includes(keyword) ||
-        userInfo.specialRequest?.toLowerCase().includes(keyword)
-      );
-      
-      // Check for adventure/hero interests
-      const heroKeywords = ['adventure', 'hero', 'knight', 'warrior', 'sword', 'fight', 'battle', 'superhero'];
-      const isHeroInterested = heroKeywords.some(keyword => 
-        userInfo.hobbies.toLowerCase().includes(keyword) ||
-        userInfo.specialRequest?.toLowerCase().includes(keyword) ||
-        userInfo.dreamJob.toLowerCase().includes(keyword)
-      );
-      
-      // Check for treasure/collecting interests
-      const treasureKeywords = ['treasure', 'collect', 'money', 'coins', 'gems', 'jewels', 'gold'];
-      const isTreasureInterested = treasureKeywords.some(keyword => 
-        userInfo.hobbies.toLowerCase().includes(keyword) ||
-        userInfo.specialRequest?.toLowerCase().includes(keyword)
-      );
-      
-      // Add relevant illustrations based on interests
-      if (isGamingInterested) {
-        personalizedSet.push(illustration4, illustration6); // Gaming controller, digital portal
+      // Add age-appropriate base illustrations
+      if (userInfo.age <= 6) {
+        personalizedSet.push(...youngKidsIllustrations);
+      } else if (userInfo.age <= 10) {
+        personalizedSet.push(...middleKidsIllustrations);
+        personalizedSet.push(...youngKidsIllustrations.slice(0, 2)); // Include some simpler ones
+      } else {
+        personalizedSet.push(...olderKidsIllustrations);
+        personalizedSet.push(...middleKidsIllustrations.slice(0, 3)); // Include some middle-grade ones
       }
       
-      if (isDragonInterested) {
-        personalizedSet.push(illustration5); // Pixel dragon
+      // Interest-based additions
+      const interests = (userInfo.hobbies + ' ' + (userInfo.specialRequest || '') + ' ' + userInfo.dreamJob + ' ' + userInfo.favoriteAnimal).toLowerCase();
+      
+      // Gaming/Technology interests
+      if (interests.includes('game') || interests.includes('gaming') || interests.includes('video') || 
+          interests.includes('computer') || interests.includes('technology') || interests.includes('minecraft') || 
+          interests.includes('roblox') || interests.includes('fortnite')) {
+        personalizedSet.push(illustration4, illustration6, illustration15, illustration24); // Gaming controller, digital portal, cyberpunk academy, gaming tournament
       }
       
-      if (isHeroInterested) {
-        personalizedSet.push(illustration7); // Hero character
+      // Animal/Nature interests
+      if (interests.includes('animal') || interests.includes('pet') || interests.includes('zoo') ||
+          interests.includes('nature') || interests.includes('farm') || interests.includes('forest')) {
+        personalizedSet.push(illustration12, illustration14, illustration23); // Woodland tea party, underwater kingdom, magical farm
       }
       
-      if (isTreasureInterested) {
+      // Dragon/Fantasy creature interests
+      if (interests.includes('dragon') || interests.includes('dinosaur') || interests.includes('monster') || 
+          interests.includes('creature') || interests.includes('unicorn') || interests.includes('fairy')) {
+        personalizedSet.push(illustration5, illustration9, illustration10); // Pixel dragon, unicorn, superhero dinosaur
+      }
+      
+      // Adventure/Hero interests
+      if (interests.includes('adventure') || interests.includes('hero') || interests.includes('knight') || 
+          interests.includes('warrior') || interests.includes('superhero') || interests.includes('explorer')) {
+        personalizedSet.push(illustration7, illustration10, illustration13, illustration20); // Hero character, superhero dinosaur, space station, mountain adventure
+      }
+      
+      // Science/Space interests
+      if (interests.includes('science') || interests.includes('space') || interests.includes('astronaut') || 
+          interests.includes('robot') || interests.includes('experiment') || interests.includes('scientist')) {
+        personalizedSet.push(illustration11, illustration13); // Science lab, space station
+      }
+      
+      // Art/Creative interests
+      if (interests.includes('art') || interests.includes('draw') || interests.includes('paint') || 
+          interests.includes('creative') || interests.includes('artist') || interests.includes('design')) {
+        personalizedSet.push(illustration19); // Magical art studio
+      }
+      
+      // Music interests
+      if (interests.includes('music') || interests.includes('sing') || interests.includes('dance') || 
+          interests.includes('instrument') || interests.includes('musician')) {
+        personalizedSet.push(illustration17, illustration22); // Musical garden, circus
+      }
+      
+      // Sports interests
+      if (interests.includes('sport') || interests.includes('soccer') || interests.includes('basketball') || 
+          interests.includes('football') || interests.includes('athlete') || interests.includes('coach')) {
+        personalizedSet.push(illustration18); // Sports arena
+      }
+      
+      // Reading/Books interests
+      if (interests.includes('read') || interests.includes('book') || interests.includes('library') || 
+          interests.includes('story') || interests.includes('writer') || interests.includes('author')) {
+        personalizedSet.push(illustration16); // Magical library
+      }
+      
+      // Cooking/Food interests
+      if (interests.includes('cook') || interests.includes('bake') || interests.includes('chef') || 
+          interests.includes('food') || interests.includes('kitchen')) {
+        personalizedSet.push(illustration21); // Magical cooking kitchen
+      }
+      
+      // Adventure/Outdoor interests
+      if (interests.includes('hiking') || interests.includes('camping') || interests.includes('mountain') || 
+          interests.includes('outdoor') || interests.includes('explorer')) {
+        personalizedSet.push(illustration20); // Mountain adventure
+      }
+      
+      // Ocean/Water interests
+      if (interests.includes('swim') || interests.includes('ocean') || interests.includes('water') || 
+          interests.includes('beach') || interests.includes('mermaid') || interests.includes('fish')) {
+        personalizedSet.push(illustration14); // Underwater kingdom
+      }
+      
+      // Treasure/Collecting interests
+      if (interests.includes('treasure') || interests.includes('collect') || interests.includes('money') || 
+          interests.includes('coins') || interests.includes('gems') || interests.includes('gold')) {
         personalizedSet.push(illustration8); // Magical treasure chest
       }
       
-      // Always include some base magical illustrations
+      // Circus/Performance interests
+      if (interests.includes('circus') || interests.includes('magic') || interests.includes('performer') || 
+          interests.includes('show') || interests.includes('entertainment')) {
+        personalizedSet.push(illustration22); // Enchanted circus
+      }
+      
+      // Always include some classic magical base illustrations
       personalizedSet.push(illustration1, illustration2, illustration3);
       
-      // Remove duplicates and ensure we have at least 3 illustrations
+      // Remove duplicates and ensure we have at least 5 diverse illustrations
       const uniqueSet = [...new Set(personalizedSet)];
-      return uniqueSet.length >= 3 ? uniqueSet : allIllustrations;
+      return uniqueSet.length >= 5 ? uniqueSet : allIllustrations.slice(0, 12);
     };
     
     const relevantIllustrations = getPersonalizedIllustrations();
