@@ -29,6 +29,18 @@ import illustration21 from "@/assets/story-illustration-21.jpg";
 import illustration22 from "@/assets/story-illustration-22.jpg";
 import illustration23 from "@/assets/story-illustration-23.jpg";
 import illustration24 from "@/assets/story-illustration-24.jpg";
+import illustration25 from "@/assets/story-illustration-25.jpg";
+import illustration26 from "@/assets/story-illustration-26.jpg";
+import illustration27 from "@/assets/story-illustration-27.jpg";
+import illustration28 from "@/assets/story-illustration-28.jpg";
+import illustration29 from "@/assets/story-illustration-29.jpg";
+import illustration30 from "@/assets/story-illustration-30.jpg";
+import illustration31 from "@/assets/story-illustration-31.jpg";
+import illustration32 from "@/assets/story-illustration-32.jpg";
+import illustration33 from "@/assets/story-illustration-33.jpg";
+import illustration34 from "@/assets/story-illustration-34.jpg";
+import illustration35 from "@/assets/story-illustration-35.jpg";
+import illustration36 from "@/assets/story-illustration-36.jpg";
 import { FloatingTimer } from "./FloatingTimer";
 
 type DifficultyLevel = "easy" | "medium" | "hard" | "expert";
@@ -359,23 +371,78 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
 
   const progress = ((currentParagraph + 1) / totalParagraphs) * 100;
 
-  // Get current illustration based on child's comprehensive preferences and story progress
+  // Get current illustration based on child's comprehensive preferences, gender, and story progress
   const getCurrentIllustration = () => {
     const allIllustrations = [
       illustration1, illustration2, illustration3, illustration4, illustration5, illustration6, 
       illustration7, illustration8, illustration9, illustration10, illustration11, illustration12,
       illustration13, illustration14, illustration15, illustration16, illustration17, illustration18,
-      illustration19, illustration20, illustration21, illustration22, illustration23, illustration24
+      illustration19, illustration20, illustration21, illustration22, illustration23, illustration24,
+      illustration25, illustration26, illustration27, illustration28, illustration29, illustration30,
+      illustration31, illustration32, illustration33, illustration34, illustration35, illustration36
     ];
     
-    // Create age-appropriate and interest-based illustration selection
+    // Gender detection based on common names (simplified approach)
+    const detectGender = (name: string): 'masculine' | 'feminine' | 'neutral' => {
+      const masculineNames = [
+        'alex', 'alexander', 'andrew', 'anthony', 'benjamin', 'ben', 'brandon', 'caleb', 'cameron', 
+        'charles', 'charlie', 'christian', 'christopher', 'daniel', 'david', 'diego', 'dominic',
+        'ethan', 'gabriel', 'jackson', 'jacob', 'james', 'john', 'jonathan', 'joseph', 'joshua',
+        'liam', 'lucas', 'luke', 'mason', 'matthew', 'michael', 'nicholas', 'noah', 'owen',
+        'ryan', 'samuel', 'sebastian', 'tyler', 'william', 'wyatt', 'zachary', 'aiden', 'austin',
+        'blake', 'bryce', 'carter', 'cole', 'connor', 'cooper', 'elijah', 'evan', 'gavin',
+        'hunter', 'ian', 'isaac', 'jack', 'jake', 'jason', 'jordan', 'justin', 'kevin',
+        'kyle', 'landon', 'logan', 'mark', 'max', 'nathan', 'parker', 'robert', 'sean',
+        'thomas', 'trevor', 'tristan', 'zach'
+      ];
+      
+      const feminineNames = [
+        'abigail', 'alyssa', 'amanda', 'amy', 'anna', 'ashley', 'ava', 'brianna', 'brooke',
+        'chloe', 'emily', 'emma', 'grace', 'hailey', 'hannah', 'isabella', 'jasmine', 'jennifer',
+        'jessica', 'kayla', 'lauren', 'madison', 'megan', 'natalie', 'nicole', 'olivia',
+        'paige', 'rachel', 'samantha', 'sarah', 'sophia', 'stephanie', 'taylor', 'victoria',
+        'alexis', 'allison', 'amber', 'andrea', 'angela', 'bethany', 'brittany', 'caroline',
+        'cassandra', 'christina', 'courtney', 'danielle', 'destiny', 'diana', 'elizabeth',
+        'haley', 'heather', 'jenna', 'julia', 'kaitlyn', 'kelly', 'kimberly', 'lindsay',
+        'maria', 'mary', 'maya', 'michelle', 'morgan', 'rebecca', 'tiffany', 'vanessa',
+        'zoe', 'aria', 'belle', 'ella', 'lily', 'mia', 'ruby', 'scarlett'
+      ];
+      
+      const lowerName = name.toLowerCase();
+      if (masculineNames.includes(lowerName)) return 'masculine';
+      if (feminineNames.includes(lowerName)) return 'feminine';
+      return 'neutral';
+    };
+    
+    // Create personalized illustration selection based on user preferences and gender
     const getPersonalizedIllustrations = () => {
       const personalizedSet = [];
+      const gender = detectGender(userInfo.name);
       
-      // Age-based categorization
+      // All user interests combined for analysis
+      const interests = (userInfo.hobbies + ' ' + (userInfo.specialRequest || '') + ' ' + userInfo.dreamJob + ' ' + userInfo.favoriteAnimal).toLowerCase();
+      
+      // Age-based categorization with gender filtering
       const youngKidsIllustrations = [illustration9, illustration10, illustration12, illustration23]; // Ages 3-6: Unicorn, superhero dinosaur, woodland tea party, magical farm
-      const middleKidsIllustrations = [illustration11, illustration14, illustration16, illustration17, illustration18, illustration21, illustration22]; // Ages 6-10: Science lab, underwater kingdom, library, musical garden, sports arena, cooking kitchen, circus
+      const middleKidsIllustrations = [illustration11, illustration14, illustration16, illustration17, illustration21, illustration22]; // Ages 6-10: Science lab, underwater kingdom, library, musical garden, cooking kitchen, circus
       const olderKidsIllustrations = [illustration13, illustration15, illustration19, illustration20, illustration24]; // Ages 11-16: Space station, cyberpunk academy, art studio, mountain adventure, gaming tournament
+      
+      // Sport-specific illustrations
+      const sportIllustrations = {
+        soccer: illustration25,
+        football: illustration32,
+        basketball: illustration26,
+        baseball: illustration27,
+        swimming: illustration28,
+        tennis: illustration29,
+        dance: illustration30,
+        gymnastics: illustration31
+      };
+      
+      // Gender-specific illustrations
+      const feminineIllustrations = [illustration9, illustration14, illustration17, illustration30, illustration31, illustration36]; // Unicorn, underwater kingdom, musical garden, dance, gymnastics, princess palace
+      const masculineIllustrations = [illustration4, illustration5, illustration7, illustration13, illustration24, illustration32, illustration33, illustration34, illustration35]; // Gaming controller, pixel dragon, hero character, space station, gaming tournament, football, workshop, racing, superhero academy
+      const neutralIllustrations = [illustration1, illustration2, illustration3, illustration6, illustration8, illustration10, illustration11, illustration12, illustration15, illustration16, illustration18, illustration19, illustration20, illustration21, illustration22, illustration23, illustration25, illustration26, illustration27, illustration28, illustration29]; // All other illustrations
       
       // Add age-appropriate base illustrations
       if (userInfo.age <= 6) {
@@ -388,8 +455,18 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
         personalizedSet.push(...middleKidsIllustrations.slice(0, 3)); // Include some middle-grade ones
       }
       
-      // Interest-based additions
-      const interests = (userInfo.hobbies + ' ' + (userInfo.specialRequest || '') + ' ' + userInfo.dreamJob + ' ' + userInfo.favoriteAnimal).toLowerCase();
+      // Sport-specific detection and illustration assignment
+      const sportKeywords = Object.keys(sportIllustrations);
+      for (const sport of sportKeywords) {
+        if (interests.includes(sport)) {
+          personalizedSet.push(sportIllustrations[sport as keyof typeof sportIllustrations]);
+        }
+      }
+      
+      // Additional sport variations
+      if (interests.includes('sport') || interests.includes('athlete') || interests.includes('coach')) {
+        personalizedSet.push(illustration18); // Sports arena
+      }
       
       // Gaming/Technology interests
       if (interests.includes('game') || interests.includes('gaming') || interests.includes('video') || 
@@ -413,7 +490,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
       // Adventure/Hero interests
       if (interests.includes('adventure') || interests.includes('hero') || interests.includes('knight') || 
           interests.includes('warrior') || interests.includes('superhero') || interests.includes('explorer')) {
-        personalizedSet.push(illustration7, illustration10, illustration13, illustration20); // Hero character, superhero dinosaur, space station, mountain adventure
+        personalizedSet.push(illustration7, illustration10, illustration13, illustration20, illustration35); // Hero character, superhero dinosaur, space station, mountain adventure, superhero academy
       }
       
       // Science/Space interests
@@ -431,13 +508,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
       // Music interests
       if (interests.includes('music') || interests.includes('sing') || interests.includes('dance') || 
           interests.includes('instrument') || interests.includes('musician')) {
-        personalizedSet.push(illustration17, illustration22); // Musical garden, circus
-      }
-      
-      // Sports interests
-      if (interests.includes('sport') || interests.includes('soccer') || interests.includes('basketball') || 
-          interests.includes('football') || interests.includes('athlete') || interests.includes('coach')) {
-        personalizedSet.push(illustration18); // Sports arena
+        personalizedSet.push(illustration17, illustration22, illustration30); // Musical garden, circus, dance studio
       }
       
       // Reading/Books interests
@@ -452,36 +523,44 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
         personalizedSet.push(illustration21); // Magical cooking kitchen
       }
       
-      // Adventure/Outdoor interests
-      if (interests.includes('hiking') || interests.includes('camping') || interests.includes('mountain') || 
-          interests.includes('outdoor') || interests.includes('explorer')) {
-        personalizedSet.push(illustration20); // Mountain adventure
+      // Building/Engineering interests
+      if (interests.includes('build') || interests.includes('engineer') || interests.includes('construction') || 
+          interests.includes('lego') || interests.includes('blocks') || interests.includes('tools')) {
+        personalizedSet.push(illustration33); // Magical workshop
       }
       
-      // Ocean/Water interests
-      if (interests.includes('swim') || interests.includes('ocean') || interests.includes('water') || 
-          interests.includes('beach') || interests.includes('mermaid') || interests.includes('fish')) {
-        personalizedSet.push(illustration14); // Underwater kingdom
+      // Cars/Racing interests
+      if (interests.includes('car') || interests.includes('race') || interests.includes('racing') || 
+          interests.includes('vehicle') || interests.includes('truck') || interests.includes('motorcycle')) {
+        personalizedSet.push(illustration34); // Magical race track
       }
       
-      // Treasure/Collecting interests
-      if (interests.includes('treasure') || interests.includes('collect') || interests.includes('money') || 
-          interests.includes('coins') || interests.includes('gems') || interests.includes('gold')) {
-        personalizedSet.push(illustration8); // Magical treasure chest
+      // Princess/Fairy interests (typically feminine)
+      if (interests.includes('princess') || interests.includes('fairy') || interests.includes('ballet') || 
+          interests.includes('pink') || interests.includes('purple') || interests.includes('dress')) {
+        personalizedSet.push(illustration36); // Princess palace
       }
       
-      // Circus/Performance interests
-      if (interests.includes('circus') || interests.includes('magic') || interests.includes('performer') || 
-          interests.includes('show') || interests.includes('entertainment')) {
-        personalizedSet.push(illustration22); // Enchanted circus
+      // Apply gender filtering
+      if (gender === 'masculine') {
+        // Add masculine-coded illustrations
+        personalizedSet.push(...masculineIllustrations.slice(0, 3));
+        // Remove overtly feminine illustrations
+        const filteredSet = personalizedSet.filter(img => !feminineIllustrations.includes(img));
+        personalizedSet.length = 0;
+        personalizedSet.push(...filteredSet);
+      } else if (gender === 'feminine') {
+        // Add feminine-coded illustrations
+        personalizedSet.push(...feminineIllustrations.slice(0, 3));
+        // Don't filter out masculine illustrations as they can be enjoyed by all
       }
       
-      // Always include some classic magical base illustrations
-      personalizedSet.push(illustration1, illustration2, illustration3);
+      // Always include neutral illustrations
+      personalizedSet.push(...neutralIllustrations.slice(0, 5));
       
-      // Remove duplicates and ensure we have at least 5 diverse illustrations
+      // Remove duplicates and ensure we have at least 6 diverse illustrations
       const uniqueSet = [...new Set(personalizedSet)];
-      return uniqueSet.length >= 5 ? uniqueSet : allIllustrations.slice(0, 12);
+      return uniqueSet.length >= 6 ? uniqueSet : allIllustrations.slice(0, 12);
     };
     
     const relevantIllustrations = getPersonalizedIllustrations();
