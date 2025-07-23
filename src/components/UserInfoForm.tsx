@@ -17,7 +17,8 @@ export interface UserInfo {
   dreamJob: string;
   favoriteFood: string;
   specialRequest: string;
-  difficultyLevel?: "easy" | "medium" | "hard";
+  difficultyLevel?: "easy" | "medium" | "hard" | "expert";
+  readingAbility?: "easy" | "medium" | "hard" | "expert";
 }
 
 interface UserInfoFormProps {
@@ -36,7 +37,8 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
     dreamJob: "",
     favoriteFood: "",
     specialRequest: "",
-    difficultyLevel: "easy"
+    difficultyLevel: "easy",
+    readingAbility: "easy"
   });
 
   const contentFilter = (text: string): boolean => {
@@ -77,8 +79,8 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
   };
 
   const handleSubmit = () => {
-    // Set initial difficulty based on age
-    const difficulty = formData.age <= 7 ? "easy" : formData.age <= 10 ? "medium" : "hard";
+    // Use the selected reading ability, or fall back to age-based difficulty
+    const difficulty = formData.readingAbility || (formData.age <= 6 ? "easy" : formData.age <= 9 ? "medium" : formData.age <= 12 ? "hard" : "expert");
     onSubmit({ ...formData, difficultyLevel: difficulty });
   };
 
@@ -173,6 +175,43 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                     <SelectItem value="9th">9th Grade</SelectItem>
                     <SelectItem value="10th">10th Grade</SelectItem>
                     <SelectItem value="11th">11th Grade</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="readingAbility" className="text-lg font-semibold text-foreground">
+                  What reading level feels right for you?
+                </Label>
+                <Select value={formData.readingAbility} onValueChange={(value) => handleInputChange("readingAbility", value)}>
+                  <SelectTrigger className="text-lg p-4 rounded-2xl border-2 border-primary/20 bg-white dark:bg-gray-800 z-50">
+                    <SelectValue placeholder="Choose your reading level" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white dark:bg-gray-800 border-2 border-primary/20 rounded-2xl shadow-lg z-50">
+                    <SelectItem value="easy" className="text-lg p-3 hover:bg-primary/10">
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-green-600">Easy Reading</span>
+                        <span className="text-sm text-muted-foreground">K-1st grade: Simple words & short sentences</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="medium" className="text-lg p-3 hover:bg-primary/10">
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-yellow-600">Medium Reading</span>
+                        <span className="text-sm text-muted-foreground">2nd-4th grade: Moderate vocabulary & sentences</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="hard" className="text-lg p-3 hover:bg-primary/10">
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-orange-600">Advanced Reading</span>
+                        <span className="text-sm text-muted-foreground">5th-8th grade: Advanced vocabulary & complex sentences</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="expert" className="text-lg p-3 hover:bg-primary/10">
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-red-600">Expert Reading</span>
+                        <span className="text-sm text-muted-foreground">9th-12th grade: Expert vocabulary & sophisticated writing</span>
+                      </div>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
