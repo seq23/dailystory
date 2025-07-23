@@ -380,7 +380,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
 
   const progress = ((currentParagraph + 1) / totalParagraphs) * 100;
 
-  // Get current illustration based on story content analysis and user preferences
+  // Get current illustration based on specific story content matching
   const getCurrentIllustration = () => {
     const allIllustrations = [
       illustration1, illustration2, illustration3, illustration4, illustration5, illustration6, 
@@ -393,65 +393,137 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
       illustration43, illustration44
     ];
     
-    // Analyze current story text for content-based illustration matching
+    // Analyze current story text for specific content matching
     const currentText = storyParagraphs[currentParagraph];
     const lowerText = currentText.toLowerCase();
     
-    // Define illustration categories with semantic keywords
-    const illustrationCategories = {
+    // Specific illustration mappings - exact keywords to exact illustrations
+    const specificMappings = {
+      // Sports - specific sports to specific illustrations
+      'basketball': illustration26,
+      'soccer': illustration25, 
+      'football': illustration32,
+      'baseball': illustration27,
+      'swimming': illustration28,
+      'tennis': illustration29,
+      'dance': illustration30,
+      'gymnastics': illustration31,
+      'racing': illustration34,
+      'race track': illustration34,
+      'sports arena': illustration18,
+      
+      // Animals - specific animals to specific illustrations
+      'cat': illustration1,
+      'dog': illustration2, 
+      'bird': illustration3,
+      'dragon': illustration5,
+      'unicorn': illustration9,
+      'dinosaur': illustration10,
+      'farm animals': illustration23,
+      'zoo': illustration22,
+      'forest animals': illustration12,
+      'underwater': illustration14,
+      
+      // Technology and gaming
+      'gaming': illustration4,
+      'video game': illustration24,
+      'computer': illustration6,
+      'robot': illustration11,
+      'space': illustration13,
+      'astronaut': illustration13,
+      'spaceship': illustration13,
+      'cyberpunk': illustration15,
+      'technology': illustration15,
+      
+      // Creative and arts
+      'art studio': illustration19,
+      'painting': illustration19,
+      'music': illustration17,
+      'musical': illustration17,
+      'singing': illustration17,
+      'library': illustration16,
+      'books': illustration16,
+      'reading': illustration16,
+      
+      // Food and cooking
+      'kitchen': illustration21,
+      'cooking': illustration21,
+      'chef': illustration21,
+      'baking': illustration21,
+      'restaurant': illustration21,
+      
+      // Adventure and places
+      'mountain': illustration20,
+      'castle': illustration36,
+      'kingdom': illustration36,
+      'palace': illustration36,
+      'princess': illustration36,
+      'workshop': illustration33,
+      'building': illustration33,
+      'tools': illustration33,
+      
+      // Character and people
+      'superhero': illustration35,
+      'hero': illustration7,
+      'character': illustration7,
+      'circus': illustration22,
+      'performance': illustration22,
+      
+      // Diverse characters for inclusive representation
+      'child': illustration37,
+      'children': illustration38,
+      'friend': illustration39,
+      'friends': illustration40,
+      'family': illustration41,
+      'team': illustration42,
+      'group': illustration43,
+      'together': illustration44
+    };
+    
+    // Check for exact specific matches first (highest priority)
+    for (const [keyword, illustration] of Object.entries(specificMappings)) {
+      if (lowerText.includes(keyword)) {
+        return illustration;
+      }
+    }
+    
+    // If no specific match, check for broader category matches
+    const categoryMappings = {
       // Animals and nature
       animals: {
-        keywords: ['animal', 'cat', 'dog', 'bird', 'forest', 'tree', 'nature', 'creature', 'pet', 'zoo', 'farm', 'woodland'],
-        illustrations: [illustration1, illustration2, illustration3, illustration7, illustration8, illustration12, illustration15, illustration16, illustration22, illustration23]
+        keywords: ['animal', 'creature', 'pet', 'nature', 'forest', 'tree', 'woodland', 'wild'],
+        illustrations: [illustration1, illustration2, illustration3, illustration12, illustration14, illustration22, illustration23]
       },
       
-      // Adventure and exploration
+      // Adventure and exploration  
       adventure: {
-        keywords: ['adventure', 'journey', 'travel', 'explore', 'mountain', 'path', 'quest', 'discover', 'outside', 'world', 'explorer'],
-        illustrations: [illustration4, illustration6, illustration9, illustration10, illustration11, illustration14, illustration17, illustration20, illustration24, illustration26]
+        keywords: ['adventure', 'journey', 'travel', 'explore', 'quest', 'discover', 'outside', 'world'],
+        illustrations: [illustration20, illustration7, illustration10, illustration11, illustration13]
       },
       
       // Magic and fantasy
       magic: {
-        keywords: ['magic', 'magical', 'powers', 'spell', 'enchanted', 'crystal', 'rainbow', 'kingdom', 'castle', 'mystical', 'fantastic', 'fairy', 'unicorn', 'dragon'],
-        illustrations: [illustration5, illustration9, illustration13, illustration19, illustration21, illustration23, illustration29, illustration32, illustration36, illustration38]
+        keywords: ['magic', 'magical', 'powers', 'spell', 'enchanted', 'mystical', 'fantastic', 'fairy'],
+        illustrations: [illustration5, illustration9, illustration36, illustration19, illustration21]
       },
       
-      // Food and celebration
-      food: {
-        keywords: ['food', 'delicious', 'feast', 'celebration', 'party', 'cake', 'sweet', 'kitchen', 'cooking', 'meal', 'chef', 'bake'],
-        illustrations: [illustration12, illustration18, illustration21, illustration28, illustration30, illustration33, illustration35, illustration41]
-      },
-      
-      // Friendship and helping
-      friendship: {
-        keywords: ['friend', 'help', 'together', 'team', 'kind', 'care', 'love', 'happy', 'smile', 'hug', 'grateful'],
-        illustrations: [illustration31, illustration34, illustration37, illustration40, illustration42, illustration43, illustration44]
-      },
-      
-      // Science and technology
-      science: {
-        keywords: ['science', 'space', 'astronaut', 'robot', 'experiment', 'scientist', 'technology', 'computer', 'gaming'],
-        illustrations: [illustration11, illustration13, illustration15, illustration24, illustration4, illustration6]
-      },
-      
-      // Sports and activities
+      // Sports and physical activities
       sports: {
-        keywords: ['sport', 'soccer', 'football', 'basketball', 'baseball', 'swimming', 'tennis', 'dance', 'gymnastics', 'race'],
+        keywords: ['sport', 'play', 'game', 'exercise', 'activity', 'competition'],
         illustrations: [illustration18, illustration25, illustration26, illustration27, illustration28, illustration29, illustration30, illustration31, illustration32, illustration34]
       },
       
-      // Creative arts
-      arts: {
-        keywords: ['art', 'draw', 'paint', 'creative', 'artist', 'design', 'music', 'sing', 'instrument', 'musician'],
-        illustrations: [illustration17, illustration19, illustration22, illustration30]
+      // Technology and science
+      technology: {
+        keywords: ['science', 'experiment', 'scientist', 'tech', 'digital', 'electronic'],
+        illustrations: [illustration4, illustration6, illustration11, illustration13, illustration15, illustration24]
       }
     };
     
     // Score each category based on keyword matches in current text
     const categoryScores: { [key: string]: number } = {};
     
-    Object.entries(illustrationCategories).forEach(([category, data]) => {
+    Object.entries(categoryMappings).forEach(([category, data]) => {
       let score = 0;
       data.keywords.forEach(keyword => {
         const matches = (lowerText.match(new RegExp(keyword, 'g')) || []).length;
@@ -472,8 +544,8 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
     )[0];
     
     // If we have a strong content match, use it
-    if (categoryScores[bestCategory] >= 2) {
-      const categoryIllustrations = illustrationCategories[bestCategory as keyof typeof illustrationCategories].illustrations;
+    if (categoryScores[bestCategory] >= 1) {
+      const categoryIllustrations = categoryMappings[bestCategory as keyof typeof categoryMappings].illustrations;
       
       // Use story progress to select from the matching category
       const illustrationIndex = Math.floor((progress / 100) * categoryIllustrations.length);
