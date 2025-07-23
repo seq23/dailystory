@@ -121,13 +121,22 @@ export default {
 					'50%': {
 						transform: 'translateY(-20px)'
 					}
+				},
+				'wiggle': {
+					'0%, 100%': {
+						transform: 'rotate(-3deg)'
+					},
+					'50%': {
+						transform: 'rotate(3deg)'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'bounce-gentle': 'bounce-gentle 2s ease-in-out infinite',
-				'float': 'float 3s ease-in-out infinite'
+				'float': 'float 3s ease-in-out infinite',
+				'wiggle': 'wiggle 0.5s ease-in-out'
 			}
 		}
 	},

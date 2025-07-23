@@ -427,13 +427,20 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                 size="lg"
                 onClick={handleDifficultyDown}
                 disabled={currentDifficulty === "easy"}
-                className="bg-amber-50/90 border-2 border-amber-400 text-amber-800 hover:bg-amber-100/90 shadow-lg backdrop-blur-sm px-6 py-3"
+                className="bg-amber-50/90 border-2 border-amber-400 text-amber-800 hover:bg-amber-100/90 shadow-lg backdrop-blur-sm px-6 py-3 animate-[wiggle_0.5s_ease-in-out_2s,_fade-in_0.8s_ease-out_1.5s] disabled:animate-none disabled:opacity-50"
+                style={{
+                  animationFillMode: 'both'
+                }}
               >
                 <TrendingDown className="w-5 h-5 mr-2" />
                 Easier
               </Button>
               
-              <div className="text-center bg-amber-100/90 backdrop-blur-sm rounded-2xl px-8 py-4 border-3 border-amber-400/70 shadow-xl">
+              <div className="text-center bg-amber-100/90 backdrop-blur-sm rounded-2xl px-8 py-4 border-3 border-amber-400/70 shadow-xl animate-[scale-in_0.6s_ease-out_1s] opacity-0"
+                style={{
+                  animationFillMode: 'both'
+                }}
+              >
                 <div className={`text-lg font-bold ${getDifficultyColor()}`}>
                   {getDifficultyLabel()}
                 </div>
@@ -449,7 +456,10 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                 size="lg"
                 onClick={handleDifficultyUp}
                 disabled={currentDifficulty === "hard"}
-                className="bg-amber-50/90 border-2 border-amber-400 text-amber-800 hover:bg-amber-100/90 shadow-lg backdrop-blur-sm px-6 py-3"
+                className="bg-amber-50/90 border-2 border-amber-400 text-amber-800 hover:bg-amber-100/90 shadow-lg backdrop-blur-sm px-6 py-3 animate-[wiggle_0.5s_ease-in-out_2.5s,_fade-in_0.8s_ease-out_1.5s] disabled:animate-none disabled:opacity-50"
+                style={{
+                  animationFillMode: 'both'
+                }}
               >
                 <TrendingUp className="w-5 h-5 mr-2" />
                 Harder
