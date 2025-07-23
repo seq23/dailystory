@@ -16,7 +16,7 @@ interface StoryDisplayProps {
 export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps) => {
   const [currentParagraph, setCurrentParagraph] = useState(0);
   const [isReading, setIsReading] = useState(false);
-  const [readingProgress, setReadingProgress] = useState(0);
+  const [timeRemaining, setTimeRemaining] = useState(20 * 60); // 20 minutes in seconds
   const [currentDifficulty, setCurrentDifficulty] = useState<DifficultyLevel>(
     userInfo.difficultyLevel || (userInfo.age <= 7 ? "easy" : userInfo.age <= 10 ? "medium" : "hard")
   );
@@ -98,21 +98,20 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
   const totalParagraphs = storyParagraphs.length;
 
   useEffect(() => {
-    if (isReading) {
+    if (isReading && timeRemaining > 0) {
       const timer = setInterval(() => {
-        setReadingProgress(prev => {
-          const newProgress = prev + (100 / (20 * 60)); // 20 minutes = 1200 seconds
-          if (newProgress >= 100) {
+        setTimeRemaining(prev => {
+          if (prev <= 1) {
             setIsReading(false);
-            return 100;
+            return 0;
           }
-          return newProgress;
+          return prev - 1;
         });
       }, 1000);
 
       return () => clearInterval(timer);
     }
-  }, [isReading]);
+  }, [isReading, timeRemaining]);
 
   const handleNext = () => {
     if (currentParagraph < totalParagraphs - 1) {
@@ -128,7 +127,9 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
 
   const handleStartReading = () => {
     setIsReading(true);
-    setReadingProgress(0);
+    if (timeRemaining === 0) {
+      setTimeRemaining(20 * 60); // Reset to 20 minutes if timer reached 0
+    }
   };
 
   const handleDifficultyUp = () => {
@@ -170,12 +171,19 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
     }
   };
 
+  // Format time for display
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
   const progress = ((currentParagraph + 1) / totalParagraphs) * 100;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-secondary/30 p-4">
       <div className="container mx-auto max-w-4xl">
-        {/* Header */}
+        {/* Header with Timer */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="p-3 bg-gradient-primary rounded-full shadow-soft">
@@ -196,37 +204,39 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
             </div>
           </div>
 
-          <div className="flex gap-2">
-            <Button variant="playful" size="lg" onClick={onNewStory}>
-              <RotateCcw className="w-5 h-5" />
-              New Story
-            </Button>
-            <Button variant="ghost" size="lg" onClick={onHome}>
-              <Home className="w-5 h-5" />
-            </Button>
-          </div>
-        </div>
+          <div className="flex items-center gap-4">
+            {/* Reading Timer */}
+            <div className="flex flex-col items-center">
+              <div className={`text-2xl font-bold px-4 py-2 rounded-2xl border-2 transition-all duration-300 ${
+                timeRemaining <= 300 ? 'text-red-600 border-red-300 bg-red-50' : 
+                timeRemaining <= 600 ? 'text-yellow-600 border-yellow-300 bg-yellow-50' :
+                'text-green-600 border-green-300 bg-green-50'
+              }`}>
+                {formatTime(timeRemaining)}
+              </div>
+              <div className="flex items-center gap-2 mt-2">
+                <Button
+                  variant={isReading ? "destructive" : "fun"}
+                  size="sm"
+                  onClick={() => setIsReading(!isReading)}
+                >
+                  {isReading ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                  {isReading ? "Pause" : "Start"}
+                </Button>
+              </div>
+            </div>
 
-        {/* Reading Progress */}
-        <Card className="bg-gradient-card shadow-card border-0 rounded-3xl p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-foreground">Reading Progress</h3>
-            <div className="flex items-center gap-2">
-              <Button
-                variant={isReading ? "destructive" : "fun"}
-                size="sm"
-                onClick={() => setIsReading(!isReading)}
-              >
-                {isReading ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-                {isReading ? "Pause" : "Start Reading"}
+            <div className="flex gap-2">
+              <Button variant="playful" size="lg" onClick={onNewStory}>
+                <RotateCcw className="w-5 h-5" />
+                New Story
+              </Button>
+              <Button variant="ghost" size="lg" onClick={onHome}>
+                <Home className="w-5 h-5" />
               </Button>
             </div>
           </div>
-          <Progress value={readingProgress} className="h-3 mb-2" />
-          <p className="text-sm text-muted-foreground">
-            {Math.round(readingProgress)}% complete • {Math.round((readingProgress / 100) * 20)} minutes read
-          </p>
-        </Card>
+        </div>
 
         {/* Story Content */}
         <Card className="bg-gradient-card shadow-card border-0 rounded-3xl p-8 mb-6">
@@ -311,8 +321,11 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
             <h2 className="text-3xl font-bold text-white mb-4">
               🎉 Congratulations, {userInfo.name}! 🎉
             </h2>
-            <p className="text-xl text-white/90 mb-6">
-              You've completed your magical adventure! Come back tomorrow for a brand new story.
+            <p className="text-xl text-white/90 mb-2">
+              You've completed your magical adventure!
+            </p>
+            <p className="text-lg text-white/80 mb-6">
+              Time used: {formatTime(20 * 60 - timeRemaining)} • Come back tomorrow for a brand new story!
             </p>
             <div className="flex gap-4 justify-center">
               <Button variant="hero" size="xl" onClick={onNewStory}>
