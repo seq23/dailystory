@@ -473,7 +473,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                 size="lg"
                 onClick={handlePrevious}
                 disabled={currentParagraph === 0}
-                className="w-16 h-16 rounded-full bg-amber-100/95 border-3 border-amber-400 text-amber-800 hover:bg-amber-200/95 backdrop-blur-sm shadow-2xl hover:scale-110 transition-all duration-200 flex items-center justify-center animate-pulse hover:animate-bounce disabled:animate-none disabled:opacity-50"
+                className="w-16 h-16 rounded-full bg-amber-100/95 border-3 border-amber-400 text-amber-800 hover:bg-amber-200/95 backdrop-blur-sm shadow-2xl hover:scale-110 hover:animate-bounce transition-all duration-200 flex items-center justify-center disabled:opacity-50"
                 title="Previous Page"
               >
                 ←
@@ -484,11 +484,8 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                 size="lg"
                 onClick={handleNext}
                 disabled={currentParagraph === totalParagraphs - 1}
-                className="w-16 h-16 rounded-full bg-gradient-to-r from-amber-600 to-yellow-600 text-white hover:from-amber-700 hover:to-yellow-700 shadow-2xl hover:scale-110 transition-all duration-200 flex items-center justify-center animate-pulse hover:animate-bounce disabled:animate-none disabled:opacity-50"
+                className="w-16 h-16 rounded-full bg-gradient-to-r from-amber-600 to-yellow-600 text-white hover:from-amber-700 hover:to-yellow-700 shadow-2xl hover:scale-110 hover:animate-bounce transition-all duration-200 flex items-center justify-center disabled:opacity-50"
                 title={currentParagraph === totalParagraphs - 1 ? "Story Complete" : "Next Page"}
-                style={{
-                  animation: currentParagraph === totalParagraphs - 1 ? 'none' : 'pulse 2s infinite, bounce 3s infinite'
-                }}
               >
                 {currentParagraph === totalParagraphs - 1 ? "✨" : "→"}
               </Button>
