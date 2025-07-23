@@ -17,6 +17,7 @@ export interface UserInfo {
   dreamJob: string;
   favoriteFood: string;
   bestFriend: string;
+  difficultyLevel?: "easy" | "medium" | "hard";
 }
 
 interface UserInfoFormProps {
@@ -34,7 +35,8 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
     hobbies: "",
     dreamJob: "",
     favoriteFood: "",
-    bestFriend: ""
+    bestFriend: "",
+    difficultyLevel: "easy"
   });
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -65,7 +67,9 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      onSubmit(formData);
+      // Set initial difficulty based on age
+      const difficulty = formData.age <= 7 ? "easy" : formData.age <= 10 ? "medium" : "hard";
+      onSubmit({ ...formData, difficultyLevel: difficulty });
     }
   };
 
