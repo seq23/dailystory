@@ -16,7 +16,7 @@ export interface UserInfo {
   hobbies: string;
   dreamJob: string;
   favoriteFood: string;
-  bestFriend: string;
+  specialRequest: string;
   difficultyLevel?: "easy" | "medium" | "hard";
 }
 
@@ -35,7 +35,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
     hobbies: "",
     dreamJob: "",
     favoriteFood: "",
-    bestFriend: "",
+    specialRequest: "",
     difficultyLevel: "easy"
   });
 
@@ -57,8 +57,8 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
            formData.favoriteAnimal && 
            formData.hobbies && 
            formData.dreamJob && 
-           formData.favoriteFood && 
-           formData.bestFriend;
+           formData.favoriteFood;
+    // specialRequest is optional, so not included in validation
   };
 
   return (
@@ -228,14 +228,15 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="bestFriend" className="text-lg font-semibold text-foreground">
-                Tell us about your best friend!
+              <Label htmlFor="specialRequest" className="text-lg font-semibold text-foreground">
+                Tell us if there is anything special you want to include in your story?
+                <span className="text-sm text-muted-foreground ml-2">(Optional)</span>
               </Label>
               <Textarea
-                id="bestFriend"
-                value={formData.bestFriend}
-                onChange={(e) => handleInputChange("bestFriend", e.target.value)}
-                placeholder="My best friend is..."
+                id="specialRequest"
+                value={formData.specialRequest}
+                onChange={(e) => handleInputChange("specialRequest", e.target.value)}
+                placeholder="Dragons, princesses, space adventures, magic powers..."
                 className="text-lg p-4 rounded-2xl border-2 border-primary/20 focus:border-primary/50 min-h-[100px]"
               />
             </div>
