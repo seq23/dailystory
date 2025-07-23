@@ -119,7 +119,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
         
         `With determination and kindness, ${info.name} and the ${info.favoriteAnimal} joined their powers together. Suddenly, a burst of beautiful ${info.favoriteColor} light shot up into the sky and restored the rainbow to its full, magnificent glory!`,
         
-        `The grateful kingdom celebrated with singing and dancing! The people offered ${info.name} the important job of Royal ${info.dreamJob}, but ${info.name} politely explained they needed to return home to share this adventure.${info.specialRequest ? ` They promised to bring ${info.specialRequest} back with them next time!` : ''}`,
+        `The grateful kingdom celebrated with singing and dancing! The people offered ${info.name} an important royal position, but ${info.name} politely explained they needed to return home to share this adventure.${info.specialRequest ? ` They promised to bring ${info.specialRequest} back with them next time!` : ''}`,
         
         `As they returned home, ${info.name} felt proud and happy. They had learned that being brave, kind, and helpful can lead to the most wonderful experiences.${info.specialRequest ? ` And they discovered that ${info.specialRequest} made everything even more magical!` : ''} ${info.name} fell asleep that night dreaming of future adventures. The End.`
       ],
@@ -152,7 +152,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
         
         `As the sun reached its zenith, a magnificent explosion of ${info.favoriteColor} radiance burst forth from their joined hands, creating a brilliant beam of light that shot directly into the heart of the faded rainbow, instantly restoring its former splendor and even enhancing its beauty beyond its original glory.${info.specialRequest ? ` The ${info.specialRequest} glowed brightly, adding their own special magic to the restored rainbow.` : ''}`,
         
-        `The eternally grateful citizens offered ${info.name} the prestigious position of Royal ${info.dreamJob}, along with a magnificent castle and all the treasures of the kingdom. However, ${info.name} graciously declined, explaining their responsibility to return home and share these remarkable experiences.${info.specialRequest ? ` They promised to return someday with more ${info.specialRequest} to help protect the kingdom.` : ''}`,
+        `The eternally grateful citizens offered ${info.name} a prestigious leadership position, along with a magnificent castle and all the treasures of the kingdom. However, ${info.name} graciously declined, explaining their responsibility to return home and share these remarkable experiences.${info.specialRequest ? ` They promised to return someday with more ${info.specialRequest} to help protect the kingdom.` : ''}`,
         
         `During their homeward journey, soaring through clouds painted with colors they had helped restore, ${info.name} reflected deeply on the profound lessons learned about courage, empathy, leadership, and the extraordinary impact that one person's kindness and determination can have on an entire world.${info.specialRequest ? ` They also marveled at how ${info.specialRequest} had made their adventure even more magical.` : ''}`,
         
@@ -187,7 +187,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
         
         `At the precise moment of optimal cosmic alignment, a spectacular cascade of ${info.favoriteColor} radiance erupted from their unified consciousness, generating a beam of pure creative energy that penetrated the rainbow's deteriorated core and initiated a comprehensive regeneration sequence that exceeded all previous manifestations of its power.${info.specialRequest ? ` The ${info.specialRequest} resonated with harmonic frequencies that enhanced the restoration beyond theoretical limitations.` : ''}`,
         
-        `In recognition of their unprecedented achievement, the grateful civilization offered ${info.name} permanent residence as Supreme ${info.dreamJob} of their realm, along with access to infinite resources and the opportunity to study advanced metaphysical sciences unavailable in conventional reality.${info.specialRequest ? ` They promised to establish a permanent sanctuary for ${info.specialRequest} to ensure continued protection and study of their remarkable properties.` : ''}`,
+        `In recognition of their unprecedented achievement, the grateful civilization offered ${info.name} permanent residence as Supreme Leader of their realm, along with access to infinite resources and the opportunity to study advanced metaphysical sciences unavailable in conventional reality.${info.specialRequest ? ` They promised to establish a permanent sanctuary for ${info.specialRequest} to ensure continued protection and study of their remarkable properties.` : ''}`,
         
         `During the contemplative return journey through shifting dimensional boundaries, ${info.name} engaged in profound philosophical reflection regarding the interconnected nature of existence, the exponential impact of individual moral choices, and the fundamental responsibility that accompanies the possession of extraordinary capabilities.${info.specialRequest ? ` They marveled at the unexpected ways in which ${info.specialRequest} had contributed to outcomes that transcended initial expectations.` : ''}`,
         
@@ -438,7 +438,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
       const gender = detectGender(userInfo.name);
       
       // All user interests combined for analysis
-      const interests = (userInfo.hobbies + ' ' + (userInfo.specialRequest || '') + ' ' + userInfo.dreamJob + ' ' + userInfo.favoriteAnimal).toLowerCase();
+      const interests = (userInfo.hobbies + ' ' + (userInfo.specialRequest || '') + ' ' + userInfo.favoriteAnimal).toLowerCase();
       
       // Age-based categorization with gender filtering
       const youngKidsIllustrations = [illustration9, illustration10, illustration12, illustration23]; // Ages 3-6: Unicorn, superhero dinosaur, woodland tea party, magical farm

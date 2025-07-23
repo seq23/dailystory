@@ -14,7 +14,6 @@ export interface UserInfo {
   favoriteColor: string;
   favoriteAnimal: string;
   hobbies: string;
-  dreamJob: string;
   favoriteFood: string;
   specialRequest: string;
   difficultyLevel?: "easy" | "medium" | "hard" | "expert";
@@ -34,7 +33,6 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
     favoriteColor: "",
     favoriteAnimal: "",
     hobbies: "",
-    dreamJob: "",
     favoriteFood: "",
     specialRequest: "",
     difficultyLevel: "easy",
@@ -91,7 +89,6 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
            formData.favoriteColor && 
            formData.favoriteAnimal && 
            formData.hobbies && 
-           formData.dreamJob && 
            formData.favoriteFood;
     // specialRequest is optional, so not included in validation
   };
@@ -264,17 +261,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                   className="text-lg p-4 rounded-2xl border-2 border-primary/20 focus:border-primary/50"
                 />
               </div>
-            </div>
-          </div>
 
-          {/* Dreams & Friends Section */}
-          <div className="space-y-6 md:col-span-2">
-            <h3 className="text-2xl font-semibold text-foreground flex items-center gap-2">
-              <Star className="w-6 h-6 text-primary" />
-              Additional Info
-            </h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="hobbies" className="text-lg font-semibold text-foreground">
                   What do you like to do for fun?
@@ -287,21 +274,16 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                   className="text-lg p-4 rounded-2xl border-2 border-primary/20 focus:border-primary/50 min-h-[100px]"
                 />
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="dreamJob" className="text-lg font-semibold text-foreground">
-                  What do you want to be when you grow up?
-                </Label>
-                <Textarea
-                  id="dreamJob"
-                  value={formData.dreamJob}
-                  onChange={(e) => handleInputChange("dreamJob", e.target.value)}
-                  placeholder="Astronaut, teacher, artist..."
-                  className="text-lg p-4 rounded-2xl border-2 border-primary/20 focus:border-primary/50 min-h-[100px]"
-                />
-              </div>
             </div>
+          </div>
 
+          {/* Additional Info Section */}
+          <div className="space-y-6 md:col-span-2">
+            <h3 className="text-2xl font-semibold text-foreground flex items-center gap-2">
+              <Star className="w-6 h-6 text-primary" />
+              Additional Info
+            </h3>
+            
             <div className="space-y-2">
               <Label htmlFor="specialRequest" className="text-lg font-semibold text-foreground">
                 Tell us if there is anything special you want to include in your story?
