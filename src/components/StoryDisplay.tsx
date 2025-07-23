@@ -8,6 +8,11 @@ import ancientBookBg from "@/assets/ancient-book-bg.jpg";
 import illustration1 from "@/assets/story-illustration-1.jpg";
 import illustration2 from "@/assets/story-illustration-2.jpg"; 
 import illustration3 from "@/assets/story-illustration-3.jpg";
+import illustration4 from "@/assets/story-illustration-4.jpg";
+import illustration5 from "@/assets/story-illustration-5.jpg";
+import illustration6 from "@/assets/story-illustration-6.jpg";
+import illustration7 from "@/assets/story-illustration-7.jpg";
+import illustration8 from "@/assets/story-illustration-8.jpg";
 import { FloatingTimer } from "./FloatingTimer";
 
 type DifficultyLevel = "easy" | "medium" | "hard";
@@ -263,11 +268,18 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
 
   const progress = ((currentParagraph + 1) / totalParagraphs) * 100;
 
-  // Get current illustration based on story progress
+  // Get current illustration based on story progress - now includes gaming-themed magical illustrations
   const getCurrentIllustration = () => {
-    if (progress <= 33) return illustration1;
-    if (progress <= 66) return illustration2;
-    return illustration3;
+    const allIllustrations = [
+      illustration1, illustration2, illustration3, illustration4, 
+      illustration5, illustration6, illustration7, illustration8
+    ];
+    
+    // Use story progress to cycle through all available illustrations
+    const illustrationIndex = Math.floor((progress / 100) * allIllustrations.length);
+    const safeIndex = Math.min(illustrationIndex, allIllustrations.length - 1);
+    
+    return allIllustrations[safeIndex];
   };
 
   // Get current chapter based on story progress
