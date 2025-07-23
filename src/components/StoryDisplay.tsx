@@ -5,6 +5,9 @@ import { Progress } from "@/components/ui/progress";
 import { BookOpen, Home, RotateCcw, Volume2, VolumeX, TrendingUp, TrendingDown, Plus } from "lucide-react";
 import type { UserInfo } from "./UserInfoForm";
 import ancientBookBg from "@/assets/ancient-book-bg.jpg";
+import illustration1 from "@/assets/story-illustration-1.jpg";
+import illustration2 from "@/assets/story-illustration-2.jpg"; 
+import illustration3 from "@/assets/story-illustration-3.jpg";
 import { FloatingTimer } from "./FloatingTimer";
 
 type DifficultyLevel = "easy" | "medium" | "hard";
@@ -193,6 +196,20 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
 
   const progress = ((currentParagraph + 1) / totalParagraphs) * 100;
 
+  // Get current illustration based on story progress
+  const getCurrentIllustration = () => {
+    if (progress <= 33) return illustration1;
+    if (progress <= 66) return illustration2;
+    return illustration3;
+  };
+
+  // Get current chapter based on story progress
+  const getCurrentChapter = () => {
+    if (progress <= 33) return 1;
+    if (progress <= 66) return 2;
+    return 3;
+  };
+
   return (
     <div 
       className="min-h-screen bg-cover bg-center bg-no-repeat relative overflow-hidden"
@@ -265,27 +282,74 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
               </div>
             </div>
 
-            {/* Main story text - positioned as if written on the book pages */}
-            <div className="bg-yellow-50/95 backdrop-blur-sm rounded-3xl p-12 mb-12 border-3 border-amber-300/60 shadow-2xl relative max-w-4xl mx-auto">
-              {/* Ornate corner decorations */}
-              <div className="absolute top-6 left-6 w-12 h-12 border-t-3 border-l-3 border-amber-500 rounded-tl-2xl opacity-70"></div>
-              <div className="absolute top-6 right-6 w-12 h-12 border-t-3 border-r-3 border-amber-500 rounded-tr-2xl opacity-70"></div>
-              <div className="absolute bottom-6 left-6 w-12 h-12 border-b-3 border-l-3 border-amber-500 rounded-bl-2xl opacity-70"></div>
-              <div className="absolute bottom-6 right-6 w-12 h-12 border-b-3 border-r-3 border-amber-500 rounded-br-2xl opacity-70"></div>
-              
-              {/* Central ornamental flourish */}
-              <div className="absolute top-8 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-60"></div>
-              <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-60"></div>
-              
-              <div className="prose prose-lg max-w-none text-center">
-                <p className={`${getTextSize()} text-amber-900 font-medium leading-relaxed drop-shadow-sm animate-fade-in`} 
-                   style={{ 
-                     fontFamily: 'Comic Neue, cursive',
-                     textShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                     lineHeight: '1.8'
-                   }}>
-                  {storyParagraphs[currentParagraph]}
-                </p>
+            {/* Two-column responsive layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12 max-w-7xl mx-auto">
+              {/* Illustration Column */}
+              <div className="flex flex-col items-center space-y-6">
+                {/* Chapter Indicator */}
+                <div className="bg-amber-100/90 backdrop-blur-sm rounded-2xl px-6 py-3 border-2 border-amber-400/60 shadow-lg">
+                  <span className="text-lg font-bold text-amber-800">
+                    Chapter {getCurrentChapter()} of 3
+                  </span>
+                </div>
+                
+                {/* Illuminated Manuscript Frame */}
+                <div className="relative bg-amber-50/95 p-6 rounded-3xl border-4 border-amber-400/80 shadow-2xl backdrop-blur-sm">
+                  {/* Ornate corner decorations */}
+                  <div className="absolute -top-2 -left-2 w-8 h-8 bg-amber-600 rounded-full border-2 border-amber-300"></div>
+                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-amber-600 rounded-full border-2 border-amber-300"></div>
+                  <div className="absolute -bottom-2 -left-2 w-8 h-8 bg-amber-600 rounded-full border-2 border-amber-300"></div>
+                  <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-amber-600 rounded-full border-2 border-amber-300"></div>
+                  
+                  {/* Medieval manuscript decorative elements */}
+                  <div className="absolute top-4 left-4 w-6 h-6 border-2 border-amber-500 rounded-tl-xl opacity-60"></div>
+                  <div className="absolute top-4 right-4 w-6 h-6 border-2 border-amber-500 rounded-tr-xl opacity-60"></div>
+                  <div className="absolute bottom-4 left-4 w-6 h-6 border-2 border-amber-500 rounded-bl-xl opacity-60"></div>
+                  <div className="absolute bottom-4 right-4 w-6 h-6 border-2 border-amber-500 rounded-br-xl opacity-60"></div>
+                  
+                  {/* The Illustration */}
+                  <div className="relative overflow-hidden rounded-2xl border-3 border-amber-300">
+                    <img 
+                      src={getCurrentIllustration()} 
+                      alt={`Chapter ${getCurrentChapter()} illustration`}
+                      className="w-full h-auto max-w-md mx-auto shadow-lg transition-transform duration-300 hover:scale-105"
+                      style={{ aspectRatio: '3/4' }}
+                    />
+                    {/* Magical overlay effect */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-amber-100/20 via-transparent to-amber-100/20 pointer-events-none"></div>
+                  </div>
+                  
+                  {/* Decorative flourish below image */}
+                  <div className="mt-4 flex justify-center">
+                    <div className="w-24 h-1 bg-gradient-to-r from-transparent via-amber-500 to-transparent rounded-full"></div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Story Text Column */}
+              <div className="flex flex-col justify-center">
+                <div className="bg-yellow-50/95 backdrop-blur-sm rounded-3xl p-8 lg:p-12 border-3 border-amber-300/60 shadow-2xl relative">
+                  {/* Ornate corner decorations */}
+                  <div className="absolute top-6 left-6 w-8 h-8 border-t-3 border-l-3 border-amber-500 rounded-tl-2xl opacity-70"></div>
+                  <div className="absolute top-6 right-6 w-8 h-8 border-t-3 border-r-3 border-amber-500 rounded-tr-2xl opacity-70"></div>
+                  <div className="absolute bottom-6 left-6 w-8 h-8 border-b-3 border-l-3 border-amber-500 rounded-bl-2xl opacity-70"></div>
+                  <div className="absolute bottom-6 right-6 w-8 h-8 border-b-3 border-r-3 border-amber-500 rounded-br-2xl opacity-70"></div>
+                  
+                  {/* Central ornamental flourish */}
+                  <div className="absolute top-4 left-1/2 transform -translate-x-1/2 w-12 h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-60"></div>
+                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-12 h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-60"></div>
+                  
+                  <div className="prose prose-lg max-w-none">
+                    <p className={`${getTextSize()} text-amber-900 font-medium leading-relaxed drop-shadow-sm animate-fade-in text-left lg:text-justify`} 
+                       style={{ 
+                         fontFamily: 'Comic Neue, cursive',
+                         textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                         lineHeight: '1.8'
+                       }}>
+                      {storyParagraphs[currentParagraph]}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
 
