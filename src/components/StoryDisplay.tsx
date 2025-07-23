@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { BookOpen, Home, RotateCcw, Volume2, VolumeX, TrendingUp, TrendingDown } from "lucide-react";
+import { BookOpen, Home, RotateCcw, Volume2, VolumeX, TrendingUp, TrendingDown, Plus } from "lucide-react";
 import type { UserInfo } from "./UserInfoForm";
 
 type DifficultyLevel = "easy" | "medium" | "hard";
@@ -139,6 +139,10 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
     }
   };
 
+  const handleAddTime = () => {
+    setTimeRemaining(prev => prev + (10 * 60)); // Add 10 minutes
+  };
+
   const handleDifficultyUp = () => {
     if (currentDifficulty === "easy") setCurrentDifficulty("medium");
     else if (currentDifficulty === "medium") setCurrentDifficulty("hard");
@@ -229,6 +233,15 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                 >
                   {isReading ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                   {isReading ? "Pause" : "Start"}
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleAddTime}
+                  title="Add 10 more minutes"
+                >
+                  <Plus className="w-4 h-4" />
+                  +10 min
                 </Button>
               </div>
             </div>
