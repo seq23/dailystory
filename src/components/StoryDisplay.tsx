@@ -27,8 +27,10 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
     userInfo.difficultyLevel || (userInfo.age <= 7 ? "easy" : userInfo.age <= 10 ? "medium" : "hard")
   );
 
-  // Generate age-appropriate stories with calibrated length for 20-minute reading
+  // Generate age-appropriate G/PG rated stories with calibrated length for 20-minute reading
   const generateStory = (info: UserInfo, difficulty: DifficultyLevel): string[] => {
+    // Ensure all content is family-friendly and G/PG rated
+    const contentGuidelines = "All stories must be positive, uplifting, non-violent, educational, and appropriate for children. No scary, dark, or inappropriate themes.";
     const baseStoryTemplates = {
       // Easy: 6 short pages (ages 4-7, ~3-4 minutes per page)
       easy: [

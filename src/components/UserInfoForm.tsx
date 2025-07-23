@@ -39,7 +39,22 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
     difficultyLevel: "easy"
   });
 
+  const contentFilter = (text: string): boolean => {
+    const inappropriateWords = [
+      'scary', 'frightening', 'violent', 'dark', 'death', 'kill', 'weapon', 'gun', 'sword', 'fight',
+      'monster', 'ghost', 'zombie', 'vampire', 'witch', 'evil', 'mean', 'bad', 'hurt', 'pain',
+      'blood', 'angry', 'mad', 'hate', 'stupid', 'dumb', 'ugly', 'fat', 'skinny'
+    ];
+    
+    return inappropriateWords.some(word => 
+      text.toLowerCase().includes(word.toLowerCase())
+    );
+  };
+
   const handleInputChange = (field: keyof UserInfo, value: string | number) => {
+    if (typeof value === 'string' && contentFilter(value)) {
+      return; // Don't update if content is inappropriate
+    }
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
