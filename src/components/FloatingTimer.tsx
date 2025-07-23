@@ -1,0 +1,237 @@
+import { useState, useEffect, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { Volume2, VolumeX, Plus } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+
+interface FloatingTimerProps {
+  timeRemaining: number;
+  isReading: boolean;
+  onToggleReading: () => void;
+  onAddTime: () => void;
+}
+
+export const FloatingTimer = ({ 
+  timeRemaining, 
+  isReading, 
+  onToggleReading, 
+  onAddTime 
+}: FloatingTimerProps) => {
+  const [showCelebration, setShowCelebration] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const { toast } = useToast();
+  
+  // Calculate progress for circular progress
+  const totalTime = 20 * 60; // 20 minutes in seconds
+  const progress = ((totalTime - timeRemaining) / totalTime) * 100;
+  const circumference = 2 * Math.PI * 45; // radius of 45
+  const strokeDashoffset = circumference - (progress / 100) * circumference;
+
+  // Format time for display
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  // Handle timer completion
+  useEffect(() => {
+    if (timeRemaining === 0 && !showCelebration) {
+      setShowCelebration(true);
+      
+      // Play celebration sound
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      // Create a pleasant celebration melody
+      const playNote = (frequency: number, startTime: number, duration: number) => {
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        
+        osc.frequency.setValueAtTime(frequency, startTime);
+        gain.gain.setValueAtTime(0, startTime);
+        gain.gain.linearRampToValueAtTime(0.1, startTime + 0.1);
+        gain.gain.linearRampToValueAtTime(0, startTime + duration);
+        
+        osc.start(startTime);
+        osc.stop(startTime + duration);
+      };
+      
+      // Play celebration melody
+      const now = audioContext.currentTime;
+      playNote(523.25, now, 0.3); // C5
+      playNote(659.25, now + 0.3, 0.3); // E5
+      playNote(783.99, now + 0.6, 0.3); // G5
+      playNote(1046.50, now + 0.9, 0.6); // C6
+      
+      // Show toast notification
+      toast({
+        title: "🎉 Congratulations!",
+        description: "You've completed your 20+ minute reading session!",
+        duration: 5000,
+      });
+      
+      // Hide celebration after 3 seconds
+      setTimeout(() => {
+        setShowCelebration(false);
+      }, 3000);
+    }
+  }, [timeRemaining, showCelebration, toast]);
+
+  // Color based on time remaining
+  const getTimerColor = () => {
+    if (timeRemaining <= 300) return "#dc2626"; // red
+    if (timeRemaining <= 600) return "#ea580c"; // orange
+    return "#16a34a"; // green
+  };
+
+  return (
+    <>
+      {/* Floating Timer Container */}
+      <div className="fixed bottom-8 right-8 z-50 flex flex-col items-center gap-3">
+        {/* Circular Timer */}
+        <div className="relative">
+          {/* Celebration Animation */}
+          {showCelebration && (
+            <div className="absolute inset-0 pointer-events-none">
+              {/* Confetti particles */}
+              {[...Array(12)].map((_, i) => (
+                <div
+                  key={i}
+                  className="absolute w-3 h-3 rounded-full animate-bounce-gentle"
+                  style={{
+                    backgroundColor: ['#fbbf24', '#f59e0b', '#d97706', '#92400e'][i % 4],
+                    left: `${Math.cos((i * 30) * Math.PI / 180) * 60 + 50}px`,
+                    top: `${Math.sin((i * 30) * Math.PI / 180) * 60 + 50}px`,
+                    animationDelay: `${i * 0.1}s`,
+                    animationDuration: '2s'
+                  }}
+                />
+              ))}
+              
+              {/* Sparkle effect */}
+              <div className="absolute inset-0 animate-spin">
+                {[...Array(8)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="absolute w-2 h-2 bg-yellow-400 rounded-full animate-ping"
+                    style={{
+                      left: `${Math.cos((i * 45) * Math.PI / 180) * 70 + 48}px`,
+                      top: `${Math.sin((i * 45) * Math.PI / 180) * 70 + 48}px`,
+                      animationDelay: `${i * 0.2}s`
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {/* Timer Circle */}
+          <div className="relative w-24 h-24 bg-white/90 backdrop-blur-sm rounded-full shadow-2xl border-4 border-amber-300/60 flex items-center justify-center">
+            {/* Progress Circle */}
+            <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 100 100">
+              {/* Background circle */}
+              <circle
+                cx="50"
+                cy="50"
+                r="45"
+                stroke="#fbbf24"
+                strokeWidth="3"
+                fill="none"
+                opacity="0.2"
+              />
+              {/* Progress circle */}
+              <circle
+                cx="50"
+                cy="50"
+                r="45"
+                stroke={getTimerColor()}
+                strokeWidth="3"
+                fill="none"
+                strokeDasharray={circumference}
+                strokeDashoffset={strokeDashoffset}
+                className="transition-all duration-1000 ease-out"
+                strokeLinecap="round"
+              />
+            </svg>
+            
+            {/* Time Display */}
+            <div className="relative z-10 text-center">
+              <div 
+                className="text-lg font-bold" 
+                style={{ color: getTimerColor() }}
+              >
+                {formatTime(timeRemaining)}
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Control Buttons */}
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onToggleReading}
+            className="bg-white/90 backdrop-blur-sm border-2 border-amber-300 text-amber-800 hover:bg-amber-50 shadow-lg w-12 h-12 p-0"
+            title={isReading ? "Pause Timer" : "Start Timer"}
+          >
+            {isReading ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+          </Button>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onAddTime}
+            className="bg-white/90 backdrop-blur-sm border-2 border-amber-300 text-amber-800 hover:bg-amber-50 shadow-lg w-12 h-12 p-0"
+            title="Add 10 minutes"
+          >
+            <Plus className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
+      
+      {/* Celebration Overlay */}
+      {showCelebration && (
+        <div className="fixed inset-0 pointer-events-none z-40 overflow-hidden">
+          {/* Golden confetti rain */}
+          {[...Array(50)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute w-2 h-2 bg-yellow-400 rounded-full animate-bounce"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `-10px`,
+                animationDelay: `${Math.random() * 3}s`,
+                animationDuration: `${2 + Math.random() * 2}s`,
+                transform: `translateY(${window.innerHeight + 50}px) rotate(${Math.random() * 360}deg)`
+              }}
+            />
+          ))}
+          
+          {/* Sparkle shower */}
+          {[...Array(30)].map((_, i) => (
+            <div
+              key={`sparkle-${i}`}
+              className="absolute text-yellow-300 text-2xl animate-ping"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 3}s`,
+                animationDuration: '1s'
+              }}
+            >
+              ✨
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  );
+};

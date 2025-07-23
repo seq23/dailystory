@@ -5,6 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { BookOpen, Home, RotateCcw, Volume2, VolumeX, TrendingUp, TrendingDown, Plus } from "lucide-react";
 import type { UserInfo } from "./UserInfoForm";
 import ancientBookBg from "@/assets/ancient-book-bg.jpg";
+import { FloatingTimer } from "./FloatingTimer";
 
 type DifficultyLevel = "easy" | "medium" | "hard";
 
@@ -235,46 +236,14 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            {/* Reading Timer */}
-            <div className="flex flex-col items-center">
-              <div className={`text-2xl font-bold px-4 py-2 rounded-2xl border-2 transition-all duration-300 ${
-                timeRemaining <= 300 ? 'text-red-600 border-red-300 bg-red-50' : 
-                timeRemaining <= 600 ? 'text-yellow-600 border-yellow-300 bg-yellow-50' :
-                'text-green-600 border-green-300 bg-green-50'
-              }`}>
-                {formatTime(timeRemaining)}
-              </div>
-              <div className="flex items-center gap-2 mt-2">
-                <Button
-                  variant={isReading ? "destructive" : "fun"}
-                  size="sm"
-                  onClick={() => setIsReading(!isReading)}
-                >
-                  {isReading ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-                  {isReading ? "Pause" : "Start"}
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={handleAddTime}
-                  title="Add 10 more minutes"
-                >
-                  <Plus className="w-4 h-4" />
-                  +10 min
-                </Button>
-              </div>
-            </div>
-
-            <div className="flex gap-2">
-              <Button variant="playful" size="lg" onClick={onNewStory}>
-                <RotateCcw className="w-5 h-5" />
-                New Story
-              </Button>
-              <Button variant="ghost" size="lg" onClick={onHome}>
-                <Home className="w-5 h-5" />
-              </Button>
-            </div>
+          <div className="flex gap-2">
+            <Button variant="playful" size="lg" onClick={onNewStory}>
+              <RotateCcw className="w-5 h-5" />
+              New Story
+            </Button>
+            <Button variant="ghost" size="lg" onClick={onHome}>
+              <Home className="w-5 h-5" />
+            </Button>
           </div>
         </div>
 
@@ -427,6 +396,14 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
             </div>
           </div>
         )}
+        
+        {/* Floating Timer Component */}
+        <FloatingTimer
+          timeRemaining={timeRemaining}
+          isReading={isReading}
+          onToggleReading={() => setIsReading(!isReading)}
+          onAddTime={handleAddTime}
+        />
       </div>
     </div>
   );
