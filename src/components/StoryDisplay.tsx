@@ -52,9 +52,6 @@ import illustration44 from "@/assets/story-illustration-44.jpg";
 import { FloatingTimer } from "./FloatingTimer";
 import { processTextForPhonetics } from "@/utils/textProcessor";
 import { RunwareService, generatedImageCache, createChildFriendlyPrompt } from "@/services/runwareService";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Eye, EyeOff } from "lucide-react";
 
 type DifficultyLevel = "easy" | "medium" | "hard" | "expert";
 
@@ -74,9 +71,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
   );
   const [currentIllustration, setCurrentIllustration] = useState<string>("");
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
-  const [apiKey, setApiKey] = useState(localStorage.getItem('runware_api_key') || '');
-  const [showApiKey, setShowApiKey] = useState(false);
-  const [runwareService, setRunwareService] = useState<RunwareService | null>(null);
+  const [runwareService] = useState<RunwareService>(() => new RunwareService("LRRGqlrg67zH8uss6lMjVvc54pVOrznM"));
 
   // Generate age-appropriate G/PG rated stories with calibrated length for 20-minute reading
   // Maximum reading level is capped at 12th grade (expert difficulty)
@@ -389,13 +384,6 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
 
   const progress = ((currentParagraph + 1) / totalParagraphs) * 100;
 
-  // Initialize Runware service when API key is provided
-  useEffect(() => {
-    if (apiKey) {
-      localStorage.setItem('runware_api_key', apiKey);
-      setRunwareService(new RunwareService(apiKey));
-    }
-  }, [apiKey]);
 
   // Smart illustration selection with automatic generation
   const getCurrentIllustration = async () => {
@@ -491,8 +479,8 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
       }
     }
     
-    // If no good match and we have an API key, generate a custom image
-    if (apiKey && runwareService && !isGeneratingImage) {
+    // Generate a custom image if no good match exists
+    if (runwareService && !isGeneratingImage) {
       try {
         setIsGeneratingImage(true);
         const prompt = createChildFriendlyPrompt(currentText);
@@ -545,7 +533,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
       setCurrentIllustration(illustration);
     };
     loadIllustration();
-  }, [currentParagraph, apiKey, runwareService]);
+  }, [currentParagraph]);
 
   // Get current chapter based on story progress
   const getCurrentChapter = () => {
@@ -597,42 +585,14 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            {/* API Key Input for Dynamic Illustration Generation */}
-            <div className="flex items-center gap-2">
-              <Label htmlFor="apiKey" className="text-sm font-medium text-amber-800 whitespace-nowrap">
-                Runware API Key:
-              </Label>
-              <div className="relative">
-                <Input
-                  id="apiKey"
-                  type={showApiKey ? "text" : "password"}
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  placeholder="Enter for auto-generation"
-                  className="w-48 text-xs bg-white/80 border-amber-300"
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute inset-y-0 right-0 px-2 h-full"
-                  onClick={() => setShowApiKey(!showApiKey)}
-                >
-                  {showApiKey ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-                </Button>
-              </div>
-            </div>
-            
-            <div className="flex gap-2">
-              <Button variant="playful" size="lg" onClick={onNewStory}>
-                <RotateCcw className="w-5 h-5" />
-                New Story
-              </Button>
-              <Button variant="ghost" size="lg" onClick={onHome}>
-                <Home className="w-5 h-5" />
-              </Button>
-            </div>
+          <div className="flex gap-2">
+            <Button variant="playful" size="lg" onClick={onNewStory}>
+              <RotateCcw className="w-5 h-5" />
+              New Story
+            </Button>
+            <Button variant="ghost" size="lg" onClick={onHome}>
+              <Home className="w-5 h-5" />
+            </Button>
           </div>
         </div>
 
