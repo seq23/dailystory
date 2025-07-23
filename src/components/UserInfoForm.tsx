@@ -49,7 +49,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
       // Profanity and inappropriate language
       'damn', 'hell', 'crap', 'piss', 'ass', 'bitch', 'bastard', 'shit', 'fuck', 'fucking',
       'motherfucker', 'asshole', 'dickhead', 'prick', 'cock', 'pussy', 'whore', 'slut',
-      'retard', 'gay', 'homo', 'fag', 'nigger', 'spic', 'chink', 'kike',
+      'retard', 'gay', 'homo', 'fag', 'nigger', 'spic', 'chink', 'kike', 'dick',
       
       // Sexual content
       'sex', 'sexual', 'porn', 'naked', 'nude', 'boobs', 'penis', 'vagina', 'orgasm',
