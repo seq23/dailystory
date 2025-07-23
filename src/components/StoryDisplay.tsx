@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { BookOpen, Home, RotateCcw, Volume2, VolumeX, TrendingUp, TrendingDown, Plus } from "lucide-react";
 import type { UserInfo } from "./UserInfoForm";
+import ancientBookBg from "@/assets/ancient-book-bg.jpg";
 
 type DifficultyLevel = "easy" | "medium" | "hard";
 
@@ -192,8 +193,16 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
   const progress = ((currentParagraph + 1) / totalParagraphs) * 100;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/30 p-4">
-      <div className="container mx-auto max-w-4xl">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-amber-100 p-4 relative overflow-hidden">
+      {/* Magical background elements */}
+      <div className="absolute inset-0 opacity-30">
+        <div className="absolute top-20 left-20 w-32 h-32 bg-yellow-300/20 rounded-full animate-float blur-xl"></div>
+        <div className="absolute top-40 right-32 w-24 h-24 bg-amber-300/30 rounded-full animate-bounce-gentle blur-lg"></div>
+        <div className="absolute bottom-32 left-1/4 w-20 h-20 bg-orange-300/20 rounded-full animate-float blur-lg"></div>
+        <div className="absolute bottom-20 right-20 w-28 h-28 bg-yellow-400/25 rounded-full animate-bounce-gentle blur-xl"></div>
+      </div>
+
+      <div className="container mx-auto max-w-6xl relative z-10">
         {/* Header with Timer */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
@@ -258,104 +267,156 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
           </div>
         </div>
 
-        {/* Story Content */}
-        <Card className="bg-gradient-card shadow-card border-0 rounded-3xl p-8 mb-6">
-          {/* Story Progress */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-muted-foreground">
-                Page {currentParagraph + 1} of {totalParagraphs}
-              </span>
-            </div>
-            <Progress value={progress} className="w-32 h-2" />
-          </div>
-
-          {/* Story Text with Dynamic Sizing */}
-          <div className="prose prose-lg max-w-none mb-8">
-            <p className={`${getTextSize()} text-foreground font-medium`}>
-              {storyParagraphs[currentParagraph]}
-            </p>
-          </div>
-
-          {/* Difficulty Adjustment Controls */}
-          <div className="flex items-center justify-center gap-4 mb-6">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleDifficultyDown}
-              disabled={currentDifficulty === "easy"}
-            >
-              <TrendingDown className="w-4 h-4 mr-2" />
-              Easier
-            </Button>
-            
-            <div className="text-center">
-              <div className={`font-semibold ${getDifficultyColor()}`}>
-                {getDifficultyLabel()}
-              </div>
-              <div className="text-xs text-muted-foreground">
-                {currentDifficulty === "easy" && "Simple words & short sentences"}
-                {currentDifficulty === "medium" && "Moderate vocabulary & sentences"}
-                {currentDifficulty === "hard" && "Advanced vocabulary & complex sentences"}
+        {/* Ancient Book Story Container */}
+        <div 
+          className="relative bg-cover bg-center bg-no-repeat rounded-3xl shadow-2xl overflow-hidden min-h-[800px] flex items-center justify-center"
+          style={{ 
+            backgroundImage: `url(${ancientBookBg})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center'
+          }}
+        >
+          {/* Book pages overlay */}
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-50/80 via-yellow-50/70 to-amber-100/80 rounded-3xl"></div>
+          
+          {/* Book content area */}
+          <div className="relative z-10 w-full max-w-4xl mx-auto p-12">
+            {/* Story Progress Indicator */}
+            <div className="flex items-center justify-center mb-8">
+              <div className="flex items-center gap-2 bg-amber-100/80 backdrop-blur-sm rounded-full px-6 py-3 border-2 border-amber-300/50 shadow-lg">
+                <span className="text-sm font-medium text-amber-800">
+                  Page {currentParagraph + 1} of {totalParagraphs}
+                </span>
+                <div className="w-32 h-2 bg-amber-200 rounded-full overflow-hidden ml-4">
+                  <div 
+                    className="h-full bg-gradient-to-r from-amber-500 to-yellow-600 transition-all duration-500 ease-out"
+                    style={{ width: `${progress}%` }}
+                  ></div>
+                </div>
               </div>
             </div>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleDifficultyUp}
-              disabled={currentDifficulty === "hard"}
-            >
-              <TrendingUp className="w-4 h-4 mr-2" />
-              Harder
-            </Button>
-          </div>
 
-          {/* Navigation */}
-          <div className="flex gap-4 justify-center">
-            <Button
-              variant="playful"
-              size="lg"
-              onClick={handlePrevious}
-              disabled={currentParagraph === 0}
-              className="flex-1 max-w-xs"
-            >
-              Previous Page
-            </Button>
-            
-            <Button
-              variant="fun"
-              size="lg"
-              onClick={handleNext}
-              disabled={currentParagraph === totalParagraphs - 1}
-              className="flex-1 max-w-xs"
-            >
-              {currentParagraph === totalParagraphs - 1 ? "Story Complete!" : "Next Page"}
-            </Button>
-          </div>
-        </Card>
+            {/* Story Text Area - Styled like handwritten text on ancient pages */}
+            <div className="bg-yellow-50/90 backdrop-blur-sm rounded-2xl p-8 mb-8 border-2 border-amber-200/50 shadow-inner relative">
+              {/* Decorative corner flourishes */}
+              <div className="absolute top-4 left-4 w-8 h-8 border-t-2 border-l-2 border-amber-400 rounded-tl-lg opacity-60"></div>
+              <div className="absolute top-4 right-4 w-8 h-8 border-t-2 border-r-2 border-amber-400 rounded-tr-lg opacity-60"></div>
+              <div className="absolute bottom-4 left-4 w-8 h-8 border-b-2 border-l-2 border-amber-400 rounded-bl-lg opacity-60"></div>
+              <div className="absolute bottom-4 right-4 w-8 h-8 border-b-2 border-r-2 border-amber-400 rounded-br-lg opacity-60"></div>
+              
+              <div className="prose prose-lg max-w-none text-center">
+                <p className={`${getTextSize()} text-amber-900 font-medium leading-relaxed drop-shadow-sm`} 
+                   style={{ 
+                     fontFamily: 'Comic Neue, cursive',
+                     textShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                   }}>
+                  {storyParagraphs[currentParagraph]}
+                </p>
+              </div>
+            </div>
 
-        {/* Story completed message */}
+            {/* Difficulty Adjustment Controls - Styled like ancient scroll */}
+            <div className="flex items-center justify-center gap-4 mb-8">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDifficultyDown}
+                disabled={currentDifficulty === "easy"}
+                className="bg-amber-50/80 border-amber-300 text-amber-800 hover:bg-amber-100/80"
+              >
+                <TrendingDown className="w-4 h-4 mr-2" />
+                Easier
+              </Button>
+              
+              <div className="text-center bg-amber-100/80 backdrop-blur-sm rounded-full px-6 py-3 border-2 border-amber-300/50">
+                <div className={`font-semibold ${getDifficultyColor()}`}>
+                  {getDifficultyLabel()}
+                </div>
+                <div className="text-xs text-amber-700">
+                  {currentDifficulty === "easy" && "Simple words & short sentences"}
+                  {currentDifficulty === "medium" && "Moderate vocabulary & sentences"}
+                  {currentDifficulty === "hard" && "Advanced vocabulary & complex sentences"}
+                </div>
+              </div>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDifficultyUp}
+                disabled={currentDifficulty === "hard"}
+                className="bg-amber-50/80 border-amber-300 text-amber-800 hover:bg-amber-100/80"
+              >
+                <TrendingUp className="w-4 h-4 mr-2" />
+                Harder
+              </Button>
+            </div>
+
+            {/* Page Navigation - Styled like ancient book controls */}
+            <div className="flex gap-6 justify-center">
+              <Button
+                variant="secondary"
+                size="lg"
+                onClick={handlePrevious}
+                disabled={currentParagraph === 0}
+                className="flex-1 max-w-xs bg-amber-100/80 border-2 border-amber-300 text-amber-800 hover:bg-amber-200/80 backdrop-blur-sm"
+              >
+                ← Previous Page
+              </Button>
+              
+              <Button
+                variant="default"
+                size="lg"
+                onClick={handleNext}
+                disabled={currentParagraph === totalParagraphs - 1}
+                className="flex-1 max-w-xs bg-gradient-to-r from-amber-600 to-yellow-600 text-white hover:from-amber-700 hover:to-yellow-700 shadow-lg"
+              >
+                {currentParagraph === totalParagraphs - 1 ? "Story Complete!" : "Next Page →"}
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Story Completion - Magical scroll appearance */}
         {currentParagraph === totalParagraphs - 1 && (
-          <Card className="bg-gradient-hero shadow-glow border-0 rounded-3xl p-8 text-center">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              🎉 Congratulations, {userInfo.name}! 🎉
-            </h2>
-            <p className="text-xl text-white/90 mb-2">
-              You've completed your magical adventure!
-            </p>
-            <p className="text-lg text-white/80 mb-6">
-              Time used: {formatTime(20 * 60 - timeRemaining)} • Come back tomorrow for a brand new story!
-            </p>
-            <div className="flex gap-4 justify-center">
-              <Button variant="hero" size="xl" onClick={onNewStory}>
-                Create Another Story
-              </Button>
-              <Button variant="card" size="xl" onClick={onHome}>
-                Back to Home
-              </Button>
+          <div className="mt-8 bg-gradient-to-br from-amber-100 to-yellow-100 border-4 border-amber-300 rounded-3xl p-8 text-center shadow-2xl relative overflow-hidden">
+            {/* Magical sparkle effects */}
+            <div className="absolute inset-0 opacity-20">
+              <div className="absolute top-4 left-8 w-4 h-4 bg-yellow-400 rounded-full animate-bounce-gentle"></div>
+              <div className="absolute top-12 right-12 w-3 h-3 bg-amber-400 rounded-full animate-float"></div>
+              <div className="absolute bottom-8 left-12 w-5 h-5 bg-yellow-500 rounded-full animate-bounce-gentle"></div>
+              <div className="absolute bottom-4 right-8 w-4 h-4 bg-amber-500 rounded-full animate-float"></div>
             </div>
-          </Card>
+            
+            <div className="relative z-10">
+              <h2 className="text-4xl font-bold text-amber-800 mb-4 drop-shadow-sm">
+                🎉 Congratulations, {userInfo.name}! 🎉
+              </h2>
+              <p className="text-xl text-amber-700 mb-2">
+                You've completed your magical adventure!
+              </p>
+              <p className="text-lg text-amber-600 mb-6">
+                Time used: {formatTime(20 * 60 - timeRemaining)} • Come back tomorrow for a brand new story!
+              </p>
+              <div className="flex gap-4 justify-center">
+                <Button 
+                  variant="default" 
+                  size="xl" 
+                  onClick={onNewStory}
+                  className="bg-gradient-to-r from-amber-600 to-yellow-600 text-white hover:from-amber-700 hover:to-yellow-700 shadow-lg"
+                >
+                  Create Another Story
+                </Button>
+                <Button 
+                  variant="secondary" 
+                  size="xl" 
+                  onClick={onHome}
+                  className="bg-amber-100 border-2 border-amber-300 text-amber-800 hover:bg-amber-200"
+                >
+                  Back to Home
+                </Button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>
