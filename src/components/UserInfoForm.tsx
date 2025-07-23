@@ -41,9 +41,26 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
 
   const contentFilter = (text: string): boolean => {
     const inappropriateWords = [
+      // Violent/scary content
       'scary', 'frightening', 'violent', 'dark', 'death', 'kill', 'weapon', 'gun', 'sword', 'fight',
       'monster', 'ghost', 'zombie', 'vampire', 'witch', 'evil', 'mean', 'bad', 'hurt', 'pain',
-      'blood', 'angry', 'mad', 'hate', 'stupid', 'dumb', 'ugly', 'fat', 'skinny'
+      'blood', 'angry', 'mad', 'hate', 'stupid', 'dumb', 'ugly', 'fat', 'skinny',
+      
+      // Profanity and inappropriate language
+      'damn', 'hell', 'crap', 'piss', 'ass', 'bitch', 'bastard', 'shit', 'fuck', 'fucking',
+      'motherfucker', 'asshole', 'dickhead', 'prick', 'cock', 'pussy', 'whore', 'slut',
+      'retard', 'gay', 'homo', 'fag', 'nigger', 'spic', 'chink', 'kike',
+      
+      // Sexual content
+      'sex', 'sexual', 'porn', 'naked', 'nude', 'boobs', 'penis', 'vagina', 'orgasm',
+      'masturbate', 'horny', 'sexy', 'erotic', 'prostitute', 'rape', 'molest',
+      
+      // Drug/alcohol references
+      'drunk', 'weed', 'marijuana', 'cocaine', 'heroin', 'meth', 'drugs', 'smoking',
+      'cigarette', 'alcohol', 'beer', 'vodka', 'whiskey',
+      
+      // Other inappropriate content
+      'suicide', 'depression', 'cutting', 'self-harm', 'anorexia', 'bulimia'
     ];
     
     return inappropriateWords.some(word => 
@@ -53,6 +70,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
 
   const handleInputChange = (field: keyof UserInfo, value: string | number) => {
     if (typeof value === 'string' && contentFilter(value)) {
+      // Show a friendly message when inappropriate content is detected
       return; // Don't update if content is inappropriate
     }
     setFormData(prev => ({ ...prev, [field]: value }));
