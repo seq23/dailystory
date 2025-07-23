@@ -51,6 +51,10 @@ import illustration43 from "@/assets/story-illustration-43.jpg";
 import illustration44 from "@/assets/story-illustration-44.jpg";
 import { FloatingTimer } from "./FloatingTimer";
 import { processTextForPhonetics } from "@/utils/textProcessor";
+import { RunwareService, generatedImageCache, createChildFriendlyPrompt } from "@/services/runwareService";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Eye, EyeOff } from "lucide-react";
 
 type DifficultyLevel = "easy" | "medium" | "hard" | "expert";
 
@@ -68,6 +72,11 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
   const [currentDifficulty, setCurrentDifficulty] = useState<DifficultyLevel>(
     userInfo.difficultyLevel || (userInfo.age <= 6 ? "easy" : userInfo.age <= 9 ? "medium" : userInfo.age <= 12 ? "hard" : "expert")
   );
+  const [currentIllustration, setCurrentIllustration] = useState<string>("");
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [apiKey, setApiKey] = useState(localStorage.getItem('runware_api_key') || '');
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [runwareService, setRunwareService] = useState<RunwareService | null>(null);
 
   // Generate age-appropriate G/PG rated stories with calibrated length for 20-minute reading
   // Maximum reading level is capped at 12th grade (expert difficulty)
@@ -380,26 +389,27 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
 
   const progress = ((currentParagraph + 1) / totalParagraphs) * 100;
 
-  // Get current illustration based on specific story content matching
-  const getCurrentIllustration = () => {
-    const allIllustrations = [
-      illustration1, illustration2, illustration3, illustration4, illustration5, illustration6, 
-      illustration7, illustration8, illustration9, illustration10, illustration11, illustration12,
-      illustration13, illustration14, illustration15, illustration16, illustration17, illustration18,
-      illustration19, illustration20, illustration21, illustration22, illustration23, illustration24,
-      illustration25, illustration26, illustration27, illustration28, illustration29, illustration30,
-      illustration31, illustration32, illustration33, illustration34, illustration35, illustration36,
-      illustration37, illustration38, illustration39, illustration40, illustration41, illustration42,
-      illustration43, illustration44
-    ];
-    
-    // Analyze current story text for specific content matching
+  // Initialize Runware service when API key is provided
+  useEffect(() => {
+    if (apiKey) {
+      localStorage.setItem('runware_api_key', apiKey);
+      setRunwareService(new RunwareService(apiKey));
+    }
+  }, [apiKey]);
+
+  // Smart illustration selection with automatic generation
+  const getCurrentIllustration = async () => {
     const currentText = storyParagraphs[currentParagraph];
     const lowerText = currentText.toLowerCase();
     
+    // Check if we have a cached generated image for this story text
+    const cacheKey = currentText.substring(0, 100); // Use first 100 chars as cache key
+    if (generatedImageCache.has(cacheKey)) {
+      return generatedImageCache.get(cacheKey)!;
+    }
+    
     // Specific illustration mappings - exact keywords to exact illustrations
     const specificMappings = {
-      // Sports - specific sports to specific illustrations
       'basketball': illustration26,
       'soccer': illustration25, 
       'football': illustration32,
@@ -409,207 +419,133 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
       'dance': illustration30,
       'gymnastics': illustration31,
       'racing': illustration34,
-      'race track': illustration34,
-      'sports arena': illustration18,
-      
-      // Animals - specific animals to specific illustrations
       'cat': illustration1,
       'dog': illustration2, 
       'bird': illustration3,
       'dragon': illustration5,
       'unicorn': illustration9,
       'dinosaur': illustration10,
-      'farm animals': illustration23,
-      'zoo': illustration22,
-      'forest animals': illustration12,
-      'underwater': illustration14,
-      
-      // Technology and gaming
-      'gaming': illustration4,
-      'video game': illustration24,
-      'computer': illustration6,
       'robot': illustration11,
       'space': illustration13,
       'astronaut': illustration13,
       'spaceship': illustration13,
-      'cyberpunk': illustration15,
-      'technology': illustration15,
-      
-      // Creative and arts
       'art studio': illustration19,
       'painting': illustration19,
       'music': illustration17,
-      'musical': illustration17,
-      'singing': illustration17,
       'library': illustration16,
       'books': illustration16,
-      'reading': illustration16,
-      
-      // Food and cooking
       'kitchen': illustration21,
       'cooking': illustration21,
-      'chef': illustration21,
-      'baking': illustration21,
-      'restaurant': illustration21,
-      
-      // Adventure and places
       'mountain': illustration20,
       'castle': illustration36,
-      'kingdom': illustration36,
-      'palace': illustration36,
-      'princess': illustration36,
-      'workshop': illustration33,
-      'building': illustration33,
-      'tools': illustration33,
-      
-      // Character and people
-      'superhero': illustration35,
-      'hero': illustration7,
-      'character': illustration7,
-      'circus': illustration22,
-      'performance': illustration22,
-      
-      // Diverse characters for inclusive representation
-      'child': illustration37,
-      'children': illustration38,
-      'friend': illustration39,
-      'friends': illustration40,
-      'family': illustration41,
-      'team': illustration42,
-      'group': illustration43,
-      'together': illustration44
+      'superhero': illustration35
     };
     
-    // Check for exact specific matches first (highest priority)
+    // Check for exact keyword matches first
     for (const [keyword, illustration] of Object.entries(specificMappings)) {
       if (lowerText.includes(keyword)) {
         return illustration;
       }
     }
     
-    // If no specific match, check for broader category matches
-    const categoryMappings = {
-      // Animals and nature
-      animals: {
-        keywords: ['animal', 'creature', 'pet', 'nature', 'forest', 'tree', 'woodland', 'wild'],
-        illustrations: [illustration1, illustration2, illustration3, illustration12, illustration14, illustration22, illustration23]
-      },
-      
-      // Adventure and exploration  
-      adventure: {
-        keywords: ['adventure', 'journey', 'travel', 'explore', 'quest', 'discover', 'outside', 'world'],
-        illustrations: [illustration20, illustration7, illustration10, illustration11, illustration13]
-      },
-      
-      // Magic and fantasy
-      magic: {
-        keywords: ['magic', 'magical', 'powers', 'spell', 'enchanted', 'mystical', 'fantastic', 'fairy'],
-        illustrations: [illustration5, illustration9, illustration36, illustration19, illustration21]
-      },
-      
-      // Sports and physical activities
-      sports: {
-        keywords: ['sport', 'play', 'game', 'exercise', 'activity', 'competition'],
-        illustrations: [illustration18, illustration25, illustration26, illustration27, illustration28, illustration29, illustration30, illustration31, illustration32, illustration34]
-      },
-      
-      // Technology and science
-      technology: {
-        keywords: ['science', 'experiment', 'scientist', 'tech', 'digital', 'electronic'],
-        illustrations: [illustration4, illustration6, illustration11, illustration13, illustration15, illustration24]
-      }
+    // Category-based matching with weighted scoring
+    const categories = {
+      animals: ['cat', 'dog', 'bird', 'rabbit', 'bear', 'lion', 'elephant', 'tiger', 'horse', 'fish'],
+      adventure: ['adventure', 'journey', 'explore', 'quest', 'travel', 'discover', 'mountain', 'forest', 'cave'],
+      magic: ['magic', 'magical', 'wizard', 'fairy', 'spell', 'wand', 'potion', 'enchanted', 'crystal'],
+      food: ['food', 'eat', 'hungry', 'delicious', 'cake', 'cookie', 'fruit', 'pizza', 'ice cream'],
+      friendship: ['friend', 'friendship', 'together', 'help', 'kind', 'share', 'play', 'team'],
+      science: ['science', 'experiment', 'laboratory', 'discovery', 'invention', 'research'],
+      sports: ['sport', 'game', 'play', 'run', 'jump', 'race', 'win', 'team', 'exercise'],
+      arts: ['art', 'draw', 'paint', 'create', 'music', 'dance', 'sing', 'beautiful']
     };
     
-    // Score each category based on keyword matches in current text
-    const categoryScores: { [key: string]: number } = {};
-    
-    Object.entries(categoryMappings).forEach(([category, data]) => {
-      let score = 0;
-      data.keywords.forEach(keyword => {
+    const categoryScores = Object.entries(categories).map(([category, keywords]) => {
+      const score = keywords.reduce((total, keyword) => {
         const matches = (lowerText.match(new RegExp(keyword, 'g')) || []).length;
-        score += matches;
-        
-        // Boost score for user's specific interests
-        const userInterests = (userInfo.hobbies + ' ' + (userInfo.specialRequest || '') + ' ' + userInfo.favoriteAnimal).toLowerCase();
-        if (userInterests.includes(keyword)) {
-          score += 2; // Bonus for matching user interests
-        }
-      });
-      categoryScores[category] = score;
-    });
+        return total + matches;
+      }, 0);
+      return { category, score };
+    }).sort((a, b) => b.score - a.score);
     
-    // Find the category with the highest score
-    const bestCategory = Object.entries(categoryScores).reduce((a, b) => 
-      categoryScores[a[0]] > categoryScores[b[0]] ? a : b
-    )[0];
+    const illustrationsByCategory = {
+      animals: [illustration1, illustration2, illustration3, illustration4, illustration5],
+      adventure: [illustration6, illustration7, illustration8, illustration9],
+      magic: [illustration10, illustration11, illustration12, illustration13],
+      food: [illustration14, illustration15, illustration16],
+      friendship: [illustration17, illustration18, illustration19, illustration20],
+      science: [illustration21, illustration22, illustration23],
+      sports: [illustration24, illustration25, illustration26, illustration27],
+      arts: [illustration28, illustration29, illustration30]
+    };
     
-    // If we have a strong content match, use it
-    if (categoryScores[bestCategory] >= 1) {
-      const categoryIllustrations = categoryMappings[bestCategory as keyof typeof categoryMappings].illustrations;
-      
-      // Use story progress to select from the matching category
-      const illustrationIndex = Math.floor((progress / 100) * categoryIllustrations.length);
-      const safeIndex = Math.min(illustrationIndex, categoryIllustrations.length - 1);
-      
-      return categoryIllustrations[safeIndex];
+    // If we have a strong category match, use those illustrations
+    const topCategory = categoryScores[0];
+    if (topCategory.score > 0) {
+      const categoryIllustrations = illustrationsByCategory[topCategory.category as keyof typeof illustrationsByCategory] || [];
+      if (categoryIllustrations.length > 0) {
+        const progress = ((currentParagraph + 1) / totalParagraphs) * 100;
+        const categoryIndex = Math.floor((progress / 100) * categoryIllustrations.length);
+        const safeCategoryIndex = Math.min(categoryIndex, categoryIllustrations.length - 1);
+        return categoryIllustrations[safeCategoryIndex];
+      }
     }
     
-    // Fallback: Use personalized illustration set based on user preferences and story progress
-    const getPersonalizedIllustrations = () => {
-      const personalizedSet = [];
-      
-      // User interests analysis
-      const interests = (userInfo.hobbies + ' ' + (userInfo.specialRequest || '') + ' ' + userInfo.favoriteAnimal).toLowerCase();
-      
-      // Age-appropriate base selection
-      const youngKidsIllustrations = [illustration9, illustration10, illustration12, illustration23];
-      const middleKidsIllustrations = [illustration11, illustration14, illustration16, illustration17, illustration21, illustration22];
-      const olderKidsIllustrations = [illustration13, illustration15, illustration19, illustration20, illustration24];
-      
-      if (userInfo.age <= 6) {
-        personalizedSet.push(...youngKidsIllustrations);
-      } else if (userInfo.age <= 10) {
-        personalizedSet.push(...middleKidsIllustrations);
-        personalizedSet.push(...youngKidsIllustrations.slice(0, 2));
-      } else {
-        personalizedSet.push(...olderKidsIllustrations);
-        personalizedSet.push(...middleKidsIllustrations.slice(0, 3));
+    // If no good match and we have an API key, generate a custom image
+    if (apiKey && runwareService && !isGeneratingImage) {
+      try {
+        setIsGeneratingImage(true);
+        const prompt = createChildFriendlyPrompt(currentText);
+        console.log("Auto-generating image with prompt:", prompt);
+        
+        const generatedImage = await runwareService.generateImage({
+          positivePrompt: prompt,
+          model: "runware:100@1",
+          width: 768,
+          height: 1024,
+          numberResults: 1,
+          outputFormat: "WEBP"
+        });
+        
+        // Cache the generated image
+        generatedImageCache.set(cacheKey, generatedImage.imageURL);
+        setCurrentIllustration(generatedImage.imageURL);
+        setIsGeneratingImage(false);
+        return generatedImage.imageURL;
+      } catch (error) {
+        console.error("Error generating image:", error);
+        setIsGeneratingImage(false);
       }
-      
-      // Add interest-based illustrations
-      if (interests.includes('game') || interests.includes('gaming') || interests.includes('technology')) {
-        personalizedSet.push(illustration4, illustration6, illustration15, illustration24);
-      }
-      
-      if (interests.includes('animal') || interests.includes('pet') || interests.includes('nature')) {
-        personalizedSet.push(illustration12, illustration14, illustration23);
-      }
-      
-      if (interests.includes('sport') || interests.includes('athlete')) {
-        personalizedSet.push(illustration18, illustration25, illustration26, illustration27);
-      }
-      
-      if (interests.includes('art') || interests.includes('creative') || interests.includes('music')) {
-        personalizedSet.push(illustration17, illustration19, illustration22, illustration30);
-      }
-      
-      // Always include some diverse character illustrations
-      const diverseIllustrations = [illustration37, illustration38, illustration39, illustration40, illustration41, illustration42, illustration43, illustration44];
-      personalizedSet.push(...diverseIllustrations.slice(0, 3));
-      
-      // Remove duplicates and ensure we have enough illustrations
-      const uniqueSet = [...new Set(personalizedSet)];
-      return uniqueSet.length >= 6 ? uniqueSet : allIllustrations.slice(0, 12);
-    };
+    }
     
-    const relevantIllustrations = getPersonalizedIllustrations();
+    // Fallback to default illustrations
+    const allIllustrations = [
+      illustration1, illustration2, illustration3, illustration4, illustration5,
+      illustration6, illustration7, illustration8, illustration9, illustration10,
+      illustration11, illustration12, illustration13, illustration14, illustration15,
+      illustration16, illustration17, illustration18, illustration19, illustration20,
+      illustration21, illustration22, illustration23, illustration24, illustration25,
+      illustration26, illustration27, illustration28, illustration29, illustration30,
+      illustration31, illustration32, illustration33, illustration34, illustration35,
+      illustration36, illustration37, illustration38, illustration39, illustration40,
+      illustration41, illustration42, illustration43, illustration44
+    ];
     
-    // Use story progress to cycle through personalized illustrations
-    const illustrationIndex = Math.floor((progress / 100) * relevantIllustrations.length);
-    const safeIndex = Math.min(illustrationIndex, relevantIllustrations.length - 1);
+    const progress = ((currentParagraph + 1) / totalParagraphs) * 100;
+    const illustrationIndex = Math.floor((progress / 100) * allIllustrations.length);
+    const safeIndex = Math.min(illustrationIndex, allIllustrations.length - 1);
     
-    return relevantIllustrations[safeIndex];
+    return allIllustrations[safeIndex];
   };
+
+  // Load illustration when paragraph changes
+  useEffect(() => {
+    const loadIllustration = async () => {
+      const illustration = await getCurrentIllustration();
+      setCurrentIllustration(illustration);
+    };
+    loadIllustration();
+  }, [currentParagraph, apiKey, runwareService]);
 
   // Get current chapter based on story progress
   const getCurrentChapter = () => {
@@ -661,14 +597,42 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
             </div>
           </div>
 
-          <div className="flex gap-2">
-            <Button variant="playful" size="lg" onClick={onNewStory}>
-              <RotateCcw className="w-5 h-5" />
-              New Story
-            </Button>
-            <Button variant="ghost" size="lg" onClick={onHome}>
-              <Home className="w-5 h-5" />
-            </Button>
+          <div className="flex items-center gap-4">
+            {/* API Key Input for Dynamic Illustration Generation */}
+            <div className="flex items-center gap-2">
+              <Label htmlFor="apiKey" className="text-sm font-medium text-amber-800 whitespace-nowrap">
+                Runware API Key:
+              </Label>
+              <div className="relative">
+                <Input
+                  id="apiKey"
+                  type={showApiKey ? "text" : "password"}
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  placeholder="Enter for auto-generation"
+                  className="w-48 text-xs bg-white/80 border-amber-300"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute inset-y-0 right-0 px-2 h-full"
+                  onClick={() => setShowApiKey(!showApiKey)}
+                >
+                  {showApiKey ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                </Button>
+              </div>
+            </div>
+            
+            <div className="flex gap-2">
+              <Button variant="playful" size="lg" onClick={onNewStory}>
+                <RotateCcw className="w-5 h-5" />
+                New Story
+              </Button>
+              <Button variant="ghost" size="lg" onClick={onHome}>
+                <Home className="w-5 h-5" />
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -717,8 +681,16 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                   
                   {/* The Illustration */}
                   <div className="relative overflow-hidden rounded-2xl border-3 border-amber-300">
+                    {isGeneratingImage && (
+                      <div className="absolute inset-0 bg-amber-100/80 flex items-center justify-center z-10">
+                        <div className="text-center">
+                          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto mb-4"></div>
+                          <p className="text-amber-800 font-medium">Creating custom illustration...</p>
+                        </div>
+                      </div>
+                    )}
                     <img 
-                      src={getCurrentIllustration()} 
+                      src={currentIllustration || illustration1} 
                       alt={`Chapter ${getCurrentChapter()} illustration`}
                       className="w-full h-auto max-w-md mx-auto shadow-lg transition-transform duration-300 hover:scale-105"
                       style={{ aspectRatio: '3/4' }}
