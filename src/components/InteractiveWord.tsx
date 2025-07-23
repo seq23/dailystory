@@ -5,9 +5,10 @@ import { Volume2 } from "lucide-react";
 interface InteractiveWordProps {
   word: string;
   className?: string;
+  difficulty?: "easy" | "medium" | "hard" | "expert";
 }
 
-export const InteractiveWord = ({ word, className = "" }: InteractiveWordProps) => {
+export const InteractiveWord = ({ word, className = "", difficulty = "easy" }: InteractiveWordProps) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const phoneticSpelling = getPhoneticSpelling(word);
 
@@ -15,7 +16,17 @@ export const InteractiveWord = ({ word, className = "" }: InteractiveWordProps) 
     speakWord(word);
   };
 
-  if (!phoneticSpelling) {
+  // For moderate to advanced levels, only show phonetics for words longer than 3 characters
+  const shouldShowPhonetics = () => {
+    if (!phoneticSpelling) return false;
+    if (difficulty === "easy") return true;
+    
+    // Remove punctuation and check clean word length
+    const cleanWord = word.toLowerCase().replace(/[.,!?;:'"()]/g, '');
+    return cleanWord.length > 3;
+  };
+
+  if (!shouldShowPhonetics()) {
     return <span className={className}>{word}</span>;
   }
 

@@ -747,7 +747,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                          textShadow: '0 1px 2px rgba(0,0,0,0.1)',
                          lineHeight: '1.8'
                        }}>
-                      {processTextForPhonetics(storyParagraphs[currentParagraph], `${getTextSize()} text-amber-900 font-medium leading-relaxed drop-shadow-sm animate-fade-in text-left lg:text-justify`)}
+                      {processTextForPhonetics(storyParagraphs[currentParagraph], `${getTextSize()} text-amber-900 font-medium leading-relaxed drop-shadow-sm animate-fade-in text-left lg:text-justify`, currentDifficulty)}
                     </p>
                   </div>
                 </div>
