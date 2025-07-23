@@ -41,6 +41,14 @@ import illustration33 from "@/assets/story-illustration-33.jpg";
 import illustration34 from "@/assets/story-illustration-34.jpg";
 import illustration35 from "@/assets/story-illustration-35.jpg";
 import illustration36 from "@/assets/story-illustration-36.jpg";
+import illustration37 from "@/assets/story-illustration-37.jpg";
+import illustration38 from "@/assets/story-illustration-38.jpg";
+import illustration39 from "@/assets/story-illustration-39.jpg";
+import illustration40 from "@/assets/story-illustration-40.jpg";
+import illustration41 from "@/assets/story-illustration-41.jpg";
+import illustration42 from "@/assets/story-illustration-42.jpg";
+import illustration43 from "@/assets/story-illustration-43.jpg";
+import illustration44 from "@/assets/story-illustration-44.jpg";
 import { FloatingTimer } from "./FloatingTimer";
 
 type DifficultyLevel = "easy" | "medium" | "hard" | "expert";
@@ -379,8 +387,18 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
       illustration13, illustration14, illustration15, illustration16, illustration17, illustration18,
       illustration19, illustration20, illustration21, illustration22, illustration23, illustration24,
       illustration25, illustration26, illustration27, illustration28, illustration29, illustration30,
-      illustration31, illustration32, illustration33, illustration34, illustration35, illustration36
+      illustration31, illustration32, illustration33, illustration34, illustration35, illustration36,
+      illustration37, illustration38, illustration39, illustration40, illustration41, illustration42,
+      illustration43, illustration44
     ];
+    
+    // Diverse character illustrations organized by skin tone
+    const diverseCharacterIllustrations = {
+      darker: [illustration37, illustration42, illustration43], // Black, Indigenous, South Asian children
+      medium: [illustration38, illustration39, illustration44], // Latino, Asian, biracial children  
+      lighter: [illustration40, illustration41], // White, Middle Eastern children
+      all: [illustration37, illustration38, illustration39, illustration40, illustration41, illustration42, illustration43, illustration44]
+    };
     
     // Gender detection based on common names (simplified approach)
     const detectGender = (name: string): 'masculine' | 'feminine' | 'neutral' => {
@@ -554,6 +572,16 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
         personalizedSet.push(...feminineIllustrations.slice(0, 3));
         // Don't filter out masculine illustrations as they can be enjoyed by all
       }
+      
+      // Always include diverse character illustrations with skin tone alternation
+      const skinToneGroups = Object.values(diverseCharacterIllustrations).slice(0, 3); // darker, medium, lighter
+      const currentStorySession = Math.floor(Date.now() / (24 * 60 * 60 * 1000)); // Daily rotation
+      const skinToneIndex = currentStorySession % 3; // Cycle through skin tones
+      
+      // Add characters with alternating skin tones
+      personalizedSet.push(...skinToneGroups[skinToneIndex]);
+      personalizedSet.push(...skinToneGroups[(skinToneIndex + 1) % 3].slice(0, 1));
+      personalizedSet.push(...skinToneGroups[(skinToneIndex + 2) % 3].slice(0, 1));
       
       // Always include neutral illustrations
       personalizedSet.push(...neutralIllustrations.slice(0, 5));
