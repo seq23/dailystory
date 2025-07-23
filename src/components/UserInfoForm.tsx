@@ -111,7 +111,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                     <SelectValue placeholder="Pick your age" />
                   </SelectTrigger>
                   <SelectContent>
-                    {[4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map(age => (
+                    {[3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].map(age => (
                       <SelectItem key={age} value={age.toString()}>{age} years old</SelectItem>
                     ))}
                   </SelectContent>
