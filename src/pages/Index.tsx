@@ -1,14 +1,60 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from "react";
+import { WelcomeHero } from "@/components/WelcomeHero";
+import { UserInfoForm, type UserInfo } from "@/components/UserInfoForm";
+import { StoryDisplay } from "@/components/StoryDisplay";
+
+type AppState = "welcome" | "form" | "story";
 
 const Index = () => {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
-    </div>
-  );
+  const [currentState, setCurrentState] = useState<AppState>("welcome");
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+
+  const handleGetStarted = () => {
+    setCurrentState("form");
+  };
+
+  const handleFormSubmit = (info: UserInfo) => {
+    setUserInfo(info);
+    setCurrentState("story");
+  };
+
+  const handleBackToWelcome = () => {
+    setCurrentState("welcome");
+    setUserInfo(null);
+  };
+
+  const handleBackToForm = () => {
+    setCurrentState("form");
+  };
+
+  const handleNewStory = () => {
+    setCurrentState("form");
+  };
+
+  switch (currentState) {
+    case "welcome":
+      return <WelcomeHero onGetStarted={handleGetStarted} />;
+    
+    case "form":
+      return (
+        <UserInfoForm 
+          onSubmit={handleFormSubmit} 
+          onBack={handleBackToWelcome}
+        />
+      );
+    
+    case "story":
+      return userInfo ? (
+        <StoryDisplay 
+          userInfo={userInfo}
+          onHome={handleBackToWelcome}
+          onNewStory={handleNewStory}
+        />
+      ) : null;
+    
+    default:
+      return <WelcomeHero onGetStarted={handleGetStarted} />;
+  }
 };
 
 export default Index;
