@@ -21,73 +21,80 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
     userInfo.difficultyLevel || (userInfo.age <= 7 ? "easy" : userInfo.age <= 10 ? "medium" : "hard")
   );
 
-  // Generate age-appropriate stories based on difficulty level
+  // Generate age-appropriate stories with calibrated length for 20-minute reading
   const generateStory = (info: UserInfo, difficulty: DifficultyLevel): string[] => {
     const storyTemplates = {
+      // Easy: 6 short pages (ages 4-7, ~3-4 minutes per page)
       easy: [
-        `Hi! This is ${info.name}. ${info.name} is ${info.age} years old. ${info.name} likes the color ${info.favoriteColor}.`,
+        `Hi! This is ${info.name}. ${info.name} is ${info.age} years old. ${info.name} likes the color ${info.favoriteColor}. ${info.name} is in ${info.grade} grade.`,
         
-        `One day, ${info.name} saw a ${info.favoriteAnimal}. The ${info.favoriteAnimal} was sad. It was stuck in a tree.`,
+        `One day, ${info.name} went outside to play. ${info.name} likes to ${info.hobbies}. It was a sunny day. ${info.name} saw a ${info.favoriteAnimal} in the yard.`,
         
-        `"Help me!" said the ${info.favoriteAnimal}. ${info.name} wanted to help. ${info.name} climbed up the tree.`,
+        `The ${info.favoriteAnimal} looked sad. It was stuck under a big rock. "Help me!" said the ${info.favoriteAnimal}. ${info.name} wanted to help the ${info.favoriteAnimal}.`,
         
-        `${info.name} helped the ${info.favoriteAnimal} get down. The ${info.favoriteAnimal} was happy now.`,
+        `${info.name} pushed the rock away. The ${info.favoriteAnimal} was free! "Thank you!" said the ${info.favoriteAnimal}. "I know a secret place. Want to see?"`,
         
-        `"Thank you!" said the ${info.favoriteAnimal}. "Want to see something cool?" ${info.name} said yes.`,
+        `They went to a magic land. Everything was made of ${info.favoriteFood}! The trees were ${info.favoriteFood}. The houses were ${info.favoriteFood} too. It smelled so good!`,
         
-        `They went to a magic place. Everything was made of ${info.favoriteFood}! It looked yummy.`,
-        
-        `${info.name} and the ${info.favoriteAnimal} played together. They had so much fun.`,
-        
-        `"I have to go home now," said ${info.name}. "I want to tell ${info.bestFriend} about you!"`,
-        
-        `The ${info.favoriteAnimal} smiled. "Come back soon!" it said. ${info.name} waved goodbye.`,
-        
-        `${info.name} went home. ${info.name} felt happy. Being kind and helpful is always good! The End.`
+        `${info.name} and the ${info.favoriteAnimal} became best friends. They played all day. Then ${info.name} went home. ${info.name} told ${info.bestFriend} about the fun day. The End.`
       ],
       
+      // Medium: 10 medium pages (ages 8-10, ~2 minutes per page)
       medium: [
-        `Once upon a time, there was a special child named ${info.name} who was ${info.age} years old and in ${info.grade} grade. ${info.name} had a wonderful gift that made everything turn ${info.favoriteColor}!`,
+        `Once upon a time, there was a special child named ${info.name} who was ${info.age} years old and in ${info.grade} grade. ${info.name} had a wonderful gift that made everything turn the beautiful color ${info.favoriteColor}!`,
         
-        `One beautiful morning, while ${info.name} was enjoying ${info.hobbies}, they heard a small voice calling for help. Looking around carefully, they discovered a magical ${info.favoriteAnimal} stuck high up in a shimmering tree.`,
+        `One beautiful morning, while ${info.name} was enjoying ${info.hobbies}, they heard a small voice calling for help. Looking around carefully, they discovered a magical ${info.favoriteAnimal} stuck high up in a shimmering, golden tree.`,
         
-        `"Please help me!" called the ${info.favoriteAnimal}. ${info.name} felt sorry for their new friend and used their special ${info.favoriteColor} powers to gently free the trapped animal.`,
+        `"Please help me!" called the ${info.favoriteAnimal}, its voice filled with hope. ${info.name} felt sorry for their new friend and carefully used their special ${info.favoriteColor} powers to gently free the trapped animal from the branches.`,
         
-        `The grateful ${info.favoriteAnimal} was so thankful that it invited ${info.name} on an amazing adventure to a secret kingdom where all the buildings were made of delicious ${info.favoriteFood}!`,
+        `The grateful ${info.favoriteAnimal} was so thankful that it invited ${info.name} on an amazing adventure. "I know a secret kingdom," whispered the ${info.favoriteAnimal}. "Would you like to see something truly magical?"`,
         
-        `In this magical place, the people explained that their rainbow had lost all its beautiful colors. ${info.name} remembered what ${info.bestFriend} always said about working together to solve problems.`,
+        `Together, they traveled through a rainbow portal and arrived in a fantastic kingdom where all the buildings were made of delicious ${info.favoriteFood}! The castle walls were ${info.favoriteFood}, and even the roads were made of ${info.favoriteFood}.`,
         
-        `With determination and kindness, ${info.name} and the ${info.favoriteAnimal} joined their powers together. Suddenly, a burst of ${info.favoriteColor} light restored the rainbow to its full glory!`,
+        `In this magical place, the sad people explained that their beautiful rainbow had lost all its wonderful colors. Without the rainbow, their kingdom was becoming gray and gloomy. They had been waiting for someone special to help them.`,
         
-        `The grateful kingdom offered ${info.name} the important job of Royal ${info.dreamJob}, but ${info.name} politely explained they needed to return home to share this adventure with ${info.bestFriend}.`,
+        `${info.name} remembered what ${info.bestFriend} always said about working together to solve big problems. "We can fix this!" said ${info.name} confidently. The ${info.favoriteAnimal} nodded and smiled encouragingly.`,
         
-        `As they flew home together, ${info.name} felt proud of what they had accomplished. They learned that being brave, kind, and helpful can lead to the most wonderful experiences.`,
+        `With determination and kindness, ${info.name} and the ${info.favoriteAnimal} joined their powers together. Suddenly, a burst of beautiful ${info.favoriteColor} light shot up into the sky and restored the rainbow to its full, magnificent glory!`,
         
-        `Back at home, ${info.name} excitedly told ${info.bestFriend} about the magical ${info.favoriteAnimal} and their colorful adventure. They fell asleep dreaming of future adventures.`,
+        `The grateful kingdom celebrated with singing and dancing! The people offered ${info.name} the important job of Royal ${info.dreamJob}, but ${info.name} politely explained they needed to return home to share this adventure with ${info.bestFriend}.`,
         
-        `And so ${info.name} learned that every day brings new opportunities for kindness and adventure. The End.`
+        `As they returned home, ${info.name} felt proud and happy. They had learned that being brave, kind, and helpful can lead to the most wonderful experiences. ${info.name} fell asleep that night dreaming of future adventures. The End.`
       ],
       
+      // Hard: 16 longer pages (ages 11+, ~1.25 minutes per page)
       hard: [
         `In a world where extraordinary things happened to ordinary children, there lived a remarkable young person named ${info.name}, who at ${info.age} years old and in ${info.grade} grade, possessed an incredible ability to transform anything they touched into the most magnificent shade of ${info.favoriteColor}.`,
         
-        `On a particularly enchanting morning, while ${info.name} was enthusiastically pursuing their favorite activity of ${info.hobbies}, an urgent plea for assistance echoed through the air. Upon investigation, they discovered an extraordinary ${info.favoriteAnimal} trapped within the crystalline branches of an ancient, mystical tree.`,
+        `On a particularly enchanting morning, while ${info.name} was enthusiastically pursuing their favorite activity of ${info.hobbies}, an urgent plea for assistance echoed through the crisp autumn air. The voice seemed to come from nowhere and everywhere at once.`,
         
-        `"I desperately need your help!" implored the ${info.favoriteAnimal}, its voice filled with both hope and desperation. ${info.name}, moved by compassion and armed with their supernatural ${info.favoriteColor} abilities, carefully and methodically worked to liberate their newfound companion.`,
+        `Upon careful investigation, ${info.name} discovered an extraordinary ${info.favoriteAnimal} trapped within the crystalline branches of an ancient, mystical tree that shimmered with otherworldly energy. The creature's eyes sparkled with intelligence and desperate hope.`,
         
-        `The profoundly grateful ${info.favoriteAnimal} extended an invitation to ${info.name} for an unprecedented journey to a magnificent realm where architectural marvels were constructed entirely from varieties of ${info.favoriteFood}, creating a landscape both beautiful and delicious.`,
+        `"I desperately need your help!" implored the ${info.favoriteAnimal}, its voice filled with both dignity and desperation. "I have been imprisoned here by a powerful spell, and only someone with a pure heart and special abilities can free me."`,
         
-        `Upon arriving in this fantastical kingdom, the inhabitants revealed a catastrophic problem: their legendary rainbow, source of all color and joy in their world, had mysteriously lost its vibrancy. ${info.name} recalled the wise words ${info.bestFriend} had once shared about the transformative power of collaboration and friendship.`,
+        `${info.name}, moved by deep compassion and armed with their supernatural ${info.favoriteColor} abilities, carefully and methodically worked to break the magical bonds. With each touch, the crystalline prison began to crack and dissolve.`,
         
-        `Through unwavering determination, creative problem-solving, and the combined strength of their partnership, ${info.name} and the ${info.favoriteAnimal} channeled their collective energy, producing a spectacular explosion of ${info.favoriteColor} radiance that magnificently restored the rainbow's former splendor.`,
+        `The profoundly grateful ${info.favoriteAnimal} extended a formal invitation to ${info.name} for an unprecedented journey to a magnificent realm that existed beyond the boundaries of the ordinary world. "Your kindness has earned you a great adventure," it declared solemnly.`,
         
-        `The eternally grateful citizens offered ${info.name} the prestigious position of Royal ${info.dreamJob}, recognizing their exceptional leadership and problem-solving abilities. However, ${info.name} graciously declined, explaining their responsibility to return home and share these remarkable experiences with their cherished friend ${info.bestFriend}.`,
+        `Through a swirling vortex of colors and stardust, they traveled to a fantastical kingdom where architectural marvels were constructed entirely from varieties of ${info.favoriteFood}, creating a landscape that was both beautiful, aromatic, and surprisingly delicious.`,
         
-        `During their homeward journey, soaring through clouds painted with colors they had helped restore, ${info.name} reflected on the profound lessons learned about courage, empathy, and the extraordinary impact that one person's kindness can have on an entire world.`,
+        `Upon arriving in this extraordinary realm, the inhabitants—who possessed an ethereal, luminescent quality—revealed a catastrophic problem that threatened their very existence. Their legendary rainbow, the source of all color, joy, and life force in their world, had mysteriously lost its vibrancy.`,
         
-        `Upon reuniting with ${info.bestFriend}, ${info.name} recounted every detail of their transformative adventure with the magical ${info.favoriteAnimal} and the colorful kingdom. That night, they drifted off to sleep with hearts full of gratitude and minds buzzing with anticipation for future adventures.`,
+        `The royal council explained that without the rainbow's power, their kingdom would gradually fade into a colorless void, and all the magical creatures who depended on its energy would slowly lose their vitality and eventually disappear forever.`,
         
-        `Thus concluded an adventure that taught ${info.name} that within every individual lies the potential for greatness, and that through kindness, creativity, and friendship, even the most seemingly impossible challenges can be overcome. The End.`
+        `${info.name} recalled the wise words ${info.bestFriend} had once shared about the transformative power of collaboration, determination, and unwavering friendship in the face of seemingly impossible challenges. These words now seemed prophetic and deeply meaningful.`,
+        
+        `Drawing upon every ounce of courage and wisdom they possessed, ${info.name} proposed a daring plan that would require the combined efforts of every citizen in the kingdom, along with the magical energy of the ${info.favoriteAnimal} and their own unique abilities.`,
+        
+        `Through unwavering determination, creative problem-solving, and the combined strength of their extraordinary partnership, ${info.name} and the ${info.favoriteAnimal} channeled their collective energy into a spectacular ritual that lasted from dawn until dusk.`,
+        
+        `As the sun reached its zenith, a magnificent explosion of ${info.favoriteColor} radiance burst forth from their joined hands, creating a brilliant beam of light that shot directly into the heart of the faded rainbow, instantly restoring its former splendor and even enhancing its beauty beyond its original glory.`,
+        
+        `The eternally grateful citizens offered ${info.name} the prestigious position of Royal ${info.dreamJob}, along with a magnificent castle and all the treasures of the kingdom. However, ${info.name} graciously declined, explaining their responsibility to return home and share these remarkable experiences with their cherished friend ${info.bestFriend}.`,
+        
+        `During their homeward journey, soaring through clouds painted with colors they had helped restore, ${info.name} reflected deeply on the profound lessons learned about courage, empathy, leadership, and the extraordinary impact that one person's kindness and determination can have on an entire world.`,
+        
+        `Upon reuniting with ${info.bestFriend}, ${info.name} spent hours recounting every detail of their transformative adventure, sharing the wisdom they had gained and the magical memories they would treasure forever. They both agreed that true friendship makes even the most incredible adventures even more meaningful. The End.`
       ]
     };
     
