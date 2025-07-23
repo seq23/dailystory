@@ -21,7 +21,7 @@ interface StoryDisplayProps {
 export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps) => {
   const [currentParagraph, setCurrentParagraph] = useState(0);
   const [isReading, setIsReading] = useState(true); // Auto-start reading
-  const [timeRemaining, setTimeRemaining] = useState(20 * 60); // 20 minutes in seconds
+  const [timeRemaining, setTimeRemaining] = useState(40 * 60); // 40 minutes in seconds
   const [storyExtensions, setStoryExtensions] = useState(0); // Track how many 10-min extensions added
   const [currentDifficulty, setCurrentDifficulty] = useState<DifficultyLevel>(
     userInfo.difficultyLevel || (userInfo.age <= 7 ? "easy" : userInfo.age <= 10 ? "medium" : "hard")
@@ -199,7 +199,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
   const handleStartReading = () => {
     setIsReading(true);
     if (timeRemaining === 0) {
-      setTimeRemaining(20 * 60); // Reset to 20 minutes if timer reached 0
+      setTimeRemaining(40 * 60); // Reset to 40 minutes if timer reached 0
     }
   };
 
@@ -498,7 +498,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                   You've completed your magical adventure!
                 </p>
                 <p className="text-lg text-amber-600 mb-8">
-                  Time used: {formatTime(20 * 60 - timeRemaining)} • Come back tomorrow for a brand new story!
+                  Time used: {formatTime(40 * 60 - timeRemaining)} • Come back tomorrow for a brand new story!
                 </p>
                 <div className="flex gap-6 justify-center">
                   <Button 

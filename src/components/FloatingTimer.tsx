@@ -21,7 +21,7 @@ export const FloatingTimer = ({
   const { toast } = useToast();
   
   // Calculate progress for circular progress
-  const totalTime = 20 * 60; // 20 minutes in seconds
+  const totalTime = 40 * 60; // 40 minutes in seconds
   const progress = ((totalTime - timeRemaining) / totalTime) * 100;
   const circumference = 2 * Math.PI * 45; // radius of 45
   const strokeDashoffset = circumference - (progress / 100) * circumference;
@@ -73,7 +73,7 @@ export const FloatingTimer = ({
       // Show toast notification
       toast({
         title: "🎉 Congratulations!",
-        description: "You've completed your 20+ minute reading session!",
+        description: "You've completed your 40+ minute reading session!",
         duration: 5000,
       });
       
