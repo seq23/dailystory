@@ -181,7 +181,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
 
               <div className="space-y-2">
                 <Label htmlFor="gender" className="text-lg font-semibold text-foreground">
-                  How would you like to be represented?
+                  Gender
                 </Label>
                 <Select value={formData.gender} onValueChange={(value) => handleInputChange("gender", value)}>
                   <SelectTrigger className="text-lg p-4 rounded-2xl border-2 border-primary/20 bg-white dark:bg-gray-800">
