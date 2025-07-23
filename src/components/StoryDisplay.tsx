@@ -49,6 +49,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
   );
 
   // Generate age-appropriate G/PG rated stories with calibrated length for 20-minute reading
+  // Maximum reading level is capped at 12th grade (hard difficulty)
   const generateStory = (info: UserInfo, difficulty: DifficultyLevel): string[] => {
     // Ensure all content is family-friendly and G/PG rated
     const contentGuidelines = "All stories must be positive, uplifting, non-violent, educational, and appropriate for children. No scary, dark, or inappropriate themes.";
@@ -91,7 +92,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
         `As they returned home, ${info.name} felt proud and happy. They had learned that being brave, kind, and helpful can lead to the most wonderful experiences.${info.specialRequest ? ` And they discovered that ${info.specialRequest} made everything even more magical!` : ''} ${info.name} fell asleep that night dreaming of future adventures. The End.`
       ],
       
-      // Hard: 16 longer pages (ages 11+, ~1.25 minutes per page)
+      // Hard: 16 longer pages (ages 11+, up to 12th grade reading level - maximum complexity)
       hard: [
         `In a world where extraordinary things happened to ordinary children, there lived a remarkable young person named ${info.name}, who at ${info.age} years old and in ${info.grade} grade, possessed an incredible ability to transform anything they touched into the most magnificent shade of ${info.favoriteColor}.`,
         
@@ -595,7 +596,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                 <div className="text-sm text-amber-700 mt-1">
                   {currentDifficulty === "easy" && "Simple words & short sentences"}
                   {currentDifficulty === "medium" && "Moderate vocabulary & sentences"}
-                  {currentDifficulty === "hard" && "Advanced vocabulary & complex sentences"}
+                  {currentDifficulty === "hard" && "12th grade level vocabulary & complex sentences"}
                 </div>
               </div>
               
