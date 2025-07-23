@@ -196,7 +196,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
           <div className="space-y-6 md:col-span-2">
             <h3 className="text-2xl font-semibold text-foreground flex items-center gap-2">
               <Star className="w-6 h-6 text-primary" />
-              Dreams & Friends
+              Additional Info
             </h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
