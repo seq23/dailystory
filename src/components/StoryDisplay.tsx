@@ -268,18 +268,79 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
 
   const progress = ((currentParagraph + 1) / totalParagraphs) * 100;
 
-  // Get current illustration based on story progress - now includes gaming-themed magical illustrations
+  // Get current illustration based on child's preferences and story progress
   const getCurrentIllustration = () => {
     const allIllustrations = [
       illustration1, illustration2, illustration3, illustration4, 
       illustration5, illustration6, illustration7, illustration8
     ];
     
-    // Use story progress to cycle through all available illustrations
-    const illustrationIndex = Math.floor((progress / 100) * allIllustrations.length);
-    const safeIndex = Math.min(illustrationIndex, allIllustrations.length - 1);
+    // Create personalized illustration selection based on user preferences
+    const getPersonalizedIllustrations = () => {
+      const personalizedSet = [];
+      
+      // Check for gaming/technology interests
+      const gamingKeywords = ['game', 'gaming', 'video', 'computer', 'technology', 'digital', 'minecraft', 'roblox', 'fortnite'];
+      const isGamingInterested = gamingKeywords.some(keyword => 
+        userInfo.hobbies.toLowerCase().includes(keyword) || 
+        userInfo.specialRequest?.toLowerCase().includes(keyword)
+      );
+      
+      // Check for dragon/fantasy creature interests
+      const dragonKeywords = ['dragon', 'dinosaur', 'monster', 'creature', 'beast'];
+      const isDragonInterested = dragonKeywords.some(keyword => 
+        userInfo.favoriteAnimal.toLowerCase().includes(keyword) ||
+        userInfo.hobbies.toLowerCase().includes(keyword) ||
+        userInfo.specialRequest?.toLowerCase().includes(keyword)
+      );
+      
+      // Check for adventure/hero interests
+      const heroKeywords = ['adventure', 'hero', 'knight', 'warrior', 'sword', 'fight', 'battle', 'superhero'];
+      const isHeroInterested = heroKeywords.some(keyword => 
+        userInfo.hobbies.toLowerCase().includes(keyword) ||
+        userInfo.specialRequest?.toLowerCase().includes(keyword) ||
+        userInfo.dreamJob.toLowerCase().includes(keyword)
+      );
+      
+      // Check for treasure/collecting interests
+      const treasureKeywords = ['treasure', 'collect', 'money', 'coins', 'gems', 'jewels', 'gold'];
+      const isTreasureInterested = treasureKeywords.some(keyword => 
+        userInfo.hobbies.toLowerCase().includes(keyword) ||
+        userInfo.specialRequest?.toLowerCase().includes(keyword)
+      );
+      
+      // Add relevant illustrations based on interests
+      if (isGamingInterested) {
+        personalizedSet.push(illustration4, illustration6); // Gaming controller, digital portal
+      }
+      
+      if (isDragonInterested) {
+        personalizedSet.push(illustration5); // Pixel dragon
+      }
+      
+      if (isHeroInterested) {
+        personalizedSet.push(illustration7); // Hero character
+      }
+      
+      if (isTreasureInterested) {
+        personalizedSet.push(illustration8); // Magical treasure chest
+      }
+      
+      // Always include some base magical illustrations
+      personalizedSet.push(illustration1, illustration2, illustration3);
+      
+      // Remove duplicates and ensure we have at least 3 illustrations
+      const uniqueSet = [...new Set(personalizedSet)];
+      return uniqueSet.length >= 3 ? uniqueSet : allIllustrations;
+    };
     
-    return allIllustrations[safeIndex];
+    const relevantIllustrations = getPersonalizedIllustrations();
+    
+    // Use story progress to cycle through personalized illustrations
+    const illustrationIndex = Math.floor((progress / 100) * relevantIllustrations.length);
+    const safeIndex = Math.min(illustrationIndex, relevantIllustrations.length - 1);
+    
+    return relevantIllustrations[safeIndex];
   };
 
   // Get current chapter based on story progress
