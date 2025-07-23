@@ -54,19 +54,31 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
     // Ensure all content is family-friendly and G/PG rated
     const contentGuidelines = "All stories must be positive, uplifting, non-violent, educational, and appropriate for children. No scary, dark, or inappropriate themes.";
     const baseStoryTemplates = {
-      // Easy: 6 short pages (ages 4-6, K-1st grade reading level)
+      // Easy: 12 very simple pages (ages 4-6, K-1st grade, 5-15 words per page like real children's books)
       easy: [
-        `Hi! This is ${info.name}. ${info.name} is ${info.age} years old. ${info.name} likes the color ${info.favoriteColor}. ${info.name} is in ${info.grade} grade.${info.specialRequest ? ` ${info.name} loves ${info.specialRequest} too!` : ''}`,
+        `Hi! This is ${info.name}.`,
         
-        `One day, ${info.name} went outside to play. ${info.name} likes to ${info.hobbies}. It was a sunny day. ${info.name} saw a ${info.favoriteAnimal} in the yard.${info.specialRequest ? ` There were also ${info.specialRequest} nearby!` : ''}`,
+        `${info.name} is ${info.age} years old.`,
         
-        `The ${info.favoriteAnimal} looked sad. It was stuck under a big rock. "Help me!" said the ${info.favoriteAnimal}. ${info.name} wanted to help the ${info.favoriteAnimal}.${info.specialRequest ? ` Maybe the ${info.specialRequest} could help too!` : ''}`,
+        `${info.name} likes ${info.favoriteColor}.`,
         
-        `${info.name} pushed the rock away. The ${info.favoriteAnimal} was free! "Thank you!" said the ${info.favoriteAnimal}. "I know a secret place. Want to see?"`,
+        `One day, ${info.name} went outside.`,
         
-        `They went to a magic land. Everything was made of ${info.favoriteFood}! The trees were ${info.favoriteFood}. The houses were ${info.favoriteFood} too. It smelled so good!${info.specialRequest ? ` And there were ${info.specialRequest} everywhere!` : ''}`,
+        `${info.name} saw a ${info.favoriteAnimal}.`,
         
-        `${info.name} and the ${info.favoriteAnimal} became best friends. They played all day.${info.specialRequest ? ` They had fun with the ${info.specialRequest} too!` : ''} Then ${info.name} went home. ${info.name} felt happy about the magical day. The End.`
+        `The ${info.favoriteAnimal} was sad.`,
+        
+        `"Help me!" said the ${info.favoriteAnimal}.`,
+        
+        `${info.name} helped the ${info.favoriteAnimal}.`,
+        
+        `They went to a magic place.`,
+        
+        `Everything was made of ${info.favoriteFood}!`,
+        
+        `${info.name} and the ${info.favoriteAnimal} played.`,
+        
+        `${info.name} was happy. The End.`
       ],
       
       // Medium: 10 medium pages (ages 7-9, 2nd-4th grade reading level)
@@ -172,9 +184,18 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
   const generateExtendedContent = (info: UserInfo, difficulty: DifficultyLevel, extensionNumber: number): string[] => {
     const extensionTemplates = {
       easy: [
-        `The next day, ${info.name} went back to the magic land. The ${info.favoriteAnimal} was there waiting! "Want to see more?" asked the ${info.favoriteAnimal}.`,
-        `They found a playground made of ${info.favoriteFood}! The swings were ${info.favoriteFood} and the slide was too. ${info.name} had so much fun playing.`,
-        `Then they met other animals who wanted to be friends. There was a nice ${info.favoriteAnimal === 'cat' ? 'dog' : 'cat'} and a funny bird. They all played together happily.`
+        `The next day, ${info.name} went back.`,
+        `The ${info.favoriteAnimal} was waiting!`,
+        `They found a playground.`,
+        `It was made of ${info.favoriteFood}!`,
+        `${info.name} played on the swings.`,
+        `Then they met more friends.`,
+        `A nice dog came to play.`,
+        `A funny bird sang songs.`,
+        `They all played together.`,
+        `${info.name} had so much fun!`,
+        `Time to go home.`,
+        `${info.name} waved goodbye.`
       ],
       medium: [
         `As ${info.name} settled back into their normal routine, they discovered that their magical adventure had given them new abilities. They could now sense when others needed help, just like the ${info.favoriteAnimal} had needed help.`,
