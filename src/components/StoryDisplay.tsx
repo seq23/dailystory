@@ -435,7 +435,10 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
     // Create personalized illustration selection based on user preferences and gender
     const getPersonalizedIllustrations = () => {
       const personalizedSet = [];
-      const gender = detectGender(userInfo.name);
+      const gender = userInfo.gender === 'boy' ? 'masculine' : 
+                    userInfo.gender === 'girl' ? 'feminine' : 
+                    userInfo.gender === 'no-preference' ? 'neutral' : 
+                    detectGender(userInfo.name); // fallback to name detection
       
       // All user interests combined for analysis
       const interests = (userInfo.hobbies + ' ' + (userInfo.specialRequest || '') + ' ' + userInfo.favoriteAnimal).toLowerCase();

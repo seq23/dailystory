@@ -11,6 +11,7 @@ export interface UserInfo {
   name: string;
   age: number;
   grade: string;
+  gender: string;
   favoriteColor: string;
   favoriteAnimal: string;
   hobbies: string;
@@ -30,6 +31,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
     name: "",
     age: 6,
     grade: "",
+    gender: "",
     favoriteColor: "",
     favoriteAnimal: "",
     hobbies: "",
@@ -86,6 +88,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
     return formData.name && 
            formData.age && 
            formData.grade && 
+           formData.gender &&
            formData.favoriteColor && 
            formData.favoriteAnimal && 
            formData.hobbies && 
@@ -172,6 +175,22 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                     <SelectItem value="9th">9th Grade</SelectItem>
                     <SelectItem value="10th">10th Grade</SelectItem>
                     <SelectItem value="11th">11th Grade</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="gender" className="text-lg font-semibold text-foreground">
+                  How would you like to be represented?
+                </Label>
+                <Select value={formData.gender} onValueChange={(value) => handleInputChange("gender", value)}>
+                  <SelectTrigger className="text-lg p-4 rounded-2xl border-2 border-primary/20 bg-white dark:bg-gray-800">
+                    <SelectValue placeholder="Choose how you'd like to be represented" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white dark:bg-gray-800 border-2 border-primary/20 rounded-2xl shadow-lg z-50">
+                    <SelectItem value="boy" className="text-lg p-3 hover:bg-primary/10">Boy</SelectItem>
+                    <SelectItem value="girl" className="text-lg p-3 hover:bg-primary/10">Girl</SelectItem>
+                    <SelectItem value="no-preference" className="text-lg p-3 hover:bg-primary/10">I'd rather not say</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
