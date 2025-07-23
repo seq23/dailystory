@@ -6,9 +6,6 @@ import { BookOpen, Home, RotateCcw, Volume2, VolumeX, TrendingUp, TrendingDown, 
 import type { UserInfo } from "./UserInfoForm";
 import ancientBookBg from "@/assets/ancient-book-bg.jpg";
 import { FloatingTimer } from "./FloatingTimer";
-import storyIllustration1 from "@/assets/story-illustration-1.jpg";
-import storyIllustration2 from "@/assets/story-illustration-2.jpg";
-import storyIllustration3 from "@/assets/story-illustration-3.jpg";
 
 type DifficultyLevel = "easy" | "medium" | "hard";
 
@@ -194,19 +191,6 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
-  // Get illustration based on story progress and content
-  const getStoryIllustration = () => {
-    const progressPercent = ((currentParagraph + 1) / totalParagraphs) * 100;
-    
-    if (progressPercent <= 33) {
-      return storyIllustration1; // Forest/beginning scene
-    } else if (progressPercent <= 66) {
-      return storyIllustration2; // Magical kingdom/adventure
-    } else {
-      return storyIllustration3; // Celebration/ending
-    }
-  };
-
   const progress = ((currentParagraph + 1) / totalParagraphs) * 100;
 
   return (
@@ -281,48 +265,27 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
               </div>
             </div>
 
-            {/* Story layout with illustration and text */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start max-w-6xl mx-auto">
-              {/* Story Illustration */}
-              <div className="order-2 lg:order-1">
-                <div className="bg-yellow-50/95 backdrop-blur-sm rounded-3xl p-6 border-3 border-amber-300/60 shadow-2xl">
-                  <img 
-                    src={getStoryIllustration()} 
-                    alt="Story illustration"
-                    className="w-full h-80 object-cover rounded-2xl shadow-lg border-2 border-amber-200/50"
-                  />
-                  <div className="text-center mt-4">
-                    <p className="text-sm text-amber-700 font-medium">
-                      Chapter {Math.ceil(((currentParagraph + 1) / totalParagraphs) * 3)} of 3
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Story Text */}
-              <div className="order-1 lg:order-2">
-                <div className="bg-yellow-50/95 backdrop-blur-sm rounded-3xl p-8 border-3 border-amber-300/60 shadow-2xl relative">
-                  {/* Ornate corner decorations */}
-                  <div className="absolute top-6 left-6 w-12 h-12 border-t-3 border-l-3 border-amber-500 rounded-tl-2xl opacity-70"></div>
-                  <div className="absolute top-6 right-6 w-12 h-12 border-t-3 border-r-3 border-amber-500 rounded-tr-2xl opacity-70"></div>
-                  <div className="absolute bottom-6 left-6 w-12 h-12 border-b-3 border-l-3 border-amber-500 rounded-bl-2xl opacity-70"></div>
-                  <div className="absolute bottom-6 right-6 w-12 h-12 border-b-3 border-r-3 border-amber-500 rounded-br-2xl opacity-70"></div>
-                  
-                  {/* Central ornamental flourish */}
-                  <div className="absolute top-8 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-60"></div>
-                  <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-60"></div>
-                  
-                  <div className="prose prose-lg max-w-none">
-                    <p className={`${getTextSize()} text-amber-900 font-medium leading-relaxed drop-shadow-sm animate-fade-in text-left`} 
-                       style={{ 
-                         fontFamily: 'Comic Neue, cursive',
-                         textShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                         lineHeight: '1.8'
-                       }}>
-                      {storyParagraphs[currentParagraph]}
-                    </p>
-                  </div>
-                </div>
+            {/* Main story text - positioned as if written on the book pages */}
+            <div className="bg-yellow-50/95 backdrop-blur-sm rounded-3xl p-12 mb-12 border-3 border-amber-300/60 shadow-2xl relative max-w-4xl mx-auto">
+              {/* Ornate corner decorations */}
+              <div className="absolute top-6 left-6 w-12 h-12 border-t-3 border-l-3 border-amber-500 rounded-tl-2xl opacity-70"></div>
+              <div className="absolute top-6 right-6 w-12 h-12 border-t-3 border-r-3 border-amber-500 rounded-tr-2xl opacity-70"></div>
+              <div className="absolute bottom-6 left-6 w-12 h-12 border-b-3 border-l-3 border-amber-500 rounded-bl-2xl opacity-70"></div>
+              <div className="absolute bottom-6 right-6 w-12 h-12 border-b-3 border-r-3 border-amber-500 rounded-br-2xl opacity-70"></div>
+              
+              {/* Central ornamental flourish */}
+              <div className="absolute top-8 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-60"></div>
+              <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-60"></div>
+              
+              <div className="prose prose-lg max-w-none text-center">
+                <p className={`${getTextSize()} text-amber-900 font-medium leading-relaxed drop-shadow-sm animate-fade-in`} 
+                   style={{ 
+                     fontFamily: 'Comic Neue, cursive',
+                     textShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                     lineHeight: '1.8'
+                   }}>
+                  {storyParagraphs[currentParagraph]}
+                </p>
               </div>
             </div>
 
