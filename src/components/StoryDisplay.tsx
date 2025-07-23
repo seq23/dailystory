@@ -456,26 +456,28 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
               </Button>
             </div>
 
-            {/* Page navigation - styled like turning pages of the book */}
-            <div className="flex gap-8 justify-center">
+            {/* Floating Page Navigation */}
+            <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 z-40 flex gap-4">
               <Button
                 variant="secondary"
-                size="xl"
+                size="lg"
                 onClick={handlePrevious}
                 disabled={currentParagraph === 0}
-                className="px-10 py-4 bg-amber-100/90 border-3 border-amber-400 text-amber-800 hover:bg-amber-200/90 backdrop-blur-sm shadow-xl text-lg font-semibold hover:scale-105 transition-all duration-200"
+                className="w-16 h-16 rounded-full bg-amber-100/95 border-3 border-amber-400 text-amber-800 hover:bg-amber-200/95 backdrop-blur-sm shadow-2xl hover:scale-110 transition-all duration-200 flex items-center justify-center"
+                title="Previous Page"
               >
-                ← Previous Page
+                ←
               </Button>
               
               <Button
                 variant="default"
-                size="xl"
+                size="lg"
                 onClick={handleNext}
                 disabled={currentParagraph === totalParagraphs - 1}
-                className="px-10 py-4 bg-gradient-to-r from-amber-600 to-yellow-600 text-white hover:from-amber-700 hover:to-yellow-700 shadow-xl text-lg font-semibold hover:scale-105 transition-all duration-200"
+                className="w-16 h-16 rounded-full bg-gradient-to-r from-amber-600 to-yellow-600 text-white hover:from-amber-700 hover:to-yellow-700 shadow-2xl hover:scale-110 transition-all duration-200 flex items-center justify-center"
+                title={currentParagraph === totalParagraphs - 1 ? "Story Complete" : "Next Page"}
               >
-                {currentParagraph === totalParagraphs - 1 ? "Story Complete! ✨" : "Next Page →"}
+                {currentParagraph === totalParagraphs - 1 ? "✨" : "→"}
               </Button>
             </div>
           </div>
