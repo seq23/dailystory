@@ -31,7 +31,7 @@ import illustration23 from "@/assets/story-illustration-23.jpg";
 import illustration24 from "@/assets/story-illustration-24.jpg";
 import { FloatingTimer } from "./FloatingTimer";
 
-type DifficultyLevel = "easy" | "medium" | "hard";
+type DifficultyLevel = "easy" | "medium" | "hard" | "expert";
 
 interface StoryDisplayProps {
   userInfo: UserInfo;
@@ -45,16 +45,16 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
   const [timeRemaining, setTimeRemaining] = useState(10 * 60); // Start at 10 minutes
   const [storyExtensions, setStoryExtensions] = useState(0); // Track how many 10-min extensions added
   const [currentDifficulty, setCurrentDifficulty] = useState<DifficultyLevel>(
-    userInfo.difficultyLevel || (userInfo.age <= 7 ? "easy" : userInfo.age <= 10 ? "medium" : "hard")
+    userInfo.difficultyLevel || (userInfo.age <= 6 ? "easy" : userInfo.age <= 9 ? "medium" : userInfo.age <= 12 ? "hard" : "expert")
   );
 
   // Generate age-appropriate G/PG rated stories with calibrated length for 20-minute reading
-  // Maximum reading level is capped at 12th grade (hard difficulty)
+  // Maximum reading level is capped at 12th grade (expert difficulty)
   const generateStory = (info: UserInfo, difficulty: DifficultyLevel): string[] => {
     // Ensure all content is family-friendly and G/PG rated
     const contentGuidelines = "All stories must be positive, uplifting, non-violent, educational, and appropriate for children. No scary, dark, or inappropriate themes.";
     const baseStoryTemplates = {
-      // Easy: 6 short pages (ages 4-7, ~3-4 minutes per page)
+      // Easy: 6 short pages (ages 4-6, K-1st grade reading level)
       easy: [
         `Hi! This is ${info.name}. ${info.name} is ${info.age} years old. ${info.name} likes the color ${info.favoriteColor}. ${info.name} is in ${info.grade} grade.${info.specialRequest ? ` ${info.name} loves ${info.specialRequest} too!` : ''}`,
         
@@ -69,7 +69,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
         `${info.name} and the ${info.favoriteAnimal} became best friends. They played all day.${info.specialRequest ? ` They had fun with the ${info.specialRequest} too!` : ''} Then ${info.name} went home. ${info.name} felt happy about the magical day. The End.`
       ],
       
-      // Medium: 10 medium pages (ages 8-10, ~2 minutes per page)
+      // Medium: 10 medium pages (ages 7-9, 2nd-4th grade reading level)
       medium: [
         `Once upon a time, there was a special child named ${info.name} who was ${info.age} years old and in ${info.grade} grade. ${info.name} had a wonderful gift that made everything turn the beautiful color ${info.favoriteColor}!`,
         
@@ -92,7 +92,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
         `As they returned home, ${info.name} felt proud and happy. They had learned that being brave, kind, and helpful can lead to the most wonderful experiences.${info.specialRequest ? ` And they discovered that ${info.specialRequest} made everything even more magical!` : ''} ${info.name} fell asleep that night dreaming of future adventures. The End.`
       ],
       
-      // Hard: 16 longer pages (ages 11+, up to 12th grade reading level - maximum complexity)
+      // Hard: 14 longer pages (ages 10-12, 5th-8th grade reading level)
       hard: [
         `In a world where extraordinary things happened to ordinary children, there lived a remarkable young person named ${info.name}, who at ${info.age} years old and in ${info.grade} grade, possessed an incredible ability to transform anything they touched into the most magnificent shade of ${info.favoriteColor}.`,
         
@@ -124,7 +124,44 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
         
         `During their homeward journey, soaring through clouds painted with colors they had helped restore, ${info.name} reflected deeply on the profound lessons learned about courage, empathy, leadership, and the extraordinary impact that one person's kindness and determination can have on an entire world.${info.specialRequest ? ` They also marveled at how ${info.specialRequest} had made their adventure even more magical.` : ''}`,
         
-        `Upon returning home, ${info.name} spent hours sharing their transformative adventure, recounting the wisdom they had gained and the magical memories they would treasure forever.${info.specialRequest ? ` They especially loved telling about how ${info.specialRequest} had helped save the day.` : ''} They fell asleep knowing that true friendship and courage make even the most incredible adventures meaningful. The End.`
+         `Upon returning home, ${info.name} spent hours sharing their transformative adventure, recounting the wisdom they had gained and the magical memories they would treasure forever.${info.specialRequest ? ` They especially loved telling about how ${info.specialRequest} had helped save the day.` : ''} They fell asleep knowing that true friendship and courage make even the most incredible adventures meaningful. The End.`
+      ],
+      
+      // Expert: 18 complex pages (ages 13+, 9th-12th grade reading level - maximum complexity)
+      expert: [
+        `In an extraordinary convergence of circumstance and destiny, there existed a remarkably gifted individual named ${info.name}, whose ${info.age} years of life in ${info.grade} grade had been distinguished by an unprecedented mastery over chromatic transformation—specifically, the ability to metamorphose any substance into the most exquisite manifestation of ${info.favoriteColor} through conscious intention and focused willpower.`,
+        
+        `During a particularly transcendent morning while ${info.name} was immersed in the contemplative practice of ${info.hobbies}, the atmospheric tranquility was suddenly pierced by an ethereal entreaty that seemed to emanate from the very fabric of reality itself, suggesting the presence of a sentient being requiring immediate intervention.`,
+        
+        `Through methodical investigation employing both intuitive perception and systematic observation, ${info.name} discovered an extraordinary ${info.favoriteAnimal} whose corporeal form had become inexplicably entangled within the crystalline matrices of an ancient, luminescent arboreal specimen that pulsed with interdimensional energy signatures.`,
+        
+        `"I find myself in dire need of assistance from one whose spiritual resonance aligns with the fundamental forces of benevolence," articulated the ${info.favoriteAnimal} with remarkable eloquence, its communication transcending mere vocalization to encompass telepathic harmonics that conveyed profound urgency coupled with unwavering dignity.`,
+        
+        `Responding to this existential crisis with characteristic compassion and leveraging their supernatural command over ${info.favoriteColor} chromatic manipulation, ${info.name} initiated a complex liberation protocol that involved the systematic dissolution of quantum crystalline bonds through precise application of transformative energy.`,
+        
+        `The profoundly grateful ${info.favoriteAnimal}, recognizing the magnitude of ${info.name}'s altruistic intervention, extended a formal invitation to participate in an unprecedented expedition to a metaphysical realm that existed parallel to conventional reality, where the fundamental laws of physics operated according to radically different principles.`,
+        
+        `Their transdimensional journey commenced through a spiraling vortex of chromatic energy that transported them to a magnificent civilization where architectural achievements had been constructed entirely from crystallized variants of ${info.favoriteFood}, resulting in a landscape that stimulated multiple sensory modalities simultaneously.`,
+        
+        `Upon materialization in this extraordinary dimension, the indigenous population—characterized by their luminescent physiological properties and advanced telepathic capabilities—revealed the catastrophic deterioration of their primary chromatic energy source, a legendary rainbow that functioned as the fundamental life-support system for their entire ecosystem.`,
+        
+        `The governing council, comprised of the realm's most distinguished scholars and mystics, elucidated that the rainbow's deterioration threatened not merely aesthetic degradation but complete existential collapse, as all sentient beings within their dimension derived their essential life force from its chromatic emanations.${info.specialRequest ? ` However, ancient prophetic texts had foretold that ${info.specialRequest} possessed latent capabilities that could potentially restore such cosmic phenomena.` : ''}`,
+        
+        `Drawing upon accumulated wisdom regarding the exponential power multiplication achieved through collaborative endeavor, strategic planning, and unwavering commitment to humanitarian principles, ${info.name} recognized the profound significance of this moment.${info.specialRequest ? ` They also recalled esoteric knowledge suggesting that ${info.specialRequest} had historically served as catalysts for miraculous transformations.` : ''}`,
+        
+        `Through comprehensive analysis of the situation's complexities and consultation with the ${info.favoriteAnimal}'s extensive knowledge of interdimensional mechanics, ${info.name} formulated an ambitious restoration strategy that would require the synchronized participation of every conscious entity within the realm.${info.specialRequest ? ` The methodology incorporated sophisticated utilization of ${info.specialRequest}'s inherent metaphysical properties to amplify the restoration process exponentially.` : ''}`,
+        
+        `The implementation phase demanded extraordinary perseverance, innovative problem-solving methodologies, and the harmonious integration of diverse energy signatures as ${info.name} and the ${info.favoriteAnimal} channeled their combined consciousness into a transcendent ritual spanning multiple temporal cycles.${info.specialRequest ? ` Throughout this process, the ${info.specialRequest} served as a crucial conduit for maintaining stable energy flow and preventing dimensional collapse.` : ''}`,
+        
+        `At the precise moment of optimal cosmic alignment, a spectacular cascade of ${info.favoriteColor} radiance erupted from their unified consciousness, generating a beam of pure creative energy that penetrated the rainbow's deteriorated core and initiated a comprehensive regeneration sequence that exceeded all previous manifestations of its power.${info.specialRequest ? ` The ${info.specialRequest} resonated with harmonic frequencies that enhanced the restoration beyond theoretical limitations.` : ''}`,
+        
+        `In recognition of their unprecedented achievement, the grateful civilization offered ${info.name} permanent residence as Supreme ${info.dreamJob} of their realm, along with access to infinite resources and the opportunity to study advanced metaphysical sciences unavailable in conventional reality.${info.specialRequest ? ` They promised to establish a permanent sanctuary for ${info.specialRequest} to ensure continued protection and study of their remarkable properties.` : ''}`,
+        
+        `During the contemplative return journey through shifting dimensional boundaries, ${info.name} engaged in profound philosophical reflection regarding the interconnected nature of existence, the exponential impact of individual moral choices, and the fundamental responsibility that accompanies the possession of extraordinary capabilities.${info.specialRequest ? ` They marveled at the unexpected ways in which ${info.specialRequest} had contributed to outcomes that transcended initial expectations.` : ''}`,
+        
+        `Upon reintegration with their original dimensional framework, ${info.name} dedicated considerable time to documenting and sharing the transformative insights gained through this extraordinary experience, recognizing their obligation to contribute to humanity's collective understanding of compassion, courage, and the unlimited potential for positive change.${info.specialRequest ? ` They particularly emphasized the crucial role that ${info.specialRequest} had played in demonstrating the power of seemingly ordinary elements to achieve extraordinary results.` : ''}`,
+        
+        `As ${info.name} concluded this remarkable chapter of their existence, they carried forward an enhanced awareness of their unique position within the cosmic order and their ongoing responsibility to utilize their gifts in service of universal well-being, knowing that this adventure represented merely the beginning of a lifetime dedicated to making meaningful contributions to the world. The End.`
       ]
     };
     
@@ -155,7 +192,17 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
         `The ${info.favoriteAnimal} appeared one more time in their dreams, offering a final piece of wisdom: "The greatest adventures are not in distant magical lands, but in the everyday moments where you choose to make a difference."`,
         `${info.name} awoke with a profound sense of purpose, knowing that their story was just beginning and that every day offered new opportunities to create magic through kindness, courage, and the unwavering belief that one person can indeed change the world.`,
         `Years later, ${info.name} would look back on that transformative experience as the moment they truly understood their place in the world and their responsibility to use their gifts in service of others, carrying forward the lessons of the magical kingdom into every aspect of their life.`
-      ]
+       ],
+      expert: [
+        `In the subsequent temporal period following their transcendental interdimensional experience, ${info.name} discovered that their consciousness had undergone fundamental alterations that manifested as enhanced perceptual capabilities, allowing them to detect subtle energetic disturbances in the fabric of conventional reality that indicated opportunities for humanitarian intervention.`,
+        `During an academic period characterized by significant interpersonal challenges, ${info.name} encountered a complex social dynamic wherein established power structures were perpetuating systematic exclusion of a recently integrated student, presenting an opportunity to apply the advanced conflict resolution principles they had mastered during their metaphysical adventure.`,
+        `Drawing upon the sophisticated understanding of systemic change methodology acquired through their interdimensional leadership experience, ${info.name} implemented a comprehensive intervention strategy that addressed both immediate symptomatic manifestations and underlying structural inequities contributing to the problematic social dynamic.`,
+        `The cascading positive effects of their intervention created a transformative ripple effect throughout the educational environment, establishing new paradigms of inclusive communication and collaborative problem-solving that fundamentally altered the institutional culture in measurable and sustainable ways.`,
+        `Through careful analysis of these outcomes, ${info.name} recognized that their extraordinary adventure had not merely been an isolated experience but rather a preparation phase for their ongoing mission to serve as a catalyst for positive transformation within their immediate sphere of influence and beyond.`,
+        `The ${info.favoriteAnimal} manifested once more through enhanced sensory perception during a moment of deep contemplation, transmitting advanced wisdom regarding the exponential multiplication of positive impact through consistent application of enlightened principles in seemingly mundane circumstances.`,
+        `${info.name} integrated this profound understanding into a comprehensive personal philosophy that recognized every interpersonal interaction as an opportunity to contribute to the collective elevation of human consciousness and the advancement of universal compassion.`,
+        `Years later, as ${info.name} reflected upon the trajectory of their personal development and the expanding sphere of their positive influence, they understood that their magical adventure had been the initial activation of a lifelong commitment to utilizing their enhanced capabilities in service of humanity's highest potential.`
+       ]
     };
     
     const templates = extensionTemplates[difficulty];
@@ -169,6 +216,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
       case "easy": return 3; // ~3.5 min per page, so 3 pages for 10 min
       case "medium": return 5; // ~2 min per page, so 5 pages for 10 min  
       case "hard": return 8; // ~1.25 min per page, so 8 pages for 10 min
+      case "expert": return 10; // ~1 min per page, so 10 pages for 10 min
       default: return 5;
     }
   };
@@ -238,12 +286,14 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
   const handleDifficultyUp = () => {
     if (currentDifficulty === "easy") setCurrentDifficulty("medium");
     else if (currentDifficulty === "medium") setCurrentDifficulty("hard");
+    else if (currentDifficulty === "hard") setCurrentDifficulty("expert");
     setCurrentParagraph(0); // Reset to beginning with new difficulty
     setStoryExtensions(0); // Reset extensions when difficulty changes
   };
 
   const handleDifficultyDown = () => {
-    if (currentDifficulty === "hard") setCurrentDifficulty("medium");
+    if (currentDifficulty === "expert") setCurrentDifficulty("hard");
+    else if (currentDifficulty === "hard") setCurrentDifficulty("medium");
     else if (currentDifficulty === "medium") setCurrentDifficulty("easy");
     setCurrentParagraph(0); // Reset to beginning with new difficulty
     setStoryExtensions(0); // Reset extensions when difficulty changes
@@ -255,14 +305,16 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
     if (userInfo.age <= 9 && currentDifficulty === "easy") return "text-2xl leading-relaxed";
     if (currentDifficulty === "easy") return "text-xl leading-relaxed";
     if (currentDifficulty === "medium") return "text-lg leading-relaxed";
-    return "text-base leading-relaxed";
+    if (currentDifficulty === "hard") return "text-base leading-relaxed";
+    return "text-sm leading-relaxed"; // expert level
   };
 
   const getDifficultyColor = () => {
     switch (currentDifficulty) {
       case "easy": return "text-green-600";
       case "medium": return "text-yellow-600";
-      case "hard": return "text-red-600";
+      case "hard": return "text-orange-600";
+      case "expert": return "text-red-600";
       default: return "text-gray-600";
     }
   };
@@ -272,6 +324,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
       case "easy": return "Easy Reading";
       case "medium": return "Medium Reading";
       case "hard": return "Advanced Reading";
+      case "expert": return "Expert Reading";
       default: return "Reading";
     }
   };
@@ -594,9 +647,10 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                   {getDifficultyLabel()}
                 </div>
                 <div className="text-sm text-amber-700 mt-1">
-                  {currentDifficulty === "easy" && "Simple words & short sentences"}
-                  {currentDifficulty === "medium" && "Moderate vocabulary & sentences"}
-                  {currentDifficulty === "hard" && "12th grade level vocabulary & complex sentences"}
+                  {currentDifficulty === "easy" && "K-1st grade: Simple words & short sentences"}
+                  {currentDifficulty === "medium" && "2nd-4th grade: Moderate vocabulary & sentences"}
+                  {currentDifficulty === "hard" && "5th-8th grade: Advanced vocabulary & complex sentences"}
+                  {currentDifficulty === "expert" && "9th-12th grade: Expert vocabulary & sophisticated writing"}
                 </div>
               </div>
               
@@ -604,7 +658,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                 variant="outline"
                 size="lg"
                 onClick={handleDifficultyUp}
-                disabled={currentDifficulty === "hard"}
+                disabled={currentDifficulty === "expert"}
                 className="bg-amber-50/90 border-2 border-amber-400 text-amber-800 hover:bg-amber-100/90 shadow-lg backdrop-blur-sm px-6 py-3 animate-[wiggle_0.5s_ease-in-out_2.5s,_fade-in_0.8s_ease-out_1.5s] disabled:animate-none disabled:opacity-50"
                 style={{
                   animationFillMode: 'both'
