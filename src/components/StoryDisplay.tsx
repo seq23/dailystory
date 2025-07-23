@@ -15,7 +15,7 @@ interface StoryDisplayProps {
 
 export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps) => {
   const [currentParagraph, setCurrentParagraph] = useState(0);
-  const [isReading, setIsReading] = useState(false);
+  const [isReading, setIsReading] = useState(true); // Auto-start reading
   const [timeRemaining, setTimeRemaining] = useState(20 * 60); // 20 minutes in seconds
   const [currentDifficulty, setCurrentDifficulty] = useState<DifficultyLevel>(
     userInfo.difficultyLevel || (userInfo.age <= 7 ? "easy" : userInfo.age <= 10 ? "medium" : "hard")
