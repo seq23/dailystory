@@ -20,9 +20,12 @@ export const FloatingTimer = ({
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const { toast } = useToast();
   
-  // Calculate progress for circular progress
-  const totalTime = 40 * 60; // 40 minutes in seconds
-  const progress = ((totalTime - timeRemaining) / totalTime) * 100;
+  // Calculate progress for circular progress (based on current session time)
+  const maxTime = 40 * 60; // Maximum 40 minutes
+  const currentSessionTime = timeRemaining > 30 * 60 ? 40 * 60 : 
+                            timeRemaining > 20 * 60 ? 30 * 60 :
+                            timeRemaining > 10 * 60 ? 20 * 60 : 10 * 60;
+  const progress = ((currentSessionTime - timeRemaining) / currentSessionTime) * 100;
   const circumference = 2 * Math.PI * 45; // radius of 45
   const strokeDashoffset = circumference - (progress / 100) * circumference;
 
@@ -73,7 +76,7 @@ export const FloatingTimer = ({
       // Show toast notification
       toast({
         title: "🎉 Congratulations!",
-        description: "You've completed your 40+ minute reading session!",
+        description: "You've completed your reading session!",
         duration: 5000,
       });
       

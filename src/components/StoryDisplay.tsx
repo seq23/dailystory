@@ -21,7 +21,7 @@ interface StoryDisplayProps {
 export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps) => {
   const [currentParagraph, setCurrentParagraph] = useState(0);
   const [isReading, setIsReading] = useState(true); // Auto-start reading
-  const [timeRemaining, setTimeRemaining] = useState(40 * 60); // 40 minutes in seconds
+  const [timeRemaining, setTimeRemaining] = useState(10 * 60); // Start at 10 minutes
   const [storyExtensions, setStoryExtensions] = useState(0); // Track how many 10-min extensions added
   const [currentDifficulty, setCurrentDifficulty] = useState<DifficultyLevel>(
     userInfo.difficultyLevel || (userInfo.age <= 7 ? "easy" : userInfo.age <= 10 ? "medium" : "hard")
@@ -199,13 +199,18 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
   const handleStartReading = () => {
     setIsReading(true);
     if (timeRemaining === 0) {
-      setTimeRemaining(40 * 60); // Reset to 40 minutes if timer reached 0
+      setTimeRemaining(10 * 60); // Reset to 10 minutes if timer reached 0
     }
   };
 
   const handleAddTime = () => {
-    setTimeRemaining(prev => prev + (10 * 60)); // Add 10 minutes
-    setStoryExtensions(prev => prev + 1); // Add corresponding story content
+    setTimeRemaining(prev => {
+      const newTime = prev + (10 * 60); // Add 10 minutes
+      return Math.min(newTime, 40 * 60); // Cap at 40 minutes maximum
+    });
+    if (timeRemaining < 40 * 60 - (10 * 60)) { // Only add story content if under the cap
+      setStoryExtensions(prev => prev + 1);
+    }
   };
 
   const handleDifficultyUp = () => {
@@ -498,7 +503,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                   You've completed your magical adventure!
                 </p>
                 <p className="text-lg text-amber-600 mb-8">
-                  Time used: {formatTime(40 * 60 - timeRemaining)} • Come back tomorrow for a brand new story!
+                  Time used: {formatTime((10 * 60 + storyExtensions * 10 * 60) - timeRemaining)} • Come back tomorrow for a brand new story!
                 </p>
                 <div className="flex gap-6 justify-center">
                   <Button 
