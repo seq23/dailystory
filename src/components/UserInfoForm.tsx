@@ -137,6 +137,9 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                     <SelectItem value="6th">6th Grade</SelectItem>
                     <SelectItem value="7th">7th Grade</SelectItem>
                     <SelectItem value="8th">8th Grade</SelectItem>
+                    <SelectItem value="9th">9th Grade</SelectItem>
+                    <SelectItem value="10th">10th Grade</SelectItem>
+                    <SelectItem value="11th">11th Grade</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
