@@ -22,13 +22,14 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
   const [currentParagraph, setCurrentParagraph] = useState(0);
   const [isReading, setIsReading] = useState(true); // Auto-start reading
   const [timeRemaining, setTimeRemaining] = useState(20 * 60); // 20 minutes in seconds
+  const [storyExtensions, setStoryExtensions] = useState(0); // Track how many 10-min extensions added
   const [currentDifficulty, setCurrentDifficulty] = useState<DifficultyLevel>(
     userInfo.difficultyLevel || (userInfo.age <= 7 ? "easy" : userInfo.age <= 10 ? "medium" : "hard")
   );
 
   // Generate age-appropriate stories with calibrated length for 20-minute reading
   const generateStory = (info: UserInfo, difficulty: DifficultyLevel): string[] => {
-    const storyTemplates = {
+    const baseStoryTemplates = {
       // Easy: 6 short pages (ages 4-7, ~3-4 minutes per page)
       easy: [
         `Hi! This is ${info.name}. ${info.name} is ${info.age} years old. ${info.name} likes the color ${info.favoriteColor}. ${info.name} is in ${info.grade} grade.${info.specialRequest ? ` ${info.name} loves ${info.specialRequest} too!` : ''}`,
@@ -103,10 +104,66 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
       ]
     };
     
-    return storyTemplates[difficulty];
+    return baseStoryTemplates[difficulty];
   };
 
-  const storyParagraphs = generateStory(userInfo, currentDifficulty);
+  // Generate additional story content for time extensions
+  const generateExtendedContent = (info: UserInfo, difficulty: DifficultyLevel, extensionNumber: number): string[] => {
+    const extensionTemplates = {
+      easy: [
+        `The next day, ${info.name} went back to the magic land. The ${info.favoriteAnimal} was there waiting! "Want to see more?" asked the ${info.favoriteAnimal}.`,
+        `They found a playground made of ${info.favoriteFood}! The swings were ${info.favoriteFood} and the slide was too. ${info.name} had so much fun playing.`,
+        `Then they met other animals who wanted to be friends. There was a nice ${info.favoriteAnimal === 'cat' ? 'dog' : 'cat'} and a funny bird. They all played together happily.`
+      ],
+      medium: [
+        `As ${info.name} settled back into their normal routine, they discovered that their magical adventure had given them new abilities. They could now sense when others needed help, just like the ${info.favoriteAnimal} had needed help.`,
+        `One afternoon, ${info.name} noticed their neighbor looking sad and worried. Using their newfound wisdom and the lessons learned from their magical journey, they offered kindness and assistance.`,
+        `The neighbor explained that their garden was dying and they didn't know why. ${info.name} remembered the power of ${info.favoriteColor} magic and gently touched the wilting plants.`,
+        `Miraculously, the garden began to bloom with vibrant flowers in every color imaginable! The neighbor was amazed and grateful, and ${info.name} realized their adventure had taught them to help others.`,
+        `That evening, ${info.name} looked up at the sky and saw a small rainbow forming. The ${info.favoriteAnimal} appeared beside them and smiled. "Your kindness is spreading magic everywhere," it said warmly.`
+      ],
+      hard: [
+        `In the weeks following their extraordinary adventure, ${info.name} began to notice subtle changes in their ordinary world. The experience had awakened a deeper awareness of the interconnectedness of all living things and the responsibility that comes with great power.`,
+        `During a particularly challenging day at school, ${info.name} encountered a situation that required the same courage and wisdom they had demonstrated in the magical kingdom. A new student was being treated unfairly by others.`,
+        `Drawing upon the lessons learned about standing up for those who cannot stand up for themselves, ${info.name} intervened with compassion and determination, creating an atmosphere of inclusion and understanding.`,
+        `The transformation in their school environment was remarkable. Other students began following ${info.name}'s example, creating a community built on mutual respect and kindness, much like the kingdom they had helped restore.`,
+        `That night, as ${info.name} reflected on the day's events, they understood that the true magic wasn't in the fantastic realm they had visited, but in the ability to bring positive change to the world around them through consistent acts of courage and compassion.`,
+        `The ${info.favoriteAnimal} appeared one more time in their dreams, offering a final piece of wisdom: "The greatest adventures are not in distant magical lands, but in the everyday moments where you choose to make a difference."`,
+        `${info.name} awoke with a profound sense of purpose, knowing that their story was just beginning and that every day offered new opportunities to create magic through kindness, courage, and the unwavering belief that one person can indeed change the world.`,
+        `Years later, ${info.name} would look back on that transformative experience as the moment they truly understood their place in the world and their responsibility to use their gifts in service of others, carrying forward the lessons of the magical kingdom into every aspect of their life.`
+      ]
+    };
+    
+    const templates = extensionTemplates[difficulty];
+    const startIndex = (extensionNumber - 1) * getExtensionPageCount(difficulty);
+    return templates.slice(startIndex, startIndex + getExtensionPageCount(difficulty)) || templates;
+  };
+
+  // Calculate pages to add per 10-minute extension based on difficulty
+  const getExtensionPageCount = (difficulty: DifficultyLevel): number => {
+    switch (difficulty) {
+      case "easy": return 3; // ~3.5 min per page, so 3 pages for 10 min
+      case "medium": return 5; // ~2 min per page, so 5 pages for 10 min  
+      case "hard": return 8; // ~1.25 min per page, so 8 pages for 10 min
+      default: return 5;
+    }
+  };
+
+  // Combine base story with any extensions
+  const getCompleteStory = (): string[] => {
+    const baseStory = generateStory(userInfo, currentDifficulty);
+    let completeStory = [...baseStory];
+    
+    // Add extended content for each 10-minute extension
+    for (let i = 1; i <= storyExtensions; i++) {
+      const extensionContent = generateExtendedContent(userInfo, currentDifficulty, i);
+      completeStory = [...completeStory, ...extensionContent];
+    }
+    
+    return completeStory;
+  };
+
+  const storyParagraphs = getCompleteStory();
   const totalParagraphs = storyParagraphs.length;
 
   useEffect(() => {
@@ -146,18 +203,21 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
 
   const handleAddTime = () => {
     setTimeRemaining(prev => prev + (10 * 60)); // Add 10 minutes
+    setStoryExtensions(prev => prev + 1); // Add corresponding story content
   };
 
   const handleDifficultyUp = () => {
     if (currentDifficulty === "easy") setCurrentDifficulty("medium");
     else if (currentDifficulty === "medium") setCurrentDifficulty("hard");
     setCurrentParagraph(0); // Reset to beginning with new difficulty
+    setStoryExtensions(0); // Reset extensions when difficulty changes
   };
 
   const handleDifficultyDown = () => {
     if (currentDifficulty === "hard") setCurrentDifficulty("medium");
     else if (currentDifficulty === "medium") setCurrentDifficulty("easy");
     setCurrentParagraph(0); // Reset to beginning with new difficulty
+    setStoryExtensions(0); // Reset extensions when difficulty changes
   };
 
   // Dynamic text size based on age and difficulty
