@@ -50,6 +50,7 @@ import illustration42 from "@/assets/story-illustration-42.jpg";
 import illustration43 from "@/assets/story-illustration-43.jpg";
 import illustration44 from "@/assets/story-illustration-44.jpg";
 import { FloatingTimer } from "./FloatingTimer";
+import { processTextForPhonetics } from "@/utils/textProcessor";
 
 type DifficultyLevel = "easy" | "medium" | "hard" | "expert";
 
@@ -746,7 +747,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                          textShadow: '0 1px 2px rgba(0,0,0,0.1)',
                          lineHeight: '1.8'
                        }}>
-                      {storyParagraphs[currentParagraph]}
+                      {processTextForPhonetics(storyParagraphs[currentParagraph], `${getTextSize()} text-amber-900 font-medium leading-relaxed drop-shadow-sm animate-fade-in text-left lg:text-justify`)}
                     </p>
                   </div>
                 </div>
