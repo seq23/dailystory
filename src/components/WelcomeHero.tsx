@@ -42,7 +42,7 @@ export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
                 <h1 className="text-2xl md:text-4xl font-bold text-white drop-shadow-lg">
                   Time <span className="text-yellow-300">2</span> Read
                 </h1>
-                <p className="text-sm text-white/80 hidden md:block">Magical Stories for Every Child</p>
+                <p className="text-sm text-white/80 hidden md:block">A Personalized Reading Assistant for Every Child</p>
               </div>
             </div>
           </div>
