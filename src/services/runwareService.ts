@@ -172,7 +172,12 @@ export const generatedImageCache = new Map<string, string>();
 
 // Function to generate child-friendly illustration prompts
 export const createChildFriendlyPrompt = (storyText: string, userInfo?: any): string => {
-  const lowerText = storyText.toLowerCase();
+  // Import ContentSecurity here to avoid circular imports
+  const { ContentSecurity } = require('@/utils/security');
+  
+  // Sanitize the input prompt for security
+  const sanitizedStoryText = ContentSecurity.sanitizePrompt(storyText);
+  const lowerText = sanitizedStoryText.toLowerCase();
   
   // Extract the main action/scene from the story
   let mainScene = "";
@@ -354,5 +359,8 @@ export const createChildFriendlyPrompt = (storyText: string, userInfo?: any): st
   // Add mood and style
   prompt += `with a ${mood} atmosphere, soft pastel colors, child-friendly art style, storybook illustration, warm lighting, safe and wholesome content, high quality digital art`;
   
-  return prompt;
+  // Final security validation of the generated prompt
+  const finalPrompt = ContentSecurity.sanitizePrompt(prompt);
+  
+  return finalPrompt;
 };

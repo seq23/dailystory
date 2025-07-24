@@ -9,6 +9,8 @@ import { TagInput } from "@/components/ui/tag-input";
 import { ColorPicker } from "@/components/ui/color-picker";
 import { AvatarPicker } from "@/components/ui/avatar-picker";
 import { ChevronRight, User, GraduationCap, Heart, Star } from "lucide-react";
+import { ContentSecurity, SecurityLogger } from "@/utils/security";
+import { useToast } from "@/hooks/use-toast";
 
 export interface UserInfo {
   name: string;
@@ -33,6 +35,7 @@ interface UserInfoFormProps {
 }
 
 export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
+  const { toast } = useToast();
   const [formData, setFormData] = useState<UserInfo>({
     name: "",
     age: 6,
@@ -50,46 +53,82 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
     readingAbility: "easy"
   });
 
-  const contentFilter = (text: string): boolean => {
-    const inappropriateWords = [
-      // Violent/scary content
-      'scary', 'frightening', 'violent', 'dark', 'death', 'kill', 'weapon', 'gun', 'sword', 'fight',
-      'monster', 'ghost', 'zombie', 'vampire', 'witch', 'evil', 'mean', 'bad', 'hurt', 'pain',
-      'blood', 'angry', 'mad', 'hate', 'stupid', 'dumb', 'ugly', 'fat', 'skinny',
-      
-      // Profanity and inappropriate language
-      'damn', 'hell', 'crap', 'piss', 'ass', 'bitch', 'bastard', 'shit', 'fuck', 'fucking',
-      'motherfucker', 'asshole', 'dickhead', 'prick', 'cock', 'pussy', 'whore', 'slut',
-      'retard', 'gay', 'homo', 'fag', 'nigger', 'spic', 'chink', 'kike', 'dick',
-      
-      // Sexual content
-      'sex', 'sexual', 'porn', 'naked', 'nude', 'boobs', 'penis', 'vagina', 'orgasm',
-      'masturbate', 'horny', 'sexy', 'erotic', 'prostitute', 'rape', 'molest',
-      
-      // Drug/alcohol references
-      'drunk', 'weed', 'marijuana', 'cocaine', 'heroin', 'meth', 'drugs', 'smoking',
-      'cigarette', 'alcohol', 'beer', 'vodka', 'whiskey',
-      
-      // Other inappropriate content
-      'suicide', 'depression', 'cutting', 'self-harm', 'anorexia', 'bulimia'
-    ];
-    
-    return inappropriateWords.some(word => 
-      text.toLowerCase().includes(word.toLowerCase())
-    );
+  // Enhanced content filtering with improved security
+  const contentFilter = (text: string): { hasInappropriateContent: boolean; reason?: string } => {
+    const validation = ContentSecurity.isContentAppropriate(text);
+    return {
+      hasInappropriateContent: !validation.appropriate,
+      reason: validation.reason
+    };
   };
 
   const handleInputChange = (field: keyof UserInfo, value: string | number) => {
-    if (typeof value === 'string' && contentFilter(value)) {
-      // Show a friendly message when inappropriate content is detected
-      return; // Don't update if content is inappropriate
+    if (typeof value === 'string') {
+      // Sanitize input
+      const sanitizedValue = ContentSecurity.sanitizeInput(value);
+      
+      // Check for inappropriate content
+      const validation = contentFilter(sanitizedValue);
+      if (validation.hasInappropriateContent) {
+        SecurityLogger.log('inappropriate_content_attempt', {
+          field,
+          reason: validation.reason,
+          originalValue: value
+        });
+        
+        toast({
+          title: "Content Warning",
+          description: "Please use appropriate language for children's stories!",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      setFormData(prev => ({ ...prev, [field]: sanitizedValue }));
+    } else {
+      setFormData(prev => ({ ...prev, [field]: value }));
     }
-    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = () => {
+    // Rate limiting check
+    const userIdentifier = formData.name + Date.now(); // Simple identifier
+    if (!ContentSecurity.checkRateLimit(userIdentifier)) {
+      toast({
+        title: "Too Many Requests",
+        description: "Please wait a moment before submitting again.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Final validation of all form data
+    const allText = `${formData.name} ${formData.favoriteAnimal} ${formData.favoriteFood} ${formData.hobbies} ${formData.specialRequest}`;
+    const finalValidation = ContentSecurity.isContentAppropriate(allText);
+    
+    if (!finalValidation.appropriate) {
+      SecurityLogger.log('form_submission_blocked', {
+        reason: finalValidation.reason,
+        formData: { ...formData, name: '[REDACTED]' }
+      });
+      
+      toast({
+        title: "Content Issue",
+        description: "Please review your inputs for appropriate content.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     // Use the selected reading ability, or fall back to age-based difficulty
     const difficulty = formData.readingAbility || (formData.age <= 6 ? "easy" : formData.age <= 9 ? "medium" : formData.age <= 12 ? "hard" : "expert");
+    
+    SecurityLogger.log('form_submission_success', {
+      difficultyLevel: difficulty,
+      age: formData.age,
+      grade: formData.grade
+    });
+    
     onSubmit({ ...formData, difficultyLevel: difficulty });
   };
 
