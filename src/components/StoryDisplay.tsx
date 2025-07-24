@@ -106,6 +106,20 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
     return avatarImages[userInfo.avatar.type]?.[userInfo.avatar.skinTone] || avatarBoyLight;
   };
 
+  // Get avatar description for image generation prompts
+  const getAvatarDescription = () => {
+    const genderDesc = userInfo.avatar.type === "boy" ? "young boy" : "young girl";
+    const skinToneDesc = {
+      pale: "very light skin",
+      light: "light skin", 
+      medium: "medium skin",
+      olive: "olive skin",
+      dark: "dark skin"
+    }[userInfo.avatar.skinTone];
+    
+    return `a happy ${genderDesc} with ${skinToneDesc}`;
+  };
+
   // Generate age-appropriate G/PG rated stories with calibrated length for 20-minute reading
   // Maximum reading level is capped at 12th grade (expert difficulty)
   const generateStory = (info: UserInfo, difficulty: DifficultyLevel): string[] => {
@@ -533,8 +547,18 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
     if (runwareService && !isGeneratingImage) {
       try {
         setIsGeneratingImage(true);
-        const prompt = createChildFriendlyPrompt(currentText);
-        console.log("Auto-generating image with prompt:", prompt);
+        
+        // Create character-aware prompt that includes avatar characteristics
+        let prompt = createChildFriendlyPrompt(currentText);
+        
+        // If story mentions main character, enhance prompt with avatar details
+        if (mentionsCharacter) {
+          const avatarDescription = getAvatarDescription();
+          prompt = prompt.replace('a happy child', avatarDescription);
+          prompt = `${prompt}, featuring ${avatarDescription} as the main character`;
+        }
+        
+        console.log("Auto-generating image with character-aware prompt:", prompt);
         
         const generatedImage = await runwareService.generateImage({
           positivePrompt: prompt,
