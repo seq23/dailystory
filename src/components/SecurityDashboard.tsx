@@ -75,87 +75,88 @@ export const SecurityDashboard: React.FC = () => {
         variant="outline"
         size="sm"
         onClick={() => setIsVisible(true)}
-        className="fixed bottom-4 right-4 z-50"
+        className="fixed bottom-4 left-4 z-50 h-6 px-2 text-xs"
       >
-        <Shield className="h-4 w-4 mr-2" />
-        Security Monitor
+        <Shield className="h-3 w-3 mr-1" />
+        Security
       </Button>
     );
   }
 
   return (
-    <div className="fixed bottom-4 right-4 w-96 max-h-[80vh] bg-background border rounded-lg shadow-lg z-50">
+    <div className="fixed bottom-4 left-4 w-48 max-h-[60vh] bg-background border rounded-lg shadow-lg z-50">
       <Card className="h-full">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              <CardTitle className="text-lg">Security Monitor</CardTitle>
+            <div className="flex items-center gap-1">
+              <Shield className="h-3 w-3" />
+              <CardTitle className="text-sm">Security</CardTitle>
             </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setIsVisible(false)}
+              className="h-6 w-6 p-0 text-xs"
             >
               ×
             </Button>
           </div>
-          <CardDescription>
-            Real-time security event monitoring
+          <CardDescription className="text-xs">
+            Security monitoring
           </CardDescription>
         </CardHeader>
         
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-2 p-3">
           {/* Critical Events Alert */}
           {criticalEvents.length > 0 && (
-            <Alert variant="destructive">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertDescription>
-                {criticalEvents.length} critical security event(s) detected
+            <Alert variant="destructive" className="p-2">
+              <AlertTriangle className="h-3 w-3" />
+              <AlertDescription className="text-xs">
+                {criticalEvents.length} critical event(s)
               </AlertDescription>
             </Alert>
           )}
 
           {/* Security Metrics */}
-          <div className="grid grid-cols-2 gap-2">
-            <div className="text-center p-2 bg-muted rounded">
-              <div className="text-lg font-bold">{events.length}</div>
-              <div className="text-xs text-muted-foreground">Total Events</div>
+          <div className="grid grid-cols-2 gap-1">
+            <div className="text-center p-1 bg-muted rounded text-xs">
+              <div className="font-bold">{events.length}</div>
+              <div className="text-[10px] text-muted-foreground">Events</div>
             </div>
-            <div className="text-center p-2 bg-muted rounded">
-              <div className="text-lg font-bold text-destructive">{criticalEvents.length}</div>
-              <div className="text-xs text-muted-foreground">Critical</div>
+            <div className="text-center p-1 bg-muted rounded text-xs">
+              <div className="font-bold text-destructive">{criticalEvents.length}</div>
+              <div className="text-[10px] text-muted-foreground">Critical</div>
             </div>
           </div>
 
           {/* Recent Events */}
           <div>
-            <div className="flex items-center gap-2 mb-2">
-              <Activity className="h-4 w-4" />
-              <span className="font-medium">Recent Events</span>
+            <div className="flex items-center gap-1 mb-1">
+              <Activity className="h-3 w-3" />
+              <span className="text-xs font-medium">Recent Events</span>
             </div>
             
-            <ScrollArea className="h-40">
+            <ScrollArea className="h-24">
               {events.length === 0 ? (
-                <div className="text-center text-muted-foreground py-4">
-                  No security events recorded
+                <div className="text-center text-muted-foreground py-2 text-xs">
+                  No events
                 </div>
               ) : (
-                <div className="space-y-2">
-                  {events.slice(-10).reverse().map((event) => (
-                    <div key={event.id} className="p-2 border rounded text-xs">
-                      <div className="flex items-center justify-between mb-1">
-                        <Badge variant={getSeverityColor(event.severity)} className="text-xs">
+                <div className="space-y-1">
+                  {events.slice(-5).reverse().map((event) => (
+                    <div key={event.id} className="p-1 border rounded text-[10px]">
+                      <div className="flex items-center justify-between">
+                        <Badge variant={getSeverityColor(event.severity)} className="text-[8px] px-1 py-0">
                           {event.severity}
                         </Badge>
-                        <span className="text-muted-foreground">
+                        <span className="text-muted-foreground text-[8px]">
                           {formatTimestamp(event.timestamp)}
                         </span>
                       </div>
-                      <div className="font-medium">{event.type}: {event.event}</div>
+                      <div className="font-medium text-[9px]">{event.type}: {event.event}</div>
                       {event.data && Object.keys(event.data).length > 0 && (
-                        <div className="text-muted-foreground mt-1">
-                          {JSON.stringify(event.data, null, 0).slice(0, 100)}...
+                        <div className="text-muted-foreground text-[8px] mt-0.5">
+                          {JSON.stringify(event.data, null, 0).slice(0, 50)}...
                         </div>
                       )}
                     </div>
@@ -168,23 +169,23 @@ export const SecurityDashboard: React.FC = () => {
           <Separator />
 
           {/* Action Buttons */}
-          <div className="flex gap-2">
+          <div className="flex gap-1">
             <Button
               variant="outline"
               size="sm"
               onClick={handleExport}
-              className="flex-1"
+              className="flex-1 h-6 px-1 text-[10px]"
             >
-              <Download className="h-3 w-3 mr-1" />
+              <Download className="h-2 w-2 mr-0.5" />
               Export
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={handleClear}
-              className="flex-1"
+              className="flex-1 h-6 px-1 text-[10px]"
             >
-              <Trash2 className="h-3 w-3 mr-1" />
+              <Trash2 className="h-2 w-2 mr-0.5" />
               Clear
             </Button>
           </div>
