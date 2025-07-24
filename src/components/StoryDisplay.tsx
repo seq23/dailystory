@@ -590,22 +590,22 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
       }
     }
     
-    // Always generate a custom image for each page based on its specific text
-    if (runwareService && !isGeneratingImage) {
+    // Generate custom image only after story is displayed and if we're actively reading
+    if (runwareService && !isGeneratingImage && isReading) {
       try {
         setIsGeneratingImage(true);
         
-        // Create a highly specific prompt for this exact page content
+        // Create a prompt that directly relates to the story text
         let prompt = createChildFriendlyPrompt(currentText, userInfo, currentParagraph);
         
         // Always include main character details for consistency
         const avatarDescription = getAvatarDescription();
         prompt = prompt.replace('a happy child', avatarDescription);
         
-        // Add page-specific context to make each image unique
-        prompt = `${prompt}, page ${currentParagraph + 1} of the story, showing exactly what happens in this scene: "${currentText.substring(0, 100)}..."`;
+        // Make the prompt more specific to the story content
+        prompt = `${prompt}. Illustration showing: ${currentText.substring(0, 120)}`;
         
-        console.log(`Generating unique image for page ${currentParagraph + 1} with text-specific prompt:`, prompt);
+        console.log(`Generating story-based image for page ${currentParagraph + 1}:`, prompt);
         
         const generatedImage = await runwareService.generateImage({
           positivePrompt: prompt,
@@ -622,7 +622,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
         setIsGeneratingImage(false);
         return generatedImage.imageURL;
       } catch (error) {
-        console.error("Error generating image for page:", error);
+        console.error("Error generating story image:", error);
         setIsGeneratingImage(false);
         // Fall back to category-based selection only if generation fails
       }
@@ -648,77 +648,41 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
     return allIllustrations[safeIndex];
   };
 
-  // Generate automatic illustrations for every other story page
+  // Generate illustrations only after story appears and based on story text
   useEffect(() => {
     const generatePageIllustration = async () => {
+      // Only generate if story is being displayed and reading has started
+      if (!isReading) return;
+      
       const currentText = storyParagraphs[currentParagraph];
       if (!currentText) return;
       
-      // Only generate images for every other page (0, 2, 4, 6, etc.)
-      if (currentParagraph % 2 !== 0) {
-        // For odd pages, use the previous page's illustration or fallback
-        const prevPageKey = `page-${currentParagraph - 1}-${storyParagraphs[currentParagraph - 1]?.substring(0, 50)}`;
-        if (getCachedImage(prevPageKey)) {
-          setCurrentIllustration(getCachedImage(prevPageKey)!);
-          return;
-        }
-        // Fallback to predefined illustrations for odd pages
-        const allIllustrations = [
-          illustration1, illustration2, illustration3, illustration4, illustration5,
-          illustration6, illustration7, illustration8, illustration9, illustration10,
-          illustration11, illustration12, illustration13, illustration14, illustration15,
-          illustration16, illustration17, illustration18, illustration19, illustration20,
-          illustration21, illustration22, illustration23, illustration24, illustration25,
-          illustration26, illustration27, illustration28, illustration29, illustration30,
-          illustration31, illustration32, illustration33, illustration34, illustration35,
-          illustration36, illustration37, illustration38, illustration39, illustration40,
-          illustration41, illustration42, illustration43, illustration44
-        ];
-        const fallbackIndex = currentParagraph % allIllustrations.length;
-        setCurrentIllustration(allIllustrations[fallbackIndex]);
+      const cacheKey = `story-${userInfo.name}-${currentDifficulty}-page-${currentParagraph}-text-${currentText.substring(0, 30).replace(/[^a-zA-Z0-9]/g, '_')}`;
+      
+      // Check if we already have this specific page cached
+      if (getCachedImage(cacheKey)) {
+        setCurrentIllustration(getCachedImage(cacheKey)!);
         return;
       }
       
-      const cacheKey = `page-${currentParagraph}-${currentText.substring(0, 50)}`;
-      
-      // Check if we already have this page cached
-    if (getCachedImage(cacheKey)) {
-      setCurrentIllustration(getCachedImage(cacheKey)!);
-        return;
-      }
-      
-      // Generate new illustration only for even pages
+      // Generate new illustration based on the specific story text
       try {
         setIsGeneratingImage(true);
         
-        // Enhanced prompt that always includes user characteristics
-        let prompt = createChildFriendlyPrompt(currentText, userInfo);
+        // Create prompt directly from the story text to ensure relevance
+        let prompt = createChildFriendlyPrompt(currentText, userInfo, currentParagraph);
         
-        // Double-check that user characteristics are included
-        if (userInfo) {
-          const genderDesc = userInfo.avatar?.type === "boy" ? "boy" : "girl";
-          const skinToneDesc = {
-            pale: "very light skin",
-            light: "light skin", 
-            medium: "medium skin",
-            olive: "olive skin",
-            dark: "dark skin"
-          }[userInfo.avatar?.skinTone] || "medium skin";
-          
-          // Ensure the user's characteristics are prominent in the prompt
-          if (!prompt.includes(userInfo.name) && !prompt.includes(genderDesc)) {
-            prompt = prompt.replace("a happy child", `${userInfo.name}, a ${genderDesc} with ${skinToneDesc}`);
-          }
-        }
+        // Enhance prompt to include specific story context
+        prompt = `${prompt}. This illustration should show exactly what is described in this part of the story: "${currentText.substring(0, 150)}..."`;
         
-        console.log(`Generating personalized illustration for page ${currentParagraph + 1}:`, prompt);
+        console.log(`Generating story-specific illustration for page ${currentParagraph + 1}:`, prompt);
         
         const result = await runwareService.generateImage({
           positivePrompt: prompt,
           model: "runware:100@1",
           width: 768,
           height: 1024,
-          numberResults: 1, // Explicitly set to 1 to avoid multiple images
+          numberResults: 1,
           outputFormat: "WEBP"
         });
         
@@ -727,7 +691,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
           setCurrentIllustration(result.imageURL);
         }
       } catch (error) {
-        console.error("Failed to generate illustration:", error);
+        console.error("Failed to generate story illustration:", error);
         // Fallback to predefined illustrations
         const allIllustrations = [
           illustration1, illustration2, illustration3, illustration4, illustration5,
@@ -747,7 +711,10 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
       }
     };
     
-    generatePageIllustration();
+    // Only start generating after the story display has begun
+    if (isReading && storyParagraphs.length > 0) {
+      generatePageIllustration();
+    }
   }, [currentParagraph, storyParagraphs, userInfo, runwareService]);
 
   // Get current chapter based on story progress
