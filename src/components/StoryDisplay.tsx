@@ -86,6 +86,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
   const [currentDifficulty, setCurrentDifficulty] = useState<DifficultyLevel>(
     userInfo.difficultyLevel || (userInfo.age <= 6 ? "easy" : userInfo.age <= 9 ? "medium" : userInfo.age <= 12 ? "hard" : "expert")
   );
+  const [hasShownDifficultyAlert, setHasShownDifficultyAlert] = useState(false);
   const [currentIllustration, setCurrentIllustration] = useState<string>("");
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [customIllustrations, setCustomIllustrations] = useState<Map<number, string>>(new Map());
@@ -475,6 +476,13 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
     }
   }, [currentParagraph, customIllustrations]);
 
+  // Alert user about difficulty buttons when reaching page 3
+  useEffect(() => {
+    if (currentParagraph === 2 && !hasShownDifficultyAlert) {
+      setHasShownDifficultyAlert(true);
+    }
+  }, [currentParagraph, hasShownDifficultyAlert]);
+
 
   const handleNext = () => {
     if (currentParagraph < totalPages - 1) {
@@ -676,7 +684,11 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                           onClick={handleDifficultyDown}
                           size="sm"
                           variant="outline"
-                          className="rounded-full w-8 h-8 p-0 hover:scale-110 transition-transform"
+                          className={`rounded-full w-8 h-8 p-0 hover:scale-110 transition-transform ${
+                            currentParagraph === 2 && !hasShownDifficultyAlert 
+                              ? 'animate-bounce bg-yellow-100 border-yellow-400' 
+                              : ''
+                          }`}
                           disabled={currentDifficulty === "easy"}
                         >
                           <TrendingDown className="w-4 h-4" />
@@ -693,7 +705,11 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                           onClick={handleDifficultyUp}
                           size="sm"
                           variant="outline"
-                          className="rounded-full w-8 h-8 p-0 hover:scale-110 transition-transform"
+                          className={`rounded-full w-8 h-8 p-0 hover:scale-110 transition-transform ${
+                            currentParagraph === 2 && !hasShownDifficultyAlert 
+                              ? 'animate-bounce bg-yellow-100 border-yellow-400' 
+                              : ''
+                          }`}
                           disabled={currentDifficulty === "expert"}
                         >
                           <TrendingUp className="w-4 h-4" />
