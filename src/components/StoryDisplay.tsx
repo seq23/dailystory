@@ -320,12 +320,26 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
   // Combine base story with any extensions
   const getCompleteStory = (): string[] => {
     const baseStory = generateStory(userInfo, currentDifficulty);
-    let completeStory = [...baseStory];
+    const baseLength = baseStory.length;
     
-    // Add extended content for each 10-minute extension
-    for (let i = 1; i <= storyExtensions; i++) {
+    if (storyExtensions === 0) {
+      return baseStory;
+    }
+    
+    // Calculate target length: (storyExtensions + 1) * baseLength
+    // 1 extension = 2x base, 2 extensions = 3x base, etc.
+    const targetLength = (storyExtensions + 1) * baseLength;
+    const additionalPagesNeeded = targetLength - baseLength;
+    
+    let completeStory = [...baseStory];
+    let addedPages = 0;
+    
+    // Keep adding extension content until we reach target length
+    for (let i = 1; addedPages < additionalPagesNeeded; i++) {
       const extensionContent = generateExtendedContent(userInfo, currentDifficulty, i);
-      completeStory = [...completeStory, ...extensionContent];
+      const pagesToAdd = Math.min(extensionContent.length, additionalPagesNeeded - addedPages);
+      completeStory = [...completeStory, ...extensionContent.slice(0, pagesToAdd)];
+      addedPages += pagesToAdd;
     }
     
     return completeStory;
