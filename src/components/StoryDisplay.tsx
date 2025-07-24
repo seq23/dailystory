@@ -512,14 +512,14 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
     if (currentTime < MAX_SESSION_TIME) {
       const timeToAdd = Math.min(600, MAX_SESSION_TIME - currentTime); // Add up to 10 minutes, but not exceed max
       setTimeRemaining(prev => prev + timeToAdd);
-      
-      // Only generate new story pages if we actually added time
-      if (timeToAdd > 0) {
-        const extensionPages = generateStoryExtension(userInfo, currentDifficulty, storyExtensions);
-        setStory(prev => [...prev, ...extensionPages]);
-        setStoryExtensions(prev => prev + 1);
-      }
     }
+  };
+
+  const handleAddPages = () => {
+    // Generate new story pages without adding time
+    const extensionPages = generateStoryExtension(userInfo, currentDifficulty, storyExtensions);
+    setStory(prev => [...prev, ...extensionPages]);
+    setStoryExtensions(prev => prev + 1);
   };
 
   return (
@@ -750,6 +750,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
         isReading={isReading}
         onToggleReading={() => setIsReading(!isReading)}
         onAddTime={handleAddTime}
+        onAddPages={handleAddPages}
         pagesRemaining={totalPages - currentParagraph - 1}
       />
     </div>
