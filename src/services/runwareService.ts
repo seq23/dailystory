@@ -183,9 +183,35 @@ export const createChildFriendlyPrompt = (storyText: string, userInfo?: any): st
   
   // Analyze the story text more comprehensively
   
-  // Character detection based purely on story content
+  // Character detection based on story content
   if (userInfo?.favoriteAnimal && lowerText.includes(userInfo.favoriteAnimal.toLowerCase())) {
     characters.push(`friendly ${userInfo.favoriteAnimal.toLowerCase()}`);
+  }
+  
+  // Check if the main character (user) is mentioned in this part of the story
+  const characterMentions = [
+    userInfo?.name?.toLowerCase(),
+    'main character',
+    'protagonist',
+    'hero'
+  ].filter(Boolean);
+  
+  const mentionsMainCharacter = characterMentions.some(mention => 
+    lowerText.includes(mention)
+  );
+  
+  // If main character is mentioned, add them with correct skin tone
+  if (mentionsMainCharacter && userInfo) {
+    const genderDesc = userInfo.avatar?.type === "boy" ? "young boy" : "young girl";
+    const skinToneDesc = {
+      pale: "very light skin",
+      light: "light skin", 
+      medium: "medium skin",
+      olive: "olive skin",
+      dark: "dark skin"
+    }[userInfo.avatar?.skinTone] || "medium skin";
+    
+    characters.push(`${genderDesc} with ${skinToneDesc}`);
   }
   
   // Detect other characters
