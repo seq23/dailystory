@@ -189,16 +189,6 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="avatar" className="text-lg font-semibold text-foreground">
-                  Which avatar do you want?
-                </Label>
-                <AvatarPicker
-                  value={formData.avatar}
-                  onChange={(avatar) => setFormData(prev => ({ ...prev, avatar }))}
-                />
-              </div>
-
-              <div className="space-y-2">
                 <Label htmlFor="readingAbility" className="text-lg font-semibold text-foreground">
                   What reading level feels right for you?
                 </Label>
@@ -233,6 +223,16 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                     </SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="avatar" className="text-lg font-semibold text-foreground">
+                  Which avatar do you want?
+                </Label>
+                <AvatarPicker
+                  value={formData.avatar}
+                  onChange={(avatar) => setFormData(prev => ({ ...prev, avatar }))}
+                />
               </div>
             </div>
           </div>
