@@ -230,7 +230,7 @@ export const FloatingTimer = ({
             
             {/* Custom Tooltip for Add Time */}
             {(showPlusTooltip || shouldShakeTooltip) && (
-              <div className={`absolute bottom-full mb-3 left-1/2 transform -translate-x-1/2 z-60 ${shouldShakeTooltip ? 'animate-bounce' : ''}`}>
+              <div className={`absolute bottom-full mb-3 right-0 z-60 ${shouldShakeTooltip ? 'animate-bounce' : ''}`}>
                 <div className={`bg-green-500 text-white px-4 py-2 rounded-2xl text-lg font-bold shadow-lg border-2 border-green-300 relative whitespace-nowrap ${shouldShakeTooltip ? 'animate-pulse' : ''}`}>
                   ➕ Add 10 minutes & pages!
                   <div className="text-sm font-normal mt-1">(Max 40 min total)</div>
@@ -240,7 +240,7 @@ export const FloatingTimer = ({
                     </div>
                   )}
                   {/* Bubble tail */}
-                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-green-500"></div>
+                  <div className="absolute top-full right-6 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-green-500"></div>
                 </div>
               </div>
             )}
