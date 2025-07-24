@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { getPhoneticSpelling } from "@/utils/phoneticDictionary";
 import { Volume2, HelpCircle } from "lucide-react";
 import { ElevenLabsService, getWordDefinition } from "@/services/textToSpeechService";
@@ -13,7 +13,22 @@ interface InteractiveWordProps {
 export const InteractiveWord = ({ word, className = "", difficulty = "easy", elevenLabsService }: InteractiveWordProps) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const phoneticSpelling = getPhoneticSpelling(word);
+
+  const handleMouseEnter = () => {
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current);
+      hideTimeoutRef.current = null;
+    }
+    setShowTooltip(true);
+  };
+
+  const handleMouseLeave = () => {
+    hideTimeoutRef.current = setTimeout(() => {
+      setShowTooltip(false);
+    }, 200); // 200ms delay before hiding
+  };
 
   const handlePronounce = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -87,25 +102,29 @@ export const InteractiveWord = ({ word, className = "", difficulty = "easy", ele
   return (
     <span
       className={`relative inline-block cursor-pointer ${className} ${isPlaying ? 'opacity-70' : ''}`}
-      onMouseEnter={() => setShowTooltip(true)}
-      onMouseLeave={() => setShowTooltip(false)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <span className="underline decoration-primary/30 decoration-dotted hover:decoration-primary/60 transition-colors">
         {word}
       </span>
       
       {showTooltip && (
-        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 z-50">
-          <div className="bg-primary text-primary-foreground px-3 py-2 rounded-lg shadow-lg text-sm font-medium whitespace-nowrap">
+        <div 
+          className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 z-50"
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          <div className="bg-popover border text-popover-foreground px-3 py-2 rounded-lg shadow-lg text-sm font-medium whitespace-nowrap">
             <div className="flex items-center gap-2 mb-2">
               {phoneticSpelling && (
-                <span className="text-xs">"{phoneticSpelling}"</span>
+                <span className="text-xs text-muted-foreground">"{phoneticSpelling}"</span>
               )}
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={handlePronounce}
-                className="flex items-center gap-1 text-xs bg-primary-foreground/20 hover:bg-primary-foreground/30 px-2 py-1 rounded transition-colors"
+                className="flex items-center gap-1 text-xs bg-secondary hover:bg-secondary/80 px-2 py-1 rounded transition-colors"
                 disabled={isPlaying}
               >
                 <Volume2 className="w-3 h-3" />
@@ -113,7 +132,7 @@ export const InteractiveWord = ({ word, className = "", difficulty = "easy", ele
               </button>
               <button
                 onClick={handleExplain}
-                className="flex items-center gap-1 text-xs bg-primary-foreground/20 hover:bg-primary-foreground/30 px-2 py-1 rounded transition-colors"
+                className="flex items-center gap-1 text-xs bg-secondary hover:bg-secondary/80 px-2 py-1 rounded transition-colors"
                 disabled={isPlaying}
               >
                 <HelpCircle className="w-3 h-3" />
@@ -122,7 +141,7 @@ export const InteractiveWord = ({ word, className = "", difficulty = "easy", ele
             </div>
           </div>
           {/* Arrow pointing down */}
-          <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-primary"></div>
+          <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-border"></div>
         </div>
       )}
     </span>
