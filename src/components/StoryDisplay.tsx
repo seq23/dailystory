@@ -115,8 +115,13 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
     return avatarImages[userInfo.avatar.type]?.[userInfo.avatar.skinTone] || avatarBoyLight;
   };
 
-  const getAvatarDescription = () => {
+  const getAvatarDescription = (includeAppearance = false) => {
     const genderDesc = userInfo.avatar.type === "boy" ? "young boy" : "young girl";
+    
+    if (!includeAppearance) {
+      return `a ${genderDesc}`;
+    }
+    
     const skinToneDesc = {
       pale: "very light skin",
       light: "light skin", 
