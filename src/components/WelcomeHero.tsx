@@ -82,6 +82,27 @@ export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
             Safe, fun, and educational stories for kids of all ages
           </p>
         </div>
+
+        {/* Footer with Company Information */}
+        <footer className="absolute bottom-0 left-0 right-0 bg-black/20 backdrop-blur-sm border-t border-white/10 py-6">
+          <div className="container mx-auto px-6">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-white/70 text-sm">
+              <div className="flex flex-col items-center md:items-start">
+                <div className="font-semibold text-white/90 mb-1">Time 2 Read LLC</div>
+                <div className="text-xs">Creating magical reading experiences for children</div>
+              </div>
+              
+              <div className="flex flex-col md:flex-row items-center gap-4 text-xs">
+                <div>© {new Date().getFullYear()} Time 2 Read LLC. All rights reserved.</div>
+                <div className="flex gap-4">
+                  <button className="hover:text-white/90 transition-colors">Privacy Policy</button>
+                  <button className="hover:text-white/90 transition-colors">Terms of Service</button>
+                  <button className="hover:text-white/90 transition-colors">Contact Us</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </footer>
       </div>
     </div>
   );
