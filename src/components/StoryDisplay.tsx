@@ -62,7 +62,10 @@ import avatarGirlOlive from "@/assets/avatar-girl-olive.jpg";
 import avatarGirlDark from "@/assets/avatar-girl-dark.jpg";
 import { FloatingTimer } from "./FloatingTimer";
 import { processTextForPhonetics } from "@/utils/textProcessor";
-import { RunwareService, generatedImageCache, createChildFriendlyPrompt } from "@/services/runwareService";
+import { SecureRunwareService, secureImageCache, cacheImage, getCachedImage } from "@/services/secureRunwareService";
+import { SecurityValidator } from "@/utils/securityValidation";
+import { SecurityMonitor } from "@/utils/monitoring";
+import { createChildFriendlyPrompt } from "@/services/runwareService";
 
 type DifficultyLevel = "easy" | "medium" | "hard" | "expert";
 
@@ -82,7 +85,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
   );
   const [currentIllustration, setCurrentIllustration] = useState<string>("");
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
-  const [runwareService] = useState<RunwareService>(() => new RunwareService("LRRGqlrg67zH8uss6lMjVvc54pVOrznM"));
+  const [runwareService] = useState<SecureRunwareService>(() => new SecureRunwareService("LRRGqlrg67zH8uss6lMjVvc54pVOrznM"));
 
   // Get user's avatar image
   const getUserAvatar = () => {
@@ -439,8 +442,8 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
     
     // Check if we have a cached generated image for this story text
     const cacheKey = currentText.substring(0, 100); // Use first 100 chars as cache key
-    if (generatedImageCache.has(cacheKey)) {
-      return generatedImageCache.get(cacheKey)!;
+    if (getCachedImage(cacheKey)) {
+      return getCachedImage(cacheKey)!;
     }
     
     // Check if the story mentions the main character - use their avatar
@@ -570,7 +573,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
         });
         
         // Cache the generated image
-        generatedImageCache.set(cacheKey, generatedImage.imageURL);
+        cacheImage(cacheKey, generatedImage.imageURL);
         setCurrentIllustration(generatedImage.imageURL);
         setIsGeneratingImage(false);
         return generatedImage.imageURL;
@@ -610,8 +613,8 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
       if (currentParagraph % 2 !== 0) {
         // For odd pages, use the previous page's illustration or fallback
         const prevPageKey = `page-${currentParagraph - 1}-${storyParagraphs[currentParagraph - 1]?.substring(0, 50)}`;
-        if (generatedImageCache.has(prevPageKey)) {
-          setCurrentIllustration(generatedImageCache.get(prevPageKey)!);
+        if (getCachedImage(prevPageKey)) {
+          setCurrentIllustration(getCachedImage(prevPageKey)!);
           return;
         }
         // Fallback to predefined illustrations for odd pages
@@ -634,8 +637,8 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
       const cacheKey = `page-${currentParagraph}-${currentText.substring(0, 50)}`;
       
       // Check if we already have this page cached
-      if (generatedImageCache.has(cacheKey)) {
-        setCurrentIllustration(generatedImageCache.get(cacheKey)!);
+    if (getCachedImage(cacheKey)) {
+      setCurrentIllustration(getCachedImage(cacheKey)!);
         return;
       }
       
@@ -655,7 +658,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
         });
         
         if (result.imageURL) {
-          generatedImageCache.set(cacheKey, result.imageURL);
+          cacheImage(cacheKey, result.imageURL);
           setCurrentIllustration(result.imageURL);
         }
       } catch (error) {

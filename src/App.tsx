@@ -7,11 +7,13 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { SecurityBoundary } from "@/components/SecurityBoundary";
 import { useSecurityHeaders } from "@/hooks/useSecurityHeaders";
+import { useSecurityMonitoring } from "@/hooks/useSecurityMonitoring";
 
 const queryClient = new QueryClient();
 
 const AppContent = () => {
   useSecurityHeaders();
+  const securityMonitoring = useSecurityMonitoring();
   
   return (
     <QueryClientProvider client={queryClient}>
