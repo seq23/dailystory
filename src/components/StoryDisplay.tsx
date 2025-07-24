@@ -479,7 +479,10 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
   // Alert user about difficulty buttons when reaching page 3
   useEffect(() => {
     if (currentParagraph === 2 && !hasShownDifficultyAlert) {
-      setHasShownDifficultyAlert(true);
+      // Show animation for 3 seconds, then mark as shown
+      setTimeout(() => {
+        setHasShownDifficultyAlert(true);
+      }, 3000);
     }
   }, [currentParagraph, hasShownDifficultyAlert]);
 
