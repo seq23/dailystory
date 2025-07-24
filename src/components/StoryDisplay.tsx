@@ -549,7 +549,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
         setIsGeneratingImage(true);
         
         // Create character-aware prompt that includes avatar characteristics
-        let prompt = createChildFriendlyPrompt(currentText);
+        let prompt = createChildFriendlyPrompt(currentText, userInfo);
         
         // If story mentions main character, enhance prompt with avatar details
         if (mentionsCharacter) {
@@ -558,7 +558,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
           prompt = `${prompt}, featuring ${avatarDescription} as the main character`;
         }
         
-        console.log("Auto-generating image with character-aware prompt:", prompt);
+        console.log("Auto-generating image with enhanced story-aware prompt:", prompt);
         
         const generatedImage = await runwareService.generateImage({
           positivePrompt: prompt,

@@ -171,73 +171,170 @@ export class RunwareService {
 export const generatedImageCache = new Map<string, string>();
 
 // Function to generate child-friendly illustration prompts
-export const createChildFriendlyPrompt = (storyText: string): string => {
+export const createChildFriendlyPrompt = (storyText: string, userInfo?: any): string => {
   const lowerText = storyText.toLowerCase();
   
-  // Extract key elements from the story
-  const elements = {
-    characters: [] as string[],
-    settings: [] as string[],
-    objects: [] as string[],
-    emotions: [] as string[]
+  // Extract the main action/scene from the story
+  let mainScene = "";
+  let characters = [];
+  let setting = "";
+  let objects = [];
+  let mood = "happy and cheerful";
+  
+  // Analyze the story text more comprehensively
+  
+  // Character detection (prioritize user's info if available)
+  if (userInfo) {
+    const characterDesc = `${userInfo.avatar.type === "boy" ? "young boy" : "young girl"} with ${userInfo.avatar.skinTone} skin`;
+    if (lowerText.includes(userInfo.name.toLowerCase()) || lowerText.includes("i ") || lowerText.includes("me ")) {
+      characters.push(characterDesc);
+    }
+    
+    // Include user's favorite animal if mentioned
+    if (userInfo.favoriteAnimal && lowerText.includes(userInfo.favoriteAnimal.toLowerCase())) {
+      characters.push(`friendly ${userInfo.favoriteAnimal.toLowerCase()}`);
+    }
+  }
+  
+  // Detect other characters
+  const animalKeywords = {
+    'cat': 'cute cat', 'dog': 'happy dog', 'bird': 'colorful bird', 'rabbit': 'fluffy rabbit',
+    'bear': 'friendly bear', 'lion': 'majestic lion', 'elephant': 'gentle elephant', 
+    'horse': 'beautiful horse', 'fish': 'bright fish', 'butterfly': 'colorful butterfly',
+    'dragon': 'friendly dragon', 'unicorn': 'magical unicorn'
   };
-
-  // Character detection
-  if (lowerText.includes('child') || lowerText.includes('kid')) elements.characters.push('happy child');
-  if (lowerText.includes('animal')) elements.characters.push('friendly animal');
-  if (lowerText.includes('cat')) elements.characters.push('cute cat');
-  if (lowerText.includes('dog')) elements.characters.push('happy dog');
-  if (lowerText.includes('bird')) elements.characters.push('colorful bird');
-  if (lowerText.includes('rabbit')) elements.characters.push('fluffy rabbit');
-  if (lowerText.includes('bear')) elements.characters.push('teddy bear');
-
-  // Setting detection
-  if (lowerText.includes('forest') || lowerText.includes('trees')) elements.settings.push('magical forest');
-  if (lowerText.includes('castle') || lowerText.includes('kingdom')) elements.settings.push('fairy tale castle');
-  if (lowerText.includes('garden')) elements.settings.push('beautiful garden');
-  if (lowerText.includes('beach') || lowerText.includes('ocean')) elements.settings.push('sunny beach');
-  if (lowerText.includes('mountain')) elements.settings.push('colorful mountains');
-  if (lowerText.includes('school')) elements.settings.push('cheerful classroom');
-  if (lowerText.includes('home') || lowerText.includes('house')) elements.settings.push('cozy home');
-
+  
+  Object.entries(animalKeywords).forEach(([keyword, description]) => {
+    if (lowerText.includes(keyword)) {
+      characters.push(description);
+    }
+  });
+  
+  // Setting detection with more context
+  const settingKeywords = {
+    'forest': 'magical forest with tall trees',
+    'castle': 'beautiful fairy tale castle',
+    'garden': 'colorful flower garden',
+    'beach': 'sunny beach with gentle waves',
+    'mountain': 'scenic mountains with green hills',
+    'school': 'bright cheerful classroom',
+    'home': 'cozy comfortable home',
+    'park': 'beautiful park with green grass',
+    'library': 'warm library filled with books',
+    'kitchen': 'bright kitchen',
+    'bedroom': 'cozy bedroom',
+    'playground': 'fun playground',
+    'farm': 'peaceful farm with animals',
+    'city': 'friendly neighborhood',
+    'space': 'colorful outer space with stars'
+  };
+  
+  Object.entries(settingKeywords).forEach(([keyword, description]) => {
+    if (lowerText.includes(keyword)) {
+      setting = description;
+      return;
+    }
+  });
+  
+  // Action detection for main scene
+  const actionKeywords = {
+    'walking': 'walking through',
+    'running': 'running happily',
+    'playing': 'playing together',
+    'eating': 'enjoying a meal',
+    'reading': 'reading a book',
+    'sleeping': 'peacefully sleeping',
+    'dancing': 'dancing joyfully',
+    'singing': 'singing happily',
+    'helping': 'helping each other',
+    'learning': 'discovering something new',
+    'exploring': 'exploring together',
+    'flying': 'flying through the air',
+    'swimming': 'swimming in water',
+    'climbing': 'climbing safely',
+    'building': 'building something creative',
+    'painting': 'creating beautiful art',
+    'cooking': 'cooking together',
+    'laughing': 'laughing and having fun'
+  };
+  
+  Object.entries(actionKeywords).forEach(([keyword, description]) => {
+    if (lowerText.includes(keyword)) {
+      mainScene = description;
+      return;
+    }
+  });
+  
   // Object detection
-  if (lowerText.includes('book')) elements.objects.push('magical book');
-  if (lowerText.includes('toy')) elements.objects.push('colorful toys');
-  if (lowerText.includes('ball')) elements.objects.push('bouncing ball');
-  if (lowerText.includes('flower')) elements.objects.push('beautiful flowers');
-  if (lowerText.includes('rainbow')) elements.objects.push('bright rainbow');
-  if (lowerText.includes('star')) elements.objects.push('twinkling stars');
-
-  // Emotion detection
-  if (lowerText.includes('happy') || lowerText.includes('joy')) elements.emotions.push('joyful');
-  if (lowerText.includes('adventure')) elements.emotions.push('adventurous');
-  if (lowerText.includes('magic')) elements.emotions.push('magical');
-  if (lowerText.includes('friend')) elements.emotions.push('friendly');
-
-  // Build prompt
+  const objectKeywords = {
+    'book': 'magical storybook', 'toy': 'colorful toys', 'ball': 'bouncing ball',
+    'flower': 'beautiful flowers', 'tree': 'tall friendly trees', 'house': 'cozy house',
+    'car': 'bright car', 'bike': 'fun bicycle', 'boat': 'cheerful boat',
+    'plane': 'friendly airplane', 'train': 'colorful train', 'cake': 'delicious cake',
+    'cookie': 'sweet cookies', 'ice cream': 'yummy ice cream', 'pizza': 'tasty pizza',
+    'rainbow': 'bright rainbow', 'star': 'twinkling stars', 'sun': 'warm sunshine',
+    'moon': 'gentle moonlight', 'cloud': 'fluffy white clouds'
+  };
+  
+  Object.entries(objectKeywords).forEach(([keyword, description]) => {
+    if (lowerText.includes(keyword)) {
+      objects.push(description);
+    }
+  });
+  
+  // Mood detection
+  const moodKeywords = {
+    'happy': 'joyful and cheerful',
+    'excited': 'excited and energetic',
+    'peaceful': 'calm and peaceful',
+    'magical': 'magical and wonderful',
+    'adventurous': 'adventurous and brave',
+    'funny': 'fun and silly',
+    'sleepy': 'cozy and sleepy',
+    'surprised': 'surprised and amazed'
+  };
+  
+  Object.entries(moodKeywords).forEach(([keyword, description]) => {
+    if (lowerText.includes(keyword)) {
+      mood = description;
+      return;
+    }
+  });
+  
+  // Build comprehensive prompt
   let prompt = "A beautiful children's book illustration showing ";
   
-  if (elements.characters.length > 0) {
-    prompt += elements.characters.slice(0, 2).join(' and ') + ' ';
+  // Add characters
+  if (characters.length > 0) {
+    prompt += characters.slice(0, 2).join(' and ') + " ";
   } else {
-    prompt += 'a happy child ';
+    prompt += "a happy child ";
   }
-
-  if (elements.settings.length > 0) {
-    prompt += 'in a ' + elements.settings[0] + ' ';
+  
+  // Add main action/scene
+  if (mainScene) {
+    prompt += mainScene + " ";
+  }
+  
+  // Add setting
+  if (setting) {
+    prompt += "in " + setting + " ";
   } else {
-    prompt += 'in a magical place ';
+    prompt += "in a magical, safe place ";
   }
-
-  if (elements.objects.length > 0) {
-    prompt += 'with ' + elements.objects.slice(0, 2).join(' and ') + ' ';
+  
+  // Add objects if present
+  if (objects.length > 0) {
+    prompt += "with " + objects.slice(0, 2).join(' and ') + " ";
   }
-
-  if (elements.emotions.length > 0) {
-    prompt += 'with a ' + elements.emotions[0] + ' atmosphere ';
+  
+  // Add user's favorite color if available
+  if (userInfo?.favoriteColor) {
+    prompt += `featuring beautiful ${userInfo.favoriteColor.toLowerCase()} colors `;
   }
-
-  prompt += ', soft pastel colors, child-friendly art style, storybook illustration, warm lighting, safe and wholesome content';
-
+  
+  // Add mood and style
+  prompt += `with a ${mood} atmosphere, soft pastel colors, child-friendly art style, storybook illustration, warm lighting, safe and wholesome content, high quality digital art`;
+  
   return prompt;
 };
