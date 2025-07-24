@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Input } from "@/components/ui/input";
 import { BookOpen, Home, RotateCcw, Volume2, VolumeX, TrendingUp, TrendingDown, Plus } from "lucide-react";
 import type { UserInfo } from "./UserInfoForm";
 import ancientBookBg from "@/assets/ancient-book-bg.jpg";
@@ -83,16 +82,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
   );
   const [currentIllustration, setCurrentIllustration] = useState<string>("");
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
-  const [apiKey, setApiKey] = useState<string>(() => localStorage.getItem('runware-api-key') || '');
-  const [runwareService, setRunwareService] = useState<RunwareService | null>(null);
-
-  // Initialize Runware service when API key is available
-  useEffect(() => {
-    if (apiKey) {
-      setRunwareService(new RunwareService(apiKey));
-      localStorage.setItem('runware-api-key', apiKey);
-    }
-  }, [apiKey]);
+  const [runwareService] = useState<RunwareService>(() => new RunwareService("LRRGqlrg67zH8uss6lMjVvc54pVOrznM"));
 
   // Get user's avatar image
   const getUserAvatar = () => {
@@ -710,45 +700,6 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
           </div>
         </div>
 
-        {/* API Key Input - only show if no API key is set */}
-        {!apiKey && (
-          <div className="mx-auto max-w-4xl mb-8 p-6 bg-amber-50/90 border-2 border-amber-300 rounded-xl backdrop-blur-sm">
-            <h3 className="text-lg font-semibold text-amber-800 mb-4">
-              🎨 Enable Custom Illustrations
-            </h3>
-            <p className="text-amber-700 mb-4">
-              To generate custom illustrations for your story, please enter your Runware API key. 
-              You can get one free at <a href="https://runware.ai" target="_blank" rel="noopener noreferrer" className="underline text-amber-800 font-semibold">runware.ai</a>
-            </p>
-            <div className="flex gap-2">
-              <input
-                type="password"
-                placeholder="Enter your Runware API key"
-                className="flex-1 px-4 py-2 border border-amber-300 rounded-lg bg-white/80 text-amber-900 placeholder-amber-500"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    setApiKey((e.target as HTMLInputElement).value);
-                  }
-                }}
-              />
-              <Button 
-                onClick={() => {
-                  const input = document.querySelector('input[type="password"]') as HTMLInputElement;
-                  if (input?.value) {
-                    setApiKey(input.value);
-                  }
-                }}
-                className="bg-amber-600 hover:bg-amber-700 text-white"
-              >
-                Save
-              </Button>
-            </div>
-            <p className="text-xs text-amber-600 mt-2">
-              Your API key will be stored locally in your browser for this session.
-            </p>
-          </div>
-        )}
-
         {/* Story content positioned on book pages */}
         <div className="flex-1 flex items-center justify-center p-8">
           <div className="w-full max-w-5xl mx-auto">
@@ -794,14 +745,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                   
                   {/* The Illustration */}
                   <div className="relative overflow-hidden rounded-2xl border-3 border-amber-300">
-                     {!apiKey && (
-                       <div className="absolute inset-0 bg-amber-100/80 flex items-center justify-center z-10">
-                         <div className="text-center p-4">
-                           <p className="text-amber-800 font-medium">Add your Runware API key above to enable custom illustrations</p>
-                         </div>
-                       </div>
-                     )}
-                     {isGeneratingImage && apiKey && (
+                    {isGeneratingImage && (
                       <div className="absolute inset-0 bg-amber-100/80 flex items-center justify-center z-10">
                         <div className="text-center">
                           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto mb-4"></div>
