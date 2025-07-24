@@ -80,8 +80,8 @@ export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
                         alt="Black girl reading on tablet in car" 
                         className="w-full h-80 md:h-96 object-cover rounded-3xl shadow-glow border-4 border-white/20"
                       />
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent rounded-b-3xl p-6">
-                        <p className="text-white font-semibold text-lg md:text-xl">
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent rounded-b-3xl p-4">
+                        <p className="text-white font-inter font-medium text-sm md:text-base">
                           Time 2 Read can be used as a magical summer reading assistant on road trips!
                         </p>
                       </div>
@@ -95,8 +95,8 @@ export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
                         alt="Asian boy reading on laptop at home" 
                         className="w-full h-80 md:h-96 object-cover rounded-3xl shadow-glow border-4 border-white/20"
                       />
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent rounded-b-3xl p-6">
-                        <p className="text-white font-semibold text-lg md:text-xl">
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent rounded-b-3xl p-4">
+                        <p className="text-white font-inter font-medium text-sm md:text-base">
                           Perfect for after-school reading time - make homework fun and engaging!
                         </p>
                       </div>
@@ -110,8 +110,8 @@ export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
                         alt="Hispanic girl reading on phone in park" 
                         className="w-full h-80 md:h-96 object-cover rounded-3xl shadow-glow border-4 border-white/20"
                       />
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent rounded-b-3xl p-6">
-                        <p className="text-white font-semibold text-lg md:text-xl">
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent rounded-b-3xl p-4">
+                        <p className="text-white font-inter font-medium text-sm md:text-base">
                           Take your stories anywhere - from playground breaks to family picnics!
                         </p>
                       </div>
@@ -125,8 +125,8 @@ export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
                         alt="White boy reading on tablet in library" 
                         className="w-full h-80 md:h-96 object-cover rounded-3xl shadow-glow border-4 border-white/20"
                       />
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent rounded-b-3xl p-6">
-                        <p className="text-white font-semibold text-lg md:text-xl">
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent rounded-b-3xl p-4">
+                        <p className="text-white font-inter font-medium text-sm md:text-base">
                           Enhance library visits with interactive digital stories that inspire reading!
                         </p>
                       </div>
