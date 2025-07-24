@@ -67,7 +67,7 @@ export const ColorPicker = React.forwardRef<
               className="h-6 w-6 rounded-full border-2 border-gray-300"
               style={{ backgroundColor: color }}
             />
-            <span>{colorName || "Select color"}</span>
+            <span>{colorName || "Pull down to select color"}</span>
           </div>
         </Button>
       </PopoverTrigger>
