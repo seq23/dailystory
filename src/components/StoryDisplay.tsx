@@ -81,6 +81,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
   const [isReading, setIsReading] = useState(true);
   const [timeRemaining, setTimeRemaining] = useState(10 * 60);
   const [storyExtensions, setStoryExtensions] = useState(0);
+  const [story, setStory] = useState<string[]>([]);
   const [currentDifficulty, setCurrentDifficulty] = useState<DifficultyLevel>(
     userInfo.difficultyLevel || (userInfo.age <= 6 ? "easy" : userInfo.age <= 9 ? "medium" : userInfo.age <= 12 ? "hard" : "expert")
   );
@@ -125,7 +126,58 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
     return `a happy ${genderDesc} with ${skinToneDesc}`;
   };
 
-  const generateStory = (info: UserInfo, difficulty: DifficultyLevel): string[] => {
+  const generateStoryExtension = (info: UserInfo, difficulty: DifficultyLevel, extensionNumber: number): string[] => {
+    const avatarDesc = getAvatarDescription();
+    const hobbies = info.hobbies;
+    
+    const extensionStories = [
+      // Extension 1
+      [
+        `${info.name} discovered a hidden portal that led to an even more magical realm. This new world was filled with floating islands and creatures made of starlight who needed ${info.name}'s help.`,
+        `In this celestial realm, ${info.name} learned to harness the power of the stars themselves. Each constellation told a different story, and ${info.name} could bring these stories to life through their connection to ${hobbies}.`,
+        `A wise star-spirit approached ${info.name} and explained that the balance between all magical worlds was in danger. Only someone with a pure heart and deep love for ${hobbies} could restore harmony.`,
+        `${info.name} embarked on a quest through the cosmic realm, solving stellar puzzles and helping star-creatures overcome their challenges. Each good deed made ${info.name}'s inner light shine brighter.`,
+        `With their dragon companion by their side, ${info.name} faced trials that tested not just their magical abilities, but their kindness, wisdom, and determination to help others.`
+      ],
+      // Extension 2
+      [
+        `${info.name} and their dragon friend discovered an ancient library floating among the clouds, where books contained living stories that could teach amazing lessons about ${hobbies}.`,
+        `The librarian, a gentle phoenix, revealed that some stories had lost their way and needed ${info.name}'s help to find their proper endings. Each rescued story would grant ${info.name} new wisdom.`,
+        `As ${info.name} ventured deeper into the library, they found books that responded to their love of ${hobbies}, revealing secrets about courage, friendship, and the magic of believing in oneself.`,
+        `${info.name} helped reunite separated story characters, solved riddles written in languages of light, and discovered that every act of kindness created new chapters in the great book of life.`,
+        `The phoenix gifted ${info.name} a special bookmark that would always guide them back to any story they wished to revisit, ensuring their adventures could continue forever.`
+      ],
+      // Extension 3  
+      [
+        `${info.name} was invited to join the Council of Young Heroes, where children from all magical realms gathered to share their adventures and learn from each other's experiences with ${hobbies}.`,
+        `At the council, ${info.name} met other brave children who had overcome incredible challenges. Together, they planned missions to help magical creatures throughout all the connected realms.`,
+        `${info.name} led a team on a mission to restore color to a realm that had lost its vibrancy. Using their knowledge of ${hobbies} and their team's combined skills, they painted rainbows across the sky.`,
+        `The grateful inhabitants of the colorless realm taught ${info.name} ancient songs that could heal hearts and bring joy to anyone who heard them. These melodies became ${info.name}'s most treasured gift.`,
+        `${info.name} returned home with new friends from across the magical multiverse, knowing that their adventures had taught them the most important lesson: that sharing joy makes it multiply infinitely.`
+      ]
+    ];
+    
+    const selectedExtension = extensionStories[extensionNumber % extensionStories.length];
+    
+    const difficultySettings = {
+      easy: { words: 50 },
+      medium: { words: 80 },
+      hard: { words: 120 },
+      expert: { words: 150 }
+    };
+    
+    const settings = difficultySettings[difficulty];
+    
+    return selectedExtension.map(paragraph => {
+      const words = paragraph.split(' ');
+      if (words.length > settings.words) {
+        return words.slice(0, settings.words).join(' ') + '...';
+      }
+      return paragraph;
+    });
+  };
+
+  const generateInitialStory = (info: UserInfo, difficulty: DifficultyLevel): string[] => {
     const avatarDesc = getAvatarDescription();
     const hobbies = info.hobbies;
     
@@ -177,13 +229,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
       
       `${info.name} and their dragon friend discovered a beautiful castle where a celebration was taking place. All the magical creatures they had helped were there, cheering for ${info.name} and celebrating their heroic deeds.`,
       
-      `At the celebration, ${info.name} was honored as a true hero of the magical realm. They received a special gift that would always remind them of their adventure and the friends they had made along the way.`,
-      
-      `When it was time to return home, ${info.name} felt sad to leave but excited to share their story. The magical guide promised that ${info.name} could return anytime they believed in the power of imagination and kindness.`,
-      
-      `Back in their own world, ${info.name} looked at their special gift and smiled. They knew that the real magic had been inside them all along - their curiosity about ${hobbies}, their brave heart, and their caring spirit.`,
-      
-      `From that day forward, ${info.name} approached every day as a new adventure. Whether exploring ${hobbies} or helping friends, they remembered the lessons learned in the magical world and lived happily ever after.`
+      `At the celebration, ${info.name} was honored as a true hero of the magical realm. They received a special gift that would always remind them of their adventure and the friends they had made along the way.`
     ];
 
     return baseStory.map(paragraph => {
@@ -195,7 +241,12 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
     });
   };
 
-  const story = generateStory(userInfo, currentDifficulty);
+  // Initialize story with useEffect to avoid conflicts
+  useEffect(() => {
+    const initialStory = generateInitialStory(userInfo, currentDifficulty);
+    setStory(initialStory);
+  }, [userInfo, currentDifficulty]);
+
   const totalPages = story.length;
   const currentStory = story[currentParagraph] || "Loading your magical story...";
 
@@ -274,7 +325,9 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
   };
 
   const handleAddTime = () => {
-    setTimeRemaining(prev => prev + 300);
+    setTimeRemaining(prev => prev + 600); // Add 10 minutes (600 seconds)
+    const extensionPages = generateStoryExtension(userInfo, currentDifficulty, storyExtensions);
+    setStory(prev => [...prev, ...extensionPages]);
     setStoryExtensions(prev => prev + 1);
   };
 
@@ -454,7 +507,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                       userInfo.age <= 9 ? 'text-xl' : 
                       'text-lg'
                     }`}>
-                      {processTextForPhonetics(currentStory, elevenLabsService, currentDifficulty)}
+                      {processTextForPhonetics(currentStory, "", currentDifficulty, elevenLabsService)}
                     </p>
                   </div>
                 </div>
