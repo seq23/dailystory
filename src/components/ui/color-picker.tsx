@@ -63,11 +63,13 @@ export const ColorPicker = React.forwardRef<
           )}
         >
           <div className="flex items-center gap-3">
-            <div
-              className="h-6 w-6 rounded-full border-2 border-gray-300"
-              style={{ backgroundColor: color }}
-            />
-            <span>{colorName || "Pull down to select color"}</span>
+            {color && (
+              <div
+                className="h-6 w-6 rounded-full border-2 border-gray-300"
+                style={{ backgroundColor: color }}
+              />
+            )}
+            <span>{color ? colorName : "Pull down to select color"}</span>
           </div>
         </Button>
       </PopoverTrigger>

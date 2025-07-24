@@ -33,7 +33,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
     age: 6,
     grade: "",
     gender: "",
-    favoriteColor: "#3b82f6",
+    favoriteColor: "",
     favoriteAnimal: "",
     hobbies: "",
     favoriteFood: "",
