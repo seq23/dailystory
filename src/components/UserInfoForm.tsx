@@ -97,12 +97,8 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
            formData.age && 
            formData.grade && 
            formData.avatar.type &&
-           formData.avatar.skinTone &&
-           formData.favoriteColor && 
-           formData.favoriteAnimal && 
-           formData.hobbies && 
-           formData.favoriteFood;
-    // specialRequest is optional, so not included in validation
+           formData.avatar.skinTone;
+    // favoriteColor, favoriteAnimal, hobbies, favoriteFood, and specialRequest are now optional
   };
 
   return (
@@ -248,6 +244,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
               <div className="space-y-2">
                 <Label htmlFor="favoriteColor" className="text-lg font-semibold text-foreground">
                   What's your favorite color?
+                  <span className="text-sm text-muted-foreground ml-2">(Optional)</span>
                 </Label>
                 <ColorPicker
                   value={formData.favoriteColor}
@@ -258,6 +255,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
               <div className="space-y-2">
                 <Label htmlFor="favoriteAnimal" className="text-lg font-semibold text-foreground">
                   What's your favorite animal?
+                  <span className="text-sm text-muted-foreground ml-2">(Optional)</span>
                 </Label>
                 <Input
                   id="favoriteAnimal"
@@ -271,6 +269,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
               <div className="space-y-2">
                 <Label htmlFor="favoriteFood" className="text-lg font-semibold text-foreground">
                   What's your favorite food?
+                  <span className="text-sm text-muted-foreground ml-2">(Optional)</span>
                 </Label>
                 <Input
                   id="favoriteFood"
@@ -284,6 +283,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
               <div className="space-y-2">
                 <Label htmlFor="hobbies" className="text-lg font-semibold text-foreground">
                   What do you like to do for fun?
+                  <span className="text-sm text-muted-foreground ml-2">(Optional)</span>
                 </Label>
                 <Textarea
                   id="hobbies"
