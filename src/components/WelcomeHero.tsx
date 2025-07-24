@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { BookOpen, Sparkles, Heart } from "lucide-react";
 import heroImage from "@/assets/hero-image-diverse-clear.jpg";
+import logoImage from "@/assets/time2read-logo.png";
 
 interface WelcomeHeroProps {
   onGetStarted: () => void;
@@ -10,14 +11,21 @@ export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
   return (
     <div className="min-h-screen bg-gradient-hero flex flex-col relative overflow-hidden">
       {/* Header with Company Branding */}
-      <header className="relative z-20 bg-black/10 backdrop-blur-sm border-b border-white/10">
-        <div className="container mx-auto px-6 py-4">
+      <header className="relative z-20 bg-black/15 backdrop-blur-sm border-b border-white/20">
+        <div className="container mx-auto px-6 py-6">
           <div className="flex items-center justify-center">
-            <div className="flex items-center gap-3">
-              <BookOpen className="w-8 h-8 text-yellow-300" />
-              <h1 className="text-2xl md:text-3xl font-bold text-white">
-                Time <span className="text-yellow-300">2</span> Read
-              </h1>
+            <div className="flex items-center gap-4 hover-scale transition-all duration-300">
+              <img 
+                src={logoImage} 
+                alt="Time 2 Read Logo" 
+                className="w-12 h-12 md:w-16 md:h-16 drop-shadow-lg"
+              />
+              <div className="flex flex-col">
+                <h1 className="text-2xl md:text-4xl font-bold text-white drop-shadow-lg">
+                  Time <span className="text-yellow-300">2</span> Read
+                </h1>
+                <p className="text-sm text-white/80 hidden md:block">Magical Stories for Every Child</p>
+              </div>
             </div>
           </div>
         </div>
