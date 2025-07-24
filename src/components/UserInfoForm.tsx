@@ -64,24 +64,30 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
 
   const handleInputChange = (field: keyof UserInfo, value: string | number) => {
     if (typeof value === 'string') {
+      // Check if this is a deletion (shorter text) - skip security validation for deletions
+      const currentValue = formData[field] as string;
+      const isDeletion = value.length < currentValue.length;
+      
       // Sanitize input
       const sanitizedValue = ContentSecurity.sanitizeInput(value);
       
-      // Check for inappropriate content
-      const validation = contentFilter(sanitizedValue);
-      if (validation.hasInappropriateContent) {
-        SecurityLogger.log('inappropriate_content_attempt', {
-          field,
-          reason: validation.reason,
-          originalValue: value
-        });
-        
-        toast({
-          title: "Content Warning",
-          description: "Please use appropriate language for children's stories!",
-          variant: "destructive"
-        });
-        return;
+      // Only check for inappropriate content on additions, not deletions
+      if (!isDeletion) {
+        const validation = contentFilter(sanitizedValue);
+        if (validation.hasInappropriateContent) {
+          SecurityLogger.log('inappropriate_content_attempt', {
+            field,
+            reason: validation.reason,
+            originalValue: value
+          });
+          
+          toast({
+            title: "Content Warning",
+            description: "Please use appropriate language for children's stories!",
+            variant: "destructive"
+          });
+          return;
+        }
       }
       
       setFormData(prev => ({ ...prev, [field]: sanitizedValue }));
