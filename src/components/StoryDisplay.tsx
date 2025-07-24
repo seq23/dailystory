@@ -89,9 +89,9 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
   const [currentIllustration, setCurrentIllustration] = useState<string>("");
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [runwareService] = useState<SecureRunwareService>(() => new SecureRunwareService("LRRGqlrg67zH8uss6lMjVvc54pVOrznM"));
-  const [elevenLabsApiKey, setElevenLabsApiKey] = useState<string>("");
-  const [elevenLabsService, setElevenLabsService] = useState<any>(null);
-  const [showApiKeyInput, setShowApiKeyInput] = useState(false);
+  const [elevenLabsService] = useState<any>(() => 
+    new ElevenLabsService({ apiKey: "sk_9935316e04bb91ad195bacd28187279ec30691b8fa66ab6b" })
+  );
 
   // Get user's avatar image
   const getUserAvatar = () => {
@@ -415,29 +415,6 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
     setStoryExtensions(0); // Reset extensions when difficulty changes
   };
 
-  // Handle ElevenLabs API key setup
-  const handleApiKeySubmit = () => {
-    if (elevenLabsApiKey.trim()) {
-      try {
-        const service = new ElevenLabsService({ apiKey: elevenLabsApiKey.trim() });
-        setElevenLabsService(service);
-        setShowApiKeyInput(false);
-        localStorage.setItem('elevenLabsApiKey', elevenLabsApiKey.trim());
-      } catch (error) {
-        console.error('Error setting up ElevenLabs service:', error);
-      }
-    }
-  };
-
-  // Load saved API key on component mount
-  useEffect(() => {
-    const savedApiKey = localStorage.getItem('elevenLabsApiKey');
-    if (savedApiKey) {
-      setElevenLabsApiKey(savedApiKey);
-      const service = new ElevenLabsService({ apiKey: savedApiKey });
-      setElevenLabsService(service);
-    }
-  }, []);
 
   // Dynamic text size based on age and difficulty
   const getTextSize = () => {
@@ -1006,52 +983,6 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
           </div>
         )}
         
-        {/* ElevenLabs API Key Setup Dialog */}
-        <Dialog open={showApiKeyInput} onOpenChange={setShowApiKeyInput}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Setup Text-to-Speech</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                To enable high-quality text-to-speech for word pronunciation and explanations, please enter your ElevenLabs API key.
-                You can get one free at{" "}
-                <a href="https://elevenlabs.io" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                  elevenlabs.io
-                </a>
-              </p>
-              <Input
-                type="password"
-                placeholder="Enter your ElevenLabs API key"
-                value={elevenLabsApiKey}
-                onChange={(e) => setElevenLabsApiKey(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleApiKeySubmit()}
-              />
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setShowApiKeyInput(false)}>
-                  Skip
-                </Button>
-                <Button onClick={handleApiKeySubmit} disabled={!elevenLabsApiKey.trim()}>
-                  Setup TTS
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* TTS Setup Button - floating in top right */}
-        {!elevenLabsService && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowApiKeyInput(true)}
-            className="fixed top-2 right-2 md:top-4 md:right-4 z-50 bg-primary/10 hover:bg-primary/20 border-primary/30 text-xs md:text-sm px-2 md:px-3 py-1 md:py-2"
-          >
-            <Volume2 className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
-            <span className="hidden sm:inline">Enable TTS</span>
-            <span className="sm:hidden">TTS</span>
-          </Button>
-        )}
         
         {/* Floating Timer Component */}
         <FloatingTimer
