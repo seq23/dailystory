@@ -66,12 +66,12 @@ export const FloatingTimer = ({
         osc.stop(startTime + duration);
       };
       
-      // Play celebration melody
+      // Play shorter celebration melody (2.5 seconds total)
       const now = audioContext.currentTime;
-      playNote(523.25, now, 0.3); // C5
-      playNote(659.25, now + 0.3, 0.3); // E5
-      playNote(783.99, now + 0.6, 0.3); // G5
-      playNote(1046.50, now + 0.9, 0.6); // C6
+      playNote(523.25, now, 0.2); // C5
+      playNote(659.25, now + 0.2, 0.2); // E5
+      playNote(783.99, now + 0.4, 0.2); // G5
+      playNote(1046.50, now + 0.6, 0.4); // C6 - slightly longer for ending
       
       // Show toast notification
       toast({
