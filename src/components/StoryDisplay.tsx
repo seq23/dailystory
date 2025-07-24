@@ -595,8 +595,8 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                           <TrendingDown className="w-4 h-4" />
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Make story easier</p>
+                      <TooltipContent side="left">
+                        <p>Easier</p>
                       </TooltipContent>
                     </Tooltip>
                     
@@ -612,8 +612,8 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                           <TrendingUp className="w-4 h-4" />
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Make story harder</p>
+                      <TooltipContent side="left">
+                        <p>Harder</p>
                       </TooltipContent>
                     </Tooltip>
                   </div>
