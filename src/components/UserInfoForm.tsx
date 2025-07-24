@@ -351,12 +351,11 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                 Tell us if there is anything special you want to include in your story?
                 <span className="text-xs md:text-sm text-muted-foreground ml-2">(Optional)</span>
               </Label>
-              <Textarea
-                id="specialRequest"
+              <TagInput
                 value={formData.specialRequest}
-                onChange={(e) => handleInputChange("specialRequest", e.target.value)}
-                placeholder="Dragons, princesses, space adventures, magic powers..."
-                className="text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-primary/20 focus:border-primary/50 min-h-[80px] md:min-h-[100px]"
+                onChange={(value) => handleInputChange("specialRequest", value)}
+                placeholder="Type special story elements and press Enter..."
+                className="text-base md:text-lg min-h-[80px] md:min-h-[100px]"
               />
             </div>
           </div>
