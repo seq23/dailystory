@@ -83,20 +83,19 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
       // Show a friendly message when inappropriate content is detected
       return; // Don't update if content is inappropriate
     }
-    
-    // For hobbies, automatically add proper separation if user doesn't use commas
-    if (field === 'hobbies' && typeof value === 'string') {
-      // Split by common separators and rejoin with commas
-      const processedValue = value
-        .split(/[\n\r]+/) // Split by line breaks
-        .map(line => line.trim())
-        .filter(line => line.length > 0)
-        .join(', ');
-      setFormData(prev => ({ ...prev, [field]: processedValue }));
-      return;
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleHobbiesChange = (value: string) => {
+    if (contentFilter(value)) {
+      return; // Don't update if content is inappropriate
     }
     
-    setFormData(prev => ({ ...prev, [field]: value }));
+    // Process hobbies to separate words/phrases properly
+    const words = value.split(/\s+/).filter(word => word.trim().length > 0);
+    const processedValue = words.join(', ');
+    
+    setFormData(prev => ({ ...prev, hobbies: processedValue }));
   };
 
   const handleSubmit = () => {
@@ -301,8 +300,8 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                 <Textarea
                   id="hobbies"
                   value={formData.hobbies}
-                  onChange={(e) => handleInputChange("hobbies", e.target.value)}
-                  placeholder="Playing soccer&#10;Drawing&#10;Reading&#10;(Each activity on a new line)"
+                  onChange={(e) => handleHobbiesChange(e.target.value)}
+                  placeholder="Type your activities separated by spaces: soccer drawing reading cooking..."
                   className="text-lg p-4 rounded-2xl border-2 border-primary/20 focus:border-primary/50 min-h-[100px]"
                 />
               </div>
