@@ -148,35 +148,35 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/30 flex items-center justify-center p-4">
-      <Card className="w-full max-w-4xl bg-gradient-card shadow-card border-0 rounded-3xl p-8">
+    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/30 flex items-center justify-center p-2 md:p-4">
+      <Card className="w-full max-w-4xl bg-gradient-card shadow-card border-0 rounded-2xl md:rounded-3xl p-4 md:p-8">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
-            <div className="p-4 bg-gradient-primary rounded-full text-white shadow-soft">
-              <User className="w-12 h-12" />
+        <div className="text-center mb-6 md:mb-8">
+          <div className="flex justify-center mb-3 md:mb-4">
+            <div className="p-3 md:p-4 bg-gradient-primary rounded-full text-white shadow-soft">
+              <User className="w-8 h-8 md:w-12 md:h-12" />
             </div>
           </div>
-          <h2 className="text-4xl font-bold text-foreground mb-2">
+          <h2 className="text-2xl md:text-4xl font-bold text-foreground mb-2">
             Tell us about yourself!
           </h2>
-          <p className="text-muted-foreground text-lg">
+          <p className="text-muted-foreground text-base md:text-lg px-2">
             Help us create the perfect story just for you
           </p>
         </div>
 
         {/* All Form Fields */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
           {/* Basic Info Section */}
-          <div className="space-y-6">
-            <h3 className="text-2xl font-semibold text-foreground flex items-center gap-2">
-              <User className="w-6 h-6 text-primary" />
+          <div className="space-y-4 md:space-y-6">
+            <h3 className="text-xl md:text-2xl font-semibold text-foreground flex items-center gap-2">
+              <User className="w-5 h-5 md:w-6 md:h-6 text-primary" />
               About You
             </h3>
             
-            <div className="space-y-4">
+            <div className="space-y-3 md:space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name" className="text-lg font-semibold text-foreground">
+                <Label htmlFor="name" className="text-base md:text-lg font-semibold text-foreground">
                   What's your name?
                 </Label>
                 <Input
@@ -184,16 +184,16 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                   value={formData.name}
                   onChange={(e) => handleInputChange("name", e.target.value)}
                   placeholder="Type your name here..."
-                  className="text-lg p-4 rounded-2xl border-2 border-primary/20 focus:border-primary/50"
+                  className="text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-primary/20 focus:border-primary/50"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="age" className="text-lg font-semibold text-foreground">
+                <Label htmlFor="age" className="text-base md:text-lg font-semibold text-foreground">
                   How old are you?
                 </Label>
                 <Select value={formData.age.toString()} onValueChange={(value) => handleInputChange("age", parseInt(value))}>
-                  <SelectTrigger className="text-lg p-4 rounded-2xl border-2 border-primary/20">
+                  <SelectTrigger className="text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-primary/20">
                     <SelectValue placeholder="Pick your age" />
                   </SelectTrigger>
                   <SelectContent>
@@ -205,11 +205,11 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="grade" className="text-lg font-semibold text-foreground">
+                <Label htmlFor="grade" className="text-base md:text-lg font-semibold text-foreground">
                   What grade are you in?
                 </Label>
                 <Select value={formData.grade} onValueChange={(value) => handleInputChange("grade", value)}>
-                  <SelectTrigger className="text-lg p-4 rounded-2xl border-2 border-primary/20">
+                  <SelectTrigger className="text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-primary/20">
                     <SelectValue placeholder="Select your grade" />
                   </SelectTrigger>
                   <SelectContent>
@@ -231,36 +231,36 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="readingAbility" className="text-lg font-semibold text-foreground">
+                <Label htmlFor="readingAbility" className="text-base md:text-lg font-semibold text-foreground">
                   What reading level feels right for you?
                 </Label>
                 <Select value={formData.readingAbility} onValueChange={(value) => handleInputChange("readingAbility", value)}>
-                  <SelectTrigger className="text-lg p-4 rounded-2xl border-2 border-primary/20 bg-white dark:bg-gray-800 z-50">
+                  <SelectTrigger className="text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-primary/20 bg-white dark:bg-gray-800 z-50">
                     <SelectValue placeholder="Choose your reading level" />
                   </SelectTrigger>
-                  <SelectContent className="bg-white dark:bg-gray-800 border-2 border-primary/20 rounded-2xl shadow-lg z-50">
-                    <SelectItem value="easy" className="text-lg p-3 hover:bg-primary/10">
+                  <SelectContent className="bg-white dark:bg-gray-800 border-2 border-primary/20 rounded-xl md:rounded-2xl shadow-lg z-50">
+                    <SelectItem value="easy" className="text-sm md:text-lg p-2 md:p-3 hover:bg-primary/10">
                       <div className="flex flex-col items-start text-left">
                         <span className="font-semibold text-green-600">Easy Reading</span>
-                        <span className="text-xs text-muted-foreground">(K-1st grade: Simple words & short sentences)</span>
+                        <span className="text-xs text-muted-foreground hidden sm:block">(K-1st grade: Simple words & short sentences)</span>
                       </div>
                     </SelectItem>
-                    <SelectItem value="medium" className="text-lg p-3 hover:bg-primary/10">
+                    <SelectItem value="medium" className="text-sm md:text-lg p-2 md:p-3 hover:bg-primary/10">
                       <div className="flex flex-col items-start text-left">
                         <span className="font-semibold text-yellow-600">Medium Reading</span>
-                        <span className="text-xs text-muted-foreground">(2nd-4th grade: Moderate vocabulary & sentences)</span>
+                        <span className="text-xs text-muted-foreground hidden sm:block">(2nd-4th grade: Moderate vocabulary & sentences)</span>
                       </div>
                     </SelectItem>
-                    <SelectItem value="hard" className="text-lg p-3 hover:bg-primary/10">
+                    <SelectItem value="hard" className="text-sm md:text-lg p-2 md:p-3 hover:bg-primary/10">
                       <div className="flex flex-col items-start text-left">
                         <span className="font-semibold text-orange-600">Advanced Reading</span>
-                        <span className="text-xs text-muted-foreground">(5th-8th grade: Advanced vocabulary & complex sentences)</span>
+                        <span className="text-xs text-muted-foreground hidden sm:block">(5th-8th grade: Advanced vocabulary & complex sentences)</span>
                       </div>
                     </SelectItem>
-                    <SelectItem value="expert" className="text-lg p-3 hover:bg-primary/10">
+                    <SelectItem value="expert" className="text-sm md:text-lg p-2 md:p-3 hover:bg-primary/10">
                       <div className="flex flex-col items-start text-left">
                         <span className="font-semibold text-red-600">Expert Reading</span>
-                        <span className="text-xs text-muted-foreground">(9th-12th grade: Expert vocabulary & sophisticated writing)</span>
+                        <span className="text-xs text-muted-foreground hidden sm:block">(9th-12th grade: Expert vocabulary & sophisticated writing)</span>
                       </div>
                     </SelectItem>
                   </SelectContent>
@@ -268,7 +268,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="avatar" className="text-lg font-semibold text-foreground">
+                <Label htmlFor="avatar" className="text-base md:text-lg font-semibold text-foreground">
                   Which avatar do you want?
                 </Label>
                 <AvatarPicker
@@ -280,17 +280,17 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
           </div>
 
           {/* Favorites Section */}
-          <div className="space-y-6">
-            <h3 className="text-2xl font-semibold text-foreground flex items-center gap-2">
-              <Heart className="w-6 h-6 text-primary" />
+          <div className="space-y-4 md:space-y-6">
+            <h3 className="text-xl md:text-2xl font-semibold text-foreground flex items-center gap-2">
+              <Heart className="w-5 h-5 md:w-6 md:h-6 text-primary" />
               Your Favorites
             </h3>
             
-            <div className="space-y-4">
+            <div className="space-y-3 md:space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="favoriteColor" className="text-lg font-semibold text-foreground">
+                <Label htmlFor="favoriteColor" className="text-base md:text-lg font-semibold text-foreground">
                   What's your favorite color?
-                  <span className="text-sm text-muted-foreground ml-2">(Optional)</span>
+                  <span className="text-xs md:text-sm text-muted-foreground ml-2">(Optional)</span>
                 </Label>
                 <ColorPicker
                   value={formData.favoriteColor}
@@ -299,76 +299,76 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="favoriteAnimal" className="text-lg font-semibold text-foreground">
+                <Label htmlFor="favoriteAnimal" className="text-base md:text-lg font-semibold text-foreground">
                   What's your favorite animal?
-                  <span className="text-sm text-muted-foreground ml-2">(Optional)</span>
+                  <span className="text-xs md:text-sm text-muted-foreground ml-2">(Optional)</span>
                 </Label>
                 <TagInput
                   value={formData.favoriteAnimal}
                   onChange={(value) => handleInputChange("favoriteAnimal", value)}
                   placeholder="Type animals and press Enter..."
-                  className="text-lg min-h-[60px]"
+                  className="text-base md:text-lg min-h-[50px] md:min-h-[60px]"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="favoriteFood" className="text-lg font-semibold text-foreground">
+                <Label htmlFor="favoriteFood" className="text-base md:text-lg font-semibold text-foreground">
                   What's your favorite food?
-                  <span className="text-sm text-muted-foreground ml-2">(Optional)</span>
+                  <span className="text-xs md:text-sm text-muted-foreground ml-2">(Optional)</span>
                 </Label>
                 <TagInput
                   value={formData.favoriteFood}
                   onChange={(value) => handleInputChange("favoriteFood", value)}
                   placeholder="Type foods and press Enter..."
-                  className="text-lg min-h-[60px]"
+                  className="text-base md:text-lg min-h-[50px] md:min-h-[60px]"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="hobbies" className="text-lg font-semibold text-foreground">
+                <Label htmlFor="hobbies" className="text-base md:text-lg font-semibold text-foreground">
                   What do you like to do for fun?
-                  <span className="text-sm text-muted-foreground ml-2">(Optional)</span>
+                  <span className="text-xs md:text-sm text-muted-foreground ml-2">(Optional)</span>
                 </Label>
                 <TagInput
                   value={formData.hobbies}
                   onChange={(value) => handleInputChange("hobbies", value)}
                   placeholder="Type activities and press Enter..."
-                  className="text-lg"
+                  className="text-base md:text-lg min-h-[50px] md:min-h-[60px]"
                 />
               </div>
             </div>
           </div>
 
           {/* Additional Info Section */}
-          <div className="space-y-6 md:col-span-2">
-            <h3 className="text-2xl font-semibold text-foreground flex items-center gap-2">
-              <Star className="w-6 h-6 text-primary" />
+          <div className="space-y-4 md:space-y-6 lg:col-span-2">
+            <h3 className="text-xl md:text-2xl font-semibold text-foreground flex items-center gap-2">
+              <Star className="w-5 h-5 md:w-6 md:h-6 text-primary" />
               Additional Info
             </h3>
             
             <div className="space-y-2">
-              <Label htmlFor="specialRequest" className="text-lg font-semibold text-foreground">
+              <Label htmlFor="specialRequest" className="text-base md:text-lg font-semibold text-foreground">
                 Tell us if there is anything special you want to include in your story?
-                <span className="text-sm text-muted-foreground ml-2">(Optional)</span>
+                <span className="text-xs md:text-sm text-muted-foreground ml-2">(Optional)</span>
               </Label>
               <Textarea
                 id="specialRequest"
                 value={formData.specialRequest}
                 onChange={(e) => handleInputChange("specialRequest", e.target.value)}
                 placeholder="Dragons, princesses, space adventures, magic powers..."
-                className="text-lg p-4 rounded-2xl border-2 border-primary/20 focus:border-primary/50 min-h-[100px]"
+                className="text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-primary/20 focus:border-primary/50 min-h-[80px] md:min-h-[100px]"
               />
             </div>
           </div>
         </div>
 
         {/* Navigation buttons */}
-        <div className="flex gap-4 justify-between">
+        <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-between">
           <Button
             variant="playful"
             size="lg"
             onClick={onBack}
-            className="flex-1 max-w-xs"
+            className="flex-1 sm:max-w-xs order-2 sm:order-1"
           >
             Back to Home
           </Button>
@@ -377,7 +377,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
             size="lg"
             onClick={handleSubmit}
             disabled={!isFormComplete()}
-            className="flex-1 max-w-xs"
+            className="flex-1 sm:max-w-xs order-1 sm:order-2"
           >
             Create My Story!
             <ChevronRight className="w-5 h-5 ml-2" />

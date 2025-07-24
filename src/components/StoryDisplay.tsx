@@ -807,44 +807,44 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
             </div>
 
             {/* Two-column responsive layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12 max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 lg:gap-12 mb-8 md:mb-12 max-w-7xl mx-auto px-4">
               {/* Illustration Column */}
-              <div className="flex flex-col items-center space-y-6">
+              <div className="flex flex-col items-center space-y-4 md:space-y-6 order-1 lg:order-1">
                 {/* Chapter Indicator */}
-                <div className="bg-amber-100/90 backdrop-blur-sm rounded-2xl px-6 py-3 border-2 border-amber-400/60 shadow-lg">
-                  <span className="text-lg font-bold text-amber-800">
+                <div className="bg-amber-100/90 backdrop-blur-sm rounded-xl md:rounded-2xl px-4 md:px-6 py-2 md:py-3 border-2 border-amber-400/60 shadow-lg">
+                  <span className="text-base md:text-lg font-bold text-amber-800">
                     Chapter {getCurrentChapter()} of 3
                   </span>
                 </div>
                 
                 {/* Illuminated Manuscript Frame */}
-                <div className="relative bg-amber-50/95 p-6 rounded-3xl border-4 border-amber-400/80 shadow-2xl backdrop-blur-sm">
+                <div className="relative bg-amber-50/95 p-3 md:p-6 rounded-2xl md:rounded-3xl border-2 md:border-4 border-amber-400/80 shadow-2xl backdrop-blur-sm w-full max-w-sm md:max-w-md">
                   {/* Ornate corner decorations */}
-                  <div className="absolute -top-2 -left-2 w-8 h-8 bg-amber-600 rounded-full border-2 border-amber-300"></div>
-                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-amber-600 rounded-full border-2 border-amber-300"></div>
-                  <div className="absolute -bottom-2 -left-2 w-8 h-8 bg-amber-600 rounded-full border-2 border-amber-300"></div>
-                  <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-amber-600 rounded-full border-2 border-amber-300"></div>
+                  <div className="absolute -top-1 -left-1 md:-top-2 md:-left-2 w-4 h-4 md:w-8 md:h-8 bg-amber-600 rounded-full border border-amber-300 md:border-2"></div>
+                  <div className="absolute -top-1 -right-1 md:-top-2 md:-right-2 w-4 h-4 md:w-8 md:h-8 bg-amber-600 rounded-full border border-amber-300 md:border-2"></div>
+                  <div className="absolute -bottom-1 -left-1 md:-bottom-2 md:-left-2 w-4 h-4 md:w-8 md:h-8 bg-amber-600 rounded-full border border-amber-300 md:border-2"></div>
+                  <div className="absolute -bottom-1 -right-1 md:-bottom-2 md:-right-2 w-4 h-4 md:w-8 md:h-8 bg-amber-600 rounded-full border border-amber-300 md:border-2"></div>
                   
                   {/* Medieval manuscript decorative elements */}
-                  <div className="absolute top-4 left-4 w-6 h-6 border-2 border-amber-500 rounded-tl-xl opacity-60"></div>
-                  <div className="absolute top-4 right-4 w-6 h-6 border-2 border-amber-500 rounded-tr-xl opacity-60"></div>
-                  <div className="absolute bottom-4 left-4 w-6 h-6 border-2 border-amber-500 rounded-bl-xl opacity-60"></div>
-                  <div className="absolute bottom-4 right-4 w-6 h-6 border-2 border-amber-500 rounded-br-xl opacity-60"></div>
+                  <div className="absolute top-2 left-2 md:top-4 md:left-4 w-3 h-3 md:w-6 md:h-6 border border-amber-500 md:border-2 rounded-tl-lg md:rounded-tl-xl opacity-60"></div>
+                  <div className="absolute top-2 right-2 md:top-4 md:right-4 w-3 h-3 md:w-6 md:h-6 border border-amber-500 md:border-2 rounded-tr-lg md:rounded-tr-xl opacity-60"></div>
+                  <div className="absolute bottom-2 left-2 md:bottom-4 md:left-4 w-3 h-3 md:w-6 md:h-6 border border-amber-500 md:border-2 rounded-bl-lg md:rounded-bl-xl opacity-60"></div>
+                  <div className="absolute bottom-2 right-2 md:bottom-4 md:right-4 w-3 h-3 md:w-6 md:h-6 border border-amber-500 md:border-2 rounded-br-lg md:rounded-br-xl opacity-60"></div>
                   
                   {/* The Illustration */}
-                  <div className="relative overflow-hidden rounded-2xl border-3 border-amber-300">
+                  <div className="relative overflow-hidden rounded-xl md:rounded-2xl border-2 md:border-3 border-amber-300">
                     {isGeneratingImage && (
                       <div className="absolute inset-0 bg-amber-100/80 flex items-center justify-center z-10">
-                        <div className="text-center">
-                          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto mb-4"></div>
-                          <p className="text-amber-800 font-medium">Creating custom illustration...</p>
+                        <div className="text-center p-4">
+                          <div className="animate-spin rounded-full h-8 w-8 md:h-12 md:w-12 border-b-2 border-amber-600 mx-auto mb-2 md:mb-4"></div>
+                          <p className="text-amber-800 font-medium text-sm md:text-base">Creating custom illustration...</p>
                         </div>
                       </div>
                     )}
                     <img 
                       src={currentIllustration || illustration1} 
                       alt={`Chapter ${getCurrentChapter()} illustration`}
-                      className="w-full h-auto max-w-md mx-auto shadow-lg transition-transform duration-300 hover:scale-105"
+                      className="w-full h-auto shadow-lg transition-transform duration-300 hover:scale-105"
                       style={{ aspectRatio: '3/4' }}
                     />
                     {/* Magical overlay effect */}
@@ -852,24 +852,24 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                   </div>
                   
                   {/* Decorative flourish below image */}
-                  <div className="mt-4 flex justify-center">
-                    <div className="w-24 h-1 bg-gradient-to-r from-transparent via-amber-500 to-transparent rounded-full"></div>
+                  <div className="mt-2 md:mt-4 flex justify-center">
+                    <div className="w-16 md:w-24 h-0.5 md:h-1 bg-gradient-to-r from-transparent via-amber-500 to-transparent rounded-full"></div>
                   </div>
                 </div>
               </div>
 
               {/* Story Text Column */}
-              <div className="flex flex-col justify-center">
-                <div className="bg-yellow-50/95 backdrop-blur-sm rounded-3xl p-8 lg:p-12 border-3 border-amber-300/60 shadow-2xl relative">
+              <div className="flex flex-col justify-center order-2 lg:order-2">
+                <div className="bg-yellow-50/95 backdrop-blur-sm rounded-2xl md:rounded-3xl p-4 md:p-8 lg:p-12 border-2 md:border-3 border-amber-300/60 shadow-2xl relative">
                   {/* Ornate corner decorations */}
-                  <div className="absolute top-6 left-6 w-8 h-8 border-t-3 border-l-3 border-amber-500 rounded-tl-2xl opacity-70"></div>
-                  <div className="absolute top-6 right-6 w-8 h-8 border-t-3 border-r-3 border-amber-500 rounded-tr-2xl opacity-70"></div>
-                  <div className="absolute bottom-6 left-6 w-8 h-8 border-b-3 border-l-3 border-amber-500 rounded-bl-2xl opacity-70"></div>
-                  <div className="absolute bottom-6 right-6 w-8 h-8 border-b-3 border-r-3 border-amber-500 rounded-br-2xl opacity-70"></div>
+                  <div className="absolute top-3 left-3 md:top-6 md:left-6 w-4 h-4 md:w-8 md:h-8 border-t-2 border-l-2 md:border-t-3 md:border-l-3 border-amber-500 rounded-tl-xl md:rounded-tl-2xl opacity-70"></div>
+                  <div className="absolute top-3 right-3 md:top-6 md:right-6 w-4 h-4 md:w-8 md:h-8 border-t-2 border-r-2 md:border-t-3 md:border-r-3 border-amber-500 rounded-tr-xl md:rounded-tr-2xl opacity-70"></div>
+                  <div className="absolute bottom-3 left-3 md:bottom-6 md:left-6 w-4 h-4 md:w-8 md:h-8 border-b-2 border-l-2 md:border-b-3 md:border-l-3 border-amber-500 rounded-bl-xl md:rounded-bl-2xl opacity-70"></div>
+                  <div className="absolute bottom-3 right-3 md:bottom-6 md:right-6 w-4 h-4 md:w-8 md:h-8 border-b-2 border-r-2 md:border-b-3 md:border-r-3 border-amber-500 rounded-br-xl md:rounded-br-2xl opacity-70"></div>
                   
                   {/* Central ornamental flourish */}
-                  <div className="absolute top-4 left-1/2 transform -translate-x-1/2 w-12 h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-60"></div>
-                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-12 h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-60"></div>
+                  <div className="absolute top-2 md:top-4 left-1/2 transform -translate-x-1/2 w-8 md:w-12 h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-60"></div>
+                  <div className="absolute bottom-2 md:bottom-4 left-1/2 transform -translate-x-1/2 w-8 md:w-12 h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-60"></div>
                   
                   <div className="prose prose-lg max-w-none">
                     <p className={`${getTextSize()} text-amber-900 font-medium leading-relaxed drop-shadow-sm animate-fade-in text-left lg:text-justify`} 
@@ -886,30 +886,30 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
             </div>
 
             {/* Difficulty controls - floating like magical runes */}
-            <div className="flex items-center justify-center gap-6 mb-12">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 md:gap-6 mb-8 md:mb-12 px-4">
               <Button
                 variant="outline"
-                size="lg"
+                size="sm"
                 onClick={handleDifficultyDown}
                 disabled={currentDifficulty === "easy"}
-                className="bg-amber-50/90 border-2 border-amber-400 text-amber-800 hover:bg-amber-100/90 shadow-lg backdrop-blur-sm px-6 py-3 animate-[wiggle_0.5s_ease-in-out_2s,_fade-in_0.8s_ease-out_1.5s] disabled:animate-none disabled:opacity-50"
+                className="bg-amber-50/90 border-2 border-amber-400 text-amber-800 hover:bg-amber-100/90 shadow-lg backdrop-blur-sm px-3 md:px-6 py-2 md:py-3 animate-[wiggle_0.5s_ease-in-out_2s,_fade-in_0.8s_ease-out_1.5s] disabled:animate-none disabled:opacity-50 text-sm md:text-base w-full sm:w-auto"
                 style={{
                   animationFillMode: 'both'
                 }}
               >
-                <TrendingDown className="w-5 h-5 mr-2" />
+                <TrendingDown className="w-4 h-4 md:w-5 md:h-5 mr-2" />
                 Easier
               </Button>
               
-              <div className="text-center bg-amber-100/90 backdrop-blur-sm rounded-2xl px-8 py-4 border-3 border-amber-400/70 shadow-xl animate-[scale-in_0.6s_ease-out_1s] opacity-0"
+              <div className="text-center bg-amber-100/90 backdrop-blur-sm rounded-xl md:rounded-2xl px-4 md:px-8 py-3 md:py-4 border-2 md:border-3 border-amber-400/70 shadow-xl animate-[scale-in_0.6s_ease-out_1s] opacity-0 w-full sm:w-auto"
                 style={{
                   animationFillMode: 'both'
                 }}
               >
-                <div className={`text-lg font-bold ${getDifficultyColor()}`}>
+                <div className={`text-base md:text-lg font-bold ${getDifficultyColor()}`}>
                   {getDifficultyLabel()}
                 </div>
-                <div className="text-sm text-amber-700 mt-1">
+                <div className="text-xs md:text-sm text-amber-700 mt-1 hidden sm:block">
                   {currentDifficulty === "easy" && "K-1st grade: Simple words & short sentences"}
                   {currentDifficulty === "medium" && "2nd-4th grade: Moderate vocabulary & sentences"}
                   {currentDifficulty === "hard" && "5th-8th grade: Advanced vocabulary & complex sentences"}
@@ -919,27 +919,27 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
               
               <Button
                 variant="outline"
-                size="lg"
+                size="sm"
                 onClick={handleDifficultyUp}
                 disabled={currentDifficulty === "expert"}
-                className="bg-amber-50/90 border-2 border-amber-400 text-amber-800 hover:bg-amber-100/90 shadow-lg backdrop-blur-sm px-6 py-3 animate-[wiggle_0.5s_ease-in-out_2.5s,_fade-in_0.8s_ease-out_1.5s] disabled:animate-none disabled:opacity-50"
+                className="bg-amber-50/90 border-2 border-amber-400 text-amber-800 hover:bg-amber-100/90 shadow-lg backdrop-blur-sm px-3 md:px-6 py-2 md:py-3 animate-[wiggle_0.5s_ease-in-out_2.5s,_fade-in_0.8s_ease-out_1.5s] disabled:animate-none disabled:opacity-50 text-sm md:text-base w-full sm:w-auto"
                 style={{
                   animationFillMode: 'both'
                 }}
               >
-                <TrendingUp className="w-5 h-5 mr-2" />
+                <TrendingUp className="w-4 h-4 md:w-5 md:h-5 mr-2" />
                 Harder
               </Button>
             </div>
 
             {/* Floating Page Navigation */}
-            <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 z-40 flex gap-4">
+            <div className="fixed bottom-20 md:bottom-24 left-1/2 transform -translate-x-1/2 z-40 flex gap-3 md:gap-4">
               <Button
                 variant="secondary"
                 size="lg"
                 onClick={handlePrevious}
                 disabled={currentParagraph === 0}
-                className="w-16 h-16 rounded-full bg-amber-100/95 border-3 border-amber-400 text-amber-800 hover:bg-amber-200/95 backdrop-blur-sm shadow-2xl hover:scale-110 hover:animate-bounce transition-all duration-200 flex items-center justify-center disabled:opacity-50"
+                className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-amber-100/95 border-2 md:border-3 border-amber-400 text-amber-800 hover:bg-amber-200/95 backdrop-blur-sm shadow-2xl hover:scale-110 hover:animate-bounce transition-all duration-200 flex items-center justify-center disabled:opacity-50 text-lg md:text-xl"
                 title="Previous Page"
               >
                 ←
@@ -950,7 +950,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                 size="lg"
                 onClick={handleNext}
                 disabled={currentParagraph === totalParagraphs - 1}
-                className="w-16 h-16 rounded-full bg-gradient-to-r from-amber-600 to-yellow-600 text-white hover:from-amber-700 hover:to-yellow-700 shadow-2xl hover:scale-110 hover:animate-bounce transition-all duration-200 flex items-center justify-center disabled:opacity-50"
+                className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-gradient-to-r from-amber-600 to-yellow-600 text-white hover:from-amber-700 hover:to-yellow-700 shadow-2xl hover:scale-110 hover:animate-bounce transition-all duration-200 flex items-center justify-center disabled:opacity-50 text-lg md:text-xl"
                 title={currentParagraph === totalParagraphs - 1 ? "Story Complete" : "Next Page"}
               >
                 {currentParagraph === totalParagraphs - 1 ? "✨" : "→"}
@@ -961,8 +961,8 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
 
         {/* Story completion overlay - appears over the book */}
         {currentParagraph === totalParagraphs - 1 && (
-          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-20 animate-fade-in">
-            <div className="bg-gradient-to-br from-amber-100 to-yellow-100 border-4 border-amber-400 rounded-3xl p-12 text-center shadow-2xl relative overflow-hidden max-w-2xl mx-8 animate-scale-in">
+          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-20 animate-fade-in p-4">
+            <div className="bg-gradient-to-br from-amber-100 to-yellow-100 border-2 md:border-4 border-amber-400 rounded-2xl md:rounded-3xl p-6 md:p-12 text-center shadow-2xl relative overflow-hidden max-w-2xl mx-4 md:mx-8 animate-scale-in w-full">
               {/* Magical celebration sparkles */}
               <div className="absolute inset-0 opacity-30 pointer-events-none">
                 <div className="absolute top-6 left-12 w-6 h-6 bg-yellow-400 rounded-full animate-bounce-gentle"></div>
@@ -974,29 +974,29 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
               </div>
               
               <div className="relative z-10">
-                <h2 className="text-5xl font-bold text-amber-800 mb-6 drop-shadow-sm animate-bounce-gentle">
+                <h2 className="text-2xl md:text-5xl font-bold text-amber-800 mb-4 md:mb-6 drop-shadow-sm animate-bounce-gentle">
                   🎉 Congratulations, {userInfo.name}! 🎉
                 </h2>
-                <p className="text-2xl text-amber-700 mb-4 font-semibold">
+                <p className="text-lg md:text-2xl text-amber-700 mb-3 md:mb-4 font-semibold">
                   You've completed your magical adventure!
                 </p>
-                <p className="text-lg text-amber-600 mb-8">
+                <p className="text-sm md:text-lg text-amber-600 mb-6 md:mb-8">
                   Time used: {formatTime((10 * 60 + storyExtensions * 10 * 60) - timeRemaining)} • Come back tomorrow for a brand new story!
                 </p>
-                <div className="flex gap-6 justify-center">
+                <div className="flex flex-col sm:flex-row gap-3 md:gap-6 justify-center">
                   <Button 
                     variant="default" 
-                    size="xl" 
+                    size="lg" 
                     onClick={onNewStory}
-                    className="px-8 py-4 bg-gradient-to-r from-amber-600 to-yellow-600 text-white hover:from-amber-700 hover:to-yellow-700 shadow-xl text-lg font-semibold hover:scale-105 transition-all duration-200"
+                    className="px-4 md:px-8 py-3 md:py-4 bg-gradient-to-r from-amber-600 to-yellow-600 text-white hover:from-amber-700 hover:to-yellow-700 shadow-xl text-base md:text-lg font-semibold hover:scale-105 transition-all duration-200 w-full sm:w-auto"
                   >
                     Create Another Story
                   </Button>
                   <Button 
                     variant="secondary" 
-                    size="xl" 
+                    size="lg" 
                     onClick={onHome}
-                    className="px-8 py-4 bg-amber-100 border-3 border-amber-400 text-amber-800 hover:bg-amber-200 text-lg font-semibold hover:scale-105 transition-all duration-200"
+                    className="px-4 md:px-8 py-3 md:py-4 bg-amber-100 border-2 md:border-3 border-amber-400 text-amber-800 hover:bg-amber-200 text-base md:text-lg font-semibold hover:scale-105 transition-all duration-200 w-full sm:w-auto"
                   >
                     Back to Home
                   </Button>
@@ -1045,10 +1045,11 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
             variant="outline"
             size="sm"
             onClick={() => setShowApiKeyInput(true)}
-            className="fixed top-4 right-4 z-50 bg-primary/10 hover:bg-primary/20 border-primary/30"
+            className="fixed top-2 right-2 md:top-4 md:right-4 z-50 bg-primary/10 hover:bg-primary/20 border-primary/30 text-xs md:text-sm px-2 md:px-3 py-1 md:py-2"
           >
-            <Volume2 className="w-4 h-4 mr-2" />
-            Enable TTS
+            <Volume2 className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+            <span className="hidden sm:inline">Enable TTS</span>
+            <span className="sm:hidden">TTS</span>
           </Button>
         )}
         

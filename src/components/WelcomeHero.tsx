@@ -66,11 +66,11 @@ export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex items-center justify-center relative z-10 py-8">
-        <div className="container mx-auto px-6 text-center">
+      <div className="flex-1 flex items-center justify-center relative z-10 py-4 md:py-8">
+        <div className="container mx-auto px-4 md:px-6 text-center">
           <div className="max-w-4xl mx-auto">
             {/* Hero Carousel */}
-            <div className="mb-8 relative">
+            <div className="mb-6 md:mb-8 relative">
               <Carousel setApi={setApi} className="w-full max-w-3xl mx-auto">
                 <CarouselContent>
                   <CarouselItem>
@@ -78,10 +78,10 @@ export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
                       <img 
                         src={carouselImage1} 
                         alt="Black girl reading on tablet in car" 
-                        className="w-full h-80 md:h-96 object-cover rounded-3xl shadow-glow border-4 border-white/20"
+                        className="w-full h-48 sm:h-64 md:h-80 lg:h-96 object-cover rounded-2xl md:rounded-3xl shadow-glow border-2 md:border-4 border-white/20"
                       />
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent rounded-b-3xl p-4">
-                        <p className="text-white font-inter font-medium text-sm md:text-base">
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent rounded-b-2xl md:rounded-b-3xl p-3 md:p-4">
+                        <p className="text-white font-inter font-medium text-xs sm:text-sm md:text-base">
                           Time 2 Read can be used as a magical summer reading assistant on road trips!
                         </p>
                       </div>
@@ -93,10 +93,10 @@ export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
                       <img 
                         src={carouselImage2} 
                         alt="Asian boy reading on laptop at home" 
-                        className="w-full h-80 md:h-96 object-cover rounded-3xl shadow-glow border-4 border-white/20"
+                        className="w-full h-48 sm:h-64 md:h-80 lg:h-96 object-cover rounded-2xl md:rounded-3xl shadow-glow border-2 md:border-4 border-white/20"
                       />
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent rounded-b-3xl p-4">
-                        <p className="text-white font-inter font-medium text-sm md:text-base">
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent rounded-b-2xl md:rounded-b-3xl p-3 md:p-4">
+                        <p className="text-white font-inter font-medium text-xs sm:text-sm md:text-base">
                           Perfect for after-school reading time - make homework fun and engaging!
                         </p>
                       </div>
@@ -108,10 +108,10 @@ export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
                       <img 
                         src={carouselImage3} 
                         alt="Hispanic girl reading on phone in park" 
-                        className="w-full h-80 md:h-96 object-cover rounded-3xl shadow-glow border-4 border-white/20"
+                        className="w-full h-48 sm:h-64 md:h-80 lg:h-96 object-cover rounded-2xl md:rounded-3xl shadow-glow border-2 md:border-4 border-white/20"
                       />
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent rounded-b-3xl p-4">
-                        <p className="text-white font-inter font-medium text-sm md:text-base">
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent rounded-b-2xl md:rounded-b-3xl p-3 md:p-4">
+                        <p className="text-white font-inter font-medium text-xs sm:text-sm md:text-base">
                           Take your stories anywhere - from playground breaks to family picnics!
                         </p>
                       </div>
@@ -123,10 +123,10 @@ export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
                       <img 
                         src={carouselImage4} 
                         alt="White boy reading on tablet in library" 
-                        className="w-full h-80 md:h-96 object-cover rounded-3xl shadow-glow border-4 border-white/20"
+                        className="w-full h-48 sm:h-64 md:h-80 lg:h-96 object-cover rounded-2xl md:rounded-3xl shadow-glow border-2 md:border-4 border-white/20"
                       />
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent rounded-b-3xl p-4">
-                        <p className="text-white font-inter font-medium text-sm md:text-base">
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent rounded-b-2xl md:rounded-b-3xl p-3 md:p-4">
+                        <p className="text-white font-inter font-medium text-xs sm:text-sm md:text-base">
                           Enhance library visits with interactive digital stories that inspire reading!
                         </p>
                       </div>
@@ -134,20 +134,20 @@ export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
                   </CarouselItem>
                 </CarouselContent>
                 
-                <CarouselPrevious className="left-4 bg-white/20 border-white/30 text-white hover:bg-white/30" />
-                <CarouselNext className="right-4 bg-white/20 border-white/30 text-white hover:bg-white/30" />
+                <CarouselPrevious className="left-2 md:left-4 bg-white/20 border-white/30 text-white hover:bg-white/30 h-8 w-8 md:h-10 md:w-10" />
+                <CarouselNext className="right-2 md:right-4 bg-white/20 border-white/30 text-white hover:bg-white/30 h-8 w-8 md:h-10 md:w-10" />
               </Carousel>
               
-              <div className="absolute -top-4 -right-4 animate-bounce-gentle">
-                <Sparkles className="w-12 h-12 text-yellow-300 drop-shadow-lg" />
+              <div className="absolute -top-2 -right-2 md:-top-4 md:-right-4 animate-bounce-gentle">
+                <Sparkles className="w-8 h-8 md:w-12 md:h-12 text-yellow-300 drop-shadow-lg" />
               </div>
-              <div className="absolute -bottom-4 -left-4 animate-float">
-                <Heart className="w-10 h-10 text-pink-300 drop-shadow-lg" />
+              <div className="absolute -bottom-2 -left-2 md:-bottom-4 md:-left-4 animate-float">
+                <Heart className="w-6 h-6 md:w-10 md:h-10 text-pink-300 drop-shadow-lg" />
               </div>
             </div>
 
             {/* Main Title */}
-            <h2 className="text-5xl md:text-7xl font-bold text-white mb-6 drop-shadow-lg">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-white mb-4 md:mb-6 drop-shadow-lg leading-tight">
               Create Your Own
               <span className="block bg-gradient-to-r from-yellow-300 to-pink-300 bg-clip-text text-transparent">
                 Magical Story!
@@ -155,26 +155,26 @@ export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
             </h2>
 
             {/* Subtitle */}
-            <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-2xl mx-auto leading-relaxed drop-shadow-md">
+            <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-white/90 mb-6 md:mb-8 max-w-2xl mx-auto leading-relaxed drop-shadow-md px-2">
               Every day, discover a new adventure written just for you! 
               Tell us about yourself and watch your personal story come to life.
             </p>
 
             {/* Features */}
-            <div className="flex flex-wrap justify-center gap-6 mb-10">
-              <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-6 py-3 border border-white/30">
-                <BookOpen className="w-6 h-6 text-yellow-300" />
+            <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 md:gap-6 mb-8 md:mb-10 px-2">
+              <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 md:px-6 py-2 md:py-3 border border-white/30 text-sm md:text-base">
+                <BookOpen className="w-4 h-4 md:w-6 md:h-6 text-yellow-300 flex-shrink-0" />
                 <div className="text-white font-medium">
                   20+ Min of Reading
                   <div className="text-xs text-center">(as recommended by teachers)</div>
                 </div>
               </div>
-              <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-6 py-3 border border-white/30">
-                <Sparkles className="w-6 h-6 text-pink-300" />
+              <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 md:px-6 py-2 md:py-3 border border-white/30 text-sm md:text-base">
+                <Sparkles className="w-4 h-4 md:w-6 md:h-6 text-pink-300 flex-shrink-0" />
                 <span className="text-white font-medium">Personalized Stories</span>
               </div>
-              <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-6 py-3 border border-white/30">
-                <Heart className="w-6 h-6 text-blue-300" />
+              <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 md:px-6 py-2 md:py-3 border border-white/30 text-sm md:text-base">
+                <Heart className="w-4 h-4 md:w-6 md:h-6 text-blue-300 flex-shrink-0" />
                 <span className="text-white font-medium">Grade Level Perfect</span>
               </div>
             </div>
