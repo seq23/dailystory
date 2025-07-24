@@ -6,13 +6,17 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { ColorPicker } from "@/components/ui/color-picker";
+import { AvatarPicker } from "@/components/ui/avatar-picker";
 import { ChevronRight, User, GraduationCap, Heart, Star } from "lucide-react";
 
 export interface UserInfo {
   name: string;
   age: number;
   grade: string;
-  gender: string;
+  avatar: {
+    type: "boy" | "girl";
+    skinTone: "light" | "medium" | "dark";
+  };
   favoriteColor: string;
   favoriteAnimal: string;
   hobbies: string;
@@ -32,7 +36,10 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
     name: "",
     age: 6,
     grade: "",
-    gender: "",
+    avatar: {
+      type: "boy",
+      skinTone: "light"
+    },
     favoriteColor: "",
     favoriteAnimal: "",
     hobbies: "",
@@ -89,7 +96,8 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
     return formData.name && 
            formData.age && 
            formData.grade && 
-           formData.gender &&
+           formData.avatar.type &&
+           formData.avatar.skinTone &&
            formData.favoriteColor && 
            formData.favoriteAnimal && 
            formData.hobbies && 
@@ -181,19 +189,13 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="gender" className="text-lg font-semibold text-foreground">
-                  Gender
+                <Label htmlFor="avatar" className="text-lg font-semibold text-foreground">
+                  Choose your avatar
                 </Label>
-                <Select value={formData.gender} onValueChange={(value) => handleInputChange("gender", value)}>
-                  <SelectTrigger className="text-lg p-4 rounded-2xl border-2 border-primary/20 bg-white dark:bg-gray-800">
-                    <SelectValue placeholder="Choose how you'd like to be represented" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white dark:bg-gray-800 border-2 border-primary/20 rounded-2xl shadow-lg z-50">
-                    <SelectItem value="boy" className="text-lg p-3 hover:bg-primary/10">Boy</SelectItem>
-                    <SelectItem value="girl" className="text-lg p-3 hover:bg-primary/10">Girl</SelectItem>
-                    <SelectItem value="no-preference" className="text-lg p-3 hover:bg-primary/10">I'd rather not say</SelectItem>
-                  </SelectContent>
-                </Select>
+                <AvatarPicker
+                  value={formData.avatar}
+                  onChange={(avatar) => setFormData(prev => ({ ...prev, avatar }))}
+                />
               </div>
 
               <div className="space-y-2">
