@@ -127,7 +127,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
 
   const generateStory = (info: UserInfo, difficulty: DifficultyLevel): string[] => {
     const avatarDesc = getAvatarDescription();
-    const interests = info.interests.join(", ");
+    const hobbies = info.hobbies;
     
     const difficultySettings = {
       easy: { 
@@ -159,19 +159,19 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
     const settings = difficultySettings[difficulty];
     
     const baseStory = [
-      `Once upon a time, there was ${avatarDesc} named ${info.name}. ${info.name} loved ${interests} more than anything in the world. One magical morning, ${info.name} discovered something amazing that would change everything.`,
+      `Once upon a time, there was ${avatarDesc} named ${info.name}. ${info.name} loved ${hobbies} more than anything in the world. One magical morning, ${info.name} discovered something amazing that would change everything.`,
       
       `${info.name} found a mysterious, glowing object hidden in their favorite place. It sparkled with all the colors of the rainbow and seemed to whisper secrets of adventure. When ${info.name} touched it, something incredible happened.`,
       
-      `Suddenly, ${info.name} was transported to a magical world where ${interests} came to life! Everything was more colorful, more exciting, and full of friendly creatures who wanted to help ${info.name} on an amazing quest.`,
+      `Suddenly, ${info.name} was transported to a magical world where ${hobbies} came to life! Everything was more colorful, more exciting, and full of friendly creatures who wanted to help ${info.name} on an amazing quest.`,
       
-      `In this enchanted land, ${info.name} met a wise guide who explained that they had been chosen for a special mission. The guide gave ${info.name} magical powers related to ${interests} and showed them the path to adventure.`,
+      `In this enchanted land, ${info.name} met a wise guide who explained that they had been chosen for a special mission. The guide gave ${info.name} magical powers related to ${hobbies} and showed them the path to adventure.`,
       
-      `${info.name} faced their first challenge with courage and creativity. Using their love of ${interests} and their new magical abilities, they solved puzzles and helped other creatures in need. Everyone was amazed by ${info.name}'s kindness.`,
+      `${info.name} faced their first challenge with courage and creativity. Using their love of ${hobbies} and their new magical abilities, they solved puzzles and helped other creatures in need. Everyone was amazed by ${info.name}'s kindness.`,
       
       `As ${info.name} continued their journey, they discovered hidden talents they never knew they had. Each challenge made them stronger and more confident. The magical world seemed to respond to ${info.name}'s pure heart and determination.`,
       
-      `${info.name} encountered a friendly dragon who was sad because they had lost something precious. Using their knowledge of ${interests} and their problem-solving skills, ${info.name} helped the dragon find what was lost.`,
+      `${info.name} encountered a friendly dragon who was sad because they had lost something precious. Using their knowledge of ${hobbies} and their problem-solving skills, ${info.name} helped the dragon find what was lost.`,
       
       `The grateful dragon became ${info.name}'s loyal companion and taught them how to fly through the clouds. Together, they soared over magical forests, crystal lakes, and rainbow bridges, seeing wonders beyond imagination.`,
       
@@ -181,9 +181,9 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
       
       `When it was time to return home, ${info.name} felt sad to leave but excited to share their story. The magical guide promised that ${info.name} could return anytime they believed in the power of imagination and kindness.`,
       
-      `Back in their own world, ${info.name} looked at their special gift and smiled. They knew that the real magic had been inside them all along - their curiosity about ${interests}, their brave heart, and their caring spirit.`,
+      `Back in their own world, ${info.name} looked at their special gift and smiled. They knew that the real magic had been inside them all along - their curiosity about ${hobbies}, their brave heart, and their caring spirit.`,
       
-      `From that day forward, ${info.name} approached every day as a new adventure. Whether exploring ${interests} or helping friends, they remembered the lessons learned in the magical world and lived happily ever after.`
+      `From that day forward, ${info.name} approached every day as a new adventure. Whether exploring ${hobbies} or helping friends, they remembered the lessons learned in the magical world and lived happily ever after.`
     ];
 
     return baseStory.map(paragraph => {
