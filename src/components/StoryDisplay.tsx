@@ -304,12 +304,12 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
   // Generate illustrations with delay after story is loaded
   useEffect(() => {
     if (story.length > 0) {
-      // Start generating illustrations after a 3-second delay
+      // Start generating illustrations after a 1.5-second delay
       const delayTimer = setTimeout(() => {
         // Queue all pages for illustration generation
         const pages = Array.from({ length: story.length }, (_, i) => i);
         setIllustrationGenerationQueue(pages);
-      }, 3000);
+      }, 1500);
 
       return () => clearTimeout(delayTimer);
     }
