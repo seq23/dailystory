@@ -412,10 +412,21 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
   };
 
   const handleAddTime = () => {
-    setTimeRemaining(prev => prev + 600); // Add 10 minutes (600 seconds)
-    const extensionPages = generateStoryExtension(userInfo, currentDifficulty, storyExtensions);
-    setStory(prev => [...prev, ...extensionPages]);
-    setStoryExtensions(prev => prev + 1);
+    const MAX_SESSION_TIME = 40 * 60; // 40 minutes in seconds
+    const currentTime = timeRemaining;
+    
+    // Only add time if we haven't reached the maximum
+    if (currentTime < MAX_SESSION_TIME) {
+      const timeToAdd = Math.min(600, MAX_SESSION_TIME - currentTime); // Add up to 10 minutes, but not exceed max
+      setTimeRemaining(prev => prev + timeToAdd);
+      
+      // Only generate new story pages if we actually added time
+      if (timeToAdd > 0) {
+        const extensionPages = generateStoryExtension(userInfo, currentDifficulty, storyExtensions);
+        setStory(prev => [...prev, ...extensionPages]);
+        setStoryExtensions(prev => prev + 1);
+      }
+    }
   };
 
   return (
