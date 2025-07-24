@@ -1,41 +1,94 @@
 import { useState } from "react";
-import { getPhoneticSpelling, speakWord } from "@/utils/phoneticDictionary";
-import { Volume2 } from "lucide-react";
+import { getPhoneticSpelling } from "@/utils/phoneticDictionary";
+import { Volume2, HelpCircle } from "lucide-react";
+import { ElevenLabsService, getWordDefinition } from "@/services/textToSpeechService";
 
 interface InteractiveWordProps {
   word: string;
   className?: string;
   difficulty?: "easy" | "medium" | "hard" | "expert";
+  elevenLabsService?: ElevenLabsService;
 }
 
-export const InteractiveWord = ({ word, className = "", difficulty = "easy" }: InteractiveWordProps) => {
+export const InteractiveWord = ({ word, className = "", difficulty = "easy", elevenLabsService }: InteractiveWordProps) => {
   const [showTooltip, setShowTooltip] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   const phoneticSpelling = getPhoneticSpelling(word);
 
-  const handleClick = () => {
-    speakWord(word);
+  const handlePronounce = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isPlaying) return;
+    
+    setIsPlaying(true);
+    try {
+      if (elevenLabsService) {
+        await elevenLabsService.speakText(word);
+      } else {
+        // Fallback to browser speech synthesis
+        if ('speechSynthesis' in window) {
+          const utterance = new SpeechSynthesisUtterance(word.replace(/[.,!?;:'"()]/g, ''));
+          utterance.rate = 0.7;
+          utterance.pitch = 1.2;
+          speechSynthesis.speak(utterance);
+        }
+      }
+    } catch (error) {
+      console.error('Error pronouncing word:', error);
+    } finally {
+      setIsPlaying(false);
+    }
   };
 
-  // For moderate to advanced levels, only show phonetics for words longer than 3 characters
-  const shouldShowPhonetics = () => {
-    if (!phoneticSpelling) return false;
+  const handleExplain = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isPlaying) return;
+    
+    setIsPlaying(true);
+    try {
+      const definition = getWordDefinition(word);
+      if (elevenLabsService) {
+        await elevenLabsService.explainWord(word, definition);
+      } else {
+        // Fallback explanation
+        const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
+        const explanationText = definition 
+          ? `The word ${cleanWord} means: ${definition}`
+          : `The word is: ${cleanWord}`;
+        
+        if ('speechSynthesis' in window) {
+          const utterance = new SpeechSynthesisUtterance(explanationText);
+          utterance.rate = 0.7;
+          utterance.pitch = 1.1;
+          speechSynthesis.speak(utterance);
+        }
+      }
+    } catch (error) {
+      console.error('Error explaining word:', error);
+    } finally {
+      setIsPlaying(false);
+    }
+  };
+
+  // Determine if word should be interactive based on difficulty level
+  const shouldBeInteractive = () => {
+    const cleanWord = word.toLowerCase().replace(/[.,!?;:'"()]/g, '');
+    
+    // Easy level: all words are interactive
     if (difficulty === "easy") return true;
     
-    // Remove punctuation and check clean word length
-    const cleanWord = word.toLowerCase().replace(/[.,!?;:'"()]/g, '');
-    return cleanWord.length > 3;
+    // Other levels: only words longer than 4 letters
+    return cleanWord.length > 4;
   };
 
-  if (!shouldShowPhonetics()) {
+  if (!shouldBeInteractive()) {
     return <span className={className}>{word}</span>;
   }
 
   return (
     <span
-      className={`relative inline-block cursor-pointer ${className}`}
+      className={`relative inline-block cursor-pointer ${className} ${isPlaying ? 'opacity-70' : ''}`}
       onMouseEnter={() => setShowTooltip(true)}
       onMouseLeave={() => setShowTooltip(false)}
-      onClick={handleClick}
     >
       <span className="underline decoration-primary/30 decoration-dotted hover:decoration-primary/60 transition-colors">
         {word}
@@ -44,11 +97,29 @@ export const InteractiveWord = ({ word, className = "", difficulty = "easy" }: I
       {showTooltip && (
         <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 z-50">
           <div className="bg-primary text-primary-foreground px-3 py-2 rounded-lg shadow-lg text-sm font-medium whitespace-nowrap">
-            <div className="flex items-center gap-2">
-              <span>"{phoneticSpelling}"</span>
-              <Volume2 className="w-3 h-3" />
+            <div className="flex items-center gap-2 mb-2">
+              {phoneticSpelling && (
+                <span className="text-xs">"{phoneticSpelling}"</span>
+              )}
             </div>
-            <div className="text-xs opacity-80 mt-1">Click to hear</div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handlePronounce}
+                className="flex items-center gap-1 text-xs bg-primary-foreground/20 hover:bg-primary-foreground/30 px-2 py-1 rounded transition-colors"
+                disabled={isPlaying}
+              >
+                <Volume2 className="w-3 h-3" />
+                Hear it
+              </button>
+              <button
+                onClick={handleExplain}
+                className="flex items-center gap-1 text-xs bg-primary-foreground/20 hover:bg-primary-foreground/30 px-2 py-1 rounded transition-colors"
+                disabled={isPlaying}
+              >
+                <HelpCircle className="w-3 h-3" />
+                Explain
+              </button>
+            </div>
           </div>
           {/* Arrow pointing down */}
           <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-primary"></div>

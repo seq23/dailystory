@@ -66,6 +66,9 @@ import { SecureRunwareService, secureImageCache, cacheImage, getCachedImage } fr
 import { SecurityValidator } from "@/utils/securityValidation";
 import { SecurityMonitor } from "@/utils/monitoring";
 import { createChildFriendlyPrompt } from "@/services/runwareService";
+import { ElevenLabsService } from "@/services/textToSpeechService";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 type DifficultyLevel = "easy" | "medium" | "hard" | "expert";
 
@@ -86,6 +89,9 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
   const [currentIllustration, setCurrentIllustration] = useState<string>("");
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [runwareService] = useState<SecureRunwareService>(() => new SecureRunwareService("LRRGqlrg67zH8uss6lMjVvc54pVOrznM"));
+  const [elevenLabsApiKey, setElevenLabsApiKey] = useState<string>("");
+  const [elevenLabsService, setElevenLabsService] = useState<any>(null);
+  const [showApiKeyInput, setShowApiKeyInput] = useState(false);
 
   // Get user's avatar image
   const getUserAvatar = () => {
@@ -408,6 +414,30 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
     setCurrentParagraph(0); // Reset to beginning with new difficulty
     setStoryExtensions(0); // Reset extensions when difficulty changes
   };
+
+  // Handle ElevenLabs API key setup
+  const handleApiKeySubmit = () => {
+    if (elevenLabsApiKey.trim()) {
+      try {
+        const service = new ElevenLabsService({ apiKey: elevenLabsApiKey.trim() });
+        setElevenLabsService(service);
+        setShowApiKeyInput(false);
+        localStorage.setItem('elevenLabsApiKey', elevenLabsApiKey.trim());
+      } catch (error) {
+        console.error('Error setting up ElevenLabs service:', error);
+      }
+    }
+  };
+
+  // Load saved API key on component mount
+  useEffect(() => {
+    const savedApiKey = localStorage.getItem('elevenLabsApiKey');
+    if (savedApiKey) {
+      setElevenLabsApiKey(savedApiKey);
+      const service = new ElevenLabsService({ apiKey: savedApiKey });
+      setElevenLabsService(service);
+    }
+  }, []);
 
   // Dynamic text size based on age and difficulty
   const getTextSize = () => {
@@ -881,7 +911,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                          textShadow: '0 1px 2px rgba(0,0,0,0.1)',
                          lineHeight: '1.8'
                        }}>
-                      {processTextForPhonetics(storyParagraphs[currentParagraph], `${getTextSize()} text-amber-900 font-medium leading-relaxed drop-shadow-sm animate-fade-in text-left lg:text-justify`, currentDifficulty)}
+                      {processTextForPhonetics(storyParagraphs[currentParagraph], `${getTextSize()} text-amber-900 font-medium leading-relaxed drop-shadow-sm animate-fade-in text-left lg:text-justify`, currentDifficulty, elevenLabsService)}
                     </p>
                   </div>
                 </div>
@@ -1007,6 +1037,52 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
               </div>
             </div>
           </div>
+        )}
+        
+        {/* ElevenLabs API Key Setup Dialog */}
+        <Dialog open={showApiKeyInput} onOpenChange={setShowApiKeyInput}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Setup Text-to-Speech</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                To enable high-quality text-to-speech for word pronunciation and explanations, please enter your ElevenLabs API key.
+                You can get one free at{" "}
+                <a href="https://elevenlabs.io" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                  elevenlabs.io
+                </a>
+              </p>
+              <Input
+                type="password"
+                placeholder="Enter your ElevenLabs API key"
+                value={elevenLabsApiKey}
+                onChange={(e) => setElevenLabsApiKey(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleApiKeySubmit()}
+              />
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setShowApiKeyInput(false)}>
+                  Skip
+                </Button>
+                <Button onClick={handleApiKeySubmit} disabled={!elevenLabsApiKey.trim()}>
+                  Setup TTS
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* TTS Setup Button - floating in top right */}
+        {!elevenLabsService && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowApiKeyInput(true)}
+            className="fixed top-4 right-4 z-50 bg-primary/10 hover:bg-primary/20 border-primary/30"
+          >
+            <Volume2 className="w-4 h-4 mr-2" />
+            Enable TTS
+          </Button>
         )}
         
         {/* Floating Timer Component */}
