@@ -52,11 +52,10 @@ export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
           <div className="flex flex-wrap justify-center gap-6 mb-10">
             <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-6 py-3 border border-white/30">
               <BookOpen className="w-6 h-6 text-yellow-300" />
-              <span className="text-white font-medium text-center">
+              <div className="text-white font-medium">
                 20+ Min of Reading
-                <br />
-                <span className="text-xs">(as recommended by teachers)</span>
-              </span>
+                <div className="text-xs text-center">(as recommended by teachers)</div>
+              </div>
             </div>
             <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-6 py-3 border border-white/30">
               <Sparkles className="w-6 h-6 text-pink-300" />
