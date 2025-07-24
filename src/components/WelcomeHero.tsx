@@ -1,7 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { BookOpen, Sparkles, Heart } from "lucide-react";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import heroImage from "@/assets/hero-image-diverse-clear.jpg";
 import logoImage from "@/assets/time2read-logo.png";
+import carouselImage1 from "@/assets/carousel-1-car-reading.jpg";
+import carouselImage2 from "@/assets/carousel-2-home-reading.jpg";
+import carouselImage3 from "@/assets/carousel-3-outdoor-reading.jpg";
+import carouselImage4 from "@/assets/carousel-4-library-reading.jpg";
 
 interface WelcomeHeroProps {
   onGetStarted: () => void;
@@ -43,13 +48,75 @@ export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
       <div className="flex-1 flex items-center justify-center relative z-10 py-8">
         <div className="container mx-auto px-6 text-center">
           <div className="max-w-4xl mx-auto">
-            {/* Hero Image */}
+            {/* Hero Carousel */}
             <div className="mb-8 relative">
-              <img 
-                src={heroImage} 
-                alt="Children creating magical stories" 
-                className="w-full max-w-2xl mx-auto rounded-3xl shadow-glow border-4 border-white/20"
-              />
+              <Carousel className="w-full max-w-3xl mx-auto">
+                <CarouselContent>
+                  <CarouselItem>
+                    <div className="relative">
+                      <img 
+                        src={carouselImage1} 
+                        alt="Black girl reading on tablet in car" 
+                        className="w-full h-80 md:h-96 object-cover rounded-3xl shadow-glow border-4 border-white/20"
+                      />
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent rounded-b-3xl p-6">
+                        <p className="text-white font-semibold text-lg md:text-xl">
+                          Time 2 Read can be used as a magical summer reading assistant on road trips!
+                        </p>
+                      </div>
+                    </div>
+                  </CarouselItem>
+                  
+                  <CarouselItem>
+                    <div className="relative">
+                      <img 
+                        src={carouselImage2} 
+                        alt="Asian boy reading on laptop at home" 
+                        className="w-full h-80 md:h-96 object-cover rounded-3xl shadow-glow border-4 border-white/20"
+                      />
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent rounded-b-3xl p-6">
+                        <p className="text-white font-semibold text-lg md:text-xl">
+                          Perfect for after-school reading time - make homework fun and engaging!
+                        </p>
+                      </div>
+                    </div>
+                  </CarouselItem>
+                  
+                  <CarouselItem>
+                    <div className="relative">
+                      <img 
+                        src={carouselImage3} 
+                        alt="Hispanic girl reading on phone in park" 
+                        className="w-full h-80 md:h-96 object-cover rounded-3xl shadow-glow border-4 border-white/20"
+                      />
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent rounded-b-3xl p-6">
+                        <p className="text-white font-semibold text-lg md:text-xl">
+                          Take your stories anywhere - from playground breaks to family picnics!
+                        </p>
+                      </div>
+                    </div>
+                  </CarouselItem>
+                  
+                  <CarouselItem>
+                    <div className="relative">
+                      <img 
+                        src={carouselImage4} 
+                        alt="White boy reading on tablet in library" 
+                        className="w-full h-80 md:h-96 object-cover rounded-3xl shadow-glow border-4 border-white/20"
+                      />
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent rounded-b-3xl p-6">
+                        <p className="text-white font-semibold text-lg md:text-xl">
+                          Enhance library visits with interactive digital stories that inspire reading!
+                        </p>
+                      </div>
+                    </div>
+                  </CarouselItem>
+                </CarouselContent>
+                
+                <CarouselPrevious className="left-4 bg-white/20 border-white/30 text-white hover:bg-white/30" />
+                <CarouselNext className="right-4 bg-white/20 border-white/30 text-white hover:bg-white/30" />
+              </Carousel>
+              
               <div className="absolute -top-4 -right-4 animate-bounce-gentle">
                 <Sparkles className="w-12 h-12 text-yellow-300 drop-shadow-lg" />
               </div>
