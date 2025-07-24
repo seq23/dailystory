@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { ColorPicker } from "@/components/ui/color-picker";
 import { ChevronRight, User, GraduationCap, Heart, Star } from "lucide-react";
 
 export interface UserInfo {
@@ -32,7 +33,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
     age: 6,
     grade: "",
     gender: "",
-    favoriteColor: "",
+    favoriteColor: "#3b82f6",
     favoriteAnimal: "",
     hobbies: "",
     favoriteFood: "",
@@ -246,12 +247,9 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                 <Label htmlFor="favoriteColor" className="text-lg font-semibold text-foreground">
                   What's your favorite color?
                 </Label>
-                <Input
-                  id="favoriteColor"
+                <ColorPicker
                   value={formData.favoriteColor}
-                  onChange={(e) => handleInputChange("favoriteColor", e.target.value)}
-                  placeholder="Blue, pink, rainbow..."
-                  className="text-lg p-4 rounded-2xl border-2 border-primary/20 focus:border-primary/50"
+                  onChange={(color) => handleInputChange("favoriteColor", color)}
                 />
               </div>
 
