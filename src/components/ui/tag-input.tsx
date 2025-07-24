@@ -30,7 +30,7 @@ export const TagInput = ({ value, onChange, placeholder, className }: TagInputPr
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' || e.key === ' ') {
+    if (e.key === 'Enter') {
       e.preventDefault();
       if (currentInput.trim()) {
         addItem(currentInput);
@@ -80,7 +80,7 @@ export const TagInput = ({ value, onChange, placeholder, className }: TagInputPr
       />
       
       <div className="text-xs text-muted-foreground mt-2">
-        Press Space or Enter to add each item
+        Press Enter to add each item
       </div>
     </div>
   );

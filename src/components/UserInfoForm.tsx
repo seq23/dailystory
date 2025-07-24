@@ -300,7 +300,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                 <TagInput
                   value={formData.favoriteAnimal}
                   onChange={(value) => handleInputChange("favoriteAnimal", value)}
-                  placeholder="Type animals and press Space or Enter..."
+                  placeholder="Type animals and press Enter..."
                   className="text-lg min-h-[60px]"
                 />
               </div>
@@ -313,7 +313,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                 <TagInput
                   value={formData.favoriteFood}
                   onChange={(value) => handleInputChange("favoriteFood", value)}
-                  placeholder="Type foods and press Space or Enter..."
+                  placeholder="Type foods and press Enter..."
                   className="text-lg min-h-[60px]"
                 />
               </div>
@@ -326,7 +326,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                 <TagInput
                   value={formData.hobbies}
                   onChange={(value) => handleInputChange("hobbies", value)}
-                  placeholder="Type activities and press Space or Enter..."
+                  placeholder="Type activities and press Enter..."
                   className="text-lg"
                 />
               </div>
