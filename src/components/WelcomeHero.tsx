@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { BookOpen, Sparkles, Heart } from "lucide-react";
-import heroImage from "@/assets/hero-image-diverse.jpg";
+import heroImage from "@/assets/hero-image-diverse-clear.jpg";
 
 interface WelcomeHeroProps {
   onGetStarted: () => void;
