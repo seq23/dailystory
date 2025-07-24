@@ -15,7 +15,7 @@ export interface UserInfo {
   grade: string;
   avatar: {
     type: "boy" | "girl";
-    skinTone: "light" | "medium" | "dark";
+    skinTone: "pale" | "light" | "medium" | "olive" | "dark";
   };
   favoriteColor: string;
   favoriteAnimal: string;

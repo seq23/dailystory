@@ -5,16 +5,20 @@ import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 
 // Import avatar images
+import avatarBoyPale from "@/assets/avatar-boy-pale.jpg"
 import avatarBoyLight from "@/assets/avatar-boy-light.jpg"
 import avatarBoyMedium from "@/assets/avatar-boy-medium.jpg"
+import avatarBoyOlive from "@/assets/avatar-boy-olive.jpg"
 import avatarBoyDark from "@/assets/avatar-boy-dark.jpg"
+import avatarGirlPale from "@/assets/avatar-girl-pale.jpg"
 import avatarGirlLight from "@/assets/avatar-girl-light.jpg"
 import avatarGirlMedium from "@/assets/avatar-girl-medium.jpg"
+import avatarGirlOlive from "@/assets/avatar-girl-olive.jpg"
 import avatarGirlDark from "@/assets/avatar-girl-dark.jpg"
 
 interface AvatarSelection {
   type: "boy" | "girl"
-  skinTone: "light" | "medium" | "dark"
+  skinTone: "pale" | "light" | "medium" | "olive" | "dark"
 }
 
 interface AvatarPickerProps {
@@ -25,21 +29,27 @@ interface AvatarPickerProps {
 
 const avatarImages = {
   boy: {
+    pale: avatarBoyPale,
     light: avatarBoyLight,
     medium: avatarBoyMedium,
+    olive: avatarBoyOlive,
     dark: avatarBoyDark,
   },
   girl: {
+    pale: avatarGirlPale,
     light: avatarGirlLight,
     medium: avatarGirlMedium,
+    olive: avatarGirlOlive,
     dark: avatarGirlDark,
   },
 }
 
-const skinToneLabels = {
-  light: "Light",
-  medium: "Medium", 
-  dark: "Dark"
+const skinToneColors = {
+  pale: "#fde2e7",
+  light: "#f7d7a3", 
+  medium: "#d4a574",
+  olive: "#c19a6b",
+  dark: "#8b5a3c"
 }
 
 export const AvatarPicker = React.forwardRef<
@@ -50,7 +60,7 @@ export const AvatarPicker = React.forwardRef<
     onChange({ ...value, type })
   }
 
-  const handleSkinToneChange = (skinTone: "light" | "medium" | "dark") => {
+  const handleSkinToneChange = (skinTone: "pale" | "light" | "medium" | "olive" | "dark") => {
     onChange({ ...value, skinTone })
   }
 
@@ -84,20 +94,24 @@ export const AvatarPicker = React.forwardRef<
         <Label className="text-lg font-semibold text-foreground">
           Tone:
         </Label>
-        <RadioGroup
-          value={value.skinTone}
-          onValueChange={handleSkinToneChange}
-          className="flex gap-4"
-        >
-          {(Object.keys(skinToneLabels) as Array<keyof typeof skinToneLabels>).map((tone) => (
-            <div key={tone} className="flex items-center space-x-2">
-              <RadioGroupItem value={tone} id={tone} />
-              <Label htmlFor={tone} className="text-base cursor-pointer">
-                {skinToneLabels[tone]}
-              </Label>
-            </div>
+        <div className="flex gap-3 flex-wrap">
+          {(Object.keys(skinToneColors) as Array<keyof typeof skinToneColors>).map((tone) => (
+            <Button
+              key={tone}
+              type="button"
+              variant="outline"
+              onClick={() => handleSkinToneChange(tone)}
+              className={cn(
+                "w-12 h-12 rounded-full border-4 hover:scale-110 transition-transform",
+                value.skinTone === tone 
+                  ? "border-primary shadow-lg scale-110" 
+                  : "border-gray-300 hover:border-primary/50"
+              )}
+              style={{ backgroundColor: skinToneColors[tone] }}
+              aria-label={`Select ${tone} skin tone`}
+            />
           ))}
-        </RadioGroup>
+        </div>
       </div>
 
       {/* Avatar Preview */}
