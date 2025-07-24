@@ -183,17 +183,9 @@ export const createChildFriendlyPrompt = (storyText: string, userInfo?: any): st
   
   // Analyze the story text more comprehensively
   
-  // Character detection (prioritize user's info if available)
-  if (userInfo) {
-    const characterDesc = `${userInfo.avatar.type === "boy" ? "young boy" : "young girl"} with ${userInfo.avatar.skinTone} skin`;
-    if (lowerText.includes(userInfo.name.toLowerCase()) || lowerText.includes("i ") || lowerText.includes("me ")) {
-      characters.push(characterDesc);
-    }
-    
-    // Include user's favorite animal if mentioned
-    if (userInfo.favoriteAnimal && lowerText.includes(userInfo.favoriteAnimal.toLowerCase())) {
-      characters.push(`friendly ${userInfo.favoriteAnimal.toLowerCase()}`);
-    }
+  // Character detection - focus on story content, not forced avatar insertion
+  if (userInfo?.favoriteAnimal && lowerText.includes(userInfo.favoriteAnimal.toLowerCase())) {
+    characters.push(`friendly ${userInfo.favoriteAnimal.toLowerCase()}`);
   }
   
   // Detect other characters

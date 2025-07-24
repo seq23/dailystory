@@ -600,11 +600,31 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
     return allIllustrations[safeIndex];
   };
 
-  // Load illustration when paragraph changes
+  // Load illustration when paragraph changes, focusing on plot points
   useEffect(() => {
     const loadIllustration = async () => {
-      const illustration = await getCurrentIllustration();
-      setCurrentIllustration(illustration);
+      const currentText = storyParagraphs[currentParagraph];
+      const lowerText = currentText.toLowerCase();
+      
+      // Detect major plot points and story changes
+      const plotTwistIndicators = [
+        'suddenly', 'then', 'but then', 'however', 'meanwhile', 'next',
+        'all of a sudden', 'unexpectedly', 'to his surprise', 'to her surprise',
+        'just then', 'at that moment', 'without warning', 'out of nowhere',
+        'before long', 'after a while', 'later that day', 'the next morning'
+      ];
+      
+      const hasPlotTwist = plotTwistIndicators.some(indicator => 
+        lowerText.includes(indicator)
+      );
+      
+      // Generate new illustration at plot twists or every few paragraphs
+      const shouldGenerateNewImage = hasPlotTwist || currentParagraph % 3 === 0;
+      
+      if (shouldGenerateNewImage || !currentIllustration) {
+        const illustration = await getCurrentIllustration();
+        setCurrentIllustration(illustration);
+      }
     };
     loadIllustration();
   }, [currentParagraph]);
