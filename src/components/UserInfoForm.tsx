@@ -190,7 +190,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
 
               <div className="space-y-2">
                 <Label htmlFor="avatar" className="text-lg font-semibold text-foreground">
-                  Choose your avatar
+                  Which avatar do you want?
                 </Label>
                 <AvatarPicker
                   value={formData.avatar}
