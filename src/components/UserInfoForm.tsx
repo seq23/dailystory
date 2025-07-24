@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { HobbyInput } from "@/components/ui/hobby-input";
+import { TagInput } from "@/components/ui/tag-input";
 import { ColorPicker } from "@/components/ui/color-picker";
 import { AvatarPicker } from "@/components/ui/avatar-picker";
 import { ChevronRight, User, GraduationCap, Heart, Star } from "lucide-react";
@@ -258,12 +258,11 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                   What's your favorite animal?
                   <span className="text-sm text-muted-foreground ml-2">(Optional)</span>
                 </Label>
-                <Input
-                  id="favoriteAnimal"
+                <TagInput
                   value={formData.favoriteAnimal}
-                  onChange={(e) => handleInputChange("favoriteAnimal", e.target.value)}
-                  placeholder="Dog, cat, dragon..."
-                  className="text-lg p-4 rounded-2xl border-2 border-primary/20 focus:border-primary/50"
+                  onChange={(value) => handleInputChange("favoriteAnimal", value)}
+                  placeholder="Type animals and press Space or Enter..."
+                  className="text-lg min-h-[60px]"
                 />
               </div>
 
@@ -272,12 +271,11 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                   What's your favorite food?
                   <span className="text-sm text-muted-foreground ml-2">(Optional)</span>
                 </Label>
-                <Input
-                  id="favoriteFood"
+                <TagInput
                   value={formData.favoriteFood}
-                  onChange={(e) => handleInputChange("favoriteFood", e.target.value)}
-                  placeholder="Pizza, ice cream, apples..."
-                  className="text-lg p-4 rounded-2xl border-2 border-primary/20 focus:border-primary/50"
+                  onChange={(value) => handleInputChange("favoriteFood", value)}
+                  placeholder="Type foods and press Space or Enter..."
+                  className="text-lg min-h-[60px]"
                 />
               </div>
 
@@ -286,10 +284,10 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                   What do you like to do for fun?
                   <span className="text-sm text-muted-foreground ml-2">(Optional)</span>
                 </Label>
-                <HobbyInput
+                <TagInput
                   value={formData.hobbies}
                   onChange={(value) => handleInputChange("hobbies", value)}
-                  placeholder="Type an activity and press Space or Enter..."
+                  placeholder="Type activities and press Space or Enter..."
                   className="text-lg"
                 />
               </div>
