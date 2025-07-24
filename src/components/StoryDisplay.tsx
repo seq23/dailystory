@@ -49,6 +49,17 @@ import illustration41 from "@/assets/story-illustration-41.jpg";
 import illustration42 from "@/assets/story-illustration-42.jpg";
 import illustration43 from "@/assets/story-illustration-43.jpg";
 import illustration44 from "@/assets/story-illustration-44.jpg";
+// Import avatar images
+import avatarBoyPale from "@/assets/avatar-boy-pale.jpg";
+import avatarBoyLight from "@/assets/avatar-boy-light.jpg";
+import avatarBoyMedium from "@/assets/avatar-boy-medium.jpg";
+import avatarBoyOlive from "@/assets/avatar-boy-olive.jpg";
+import avatarBoyDark from "@/assets/avatar-boy-dark.jpg";
+import avatarGirlPale from "@/assets/avatar-girl-pale.jpg";
+import avatarGirlLight from "@/assets/avatar-girl-light.jpg";
+import avatarGirlMedium from "@/assets/avatar-girl-medium.jpg";
+import avatarGirlOlive from "@/assets/avatar-girl-olive.jpg";
+import avatarGirlDark from "@/assets/avatar-girl-dark.jpg";
 import { FloatingTimer } from "./FloatingTimer";
 import { processTextForPhonetics } from "@/utils/textProcessor";
 import { RunwareService, generatedImageCache, createChildFriendlyPrompt } from "@/services/runwareService";
@@ -72,6 +83,28 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
   const [currentIllustration, setCurrentIllustration] = useState<string>("");
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [runwareService] = useState<RunwareService>(() => new RunwareService("LRRGqlrg67zH8uss6lMjVvc54pVOrznM"));
+
+  // Get user's avatar image
+  const getUserAvatar = () => {
+    const avatarImages = {
+      boy: {
+        pale: avatarBoyPale,
+        light: avatarBoyLight,
+        medium: avatarBoyMedium,
+        olive: avatarBoyOlive,
+        dark: avatarBoyDark,
+      },
+      girl: {
+        pale: avatarGirlPale,
+        light: avatarGirlLight,
+        medium: avatarGirlMedium,
+        olive: avatarGirlOlive,
+        dark: avatarGirlDark,
+      },
+    };
+    
+    return avatarImages[userInfo.avatar.type]?.[userInfo.avatar.skinTone] || avatarBoyLight;
+  };
 
   // Generate age-appropriate G/PG rated stories with calibrated length for 20-minute reading
   // Maximum reading level is capped at 12th grade (expert difficulty)
@@ -396,6 +429,23 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
       return generatedImageCache.get(cacheKey)!;
     }
     
+    // Check if the story mentions the main character - use their avatar
+    const characterMentions = [
+      userInfo.name.toLowerCase(),
+      userInfo.avatar.type,
+      'main character',
+      'protagonist',
+      'hero'
+    ];
+    
+    const mentionsCharacter = characterMentions.some(mention => 
+      lowerText.includes(mention)
+    );
+    
+    if (mentionsCharacter) {
+      return getUserAvatar();
+    }
+    
     // Specific illustration mappings - exact keywords to exact illustrations
     const specificMappings = {
       'basketball': illustration26,
@@ -566,7 +616,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
       <div className="relative z-10 min-h-screen flex flex-col">
         {/* Header positioned at top of book */}
         <div className="flex items-center justify-between p-6 bg-amber-100/60 backdrop-blur-sm border-b border-amber-300/30">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <div className="p-3 bg-gradient-primary rounded-full shadow-soft">
               <BookOpen className="w-8 h-8 text-white" />
             </div>
@@ -581,6 +631,16 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                 <span className={`text-sm font-semibold px-2 py-1 rounded-full bg-white/80 ${getDifficultyColor()}`}>
                   {getDifficultyLabel()}
                 </span>
+              </div>
+            </div>
+            {/* User's Avatar */}
+            <div className="ml-4">
+              <div className="w-16 h-16 rounded-full overflow-hidden border-4 border-primary/30 shadow-lg">
+                <img
+                  src={getUserAvatar()}
+                  alt={`${userInfo.name}'s avatar`}
+                  className="w-full h-full object-cover"
+                />
               </div>
             </div>
           </div>
