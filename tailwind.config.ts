@@ -20,6 +20,7 @@ export default {
 		extend: {
 			fontFamily: {
 				'comic': ['Comic Neue', 'cursive', 'sans-serif'],
+				'schoolbell': ['Schoolbell', 'cursive', 'sans-serif'],
 				'sans': ['Comic Neue', 'ui-sans-serif', 'system-ui'],
 			},
 			colors: {

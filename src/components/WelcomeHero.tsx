@@ -43,7 +43,7 @@ export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
                   <h1 className="text-2xl md:text-4xl font-bold text-white drop-shadow-lg">
                     Time
                   </h1>
-                  <span className="text-3xl md:text-5xl font-bold text-yellow-300 drop-shadow-lg mx-0.5">
+                  <span className="text-4xl md:text-6xl font-schoolbell text-yellow-300 drop-shadow-lg mx-0.5 transform rotate-3">
                     2
                   </span>
                   <h1 className="text-2xl md:text-4xl font-bold text-white drop-shadow-lg">
