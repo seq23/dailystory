@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { BookOpen, Home, RotateCcw, Volume2, VolumeX, TrendingUp, TrendingDown, Plus, Star, Heart, Sparkles } from "lucide-react";
 import type { UserInfo } from "./UserInfoForm";
 import ancientBookBg from "@/assets/ancient-book-bg.jpg";
@@ -435,6 +436,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
   };
 
   return (
+    <TooltipProvider>
     <div className="min-h-screen bg-gradient-hero relative overflow-hidden">
       {/* Magical floating elements */}
       <div className="absolute inset-0 pointer-events-none">
@@ -581,24 +583,39 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                   
                   {/* Difficulty Controls */}
                   <div className="flex items-center gap-2">
-                    <Button
-                      onClick={handleDifficultyDown}
-                      size="sm"
-                      variant="outline"
-                      className="rounded-full w-8 h-8 p-0 hover:scale-110 transition-transform"
-                      disabled={currentDifficulty === "easy"}
-                    >
-                      <TrendingDown className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      onClick={handleDifficultyUp}
-                      size="sm"
-                      variant="outline"
-                      className="rounded-full w-8 h-8 p-0 hover:scale-110 transition-transform"
-                      disabled={currentDifficulty === "expert"}
-                    >
-                      <TrendingUp className="w-4 h-4" />
-                    </Button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={handleDifficultyDown}
+                          size="sm"
+                          variant="outline"
+                          className="rounded-full w-8 h-8 p-0 hover:scale-110 transition-transform"
+                          disabled={currentDifficulty === "easy"}
+                        >
+                          <TrendingDown className="w-4 h-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Make story easier</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={handleDifficultyUp}
+                          size="sm"
+                          variant="outline"
+                          className="rounded-full w-8 h-8 p-0 hover:scale-110 transition-transform"
+                          disabled={currentDifficulty === "expert"}
+                        >
+                          <TrendingUp className="w-4 h-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Make story harder</p>
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                 </div>
 
@@ -647,5 +664,6 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
         onAddTime={handleAddTime}
       />
     </div>
+    </TooltipProvider>
   );
 };
