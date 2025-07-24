@@ -171,7 +171,7 @@ export class RunwareService {
 export const generatedImageCache = new Map<string, string>();
 
 // Function to generate child-friendly illustration prompts
-export const createChildFriendlyPrompt = (storyText: string, userInfo?: any): string => {
+export const createChildFriendlyPrompt = (storyText: string, userInfo?: any, pageIndex = 0): string => {
   // Import ContentSecurity here to avoid circular imports
   const { ContentSecurity } = require('@/utils/security');
   
@@ -389,8 +389,41 @@ export const createChildFriendlyPrompt = (storyText: string, userInfo?: any): st
     }
   }
   
-  // Add mood and style
-  prompt += `with a ${mood} atmosphere, soft pastel colors, child-friendly art style, storybook illustration, warm lighting, safe and wholesome content, high quality digital art`;
+  // Diverse art style options that appeal to both boys and girls
+  const artStyles = [
+    "realistic children's photography style with natural lighting",
+    "vibrant digital illustration with bold colors", 
+    "soft watercolor painting style",
+    "modern cartoon illustration with clean lines",
+    "realistic digital art with photographic quality",
+    "colorful storybook illustration",
+    "contemporary children's book art style",
+    "bright and engaging realistic style"
+  ];
+  
+  // Choose art style based on story content and user preferences
+  let selectedStyle = artStyles[pageIndex % artStyles.length] || artStyles[0];
+  
+  // Color palette variety - not just pastels
+  const colorPalettes = [
+    "vibrant and energetic colors",
+    "warm earth tones and natural colors", 
+    "bright primary colors",
+    "soft pastels",
+    "rich jewel tones",
+    "cool blues and greens",
+    "warm oranges and yellows",
+    "balanced natural color palette"
+  ];
+  
+  // Select color palette that incorporates user's favorite color if available
+  let selectedColors = colorPalettes[Math.floor(Math.random() * colorPalettes.length)];
+  if (userInfo?.favoriteColor) {
+    selectedColors = `beautiful ${userInfo.favoriteColor.toLowerCase()} tones with complementary colors`;
+  }
+  
+  // Add mood, style, and universal appeal
+  prompt += `with a ${mood} atmosphere, ${selectedColors}, ${selectedStyle}, appealing to all children regardless of gender, diverse and inclusive, safe and wholesome content, high quality professional artwork`;
   
   // Final security validation of the generated prompt
   const finalPrompt = ContentSecurity.sanitizePrompt(prompt);

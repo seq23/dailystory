@@ -566,7 +566,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
         setIsGeneratingImage(true);
         
         // Create a highly specific prompt for this exact page content
-        let prompt = createChildFriendlyPrompt(currentText, userInfo);
+        let prompt = createChildFriendlyPrompt(currentText, userInfo, currentParagraph);
         
         // Always include main character details for consistency
         const avatarDescription = getAvatarDescription();
