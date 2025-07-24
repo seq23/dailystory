@@ -8,19 +8,24 @@ interface FloatingTimerProps {
   isReading: boolean;
   onToggleReading: () => void;
   onAddTime: () => void;
+  pagesRemaining?: number;
 }
 
 export const FloatingTimer = ({ 
   timeRemaining, 
   isReading, 
   onToggleReading, 
-  onAddTime 
+  onAddTime,
+  pagesRemaining = 0
 }: FloatingTimerProps) => {
   const [showCelebration, setShowCelebration] = useState(false);
   const [showPlayTooltip, setShowPlayTooltip] = useState(false);
   const [showPlusTooltip, setShowPlusTooltip] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const { toast } = useToast();
+  
+  // Check if we should encourage adding pages (5+ minutes left, 1 page remaining)
+  const shouldShakeTooltip = timeRemaining >= 5 * 60 && pagesRemaining === 1;
   
   // Calculate progress for circular progress (based on current session time)
   const maxTime = 40 * 60; // Maximum 40 minutes
@@ -224,11 +229,16 @@ export const FloatingTimer = ({
             </Button>
             
             {/* Custom Tooltip for Add Time */}
-            {showPlusTooltip && (
-              <div className="absolute bottom-full mb-3 left-1/2 transform -translate-x-1/2 z-60">
-                <div className="bg-green-500 text-white px-4 py-2 rounded-2xl text-lg font-bold shadow-lg border-2 border-green-300 relative whitespace-nowrap">
+            {(showPlusTooltip || shouldShakeTooltip) && (
+              <div className={`absolute bottom-full mb-3 left-1/2 transform -translate-x-1/2 z-60 ${shouldShakeTooltip ? 'animate-bounce' : ''}`}>
+                <div className={`bg-green-500 text-white px-4 py-2 rounded-2xl text-lg font-bold shadow-lg border-2 border-green-300 relative whitespace-nowrap ${shouldShakeTooltip ? 'animate-pulse' : ''}`}>
                   ➕ Add 10 minutes & pages!
                   <div className="text-sm font-normal mt-1">(Max 40 min total)</div>
+                  {shouldShakeTooltip && (
+                    <div className="text-sm font-normal mt-1 text-yellow-200">
+                      📖 Only 1 page left!
+                    </div>
+                  )}
                   {/* Bubble tail */}
                   <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-green-500"></div>
                 </div>

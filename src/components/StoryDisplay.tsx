@@ -750,6 +750,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
         isReading={isReading}
         onToggleReading={() => setIsReading(!isReading)}
         onAddTime={handleAddTime}
+        pagesRemaining={totalPages - currentParagraph - 1}
       />
     </div>
     </TooltipProvider>
