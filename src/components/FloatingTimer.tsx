@@ -17,6 +17,8 @@ export const FloatingTimer = ({
   onAddTime 
 }: FloatingTimerProps) => {
   const [showCelebration, setShowCelebration] = useState(false);
+  const [showPlayTooltip, setShowPlayTooltip] = useState(false);
+  const [showPlusTooltip, setShowPlusTooltip] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const { toast } = useToast();
   
@@ -182,26 +184,57 @@ export const FloatingTimer = ({
         </div>
         
         {/* Control Buttons */}
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onToggleReading}
-            className="bg-white/90 backdrop-blur-sm border-2 border-amber-300 text-amber-800 hover:bg-amber-50 shadow-lg w-12 h-12 p-0"
-            title={isReading ? "Pause Timer" : "Start Timer"}
-          >
-            {isReading ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-          </Button>
+        <div className="flex gap-2 relative">
+          {/* Play/Pause Button */}
+          <div className="relative">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onToggleReading}
+              onMouseEnter={() => setShowPlayTooltip(true)}
+              onMouseLeave={() => setShowPlayTooltip(false)}
+              className="bg-white/90 backdrop-blur-sm border-2 border-amber-300 text-amber-800 hover:bg-amber-50 shadow-lg w-12 h-12 p-0"
+            >
+              {isReading ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+            </Button>
+            
+            {/* Custom Tooltip for Play/Pause */}
+            {showPlayTooltip && (
+              <div className="absolute bottom-full mb-3 left-1/2 transform -translate-x-1/2 z-60">
+                <div className="bg-purple-500 text-white px-4 py-2 rounded-2xl text-lg font-bold shadow-lg border-2 border-purple-300 relative">
+                  {isReading ? "⏸️ Pause Timer" : "▶️ Start Timer"}
+                  {/* Bubble tail */}
+                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-purple-500"></div>
+                </div>
+              </div>
+            )}
+          </div>
           
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onAddTime}
-            className="bg-white/90 backdrop-blur-sm border-2 border-amber-300 text-amber-800 hover:bg-amber-50 shadow-lg w-12 h-12 p-0"
-            title="Add 10 minutes (max 40 min) & add pages"
-          >
-            <Plus className="w-4 h-4" />
-          </Button>
+          {/* Add Time Button */}
+          <div className="relative">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onAddTime}
+              onMouseEnter={() => setShowPlusTooltip(true)}
+              onMouseLeave={() => setShowPlusTooltip(false)}
+              className="bg-white/90 backdrop-blur-sm border-2 border-amber-300 text-amber-800 hover:bg-amber-50 shadow-lg w-12 h-12 p-0"
+            >
+              <Plus className="w-4 h-4" />
+            </Button>
+            
+            {/* Custom Tooltip for Add Time */}
+            {showPlusTooltip && (
+              <div className="absolute bottom-full mb-3 left-1/2 transform -translate-x-1/2 z-60">
+                <div className="bg-green-500 text-white px-4 py-2 rounded-2xl text-lg font-bold shadow-lg border-2 border-green-300 relative whitespace-nowrap">
+                  ➕ Add 10 minutes & pages!
+                  <div className="text-sm font-normal mt-1">(Max 40 min total)</div>
+                  {/* Bubble tail */}
+                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-green-500"></div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
       
