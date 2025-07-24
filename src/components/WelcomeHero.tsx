@@ -1,6 +1,7 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { BookOpen, Sparkles, Heart } from "lucide-react";
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from "@/components/ui/carousel";
 import heroImage from "@/assets/hero-image-diverse-clear.jpg";
 import logoImage from "@/assets/time2read-logo.png";
 import carouselImage1 from "@/assets/carousel-1-car-reading.jpg";
@@ -13,6 +14,18 @@ interface WelcomeHeroProps {
 }
 
 export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
+  const [api, setApi] = useState<CarouselApi>();
+
+  useEffect(() => {
+    if (!api) return;
+
+    const autoplay = setInterval(() => {
+      api.scrollNext();
+    }, 4000); // Change slide every 4 seconds
+
+    return () => clearInterval(autoplay);
+  }, [api]);
+
   return (
     <div className="min-h-screen bg-gradient-hero flex flex-col relative overflow-hidden">
       {/* Header with Company Branding */}
@@ -50,7 +63,7 @@ export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
           <div className="max-w-4xl mx-auto">
             {/* Hero Carousel */}
             <div className="mb-8 relative">
-              <Carousel className="w-full max-w-3xl mx-auto">
+              <Carousel setApi={setApi} className="w-full max-w-3xl mx-auto">
                 <CarouselContent>
                   <CarouselItem>
                     <div className="relative">
