@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { SecurityBoundary } from "@/components/SecurityBoundary";
+import { SecurityDashboard } from "@/components/SecurityDashboard";
 import { useSecurityHeaders } from "@/hooks/useSecurityHeaders";
 import { useSecurityMonitoring } from "@/hooks/useSecurityMonitoring";
 
@@ -23,6 +24,7 @@ const SecurityWrapper = () => {
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
+      <SecurityDashboard />
     </SecurityBoundary>
   );
 };

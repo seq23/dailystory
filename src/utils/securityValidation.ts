@@ -49,14 +49,41 @@ export class SecurityValidator {
           }
         });
 
-        // Check for excessive length
-        if (input.length > 10000) {
-          warnings.push('Input exceeds recommended length');
+        // Enhanced length validation with stricter limits
+        if (input.length > 5000) {
+          errors.push('Input exceeds maximum allowed length');
           SecurityMonitor.logEvent('security', 'excessive_input_length', {
             context,
             length: input.length
-          }, 'low');
+          }, 'medium');
+        } else if (input.length > 2000) {
+          warnings.push('Input approaching length limit');
         }
+
+        // Additional validation patterns
+        const suspiciousPatterns = [
+          /<iframe[^>]*>/gi,
+          /<object[^>]*>/gi,
+          /<embed[^>]*>/gi,
+          /<link[^>]*>/gi,
+          /<meta[^>]*>/gi,
+          /document\./gi,
+          /window\./gi,
+          /eval\(/gi,
+          /Function\(/gi,
+          /setTimeout\(/gi,
+          /setInterval\(/gi
+        ];
+
+        suspiciousPatterns.forEach(pattern => {
+          if (pattern.test(input)) {
+            errors.push('Suspicious content pattern detected');
+            SecurityMonitor.logEvent('security', 'suspicious_pattern_detected', {
+              context,
+              pattern: pattern.toString()
+            }, 'high');
+          }
+        });
       }
 
       return {
