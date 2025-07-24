@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { HobbyInput } from "@/components/ui/hobby-input";
 import { ColorPicker } from "@/components/ui/color-picker";
 import { AvatarPicker } from "@/components/ui/avatar-picker";
 import { ChevronRight, User, GraduationCap, Heart, Star } from "lucide-react";
@@ -84,18 +85,6 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
       return; // Don't update if content is inappropriate
     }
     setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleHobbiesChange = (value: string) => {
-    if (contentFilter(value)) {
-      return; // Don't update if content is inappropriate
-    }
-    
-    // Process hobbies to separate words/phrases properly
-    const words = value.split(/\s+/).filter(word => word.trim().length > 0);
-    const processedValue = words.join(', ');
-    
-    setFormData(prev => ({ ...prev, hobbies: processedValue }));
   };
 
   const handleSubmit = () => {
@@ -297,12 +286,11 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                   What do you like to do for fun?
                   <span className="text-sm text-muted-foreground ml-2">(Optional)</span>
                 </Label>
-                <Textarea
-                  id="hobbies"
+                <HobbyInput
                   value={formData.hobbies}
-                  onChange={(e) => handleHobbiesChange(e.target.value)}
-                  placeholder="Type your activities separated by spaces: soccer drawing reading cooking..."
-                  className="text-lg p-4 rounded-2xl border-2 border-primary/20 focus:border-primary/50 min-h-[100px]"
+                  onChange={(value) => handleInputChange("hobbies", value)}
+                  placeholder="Type an activity and press Space or Enter..."
+                  className="text-lg"
                 />
               </div>
             </div>
