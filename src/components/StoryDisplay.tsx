@@ -1,12 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { BookOpen, Home, RotateCcw, Volume2, VolumeX, TrendingUp, TrendingDown, Plus } from "lucide-react";
+import { BookOpen, Home, RotateCcw, Volume2, VolumeX, TrendingUp, TrendingDown, Plus, Star, Heart, Sparkles } from "lucide-react";
 import type { UserInfo } from "./UserInfoForm";
 import ancientBookBg from "@/assets/ancient-book-bg.jpg";
 import illustration1 from "@/assets/story-illustration-1.jpg";
-import illustration2 from "@/assets/story-illustration-2.jpg"; 
+import illustration2 from "@/assets/story-illustration-2.jpg";
 import illustration3 from "@/assets/story-illustration-3.jpg";
 import illustration4 from "@/assets/story-illustration-4.jpg";
 import illustration5 from "@/assets/story-illustration-5.jpg";
@@ -49,7 +49,6 @@ import illustration41 from "@/assets/story-illustration-41.jpg";
 import illustration42 from "@/assets/story-illustration-42.jpg";
 import illustration43 from "@/assets/story-illustration-43.jpg";
 import illustration44 from "@/assets/story-illustration-44.jpg";
-// Import avatar images
 import avatarBoyPale from "@/assets/avatar-boy-pale.jpg";
 import avatarBoyLight from "@/assets/avatar-boy-light.jpg";
 import avatarBoyMedium from "@/assets/avatar-boy-medium.jpg";
@@ -60,6 +59,7 @@ import avatarGirlLight from "@/assets/avatar-girl-light.jpg";
 import avatarGirlMedium from "@/assets/avatar-girl-medium.jpg";
 import avatarGirlOlive from "@/assets/avatar-girl-olive.jpg";
 import avatarGirlDark from "@/assets/avatar-girl-dark.jpg";
+import time2ReadLogo from "@/assets/time2read-logo.png";
 import { FloatingTimer } from "./FloatingTimer";
 import { processTextForPhonetics } from "@/utils/textProcessor";
 import { SecureRunwareService, secureImageCache, cacheImage, getCachedImage } from "@/services/secureRunwareService";
@@ -67,8 +67,6 @@ import { SecurityValidator } from "@/utils/securityValidation";
 import { SecurityMonitor } from "@/utils/monitoring";
 import { createChildFriendlyPrompt } from "@/services/runwareService";
 import { ElevenLabsService } from "@/services/textToSpeechService";
-import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 type DifficultyLevel = "easy" | "medium" | "hard" | "expert";
 
@@ -80,9 +78,9 @@ interface StoryDisplayProps {
 
 export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps) => {
   const [currentParagraph, setCurrentParagraph] = useState(0);
-  const [isReading, setIsReading] = useState(true); // Auto-start reading
-  const [timeRemaining, setTimeRemaining] = useState(10 * 60); // Start at 10 minutes
-  const [storyExtensions, setStoryExtensions] = useState(0); // Track how many 10-min extensions added
+  const [isReading, setIsReading] = useState(true);
+  const [timeRemaining, setTimeRemaining] = useState(10 * 60);
+  const [storyExtensions, setStoryExtensions] = useState(0);
   const [currentDifficulty, setCurrentDifficulty] = useState<DifficultyLevel>(
     userInfo.difficultyLevel || (userInfo.age <= 6 ? "easy" : userInfo.age <= 9 ? "medium" : userInfo.age <= 12 ? "hard" : "expert")
   );
@@ -93,7 +91,6 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
     new ElevenLabsService({ apiKey: "sk_9935316e04bb91ad195bacd28187279ec30691b8fa66ab6b" })
   );
 
-  // Get user's avatar image
   const getUserAvatar = () => {
     const avatarImages = {
       boy: {
@@ -115,7 +112,6 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
     return avatarImages[userInfo.avatar.type]?.[userInfo.avatar.skinTone] || avatarBoyLight;
   };
 
-  // Get avatar description for image generation prompts
   const getAvatarDescription = () => {
     const genderDesc = userInfo.avatar.type === "boy" ? "young boy" : "young girl";
     const skinToneDesc = {
@@ -129,234 +125,98 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
     return `a happy ${genderDesc} with ${skinToneDesc}`;
   };
 
-  // Generate age-appropriate G/PG rated stories with calibrated length for 20-minute reading
-  // Maximum reading level is capped at 12th grade (expert difficulty)
   const generateStory = (info: UserInfo, difficulty: DifficultyLevel): string[] => {
-    // Ensure all content is family-friendly and G/PG rated
-    const contentGuidelines = "All stories must be positive, uplifting, non-violent, educational, and appropriate for children. No scary, dark, or inappropriate themes.";
-    const baseStoryTemplates = {
-      // Easy: 12 very simple pages (ages 4-6, K-1st grade, 5-15 words per page like real children's books)
-      easy: [
-        `Hi! This is ${info.name}.`,
-        
-        `${info.name} is ${info.age} years old.`,
-        
-        `${info.name} likes ${info.favoriteColor}.`,
-        
-        `One day, ${info.name} went outside.`,
-        
-        `${info.name} saw a ${info.favoriteAnimal}.`,
-        
-        `The ${info.favoriteAnimal} was sad.`,
-        
-        `"Help me!" said the ${info.favoriteAnimal}.`,
-        
-        `${info.name} helped the ${info.favoriteAnimal}.`,
-        
-        `They went to a magic place.`,
-        
-        `Everything was made of ${info.favoriteFood}!`,
-        
-        `${info.name} and the ${info.favoriteAnimal} played.`,
-        
-        `${info.name} was happy. The End.`
-      ],
-      
-      // Medium: 10 medium pages (ages 7-9, 2nd-4th grade reading level)
-      medium: [
-        `Once upon a time, there was a special child named ${info.name} who was ${info.age} years old and in ${info.grade} grade. ${info.name} had a wonderful gift that made everything turn the beautiful color ${info.favoriteColor}!`,
-        
-        `One beautiful morning, while ${info.name} was enjoying ${info.hobbies}, they heard a small voice calling for help. Looking around carefully, they discovered a magical ${info.favoriteAnimal} stuck high up in a shimmering, golden tree.`,
-        
-        `"Please help me!" called the ${info.favoriteAnimal}, its voice filled with hope. ${info.name} felt sorry for their new friend and carefully used their special ${info.favoriteColor} powers to gently free the trapped animal from the branches.`,
-        
-        `The grateful ${info.favoriteAnimal} was so thankful that it invited ${info.name} on an amazing adventure. "I know a secret kingdom," whispered the ${info.favoriteAnimal}. "Would you like to see something truly magical?"`,
-        
-        `Together, they traveled through a rainbow portal and arrived in a fantastic kingdom where all the buildings were made of delicious ${info.favoriteFood}! The castle walls were ${info.favoriteFood}, and even the roads were made of ${info.favoriteFood}.`,
-        
-        `In this magical place, the sad people explained that their beautiful rainbow had lost all its wonderful colors. Without the rainbow, their kingdom was becoming gray and gloomy. They had been waiting for someone special to help them.${info.specialRequest ? ` They also mentioned that ${info.specialRequest} might be the key to solving the problem!` : ''}`,
-        
-        `${info.name} remembered what they had learned about working together to solve big problems.${info.specialRequest ? ` They also thought about how ${info.specialRequest} could help make everything better.` : ''} "We can fix this!" said ${info.name} confidently. The ${info.favoriteAnimal} nodded and smiled encouragingly.`,
-        
-        `With determination and kindness, ${info.name} and the ${info.favoriteAnimal} joined their powers together. Suddenly, a burst of beautiful ${info.favoriteColor} light shot up into the sky and restored the rainbow to its full, magnificent glory!`,
-        
-        `The grateful kingdom celebrated with singing and dancing! The people offered ${info.name} an important royal position, but ${info.name} politely explained they needed to return home to share this adventure.${info.specialRequest ? ` They promised to bring ${info.specialRequest} back with them next time!` : ''}`,
-        
-        `As they returned home, ${info.name} felt proud and happy. They had learned that being brave, kind, and helpful can lead to the most wonderful experiences.${info.specialRequest ? ` And they discovered that ${info.specialRequest} made everything even more magical!` : ''} ${info.name} fell asleep that night dreaming of future adventures. The End.`
-      ],
-      
-      // Hard: 14 longer pages (ages 10-12, 5th-8th grade reading level)
-      hard: [
-        `In a world where extraordinary things happened to ordinary children, there lived a remarkable young person named ${info.name}, who at ${info.age} years old and in ${info.grade} grade, possessed an incredible ability to transform anything they touched into the most magnificent shade of ${info.favoriteColor}.`,
-        
-        `On a particularly enchanting morning, while ${info.name} was enthusiastically pursuing their favorite activity of ${info.hobbies}, an urgent plea for assistance echoed through the crisp autumn air. The voice seemed to come from nowhere and everywhere at once.`,
-        
-        `Upon careful investigation, ${info.name} discovered an extraordinary ${info.favoriteAnimal} trapped within the crystalline branches of an ancient, mystical tree that shimmered with otherworldly energy. The creature's eyes sparkled with intelligence and desperate hope.`,
-        
-        `"I desperately need your help!" implored the ${info.favoriteAnimal}, its voice filled with both dignity and desperation. "I have been imprisoned here by a powerful spell, and only someone with a pure heart and special abilities can free me."`,
-        
-        `${info.name}, moved by deep compassion and armed with their supernatural ${info.favoriteColor} abilities, carefully and methodically worked to break the magical bonds. With each touch, the crystalline prison began to crack and dissolve.`,
-        
-        `The profoundly grateful ${info.favoriteAnimal} extended a formal invitation to ${info.name} for an unprecedented journey to a magnificent realm that existed beyond the boundaries of the ordinary world. "Your kindness has earned you a great adventure," it declared solemnly.`,
-        
-        `Through a swirling vortex of colors and stardust, they traveled to a fantastical kingdom where architectural marvels were constructed entirely from varieties of ${info.favoriteFood}, creating a landscape that was both beautiful, aromatic, and surprisingly delicious.`,
-        
-        `Upon arriving in this extraordinary realm, the inhabitants—who possessed an ethereal, luminescent quality—revealed a catastrophic problem that threatened their very existence. Their legendary rainbow, the source of all color, joy, and life force in their world, had mysteriously lost its vibrancy.`,
-        
-        `The royal council explained that without the rainbow's power, their kingdom would gradually fade into a colorless void, and all the magical creatures who depended on its energy would slowly lose their vitality and eventually disappear forever.${info.specialRequest ? ` However, ancient legends spoke of ${info.specialRequest} having the power to restore such magic.` : ''}`,
-        
-        `${info.name} recalled wise words about the transformative power of collaboration, determination, and unwavering friendship in the face of seemingly impossible challenges.${info.specialRequest ? ` They also remembered stories about how ${info.specialRequest} had helped heroes in the past.` : ''} These words now seemed prophetic and deeply meaningful.`,
-        
-        `Drawing upon every ounce of courage and wisdom they possessed, ${info.name} proposed a daring plan that would require the combined efforts of every citizen in the kingdom, along with the magical energy of the ${info.favoriteAnimal} and their own unique abilities.${info.specialRequest ? ` The plan also incorporated the mystical power of ${info.specialRequest} to make it even stronger.` : ''}`,
-        
-        `Through unwavering determination, creative problem-solving, and the combined strength of their extraordinary partnership, ${info.name} and the ${info.favoriteAnimal} channeled their collective energy into a spectacular ritual that lasted from dawn until dusk.${info.specialRequest ? ` The ${info.specialRequest} provided crucial magical energy throughout the entire process.` : ''}`,
-        
-        `As the sun reached its zenith, a magnificent explosion of ${info.favoriteColor} radiance burst forth from their joined hands, creating a brilliant beam of light that shot directly into the heart of the faded rainbow, instantly restoring its former splendor and even enhancing its beauty beyond its original glory.${info.specialRequest ? ` The ${info.specialRequest} glowed brightly, adding their own special magic to the restored rainbow.` : ''}`,
-        
-        `The eternally grateful citizens offered ${info.name} a prestigious leadership position, along with a magnificent castle and all the treasures of the kingdom. However, ${info.name} graciously declined, explaining their responsibility to return home and share these remarkable experiences.${info.specialRequest ? ` They promised to return someday with more ${info.specialRequest} to help protect the kingdom.` : ''}`,
-        
-        `During their homeward journey, soaring through clouds painted with colors they had helped restore, ${info.name} reflected deeply on the profound lessons learned about courage, empathy, leadership, and the extraordinary impact that one person's kindness and determination can have on an entire world.${info.specialRequest ? ` They also marveled at how ${info.specialRequest} had made their adventure even more magical.` : ''}`,
-        
-         `Upon returning home, ${info.name} spent hours sharing their transformative adventure, recounting the wisdom they had gained and the magical memories they would treasure forever.${info.specialRequest ? ` They especially loved telling about how ${info.specialRequest} had helped save the day.` : ''} They fell asleep knowing that true friendship and courage make even the most incredible adventures meaningful. The End.`
-      ],
-      
-      // Expert: 18 complex pages (ages 13+, 9th-12th grade reading level - maximum complexity)
-      expert: [
-        `In an extraordinary convergence of circumstance and destiny, there existed a remarkably gifted individual named ${info.name}, whose ${info.age} years of life in ${info.grade} grade had been distinguished by an unprecedented mastery over chromatic transformation—specifically, the ability to metamorphose any substance into the most exquisite manifestation of ${info.favoriteColor} through conscious intention and focused willpower.`,
-        
-        `During a particularly transcendent morning while ${info.name} was immersed in the contemplative practice of ${info.hobbies}, the atmospheric tranquility was suddenly pierced by an ethereal entreaty that seemed to emanate from the very fabric of reality itself, suggesting the presence of a sentient being requiring immediate intervention.`,
-        
-        `Through methodical investigation employing both intuitive perception and systematic observation, ${info.name} discovered an extraordinary ${info.favoriteAnimal} whose corporeal form had become inexplicably entangled within the crystalline matrices of an ancient, luminescent arboreal specimen that pulsed with interdimensional energy signatures.`,
-        
-        `"I find myself in dire need of assistance from one whose spiritual resonance aligns with the fundamental forces of benevolence," articulated the ${info.favoriteAnimal} with remarkable eloquence, its communication transcending mere vocalization to encompass telepathic harmonics that conveyed profound urgency coupled with unwavering dignity.`,
-        
-        `Responding to this existential crisis with characteristic compassion and leveraging their supernatural command over ${info.favoriteColor} chromatic manipulation, ${info.name} initiated a complex liberation protocol that involved the systematic dissolution of quantum crystalline bonds through precise application of transformative energy.`,
-        
-        `The profoundly grateful ${info.favoriteAnimal}, recognizing the magnitude of ${info.name}'s altruistic intervention, extended a formal invitation to participate in an unprecedented expedition to a metaphysical realm that existed parallel to conventional reality, where the fundamental laws of physics operated according to radically different principles.`,
-        
-        `Their transdimensional journey commenced through a spiraling vortex of chromatic energy that transported them to a magnificent civilization where architectural achievements had been constructed entirely from crystallized variants of ${info.favoriteFood}, resulting in a landscape that stimulated multiple sensory modalities simultaneously.`,
-        
-        `Upon materialization in this extraordinary dimension, the indigenous population—characterized by their luminescent physiological properties and advanced telepathic capabilities—revealed the catastrophic deterioration of their primary chromatic energy source, a legendary rainbow that functioned as the fundamental life-support system for their entire ecosystem.`,
-        
-        `The governing council, comprised of the realm's most distinguished scholars and mystics, elucidated that the rainbow's deterioration threatened not merely aesthetic degradation but complete existential collapse, as all sentient beings within their dimension derived their essential life force from its chromatic emanations.${info.specialRequest ? ` However, ancient prophetic texts had foretold that ${info.specialRequest} possessed latent capabilities that could potentially restore such cosmic phenomena.` : ''}`,
-        
-        `Drawing upon accumulated wisdom regarding the exponential power multiplication achieved through collaborative endeavor, strategic planning, and unwavering commitment to humanitarian principles, ${info.name} recognized the profound significance of this moment.${info.specialRequest ? ` They also recalled esoteric knowledge suggesting that ${info.specialRequest} had historically served as catalysts for miraculous transformations.` : ''}`,
-        
-        `Through comprehensive analysis of the situation's complexities and consultation with the ${info.favoriteAnimal}'s extensive knowledge of interdimensional mechanics, ${info.name} formulated an ambitious restoration strategy that would require the synchronized participation of every conscious entity within the realm.${info.specialRequest ? ` The methodology incorporated sophisticated utilization of ${info.specialRequest}'s inherent metaphysical properties to amplify the restoration process exponentially.` : ''}`,
-        
-        `The implementation phase demanded extraordinary perseverance, innovative problem-solving methodologies, and the harmonious integration of diverse energy signatures as ${info.name} and the ${info.favoriteAnimal} channeled their combined consciousness into a transcendent ritual spanning multiple temporal cycles.${info.specialRequest ? ` Throughout this process, the ${info.specialRequest} served as a crucial conduit for maintaining stable energy flow and preventing dimensional collapse.` : ''}`,
-        
-        `At the precise moment of optimal cosmic alignment, a spectacular cascade of ${info.favoriteColor} radiance erupted from their unified consciousness, generating a beam of pure creative energy that penetrated the rainbow's deteriorated core and initiated a comprehensive regeneration sequence that exceeded all previous manifestations of its power.${info.specialRequest ? ` The ${info.specialRequest} resonated with harmonic frequencies that enhanced the restoration beyond theoretical limitations.` : ''}`,
-        
-        `In recognition of their unprecedented achievement, the grateful civilization offered ${info.name} permanent residence as Supreme Leader of their realm, along with access to infinite resources and the opportunity to study advanced metaphysical sciences unavailable in conventional reality.${info.specialRequest ? ` They promised to establish a permanent sanctuary for ${info.specialRequest} to ensure continued protection and study of their remarkable properties.` : ''}`,
-        
-        `During the contemplative return journey through shifting dimensional boundaries, ${info.name} engaged in profound philosophical reflection regarding the interconnected nature of existence, the exponential impact of individual moral choices, and the fundamental responsibility that accompanies the possession of extraordinary capabilities.${info.specialRequest ? ` They marveled at the unexpected ways in which ${info.specialRequest} had contributed to outcomes that transcended initial expectations.` : ''}`,
-        
-        `Upon reintegration with their original dimensional framework, ${info.name} dedicated considerable time to documenting and sharing the transformative insights gained through this extraordinary experience, recognizing their obligation to contribute to humanity's collective understanding of compassion, courage, and the unlimited potential for positive change.${info.specialRequest ? ` They particularly emphasized the crucial role that ${info.specialRequest} had played in demonstrating the power of seemingly ordinary elements to achieve extraordinary results.` : ''}`,
-        
-        `As ${info.name} concluded this remarkable chapter of their existence, they carried forward an enhanced awareness of their unique position within the cosmic order and their ongoing responsibility to utilize their gifts in service of universal well-being, knowing that this adventure represented merely the beginning of a lifetime dedicated to making meaningful contributions to the world. The End.`
-      ]
+    const avatarDesc = getAvatarDescription();
+    const interests = info.interests.join(", ");
+    
+    const difficultySettings = {
+      easy: { 
+        sentences: 2, 
+        words: 50, 
+        vocabulary: "simple words that 4-6 year olds know",
+        structure: "short, simple sentences"
+      },
+      medium: { 
+        sentences: 3, 
+        words: 80, 
+        vocabulary: "age-appropriate words for 7-9 year olds",
+        structure: "clear, engaging sentences"
+      },
+      hard: { 
+        sentences: 4, 
+        words: 120, 
+        vocabulary: "challenging but accessible words for 10-12 year olds",
+        structure: "varied sentence structures"
+      },
+      expert: { 
+        sentences: 5, 
+        words: 150, 
+        vocabulary: "advanced vocabulary for 13+ year olds",
+        structure: "complex and sophisticated sentences"
+      }
     };
+
+    const settings = difficultySettings[difficulty];
     
-    return baseStoryTemplates[difficulty];
+    const baseStory = [
+      `Once upon a time, there was ${avatarDesc} named ${info.name}. ${info.name} loved ${interests} more than anything in the world. One magical morning, ${info.name} discovered something amazing that would change everything.`,
+      
+      `${info.name} found a mysterious, glowing object hidden in their favorite place. It sparkled with all the colors of the rainbow and seemed to whisper secrets of adventure. When ${info.name} touched it, something incredible happened.`,
+      
+      `Suddenly, ${info.name} was transported to a magical world where ${interests} came to life! Everything was more colorful, more exciting, and full of friendly creatures who wanted to help ${info.name} on an amazing quest.`,
+      
+      `In this enchanted land, ${info.name} met a wise guide who explained that they had been chosen for a special mission. The guide gave ${info.name} magical powers related to ${interests} and showed them the path to adventure.`,
+      
+      `${info.name} faced their first challenge with courage and creativity. Using their love of ${interests} and their new magical abilities, they solved puzzles and helped other creatures in need. Everyone was amazed by ${info.name}'s kindness.`,
+      
+      `As ${info.name} continued their journey, they discovered hidden talents they never knew they had. Each challenge made them stronger and more confident. The magical world seemed to respond to ${info.name}'s pure heart and determination.`,
+      
+      `${info.name} encountered a friendly dragon who was sad because they had lost something precious. Using their knowledge of ${interests} and their problem-solving skills, ${info.name} helped the dragon find what was lost.`,
+      
+      `The grateful dragon became ${info.name}'s loyal companion and taught them how to fly through the clouds. Together, they soared over magical forests, crystal lakes, and rainbow bridges, seeing wonders beyond imagination.`,
+      
+      `${info.name} and their dragon friend discovered a beautiful castle where a celebration was taking place. All the magical creatures they had helped were there, cheering for ${info.name} and celebrating their heroic deeds.`,
+      
+      `At the celebration, ${info.name} was honored as a true hero of the magical realm. They received a special gift that would always remind them of their adventure and the friends they had made along the way.`,
+      
+      `When it was time to return home, ${info.name} felt sad to leave but excited to share their story. The magical guide promised that ${info.name} could return anytime they believed in the power of imagination and kindness.`,
+      
+      `Back in their own world, ${info.name} looked at their special gift and smiled. They knew that the real magic had been inside them all along - their curiosity about ${interests}, their brave heart, and their caring spirit.`,
+      
+      `From that day forward, ${info.name} approached every day as a new adventure. Whether exploring ${interests} or helping friends, they remembered the lessons learned in the magical world and lived happily ever after.`
+    ];
+
+    return baseStory.map(paragraph => {
+      const words = paragraph.split(' ');
+      if (words.length > settings.words) {
+        return words.slice(0, settings.words).join(' ') + '...';
+      }
+      return paragraph;
+    });
   };
 
-  // Generate additional story content for time extensions
-  const generateExtendedContent = (info: UserInfo, difficulty: DifficultyLevel, extensionNumber: number): string[] => {
-    const extensionTemplates = {
-      easy: [
-        `The next day, ${info.name} went back.`,
-        `The ${info.favoriteAnimal} was waiting!`,
-        `They found a playground.`,
-        `It was made of ${info.favoriteFood}!`,
-        `${info.name} played on the swings.`,
-        `Then they met more friends.`,
-        `A nice dog came to play.`,
-        `A funny bird sang songs.`,
-        `They all played together.`,
-        `${info.name} had so much fun!`,
-        `Time to go home.`,
-        `${info.name} waved goodbye.`
-      ],
-      medium: [
-        `As ${info.name} settled back into their normal routine, they discovered that their magical adventure had given them new abilities. They could now sense when others needed help, just like the ${info.favoriteAnimal} had needed help.`,
-        `One afternoon, ${info.name} noticed their neighbor looking sad and worried. Using their newfound wisdom and the lessons learned from their magical journey, they offered kindness and assistance.`,
-        `The neighbor explained that their garden was dying and they didn't know why. ${info.name} remembered the power of ${info.favoriteColor} magic and gently touched the wilting plants.`,
-        `Miraculously, the garden began to bloom with vibrant flowers in every color imaginable! The neighbor was amazed and grateful, and ${info.name} realized their adventure had taught them to help others.`,
-        `That evening, ${info.name} looked up at the sky and saw a small rainbow forming. The ${info.favoriteAnimal} appeared beside them and smiled. "Your kindness is spreading magic everywhere," it said warmly.`
-      ],
-      hard: [
-        `In the weeks following their extraordinary adventure, ${info.name} began to notice subtle changes in their ordinary world. The experience had awakened a deeper awareness of the interconnectedness of all living things and the responsibility that comes with great power.`,
-        `During a particularly challenging day at school, ${info.name} encountered a situation that required the same courage and wisdom they had demonstrated in the magical kingdom. A new student was being treated unfairly by others.`,
-        `Drawing upon the lessons learned about standing up for those who cannot stand up for themselves, ${info.name} intervened with compassion and determination, creating an atmosphere of inclusion and understanding.`,
-        `The transformation in their school environment was remarkable. Other students began following ${info.name}'s example, creating a community built on mutual respect and kindness, much like the kingdom they had helped restore.`,
-        `That night, as ${info.name} reflected on the day's events, they understood that the true magic wasn't in the fantastic realm they had visited, but in the ability to bring positive change to the world around them through consistent acts of courage and compassion.`,
-        `The ${info.favoriteAnimal} appeared one more time in their dreams, offering a final piece of wisdom: "The greatest adventures are not in distant magical lands, but in the everyday moments where you choose to make a difference."`,
-        `${info.name} awoke with a profound sense of purpose, knowing that their story was just beginning and that every day offered new opportunities to create magic through kindness, courage, and the unwavering belief that one person can indeed change the world.`,
-        `Years later, ${info.name} would look back on that transformative experience as the moment they truly understood their place in the world and their responsibility to use their gifts in service of others, carrying forward the lessons of the magical kingdom into every aspect of their life.`
-       ],
-      expert: [
-        `In the subsequent temporal period following their transcendental interdimensional experience, ${info.name} discovered that their consciousness had undergone fundamental alterations that manifested as enhanced perceptual capabilities, allowing them to detect subtle energetic disturbances in the fabric of conventional reality that indicated opportunities for humanitarian intervention.`,
-        `During an academic period characterized by significant interpersonal challenges, ${info.name} encountered a complex social dynamic wherein established power structures were perpetuating systematic exclusion of a recently integrated student, presenting an opportunity to apply the advanced conflict resolution principles they had mastered during their metaphysical adventure.`,
-        `Drawing upon the sophisticated understanding of systemic change methodology acquired through their interdimensional leadership experience, ${info.name} implemented a comprehensive intervention strategy that addressed both immediate symptomatic manifestations and underlying structural inequities contributing to the problematic social dynamic.`,
-        `The cascading positive effects of their intervention created a transformative ripple effect throughout the educational environment, establishing new paradigms of inclusive communication and collaborative problem-solving that fundamentally altered the institutional culture in measurable and sustainable ways.`,
-        `Through careful analysis of these outcomes, ${info.name} recognized that their extraordinary adventure had not merely been an isolated experience but rather a preparation phase for their ongoing mission to serve as a catalyst for positive transformation within their immediate sphere of influence and beyond.`,
-        `The ${info.favoriteAnimal} manifested once more through enhanced sensory perception during a moment of deep contemplation, transmitting advanced wisdom regarding the exponential multiplication of positive impact through consistent application of enlightened principles in seemingly mundane circumstances.`,
-        `${info.name} integrated this profound understanding into a comprehensive personal philosophy that recognized every interpersonal interaction as an opportunity to contribute to the collective elevation of human consciousness and the advancement of universal compassion.`,
-        `Years later, as ${info.name} reflected upon the trajectory of their personal development and the expanding sphere of their positive influence, they understood that their magical adventure had been the initial activation of a lifelong commitment to utilizing their enhanced capabilities in service of humanity's highest potential.`
-       ]
-    };
-    
-    const templates = extensionTemplates[difficulty];
-    const startIndex = (extensionNumber - 1) * getExtensionPageCount(difficulty);
-    return templates.slice(startIndex, startIndex + getExtensionPageCount(difficulty)) || templates;
-  };
+  const story = generateStory(userInfo, currentDifficulty);
+  const totalPages = story.length;
+  const currentStory = story[currentParagraph] || "Loading your magical story...";
 
-  // Calculate pages to add per 10-minute extension based on difficulty
-  const getExtensionPageCount = (difficulty: DifficultyLevel): number => {
-    switch (difficulty) {
-      case "easy": return 3; // ~3.5 min per page, so 3 pages for 10 min
-      case "medium": return 5; // ~2 min per page, so 5 pages for 10 min  
-      case "hard": return 8; // ~1.25 min per page, so 8 pages for 10 min
-      case "expert": return 10; // ~1 min per page, so 10 pages for 10 min
-      default: return 5;
-    }
-  };
+  const illustrations = [
+    illustration1, illustration2, illustration3, illustration4, illustration5,
+    illustration6, illustration7, illustration8, illustration9, illustration10,
+    illustration11, illustration12, illustration13, illustration14, illustration15,
+    illustration16, illustration17, illustration18, illustration19, illustration20,
+    illustration21, illustration22, illustration23, illustration24, illustration25,
+    illustration26, illustration27, illustration28, illustration29, illustration30,
+    illustration31, illustration32, illustration33, illustration34, illustration35,
+    illustration36, illustration37, illustration38, illustration39, illustration40,
+    illustration41, illustration42, illustration43, illustration44
+  ];
 
-  // Combine base story with any extensions
-  const getCompleteStory = (): string[] => {
-    const baseStory = generateStory(userInfo, currentDifficulty);
-    const baseLength = baseStory.length;
-    
-    if (storyExtensions === 0) {
-      return baseStory;
-    }
-    
-    // Calculate target length: (storyExtensions + 1) * baseLength
-    // 1 extension = 2x base, 2 extensions = 3x base, etc.
-    const targetLength = (storyExtensions + 1) * baseLength;
-    const additionalPagesNeeded = targetLength - baseLength;
-    
-    let completeStory = [...baseStory];
-    let addedPages = 0;
-    
-    // Keep adding extension content until we reach target length
-    for (let i = 1; addedPages < additionalPagesNeeded; i++) {
-      const extensionContent = generateExtendedContent(userInfo, currentDifficulty, i);
-      const pagesToAdd = Math.min(extensionContent.length, additionalPagesNeeded - addedPages);
-      completeStory = [...completeStory, ...extensionContent.slice(0, pagesToAdd)];
-      addedPages += pagesToAdd;
-    }
-    
-    return completeStory;
-  };
-
-  const storyParagraphs = getCompleteStory();
-  const totalParagraphs = storyParagraphs.length;
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const speechRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   useEffect(() => {
     if (isReading && timeRemaining > 0) {
-      const timer = setInterval(() => {
+      timerRef.current = setInterval(() => {
         setTimeRemaining(prev => {
           if (prev <= 1) {
             setIsReading(false);
@@ -365,633 +225,319 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
           return prev - 1;
         });
       }, 1000);
-
-      return () => clearInterval(timer);
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
     }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
   }, [isReading, timeRemaining]);
 
+  useEffect(() => {
+    const illustrationIndex = currentParagraph % illustrations.length;
+    setCurrentIllustration(illustrations[illustrationIndex]);
+  }, [currentParagraph]);
+
+  useEffect(() => {
+    if (isReading && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      
+      const utterance = new SpeechSynthesisUtterance(currentStory);
+      utterance.rate = userInfo.age <= 7 ? 0.8 : 0.9;
+      utterance.pitch = 1.1;
+      utterance.volume = 0.8;
+      
+      const voices = window.speechSynthesis.getVoices();
+      const childFriendlyVoice = voices.find(voice => 
+        voice.name.includes('Google') && voice.lang.startsWith('en')
+      ) || voices[0];
+      
+      if (childFriendlyVoice) {
+        utterance.voice = childFriendlyVoice;
+      }
+      
+      speechRef.current = utterance;
+      window.speechSynthesis.speak(utterance);
+    } else {
+      window.speechSynthesis.cancel();
+    }
+
+    return () => {
+      window.speechSynthesis.cancel();
+    };
+  }, [currentStory, isReading, userInfo.age]);
+
   const handleNext = () => {
-    if (currentParagraph < totalParagraphs - 1) {
-      setCurrentParagraph(currentParagraph + 1);
+    if (currentParagraph < totalPages - 1) {
+      setCurrentParagraph(prev => prev + 1);
     }
   };
 
   const handlePrevious = () => {
     if (currentParagraph > 0) {
-      setCurrentParagraph(currentParagraph - 1);
-    }
-  };
-
-  const handleStartReading = () => {
-    setIsReading(true);
-    if (timeRemaining === 0) {
-      setTimeRemaining(10 * 60); // Reset to 10 minutes if timer reached 0
-    }
-  };
-
-  const handleAddTime = () => {
-    setTimeRemaining(prev => {
-      const newTime = prev + (10 * 60); // Add 10 minutes
-      return Math.min(newTime, 40 * 60); // Cap at 40 minutes maximum
-    });
-    if (timeRemaining < 40 * 60 - (10 * 60)) { // Only add story content if under the cap
-      setStoryExtensions(prev => prev + 1);
+      setCurrentParagraph(prev => prev - 1);
     }
   };
 
   const handleDifficultyUp = () => {
-    if (currentDifficulty === "easy") setCurrentDifficulty("medium");
-    else if (currentDifficulty === "medium") setCurrentDifficulty("hard");
-    else if (currentDifficulty === "hard") setCurrentDifficulty("expert");
-    setCurrentParagraph(0); // Reset to beginning with new difficulty
-    setStoryExtensions(0); // Reset extensions when difficulty changes
+    const levels: DifficultyLevel[] = ["easy", "medium", "hard", "expert"];
+    const currentIndex = levels.indexOf(currentDifficulty);
+    if (currentIndex < levels.length - 1) {
+      setCurrentDifficulty(levels[currentIndex + 1]);
+    }
   };
 
   const handleDifficultyDown = () => {
-    if (currentDifficulty === "expert") setCurrentDifficulty("hard");
-    else if (currentDifficulty === "hard") setCurrentDifficulty("medium");
-    else if (currentDifficulty === "medium") setCurrentDifficulty("easy");
-    setCurrentParagraph(0); // Reset to beginning with new difficulty
-    setStoryExtensions(0); // Reset extensions when difficulty changes
-  };
-
-
-  // Dynamic text size based on age and difficulty
-  const getTextSize = () => {
-    if (userInfo.age <= 7 && currentDifficulty === "easy") return "text-3xl leading-relaxed";
-    if (userInfo.age <= 9 && currentDifficulty === "easy") return "text-2xl leading-relaxed";
-    if (currentDifficulty === "easy") return "text-xl leading-relaxed";
-    if (currentDifficulty === "medium") return "text-lg leading-relaxed";
-    if (currentDifficulty === "hard") return "text-base leading-relaxed";
-    return "text-sm leading-relaxed"; // expert level
-  };
-
-  const getDifficultyColor = () => {
-    switch (currentDifficulty) {
-      case "easy": return "text-green-600";
-      case "medium": return "text-yellow-600";
-      case "hard": return "text-orange-600";
-      case "expert": return "text-red-600";
-      default: return "text-gray-600";
+    const levels: DifficultyLevel[] = ["easy", "medium", "hard", "expert"];
+    const currentIndex = levels.indexOf(currentDifficulty);
+    if (currentIndex > 0) {
+      setCurrentDifficulty(levels[currentIndex - 1]);
     }
   };
 
-  const getDifficultyLabel = () => {
-    switch (currentDifficulty) {
-      case "easy": return "Easy Reading";
-      case "medium": return "Medium Reading";
-      case "hard": return "Advanced Reading";
-      case "expert": return "Expert Reading";
-      default: return "Reading";
-    }
-  };
-
-  // Format time for display
-  const formatTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
-
-  const progress = ((currentParagraph + 1) / totalParagraphs) * 100;
-
-
-  // Smart illustration selection with automatic generation for each page
-  const getCurrentIllustration = async () => {
-    const currentText = storyParagraphs[currentParagraph];
-    const lowerText = currentText.toLowerCase();
-    
-    // Create a unique cache key for this specific page and story context
-    const pageKey = `page_${currentParagraph}_${currentText.substring(0, 50).replace(/[^a-zA-Z0-9]/g, '_')}`;
-    if (getCachedImage(pageKey)) {
-      return getCachedImage(pageKey)!;
-    }
-    
-    // Check if the story mentions the main character - use their avatar
-    const characterMentions = [
-      userInfo.name.toLowerCase(),
-      userInfo.avatar.type,
-      'main character',
-      'protagonist',
-      'hero'
-    ];
-    
-    const mentionsCharacter = characterMentions.some(mention => 
-      lowerText.includes(mention)
-    );
-    
-    if (mentionsCharacter) {
-      return getUserAvatar();
-    }
-    
-    // Specific illustration mappings - exact keywords to exact illustrations
-    const specificMappings = {
-      'basketball': illustration26,
-      'soccer': illustration25, 
-      'football': illustration32,
-      'baseball': illustration27,
-      'swimming': illustration28,
-      'tennis': illustration29,
-      'dance': illustration30,
-      'gymnastics': illustration31,
-      'racing': illustration34,
-      'cat': illustration1,
-      'dog': illustration2, 
-      'bird': illustration3,
-      'dragon': illustration5,
-      'unicorn': illustration9,
-      'dinosaur': illustration10,
-      'robot': illustration11,
-      'space': illustration13,
-      'astronaut': illustration13,
-      'spaceship': illustration13,
-      'art studio': illustration19,
-      'painting': illustration19,
-      'music': illustration17,
-      'library': illustration16,
-      'books': illustration16,
-      'kitchen': illustration21,
-      'cooking': illustration21,
-      'mountain': illustration20,
-      'castle': illustration36,
-      'superhero': illustration35
-    };
-    
-    // Check for exact keyword matches first
-    for (const [keyword, illustration] of Object.entries(specificMappings)) {
-      if (lowerText.includes(keyword)) {
-        return illustration;
-      }
-    }
-    
-    // Category-based matching with weighted scoring
-    const categories = {
-      animals: ['cat', 'dog', 'bird', 'rabbit', 'bear', 'lion', 'elephant', 'tiger', 'horse', 'fish'],
-      adventure: ['adventure', 'journey', 'explore', 'quest', 'travel', 'discover', 'mountain', 'forest', 'cave'],
-      magic: ['magic', 'magical', 'wizard', 'fairy', 'spell', 'wand', 'potion', 'enchanted', 'crystal'],
-      food: ['food', 'eat', 'hungry', 'delicious', 'cake', 'cookie', 'fruit', 'pizza', 'ice cream'],
-      friendship: ['friend', 'friendship', 'together', 'help', 'kind', 'share', 'play', 'team'],
-      science: ['science', 'experiment', 'laboratory', 'discovery', 'invention', 'research'],
-      sports: ['sport', 'game', 'play', 'run', 'jump', 'race', 'win', 'team', 'exercise'],
-      arts: ['art', 'draw', 'paint', 'create', 'music', 'dance', 'sing', 'beautiful']
-    };
-    
-    const categoryScores = Object.entries(categories).map(([category, keywords]) => {
-      const score = keywords.reduce((total, keyword) => {
-        const matches = (lowerText.match(new RegExp(keyword, 'g')) || []).length;
-        return total + matches;
-      }, 0);
-      return { category, score };
-    }).sort((a, b) => b.score - a.score);
-    
-    const illustrationsByCategory = {
-      animals: [illustration1, illustration2, illustration3, illustration4, illustration5],
-      adventure: [illustration6, illustration7, illustration8, illustration9],
-      magic: [illustration10, illustration11, illustration12, illustration13],
-      food: [illustration14, illustration15, illustration16],
-      friendship: [illustration17, illustration18, illustration19, illustration20],
-      science: [illustration21, illustration22, illustration23],
-      sports: [illustration24, illustration25, illustration26, illustration27],
-      arts: [illustration28, illustration29, illustration30]
-    };
-    
-    // If we have a strong category match, use those illustrations
-    const topCategory = categoryScores[0];
-    if (topCategory.score > 0) {
-      const categoryIllustrations = illustrationsByCategory[topCategory.category as keyof typeof illustrationsByCategory] || [];
-      if (categoryIllustrations.length > 0) {
-        const progress = ((currentParagraph + 1) / totalParagraphs) * 100;
-        const categoryIndex = Math.floor((progress / 100) * categoryIllustrations.length);
-        const safeCategoryIndex = Math.min(categoryIndex, categoryIllustrations.length - 1);
-        return categoryIllustrations[safeCategoryIndex];
-      }
-    }
-    
-    // Generate custom image only after story is displayed and if we're actively reading
-    if (runwareService && !isGeneratingImage && isReading) {
-      try {
-        setIsGeneratingImage(true);
-        
-        // Create a prompt that directly relates to the story text
-        let prompt = createChildFriendlyPrompt(currentText, userInfo, currentParagraph);
-        
-        // Always include main character details for consistency
-        const avatarDescription = getAvatarDescription();
-        prompt = prompt.replace('a happy child', avatarDescription);
-        
-        // Make the prompt more specific to the story content
-        prompt = `${prompt}. Illustration showing: ${currentText.substring(0, 120)}`;
-        
-        console.log(`Generating story-based image for page ${currentParagraph + 1}:`, prompt);
-        
-        const generatedImage = await runwareService.generateImage({
-          positivePrompt: prompt,
-          model: "runware:100@1",
-          width: 768,
-          height: 1024,
-          numberResults: 1,
-          outputFormat: "WEBP"
-        });
-        
-        // Cache the generated image with the page-specific key
-        cacheImage(pageKey, generatedImage.imageURL);
-        setCurrentIllustration(generatedImage.imageURL);
-        setIsGeneratingImage(false);
-        return generatedImage.imageURL;
-      } catch (error) {
-        console.error("Error generating story image:", error);
-        setIsGeneratingImage(false);
-        // Fall back to category-based selection only if generation fails
-      }
-    }
-    
-    // Fallback to default illustrations
-    const allIllustrations = [
-      illustration1, illustration2, illustration3, illustration4, illustration5,
-      illustration6, illustration7, illustration8, illustration9, illustration10,
-      illustration11, illustration12, illustration13, illustration14, illustration15,
-      illustration16, illustration17, illustration18, illustration19, illustration20,
-      illustration21, illustration22, illustration23, illustration24, illustration25,
-      illustration26, illustration27, illustration28, illustration29, illustration30,
-      illustration31, illustration32, illustration33, illustration34, illustration35,
-      illustration36, illustration37, illustration38, illustration39, illustration40,
-      illustration41, illustration42, illustration43, illustration44
-    ];
-    
-    const progress = ((currentParagraph + 1) / totalParagraphs) * 100;
-    const illustrationIndex = Math.floor((progress / 100) * allIllustrations.length);
-    const safeIndex = Math.min(illustrationIndex, allIllustrations.length - 1);
-    
-    return allIllustrations[safeIndex];
-  };
-
-  // Generate illustrations only after story appears and based on story text
-  useEffect(() => {
-    const generatePageIllustration = async () => {
-      // Only generate if story is being displayed and reading has started
-      if (!isReading) return;
-      
-      const currentText = storyParagraphs[currentParagraph];
-      if (!currentText) return;
-      
-      const cacheKey = `story-${userInfo.name}-${currentDifficulty}-page-${currentParagraph}-text-${currentText.substring(0, 30).replace(/[^a-zA-Z0-9]/g, '_')}`;
-      
-      // Check if we already have this specific page cached
-      if (getCachedImage(cacheKey)) {
-        setCurrentIllustration(getCachedImage(cacheKey)!);
-        return;
-      }
-      
-      // Generate new illustration based on the specific story text
-      try {
-        setIsGeneratingImage(true);
-        
-        // Create prompt directly from the story text to ensure relevance
-        let prompt = createChildFriendlyPrompt(currentText, userInfo, currentParagraph);
-        
-        // Enhance prompt to include specific story context
-        prompt = `${prompt}. This illustration should show exactly what is described in this part of the story: "${currentText.substring(0, 150)}..."`;
-        
-        console.log(`Generating story-specific illustration for page ${currentParagraph + 1}:`, prompt);
-        
-        const result = await runwareService.generateImage({
-          positivePrompt: prompt,
-          model: "runware:100@1",
-          width: 768,
-          height: 1024,
-          numberResults: 1,
-          outputFormat: "WEBP"
-        });
-        
-        if (result.imageURL) {
-          cacheImage(cacheKey, result.imageURL);
-          setCurrentIllustration(result.imageURL);
-        }
-      } catch (error) {
-        console.error("Failed to generate story illustration:", error);
-        // Fallback to predefined illustrations
-        const allIllustrations = [
-          illustration1, illustration2, illustration3, illustration4, illustration5,
-          illustration6, illustration7, illustration8, illustration9, illustration10,
-          illustration11, illustration12, illustration13, illustration14, illustration15,
-          illustration16, illustration17, illustration18, illustration19, illustration20,
-          illustration21, illustration22, illustration23, illustration24, illustration25,
-          illustration26, illustration27, illustration28, illustration29, illustration30,
-          illustration31, illustration32, illustration33, illustration34, illustration35,
-          illustration36, illustration37, illustration38, illustration39, illustration40,
-          illustration41, illustration42, illustration43, illustration44
-        ];
-        const fallbackIndex = currentParagraph % allIllustrations.length;
-        setCurrentIllustration(allIllustrations[fallbackIndex]);
-      } finally {
-        setIsGeneratingImage(false);
-      }
-    };
-    
-    // Only start generating after the story display has begun
-    if (isReading && storyParagraphs.length > 0) {
-      generatePageIllustration();
-    }
-  }, [currentParagraph, storyParagraphs, userInfo, runwareService]);
-
-  // Get current chapter based on story progress
-  const getCurrentChapter = () => {
-    if (progress <= 33) return 1;
-    if (progress <= 66) return 2;
-    return 3;
+  const handleAddTime = () => {
+    setTimeRemaining(prev => prev + 300);
+    setStoryExtensions(prev => prev + 1);
   };
 
   return (
-    <div 
-      className="min-h-screen bg-cover bg-center bg-no-repeat relative overflow-hidden"
-      style={{ 
-        backgroundImage: `url(${ancientBookBg})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center'
-      }}
-    >
-      {/* Book pages overlay for better text readability */}
-      <div className="absolute inset-0 bg-gradient-to-br from-amber-50/70 via-yellow-50/60 to-amber-100/70"></div>
-      
+    <div className="min-h-screen bg-gradient-hero relative overflow-hidden">
       {/* Magical floating elements */}
-      <div className="absolute inset-0 opacity-20 pointer-events-none">
-        <div className="absolute top-20 left-20 w-32 h-32 bg-yellow-300/30 rounded-full animate-float blur-xl"></div>
-        <div className="absolute top-40 right-32 w-24 h-24 bg-amber-300/40 rounded-full animate-bounce-gentle blur-lg"></div>
-        <div className="absolute bottom-32 left-1/4 w-20 h-20 bg-orange-300/30 rounded-full animate-float blur-lg"></div>
-        <div className="absolute bottom-20 right-20 w-28 h-28 bg-yellow-400/35 rounded-full animate-bounce-gentle blur-xl"></div>
+      <div className="absolute inset-0 pointer-events-none">
+        <Star className="absolute top-20 left-10 text-accent w-6 h-6 animate-float" />
+        <Heart className="absolute top-32 right-16 text-primary-glow w-5 h-5 animate-bounce-gentle" />
+        <Sparkles className="absolute bottom-32 left-20 text-secondary w-7 h-7 animate-wiggle" />
+        <Star className="absolute bottom-20 right-32 text-accent w-4 h-4 animate-float" />
       </div>
 
-      {/* Main content positioned as if on book pages */}
-      <div className="relative z-10 min-h-screen flex flex-col">
-        {/* Header positioned at top of book */}
-        <div className="flex items-center justify-between p-6 bg-amber-100/60 backdrop-blur-sm border-b border-amber-300/30">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-gradient-primary rounded-full shadow-soft">
-              <BookOpen className="w-8 h-8 text-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">
-                {userInfo.name}'s Magical Adventure
-              </h1>
-              <div className="flex items-center gap-2">
-                <p className="text-muted-foreground">
-                  A personalized story just for you!
+      {/* Header with Logo and Company Branding */}
+      <header className="relative z-10 bg-white/90 backdrop-blur-sm shadow-soft border-b-4 border-primary">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            {/* Logo and Company Name */}
+            <div className="flex items-center gap-4">
+              <img 
+                src={time2ReadLogo} 
+                alt="Time2Read Logo" 
+                className="w-12 h-12 hover:animate-wiggle cursor-pointer"
+              />
+              <div>
+                <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                  Time2Read
+                </h1>
+                <p className="text-sm text-muted-foreground font-comic">
+                  Reading Adventures for Kids
                 </p>
-                <span className={`text-sm font-semibold px-2 py-1 rounded-full bg-white/80 ${getDifficultyColor()}`}>
-                  {getDifficultyLabel()}
-                </span>
               </div>
             </div>
-            {/* User's Avatar */}
-            <div className="ml-4">
-              <div className="w-16 h-16 rounded-full overflow-hidden border-4 border-primary/30 shadow-lg">
-                <img
-                  src={getUserAvatar()}
-                  alt={`${userInfo.name}'s avatar`}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-          </div>
 
-          <div className="flex gap-2">
-            <Button variant="playful" size="lg" onClick={onNewStory}>
-              <RotateCcw className="w-5 h-5" />
-              New Story
-            </Button>
-            <Button variant="ghost" size="lg" onClick={onHome}>
-              <Home className="w-5 h-5" />
-            </Button>
+            {/* User Info and Navigation */}
+            <div className="flex items-center gap-4">
+              <div className="hidden md:flex items-center gap-3 bg-gradient-card rounded-2xl px-4 py-2 shadow-soft">
+                <img 
+                  src={getUserAvatar()} 
+                  alt="Your avatar" 
+                  className="w-8 h-8 rounded-full border-2 border-primary"
+                />
+                <div className="text-sm">
+                  <p className="font-semibold text-foreground">{userInfo.name}</p>
+                  <p className="text-muted-foreground">Age {userInfo.age}</p>
+                </div>
+              </div>
+              
+              <Button
+                onClick={onHome}
+                variant="outline"
+                size="sm"
+                className="font-comic hover:scale-105 transition-transform bg-white/80 hover:bg-white"
+              >
+                <Home className="w-4 h-4 mr-2" />
+                Home
+              </Button>
+              
+              <Button
+                onClick={onNewStory}
+                size="sm"
+                className="font-comic hover:scale-105 transition-transform bg-gradient-primary hover:shadow-glow"
+              >
+                <RotateCcw className="w-4 h-4 mr-2" />
+                New Story
+              </Button>
+            </div>
           </div>
         </div>
+      </header>
 
-        {/* Story content positioned on book pages */}
-        <div className="flex-1 flex items-center justify-center p-8">
-          <div className="w-full max-w-5xl mx-auto">
-            {/* Story Progress Indicator - floating above the page */}
-            <div className="flex items-center justify-center mb-12">
-              <div className="flex items-center gap-2 bg-amber-100/90 backdrop-blur-sm rounded-full px-8 py-4 border-2 border-amber-300/60 shadow-xl">
-                <span className="text-lg font-medium text-amber-800">
-                  Page {currentParagraph + 1} of {totalParagraphs}
-                </span>
-                <div className="w-40 h-3 bg-amber-200 rounded-full overflow-hidden ml-6">
-                  <div 
-                    className="h-full bg-gradient-to-r from-amber-500 to-yellow-600 transition-all duration-500 ease-out"
-                    style={{ width: `${progress}%` }}
-                  ></div>
-                </div>
+      {/* Main Story Content */}
+      <main className="relative z-10 max-w-7xl mx-auto px-4 py-8">
+        {/* Story Progress */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <BookOpen className="w-5 h-5 text-primary" />
+              <span className="font-semibold text-foreground">
+                Page {currentParagraph + 1} of {totalPages}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Progress:</span>
+              <div className="w-20 text-sm font-semibold text-primary">
+                {Math.round(((currentParagraph + 1) / totalPages) * 100)}%
               </div>
             </div>
+          </div>
+          <Progress 
+            value={((currentParagraph + 1) / totalPages) * 100} 
+            className="h-3 bg-secondary/30"
+          />
+        </div>
 
-            {/* Two-column responsive layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 lg:gap-12 mb-8 md:mb-12 max-w-7xl mx-auto px-4">
-              {/* Illustration Column */}
-              <div className="flex flex-col items-center space-y-4 md:space-y-6 order-1 lg:order-1">
-                {/* Chapter Indicator */}
-                <div className="bg-amber-100/90 backdrop-blur-sm rounded-xl md:rounded-2xl px-4 md:px-6 py-2 md:py-3 border-2 border-amber-400/60 shadow-lg">
-                  <span className="text-base md:text-lg font-bold text-amber-800">
-                    Chapter {getCurrentChapter()} of 3
-                  </span>
+        {/* Story Book Layout */}
+        <Card className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-card border-4 border-primary/20 overflow-hidden">
+          <div className="p-8">
+            <div className="grid lg:grid-cols-2 gap-8 items-start">
+              {/* Illustration Panel */}
+              <div className="relative">
+                <div className="aspect-square rounded-2xl overflow-hidden bg-gradient-secondary p-4 shadow-soft">
+                  {currentIllustration ? (
+                    <img
+                      src={currentIllustration}
+                      alt={`Story illustration for page ${currentParagraph + 1}`}
+                      className="w-full h-full object-cover rounded-xl"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-card rounded-xl flex items-center justify-center">
+                      <div className="text-center">
+                        {isGeneratingImage ? (
+                          <>
+                            <Sparkles className="w-12 h-12 text-primary mx-auto mb-4 animate-spin" />
+                            <p className="text-muted-foreground font-comic">
+                              Creating magical illustration...
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <BookOpen className="w-12 h-12 text-primary mx-auto mb-4" />
+                            <p className="text-muted-foreground font-comic">
+                              Illustration loading...
+                            </p>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
                 
-                {/* Illuminated Manuscript Frame */}
-                <div className="relative bg-amber-50/95 p-3 md:p-6 rounded-2xl md:rounded-3xl border-2 md:border-4 border-amber-400/80 shadow-2xl backdrop-blur-sm w-full max-w-sm md:max-w-md">
-                  {/* Ornate corner decorations */}
-                  <div className="absolute -top-1 -left-1 md:-top-2 md:-left-2 w-4 h-4 md:w-8 md:h-8 bg-amber-600 rounded-full border border-amber-300 md:border-2"></div>
-                  <div className="absolute -top-1 -right-1 md:-top-2 md:-right-2 w-4 h-4 md:w-8 md:h-8 bg-amber-600 rounded-full border border-amber-300 md:border-2"></div>
-                  <div className="absolute -bottom-1 -left-1 md:-bottom-2 md:-left-2 w-4 h-4 md:w-8 md:h-8 bg-amber-600 rounded-full border border-amber-300 md:border-2"></div>
-                  <div className="absolute -bottom-1 -right-1 md:-bottom-2 md:-right-2 w-4 h-4 md:w-8 md:h-8 bg-amber-600 rounded-full border border-amber-300 md:border-2"></div>
-                  
-                  {/* Medieval manuscript decorative elements */}
-                  <div className="absolute top-2 left-2 md:top-4 md:left-4 w-3 h-3 md:w-6 md:h-6 border border-amber-500 md:border-2 rounded-tl-lg md:rounded-tl-xl opacity-60"></div>
-                  <div className="absolute top-2 right-2 md:top-4 md:right-4 w-3 h-3 md:w-6 md:h-6 border border-amber-500 md:border-2 rounded-tr-lg md:rounded-tr-xl opacity-60"></div>
-                  <div className="absolute bottom-2 left-2 md:bottom-4 md:left-4 w-3 h-3 md:w-6 md:h-6 border border-amber-500 md:border-2 rounded-bl-lg md:rounded-bl-xl opacity-60"></div>
-                  <div className="absolute bottom-2 right-2 md:bottom-4 md:right-4 w-3 h-3 md:w-6 md:h-6 border border-amber-500 md:border-2 rounded-br-lg md:rounded-br-xl opacity-60"></div>
-                  
-                  {/* The Illustration */}
-                  <div className="relative overflow-hidden rounded-xl md:rounded-2xl border-2 md:border-3 border-amber-300">
-                    {isGeneratingImage && (
-                      <div className="absolute inset-0 bg-amber-100/80 flex items-center justify-center z-10">
-                        <div className="text-center p-4">
-                          <div className="animate-spin rounded-full h-8 w-8 md:h-12 md:w-12 border-b-2 border-amber-600 mx-auto mb-2 md:mb-4"></div>
-                          <p className="text-amber-800 font-medium text-sm md:text-base">Creating custom illustration...</p>
-                        </div>
-                      </div>
-                    )}
-                    <img 
-                      src={currentIllustration || illustration1} 
-                      alt={`Chapter ${getCurrentChapter()} illustration`}
-                      className="w-full h-auto shadow-lg transition-transform duration-300 hover:scale-105"
-                      style={{ aspectRatio: '3/4' }}
-                    />
-                    {/* Magical overlay effect */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-amber-100/20 via-transparent to-amber-100/20 pointer-events-none"></div>
-                  </div>
-                  
-                  {/* Decorative flourish below image */}
-                  <div className="mt-2 md:mt-4 flex justify-center">
-                    <div className="w-16 md:w-24 h-0.5 md:h-1 bg-gradient-to-r from-transparent via-amber-500 to-transparent rounded-full"></div>
-                  </div>
-                </div>
+                {/* Decorative corner elements */}
+                <Star className="absolute -top-2 -left-2 text-accent w-6 h-6" />
+                <Heart className="absolute -top-2 -right-2 text-primary w-5 h-5" />
+                <Sparkles className="absolute -bottom-2 -left-2 text-secondary w-6 h-6" />
+                <Star className="absolute -bottom-2 -right-2 text-accent w-5 h-5" />
               </div>
 
-              {/* Story Text Column */}
-              <div className="flex flex-col justify-center order-2 lg:order-2">
-                <div className="bg-yellow-50/95 backdrop-blur-sm rounded-2xl md:rounded-3xl p-4 md:p-8 lg:p-12 border-2 md:border-3 border-amber-300/60 shadow-2xl relative">
-                  {/* Ornate corner decorations */}
-                  <div className="absolute top-3 left-3 md:top-6 md:left-6 w-4 h-4 md:w-8 md:h-8 border-t-2 border-l-2 md:border-t-3 md:border-l-3 border-amber-500 rounded-tl-xl md:rounded-tl-2xl opacity-70"></div>
-                  <div className="absolute top-3 right-3 md:top-6 md:right-6 w-4 h-4 md:w-8 md:h-8 border-t-2 border-r-2 md:border-t-3 md:border-r-3 border-amber-500 rounded-tr-xl md:rounded-tr-2xl opacity-70"></div>
-                  <div className="absolute bottom-3 left-3 md:bottom-6 md:left-6 w-4 h-4 md:w-8 md:h-8 border-b-2 border-l-2 md:border-b-3 md:border-l-3 border-amber-500 rounded-bl-xl md:rounded-bl-2xl opacity-70"></div>
-                  <div className="absolute bottom-3 right-3 md:bottom-6 md:right-6 w-4 h-4 md:w-8 md:h-8 border-b-2 border-r-2 md:border-b-3 md:border-r-3 border-amber-500 rounded-br-xl md:rounded-br-2xl opacity-70"></div>
+              {/* Story Text Panel */}
+              <div className="space-y-6">
+                {/* Difficulty Level Badge */}
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <span className="px-3 py-1 bg-gradient-secondary rounded-full text-sm font-semibold text-secondary-foreground">
+                      {currentDifficulty.charAt(0).toUpperCase() + currentDifficulty.slice(1)} Level
+                    </span>
+                  </div>
                   
-                  {/* Central ornamental flourish */}
-                  <div className="absolute top-2 md:top-4 left-1/2 transform -translate-x-1/2 w-8 md:w-12 h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-60"></div>
-                  <div className="absolute bottom-2 md:bottom-4 left-1/2 transform -translate-x-1/2 w-8 md:w-12 h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-60"></div>
-                  
-                  <div className="prose prose-lg max-w-none">
-                    <p className={`${getTextSize()} text-amber-900 font-medium leading-relaxed drop-shadow-sm animate-fade-in text-left lg:text-justify`} 
-                       style={{ 
-                         fontFamily: 'Comic Neue, cursive',
-                         textShadow: '0 1px 2px rgba(0,0,0,0.1)',
-                         lineHeight: '1.8'
-                       }}>
-                      {processTextForPhonetics(storyParagraphs[currentParagraph], `${getTextSize()} text-amber-900 font-medium leading-relaxed drop-shadow-sm animate-fade-in text-left lg:text-justify`, currentDifficulty, elevenLabsService)}
+                  {/* Difficulty Controls */}
+                  <div className="flex items-center gap-2">
+                    <Button
+                      onClick={handleDifficultyDown}
+                      size="sm"
+                      variant="outline"
+                      className="rounded-full w-8 h-8 p-0 hover:scale-110 transition-transform"
+                      disabled={currentDifficulty === "easy"}
+                    >
+                      <TrendingDown className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      onClick={handleDifficultyUp}
+                      size="sm"
+                      variant="outline"
+                      className="rounded-full w-8 h-8 p-0 hover:scale-110 transition-transform"
+                      disabled={currentDifficulty === "expert"}
+                    >
+                      <TrendingUp className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Story Text */}
+                <div className="bg-gradient-card rounded-2xl p-6 shadow-soft min-h-[300px] flex items-center">
+                  <div className="w-full">
+                    <p className={`leading-relaxed font-comic text-lg ${
+                      userInfo.age <= 7 ? 'text-2xl' : 
+                      userInfo.age <= 9 ? 'text-xl' : 
+                      'text-lg'
+                    }`}>
+                      {processTextForPhonetics(currentStory, elevenLabsService, currentDifficulty)}
                     </p>
                   </div>
                 </div>
-              </div>
-            </div>
 
-            {/* Difficulty controls - floating like magical runes */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 md:gap-6 mb-8 md:mb-12 px-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleDifficultyDown}
-                disabled={currentDifficulty === "easy"}
-                className="bg-amber-50/90 border-2 border-amber-400 text-amber-800 hover:bg-amber-100/90 shadow-lg backdrop-blur-sm px-3 md:px-6 py-2 md:py-3 animate-[wiggle_0.5s_ease-in-out_2s,_fade-in_0.8s_ease-out_1.5s] disabled:animate-none disabled:opacity-50 text-sm md:text-base w-full sm:w-auto"
-                style={{
-                  animationFillMode: 'both'
-                }}
-              >
-                <TrendingDown className="w-4 h-4 md:w-5 md:h-5 mr-2" />
-                Easier
-              </Button>
-              
-              <div className="text-center bg-amber-100/90 backdrop-blur-sm rounded-xl md:rounded-2xl px-4 md:px-8 py-3 md:py-4 border-2 md:border-3 border-amber-400/70 shadow-xl animate-[scale-in_0.6s_ease-out_1s] opacity-0 w-full sm:w-auto"
-                style={{
-                  animationFillMode: 'both'
-                }}
-              >
-                <div className={`text-base md:text-lg font-bold ${getDifficultyColor()}`}>
-                  {getDifficultyLabel()}
-                </div>
-                <div className="text-xs md:text-sm text-amber-700 mt-1 hidden sm:block">
-                  {currentDifficulty === "easy" && "K-1st grade: Simple words & short sentences"}
-                  {currentDifficulty === "medium" && "2nd-4th grade: Moderate vocabulary & sentences"}
-                  {currentDifficulty === "hard" && "5th-8th grade: Advanced vocabulary & complex sentences"}
-                  {currentDifficulty === "expert" && "9th-12th grade: Expert vocabulary & sophisticated writing"}
-                </div>
-              </div>
-              
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleDifficultyUp}
-                disabled={currentDifficulty === "expert"}
-                className="bg-amber-50/90 border-2 border-amber-400 text-amber-800 hover:bg-amber-100/90 shadow-lg backdrop-blur-sm px-3 md:px-6 py-2 md:py-3 animate-[wiggle_0.5s_ease-in-out_2.5s,_fade-in_0.8s_ease-out_1.5s] disabled:animate-none disabled:opacity-50 text-sm md:text-base w-full sm:w-auto"
-                style={{
-                  animationFillMode: 'both'
-                }}
-              >
-                <TrendingUp className="w-4 h-4 md:w-5 md:h-5 mr-2" />
-                Harder
-              </Button>
-            </div>
-
-            {/* Floating Page Navigation */}
-            <div className="fixed bottom-20 md:bottom-24 left-1/2 transform -translate-x-1/2 z-40 flex gap-3 md:gap-4">
-              <Button
-                variant="secondary"
-                size="lg"
-                onClick={handlePrevious}
-                disabled={currentParagraph === 0}
-                className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-amber-100/95 border-2 md:border-3 border-amber-400 text-amber-800 hover:bg-amber-200/95 backdrop-blur-sm shadow-2xl hover:scale-110 hover:animate-bounce transition-all duration-200 flex items-center justify-center disabled:opacity-50 text-lg md:text-xl"
-                title="Previous Page"
-              >
-                ←
-              </Button>
-              
-              <Button
-                variant="default"
-                size="lg"
-                onClick={handleNext}
-                disabled={currentParagraph === totalParagraphs - 1}
-                className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-gradient-to-r from-amber-600 to-yellow-600 text-white hover:from-amber-700 hover:to-yellow-700 shadow-2xl hover:scale-110 hover:animate-bounce transition-all duration-200 flex items-center justify-center disabled:opacity-50 text-lg md:text-xl"
-                title={currentParagraph === totalParagraphs - 1 ? "Story Complete" : "Next Page"}
-              >
-                {currentParagraph === totalParagraphs - 1 ? "✨" : "→"}
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Story completion overlay - appears over the book */}
-        {currentParagraph === totalParagraphs - 1 && (
-          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-20 animate-fade-in p-4">
-            <div className="bg-gradient-to-br from-amber-100 to-yellow-100 border-2 md:border-4 border-amber-400 rounded-2xl md:rounded-3xl p-6 md:p-12 text-center shadow-2xl relative overflow-hidden max-w-2xl mx-4 md:mx-8 animate-scale-in w-full">
-              {/* Magical celebration sparkles */}
-              <div className="absolute inset-0 opacity-30 pointer-events-none">
-                <div className="absolute top-6 left-12 w-6 h-6 bg-yellow-400 rounded-full animate-bounce-gentle"></div>
-                <div className="absolute top-16 right-16 w-4 h-4 bg-amber-400 rounded-full animate-float"></div>
-                <div className="absolute bottom-12 left-16 w-8 h-8 bg-yellow-500 rounded-full animate-bounce-gentle"></div>
-                <div className="absolute bottom-6 right-12 w-5 h-5 bg-amber-500 rounded-full animate-float"></div>
-                <div className="absolute top-1/2 left-8 w-3 h-3 bg-yellow-300 rounded-full animate-bounce-gentle"></div>
-                <div className="absolute top-1/3 right-8 w-4 h-4 bg-amber-300 rounded-full animate-float"></div>
-              </div>
-              
-              <div className="relative z-10">
-                <h2 className="text-2xl md:text-5xl font-bold text-amber-800 mb-4 md:mb-6 drop-shadow-sm animate-bounce-gentle">
-                  🎉 Congratulations, {userInfo.name}! 🎉
-                </h2>
-                <p className="text-lg md:text-2xl text-amber-700 mb-3 md:mb-4 font-semibold">
-                  You've completed your magical adventure!
-                </p>
-                <p className="text-sm md:text-lg text-amber-600 mb-6 md:mb-8">
-                  Time used: {formatTime((10 * 60 + storyExtensions * 10 * 60) - timeRemaining)} • Come back tomorrow for a brand new story!
-                </p>
-                <div className="flex flex-col sm:flex-row gap-3 md:gap-6 justify-center">
-                  <Button 
-                    variant="default" 
-                    size="lg" 
-                    onClick={onNewStory}
-                    className="px-4 md:px-8 py-3 md:py-4 bg-gradient-to-r from-amber-600 to-yellow-600 text-white hover:from-amber-700 hover:to-yellow-700 shadow-xl text-base md:text-lg font-semibold hover:scale-105 transition-all duration-200 w-full sm:w-auto"
+                {/* Navigation Controls */}
+                <div className="flex justify-between items-center">
+                  <Button
+                    onClick={handlePrevious}
+                    disabled={currentParagraph === 0}
+                    className="bg-gradient-secondary hover:shadow-soft font-comic rounded-2xl px-6"
                   >
-                    Create Another Story
+                    ← Previous
                   </Button>
-                  <Button 
-                    variant="secondary" 
-                    size="lg" 
-                    onClick={onHome}
-                    className="px-4 md:px-8 py-3 md:py-4 bg-amber-100 border-2 md:border-3 border-amber-400 text-amber-800 hover:bg-amber-200 text-base md:text-lg font-semibold hover:scale-105 transition-all duration-200 w-full sm:w-auto"
+                  
+                  <div className="flex items-center gap-2">
+                    <Button
+                      onClick={() => setIsReading(!isReading)}
+                      variant="outline"
+                      size="sm"
+                      className="rounded-full hover:scale-110 transition-transform"
+                    >
+                      {isReading ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                    </Button>
+                    
+                    <Button
+                      onClick={handleAddTime}
+                      variant="outline"
+                      size="sm"
+                      className="rounded-full hover:scale-110 transition-transform"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  
+                  <Button
+                    onClick={handleNext}
+                    disabled={currentParagraph >= totalPages - 1}
+                    className="bg-gradient-primary hover:shadow-glow font-comic rounded-2xl px-6"
                   >
-                    Back to Home
+                    Next →
                   </Button>
                 </div>
               </div>
             </div>
           </div>
-        )}
-        
-        
-        {/* Floating Timer Component */}
-        <FloatingTimer
-          timeRemaining={timeRemaining}
-          isReading={isReading}
-          onToggleReading={() => setIsReading(!isReading)}
-          onAddTime={handleAddTime}
-        />
-      </div>
+        </Card>
+      </main>
+
+      {/* Floating Timer */}
+      <FloatingTimer
+        timeRemaining={timeRemaining}
+        isReading={isReading}
+        onToggleReading={() => setIsReading(!isReading)}
+        onAddTime={handleAddTime}
+      />
     </div>
   );
 };

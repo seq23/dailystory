@@ -20,9 +20,10 @@ export default {
 		extend: {
 			fontFamily: {
 				'comic': ['Comic Neue', 'cursive', 'sans-serif'],
+				'fun': ['Fredoka', 'cursive', 'sans-serif'],
 				'schoolbell': ['Schoolbell', 'cursive', 'sans-serif'],
 				'inter': ['Inter', 'ui-sans-serif', 'system-ui'],
-				'sans': ['Comic Neue', 'ui-sans-serif', 'system-ui'],
+				'sans': ['Fredoka', 'ui-sans-serif', 'system-ui'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',
