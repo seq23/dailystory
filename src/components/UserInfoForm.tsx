@@ -194,25 +194,25 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                   </SelectTrigger>
                   <SelectContent className="bg-white dark:bg-gray-800 border-2 border-primary/20 rounded-2xl shadow-lg z-50">
                     <SelectItem value="easy" className="text-lg p-3 hover:bg-primary/10">
-                      <div className="flex flex-col items-end text-right">
+                      <div className="flex flex-col items-start text-left">
                         <span className="font-semibold text-green-600">Easy Reading</span>
                         <span className="text-xs text-muted-foreground">(K-1st grade: Simple words & short sentences)</span>
                       </div>
                     </SelectItem>
                     <SelectItem value="medium" className="text-lg p-3 hover:bg-primary/10">
-                      <div className="flex flex-col items-end text-right">
+                      <div className="flex flex-col items-start text-left">
                         <span className="font-semibold text-yellow-600">Medium Reading</span>
                         <span className="text-xs text-muted-foreground">(2nd-4th grade: Moderate vocabulary & sentences)</span>
                       </div>
                     </SelectItem>
                     <SelectItem value="hard" className="text-lg p-3 hover:bg-primary/10">
-                      <div className="flex flex-col items-end text-right">
+                      <div className="flex flex-col items-start text-left">
                         <span className="font-semibold text-orange-600">Advanced Reading</span>
                         <span className="text-xs text-muted-foreground">(5th-8th grade: Advanced vocabulary & complex sentences)</span>
                       </div>
                     </SelectItem>
                     <SelectItem value="expert" className="text-lg p-3 hover:bg-primary/10">
-                      <div className="flex flex-col items-end text-right">
+                      <div className="flex flex-col items-start text-left">
                         <span className="font-semibold text-red-600">Expert Reading</span>
                         <span className="text-xs text-muted-foreground">(9th-12th grade: Expert vocabulary & sophisticated writing)</span>
                       </div>
