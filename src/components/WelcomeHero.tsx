@@ -39,9 +39,17 @@ export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
                 className="w-12 h-12 md:w-16 md:h-16 drop-shadow-lg"
               />
               <div className="flex flex-col">
-                <h1 className="text-2xl md:text-4xl font-bold text-white drop-shadow-lg">
-                  Time <span className="text-yellow-300">2</span> Read
-                </h1>
+                <div className="flex items-center font-comic">
+                  <h1 className="text-2xl md:text-4xl font-bold text-white drop-shadow-lg">
+                    Time
+                  </h1>
+                  <span className="text-3xl md:text-5xl font-bold text-yellow-300 drop-shadow-lg mx-0.5">
+                    2
+                  </span>
+                  <h1 className="text-2xl md:text-4xl font-bold text-white drop-shadow-lg">
+                    Read!
+                  </h1>
+                </div>
                 <p className="text-sm text-white/80 hidden md:block">A Personalized Reading Assistant for Every Child</p>
               </div>
             </div>
