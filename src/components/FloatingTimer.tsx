@@ -198,7 +198,7 @@ export const FloatingTimer = ({
             size="sm"
             onClick={onAddTime}
             className="bg-white/90 backdrop-blur-sm border-2 border-amber-300 text-amber-800 hover:bg-amber-50 shadow-lg w-12 h-12 p-0"
-            title="Add 10 minutes"
+            title="Add 10 minutes (max 40 min) & extend story"
           >
             <Plus className="w-4 h-4" />
           </Button>
