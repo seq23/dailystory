@@ -11,24 +11,31 @@ import { useSecurityMonitoring } from "@/hooks/useSecurityMonitoring";
 
 const queryClient = new QueryClient();
 
+const SecurityWrapper = () => {
+  const securityMonitoring = useSecurityMonitoring();
+  
+  return (
+    <SecurityBoundary>
+      <Toaster />
+      <Sonner />
+      <Routes>
+        <Route path="/" element={<Index />} />
+        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </SecurityBoundary>
+  );
+};
+
 const AppContent = () => {
   useSecurityHeaders();
-  const securityMonitoring = useSecurityMonitoring();
   
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <SecurityBoundary>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </SecurityBoundary>
+        <BrowserRouter>
+          <SecurityWrapper />
+        </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
   );
