@@ -87,6 +87,8 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
   );
   const [currentIllustration, setCurrentIllustration] = useState<string>("");
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [customIllustrations, setCustomIllustrations] = useState<Map<number, string>>(new Map());
+  const [illustrationGenerationQueue, setIllustrationGenerationQueue] = useState<number[]>([]);
   const [runwareService] = useState<SecureRunwareService>(() => new SecureRunwareService("LRRGqlrg67zH8uss6lMjVvc54pVOrznM"));
   const [elevenLabsService] = useState<any>(() => 
     new ElevenLabsService({ apiKey: "sk_9935316e04bb91ad195bacd28187279ec30691b8fa66ab6b" })
@@ -241,11 +243,90 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
     });
   };
 
+  // Function to generate custom illustration for a story page
+  const generateCustomIllustration = async (storyText: string, pageIndex: number) => {
+    try {
+      setIsGeneratingImage(true);
+      
+      // Check if we already have a cached illustration for this page
+      const cachedImage = getCachedImage(`story-${pageIndex}-${storyText.slice(0, 50)}`);
+      if (cachedImage) {
+        setCustomIllustrations(prev => new Map(prev).set(pageIndex, cachedImage));
+        return;
+      }
+      
+      // Generate child-friendly prompt based on story content
+      const prompt = createChildFriendlyPrompt(storyText, userInfo, pageIndex);
+      
+      // Generate the illustration
+      const result = await runwareService.generateImage({
+        positivePrompt: prompt,
+        model: "runware:100@1",
+        width: 1024,
+        height: 1024,
+        numberResults: 1,
+        outputFormat: "WEBP"
+      });
+      
+      if (result?.imageURL) {
+        // Cache the generated image
+        cacheImage(`story-${pageIndex}-${storyText.slice(0, 50)}`, result.imageURL);
+        
+        // Update the custom illustrations map
+        setCustomIllustrations(prev => new Map(prev).set(pageIndex, result.imageURL));
+      }
+    } catch (error) {
+      console.error(`Failed to generate illustration for page ${pageIndex}:`, error);
+      // Fallback to static illustration
+      const fallbackIndex = pageIndex % illustrations.length;
+      setCustomIllustrations(prev => new Map(prev).set(pageIndex, illustrations[fallbackIndex]));
+    } finally {
+      setIsGeneratingImage(false);
+    }
+  };
+
   // Initialize story with useEffect to avoid conflicts
   useEffect(() => {
     const initialStory = generateInitialStory(userInfo, currentDifficulty);
     setStory(initialStory);
+    
+    // Clear custom illustrations when story changes
+    setCustomIllustrations(new Map());
+    setIllustrationGenerationQueue([]);
   }, [userInfo, currentDifficulty]);
+
+  // Generate illustrations with delay after story is loaded
+  useEffect(() => {
+    if (story.length > 0) {
+      // Start generating illustrations after a 3-second delay
+      const delayTimer = setTimeout(() => {
+        // Queue all pages for illustration generation
+        const pages = Array.from({ length: story.length }, (_, i) => i);
+        setIllustrationGenerationQueue(pages);
+      }, 3000);
+
+      return () => clearTimeout(delayTimer);
+    }
+  }, [story]);
+
+  // Process illustration generation queue
+  useEffect(() => {
+    if (illustrationGenerationQueue.length > 0 && !isGeneratingImage) {
+      const nextPage = illustrationGenerationQueue[0];
+      const storyText = story[nextPage];
+      
+      if (storyText && !customIllustrations.has(nextPage)) {
+        // Generate illustration for this page
+        generateCustomIllustration(storyText, nextPage);
+        
+        // Remove this page from the queue
+        setIllustrationGenerationQueue(prev => prev.slice(1));
+      } else {
+        // Skip this page and move to next
+        setIllustrationGenerationQueue(prev => prev.slice(1));
+      }
+    }
+  }, [illustrationGenerationQueue, isGeneratingImage, story, customIllustrations]);
 
   const totalPages = story.length;
   const currentStory = story[currentParagraph] || "Loading your magical story...";
@@ -291,9 +372,15 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
   }, [isReading, timeRemaining]);
 
   useEffect(() => {
-    const illustrationIndex = currentParagraph % illustrations.length;
-    setCurrentIllustration(illustrations[illustrationIndex]);
-  }, [currentParagraph]);
+    // Use custom illustration if available, otherwise fall back to static illustrations
+    const customIllustration = customIllustrations.get(currentParagraph);
+    if (customIllustration) {
+      setCurrentIllustration(customIllustration);
+    } else {
+      const illustrationIndex = currentParagraph % illustrations.length;
+      setCurrentIllustration(illustrations[illustrationIndex]);
+    }
+  }, [currentParagraph, customIllustrations]);
 
 
   const handleNext = () => {
