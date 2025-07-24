@@ -172,6 +172,11 @@ export const FloatingTimer = ({
               >
                 {formatTime(timeRemaining)}
               </div>
+              {timeRemaining >= 40 * 60 && (
+                <div className="text-xs text-amber-600 font-medium mt-1">
+                  Max time limit
+                </div>
+              )}
             </div>
           </div>
         </div>
