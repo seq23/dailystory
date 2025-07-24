@@ -186,27 +186,8 @@ export const createChildFriendlyPrompt = (storyText: string, userInfo?: any): st
   let objects = [];
   let mood = "happy and cheerful";
   
-  // Analyze the story text more comprehensively
-  
-  // Character detection based on story content
-  if (userInfo?.favoriteAnimal && lowerText.includes(userInfo.favoriteAnimal.toLowerCase())) {
-    characters.push(`friendly ${userInfo.favoriteAnimal.toLowerCase()}`);
-  }
-  
-  // Check if the main character (user) is mentioned in this part of the story
-  const characterMentions = [
-    userInfo?.name?.toLowerCase(),
-    'main character',
-    'protagonist',
-    'hero'
-  ].filter(Boolean);
-  
-  const mentionsMainCharacter = characterMentions.some(mention => 
-    lowerText.includes(mention)
-  );
-  
-  // If main character is mentioned, add them with correct skin tone
-  if (mentionsMainCharacter && userInfo) {
+  // ALWAYS include the main character first if userInfo is provided
+  if (userInfo) {
     const genderDesc = userInfo.avatar?.type === "boy" ? "young boy" : "young girl";
     const skinToneDesc = {
       pale: "very light skin",
@@ -216,8 +197,17 @@ export const createChildFriendlyPrompt = (storyText: string, userInfo?: any): st
       dark: "dark skin"
     }[userInfo.avatar?.skinTone] || "medium skin";
     
-    characters.push(`${genderDesc} with ${skinToneDesc}`);
+    // Create a detailed character description
+    const mainCharacter = `${genderDesc} named ${userInfo.name || 'the main character'} with ${skinToneDesc}`;
+    characters.push(mainCharacter);
+    
+    // Add favorite animal if mentioned in story or if it's a key part of user info
+    if (userInfo.favoriteAnimal && (lowerText.includes(userInfo.favoriteAnimal.toLowerCase()) || lowerText.includes('animal') || lowerText.includes('friend'))) {
+      characters.push(`friendly ${userInfo.favoriteAnimal.toLowerCase()}`);
+    }
   }
+  
+  // Analyze the story text more comprehensively
   
   // Detect other characters
   const animalKeywords = {

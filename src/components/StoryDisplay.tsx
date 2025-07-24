@@ -659,8 +659,28 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
       // Generate new illustration only for even pages
       try {
         setIsGeneratingImage(true);
-        const prompt = createChildFriendlyPrompt(currentText, userInfo);
-        console.log(`Generating illustration for page ${currentParagraph + 1}:`, prompt);
+        
+        // Enhanced prompt that always includes user characteristics
+        let prompt = createChildFriendlyPrompt(currentText, userInfo);
+        
+        // Double-check that user characteristics are included
+        if (userInfo) {
+          const genderDesc = userInfo.avatar?.type === "boy" ? "boy" : "girl";
+          const skinToneDesc = {
+            pale: "very light skin",
+            light: "light skin", 
+            medium: "medium skin",
+            olive: "olive skin",
+            dark: "dark skin"
+          }[userInfo.avatar?.skinTone] || "medium skin";
+          
+          // Ensure the user's characteristics are prominent in the prompt
+          if (!prompt.includes(userInfo.name) && !prompt.includes(genderDesc)) {
+            prompt = prompt.replace("a happy child", `${userInfo.name}, a ${genderDesc} with ${skinToneDesc}`);
+          }
+        }
+        
+        console.log(`Generating personalized illustration for page ${currentParagraph + 1}:`, prompt);
         
         const result = await runwareService.generateImage({
           positivePrompt: prompt,
