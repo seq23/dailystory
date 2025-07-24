@@ -138,40 +138,90 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
     const avatarDesc = getAvatarDescription();
     const hobbies = info.hobbies;
     
-    const extensionStories = [
-      // Extension 1
-      [
-        `${info.name} discovered a hidden portal that led to an even more magical realm. This new world was filled with floating islands and creatures made of starlight who needed ${info.name}'s help.`,
-        `In this celestial realm, ${info.name} learned to harness the power of the stars themselves. Each constellation told a different story, and ${info.name} could bring these stories to life through their connection to ${hobbies}.`,
-        `A wise star-spirit approached ${info.name} and explained that the balance between all magical worlds was in danger. Only someone with a pure heart and deep love for ${hobbies} could restore harmony.`,
-        `${info.name} embarked on a quest through the cosmic realm, solving stellar puzzles and helping star-creatures overcome their challenges. Each good deed made ${info.name}'s inner light shine brighter.`,
-        `With their dragon companion by their side, ${info.name} faced trials that tested not just their magical abilities, but their kindness, wisdom, and determination to help others.`
-      ],
-      // Extension 2
-      [
-        `${info.name} and their dragon friend discovered an ancient library floating among the clouds, where books contained living stories that could teach amazing lessons about ${hobbies}.`,
-        `The librarian, a gentle phoenix, revealed that some stories had lost their way and needed ${info.name}'s help to find their proper endings. Each rescued story would grant ${info.name} new wisdom.`,
-        `As ${info.name} ventured deeper into the library, they found books that responded to their love of ${hobbies}, revealing secrets about courage, friendship, and the magic of believing in oneself.`,
-        `${info.name} helped reunite separated story characters, solved riddles written in languages of light, and discovered that every act of kindness created new chapters in the great book of life.`,
-        `The phoenix gifted ${info.name} a special bookmark that would always guide them back to any story they wished to revisit, ensuring their adventures could continue forever.`
-      ],
-      // Extension 3  
-      [
-        `${info.name} was invited to join the Council of Young Heroes, where children from all magical realms gathered to share their adventures and learn from each other's experiences with ${hobbies}.`,
-        `At the council, ${info.name} met other brave children who had overcome incredible challenges. Together, they planned missions to help magical creatures throughout all the connected realms.`,
-        `${info.name} led a team on a mission to restore color to a realm that had lost its vibrancy. Using their knowledge of ${hobbies} and their team's combined skills, they painted rainbows across the sky.`,
-        `The grateful inhabitants of the colorless realm taught ${info.name} ancient songs that could heal hearts and bring joy to anyone who heard them. These melodies became ${info.name}'s most treasured gift.`,
-        `${info.name} returned home with new friends from across the magical multiverse, knowing that their adventures had taught them the most important lesson: that sharing joy makes it multiply infinitely.`
-      ]
-    ];
-    
-    const selectedExtension = extensionStories[extensionNumber % extensionStories.length];
+    // Create different extension content based on difficulty level
+    const createExtensionByDifficulty = () => {
+      if (difficulty === "easy") {
+        const simpleExtensions = [
+          [
+            `${info.name} saw a new magic door. It was big and red.`,
+            `${info.name} went through the door. There were new fun things.`,
+            `A nice cat said hello to ${info.name}. The cat was fluffy.`,
+            `${info.name} and the cat played games. They had lots of fun.`,
+            `${info.name} was happy and smiled big. The cat purred.`
+          ],
+          [
+            `${info.name} found a pretty garden. The flowers were bright.`,
+            `Bees and birds lived in the garden. They were very nice.`,
+            `${info.name} helped water the flowers. The garden looked happy.`,
+            `All the animals said thank you. They gave ${info.name} a flower.`,
+            `${info.name} put the flower in their hair. It smelled good.`
+          ]
+        ];
+        return simpleExtensions[extensionNumber % simpleExtensions.length];
+      } else if (difficulty === "medium") {
+        const mediumExtensions = [
+          [
+            `${info.name} discovered a hidden portal behind a waterfall. The water sparkled with rainbow colors.`,
+            `Stepping through the portal, ${info.name} found themselves in a floating cloud city. Friendly cloud people welcomed them warmly.`,
+            `The cloud people taught ${info.name} how to bounce on fluffy clouds. They played exciting games in the sky.`,
+            `${info.name} helped the cloud people fix their rainbow maker. Now beautiful rainbows appeared everywhere.`,
+            `Before leaving, the cloud people gave ${info.name} a special cloud pet. It followed them home happily.`
+          ],
+          [
+            `${info.name} met a wise owl who owned a magical library. The books could tell stories all by themselves.`,
+            `Each book contained adventures about ${hobbies} and amazing discoveries. ${info.name} listened with wonder.`,
+            `The owl asked ${info.name} to help organize the flying books. Together they created perfect order.`,
+            `As a reward, the owl gave ${info.name} a special bookmark. It could take them into any story.`,
+            `${info.name} promised to return and share their own adventures. The owl hooted with joy.`
+          ]
+        ];
+        return mediumExtensions[extensionNumber % mediumExtensions.length];
+      } else if (difficulty === "hard") {
+        const hardExtensions = [
+          [
+            `${info.name} encountered an interdimensional gateway concealed within crystalline formations. The portal emanated extraordinary luminescence.`,
+            `Traversing the threshold, ${info.name} materialized within a realm where sentient celestial bodies communicated through harmonic vibrations.`,
+            `These astronomical entities revealed ancient knowledge about ${hobbies}, expanding ${info.name}'s understanding beyond conventional limitations.`,
+            `${info.name} participated in cosmic ceremonies that synchronized planetary movements with their personal growth and development.`,
+            `Upon completing their celestial education, ${info.name} received astral abilities that would enhance their future endeavors.`
+          ],
+          [
+            `${info.name} discovered an academy where remarkable individuals mastered extraordinary talents related to ${hobbies}.`,
+            `The academy's professors were legendary figures who had achieved unprecedented accomplishments throughout history.`,
+            `${info.name} underwent rigorous training that challenged their intellectual, emotional, and spiritual capabilities.`,
+            `Through determination and perseverance, ${info.name} developed skills that surpassed their previous limitations.`,
+            `Graduating with honors, ${info.name} joined an elite society dedicated to using their abilities for universal betterment.`
+          ]
+        ];
+        return hardExtensions[extensionNumber % hardExtensions.length];
+      } else { // expert
+        const expertExtensions = [
+          [
+            `${info.name} encountered an infinitely complex multidimensional nexus where parallel realities converged through quantum entanglement phenomena.`,
+            `Navigation through these interconnected universes required sophisticated comprehension of theoretical physics and metaphysical principles governing existence.`,
+            `${info.name} assimilated knowledge from civilizations spanning eons, synthesizing their expertise in ${hobbies} with cosmic wisdom.`,
+            `The expedition necessitated resolving paradoxical situations that challenged fundamental assumptions about causality and temporal mechanics.`,
+            `Ultimately, ${info.name} transcended conventional limitations, achieving enlightenment that unified scientific understanding with spiritual awareness.`
+          ],
+          [
+            `${info.name} infiltrated a clandestine organization dedicated to preserving universal equilibrium through sophisticated manipulation of probability matrices.`,
+            `Membership required demonstrating exceptional proficiency in ${hobbies} while simultaneously mastering esoteric disciplines encompassing consciousness research.`,
+            `${info.name} undertook increasingly complex missions that influenced the trajectory of civilizations across multiple dimensional planes.`,
+            `Success demanded synthesizing intuitive wisdom with analytical reasoning, transcending dichotomous thinking to embrace holistic perspectives.`,
+            `${info.name} eventually assumed leadership responsibilities, guiding interdimensional affairs with unprecedented wisdom and compassion.`
+          ]
+        ];
+        return expertExtensions[extensionNumber % expertExtensions.length];
+      }
+    };
+
+    const selectedExtension = createExtensionByDifficulty();
     
     const difficultySettings = {
-      easy: { words: 50 },
-      medium: { words: 80 },
-      hard: { words: 120 },
-      expert: { words: 150 }
+      easy: { words: 25 },
+      medium: { words: 50 },
+      hard: { words: 75 },
+      expert: { words: 100 }
     };
     
     const settings = difficultySettings[difficulty];
@@ -192,25 +242,25 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
     const difficultySettings = {
       easy: { 
         sentences: 2, 
-        words: 50, 
+        words: 30, 
         vocabulary: "simple words that 4-6 year olds know",
         structure: "short, simple sentences"
       },
       medium: { 
         sentences: 3, 
-        words: 80, 
+        words: 60, 
         vocabulary: "age-appropriate words for 7-9 year olds",
         structure: "clear, engaging sentences"
       },
       hard: { 
         sentences: 4, 
-        words: 120, 
+        words: 90, 
         vocabulary: "challenging but accessible words for 10-12 year olds",
         structure: "varied sentence structures"
       },
       expert: { 
         sentences: 5, 
-        words: 150, 
+        words: 120, 
         vocabulary: "advanced vocabulary for 13+ year olds",
         structure: "complex and sophisticated sentences"
       }
@@ -218,27 +268,64 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
 
     const settings = difficultySettings[difficulty];
     
-    const baseStory = [
-      `Once upon a time, there was ${avatarDesc} named ${info.name}. ${info.name} loved ${hobbies} more than anything in the world. One magical morning, ${info.name} discovered something amazing that would change everything.`,
-      
-      `${info.name} found a mysterious, glowing object hidden in their favorite place. It sparkled with all the colors of the rainbow and seemed to whisper secrets of adventure. When ${info.name} touched it, something incredible happened.`,
-      
-      `Suddenly, ${info.name} was transported to a magical world where ${hobbies} came to life! Everything was more colorful, more exciting, and full of friendly creatures who wanted to help ${info.name} on an amazing quest.`,
-      
-      `In this enchanted land, ${info.name} met a wise guide who explained that they had been chosen for a special mission. The guide gave ${info.name} magical powers related to ${hobbies} and showed them the path to adventure.`,
-      
-      `${info.name} faced their first challenge with courage and creativity. Using their love of ${hobbies} and their new magical abilities, they solved puzzles and helped other creatures in need. Everyone was amazed by ${info.name}'s kindness.`,
-      
-      `As ${info.name} continued their journey, they discovered hidden talents they never knew they had. Each challenge made them stronger and more confident. The magical world seemed to respond to ${info.name}'s pure heart and determination.`,
-      
-      `${info.name} encountered a friendly dragon who was sad because they had lost something precious. Using their knowledge of ${hobbies} and their problem-solving skills, ${info.name} helped the dragon find what was lost.`,
-      
-      `The grateful dragon became ${info.name}'s loyal companion and taught them how to fly through the clouds. Together, they soared over magical forests, crystal lakes, and rainbow bridges, seeing wonders beyond imagination.`,
-      
-      `${info.name} and their dragon friend discovered a beautiful castle where a celebration was taking place. All the magical creatures they had helped were there, cheering for ${info.name} and celebrating their heroic deeds.`,
-      
-      `At the celebration, ${info.name} was honored as a true hero of the magical realm. They received a special gift that would always remind them of their adventure and the friends they had made along the way.`
-    ];
+    // Create different story content based on difficulty level
+    const createStoryByDifficulty = () => {
+      if (difficulty === "easy") {
+        return [
+          `${info.name} is a happy ${info.avatar.type}. ${info.name} likes ${hobbies} a lot.`,
+          `One day, ${info.name} found a magic thing. It was pretty and bright.`,
+          `The magic thing took ${info.name} to a fun place. There were nice animals there.`,
+          `${info.name} met a kind friend. The friend helped ${info.name} play.`,
+          `${info.name} had fun with ${hobbies}. All the animals were happy.`,
+          `${info.name} helped a small bird. The bird said thank you.`,
+          `More animals came to play. They all liked ${info.name}.`,
+          `${info.name} learned new games. The games were fun.`,
+          `At the end, ${info.name} was very happy. All friends said goodbye.`,
+          `${info.name} went home with a big smile. It was the best day ever.`
+        ];
+      } else if (difficulty === "medium") {
+        return [
+          `${info.name} was a curious ${info.avatar.type} who loved ${hobbies} more than anything. Every day brought new adventures.`,
+          `One sunny morning, ${info.name} discovered a mysterious glowing object in their backyard. It sparkled like stars and felt warm to touch.`,
+          `The magical object suddenly transported ${info.name} to an amazing world. Colorful creatures welcomed them with cheerful songs.`,
+          `A wise unicorn approached ${info.name} and explained they were chosen for a special quest. The unicorn gave them magical abilities.`,
+          `${info.name} used their new powers to help lost forest animals find their homes. Everyone was grateful for their kindness.`,
+          `Along the journey, ${info.name} met a friendly dragon who taught them about courage. Together they solved exciting puzzles.`,
+          `The adventure led ${info.name} to a beautiful castle where a celebration was happening. All the creatures they helped were there.`,
+          `${info.name} was honored as a hero and received a special medal. The ceremony was filled with music and laughter.`,
+          `When it was time to return home, ${info.name} promised to visit again. They had learned so much about friendship.`,
+          `Back in their own world, ${info.name} treasured the memories forever. Their love for ${hobbies} had grown even stronger.`
+        ];
+      } else if (difficulty === "hard") {
+        return [
+          `${info.name} was an adventurous ${info.avatar.type} with an insatiable passion for ${hobbies}. Their imagination knew no boundaries, constantly seeking extraordinary experiences.`,
+          `During an exploration of their grandmother's mysterious attic, ${info.name} uncovered an ancient, luminescent artifact. The relic pulsated with otherworldly energy, emanating whispers of forgotten legends.`,
+          `Without warning, the enchanted artifact transported ${info.name} into a mystical realm where reality defied conventional understanding. Majestic creatures soared through crystalline skies while magical energies danced around them.`,
+          `An ethereal guardian materialized before ${info.name}, revealing they had been destined for this momentous encounter. The guardian bestowed upon them extraordinary abilities connected to their passion for ${hobbies}.`,
+          `Utilizing their newfound supernatural talents, ${info.name} embarked on a perilous mission to restore balance to the endangered realm. Ancient prophecies spoke of their arrival and potential triumph.`,
+          `Throughout their treacherous journey, ${info.name} encountered formidable challenges that tested their courage, wisdom, and determination. Each obstacle strengthened their resolve and expanded their understanding.`,
+          `The quest culminated in an epic confrontation with malevolent forces threatening the magical world's existence. ${info.name}'s unique connection to ${hobbies} proved instrumental in the decisive victory.`,
+          `Grateful inhabitants from across the liberated realm gathered to honor ${info.name}'s heroic accomplishments. The celebration resonated with triumphant melodies and expressions of eternal gratitude.`,
+          `As their incredible adventure concluded, ${info.name} reluctantly prepared to return to their original world. The bonds forged during their quest would endure beyond dimensional boundaries.`,
+          `Forever transformed by their extraordinary experience, ${info.name} returned home with profound wisdom and an unshakeable belief in the power of pursuing one's passions with unwavering dedication.`
+        ];
+      } else { // expert
+        return [
+          `${info.name} exemplified the quintessential characteristics of an intellectually curious and remarkably perceptive ${info.avatar.type}, whose profound dedication to ${hobbies} transcended conventional boundaries and ventured into realms of extraordinary possibility.`,
+          `While meticulously examining the labyrinthine corridors of their ancestral estate's forgotten archives, ${info.name} fortuitously discovered an ineffably ancient artifact whose luminescent properties defied scientific explanation and resonated with interdimensional harmonics.`,
+          `The archaeological marvel instantaneously precipitated a quantum displacement phenomenon, catapulting ${info.name} across the metaphysical threshold into an alternate universe where fundamental laws of physics yielded to supernatural phenomena and impossibility became manifest reality.`,
+          `An omniscient celestial entity of incomprehensible wisdom materialized through dimensional convergence, elucidating ${info.name}'s predestined role in fulfilling an ancient cosmological prophecy that would determine the fate of multiple interconnected realms throughout the multiverse.`,
+          `Harnessing their exponentially amplified metaphysical capabilities, ${info.name} initiated a systematic campaign to neutralize the catastrophic entropy threatening to obliterate the delicate equilibrium maintaining existence across parallel dimensions, utilizing their expertise in ${hobbies} as a foundational framework.`,
+          `The unprecedented odyssey necessitated navigating increasingly complex moral dilemmas and philosophical paradoxes that challenged ${info.name}'s fundamental understanding of reality, consciousness, and the interconnectedness of all sentient beings throughout the cosmic tapestry.`,
+          `The climactic confrontation against primordial chaos entities required ${info.name} to synthesize advanced theoretical knowledge with intuitive wisdom, ultimately discovering that their mastery of ${hobbies} contained the key to unlocking universal harmonization principles.`,
+          `Upon achieving the seemingly impossible victory through intellectual prowess and spiritual transcendence, representatives from countless civilizations converged to acknowledge ${info.name}'s unprecedented contribution to preserving the fundamental structure of existence itself.`,
+          `The inevitable conclusion of their transformative expedition approached with bittersweet contemplation, as ${info.name} recognized that their consciousness had been permanently elevated to comprehend previously inconceivable truths about the nature of reality and purpose.`,
+          `Returning to their original dimension with consciousness expanded beyond conventional limitations, ${info.name} embraced their eternal responsibility as a guardian of interdimensional wisdom, forever changed by the realization that true mastery of ${hobbies} represented a pathway to universal understanding.`
+        ];
+      }
+    };
+
+    const baseStory = createStoryByDifficulty();
 
     return baseStory.map(paragraph => {
       const words = paragraph.split(' ');
