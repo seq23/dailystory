@@ -449,15 +449,15 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
   const progress = ((currentParagraph + 1) / totalParagraphs) * 100;
 
 
-  // Smart illustration selection with automatic generation
+  // Smart illustration selection with automatic generation for each page
   const getCurrentIllustration = async () => {
     const currentText = storyParagraphs[currentParagraph];
     const lowerText = currentText.toLowerCase();
     
-    // Check if we have a cached generated image for this story text
-    const cacheKey = currentText.substring(0, 100); // Use first 100 chars as cache key
-    if (getCachedImage(cacheKey)) {
-      return getCachedImage(cacheKey)!;
+    // Create a unique cache key for this specific page and story context
+    const pageKey = `page_${currentParagraph}_${currentText.substring(0, 50).replace(/[^a-zA-Z0-9]/g, '_')}`;
+    if (getCachedImage(pageKey)) {
+      return getCachedImage(pageKey)!;
     }
     
     // Check if the story mentions the main character - use their avatar
@@ -560,22 +560,22 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
       }
     }
     
-    // Generate a custom image if no good match exists
+    // Always generate a custom image for each page based on its specific text
     if (runwareService && !isGeneratingImage) {
       try {
         setIsGeneratingImage(true);
         
-        // Create character-aware prompt that includes avatar characteristics
+        // Create a highly specific prompt for this exact page content
         let prompt = createChildFriendlyPrompt(currentText, userInfo);
         
-        // If story mentions main character, enhance prompt with avatar details
-        if (mentionsCharacter) {
-          const avatarDescription = getAvatarDescription();
-          prompt = prompt.replace('a happy child', avatarDescription);
-          prompt = `${prompt}, featuring ${avatarDescription} as the main character`;
-        }
+        // Always include main character details for consistency
+        const avatarDescription = getAvatarDescription();
+        prompt = prompt.replace('a happy child', avatarDescription);
         
-        console.log("Auto-generating image with enhanced story-aware prompt:", prompt);
+        // Add page-specific context to make each image unique
+        prompt = `${prompt}, page ${currentParagraph + 1} of the story, showing exactly what happens in this scene: "${currentText.substring(0, 100)}..."`;
+        
+        console.log(`Generating unique image for page ${currentParagraph + 1} with text-specific prompt:`, prompt);
         
         const generatedImage = await runwareService.generateImage({
           positivePrompt: prompt,
@@ -586,14 +586,15 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
           outputFormat: "WEBP"
         });
         
-        // Cache the generated image
-        cacheImage(cacheKey, generatedImage.imageURL);
+        // Cache the generated image with the page-specific key
+        cacheImage(pageKey, generatedImage.imageURL);
         setCurrentIllustration(generatedImage.imageURL);
         setIsGeneratingImage(false);
         return generatedImage.imageURL;
       } catch (error) {
-        console.error("Error generating image:", error);
+        console.error("Error generating image for page:", error);
         setIsGeneratingImage(false);
+        // Fall back to category-based selection only if generation fails
       }
     }
     
