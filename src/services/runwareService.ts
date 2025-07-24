@@ -341,9 +341,31 @@ export const createChildFriendlyPrompt = (storyText: string, userInfo?: any): st
     prompt += "with " + objects.slice(0, 2).join(' and ') + " ";
   }
   
-  // Add user's favorite color if available
-  if (userInfo?.favoriteColor) {
-    prompt += `featuring beautiful ${userInfo.favoriteColor.toLowerCase()} colors `;
+  // Add ALL user favorites to enhance personalization
+  if (userInfo) {
+    // Add favorite color
+    if (userInfo.favoriteColor) {
+      prompt += `featuring beautiful ${userInfo.favoriteColor.toLowerCase()} colors `;
+    }
+    
+    // Add favorite food if it makes sense in context
+    if (userInfo.favoriteFood && (lowerText.includes('food') || lowerText.includes('eat') || lowerText.includes('meal') || userInfo.favoriteFood.toLowerCase().includes('cake') || userInfo.favoriteFood.toLowerCase().includes('cookie'))) {
+      prompt += `with delicious ${userInfo.favoriteFood.toLowerCase()} `;
+    }
+    
+    // Add hobbies if relevant to the scene
+    if (userInfo.hobbies && (lowerText.includes('play') || lowerText.includes('fun') || lowerText.includes('activity'))) {
+      const hobbiesList = userInfo.hobbies.split(',').map(h => h.trim()).slice(0, 2);
+      prompt += `incorporating ${hobbiesList.join(' and ')} `;
+    }
+    
+    // Add special request elements if mentioned
+    if (userInfo.specialRequest) {
+      const specialElements = userInfo.specialRequest.toLowerCase();
+      if (specialElements.includes('magic') || specialElements.includes('dragon') || specialElements.includes('princess') || specialElements.includes('space') || specialElements.includes('power')) {
+        prompt += `with magical elements from their special request: ${userInfo.specialRequest.toLowerCase()} `;
+      }
+    }
   }
   
   // Add mood and style
