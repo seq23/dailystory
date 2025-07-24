@@ -244,34 +244,6 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
     setCurrentIllustration(illustrations[illustrationIndex]);
   }, [currentParagraph]);
 
-  useEffect(() => {
-    if (isReading && 'speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      
-      const utterance = new SpeechSynthesisUtterance(currentStory);
-      utterance.rate = userInfo.age <= 7 ? 0.8 : 0.9;
-      utterance.pitch = 1.1;
-      utterance.volume = 0.8;
-      
-      const voices = window.speechSynthesis.getVoices();
-      const childFriendlyVoice = voices.find(voice => 
-        voice.name.includes('Google') && voice.lang.startsWith('en')
-      ) || voices[0];
-      
-      if (childFriendlyVoice) {
-        utterance.voice = childFriendlyVoice;
-      }
-      
-      speechRef.current = utterance;
-      window.speechSynthesis.speak(utterance);
-    } else {
-      window.speechSynthesis.cancel();
-    }
-
-    return () => {
-      window.speechSynthesis.cancel();
-    };
-  }, [currentStory, isReading, userInfo.age]);
 
   const handleNext = () => {
     if (currentParagraph < totalPages - 1) {
@@ -496,26 +468,6 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                   >
                     ← Previous
                   </Button>
-                  
-                  <div className="flex items-center gap-2">
-                    <Button
-                      onClick={() => setIsReading(!isReading)}
-                      variant="outline"
-                      size="sm"
-                      className="rounded-full hover:scale-110 transition-transform"
-                    >
-                      {isReading ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-                    </Button>
-                    
-                    <Button
-                      onClick={handleAddTime}
-                      variant="outline"
-                      size="sm"
-                      className="rounded-full hover:scale-110 transition-transform"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                  </div>
                   
                   <Button
                     onClick={handleNext}
