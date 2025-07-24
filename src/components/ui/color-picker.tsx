@@ -2,6 +2,7 @@ import * as React from "react"
 import { HexColorPicker } from "react-colorful"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface ColorPickerProps {
@@ -62,14 +63,17 @@ export const ColorPicker = React.forwardRef<
             className
           )}
         >
-          <div className="flex items-center gap-3">
-            {color && (
-              <div
-                className="h-6 w-6 rounded-full border-2 border-gray-300"
-                style={{ backgroundColor: color }}
-              />
-            )}
-            <span>{color ? colorName : "Pull down to select color"}</span>
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-3">
+              {color && (
+                <div
+                  className="h-6 w-6 rounded-full border-2 border-gray-300"
+                  style={{ backgroundColor: color }}
+                />
+              )}
+              <span>{color ? colorName : "Pull down to select color"}</span>
+            </div>
+            <ChevronDown className="h-4 w-4 opacity-50" />
           </div>
         </Button>
       </PopoverTrigger>
