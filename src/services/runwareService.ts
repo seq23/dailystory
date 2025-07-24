@@ -179,12 +179,16 @@ export const createChildFriendlyPrompt = (storyText: string, userInfo?: any): st
   const sanitizedStoryText = ContentSecurity.sanitizePrompt(storyText);
   const lowerText = sanitizedStoryText.toLowerCase();
   
-  // Extract the main action/scene from the story
+  // Extract key elements directly from the story text
   let mainScene = "";
   let characters = [];
   let setting = "";
   let objects = [];
   let mood = "happy and cheerful";
+  
+  // Enhanced story text analysis - extract more specific details from the actual story
+  const storyWords = lowerText.split(/\s+/);
+  const storyContext = sanitizedStoryText; // Keep original capitalization for better context
   
   // ALWAYS include the main character first if userInfo is provided
   if (userInfo) {
@@ -314,31 +318,48 @@ export const createChildFriendlyPrompt = (storyText: string, userInfo?: any): st
     }
   });
   
-  // Build comprehensive prompt
-  let prompt = "A beautiful children's book illustration showing ";
+  // Build comprehensive prompt that closely follows the story
+  let prompt = "A beautiful children's book illustration depicting ";
   
-  // Add characters
+  // Start with a direct reference to the story scene
+  if (mainScene || setting || objects.length > 0) {
+    prompt += "the scene where ";
+  }
+  
+  // Add characters first (user's character is always primary)
   if (characters.length > 0) {
     prompt += characters.slice(0, 2).join(' and ') + " ";
   } else {
     prompt += "a happy child ";
   }
   
-  // Add main action/scene
+  // Add the main action/scene from the story
   if (mainScene) {
     prompt += mainScene + " ";
+  } else {
+    // If no specific action detected, try to infer from story context
+    prompt += "is featured in the story ";
   }
   
-  // Add setting
+  // Add setting with story context
   if (setting) {
     prompt += "in " + setting + " ";
+  } else if (storyWords.length > 5) {
+    // Try to infer setting from story if not explicitly found
+    prompt += "in the setting described in the story ";
   } else {
     prompt += "in a magical, safe place ";
   }
   
-  // Add objects if present
+  // Add objects that appear in the story
   if (objects.length > 0) {
-    prompt += "with " + objects.slice(0, 2).join(' and ') + " ";
+    prompt += "surrounded by " + objects.slice(0, 3).join(', ') + " ";
+  }
+  
+  // Include a snippet of the actual story context for better accuracy
+  if (storyContext.length > 20) {
+    const relevantWords = storyWords.slice(0, 8).join(' ');
+    prompt += `based on this story context: "${relevantWords}..." `;
   }
   
   // Add ALL user favorites to enhance personalization
