@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Volume2, VolumeX, Plus } from "lucide-react";
+import { Play, Pause, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface FloatingTimerProps {
@@ -185,7 +185,7 @@ export const FloatingTimer = ({
             className="bg-white/90 backdrop-blur-sm border-2 border-amber-300 text-amber-800 hover:bg-amber-50 shadow-lg w-12 h-12 p-0"
             title={isReading ? "Pause Timer" : "Start Timer"}
           >
-            {isReading ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+            {isReading ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
           </Button>
           
           <Button
