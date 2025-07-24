@@ -143,18 +143,18 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
       if (difficulty === "easy") {
         const simpleExtensions = [
           [
-            `${info.name} saw a new magic door. It was big and red.`,
-            `${info.name} went through the door. There were new fun things.`,
-            `A nice cat said hello to ${info.name}. The cat was fluffy.`,
-            `${info.name} and the cat played games. They had lots of fun.`,
-            `${info.name} was happy and smiled big. The cat purred.`
+            `${info.name} sees a dog.`,
+            `The dog is big.`,
+            `${info.name} says hi.`,
+            `The dog wags tail.`,
+            `They are friends.`
           ],
           [
-            `${info.name} found a pretty garden. The flowers were bright.`,
-            `Bees and birds lived in the garden. They were very nice.`,
-            `${info.name} helped water the flowers. The garden looked happy.`,
-            `All the animals said thank you. They gave ${info.name} a flower.`,
-            `${info.name} put the flower in their hair. It smelled good.`
+            `${info.name} finds a ball.`,
+            `The ball is red.`,
+            `${info.name} throws the ball.`,
+            `The ball bounces high.`,
+            `${info.name} catches it.`
           ]
         ];
         return simpleExtensions[extensionNumber % simpleExtensions.length];
@@ -241,10 +241,10 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
     
     const difficultySettings = {
       easy: { 
-        sentences: 2, 
-        words: 30, 
-        vocabulary: "simple words that 4-6 year olds know",
-        structure: "short, simple sentences"
+        sentences: 1, 
+        words: 6, 
+        vocabulary: "very simple words that 3-5 year olds know",
+        structure: "one short, simple sentence"
       },
       medium: { 
         sentences: 3, 
@@ -272,16 +272,16 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
     const createStoryByDifficulty = () => {
       if (difficulty === "easy") {
         return [
-          `${info.name} is a happy ${info.avatar.type}. ${info.name} likes ${hobbies} a lot.`,
-          `One day, ${info.name} found a magic thing. It was pretty and bright.`,
-          `The magic thing took ${info.name} to a fun place. There were nice animals there.`,
-          `${info.name} met a kind friend. The friend helped ${info.name} play.`,
-          `${info.name} had fun with ${hobbies}. All the animals were happy.`,
-          `${info.name} helped a small bird. The bird said thank you.`,
-          `More animals came to play. They all liked ${info.name}.`,
-          `${info.name} learned new games. The games were fun.`,
-          `At the end, ${info.name} was very happy. All friends said goodbye.`,
-          `${info.name} went home with a big smile. It was the best day ever.`
+          `${info.name} likes to play.`,
+          `${info.name} found a cat.`,
+          `The cat is soft.`,
+          `${info.name} pets the cat.`,
+          `The cat says meow.`,
+          `They play together.`,
+          `${info.name} is happy.`,
+          `The cat is happy.`,
+          `They run and jump.`,
+          `${info.name} loves the cat.`
         ];
       } else if (difficulty === "medium") {
         return [
@@ -709,7 +709,8 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                 {/* Story Text */}
                 <div className="bg-gradient-card rounded-2xl p-6 shadow-soft min-h-[300px] flex items-center">
                   <div className="w-full">
-                    <p className={`leading-relaxed font-comic text-lg ${
+                    <p className={`leading-relaxed font-comic text-center ${
+                      currentDifficulty === "easy" ? 'text-4xl font-bold' :
                       userInfo.age <= 7 ? 'text-2xl' : 
                       userInfo.age <= 9 ? 'text-xl' : 
                       'text-lg'
