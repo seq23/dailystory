@@ -600,34 +600,62 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
     return allIllustrations[safeIndex];
   };
 
-  // Load illustration when paragraph changes, focusing on plot points
+  // Generate automatic illustrations for each story page
   useEffect(() => {
-    const loadIllustration = async () => {
+    const generatePageIllustration = async () => {
       const currentText = storyParagraphs[currentParagraph];
-      const lowerText = currentText.toLowerCase();
+      if (!currentText) return;
       
-      // Detect major plot points and story changes
-      const plotTwistIndicators = [
-        'suddenly', 'then', 'but then', 'however', 'meanwhile', 'next',
-        'all of a sudden', 'unexpectedly', 'to his surprise', 'to her surprise',
-        'just then', 'at that moment', 'without warning', 'out of nowhere',
-        'before long', 'after a while', 'later that day', 'the next morning'
-      ];
+      const cacheKey = `page-${currentParagraph}-${currentText.substring(0, 50)}`;
       
-      const hasPlotTwist = plotTwistIndicators.some(indicator => 
-        lowerText.includes(indicator)
-      );
+      // Check if we already have this page cached
+      if (generatedImageCache.has(cacheKey)) {
+        setCurrentIllustration(generatedImageCache.get(cacheKey)!);
+        return;
+      }
       
-      // Generate new illustration at plot twists or every few paragraphs
-      const shouldGenerateNewImage = hasPlotTwist || currentParagraph % 3 === 0;
-      
-      if (shouldGenerateNewImage || !currentIllustration) {
-        const illustration = await getCurrentIllustration();
-        setCurrentIllustration(illustration);
+      // Generate new illustration for each page automatically
+      try {
+        setIsGeneratingImage(true);
+        const prompt = createChildFriendlyPrompt(currentText, userInfo);
+        console.log(`Generating illustration for page ${currentParagraph + 1}:`, prompt);
+        
+        const result = await runwareService.generateImage({
+          positivePrompt: prompt,
+          model: "runware:100@1",
+          width: 768,
+          height: 1024,
+          numberResults: 1,
+          outputFormat: "WEBP"
+        });
+        
+        if (result.imageURL) {
+          generatedImageCache.set(cacheKey, result.imageURL);
+          setCurrentIllustration(result.imageURL);
+        }
+      } catch (error) {
+        console.error("Failed to generate illustration:", error);
+        // Fallback to predefined illustrations
+        const allIllustrations = [
+          illustration1, illustration2, illustration3, illustration4, illustration5,
+          illustration6, illustration7, illustration8, illustration9, illustration10,
+          illustration11, illustration12, illustration13, illustration14, illustration15,
+          illustration16, illustration17, illustration18, illustration19, illustration20,
+          illustration21, illustration22, illustration23, illustration24, illustration25,
+          illustration26, illustration27, illustration28, illustration29, illustration30,
+          illustration31, illustration32, illustration33, illustration34, illustration35,
+          illustration36, illustration37, illustration38, illustration39, illustration40,
+          illustration41, illustration42, illustration43, illustration44
+        ];
+        const fallbackIndex = currentParagraph % allIllustrations.length;
+        setCurrentIllustration(allIllustrations[fallbackIndex]);
+      } finally {
+        setIsGeneratingImage(false);
       }
     };
-    loadIllustration();
-  }, [currentParagraph]);
+    
+    generatePageIllustration();
+  }, [currentParagraph, storyParagraphs, userInfo, runwareService]);
 
   // Get current chapter based on story progress
   const getCurrentChapter = () => {

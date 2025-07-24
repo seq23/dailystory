@@ -183,7 +183,7 @@ export const createChildFriendlyPrompt = (storyText: string, userInfo?: any): st
   
   // Analyze the story text more comprehensively
   
-  // Character detection - focus on story content, not forced avatar insertion
+  // Character detection based purely on story content
   if (userInfo?.favoriteAnimal && lowerText.includes(userInfo.favoriteAnimal.toLowerCase())) {
     characters.push(`friendly ${userInfo.favoriteAnimal.toLowerCase()}`);
   }
