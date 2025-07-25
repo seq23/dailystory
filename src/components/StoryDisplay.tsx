@@ -89,12 +89,12 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
   const [hasShownDifficultyAlert, setHasShownDifficultyAlert] = useState(false);
   const [showTutorialBubble, setShowTutorialBubble] = useState(true);
 
-  // Auto-dismiss tutorial bubble after 10 seconds
+  // Auto-dismiss tutorial bubble after 6 seconds
   useEffect(() => {
     if (showTutorialBubble && currentParagraph === 0) {
       const timer = setTimeout(() => {
         setShowTutorialBubble(false);
-      }, 10000);
+      }, 6000);
       
       return () => clearTimeout(timer);
     }
