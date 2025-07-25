@@ -738,16 +738,16 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                   <div className="relative flex items-center gap-1 sm:gap-2">
                     {/* Tutorial Bubble */}
                     {showTutorialBubble && currentParagraph === 0 && (
-                      <div className="absolute -top-20 -left-40 sm:-top-24 sm:-left-48 lg:-left-64 z-50 animate-fade-in">
-                        <div className="relative bg-gradient-to-r from-primary to-accent text-white p-3 sm:p-4 rounded-2xl shadow-lg w-48 sm:w-64 animate-[pulse_2s_infinite]">
-                          <div className="text-xs sm:text-sm font-semibold">
+                      <div className="absolute -top-16 -left-32 sm:-top-20 sm:-left-40 lg:-left-48 z-50 animate-fade-in">
+                        <div className="relative bg-gradient-to-r from-primary to-accent text-white p-4 sm:p-5 rounded-2xl shadow-lg w-56 sm:w-72 animate-[pulse_2s_infinite]">
+                          <div className="text-sm sm:text-base font-semibold">
                             💡 Tip: Make stories easier or harder!
                           </div>
-                          <div className="text-xs mt-1 opacity-90">
+                          <div className="text-xs sm:text-sm mt-1 opacity-90">
                             Click these buttons to adjust difficulty
                           </div>
-                          {/* Arrow pointing to buttons */}
-                          <div className="absolute -bottom-2 right-8 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-primary"></div>
+                          {/* Arrow pointing directly to buttons */}
+                          <div className="absolute -bottom-2 right-12 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-primary"></div>
                           {/* Close button */}
                           <button
                             onClick={() => setShowTutorialBubble(false)}
