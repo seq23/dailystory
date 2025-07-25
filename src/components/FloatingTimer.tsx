@@ -10,6 +10,7 @@ interface FloatingTimerProps {
   onAddTime: () => void;
   onAddPages: () => void;
   pagesRemaining?: number;
+  currentParagraph?: number;
 }
 
 export const FloatingTimer = ({ 
@@ -18,14 +19,35 @@ export const FloatingTimer = ({
   onToggleReading, 
   onAddTime,
   onAddPages,
-  pagesRemaining = 0
+  pagesRemaining = 0,
+  currentParagraph = 0
 }: FloatingTimerProps) => {
   const [showCelebration, setShowCelebration] = useState(false);
   const [showPlayTooltip, setShowPlayTooltip] = useState(false);
   const [showPlusTooltip, setShowPlusTooltip] = useState(false);
   const [showPagesTooltip, setShowPagesTooltip] = useState(false);
+  const [hasFlashedTooltips, setHasFlashedTooltips] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const { toast } = useToast();
+  
+  // Auto-flash tooltips on first page
+  useEffect(() => {
+    if (currentParagraph === 0 && !hasFlashedTooltips) {
+      setHasFlashedTooltips(true);
+      
+      // Flash play tooltip first
+      setTimeout(() => setShowPlayTooltip(true), 1000);
+      setTimeout(() => setShowPlayTooltip(false), 3000);
+      
+      // Flash plus tooltip second
+      setTimeout(() => setShowPlusTooltip(true), 3500);
+      setTimeout(() => setShowPlusTooltip(false), 5500);
+      
+      // Flash pages tooltip third
+      setTimeout(() => setShowPagesTooltip(true), 6000);
+      setTimeout(() => setShowPagesTooltip(false), 8000);
+    }
+  }, [currentParagraph, hasFlashedTooltips]);
   
   // Check if we should encourage adding pages (5+ minutes left, 1 page remaining)
   const shouldShakeTooltip = timeRemaining >= 5 * 60 && pagesRemaining === 1;

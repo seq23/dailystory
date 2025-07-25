@@ -851,6 +851,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
         onAddTime={handleAddTime}
         onAddPages={handleAddPages}
         pagesRemaining={totalPages - currentParagraph - 1}
+        currentParagraph={currentParagraph}
       />
     </div>
     </TooltipProvider>
