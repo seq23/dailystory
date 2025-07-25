@@ -389,13 +389,32 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
     setIllustrationGenerationQueue([]);
   }, [userInfo]);
 
-  // Regenerate story text when difficulty changes, but preserve images
+  // Regenerate story text when difficulty changes, but preserve images and page count
   useEffect(() => {
     if (story.length > 0) {
       // Add 1-2 second delay before updating story text for difficulty changes
       const difficultyChangeTimer = setTimeout(() => {
-        const updatedStory = generateInitialStory(userInfo, currentDifficulty);
-        setStory(updatedStory);
+        const currentPageCount = story.length;
+        const baseStory = generateInitialStory(userInfo, currentDifficulty);
+        
+        // If user has added pages beyond the base 10, preserve those pages by regenerating extensions
+        if (currentPageCount > baseStory.length) {
+          const additionalPagesNeeded = currentPageCount - baseStory.length;
+          const extensionsNeeded = Math.ceil(additionalPagesNeeded / 5); // Extensions add 5 pages each
+          
+          let updatedStory = [...baseStory];
+          for (let i = 0; i < extensionsNeeded; i++) {
+            const extensionPages = generateStoryExtension(userInfo, currentDifficulty, i);
+            updatedStory = [...updatedStory, ...extensionPages];
+          }
+          
+          // Trim to exact page count if needed
+          updatedStory = updatedStory.slice(0, currentPageCount);
+          setStory(updatedStory);
+        } else {
+          // User hasn't added extra pages, just update with base story
+          setStory(baseStory);
+        }
       }, Math.random() * 1000 + 1000); // 1-2 second delay
 
       return () => clearTimeout(difficultyChangeTimer);
