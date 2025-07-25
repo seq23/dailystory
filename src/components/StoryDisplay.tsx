@@ -180,36 +180,36 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
       } else if (difficulty === "hard") {
         const hardExtensions = [
           [
-            `${info.name} encountered an interdimensional gateway concealed within crystalline formations. The portal emanated extraordinary luminescence.`,
-            `Traversing the threshold, ${info.name} materialized within a realm where sentient celestial bodies communicated through harmonic vibrations.`,
-            `These astronomical entities revealed ancient knowledge about ${hobbies}, expanding ${info.name}'s understanding beyond conventional limitations.`,
-            `${info.name} participated in cosmic ceremonies that synchronized planetary movements with their personal growth and development.`,
-            `Upon completing their celestial education, ${info.name} received astral abilities that would enhance their future endeavors.`
+            `${info.name} found a hidden gateway made of beautiful crystal formations. The portal glowed with extraordinary light.`,
+            `Walking through the gateway, ${info.name} entered a realm where celestial beings spoke through musical vibrations.`,
+            `These amazing star creatures shared ancient secrets about ${hobbies}, helping ${info.name} learn things beyond normal understanding.`,
+            `${info.name} joined in cosmic ceremonies that connected planetary movements with their personal growth and development.`,
+            `After completing their celestial education, ${info.name} received special astral abilities for their future adventures.`
           ],
           [
-            `${info.name} discovered an academy where remarkable individuals mastered extraordinary talents related to ${hobbies}.`,
-            `The academy's professors were legendary figures who had achieved unprecedented accomplishments throughout history.`,
-            `${info.name} underwent rigorous training that challenged their intellectual, emotional, and spiritual capabilities.`,
-            `Through determination and perseverance, ${info.name} developed skills that surpassed their previous limitations.`,
-            `Graduating with honors, ${info.name} joined an elite society dedicated to using their abilities for universal betterment.`
+            `${info.name} discovered a magical academy where remarkable people mastered extraordinary talents related to ${hobbies}.`,
+            `The academy's teachers were legendary figures who had achieved incredible accomplishments throughout history.`,
+            `${info.name} went through challenging training that tested their mind, heart, and spiritual capabilities.`,
+            `Through hard work and perseverance, ${info.name} developed skills that went beyond their previous limitations.`,
+            `Graduating with honors, ${info.name} joined an elite group dedicated to using their abilities for making the world better.`
           ]
         ];
         return hardExtensions[extensionNumber % hardExtensions.length];
       } else { // expert
         const expertExtensions = [
           [
-            `${info.name} encountered an infinitely complex multidimensional nexus where parallel realities converged through quantum entanglement phenomena.`,
-            `Navigation through these interconnected universes required sophisticated comprehension of theoretical physics and metaphysical principles governing existence.`,
-            `${info.name} assimilated knowledge from civilizations spanning eons, synthesizing their expertise in ${hobbies} with cosmic wisdom.`,
-            `The expedition necessitated resolving paradoxical situations that challenged fundamental assumptions about causality and temporal mechanics.`,
-            `Ultimately, ${info.name} transcended conventional limitations, achieving enlightenment that unified scientific understanding with spiritual awareness.`
+            `${info.name} discovered an incredibly complex multidimensional nexus where parallel realities merged through quantum entanglement phenomena.`,
+            `Traveling through these interconnected universes required sophisticated understanding of theoretical physics and metaphysical principles governing existence.`,
+            `${info.name} learned knowledge from civilizations spanning eons, combining their expertise in ${hobbies} with cosmic wisdom.`,
+            `The expedition required solving paradoxical situations that challenged fundamental assumptions about causality and temporal mechanics.`,
+            `Finally, ${info.name} transcended conventional limitations, achieving enlightenment that unified scientific understanding with spiritual awareness.`
           ],
           [
-            `${info.name} infiltrated a clandestine organization dedicated to preserving universal equilibrium through sophisticated manipulation of probability matrices.`,
-            `Membership required demonstrating exceptional proficiency in ${hobbies} while simultaneously mastering esoteric disciplines encompassing consciousness research.`,
-            `${info.name} undertook increasingly complex missions that influenced the trajectory of civilizations across multiple dimensional planes.`,
-            `Success demanded synthesizing intuitive wisdom with analytical reasoning, transcending dichotomous thinking to embrace holistic perspectives.`,
-            `${info.name} eventually assumed leadership responsibilities, guiding interdimensional affairs with unprecedented wisdom and compassion.`
+            `${info.name} joined a secret organization dedicated to preserving universal balance through sophisticated manipulation of probability matrices.`,
+            `Membership required showing exceptional skill in ${hobbies} while simultaneously mastering esoteric disciplines encompassing consciousness research.`,
+            `${info.name} took on increasingly complex missions that influenced the direction of civilizations across multiple dimensional planes.`,
+            `Success demanded combining intuitive wisdom with analytical reasoning, transcending binary thinking to embrace holistic perspectives.`,
+            `${info.name} eventually took on leadership responsibilities, guiding interdimensional affairs with unprecedented wisdom and compassion.`
           ]
         ];
         return expertExtensions[extensionNumber % expertExtensions.length];
@@ -299,29 +299,29 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
         ];
       } else if (difficulty === "hard") {
         return [
-          `${info.name} was an adventurous ${info.avatar.type} with an insatiable passion for ${hobbies}. Their imagination knew no boundaries, constantly seeking extraordinary experiences.`,
-          `During an exploration of their grandmother's mysterious attic, ${info.name} uncovered an ancient, luminescent artifact. The relic pulsated with otherworldly energy, emanating whispers of forgotten legends.`,
-          `Without warning, the enchanted artifact transported ${info.name} into a mystical realm where reality defied conventional understanding. Majestic creatures soared through crystalline skies while magical energies danced around them.`,
-          `An ethereal guardian materialized before ${info.name}, revealing they had been destined for this momentous encounter. The guardian bestowed upon them extraordinary abilities connected to their passion for ${hobbies}.`,
-          `Utilizing their newfound supernatural talents, ${info.name} embarked on a perilous mission to restore balance to the endangered realm. Ancient prophecies spoke of their arrival and potential triumph.`,
-          `Throughout their treacherous journey, ${info.name} encountered formidable challenges that tested their courage, wisdom, and determination. Each obstacle strengthened their resolve and expanded their understanding.`,
-          `The quest culminated in an epic confrontation with malevolent forces threatening the magical world's existence. ${info.name}'s unique connection to ${hobbies} proved instrumental in the decisive victory.`,
-          `Grateful inhabitants from across the liberated realm gathered to honor ${info.name}'s heroic accomplishments. The celebration resonated with triumphant melodies and expressions of eternal gratitude.`,
-          `As their incredible adventure concluded, ${info.name} reluctantly prepared to return to their original world. The bonds forged during their quest would endure beyond dimensional boundaries.`,
-          `Forever transformed by their extraordinary experience, ${info.name} returned home with profound wisdom and an unshakeable belief in the power of pursuing one's passions with unwavering dedication.`
+          `${info.name} was a brave ${info.avatar.type} who loved ${hobbies} very much. They always looked for new adventures and exciting things to do.`,
+          `One day, ${info.name} found a mysterious box in their grandmother's attic. The box was glowing with a strange, beautiful light that seemed magical.`,
+          `Suddenly, the enchanted box took ${info.name} to a wonderful place where amazing creatures lived. Dragons flew through the sky and unicorns walked in crystal forests.`,
+          `A wise guardian appeared and told ${info.name} they were chosen for something important. The guardian gave them special powers connected to their love for ${hobbies}.`,
+          `Using their new abilities, ${info.name} went on a dangerous mission to help save this magical world. Ancient stories had predicted their arrival and success.`,
+          `During their challenging journey, ${info.name} faced many difficult problems that tested their bravery and intelligence. Each challenge made them stronger and wiser.`,
+          `The adventure reached its peak when ${info.name} had to fight against evil forces threatening the magical world. Their knowledge of ${hobbies} helped them win the battle.`,
+          `All the grateful people from the rescued kingdom came together to celebrate ${info.name}'s heroic deeds. There was music, dancing, and joy everywhere.`,
+          `When it was time to go home, ${info.name} sadly said goodbye to their new friends. The friendships they made would last forever in their heart.`,
+          `Changed by their amazing experience, ${info.name} came back home with new wisdom and a strong belief in following their dreams with determination.`
         ];
       } else { // expert
         return [
-          `${info.name} exemplified the quintessential characteristics of an intellectually curious and remarkably perceptive ${info.avatar.type}, whose profound dedication to ${hobbies} transcended conventional boundaries and ventured into realms of extraordinary possibility.`,
-          `While meticulously examining the labyrinthine corridors of their ancestral estate's forgotten archives, ${info.name} fortuitously discovered an ineffably ancient artifact whose luminescent properties defied scientific explanation and resonated with interdimensional harmonics.`,
-          `The archaeological marvel instantaneously precipitated a quantum displacement phenomenon, catapulting ${info.name} across the metaphysical threshold into an alternate universe where fundamental laws of physics yielded to supernatural phenomena and impossibility became manifest reality.`,
-          `An omniscient celestial entity of incomprehensible wisdom materialized through dimensional convergence, elucidating ${info.name}'s predestined role in fulfilling an ancient cosmological prophecy that would determine the fate of multiple interconnected realms throughout the multiverse.`,
-          `Harnessing their exponentially amplified metaphysical capabilities, ${info.name} initiated a systematic campaign to neutralize the catastrophic entropy threatening to obliterate the delicate equilibrium maintaining existence across parallel dimensions, utilizing their expertise in ${hobbies} as a foundational framework.`,
-          `The unprecedented odyssey necessitated navigating increasingly complex moral dilemmas and philosophical paradoxes that challenged ${info.name}'s fundamental understanding of reality, consciousness, and the interconnectedness of all sentient beings throughout the cosmic tapestry.`,
-          `The climactic confrontation against primordial chaos entities required ${info.name} to synthesize advanced theoretical knowledge with intuitive wisdom, ultimately discovering that their mastery of ${hobbies} contained the key to unlocking universal harmonization principles.`,
-          `Upon achieving the seemingly impossible victory through intellectual prowess and spiritual transcendence, representatives from countless civilizations converged to acknowledge ${info.name}'s unprecedented contribution to preserving the fundamental structure of existence itself.`,
-          `The inevitable conclusion of their transformative expedition approached with bittersweet contemplation, as ${info.name} recognized that their consciousness had been permanently elevated to comprehend previously inconceivable truths about the nature of reality and purpose.`,
-          `Returning to their original dimension with consciousness expanded beyond conventional limitations, ${info.name} embraced their eternal responsibility as a guardian of interdimensional wisdom, forever changed by the realization that true mastery of ${hobbies} represented a pathway to universal understanding.`
+          `${info.name} was an exceptionally curious ${info.avatar.type} whose deep love for ${hobbies} opened doors to extraordinary adventures. Their intellect and determination set them apart from others.`,
+          `While exploring the mysterious corridors of an ancient library, ${info.name} discovered a luminescent artifact with supernatural properties. This archaeological wonder defied scientific explanation completely.`,
+          `The magical object instantly transported ${info.name} across dimensional boundaries into an alternate universe. Here, the fundamental laws of physics yielded to supernatural phenomena beyond imagination.`,
+          `A wise celestial being appeared through dimensional convergence, revealing ${info.name}'s important role in an ancient prophecy. This destiny would determine the fate of multiple interconnected realms.`,
+          `Using their enhanced metaphysical abilities, ${info.name} began a systematic campaign to stop the chaos threatening parallel dimensions. Their expertise in ${hobbies} became the foundation for success.`,
+          `The incredible journey required navigating complex moral dilemmas and philosophical puzzles that challenged everything ${info.name} knew about reality and consciousness.`,
+          `The final confrontation against primordial chaos required ${info.name} to combine advanced knowledge with intuitive wisdom. Their mastery of ${hobbies} held the key to universal harmony.`,
+          `After achieving victory through intellectual prowess and spiritual growth, representatives from countless civilizations gathered to honor ${info.name}'s contribution to preserving existence itself.`,
+          `As their transformative expedition concluded, ${info.name} experienced bittersweet emotions, knowing their consciousness had been permanently elevated to understand previously inconceivable truths.`,
+          `Returning home with expanded awareness, ${info.name} accepted their eternal responsibility as a guardian of interdimensional wisdom, forever changed by the realization that ${hobbies} represented a pathway to understanding.`
         ];
       }
     };
