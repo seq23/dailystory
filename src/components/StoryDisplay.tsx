@@ -180,18 +180,18 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
       } else if (difficulty === "hard") {
         const hardExtensions = [
           [
-            `${info.name} found a hidden gateway made of beautiful crystal formations. The portal glowed with extraordinary light.`,
-            `Walking through the gateway, ${info.name} entered a realm where celestial beings spoke through musical vibrations.`,
-            `These amazing star creatures shared ancient secrets about ${hobbies}, helping ${info.name} learn things beyond normal understanding.`,
-            `${info.name} joined in cosmic ceremonies that connected planetary movements with their personal growth and development.`,
-            `After completing their celestial education, ${info.name} received special astral abilities for their future adventures.`
+            `${info.name} encountered a magnificent crystalline gateway radiating ethereal luminescence with supernatural properties. The dimensional portal emanated extraordinary energy that transcended ordinary perception.`,
+            `Traversing this mystical threshold, ${info.name} discovered a celestial realm where advanced beings communicated through harmonious vibrational frequencies and telepathic resonance.`,
+            `These enlightened stellar entities imparted ancient wisdom regarding ${hobbies}, enabling ${info.name} to comprehend knowledge that exceeded conventional understanding and intellectual boundaries.`,
+            `${info.name} participated in profound cosmic ceremonies that established connections between astronomical phenomena and their personal spiritual development and consciousness expansion.`,
+            `Upon completing their comprehensive celestial education, ${info.name} acquired remarkable astral capabilities that would enhance their future interdimensional adventures and quests.`
           ],
           [
-            `${info.name} discovered a magical academy where remarkable people mastered extraordinary talents related to ${hobbies}.`,
-            `The academy's teachers were legendary figures who had achieved incredible accomplishments throughout history.`,
-            `${info.name} went through challenging training that tested their mind, heart, and spiritual capabilities.`,
-            `Through hard work and perseverance, ${info.name} developed skills that went beyond their previous limitations.`,
-            `Graduating with honors, ${info.name} joined an elite group dedicated to using their abilities for making the world better.`
+            `${info.name} uncovered an extraordinary academy where exceptional individuals mastered phenomenal abilities related to ${hobbies} through rigorous academic training and mystical preparation.`,
+            `The institution's instructors were legendary historical figures who had achieved unprecedented accomplishments throughout various civilizations and temporal periods.`,
+            `${info.name} underwent intensive preparation that challenged their intellectual capacity, emotional resilience, and spiritual fortitude through systematic developmental exercises.`,
+            `Through dedicated perseverance and unwavering determination, ${info.name} cultivated extraordinary skills that transcended their previous limitations and expanded their potential significantly.`,
+            `Graduating with exceptional honors, ${info.name} joined an elite organization dedicated to utilizing their enhanced abilities for promoting universal welfare and cosmic harmony.`
           ]
         ];
         return hardExtensions[extensionNumber % hardExtensions.length];
@@ -255,9 +255,9 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
       },
       hard: { 
         sentences: 4, 
-        words: 90, 
-        vocabulary: "challenging but accessible words for 10-12 year olds",
-        structure: "varied sentence structures"
+        words: 110, 
+        vocabulary: "advanced vocabulary with complex terminology for mature readers",
+        structure: "sophisticated sentence structures with varied complexity"
       },
       expert: { 
         sentences: 6, 
@@ -299,16 +299,16 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
         ];
       } else if (difficulty === "hard") {
         return [
-          `${info.name} was a brave ${info.avatar.type} who loved ${hobbies} very much. They always looked for new adventures and exciting things to do.`,
-          `One day, ${info.name} found a mysterious box in their grandmother's attic. The box was glowing with a strange, beautiful light that seemed magical.`,
-          `Suddenly, the enchanted box took ${info.name} to a wonderful place where amazing creatures lived. Dragons flew through the sky and unicorns walked in crystal forests.`,
-          `A wise guardian appeared and told ${info.name} they were chosen for something important. The guardian gave them special powers connected to their love for ${hobbies}.`,
-          `Using their new abilities, ${info.name} went on a dangerous mission to help save this magical world. Ancient stories had predicted their arrival and success.`,
-          `During their challenging journey, ${info.name} faced many difficult problems that tested their bravery and intelligence. Each challenge made them stronger and wiser.`,
-          `The adventure reached its peak when ${info.name} had to fight against evil forces threatening the magical world. Their knowledge of ${hobbies} helped them win the battle.`,
-          `All the grateful people from the rescued kingdom came together to celebrate ${info.name}'s heroic deeds. There was music, dancing, and joy everywhere.`,
-          `When it was time to go home, ${info.name} sadly said goodbye to their new friends. The friendships they made would last forever in their heart.`,
-          `Changed by their amazing experience, ${info.name} came back home with new wisdom and a strong belief in following their dreams with determination.`
+          `${info.name} was an exceptionally courageous ${info.avatar.type} whose passionate dedication to ${hobbies} consistently propelled them toward extraordinary adventures and profound discoveries.`,
+          `During exploration of their grandmother's antiquated attic, ${info.name} encountered a mysterious luminescent container radiating otherworldly energy that seemed to pulse with supernatural significance.`,
+          `The enchanted artifact immediately transported ${info.name} through dimensional barriers into a magnificent realm where mythological creatures coexisted harmoniously within crystalline forests and ethereal landscapes.`,
+          `A venerable guardian materialized before ${info.name}, revealing their predetermined role in an ancient prophecy that would determine the salvation of this endangered magical civilization.`,
+          `Utilizing their newly acquired supernatural abilities, ${info.name} embarked upon a perilous quest to neutralize malevolent forces threatening the existence of this extraordinary world.`,
+          `Throughout their treacherous journey, ${info.name} confronted numerous formidable challenges that tested their intellectual capabilities, moral fortitude, and unwavering determination to succeed.`,
+          `The climactic confrontation required ${info.name} to synthesize their comprehensive knowledge of ${hobbies} with mystical powers, ultimately triumphing over ancient evil through strategic brilliance.`,
+          `Grateful inhabitants from throughout the liberated kingdom assembled to commemorate ${info.name}'s heroic accomplishments with elaborate festivities featuring music, dancing, and jubilant celebration.`,
+          `When the moment arrived for departure, ${info.name} experienced profound melancholy while bidding farewell to cherished companions whose friendship would eternally remain within their heart.`,
+          `Transformed by their extraordinary experience, ${info.name} returned home possessing enhanced wisdom and an unshakeable conviction in pursuing their dreams with unwavering determination and courage.`
         ];
       } else { // expert
         return [
