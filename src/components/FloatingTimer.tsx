@@ -83,6 +83,13 @@ export const FloatingTimer = ({
       playNote(783.99, now + 0.4, 0.2); // G5
       playNote(1046.50, now + 0.6, 0.4); // C6 - slightly longer for ending
       
+      // Clean up audio context after melody completes (3 seconds)
+      setTimeout(() => {
+        audioContext.close().catch(() => {
+          // Ignore errors if context is already closed
+        });
+      }, 3000);
+      
       // Show toast notification
       toast({
         title: "🎉 Congratulations!",
