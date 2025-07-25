@@ -87,6 +87,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
     userInfo.difficultyLevel || (userInfo.age <= 6 ? "easy" : userInfo.age <= 9 ? "medium" : userInfo.age <= 12 ? "hard" : "expert")
   );
   const [hasShownDifficultyAlert, setHasShownDifficultyAlert] = useState(false);
+  const [showTutorialBubble, setShowTutorialBubble] = useState(true);
   const [currentIllustration, setCurrentIllustration] = useState<string>("");
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [customIllustrations, setCustomIllustrations] = useState<Map<number, string>>(new Map());
@@ -712,7 +713,30 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                   </div>
                   
                   {/* Difficulty Controls */}
-                  <div className="flex items-center gap-1 sm:gap-2">
+                  <div className="relative flex items-center gap-1 sm:gap-2">
+                    {/* Tutorial Bubble */}
+                    {showTutorialBubble && currentParagraph === 0 && (
+                      <div className="absolute -top-20 -right-4 sm:-top-24 sm:-right-8 z-50 animate-fade-in">
+                        <div className="relative bg-gradient-to-r from-primary to-accent text-white p-3 sm:p-4 rounded-2xl shadow-lg max-w-48 sm:max-w-64 animate-[pulse_2s_infinite]">
+                          <div className="text-xs sm:text-sm font-semibold">
+                            💡 Tip: Make stories easier or harder!
+                          </div>
+                          <div className="text-xs mt-1 opacity-90">
+                            Click these buttons to adjust difficulty
+                          </div>
+                          {/* Arrow pointing to buttons */}
+                          <div className="absolute -bottom-2 right-8 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-primary"></div>
+                          {/* Close button */}
+                          <button
+                            onClick={() => setShowTutorialBubble(false)}
+                            className="absolute -top-2 -right-2 bg-white text-primary rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold hover:scale-110 transition-transform"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                    
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
@@ -720,7 +744,9 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                           size="sm"
                           variant="outline"
                           className={`rounded-full w-7 h-7 sm:w-8 sm:h-8 p-0 hover:scale-110 transition-transform ${
-                            currentParagraph === 2 && !hasShownDifficultyAlert 
+                            showTutorialBubble && currentParagraph === 0
+                              ? 'animate-[pulse_1.5s_infinite] ring-2 ring-primary/50' 
+                              : currentParagraph === 2 && !hasShownDifficultyAlert 
                               ? 'animate-bounce bg-yellow-100 border-yellow-400' 
                               : ''
                           }`}
@@ -741,7 +767,9 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                           size="sm"
                           variant="outline"
                           className={`rounded-full w-7 h-7 sm:w-8 sm:h-8 p-0 hover:scale-110 transition-transform ${
-                            currentParagraph === 2 && !hasShownDifficultyAlert 
+                            showTutorialBubble && currentParagraph === 0
+                              ? 'animate-[pulse_1.5s_infinite] ring-2 ring-primary/50' 
+                              : currentParagraph === 2 && !hasShownDifficultyAlert 
                               ? 'animate-bounce bg-yellow-100 border-yellow-400' 
                               : ''
                           }`}
