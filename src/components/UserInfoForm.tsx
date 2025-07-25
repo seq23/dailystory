@@ -289,7 +289,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
             <div className="space-y-3 md:space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="favoriteColor" className="text-base md:text-lg font-semibold text-foreground">
-                  What's your favorite color?
+                  What is your favorite color or shade?
                   <span className="text-xs md:text-sm text-muted-foreground ml-2">(Optional)</span>
                 </Label>
                 <ColorPicker
