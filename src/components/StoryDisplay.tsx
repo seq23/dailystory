@@ -89,12 +89,12 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
   const [hasShownDifficultyAlert, setHasShownDifficultyAlert] = useState(false);
   const [showTutorialBubble, setShowTutorialBubble] = useState(true);
 
-  // Auto-dismiss tutorial bubble after 3 seconds
+  // Auto-dismiss tutorial bubble after 10 seconds
   useEffect(() => {
     if (showTutorialBubble && currentParagraph === 0) {
       const timer = setTimeout(() => {
         setShowTutorialBubble(false);
-      }, 3000);
+      }, 10000);
       
       return () => clearTimeout(timer);
     }
@@ -738,8 +738,8 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                   <div className="relative flex items-center gap-1 sm:gap-2">
                     {/* Tutorial Bubble */}
                     {showTutorialBubble && currentParagraph === 0 && (
-                      <div className="absolute -top-20 -right-4 sm:-top-24 sm:-right-8 z-50 animate-fade-in">
-                        <div className="relative bg-gradient-to-r from-primary to-accent text-white p-3 sm:p-4 rounded-2xl shadow-lg max-w-48 sm:max-w-64 animate-[pulse_2s_infinite]">
+                      <div className="absolute -top-20 -left-40 sm:-top-24 sm:-left-48 lg:-left-64 z-50 animate-fade-in">
+                        <div className="relative bg-gradient-to-r from-primary to-accent text-white p-3 sm:p-4 rounded-2xl shadow-lg w-48 sm:w-64 animate-[pulse_2s_infinite]">
                           <div className="text-xs sm:text-sm font-semibold">
                             💡 Tip: Make stories easier or harder!
                           </div>
