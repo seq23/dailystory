@@ -384,10 +384,23 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
     const initialStory = generateInitialStory(userInfo, currentDifficulty);
     setStory(initialStory);
     
-    // Clear custom illustrations when story changes
+    // Only clear custom illustrations when user changes, not difficulty
     setCustomIllustrations(new Map());
     setIllustrationGenerationQueue([]);
-  }, [userInfo, currentDifficulty]);
+  }, [userInfo]);
+
+  // Regenerate story text when difficulty changes, but preserve images
+  useEffect(() => {
+    if (story.length > 0) {
+      // Add 1-2 second delay before updating story text for difficulty changes
+      const difficultyChangeTimer = setTimeout(() => {
+        const updatedStory = generateInitialStory(userInfo, currentDifficulty);
+        setStory(updatedStory);
+      }, Math.random() * 1000 + 1000); // 1-2 second delay
+
+      return () => clearTimeout(difficultyChangeTimer);
+    }
+  }, [currentDifficulty]);
 
   // Generate illustrations with delay after story is loaded
   useEffect(() => {
