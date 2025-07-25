@@ -140,77 +140,83 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
     const avatarDesc = getAvatarDescription();
     const hobbies = info.hobbies;
     
-    // Create different extension content based on difficulty level
+    // Create different extension content based on difficulty level with author-inspired styles
     const createExtensionByDifficulty = () => {
       if (difficulty === "easy") {
-        const simpleExtensions = [
+        // Dr. Seuss / Eric Carle / Mo Willems style - rhyming, repetitive, playful
+        const easyExtensions = [
           [
-            `${info.name} sees a dog.`,
-            `The dog is big.`,
-            `${info.name} says hi.`,
-            `The dog wags tail.`,
-            `They are friends.`
+            `Oh my! What does ${info.name} spy? A wiggly, giggly butterfly!`,
+            `"Come play!" says the butterfly. "Let's fly high in the big blue sky!"`,
+            `Up, up, up they go! Flying fast, flying slow.`,
+            `They dance with clouds so white and round. Then gently float back to the ground.`,
+            `"Thank you, friend!" says ${info.name} with glee. "Flying was fun as fun can be!"`
           ],
           [
-            `${info.name} finds a ball.`,
-            `The ball is red.`,
-            `${info.name} throws the ball.`,
-            `The ball bounces high.`,
-            `${info.name} catches it.`
+            `Buzz, buzz! What's that sound? A busy bee flying all around!`,
+            `The bee loves ${info.hobbies} just like ${info.name}. "Let's play together!" the bee exclaims.`,
+            `They hop and skip and laugh with joy. Every flower is like a toy!`,
+            `Red flowers, blue flowers, yellow too! So many colors, bright and new!`,
+            `"Goodbye!" hums the happy bee. "You're the best friend there could be!"`
           ]
         ];
-        return simpleExtensions[extensionNumber % simpleExtensions.length];
+        return easyExtensions[extensionNumber % easyExtensions.length];
       } else if (difficulty === "medium") {
+        // Magic Tree House / Junie B. Jones style - adventure with wonder
         const mediumExtensions = [
           [
-            `${info.name} discovered a hidden portal behind a waterfall. The water sparkled with rainbow colors.`,
-            `Stepping through the portal, ${info.name} found themselves in a floating cloud city. Friendly cloud people welcomed them warmly.`,
-            `The cloud people taught ${info.name} how to bounce on fluffy clouds. They played exciting games in the sky.`,
-            `${info.name} helped the cloud people fix their rainbow maker. Now beautiful rainbows appeared everywhere.`,
-            `Before leaving, the cloud people gave ${info.name} a special cloud pet. It followed them home happily.`
+            `${info.name} discovered something amazing while enjoying ${info.hobbies}. A shimmering doorway appeared right in their backyard!`,
+            `"This is impossible!" ${info.name} whispered, but stepped through anyway. On the other side was a land of talking animals who needed help.`,
+            `A wise old elephant wearing spectacles approached. "We've been waiting for someone just like you," she said with a warm smile.`,
+            `The animals had lost their way home after a terrible storm. ${info.name} used their knowledge of ${info.hobbies} to create a clever solution.`,
+            `"You saved us!" cheered all the animals. They threw a wonderful party with music, dancing, and the most delicious cake ${info.name} had ever tasted.`
           ],
           [
-            `${info.name} met a wise owl who owned a magical library. The books could tell stories all by themselves.`,
-            `Each book contained adventures about ${hobbies} and amazing discoveries. ${info.name} listened with wonder.`,
-            `The owl asked ${info.name} to help organize the flying books. Together they created perfect order.`,
-            `As a reward, the owl gave ${info.name} a special bookmark. It could take them into any story.`,
-            `${info.name} promised to return and share their own adventures. The owl hooted with joy.`
+            `While practicing ${info.hobbies}, ${info.name} noticed their reflection winking back from a puddle. "That's odd," they thought, and touched the water.`,
+            `Suddenly, ${info.name} was pulled into a mirror world where everything was backwards and upside-down, but surprisingly friendly.`,
+            `A backwards girl named Eman (which was "Name" spelled backwards) became their guide. "Welcome to our topsy-turvy town!" she laughed.`,
+            `Together, they solved the mystery of the disappearing rainbow by following clues hidden in riddles and rhymes throughout the strange land.`,
+            `When it was time to leave, Eman gave ${info.name} a special backwards watch. "This will always remind you that different can be wonderful!"`
           ]
         ];
         return mediumExtensions[extensionNumber % mediumExtensions.length];
       } else if (difficulty === "hard") {
+        // Harry Potter / Holes style - deeper adventure with character growth
         const hardExtensions = [
           [
-            `${info.name} encountered a magnificent crystalline gateway radiating ethereal luminescence with supernatural properties. The dimensional portal emanated extraordinary energy that transcended ordinary perception.`,
-            `Traversing this mystical threshold, ${info.name} discovered a celestial realm where advanced beings communicated through harmonious vibrational frequencies and telepathic resonance.`,
-            `These enlightened stellar entities imparted ancient wisdom regarding ${hobbies}, enabling ${info.name} to comprehend knowledge that exceeded conventional understanding and intellectual boundaries.`,
-            `${info.name} participated in profound cosmic ceremonies that established connections between astronomical phenomena and their personal spiritual development and consciousness expansion.`,
-            `Upon completing their comprehensive celestial education, ${info.name} acquired remarkable astral capabilities that would enhance their future interdimensional adventures and quests.`
+            `${info.name} had always felt different, but never more so than the day a peculiar letter arrived. It was written in silver ink that seemed to move across the page.`,
+            `The letter invited ${info.name} to join the Academy of Extraordinary Talents, where students learned to master abilities related to their greatest passions—like ${info.hobbies}.`,
+            `At the academy, ${info.name} met other gifted students and learned from Professor Sage, a mysterious teacher who claimed to be over 200 years old.`,
+            `But something was wrong. Strange shadows were stealing students' talents, leaving them ordinary again. ${info.name} realized they might be the only one who could stop it.`,
+            `Using creativity, courage, and everything they'd learned about ${info.hobbies}, ${info.name} uncovered the truth and restored everyone's gifts. The academy was safe once more.`
           ],
           [
-            `${info.name} uncovered an extraordinary academy where exceptional individuals mastered phenomenal abilities related to ${hobbies} through rigorous academic training and mystical preparation.`,
-            `The institution's instructors were legendary historical figures who had achieved unprecedented accomplishments throughout various civilizations and temporal periods.`,
-            `${info.name} underwent intensive preparation that challenged their intellectual capacity, emotional resilience, and spiritual fortitude through systematic developmental exercises.`,
-            `Through dedicated perseverance and unwavering determination, ${info.name} cultivated extraordinary skills that transcended their previous limitations and expanded their potential significantly.`,
-            `Graduating with exceptional honors, ${info.name} joined an elite organization dedicated to utilizing their enhanced abilities for promoting universal welfare and cosmic harmony.`
+            `${info.name} never expected that their family's old attic would hold the key to a centuries-old mystery. Hidden beneath dusty boards was an ancient journal.`,
+            `The journal belonged to a young inventor who had mysteriously vanished while working on a device powered by the very thing ${info.name} loved most: ${info.hobbies}.`,
+            `Following the journal's clues led ${info.name} on a thrilling treasure hunt through their own town, discovering secret passages and hidden messages.`,
+            `Each puzzle solved revealed more about the inventor's noble quest to help others and the dangerous forces that tried to stop him.`,
+            `In the end, ${info.name} not only solved the mystery but found the inventor's greatest creation—a device that could make anyone's dreams come true, if they were brave enough to try.`
           ]
         ];
         return hardExtensions[extensionNumber % hardExtensions.length];
       } else { // expert
+        // Suzanne Collins / advanced middle-grade style - complex themes with sophisticated narrative
         const expertExtensions = [
           [
-            `${info.name} uncovered an extraordinarily intricate multidimensional nexus where parallel realities coalesced through incomprehensible quantum entanglement phenomena and paradoxical spatiotemporal convergences.`,
-            `Traversing these interconnected universes necessitated comprehensive mastery of advanced theoretical physics, metaphysical principles, and transcendental consciousness manipulation techniques beyond conventional understanding.`,
-            `${info.name} assimilated esoteric knowledge from civilizations spanning millennia, synthesizing their unparalleled expertise in ${hobbies} with cosmic wisdom and interdimensional consciousness.`,
-            `This unprecedented expedition demanded resolution of paradoxical situations that fundamentally challenged conventional assumptions about causality, temporal mechanics, and the nature of reality itself.`,
-            `Ultimately, ${info.name} transcended conventional limitations, achieving unprecedented enlightenment that unified scientific understanding with spiritual awareness and metaphysical transcendence.`
+            `${info.name} lived in a world where creativity was carefully controlled, and their passion for ${info.hobbies} marked them as dangerously different from others their age.`,
+            `When the government announced a competition to find the most talented young person in the nation, ${info.name} faced an impossible choice: hide their abilities or risk everything.`,
+            `The competition was more than it seemed—a test not just of skill, but of character, loyalty, and the willingness to stand up for what's right, even when it's difficult.`,
+            `As ${info.name} advanced through increasingly challenging rounds, they uncovered a conspiracy that threatened to destroy the very creativity they were meant to celebrate.`,
+            `With time running out and allies few, ${info.name} had to decide whether to play it safe or use their unique talents to expose the truth and protect future generations.`,
+            `Through courage, intelligence, and the power of ${info.hobbies}, ${info.name} not only won the competition but changed their world forever, proving that young people can make a real difference.`
           ],
           [
-            `${info.name} became indoctrinated into a clandestine organization dedicated to preserving universal equilibrium through sophisticated manipulation of probability matrices and quantum consciousness fields.`,
-            `Membership prerequisites included demonstrating exceptional proficiency in ${hobbies} while simultaneously mastering esoteric disciplines encompassing consciousness research, metaphysical manipulation, and interdimensional communication.`,
-            `${info.name} undertook increasingly complex missions that profoundly influenced the evolutionary trajectory of civilizations across multiple dimensional planes and parallel universes.`,
-            `Success demanded synthesizing intuitive wisdom with analytical reasoning, transcending binary thinking to embrace holistic perspectives and multidimensional understanding.`,
-            `${info.name} eventually assumed leadership responsibilities, guiding interdimensional affairs with unprecedented wisdom, compassion, and metaphysical understanding.`
+            `The letter arrived on ${info.name}'s thirteenth birthday, but it wasn't a normal invitation—it was a summons to defend their right to pursue ${info.hobbies} in a world that had forgotten their value.`,
+            `${info.name} discovered they were part of a secret network of young people working to preserve arts, creativity, and free thinking in a society that valued only efficiency and control.`,
+            `Their mentor, a former rebel who had lost everything fighting for creative freedom, taught ${info.name} that true strength comes from knowing who you are and what you believe in.`,
+            `When the authorities discovered the network, ${info.name} and their friends had to go underground, using their various talents to stay hidden while planning their resistance.`,
+            `The final confrontation required ${info.name} to make a speech that would be broadcast to the entire nation, knowing it could change everything—or cost them their freedom.`,
+            `In the end, ${info.name}'s words and dedication to ${info.hobbies} inspired a revolution of creativity that swept across the country, proving that passion and truth are stronger than fear.`
           ]
         ];
         return expertExtensions[extensionNumber % expertExtensions.length];
@@ -270,59 +276,64 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
 
     const settings = difficultySettings[difficulty];
     
-    // Create different story content based on difficulty level
+    // Create different story content based on difficulty level with famous author styles
     const createStoryByDifficulty = () => {
       if (difficulty === "easy") {
+        // Dr. Seuss / Margaret Wise Brown / Eric Carle style - rhythmic, repetitive, soothing
         return [
-          `${info.name} likes to play.`,
-          `${info.name} found a cat.`,
-          `The cat is soft.`,
-          `${info.name} pets the cat.`,
-          `The cat says meow.`,
-          `They play together.`,
-          `${info.name} is happy.`,
-          `The cat is happy.`,
-          `They run and jump.`,
-          `${info.name} loves the cat.`
+          `${info.name} wakes up in the morning bright. The sun is shining. What a sight!`,
+          `"What shall I do?" asks ${info.name} with glee. "I think I'll try some ${info.hobbies}!"`,
+          `Out the door and down the street. Dancing, dancing with happy feet!`,
+          `Hello, birds! Hello, trees! Hello, flowers! Hello, bees!`,
+          `${info.name} loves to play all day. ${info.hobbies} makes everything okay!`,
+          `Friends come over to play along. Together they sing a happy song.`,
+          `Hop and skip and jump so high! Look at all the clouds in the sky!`,
+          `When the day is nearly done, ${info.name} says, "That was so much fun!"`,
+          `Stars come out to say goodnight. ${info.name} sleeps tight until morning light.`,
+          `Tomorrow brings another day for ${info.name} to play and play!`
         ];
       } else if (difficulty === "medium") {
+        // Magic Tree House / Beverly Cleary / Roald Dahl style - adventure with heart
         return [
-          `${info.name} was a curious ${info.avatar.type} who loved ${hobbies} more than anything. Every day brought new adventures.`,
-          `One sunny morning, ${info.name} discovered a mysterious glowing object in their backyard. It sparkled like stars and felt warm to touch.`,
-          `The magical object suddenly transported ${info.name} to an amazing world. Colorful creatures welcomed them with cheerful songs.`,
-          `A wise unicorn approached ${info.name} and explained they were chosen for a special quest. The unicorn gave them magical abilities.`,
-          `${info.name} used their new powers to help lost forest animals find their homes. Everyone was grateful for their kindness.`,
-          `Along the journey, ${info.name} met a friendly dragon who taught them about courage. Together they solved exciting puzzles.`,
-          `The adventure led ${info.name} to a beautiful castle where a celebration was happening. All the creatures they helped were there.`,
-          `${info.name} was honored as a hero and received a special medal. The ceremony was filled with music and laughter.`,
-          `When it was time to return home, ${info.name} promised to visit again. They had learned so much about friendship.`,
-          `Back in their own world, ${info.name} treasured the memories forever. Their love for ${hobbies} had grown even stronger.`
+          `${info.name} was the kind of ${info.avatar.type} who believed in magic, especially when it came to ${info.hobbies}. Today felt different somehow.`,
+          `While practicing ${info.hobbies} in the garden, ${info.name} noticed something peculiar. A tiny door had appeared at the base of the old oak tree!`,
+          `"This wasn't here yesterday," ${info.name} whispered, kneeling down to examine the miniature entrance. It was painted bright purple with a golden doorknob.`,
+          `Suddenly, the door swung open! Out popped a mouse wearing a red velvet jacket and tiny spectacles. "Finally!" squeaked the mouse. "I've been waiting ages for you!"`,
+          `"Me?" asked ${info.name} in amazement. The mouse nodded importantly. "You're exactly the person we need to help solve the Great Acorn Mystery!"`,
+          `Without hesitation, ${info.name} shrunk down to mouse size (magic is funny that way) and followed their new friend through a tunnel lined with glowing mushrooms.`,
+          `They emerged in a bustling underground city where animals of all kinds lived in harmony. But something was terribly wrong—all the acorns had vanished!`,
+          `Using their special knowledge of ${info.hobbies}, ${info.name} helped the animals search high and low. They discovered the acorns had been borrowed by young squirrels for a surprise party!`,
+          `The whole city celebrated with the biggest feast anyone had ever seen. ${info.name} was made an honorary citizen and given a magical compass that would always point toward new adventures.`,
+          `When it was time to return home, ${info.name} felt their heart full of joy. They knew that whenever they needed magic, they just had to believe—and practice ${info.hobbies}!`
         ];
       } else if (difficulty === "hard") {
+        // Harry Potter / Holes / Bridge to Terabithia style - deeper themes with character development
         return [
-          `${info.name} was an exceptionally courageous ${info.avatar.type} whose passionate dedication to ${hobbies} consistently propelled them toward extraordinary adventures and profound discoveries.`,
-          `During exploration of their grandmother's antiquated attic, ${info.name} encountered a mysterious luminescent container radiating otherworldly energy that seemed to pulse with supernatural significance.`,
-          `The enchanted artifact immediately transported ${info.name} through dimensional barriers into a magnificent realm where mythological creatures coexisted harmoniously within crystalline forests and ethereal landscapes.`,
-          `A venerable guardian materialized before ${info.name}, revealing their predetermined role in an ancient prophecy that would determine the salvation of this endangered magical civilization.`,
-          `Utilizing their newly acquired supernatural abilities, ${info.name} embarked upon a perilous quest to neutralize malevolent forces threatening the existence of this extraordinary world.`,
-          `Throughout their treacherous journey, ${info.name} confronted numerous formidable challenges that tested their intellectual capabilities, moral fortitude, and unwavering determination to succeed.`,
-          `The climactic confrontation required ${info.name} to synthesize their comprehensive knowledge of ${hobbies} with mystical powers, ultimately triumphing over ancient evil through strategic brilliance.`,
-          `Grateful inhabitants from throughout the liberated kingdom assembled to commemorate ${info.name}'s heroic accomplishments with elaborate festivities featuring music, dancing, and jubilant celebration.`,
-          `When the moment arrived for departure, ${info.name} experienced profound melancholy while bidding farewell to cherished companions whose friendship would eternally remain within their heart.`,
-          `Transformed by their extraordinary experience, ${info.name} returned home possessing enhanced wisdom and an unshakeable conviction in pursuing their dreams with unwavering determination and courage.`
+          `${info.name} had always felt like an outsider at school, finding solace only in ${info.hobbies} and the quiet corners of the library where nobody bothered to look for them.`,
+          `Everything changed the day Mrs. Chen, the new art teacher, pulled ${info.name} aside after class. "I've been watching you," she said quietly. "You have a gift that needs nurturing."`,
+          `She handed ${info.name} an old, leather-bound journal. "This belonged to my grandmother. She was like you—someone who saw the world differently, more deeply than others."`,
+          `That night, ${info.name} opened the journal and discovered it was filled with sketches, poems, and stories about young people who had changed the world through their unique talents and passion for their interests.`,
+          `The journal seemed to come alive under ${info.name}'s touch. Pages fluttered on their own, revealing a hidden message: "The Society of Young Dreamers seeks a new member."`,
+          `Following cryptic clues hidden throughout their town, ${info.name} uncovered a secret network of young people who used their talents—like ${info.hobbies}—to solve real problems in their community.`,
+          `Their first mission involved helping an elderly man who had lost all his family photographs in a fire. Using creativity and determination, ${info.name} helped recreate precious memories through art and storytelling.`,
+          `As ${info.name} grew more confident in their abilities, they realized that being different wasn't something to hide from—it was their greatest strength and the key to making a real difference.`,
+          `The Society's leader, a wise teenager named Alex, told ${info.name}, "Every person who changes the world starts exactly where you are now—feeling different, but choosing to embrace it."`,
+          `With newfound purpose and a community of like-minded friends, ${info.name} understood that their love for ${info.hobbies} wasn't just a hobby—it was a pathway to helping others and making the world a better place.`
         ];
       } else { // expert
+        // The Hunger Games / The Giver / sophisticated YA style - complex themes with social commentary
         return [
-          `${info.name} exemplified intellectual transcendence as an extraordinarily perspicacious ${info.avatar.type} whose profound dedication to ${hobbies} catalyzed metaphysical awakening and interdimensional consciousness expansion.`,
-          `During meticulous exploration of labyrinthine archives within an antediluvian repository, ${info.name} encountered an incandescent relic possessing incomprehensible quantum properties that defied conventional epistemological frameworks and challenged fundamental ontological assumptions.`,
-          `This enigmatic artifact instantaneously facilitated translocation through multidimensional matrices into a parallel cosmological framework where conventional physical laws capitulated to supernatural phenomena transcending rational comprehension.`,
-          `An omniscient ethereal entity materialized through dimensional convergence, elucidating ${info.name}'s predetermined significance within an immemorial prophecy whose fulfillment would determine the existential trajectory of countless interconnected realms and civilizations.`,
-          `Utilizing their augmented metaphysical capabilities and transcendental consciousness, ${info.name} initiated a comprehensive campaign to neutralize entropic forces threatening the delicate equilibrium of parallel dimensional structures.`,
-          `This unprecedented odyssey necessitated navigation through labyrinthine ethical paradoxes and philosophical conundrums that challenged fundamental epistemological assumptions about reality, consciousness, and the nature of existence itself.`,
-          `The culminating confrontation against primordial chaos demanded synthesis of advanced theoretical knowledge with intuitive wisdom, requiring ${info.name} to transcend binary thinking and embrace holistic understanding.`,
-          `Following triumphant resolution through unprecedented intellectual prowess and spiritual metamorphosis, delegates from myriad civilizations convened to commemorate ${info.name}'s indispensable contribution to preserving universal equilibrium and cosmic harmony.`,
-          `As this transformative expedition reached its denouement, ${info.name} experienced profound existential awakening, recognizing their consciousness had undergone irreversible elevation to comprehend previously inconceivable metaphysical truths.`,
-          `Returning to their terrestrial existence with exponentially expanded awareness, ${info.name} embraced their perpetual responsibility as custodian of interdimensional wisdom, forever transformed by the recognition that ${hobbies} constituted a conduit to ultimate understanding.`
+          `In a world where creativity was measured and rationed, ${info.name} had learned to hide their passion for ${info.hobbies} behind a mask of calculated conformity.`,
+          `The Society of Productive Citizens had ruled for fifty years, determining that only "useful" skills deserved development. Art, music, and creative expression were considered dangerous distractions from economic progress.`,
+          `${info.name}'s secret practice sessions took place in an abandoned subway tunnel, where they had discovered remnants of the old world—books, paintings, and instruments left behind by those who had dared to dream.`,
+          `On the morning of their sixteenth birthday, ${info.name} received two letters: one assigned them to a factory job, the other bore only an address and the words "The Underground Academy of Lost Arts."`,
+          `The choice was impossible yet clear. Reporting to the factory meant safety but a life of spiritual emptiness. Following the mysterious letter meant risking everything for the chance to truly live.`,
+          `At the Underground Academy, ${info.name} met other young people who had chosen freedom over security. They learned that creativity wasn't just personal expression—it was the foundation of human progress and dignity.`,
+          `Their teacher, a former government official who had abandoned power to protect young artists, explained: "Every totalitarian regime in history has first attacked the artists. Do you know why?"`,
+          `Through intensive study and practice of ${info.hobbies}, ${info.name} began to understand that art and creativity were forms of resistance, ways of preserving human truth in an increasingly mechanized world.`,
+          `When the government discovered the Academy, ${info.name} faced the ultimate test: lead a peaceful revolution to restore creative freedom, knowing that failure meant not just personal destruction but the loss of hope for future generations.`,
+          `Standing before the Council of Productive Citizens, ${info.name} spoke with the power of truth: "You fear our ${info.hobbies} because they remind people what it means to be human. But humanity cannot be destroyed—only temporarily forgotten."`,
+          `The revolution that followed wasn't won with violence, but with beauty—thousands of young people sharing their hidden art, music, and stories, proving that the human spirit cannot be suppressed when it chooses to rise together.`
         ];
       }
     };
