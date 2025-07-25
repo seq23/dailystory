@@ -551,36 +551,36 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
     <div className="min-h-screen bg-gradient-hero relative overflow-hidden">
       {/* Magical floating elements */}
       <div className="absolute inset-0 pointer-events-none">
-        <Star className="absolute top-20 left-10 text-accent w-6 h-6 animate-float" />
-        <Heart className="absolute top-32 right-16 text-primary-glow w-5 h-5 animate-bounce-gentle" />
-        <Sparkles className="absolute bottom-32 left-20 text-secondary w-7 h-7 animate-wiggle" />
-        <Star className="absolute bottom-20 right-32 text-accent w-4 h-4 animate-float" />
+        <Star className="absolute top-20 left-4 md:left-10 text-accent w-4 h-4 md:w-6 md:h-6 animate-float" />
+        <Heart className="absolute top-32 right-8 md:right-16 text-primary-glow w-4 h-4 md:w-5 md:h-5 animate-bounce-gentle" />
+        <Sparkles className="absolute bottom-32 left-8 md:left-20 text-secondary w-5 h-5 md:w-7 md:h-7 animate-wiggle" />
+        <Star className="absolute bottom-20 right-16 md:right-32 text-accent w-3 h-3 md:w-4 md:h-4 animate-float" />
       </div>
 
       {/* Header with Logo and Company Branding */}
       <header className="relative z-10 bg-white/90 backdrop-blur-sm shadow-soft border-b-4 border-primary">
-        <div className="max-w-7xl mx-auto px-4 py-4">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 py-2 sm:py-4">
           <div className="flex items-center justify-between">
             {/* Logo and Company Name */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               <img 
                 src={time2ReadLogo} 
                 alt="Time2Read Logo" 
-                className="w-12 h-12 hover:animate-wiggle cursor-pointer"
+                className="w-8 h-8 sm:w-12 sm:h-12 hover:animate-wiggle cursor-pointer"
               />
               <div>
-                <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                <h1 className="text-lg sm:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
                   Time2Read
                 </h1>
-                <p className="text-sm text-muted-foreground font-comic">
+                <p className="text-xs sm:text-sm text-muted-foreground font-comic hidden sm:block">
                   Reading Adventures for Kids
                 </p>
               </div>
             </div>
 
             {/* User Info and Navigation */}
-            <div className="flex items-center gap-4">
-              <div className="hidden md:flex items-center gap-3 bg-gradient-card rounded-2xl px-4 py-2 shadow-soft">
+            <div className="flex items-center gap-1 sm:gap-4">
+              <div className="hidden lg:flex items-center gap-3 bg-gradient-card rounded-2xl px-4 py-2 shadow-soft">
                 <img 
                   src={getUserAvatar()} 
                   alt="Your avatar" 
@@ -596,19 +596,19 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                 onClick={onHome}
                 variant="outline"
                 size="sm"
-                className="font-comic hover:scale-105 transition-transform bg-white/80 hover:bg-white"
+                className="font-comic hover:scale-105 transition-transform bg-white/80 hover:bg-white text-xs sm:text-sm px-2 sm:px-4"
               >
-                <Home className="w-4 h-4 mr-2" />
-                Home
+                <Home className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Home</span>
               </Button>
               
               <Button
                 onClick={onNewStory}
                 size="sm"
-                className="font-comic hover:scale-105 transition-transform bg-gradient-primary hover:shadow-glow"
+                className="font-comic hover:scale-105 transition-transform bg-gradient-primary hover:shadow-glow text-xs sm:text-sm px-2 sm:px-4"
               >
-                <RotateCcw className="w-4 h-4 mr-2" />
-                New Story
+                <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                <span className="hidden sm:inline">New Story</span>
               </Button>
             </div>
           </div>
@@ -616,56 +616,56 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
       </header>
 
       {/* Main Story Content */}
-      <main className="relative z-10 max-w-7xl mx-auto px-4 py-8">
+      <main className="relative z-10 max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-8 pb-24 sm:pb-32">
         {/* Story Progress */}
-        <div className="mb-6">
+        <div className="mb-4 sm:mb-6">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-primary" />
-              <span className="font-semibold text-foreground">
+              <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+              <span className="font-semibold text-foreground text-sm sm:text-base">
                 Page {currentParagraph + 1} of {totalPages}
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Progress:</span>
-              <div className="w-20 text-sm font-semibold text-primary">
+              <span className="text-xs sm:text-sm text-muted-foreground">Progress:</span>
+              <div className="w-16 sm:w-20 text-xs sm:text-sm font-semibold text-primary">
                 {Math.round(((currentParagraph + 1) / totalPages) * 100)}%
               </div>
             </div>
           </div>
           <Progress 
             value={((currentParagraph + 1) / totalPages) * 100} 
-            className="h-3 bg-secondary/30"
+            className="h-2 sm:h-3 bg-secondary/30"
           />
         </div>
 
         {/* Story Book Layout */}
-        <Card className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-card border-4 border-primary/20 overflow-hidden">
-          <div className="p-8">
-            <div className="grid lg:grid-cols-2 gap-8 items-start">
+        <Card className="bg-white/95 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-card border-2 sm:border-4 border-primary/20 overflow-hidden">
+          <div className="p-3 sm:p-6 lg:p-8">
+            <div className="grid lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 items-start">
               {/* Illustration Panel */}
-              <div className="relative">
-                <div className="aspect-square rounded-2xl overflow-hidden bg-gradient-secondary p-4 shadow-soft">
+              <div className="relative order-1 lg:order-1">
+                <div className="aspect-square rounded-xl sm:rounded-2xl overflow-hidden bg-gradient-secondary p-2 sm:p-4 shadow-soft">
                   {currentIllustration ? (
                     <img
                       src={currentIllustration}
                       alt={`Story illustration for page ${currentParagraph + 1}`}
-                      className="w-full h-full object-cover rounded-xl"
+                      className="w-full h-full object-cover rounded-lg sm:rounded-xl"
                     />
                   ) : (
-                    <div className="w-full h-full bg-gradient-card rounded-xl flex items-center justify-center">
+                    <div className="w-full h-full bg-gradient-card rounded-lg sm:rounded-xl flex items-center justify-center">
                       <div className="text-center">
                         {isGeneratingImage ? (
                           <>
-                            <Sparkles className="w-12 h-12 text-primary mx-auto mb-4 animate-spin" />
-                            <p className="text-muted-foreground font-comic">
+                            <Sparkles className="w-8 h-8 sm:w-12 sm:h-12 text-primary mx-auto mb-2 sm:mb-4 animate-spin" />
+                            <p className="text-muted-foreground font-comic text-sm sm:text-base">
                               Creating magical illustration...
                             </p>
                           </>
                         ) : (
                           <>
-                            <BookOpen className="w-12 h-12 text-primary mx-auto mb-4" />
-                            <p className="text-muted-foreground font-comic">
+                            <BookOpen className="w-8 h-8 sm:w-12 sm:h-12 text-primary mx-auto mb-2 sm:mb-4" />
+                            <p className="text-muted-foreground font-comic text-sm sm:text-base">
                               Illustration loading...
                             </p>
                           </>
@@ -675,39 +675,39 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                   )}
                 </div>
                 
-                {/* Decorative corner elements */}
-                <Star className="absolute -top-2 -left-2 text-accent w-6 h-6" />
-                <Heart className="absolute -top-2 -right-2 text-primary w-5 h-5" />
-                <Sparkles className="absolute -bottom-2 -left-2 text-secondary w-6 h-6" />
-                <Star className="absolute -bottom-2 -right-2 text-accent w-5 h-5" />
+                {/* Decorative corner elements - smaller on mobile */}
+                <Star className="absolute -top-1 -left-1 sm:-top-2 sm:-left-2 text-accent w-4 h-4 sm:w-6 sm:h-6" />
+                <Heart className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 text-primary w-3 h-3 sm:w-5 sm:h-5" />
+                <Sparkles className="absolute -bottom-1 -left-1 sm:-bottom-2 sm:-left-2 text-secondary w-4 h-4 sm:w-6 sm:h-6" />
+                <Star className="absolute -bottom-1 -right-1 sm:-bottom-2 sm:-right-2 text-accent w-3 h-3 sm:w-5 sm:h-5" />
               </div>
 
               {/* Story Text Panel */}
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6 order-2 lg:order-2">
                 {/* Difficulty Level Badge */}
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
-                    <span className="px-3 py-1 bg-gradient-secondary rounded-full text-sm font-semibold text-secondary-foreground">
+                    <span className="px-2 py-1 sm:px-3 sm:py-1 bg-gradient-secondary rounded-full text-xs sm:text-sm font-semibold text-secondary-foreground">
                       {currentDifficulty.charAt(0).toUpperCase() + currentDifficulty.slice(1)} Level
                     </span>
                   </div>
                   
                   {/* Difficulty Controls */}
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 sm:gap-2">
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
                           onClick={handleDifficultyDown}
                           size="sm"
                           variant="outline"
-                          className={`rounded-full w-8 h-8 p-0 hover:scale-110 transition-transform ${
+                          className={`rounded-full w-7 h-7 sm:w-8 sm:h-8 p-0 hover:scale-110 transition-transform ${
                             currentParagraph === 2 && !hasShownDifficultyAlert 
                               ? 'animate-bounce bg-yellow-100 border-yellow-400' 
                               : ''
                           }`}
                           disabled={currentDifficulty === "easy"}
                         >
-                          <TrendingDown className="w-4 h-4" />
+                          <TrendingDown className="w-3 h-3 sm:w-4 sm:h-4" />
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent side="left">
@@ -721,14 +721,14 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                           onClick={handleDifficultyUp}
                           size="sm"
                           variant="outline"
-                          className={`rounded-full w-8 h-8 p-0 hover:scale-110 transition-transform ${
+                          className={`rounded-full w-7 h-7 sm:w-8 sm:h-8 p-0 hover:scale-110 transition-transform ${
                             currentParagraph === 2 && !hasShownDifficultyAlert 
                               ? 'animate-bounce bg-yellow-100 border-yellow-400' 
                               : ''
                           }`}
                           disabled={currentDifficulty === "expert"}
                         >
-                          <TrendingUp className="w-4 h-4" />
+                          <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4" />
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent side="left">
@@ -739,13 +739,13 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                 </div>
 
                 {/* Story Text */}
-                <div className="bg-gradient-card rounded-2xl p-6 shadow-soft min-h-[300px] flex items-center">
+                <div className="bg-gradient-card rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-soft min-h-[200px] sm:min-h-[300px] flex items-center">
                   <div className="w-full">
                     <p className={`leading-relaxed font-comic text-center ${
-                      currentDifficulty === "easy" ? 'text-4xl font-bold' :
-                      userInfo.age <= 7 ? 'text-2xl' : 
-                      userInfo.age <= 9 ? 'text-xl' : 
-                      'text-lg'
+                      currentDifficulty === "easy" ? 'text-2xl sm:text-3xl lg:text-4xl font-bold' :
+                      userInfo.age <= 7 ? 'text-lg sm:text-xl lg:text-2xl' : 
+                      userInfo.age <= 9 ? 'text-base sm:text-lg lg:text-xl' : 
+                      'text-sm sm:text-base lg:text-lg'
                     }`}>
                       {processTextForPhonetics(currentStory, "", currentDifficulty, elevenLabsService)}
                     </p>
@@ -753,21 +753,23 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                 </div>
 
                 {/* Navigation Controls */}
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center gap-2">
                   <Button
                     onClick={handlePrevious}
                     disabled={currentParagraph === 0}
-                    className="bg-gradient-secondary hover:shadow-soft font-comic rounded-2xl px-6"
+                    className="bg-gradient-secondary hover:shadow-soft font-comic rounded-xl sm:rounded-2xl px-3 sm:px-6 text-sm sm:text-base"
                   >
-                    ← Previous
+                    <span className="hidden sm:inline">← Previous</span>
+                    <span className="sm:hidden">←</span>
                   </Button>
                   
                   <Button
                     onClick={handleNext}
                     disabled={currentParagraph >= totalPages - 1}
-                    className="bg-gradient-primary hover:shadow-glow font-comic rounded-2xl px-6"
+                    className="bg-gradient-primary hover:shadow-glow font-comic rounded-xl sm:rounded-2xl px-3 sm:px-6 text-sm sm:text-base"
                   >
-                    Next →
+                    <span className="hidden sm:inline">Next →</span>
+                    <span className="sm:hidden">→</span>
                   </Button>
                 </div>
               </div>

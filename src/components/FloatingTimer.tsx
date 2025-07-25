@@ -107,7 +107,7 @@ export const FloatingTimer = ({
   return (
     <>
       {/* Floating Timer Container */}
-      <div className="fixed bottom-8 right-8 z-50 flex flex-col items-center gap-3">
+      <div className="fixed bottom-4 sm:bottom-8 right-2 sm:right-8 z-50 flex flex-col items-center gap-2 sm:gap-3">
         {/* Circular Timer */}
         <div className="relative">
           {/* Celebration Animation */}
@@ -117,11 +117,11 @@ export const FloatingTimer = ({
               {[...Array(12)].map((_, i) => (
                 <div
                   key={i}
-                  className="absolute w-3 h-3 rounded-full animate-bounce-gentle"
+                  className="absolute w-2 h-2 sm:w-3 sm:h-3 rounded-full animate-bounce-gentle"
                   style={{
                     backgroundColor: ['#fbbf24', '#f59e0b', '#d97706', '#92400e'][i % 4],
-                    left: `${Math.cos((i * 30) * Math.PI / 180) * 60 + 50}px`,
-                    top: `${Math.sin((i * 30) * Math.PI / 180) * 60 + 50}px`,
+                    left: `${Math.cos((i * 30) * Math.PI / 180) * 40 + 35}px`,
+                    top: `${Math.sin((i * 30) * Math.PI / 180) * 40 + 35}px`,
                     animationDelay: `${i * 0.1}s`,
                     animationDuration: '2s'
                   }}
@@ -133,10 +133,10 @@ export const FloatingTimer = ({
                 {[...Array(8)].map((_, i) => (
                   <div
                     key={i}
-                    className="absolute w-2 h-2 bg-yellow-400 rounded-full animate-ping"
+                    className="absolute w-1.5 h-1.5 sm:w-2 sm:h-2 bg-yellow-400 rounded-full animate-ping"
                     style={{
-                      left: `${Math.cos((i * 45) * Math.PI / 180) * 70 + 48}px`,
-                      top: `${Math.sin((i * 45) * Math.PI / 180) * 70 + 48}px`,
+                      left: `${Math.cos((i * 45) * Math.PI / 180) * 50 + 33}px`,
+                      top: `${Math.sin((i * 45) * Math.PI / 180) * 50 + 33}px`,
                       animationDelay: `${i * 0.2}s`
                     }}
                   />
@@ -146,7 +146,7 @@ export const FloatingTimer = ({
           )}
           
           {/* Timer Circle */}
-          <div className="relative w-24 h-24 bg-white/90 backdrop-blur-sm rounded-full shadow-2xl border-4 border-amber-300/60 flex items-center justify-center">
+          <div className="relative w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-white/90 backdrop-blur-sm rounded-full shadow-2xl border-2 sm:border-4 border-amber-300/60 flex items-center justify-center">
             {/* Progress Circle */}
             <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 100 100">
               {/* Background circle */}
@@ -177,13 +177,13 @@ export const FloatingTimer = ({
             {/* Time Display */}
             <div className="relative z-10 text-center">
               <div 
-                className="text-lg font-bold" 
+                className="text-sm sm:text-base lg:text-lg font-bold" 
                 style={{ color: getTimerColor() }}
               >
                 {formatTime(timeRemaining)}
               </div>
               {timeRemaining >= 40 * 60 && (
-                <div className="text-xs text-amber-600 font-medium mt-1">
+                <div className="text-xs text-amber-600 font-medium mt-1 hidden sm:block">
                   Max time limit
                 </div>
               )}
@@ -192,7 +192,7 @@ export const FloatingTimer = ({
         </div>
         
         {/* Control Buttons */}
-        <div className="flex gap-2 relative">
+        <div className="flex gap-1 sm:gap-2 relative">
           {/* Play/Pause Button */}
           <div className="relative">
             <Button
@@ -201,18 +201,18 @@ export const FloatingTimer = ({
               onClick={onToggleReading}
               onMouseEnter={() => setShowPlayTooltip(true)}
               onMouseLeave={() => setShowPlayTooltip(false)}
-              className="bg-white/90 backdrop-blur-sm border-2 border-amber-300 text-amber-800 hover:bg-amber-50 shadow-lg w-12 h-12 p-0"
+              className="bg-white/90 backdrop-blur-sm border-2 border-amber-300 text-amber-800 hover:bg-amber-50 shadow-lg w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 p-0"
             >
-              {isReading ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+              {isReading ? <Pause className="w-3 h-3 sm:w-4 sm:h-4" /> : <Play className="w-3 h-3 sm:w-4 sm:h-4" />}
             </Button>
             
             {/* Custom Tooltip for Play/Pause */}
             {showPlayTooltip && (
-              <div className="absolute bottom-full mb-3 left-1/2 transform -translate-x-1/2 z-60">
-                <div className="bg-purple-500 text-white px-4 py-2 rounded-2xl text-lg font-bold shadow-lg border-2 border-purple-300 relative">
+              <div className="absolute bottom-full mb-2 sm:mb-3 left-1/2 transform -translate-x-1/2 z-60">
+                <div className="bg-purple-500 text-white px-2 py-1 sm:px-4 sm:py-2 rounded-2xl text-sm sm:text-lg font-bold shadow-lg border-2 border-purple-300 relative whitespace-nowrap">
                   {isReading ? "⏸️ Pause Timer" : "▶️ Start Timer"}
                   {/* Bubble tail */}
-                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-purple-500"></div>
+                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[6px] sm:border-l-[8px] border-l-transparent border-r-[6px] sm:border-r-[8px] border-r-transparent border-t-[6px] sm:border-t-[8px] border-t-purple-500"></div>
                 </div>
               </div>
             )}
@@ -226,19 +226,19 @@ export const FloatingTimer = ({
               onClick={onAddTime}
               onMouseEnter={() => setShowPlusTooltip(true)}
               onMouseLeave={() => setShowPlusTooltip(false)}
-              className="bg-white/90 backdrop-blur-sm border-2 border-amber-300 text-amber-800 hover:bg-amber-50 shadow-lg w-12 h-12 p-0"
+              className="bg-white/90 backdrop-blur-sm border-2 border-amber-300 text-amber-800 hover:bg-amber-50 shadow-lg w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 p-0"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
             </Button>
             
             {/* Custom Tooltip for Add Time */}
             {showPlusTooltip && (
-              <div className="absolute bottom-full mb-3 left-1/2 transform -translate-x-1/2 z-60">
-                <div className="bg-blue-500 text-white px-4 py-2 rounded-2xl text-lg font-bold shadow-lg border-2 border-blue-300 relative whitespace-nowrap">
+              <div className="absolute bottom-full mb-2 sm:mb-3 left-1/2 transform -translate-x-1/2 z-60">
+                <div className="bg-blue-500 text-white px-2 py-1 sm:px-4 sm:py-2 rounded-2xl text-sm sm:text-lg font-bold shadow-lg border-2 border-blue-300 relative whitespace-nowrap">
                   ⏰ Add 10 minutes!
-                  <div className="text-sm font-normal mt-1">(Max 40 min total)</div>
+                  <div className="text-xs sm:text-sm font-normal mt-1">(Max 40 min total)</div>
                   {/* Bubble tail */}
-                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-blue-500"></div>
+                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[6px] sm:border-l-[8px] border-l-transparent border-r-[6px] sm:border-r-[8px] border-r-transparent border-t-[6px] sm:border-t-[8px] border-t-blue-500"></div>
                 </div>
               </div>
             )}
@@ -252,23 +252,23 @@ export const FloatingTimer = ({
               onClick={onAddPages}
               onMouseEnter={() => setShowPagesTooltip(true)}
               onMouseLeave={() => setShowPagesTooltip(false)}
-              className="bg-white/90 backdrop-blur-sm border-2 border-amber-300 text-amber-800 hover:bg-amber-50 shadow-lg w-12 h-12 p-0"
+              className="bg-white/90 backdrop-blur-sm border-2 border-amber-300 text-amber-800 hover:bg-amber-50 shadow-lg w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 p-0"
             >
-              <BookOpen className="w-4 h-4" />
+              <BookOpen className="w-3 h-3 sm:w-4 sm:h-4" />
             </Button>
             
             {/* Custom Tooltip for Add Pages */}
             {(showPagesTooltip || shouldShakeTooltip) && (
-              <div className={`absolute bottom-full mb-3 right-0 z-60 ${shouldShakeTooltip ? 'animate-bounce' : ''}`}>
-                <div className={`bg-green-500 text-white px-4 py-2 rounded-2xl text-lg font-bold shadow-lg border-2 border-green-300 relative whitespace-nowrap ${shouldShakeTooltip ? 'animate-pulse' : ''}`}>
+              <div className={`absolute bottom-full mb-2 sm:mb-3 right-0 z-60 ${shouldShakeTooltip ? 'animate-bounce' : ''}`}>
+                <div className={`bg-green-500 text-white px-2 py-1 sm:px-4 sm:py-2 rounded-2xl text-sm sm:text-lg font-bold shadow-lg border-2 border-green-300 relative whitespace-nowrap ${shouldShakeTooltip ? 'animate-pulse' : ''}`}>
                   📖 Add more pages!
                   {shouldShakeTooltip && (
-                    <div className="text-sm font-normal mt-1 text-yellow-200">
+                    <div className="text-xs sm:text-sm font-normal mt-1 text-yellow-200">
                       Only 1 page left!
                     </div>
                   )}
                   {/* Bubble tail */}
-                  <div className="absolute top-full right-6 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-green-500"></div>
+                  <div className="absolute top-full right-4 sm:right-6 w-0 h-0 border-l-[6px] sm:border-l-[8px] border-l-transparent border-r-[6px] sm:border-r-[8px] border-r-transparent border-t-[6px] sm:border-t-[8px] border-t-green-500"></div>
                 </div>
               </div>
             )}
@@ -280,10 +280,10 @@ export const FloatingTimer = ({
       {showCelebration && (
         <div className="fixed inset-0 pointer-events-none z-40 overflow-hidden">
           {/* Golden confetti rain */}
-          {[...Array(50)].map((_, i) => (
+          {[...Array(30)].map((_, i) => (
             <div
               key={i}
-              className="absolute w-2 h-2 bg-yellow-400 rounded-full animate-bounce"
+              className="absolute w-1.5 h-1.5 sm:w-2 sm:h-2 bg-yellow-400 rounded-full animate-bounce"
               style={{
                 left: `${Math.random() * 100}%`,
                 top: `-10px`,
@@ -295,10 +295,10 @@ export const FloatingTimer = ({
           ))}
           
           {/* Sparkle shower */}
-          {[...Array(30)].map((_, i) => (
+          {[...Array(20)].map((_, i) => (
             <div
               key={`sparkle-${i}`}
-              className="absolute text-yellow-300 text-2xl animate-ping"
+              className="absolute text-yellow-300 text-lg sm:text-2xl animate-ping"
               style={{
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
