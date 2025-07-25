@@ -177,7 +177,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
             <div className="space-y-3 md:space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-base md:text-lg font-semibold text-foreground">
-                  What's your name?
+                  What is your first name?
                 </Label>
                 <Input
                   id="name"
