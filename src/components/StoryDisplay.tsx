@@ -88,6 +88,17 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
   );
   const [hasShownDifficultyAlert, setHasShownDifficultyAlert] = useState(false);
   const [showTutorialBubble, setShowTutorialBubble] = useState(true);
+
+  // Auto-dismiss tutorial bubble after 3 seconds
+  useEffect(() => {
+    if (showTutorialBubble && currentParagraph === 0) {
+      const timer = setTimeout(() => {
+        setShowTutorialBubble(false);
+      }, 3000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [showTutorialBubble, currentParagraph]);
   const [currentIllustration, setCurrentIllustration] = useState<string>("");
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [customIllustrations, setCustomIllustrations] = useState<Map<number, string>>(new Map());
