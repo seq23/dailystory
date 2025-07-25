@@ -746,8 +746,6 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                           className={`rounded-full w-7 h-7 sm:w-8 sm:h-8 p-0 hover:scale-110 transition-transform ${
                             showTutorialBubble && currentParagraph === 0
                               ? 'animate-[pulse_1.5s_infinite] ring-2 ring-primary/50' 
-                              : currentParagraph === 2 && !hasShownDifficultyAlert 
-                              ? 'animate-bounce bg-yellow-100 border-yellow-400' 
                               : ''
                           }`}
                           disabled={currentDifficulty === "easy"}
@@ -769,8 +767,6 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                           className={`rounded-full w-7 h-7 sm:w-8 sm:h-8 p-0 hover:scale-110 transition-transform ${
                             showTutorialBubble && currentParagraph === 0
                               ? 'animate-[pulse_1.5s_infinite] ring-2 ring-primary/50' 
-                              : currentParagraph === 2 && !hasShownDifficultyAlert 
-                              ? 'animate-bounce bg-yellow-100 border-yellow-400' 
                               : ''
                           }`}
                           disabled={currentDifficulty === "expert"}
