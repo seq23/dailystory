@@ -198,18 +198,18 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
       } else { // expert
         const expertExtensions = [
           [
-            `${info.name} discovered an incredibly complex multidimensional nexus where parallel realities merged through quantum entanglement phenomena.`,
-            `Traveling through these interconnected universes required sophisticated understanding of theoretical physics and metaphysical principles governing existence.`,
-            `${info.name} learned knowledge from civilizations spanning eons, combining their expertise in ${hobbies} with cosmic wisdom.`,
-            `The expedition required solving paradoxical situations that challenged fundamental assumptions about causality and temporal mechanics.`,
-            `Finally, ${info.name} transcended conventional limitations, achieving enlightenment that unified scientific understanding with spiritual awareness.`
+            `${info.name} uncovered an extraordinarily intricate multidimensional nexus where parallel realities coalesced through incomprehensible quantum entanglement phenomena and paradoxical spatiotemporal convergences.`,
+            `Traversing these interconnected universes necessitated comprehensive mastery of advanced theoretical physics, metaphysical principles, and transcendental consciousness manipulation techniques beyond conventional understanding.`,
+            `${info.name} assimilated esoteric knowledge from civilizations spanning millennia, synthesizing their unparalleled expertise in ${hobbies} with cosmic wisdom and interdimensional consciousness.`,
+            `This unprecedented expedition demanded resolution of paradoxical situations that fundamentally challenged conventional assumptions about causality, temporal mechanics, and the nature of reality itself.`,
+            `Ultimately, ${info.name} transcended conventional limitations, achieving unprecedented enlightenment that unified scientific understanding with spiritual awareness and metaphysical transcendence.`
           ],
           [
-            `${info.name} joined a secret organization dedicated to preserving universal balance through sophisticated manipulation of probability matrices.`,
-            `Membership required showing exceptional skill in ${hobbies} while simultaneously mastering esoteric disciplines encompassing consciousness research.`,
-            `${info.name} took on increasingly complex missions that influenced the direction of civilizations across multiple dimensional planes.`,
-            `Success demanded combining intuitive wisdom with analytical reasoning, transcending binary thinking to embrace holistic perspectives.`,
-            `${info.name} eventually took on leadership responsibilities, guiding interdimensional affairs with unprecedented wisdom and compassion.`
+            `${info.name} became indoctrinated into a clandestine organization dedicated to preserving universal equilibrium through sophisticated manipulation of probability matrices and quantum consciousness fields.`,
+            `Membership prerequisites included demonstrating exceptional proficiency in ${hobbies} while simultaneously mastering esoteric disciplines encompassing consciousness research, metaphysical manipulation, and interdimensional communication.`,
+            `${info.name} undertook increasingly complex missions that profoundly influenced the evolutionary trajectory of civilizations across multiple dimensional planes and parallel universes.`,
+            `Success demanded synthesizing intuitive wisdom with analytical reasoning, transcending binary thinking to embrace holistic perspectives and multidimensional understanding.`,
+            `${info.name} eventually assumed leadership responsibilities, guiding interdimensional affairs with unprecedented wisdom, compassion, and metaphysical understanding.`
           ]
         ];
         return expertExtensions[extensionNumber % expertExtensions.length];
@@ -260,10 +260,10 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
         structure: "varied sentence structures"
       },
       expert: { 
-        sentences: 5, 
-        words: 120, 
-        vocabulary: "advanced vocabulary for 13+ year olds",
-        structure: "complex and sophisticated sentences"
+        sentences: 6, 
+        words: 150, 
+        vocabulary: "sophisticated academic vocabulary with advanced terminology",
+        structure: "complex, multi-layered sentences with advanced literary techniques"
       }
     };
 
@@ -312,16 +312,16 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
         ];
       } else { // expert
         return [
-          `${info.name} was an exceptionally curious ${info.avatar.type} whose deep love for ${hobbies} opened doors to extraordinary adventures. Their intellect and determination set them apart from others.`,
-          `While exploring the mysterious corridors of an ancient library, ${info.name} discovered a luminescent artifact with supernatural properties. This archaeological wonder defied scientific explanation completely.`,
-          `The magical object instantly transported ${info.name} across dimensional boundaries into an alternate universe. Here, the fundamental laws of physics yielded to supernatural phenomena beyond imagination.`,
-          `A wise celestial being appeared through dimensional convergence, revealing ${info.name}'s important role in an ancient prophecy. This destiny would determine the fate of multiple interconnected realms.`,
-          `Using their enhanced metaphysical abilities, ${info.name} began a systematic campaign to stop the chaos threatening parallel dimensions. Their expertise in ${hobbies} became the foundation for success.`,
-          `The incredible journey required navigating complex moral dilemmas and philosophical puzzles that challenged everything ${info.name} knew about reality and consciousness.`,
-          `The final confrontation against primordial chaos required ${info.name} to combine advanced knowledge with intuitive wisdom. Their mastery of ${hobbies} held the key to universal harmony.`,
-          `After achieving victory through intellectual prowess and spiritual growth, representatives from countless civilizations gathered to honor ${info.name}'s contribution to preserving existence itself.`,
-          `As their transformative expedition concluded, ${info.name} experienced bittersweet emotions, knowing their consciousness had been permanently elevated to understand previously inconceivable truths.`,
-          `Returning home with expanded awareness, ${info.name} accepted their eternal responsibility as a guardian of interdimensional wisdom, forever changed by the realization that ${hobbies} represented a pathway to understanding.`
+          `${info.name} exemplified intellectual transcendence as an extraordinarily perspicacious ${info.avatar.type} whose profound dedication to ${hobbies} catalyzed metaphysical awakening and interdimensional consciousness expansion.`,
+          `During meticulous exploration of labyrinthine archives within an antediluvian repository, ${info.name} encountered an incandescent relic possessing incomprehensible quantum properties that defied conventional epistemological frameworks and challenged fundamental ontological assumptions.`,
+          `This enigmatic artifact instantaneously facilitated translocation through multidimensional matrices into a parallel cosmological framework where conventional physical laws capitulated to supernatural phenomena transcending rational comprehension.`,
+          `An omniscient ethereal entity materialized through dimensional convergence, elucidating ${info.name}'s predetermined significance within an immemorial prophecy whose fulfillment would determine the existential trajectory of countless interconnected realms and civilizations.`,
+          `Utilizing their augmented metaphysical capabilities and transcendental consciousness, ${info.name} initiated a comprehensive campaign to neutralize entropic forces threatening the delicate equilibrium of parallel dimensional structures.`,
+          `This unprecedented odyssey necessitated navigation through labyrinthine ethical paradoxes and philosophical conundrums that challenged fundamental epistemological assumptions about reality, consciousness, and the nature of existence itself.`,
+          `The culminating confrontation against primordial chaos demanded synthesis of advanced theoretical knowledge with intuitive wisdom, requiring ${info.name} to transcend binary thinking and embrace holistic understanding.`,
+          `Following triumphant resolution through unprecedented intellectual prowess and spiritual metamorphosis, delegates from myriad civilizations convened to commemorate ${info.name}'s indispensable contribution to preserving universal equilibrium and cosmic harmony.`,
+          `As this transformative expedition reached its denouement, ${info.name} experienced profound existential awakening, recognizing their consciousness had undergone irreversible elevation to comprehend previously inconceivable metaphysical truths.`,
+          `Returning to their terrestrial existence with exponentially expanded awareness, ${info.name} embraced their perpetual responsibility as custodian of interdimensional wisdom, forever transformed by the recognition that ${hobbies} constituted a conduit to ultimate understanding.`
         ];
       }
     };
