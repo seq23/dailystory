@@ -107,7 +107,7 @@ export const FloatingTimer = ({
   return (
     <>
       {/* Floating Timer Container */}
-      <div className="fixed bottom-4 sm:bottom-8 right-2 sm:right-8 z-50 flex flex-col items-center gap-2 sm:gap-3">
+      <div className="fixed bottom-6 sm:bottom-8 right-2 sm:right-4 lg:right-8 z-50 flex flex-col items-center gap-2 sm:gap-3">
         {/* Circular Timer */}
         <div className="relative">
           {/* Celebration Animation */}

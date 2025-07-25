@@ -616,7 +616,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
       </header>
 
       {/* Main Story Content */}
-      <main className="relative z-10 max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-8 pb-24 sm:pb-32">
+      <main className="relative z-10 max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-8 pb-32 sm:pb-40 lg:pb-32">
         {/* Story Progress */}
         <div className="mb-4 sm:mb-6">
           <div className="flex items-center justify-between mb-2">
