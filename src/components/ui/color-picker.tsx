@@ -22,6 +22,9 @@ export const ColorPicker = React.forwardRef<
     { name: "Blue", color: "#0000ff" },
     { name: "Purple", color: "#800080" },
     { name: "Brown", color: "#8b4513" },
+    { name: "Pink", color: "#ffc0cb" },
+    { name: "Gray", color: "#808080" },
+    { name: "Turquoise", color: "#40e0d0" },
     { name: "Black", color: "#000000" },
     { name: "White", color: "#ffffff" },
   ];
