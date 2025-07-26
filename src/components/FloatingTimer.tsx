@@ -99,13 +99,8 @@ export const FloatingTimer = ({
     if (timeRemaining === 0 && !showCelebration) {
       setShowCelebration(true);
       
-      // Play celebration sound
+      // Play celebration sound 3 times
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
       
       // Create a pleasant celebration melody
       const playNote = (frequency: number, startTime: number, duration: number) => {
@@ -124,19 +119,26 @@ export const FloatingTimer = ({
         osc.stop(startTime + duration);
       };
       
-      // Play shorter celebration melody (2.5 seconds total)
-      const now = audioContext.currentTime;
-      playNote(523.25, now, 0.2); // C5
-      playNote(659.25, now + 0.2, 0.2); // E5
-      playNote(783.99, now + 0.4, 0.2); // G5
-      playNote(1046.50, now + 0.6, 0.4); // C6 - slightly longer for ending
+      // Play the melody 3 times with delays
+      const playMelody = (startOffset: number) => {
+        const now = audioContext.currentTime + startOffset;
+        playNote(523.25, now, 0.2); // C5
+        playNote(659.25, now + 0.2, 0.2); // E5
+        playNote(783.99, now + 0.4, 0.2); // G5
+        playNote(1046.50, now + 0.6, 0.4); // C6 - slightly longer for ending
+      };
       
-      // Clean up audio context after melody completes (3 seconds)
+      // Play 3 times with 1-second gaps
+      playMelody(0);        // First play
+      playMelody(1.5);      // Second play after 1.5 seconds
+      playMelody(3);        // Third play after 3 seconds
+      
+      // Clean up audio context after all melodies complete
       setTimeout(() => {
         audioContext.close().catch(() => {
           // Ignore errors if context is already closed
         });
-      }, 3000);
+      }, 6000);
       
       // Show toast notification
       toast({
@@ -144,11 +146,6 @@ export const FloatingTimer = ({
         description: "You've completed your reading session!",
         duration: 5000,
       });
-      
-      // Hide celebration after 3 seconds
-      setTimeout(() => {
-        setShowCelebration(false);
-      }, 3000);
     }
   }, [timeRemaining, showCelebration, toast]);
 
@@ -345,37 +342,48 @@ export const FloatingTimer = ({
       
       {/* Celebration Overlay */}
       {showCelebration && (
-        <div className="fixed inset-0 pointer-events-none z-40 overflow-hidden">
-          {/* Golden confetti rain */}
-          {[...Array(30)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-1.5 h-1.5 sm:w-2 sm:h-2 bg-yellow-400 rounded-full animate-bounce"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `-10px`,
-                animationDelay: `${Math.random() * 3}s`,
-                animationDuration: `${2 + Math.random() * 2}s`,
-                transform: `translateY(${window.innerHeight + 50}px) rotate(${Math.random() * 360}deg)`
-              }}
-            />
-          ))}
+        <div className="fixed inset-0 z-40 overflow-hidden">
+          {/* Close button */}
+          <button
+            onClick={() => setShowCelebration(false)}
+            className="absolute top-4 right-4 bg-white text-amber-600 rounded-full w-10 h-10 flex items-center justify-center text-xl font-bold hover:scale-110 transition-transform shadow-lg z-50 pointer-events-auto"
+          >
+            ×
+          </button>
           
-          {/* Sparkle shower */}
-          {[...Array(20)].map((_, i) => (
-            <div
-              key={`sparkle-${i}`}
-              className="absolute text-yellow-300 text-lg sm:text-2xl animate-ping"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 3}s`,
-                animationDuration: '1s'
-              }}
-            >
-              ✨
-            </div>
-          ))}
+          {/* Celebration animations - pointer-events-none for all animated elements */}
+          <div className="pointer-events-none">
+            {/* Golden confetti rain */}
+            {[...Array(30)].map((_, i) => (
+              <div
+                key={i}
+                className="absolute w-1.5 h-1.5 sm:w-2 sm:h-2 bg-yellow-400 rounded-full animate-bounce"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  top: `-10px`,
+                  animationDelay: `${Math.random() * 3}s`,
+                  animationDuration: `${2 + Math.random() * 2}s`,
+                  transform: `translateY(${window.innerHeight + 50}px) rotate(${Math.random() * 360}deg)`
+                }}
+              />
+            ))}
+            
+            {/* Sparkle shower */}
+            {[...Array(20)].map((_, i) => (
+              <div
+                key={`sparkle-${i}`}
+                className="absolute text-yellow-300 text-lg sm:text-2xl animate-ping"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                  animationDelay: `${Math.random() * 3}s`,
+                  animationDuration: '1s'
+                }}
+              >
+                ✨
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </>
