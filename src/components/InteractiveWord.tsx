@@ -58,6 +58,10 @@ export const InteractiveWord = ({ word, className = "", difficulty = "easy", ele
     e.stopPropagation();
     if (isPlaying) return;
     
+    console.log('TTS Debug: handleExplain called with word:', word);
+    console.log('TTS Debug: elevenLabsService available:', !!elevenLabsService);
+    console.log('TTS Debug: elevenLabsService object:', elevenLabsService);
+    
     setIsPlaying(true);
     try {
       const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
@@ -65,8 +69,9 @@ export const InteractiveWord = ({ word, className = "", difficulty = "easy", ele
       console.log(`TTS Debug: Explaining word "${cleanWord}", definition found:`, definition);
       
       if (elevenLabsService) {
-        console.log('TTS Debug: Using ElevenLabs service');
+        console.log('TTS Debug: Using ElevenLabs service, calling explainWord...');
         await elevenLabsService.explainWord(word, definition);
+        console.log('TTS Debug: ElevenLabs explainWord completed');
       } else {
         console.log('TTS Debug: Using fallback speech synthesis');
         // Fallback explanation
@@ -81,13 +86,15 @@ export const InteractiveWord = ({ word, className = "", difficulty = "easy", ele
           utterance.rate = 0.7;
           utterance.pitch = 1.1;
           speechSynthesis.speak(utterance);
+          console.log('TTS Debug: Fallback speech started');
         } else {
           console.log('TTS Debug: Speech synthesis not available');
         }
       }
     } catch (error) {
-      console.error('Error explaining word:', error);
+      console.error('TTS Debug: Error in handleExplain:', error);
     } finally {
+      console.log('TTS Debug: handleExplain finished, setting isPlaying to false');
       setIsPlaying(false);
     }
   };
