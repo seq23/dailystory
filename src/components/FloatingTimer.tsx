@@ -27,6 +27,7 @@ export const FloatingTimer = ({
   const [showPlusTooltip, setShowPlusTooltip] = useState(false);
   const [showPagesTooltip, setShowPagesTooltip] = useState(false);
   const [showAddPagesAlert, setShowAddPagesAlert] = useState(false);
+  const [hasShownAddPagesAlert, setHasShownAddPagesAlert] = useState(false);
   const [hasFlashedTooltips, setHasFlashedTooltips] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const { toast } = useToast();
@@ -50,9 +51,10 @@ export const FloatingTimer = ({
     }
   }, [currentParagraph, hasFlashedTooltips]);
   
-  // Flash "add more pages" alert for 6 seconds when 1 page left
+  // Flash "add more pages" alert for 3 seconds when 1 page left (only once per session)
   useEffect(() => {
-    if (timeRemaining >= 5 * 60 && pagesRemaining === 1 && !showAddPagesAlert) {
+    if (timeRemaining >= 5 * 60 && pagesRemaining === 1 && !hasShownAddPagesAlert) {
+      setHasShownAddPagesAlert(true);
       setShowAddPagesAlert(true);
       
       const timer = setTimeout(() => {
@@ -61,7 +63,14 @@ export const FloatingTimer = ({
       
       return () => clearTimeout(timer);
     }
-  }, [timeRemaining, pagesRemaining, showAddPagesAlert]);
+  }, [timeRemaining, pagesRemaining, hasShownAddPagesAlert]);
+  
+  // Reset the flag when more pages are added or we move away from the last page
+  useEffect(() => {
+    if (pagesRemaining > 1) {
+      setHasShownAddPagesAlert(false);
+    }
+  }, [pagesRemaining]);
   
   // Check if we should encourage adding pages (5+ minutes left, 1 page remaining)
   const shouldShakeTooltip = showAddPagesAlert;
