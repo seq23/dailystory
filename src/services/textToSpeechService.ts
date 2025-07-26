@@ -170,7 +170,24 @@ export const getWordDefinition = (word: string): string | undefined => {
     'special': 'Something that is different in a good and important way.',
     'together': 'Being with someone else, not alone.',
     'understand': 'To know what something means or how it works.',
-    'wonderful': 'Something that is really, really good and amazing.'
+    'wonderful': 'Something that is really, really good and amazing.',
+    'solace': 'Comfort when you feel sad or worried.',
+    'mysterious': 'Something that is hard to understand or figure out.',
+    'brilliant': 'Very smart or very bright and shiny.',
+    'gentle': 'Being soft, kind, and not rough.',
+    'wisdom': 'Having lots of good knowledge and understanding.',
+    'treasure': 'Something very valuable and special.',
+    'enchanted': 'Having magical powers or being under a magic spell.',
+    'curious': 'Wanting to learn and know more about things.',
+    'delightful': 'Something that makes you very happy.',
+    'magnificent': 'Something that is really grand and impressive.',
+    'marvelous': 'Something that is wonderful and amazing.',
+    'extraordinary': 'Something that is very unusual and special.',
+    'fortunate': 'Being lucky or having good things happen.',
+    'graceful': 'Moving in a smooth and beautiful way.',
+    'inspired': 'Feeling excited and creative about something.',
+    'perseverance': 'Not giving up even when things are hard.',
+    'compassion': 'Caring deeply about others and wanting to help them.'
   };
   
   return definitions[word.toLowerCase()];
