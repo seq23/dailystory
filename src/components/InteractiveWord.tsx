@@ -69,8 +69,10 @@ export const InteractiveWord = ({ word, className = "", difficulty = "easy" }: I
       const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
       
       if (ttsService) {
+        console.log('Explaining word with OpenAI TTS:', cleanWord);
         await ttsService.explainWord(cleanWord);
       } else {
+        console.log('No TTS service available, using fallback');
         // Fallback explanation
         const explanationText = `The word is: ${cleanWord}`;
         

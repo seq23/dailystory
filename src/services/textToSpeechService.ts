@@ -163,7 +163,7 @@ export const createOpenAITTSService = () => {
   const OPENAI_API_KEY = 'your-openai-api-key-here'; // Replace with your actual OpenAI API key
   
   if (!OPENAI_API_KEY || OPENAI_API_KEY === 'your-openai-api-key-here') {
-    console.warn('OpenAI API key not configured');
+    console.warn('OpenAI API key not configured - TTS explanations will not work');
     return null;
   }
   
