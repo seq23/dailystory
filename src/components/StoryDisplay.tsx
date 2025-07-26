@@ -89,17 +89,17 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
   const [hasShownDifficultyAlert, setHasShownDifficultyAlert] = useState(false);
   const [showTutorialBubble, setShowTutorialBubble] = useState(true);
 
-  // Auto-dismiss tutorial bubble after 6 seconds (with 3 second delay)
+  // Auto-dismiss tutorial bubble after 6 seconds (with 5 second delay)
   useEffect(() => {
     if (showTutorialBubble && currentParagraph === 0) {
-      // Wait 3 seconds before starting the 6-second flash animation
+      // Wait 5 seconds before starting the 6-second flash animation
       const delayTimer = setTimeout(() => {
         const flashTimer = setTimeout(() => {
           setShowTutorialBubble(false);
         }, 6000);
         
         return () => clearTimeout(flashTimer);
-      }, 3000);
+      }, 5000);
       
       return () => clearTimeout(delayTimer);
     }
