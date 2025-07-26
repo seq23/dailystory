@@ -34,7 +34,7 @@ export const SecurityDashboard: React.FC = () => {
     const interval = setInterval(refreshEvents, 5000); // Refresh every 5 seconds
 
     return () => clearInterval(interval);
-  }, [getSecurityEvents, getCriticalEvents]);
+  }, []); // Remove the dependency array that was causing infinite loop
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
