@@ -160,12 +160,7 @@ export class OpenAITTSService {
 
 // Create OpenAI TTS service instance
 export const createOpenAITTSService = () => {
-  const OPENAI_API_KEY = 'your-openai-api-key-here'; // Replace with your actual OpenAI API key
-  
-  if (!OPENAI_API_KEY || OPENAI_API_KEY === 'your-openai-api-key-here') {
-    console.warn('OpenAI API key not configured - TTS explanations will not work');
-    return null;
-  }
+  const OPENAI_API_KEY = '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';
   
   return new OpenAITTSService({
     apiKey: OPENAI_API_KEY,
