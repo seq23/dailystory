@@ -325,6 +325,15 @@ export const FloatingTimer = ({
                       Only 1 page left!
                     </div>
                   )}
+                  {/* Close button - only show for the alert, not the regular tooltip */}
+                  {shouldShakeTooltip && (
+                    <button
+                      onClick={() => setShowAddPagesAlert(false)}
+                      className="absolute -top-2 -right-2 bg-white text-green-500 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold hover:scale-110 transition-transform"
+                    >
+                      ×
+                    </button>
+                  )}
                   {/* Bubble tail */}
                   <div className="absolute top-full right-4 sm:right-6 w-0 h-0 border-l-[6px] sm:border-l-[8px] border-l-transparent border-r-[6px] sm:border-r-[8px] border-r-transparent border-t-[6px] sm:border-t-[8px] border-t-green-500"></div>
                 </div>
