@@ -12,12 +12,14 @@ export class ContentSecurity {
     'masturbate', 'horny', 'sexy', 'erotic', 'prostitute', 'rape', 'molest',
     'drunk', 'weed', 'marijuana', 'cocaine', 'heroin', 'meth', 'drugs', 'smoking',
     'cigarette', 'alcohol', 'beer', 'vodka', 'whiskey',
-    'suicide', 'depression', 'cutting', 'self-harm', 'anorexia', 'bulimia'
+    'suicide', 'depression', 'cutting', 'self-harm', 'anorexia', 'bulimia',
+    // Violence-related words now blocked for all ages
+    'shoot', 'shooting', 'shot', 'kill', 'killing', 'killed', 'killer', 'gun', 'guns', 'gunshot'
   ];
 
   // Words inappropriate only for youngest children (PreK-2nd grade) but OK for 3rd grade and up
   private static youngerChildrenRestrictedWords = [
-    'scary', 'frightening', 'violent', 'dark', 'death', 'kill', 'weapon', 'gun', 'sword', 'fight',
+    'scary', 'frightening', 'violent', 'dark', 'death', 'weapon', 'sword', 'fight',
     'monster', 'ghost', 'zombie', 'vampire', 'witch', 'evil', 'mean', 'bad', 'hurt', 'pain',
     'blood', 'angry', 'mad', 'hate', 'stupid', 'dumb', 'ugly', 'fat', 'skinny'
   ];
