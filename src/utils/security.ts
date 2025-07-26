@@ -14,7 +14,8 @@ export class ContentSecurity {
     'cigarette', 'alcohol', 'beer', 'vodka', 'whiskey',
     'suicide', 'depression', 'cutting', 'self-harm', 'anorexia', 'bulimia',
     // Violence-related words now blocked for all ages
-    'shoot', 'shooting', 'shot', 'kill', 'killing', 'killed', 'killer', 'gun', 'guns', 'gunshot'
+    'shoot', 'shooting', 'shot', 'kill', 'killing', 'killed', 'killer', 'gun', 'guns', 'gunshot',
+    'stab', 'stabbing', 'stabbed', 'stabs'
   ];
 
   // Words inappropriate only for youngest children (PreK-2nd grade) but OK for 3rd grade and up
