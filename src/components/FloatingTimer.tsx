@@ -54,7 +54,7 @@ export const FloatingTimer = ({
   // Flash "add more pages" alert for 3 seconds when 1 page left (only once per session)
   useEffect(() => {
     console.log('Add pages effect:', { timeRemaining, pagesRemaining, hasShownAddPagesAlert, showAddPagesAlert });
-    if (timeRemaining > 1 * 60 && pagesRemaining === 1 && !hasShownAddPagesAlert) {
+    if (timeRemaining > 1 * 60 && pagesRemaining === 1 && !hasShownAddPagesAlert && !showAddPagesAlert) {
       console.log('Triggering add pages alert');
       setHasShownAddPagesAlert(true);
       setShowAddPagesAlert(true);
@@ -66,7 +66,7 @@ export const FloatingTimer = ({
       
       return () => clearTimeout(timer);
     }
-  }, [pagesRemaining, hasShownAddPagesAlert]); // Removed timeRemaining from dependencies
+  }, [timeRemaining, pagesRemaining, hasShownAddPagesAlert, showAddPagesAlert]);
   
   // Reset the flag when more pages are added or we move away from the last page
   useEffect(() => {
