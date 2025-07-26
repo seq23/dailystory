@@ -11,6 +11,7 @@ interface FloatingTimerProps {
   onAddPages: () => void;
   pagesRemaining?: number;
   currentParagraph?: number;
+  onSessionEnded: () => void;
 }
 
 export const FloatingTimer = ({ 
@@ -20,7 +21,8 @@ export const FloatingTimer = ({
   onAddTime,
   onAddPages,
   pagesRemaining = 0,
-  currentParagraph = 0
+  currentParagraph = 0,
+  onSessionEnded
 }: FloatingTimerProps) => {
   const [showCelebration, setShowCelebration] = useState(false);
   const [showPlayTooltip, setShowPlayTooltip] = useState(false);
@@ -146,8 +148,13 @@ export const FloatingTimer = ({
         description: "You've completed your reading session!",
         duration: 5000,
       });
+
+      // Navigate to session ended page after 6 seconds
+      setTimeout(() => {
+        onSessionEnded();
+      }, 6000);
     }
-  }, [timeRemaining, showCelebration, toast]);
+  }, [timeRemaining, showCelebration, toast, onSessionEnded]);
 
   // Color based on time remaining
   const getTimerColor = () => {

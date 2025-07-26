@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { WelcomeHero } from "@/components/WelcomeHero";
 import { UserInfoForm, type UserInfo } from "@/components/UserInfoForm";
 import { StoryDisplay } from "@/components/StoryDisplay";
@@ -8,6 +9,7 @@ type AppState = "welcome" | "form" | "story";
 const Index = () => {
   const [currentState, setCurrentState] = useState<AppState>("welcome");
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const navigate = useNavigate();
 
   const handleGetStarted = () => {
     setCurrentState("form");
@@ -31,6 +33,10 @@ const Index = () => {
     setCurrentState("form");
   };
 
+  const handleSessionEnded = () => {
+    navigate("/session-ended");
+  };
+
   switch (currentState) {
     case "welcome":
       return <WelcomeHero onGetStarted={handleGetStarted} />;
@@ -49,6 +55,7 @@ const Index = () => {
           userInfo={userInfo}
           onHome={handleBackToWelcome}
           onNewStory={handleNewStory}
+          onSessionEnded={handleSessionEnded}
         />
       ) : null;
     

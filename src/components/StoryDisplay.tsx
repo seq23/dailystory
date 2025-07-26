@@ -75,9 +75,10 @@ interface StoryDisplayProps {
   userInfo: UserInfo;
   onHome: () => void;
   onNewStory: () => void;
+  onSessionEnded: () => void;
 }
 
-export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps) => {
+export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDisplayProps) => {
   const [currentParagraph, setCurrentParagraph] = useState(0);
   const [isReading, setIsReading] = useState(true);
   const [timeRemaining, setTimeRemaining] = useState(10 * 60 + 10);
@@ -855,6 +856,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
         onAddPages={handleAddPages}
         pagesRemaining={totalPages - currentParagraph - 1}
         currentParagraph={currentParagraph}
+        onSessionEnded={onSessionEnded}
       />
     </div>
     </TooltipProvider>
