@@ -59,9 +59,11 @@ export class ContentSecurity {
     // Remove non-alphabetic characters except spaces
     normalizedText = normalizedText.replace(/[^a-z\s]/g, '');
 
-    // Check against inappropriate words
+    // Check against inappropriate words using word boundaries to avoid false positives
     for (const word of this.inappropriateWords) {
-      if (normalizedText.includes(word)) {
+      // Create a regex pattern that matches the word with word boundaries
+      const wordPattern = new RegExp(`\\b${word}\\b`, 'i');
+      if (wordPattern.test(normalizedText)) {
         return { appropriate: false, reason: `Inappropriate content detected: ${word}` };
       }
     }
