@@ -15,7 +15,7 @@ export class ContentSecurity {
     'suicide', 'depression', 'cutting', 'self-harm', 'anorexia', 'bulimia'
   ];
 
-  // Words inappropriate for younger children (K-4th grade) but OK for older kids
+  // Words inappropriate only for youngest children (PreK-2nd grade) but OK for 3rd grade and up
   private static youngerChildrenRestrictedWords = [
     'scary', 'frightening', 'violent', 'dark', 'death', 'kill', 'weapon', 'gun', 'sword', 'fight',
     'monster', 'ghost', 'zombie', 'vampire', 'witch', 'evil', 'mean', 'bad', 'hurt', 'pain',
@@ -56,8 +56,8 @@ export class ContentSecurity {
     // Remove non-alphabetic characters except spaces
     normalizedText = normalizedText.replace(/[^a-z\s]/g, '');
 
-    // Determine if user is in younger grades (K-4th)
-    const isYoungerChild = !grade || ['PreK', 'K', '1st', '2nd', '3rd', '4th'].includes(grade);
+    // Determine if user is in youngest grades (PreK-2nd grade only)
+    const isYoungestChild = !grade || ['PreK', 'K', '1st', '2nd'].includes(grade);
 
     // Always check strictly inappropriate words
     for (const word of this.strictlyInappropriateWords) {
@@ -67,12 +67,12 @@ export class ContentSecurity {
       }
     }
 
-    // Check age-restricted words only for younger children
-    if (isYoungerChild) {
+    // Check age-restricted words only for youngest children (PreK-2nd grade)
+    if (isYoungestChild) {
       for (const word of this.youngerChildrenRestrictedWords) {
         const wordPattern = new RegExp(`\\b${word}\\b`, 'i');
         if (wordPattern.test(normalizedText)) {
-          return { appropriate: false, reason: `Content not appropriate for younger children: ${word}` };
+          return { appropriate: false, reason: `Content not appropriate for youngest children: ${word}` };
         }
       }
     }
