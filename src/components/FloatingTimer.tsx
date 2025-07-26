@@ -57,7 +57,7 @@ export const FloatingTimer = ({
       
       const timer = setTimeout(() => {
         setShowAddPagesAlert(false);
-      }, 6000);
+      }, 3000);
       
       return () => clearTimeout(timer);
     }
