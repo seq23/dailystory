@@ -26,6 +26,7 @@ export const FloatingTimer = ({
   const [showPlayTooltip, setShowPlayTooltip] = useState(false);
   const [showPlusTooltip, setShowPlusTooltip] = useState(false);
   const [showPagesTooltip, setShowPagesTooltip] = useState(false);
+  const [showAddPagesAlert, setShowAddPagesAlert] = useState(false);
   const [hasFlashedTooltips, setHasFlashedTooltips] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const { toast } = useToast();
@@ -49,8 +50,21 @@ export const FloatingTimer = ({
     }
   }, [currentParagraph, hasFlashedTooltips]);
   
+  // Flash "add more pages" alert for 6 seconds when 1 page left
+  useEffect(() => {
+    if (timeRemaining >= 5 * 60 && pagesRemaining === 1 && !showAddPagesAlert) {
+      setShowAddPagesAlert(true);
+      
+      const timer = setTimeout(() => {
+        setShowAddPagesAlert(false);
+      }, 6000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [timeRemaining, pagesRemaining, showAddPagesAlert]);
+  
   // Check if we should encourage adding pages (5+ minutes left, 1 page remaining)
-  const shouldShakeTooltip = timeRemaining >= 5 * 60 && pagesRemaining === 1;
+  const shouldShakeTooltip = showAddPagesAlert;
   
   // Calculate progress for circular progress (based on current session time)
   const maxTime = 40 * 60; // Maximum 40 minutes
