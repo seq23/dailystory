@@ -60,21 +60,29 @@ export const InteractiveWord = ({ word, className = "", difficulty = "easy", ele
     
     setIsPlaying(true);
     try {
-      const definition = getWordDefinition(word);
+      const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
+      const definition = getWordDefinition(cleanWord);
+      console.log(`TTS Debug: Explaining word "${cleanWord}", definition found:`, definition);
+      
       if (elevenLabsService) {
+        console.log('TTS Debug: Using ElevenLabs service');
         await elevenLabsService.explainWord(word, definition);
       } else {
+        console.log('TTS Debug: Using fallback speech synthesis');
         // Fallback explanation
-        const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
         const explanationText = definition 
           ? `The word ${cleanWord} means: ${definition}`
           : `The word is: ${cleanWord}`;
+        
+        console.log('TTS Debug: Explanation text:', explanationText);
         
         if ('speechSynthesis' in window) {
           const utterance = new SpeechSynthesisUtterance(explanationText);
           utterance.rate = 0.7;
           utterance.pitch = 1.1;
           speechSynthesis.speak(utterance);
+        } else {
+          console.log('TTS Debug: Speech synthesis not available');
         }
       }
     } catch (error) {
