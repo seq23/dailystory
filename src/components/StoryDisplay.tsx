@@ -80,7 +80,7 @@ interface StoryDisplayProps {
 export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps) => {
   const [currentParagraph, setCurrentParagraph] = useState(0);
   const [isReading, setIsReading] = useState(true);
-  const [timeRemaining, setTimeRemaining] = useState(10 * 60);
+  const [timeRemaining, setTimeRemaining] = useState(10 * 60 + 10);
   const [storyExtensions, setStoryExtensions] = useState(0);
   const [story, setStory] = useState<string[]>([]);
   const [currentDifficulty, setCurrentDifficulty] = useState<DifficultyLevel>(
