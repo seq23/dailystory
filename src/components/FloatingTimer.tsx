@@ -301,7 +301,10 @@ export const FloatingTimer = ({
             <Button
               variant="outline"
               size="sm"
-              onClick={onAddPages}
+              onClick={() => {
+                onAddPages();
+                setShowAddPagesAlert(false);
+              }}
               onMouseEnter={() => setShowPagesTooltip(true)}
               onMouseLeave={() => setShowPagesTooltip(false)}
               className="bg-white/90 backdrop-blur-sm border-2 border-amber-300 text-amber-800 hover:bg-amber-50 shadow-lg w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 p-0"
