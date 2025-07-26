@@ -66,7 +66,7 @@ export const FloatingTimer = ({
       
       return () => clearTimeout(timer);
     }
-  }, [timeRemaining, pagesRemaining, hasShownAddPagesAlert]);
+  }, [pagesRemaining, hasShownAddPagesAlert]); // Removed timeRemaining from dependencies
   
   // Reset the flag when more pages are added or we move away from the last page
   useEffect(() => {
