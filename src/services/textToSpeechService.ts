@@ -50,6 +50,10 @@ export class OpenAITTSService {
       });
 
       if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        if (response.status === 429) {
+          throw new Error('OpenAI API quota exceeded. Please check your billing.');
+        }
         throw new Error(`OpenAI TTS API error: ${response.status}`);
       }
 
