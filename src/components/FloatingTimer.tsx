@@ -81,10 +81,10 @@ export const FloatingTimer = ({
   const shouldShakeTooltip = showAddPagesAlert;
   
   // Calculate progress for circular progress (based on current session time)
-  const maxTime = 40 * 60; // Maximum 40 minutes
-  const currentSessionTime = timeRemaining > 30 * 60 ? 40 * 60 : 
-                            timeRemaining > 20 * 60 ? 30 * 60 :
-                            timeRemaining > 10 * 60 ? 20 * 60 : 10 * 60;
+  const maxTime = 30 * 60; // Maximum 30 minutes
+  const currentSessionTime = timeRemaining > 20 * 60 ? 30 * 60 : 
+                            timeRemaining > 15 * 60 ? 20 * 60 :
+                            timeRemaining > 10 * 60 ? 15 * 60 : 10 * 60;
   const progress = ((currentSessionTime - timeRemaining) / currentSessionTime) * 100;
   const circumference = 2 * Math.PI * 45; // radius of 45
   const strokeDashoffset = circumference - (progress / 100) * circumference;
@@ -295,7 +295,7 @@ export const FloatingTimer = ({
               <div className="absolute bottom-full mb-2 sm:mb-3 left-1/2 transform -translate-x-1/2 z-60">
                 <div className="bg-blue-500 text-white px-2 py-1 sm:px-4 sm:py-2 rounded-2xl text-sm sm:text-lg font-bold shadow-lg border-2 border-blue-300 relative whitespace-nowrap">
                   ⏰ Add 10 minutes!
-                  <div className="text-xs sm:text-sm font-normal mt-1">(Max 40 min total)</div>
+                  <div className="text-xs sm:text-sm font-normal mt-1">(Max 30 min total)</div>
                   {/* Bubble tail */}
                   <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[6px] sm:border-l-[8px] border-l-transparent border-r-[6px] sm:border-r-[8px] border-r-transparent border-t-[6px] sm:border-t-[8px] border-t-blue-500"></div>
                 </div>

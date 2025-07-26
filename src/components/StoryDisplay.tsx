@@ -575,7 +575,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: S
   };
 
   const handleAddTime = () => {
-    const MAX_SESSION_TIME = 40 * 60; // 40 minutes in seconds
+    const MAX_SESSION_TIME = 30 * 60; // 30 minutes in seconds
     const currentTime = timeRemaining;
     
     // Only add time if we haven't reached the maximum
