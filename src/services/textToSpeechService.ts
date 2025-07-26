@@ -146,9 +146,54 @@ export class ElevenLabsService {
   }
 }
 
+// AI-powered word definition service
+const generateAIDefinition = async (word: string): Promise<string | undefined> => {
+  const OPENAI_API_KEY = 'your-openai-api-key-here'; // Replace with your actual OpenAI API key
+  
+  if (!OPENAI_API_KEY || OPENAI_API_KEY === 'your-openai-api-key-here') {
+    return undefined;
+  }
+  
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4.1-2025-04-14',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a helpful assistant that creates simple, child-friendly definitions for words. Keep definitions under 15 words and use simple language that a child can understand.'
+          },
+          {
+            role: 'user',
+            content: `Define the word "${word}" in simple terms for a child.`
+          }
+        ],
+        max_tokens: 50,
+        temperature: 0.3
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`OpenAI API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.choices[0]?.message?.content?.trim();
+  } catch (error) {
+    console.error('Error generating AI definition:', error);
+    return undefined;
+  }
+};
+
 // Word definition service for explanations
-export const getWordDefinition = (word: string): string | undefined => {
-  const definitions: Record<string, string> = {
+export const getWordDefinition = async (word: string): Promise<string | undefined> => {
+  // First check static definitions
+  const staticDefinitions: Record<string, string> = {
     'adventure': 'An exciting journey or experience with new discoveries.',
     'beautiful': 'Something that is very pretty and nice to look at.',
     'courage': 'Being brave even when you feel scared.',
@@ -190,5 +235,12 @@ export const getWordDefinition = (word: string): string | undefined => {
     'compassion': 'Caring deeply about others and wanting to help them.'
   };
   
-  return definitions[word.toLowerCase()];
+  // Check static definitions first
+  const staticDefinition = staticDefinitions[word.toLowerCase()];
+  if (staticDefinition) {
+    return staticDefinition;
+  }
+  
+  // Fall back to AI-generated definition
+  return await generateAIDefinition(word);
 };

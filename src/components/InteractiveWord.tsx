@@ -61,7 +61,7 @@ export const InteractiveWord = ({ word, className = "", difficulty = "easy", ele
     setIsPlaying(true);
     try {
       const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
-      const definition = getWordDefinition(cleanWord);
+      const definition = await getWordDefinition(cleanWord);
       
       if (elevenLabsService) {
         await elevenLabsService.explainWord(word, definition);
