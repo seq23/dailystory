@@ -1,20 +1,26 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { getPhoneticSpelling } from "@/utils/phoneticDictionary";
 import { Volume2, HelpCircle } from "lucide-react";
-import { ElevenLabsService, getWordDefinition } from "@/services/textToSpeechService";
+import { createOpenAITTSService } from "@/services/textToSpeechService";
 
 interface InteractiveWordProps {
   word: string;
   className?: string;
   difficulty?: "easy" | "medium" | "hard" | "expert";
-  elevenLabsService?: ElevenLabsService;
 }
 
-export const InteractiveWord = ({ word, className = "", difficulty = "easy", elevenLabsService }: InteractiveWordProps) => {
+export const InteractiveWord = ({ word, className = "", difficulty = "easy" }: InteractiveWordProps) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [ttsService, setTtsService] = useState<any>(null);
   const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const phoneticSpelling = getPhoneticSpelling(word);
+
+  useEffect(() => {
+    // Initialize OpenAI TTS service
+    const service = createOpenAITTSService();
+    setTtsService(service);
+  }, []);
 
   const handleMouseEnter = () => {
     if (hideTimeoutRef.current) {
@@ -36,8 +42,8 @@ export const InteractiveWord = ({ word, className = "", difficulty = "easy", ele
     
     setIsPlaying(true);
     try {
-      if (elevenLabsService) {
-        await elevenLabsService.speakText(word);
+      if (ttsService) {
+        await ttsService.speakText(word);
       } else {
         // Fallback to browser speech synthesis
         if ('speechSynthesis' in window) {
@@ -61,15 +67,12 @@ export const InteractiveWord = ({ word, className = "", difficulty = "easy", ele
     setIsPlaying(true);
     try {
       const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
-      const definition = await getWordDefinition(cleanWord);
       
-      if (elevenLabsService) {
-        await elevenLabsService.explainWord(word, definition);
+      if (ttsService) {
+        await ttsService.explainWord(cleanWord);
       } else {
         // Fallback explanation
-        const explanationText = definition 
-          ? `The word ${cleanWord} means: ${definition}`
-          : `The word is: ${cleanWord}`;
+        const explanationText = `The word is: ${cleanWord}`;
         
         if ('speechSynthesis' in window) {
           const utterance = new SpeechSynthesisUtterance(explanationText);

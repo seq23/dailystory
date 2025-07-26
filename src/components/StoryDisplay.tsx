@@ -67,7 +67,7 @@ import { SecureRunwareService, secureImageCache, cacheImage, getCachedImage } fr
 import { SecurityValidator } from "@/utils/securityValidation";
 import { SecurityMonitor } from "@/utils/monitoring";
 import { createChildFriendlyPrompt } from "@/services/runwareService";
-import { ElevenLabsService } from "@/services/textToSpeechService";
+import { createOpenAITTSService } from "@/services/textToSpeechService";
 
 type DifficultyLevel = "easy" | "medium" | "hard" | "expert";
 
@@ -104,9 +104,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
   const [customIllustrations, setCustomIllustrations] = useState<Map<number, string>>(new Map());
   const [illustrationGenerationQueue, setIllustrationGenerationQueue] = useState<number[]>([]);
   const [runwareService] = useState<SecureRunwareService>(() => new SecureRunwareService("LRRGqlrg67zH8uss6lMjVvc54pVOrznM"));
-  const [elevenLabsService] = useState<any>(() => 
-    new ElevenLabsService({ apiKey: "sk_9935316e04bb91ad195bacd28187279ec30691b8fa66ab6b" })
-  );
+  const [openAIService] = useState<any>(() => createOpenAITTSService());
 
   const getUserAvatar = () => {
     const avatarImages = {
@@ -812,7 +810,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory }: StoryDisplayProps
                       userInfo.age <= 9 ? 'text-base sm:text-lg lg:text-xl' : 
                       'text-sm sm:text-base lg:text-lg'
                     }`}>
-                      {processTextForPhonetics(currentStory, "", currentDifficulty, elevenLabsService)}
+                      {processTextForPhonetics(currentStory, "", currentDifficulty)}
                     </p>
                   </div>
                 </div>
