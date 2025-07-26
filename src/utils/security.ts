@@ -2,27 +2,24 @@
 
 // Content filtering and sanitization
 export class ContentSecurity {
-  private static inappropriateWords = [
-    // Violent/scary content
-    'scary', 'frightening', 'violent', 'dark', 'death', 'kill', 'weapon', 'gun', 'sword', 'fight',
-    'monster', 'ghost', 'zombie', 'vampire', 'witch', 'evil', 'mean', 'bad', 'hurt', 'pain',
-    'blood', 'angry', 'mad', 'hate', 'stupid', 'dumb', 'ugly', 'fat', 'skinny',
-    
-    // Profanity and inappropriate language
+  // Age-appropriate content filtering - different words for different grade levels
+  private static strictlyInappropriateWords = [
+    // Always inappropriate regardless of age
     'damn', 'hell', 'crap', 'piss', 'ass', 'bitch', 'bastard', 'shit', 'fuck', 'fucking',
     'motherfucker', 'asshole', 'dickhead', 'prick', 'cock', 'pussy', 'whore', 'slut',
     'retard', 'gay', 'homo', 'fag', 'nigger', 'spic', 'chink', 'kike', 'dick',
-    
-    // Sexual content
     'sex', 'sexual', 'porn', 'naked', 'nude', 'boobs', 'penis', 'vagina', 'orgasm',
     'masturbate', 'horny', 'sexy', 'erotic', 'prostitute', 'rape', 'molest',
-    
-    // Drug/alcohol references
     'drunk', 'weed', 'marijuana', 'cocaine', 'heroin', 'meth', 'drugs', 'smoking',
     'cigarette', 'alcohol', 'beer', 'vodka', 'whiskey',
-    
-    // Other inappropriate content
     'suicide', 'depression', 'cutting', 'self-harm', 'anorexia', 'bulimia'
+  ];
+
+  // Words inappropriate for younger children (K-4th grade) but OK for older kids
+  private static youngerChildrenRestrictedWords = [
+    'scary', 'frightening', 'violent', 'dark', 'death', 'kill', 'weapon', 'gun', 'sword', 'fight',
+    'monster', 'ghost', 'zombie', 'vampire', 'witch', 'evil', 'mean', 'bad', 'hurt', 'pain',
+    'blood', 'angry', 'mad', 'hate', 'stupid', 'dumb', 'ugly', 'fat', 'skinny'
   ];
 
   // Character substitution patterns (e.g., "v1ol3nt" → "violent")
@@ -41,9 +38,9 @@ export class ContentSecurity {
   private static submissionCounts = new Map<string, { count: number; timestamp: number }>();
 
   /**
-   * Enhanced content filtering with character substitution detection
+   * Enhanced content filtering with age-appropriate validation
    */
-  static isContentAppropriate(text: string): { appropriate: boolean; reason?: string } {
+  static isContentAppropriate(text: string, grade?: string): { appropriate: boolean; reason?: string } {
     if (!text || typeof text !== 'string') {
       return { appropriate: false, reason: 'Invalid input' };
     }
@@ -59,12 +56,24 @@ export class ContentSecurity {
     // Remove non-alphabetic characters except spaces
     normalizedText = normalizedText.replace(/[^a-z\s]/g, '');
 
-    // Check against inappropriate words using word boundaries to avoid false positives
-    for (const word of this.inappropriateWords) {
-      // Create a regex pattern that matches the word with word boundaries
+    // Determine if user is in younger grades (K-4th)
+    const isYoungerChild = !grade || ['PreK', 'K', '1st', '2nd', '3rd', '4th'].includes(grade);
+
+    // Always check strictly inappropriate words
+    for (const word of this.strictlyInappropriateWords) {
       const wordPattern = new RegExp(`\\b${word}\\b`, 'i');
       if (wordPattern.test(normalizedText)) {
         return { appropriate: false, reason: `Inappropriate content detected: ${word}` };
+      }
+    }
+
+    // Check age-restricted words only for younger children
+    if (isYoungerChild) {
+      for (const word of this.youngerChildrenRestrictedWords) {
+        const wordPattern = new RegExp(`\\b${word}\\b`, 'i');
+        if (wordPattern.test(normalizedText)) {
+          return { appropriate: false, reason: `Content not appropriate for younger children: ${word}` };
+        }
       }
     }
 
@@ -148,12 +157,12 @@ export class ContentSecurity {
   /**
    * Validate story content for appropriateness
    */
-  static validateStoryContent(story: string[]): { valid: boolean; issues: string[] } {
+  static validateStoryContent(story: string[], grade?: string): { valid: boolean; issues: string[] } {
     const issues: string[] = [];
 
     for (let i = 0; i < story.length; i++) {
       const paragraph = story[i];
-      const validation = this.isContentAppropriate(paragraph);
+      const validation = this.isContentAppropriate(paragraph, grade);
       
       if (!validation.appropriate) {
         issues.push(`Paragraph ${i + 1}: ${validation.reason}`);

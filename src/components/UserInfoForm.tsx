@@ -53,9 +53,9 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
     readingAbility: "easy"
   });
 
-  // Enhanced content filtering with improved security
+  // Enhanced content filtering with grade-aware security
   const contentFilter = (text: string): { hasInappropriateContent: boolean; reason?: string } => {
-    const validation = ContentSecurity.isContentAppropriate(text);
+    const validation = ContentSecurity.isContentAppropriate(text, formData.grade);
     return {
       hasInappropriateContent: !validation.appropriate,
       reason: validation.reason
@@ -110,7 +110,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
 
     // Final validation of all form data
     const allText = `${formData.name} ${formData.favoriteAnimal} ${formData.favoriteFood} ${formData.hobbies} ${formData.specialRequest}`;
-    const finalValidation = ContentSecurity.isContentAppropriate(allText);
+    const finalValidation = ContentSecurity.isContentAppropriate(allText, formData.grade);
     
     if (!finalValidation.appropriate) {
       SecurityLogger.log('form_submission_blocked', {
