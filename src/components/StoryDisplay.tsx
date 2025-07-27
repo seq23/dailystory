@@ -779,7 +779,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: S
                           <TrendingDown className="w-3 h-3 sm:w-4 sm:h-4" />
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent side="left">
+                      <TooltipContent side="bottom">
                         <p>Easier</p>
                       </TooltipContent>
                     </Tooltip>
@@ -800,7 +800,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: S
                           <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4" />
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent side="left">
+                      <TooltipContent side="bottom">
                         <p>Harder</p>
                       </TooltipContent>
                     </Tooltip>
