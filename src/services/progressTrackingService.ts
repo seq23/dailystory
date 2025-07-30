@@ -343,11 +343,13 @@ export class ProgressTrackingService {
   }
   
   static saveProgress(progress: ReadingProgress): void {
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(progress));
+    // Session-only storage - no persistence between sessions until user creates profile
+    sessionStorage.setItem(this.STORAGE_KEY, JSON.stringify(progress));
   }
   
   static loadProgress(): ReadingProgress | null {
-    const stored = localStorage.getItem(this.STORAGE_KEY);
+    // Only load from current session, not persistent storage
+    const stored = sessionStorage.getItem(this.STORAGE_KEY);
     if (stored) {
       try {
         return JSON.parse(stored);
@@ -360,6 +362,6 @@ export class ProgressTrackingService {
   }
   
   static clearProgress(): void {
-    localStorage.removeItem(this.STORAGE_KEY);
+    sessionStorage.removeItem(this.STORAGE_KEY);
   }
 }
