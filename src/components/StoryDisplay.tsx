@@ -227,18 +227,19 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
     };
   }, [showFinishCountdown, countdownSeconds]);
 
-  // Add pages alert logic
+  // Add pages alert logic - only once per session
   useEffect(() => {
     const isNextToLastPage = currentParagraph === story.length - 2;
     const hasTimeRemaining = timeRemaining > 60;
     
-    if (isNextToLastPage && hasTimeRemaining && !hasShownAddPagesAlert) {
+    // Only show alert once per session, first time reaching next-to-last page
+    if (isNextToLastPage && hasTimeRemaining && !hasShownAddPagesAlert && story.length > 1) {
       setShowAddPagesAlert(true);
-      setHasShownAddPagesAlert(true);
+      setHasShownAddPagesAlert(true); // Once set, never reset during session
       
       setTimeout(() => {
         setShowAddPagesAlert(false);
-      }, 5000);
+      }, 3000); // 3 seconds as requested
     }
   }, [currentParagraph, story.length, timeRemaining, hasShownAddPagesAlert]);
 
@@ -320,8 +321,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
     try {
       const extension = InclusiveStoryGenerator.generateCulturallyAdaptedStory(userInfo, currentDifficulty, true, 1);
       setStory(prev => [...prev, ...extension]);
-      setShowAddPagesAlert(false);
-      setHasShownAddPagesAlert(false);
+      setShowAddPagesAlert(false); // Hide current alert but don't reset the flag
       
       toast({
         title: "Story Extended! 📖",
