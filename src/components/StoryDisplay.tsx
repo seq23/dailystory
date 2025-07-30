@@ -449,4 +449,5 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
   );
 };
 
+console.log("StoryDisplay component loaded"); // Force module refresh
 export default StoryDisplay;
