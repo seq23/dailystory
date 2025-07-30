@@ -610,184 +610,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
 
           {/* Main Story Content */}
           <div className="grid lg:grid-cols-5 gap-8">
-            {/* Story Text */}
-            <div className="lg:col-span-3">
-              <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-2xl rounded-3xl overflow-hidden">
-                {/* Story Header */}
-                <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-6 text-white">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="relative">
-                        <div className="w-20 h-20 rounded-2xl overflow-hidden shadow-lg border-4 border-white/30">
-                          <img 
-                            src={getUserAvatar()} 
-                            alt={`${userInfo.name}'s avatar`}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center">
-                          <Star className="w-4 h-4 text-white" />
-                        </div>
-                      </div>
-                      <div>
-                        <h2 className="text-2xl font-bold mb-1">
-                          {userInfo.name}'s Adventure
-                        </h2>
-                        <p className="text-indigo-100">
-                          Chapter {currentParagraph + 1}: The Journey Continues
-                        </p>
-                        {userInfo.hobbies && (
-                          <p className="text-sm text-indigo-200 mt-1">
-                            Featuring: {userInfo.hobbies}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    
-                    {/* Difficulty Level Controls */}
-                    <div className="flex flex-col items-end space-y-2">
-                      <div className="text-sm text-indigo-100 font-medium">
-                        Reading Level: {
-                          currentDifficulty === "easy" ? "Pre-K - 1st Grade" :
-                          currentDifficulty === "medium" ? "2nd - 3rd Grade" :
-                          currentDifficulty === "hard" ? "4th - 5th Grade" :
-                          "6th Grade+"
-                        }
-                      </div>
-                      <div className="flex space-x-2">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              onClick={handleMakeEasier}
-                              disabled={currentDifficulty === "easy"}
-                              size="sm"
-                              className="bg-white/20 hover:bg-white/30 text-white border-white/30 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl px-3 py-1"
-                            >
-                              <TrendingDown className="w-4 h-4 mr-1" />
-                              Easier
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Make the story easier to read</p>
-                          </TooltipContent>
-                        </Tooltip>
-                        
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              onClick={handleMakeHarder}
-                              disabled={currentDifficulty === "expert"}
-                              size="sm"
-                              className="bg-white/20 hover:bg-white/30 text-white border-white/30 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl px-3 py-1"
-                            >
-                              <TrendingUp className="w-4 h-4 mr-1" />
-                              Harder
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Make the story more challenging</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Story Content */}
-                <div className="p-8">
-                  <div className="bg-gradient-to-br from-gray-50 to-indigo-50/30 rounded-2xl p-8 border border-gray-100">
-                    <div className="text-center mb-6">
-                      <div className="inline-flex items-center space-x-2 bg-indigo-100 rounded-full px-4 py-2">
-                        <Sparkles className="w-4 h-4 text-indigo-600" />
-                        <span className="text-sm font-medium text-indigo-800">Chapter {currentParagraph + 1}</span>
-                      </div>
-                    </div>
-
-                    <div className="prose prose-lg max-w-none text-center">
-                      <p className={`leading-relaxed font-medium text-gray-800 ${
-                        currentDifficulty === "easy" ? 'text-2xl lg:text-3xl font-bold' :
-                        userInfo.age <= 7 ? 'text-xl lg:text-2xl' : 
-                        userInfo.age <= 9 ? 'text-lg lg:text-xl' : 
-                        'text-base lg:text-lg'
-                      }`}>
-                        {processTextForPhonetics(currentStory, "", currentDifficulty, userInfo)}
-                      </p>
-                    </div>
-                  </div>
-                  
-                  {/* Audio Controls */}
-                  <div className="flex justify-center space-x-4 mt-6">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          onClick={() => isPlaying ? stopTextToSpeech() : playTextToSpeech(currentStory)}
-                          variant="outline"
-                          size="sm"
-                          className="rounded-xl bg-indigo-50 hover:bg-indigo-100 border-indigo-200"
-                        >
-                          {isPlaying ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{isPlaying ? "Stop reading aloud" : "Read this page aloud"}</p>
-                      </TooltipContent>
-                    </Tooltip>
-
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          onClick={() => isRecording ? stopRecording() : startRecording()}
-                          variant={isRecording ? "destructive" : "outline"}
-                          size="sm"
-                          className="rounded-xl"
-                        >
-                          {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{isRecording ? "Stop reading practice" : "Practice reading aloud"}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
-                </div>
-
-                {/* Navigation */}
-                <div className="bg-gray-50/80 p-6 border-t border-gray-100">
-                  <div className="flex justify-between items-center">
-                    <Button
-                      onClick={handlePrevious}
-                      disabled={currentParagraph === 0}
-                      className="bg-gray-200 hover:bg-gray-300 text-gray-700 disabled:bg-gray-100 disabled:text-gray-400 rounded-xl px-6 py-3 font-medium"
-                    >
-                      ← Previous
-                    </Button>
-                    
-                    <div className="flex space-x-2">
-                      {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => (
-                        <div
-                          key={i}
-                          className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                            i === currentParagraph % 7 
-                              ? 'bg-indigo-500 scale-125 shadow-lg' 
-                              : 'bg-gray-200'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    
-                    <Button
-                      onClick={handleNext}
-                      disabled={currentParagraph >= totalPages - 1}
-                      className="bg-indigo-500 hover:bg-indigo-600 text-white disabled:bg-gray-100 disabled:text-gray-400 rounded-xl px-6 py-3 font-medium"
-                    >
-                      Next →
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            </div>
-
-            {/* Illustration & Stats Sidebar */}
+            {/* Illustration & Stats Sidebar - LEFT COLUMN */}
             <div className="lg:col-span-2 space-y-6">
               {/* Illustration */}
               <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-xl rounded-2xl overflow-hidden">
@@ -795,7 +618,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                   <img 
                     src={customIllustrations.get(currentParagraph) || currentIllustration}
                     alt="Story illustration"
-                    className="w-full h-64 lg:h-80 object-cover"
+                    className="w-full h-80 lg:h-96 object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
                   
@@ -819,6 +642,16 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                         <p>Generate custom illustration</p>
                       </TooltipContent>
                     </Tooltip>
+                  </div>
+
+                  {/* Chapter indicator overlay */}
+                  <div className="absolute bottom-4 left-4">
+                    <div className="bg-white/90 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg">
+                      <div className="flex items-center space-x-2">
+                        <Sparkles className="w-4 h-4 text-indigo-600" />
+                        <span className="text-sm font-bold text-indigo-800">Chapter {currentParagraph + 1}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </Card>
@@ -867,6 +700,182 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                     onChange={(e) => setReadingSpeed(parseFloat(e.target.value))}
                     className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                   />
+                </div>
+              </Card>
+            </div>
+
+            {/* Story Text - RIGHT COLUMN */}
+            <div className="lg:col-span-3">
+              <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-2xl rounded-3xl overflow-hidden">
+                {/* Story Header */}
+                <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-6 text-white">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className="relative">
+                        <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-2xl overflow-hidden shadow-lg border-4 border-white/30">
+                          <img 
+                            src={getUserAvatar()} 
+                            alt={`${userInfo.name}'s avatar`}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="absolute -bottom-2 -right-2 w-6 h-6 lg:w-8 lg:h-8 bg-yellow-400 rounded-full flex items-center justify-center">
+                          <Star className="w-3 h-3 lg:w-4 lg:h-4 text-white" />
+                        </div>
+                      </div>
+                      <div>
+                        <h2 className="text-xl lg:text-2xl font-bold mb-1">
+                          {userInfo.name}'s Adventure
+                        </h2>
+                        <p className="text-indigo-100 text-sm lg:text-base">
+                          Chapter {currentParagraph + 1}: The Journey Continues
+                        </p>
+                        {userInfo.hobbies && (
+                          <p className="text-xs lg:text-sm text-indigo-200 mt-1">
+                            Featuring: {userInfo.hobbies}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Difficulty Level Controls */}
+                    <div className="flex flex-col items-end space-y-2">
+                      <div className="text-xs lg:text-sm text-indigo-100 font-medium text-right">
+                        Reading Level: {
+                          currentDifficulty === "easy" ? "Pre-K - 1st Grade" :
+                          currentDifficulty === "medium" ? "2nd - 3rd Grade" :
+                          currentDifficulty === "hard" ? "4th - 5th Grade" :
+                          "6th Grade+"
+                        }
+                      </div>
+                      <div className="flex space-x-2">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              onClick={handleMakeEasier}
+                              disabled={currentDifficulty === "easy"}
+                              size="sm"
+                              className="bg-white/20 hover:bg-white/30 text-white border-white/30 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl px-2 py-1 text-xs lg:px-3 lg:text-sm"
+                            >
+                              <TrendingDown className="w-3 h-3 lg:w-4 lg:h-4 mr-1" />
+                              Easier
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Make the story easier to read</p>
+                          </TooltipContent>
+                        </Tooltip>
+                        
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              onClick={handleMakeHarder}
+                              disabled={currentDifficulty === "expert"}
+                              size="sm"
+                              className="bg-white/20 hover:bg-white/30 text-white border-white/30 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl px-2 py-1 text-xs lg:px-3 lg:text-sm"
+                            >
+                              <TrendingUp className="w-3 h-3 lg:w-4 lg:h-4 mr-1" />
+                              Harder
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Make the story more challenging</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Story Content */}
+                <div className="p-6 lg:p-8">
+                  <div className="bg-gradient-to-br from-gray-50 to-indigo-50/30 rounded-2xl p-6 lg:p-8 border border-gray-100 min-h-[400px] flex items-center justify-center">
+                    <div className="prose prose-lg max-w-none text-center w-full">
+                      <p className={`leading-relaxed font-medium text-gray-800 ${
+                        currentDifficulty === "easy" ? 'text-xl lg:text-2xl xl:text-3xl font-bold' :
+                        userInfo.age <= 7 ? 'text-lg lg:text-xl xl:text-2xl' : 
+                        userInfo.age <= 9 ? 'text-base lg:text-lg xl:text-xl' : 
+                        'text-sm lg:text-base xl:text-lg'
+                      }`}>
+                        {processTextForPhonetics(currentStory, "", currentDifficulty, userInfo)}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {/* Audio Controls */}
+                  <div className="flex justify-center space-x-4 mt-6">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={() => isPlaying ? stopTextToSpeech() : playTextToSpeech(currentStory)}
+                          variant="outline"
+                          size="sm"
+                          className="rounded-xl bg-indigo-50 hover:bg-indigo-100 border-indigo-200"
+                        >
+                          {isPlaying ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                          <span className="ml-2 hidden sm:inline">
+                            {isPlaying ? "Stop" : "Listen"}
+                          </span>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{isPlaying ? "Stop reading aloud" : "Read this page aloud"}</p>
+                      </TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={() => isRecording ? stopRecording() : startRecording()}
+                          variant={isRecording ? "destructive" : "outline"}
+                          size="sm"
+                          className="rounded-xl"
+                        >
+                          {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                          <span className="ml-2 hidden sm:inline">
+                            {isRecording ? "Stop" : "Practice"}
+                          </span>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{isRecording ? "Stop reading practice" : "Practice reading aloud"}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                </div>
+
+                {/* Navigation */}
+                <div className="bg-gray-50/80 p-6 border-t border-gray-100">
+                  <div className="flex justify-between items-center">
+                    <Button
+                      onClick={handlePrevious}
+                      disabled={currentParagraph === 0}
+                      className="bg-gray-200 hover:bg-gray-300 text-gray-700 disabled:bg-gray-100 disabled:text-gray-400 rounded-xl px-4 lg:px-6 py-2 lg:py-3 font-medium text-sm lg:text-base"
+                    >
+                      ← Previous
+                    </Button>
+                    
+                    <div className="flex space-x-2">
+                      {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => (
+                        <div
+                          key={i}
+                          className={`w-2 h-2 lg:w-3 lg:h-3 rounded-full transition-all duration-300 ${
+                            i === currentParagraph % 7 
+                              ? 'bg-indigo-500 scale-125 shadow-lg' 
+                              : 'bg-gray-200'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    
+                    <Button
+                      onClick={handleNext}
+                      disabled={currentParagraph >= totalPages - 1}
+                      className="bg-indigo-500 hover:bg-indigo-600 text-white disabled:bg-gray-100 disabled:text-gray-400 rounded-xl px-4 lg:px-6 py-2 lg:py-3 font-medium text-sm lg:text-base"
+                    >
+                      Next →
+                    </Button>
+                  </div>
                 </div>
               </Card>
             </div>
