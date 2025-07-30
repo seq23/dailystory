@@ -495,13 +495,28 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
   };
 
   const handleFinishSession = () => {
-    // Update final reading stats if progress tracking is available
+    // Calculate actual session stats
+    const actualTimeSpent = Math.floor((Date.now() - sessionStartTime.getTime()) / 1000);
+    const actualWordsRead = sessionWordsRead;
+    const actualPagesRead = currentParagraph + 1; // Current page + 1 since it's 0-indexed
+    
+    // Create session stats for SessionEnded component
+    const sessionStats = {
+      wordsRead: actualWordsRead,
+      timeSpent: actualTimeSpent,
+      pagesRead: actualPagesRead,
+      totalPages: story.length,
+      accuracy: 95, // This could be enhanced with actual reading accuracy tracking
+      currentDifficulty: currentDifficulty
+    };
+    
+    // Update progress tracking if available
     if (readingProgress) {
       const sessionData = {
-        wordsRead: sessionWordsRead,
-        timeSpent: Math.floor((Date.now() - sessionStartTime.getTime()) / 1000),
+        wordsRead: actualWordsRead,
+        timeSpent: actualTimeSpent,
         storiesCompleted: 1,
-        comprehensionScore: 95 // This could be dynamic based on user interactions
+        comprehensionScore: 95
       };
       
       const updatedProgress = ProgressTrackingService.updateReadingSession(readingProgress, sessionData);
@@ -512,12 +527,10 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       
       setReadingProgress(finalProgress);
       ProgressTrackingService.saveProgress(finalProgress);
-      
-      // Navigate to session ended with stats
-      onSessionEnded(finalProgress);
-    } else {
-      onSessionEnded();
     }
+    
+    // Navigate to session ended with actual stats
+    onSessionEnded(sessionStats);
   };
 
   const playTextToSpeech = async (text: string) => {
