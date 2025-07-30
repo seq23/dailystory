@@ -283,6 +283,8 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         { message: "Welcome! Your timer has started at 10:10 and is counting down. Click the center button to pause/start.", duration: 4000 },
         { message: "Use the green + button to add 10 minutes if you need more time.", duration: 3000 },
         { message: "Use the orange - button to remove 10 minutes if you want less time.", duration: 3000 },
+        { message: "Click the speaker button to have the story read aloud, or the microphone to record yourself reading.", duration: 4000 },
+        { message: "Use the 'Easier' and 'Harder' buttons to adjust the story difficulty as you read.", duration: 3000 },
         { message: "Happy reading! Enjoy your personalized adventure!", duration: 2000 }
       ];
 
@@ -941,13 +943,15 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                 </div>
                 <div className="flex-1">
                   <div className="text-sm font-medium mb-1">
-                    Tutorial {tutorialStep + 1}/4
+                    Tutorial {tutorialStep + 1}/6
                   </div>
                   <div className="text-sm">
-                    {showTutorial && tutorialStep < 4 ? [
+                    {showTutorial && tutorialStep < 6 ? [
                       "Welcome! Your timer has started at 10:10 and is counting down. Click the center button to pause/start.",
                       "Use the green + button to add 10 minutes if you need more time.",
                       "Use the orange - button to remove 10 minutes if you want less time.",
+                      "Click the speaker button to have the story read aloud, or the microphone to record yourself reading.",
+                      "Use the 'Easier' and 'Harder' buttons to adjust the story difficulty as you read.",
                       "Happy reading! Enjoy your personalized adventure!"
                     ][tutorialStep] : ""}
                   </div>
@@ -968,7 +972,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                 <div className="w-full bg-white/20 rounded-full h-2">
                   <div 
                     className="bg-white h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${((tutorialStep + 1) / 4) * 100}%` }}
+                    style={{ width: `${((tutorialStep + 1) / 6) * 100}%` }}
                   />
                 </div>
               </div>
