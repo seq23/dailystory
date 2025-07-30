@@ -93,6 +93,17 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
   // UI state
   const [showAddPagesAlert, setShowAddPagesAlert] = useState(false);
   const [hasShownAddPagesAlert, setHasShownAddPagesAlert] = useState(false);
+  const [showFinishCountdown, setShowFinishCountdown] = useState(false);
+  const [countdownSeconds, setCountdownSeconds] = useState(5);
+  
+  // Reading stats
+  const [readingStats, setReadingStats] = useState({
+    wordsRead: 0,
+    timeSpent: 0,
+    pagesRead: 0,
+    startTime: Date.now(),
+    accuracy: 95
+  });
   
   // Image generation
   const [currentIllustration, setCurrentIllustration] = useState<string>("");
@@ -122,12 +133,20 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
     illustration41, illustration42, illustration43, illustration44
   ];
 
-  // Generate initial story
+  // Generate initial story and setup reading stats
   useEffect(() => {
     const generateStory = async () => {
       try {
         const generatedStory = InclusiveStoryGenerator.generateCulturallyAdaptedStory(userInfo, currentDifficulty);
         setStory(generatedStory);
+        
+        // Calculate word count for stats
+        const wordCount = generatedStory.join(' ').split(' ').filter(word => word.length > 0).length;
+        setReadingStats(prev => ({ 
+          ...prev, 
+          wordsRead: wordCount,
+          startTime: Date.now() 
+        }));
         
         // Set illustration
         const illustrationIndex = Math.floor(Math.random() * illustrations.length);
@@ -145,7 +164,25 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
     generateStory();
   }, [userInfo, currentDifficulty]);
 
-  // Timer countdown
+  // Update reading stats when reading
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+    
+    if (isReading) {
+      interval = setInterval(() => {
+        setReadingStats(prev => ({
+          ...prev,
+          timeSpent: prev.timeSpent + 1
+        }));
+      }, 1000);
+    }
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isReading]);
+
+  // Timer countdown with finish countdown
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
     
@@ -155,7 +192,9 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
           const newTime = prev - 1;
           if (newTime === 0) {
             setIsReading(false);
-            onSessionEnded();
+            // Start 5-second countdown before auto-finishing
+            setShowFinishCountdown(true);
+            setCountdownSeconds(5);
           }
           return newTime;
         });
@@ -166,6 +205,27 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       if (interval) clearInterval(interval);
     };
   }, [isReading, timeRemaining]);
+
+  // Countdown timer for auto-finish
+  useEffect(() => {
+    let countdownInterval: NodeJS.Timeout | null = null;
+    
+    if (showFinishCountdown && countdownSeconds > 0) {
+      countdownInterval = setInterval(() => {
+        setCountdownSeconds(prev => {
+          const newCount = prev - 1;
+          if (newCount === 0) {
+            handleFinishSession();
+          }
+          return newCount;
+        });
+      }, 1000);
+    }
+    
+    return () => {
+      if (countdownInterval) clearInterval(countdownInterval);
+    };
+  }, [showFinishCountdown, countdownSeconds]);
 
   // Add pages alert logic
   useEffect(() => {
@@ -304,6 +364,18 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
     }
   };
 
+  const handleFinishSession = () => {
+    // Update final reading stats
+    setReadingStats(prev => ({
+      ...prev,
+      pagesRead: currentParagraph + 1,
+      timeSpent: Math.floor((Date.now() - prev.startTime) / 1000)
+    }));
+    
+    // Navigate to session ended with stats
+    onSessionEnded();
+  };
+
   const playTextToSpeech = async (text: string) => {
     if (isPlaying) return;
     
@@ -423,6 +495,13 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
             </div>
             
             <div className="flex items-center space-x-2">
+              <Button 
+                onClick={handleFinishSession} 
+                className="bg-green-500 hover:bg-green-600 text-white rounded-full"
+                size="sm"
+              >
+                ✨ I'm Done!
+              </Button>
               <Button onClick={onNewStory} variant="outline" size="sm" className="rounded-full">
                 <RotateCcw className="w-4 h-4 mr-1" />
                 New Story
@@ -712,6 +791,55 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
           </div>
         </Card>
       </div>
+
+      {/* Reading Stats (on hover over progress bar) */}
+      <div className="fixed top-20 right-4 z-40">
+        <Card className="bg-white/95 backdrop-blur-sm shadow-xl rounded-xl p-3 text-xs border-0">
+          <h4 className="font-bold text-purple-800 mb-2">📊 Reading Stats</h4>
+          <div className="space-y-1">
+            <div className="flex justify-between">
+              <span className="text-gray-600">Words Read:</span>
+              <span className="font-medium text-purple-700">{readingStats.wordsRead}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Time Spent:</span>
+              <span className="font-medium text-green-700">{formatTime(readingStats.timeSpent)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Pages Read:</span>
+              <span className="font-medium text-blue-700">{currentParagraph + 1}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Accuracy:</span>
+              <span className="font-medium text-orange-700">{readingStats.accuracy}%</span>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Countdown Overlay */}
+      {showFinishCountdown && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
+          <Card className="bg-white rounded-3xl p-8 text-center max-w-md mx-4 shadow-2xl border-0">
+            <div className="text-6xl mb-4">⏰</div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">
+              Time's Up!
+            </h2>
+            <p className="text-gray-600 mb-4">
+              Going to your reading report in...
+            </p>
+            <div className="text-4xl font-bold text-purple-600 mb-4">
+              {countdownSeconds}
+            </div>
+            <Button 
+              onClick={handleFinishSession}
+              className="bg-purple-500 hover:bg-purple-600 text-white rounded-full px-6"
+            >
+              Go Now ✨
+            </Button>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };
