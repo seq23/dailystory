@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { BookOpen, Home, RotateCcw, Volume2, VolumeX, TrendingUp, TrendingDown, Plus, Star, Heart, Sparkles } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import type { UserInfo } from "./UserInfoForm";
 import ancientBookBg from "@/assets/ancient-book-bg.jpg";
 import illustration1 from "@/assets/story-illustration-1.jpg";
@@ -69,7 +70,7 @@ import { SecurityValidator } from "@/utils/securityValidation";
 import { SecurityMonitor } from "@/utils/monitoring";
 import { createChildFriendlyPrompt } from "@/services/runwareService";
 import { createOpenAITTSService } from "@/services/textToSpeechService";
-import { MultilingualStoryService } from "@/services/multilingualStoryService";
+import { MultilingualStoryService, type StoryLanguage } from "@/services/multilingualStoryService";
 
 type DifficultyLevel = "easy" | "medium" | "hard" | "expert";
 
@@ -82,6 +83,7 @@ interface StoryDisplayProps {
 
 export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDisplayProps) => {
   const { t } = useTranslation();
+  const { toast } = useToast();
   const [currentParagraph, setCurrentParagraph] = useState(0);
   const [isReading, setIsReading] = useState(true);
   const [timeRemaining, setTimeRemaining] = useState(10 * 60 + 10);
@@ -559,9 +561,9 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: S
   useEffect(() => {
     if (story.length > 0) {
       // Add 1-2 second delay before updating story text for difficulty changes
-      const difficultyChangeTimer = setTimeout(() => {
+      const difficultyChangeTimer = setTimeout(async () => {
         const currentPageCount = story.length;
-        const baseStory = generateInitialStory(userInfo, currentDifficulty);
+        const baseStory = await generateInitialStory(userInfo, currentDifficulty);
         
         // If user has added pages beyond the base 10, preserve those pages by regenerating extensions
         if (currentPageCount > baseStory.length) {
@@ -570,7 +572,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: S
           
           let updatedStory = [...baseStory];
           for (let i = 0; i < extensionsNeeded; i++) {
-            const extensionPages = generateStoryExtension(userInfo, currentDifficulty, i);
+            const extensionPages = await generateStoryExtension(userInfo, currentDifficulty, i);
             updatedStory = [...updatedStory, ...extensionPages];
           }
           
@@ -724,11 +726,25 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: S
     }
   };
 
-  const handleAddPages = () => {
-    // Generate new story pages without adding time
-    const extensionPages = generateStoryExtension(userInfo, currentDifficulty, storyExtensions);
-    setStory(prev => [...prev, ...extensionPages]);
-    setStoryExtensions(prev => prev + 1);
+  const handleAddPages = async () => {
+    if (storyExtensions < 3) {
+      // Generate new story pages without adding time
+      const extensionPages = await generateStoryExtension(userInfo, currentDifficulty, storyExtensions);
+      setStory(prev => [...prev, ...extensionPages]);
+      setStoryExtensions(prev => prev + 1);
+      
+      // Show success message
+      toast({
+        title: t('story.storyExtended'),
+        duration: 3000,
+      });
+    } else {
+      // Show limit reached message
+      toast({
+        title: t('story.noMoreExtensions'),
+        duration: 3000,
+      });
+    }
   };
 
   return (

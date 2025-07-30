@@ -246,7 +246,7 @@ Provide ONLY the translated story paragraphs, numbered the same way:`;
     context: CulturalContext,
     extensionNumber: number
   ): string[] {
-    const hobbies = userInfo.hobbies?.join(', ') || 'jugar';
+    const hobbies = (userInfo.hobbies && Array.isArray(userInfo.hobbies)) ? userInfo.hobbies.join(', ') : 'jugar';
     const friend = context.characterNames.friends[0];
     
     if (difficulty === "easy") {
@@ -283,7 +283,7 @@ Provide ONLY the translated story paragraphs, numbered the same way:`;
     context: CulturalContext,
     extensionNumber: number
   ): string[] {
-    const hobbies = userInfo.hobbies?.join(', ') || 'jouer';
+    const hobbies = (userInfo.hobbies && Array.isArray(userInfo.hobbies)) ? userInfo.hobbies.join(', ') : 'jouer';
     
     if (difficulty === "easy") {
       return [
