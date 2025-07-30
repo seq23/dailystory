@@ -42,7 +42,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
   const { toast } = useToast();
   const [formData, setFormData] = useState<UserInfo>({
     name: "",
-    age: 11,
+    age: 6,
     grade: "",
     nativeLanguage: "en",
     learningGoal: "improve-english-reading",
@@ -211,6 +211,9 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                     <SelectValue placeholder={t("userInfoForm.fields.age.placeholder")} />
                   </SelectTrigger>
                   <SelectContent>
+                    {[3, 4, 5, 6, 7, 8, 9, 10].map(age => (
+                      <SelectItem key={age} value={age.toString()}>{age} {t("userInfoForm.fields.age.yearsOld")}</SelectItem>
+                    ))}
                     <SelectItem value="11">11+ {t("userInfoForm.fields.age.yearsOld")}</SelectItem>
                   </SelectContent>
                 </Select>
@@ -225,13 +228,14 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                     <SelectValue placeholder={t("userInfoForm.fields.grade.placeholder")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="6th">{t("userInfoForm.grades.6th")}</SelectItem>
-                    <SelectItem value="7th">{t("userInfoForm.grades.7th")}</SelectItem>
-                    <SelectItem value="8th">{t("userInfoForm.grades.8th")}</SelectItem>
-                    <SelectItem value="9th">{t("userInfoForm.grades.9th")}</SelectItem>
-                    <SelectItem value="10th">{t("userInfoForm.grades.10th")}</SelectItem>
-                    <SelectItem value="11th">{t("userInfoForm.grades.11th")}</SelectItem>
-                    <SelectItem value="12th">{t("userInfoForm.grades.12th")}</SelectItem>
+                    <SelectItem value="PreK">{t("userInfoForm.grades.PreK")}</SelectItem>
+                    <SelectItem value="K">{t("userInfoForm.grades.K")}</SelectItem>
+                    <SelectItem value="1st">{t("userInfoForm.grades.1st")}</SelectItem>
+                    <SelectItem value="2nd">{t("userInfoForm.grades.2nd")}</SelectItem>
+                    <SelectItem value="3rd">{t("userInfoForm.grades.3rd")}</SelectItem>
+                    <SelectItem value="4th">{t("userInfoForm.grades.4th")}</SelectItem>
+                    <SelectItem value="5th">{t("userInfoForm.grades.5th")}</SelectItem>
+                    <SelectItem value="6th+">{t("userInfoForm.grades.6th")} or Higher</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
