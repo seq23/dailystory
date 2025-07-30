@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Play, Pause, Plus, BookOpen } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Play, Pause, Plus, Minus, BookOpen } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface FloatingTimerProps {
@@ -8,6 +9,7 @@ interface FloatingTimerProps {
   isReading: boolean;
   onToggleReading: () => void;
   onAddTime: () => void;
+  onSubtractTime?: () => void;
   onAddPages: () => void;
   pagesRemaining?: number;
   currentParagraph?: number;
@@ -19,50 +21,24 @@ export const FloatingTimer = ({
   isReading, 
   onToggleReading, 
   onAddTime,
+  onSubtractTime,
   onAddPages,
   pagesRemaining = 0,
   currentParagraph = 0,
   onSessionEnded
 }: FloatingTimerProps) => {
   const [showCelebration, setShowCelebration] = useState(false);
-  const [showPlayTooltip, setShowPlayTooltip] = useState(false);
-  const [showPlusTooltip, setShowPlusTooltip] = useState(false);
-  const [showPagesTooltip, setShowPagesTooltip] = useState(false);
   const [showAddPagesAlert, setShowAddPagesAlert] = useState(false);
   const [hasShownAddPagesAlert, setHasShownAddPagesAlert] = useState(false);
-  const [hasFlashedTooltips, setHasFlashedTooltips] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const { toast } = useToast();
-  
-  // Auto-flash tooltips on first page
-  useEffect(() => {
-    if (currentParagraph === 0 && !hasFlashedTooltips) {
-      setHasFlashedTooltips(true);
-      
-      // Flash play tooltip first
-      setTimeout(() => setShowPlayTooltip(true), 1000);
-      setTimeout(() => setShowPlayTooltip(false), 3000);
-      
-      // Flash plus tooltip second
-      setTimeout(() => setShowPlusTooltip(true), 3500);
-      setTimeout(() => setShowPlusTooltip(false), 5500);
-      
-      // Flash pages tooltip third
-      setTimeout(() => setShowPagesTooltip(true), 6000);
-      setTimeout(() => setShowPagesTooltip(false), 8000);
-    }
-  }, [currentParagraph, hasFlashedTooltips]);
   
   // Flash "add more pages" alert for 3 seconds when 1 page left (only once per session)
   useEffect(() => {
-    console.log('Add pages effect:', { timeRemaining, pagesRemaining, hasShownAddPagesAlert, showAddPagesAlert });
     if (timeRemaining > 1 * 60 && pagesRemaining === 1 && !hasShownAddPagesAlert && !showAddPagesAlert) {
-      console.log('Triggering add pages alert');
       setHasShownAddPagesAlert(true);
       setShowAddPagesAlert(true);
       
       const timer = setTimeout(() => {
-        console.log('Hiding add pages alert after 3 seconds');
         setShowAddPagesAlert(false);
       }, 3000);
       
@@ -86,7 +62,7 @@ export const FloatingTimer = ({
                             timeRemaining > 15 * 60 ? 20 * 60 :
                             timeRemaining > 10 * 60 ? 15 * 60 : 10 * 60;
   const progress = ((currentSessionTime - timeRemaining) / currentSessionTime) * 100;
-  const circumference = 2 * Math.PI * 45; // radius of 45
+  const circumference = 2 * Math.PI * 42; // radius of 42
   const strokeDashoffset = circumference - (progress / 100) * circumference;
 
   // Format time for display
@@ -164,9 +140,9 @@ export const FloatingTimer = ({
   };
 
   return (
-    <>
+    <TooltipProvider>
       {/* Floating Timer Container */}
-      <div className="fixed bottom-6 sm:bottom-8 right-2 sm:right-4 lg:right-8 z-50 flex flex-col items-center gap-2 sm:gap-3">
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-4">
         {/* Circular Timer */}
         <div className="relative">
           {/* Celebration Animation */}
@@ -176,11 +152,11 @@ export const FloatingTimer = ({
               {[...Array(12)].map((_, i) => (
                 <div
                   key={i}
-                  className="absolute w-2 h-2 sm:w-3 sm:h-3 rounded-full animate-bounce-gentle"
+                  className="absolute w-3 h-3 rounded-full animate-bounce"
                   style={{
                     backgroundColor: ['#fbbf24', '#f59e0b', '#d97706', '#92400e'][i % 4],
-                    left: `${Math.cos((i * 30) * Math.PI / 180) * 40 + 35}px`,
-                    top: `${Math.sin((i * 30) * Math.PI / 180) * 40 + 35}px`,
+                    left: `${Math.cos((i * 30) * Math.PI / 180) * 50 + 45}px`,
+                    top: `${Math.sin((i * 30) * Math.PI / 180) * 50 + 45}px`,
                     animationDelay: `${i * 0.1}s`,
                     animationDuration: '2s'
                   }}
@@ -192,10 +168,10 @@ export const FloatingTimer = ({
                 {[...Array(8)].map((_, i) => (
                   <div
                     key={i}
-                    className="absolute w-1.5 h-1.5 sm:w-2 sm:h-2 bg-yellow-400 rounded-full animate-ping"
+                    className="absolute w-2 h-2 bg-yellow-400 rounded-full animate-ping"
                     style={{
-                      left: `${Math.cos((i * 45) * Math.PI / 180) * 50 + 33}px`,
-                      top: `${Math.sin((i * 45) * Math.PI / 180) * 50 + 33}px`,
+                      left: `${Math.cos((i * 45) * Math.PI / 180) * 60 + 42}px`,
+                      top: `${Math.sin((i * 45) * Math.PI / 180) * 60 + 42}px`,
                       animationDelay: `${i * 0.2}s`
                     }}
                   />
@@ -204,17 +180,17 @@ export const FloatingTimer = ({
             </div>
           )}
           
-          {/* Timer Circle */}
-          <div className="relative w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-white/90 backdrop-blur-sm rounded-full shadow-2xl border-2 sm:border-4 border-amber-300/60 flex items-center justify-center">
+          {/* Main Timer Circle */}
+          <div className="relative w-36 h-36 bg-white/95 backdrop-blur-sm rounded-full shadow-2xl border-4 border-amber-300/60 flex items-center justify-center">
             {/* Progress Circle */}
             <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 100 100">
               {/* Background circle */}
               <circle
                 cx="50"
                 cy="50"
-                r="45"
+                r="42"
                 stroke="#fbbf24"
-                strokeWidth="3"
+                strokeWidth="4"
                 fill="none"
                 opacity="0.2"
               />
@@ -222,9 +198,9 @@ export const FloatingTimer = ({
               <circle
                 cx="50"
                 cy="50"
-                r="45"
+                r="42"
                 stroke={getTimerColor()}
-                strokeWidth="3"
+                strokeWidth="4"
                 fill="none"
                 strokeDasharray={circumference}
                 strokeDashoffset={strokeDashoffset}
@@ -236,113 +212,105 @@ export const FloatingTimer = ({
             {/* Time Display */}
             <div className="relative z-10 text-center">
               <div 
-                className="text-sm sm:text-base lg:text-lg font-bold" 
+                className="text-2xl font-bold" 
                 style={{ color: getTimerColor() }}
               >
                 {formatTime(timeRemaining)}
               </div>
               {timeRemaining >= 40 * 60 && (
-                <div className="text-xs text-amber-600 font-medium mt-1 hidden sm:block">
-                  Max time limit
+                <div className="text-xs text-amber-600 font-medium mt-1">
+                  Max limit
                 </div>
               )}
             </div>
           </div>
         </div>
         
-        {/* Control Buttons */}
-        <div className="flex gap-1 sm:gap-2 relative">
-          {/* Play/Pause Button */}
-          <div className="relative">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onToggleReading}
-              onMouseEnter={() => setShowPlayTooltip(true)}
-              onMouseLeave={() => setShowPlayTooltip(false)}
-              className="bg-white/90 backdrop-blur-sm border-2 border-amber-300 text-amber-800 hover:bg-amber-50 shadow-lg w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 p-0"
-            >
-              {isReading ? <Pause className="w-3 h-3 sm:w-4 sm:h-4" /> : <Play className="w-3 h-3 sm:w-4 sm:h-4" />}
-            </Button>
-            
-            {/* Custom Tooltip for Play/Pause */}
-            {showPlayTooltip && (
-              <div className="absolute bottom-full mb-2 sm:mb-3 left-1/2 transform -translate-x-1/2 z-60">
-                <div className="bg-purple-500 text-white px-2 py-1 sm:px-4 sm:py-2 rounded-2xl text-sm sm:text-lg font-bold shadow-lg border-2 border-purple-300 relative whitespace-nowrap">
-                  {isReading ? "⏸️ Pause Timer" : "▶️ Start Timer"}
-                  {/* Bubble tail */}
-                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[6px] sm:border-l-[8px] border-l-transparent border-r-[6px] sm:border-r-[8px] border-r-transparent border-t-[6px] sm:border-t-[8px] border-t-purple-500"></div>
-                </div>
-              </div>
-            )}
-          </div>
-          
-          {/* Add Time Button */}
-          <div className="relative">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onAddTime}
-              onMouseEnter={() => setShowPlusTooltip(true)}
-              onMouseLeave={() => setShowPlusTooltip(false)}
-              className="bg-white/90 backdrop-blur-sm border-2 border-amber-300 text-amber-800 hover:bg-amber-50 shadow-lg w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 p-0"
-            >
-              <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
-            </Button>
-            
-            {/* Custom Tooltip for Add Time */}
-            {showPlusTooltip && (
-              <div className="absolute bottom-full mb-2 sm:mb-3 left-1/2 transform -translate-x-1/2 z-60">
-                <div className="bg-blue-500 text-white px-2 py-1 sm:px-4 sm:py-2 rounded-2xl text-sm sm:text-lg font-bold shadow-lg border-2 border-blue-300 relative whitespace-nowrap">
-                  ⏰ Add 10 minutes!
-                  <div className="text-xs sm:text-sm font-normal mt-1">(Max 30 min total)</div>
-                  {/* Bubble tail */}
-                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[6px] sm:border-l-[8px] border-l-transparent border-r-[6px] sm:border-r-[8px] border-r-transparent border-t-[6px] sm:border-t-[8px] border-t-blue-500"></div>
-                </div>
-              </div>
-            )}
-          </div>
+        {/* Circular Control Buttons in Arc Formation */}
+        <div className="relative flex items-center justify-center">
+          {/* Center Play/Pause Button */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={onToggleReading}
+                className="bg-white/95 backdrop-blur-sm border-3 border-purple-400 text-purple-700 hover:bg-purple-50 shadow-xl w-14 h-14 rounded-full p-0 transition-all duration-200 hover:scale-105"
+              >
+                {isReading ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 ml-0.5" />}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="bg-purple-700 text-white border-purple-500">
+              {isReading ? "Pause Timer" : "Start Timer"}
+            </TooltipContent>
+          </Tooltip>
 
-          {/* Add Pages Button */}
-          <div className="relative">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                onAddPages();
-                setShowAddPagesAlert(false);
-              }}
-              onMouseEnter={() => setShowPagesTooltip(true)}
-              onMouseLeave={() => setShowPagesTooltip(false)}
-              className="bg-white/90 backdrop-blur-sm border-2 border-amber-300 text-amber-800 hover:bg-amber-50 shadow-lg w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 p-0"
-            >
-              <BookOpen className="w-3 h-3 sm:w-4 sm:h-4" />
-            </Button>
-            
-            {/* Custom Tooltip for Add Pages */}
-            {(showPagesTooltip || shouldShakeTooltip) && (
-              <div className={`absolute bottom-full mb-2 sm:mb-3 right-0 z-60 ${shouldShakeTooltip ? 'animate-bounce' : ''}`}>
-                <div className={`bg-green-500 text-white px-2 py-1 sm:px-4 sm:py-2 rounded-2xl text-sm sm:text-lg font-bold shadow-lg border-2 border-green-300 relative whitespace-nowrap ${shouldShakeTooltip ? 'animate-pulse' : ''}`}>
-                  📖 Add more pages!
-                  {shouldShakeTooltip && (
-                    <div className="text-xs sm:text-sm font-normal mt-1 text-yellow-200">
-                      Only 1 page left!
-                    </div>
-                  )}
-                  {/* Close button - only show for the alert, not the regular tooltip */}
-                  {shouldShakeTooltip && (
-                    <button
-                      onClick={() => setShowAddPagesAlert(false)}
-                      className="absolute -top-2 -right-2 bg-white text-green-500 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold hover:scale-110 transition-transform"
+          {/* Surrounding Action Buttons */}
+          <div className="absolute inset-0 pointer-events-none">
+            {/* Add Time Button - Top Left */}
+            <div className="absolute -top-4 -left-20 pointer-events-auto">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onAddTime}
+                    className="bg-white/95 backdrop-blur-sm border-2 border-green-400 text-green-700 hover:bg-green-50 shadow-lg w-11 h-11 rounded-full p-0 transition-all duration-200 hover:scale-110"
+                  >
+                    <Plus className="w-5 h-5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="bg-green-700 text-white border-green-500">
+                  Add 10 minutes
+                </TooltipContent>
+              </Tooltip>
+            </div>
+
+            {/* Subtract Time Button - Top Right */}
+            {onSubtractTime && (
+              <div className="absolute -top-4 -right-20 pointer-events-auto">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={onSubtractTime}
+                      disabled={timeRemaining <= 10 * 60}
+                      className="bg-white/95 backdrop-blur-sm border-2 border-orange-400 text-orange-700 hover:bg-orange-50 shadow-lg w-11 h-11 rounded-full p-0 disabled:opacity-50 transition-all duration-200 hover:scale-110"
                     >
-                      ×
-                    </button>
-                  )}
-                  {/* Bubble tail */}
-                  <div className="absolute top-full right-4 sm:right-6 w-0 h-0 border-l-[6px] sm:border-l-[8px] border-l-transparent border-r-[6px] sm:border-r-[8px] border-r-transparent border-t-[6px] sm:border-t-[8px] border-t-green-500"></div>
-                </div>
+                      <Minus className="w-5 h-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="bg-orange-700 text-white border-orange-500">
+                    Remove 10 minutes
+                  </TooltipContent>
+                </Tooltip>
               </div>
             )}
+
+            {/* Add Pages Button - Bottom */}
+            <div className="absolute top-16 left-1/2 transform -translate-x-1/2 pointer-events-auto">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      onAddPages();
+                      setShowAddPagesAlert(false);
+                    }}
+                    className={`bg-white/95 backdrop-blur-sm border-2 border-blue-400 text-blue-700 hover:bg-blue-50 shadow-lg w-11 h-11 rounded-full p-0 transition-all duration-200 hover:scale-110 ${
+                      shouldShakeTooltip ? 'animate-bounce border-red-400 text-red-700' : ''
+                    }`}
+                  >
+                    <BookOpen className="w-5 h-5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="bg-blue-700 text-white border-blue-500">
+                  {shouldShakeTooltip ? "Only 1 page left! Add more?" : "Add more pages"}
+                </TooltipContent>
+              </Tooltip>
+            </div>
           </div>
         </div>
       </div>
@@ -364,7 +332,7 @@ export const FloatingTimer = ({
             {[...Array(30)].map((_, i) => (
               <div
                 key={i}
-                className="absolute w-1.5 h-1.5 sm:w-2 sm:h-2 bg-yellow-400 rounded-full animate-bounce"
+                className="absolute w-2 h-2 bg-yellow-400 rounded-full animate-bounce"
                 style={{
                   left: `${Math.random() * 100}%`,
                   top: `-10px`,
@@ -379,7 +347,7 @@ export const FloatingTimer = ({
             {[...Array(20)].map((_, i) => (
               <div
                 key={`sparkle-${i}`}
-                className="absolute text-yellow-300 text-lg sm:text-2xl animate-ping"
+                className="absolute text-yellow-300 text-2xl animate-ping"
                 style={{
                   left: `${Math.random() * 100}%`,
                   top: `${Math.random() * 100}%`,
@@ -393,6 +361,6 @@ export const FloatingTimer = ({
           </div>
         </div>
       )}
-    </>
+    </TooltipProvider>
   );
 };
