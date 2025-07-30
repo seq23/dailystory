@@ -89,6 +89,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: S
   );
   const [hasShownDifficultyAlert, setHasShownDifficultyAlert] = useState(false);
   const [showTutorialBubble, setShowTutorialBubble] = useState(true);
+  const [lastStoryVariant, setLastStoryVariant] = useState<number | null>(null);
 
   // Auto-dismiss tutorial bubble after 6 seconds (with 5 second delay)
   useEffect(() => {
@@ -291,65 +292,188 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: S
 
     const settings = difficultySettings[difficulty];
     
-    // Create different story content based on difficulty level with famous author styles
+    // Create different story variants to ensure no consecutive duplicates
     const createStoryByDifficulty = () => {
       if (difficulty === "easy") {
-        // Dr. Seuss / Margaret Wise Brown / Eric Carle style - rhythmic, repetitive, soothing
-        return [
-          `${info.name} wakes up in the morning bright. The sun is shining. What a sight!`,
-          `"What shall I do?" asks ${info.name} with glee. "I think I'll try some ${info.hobbies}!"`,
-          `Out the door and down the street. Dancing, dancing with happy feet!`,
-          `Hello, birds! Hello, trees! Hello, flowers! Hello, bees!`,
-          `${info.name} loves to play all day. ${info.hobbies} makes everything okay!`,
-          `Friends come over to play along. Together they sing a happy song.`,
-          `Hop and skip and jump so high! Look at all the clouds in the sky!`,
-          `When the day is nearly done, ${info.name} says, "That was so much fun!"`,
-          `Stars come out to say goodnight. ${info.name} sleeps tight until morning light.`,
-          `Tomorrow brings another day for ${info.name} to play and play!`
+        // Multiple story variants - Dr. Seuss / Margaret Wise Brown / Eric Carle style
+        const storyVariants = [
+          [
+            `${info.name} wakes up in the morning bright. The sun is shining. What a sight!`,
+            `"What shall I do?" asks ${info.name} with glee. "I think I'll try some ${info.hobbies}!"`,
+            `Out the door and down the street. Dancing, dancing with happy feet!`,
+            `Hello, birds! Hello, trees! Hello, flowers! Hello, bees!`,
+            `${info.name} loves to play all day. ${info.hobbies} makes everything okay!`,
+            `Friends come over to play along. Together they sing a happy song.`,
+            `Hop and skip and jump so high! Look at all the clouds in the sky!`,
+            `When the day is nearly done, ${info.name} says, "That was so much fun!"`,
+            `Stars come out to say goodnight. ${info.name} sleeps tight until morning light.`,
+            `Tomorrow brings another day for ${info.name} to play and play!`
+          ],
+          [
+            `Hooray! Hooray! It's a beautiful day! ${info.name} wants to go out and play!`,
+            `"${info.hobbies} sounds like fun," says ${info.name}. "Let's play until the day is done!"`,
+            `Skip and hop and jump around. Happy sounds are everywhere found!`,
+            `Red and blue and green and yellow! ${info.name} is one happy fellow!`,
+            `Wiggle, giggle, laugh and cheer! Fun and joy are always near!`,
+            `Animals come to play today. They love ${info.hobbies} in every way!`,
+            `Round and round and up and down. ${info.name} is the happiest ${info.avatar.type} in town!`,
+            `Time to rest, time to play. What a perfectly wonderful day!`,
+            `Moon and stars shine bright above. ${info.name} goes to sleep with so much love.`,
+            `Sweet dreams tonight, wake up bright! Tomorrow will be another delight!`
+          ],
+          [
+            `${info.name} opens eyes so wide. It's time to play outside!`,
+            `"I love ${info.hobbies} most of all! Come on, let's have a ball!"`,
+            `Bouncy, bouncy, here and there! Fun is floating in the air!`,
+            `Look! A butterfly so blue! "Hello there! How do you do?"`,
+            `${info.name} and friends all play. Laughing, smiling all the day!`,
+            `Twirl and swirl and spin around. The best fun ever can be found!`,
+            `Pat-a-cake and peek-a-boo! There's so much fun for me and you!`,
+            `When the sun begins to set, this was the best day yet!`,
+            `Sleepy time is drawing near. Sweet dreams, my little dear.`,
+            `Close your eyes and drift away. Dream of fun and play!`
+          ]
         ];
+        
+        // Select a variant different from the last one
+        let selectedVariant = Math.floor(Math.random() * storyVariants.length);
+        if (lastStoryVariant !== null && storyVariants.length > 1) {
+          while (selectedVariant === lastStoryVariant) {
+            selectedVariant = Math.floor(Math.random() * storyVariants.length);
+          }
+        }
+        setLastStoryVariant(selectedVariant);
+        return storyVariants[selectedVariant];
+        
       } else if (difficulty === "medium") {
-        // Magic Tree House / Beverly Cleary / Roald Dahl style - adventure with heart
-        return [
-          `${info.name} was the kind of ${info.avatar.type} who believed in magic, especially when it came to ${info.hobbies}. Today felt different somehow.`,
-          `While practicing ${info.hobbies} in the garden, ${info.name} noticed something peculiar. A tiny door had appeared at the base of the old oak tree!`,
-          `"This wasn't here yesterday," ${info.name} whispered, kneeling down to examine the miniature entrance. It was painted bright purple with a golden doorknob.`,
-          `Suddenly, the door swung open! Out popped a mouse wearing a red velvet jacket and tiny spectacles. "Finally!" squeaked the mouse. "I've been waiting ages for you!"`,
-          `"Me?" asked ${info.name} in amazement. The mouse nodded importantly. "You're exactly the person we need to help solve the Great Acorn Mystery!"`,
-          `Without hesitation, ${info.name} shrunk down to mouse size (magic is funny that way) and followed their new friend through a tunnel lined with glowing mushrooms.`,
-          `They emerged in a bustling underground city where animals of all kinds lived in harmony. But something was terribly wrong—all the acorns had vanished!`,
-          `Using their special knowledge of ${info.hobbies}, ${info.name} helped the animals search high and low. They discovered the acorns had been borrowed by young squirrels for a surprise party!`,
-          `The whole city celebrated with the biggest feast anyone had ever seen. ${info.name} was made an honorary citizen and given a magical compass that would always point toward new adventures.`,
-          `When it was time to return home, ${info.name} felt their heart full of joy. They knew that whenever they needed magic, they just had to believe—and practice ${info.hobbies}!`
+        // Multiple story variants - Magic Tree House / Beverly Cleary / Roald Dahl style
+        const storyVariants = [
+          [
+            `${info.name} was the kind of ${info.avatar.type} who believed in magic, especially when it came to ${info.hobbies}. Today felt different somehow.`,
+            `While practicing ${info.hobbies} in the garden, ${info.name} noticed something peculiar. A tiny door had appeared at the base of the old oak tree!`,
+            `"This wasn't here yesterday," ${info.name} whispered, kneeling down to examine the miniature entrance. It was painted bright purple with a golden doorknob.`,
+            `Suddenly, the door swung open! Out popped a mouse wearing a red velvet jacket and tiny spectacles. "Finally!" squeaked the mouse. "I've been waiting ages for you!"`,
+            `"Me?" asked ${info.name} in amazement. The mouse nodded importantly. "You're exactly the person we need to help solve the Great Acorn Mystery!"`,
+            `Without hesitation, ${info.name} shrunk down to mouse size (magic is funny that way) and followed their new friend through a tunnel lined with glowing mushrooms.`,
+            `They emerged in a bustling underground city where animals of all kinds lived in harmony. But something was terribly wrong—all the acorns had vanished!`,
+            `Using their special knowledge of ${info.hobbies}, ${info.name} helped the animals search high and low. They discovered the acorns had been borrowed by young squirrels for a surprise party!`,
+            `The whole city celebrated with the biggest feast anyone had ever seen. ${info.name} was made an honorary citizen and given a magical compass that would always point toward new adventures.`,
+            `When it was time to return home, ${info.name} felt their heart full of joy. They knew that whenever they needed magic, they just had to believe—and practice ${info.hobbies}!`
+          ],
+          [
+            `${info.name} had always wondered what it would be like to fly like a bird. While practicing ${info.hobbies} on the roof, something magical happened.`,
+            `A gentle breeze swirled around ${info.name}, lifting them higher and higher until they were soaring above the clouds with a flock of friendly rainbow parrots.`,
+            `"Welcome to the Sky Kingdom!" chirped the lead parrot, whose feathers sparkled like jewels. "We've been watching you practice ${info.hobbies} and we're very impressed!"`,
+            `The parrots led ${info.name} to a floating castle made entirely of clouds and stardust, where the Sky King was waiting with a worried expression.`,
+            `"Our magical Sky Crystal has lost its power," the King explained. "Without it, all the colors will drain from the world below. We need someone special to help us."`,
+            `${info.name} discovered that their love for ${info.hobbies} was exactly what the crystal needed to recharge. As they shared their passion, the crystal began to glow brighter and brighter.`,
+            `The colors returned to the world in a spectacular display of rainbows and shooting stars. The Sky King was so grateful that he granted ${info.name} the power to visit the Sky Kingdom whenever they wished.`,
+            `As the parrots gently carried ${info.name} back home, they whispered the secret of the Sky Kingdom: "Believe in yourself, and magic will always find you."`,
+            `Back on solid ground, ${info.name} looked up at the sky with new eyes, knowing that adventure was always just a cloud away.`,
+            `From that day forward, whenever ${info.name} practiced ${info.hobbies}, they could feel the wind calling them back to their friends in the Sky Kingdom.`
+          ],
+          [
+            `${info.name} found a mysterious old map while cleaning the attic, and it seemed to show a secret path through their own neighborhood.`,
+            `Following the map's curious symbols and riddles, ${info.name} discovered that their ordinary town was filled with extraordinary secrets and hidden treasures.`,
+            `The first clue led to the library, where ${info.name} met a talking cat named Whiskers who claimed to be the Guardian of Lost Stories.`,
+            `"Every story that's ever been forgotten ends up here," Whiskers explained, leading ${info.name} through a hidden door behind the poetry section.`,
+            `Inside was a vast underground library where characters from unfinished books lived, waiting for someone to help complete their adventures.`,
+            `${info.name} used their creativity and knowledge of ${info.hobbies} to help solve the characters' problems and finish their interrupted stories.`,
+            `Each completed story created a burst of golden light that made the underground library even more beautiful and filled it with the sound of grateful laughter.`,
+            `As a reward for their kindness and creativity, the story characters gave ${info.name} a magical pen that could bring any story to life.`,
+            `Whiskers walked ${info.name} back to the regular library and winked. "Remember, every ordinary place can become extraordinary if you know how to look for the magic."`,
+            `${info.name} left the library with their magical pen, excited to create new stories and knowing that adventure could be found anywhere, even in the most unexpected places.`
+          ]
         ];
+        
+        // Select a variant different from the last one
+        let selectedVariant = Math.floor(Math.random() * storyVariants.length);
+        if (lastStoryVariant !== null && storyVariants.length > 1) {
+          while (selectedVariant === lastStoryVariant) {
+            selectedVariant = Math.floor(Math.random() * storyVariants.length);
+          }
+        }
+        setLastStoryVariant(selectedVariant);
+        return storyVariants[selectedVariant];
+        
       } else if (difficulty === "hard") {
-        // Harry Potter / Holes / Bridge to Terabithia style - deeper themes with character development
-        return [
-          `${info.name} had always felt like an outsider at school, finding solace only in ${info.hobbies} and the quiet corners of the library where nobody bothered to look for them.`,
-          `Everything changed the day Mrs. Chen, the new art teacher, pulled ${info.name} aside after class. "I've been watching you," she said quietly. "You have a gift that needs nurturing."`,
-          `She handed ${info.name} an old, leather-bound journal. "This belonged to my grandmother. She was like you—someone who saw the world differently, more deeply than others."`,
-          `That night, ${info.name} opened the journal and discovered it was filled with sketches, poems, and stories about young people who had changed the world through their unique talents and passion for their interests.`,
-          `The journal seemed to come alive under ${info.name}'s touch. Pages fluttered on their own, revealing a hidden message: "The Society of Young Dreamers seeks a new member."`,
-          `Following cryptic clues hidden throughout their town, ${info.name} uncovered a secret network of young people who used their talents—like ${info.hobbies}—to solve real problems in their community.`,
-          `Their first mission involved helping an elderly man who had lost all his family photographs in a fire. Using creativity and determination, ${info.name} helped recreate precious memories through art and storytelling.`,
-          `As ${info.name} grew more confident in their abilities, they realized that being different wasn't something to hide from—it was their greatest strength and the key to making a real difference.`,
-          `The Society's leader, a wise teenager named Alex, told ${info.name}, "Every person who changes the world starts exactly where you are now—feeling different, but choosing to embrace it."`,
-          `With newfound purpose and a community of like-minded friends, ${info.name} understood that their love for ${info.hobbies} wasn't just a hobby—it was a pathway to helping others and making the world a better place.`
+        // Multiple story variants - Harry Potter / Holes / Bridge to Terabithia style
+        const storyVariants = [
+          [
+            `${info.name} had always felt like an outsider at school, finding solace only in ${info.hobbies} and the quiet corners of the library where nobody bothered to look for them.`,
+            `Everything changed the day Mrs. Chen, the new art teacher, pulled ${info.name} aside after class. "I've been watching you," she said quietly. "You have a gift that needs nurturing."`,
+            `She handed ${info.name} an old, leather-bound journal. "This belonged to my grandmother. She was like you—someone who saw the world differently, more deeply than others."`,
+            `That night, ${info.name} opened the journal and discovered it was filled with sketches, poems, and stories about young people who had changed the world through their unique talents and passion for their interests.`,
+            `The journal seemed to come alive under ${info.name}'s touch. Pages fluttered on their own, revealing a hidden message: "The Society of Young Dreamers seeks a new member."`,
+            `Following cryptic clues hidden throughout their town, ${info.name} uncovered a secret network of young people who used their talents—like ${info.hobbies}—to solve real problems in their community.`,
+            `Their first mission involved helping an elderly man who had lost all his family photographs in a fire. Using creativity and determination, ${info.name} helped recreate precious memories through art and storytelling.`,
+            `As ${info.name} grew more confident in their abilities, they realized that being different wasn't something to hide from—it was their greatest strength and the key to making a real difference.`,
+            `The Society's leader, a wise teenager named Alex, told ${info.name}, "Every person who changes the world starts exactly where you are now—feeling different, but choosing to embrace it."`,
+            `With newfound purpose and a community of like-minded friends, ${info.name} understood that their love for ${info.hobbies} wasn't just a hobby—it was a pathway to helping others and making the world a better place.`
+          ],
+          [
+            `${info.name} never expected that inheriting their great-aunt's old house would lead to the discovery of a time machine hidden in the basement.`,
+            `The machine was covered in dust and cobwebs, with a note attached: "For ${info.name}, when you're ready to understand that every generation faces the same challenges, just in different ways."`,
+            `Curious and a bit nervous, ${info.name} activated the machine and found themselves transported to their great-aunt's childhood during a time when young people weren't allowed to pursue interests like ${info.hobbies}.`,
+            `They met their great-aunt as a young girl, also passionate about creative pursuits but forced to hide her talents from a society that didn't value them.`,
+            `Working together across time, ${info.name} and young Aunt Marie organized a secret group of creative kids who used their combined talents to solve problems in their community and prove their worth.`,
+            `Through their adventures in the past, ${info.name} learned that every generation of young people has had to fight for the right to be different, to be creative, and to follow their dreams.`,
+            `When the time machine brought ${info.name} back to the present, they discovered that their actions in the past had created a ripple effect that made their own world more accepting of creativity and individuality.`,
+            `The experience taught ${info.name} that their struggles weren't unique, but part of a long tradition of young people who had the courage to be themselves and make a difference.`,
+            `Aunt Marie's final note, which appeared after the time travel, read: "Every young person who refuses to give up their dreams helps create a better world for the next generation."`,
+            `${info.name} decided to continue their great-aunt's legacy, using their passion for ${info.hobbies} to inspire other young people to embrace their uniqueness and work together to build a more creative world.`
+          ]
         ];
+        
+        // Select a variant different from the last one
+        let selectedVariant = Math.floor(Math.random() * storyVariants.length);
+        if (lastStoryVariant !== null && storyVariants.length > 1) {
+          while (selectedVariant === lastStoryVariant) {
+            selectedVariant = Math.floor(Math.random() * storyVariants.length);
+          }
+        }
+        setLastStoryVariant(selectedVariant);
+        return storyVariants[selectedVariant];
+        
       } else { // expert
-        // The Hunger Games / The Giver / sophisticated YA style - complex themes with social commentary
-        return [
-          `In a world where creativity was measured and rationed, ${info.name} had learned to hide their passion for ${info.hobbies} behind a mask of calculated conformity.`,
-          `The Society of Productive Citizens had ruled for fifty years, determining that only "useful" skills deserved development. Art, music, and creative expression were considered dangerous distractions from economic progress.`,
-          `${info.name}'s secret practice sessions took place in an abandoned subway tunnel, where they had discovered remnants of the old world—books, paintings, and instruments left behind by those who had dared to dream.`,
-          `On the morning of their sixteenth birthday, ${info.name} received two letters: one assigned them to a factory job, the other bore only an address and the words "The Underground Academy of Lost Arts."`,
-          `The choice was impossible yet clear. Reporting to the factory meant safety but a life of spiritual emptiness. Following the mysterious letter meant risking everything for the chance to truly live.`,
-          `At the Underground Academy, ${info.name} met other young people who had chosen freedom over security. They learned that creativity wasn't just personal expression—it was the foundation of human progress and dignity.`,
-          `Their teacher, a former government official who had abandoned power to protect young artists, explained: "Every totalitarian regime in history has first attacked the artists. Do you know why?"`,
-          `Through intensive study and practice of ${info.hobbies}, ${info.name} began to understand that art and creativity were forms of resistance, ways of preserving human truth in an increasingly mechanized world.`,
-          `When the government discovered the Academy, ${info.name} faced the ultimate test: lead a peaceful revolution to restore creative freedom, knowing that failure meant not just personal destruction but the loss of hope for future generations.`,
-          `Standing before the Council of Productive Citizens, ${info.name} spoke with the power of truth: "You fear our ${info.hobbies} because they remind people what it means to be human. But humanity cannot be destroyed—only temporarily forgotten."`,
-          `The revolution that followed wasn't won with violence, but with beauty—thousands of young people sharing their hidden art, music, and stories, proving that the human spirit cannot be suppressed when it chooses to rise together.`
+        // Multiple story variants - The Hunger Games / The Giver / sophisticated YA style
+        const storyVariants = [
+          [
+            `In a world where creativity was measured and rationed, ${info.name} had learned to hide their passion for ${info.hobbies} behind a mask of calculated conformity.`,
+            `The Society of Productive Citizens had ruled for fifty years, determining that only "useful" skills deserved development. Art, music, and creative expression were considered dangerous distractions from economic progress.`,
+            `${info.name}'s secret practice sessions took place in an abandoned subway tunnel, where they had discovered remnants of the old world—books, paintings, and instruments left behind by those who had dared to dream.`,
+            `On the morning of their sixteenth birthday, ${info.name} received two letters: one assigned them to a factory job, the other bore only an address and the words "The Underground Academy of Lost Arts."`,
+            `The choice was impossible yet clear. Reporting to the factory meant safety but a life of spiritual emptiness. Following the mysterious letter meant risking everything for the chance to truly live.`,
+            `At the Underground Academy, ${info.name} met other young people who had chosen freedom over security. They learned that creativity wasn't just personal expression—it was the foundation of human progress and dignity.`,
+            `Their teacher, a former government official who had abandoned power to protect young artists, explained: "Every totalitarian regime in history has first attacked the artists. Do you know why?"`,
+            `Through intensive study and practice of ${info.hobbies}, ${info.name} began to understand that art and creativity were forms of resistance, ways of preserving human truth in an increasingly mechanized world.`,
+            `When the government discovered the Academy, ${info.name} faced the ultimate test: lead a peaceful revolution to restore creative freedom, knowing that failure meant not just personal destruction but the loss of hope for future generations.`,
+            `Standing before the Council of Productive Citizens, ${info.name} spoke with the power of truth: "You fear our ${info.hobbies} because they remind people what it means to be human. But humanity cannot be destroyed—only temporarily forgotten."`,
+            `The revolution that followed wasn't won with violence, but with beauty—thousands of young people sharing their hidden art, music, and stories, proving that the human spirit cannot be suppressed when it chooses to rise together.`
+          ],
+          [
+            `${info.name} lived in the last free city on Earth, surrounded by a vast wasteland where creativity had been systematically eliminated by machines that valued only efficiency and uniformity.`,
+            `As the youngest member of the city's Council of Guardians, ${info.name} was chosen to venture into the wasteland to discover why children from their city were beginning to lose their ability to imagine and create.`,
+            `Armed only with their knowledge of ${info.hobbies} and an ancient device called a Memory Keeper, ${info.name} set out across the desolate landscape, following signals from other survivors.`,
+            `They discovered hidden communities of artists, musicians, and dreamers who had been living underground for generations, preserving human creativity while the world above forgot what it meant to be truly alive.`,
+            `The underground dwellers revealed that the machines were powered by harvested human imagination, and that ${info.name}'s city was slowly being drained of its creative energy through a network of invisible sensors.`,
+            `Working with the underground resistance, ${info.name} learned to use their passion for ${info.hobbies} as a weapon against the machines, discovering that genuine creativity could overload and disable the oppressive technology.`,
+            `The final battle wasn't fought with conventional weapons, but with a massive coordinated expression of human creativity—millions of people across the globe simultaneously creating art, music, stories, and beauty.`,
+            `As the machines fell silent, defeated by the very thing they had tried to eliminate, ${info.name} watched as color and imagination began to return to the world like sunrise after an endless night.`,
+            `The Memory Keeper revealed its final secret: it had been recording every act of creativity throughout the dark ages, and now those memories flowed back into the world, restoring what had been lost.`,
+            `${info.name} returned home not as a guardian of the last free city, but as a leader of the first truly free world, where every person was encouraged to explore their creativity and contribute to the ongoing human story.`
+          ]
         ];
+        
+        // Select a variant different from the last one
+        let selectedVariant = Math.floor(Math.random() * storyVariants.length);
+        if (lastStoryVariant !== null && storyVariants.length > 1) {
+          while (selectedVariant === lastStoryVariant) {
+            selectedVariant = Math.floor(Math.random() * storyVariants.length);
+          }
+        }
+        setLastStoryVariant(selectedVariant);
+        return storyVariants[selectedVariant];
       }
     };
 
