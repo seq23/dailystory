@@ -380,6 +380,26 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const handleMakeEasier = () => {
+    if (currentDifficulty === "medium") {
+      setCurrentDifficulty("easy");
+    } else if (currentDifficulty === "hard") {
+      setCurrentDifficulty("medium");
+    } else if (currentDifficulty === "expert") {
+      setCurrentDifficulty("hard");
+    }
+  };
+
+  const handleMakeHarder = () => {
+    if (currentDifficulty === "easy") {
+      setCurrentDifficulty("medium");
+    } else if (currentDifficulty === "medium") {
+      setCurrentDifficulty("hard");
+    } else if (currentDifficulty === "hard") {
+      setCurrentDifficulty("expert");
+    }
+  };
+
   return (
     <TooltipProvider>
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 relative overflow-hidden">
@@ -537,31 +557,84 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
               <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-2xl rounded-3xl overflow-hidden">
                 {/* Story Header */}
                 <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-6 text-white">
-                  <div className="flex items-center space-x-4">
-                    <div className="relative">
-                      <div className="w-20 h-20 rounded-2xl overflow-hidden shadow-lg border-4 border-white/30">
-                        <img 
-                          src={getUserAvatar()} 
-                          alt={`${userInfo.name}'s avatar`}
-                          className="w-full h-full object-cover"
-                        />
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className="relative">
+                        <div className="w-20 h-20 rounded-2xl overflow-hidden shadow-lg border-4 border-white/30">
+                          <img 
+                            src={getUserAvatar()} 
+                            alt={`${userInfo.name}'s avatar`}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center">
+                          <Star className="w-4 h-4 text-white" />
+                        </div>
                       </div>
-                      <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center">
-                        <Star className="w-4 h-4 text-white" />
+                      <div>
+                        <h2 className="text-2xl font-bold mb-1">
+                          {userInfo.name}'s Adventure
+                        </h2>
+                        <p className="text-indigo-100">
+                          Chapter {currentParagraph + 1}: The Journey Continues
+                        </p>
+                        {userInfo.hobbies && (
+                          <p className="text-sm text-indigo-200 mt-1">
+                            Featuring: {userInfo.hobbies}
+                          </p>
+                        )}
                       </div>
                     </div>
-                    <div>
-                      <h2 className="text-2xl font-bold mb-1">
-                        {userInfo.name}'s Adventure
-                      </h2>
-                      <p className="text-indigo-100">
-                        Chapter {currentParagraph + 1}: The Journey Continues
-                      </p>
-                      {userInfo.hobbies && (
-                        <p className="text-sm text-indigo-200 mt-1">
-                          Featuring: {userInfo.hobbies}
-                        </p>
-                      )}
+                    
+                    {/* Difficulty Level Controls */}
+                    <div className="flex flex-col items-end space-y-2">
+                      <div className="text-sm text-indigo-100 font-medium">
+                        Reading Level: {
+                          currentDifficulty === "easy" ? "Pre-K - 1st Grade" :
+                          currentDifficulty === "medium" ? "2nd - 3rd Grade" :
+                          currentDifficulty === "hard" ? "4th - 5th Grade" :
+                          "6th Grade+"
+                        }
+                      </div>
+                      <div className="flex space-x-2">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                onClick={handleMakeEasier}
+                                disabled={currentDifficulty === "easy"}
+                                size="sm"
+                                className="bg-white/20 hover:bg-white/30 text-white border-white/30 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl px-3 py-1"
+                              >
+                                <TrendingDown className="w-4 h-4 mr-1" />
+                                Easier
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Make the story easier to read</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                onClick={handleMakeHarder}
+                                disabled={currentDifficulty === "expert"}
+                                size="sm"
+                                className="bg-white/20 hover:bg-white/30 text-white border-white/30 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl px-3 py-1"
+                              >
+                                <TrendingUp className="w-4 h-4 mr-1" />
+                                Harder
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Make the story more challenging</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
                     </div>
                   </div>
                 </div>
