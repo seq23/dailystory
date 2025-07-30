@@ -84,8 +84,8 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
   
   // Core state
   const [currentParagraph, setCurrentParagraph] = useState(0);
-  const [isReading, setIsReading] = useState(false);
-  const [timeRemaining, setTimeRemaining] = useState(10 * 60); // 10 minutes in seconds
+  const [isReading, setIsReading] = useState(true); // Auto-start reading
+  const [timeRemaining, setTimeRemaining] = useState(610); // 10 minutes 10 seconds
   const [story, setStory] = useState<string[]>([]);
   const [currentDifficulty, setCurrentDifficulty] = useState<DifficultyLevel>(
     userInfo.difficultyLevel || (userInfo.age <= 6 ? "easy" : userInfo.age <= 9 ? "medium" : userInfo.age <= 12 ? "hard" : "expert")
@@ -96,6 +96,8 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
   const [hasShownAddPagesAlert, setHasShownAddPagesAlert] = useState(false);
   const [showFinishCountdown, setShowFinishCountdown] = useState(false);
   const [countdownSeconds, setCountdownSeconds] = useState(5);
+  const [showTutorial, setShowTutorial] = useState(true);
+  const [tutorialStep, setTutorialStep] = useState(0);
   
   // Reading stats
   const [readingStats, setReadingStats] = useState({
@@ -145,10 +147,14 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       try {
         // Reset progress bar and reading state for new session
         setCurrentParagraph(0);
-        setIsReading(false);
-        setTimeRemaining(10 * 60); // Reset to 10 minutes
+        setIsReading(true); // Auto-start reading
+        setTimeRemaining(610); // Reset to 10:10 (610 seconds)
         setHasShownAddPagesAlert(false); // Reset alert flag for new session
         setCustomIllustrations(new Map()); // Clear custom illustrations
+        
+        // Start tutorial for new session
+        setShowTutorial(true);
+        setTutorialStep(0);
         
         const generatedStory = InclusiveStoryGenerator.generateCulturallyAdaptedStory(userInfo, currentDifficulty);
         setStory(generatedStory);
@@ -265,6 +271,32 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       }, 3000); // 3 seconds as requested
     }
   }, [currentParagraph, story.length, timeRemaining, hasShownAddPagesAlert]);
+
+  // Tutorial system for new sessions
+  useEffect(() => {
+    if (showTutorial && story.length > 0) {
+      const tutorialSteps = [
+        { message: "Welcome! Your timer has started at 10:10 and is counting down. Click the center button to pause/start.", duration: 4000 },
+        { message: "Use the green + button to add 10 minutes if you need more time.", duration: 3000 },
+        { message: "Use the orange - button to remove 10 minutes if you want less time.", duration: 3000 },
+        { message: "Use the blue book button to add more pages to your story.", duration: 3000 },
+        { message: "Happy reading! Enjoy your personalized adventure!", duration: 2000 }
+      ];
+
+      if (tutorialStep < tutorialSteps.length) {
+        const timer = setTimeout(() => {
+          if (tutorialStep === tutorialSteps.length - 1) {
+            setShowTutorial(false);
+            setTutorialStep(0);
+          } else {
+            setTutorialStep(prev => prev + 1);
+          }
+        }, tutorialSteps[tutorialStep].duration);
+
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [showTutorial, tutorialStep, story.length]);
 
   const totalPages = story.length;
   const currentStory = story[currentParagraph] || "Loading your adventure...";
@@ -901,6 +933,54 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
               Go Now ✨
             </Button>
           </Card>
+        </div>
+      )}
+
+      {/* Tutorial Overlay */}
+      {showTutorial && (
+        <div className="fixed bottom-4 left-4 right-4 z-40 pointer-events-none">
+          <div className="max-w-md mx-auto pointer-events-auto">
+            <Card className="bg-blue-500 text-white p-4 rounded-2xl shadow-2xl border-0 animate-slide-up">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                  <span className="text-lg">🎯</span>
+                </div>
+                <div className="flex-1">
+                  <div className="text-sm font-medium mb-1">
+                    Tutorial {tutorialStep + 1}/5
+                  </div>
+                  <div className="text-sm">
+                    {showTutorial && tutorialStep < 5 ? [
+                      "Welcome! Your timer has started at 10:10 and is counting down. Click the center button to pause/start.",
+                      "Use the green + button to add 10 minutes if you need more time.",
+                      "Use the orange - button to remove 10 minutes if you want less time.",
+                      "Use the blue book button to add more pages to your story.",
+                      "Happy reading! Enjoy your personalized adventure!"
+                    ][tutorialStep] : ""}
+                  </div>
+                </div>
+                <Button
+                  onClick={() => {
+                    setShowTutorial(false);
+                    setTutorialStep(0);
+                  }}
+                  variant="ghost"
+                  size="sm"
+                  className="text-white hover:bg-white/20 p-1 h-auto"
+                >
+                  ×
+                </Button>
+              </div>
+              <div className="mt-3">
+                <div className="w-full bg-white/20 rounded-full h-2">
+                  <div 
+                    className="bg-white h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${((tutorialStep + 1) / 5) * 100}%` }}
+                  />
+                </div>
+              </div>
+            </Card>
+          </div>
         </div>
       )}
     </div>

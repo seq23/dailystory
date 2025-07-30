@@ -142,7 +142,7 @@ export const FloatingTimer = ({
   return (
     <TooltipProvider>
       {/* Floating Timer Container */}
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-4">
+      <div className="fixed bottom-8 right-8 z-50 flex flex-col items-center gap-4" style={{ marginRight: 'max(1rem, env(safe-area-inset-right))', marginBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
         {/* Circular Timer */}
         <div className="relative">
           {/* Celebration Animation */}
@@ -248,7 +248,7 @@ export const FloatingTimer = ({
           {/* Surrounding Action Buttons */}
           <div className="absolute inset-0 pointer-events-none">
             {/* Add Time Button - Top Left */}
-            <div className="absolute -top-4 -left-20 pointer-events-auto">
+            <div className="absolute -top-4 -left-16 pointer-events-auto">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
@@ -268,7 +268,7 @@ export const FloatingTimer = ({
 
             {/* Subtract Time Button - Top Right */}
             {onSubtractTime && (
-              <div className="absolute -top-4 -right-20 pointer-events-auto">
+              <div className="absolute -top-4 -right-16 pointer-events-auto">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
