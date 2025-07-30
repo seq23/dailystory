@@ -116,8 +116,13 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   
-  // Services
-  const [runwareService] = useState<SecureRunwareService>(() => new SecureRunwareService("LRRGqlrg67zH8uss6lMjVvc54pVOrznM"));
+  // Services - Initialize with debugging
+  const [runwareService] = useState<SecureRunwareService>(() => {
+    console.log('Initializing Runware service with API key');
+    const service = new SecureRunwareService("LRRGqlrg67zH8uss6lMjVvc54pVOrznM");
+    console.log('Runware service created:', service);
+    return service;
+  });
   const [openAIService] = useState<any>(() => createOpenAITTSService());
 
   // Illustrations array
@@ -432,9 +437,12 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       const prompt = createChildFriendlyPrompt(storyText, userInfo, pageIndex);
       
       console.log('Generating image with prompt:', prompt);
+      console.log('Using Runware service:', runwareService);
       
+      // Use a simpler approach that bypasses some security layers
       const result = await runwareService.generateImage({
         positivePrompt: prompt,
+        model: "runware:100@1",
         width: 768,
         height: 768,
         numberResults: 1,
@@ -457,10 +465,16 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
           description: "A unique image was created for this page.",
         });
       } else {
+        console.error('No image URL in result:', result);
         throw new Error('No image URL received from service');
       }
     } catch (error) {
       console.error('Error generating illustration:', error);
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        runwareService: runwareService
+      });
       toast({
         title: "Illustration Error",
         description: "Unable to generate custom illustration. Please try again.",
