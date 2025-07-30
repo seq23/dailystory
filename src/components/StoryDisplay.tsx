@@ -125,6 +125,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
   // Audio/TTS
   const [isPlaying, setIsPlaying] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [hasPlayedAudioForPage, setHasPlayedAudioForPage] = useState<Set<number>>(new Set());
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   
@@ -519,10 +520,20 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
   };
 
   const playTextToSpeech = async (text: string) => {
-    if (isPlaying) return;
+    // Prevent multiple clicks and playing audio multiple times per page
+    if (isPlaying || hasPlayedAudioForPage.has(currentParagraph)) return;
     
     try {
       setIsPlaying(true);
+      // Mark this page as having played audio
+      setHasPlayedAudioForPage(prev => new Set([...prev, currentParagraph]));
+      
+      // Stop any existing audio first
+      if (currentAudioRef.current) {
+        currentAudioRef.current.pause();
+        currentAudioRef.current = null;
+      }
+      
       await openAIService.speakText(text, { speed: 0.9 });
       setIsPlaying(false);
     } catch (error) {
@@ -779,12 +790,19 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                   {/* Audio & Recording */}
                   <div className="flex justify-center space-x-3" data-tutorial-target="audio">
                     <Button
-                      onClick={() => isPlaying ? stopTextToSpeech() : playTextToSpeech(currentStory)}
+                      onClick={() => playTextToSpeech(currentStory)}
                       variant="outline"
                       size="sm"
                       className="rounded-full bg-blue-50 border-blue-200 hover:bg-blue-100"
+                      disabled={isPlaying || hasPlayedAudioForPage.has(currentParagraph)}
                     >
-                      {isPlaying ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                      {isPlaying ? (
+                        <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                      ) : hasPlayedAudioForPage.has(currentParagraph) ? (
+                        <VolumeX className="w-4 h-4" />
+                      ) : (
+                        <Volume2 className="w-4 h-4" />
+                      )}
                     </Button>
 
                     <Button
