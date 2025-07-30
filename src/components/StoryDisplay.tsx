@@ -255,7 +255,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
     
     try {
       setIsPlaying(true);
-      const audioUrl = await openAIService.synthesize(text, userInfo.nativeLanguage || 'en', readingSpeed);
+      const audioUrl = await openAIService.synthesizeText(text, userInfo.nativeLanguage || 'en', readingSpeed);
       
       if (audioUrl) {
         const audio = new HTMLAudioElement();
@@ -421,10 +421,10 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
           <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <div className="relative">
-                  <img src={time2ReadLogo} alt="Time2Read" className="w-12 h-12 rounded-xl shadow-lg transition-transform hover:scale-105" />
-                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full animate-pulse"></div>
-                </div>
+                 <div className="relative">
+                   <img src={time2ReadLogo} alt="Time2Read" className="w-12 h-12 rounded-xl shadow-lg transition-transform hover:scale-105" />
+                   <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full animate-pulse"></div>
+                 </div>
                 <div>
                   <h1 className="text-2xl font-bold text-gray-800 font-comic">
                     {userInfo.name}'s Reading Journey
