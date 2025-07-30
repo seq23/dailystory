@@ -1,4 +1,38 @@
 {
+  "welcomeHero": {
+    "companyTagline": "A Personalized Reading Assistant for Every Child",
+    "carousel": {
+      "item1": "Time 2 Read can be used as a magical summer reading assistant on road trips!",
+      "item2": "Perfect for after-school reading time - make homework fun and engaging!",
+      "item3": "Take your stories anywhere - from playground breaks to family picnics!",
+      "item4": "Enhance library visits with interactive digital stories that inspire reading!"
+    },
+    "title": "Create Your Own",
+    "titleHighlight": "Magical Story!",
+    "subtitle": "Every day, discover a new adventure written just for you! Tell us about yourself and watch your personal story come to life.",
+    "features": {
+      "reading": {
+        "title": "20+ Min of Reading",
+        "subtitle": "(as recommended by teachers)"
+      },
+      "personalized": "Personalized Stories",
+      "gradeLevel": "Grade Level Perfect"
+    },
+    "ctaButton": "Start My Story Adventure!",
+    "safetyNote": "Safe, fun, and educational stories for kids of all ages",
+    "footer": {
+      "companyName": "Time 2 Read LLC",
+      "description": "Creating magical reading experiences for children",
+      "copyright": "All rights reserved.",
+      "privacyPolicy": "Privacy Policy",
+      "termsOfService": "Terms of Service",
+      "contactUs": "Contact Us"
+    },
+    "languageSelector": {
+      "label": "Choose your language",
+      "placeholder": "Select language"
+    }
+  },
   "userInfoForm": {
     "title": "Tell us about yourself!",
     "subtitle": "Help us create the perfect story just for you",

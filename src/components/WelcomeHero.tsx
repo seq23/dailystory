@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Sparkles, Heart } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { BookOpen, Sparkles, Heart, Globe } from "lucide-react";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from "@/components/ui/carousel";
 import heroImage from "@/assets/hero-image-diverse-clear.jpg";
 import logoImage from "@/assets/time2read-logo.png";
@@ -14,6 +16,7 @@ interface WelcomeHeroProps {
 }
 
 export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
+  const { t, i18n } = useTranslation();
   const [api, setApi] = useState<CarouselApi>();
 
   useEffect(() => {
@@ -26,12 +29,36 @@ export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
     return () => clearInterval(autoplay);
   }, [api]);
 
+  const handleLanguageChange = (newLanguage: string) => {
+    i18n.changeLanguage(newLanguage);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-hero flex flex-col relative overflow-hidden">
-      {/* Header with Company Branding */}
+      {/* Header with Company Branding and Language Selector */}
       <header className="relative z-20 bg-black/15 backdrop-blur-sm border-b border-white/20">
         <div className="container mx-auto px-6 py-6">
-          <div className="flex items-center justify-center">
+          <div className="flex items-center justify-between">
+            {/* Language Selector */}
+            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-3 py-2 border border-white/20">
+              <Globe className="w-4 h-4 text-white" />
+              <Select value={i18n.language} onValueChange={handleLanguageChange}>
+                <SelectTrigger className="w-[140px] border-none bg-transparent text-white text-sm h-auto p-0 focus:ring-0">
+                  <SelectValue placeholder={t("welcomeHero.languageSelector.placeholder")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="en">{t("userInfoForm.languages.en")}</SelectItem>
+                  <SelectItem value="ar">{t("userInfoForm.languages.ar")}</SelectItem>
+                  <SelectItem value="es">{t("userInfoForm.languages.es")}</SelectItem>
+                  <SelectItem value="zh">{t("userInfoForm.languages.zh")}</SelectItem>
+                  <SelectItem value="hi">{t("userInfoForm.languages.hi")}</SelectItem>
+                  <SelectItem value="pt">{t("userInfoForm.languages.pt")}</SelectItem>
+                  <SelectItem value="fr">{t("userInfoForm.languages.fr")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Company Logo */}
             <div className="flex items-center gap-4 hover-scale transition-all duration-300">
               <img 
                 src={logoImage} 
@@ -50,9 +77,12 @@ export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
                     Read!
                   </h1>
                 </div>
-                <p className="text-sm text-white/80 hidden md:block">A Personalized Reading Assistant for Every Child</p>
+                <p className="text-sm text-white/80 hidden md:block">{t("welcomeHero.companyTagline")}</p>
               </div>
             </div>
+
+            {/* Spacer for balance */}
+            <div className="w-[140px]"></div>
           </div>
         </div>
       </header>
@@ -82,7 +112,7 @@ export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
                       />
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent rounded-b-2xl md:rounded-b-3xl p-3 md:p-4">
                         <p className="text-white font-inter font-medium text-xs sm:text-sm md:text-base">
-                          Time 2 Read can be used as a magical summer reading assistant on road trips!
+                          {t("welcomeHero.carousel.item1")}
                         </p>
                       </div>
                     </div>
@@ -97,7 +127,7 @@ export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
                       />
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent rounded-b-2xl md:rounded-b-3xl p-3 md:p-4">
                         <p className="text-white font-inter font-medium text-xs sm:text-sm md:text-base">
-                          Perfect for after-school reading time - make homework fun and engaging!
+                          {t("welcomeHero.carousel.item2")}
                         </p>
                       </div>
                     </div>
@@ -112,7 +142,7 @@ export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
                       />
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent rounded-b-2xl md:rounded-b-3xl p-3 md:p-4">
                         <p className="text-white font-inter font-medium text-xs sm:text-sm md:text-base">
-                          Take your stories anywhere - from playground breaks to family picnics!
+                          {t("welcomeHero.carousel.item3")}
                         </p>
                       </div>
                     </div>
@@ -127,7 +157,7 @@ export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
                       />
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent rounded-b-2xl md:rounded-b-3xl p-3 md:p-4">
                         <p className="text-white font-inter font-medium text-xs sm:text-sm md:text-base">
-                          Enhance library visits with interactive digital stories that inspire reading!
+                          {t("welcomeHero.carousel.item4")}
                         </p>
                       </div>
                     </div>
@@ -148,16 +178,15 @@ export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
 
             {/* Main Title */}
             <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-white mb-4 md:mb-6 drop-shadow-lg leading-tight">
-              Create Your Own
+              {t("welcomeHero.title")}
               <span className="block bg-gradient-to-r from-yellow-300 to-pink-300 bg-clip-text text-transparent">
-                Magical Story!
+                {t("welcomeHero.titleHighlight")}
               </span>
             </h2>
 
             {/* Subtitle */}
             <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-white/90 mb-6 md:mb-8 max-w-2xl mx-auto leading-relaxed drop-shadow-md px-2">
-              Every day, discover a new adventure written just for you! 
-              Tell us about yourself and watch your personal story come to life.
+              {t("welcomeHero.subtitle")}
             </p>
 
             {/* Features */}
@@ -165,17 +194,17 @@ export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
               <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 md:px-6 py-2 md:py-3 border border-white/30 text-sm md:text-base">
                 <BookOpen className="w-4 h-4 md:w-6 md:h-6 text-yellow-300 flex-shrink-0" />
                 <div className="text-white font-medium">
-                  20+ Min of Reading
-                  <div className="text-xs text-center">(as recommended by teachers)</div>
+                  {t("welcomeHero.features.reading.title")}
+                  <div className="text-xs text-center">{t("welcomeHero.features.reading.subtitle")}</div>
                 </div>
               </div>
               <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 md:px-6 py-2 md:py-3 border border-white/30 text-sm md:text-base">
                 <Sparkles className="w-4 h-4 md:w-6 md:h-6 text-pink-300 flex-shrink-0" />
-                <span className="text-white font-medium">Personalized Stories</span>
+                <span className="text-white font-medium">{t("welcomeHero.features.personalized")}</span>
               </div>
               <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 md:px-6 py-2 md:py-3 border border-white/30 text-sm md:text-base">
                 <Heart className="w-4 h-4 md:w-6 md:h-6 text-blue-300 flex-shrink-0" />
-                <span className="text-white font-medium">Grade Level Perfect</span>
+                <span className="text-white font-medium">{t("welcomeHero.features.gradeLevel")}</span>
               </div>
             </div>
 
@@ -187,11 +216,11 @@ export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
               className="animate-bounce-gentle hover:animate-none shadow-glow"
             >
               <BookOpen className="w-6 h-6" />
-              Start My Story Adventure!
+              {t("welcomeHero.ctaButton")}
             </Button>
 
             <p className="text-white/70 mt-4 text-sm">
-              Safe, fun, and educational stories for kids of all ages
+              {t("welcomeHero.safetyNote")}
             </p>
           </div>
         </div>
@@ -202,16 +231,16 @@ export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
         <div className="container mx-auto px-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-white/70 text-sm">
             <div className="flex flex-col items-center md:items-start">
-              <div className="font-semibold text-white/90 mb-1">Time 2 Read LLC</div>
-              <div className="text-xs">Creating magical reading experiences for children</div>
+              <div className="font-semibold text-white/90 mb-1">{t("welcomeHero.footer.companyName")}</div>
+              <div className="text-xs">{t("welcomeHero.footer.description")}</div>
             </div>
             
             <div className="flex flex-col md:flex-row items-center gap-4 text-xs">
-              <div>© {new Date().getFullYear()} Time 2 Read LLC. All rights reserved.</div>
+              <div>© {new Date().getFullYear()} {t("welcomeHero.footer.companyName")}. {t("welcomeHero.footer.copyright")}</div>
               <div className="flex gap-4">
-                <button className="hover:text-white/90 transition-colors">Privacy Policy</button>
-                <button className="hover:text-white/90 transition-colors">Terms of Service</button>
-                <a href="mailto:hello@time-2-read.com" className="hover:text-white/90 transition-colors">Contact Us</a>
+                <button className="hover:text-white/90 transition-colors">{t("welcomeHero.footer.privacyPolicy")}</button>
+                <button className="hover:text-white/90 transition-colors">{t("welcomeHero.footer.termsOfService")}</button>
+                <a href="mailto:hello@time-2-read.com" className="hover:text-white/90 transition-colors">{t("welcomeHero.footer.contactUs")}</a>
               </div>
             </div>
           </div>

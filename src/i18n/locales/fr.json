@@ -1,4 +1,38 @@
 {
+  "welcomeHero": {
+    "companyTagline": "Un Assistant de Lecture Personnalisé pour Chaque Enfant",
+    "carousel": {
+      "item1": "Time 2 Read peut être utilisé comme un assistant de lecture magique lors des voyages d'été !",
+      "item2": "Parfait pour le temps de lecture après l'école - rendez les devoirs amusants et captivants !",
+      "item3": "Emportez vos histoires partout - des pauses de récréation aux pique-niques en famille !",
+      "item4": "Améliorez les visites à la bibliothèque avec des histoires numériques interactives qui inspirent la lecture !"
+    },
+    "title": "Créez Votre Propre",
+    "titleHighlight": "Histoire Magique !",
+    "subtitle": "Chaque jour, découvrez une nouvelle aventure écrite juste pour vous ! Parlez-nous de vous et regardez votre histoire personnelle prendre vie.",
+    "features": {
+      "reading": {
+        "title": "20+ Min de Lecture",
+        "subtitle": "(comme recommandé par les enseignants)"
+      },
+      "personalized": "Histoires Personnalisées",
+      "gradeLevel": "Parfait pour votre Niveau"
+    },
+    "ctaButton": "Commencez Mon Aventure d'Histoire !",
+    "safetyNote": "Histoires sûres, amusantes et éducatives pour les enfants de tous âges",
+    "footer": {
+      "companyName": "Time 2 Read LLC",
+      "description": "Créer des expériences de lecture magiques pour les enfants",
+      "copyright": "Tous droits réservés.",
+      "privacyPolicy": "Politique de Confidentialité",
+      "termsOfService": "Conditions de Service",
+      "contactUs": "Nous Contacter"
+    },
+    "languageSelector": {
+      "label": "Choisissez votre langue",
+      "placeholder": "Sélectionner la langue"
+    }
+  },
   "userInfoForm": {
     "title": "Parlez-nous de vous !",
     "subtitle": "Aidez-nous à créer l'histoire parfaite pour vous",

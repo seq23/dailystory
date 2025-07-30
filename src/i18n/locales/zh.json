@@ -1,4 +1,38 @@
 {
+  "welcomeHero": {
+    "companyTagline": "为每个孩子提供个性化阅读助手",
+    "carousel": {
+      "item1": "Time 2 Read可以作为夏日旅行中的神奇阅读助手使用！",
+      "item2": "完美适合课后阅读时间 - 让作业变得有趣又吸引人！",
+      "item3": "随时随地带着你的故事 - 从游乐场休息到家庭野餐！",
+      "item4": "通过激发阅读兴趣的互动数字故事来增强图书馆访问体验！"
+    },
+    "title": "创造你自己的",
+    "titleHighlight": "神奇故事！",
+    "subtitle": "每天，发现一个专为你而写的新冒险！告诉我们关于你的信息，看看你的个人故事如何栩栩如生。",
+    "features": {
+      "reading": {
+        "title": "20+分钟阅读",
+        "subtitle": "（如老师推荐）"
+      },
+      "personalized": "个性化故事",
+      "gradeLevel": "完美适合年级水平"
+    },
+    "ctaButton": "开始我的故事冒险！",
+    "safetyNote": "为所有年龄段的孩子提供安全、有趣、有教育意义的故事",
+    "footer": {
+      "companyName": "Time 2 Read LLC",
+      "description": "为儿童创造神奇的阅读体验",
+      "copyright": "版权所有。",
+      "privacyPolicy": "隐私政策",
+      "termsOfService": "服务条款",
+      "contactUs": "联系我们"
+    },
+    "languageSelector": {
+      "label": "选择你的语言",
+      "placeholder": "选择语言"
+    }
+  },
   "userInfoForm": {
     "title": "告诉我们关于你的信息！",
     "subtitle": "帮助我们为你创建完美的故事",
