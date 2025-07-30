@@ -255,7 +255,7 @@ export const FloatingTimer = ({
                     variant="outline"
                     size="sm"
                     onClick={onAddTime}
-                    className="bg-white/95 backdrop-blur-sm border-2 border-green-400 text-green-700 hover:bg-green-50 shadow-lg w-11 h-11 rounded-full p-0 transition-all duration-200 hover:scale-110"
+                    className="bg-white/95 backdrop-blur-sm border-2 border-green-400 text-green-700 hover:bg-green-50 shadow-lg w-14 h-14 rounded-full p-0 transition-all duration-200 hover:scale-110"
                   >
                     <Plus className="w-5 h-5" />
                   </Button>
@@ -276,7 +276,7 @@ export const FloatingTimer = ({
                       size="sm"
                       onClick={onSubtractTime}
                       disabled={timeRemaining <= 10 * 60}
-                      className="bg-white/95 backdrop-blur-sm border-2 border-orange-400 text-orange-700 hover:bg-orange-50 shadow-lg w-11 h-11 rounded-full p-0 disabled:opacity-50 transition-all duration-200 hover:scale-110"
+                      className="bg-white/95 backdrop-blur-sm border-2 border-orange-400 text-orange-700 hover:bg-orange-50 shadow-lg w-14 h-14 rounded-full p-0 disabled:opacity-50 transition-all duration-200 hover:scale-110"
                     >
                       <Minus className="w-5 h-5" />
                     </Button>
@@ -288,8 +288,8 @@ export const FloatingTimer = ({
               </div>
             )}
 
-            {/* Add Pages Button - Bottom */}
-            <div className="absolute top-16 left-1/2 transform -translate-x-1/2 pointer-events-auto">
+            {/* Add Pages Button - Above Timer */}
+            <div className="absolute -top-20 left-1/2 transform -translate-x-1/2 pointer-events-auto">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
@@ -299,14 +299,14 @@ export const FloatingTimer = ({
                       onAddPages();
                       setShowAddPagesAlert(false);
                     }}
-                    className={`bg-white/95 backdrop-blur-sm border-2 border-blue-400 text-blue-700 hover:bg-blue-50 shadow-lg w-11 h-11 rounded-full p-0 transition-all duration-200 hover:scale-110 ${
+                    className={`bg-white/95 backdrop-blur-sm border-2 border-blue-400 text-blue-700 hover:bg-blue-50 shadow-lg w-14 h-14 rounded-full p-0 transition-all duration-200 hover:scale-110 ${
                       shouldShakeTooltip ? 'animate-bounce border-red-400 text-red-700' : ''
                     }`}
                   >
-                    <BookOpen className="w-5 h-5" />
+                    <BookOpen className="w-6 h-6" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className="bg-blue-700 text-white border-blue-500">
+                <TooltipContent side="top" className="bg-blue-700 text-white border-blue-500">
                   {shouldShakeTooltip ? "Only 1 page left! Add more?" : "Add more pages"}
                 </TooltipContent>
               </Tooltip>
