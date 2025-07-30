@@ -87,59 +87,8 @@
           "expert": {
             "title": "Lecture Expert",
             "description": "(9e-12e année : Vocabulaire expert et écriture sophistiquée)"
-    }
-  },
-  "storyDisplay": {
-    "header": {
-      "readingTime": "Temps de Lecture",
-      "progress": "Progrès",
-      "done": "✨ J'ai Fini !",
-      "newStory": "Nouvelle Histoire",
-      "home": "Accueil"
-    },
-    "controls": {
-      "speed": "Vitesse :",
-      "easier": "Plus Facile",
-      "harder": "Plus Difficile",
-      "back": "← Retour",
-      "next": "Suivant →"
-    },
-    "pages": {
-      "storyLength": "Longueur de l'Histoire :",
-      "removePages": "Supprimer des Pages",
-      "addPages": "Ajouter des Pages",
-      "page": "page",
-      "pages": "pages"
-    },
-    "alerts": {
-      "almostDone": "Presque fini !",
-      "clickToAdd": "Cliquez sur + pour ajouter plus de pages !"
-    },
-    "countdown": {
-      "timesUp": "Le Temps est Écoulé !",
-      "goingToReport": "Aller à votre rapport de lecture dans...",
-      "goNow": "Y Aller Maintenant ✨"
-    },
-    "tutorial": {
-      "step": "Tutoriel",
-      "of": "5"
-    }
-  },
-    "hearIt": "Écoutez",
-    "explain": "Expliquer",
-    "translate": "Traduire",
-    "synonym": "Synonyme",
-    "example": "Exemple",
-    "etymology": "Origine",
-    "difficulty": {
-      "beginner": "Débutant",
-      "intermediate": "Intermédiaire",
-      "advanced": "Avancé"
-    },
-    "loading": "Chargement...",
-    "playbackError": "Impossible de lire l'audio",
-    "translationError": "Traduction non disponible"
-  }
+          }
+        }
       },
       "avatar": {
         "label": "Quel avatar voulez-vous ?"
@@ -205,5 +154,57 @@
       "contentIssue": "Problème de Contenu",
       "reviewInputs": "Veuillez réviser vos entrées pour un contenu approprié."
     }
+  },
+  "storyDisplay": {
+    "header": {
+      "readingTime": "Temps de Lecture",
+      "progress": "Progrès",
+      "done": "✨ J'ai Fini !",
+      "newStory": "Nouvelle Histoire",
+      "home": "Accueil"
+    },
+    "controls": {
+      "speed": "Vitesse :",
+      "easier": "Plus Facile",
+      "harder": "Plus Difficile",
+      "back": "← Retour",
+      "next": "Suivant →"
+    },
+    "pages": {
+      "storyLength": "Longueur de l'Histoire :",
+      "removePages": "Supprimer des Pages",
+      "addPages": "Ajouter des Pages",
+      "page": "page",
+      "pages": "pages"
+    },
+    "alerts": {
+      "almostDone": "Presque fini !",
+      "clickToAdd": "Cliquez sur + pour ajouter plus de pages !"
+    },
+    "countdown": {
+      "timesUp": "Le Temps est Écoulé !",
+      "goingToReport": "Aller à votre rapport de lecture dans...",
+      "goNow": "Y Aller Maintenant ✨"
+    },
+    "tutorial": {
+      "step": "Tutoriel",
+      "of": "de"
+    }
+  },
+  "interactiveWord": {
+    "hearIt": "Écoutez",
+    "explain": "Expliquer",
+    "translate": "Traduire",
+    "synonym": "Synonyme",
+    "example": "Exemple",
+    "etymology": "Origine",
+    "difficulty": {
+      "beginner": "Débutant",
+      "intermediate": "Intermédiaire",
+      "advanced": "Avancé"
+    },
+    "loading": "Chargement...",
+    "playbackError": "Impossible de lire l'audio",
+    "translationError": "Traduction non disponible"
   }
 }
