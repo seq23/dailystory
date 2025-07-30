@@ -705,8 +705,66 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       {/* Main Content Container - Increased reading area */}
       <div className="flex-1 max-w-6xl mx-auto px-4 py-6 pt-20 pb-32">
         <div className="grid lg:grid-cols-2 gap-8 items-start">
-          {/* Story Content - Larger area */}
-          <div className="order-2 lg:order-1">
+          {/* Illustration - Now on the left */}
+          <div className="order-1 lg:order-1">
+            <Card className="bg-white/95 backdrop-blur-sm shadow-2xl rounded-3xl border-2 border-purple-200/50 overflow-hidden max-h-[600px]">
+              <CardContent className="p-6">
+                <div className="relative w-full h-[500px] bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl overflow-hidden flex items-center justify-center">
+                  {currentIllustration ? (
+                    <img 
+                      src={customIllustrations.get(currentParagraph) || currentIllustration}
+                      alt="Story illustration"
+                      className="w-full h-full object-cover rounded-2xl"
+                    />
+                  ) : (
+                    <div className="text-center">
+                      <div className="text-6xl mb-4">📖</div>
+                      <p className="text-purple-600 font-medium">Your story illustration is loading...</p>
+                    </div>
+                  )}
+                  
+                  {/* Image Generation Status */}
+                  {isGeneratingImage && (
+                    <div className="absolute top-4 right-4">
+                      <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg px-3 py-2 flex items-center space-x-2">
+                        <div className="w-4 h-4 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+                        <span className="text-sm font-medium text-gray-700">Creating image...</span>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Custom Image Generation Button */}
+                  <div className="absolute bottom-4 right-4">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            onClick={() => generateCustomIllustration(currentParagraph, currentStory)}
+                            disabled={isGeneratingImage}
+                            variant="outline"
+                            size="sm"
+                            className="bg-white/90 backdrop-blur-sm border-2 border-purple-300 text-purple-700 hover:bg-purple-50 shadow-lg rounded-full w-12 h-12 p-0"
+                          >
+                            {isGeneratingImage ? (
+                              <div className="w-4 h-4 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+                            ) : (
+                              <Wand2 className="w-4 h-4" />
+                            )}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="left" className="bg-purple-700 text-white border-purple-500">
+                          Generate custom image for this page
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          
+          {/* Story Content - Now on the right */}
+          <div className="order-2 lg:order-2">
             <Card className="bg-white/95 backdrop-blur-sm shadow-2xl rounded-3xl border-2 border-purple-200/50 overflow-hidden min-h-[600px]">
               <CardContent className="p-8">
                 {/* Story Text */}
@@ -866,54 +924,12 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                       </div>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Illustration - Constrained to reading area */}
-          <div className="order-1 lg:order-2">
-            <Card className="bg-white/95 backdrop-blur-sm shadow-2xl rounded-3xl border-2 border-purple-200/50 overflow-hidden max-h-[600px]">
-              <CardContent className="p-6">
-                <div className="relative w-full h-[500px] bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl overflow-hidden flex items-center justify-center">
-                  {currentIllustration ? (
-                    <img 
-                      src={customIllustrations.get(currentParagraph) || currentIllustration}
-                      alt="Story illustration"
-                      className="w-full h-full object-cover rounded-2xl"
-                    />
-                  ) : (
-                    <div className="text-center">
-                      <div className="text-6xl mb-4">📖</div>
-                      <p className="text-purple-600 font-medium">Your story illustration is loading...</p>
-                    </div>
-                  )}
-                  
-                  {/* Image Generation Status */}
-                  {isGeneratingImage && (
-                    <div className="absolute top-4 right-4">
-                      <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg px-3 py-2 flex items-center space-x-2">
-                        <div className="w-4 h-4 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
-                        <span className="text-sm font-medium text-gray-700">Creating image...</span>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Chapter Badge */}
-                  <div className="absolute bottom-4 left-4">
-                    <div className="bg-white/95 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg">
-                      <div className="flex items-center space-x-2">
-                        <Sparkles className="w-4 h-4 text-purple-600" />
-                        <span className="text-sm font-bold text-purple-800">Chapter {currentParagraph + 1}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
+                 </div>
+               </CardContent>
+             </Card>
+           </div>
+         </div>
+       </div>
 
       {/* Floating Timer */}
       <FloatingTimer 
