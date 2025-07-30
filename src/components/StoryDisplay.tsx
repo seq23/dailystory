@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { BookOpen, Home, RotateCcw, Volume2, VolumeX, TrendingUp, TrendingDown, Plus, Minus, Star, Heart, Sparkles, Wand2, Play, Pause, Timer, Mic, MicOff } from "lucide-react";
+import { FloatingTimer } from "./FloatingTimer";
 import type { UserInfo } from "./UserInfoForm";
 import illustration1 from "@/assets/story-illustration-1.jpg";
 import illustration2 from "@/assets/story-illustration-2.jpg";
@@ -840,63 +841,17 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       </main>
 
       {/* Floating Timer */}
-      <div className="fixed bottom-6 left-6 z-50">
-        <Card className="bg-white/95 backdrop-blur-sm shadow-2xl rounded-2xl p-4 border-0">
-          <div className="flex items-center space-x-3">
-            {/* Timer Display */}
-            <div className="relative">
-              <div className="w-14 h-14 bg-gradient-to-br from-green-400 to-blue-500 rounded-xl flex items-center justify-center shadow-lg">
-                <div className="text-center">
-                  <div className="text-sm font-bold text-white">
-                    {formatTime(timeRemaining)}
-                  </div>
-                </div>
-              </div>
-              <div className={`absolute -top-1 -right-1 w-4 h-4 rounded-full ${
-                isReading ? 'bg-green-400 animate-pulse' : 'bg-red-400'
-              }`} />
-            </div>
-            
-            {/* Controls */}
-            <div className="flex flex-col space-y-1">
-              <Button
-                onClick={() => setIsReading(!isReading)}
-                size="sm"
-                className={`rounded-full text-xs px-3 ${
-                  isReading ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'
-                }`}
-              >
-                {isReading ? <Pause className="w-3 h-3 mr-1" /> : <Play className="w-3 h-3 mr-1" />}
-                {isReading ? "Pause" : "Start"}
-              </Button>
-              
-              {/* Time Controls */}
-              <div className="flex space-x-1">
-                <Button
-                  onClick={handleReduceTime}
-                  variant="outline"
-                  size="sm"
-                  className="rounded-full text-xs px-2"
-                  disabled={timeRemaining <= 60}
-                >
-                  <Minus className="w-3 h-3" />
-                  -10m
-                </Button>
-                
-                <Button
-                  onClick={handleAddTime}
-                  variant="outline"
-                  size="sm"
-                  className="rounded-full text-xs px-2"
-                >
-                  <Plus className="w-3 h-3" />
-                  +10m
-                </Button>
-              </div>
-            </div>
-          </div>
-        </Card>
-      </div>
+      <FloatingTimer 
+        timeRemaining={timeRemaining}
+        isReading={isReading}
+        onToggleReading={() => setIsReading(!isReading)}
+        onAddTime={handleAddTime}
+        onSubtractTime={handleReduceTime}
+        onAddPages={handleAddPages}
+        pagesRemaining={totalPages - currentParagraph - 1}
+        currentParagraph={currentParagraph}
+        onSessionEnded={handleFinishSession}
+      />
 
       {/* Floating Reading Stats - LEFT SIDE */}
       <div className="fixed top-32 left-4 z-40">
