@@ -170,11 +170,70 @@ export class RunwareService {
 // Cache for generated images
 export const generatedImageCache = new Map<string, string>();
 
-// Function to generate child-friendly illustration prompts
+// Function to generate child-friendly illustration prompts with cultural competency
 export const createChildFriendlyPrompt = (storyText: string, userInfo?: any, pageIndex = 0): string => {
   // Sanitize the input prompt for security (basic sanitization to avoid import issues)
   const sanitizedStoryText = storyText.replace(/[<>\"'&]/g, '').trim();
   const lowerText = sanitizedStoryText.toLowerCase();
+  
+  // Cultural competency based on native language
+  const getCulturalElements = (nativeLanguage: string) => {
+    const culturalSettings = {
+      'ar': {
+        architecture: 'traditional Middle Eastern architecture with domes and arches',
+        clothing: 'traditional and modern Middle Eastern clothing',
+        landscape: 'desert landscapes with oases, or modern Middle Eastern cities',
+        family: 'diverse Middle Eastern family structures',
+        food: 'traditional Middle Eastern cuisine'
+      },
+      'es': {
+        architecture: 'colorful Latin American or Spanish colonial architecture',
+        clothing: 'vibrant Latin American traditional and modern clothing',
+        landscape: 'tropical landscapes, mountains, or vibrant Latino neighborhoods',
+        family: 'diverse Latino family structures',
+        food: 'traditional Latin American cuisine'
+      },
+      'zh': {
+        architecture: 'traditional Chinese architecture with pagodas and modern Asian cities',
+        clothing: 'traditional and modern East Asian clothing',
+        landscape: 'Asian gardens, mountains, or modern Asian cities',
+        family: 'diverse East Asian family structures',
+        food: 'traditional East Asian cuisine'
+      },
+      'hi': {
+        architecture: 'traditional Indian architecture with colorful buildings',
+        clothing: 'vibrant traditional and modern South Asian clothing',
+        landscape: 'diverse Indian landscapes from mountains to cities',
+        family: 'diverse South Asian family structures',
+        food: 'traditional South Asian cuisine'
+      },
+      'pt': {
+        architecture: 'Portuguese or Brazilian colonial and modern architecture',
+        clothing: 'vibrant Brazilian and Portuguese traditional and modern clothing',
+        landscape: 'tropical Brazilian landscapes or Portuguese countryside',
+        family: 'diverse Brazilian and Portuguese family structures',
+        food: 'traditional Brazilian and Portuguese cuisine'
+      },
+      'fr': {
+        architecture: 'classic French architecture or diverse francophone settings',
+        clothing: 'elegant French and francophone traditional and modern clothing',
+        landscape: 'French countryside, African landscapes, or diverse francophone settings',
+        family: 'diverse francophone family structures',
+        food: 'traditional French and francophone cuisine'
+      },
+      'en': {
+        architecture: 'diverse architectural styles representing global cultures',
+        clothing: 'diverse cultural clothing from around the world',
+        landscape: 'diverse global landscapes and multicultural neighborhoods',
+        family: 'diverse multicultural family structures',
+        food: 'diverse international cuisine'
+      }
+    };
+    
+    return culturalSettings[nativeLanguage as keyof typeof culturalSettings] || culturalSettings['en'];
+  };
+
+  const culturalElements = getCulturalElements(userInfo?.nativeLanguage || 'en');
   
   // Extract key elements directly from the story text
   let mainScene = "";
@@ -338,12 +397,12 @@ export const createChildFriendlyPrompt = (storyText: string, userInfo?: any, pag
     prompt += "is featured in the story ";
   }
   
-  // Add setting with story context
+  // Add culturally appropriate setting with story context
   if (setting) {
     prompt += "in " + setting + " ";
   } else if (storyWords.length > 5) {
-    // Try to infer setting from story if not explicitly found
-    prompt += "in the setting described in the story ";
+    // Use cultural landscape if no specific setting found
+    prompt += `in ${culturalElements.landscape} `;
   } else {
     prompt += "in a magical, safe place ";
   }
@@ -357,6 +416,17 @@ export const createChildFriendlyPrompt = (storyText: string, userInfo?: any, pag
   if (storyContext.length > 20) {
     const relevantWords = storyWords.slice(0, 8).join(' ');
     prompt += `based on this story context: "${relevantWords}..." `;
+  }
+  
+  // Add cultural elements based on user's background
+  if (userInfo?.nativeLanguage && userInfo.nativeLanguage !== 'en') {
+    prompt += `incorporating ${culturalElements.architecture}, `;
+    prompt += `featuring ${culturalElements.clothing}, `;
+    
+    // Add cultural food context if relevant
+    if (lowerText.includes('food') || lowerText.includes('eat') || lowerText.includes('meal')) {
+      prompt += `with ${culturalElements.food}, `;
+    }
   }
   
   // Add ALL user favorites to enhance personalization
@@ -373,7 +443,7 @@ export const createChildFriendlyPrompt = (storyText: string, userInfo?: any, pag
     
     // Add hobbies if relevant to the scene
     if (userInfo.hobbies && (lowerText.includes('play') || lowerText.includes('fun') || lowerText.includes('activity'))) {
-      const hobbiesList = userInfo.hobbies.split(',').map(h => h.trim()).slice(0, 2);
+      const hobbiesList = userInfo.hobbies.split(',').map((h: string) => h.trim()).slice(0, 2);
       prompt += `incorporating ${hobbiesList.join(' and ')} `;
     }
     
@@ -386,44 +456,50 @@ export const createChildFriendlyPrompt = (storyText: string, userInfo?: any, pag
     }
   }
   
-  // Diverse art style options that appeal to both boys and girls
+  // Culturally diverse art style options
   const artStyles = [
-    "realistic children's photography style with natural lighting",
-    "vibrant digital illustration with bold colors", 
-    "soft watercolor painting style",
-    "modern cartoon illustration with clean lines",
-    "realistic digital art with photographic quality",
-    "colorful storybook illustration",
-    "contemporary children's book art style",
-    "bright and engaging realistic style"
+    "realistic children's book illustration with natural lighting",
+    "vibrant digital illustration with rich cultural details", 
+    "warm watercolor painting style with cultural authenticity",
+    "modern storybook illustration with diverse representation",
+    "detailed digital art with photographic quality and cultural accuracy",
+    "colorful multicultural children's book illustration",
+    "contemporary diverse children's art style",
+    "bright engaging illustration representing global cultures"
   ];
   
-  // Choose art style based on story content and user preferences
+  // Choose art style based on story content and cultural background
   let selectedStyle = artStyles[pageIndex % artStyles.length] || artStyles[0];
   
-  // Color palette variety - not just pastels
+  // Color palette that respects cultural aesthetics
   const colorPalettes = [
-    "vibrant and energetic colors",
-    "warm earth tones and natural colors", 
-    "bright primary colors",
-    "soft pastels",
-    "rich jewel tones",
-    "cool blues and greens",
-    "warm oranges and yellows",
-    "balanced natural color palette"
+    "vibrant culturally authentic colors",
+    "warm earth tones reflecting natural diversity", 
+    "bright respectful primary colors",
+    "soft harmonious pastels",
+    "rich culturally inspired jewel tones",
+    "cool blues and greens with cultural accents",
+    "warm oranges and yellows with cultural depth",
+    "balanced multicultural color palette"
   ];
   
-  // Select color palette that incorporates user's favorite color if available
+  // Select color palette that incorporates user's favorite color and cultural background
   let selectedColors = colorPalettes[Math.floor(Math.random() * colorPalettes.length)];
   if (userInfo?.favoriteColor) {
-    selectedColors = `beautiful ${userInfo.favoriteColor.toLowerCase()} tones with complementary colors`;
+    selectedColors = `beautiful ${userInfo.favoriteColor.toLowerCase()} tones with culturally authentic complementary colors`;
   }
   
-  // Add mood, style, and universal appeal
-  prompt += `with a ${mood} atmosphere, ${selectedColors}, ${selectedStyle}, appealing to all children regardless of gender, diverse and inclusive, safe and wholesome content, high quality professional artwork`;
+  // Add mood, style, cultural sensitivity, and universal appeal
+  prompt += `with a ${mood} atmosphere, ${selectedColors}, ${selectedStyle}, `;
+  prompt += `culturally respectful and authentic representation, `;
+  prompt += `diverse and inclusive characters, appealing to all children regardless of background, `;
+  prompt += `safe and wholesome content, high quality professional children's book artwork, `;
+  prompt += `accurate cultural representation when applicable, positive multicultural themes`;
   
-   // Final security validation of the generated prompt (basic sanitization)
-   const finalPrompt = prompt.replace(/[<>\"'&]/g, '').trim();
-   
-   return finalPrompt;
- };
+  // Final security validation of the generated prompt
+  const finalPrompt = prompt.replace(/[<>\"'&]/g, '').trim();
+  
+  console.log('Generated culturally competent prompt:', finalPrompt);
+  
+  return finalPrompt;
+};

@@ -425,13 +425,25 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
     try {
       setIsGeneratingImage(true);
       
-      const prompt = createChildFriendlyPrompt(storyText, userInfo);
+      // Add 1-2 second delay as requested
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Create culturally competent prompt
+      const prompt = createChildFriendlyPrompt(storyText, userInfo, pageIndex);
+      
+      console.log('Generating image with prompt:', prompt);
+      
       const result = await runwareService.generateImage({
         positivePrompt: prompt,
-        width: 512,
-        height: 512,
-        numberResults: 1
+        width: 768,
+        height: 768,
+        numberResults: 1,
+        outputFormat: "WEBP",
+        CFGScale: 7,
+        scheduler: "FlowMatchEulerDiscreteScheduler"
       });
+      
+      console.log('Image generation result:', result);
       
       if (result?.imageURL) {
         setCustomIllustrations(prev => new Map(prev.set(pageIndex, result.imageURL)));
@@ -439,12 +451,19 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         if (pageIndex === currentParagraph) {
           setCurrentIllustration(result.imageURL);
         }
+        
+        toast({
+          title: "Custom Illustration Generated! 🎨",
+          description: "A unique image was created for this page.",
+        });
+      } else {
+        throw new Error('No image URL received from service');
       }
     } catch (error) {
       console.error('Error generating illustration:', error);
       toast({
         title: "Illustration Error",
-        description: "Unable to generate custom illustration.",
+        description: "Unable to generate custom illustration. Please try again.",
         variant: "destructive"
       });
     } finally {
