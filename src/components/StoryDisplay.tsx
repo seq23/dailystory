@@ -466,8 +466,8 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
   };
 
   const handleAddTime = () => {
-    // Add 10 minutes (600 seconds), not 10 seconds
-    setTimeRemaining(prev => prev + 600);
+    // Add 10 minutes (600 seconds), but don't go over 30 minutes (1800 seconds)
+    setTimeRemaining(prev => Math.min(prev + 600, 1800));
   };
 
   const handleReduceTime = () => {
