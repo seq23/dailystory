@@ -1,0 +1,101 @@
+{
+  "welcome": {
+    "title": "¡Bienvenido a Time 2 Read!",
+    "subtitle": "Crea historias personalizadas que ayudan a los niños a descubrir la alegría de leer",
+    "description": "¡Elige tu aventura de lectura y deja que la IA cree historias mágicas solo para ti!",
+    "getStarted": "Comenzar",
+    "features": {
+      "personalized": "Historias Personalizadas",
+      "personalizedDesc": "Cada historia es única y adaptada a los intereses de tu hijo",
+      "interactive": "Lectura Interactiva",
+      "interactiveDesc": "Haz clic en las palabras para escuchar pronunciación y explicaciones",
+      "adaptive": "Dificultad Adaptativa",
+      "adaptiveDesc": "Las historias se ajustan automáticamente al nivel de lectura de tu hijo"
+    },
+    "footer": {
+      "privacy": "Política de Privacidad",
+      "terms": "Términos de Servicio",
+      "contact": "Contáctanos"
+    }
+  },
+  "form": {
+    "title": "¡Cuéntanos sobre ti!",
+    "subtitle": "Ayúdanos a crear la historia perfecta solo para ti",
+    "sections": {
+      "aboutYou": "Sobre Ti",
+      "favorites": "Tus Favoritos",
+      "additional": "Información Adicional"
+    },
+    "fields": {
+      "name": "¿Cuál es tu primer nombre?",
+      "namePlaceholder": "Escribe tu nombre aquí...",
+      "age": "¿Cuántos años tienes?",
+      "agePlaceholder": "Elige tu edad",
+      "grade": "¿En qué grado estás?",
+      "gradePlaceholder": "Selecciona tu grado",
+      "readingLevel": "¿Qué nivel de lectura te parece adecuado?",
+      "readingPlaceholder": "Elige tu nivel de lectura",
+      "avatar": "¿Qué avatar quieres?",
+      "favoriteColor": "¿Cuál es tu color o tono favorito?",
+      "favoriteAnimal": "¿Cuál es tu animal favorito?",
+      "animalPlaceholder": "Escribe animales y presiona Enter...",
+      "favoriteFood": "¿Cuál es tu comida favorita?",
+      "foodPlaceholder": "Escribe comidas y presiona Enter...",
+      "hobbies": "¿Qué te gusta hacer por diversión?",
+      "hobbiesPlaceholder": "Escribe actividades y presiona Enter...",
+      "specialRequest": "¿Hay algo especial que quieras incluir en tu historia?",
+      "specialPlaceholder": "Escribe elementos especiales de la historia y presiona Enter...",
+      "storyLanguage": "¿En qué idioma te gustaría tu historia?",
+      "storyLanguagePlaceholder": "Selecciona el idioma de la historia",
+      "learningMode": "¿Estás aprendiendo este idioma?",
+      "learningModePlaceholder": "Modo de aprendizaje"
+    },
+    "readingLevels": {
+      "easy": "Lectura Fácil",
+      "easyDesc": "(K-1er grado: Palabras simples y oraciones cortas)",
+      "medium": "Lectura Intermedia",
+      "mediumDesc": "(2do-4to grado: Vocabulario moderado y oraciones)",
+      "hard": "Lectura Avanzada",
+      "hardDesc": "(5to-8vo grado: Vocabulario avanzado y oraciones complejas)",
+      "expert": "Lectura Experta",
+      "expertDesc": "(9no-12vo grado: Vocabulario experto y escritura sofisticada)"
+    },
+    "learningOptions": {
+      "no": "No, soy fluido",
+      "yes": "Sí, estoy aprendiendo"
+    },
+    "grades": {
+      "preK": "Pre-K",
+      "k": "Jardín de Infantes",
+      "1st": "1er Grado",
+      "2nd": "2do Grado",
+      "3rd": "3er Grado",
+      "4th": "4to Grado",
+      "5th": "5to Grado",
+      "6th": "6to Grado",
+      "7th": "7mo Grado",
+      "8th": "8vo Grado",
+      "9th": "9no Grado",
+      "10th": "10mo Grado",
+      "11th": "11vo Grado"
+    },
+    "ages": {
+      "years": "{{count}} años"
+    },
+    "buttons": {
+      "back": "Volver al Inicio",
+      "create": "¡Crear Mi Historia!"
+    },
+    "optional": "(Opcional)"
+  },
+  "languages": {
+    "English": "Inglés (English)",
+    "Spanish": "Español",
+    "French": "Francés (Français)",
+    "German": "Alemán (Deutsch)",
+    "Italian": "Italiano",
+    "Portuguese": "Portugués (Português)",
+    "Chinese": "Chino (中文)",
+    "Japanese": "Japonés (日本語)"
+  }
+}

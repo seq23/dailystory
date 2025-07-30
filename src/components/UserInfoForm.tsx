@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -40,6 +41,7 @@ interface UserInfoFormProps {
 
 export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<UserInfo>({
     name: "",
     age: 6,
@@ -166,10 +168,10 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
             </div>
           </div>
           <h2 className="text-2xl md:text-4xl font-bold text-foreground mb-2">
-            Tell us about yourself!
+            {t('form.title')}
           </h2>
           <p className="text-muted-foreground text-base md:text-lg px-2">
-            Help us create the perfect story just for you
+            {t('form.subtitle')}
           </p>
         </div>
 
@@ -179,34 +181,34 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
           <div className="space-y-4 md:space-y-6">
             <h3 className="text-xl md:text-2xl font-semibold text-foreground flex items-center gap-2">
               <User className="w-5 h-5 md:w-6 md:h-6 text-primary" />
-              About You
+              {t('form.sections.aboutYou')}
             </h3>
             
             <div className="space-y-3 md:space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-base md:text-lg font-semibold text-foreground">
-                  What is your first name?
+                  {t('form.fields.name')}
                 </Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => handleInputChange("name", e.target.value)}
-                  placeholder="Type your name here..."
+                  placeholder={t('form.fields.namePlaceholder')}
                   className="text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-primary/20 focus:border-primary/50"
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="age" className="text-base md:text-lg font-semibold text-foreground">
-                  How old are you?
+                  {t('form.fields.age')}
                 </Label>
                 <Select value={formData.age.toString()} onValueChange={(value) => handleInputChange("age", parseInt(value))}>
                   <SelectTrigger className="text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-primary/20">
-                    <SelectValue placeholder="Pick your age" />
+                    <SelectValue placeholder={t('form.fields.agePlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
                     {[3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].map(age => (
-                      <SelectItem key={age} value={age.toString()}>{age} years old</SelectItem>
+                      <SelectItem key={age} value={age.toString()}>{t('form.ages.years', { count: age })}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -214,61 +216,61 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
 
               <div className="space-y-2">
                 <Label htmlFor="grade" className="text-base md:text-lg font-semibold text-foreground">
-                  What grade are you in?
+                  {t('form.fields.grade')}
                 </Label>
                 <Select value={formData.grade} onValueChange={(value) => handleInputChange("grade", value)}>
                   <SelectTrigger className="text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-primary/20">
-                    <SelectValue placeholder="Select your grade" />
+                    <SelectValue placeholder={t('form.fields.gradePlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="PreK">Pre-K</SelectItem>
-                    <SelectItem value="K">Kindergarten</SelectItem>
-                    <SelectItem value="1st">1st Grade</SelectItem>
-                    <SelectItem value="2nd">2nd Grade</SelectItem>
-                    <SelectItem value="3rd">3rd Grade</SelectItem>
-                    <SelectItem value="4th">4th Grade</SelectItem>
-                    <SelectItem value="5th">5th Grade</SelectItem>
-                    <SelectItem value="6th">6th Grade</SelectItem>
-                    <SelectItem value="7th">7th Grade</SelectItem>
-                    <SelectItem value="8th">8th Grade</SelectItem>
-                    <SelectItem value="9th">9th Grade</SelectItem>
-                    <SelectItem value="10th">10th Grade</SelectItem>
-                    <SelectItem value="11th">11th Grade</SelectItem>
+                    <SelectItem value="PreK">{t('form.grades.preK')}</SelectItem>
+                    <SelectItem value="K">{t('form.grades.k')}</SelectItem>
+                    <SelectItem value="1st">{t('form.grades.1st')}</SelectItem>
+                    <SelectItem value="2nd">{t('form.grades.2nd')}</SelectItem>
+                    <SelectItem value="3rd">{t('form.grades.3rd')}</SelectItem>
+                    <SelectItem value="4th">{t('form.grades.4th')}</SelectItem>
+                    <SelectItem value="5th">{t('form.grades.5th')}</SelectItem>
+                    <SelectItem value="6th">{t('form.grades.6th')}</SelectItem>
+                    <SelectItem value="7th">{t('form.grades.7th')}</SelectItem>
+                    <SelectItem value="8th">{t('form.grades.8th')}</SelectItem>
+                    <SelectItem value="9th">{t('form.grades.9th')}</SelectItem>
+                    <SelectItem value="10th">{t('form.grades.10th')}</SelectItem>
+                    <SelectItem value="11th">{t('form.grades.11th')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="readingAbility" className="text-base md:text-lg font-semibold text-foreground">
-                  What reading level feels right for you?
+                  {t('form.fields.readingLevel')}
                 </Label>
                 <Select value={formData.readingAbility} onValueChange={(value) => handleInputChange("readingAbility", value)}>
-                  <SelectTrigger className="text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-primary/20 bg-white dark:bg-gray-800 z-50">
-                    <SelectValue placeholder="Choose your reading level" />
+                  <SelectTrigger className="text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-primary/20 bg-background z-50">
+                    <SelectValue placeholder={t('form.fields.readingPlaceholder')} />
                   </SelectTrigger>
-                  <SelectContent className="bg-white dark:bg-gray-800 border-2 border-primary/20 rounded-xl md:rounded-2xl shadow-lg z-50">
+                  <SelectContent className="bg-background border-2 border-primary/20 rounded-xl md:rounded-2xl shadow-lg z-50">
                     <SelectItem value="easy" className="text-sm md:text-lg p-2 md:p-3 hover:bg-primary/10">
                       <div className="flex flex-col items-start text-left">
-                        <span className="font-semibold text-green-600">Easy Reading</span>
-                        <span className="text-xs text-muted-foreground hidden sm:block">(K-1st grade: Simple words & short sentences)</span>
+                        <span className="font-semibold text-green-600">{t('form.readingLevels.easy')}</span>
+                        <span className="text-xs text-muted-foreground hidden sm:block">{t('form.readingLevels.easyDesc')}</span>
                       </div>
                     </SelectItem>
                     <SelectItem value="medium" className="text-sm md:text-lg p-2 md:p-3 hover:bg-primary/10">
                       <div className="flex flex-col items-start text-left">
-                        <span className="font-semibold text-yellow-600">Medium Reading</span>
-                        <span className="text-xs text-muted-foreground hidden sm:block">(2nd-4th grade: Moderate vocabulary & sentences)</span>
+                        <span className="font-semibold text-yellow-600">{t('form.readingLevels.medium')}</span>
+                        <span className="text-xs text-muted-foreground hidden sm:block">{t('form.readingLevels.mediumDesc')}</span>
                       </div>
                     </SelectItem>
                     <SelectItem value="hard" className="text-sm md:text-lg p-2 md:p-3 hover:bg-primary/10">
                       <div className="flex flex-col items-start text-left">
-                        <span className="font-semibold text-orange-600">Advanced Reading</span>
-                        <span className="text-xs text-muted-foreground hidden sm:block">(5th-8th grade: Advanced vocabulary & complex sentences)</span>
+                        <span className="font-semibold text-orange-600">{t('form.readingLevels.hard')}</span>
+                        <span className="text-xs text-muted-foreground hidden sm:block">{t('form.readingLevels.hardDesc')}</span>
                       </div>
                     </SelectItem>
                     <SelectItem value="expert" className="text-sm md:text-lg p-2 md:p-3 hover:bg-primary/10">
                       <div className="flex flex-col items-start text-left">
-                        <span className="font-semibold text-red-600">Expert Reading</span>
-                        <span className="text-xs text-muted-foreground hidden sm:block">(9th-12th grade: Expert vocabulary & sophisticated writing)</span>
+                        <span className="font-semibold text-red-600">{t('form.readingLevels.expert')}</span>
+                        <span className="text-xs text-muted-foreground hidden sm:block">{t('form.readingLevels.expertDesc')}</span>
                       </div>
                     </SelectItem>
                   </SelectContent>
@@ -277,7 +279,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
 
               <div className="space-y-2">
                 <Label htmlFor="avatar" className="text-base md:text-lg font-semibold text-foreground">
-                  Which avatar do you want?
+                  {t('form.fields.avatar')}
                 </Label>
                 <AvatarPicker
                   value={formData.avatar}
@@ -291,14 +293,14 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
           <div className="space-y-4 md:space-y-6">
             <h3 className="text-xl md:text-2xl font-semibold text-foreground flex items-center gap-2">
               <Heart className="w-5 h-5 md:w-6 md:h-6 text-primary" />
-              Your Favorites
+              {t('form.sections.favorites')}
             </h3>
             
             <div className="space-y-3 md:space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="favoriteColor" className="text-base md:text-lg font-semibold text-foreground">
-                  What is your favorite color or shade?
-                  <span className="text-xs md:text-sm text-muted-foreground ml-2">(Optional)</span>
+                  {t('form.fields.favoriteColor')}
+                  <span className="text-xs md:text-sm text-muted-foreground ml-2">{t('form.optional')}</span>
                 </Label>
                 <ColorPicker
                   value={formData.favoriteColor}
@@ -308,39 +310,39 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
 
               <div className="space-y-2">
                 <Label htmlFor="favoriteAnimal" className="text-base md:text-lg font-semibold text-foreground">
-                  What's your favorite animal?
-                  <span className="text-xs md:text-sm text-muted-foreground ml-2">(Optional)</span>
+                  {t('form.fields.favoriteAnimal')}
+                  <span className="text-xs md:text-sm text-muted-foreground ml-2">{t('form.optional')}</span>
                 </Label>
                 <TagInput
                   value={formData.favoriteAnimal}
                   onChange={(value) => handleInputChange("favoriteAnimal", value)}
-                  placeholder="Type animals and press Enter..."
+                  placeholder={t('form.fields.animalPlaceholder')}
                   className="text-base md:text-lg min-h-[50px] md:min-h-[60px]"
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="favoriteFood" className="text-base md:text-lg font-semibold text-foreground">
-                  What's your favorite food?
-                  <span className="text-xs md:text-sm text-muted-foreground ml-2">(Optional)</span>
+                  {t('form.fields.favoriteFood')}
+                  <span className="text-xs md:text-sm text-muted-foreground ml-2">{t('form.optional')}</span>
                 </Label>
                 <TagInput
                   value={formData.favoriteFood}
                   onChange={(value) => handleInputChange("favoriteFood", value)}
-                  placeholder="Type foods and press Enter..."
+                  placeholder={t('form.fields.foodPlaceholder')}
                   className="text-base md:text-lg min-h-[50px] md:min-h-[60px]"
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="hobbies" className="text-base md:text-lg font-semibold text-foreground">
-                  What do you like to do for fun?
-                  <span className="text-xs md:text-sm text-muted-foreground ml-2">(Optional)</span>
+                  {t('form.fields.hobbies')}
+                  <span className="text-xs md:text-sm text-muted-foreground ml-2">{t('form.optional')}</span>
                 </Label>
                 <TagInput
                   value={formData.hobbies}
                   onChange={(value) => handleInputChange("hobbies", value)}
-                  placeholder="Type activities and press Enter..."
+                  placeholder={t('form.fields.hobbiesPlaceholder')}
                   className="text-base md:text-lg min-h-[50px] md:min-h-[60px]"
                 />
               </div>
@@ -351,18 +353,18 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
           <div className="space-y-4 md:space-y-6 lg:col-span-2">
             <h3 className="text-xl md:text-2xl font-semibold text-foreground flex items-center gap-2">
               <Star className="w-5 h-5 md:w-6 md:h-6 text-primary" />
-              Additional Info
+              {t('form.sections.additional')}
             </h3>
             
               <div className="space-y-2">
                 <Label htmlFor="specialRequest" className="text-base md:text-lg font-semibold text-foreground">
-                  Tell us if there is anything special you want to include in your story?
-                  <span className="text-xs md:text-sm text-muted-foreground ml-2">(Optional)</span>
+                  {t('form.fields.specialRequest')}
+                  <span className="text-xs md:text-sm text-muted-foreground ml-2">{t('form.optional')}</span>
                 </Label>
                 <TagInput
                   value={formData.specialRequest}
                   onChange={(value) => handleInputChange("specialRequest", value)}
-                  placeholder="Type special story elements and press Enter..."
+                  placeholder={t('form.fields.specialPlaceholder')}
                   className="text-base md:text-lg min-h-[80px] md:min-h-[100px]"
                 />
               </div>
@@ -370,41 +372,41 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="storyLanguage" className="text-base md:text-lg font-semibold text-foreground">
-                    What language would you like your story in?
-                    <span className="text-xs md:text-sm text-muted-foreground ml-2">(Optional)</span>
+                    {t('form.fields.storyLanguage')}
+                    <span className="text-xs md:text-sm text-muted-foreground ml-2">{t('form.optional')}</span>
                   </Label>
                   <Select value={formData.storyLanguage} onValueChange={(value) => handleInputChange("storyLanguage", value)}>
                     <SelectTrigger className="text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-primary/20">
-                      <SelectValue placeholder="Select story language" />
+                      <SelectValue placeholder={t('form.fields.storyLanguagePlaceholder')} />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="English">English</SelectItem>
-                      <SelectItem value="Spanish">Spanish (Español)</SelectItem>
-                      <SelectItem value="French">French (Français)</SelectItem>
-                      <SelectItem value="German">German (Deutsch)</SelectItem>
-                      <SelectItem value="Italian">Italian (Italiano)</SelectItem>
-                      <SelectItem value="Portuguese">Portuguese (Português)</SelectItem>
-                      <SelectItem value="Chinese">Chinese (中文)</SelectItem>
-                      <SelectItem value="Japanese">Japanese (日本語)</SelectItem>
+                    <SelectContent className="bg-background border-2 border-primary/20 rounded-xl shadow-lg z-50">
+                      <SelectItem value="English">{t('languages.English')}</SelectItem>
+                      <SelectItem value="Spanish">{t('languages.Spanish')}</SelectItem>
+                      <SelectItem value="French">{t('languages.French')}</SelectItem>
+                      <SelectItem value="German">{t('languages.German')}</SelectItem>
+                      <SelectItem value="Italian">{t('languages.Italian')}</SelectItem>
+                      <SelectItem value="Portuguese">{t('languages.Portuguese')}</SelectItem>
+                      <SelectItem value="Chinese">{t('languages.Chinese')}</SelectItem>
+                      <SelectItem value="Japanese">{t('languages.Japanese')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="isLearningMode" className="text-base md:text-lg font-semibold text-foreground">
-                    Are you learning this language?
-                    <span className="text-xs md:text-sm text-muted-foreground ml-2">(Optional)</span>
+                    {t('form.fields.learningMode')}
+                    <span className="text-xs md:text-sm text-muted-foreground ml-2">{t('form.optional')}</span>
                   </Label>
                   <Select 
                     value={formData.isLearningMode ? "yes" : "no"} 
                     onValueChange={(value) => handleInputChange("isLearningMode", value === "yes")}
                   >
                     <SelectTrigger className="text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-primary/20">
-                      <SelectValue placeholder="Learning mode" />
+                      <SelectValue placeholder={t('form.fields.learningModePlaceholder')} />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="no">No, I'm fluent</SelectItem>
-                      <SelectItem value="yes">Yes, I'm learning</SelectItem>
+                    <SelectContent className="bg-background border-2 border-primary/20 rounded-xl shadow-lg z-50">
+                      <SelectItem value="no">{t('form.learningOptions.no')}</SelectItem>
+                      <SelectItem value="yes">{t('form.learningOptions.yes')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -420,7 +422,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
             onClick={onBack}
             className="flex-1 sm:max-w-xs order-2 sm:order-1"
           >
-            Back to Home
+            {t('form.buttons.back')}
           </Button>
           <Button
             variant="fun"
@@ -429,7 +431,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
             disabled={!isFormComplete()}
             className="flex-1 sm:max-w-xs order-1 sm:order-2"
           >
-            Create My Story!
+            {t('form.buttons.create')}
             <ChevronRight className="w-5 h-5 ml-2" />
           </Button>
         </div>
