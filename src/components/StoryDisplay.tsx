@@ -9,6 +9,9 @@ import { FloatingTimer } from "./FloatingTimer";
 import type { UserInfo } from "./UserInfoForm";
 import ProgressDashboard from "@/components/ProgressDashboard";
 import { ProgressTrackingService, ReadingProgress } from "@/services/progressTrackingService";
+import { createOpenAITTSService } from "@/services/textToSpeechService";
+import { useToast } from "@/hooks/use-toast";
+import InclusiveStoryGenerator from "@/services/inclusiveStoryGenerator";
 import illustration1 from "@/assets/story-illustration-1.jpg";
 import illustration2 from "@/assets/story-illustration-2.jpg";
 import illustration3 from "@/assets/story-illustration-3.jpg";
@@ -67,9 +70,6 @@ import time2ReadLogo from "@/assets/time2read-logo.png";
 import { processTextForPhonetics } from "@/utils/textProcessor";
 import { SecureRunwareService } from "@/services/secureRunwareService";
 import { createChildFriendlyPrompt } from "@/services/runwareService";
-import { createOpenAITTSService } from "@/services/textToSpeechService";
-import InclusiveStoryGenerator from "@/services/inclusiveStoryGenerator";
-import { useToast } from "@/hooks/use-toast";
 
 type DifficultyLevel = "easy" | "medium" | "hard" | "expert";
 
@@ -523,25 +523,8 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
     
     try {
       setIsPlaying(true);
-      const audioUrl = await openAIService.synthesizeText(text, userInfo.nativeLanguage || 'en', 1.0);
-      
-      if (audioUrl) {
-        const audio = new HTMLAudioElement();
-        audio.src = audioUrl;
-        currentAudioRef.current = audio;
-        
-        audio.onended = () => {
-          setIsPlaying(false);
-          currentAudioRef.current = null;
-        };
-        
-        audio.onerror = () => {
-          setIsPlaying(false);
-          currentAudioRef.current = null;
-        };
-        
-        await audio.play();
-      }
+      await openAIService.speakText(text, { speed: 0.9 });
+      setIsPlaying(false);
     } catch (error) {
       console.error('Error playing text-to-speech:', error);
       setIsPlaying(false);
