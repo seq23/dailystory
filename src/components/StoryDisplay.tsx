@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { BookOpen, Home, RotateCcw, Volume2, VolumeX, TrendingUp, TrendingDown, Plus, Star, Heart, Sparkles, Wand2, Zap } from "lucide-react";
+import { BookOpen, Home, RotateCcw, Volume2, VolumeX, TrendingUp, TrendingDown, Plus, Star, Heart, Sparkles, Wand2, Zap, Timer, Award, Target, Mic, MicOff } from "lucide-react";
 import type { UserInfo } from "./UserInfoForm";
 import ancientBookBg from "@/assets/ancient-book-bg.jpg";
 import illustration1 from "@/assets/story-illustration-1.jpg";
@@ -81,6 +81,13 @@ interface StoryDisplayProps {
   onSessionEnded: () => void;
 }
 
+interface ReadingStats {
+  wordsRead: number;
+  timeSpent: number;
+  accuracy: number;
+  streak: number;
+}
+
 const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDisplayProps) => {
   const { t } = useTranslation();
   const [currentParagraph, setCurrentParagraph] = useState(0);
@@ -104,7 +111,22 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
   const [audioQueue, setAudioQueue] = useState<HTMLAudioElement[]>([]);
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Auto-dismiss tutorial bubble after 6 seconds (with 5 second delay)
+  // New Phase 4 features
+  const [readingStats, setReadingStats] = useState<ReadingStats>({
+    wordsRead: 0,
+    timeSpent: 0,
+    accuracy: 100,
+    streak: 0
+  });
+  const [isRecording, setIsRecording] = useState(false);
+  const [autoReadMode, setAutoReadMode] = useState(false);
+  const [readingSpeed, setReadingSpeed] = useState(1.0);
+  const [showAchievements, setShowAchievements] = useState(false);
+  const [highlightedWords, setHighlightedWords] = useState<Set<number>>(new Set());
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const sessionStartTime = useRef<number>(Date.now());
+
+  // Auto-dismiss tutorial bubble
   useEffect(() => {
     if (showTutorialBubble && currentParagraph === 0) {
       const delayTimer = setTimeout(() => {
@@ -116,6 +138,20 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       return () => clearTimeout(delayTimer);
     }
   }, [showTutorialBubble, currentParagraph]);
+
+  // Track reading time
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (isReading) {
+        setReadingStats(prev => ({
+          ...prev,
+          timeSpent: prev.timeSpent + 1
+        }));
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isReading]);
 
   const illustrations = [
     illustration1, illustration2, illustration3, illustration4, illustration5,
@@ -168,7 +204,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
     return InclusiveStoryGenerator.generateCulturallyAdaptedStory(
       info, 
       difficulty, 
-      true, // isExtension = true
+      true,
       extensionNumber
     );
   };
@@ -177,7 +213,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
     return InclusiveStoryGenerator.generateCulturallyAdaptedStory(
       info, 
       difficulty, 
-      false // isExtension = false
+      false
     );
   };
 
@@ -219,7 +255,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
     
     try {
       setIsPlaying(true);
-      const audioUrl = await openAIService.synthesize(text, userInfo.nativeLanguage || 'en');
+      const audioUrl = await openAIService.synthesize(text, userInfo.nativeLanguage || 'en', readingSpeed);
       
       if (audioUrl) {
         const audio = new HTMLAudioElement();
@@ -229,6 +265,9 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         audio.onended = () => {
           setIsPlaying(false);
           currentAudioRef.current = null;
+          if (autoReadMode && currentParagraph < totalPages - 1) {
+            setTimeout(() => handleNext(), 2000);
+          }
         };
         
         audio.onerror = () => {
@@ -252,6 +291,48 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
     setIsPlaying(false);
   };
 
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      
+      const audioChunks: BlobPart[] = [];
+      
+      mediaRecorder.ondataavailable = (event) => {
+        audioChunks.push(event.data);
+      };
+      
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+        // Here you would send the audio to speech recognition API
+        // For now, we'll simulate reading progress
+        updateReadingProgress();
+      };
+      
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (error) {
+      console.error("Error starting recording:", error);
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+
+  const updateReadingProgress = () => {
+    const words = currentStory.split(' ').length;
+    setReadingStats(prev => ({
+      ...prev,
+      wordsRead: prev.wordsRead + words,
+      streak: prev.streak + 1
+    }));
+  };
+
   const totalPages = story.length;
   const currentStory = story[currentParagraph] || "";
   
@@ -267,21 +348,11 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
     }
   }, [currentParagraph, story.length]);
 
-  useEffect(() => {
-    const checkDifficulty = () => {
-      const preferredDifficulty = userInfo.difficultyLevel || (userInfo.age <= 6 ? "easy" : userInfo.age <= 9 ? "medium" : userInfo.age <= 12 ? "hard" : "expert");
-      if (currentDifficulty !== preferredDifficulty && !hasShownDifficultyAlert) {
-        alert(t("storyDisplay.alerts.difficultyMismatch", { preferredDifficulty }));
-        setHasShownDifficultyAlert(true);
-      }
-    };
-    checkDifficulty();
-  }, [currentDifficulty, userInfo, hasShownDifficultyAlert, t]);
-
   const handleNext = () => {
     if (currentParagraph < totalPages - 1) {
       setCurrentParagraph(currentParagraph + 1);
       setShowTutorialBubble(false);
+      updateReadingProgress();
     }
     stopTextToSpeech();
   };
@@ -303,164 +374,191 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
     setStoryExtensions(prev => prev + 1);
   };
 
-  const handleDifficultyChange = (newDifficulty: DifficultyLevel) => {
-    setCurrentDifficulty(newDifficulty);
-    const newStory = generateInitialStory(userInfo, newDifficulty);
-    setStory(newStory);
-    setCurrentParagraph(0);
+  const formatTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen bg-gradient-hero relative overflow-hidden">
-        {/* Magical floating elements with enhanced animations */}
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 relative overflow-hidden">
+        {/* Enhanced Magical Background Elements */}
         <div className="absolute inset-0 pointer-events-none z-0">
-          <Star className="absolute top-20 left-4 md:left-10 text-accent w-4 h-4 md:w-6 md:h-6 animate-float opacity-70" />
-          <Heart className="absolute top-32 right-8 md:right-16 text-primary-glow w-4 h-4 md:w-5 md:h-5 animate-bounce-gentle opacity-60" />
-          <Sparkles className="absolute bottom-32 left-8 md:left-20 text-secondary w-5 h-5 md:w-7 md:h-7 animate-wiggle opacity-80" />
-          <Star className="absolute bottom-20 right-16 md:right-32 text-accent w-3 h-3 md:w-4 md:h-4 animate-float opacity-75" />
-          <Wand2 className="absolute top-1/2 left-4 text-primary-glow w-5 h-5 animate-pulse opacity-50" />
-          <Zap className="absolute top-1/3 right-4 text-accent w-4 h-4 animate-bounce opacity-60" />
+          <div className="absolute top-10 left-10 w-32 h-32 bg-gradient-to-br from-pink-200/30 to-purple-200/30 rounded-full blur-xl animate-pulse"></div>
+          <div className="absolute top-1/3 right-20 w-24 h-24 bg-gradient-to-br from-blue-200/30 to-indigo-200/30 rounded-full blur-lg animate-float"></div>
+          <div className="absolute bottom-20 left-1/4 w-40 h-40 bg-gradient-to-br from-green-200/20 to-teal-200/20 rounded-full blur-2xl animate-bounce-gentle"></div>
+          
+          {/* Floating Icons */}
+          <Star className="absolute top-20 left-20 text-yellow-400 w-6 h-6 animate-float opacity-70" />
+          <Heart className="absolute top-40 right-32 text-pink-400 w-5 h-5 animate-bounce-gentle opacity-60" />
+          <Sparkles className="absolute bottom-40 left-16 text-purple-400 w-7 h-7 animate-wiggle opacity-80" />
+          <Star className="absolute bottom-20 right-40 text-indigo-400 w-4 h-4 animate-float opacity-75" />
         </div>
 
-        {/* Enhanced Header with professional styling */}
-        <header className="relative z-20 p-4 sm:p-6 bg-gradient-to-r from-primary/10 to-secondary/10 backdrop-blur-sm border-b border-primary/20">
-          <div className="flex items-center justify-between max-w-7xl mx-auto">
-            <div className="flex items-center gap-3 sm:gap-4">
-              <div className="relative">
-                <img src={time2ReadLogo} alt="Time2Read" className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl shadow-elegant transition-transform hover:scale-105" />
-                <div className="absolute -top-1 -right-1 w-4 h-4 bg-accent rounded-full animate-pulse"></div>
+        {/* Modern Header */}
+        <header className="relative z-20 bg-white/80 backdrop-blur-md border-b border-gray-200/50 shadow-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="relative">
+                  <img src={time2ReadLogo} alt="Time2Read" className="w-12 h-12 rounded-xl shadow-lg transition-transform hover:scale-105" />
+                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full animate-pulse"></div>
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-800 font-comic">
+                    {userInfo.name}'s Reading Journey
+                  </h1>
+                  <p className="text-sm text-gray-600">
+                    {currentDifficulty.charAt(0).toUpperCase() + currentDifficulty.slice(1)} Level • {formatTime(readingStats.timeSpent)}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-text-primary font-comic">
-                  {t("storyDisplay.header.title")}
-                </h1>
-                <p className="text-xs sm:text-sm text-text-secondary font-comic opacity-80">
-                  {userInfo.name}'s Reading Adventure
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-2 sm:gap-3">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    onClick={onNewStory}
-                    variant="outline"
-                    size="sm"
-                    className="bg-gradient-subtle hover:bg-gradient-primary transition-all duration-300 border-primary/30 hover:border-primary/50 font-comic text-xs sm:text-sm shadow-soft hover:shadow-glow"
-                  >
-                    <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                    <span className="hidden sm:inline">{t("storyDisplay.navigation.newStory")}</span>
-                    <span className="sm:hidden">New</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Generate a new story adventure</p>
-                </TooltipContent>
-              </Tooltip>
               
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    onClick={onHome}
-                    variant="outline"
-                    size="sm"
-                    className="bg-gradient-subtle hover:bg-gradient-secondary transition-all duration-300 border-secondary/30 hover:border-secondary/50 font-comic text-xs sm:text-sm shadow-soft hover:shadow-elegant"
-                  >
-                    <Home className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                    <span className="hidden sm:inline">{t("storyDisplay.navigation.home")}</span>
-                    <span className="sm:hidden">Home</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Return to the main menu</p>
-                </TooltipContent>
-              </Tooltip>
+              <div className="flex items-center space-x-3">
+                <div className="hidden md:flex items-center space-x-4 bg-gray-50/80 rounded-xl px-4 py-2">
+                  <div className="flex items-center space-x-2">
+                    <Award className="w-4 h-4 text-yellow-500" />
+                    <span className="text-sm font-medium text-gray-700">{readingStats.streak}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Target className="w-4 h-4 text-green-500" />
+                    <span className="text-sm font-medium text-gray-700">{readingStats.wordsRead}</span>
+                  </div>
+                </div>
+                
+                <Button
+                  onClick={onNewStory}
+                  variant="outline"
+                  className="bg-white hover:bg-gray-50 border-gray-200 hover:border-gray-300 rounded-xl shadow-sm"
+                >
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  New Story
+                </Button>
+                
+                <Button
+                  onClick={onHome}
+                  variant="outline"
+                  className="bg-white hover:bg-gray-50 border-gray-200 hover:border-gray-300 rounded-xl shadow-sm"
+                >
+                  <Home className="w-4 h-4 mr-2" />
+                  Home
+                </Button>
+              </div>
             </div>
           </div>
         </header>
 
-        <main className="relative z-10 px-3 sm:px-6 pb-32 pt-6">
-          <div className="max-w-6xl mx-auto">
-            {/* Enhanced Progress Section */}
-            <div className="mb-6">
-              <Card className="bg-card-surface/95 backdrop-blur-sm border-card-border shadow-elegant rounded-2xl p-4 sm:p-6">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-primary flex items-center justify-center shadow-glow">
-                      <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-sm sm:text-base font-bold text-text-primary font-comic">
-                          {t("storyDisplay.progress.page")} {currentParagraph + 1} {t("storyDisplay.progress.of")} {totalPages}
-                        </span>
-                        {showTutorialBubble && currentParagraph === 0 && (
-                          <div className="bg-accent text-white px-2 py-1 rounded-full text-xs font-comic animate-bounce-gentle">
-                            Click words to learn!
-                          </div>
-                        )}
-                      </div>
-                      <Progress 
-                        value={(currentParagraph / Math.max(1, totalPages - 1)) * 100} 
-                        className="h-2 sm:h-3 w-48 sm:w-64 bg-surface-soft"
-                      />
-                    </div>
+        <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-8">
+          {/* Progress Section */}
+          <div className="mb-8">
+            <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl rounded-2xl p-6">
+              <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+                <div className="flex items-center space-x-4">
+                  <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                    <BookOpen className="w-8 h-8 text-white" />
                   </div>
-                  
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2 bg-gradient-subtle rounded-xl px-3 py-2 shadow-soft">
-                      <TrendingUp className="w-4 h-4 text-secondary" />
-                      <span className="text-xs sm:text-sm font-bold text-text-primary font-comic capitalize">
-                        {currentDifficulty} Level
+                  <div>
+                    <div className="flex items-center space-x-3 mb-2">
+                      <span className="text-lg font-bold text-gray-800">
+                        Page {currentParagraph + 1} of {totalPages}
                       </span>
+                      {showTutorialBubble && currentParagraph === 0 && (
+                        <div className="bg-indigo-500 text-white px-3 py-1 rounded-full text-xs font-medium animate-bounce">
+                          Click words to learn more!
+                        </div>
+                      )}
                     </div>
-                    
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          onClick={() => isPlaying ? stopTextToSpeech() : playTextToSpeech(currentStory)}
-                          variant="outline"
-                          size="sm"
-                          className="bg-gradient-primary hover:bg-gradient-primary/80 text-white border-primary/50 rounded-xl shadow-glow"
-                        >
-                          {isPlaying ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{isPlaying ? "Stop reading" : "Read aloud"}</p>
-                      </TooltipContent>
-                    </Tooltip>
+                    <Progress 
+                      value={(currentParagraph / Math.max(1, totalPages - 1)) * 100} 
+                      className="h-3 w-80 bg-gray-100"
+                    />
                   </div>
                 </div>
-              </Card>
-            </div>
+                
+                <div className="flex items-center space-x-3">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        onClick={() => setAutoReadMode(!autoReadMode)}
+                        variant={autoReadMode ? "default" : "outline"}
+                        size="sm"
+                        className="rounded-xl"
+                      >
+                        <Timer className="w-4 h-4 mr-2" />
+                        Auto Read
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Automatically advance to next page after reading</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        onClick={() => isPlaying ? stopTextToSpeech() : playTextToSpeech(currentStory)}
+                        variant="outline"
+                        size="sm"
+                        className="rounded-xl bg-indigo-50 hover:bg-indigo-100 border-indigo-200"
+                      >
+                        {isPlaying ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{isPlaying ? "Stop reading aloud" : "Read this page aloud"}</p>
+                    </TooltipContent>
+                  </Tooltip>
 
-            {/* Enhanced Story Content */}
-            <Card className="bg-card-surface/95 backdrop-blur-sm border-card-border shadow-elegant rounded-3xl overflow-hidden">
-              <div className="relative">
-                {/* Story Header with Avatar */}
-                <div className="bg-gradient-to-r from-primary/20 to-secondary/20 p-4 sm:p-6 text-center border-b border-primary/10">
-                  <div className="flex items-center justify-center gap-4 mb-4">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        onClick={() => isRecording ? stopRecording() : startRecording()}
+                        variant={isRecording ? "destructive" : "outline"}
+                        size="sm"
+                        className="rounded-xl"
+                      >
+                        {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{isRecording ? "Stop reading practice" : "Practice reading aloud"}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          {/* Main Story Content */}
+          <div className="grid lg:grid-cols-5 gap-8">
+            {/* Story Text */}
+            <div className="lg:col-span-3">
+              <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-2xl rounded-3xl overflow-hidden">
+                {/* Story Header */}
+                <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-6 text-white">
+                  <div className="flex items-center space-x-4">
                     <div className="relative">
-                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden shadow-elegant border-4 border-primary/30 bg-gradient-primary p-1">
+                      <div className="w-20 h-20 rounded-2xl overflow-hidden shadow-lg border-4 border-white/30">
                         <img 
                           src={getUserAvatar()} 
                           alt={`${userInfo.name}'s avatar`}
-                          className="w-full h-full object-cover rounded-full"
+                          className="w-full h-full object-cover"
                         />
                       </div>
-                      <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-accent rounded-full flex items-center justify-center">
-                        <Star className="w-3 h-3 text-white" />
+                      <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center">
+                        <Star className="w-4 h-4 text-white" />
                       </div>
                     </div>
-                    <div className="text-left">
-                      <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-text-primary font-comic">
+                    <div>
+                      <h2 className="text-2xl font-bold mb-1">
                         {userInfo.name}'s Adventure
                       </h2>
+                      <p className="text-indigo-100">
+                        Chapter {currentParagraph + 1}: The Journey Continues
+                      </p>
                       {userInfo.hobbies && (
-                        <p className="text-sm sm:text-base text-text-secondary font-comic">
+                        <p className="text-sm text-indigo-200 mt-1">
                           Featuring: {userInfo.hobbies}
                         </p>
                       )}
@@ -468,116 +566,152 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                   </div>
                 </div>
 
-                {/* Story Content with Illustration */}
-                <div className="grid lg:grid-cols-2 gap-6 p-4 sm:p-6 lg:p-8">
-                  {/* Illustration Section */}
-                  <div className="order-2 lg:order-1">
-                    <div className="relative rounded-2xl overflow-hidden shadow-elegant bg-gradient-subtle">
-                      <img 
-                        src={customIllustrations.get(currentParagraph) || currentIllustration}
-                        alt="Story illustration"
-                        className="w-full h-64 sm:h-80 lg:h-96 object-cover"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-                      
-                      {/* Custom illustration button */}
-                      <div className="absolute top-4 right-4">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              onClick={() => generateCustomIllustration(currentParagraph, currentStory)}
-                              disabled={isGeneratingImage || customIllustrations.has(currentParagraph)}
-                              size="sm"
-                              className="bg-primary/90 hover:bg-primary text-white rounded-xl shadow-glow"
-                            >
-                              {isGeneratingImage && illustrationGenerationQueue.includes(currentParagraph) ? (
-                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                              ) : (
-                                <Wand2 className="w-4 h-4" />
-                              )}
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Generate custom illustration</p>
-                          </TooltipContent>
-                        </Tooltip>
+                {/* Story Content */}
+                <div className="p-8">
+                  <div className="bg-gradient-to-br from-gray-50 to-indigo-50/30 rounded-2xl p-8 border border-gray-100">
+                    <div className="text-center mb-6">
+                      <div className="inline-flex items-center space-x-2 bg-indigo-100 rounded-full px-4 py-2">
+                        <Sparkles className="w-4 h-4 text-indigo-600" />
+                        <span className="text-sm font-medium text-indigo-800">Chapter {currentParagraph + 1}</span>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Text Section */}
-                  <div className="order-1 lg:order-2 flex flex-col justify-center">
-                    <div className="bg-gradient-to-br from-surface-primary/50 to-surface-soft/50 rounded-2xl p-6 sm:p-8 shadow-soft border border-primary/10">
-                      <div className="text-center mb-6">
-                        <div className="inline-flex items-center gap-2 bg-accent/10 rounded-full px-4 py-2 mb-4">
-                          <Sparkles className="w-4 h-4 text-accent" />
-                          <span className="text-sm font-comic text-accent">Chapter {currentParagraph + 1}</span>
-                        </div>
-                      </div>
-
-                      <div className="prose prose-lg max-w-none">
-                        <p className={`leading-relaxed font-comic text-center text-text-primary ${
-                          currentDifficulty === "easy" ? 'text-xl sm:text-2xl lg:text-3xl font-bold' :
-                          userInfo.age <= 7 ? 'text-lg sm:text-xl lg:text-2xl' : 
-                          userInfo.age <= 9 ? 'text-base sm:text-lg lg:text-xl' : 
-                          'text-sm sm:text-base lg:text-lg'
-                        }`}>
-                          {processTextForPhonetics(currentStory, "", currentDifficulty, userInfo)}
-                        </p>
-                      </div>
+                    <div className="prose prose-lg max-w-none text-center">
+                      <p className={`leading-relaxed font-medium text-gray-800 ${
+                        currentDifficulty === "easy" ? 'text-2xl lg:text-3xl font-bold' :
+                        userInfo.age <= 7 ? 'text-xl lg:text-2xl' : 
+                        userInfo.age <= 9 ? 'text-lg lg:text-xl' : 
+                        'text-base lg:text-lg'
+                      }`}>
+                        {processTextForPhonetics(currentStory, "", currentDifficulty, userInfo)}
+                      </p>
                     </div>
                   </div>
                 </div>
 
-                {/* Enhanced Navigation Controls */}
-                <div className="bg-gradient-to-r from-surface-soft/50 to-surface-primary/50 p-4 sm:p-6 border-t border-primary/10">
-                  <div className="flex justify-between items-center gap-4 max-w-2xl mx-auto">
+                {/* Navigation */}
+                <div className="bg-gray-50/80 p-6 border-t border-gray-100">
+                  <div className="flex justify-between items-center">
                     <Button
                       onClick={handlePrevious}
                       disabled={currentParagraph === 0}
-                      className="bg-gradient-secondary hover:bg-gradient-secondary/80 disabled:bg-surface-soft disabled:text-text-secondary font-comic rounded-2xl px-4 sm:px-8 py-3 text-sm sm:text-base shadow-soft hover:shadow-elegant transition-all duration-300 disabled:cursor-not-allowed"
+                      className="bg-gray-200 hover:bg-gray-300 text-gray-700 disabled:bg-gray-100 disabled:text-gray-400 rounded-xl px-6 py-3 font-medium"
                     >
-                      <span className="flex items-center gap-2">
-                        <span>←</span>
-                        <span className="hidden sm:inline">{t("storyDisplay.navigation.previous")}</span>
-                        <span className="sm:hidden">Back</span>
-                      </span>
+                      ← Previous
                     </Button>
                     
-                    <div className="flex items-center gap-2">
-                      <div className="flex -space-x-1">
-                        {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => (
-                          <div
-                            key={i}
-                            className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-300 ${
-                              i === currentParagraph % 5 
-                                ? 'bg-primary scale-125 shadow-glow' 
-                                : 'bg-surface-soft'
-                            }`}
-                          />
-                        ))}
-                      </div>
+                    <div className="flex space-x-2">
+                      {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => (
+                        <div
+                          key={i}
+                          className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                            i === currentParagraph % 7 
+                              ? 'bg-indigo-500 scale-125 shadow-lg' 
+                              : 'bg-gray-200'
+                          }`}
+                        />
+                      ))}
                     </div>
                     
                     <Button
                       onClick={handleNext}
                       disabled={currentParagraph >= totalPages - 1}
-                      className="bg-gradient-primary hover:bg-gradient-primary/80 disabled:bg-surface-soft disabled:text-text-secondary font-comic rounded-2xl px-4 sm:px-8 py-3 text-sm sm:text-base shadow-glow hover:shadow-elegant transition-all duration-300 disabled:cursor-not-allowed"
+                      className="bg-indigo-500 hover:bg-indigo-600 text-white disabled:bg-gray-100 disabled:text-gray-400 rounded-xl px-6 py-3 font-medium"
                     >
-                      <span className="flex items-center gap-2">
-                        <span className="hidden sm:inline">{t("storyDisplay.navigation.next")}</span>
-                        <span className="sm:hidden">Next</span>
-                        <span>→</span>
-                      </span>
+                      Next →
                     </Button>
                   </div>
                 </div>
-              </div>
-            </Card>
+              </Card>
+            </div>
+
+            {/* Illustration & Stats Sidebar */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Illustration */}
+              <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-xl rounded-2xl overflow-hidden">
+                <div className="relative">
+                  <img 
+                    src={customIllustrations.get(currentParagraph) || currentIllustration}
+                    alt="Story illustration"
+                    className="w-full h-64 lg:h-80 object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                  
+                  <div className="absolute top-4 right-4">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={() => generateCustomIllustration(currentParagraph, currentStory)}
+                          disabled={isGeneratingImage || customIllustrations.has(currentParagraph)}
+                          size="sm"
+                          className="bg-white/90 hover:bg-white text-gray-700 rounded-xl shadow-lg"
+                        >
+                          {isGeneratingImage && illustrationGenerationQueue.includes(currentParagraph) ? (
+                            <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            <Wand2 className="w-4 h-4" />
+                          )}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Generate custom illustration</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Reading Stats */}
+              <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-xl rounded-2xl p-6">
+                <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                  <Award className="w-5 h-5 mr-2 text-yellow-500" />
+                  Reading Progress
+                </h3>
+                
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl">
+                    <span className="text-sm font-medium text-gray-700">Words Read</span>
+                    <span className="text-lg font-bold text-indigo-600">{readingStats.wordsRead}</span>
+                  </div>
+                  
+                  <div className="flex justify-between items-center p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl">
+                    <span className="text-sm font-medium text-gray-700">Time Reading</span>
+                    <span className="text-lg font-bold text-emerald-600">{formatTime(readingStats.timeSpent)}</span>
+                  </div>
+                  
+                  <div className="flex justify-between items-center p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl">
+                    <span className="text-sm font-medium text-gray-700">Streak</span>
+                    <span className="text-lg font-bold text-purple-600">{readingStats.streak} pages</span>
+                  </div>
+                  
+                  <div className="flex justify-between items-center p-3 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl">
+                    <span className="text-sm font-medium text-gray-700">Accuracy</span>
+                    <span className="text-lg font-bold text-orange-600">{readingStats.accuracy}%</span>
+                  </div>
+                </div>
+
+                {/* Reading Speed Control */}
+                <div className="mt-6 p-4 bg-gray-50 rounded-xl">
+                  <div className="flex justify-between items-center mb-3">
+                    <span className="text-sm font-medium text-gray-700">Reading Speed</span>
+                    <span className="text-sm text-gray-600">{readingSpeed}x</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0.5"
+                    max="2"
+                    step="0.1"
+                    value={readingSpeed}
+                    onChange={(e) => setReadingSpeed(parseFloat(e.target.value))}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                  />
+                </div>
+              </Card>
+            </div>
           </div>
         </main>
 
-        {/* Enhanced Floating Timer */}
+        {/* Floating Timer */}
         <FloatingTimer
           timeRemaining={timeRemaining}
           isReading={isReading}
