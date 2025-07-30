@@ -3,52 +3,189 @@
     "companyTagline": "A Personalized Reading Assistant for Every Child",
     "carousel": {
       "item1": "Time 2 Read can be used as a magical summer reading assistant on road trips!",
-      "item2": "Perfect for after-school reading time - make homework fun and engaging!",
-      "item3": "Take your stories anywhere - from playground breaks to family picnics!",
-      "item4": "Enhance library visits with interactive digital stories that inspire reading!"
+      "item2": "Perfect for cozy home reading sessions with personalized stories.",
+      "item3": "Great for outdoor adventures - read anywhere, anytime!",
+      "item4": "Transform any space into a magical library experience."
     },
-    "title": "Create Your Own",
-    "titleHighlight": "Magical Story!",
-    "subtitle": "Every day, discover a new adventure written just for you! Tell us about yourself and watch your personal story come to life.",
+    "headline": "Where Every Story is Made Just for You",
+    "subheadline": "Discover magical stories created specifically for your child's interests, reading level, and cultural background.",
+    "getStarted": "Create Your Adventure",
     "features": {
-      "reading": {
-        "title": "20+ Min of Reading",
-        "subtitle": "(as recommended by teachers)"
+      "culturallyAdapted": {
+        "title": "Culturally Adapted Stories",
+        "description": "Stories that reflect your child's background and experiences"
       },
-      "personalized": "Personalized Stories",
-      "gradeLevel": "Grade Level Perfect"
+      "ageAppropriate": {
+        "title": "Age-Appropriate Content",
+        "description": "Content perfectly matched to your child's developmental stage"
+      },
+      "interactiveElements": {
+        "title": "Interactive Learning",
+        "description": "Engaging elements that make learning fun and effective"
+      }
     },
-    "ctaButton": "Start My Story Adventure!",
-    "safetyNote": "Safe, fun, and educational stories for kids of all ages",
+    "userProfilesTitle": "Made for Every Child",
+    "userProfiles": {
+      "nativeEnglish": "Native English speakers improving reading skills",
+      "eslLearners": "Students learning English as a second language",
+      "visualLearners": "Children who learn best with images and stories",
+      "culturallyDiverse": "Kids from diverse cultural backgrounds"
+    },
+    "howItWorks": {
+      "title": "How It Works",
+      "step1": {
+        "title": "Tell Us About Yourself",
+        "description": "Share your interests, reading level, and preferences"
+      },
+      "step2": {
+        "title": "Get Your Story",
+        "description": "Receive a personalized story created just for you"
+      },
+      "step3": {
+        "title": "Read & Learn",
+        "description": "Enjoy interactive reading with helpful features"
+      }
+    },
     "footer": {
-      "companyName": "Time 2 Read LLC",
-      "description": "Creating magical reading experiences for children",
-      "copyright": "All rights reserved.",
-      "privacyPolicy": "Privacy Policy",
-      "termsOfService": "Terms of Service",
-      "contactUs": "Contact Us"
+      "contact": "Contact Us",
+      "mission": "Our mission is to make reading accessible, enjoyable, and culturally relevant for every child."
     },
-    "languageSelector": {
-      "label": "Choose your language",
-      "placeholder": "Select language"
+    "pricing": {
+      "title": "Simple, Transparent Pricing",
+      "subtitle": "Choose the plan that works best for your family",
+      "free": {
+        "title": "Free",
+        "price": "$0",
+        "period": "forever",
+        "features": [
+          "5 personalized stories per month",
+          "Basic reading features",
+          "Community support"
+        ],
+        "cta": "Get Started Free"
+      }
+    }
+  },
+  "userInfoForm": {
+    "title": "Let's Create Your Perfect Story!",
+    "subtitle": "Tell us about yourself so we can create amazing stories just for you.",
+    "fields": {
+      "name": {
+        "label": "What's your name?",
+        "placeholder": "Enter your name"
+      },
+      "age": {
+        "label": "How old are you?"
+      },
+      "grade": {
+        "label": "What grade are you in?",
+        "placeholder": "Enter your grade (e.g., 3rd grade, Year 5)"
+      },
+      "nativeLanguage": {
+        "label": "What language do you speak at home?",
+        "placeholder": "Select your native language",
+        "options": {
+          "en": "English",
+          "es": "Spanish",
+          "fr": "French",
+          "ar": "Arabic",
+          "hi": "Hindi",
+          "pt": "Portuguese",
+          "zh": "Chinese"
+        }
+      },
+      "learningGoal": {
+        "label": "What do you want to improve?",
+        "options": {
+          "improve-english-reading": "Get better at reading English",
+          "learn-english-language": "Learn English as a new language",
+          "both": "Both reading and language skills"
+        }
+      },
+      "interests": {
+        "label": "What do you love?",
+        "subtitle": "Pick your favorite things (choose up to 3)",
+        "options": {
+          "animals": "Animals & Pets",
+          "adventure": "Adventure & Exploration",
+          "sports": "Sports & Games",
+          "science": "Science & Discovery",
+          "fantasy": "Magic & Fantasy",
+          "friendship": "Friends & Family",
+          "nature": "Nature & Environment",
+          "vehicles": "Cars, Trains & Flying",
+          "art": "Art & Creativity",
+          "music": "Music & Dancing"
+        }
+      },
+      "readingAbility": {
+        "label": "How well do you read?",
+        "options": {
+          "easy": "I'm just starting to read",
+          "medium": "I can read simple books",
+          "hard": "I can read chapter books",
+          "expert": "I love reading big books"
+        }
+      },
+      "specialRequest": {
+        "label": "Anything special you'd like in your story?",
+        "placeholder": "Tell us about characters, places, or themes you'd love to see..."
+      }
+    },
+    "avatar": {
+      "label": "Which avatar do you want?"
+    },
+    "favoriteColor": {
+      "label": "What is your favorite color or shade?",
+      "optional": "(Optional)"
+    },
+    "submit": "Create My Story! ✨",
+    "back": "← Back",
+    "validation": {
+      "nameRequired": "Please tell us your name",
+      "ageRequired": "Please tell us your age",
+      "gradeRequired": "Please tell us your grade",
+      "interestsRequired": "Please pick at least one thing you love",
+      "maxInterests": "Please pick only 3 favorites",
+      "readingAbilityRequired": "Please tell us about your reading level"
     }
   },
   "storyDisplay": {
     "header": {
-      "tagline": "Reading Adventures for Kids",
-      "home": "Home",
-      "newStory": "New Story"
+      "readingTime": "Reading Time",
+      "progress": "Progress",
+      "done": "✨ I'm Done!",
+      "newStory": "New Story",
+      "home": "Home"
     },
-    "progress": {
-      "page": "Page",
-      "of": "of",
-      "progress": "Progress:"
+    "controls": {
+      "speed": "Speed:",
+      "easier": "Easier",
+      "harder": "Harder",
+      "back": "← Back",
+      "next": "Next →"
+    },
+    "pages": {
+      "storyLength": "Story Length:",
+      "removePages": "Remove Pages",
+      "addPages": "Add Pages",
+      "page": "page",
+      "pages": "pages"
+    },
+    "alerts": {
+      "almostDone": "Almost done!",
+      "clickToAdd": "Click + to add more pages!"
+    },
+    "countdown": {
+      "timesUp": "Time's Up!",
+      "goingToReport": "Going to your reading report in...",
+      "goNow": "Go Now ✨"
+    },
+    "tutorial": {
+      "step": "Tutorial",
+      "of": "5"
     },
     "difficulty": {
-      "easy": "Easy",
-      "medium": "Medium", 
-      "hard": "Hard",
-      "expert": "Expert",
       "level": "Level",
       "easier": "Easier",
       "harder": "Harder",
@@ -63,74 +200,11 @@
       }
     },
     "illustration": {
-      "creating": "Creating magical illustration...",
-      "loading": "Illustration loading..."
-    },
-    "navigation": {
-      "previous": "Previous",
-      "next": "Next",
-      "previousShort": "←",
-      "nextShort": "→"
-    }
-  },
-  "userInfoForm": {
-    "title": "Tell us about yourself!",
-    "subtitle": "Help us create the perfect story just for you",
-    "sections": {
-      "aboutYou": "About You",
-      "yourFavorites": "Your Favorites",
-      "additionalInfo": "Additional Info"
-    },
-    "fields": {
-      "name": {
-        "label": "What is your first name?",
-        "placeholder": "Type your name here..."
-      },
-      "age": {
-        "label": "How old are you?",
-        "placeholder": "Pick your age",
-        "yearsOld": "years old"
-      },
-      "grade": {
-        "label": "What grade are you in?",
-        "placeholder": "Select your grade"
-      },
-      "nativeLanguage": {
-        "label": "What is your native language?",
-        "placeholder": "Select your first language"
-      },
-      "learningGoal": {
-        "label": "What is your learning goal?",
-        "placeholder": "Choose your learning goal",
-        "options": {
-          "improve-english-reading": "Improve English Reading",
-          "learn-english-language": "Learn English Language",
-          "both": "Both Reading & Language"
-        }
-      },
-      "readingAbility": {
-        "label": "What reading level feels right for you?",
-        "placeholder": "Choose your reading level",
-        "levels": {
-          "easy": {
-            "title": "Easy Reading",
-            "description": "(K-1st grade: Simple words & short sentences)"
-          },
-          "medium": {
-            "title": "Medium Reading",
-            "description": "(2nd-4th grade: Moderate vocabulary & sentences)"
-          },
-          "hard": {
-            "title": "Advanced Reading",
-            "description": "(5th-8th grade: Advanced vocabulary & complex sentences)"
-          },
-          "expert": {
-            "title": "Expert Reading",
-            "description": "(9th-12th grade: Expert vocabulary & sophisticated writing)"
+      "creating": "Creating magical illustration..."
     }
   },
   "interactiveWord": {
-    "hearIt": "Hear it",
+    "hearIt": "Hear It",
     "explain": "Explain",
     "translate": "Translate",
     "synonym": "Synonym",
@@ -144,71 +218,5 @@
     "loading": "Loading...",
     "playbackError": "Could not play audio",
     "translationError": "Translation not available"
-  }
-      },
-      "avatar": {
-        "label": "Which avatar do you want?"
-      },
-      "favoriteColor": {
-        "label": "What is your favorite color or shade?",
-        "optional": "(Optional)"
-      },
-      "favoriteAnimal": {
-        "label": "What's your favorite animal?",
-        "placeholder": "Type animals and press Enter...",
-        "optional": "(Optional)"
-      },
-      "favoriteFood": {
-        "label": "What's your favorite food?",
-        "placeholder": "Type foods and press Enter...",
-        "optional": "(Optional)"
-      },
-      "hobbies": {
-        "label": "What do you like to do for fun?",
-        "placeholder": "Type activities and press Enter...",
-        "optional": "(Optional)"
-      },
-      "specialRequest": {
-        "label": "Tell us if there is anything special you want to include in your story?",
-        "placeholder": "Type special story elements and press Enter...",
-        "optional": "(Optional)"
-      }
-    },
-    "grades": {
-      "PreK": "Pre-K",
-      "K": "Kindergarten",
-      "1st": "1st Grade",
-      "2nd": "2nd Grade",
-      "3rd": "3rd Grade",
-      "4th": "4th Grade",
-      "5th": "5th Grade",
-      "6th": "6th Grade",
-      "7th": "7th Grade",
-      "8th": "8th Grade",
-      "9th": "9th Grade",
-      "10th": "10th Grade",
-      "11th": "11th Grade"
-    },
-    "languages": {
-      "en": "English",
-      "ar": "Arabic",
-      "es": "Spanish",
-      "zh": "Chinese (Mandarin)",
-      "hi": "Hindi",
-      "pt": "Portuguese",
-      "fr": "French"
-    },
-    "buttons": {
-      "backToHome": "Back to Home",
-      "createStory": "Create My Story!"
-    },
-    "validation": {
-      "contentWarning": "Content Warning",
-      "inappropriateContent": "Please use appropriate language for children's stories!",
-      "tooManyRequests": "Too Many Requests",
-      "waitToSubmit": "Please wait a moment before submitting again.",
-      "contentIssue": "Content Issue",
-      "reviewInputs": "Please review your inputs for appropriate content."
-    }
   }
 }

@@ -82,7 +82,7 @@ interface StoryDisplayProps {
 
 const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDisplayProps) => {
   const { toast } = useToast();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   
   // Core state
   const [currentParagraph, setCurrentParagraph] = useState(0);
@@ -138,6 +138,13 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
     return service;
   });
   const [openAIService] = useState<any>(() => createOpenAITTSService());
+  
+  // Set language based on user's native language when component loads
+  useEffect(() => {
+    if (userInfo.nativeLanguage && userInfo.nativeLanguage !== i18n.language) {
+      i18n.changeLanguage(userInfo.nativeLanguage);
+    }
+  }, [userInfo.nativeLanguage, i18n]);
 
   // Illustrations array
   const illustrations = [
@@ -692,7 +699,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
             <div className="flex items-center space-x-3">
               <img src={time2ReadLogo} alt="Time2Read" className="w-10 h-10 rounded-lg" />
               <h1 className="text-xl font-bold text-purple-800">
-                {userInfo.name}'s Reading Time
+                {userInfo.name}'s {t("storyDisplay.header.readingTime")}
               </h1>
             </div>
             
@@ -704,22 +711,22 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                 className="text-purple-600 hover:bg-purple-50"
               >
                 <BarChart3 className="w-4 h-4 mr-1" />
-                Progress
+                {t("storyDisplay.header.progress")}
               </Button>
               <Button 
                 onClick={handleFinishSession} 
                 className="bg-green-500 hover:bg-green-600 text-white rounded-full"
                 size="sm"
               >
-                ✨ I'm Done!
+                {t("storyDisplay.header.done")}
               </Button>
               <Button onClick={onNewStory} variant="outline" size="sm" className="rounded-full">
                 <RotateCcw className="w-4 h-4 mr-1" />
-                New Story
+                {t("storyDisplay.header.newStory")}
               </Button>
               <Button onClick={onHome} variant="outline" size="sm" className="rounded-full">
                 <Home className="w-4 h-4 mr-1" />
-                Home
+                {t("storyDisplay.header.home")}
               </Button>
             </div>
           </div>
@@ -805,7 +812,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
 
                   {/* Audio Speed Controls */}
                   <div className="flex justify-center items-center space-x-2">
-                    <span className="text-xs text-gray-600 font-medium">Speed:</span>
+                    <span className="text-xs text-gray-600 font-medium">{t("storyDisplay.controls.speed")}</span>
                     <div className="flex space-x-1">
                       {[0.5, 0.75, 1.0, 1.25].map((speed) => (
                         <Button
@@ -831,7 +838,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                       className="rounded-full text-xs"
                     >
                       <TrendingDown className="w-3 h-3 mr-1" />
-                      Easier
+                      {t("storyDisplay.controls.easier")}
                     </Button>
                     
                     <Button
@@ -842,7 +849,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                       className="rounded-full text-xs"
                     >
                       <TrendingUp className="w-3 h-3 mr-1" />
-                      Harder
+                      {t("storyDisplay.controls.harder")}
                     </Button>
                   </div>
 
@@ -855,7 +862,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                       size="sm"
                       className="rounded-full"
                     >
-                      ← Back
+                      {t("storyDisplay.controls.back")}
                     </Button>
                     
                     <div className="flex items-center space-x-3">
@@ -881,14 +888,14 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                       size="sm"
                       className="rounded-full"
                     >
-                      Next →
+                      {t("storyDisplay.controls.next")}
                     </Button>
                   </div>
 
                   {/* Page Management Section */}
                   <div className="mt-4 pt-3 border-t border-gray-100" data-tutorial-target="pages">
                     <div className="flex items-center justify-center space-x-3">
-                      <span className="text-sm text-gray-600 font-medium">Story Length:</span>
+                      <span className="text-sm text-gray-600 font-medium">{t("storyDisplay.pages.storyLength")}</span>
                       
                       <div className="flex items-center space-x-2">
                         <Button
@@ -901,12 +908,12 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                           <div className="relative">
                             <BookOpen className="w-4 h-4 mr-1" />
                             <Minus className="w-1.5 h-1.5 absolute -top-0.5 -right-0.5 bg-white rounded-full" />
-                          </div>
-                          Remove Pages
-                        </Button>
-                        
-                        <span className="text-sm font-bold text-purple-600 px-2">
-                          {totalPages} page{totalPages !== 1 ? 's' : ''}
+                            </div>
+                            {t("storyDisplay.pages.removePages")}
+                          </Button>
+                          
+                          <span className="text-sm font-bold text-purple-600 px-2">
+                            {totalPages} {totalPages !== 1 ? t("storyDisplay.pages.pages") : t("storyDisplay.pages.page")}
                         </span>
                         
                         <div className="relative">
@@ -924,7 +931,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                               <BookOpen className="w-4 h-4 mr-1" />
                               <Plus className="w-1.5 h-1.5 absolute -top-0.5 -right-0.5 bg-white rounded-full" />
                             </div>
-                            Add Pages
+                            {t("storyDisplay.pages.addPages")}
                             {showAddPagesAlert && " ⚡"}
                           </Button>
                           
@@ -934,9 +941,9 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                               <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white px-4 py-2 rounded-2xl shadow-xl border-2 border-yellow-300 relative animate-pulse">
                                 <div className="flex items-center space-x-2">
                                   <span className="text-lg">📖</span>
-                                  <div>
-                                    <div className="text-sm font-bold">Almost done!</div>
-                                    <div className="text-xs">Click + to add more pages!</div>
+                                   <div>
+                                     <div className="text-sm font-bold">{t("storyDisplay.alerts.almostDone")}</div>
+                                     <div className="text-xs">{t("storyDisplay.alerts.clickToAdd")}</div>
                                   </div>
                                 </div>
                                 {/* Arrow pointing down */}
@@ -976,10 +983,10 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
           <Card className="bg-white rounded-3xl p-8 text-center max-w-md mx-4 shadow-2xl border-0">
             <div className="text-6xl mb-4">⏰</div>
             <h2 className="text-2xl font-bold text-gray-800 mb-2">
-              Time's Up!
+              {t("storyDisplay.countdown.timesUp")}
             </h2>
             <p className="text-gray-600 mb-4">
-              Going to your reading report in...
+              {t("storyDisplay.countdown.goingToReport")}
             </p>
             <div className="text-4xl font-bold text-purple-600 mb-4">
               {countdownSeconds}
@@ -988,7 +995,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
               onClick={handleFinishSession}
               className="bg-purple-500 hover:bg-purple-600 text-white rounded-full px-6"
             >
-              Go Now ✨
+              {t("storyDisplay.countdown.goNow")}
             </Button>
           </Card>
         </div>
@@ -1004,7 +1011,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                 </div>
                 <div className="flex-1">
                   <div className="text-sm font-medium mb-1">
-                    Tutorial {tutorialStep + 1}/5
+                    {t("storyDisplay.tutorial.step")} {tutorialStep + 1}/{t("storyDisplay.tutorial.of")}
                   </div>
                   <div className="text-sm">
                     {showTutorial && tutorialStep < 5 ? [
