@@ -9,127 +9,144 @@ export class InclusiveStoryGenerator {
     userInfo: UserInfo, 
     difficulty: DifficultyLevel,
     isExtension: boolean = false,
-    extensionNumber: number = 0
+    pageCount: number = 10
   ): string[] {
     
     const isESLLearner = userInfo.nativeLanguage !== 'en';
     const isNativeEnglishSpeaker = userInfo.nativeLanguage === 'en';
     
     if (isExtension) {
-      return this.generateCulturalExtension(userInfo, difficulty, extensionNumber, isESLLearner);
+      return this.generateCulturalExtension(userInfo, difficulty, pageCount, isESLLearner);
     } else {
-      return this.generateCulturalInitialStory(userInfo, difficulty, isESLLearner);
+      return this.generateCulturalInitialStory(userInfo, difficulty, isESLLearner, pageCount);
     }
   }
 
   private static generateCulturalInitialStory(
     userInfo: UserInfo, 
     difficulty: DifficultyLevel,
-    isESLLearner: boolean
+    isESLLearner: boolean,
+    pageCount: number = 10
   ): string[] {
     
     const culturalContext = CulturalAdaptationService.getCulturalContext(userInfo.nativeLanguage || 'en');
     const culturalElements = CulturalAdaptationService.getCulturalElements(userInfo);
     const characterName = userInfo.name;
     
+    // Determine words per page based on difficulty level
+    const wordsPerPage = {
+      easy: 15,      // Pre-K - 1st Grade: 10-20 words
+      medium: 35,    // 2nd - 3rd Grade: 25-45 words  
+      hard: 65,      // 4th - 5th Grade: 50-80 words
+      expert: 85     // 6th Grade+: 70-100 words
+    };
+    
+    const targetWords = wordsPerPage[difficulty] || 35;
+    
     // Create different story variants based on difficulty and cultural context
     const createCulturalStoryByDifficulty = () => {
-      if (difficulty === "easy") {
-        // Simple, repetitive stories with cultural elements
-        const culturalStoryVariants = [
-          [
-            `${characterName} wakes up in the morning bright. The sun is shining. What a sight!`,
-            `"What shall I do?" asks ${characterName} with glee. "I think I'll try some ${userInfo.hobbies}!"`,
-            `Out the door ${characterName} goes. Today will be great, everyone knows!`,
-            `${characterName} sees friends from the neighborhood. They wave and smile. This feels so good!`,
-            `Together they enjoy ${culturalElements.food}. Sharing with friends is always good food!`,
-            `${characterName} learns about ${culturalElements.value}. This makes the day feel full of love!`,
-            `When evening comes, ${characterName} feels proud. "Today was wonderful!" they say out loud.`
-          ],
-          [
-            `Today is special for ${characterName}. It's time for ${culturalElements.celebration}!`,
-            `${characterName} puts on nice clothes. Everyone is excited, as the happiness shows!`,
-            `The family gathers near ${culturalElements.setting}. This day will be one worth remembering!`,
-            `They eat delicious ${culturalElements.food}. Every bite tastes really good!`,
-            `${characterName} learns about ${culturalElements.value}. This wisdom comes from high above!`,
-            `Music and laughter fill the air. Joy and love are everywhere!`,
-            `${characterName} goes to sleep with a smile. This was a perfect celebration style!`
-          ]
-        ];
+      const storyPages: string[] = [];
+      
+      // Base story elements
+      const animals = ["friendly dragon", "wise owl", "playful rabbit", "gentle deer", "curious fox"];
+      const settings = [culturalElements.setting, "magical forest", "enchanted garden", "crystal cave", "rainbow bridge"];
+      const objects = ["glowing crystal", "magic book", "golden key", "silver compass", "rainbow gem"];
+      const values = [culturalElements.value, "kindness", "courage", "friendship", "wisdom"];
+      
+      for (let i = 0; i < pageCount; i++) {
+        let page = "";
+        let wordCount = 0;
         
-        // For ESL learners, add more repetitive language patterns
-        if (isESLLearner) {
-          return culturalStoryVariants[0].map(sentence => {
-            // Add simple, repetitive patterns that help with English learning
-            return sentence;
-          });
+        if (difficulty === "easy") {
+          // Simple, short sentences for early readers
+          const easyTemplates = [
+            `${characterName} saw a big ${animals[i % animals.length]}.`,
+            `They walked to the ${settings[i % settings.length]}.`,
+            `The ${animals[i % animals.length]} was very friendly.`,
+            `${characterName} felt happy and excited.`,
+            `They found a special ${objects[i % objects.length]}.`,
+            `${characterName} learned about ${values[i % values.length]}.`,
+            `The sun was bright and warm.`,
+            `${characterName} smiled with joy.`,
+            `Friends came to help too.`,
+            `Everyone had a good time.`
+          ];
+          
+          while (wordCount < targetWords) {
+            const template = easyTemplates[Math.floor(Math.random() * easyTemplates.length)];
+            const words = template.split(' ').length;
+            if (wordCount + words <= targetWords + 5) {
+              page += (page ? " " : "") + template;
+              wordCount += words;
+            } else {
+              break;
+            }
+          }
+        } else if (difficulty === "medium") {
+          // More complex sentences for intermediate readers
+          const mediumTemplates = [
+            `${characterName} was exploring the magical ${settings[i % settings.length]} when they discovered a mysterious ${objects[i % objects.length]}.`,
+            `The wise ${animals[i % animals.length]} told them about an ancient secret hidden in the ${settings[i % settings.length]}.`,
+            `Together, they embarked on an exciting adventure through the ${settings[i % settings.length]}.`,
+            `${characterName} learned important lessons about ${values[i % values.length]} and how it helps everyone.`,
+            `The journey was challenging but filled with wonderful surprises and new discoveries.`,
+            `${characterName} used their knowledge of ${userInfo.hobbies || "reading"} to solve the puzzle.`,
+            `The ${animals[i % animals.length]} became ${characterName}'s trusted companion on this adventure.`,
+            `They worked together to overcome obstacles and help others in need.`
+          ];
+          
+          while (wordCount < targetWords) {
+            const template = mediumTemplates[Math.floor(Math.random() * mediumTemplates.length)];
+            const words = template.split(' ').length;
+            if (wordCount + words <= targetWords + 8) {
+              page += (page ? " " : "") + template;
+              wordCount += words;
+            } else {
+              break;
+            }
+          }
+        } else {
+          // Complex sentences and vocabulary for advanced readers
+          const hardTemplates = [
+            `${characterName} embarked on an extraordinary adventure through the enchanting ${settings[i % settings.length]}, where they encountered a magnificent ${animals[i % animals.length]} who possessed ancient wisdom about ${values[i % values.length]}.`,
+            `The mysterious ${objects[i % objects.length]} glowed with an ethereal light, revealing intricate patterns that seemed to tell the story of forgotten civilizations and their understanding of ${values[i % values.length]}.`,
+            `Through perseverance and determination, ${characterName} overcame numerous obstacles, learning valuable lessons about resilience, empathy, and the importance of ${values[i % values.length]} in building strong communities.`,
+            `The adventure challenged their problem-solving skills and encouraged them to think creatively about solutions to complex puzzles while maintaining their commitment to ${values[i % values.length]}.`,
+            `As the journey continued, ${characterName} discovered that true strength comes not from physical power, but from the courage to be kind and the wisdom to understand that ${values[i % values.length]} guides all meaningful actions.`,
+            `${characterName}'s expertise in ${userInfo.hobbies || "learning"} became instrumental in helping the ${animals[i % animals.length]} restore balance to the ${settings[i % settings.length]}.`,
+            `The experience taught ${characterName} that leadership means inspiring others to discover their own potential while staying true to the principles of ${values[i % values.length]}.`
+          ];
+          
+          while (wordCount < targetWords) {
+            const template = hardTemplates[Math.floor(Math.random() * hardTemplates.length)];
+            const words = template.split(' ').length;
+            if (wordCount + words <= targetWords + 12) {
+              page += (page ? " " : "") + template;
+              wordCount += words;
+            } else {
+              break;
+            }
+          }
         }
         
-        return culturalStoryVariants[Math.floor(Math.random() * culturalStoryVariants.length)];
+        // Ensure we have content for the page
+        if (!page.trim()) {
+          page = `${characterName} continued their amazing adventure, learning more about ${values[i % values.length]} with each step.`;
+        }
         
-      } else if (difficulty === "medium") {
-        // Cultural adventure stories
-        const culturalMediumStories = [
-          [
-            `${characterName} was practicing ${userInfo.hobbies} when something magical happened near ${culturalElements.setting}.`,
-            `A wise character from their family's stories appeared and said, "I have been waiting for someone who understands ${culturalElements.value}."`,
-            `"Your community needs help," the wise character explained. "Only someone who appreciates both tradition and new ideas can solve this challenge."`,
-            `${characterName} used their knowledge of ${userInfo.hobbies} and their understanding of ${culturalElements.value} to find a creative solution.`,
-            `The celebration afterward included ${culturalElements.food} and stories that connected past and present.`,
-            `"You have learned that being proud of your heritage while embracing new experiences makes you strong," the wise character said with a smile.`
-          ],
-          [
-            `During ${culturalElements.celebration}, ${characterName} discovered an old family treasure hidden near ${culturalElements.setting}.`,
-            `The treasure wasn't gold or silver, but something more valuable: stories and wisdom about ${culturalElements.value}.`,
-            `${characterName} realized that their passion for ${userInfo.hobbies} connected them to generations of family members who shared similar dreams.`,
-            `With help from friends who came from different backgrounds, ${characterName} organized a special event to share these discoveries.`,
-            `They prepared ${culturalElements.food} and invited everyone to learn about different traditions while building new friendships.`,
-            `"Diversity makes our community stronger," ${characterName} realized, "and sharing our stories helps everyone feel at home."`
-          ]
-        ];
-        
-        return culturalMediumStories[Math.floor(Math.random() * culturalMediumStories.length)];
-        
-      } else if (difficulty === "hard") {
-        // Complex cultural narratives with character development
-        const culturalHardStories = [
-          [
-            `${characterName} had always felt caught between two worlds: honoring their family's traditions from ${culturalContext.region} and fitting in with their friends at school.`,
-            `When their class was assigned a project about ${culturalElements.value}, ${characterName} saw an opportunity to bridge both parts of their identity.`,
-            `Working with classmates from different backgrounds, they discovered that everyone struggled with similar questions about belonging and identity.`,
-            `${characterName}'s expertise in ${userInfo.hobbies} became the perfect way to express these complex feelings and bring the group together.`,
-            `Their presentation, which included ${culturalElements.food} and stories from ${culturalElements.setting}, helped everyone understand that having multiple cultural influences is a strength.`,
-            `"I used to think I had to choose between my heritage and my future," ${characterName} reflected, "but now I see that embracing both makes me uniquely valuable to my community."`
-          ]
-        ];
-        
-        return culturalHardStories[0];
-        
-      } else { // expert
-        // Sophisticated narratives exploring cultural identity and global citizenship
-        const culturalExpertStories = [
-          [
-            `${characterName} lived in a diverse community where understanding ${culturalElements.value} required navigating complex social dynamics and historical context.`,
-            `When a community conflict arose that threatened the annual ${culturalElements.celebration}, ${characterName} realized their unique perspective could contribute to a solution.`,
-            `Drawing on their deep knowledge of ${userInfo.hobbies} and their multicultural background, ${characterName} proposed a collaborative approach that honored everyone's traditions.`,
-            `The process wasn't easy—it required difficult conversations about privilege, representation, and the difference between cultural appreciation and appropriation.`,
-            `${characterName}'s leadership helped community members recognize that true inclusivity means creating space for authentic voices while building bridges across differences.`,
-            `The successful celebration, featuring foods like ${culturalElements.food} from many cultures, became a model for other communities seeking to build unity while celebrating diversity.`,
-            `"Being a bridge between cultures," ${characterName} concluded, "means understanding that my identity gives me both the privilege and responsibility to help others feel seen and valued."`
-          ]
-        ];
-        
-        return culturalExpertStories[0];
+        storyPages.push(page);
       }
+      
+      return storyPages;
     };
 
-    return createCulturalStoryByDifficulty() || [];
+    return createCulturalStoryByDifficulty();
   }
 
   private static generateCulturalExtension(
     userInfo: UserInfo, 
     difficulty: DifficultyLevel, 
-    extensionNumber: number,
+    pageCount: number,
     isESLLearner: boolean
   ): string[] {
     
@@ -155,7 +172,7 @@ export class InclusiveStoryGenerator {
           ]
         ];
         
-        return culturalEasyExtensions[extensionNumber % culturalEasyExtensions.length];
+        return culturalEasyExtensions[0].slice(0, pageCount);
         
       } else if (difficulty === "medium") {
         const culturalMediumExtensions = [
