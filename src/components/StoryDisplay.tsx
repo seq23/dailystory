@@ -676,17 +676,45 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                       ← Back
                     </Button>
                     
-                    <div className="flex space-x-1">
-                      {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => (
-                        <div
-                          key={i}
-                          className={`w-2 h-2 rounded-full transition-all ${
-                            i === currentParagraph % 5 
-                              ? 'bg-purple-500 scale-125' 
-                              : 'bg-gray-200'
+                    <div className="flex items-center space-x-3">
+                      {/* Page dots */}
+                      <div className="flex space-x-1">
+                        {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => (
+                          <div
+                            key={i}
+                            className={`w-2 h-2 rounded-full transition-all ${
+                              i === currentParagraph % 5 
+                                ? 'bg-purple-500 scale-125' 
+                                : 'bg-gray-200'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      
+                      {/* Page Controls */}
+                      <div className="flex space-x-1">
+                        <Button
+                          onClick={handleReducePages}
+                          variant="outline"
+                          size="sm"
+                          className="rounded-full text-xs px-2"
+                          disabled={story.length <= 1}
+                        >
+                          <Minus className="w-3 h-3" />
+                        </Button>
+                        
+                        <Button
+                          onClick={handleAddPages}
+                          variant="outline"
+                          size="sm"
+                          className={`rounded-full text-xs px-2 ${
+                            showAddPagesAlert ? 'animate-pulse bg-yellow-50 border-yellow-300' : ''
                           }`}
-                        />
-                      ))}
+                        >
+                          <Plus className="w-3 h-3" />
+                          {showAddPagesAlert && " ⚡"}
+                        </Button>
+                      </div>
                     </div>
                     
                     <Button
@@ -760,58 +788,33 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                   +10m
                 </Button>
               </div>
-              
-              {/* Page Controls */}
-              <div className="flex space-x-1">
-                <Button
-                  onClick={handleReducePages}
-                  variant="outline"
-                  size="sm"
-                  className="rounded-full text-xs px-2"
-                  disabled={story.length <= 1}
-                >
-                  <Minus className="w-3 h-3" />
-                  -Page
-                </Button>
-                
-                <Button
-                  onClick={handleAddPages}
-                  variant="outline"
-                  size="sm"
-                  className={`rounded-full text-xs px-2 ${
-                    showAddPagesAlert ? 'animate-pulse bg-yellow-50 border-yellow-300' : ''
-                  }`}
-                >
-                  <Plus className="w-3 h-3" />
-                  +Page
-                  {showAddPagesAlert && " ⚡"}
-                </Button>
-              </div>
             </div>
           </div>
         </Card>
       </div>
 
-      {/* Reading Stats (on hover over progress bar) */}
-      <div className="fixed top-20 right-4 z-40">
-        <Card className="bg-white/95 backdrop-blur-sm shadow-xl rounded-xl p-3 text-xs border-0">
-          <h4 className="font-bold text-purple-800 mb-2">📊 Reading Stats</h4>
-          <div className="space-y-1">
-            <div className="flex justify-between">
-              <span className="text-gray-600">Words Read:</span>
-              <span className="font-medium text-purple-700">{readingStats.wordsRead}</span>
+      {/* Floating Reading Stats - LEFT SIDE */}
+      <div className="fixed top-32 left-4 z-40">
+        <Card className="bg-white/95 backdrop-blur-sm shadow-xl rounded-xl p-4 text-sm border-0">
+          <h4 className="font-bold text-purple-800 mb-3 flex items-center">
+            📊 Reading Progress
+          </h4>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">Words:</span>
+              <span className="font-bold text-purple-700">{readingStats.wordsRead}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Time Spent:</span>
-              <span className="font-medium text-green-700">{formatTime(readingStats.timeSpent)}</span>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">Time:</span>
+              <span className="font-bold text-green-700">{formatTime(readingStats.timeSpent)}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Pages Read:</span>
-              <span className="font-medium text-blue-700">{currentParagraph + 1}</span>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">Pages:</span>
+              <span className="font-bold text-blue-700">{currentParagraph + 1}</span>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between items-center">
               <span className="text-gray-600">Accuracy:</span>
-              <span className="font-medium text-orange-700">{readingStats.accuracy}%</span>
+              <span className="font-bold text-orange-700">{readingStats.accuracy}%</span>
             </div>
           </div>
         </Card>
