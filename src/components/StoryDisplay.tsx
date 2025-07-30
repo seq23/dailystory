@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { BookOpen, Home, RotateCcw, Volume2, VolumeX, TrendingUp, TrendingDown, Plus, Star, Heart, Sparkles, Wand2, Play, Pause, Timer, Mic, MicOff } from "lucide-react";
+import { BookOpen, Home, RotateCcw, Volume2, VolumeX, TrendingUp, TrendingDown, Plus, Minus, Star, Heart, Sparkles, Wand2, Play, Pause, Timer, Mic, MicOff } from "lucide-react";
 import type { UserInfo } from "./UserInfoForm";
 import illustration1 from "@/assets/story-illustration-1.jpg";
 import illustration2 from "@/assets/story-illustration-2.jpg";
@@ -280,6 +280,28 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
   const handleAddTime = () => {
     // Add 10 minutes (600 seconds), not 10 seconds
     setTimeRemaining(prev => prev + 600);
+  };
+
+  const handleReduceTime = () => {
+    // Remove 10 minutes (600 seconds), but don't go below 1 minute
+    setTimeRemaining(prev => Math.max(prev - 600, 60));
+  };
+
+  const handleReducePages = () => {
+    if (story.length > 1) {
+      // Remove the last page, but don't go below 1 page
+      setStory(prev => prev.slice(0, -1));
+      
+      // If current page is now out of bounds, go to the last page
+      if (currentParagraph >= story.length - 1) {
+        setCurrentParagraph(story.length - 2);
+      }
+      
+      toast({
+        title: "Page Removed! 📖",
+        description: "Removed the last page from your story.",
+      });
+    }
   };
 
   const playTextToSpeech = async (text: string) => {
@@ -636,7 +658,19 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                 {isReading ? "Pause" : "Start"}
               </Button>
               
+              {/* Time Controls */}
               <div className="flex space-x-1">
+                <Button
+                  onClick={handleReduceTime}
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full text-xs px-2"
+                  disabled={timeRemaining <= 60}
+                >
+                  <Minus className="w-3 h-3" />
+                  -10m
+                </Button>
+                
                 <Button
                   onClick={handleAddTime}
                   variant="outline"
@@ -645,6 +679,20 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                 >
                   <Plus className="w-3 h-3" />
                   +10m
+                </Button>
+              </div>
+              
+              {/* Page Controls */}
+              <div className="flex space-x-1">
+                <Button
+                  onClick={handleReducePages}
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full text-xs px-2"
+                  disabled={story.length <= 1}
+                >
+                  <Minus className="w-3 h-3" />
+                  -Page
                 </Button>
                 
                 <Button
@@ -655,8 +703,9 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                     showAddPagesAlert ? 'animate-pulse bg-yellow-50 border-yellow-300' : ''
                   }`}
                 >
-                  <BookOpen className="w-3 h-3" />
-                  {showAddPagesAlert && "⚡"}
+                  <Plus className="w-3 h-3" />
+                  +Page
+                  {showAddPagesAlert && " ⚡"}
                 </Button>
               </div>
             </div>
