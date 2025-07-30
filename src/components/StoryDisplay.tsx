@@ -4,9 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { BookOpen, Home, RotateCcw, Volume2, VolumeX, TrendingUp, TrendingDown, Plus, Minus, Star, Heart, Sparkles, Wand2, Play, Pause, Timer, Mic, MicOff } from "lucide-react";
+import { BookOpen, Home, RotateCcw, Volume2, VolumeX, TrendingUp, TrendingDown, Plus, Minus, Star, Heart, Sparkles, Wand2, Play, Pause, Timer, Mic, MicOff, BarChart3 } from "lucide-react";
 import { FloatingTimer } from "./FloatingTimer";
 import type { UserInfo } from "./UserInfoForm";
+import ProgressDashboard from "@/components/ProgressDashboard";
+import { ProgressTrackingService, ReadingProgress } from "@/services/progressTrackingService";
 import illustration1 from "@/assets/story-illustration-1.jpg";
 import illustration2 from "@/assets/story-illustration-2.jpg";
 import illustration3 from "@/assets/story-illustration-3.jpg";
@@ -100,6 +102,12 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
   const [tutorialStep, setTutorialStep] = useState(0);
   const [hasShownTutorial, setHasShownTutorial] = useState(false);
   
+  // Progress tracking
+  const [readingProgress, setReadingProgress] = useState<ReadingProgress | null>(null);
+  const [showProgressDashboard, setShowProgressDashboard] = useState(false);
+  const [sessionStartTime, setSessionStartTime] = useState<Date>(new Date());
+  const [sessionWordsRead, setSessionWordsRead] = useState(0);
+  
   // Reading stats
   const [readingStats, setReadingStats] = useState({
     wordsRead: 0,
@@ -153,6 +161,16 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         setHasShownAddPagesAlert(false); // Reset alert flag for new session
         setCustomIllustrations(new Map()); // Clear custom illustrations
         
+        // Initialize or load progress tracking
+        const existingProgress = ProgressTrackingService.loadProgress();
+        if (existingProgress && existingProgress.userId.includes(userInfo.name.toLowerCase())) {
+          setReadingProgress(existingProgress);
+        } else {
+          const newProgress = ProgressTrackingService.initializeProgress(userInfo);
+          setReadingProgress(newProgress);
+          ProgressTrackingService.saveProgress(newProgress);
+        }
+        
         // Start tutorial for new session only if not shown before
         if (!hasShownTutorial) {
           setShowTutorial(true);
@@ -165,6 +183,9 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         
         // Calculate word count for stats and reset reading stats
         const wordCount = generatedStory.join(' ').split(' ').filter(word => word.length > 0).length;
+        setSessionStartTime(new Date());
+        setSessionWordsRead(wordCount);
+        
         setReadingStats({ 
           wordsRead: wordCount,
           timeSpent: 0, // Reset time spent
@@ -472,17 +493,29 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
   };
 
   const handleFinishSession = () => {
-    // Update final reading stats
-    const finalStats = {
-      ...readingStats,
-      pagesRead: currentParagraph + 1,
-      timeSpent: Math.floor((Date.now() - readingStats.startTime) / 1000),
-      totalPages: totalPages,
-      currentDifficulty
-    };
-    
-    // Navigate to session ended with stats
-    onSessionEnded(finalStats);
+    // Update final reading stats if progress tracking is available
+    if (readingProgress) {
+      const sessionData = {
+        wordsRead: sessionWordsRead,
+        timeSpent: Math.floor((Date.now() - sessionStartTime.getTime()) / 1000),
+        storiesCompleted: 1,
+        comprehensionScore: 95 // This could be dynamic based on user interactions
+      };
+      
+      const updatedProgress = ProgressTrackingService.updateReadingSession(readingProgress, sessionData);
+      const finalProgress = {
+        ...updatedProgress,
+        personalizedRecommendations: ProgressTrackingService.generatePersonalizedRecommendations(updatedProgress, userInfo)
+      };
+      
+      setReadingProgress(finalProgress);
+      ProgressTrackingService.saveProgress(finalProgress);
+      
+      // Navigate to session ended with stats
+      onSessionEnded(finalProgress);
+    } else {
+      onSessionEnded();
+    }
   };
 
   const playTextToSpeech = async (text: string) => {
@@ -656,6 +689,15 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
             </div>
             
             <div className="flex items-center space-x-2">
+              <Button
+                onClick={() => setShowProgressDashboard(true)}
+                variant="ghost"
+                size="sm"
+                className="text-purple-600 hover:bg-purple-50"
+              >
+                <BarChart3 className="w-4 h-4 mr-1" />
+                Progress
+              </Button>
               <Button 
                 onClick={handleFinishSession} 
                 className="bg-green-500 hover:bg-green-600 text-white rounded-full"
@@ -982,6 +1024,15 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
               </div>
             </Card>
           </div>
+        )}
+        
+        {/* Progress Dashboard */}
+        {showProgressDashboard && readingProgress && (
+          <ProgressDashboard
+            progress={readingProgress}
+            userInfo={userInfo}
+            onClose={() => setShowProgressDashboard(false)}
+          />
         )}
     </div>
   );
