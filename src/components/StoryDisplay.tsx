@@ -81,7 +81,7 @@ interface StoryDisplayProps {
   onSessionEnded: () => void;
 }
 
-export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDisplayProps) => {
+const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDisplayProps) => {
   const { t } = useTranslation();
   const [currentParagraph, setCurrentParagraph] = useState(0);
   const [isReading, setIsReading] = useState(true);
@@ -899,3 +899,5 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: S
     </TooltipProvider>
   );
 };
+
+export default StoryDisplay;
