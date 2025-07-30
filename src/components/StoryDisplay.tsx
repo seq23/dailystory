@@ -69,6 +69,7 @@ import { SecurityValidator } from "@/utils/securityValidation";
 import { SecurityMonitor } from "@/utils/monitoring";
 import { createChildFriendlyPrompt } from "@/services/runwareService";
 import { createOpenAITTSService } from "@/services/textToSpeechService";
+import { MultilingualStoryService } from "@/services/multilingualStoryService";
 
 type DifficultyLevel = "easy" | "medium" | "hard" | "expert";
 
@@ -154,7 +155,18 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: S
     return `a happy ${genderDesc} with ${skinToneDesc}`;
   };
 
-  const generateStoryExtension = (info: UserInfo, difficulty: DifficultyLevel, extensionNumber: number): string[] => {
+  const generateStoryExtension = async (info: UserInfo, difficulty: DifficultyLevel, extensionNumber: number): Promise<string[]> => {
+    const storyLanguage = (info.storyLanguage || "English") as StoryLanguage;
+    
+    // First try to generate native story in target language
+    if (storyLanguage !== "English") {
+      const nativeStory = MultilingualStoryService.generateNativeStory(info, difficulty, storyLanguage, extensionNumber);
+      if (nativeStory.length > 0) {
+        return nativeStory;
+      }
+    }
+
+    // Fall back to English generation with translation
     const avatarDesc = getAvatarDescription();
     const hobbies = info.hobbies;
     
@@ -241,24 +253,25 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: S
       }
     };
 
-    const selectedExtension = createExtensionByDifficulty();
+    const englishStory = createExtensionByDifficulty();
     
-    const difficultySettings = {
-      easy: { words: 25 },
-      medium: { words: 50 },
-      hard: { words: 75 },
-      expert: { words: 100 }
-    };
-    
-    const settings = difficultySettings[difficulty];
-    
-    return selectedExtension.map(paragraph => {
-      const words = paragraph.split(' ');
-      if (words.length > settings.words) {
-        return words.slice(0, settings.words).join(' ') + '...';
+    // Translate if needed
+    if (storyLanguage !== "English") {
+      try {
+        const translatedStory = await MultilingualStoryService.translateStoryContent(
+          englishStory, 
+          storyLanguage, 
+          info, 
+          difficulty
+        );
+        return translatedStory;
+      } catch (error) {
+        console.error('Translation failed, using English:', error);
+        return englishStory;
       }
-      return paragraph;
-    });
+    }
+    
+    return englishStory;
   };
 
   const generateInitialStory = (info: UserInfo, difficulty: DifficultyLevel): string[] => {
