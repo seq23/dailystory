@@ -27,6 +27,10 @@ export interface UserInfo {
   specialRequest: string;
   difficultyLevel?: "easy" | "medium" | "hard" | "expert";
   readingAbility?: "easy" | "medium" | "hard" | "expert";
+  // New optional language preferences - defaults to English if not specified
+  nativeLanguage?: string;
+  storyLanguage?: string;
+  isLearningMode?: boolean;
 }
 
 interface UserInfoFormProps {
@@ -50,7 +54,11 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
     favoriteFood: "",
     specialRequest: "",
     difficultyLevel: "easy",
-    readingAbility: "easy"
+    readingAbility: "easy",
+    // Default language preferences (preserves existing behavior)
+    nativeLanguage: "English",
+    storyLanguage: "English", 
+    isLearningMode: false
   });
 
   // Enhanced content filtering with grade-aware security
@@ -62,7 +70,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
     };
   };
 
-  const handleInputChange = (field: keyof UserInfo, value: string | number) => {
+  const handleInputChange = (field: keyof UserInfo, value: string | number | boolean) => {
     if (typeof value === 'string') {
       // Check if this is a deletion (shorter text) - skip security validation for deletions
       const currentValue = formData[field] as string;
@@ -346,18 +354,61 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
               Additional Info
             </h3>
             
-            <div className="space-y-2">
-              <Label htmlFor="specialRequest" className="text-base md:text-lg font-semibold text-foreground">
-                Tell us if there is anything special you want to include in your story?
-                <span className="text-xs md:text-sm text-muted-foreground ml-2">(Optional)</span>
-              </Label>
-              <TagInput
-                value={formData.specialRequest}
-                onChange={(value) => handleInputChange("specialRequest", value)}
-                placeholder="Type special story elements and press Enter..."
-                className="text-base md:text-lg min-h-[80px] md:min-h-[100px]"
-              />
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="specialRequest" className="text-base md:text-lg font-semibold text-foreground">
+                  Tell us if there is anything special you want to include in your story?
+                  <span className="text-xs md:text-sm text-muted-foreground ml-2">(Optional)</span>
+                </Label>
+                <TagInput
+                  value={formData.specialRequest}
+                  onChange={(value) => handleInputChange("specialRequest", value)}
+                  placeholder="Type special story elements and press Enter..."
+                  className="text-base md:text-lg min-h-[80px] md:min-h-[100px]"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="storyLanguage" className="text-base md:text-lg font-semibold text-foreground">
+                    What language would you like your story in?
+                    <span className="text-xs md:text-sm text-muted-foreground ml-2">(Optional)</span>
+                  </Label>
+                  <Select value={formData.storyLanguage} onValueChange={(value) => handleInputChange("storyLanguage", value)}>
+                    <SelectTrigger className="text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-primary/20">
+                      <SelectValue placeholder="Select story language" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="English">English</SelectItem>
+                      <SelectItem value="Spanish">Spanish (Español)</SelectItem>
+                      <SelectItem value="French">French (Français)</SelectItem>
+                      <SelectItem value="German">German (Deutsch)</SelectItem>
+                      <SelectItem value="Italian">Italian (Italiano)</SelectItem>
+                      <SelectItem value="Portuguese">Portuguese (Português)</SelectItem>
+                      <SelectItem value="Chinese">Chinese (中文)</SelectItem>
+                      <SelectItem value="Japanese">Japanese (日本語)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="isLearningMode" className="text-base md:text-lg font-semibold text-foreground">
+                    Are you learning this language?
+                    <span className="text-xs md:text-sm text-muted-foreground ml-2">(Optional)</span>
+                  </Label>
+                  <Select 
+                    value={formData.isLearningMode ? "yes" : "no"} 
+                    onValueChange={(value) => handleInputChange("isLearningMode", value === "yes")}
+                  >
+                    <SelectTrigger className="text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-primary/20">
+                      <SelectValue placeholder="Learning mode" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="no">No, I'm fluent</SelectItem>
+                      <SelectItem value="yes">Yes, I'm learning</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
           </div>
         </div>
 
