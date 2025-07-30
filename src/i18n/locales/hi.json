@@ -87,8 +87,41 @@
           "expert": {
             "title": "विशेषज्ञ पढ़ना",
             "description": "(9th-12th कक्षा: विशेषज्ञ शब्दावली और परिष्कृत लेखन)"
-          }
-        }
+    }
+  },
+  "storyDisplay": {
+    "header": {
+      "tagline": "बच्चों के लिए पढ़ने के साहसिक कार्य",
+      "home": "होम",
+      "newStory": "नई कहानी"
+    },
+    "progress": {
+      "page": "पेज",
+      "of": "का",
+      "progress": "प्रगति:"
+    },
+    "difficulty": {
+      "easy": "आसान",
+      "medium": "मध्यम",
+      "hard": "कठिन", 
+      "expert": "विशेषज्ञ",
+      "level": "स्तर",
+      "easier": "आसान",
+      "harder": "कठिन",
+      "tutorialTitle": "💡 टिप: कहानियों को आसान या कठिन बनाएं!",
+      "tutorialText": "कठिनाई समायोजित करने के लिए इन बटनों पर क्लिक करें"
+    },
+    "illustration": {
+      "creating": "जादुई चित्र बनाया जा रहा है...",
+      "loading": "चित्र लोड हो रहा है..."
+    },
+    "navigation": {
+      "previous": "पिछला",
+      "next": "अगला",
+      "previousShort": "←",
+      "nextShort": "→"
+    }
+  }
       },
       "avatar": {
         "label": "आप कौन सा अवतार चाहते हैं?"

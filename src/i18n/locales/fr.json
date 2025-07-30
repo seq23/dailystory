@@ -87,8 +87,41 @@
           "expert": {
             "title": "Lecture Expert",
             "description": "(9e-12e année : Vocabulaire expert et écriture sophistiquée)"
-          }
-        }
+    }
+  },
+  "storyDisplay": {
+    "header": {
+      "tagline": "Aventures de Lecture pour Enfants",
+      "home": "Accueil",
+      "newStory": "Nouvelle Histoire"
+    },
+    "progress": {
+      "page": "Page",
+      "of": "sur",
+      "progress": "Progrès :"
+    },
+    "difficulty": {
+      "easy": "Facile",
+      "medium": "Moyen",
+      "hard": "Difficile",
+      "expert": "Expert",
+      "level": "Niveau",
+      "easier": "Plus Facile",
+      "harder": "Plus Difficile",
+      "tutorialTitle": "💡 Astuce : Rendez les histoires plus faciles ou plus difficiles !",
+      "tutorialText": "Cliquez sur ces boutons pour ajuster la difficulté"
+    },
+    "illustration": {
+      "creating": "Création d'une illustration magique...",
+      "loading": "Chargement de l'illustration..."
+    },
+    "navigation": {
+      "previous": "Précédent",
+      "next": "Suivant",
+      "previousShort": "←",
+      "nextShort": "→"
+    }
+  }
       },
       "avatar": {
         "label": "Quel avatar voulez-vous ?"

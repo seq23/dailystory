@@ -87,8 +87,41 @@
           "expert": {
             "title": "Leitura Expert",
             "description": "(9ª-12ª série: Vocabulário expert e escrita sofisticada)"
-          }
-        }
+    }
+  },
+  "storyDisplay": {
+    "header": {
+      "tagline": "Aventuras de Leitura para Crianças",
+      "home": "Início",
+      "newStory": "Nova História"
+    },
+    "progress": {
+      "page": "Página",
+      "of": "de",
+      "progress": "Progresso:"
+    },
+    "difficulty": {
+      "easy": "Fácil",
+      "medium": "Médio",
+      "hard": "Difícil",
+      "expert": "Expert",
+      "level": "Nível",
+      "easier": "Mais Fácil",
+      "harder": "Mais Difícil",
+      "tutorialTitle": "💡 Dica: Torne as histórias mais fáceis ou mais difíceis!",
+      "tutorialText": "Clique nestes botões para ajustar a dificuldade"
+    },
+    "illustration": {
+      "creating": "Criando ilustração mágica...",
+      "loading": "Carregando ilustração..."
+    },
+    "navigation": {
+      "previous": "Anterior",
+      "next": "Próximo",
+      "previousShort": "←",
+      "nextShort": "→"
+    }
+  }
       },
       "avatar": {
         "label": "Qual avatar você quer?"

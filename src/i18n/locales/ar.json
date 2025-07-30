@@ -87,8 +87,41 @@
           "expert": {
             "title": "قراءة خبير",
             "description": "(صف تاسع-ثاني عشر: مفردات متخصصة وكتابة متطورة)"
-          }
-        }
+    }
+  },
+  "storyDisplay": {
+    "header": {
+      "tagline": "مغامرات القراءة للأطفال",
+      "home": "الرئيسية",
+      "newStory": "قصة جديدة"
+    },
+    "progress": {
+      "page": "صفحة",
+      "of": "من",
+      "progress": "التقدم:"
+    },
+    "difficulty": {
+      "easy": "سهل",
+      "medium": "متوسط",
+      "hard": "صعب", 
+      "expert": "خبير",
+      "level": "مستوى",
+      "easier": "أسهل",
+      "harder": "أصعب",
+      "tutorialTitle": "💡 نصيحة: اجعل القصص أسهل أو أصعب!",
+      "tutorialText": "انقر على هذه الأزرار لتعديل الصعوبة"
+    },
+    "illustration": {
+      "creating": "إنشاء رسم توضيحي سحري...",
+      "loading": "تحميل الرسم التوضيحي..."
+    },
+    "navigation": {
+      "previous": "السابق",
+      "next": "التالي",
+      "previousShort": "←",
+      "nextShort": "→"
+    }
+  }
       },
       "avatar": {
         "label": "أي صورة رمزية تريد؟"

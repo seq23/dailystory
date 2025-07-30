@@ -33,6 +33,39 @@
       "placeholder": "Select language"
     }
   },
+  "storyDisplay": {
+    "header": {
+      "tagline": "Reading Adventures for Kids",
+      "home": "Home",
+      "newStory": "New Story"
+    },
+    "progress": {
+      "page": "Page",
+      "of": "of",
+      "progress": "Progress:"
+    },
+    "difficulty": {
+      "easy": "Easy",
+      "medium": "Medium", 
+      "hard": "Hard",
+      "expert": "Expert",
+      "level": "Level",
+      "easier": "Easier",
+      "harder": "Harder",
+      "tutorialTitle": "💡 Tip: Make stories easier or harder!",
+      "tutorialText": "Click these buttons to adjust difficulty"
+    },
+    "illustration": {
+      "creating": "Creating magical illustration...",
+      "loading": "Illustration loading..."
+    },
+    "navigation": {
+      "previous": "Previous",
+      "next": "Next",
+      "previousShort": "←",
+      "nextShort": "→"
+    }
+  },
   "userInfoForm": {
     "title": "Tell us about yourself!",
     "subtitle": "Help us create the perfect story just for you",

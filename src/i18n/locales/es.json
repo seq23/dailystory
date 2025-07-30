@@ -87,8 +87,41 @@
           "expert": {
             "title": "Lectura Experta",
             "description": "(9no-12vo grado: Vocabulario experto y escritura sofisticada)"
-          }
-        }
+    }
+  },
+  "storyDisplay": {
+    "header": {
+      "tagline": "Aventuras de Lectura para Niños",
+      "home": "Inicio",
+      "newStory": "Nueva Historia"
+    },
+    "progress": {
+      "page": "Página",
+      "of": "de",
+      "progress": "Progreso:"
+    },
+    "difficulty": {
+      "easy": "Fácil",
+      "medium": "Intermedio",
+      "hard": "Difícil",
+      "expert": "Experto", 
+      "level": "Nivel",
+      "easier": "Más Fácil",
+      "harder": "Más Difícil",
+      "tutorialTitle": "💡 Consejo: ¡Haz las historias más fáciles o más difíciles!",
+      "tutorialText": "Haz clic en estos botones para ajustar la dificultad"
+    },
+    "illustration": {
+      "creating": "Creando ilustración mágica...",
+      "loading": "Cargando ilustración..."
+    },
+    "navigation": {
+      "previous": "Anterior",
+      "next": "Siguiente",
+      "previousShort": "←",
+      "nextShort": "→"
+    }
+  }
       },
       "avatar": {
         "label": "¿Qué avatar quieres?"

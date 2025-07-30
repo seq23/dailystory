@@ -87,8 +87,41 @@
           "expert": {
             "title": "专家阅读",
             "description": "(9-12年级：专业词汇和复杂写作)"
-          }
-        }
+    }
+  },
+  "storyDisplay": {
+    "header": {
+      "tagline": "儿童阅读冒险",
+      "home": "首页",
+      "newStory": "新故事"
+    },
+    "progress": {
+      "page": "第",
+      "of": "页，共",
+      "progress": "进度："
+    },
+    "difficulty": {
+      "easy": "简单",
+      "medium": "中等",
+      "hard": "困难",
+      "expert": "专家",
+      "level": "级别",
+      "easier": "更简单",
+      "harder": "更困难",
+      "tutorialTitle": "💡 提示：让故事变得更简单或更困难！",
+      "tutorialText": "点击这些按钮来调整难度"
+    },
+    "illustration": {
+      "creating": "正在创建神奇插图...",
+      "loading": "插图加载中..."
+    },
+    "navigation": {
+      "previous": "上一页",
+      "next": "下一页",
+      "previousShort": "←",
+      "nextShort": "→"
+    }
+  }
       },
       "avatar": {
         "label": "你想要哪个头像？"

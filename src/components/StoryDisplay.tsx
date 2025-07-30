@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -79,6 +80,7 @@ interface StoryDisplayProps {
 }
 
 export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDisplayProps) => {
+  const { t } = useTranslation();
   const [currentParagraph, setCurrentParagraph] = useState(0);
   const [isReading, setIsReading] = useState(true);
   const [timeRemaining, setTimeRemaining] = useState(10 * 60 + 10);
@@ -743,7 +745,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: S
                   Time2Read
                 </h1>
                 <p className="text-xs sm:text-sm text-muted-foreground font-comic hidden sm:block">
-                  Reading Adventures for Kids
+                  {t("storyDisplay.header.tagline")}
                 </p>
               </div>
             </div>
@@ -769,7 +771,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: S
                 className="font-comic hover:scale-105 transition-transform bg-white/80 hover:bg-white text-xs sm:text-sm px-2 sm:px-4"
               >
                 <Home className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Home</span>
+                <span className="hidden sm:inline">{t("storyDisplay.header.home")}</span>
               </Button>
               
               <Button
@@ -778,7 +780,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: S
                 className="font-comic hover:scale-105 transition-transform bg-gradient-primary hover:shadow-glow text-xs sm:text-sm px-2 sm:px-4"
               >
                 <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
-                <span className="hidden sm:inline">New Story</span>
+                <span className="hidden sm:inline">{t("storyDisplay.header.newStory")}</span>
               </Button>
             </div>
           </div>
@@ -793,11 +795,11 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: S
             <div className="flex items-center gap-2">
               <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
               <span className="font-semibold text-foreground text-sm sm:text-base">
-                Page {currentParagraph + 1} of {totalPages}
+                {t("storyDisplay.progress.page")} {currentParagraph + 1} {t("storyDisplay.progress.of")} {totalPages}
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs sm:text-sm text-muted-foreground">Progress:</span>
+              <span className="text-xs sm:text-sm text-muted-foreground">{t("storyDisplay.progress.progress")}</span>
               <div className="w-16 sm:w-20 text-xs sm:text-sm font-semibold text-primary">
                 {Math.round(((currentParagraph + 1) / totalPages) * 100)}%
               </div>
@@ -829,14 +831,14 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: S
                           <>
                             <Sparkles className="w-8 h-8 sm:w-12 sm:h-12 text-primary mx-auto mb-2 sm:mb-4 animate-spin" />
                             <p className="text-muted-foreground font-comic text-sm sm:text-base">
-                              Creating magical illustration...
+                              {t("storyDisplay.illustration.creating")}
                             </p>
                           </>
                         ) : (
                           <>
                             <BookOpen className="w-8 h-8 sm:w-12 sm:h-12 text-primary mx-auto mb-2 sm:mb-4" />
                             <p className="text-muted-foreground font-comic text-sm sm:text-base">
-                              Illustration loading...
+                              {t("storyDisplay.illustration.loading")}
                             </p>
                           </>
                         )}
@@ -858,7 +860,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: S
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
                     <span className="px-2 py-1 sm:px-3 sm:py-1 bg-gradient-secondary rounded-full text-xs sm:text-sm font-semibold text-secondary-foreground">
-                      {currentDifficulty.charAt(0).toUpperCase() + currentDifficulty.slice(1)} Level
+                      {t(`storyDisplay.difficulty.${currentDifficulty}`)} {t("storyDisplay.difficulty.level")}
                     </span>
                   </div>
                   
@@ -869,10 +871,10 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: S
                       <div className="absolute -top-16 -left-32 sm:-top-20 sm:-left-40 lg:-left-48 z-50 animate-fade-in">
                         <div className="relative bg-gradient-to-r from-primary to-accent text-white p-4 sm:p-5 rounded-2xl shadow-lg w-56 sm:w-72 animate-[pulse_2s_infinite]">
                           <div className="text-sm sm:text-base font-semibold">
-                            💡 Tip: Make stories easier or harder!
+                            {t("storyDisplay.difficulty.tutorialTitle")}
                           </div>
                           <div className="text-xs sm:text-sm mt-1 opacity-90">
-                            Click these buttons to adjust difficulty
+                            {t("storyDisplay.difficulty.tutorialText")}
                           </div>
                           {/* Arrow pointing directly to buttons */}
                           <div className="absolute -bottom-2 right-12 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-primary"></div>
@@ -904,7 +906,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: S
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent side="bottom">
-                        <p>Easier</p>
+                        <p>{t("storyDisplay.difficulty.easier")}</p>
                       </TooltipContent>
                     </Tooltip>
                     
@@ -925,7 +927,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: S
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent side="bottom">
-                        <p>Harder</p>
+                        <p>{t("storyDisplay.difficulty.harder")}</p>
                       </TooltipContent>
                     </Tooltip>
                   </div>
@@ -952,8 +954,8 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: S
                     disabled={currentParagraph === 0}
                     className="bg-gradient-secondary hover:shadow-soft font-comic rounded-xl sm:rounded-2xl px-3 sm:px-6 text-sm sm:text-base"
                   >
-                    <span className="hidden sm:inline">← Previous</span>
-                    <span className="sm:hidden">←</span>
+                    <span className="hidden sm:inline">← {t("storyDisplay.navigation.previous")}</span>
+                    <span className="sm:hidden">{t("storyDisplay.navigation.previousShort")}</span>
                   </Button>
                   
                   <Button
@@ -961,8 +963,8 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: S
                     disabled={currentParagraph >= totalPages - 1}
                     className="bg-gradient-primary hover:shadow-glow font-comic rounded-xl sm:rounded-2xl px-3 sm:px-6 text-sm sm:text-base"
                   >
-                    <span className="hidden sm:inline">Next →</span>
-                    <span className="sm:hidden">→</span>
+                    <span className="hidden sm:inline">{t("storyDisplay.navigation.next")} →</span>
+                    <span className="sm:hidden">{t("storyDisplay.navigation.nextShort")}</span>
                   </Button>
                 </div>
               </div>
