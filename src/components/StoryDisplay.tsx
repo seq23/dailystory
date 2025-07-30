@@ -96,8 +96,9 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
   const [hasShownAddPagesAlert, setHasShownAddPagesAlert] = useState(false);
   const [showFinishCountdown, setShowFinishCountdown] = useState(false);
   const [countdownSeconds, setCountdownSeconds] = useState(5);
-  const [showTutorial, setShowTutorial] = useState(true);
+  const [showTutorial, setShowTutorial] = useState(false);
   const [tutorialStep, setTutorialStep] = useState(0);
+  const [hasShownTutorial, setHasShownTutorial] = useState(false);
   
   // Reading stats
   const [readingStats, setReadingStats] = useState({
@@ -152,9 +153,12 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         setHasShownAddPagesAlert(false); // Reset alert flag for new session
         setCustomIllustrations(new Map()); // Clear custom illustrations
         
-        // Start tutorial for new session
-        setShowTutorial(true);
-        setTutorialStep(0);
+        // Start tutorial for new session only if not shown before
+        if (!hasShownTutorial) {
+          setShowTutorial(true);
+          setTutorialStep(0);
+          setHasShownTutorial(true);
+        }
         
         const generatedStory = InclusiveStoryGenerator.generateCulturallyAdaptedStory(userInfo, currentDifficulty);
         setStory(generatedStory);
@@ -279,7 +283,6 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         { message: "Welcome! Your timer has started at 10:10 and is counting down. Click the center button to pause/start.", duration: 4000 },
         { message: "Use the green + button to add 10 minutes if you need more time.", duration: 3000 },
         { message: "Use the orange - button to remove 10 minutes if you want less time.", duration: 3000 },
-        { message: "Use the blue book button to add more pages to your story.", duration: 3000 },
         { message: "Happy reading! Enjoy your personalized adventure!", duration: 2000 }
       ];
 
@@ -938,14 +941,13 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                 </div>
                 <div className="flex-1">
                   <div className="text-sm font-medium mb-1">
-                    Tutorial {tutorialStep + 1}/5
+                    Tutorial {tutorialStep + 1}/4
                   </div>
                   <div className="text-sm">
-                    {showTutorial && tutorialStep < 5 ? [
+                    {showTutorial && tutorialStep < 4 ? [
                       "Welcome! Your timer has started at 10:10 and is counting down. Click the center button to pause/start.",
                       "Use the green + button to add 10 minutes if you need more time.",
                       "Use the orange - button to remove 10 minutes if you want less time.",
-                      "Use the blue book button to add more pages to your story.",
                       "Happy reading! Enjoy your personalized adventure!"
                     ][tutorialStep] : ""}
                   </div>
@@ -966,7 +968,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                 <div className="w-full bg-white/20 rounded-full h-2">
                   <div 
                     className="bg-white h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${((tutorialStep + 1) / 5) * 100}%` }}
+                    style={{ width: `${((tutorialStep + 1) / 4) * 100}%` }}
                   />
                 </div>
               </div>
