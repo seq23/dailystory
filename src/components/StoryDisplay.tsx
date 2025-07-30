@@ -692,7 +692,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                       </div>
                       
                       {/* Page Controls */}
-                      <div className="flex space-x-1">
+                      <div className="flex space-x-1 relative">
                         <Button
                           onClick={handleReducePages}
                           variant="outline"
@@ -703,17 +703,43 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                           <Minus className="w-3 h-3" />
                         </Button>
                         
-                        <Button
-                          onClick={handleAddPages}
-                          variant="outline"
-                          size="sm"
-                          className={`rounded-full text-xs px-2 ${
-                            showAddPagesAlert ? 'animate-pulse bg-yellow-50 border-yellow-300' : ''
-                          }`}
-                        >
-                          <Plus className="w-3 h-3" />
-                          {showAddPagesAlert && " ⚡"}
-                        </Button>
+                        <div className="relative">
+                          <Button
+                            onClick={handleAddPages}
+                            variant="outline"
+                            size="sm"
+                            className={`rounded-full text-xs px-2 transition-all duration-300 ${
+                              showAddPagesAlert 
+                                ? 'animate-bounce bg-yellow-200 border-yellow-400 text-yellow-800 shadow-lg scale-110 animate-pulse' 
+                                : ''
+                            }`}
+                            style={{
+                              animation: showAddPagesAlert 
+                                ? 'jump 0.6s ease-in-out infinite alternate, flash 0.8s ease-in-out infinite' 
+                                : undefined
+                            }}
+                          >
+                            <Plus className="w-3 h-3" />
+                            {showAddPagesAlert && " ⚡"}
+                          </Button>
+                          
+                          {/* Animated Alert Bubble */}
+                          {showAddPagesAlert && (
+                            <div className="absolute -top-16 -left-8 z-50 animate-bounce">
+                              <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white px-4 py-2 rounded-2xl shadow-xl border-2 border-yellow-300 relative animate-pulse">
+                                <div className="flex items-center space-x-2">
+                                  <span className="text-lg">📖</span>
+                                  <div>
+                                    <div className="text-sm font-bold">Almost done!</div>
+                                    <div className="text-xs">Click + to add more pages!</div>
+                                  </div>
+                                </div>
+                                {/* Arrow pointing down */}
+                                <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-yellow-400"></div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                     
