@@ -142,16 +142,25 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
   useEffect(() => {
     const generateStory = async () => {
       try {
+        // Reset progress bar and reading state for new session
+        setCurrentParagraph(0);
+        setIsReading(false);
+        setTimeRemaining(10 * 60); // Reset to 10 minutes
+        setHasShownAddPagesAlert(false); // Reset alert flag for new session
+        setCustomIllustrations(new Map()); // Clear custom illustrations
+        
         const generatedStory = InclusiveStoryGenerator.generateCulturallyAdaptedStory(userInfo, currentDifficulty);
         setStory(generatedStory);
         
-        // Calculate word count for stats
+        // Calculate word count for stats and reset reading stats
         const wordCount = generatedStory.join(' ').split(' ').filter(word => word.length > 0).length;
-        setReadingStats(prev => ({ 
-          ...prev, 
+        setReadingStats({ 
           wordsRead: wordCount,
-          startTime: Date.now() 
-        }));
+          timeSpent: 0, // Reset time spent
+          pagesRead: 0, // Reset pages read
+          startTime: Date.now(), // Reset start time
+          accuracy: 95
+        });
         
         // Set illustration
         const illustrationIndex = Math.floor(Math.random() * illustrations.length);
@@ -576,10 +585,9 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-6">
-        {/* Progress Bar */}
-        <div className="mb-6">
+      {/* Fixed Progress Bar at Top */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-purple-100">
+        <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-purple-700">
               Page {currentParagraph + 1} of {totalPages}
@@ -593,9 +601,13 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
           </div>
           <Progress 
             value={(currentParagraph / Math.max(1, totalPages - 1)) * 100} 
-            className="h-3 bg-purple-100"
+            className="h-2 bg-purple-100"
           />
         </div>
+      </div>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 pt-24 pb-6">
 
         {/* Story Layout */}
         <div className="grid lg:grid-cols-3 gap-6">
