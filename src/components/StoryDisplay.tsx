@@ -530,10 +530,6 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
           setCurrentIllustration(result.imageURL);
         }
         
-        toast({
-          title: "Custom Illustration Generated! 🎨",
-          description: "A unique image was created for this page.",
-        });
       } else {
         console.error('No image URL in result:', result);
         throw new Error('No image URL received from service');
@@ -544,11 +540,6 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         message: error.message,
         stack: error.stack,
         runwareService: runwareService
-      });
-      toast({
-        title: "Illustration Error",
-        description: "Unable to generate custom illustration. Please try again.",
-        variant: "destructive"
       });
     } finally {
       setIsGeneratingImage(false);
