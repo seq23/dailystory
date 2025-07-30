@@ -91,45 +91,40 @@
   },
   "storyDisplay": {
     "header": {
-      "tagline": "Aventures de Lecture pour Enfants",
-      "home": "Accueil",
-      "newStory": "Nouvelle Histoire"
+      "readingTime": "Temps de Lecture",
+      "progress": "Progrès",
+      "done": "✨ J'ai Fini !",
+      "newStory": "Nouvelle Histoire",
+      "home": "Accueil"
     },
-    "progress": {
-      "page": "Page",
-      "of": "sur",
-      "progress": "Progrès :"
-    },
-    "difficulty": {
-      "easy": "Facile",
-      "medium": "Moyen",
-      "hard": "Difficile",
-      "expert": "Expert",
-      "level": "Niveau",
+    "controls": {
+      "speed": "Vitesse :",
       "easier": "Plus Facile",
       "harder": "Plus Difficile",
-      "tutorialTitle": "💡 Astuce : Rendez les histoires plus faciles ou plus difficiles !",
-      "tutorialText": "Cliquez sur ces boutons pour ajuster la difficulté",
-      "tutorialSteps": {
-        "step1": "Bienvenue ! Le minuteur a démarré automatiquement à 10:15. Vert + ajoute du temps, orange - enlève du temps.",
-        "step2": "Le bouton haut-parleur lit à voix haute, le microphone enregistre votre lecture.",
-        "step3": "Les boutons Plus facile/Plus difficile ajustent la difficulté de l'histoire pendant que vous lisez.",
-        "step4": "Les boutons Ajouter/Supprimer des pages changent la longueur de votre histoire.",
-        "step5": "Bonne lecture ! Profitez de votre aventure personnalisée !"
-      }
+      "back": "← Retour",
+      "next": "Suivant →"
     },
-    "illustration": {
-      "creating": "Création d'une illustration magique...",
-      "loading": "Chargement de l'illustration..."
+    "pages": {
+      "storyLength": "Longueur de l'Histoire :",
+      "removePages": "Supprimer des Pages",
+      "addPages": "Ajouter des Pages",
+      "page": "page",
+      "pages": "pages"
     },
-    "navigation": {
-      "previous": "Précédent",
-      "next": "Suivant",
-      "previousShort": "←",
-      "nextShort": "→"
+    "alerts": {
+      "almostDone": "Presque fini !",
+      "clickToAdd": "Cliquez sur + pour ajouter plus de pages !"
+    },
+    "countdown": {
+      "timesUp": "Le Temps est Écoulé !",
+      "goingToReport": "Aller à votre rapport de lecture dans...",
+      "goNow": "Y Aller Maintenant ✨"
+    },
+    "tutorial": {
+      "step": "Tutoriel",
+      "of": "5"
     }
   },
-  "interactiveWord": {
     "hearIt": "Écoutez",
     "explain": "Expliquer",
     "translate": "Traduire",

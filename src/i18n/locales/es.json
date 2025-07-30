@@ -33,6 +33,76 @@
       "placeholder": "Seleccionar idioma"
     }
   },
+  "storyDisplay": {
+    "header": {
+      "readingTime": "Tiempo de Lectura",
+      "progress": "Progreso",
+      "done": "✨ ¡Terminé!",
+      "newStory": "Nueva Historia",
+      "home": "Inicio"
+    },
+    "controls": {
+      "speed": "Velocidad:",
+      "easier": "Más Fácil",
+      "harder": "Más Difícil",
+      "back": "← Atrás",
+      "next": "Siguiente →"
+    },
+    "pages": {
+      "storyLength": "Longitud de la Historia:",
+      "removePages": "Quitar Páginas",
+      "addPages": "Agregar Páginas",
+      "page": "página",
+      "pages": "páginas"
+    },
+    "alerts": {
+      "almostDone": "¡Casi terminado!",
+      "clickToAdd": "¡Haz clic en + para agregar más páginas!"
+    },
+    "countdown": {
+      "timesUp": "¡Se Acabó el Tiempo!",
+      "goingToReport": "Yendo a tu reporte de lectura en...",
+      "goNow": "Ir Ahora ✨"
+    },
+    "tutorial": {
+      "step": "Tutorial",
+      "of": "5"
+    },
+    "difficulty": {
+      "easy": "Fácil",
+      "medium": "Intermedio",
+      "hard": "Difícil",
+      "expert": "Experto", 
+      "level": "Nivel",
+      "easier": "Más Fácil",
+      "harder": "Más Difícil",
+      "tutorialTitle": "💡 Consejo: ¡Haz las historias más fáciles o más difíciles!",
+      "tutorialText": "Haz clic en estos botones para ajustar la dificultad",
+      "tutorialSteps": {
+        "step1": "¡Bienvenido! El temporizador se inició automáticamente a las 10:15. Verde + agrega tiempo, naranja - quita tiempo.",
+        "step2": "El botón del altavoz lee en voz alta, el micrófono graba tu lectura.",
+        "step3": "Los botones Más fácil/Más difícil ajustan la dificultad de la historia mientras lees.",
+        "step4": "Los botones Agregar/Quitar páginas cambian la longitud de tu historia.",
+        "step5": "¡Feliz lectura! ¡Disfruta tu aventura personalizada!"
+      }
+    }
+  },
+  "interactiveWord": {
+    "hearIt": "Escúchala",
+    "explain": "Explicar",
+    "translate": "Traducir",
+    "synonym": "Sinónimo",
+    "example": "Ejemplo", 
+    "etymology": "Origen",
+    "difficulty": {
+      "beginner": "Principiante",
+      "intermediate": "Intermedio",
+      "advanced": "Avanzado"
+    },
+    "loading": "Cargando...",
+    "playbackError": "No se pudo reproducir el audio",
+    "translationError": "Traducción no disponible"
+  },
   "userInfoForm": {
     "title": "¡Cuéntanos sobre ti!",
     "subtitle": "Ayúdanos a crear la historia perfecta para ti",
@@ -87,64 +157,8 @@
           "expert": {
             "title": "Lectura Experta",
             "description": "(9no-12vo grado: Vocabulario experto y escritura sofisticada)"
-    }
-  },
-  "storyDisplay": {
-    "header": {
-      "tagline": "Aventuras de Lectura para Niños",
-      "home": "Inicio",
-      "newStory": "Nueva Historia"
-    },
-    "progress": {
-      "page": "Página",
-      "of": "de",
-      "progress": "Progreso:"
-    },
-    "difficulty": {
-      "easy": "Fácil",
-      "medium": "Intermedio",
-      "hard": "Difícil",
-      "expert": "Experto", 
-      "level": "Nivel",
-      "easier": "Más Fácil",
-      "harder": "Más Difícil",
-      "tutorialTitle": "💡 Consejo: ¡Haz las historias más fáciles o más difíciles!",
-      "tutorialText": "Haz clic en estos botones para ajustar la dificultad",
-      "tutorialSteps": {
-        "step1": "¡Bienvenido! El temporizador se inició automáticamente a las 10:15. Verde + agrega tiempo, naranja - quita tiempo.",
-        "step2": "El botón del altavoz lee en voz alta, el micrófono graba tu lectura.",
-        "step3": "Los botones Más fácil/Más difícil ajustan la dificultad de la historia mientras lees.",
-        "step4": "Los botones Agregar/Quitar páginas cambian la longitud de tu historia.",
-        "step5": "¡Feliz lectura! ¡Disfruta tu aventura personalizada!"
-      }
-    },
-    "illustration": {
-      "creating": "Creando ilustración mágica...",
-      "loading": "Cargando ilustración..."
-    },
-    "navigation": {
-      "previous": "Anterior",
-      "next": "Siguiente",
-      "previousShort": "←",
-      "nextShort": "→"
-    }
-  },
-  "interactiveWord": {
-    "hearIt": "Escúchala",
-    "explain": "Explicar",
-    "translate": "Traducir",
-    "synonym": "Sinónimo",
-    "example": "Ejemplo", 
-    "etymology": "Origen",
-    "difficulty": {
-      "beginner": "Principiante",
-      "intermediate": "Intermedio",
-      "advanced": "Avanzado"
-    },
-    "loading": "Cargando...",
-    "playbackError": "No se pudo reproducir el audio",
-    "translationError": "Traducción no disponible"
-  }
+          }
+        }
       },
       "avatar": {
         "label": "¿Qué avatar quieres?"
