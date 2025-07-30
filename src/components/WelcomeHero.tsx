@@ -211,7 +211,7 @@ export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
               <div className="flex gap-4">
                 <button className="hover:text-white/90 transition-colors">Privacy Policy</button>
                 <button className="hover:text-white/90 transition-colors">Terms of Service</button>
-                <button className="hover:text-white/90 transition-colors">Contact Us</button>
+                <a href="mailto:hello@time-2-read.com" className="hover:text-white/90 transition-colors">Contact Us</a>
               </div>
             </div>
           </div>
