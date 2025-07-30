@@ -513,97 +513,89 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
           </div>
         </header>
 
-        <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-8">
-          {/* Timer and Controls Section */}
-          <div className="mb-8">
-            <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl rounded-2xl p-6">
-              <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
-                {/* Timer Display */}
+        <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-4">
+          {/* Compact Reading Progress Section */}
+          <div className="mb-6">
+            <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-lg rounded-xl p-4">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-6">
-                  <div className="relative">
-                    <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-                      <div className="text-center">
-                        <div className="text-xl font-bold text-white">
-                          {formatTime(timeRemaining)}
-                        </div>
-                        <div className="text-xs text-indigo-100">
-                          Reading Time
-                        </div>
-                      </div>
-                    </div>
-                    <div className={`absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center ${
-                      isReading ? 'bg-green-400 animate-pulse' : 'bg-gray-400'
-                    }`}>
-                      {isReading ? <Play className="w-3 h-3 text-white" /> : <Pause className="w-3 h-3 text-white" />}
-                    </div>
+                  <div className="flex items-center space-x-2">
+                    <BookOpen className="w-5 h-5 text-indigo-500" />
+                    <span className="text-sm font-medium text-gray-700">
+                      Page {currentParagraph + 1} of {totalPages}
+                    </span>
                   </div>
-                  
-                  {/* Timer Controls */}
-                  <div className="flex flex-col space-y-3">
-                    <div className="flex items-center space-x-2">
-                      <Button
-                        onClick={() => setIsReading(!isReading)}
-                        variant={isReading ? "default" : "outline"}
-                        className="rounded-xl"
-                      >
-                        {isReading ? <Pause className="w-4 h-4 mr-2" /> : <Play className="w-4 h-4 mr-2" />}
-                        {isReading ? "Pause" : "Start"} Timer
-                      </Button>
-                      
-                      <Button
-                        onClick={() => setTimeRemaining(prev => Math.min(prev + 600, 3600))}
-                        variant="outline"
-                        size="sm"
-                        className="rounded-xl"
-                      >
-                        <Plus className="w-4 h-4 mr-1" />
-                        +10 min
-                      </Button>
-                    </div>
-                    
-                    {/* Time Setting */}
-                    <div className="flex items-center space-x-2">
-                      <Clock className="w-4 h-4 text-gray-500" />
-                      <span className="text-sm text-gray-600">Max time:</span>
-                      <Select value={maxReadingTime.toString()} onValueChange={handleTimeChange}>
-                        <SelectTrigger className="w-24 h-8 text-xs">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="600">10 min</SelectItem>
-                          <SelectItem value="1200">20 min</SelectItem>
-                          <SelectItem value="1800">30 min</SelectItem>
-                          <SelectItem value="2400">40 min</SelectItem>
-                          <SelectItem value="3000">50 min</SelectItem>
-                          <SelectItem value="3600">60 min</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
+                  <Progress 
+                    value={(currentParagraph / Math.max(1, totalPages - 1)) * 100} 
+                    className="h-2 w-48"
+                  />
                 </div>
                 
-                {/* Progress and Add Pages */}
-                <div className="flex items-center space-x-6">
-                  <div className="text-center">
-                    <div className="text-lg font-bold text-gray-800 mb-1">
-                      Page {currentParagraph + 1} of {totalPages}
+                <div className="flex items-center space-x-4">
+                  <div className="hidden md:flex items-center space-x-4 text-sm">
+                    <div className="flex items-center space-x-1">
+                      <Award className="w-4 h-4 text-yellow-500" />
+                      <span className="text-gray-600">{readingStats.streak} pages</span>
                     </div>
-                    <Progress 
-                      value={(currentParagraph / Math.max(1, totalPages - 1)) * 100} 
-                      className="h-2 w-40"
-                    />
+                    <div className="flex items-center space-x-1">
+                      <Target className="w-4 h-4 text-green-500" />
+                      <span className="text-gray-600">{readingStats.wordsRead} words</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <Timer className="w-4 h-4 text-blue-500" />
+                      <span className="text-gray-600">{formatTime(readingStats.timeSpent)}</span>
+                    </div>
                   </div>
                   
-                  <Button
-                    onClick={handleAddPages}
-                    variant="outline"
-                    className={`rounded-xl ${showAddPagesAlert ? 'animate-pulse bg-green-50 border-green-300 text-green-700' : ''}`}
-                  >
-                    <BookOpen className="w-4 h-4 mr-2" />
-                    Add More Pages
-                    {showAddPagesAlert && <span className="ml-2 text-xs">⚡</span>}
-                  </Button>
+                  {/* Difficulty Level Controls */}
+                  <div className="flex space-x-2">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={handleMakeEasier}
+                          disabled={currentDifficulty === "easy"}
+                          size="sm"
+                          variant="outline"
+                          className="rounded-lg px-2 py-1 text-xs"
+                        >
+                          <TrendingDown className="w-3 h-3 mr-1" />
+                          Easier
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Make the story easier to read</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={handleMakeHarder}
+                          disabled={currentDifficulty === "expert"}
+                          size="sm"
+                          variant="outline"
+                          className="rounded-lg px-2 py-1 text-xs"
+                        >
+                          <TrendingUp className="w-3 h-3 mr-1" />
+                          Harder
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Make the story more challenging</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
                 </div>
+              </div>
+              
+              {/* Current difficulty indicator */}
+              <div className="mt-2 text-center">
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                  {currentDifficulty === "easy" ? "Pre-K - 1st Grade" :
+                   currentDifficulty === "medium" ? "2nd - 3rd Grade" :
+                   currentDifficulty === "hard" ? "4th - 5th Grade" :
+                   "6th Grade+"}
+                </span>
               </div>
             </Card>
           </div>
@@ -881,6 +873,88 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
             </div>
           </div>
         </main>
+
+        {/* Floating Timer & Controls */}
+        <div className="fixed bottom-6 left-4 lg:left-8 z-40 max-w-sm">
+          <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-2xl rounded-2xl p-4">
+            <div className="space-y-4">
+              {/* Timer Display */}
+              <div className="flex items-center space-x-4">
+                <div className="relative">
+                  <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-white">
+                        {formatTime(timeRemaining)}
+                      </div>
+                      <div className="text-xs text-indigo-100">
+                        Time Left
+                      </div>
+                    </div>
+                  </div>
+                  <div className={`absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center ${
+                    isReading ? 'bg-green-400 animate-pulse' : 'bg-gray-400'
+                  }`}>
+                    {isReading ? <Play className="w-2 h-2 text-white" /> : <Pause className="w-2 h-2 text-white" />}
+                  </div>
+                </div>
+                
+                {/* Timer Controls */}
+                <div className="flex flex-col space-y-2">
+                  <Button
+                    onClick={() => setIsReading(!isReading)}
+                    variant={isReading ? "default" : "outline"}
+                    size="sm"
+                    className="rounded-lg text-xs"
+                  >
+                    {isReading ? <Pause className="w-3 h-3 mr-1" /> : <Play className="w-3 h-3 mr-1" />}
+                    {isReading ? "Pause" : "Start"}
+                  </Button>
+                  
+                  <Button
+                    onClick={() => setTimeRemaining(prev => Math.min(prev + 600, 3600))}
+                    variant="outline"
+                    size="sm"
+                    className="rounded-lg text-xs"
+                  >
+                    <Plus className="w-3 h-3 mr-1" />
+                    +10 min
+                  </Button>
+                </div>
+              </div>
+              
+              {/* Time Setting */}
+              <div className="flex items-center space-x-2 text-xs">
+                <Clock className="w-3 h-3 text-gray-500" />
+                <span className="text-gray-600">Max:</span>
+                <Select value={maxReadingTime.toString()} onValueChange={handleTimeChange}>
+                  <SelectTrigger className="w-20 h-6 text-xs bg-white border border-gray-200 z-50">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
+                    <SelectItem value="600">10m</SelectItem>
+                    <SelectItem value="1200">20m</SelectItem>
+                    <SelectItem value="1800">30m</SelectItem>
+                    <SelectItem value="2400">40m</SelectItem>
+                    <SelectItem value="3000">50m</SelectItem>
+                    <SelectItem value="3600">60m</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* Add Pages Button */}
+              <Button
+                onClick={handleAddPages}
+                variant="outline"
+                size="sm"
+                className={`rounded-lg w-full text-xs ${showAddPagesAlert ? 'animate-pulse bg-green-50 border-green-300 text-green-700' : ''}`}
+              >
+                <BookOpen className="w-3 h-3 mr-1" />
+                Add More Pages
+                {showAddPagesAlert && <span className="ml-1">⚡</span>}
+              </Button>
+            </div>
+          </Card>
+        </div>
 
         {/* Celebration Overlay */}
         {showCelebration && (
