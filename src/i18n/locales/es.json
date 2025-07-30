@@ -18,6 +18,37 @@
       "contact": "Contáctanos"
     }
   },
+  "story": {
+    "reading": "Tiempo de Lectura",
+    "timeRemaining": "Tiempo Restante",
+    "continue": "Continuar Leyendo",
+    "pause": "Pausar Lectura",
+    "nextParagraph": "Siguiente Párrafo",
+    "previousParagraph": "Párrafo Anterior",
+    "home": "Inicio",
+    "newStory": "Nueva Historia",
+    "increaseDifficulty": "Hacerla Más Difícil",
+    "decreaseDifficulty": "Hacerla Más Fácil",
+    "addMoreStory": "Agregar Más a la Historia",
+    "tutorialBubble": "¡Haz clic en cualquier palabra para escucharla o que te la expliquen!",
+    "difficultyChanged": "¡Dificultad de la historia ajustada!",
+    "storyExtended": "¡Nuevo contenido agregado a tu historia!",
+    "noMoreExtensions": "Has alcanzado el máximo de extensiones de historia para esta sesión.",
+    "sessionEnding": "La sesión terminará pronto...",
+    "sessionEnded": "La sesión de lectura ha terminado.",
+    "difficultyLabels": {
+      "easy": "Fácil",
+      "medium": "Intermedio",
+      "hard": "Difícil",
+      "expert": "Experto"
+    },
+    "timer": {
+      "addTime": "¡Agregar 10 minutos!",
+      "addPages": "¡Agregar más páginas!",
+      "maxTime": "(Máx 30 min total)",
+      "pagesLeft": "¡Solo queda 1 página!"
+    }
+  },
   "form": {
     "title": "¡Cuéntanos sobre ti!",
     "subtitle": "Ayúdanos a crear la historia perfecta solo para ti",

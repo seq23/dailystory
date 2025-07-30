@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Play, Pause, Plus, BookOpen } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -24,6 +25,7 @@ export const FloatingTimer = ({
   currentParagraph = 0,
   onSessionEnded
 }: FloatingTimerProps) => {
+  const { t } = useTranslation();
   const [showCelebration, setShowCelebration] = useState(false);
   const [showPlayTooltip, setShowPlayTooltip] = useState(false);
   const [showPlusTooltip, setShowPlusTooltip] = useState(false);
@@ -269,7 +271,7 @@ export const FloatingTimer = ({
             {showPlayTooltip && (
               <div className="absolute bottom-full mb-2 sm:mb-3 left-1/2 transform -translate-x-1/2 z-60">
                 <div className="bg-purple-500 text-white px-2 py-1 sm:px-4 sm:py-2 rounded-2xl text-sm sm:text-lg font-bold shadow-lg border-2 border-purple-300 relative whitespace-nowrap">
-                  {isReading ? "⏸️ Pause Timer" : "▶️ Start Timer"}
+                  {isReading ? `⏸️ ${t('story.pause')}` : `▶️ ${t('story.continue')}`}
                   {/* Bubble tail */}
                   <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[6px] sm:border-l-[8px] border-l-transparent border-r-[6px] sm:border-r-[8px] border-r-transparent border-t-[6px] sm:border-t-[8px] border-t-purple-500"></div>
                 </div>
@@ -294,8 +296,8 @@ export const FloatingTimer = ({
             {showPlusTooltip && (
               <div className="absolute bottom-full mb-2 sm:mb-3 left-1/2 transform -translate-x-1/2 z-60">
                 <div className="bg-blue-500 text-white px-2 py-1 sm:px-4 sm:py-2 rounded-2xl text-sm sm:text-lg font-bold shadow-lg border-2 border-blue-300 relative whitespace-nowrap">
-                  ⏰ Add 10 minutes!
-                  <div className="text-xs sm:text-sm font-normal mt-1">(Max 30 min total)</div>
+                  ⏰ {t('story.timer.addTime')}
+                  <div className="text-xs sm:text-sm font-normal mt-1">{t('story.timer.maxTime')}</div>
                   {/* Bubble tail */}
                   <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[6px] sm:border-l-[8px] border-l-transparent border-r-[6px] sm:border-r-[8px] border-r-transparent border-t-[6px] sm:border-t-[8px] border-t-blue-500"></div>
                 </div>
@@ -323,10 +325,10 @@ export const FloatingTimer = ({
             {(showPagesTooltip || shouldShakeTooltip) && (
               <div className={`absolute bottom-full mb-2 sm:mb-3 right-0 z-60 ${shouldShakeTooltip ? 'animate-bounce' : ''}`}>
                 <div className={`bg-green-500 text-white px-2 py-1 sm:px-4 sm:py-2 rounded-2xl text-sm sm:text-lg font-bold shadow-lg border-2 border-green-300 relative whitespace-nowrap ${shouldShakeTooltip ? 'animate-pulse' : ''}`}>
-                  📖 Add more pages!
+                  📖 {t('story.timer.addPages')}
                   {shouldShakeTooltip && (
                     <div className="text-xs sm:text-sm font-normal mt-1 text-yellow-200">
-                      Only 1 page left!
+                      {t('story.timer.pagesLeft')}
                     </div>
                   )}
                   {/* Close button - only show for the alert, not the regular tooltip */}

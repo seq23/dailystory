@@ -18,6 +18,37 @@
       "contact": "Contact Us"
     }
   },
+  "story": {
+    "reading": "Reading Time",
+    "timeRemaining": "Time Remaining",
+    "continue": "Continue Reading",
+    "pause": "Pause Reading",
+    "nextParagraph": "Next Paragraph",
+    "previousParagraph": "Previous Paragraph",
+    "home": "Home",
+    "newStory": "New Story",
+    "increaseDifficulty": "Make it Harder",
+    "decreaseDifficulty": "Make it Easier",
+    "addMoreStory": "Add More to Story",
+    "tutorialBubble": "Click on any word to hear it spoken or explained!",
+    "difficultyChanged": "Story difficulty adjusted!",
+    "storyExtended": "New content added to your story!",
+    "noMoreExtensions": "You've reached the maximum story extensions for this session.",
+    "sessionEnding": "Session ending soon...",
+    "sessionEnded": "Reading session has ended.",
+    "difficultyLabels": {
+      "easy": "Easy",
+      "medium": "Medium", 
+      "hard": "Hard",
+      "expert": "Expert"
+    },
+    "timer": {
+      "addTime": "Add 10 minutes!",
+      "addPages": "Add more pages!",
+      "maxTime": "(Max 30 min total)",
+      "pagesLeft": "Only 1 page left!"
+    }
+  },
   "form": {
     "title": "Tell us about yourself!",
     "subtitle": "Help us create the perfect story just for you",

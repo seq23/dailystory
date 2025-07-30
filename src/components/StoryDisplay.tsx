@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -79,6 +80,7 @@ interface StoryDisplayProps {
 }
 
 export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDisplayProps) => {
+  const { t } = useTranslation();
   const [currentParagraph, setCurrentParagraph] = useState(0);
   const [isReading, setIsReading] = useState(true);
   const [timeRemaining, setTimeRemaining] = useState(10 * 60 + 10);
@@ -769,7 +771,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: S
                 className="font-comic hover:scale-105 transition-transform bg-white/80 hover:bg-white text-xs sm:text-sm px-2 sm:px-4"
               >
                 <Home className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Home</span>
+                <span className="hidden sm:inline">{t('story.home')}</span>
               </Button>
               
               <Button
@@ -778,7 +780,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: S
                 className="font-comic hover:scale-105 transition-transform bg-gradient-primary hover:shadow-glow text-xs sm:text-sm px-2 sm:px-4"
               >
                 <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
-                <span className="hidden sm:inline">New Story</span>
+                <span className="hidden sm:inline">{t('story.newStory')}</span>
               </Button>
             </div>
           </div>
@@ -952,7 +954,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: S
                     disabled={currentParagraph === 0}
                     className="bg-gradient-secondary hover:shadow-soft font-comic rounded-xl sm:rounded-2xl px-3 sm:px-6 text-sm sm:text-base"
                   >
-                    <span className="hidden sm:inline">← Previous</span>
+                    <span className="hidden sm:inline">← {t('story.previousParagraph')}</span>
                     <span className="sm:hidden">←</span>
                   </Button>
                   
@@ -961,7 +963,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: S
                     disabled={currentParagraph >= totalPages - 1}
                     className="bg-gradient-primary hover:shadow-glow font-comic rounded-xl sm:rounded-2xl px-3 sm:px-6 text-sm sm:text-base"
                   >
-                    <span className="hidden sm:inline">Next →</span>
+                    <span className="hidden sm:inline">{t('story.nextParagraph')} →</span>
                     <span className="sm:hidden">→</span>
                   </Button>
                 </div>
