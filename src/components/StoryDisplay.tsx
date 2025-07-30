@@ -87,7 +87,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
   // Core state
   const [currentParagraph, setCurrentParagraph] = useState(0);
   const [isReading, setIsReading] = useState(true); // Auto-start reading
-  const [timeRemaining, setTimeRemaining] = useState(610); // 10 minutes 10 seconds
+  const [timeRemaining, setTimeRemaining] = useState(615); // 10 minutes 15 seconds
   const [story, setStory] = useState<string[]>([]);
   const [currentDifficulty, setCurrentDifficulty] = useState<DifficultyLevel>(
     userInfo.difficultyLevel || (userInfo.age <= 6 ? "easy" : userInfo.age <= 9 ? "medium" : userInfo.age <= 12 ? "hard" : "expert")
@@ -157,7 +157,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         // Reset progress bar and reading state for new session
         setCurrentParagraph(0);
         setIsReading(true); // Auto-start reading
-        setTimeRemaining(610); // Reset to 10:10 (610 seconds)
+        setTimeRemaining(615); // Reset to 10:15 (615 seconds)
         setHasShownAddPagesAlert(false); // Reset alert flag for new session
         setCustomIllustrations(new Map()); // Clear custom illustrations
         
@@ -300,11 +300,11 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
   useEffect(() => {
     if (showTutorial && story.length > 0) {
       const tutorialSteps = [
-        { message: "Welcome! Timer auto-started at 10:10. Green + adds time, orange - removes time.", duration: 2500, target: "timer" },
-        { message: "Speaker button reads aloud, microphone records you reading.", duration: 2000, target: "audio" },
-        { message: "Easier/Harder buttons adjust story difficulty as you read.", duration: 1500, target: "difficulty" },
-        { message: "Add/Remove Pages buttons change your story length.", duration: 2000, target: "pages" },
-        { message: "Happy reading! Enjoy your personalized adventure!", duration: 2000, target: "center" }
+        { message: "Welcome! Timer auto-started at 10:15. Green + adds time, orange - removes time.", duration: 3000, target: "timer" },
+        { message: "Speaker button reads aloud, microphone records you reading.", duration: 3000, target: "audio" },
+        { message: "Easier/Harder buttons adjust story difficulty as you read.", duration: 3000, target: "difficulty" },
+        { message: "Add/Remove Pages buttons change your story length.", duration: 3000, target: "pages" },
+        { message: "Happy reading! Enjoy your personalized adventure!", duration: 3000, target: "center" }
       ];
 
       let currentStep = 0;
@@ -968,7 +968,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                   </div>
                   <div className="text-sm">
                     {showTutorial && tutorialStep < 5 ? [
-                      "Welcome! Timer auto-started at 10:10. Green + adds time, orange - removes time.",
+                      "Welcome! Timer auto-started at 10:15. Green + adds time, orange - removes time.",
                       "Speaker button reads aloud, microphone records you reading.",
                       "Easier/Harder buttons adjust story difficulty as you read.",
                       "Add/Remove Pages buttons change your story length.",
