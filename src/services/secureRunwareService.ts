@@ -250,29 +250,32 @@ export class SecureRunwareService {
     
     return PerformanceMonitor.measureAsync('image_generation', async () => {
       return new Promise((resolve, reject) => {
-        const message = [{
+        const message: any = [{
           taskType: "imageInference",
           taskUUID,
+          positivePrompt: params.positivePrompt,
           model: params.model || "runware:100@1",
-          width: 768,
-          height: 1024,
+          width: params.width || 768,
+          height: params.height || 768,
           numberResults: params.numberResults || 1,
           outputFormat: params.outputFormat || "WEBP",
           steps: 4,
-          CFGScale: params.CFGScale || 1,
+          CFGScale: params.CFGScale || 7,
           scheduler: params.scheduler || "FlowMatchEulerDiscreteScheduler",
           strength: params.strength || 0.8,
           lora: params.lora || [],
-          ...params,
         }];
 
-        if (!params.seed) {
-          delete message[0].seed;
+        // Add optional parameters if provided
+        if (params.seed !== null && params.seed !== undefined) {
+          message[0].seed = params.seed;
         }
 
-        if (message[0].model === "runware:100@1") {
-          delete message[0].promptWeighting;
+        if (params.promptWeighting && message[0].model !== "runware:100@1") {
+          message[0].promptWeighting = params.promptWeighting;
         }
+
+        console.log('Sending image generation message:', JSON.stringify(message, null, 2));
 
         this.messageCallbacks.set(taskUUID, (data) => {
           if (data.error) {
