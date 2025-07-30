@@ -425,13 +425,14 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
 
   const handleAddPages = async () => {
     try {
-      const extension = InclusiveStoryGenerator.generateCulturallyAdaptedStory(userInfo, currentDifficulty, true, 1);
+      // Add 5 pages each time
+      const extension = InclusiveStoryGenerator.generateCulturallyAdaptedStory(userInfo, currentDifficulty, true, 5);
       setStory(prev => [...prev, ...extension]);
       setShowAddPagesAlert(false); // Hide current alert but don't reset the flag
       
       toast({
         title: "Story Extended! 📖",
-        description: `Added ${extension.length} more pages to your adventure.`,
+        description: `Added 5 more pages to your adventure.`,
       });
     } catch (error) {
       console.error('Error extending story:', error);
@@ -455,7 +456,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
 
   const handleReducePages = () => {
     if (story.length > 1) {
-      // Remove the last page, but don't go below 1 page
+      // Remove 1 page at a time
       setStory(prev => prev.slice(0, -1));
       
       // If current page is now out of bounds, go to the last page
@@ -464,8 +465,8 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       }
       
       toast({
-        title: "Page Removed! 📖",
-        description: "Removed the last page from your story.",
+        title: "Page Removed 📄",
+        description: "Removed 1 page from your story.",
       });
     }
   };
