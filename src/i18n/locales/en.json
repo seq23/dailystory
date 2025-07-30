@@ -13,7 +13,16 @@
     "headline": "Where Every Story is Made Just for You",
     "subheadline": "Discover magical stories created specifically for your child's interests, reading level, and cultural background.",
     "getStarted": "Create Your Adventure",
+    "languageSelector": {
+      "placeholder": "Language"
+    },
     "features": {
+      "reading": {
+        "title": "Adaptive Reading",
+        "subtitle": "Adjusts to your level"
+      },
+      "personalized": "Stories Made for You",
+      "gradeLevel": "Perfect for Your Grade",
       "culturallyAdapted": {
         "title": "Culturally Adapted Stories",
         "description": "Stories that reflect your child's background and experiences"
@@ -27,6 +36,8 @@
         "description": "Engaging elements that make learning fun and effective"
       }
     },
+    "ctaButton": "Create Your Adventure",
+    "safetyNote": "Safe, educational content for all children.",
     "userProfilesTitle": "Made for Every Child",
     "userProfiles": {
       "nativeEnglish": "Native English speakers improving reading skills",
@@ -50,6 +61,12 @@
       }
     },
     "footer": {
+      "companyName": "Time 2 Read",
+      "description": "Making reading fun and accessible for every child.",
+      "copyright": "All rights reserved.",
+      "privacyPolicy": "Privacy Policy",
+      "termsOfService": "Terms of Service",
+      "contactUs": "Contact Us",
       "contact": "Contact Us",
       "mission": "Our mission is to make reading accessible, enjoyable, and culturally relevant for every child."
     },
