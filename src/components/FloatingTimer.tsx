@@ -288,29 +288,6 @@ export const FloatingTimer = ({
               </div>
             )}
 
-            {/* Add Pages Button - Above Timer */}
-            <div className="absolute -top-20 left-1/2 transform -translate-x-1/2 pointer-events-auto">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      onAddPages();
-                      setShowAddPagesAlert(false);
-                    }}
-                    className={`bg-white/95 backdrop-blur-sm border-2 border-blue-400 text-blue-700 hover:bg-blue-50 shadow-lg w-14 h-14 rounded-full p-0 transition-all duration-200 hover:scale-110 ${
-                      shouldShakeTooltip ? 'animate-bounce border-red-400 text-red-700' : ''
-                    }`}
-                  >
-                    <BookOpen className="w-6 h-6" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="bg-blue-700 text-white border-blue-500">
-                  {shouldShakeTooltip ? "Only 1 page left! Add more?" : "Add more pages"}
-                </TooltipContent>
-              </Tooltip>
-            </div>
           </div>
         </div>
       </div>
