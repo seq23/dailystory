@@ -46,14 +46,14 @@ export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
                 <SelectTrigger className="w-[140px] border-none bg-transparent text-white text-sm h-auto p-0 focus:ring-0">
                   <SelectValue placeholder={t("welcomeHero.languageSelector.placeholder")} />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="en">{t("userInfoForm.languages.en")}</SelectItem>
-                  <SelectItem value="ar">{t("userInfoForm.languages.ar")}</SelectItem>
-                  <SelectItem value="es">{t("userInfoForm.languages.es")}</SelectItem>
-                  <SelectItem value="zh">{t("userInfoForm.languages.zh")}</SelectItem>
-                  <SelectItem value="hi">{t("userInfoForm.languages.hi")}</SelectItem>
-                  <SelectItem value="pt">{t("userInfoForm.languages.pt")}</SelectItem>
-                  <SelectItem value="fr">{t("userInfoForm.languages.fr")}</SelectItem>
+                <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
+                  <SelectItem value="en">English</SelectItem>
+                  <SelectItem value="ar">العربية</SelectItem>
+                  <SelectItem value="es">Español</SelectItem>
+                  <SelectItem value="zh">中文</SelectItem>
+                  <SelectItem value="hi">हिंदी</SelectItem>
+                  <SelectItem value="pt">Português</SelectItem>
+                  <SelectItem value="fr">Français</SelectItem>
                 </SelectContent>
               </Select>
             </div>
