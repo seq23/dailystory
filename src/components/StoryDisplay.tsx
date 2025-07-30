@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { BookOpen, Home, RotateCcw, Volume2, VolumeX, TrendingUp, TrendingDown, Plus, Star, Heart, Sparkles, Wand2, Zap, Timer, Award, Target, Mic, MicOff } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { BookOpen, Home, RotateCcw, Volume2, VolumeX, TrendingUp, TrendingDown, Plus, Star, Heart, Sparkles, Wand2, Play, Pause, Timer, Clock, Award, Target, Mic, MicOff } from "lucide-react";
 import type { UserInfo } from "./UserInfoForm";
 import ancientBookBg from "@/assets/ancient-book-bg.jpg";
 import illustration1 from "@/assets/story-illustration-1.jpg";
@@ -62,7 +63,6 @@ import avatarGirlMedium from "@/assets/avatar-girl-medium.jpg";
 import avatarGirlOlive from "@/assets/avatar-girl-olive.jpg";
 import avatarGirlDark from "@/assets/avatar-girl-dark.jpg";
 import time2ReadLogo from "@/assets/time2read-logo.png";
-import { FloatingTimer } from "./FloatingTimer";
 import { processTextForPhonetics } from "@/utils/textProcessor";
 import { SecureRunwareService, secureImageCache, cacheImage, getCachedImage } from "@/services/secureRunwareService";
 import { SecurityValidator } from "@/utils/securityValidation";
@@ -71,6 +71,7 @@ import { createChildFriendlyPrompt } from "@/services/runwareService";
 import { createOpenAITTSService } from "@/services/textToSpeechService";
 import InclusiveStoryGenerator from "@/services/inclusiveStoryGenerator";
 import CulturalAdaptationService from "@/services/culturalAdaptationService";
+import { useToast } from "@/hooks/use-toast";
 
 type DifficultyLevel = "easy" | "medium" | "hard" | "expert";
 
@@ -90,69 +91,53 @@ interface ReadingStats {
 
 const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDisplayProps) => {
   const { t } = useTranslation();
+  const { toast } = useToast();
+  
+  // Core state
   const [currentParagraph, setCurrentParagraph] = useState(0);
-  const [isReading, setIsReading] = useState(true);
-  const [timeRemaining, setTimeRemaining] = useState(10 * 60 + 10);
+  const [isReading, setIsReading] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState(10 * 60);
+  const [maxReadingTime, setMaxReadingTime] = useState(10 * 60);
   const [storyExtensions, setStoryExtensions] = useState(0);
   const [story, setStory] = useState<string[]>([]);
   const [currentDifficulty, setCurrentDifficulty] = useState<DifficultyLevel>(
     userInfo.difficultyLevel || (userInfo.age <= 6 ? "easy" : userInfo.age <= 9 ? "medium" : userInfo.age <= 12 ? "hard" : "expert")
   );
-  const [hasShownDifficultyAlert, setHasShownDifficultyAlert] = useState(false);
+  
+  // UI state
   const [showTutorialBubble, setShowTutorialBubble] = useState(true);
-  const [lastStoryVariant, setLastStoryVariant] = useState<number | null>(null);
+  const [showAddPagesAlert, setShowAddPagesAlert] = useState(false);
+  const [hasShownAddPagesAlert, setHasShownAddPagesAlert] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
+  
+  // Image generation
   const [currentIllustration, setCurrentIllustration] = useState<string>("");
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [customIllustrations, setCustomIllustrations] = useState<Map<number, string>>(new Map());
   const [illustrationGenerationQueue, setIllustrationGenerationQueue] = useState<number[]>([]);
+  
+  // Audio/TTS
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [autoReadMode, setAutoReadMode] = useState(false);
+  const [readingSpeed, setReadingSpeed] = useState(1.0);
+  const [isRecording, setIsRecording] = useState(false);
+  const currentAudioRef = useRef<HTMLAudioElement | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  
+  // Services
   const [runwareService] = useState<SecureRunwareService>(() => new SecureRunwareService("LRRGqlrg67zH8uss6lMjVvc54pVOrznM"));
   const [openAIService] = useState<any>(() => createOpenAITTSService());
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [audioQueue, setAudioQueue] = useState<HTMLAudioElement[]>([]);
-  const currentAudioRef = useRef<HTMLAudioElement | null>(null);
-
-  // New Phase 4 features
+  
+  // Reading stats
   const [readingStats, setReadingStats] = useState<ReadingStats>({
     wordsRead: 0,
     timeSpent: 0,
     accuracy: 100,
     streak: 0
   });
-  const [isRecording, setIsRecording] = useState(false);
-  const [autoReadMode, setAutoReadMode] = useState(false);
-  const [readingSpeed, setReadingSpeed] = useState(1.0);
-  const [showAchievements, setShowAchievements] = useState(false);
-  const [highlightedWords, setHighlightedWords] = useState<Set<number>>(new Set());
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const sessionStartTime = useRef<number>(Date.now());
 
-  // Auto-dismiss tutorial bubble
-  useEffect(() => {
-    if (showTutorialBubble && currentParagraph === 0) {
-      const delayTimer = setTimeout(() => {
-        const flashTimer = setTimeout(() => {
-          setShowTutorialBubble(false);
-        }, 6000);
-        return () => clearTimeout(flashTimer);
-      }, 5000);
-      return () => clearTimeout(delayTimer);
-    }
-  }, [showTutorialBubble, currentParagraph]);
-
-  // Track reading time
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (isReading) {
-        setReadingStats(prev => ({
-          ...prev,
-          timeSpent: prev.timeSpent + 1
-        }));
-      }
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [isReading]);
-
+  // Illustrations array
   const illustrations = [
     illustration1, illustration2, illustration3, illustration4, illustration5,
     illustration6, illustration7, illustration8, illustration9, illustration10,
@@ -165,89 +150,193 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
     illustration41, illustration42, illustration43, illustration44
   ];
 
-  const getUserAvatar = () => {
-    const avatarImages = {
-      boy: {
-        pale: avatarBoyPale,
-        light: avatarBoyLight,
-        medium: avatarBoyMedium,
-        olive: avatarBoyOlive,
-        dark: avatarBoyDark,
-      },
-      girl: {
-        pale: avatarGirlPale,
-        light: avatarGirlLight,
-        medium: avatarGirlMedium,
-        olive: avatarGirlOlive,
-        dark: avatarGirlDark,
-      },
-    };
-    return avatarImages[userInfo.avatar.type]?.[userInfo.avatar.skinTone] || avatarBoyLight;
-  };
+  // Auto-dismiss tutorial bubble
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowTutorialBubble(false);
+    }, 8000);
+    return () => clearTimeout(timer);
+  }, []);
 
-  const getAvatarDescription = (includeAppearance = false) => {
-    const genderDesc = userInfo.avatar.type === "boy" ? "young boy" : "young girl";
-    if (!includeAppearance) {
-      return `a ${genderDesc}`;
-    }
-    const skinToneDesc = {
-      pale: "very light skin",
-      light: "light skin", 
-      medium: "medium skin",
-      olive: "olive skin",
-      dark: "dark skin"
-    }[userInfo.avatar.skinTone];
-    return `a happy ${genderDesc} with ${skinToneDesc}`;
-  };
-
-  const generateStoryExtension = (info: UserInfo, difficulty: DifficultyLevel, extensionNumber: number): string[] => {
-    return InclusiveStoryGenerator.generateCulturallyAdaptedStory(
-      info, 
-      difficulty, 
-      true,
-      extensionNumber
-    );
-  };
-
-  const generateInitialStory = (info: UserInfo, difficulty: DifficultyLevel): string[] => {
-    return InclusiveStoryGenerator.generateCulturallyAdaptedStory(
-      info, 
-      difficulty, 
-      false
-    );
-  };
-
-  const generateCustomIllustration = async (paragraphIndex: number, storyParagraph: string) => {
-    if (isGeneratingImage || customIllustrations.has(paragraphIndex)) return;
-
-    try {
-      setIsGeneratingImage(true);
-      setIllustrationGenerationQueue(prev => [...prev, paragraphIndex]);
-
-      const prompt = createChildFriendlyPrompt(
-        storyParagraph,
-        userInfo.name
-      );
-
-      const imageUrl = await runwareService.generateImage({
-        positivePrompt: prompt,
-        model: "runware:100@1",
-        numberResults: 1,
-        outputFormat: "WEBP"
-      });
-
-      if (imageUrl) {
-        const newIllustrations = new Map(customIllustrations);
-        newIllustrations.set(paragraphIndex, imageUrl.imageURL || "");
-        setCustomIllustrations(newIllustrations);
-        await cacheImage(imageUrl.imageURL || "", paragraphIndex.toString());
+  // Generate initial story
+  useEffect(() => {
+    const generateStory = async () => {
+      try {
+        const generator = new InclusiveStoryGenerator();
+        const generatedStory = InclusiveStoryGenerator.generateCulturallyAdaptedStory(userInfo, currentDifficulty);
+        setStory(generatedStory);
+        
+        // Set illustration
+        const illustrationIndex = Math.floor(Math.random() * illustrations.length);
+        setCurrentIllustration(illustrations[illustrationIndex]);
+        
+        // Update reading stats
+        const wordCount = generatedStory.join(' ').split(' ').length;
+        setReadingStats(prev => ({ ...prev, wordsRead: wordCount }));
+      } catch (error) {
+        console.error('Error generating story:', error);
+        toast({
+          title: "Story Generation Error",
+          description: "Unable to generate story. Please try again.",
+          variant: "destructive"
+        });
       }
-    } catch (error) {
-      console.error("Error generating illustration:", error);
-    } finally {
-      setIsGeneratingImage(false);
-      setIllustrationGenerationQueue(prev => prev.filter(i => i !== paragraphIndex));
+    };
+
+    generateStory();
+  }, [userInfo, currentDifficulty]);
+
+  // Timer countdown
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+    
+    if (isReading && timeRemaining > 0) {
+      interval = setInterval(() => {
+        setTimeRemaining(prev => {
+          const newTime = prev - 1;
+          if (newTime === 0) {
+            setIsReading(false);
+            setShowCelebration(true);
+            handleSessionEnd();
+          }
+          return newTime;
+        });
+        
+        setReadingStats(prev => ({ ...prev, timeSpent: prev.timeSpent + 1 }));
+      }, 1000);
     }
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isReading, timeRemaining]);
+
+  // Add pages alert logic
+  useEffect(() => {
+    const isNextToLastPage = currentParagraph === story.length - 2;
+    const hasTimeRemaining = timeRemaining > 60;
+    
+    if (isNextToLastPage && hasTimeRemaining && !hasShownAddPagesAlert) {
+      setShowAddPagesAlert(true);
+      setHasShownAddPagesAlert(true);
+      
+      setTimeout(() => {
+        setShowAddPagesAlert(false);
+      }, 5000);
+    }
+  }, [currentParagraph, story.length, timeRemaining, hasShownAddPagesAlert]);
+
+  const totalPages = story.length;
+  const currentStory = story[currentParagraph] || "Loading your adventure...";
+
+  const getUserAvatar = () => {
+    const gender = userInfo.avatar.type || 'boy';
+    const skinTone = userInfo.avatar.skinTone || 'light';
+    
+    if (gender === 'boy') {
+      switch (skinTone) {
+        case 'pale': return avatarBoyPale;
+        case 'light': return avatarBoyLight;
+        case 'medium': return avatarBoyMedium;
+        case 'olive': return avatarBoyOlive;
+        case 'dark': return avatarBoyDark;
+        default: return avatarBoyLight;
+      }
+    } else {
+      switch (skinTone) {
+        case 'pale': return avatarGirlPale;
+        case 'light': return avatarGirlLight;
+        case 'medium': return avatarGirlMedium;
+        case 'olive': return avatarGirlOlive;
+        case 'dark': return avatarGirlDark;
+        default: return avatarGirlLight;
+      }
+    }
+  };
+
+  const formatTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleMakeEasier = () => {
+    if (currentDifficulty === "medium") {
+      setCurrentDifficulty("easy");
+    } else if (currentDifficulty === "hard") {
+      setCurrentDifficulty("medium");
+    } else if (currentDifficulty === "expert") {
+      setCurrentDifficulty("hard");
+    }
+  };
+
+  const handleMakeHarder = () => {
+    if (currentDifficulty === "easy") {
+      setCurrentDifficulty("medium");
+    } else if (currentDifficulty === "medium") {
+      setCurrentDifficulty("hard");
+    } else if (currentDifficulty === "hard") {
+      setCurrentDifficulty("expert");
+    }
+  };
+
+  const handleNext = () => {
+    if (currentParagraph < totalPages - 1) {
+      setCurrentParagraph(prev => prev + 1);
+      setReadingStats(prev => ({ ...prev, streak: prev.streak + 1 }));
+      
+      // Set new illustration
+      const illustrationIndex = (currentParagraph + 1) % illustrations.length;
+      setCurrentIllustration(illustrations[illustrationIndex]);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentParagraph > 0) {
+      setCurrentParagraph(prev => prev - 1);
+      
+      // Set illustration
+      const illustrationIndex = (currentParagraph - 1) % illustrations.length;
+      setCurrentIllustration(illustrations[illustrationIndex]);
+    }
+  };
+
+  const handleAddPages = async () => {
+    try {
+      const generator = new InclusiveStoryGenerator();
+      const extension = InclusiveStoryGenerator.generateCulturallyAdaptedStory(userInfo, currentDifficulty, true, storyExtensions + 1);
+      setStory(prev => [...prev, ...extension]);
+      setStoryExtensions(prev => prev + 1);
+      setShowAddPagesAlert(false);
+      setHasShownAddPagesAlert(false);
+      
+      toast({
+        title: "Story Extended!",
+        description: `Added ${extension.length} more pages to your adventure.`,
+      });
+    } catch (error) {
+      console.error('Error extending story:', error);
+      toast({
+        title: "Extension Error",
+        description: "Unable to add more pages. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleTimeChange = (value: string) => {
+    const minutes = parseInt(value);
+    const seconds = minutes * 60;
+    setMaxReadingTime(seconds);
+    setTimeRemaining(seconds);
+  };
+
+  const handleSessionEnd = () => {
+    setShowCelebration(true);
+    
+    setTimeout(() => {
+      onSessionEnded();
+    }, 5000);
   };
 
   const playTextToSpeech = async (text: string) => {
@@ -278,8 +367,13 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         await audio.play();
       }
     } catch (error) {
-      console.error("Error playing text-to-speech:", error);
+      console.error('Error playing text-to-speech:', error);
       setIsPlaying(false);
+      toast({
+        title: "Audio Error",
+        description: "Unable to play audio. Please try again.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -291,112 +385,73 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
     setIsPlaying(false);
   };
 
+  const generateCustomIllustration = async (pageIndex: number, storyText: string) => {
+    if (isGeneratingImage || customIllustrations.has(pageIndex)) return;
+    
+    try {
+      setIsGeneratingImage(true);
+      setIllustrationGenerationQueue(prev => [...prev, pageIndex]);
+      
+      const prompt = createChildFriendlyPrompt(storyText, userInfo);
+      const result = await runwareService.generateImage({
+        positivePrompt: prompt,
+        width: 512,
+        height: 512,
+        numberResults: 1
+      });
+      
+      if (result?.imageURL) {
+        await cacheImage(result.imageURL, `story-${pageIndex}`);
+        setCustomIllustrations(prev => new Map(prev.set(pageIndex, result.imageURL)));
+        
+        if (pageIndex === currentParagraph) {
+          setCurrentIllustration(result.imageURL);
+        }
+      }
+    } catch (error) {
+      console.error('Error generating illustration:', error);
+      toast({
+        title: "Illustration Error",
+        description: "Unable to generate custom illustration.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGeneratingImage(false);
+      setIllustrationGenerationQueue(prev => prev.filter(id => id !== pageIndex));
+    }
+  };
+
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mediaRecorder = new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
       
-      const audioChunks: BlobPart[] = [];
-      
-      mediaRecorder.ondataavailable = (event) => {
-        audioChunks.push(event.data);
-      };
-      
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-        // Here you would send the audio to speech recognition API
-        // For now, we'll simulate reading progress
-        updateReadingProgress();
-      };
-      
       mediaRecorder.start();
       setIsRecording(true);
+      
+      mediaRecorder.ondataavailable = (event) => {
+        // Handle recorded audio data
+        console.log('Recording data available:', event.data);
+      };
+      
+      mediaRecorder.onstop = () => {
+        setIsRecording(false);
+        stream.getTracks().forEach(track => track.stop());
+      };
     } catch (error) {
-      console.error("Error starting recording:", error);
+      console.error('Error starting recording:', error);
+      toast({
+        title: "Recording Error",
+        description: "Unable to start recording. Please check microphone permissions.",
+        variant: "destructive"
+      });
     }
   };
 
   const stopRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
-      setIsRecording(false);
-    }
-  };
-
-  const updateReadingProgress = () => {
-    const words = currentStory.split(' ').length;
-    setReadingStats(prev => ({
-      ...prev,
-      wordsRead: prev.wordsRead + words,
-      streak: prev.streak + 1
-    }));
-  };
-
-  const totalPages = story.length;
-  const currentStory = story[currentParagraph] || "";
-  
-  useEffect(() => {
-    const initialStory = generateInitialStory(userInfo, currentDifficulty);
-    setStory(initialStory);
-  }, [userInfo, currentDifficulty]);
-
-  useEffect(() => {
-    if (story.length > 0) {
-      const illustrationIndex = currentParagraph % illustrations.length;
-      setCurrentIllustration(illustrations[illustrationIndex]);
-    }
-  }, [currentParagraph, story.length]);
-
-  const handleNext = () => {
-    if (currentParagraph < totalPages - 1) {
-      setCurrentParagraph(currentParagraph + 1);
-      setShowTutorialBubble(false);
-      updateReadingProgress();
-    }
-    stopTextToSpeech();
-  };
-
-  const handlePrevious = () => {
-    if (currentParagraph > 0) {
-      setCurrentParagraph(currentParagraph - 1);
-    }
-    stopTextToSpeech();
-  };
-
-  const handleAddTime = () => {
-    setTimeRemaining(prev => prev + 300);
-  };
-
-  const handleAddPages = () => {
-    const extensionPages = generateStoryExtension(userInfo, currentDifficulty, storyExtensions);
-    setStory(prev => [...prev, ...extensionPages]);
-    setStoryExtensions(prev => prev + 1);
-  };
-
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const handleMakeEasier = () => {
-    if (currentDifficulty === "medium") {
-      setCurrentDifficulty("easy");
-    } else if (currentDifficulty === "hard") {
-      setCurrentDifficulty("medium");
-    } else if (currentDifficulty === "expert") {
-      setCurrentDifficulty("hard");
-    }
-  };
-
-  const handleMakeHarder = () => {
-    if (currentDifficulty === "easy") {
-      setCurrentDifficulty("medium");
-    } else if (currentDifficulty === "medium") {
-      setCurrentDifficulty("hard");
-    } else if (currentDifficulty === "hard") {
-      setCurrentDifficulty("expert");
     }
   };
 
@@ -421,10 +476,10 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
           <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                 <div className="relative">
-                   <img src={time2ReadLogo} alt="Time2Read" className="w-12 h-12 rounded-xl shadow-lg transition-transform hover:scale-105" />
-                   <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full animate-pulse"></div>
-                 </div>
+                <div className="relative">
+                  <img src={time2ReadLogo} alt="Time2Read" className="w-12 h-12 rounded-xl shadow-lg transition-transform hover:scale-105" />
+                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full animate-pulse"></div>
+                </div>
                 <div>
                   <h1 className="text-2xl font-bold text-gray-800 font-comic">
                     {userInfo.name}'s Reading Journey
@@ -436,17 +491,6 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
               </div>
               
               <div className="flex items-center space-x-3">
-                <div className="hidden md:flex items-center space-x-4 bg-gray-50/80 rounded-xl px-4 py-2">
-                  <div className="flex items-center space-x-2">
-                    <Award className="w-4 h-4 text-yellow-500" />
-                    <span className="text-sm font-medium text-gray-700">{readingStats.streak}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Target className="w-4 h-4 text-green-500" />
-                    <span className="text-sm font-medium text-gray-700">{readingStats.wordsRead}</span>
-                  </div>
-                </div>
-                
                 <Button
                   onClick={onNewStory}
                   variant="outline"
@@ -470,81 +514,95 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         </header>
 
         <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-8">
-          {/* Progress Section */}
+          {/* Timer and Controls Section */}
           <div className="mb-8">
             <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl rounded-2xl p-6">
-              <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-                <div className="flex items-center space-x-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-                    <BookOpen className="w-8 h-8 text-white" />
-                  </div>
-                  <div>
-                    <div className="flex items-center space-x-3 mb-2">
-                      <span className="text-lg font-bold text-gray-800">
-                        Page {currentParagraph + 1} of {totalPages}
-                      </span>
-                      {showTutorialBubble && currentParagraph === 0 && (
-                        <div className="bg-indigo-500 text-white px-3 py-1 rounded-full text-xs font-medium animate-bounce">
-                          Click words to learn more!
+              <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
+                {/* Timer Display */}
+                <div className="flex items-center space-x-6">
+                  <div className="relative">
+                    <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                      <div className="text-center">
+                        <div className="text-xl font-bold text-white">
+                          {formatTime(timeRemaining)}
                         </div>
-                      )}
+                        <div className="text-xs text-indigo-100">
+                          Reading Time
+                        </div>
+                      </div>
                     </div>
-                    <Progress 
-                      value={(currentParagraph / Math.max(1, totalPages - 1)) * 100} 
-                      className="h-3 w-80 bg-gray-100"
-                    />
+                    <div className={`absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center ${
+                      isReading ? 'bg-green-400 animate-pulse' : 'bg-gray-400'
+                    }`}>
+                      {isReading ? <Play className="w-3 h-3 text-white" /> : <Pause className="w-3 h-3 text-white" />}
+                    </div>
+                  </div>
+                  
+                  {/* Timer Controls */}
+                  <div className="flex flex-col space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        onClick={() => setIsReading(!isReading)}
+                        variant={isReading ? "default" : "outline"}
+                        className="rounded-xl"
+                      >
+                        {isReading ? <Pause className="w-4 h-4 mr-2" /> : <Play className="w-4 h-4 mr-2" />}
+                        {isReading ? "Pause" : "Start"} Timer
+                      </Button>
+                      
+                      <Button
+                        onClick={() => setTimeRemaining(prev => Math.min(prev + 600, 3600))}
+                        variant="outline"
+                        size="sm"
+                        className="rounded-xl"
+                      >
+                        <Plus className="w-4 h-4 mr-1" />
+                        +10 min
+                      </Button>
+                    </div>
+                    
+                    {/* Time Setting */}
+                    <div className="flex items-center space-x-2">
+                      <Clock className="w-4 h-4 text-gray-500" />
+                      <span className="text-sm text-gray-600">Max time:</span>
+                      <Select value={maxReadingTime.toString()} onValueChange={handleTimeChange}>
+                        <SelectTrigger className="w-24 h-8 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="600">10 min</SelectItem>
+                          <SelectItem value="1200">20 min</SelectItem>
+                          <SelectItem value="1800">30 min</SelectItem>
+                          <SelectItem value="2400">40 min</SelectItem>
+                          <SelectItem value="3000">50 min</SelectItem>
+                          <SelectItem value="3600">60 min</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 </div>
                 
-                <div className="flex items-center space-x-3">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        onClick={() => setAutoReadMode(!autoReadMode)}
-                        variant={autoReadMode ? "default" : "outline"}
-                        size="sm"
-                        className="rounded-xl"
-                      >
-                        <Timer className="w-4 h-4 mr-2" />
-                        Auto Read
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Automatically advance to next page after reading</p>
-                    </TooltipContent>
-                  </Tooltip>
+                {/* Progress and Add Pages */}
+                <div className="flex items-center space-x-6">
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-gray-800 mb-1">
+                      Page {currentParagraph + 1} of {totalPages}
+                    </div>
+                    <Progress 
+                      value={(currentParagraph / Math.max(1, totalPages - 1)) * 100} 
+                      className="h-2 w-40"
+                    />
+                  </div>
                   
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        onClick={() => isPlaying ? stopTextToSpeech() : playTextToSpeech(currentStory)}
-                        variant="outline"
-                        size="sm"
-                        className="rounded-xl bg-indigo-50 hover:bg-indigo-100 border-indigo-200"
-                      >
-                        {isPlaying ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{isPlaying ? "Stop reading aloud" : "Read this page aloud"}</p>
-                    </TooltipContent>
-                  </Tooltip>
-
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        onClick={() => isRecording ? stopRecording() : startRecording()}
-                        variant={isRecording ? "destructive" : "outline"}
-                        size="sm"
-                        className="rounded-xl"
-                      >
-                        {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{isRecording ? "Stop reading practice" : "Practice reading aloud"}</p>
-                    </TooltipContent>
-                  </Tooltip>
+                  <Button
+                    onClick={handleAddPages}
+                    variant="outline"
+                    className={`rounded-xl ${showAddPagesAlert ? 'animate-pulse bg-green-50 border-green-300 text-green-700' : ''}`}
+                  >
+                    <BookOpen className="w-4 h-4 mr-2" />
+                    Add More Pages
+                    {showAddPagesAlert && <span className="ml-2 text-xs">⚡</span>}
+                  </Button>
                 </div>
               </div>
             </Card>
@@ -597,43 +655,39 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                         }
                       </div>
                       <div className="flex space-x-2">
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                onClick={handleMakeEasier}
-                                disabled={currentDifficulty === "easy"}
-                                size="sm"
-                                className="bg-white/20 hover:bg-white/30 text-white border-white/30 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl px-3 py-1"
-                              >
-                                <TrendingDown className="w-4 h-4 mr-1" />
-                                Easier
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Make the story easier to read</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              onClick={handleMakeEasier}
+                              disabled={currentDifficulty === "easy"}
+                              size="sm"
+                              className="bg-white/20 hover:bg-white/30 text-white border-white/30 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl px-3 py-1"
+                            >
+                              <TrendingDown className="w-4 h-4 mr-1" />
+                              Easier
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Make the story easier to read</p>
+                          </TooltipContent>
+                        </Tooltip>
                         
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                onClick={handleMakeHarder}
-                                disabled={currentDifficulty === "expert"}
-                                size="sm"
-                                className="bg-white/20 hover:bg-white/30 text-white border-white/30 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl px-3 py-1"
-                              >
-                                <TrendingUp className="w-4 h-4 mr-1" />
-                                Harder
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Make the story more challenging</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              onClick={handleMakeHarder}
+                              disabled={currentDifficulty === "expert"}
+                              size="sm"
+                              className="bg-white/20 hover:bg-white/30 text-white border-white/30 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl px-3 py-1"
+                            >
+                              <TrendingUp className="w-4 h-4 mr-1" />
+                              Harder
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Make the story more challenging</p>
+                          </TooltipContent>
+                        </Tooltip>
                       </div>
                     </div>
                   </div>
@@ -659,6 +713,41 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                         {processTextForPhonetics(currentStory, "", currentDifficulty, userInfo)}
                       </p>
                     </div>
+                  </div>
+                  
+                  {/* Audio Controls */}
+                  <div className="flex justify-center space-x-4 mt-6">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={() => isPlaying ? stopTextToSpeech() : playTextToSpeech(currentStory)}
+                          variant="outline"
+                          size="sm"
+                          className="rounded-xl bg-indigo-50 hover:bg-indigo-100 border-indigo-200"
+                        >
+                          {isPlaying ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{isPlaying ? "Stop reading aloud" : "Read this page aloud"}</p>
+                      </TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={() => isRecording ? stopRecording() : startRecording()}
+                          variant={isRecording ? "destructive" : "outline"}
+                          size="sm"
+                          className="rounded-xl"
+                        >
+                          {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{isRecording ? "Stop reading practice" : "Practice reading aloud"}</p>
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                 </div>
 
@@ -784,17 +873,25 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
           </div>
         </main>
 
-        {/* Floating Timer */}
-        <FloatingTimer
-          timeRemaining={timeRemaining}
-          isReading={isReading}
-          onToggleReading={() => setIsReading(!isReading)}
-          onAddTime={handleAddTime}
-          onAddPages={handleAddPages}
-          pagesRemaining={totalPages - currentParagraph - 1}
-          currentParagraph={currentParagraph}
-          onSessionEnded={onSessionEnded}
-        />
+        {/* Celebration Overlay */}
+        {showCelebration && (
+          <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
+            <div className="bg-white rounded-3xl p-8 text-center max-w-md mx-4 shadow-2xl">
+              <div className="text-6xl mb-4">🎉</div>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                Congratulations!
+              </h2>
+              <p className="text-gray-600 mb-6">
+                You've completed your reading session!
+              </p>
+              <div className="space-y-2 text-sm text-gray-500">
+                <p>📚 Words read: {readingStats.wordsRead}</p>
+                <p>⏰ Time spent: {formatTime(readingStats.timeSpent)}</p>
+                <p>🔥 Pages read: {readingStats.streak}</p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </TooltipProvider>
   );
