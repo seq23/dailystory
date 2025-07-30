@@ -1,0 +1,124 @@
+{
+  "userInfoForm": {
+    "title": "¡Cuéntanos sobre ti!",
+    "subtitle": "Ayúdanos a crear la historia perfecta para ti",
+    "sections": {
+      "aboutYou": "Sobre Ti",
+      "yourFavorites": "Tus Favoritos",
+      "additionalInfo": "Información Adicional"
+    },
+    "fields": {
+      "name": {
+        "label": "¿Cuál es tu nombre?",
+        "placeholder": "Escribe tu nombre aquí..."
+      },
+      "age": {
+        "label": "¿Cuántos años tienes?",
+        "placeholder": "Elige tu edad",
+        "yearsOld": "años"
+      },
+      "grade": {
+        "label": "¿En qué grado estás?",
+        "placeholder": "Selecciona tu grado"
+      },
+      "nativeLanguage": {
+        "label": "¿Cuál es tu idioma nativo?",
+        "placeholder": "Selecciona tu primer idioma"
+      },
+      "learningGoal": {
+        "label": "¿Cuál es tu objetivo de aprendizaje?",
+        "placeholder": "Elige tu objetivo de aprendizaje",
+        "options": {
+          "improve-english-reading": "Mejorar la Lectura en Inglés",
+          "learn-english-language": "Aprender el Idioma Inglés",
+          "both": "Ambos: Lectura e Idioma"
+        }
+      },
+      "readingAbility": {
+        "label": "¿Qué nivel de lectura es adecuado para ti?",
+        "placeholder": "Elige tu nivel de lectura",
+        "levels": {
+          "easy": {
+            "title": "Lectura Fácil",
+            "description": "(K-1er grado: Palabras simples y oraciones cortas)"
+          },
+          "medium": {
+            "title": "Lectura Intermedia",
+            "description": "(2do-4to grado: Vocabulario y oraciones moderadas)"
+          },
+          "hard": {
+            "title": "Lectura Avanzada",
+            "description": "(5to-8vo grado: Vocabulario avanzado y oraciones complejas)"
+          },
+          "expert": {
+            "title": "Lectura Experta",
+            "description": "(9no-12vo grado: Vocabulario experto y escritura sofisticada)"
+          }
+        }
+      },
+      "avatar": {
+        "label": "¿Qué avatar quieres?"
+      },
+      "favoriteColor": {
+        "label": "¿Cuál es tu color favorito?",
+        "optional": "(Opcional)"
+      },
+      "favoriteAnimal": {
+        "label": "¿Cuál es tu animal favorito?",
+        "placeholder": "Escribe animales y presiona Enter...",
+        "optional": "(Opcional)"
+      },
+      "favoriteFood": {
+        "label": "¿Cuál es tu comida favorita?",
+        "placeholder": "Escribe comidas y presiona Enter...",
+        "optional": "(Opcional)"
+      },
+      "hobbies": {
+        "label": "¿Qué te gusta hacer para divertirte?",
+        "placeholder": "Escribe actividades y presiona Enter...",
+        "optional": "(Opcional)"
+      },
+      "specialRequest": {
+        "label": "¿Hay algo especial que quieras incluir en tu historia?",
+        "placeholder": "Escribe elementos especiales de la historia y presiona Enter...",
+        "optional": "(Opcional)"
+      }
+    },
+    "grades": {
+      "PreK": "Pre-Kinder",
+      "K": "Kinder",
+      "1st": "1er Grado",
+      "2nd": "2do Grado",
+      "3rd": "3er Grado",
+      "4th": "4to Grado",
+      "5th": "5to Grado",
+      "6th": "6to Grado",
+      "7th": "7mo Grado",
+      "8th": "8vo Grado",
+      "9th": "9no Grado",
+      "10th": "10mo Grado",
+      "11th": "11vo Grado"
+    },
+    "languages": {
+      "en": "Inglés",
+      "ar": "Árabe",
+      "es": "Español",
+      "zh": "Chino (Mandarín)",
+      "hi": "Hindi",
+      "pt": "Portugués",
+      "fr": "Francés"
+    },
+    "buttons": {
+      "backToHome": "Volver al Inicio",
+      "createStory": "¡Crear Mi Historia!"
+    },
+    "validation": {
+      "contentWarning": "Advertencia de Contenido",
+      "inappropriateContent": "¡Por favor usa un lenguaje apropiado para historias infantiles!",
+      "tooManyRequests": "Demasiadas Solicitudes",
+      "waitToSubmit": "Por favor espera un momento antes de enviar de nuevo.",
+      "contentIssue": "Problema de Contenido",
+      "reviewInputs": "Por favor revisa tus entradas para contenido apropiado."
+    }
+  }
+}

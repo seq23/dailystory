@@ -1,0 +1,124 @@
+{
+  "userInfoForm": {
+    "title": "Parlez-nous de vous !",
+    "subtitle": "Aidez-nous à créer l'histoire parfaite pour vous",
+    "sections": {
+      "aboutYou": "À Propos de Vous",
+      "yourFavorites": "Vos Favoris",
+      "additionalInfo": "Informations Supplémentaires"
+    },
+    "fields": {
+      "name": {
+        "label": "Quel est votre prénom ?",
+        "placeholder": "Tapez votre nom ici..."
+      },
+      "age": {
+        "label": "Quel âge avez-vous ?",
+        "placeholder": "Choisissez votre âge",
+        "yearsOld": "ans"
+      },
+      "grade": {
+        "label": "En quelle classe êtes-vous ?",
+        "placeholder": "Sélectionnez votre classe"
+      },
+      "nativeLanguage": {
+        "label": "Quelle est votre langue maternelle ?",
+        "placeholder": "Sélectionnez votre première langue"
+      },
+      "learningGoal": {
+        "label": "Quel est votre objectif d'apprentissage ?",
+        "placeholder": "Choisissez votre objectif d'apprentissage",
+        "options": {
+          "improve-english-reading": "Améliorer la Lecture en Anglais",
+          "learn-english-language": "Apprendre la Langue Anglaise",
+          "both": "Les Deux : Lecture et Langue"
+        }
+      },
+      "readingAbility": {
+        "label": "Quel niveau de lecture vous convient ?",
+        "placeholder": "Choisissez votre niveau de lecture",
+        "levels": {
+          "easy": {
+            "title": "Lecture Facile",
+            "description": "(K-1ère année : Mots simples et phrases courtes)"
+          },
+          "medium": {
+            "title": "Lecture Intermédiaire",
+            "description": "(2e-4e année : Vocabulaire et phrases modérés)"
+          },
+          "hard": {
+            "title": "Lecture Avancée",
+            "description": "(5e-8e année : Vocabulaire avancé et phrases complexes)"
+          },
+          "expert": {
+            "title": "Lecture Expert",
+            "description": "(9e-12e année : Vocabulaire expert et écriture sophistiquée)"
+          }
+        }
+      },
+      "avatar": {
+        "label": "Quel avatar voulez-vous ?"
+      },
+      "favoriteColor": {
+        "label": "Quelle est votre couleur préférée ?",
+        "optional": "(Optionnel)"
+      },
+      "favoriteAnimal": {
+        "label": "Quel est votre animal préféré ?",
+        "placeholder": "Tapez des animaux et appuyez sur Entrée...",
+        "optional": "(Optionnel)"
+      },
+      "favoriteFood": {
+        "label": "Quelle est votre nourriture préférée ?",
+        "placeholder": "Tapez des aliments et appuyez sur Entrée...",
+        "optional": "(Optionnel)"
+      },
+      "hobbies": {
+        "label": "Qu'aimez-vous faire pour vous amuser ?",
+        "placeholder": "Tapez des activités et appuyez sur Entrée...",
+        "optional": "(Optionnel)"
+      },
+      "specialRequest": {
+        "label": "Y a-t-il quelque chose de spécial que vous voulez inclure dans votre histoire ?",
+        "placeholder": "Tapez des éléments spéciaux de l'histoire et appuyez sur Entrée...",
+        "optional": "(Optionnel)"
+      }
+    },
+    "grades": {
+      "PreK": "Pré-Maternelle",
+      "K": "Maternelle",
+      "1st": "1ère Année",
+      "2nd": "2e Année",
+      "3rd": "3e Année",
+      "4th": "4e Année",
+      "5th": "5e Année",
+      "6th": "6e Année",
+      "7th": "7e Année",
+      "8th": "8e Année",
+      "9th": "9e Année",
+      "10th": "10e Année",
+      "11th": "11e Année"
+    },
+    "languages": {
+      "en": "Anglais",
+      "ar": "Arabe",
+      "es": "Espagnol",
+      "zh": "Chinois (Mandarin)",
+      "hi": "Hindi",
+      "pt": "Portugais",
+      "fr": "Français"
+    },
+    "buttons": {
+      "backToHome": "Retour à l'Accueil",
+      "createStory": "Créer Mon Histoire !"
+    },
+    "validation": {
+      "contentWarning": "Avertissement de Contenu",
+      "inappropriateContent": "Veuillez utiliser un langage approprié pour les histoires d'enfants !",
+      "tooManyRequests": "Trop de Demandes",
+      "waitToSubmit": "Veuillez attendre un moment avant de soumettre à nouveau.",
+      "contentIssue": "Problème de Contenu",
+      "reviewInputs": "Veuillez réviser vos entrées pour un contenu approprié."
+    }
+  }
+}

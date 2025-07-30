@@ -1,0 +1,124 @@
+{
+  "userInfoForm": {
+    "title": "Nos conte sobre você!",
+    "subtitle": "Nos ajude a criar a história perfeita para você",
+    "sections": {
+      "aboutYou": "Sobre Você",
+      "yourFavorites": "Seus Favoritos",
+      "additionalInfo": "Informações Adicionais"
+    },
+    "fields": {
+      "name": {
+        "label": "Qual é o seu nome?",
+        "placeholder": "Digite seu nome aqui..."
+      },
+      "age": {
+        "label": "Quantos anos você tem?",
+        "placeholder": "Escolha sua idade",
+        "yearsOld": "anos"
+      },
+      "grade": {
+        "label": "Em que série você está?",
+        "placeholder": "Selecione sua série"
+      },
+      "nativeLanguage": {
+        "label": "Qual é sua língua nativa?",
+        "placeholder": "Selecione seu primeiro idioma"
+      },
+      "learningGoal": {
+        "label": "Qual é seu objetivo de aprendizado?",
+        "placeholder": "Escolha seu objetivo de aprendizado",
+        "options": {
+          "improve-english-reading": "Melhorar a Leitura em Inglês",
+          "learn-english-language": "Aprender o Idioma Inglês",
+          "both": "Ambos: Leitura e Idioma"
+        }
+      },
+      "readingAbility": {
+        "label": "Que nível de leitura é adequado para você?",
+        "placeholder": "Escolha seu nível de leitura",
+        "levels": {
+          "easy": {
+            "title": "Leitura Fácil",
+            "description": "(K-1ª série: Palavras simples e frases curtas)"
+          },
+          "medium": {
+            "title": "Leitura Intermediária",
+            "description": "(2ª-4ª série: Vocabulário e frases moderadas)"
+          },
+          "hard": {
+            "title": "Leitura Avançada",
+            "description": "(5ª-8ª série: Vocabulário avançado e frases complexas)"
+          },
+          "expert": {
+            "title": "Leitura Expert",
+            "description": "(9ª-12ª série: Vocabulário expert e escrita sofisticada)"
+          }
+        }
+      },
+      "avatar": {
+        "label": "Qual avatar você quer?"
+      },
+      "favoriteColor": {
+        "label": "Qual é sua cor favorita?",
+        "optional": "(Opcional)"
+      },
+      "favoriteAnimal": {
+        "label": "Qual é seu animal favorito?",
+        "placeholder": "Digite animais e pressione Enter...",
+        "optional": "(Opcional)"
+      },
+      "favoriteFood": {
+        "label": "Qual é sua comida favorita?",
+        "placeholder": "Digite comidas e pressione Enter...",
+        "optional": "(Opcional)"
+      },
+      "hobbies": {
+        "label": "O que você gosta de fazer para se divertir?",
+        "placeholder": "Digite atividades e pressione Enter...",
+        "optional": "(Opcional)"
+      },
+      "specialRequest": {
+        "label": "Há algo especial que você quer incluir em sua história?",
+        "placeholder": "Digite elementos especiais da história e pressione Enter...",
+        "optional": "(Opcional)"
+      }
+    },
+    "grades": {
+      "PreK": "Pré-Escola",
+      "K": "Jardim de Infância",
+      "1st": "1ª Série",
+      "2nd": "2ª Série",
+      "3rd": "3ª Série",
+      "4th": "4ª Série",
+      "5th": "5ª Série",
+      "6th": "6ª Série",
+      "7th": "7ª Série",
+      "8th": "8ª Série",
+      "9th": "9ª Série",
+      "10th": "10ª Série",
+      "11th": "11ª Série"
+    },
+    "languages": {
+      "en": "Inglês",
+      "ar": "Árabe",
+      "es": "Espanhol",
+      "zh": "Chinês (Mandarim)",
+      "hi": "Hindi",
+      "pt": "Português",
+      "fr": "Francês"
+    },
+    "buttons": {
+      "backToHome": "Voltar ao Início",
+      "createStory": "Criar Minha História!"
+    },
+    "validation": {
+      "contentWarning": "Aviso de Conteúdo",
+      "inappropriateContent": "Por favor, use linguagem apropriada para histórias infantis!",
+      "tooManyRequests": "Muitas Solicitações",
+      "waitToSubmit": "Por favor, aguarde um momento antes de enviar novamente.",
+      "contentIssue": "Problema de Conteúdo",
+      "reviewInputs": "Por favor, revise suas entradas para conteúdo apropriado."
+    }
+  }
+}

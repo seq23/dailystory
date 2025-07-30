@@ -1,0 +1,124 @@
+{
+  "userInfoForm": {
+    "title": "告诉我们关于你的信息！",
+    "subtitle": "帮助我们为你创建完美的故事",
+    "sections": {
+      "aboutYou": "关于你",
+      "yourFavorites": "你的最爱",
+      "additionalInfo": "附加信息"
+    },
+    "fields": {
+      "name": {
+        "label": "你的名字是什么？",
+        "placeholder": "在这里输入你的名字..."
+      },
+      "age": {
+        "label": "你多大了？",
+        "placeholder": "选择你的年龄",
+        "yearsOld": "岁"
+      },
+      "grade": {
+        "label": "你在几年级？",
+        "placeholder": "选择你的年级"
+      },
+      "nativeLanguage": {
+        "label": "你的母语是什么？",
+        "placeholder": "选择你的第一语言"
+      },
+      "learningGoal": {
+        "label": "你的学习目标是什么？",
+        "placeholder": "选择你的学习目标",
+        "options": {
+          "improve-english-reading": "提高英语阅读",
+          "learn-english-language": "学习英语语言",
+          "both": "阅读和语言都要"
+        }
+      },
+      "readingAbility": {
+        "label": "什么阅读水平适合你？",
+        "placeholder": "选择你的阅读水平",
+        "levels": {
+          "easy": {
+            "title": "简单阅读",
+            "description": "(K-1年级：简单单词和短句)"
+          },
+          "medium": {
+            "title": "中等阅读",
+            "description": "(2-4年级：中等词汇和句子)"
+          },
+          "hard": {
+            "title": "高级阅读",
+            "description": "(5-8年级：高级词汇和复杂句子)"
+          },
+          "expert": {
+            "title": "专家阅读",
+            "description": "(9-12年级：专业词汇和复杂写作)"
+          }
+        }
+      },
+      "avatar": {
+        "label": "你想要哪个头像？"
+      },
+      "favoriteColor": {
+        "label": "你最喜欢的颜色是什么？",
+        "optional": "（可选）"
+      },
+      "favoriteAnimal": {
+        "label": "你最喜欢的动物是什么？",
+        "placeholder": "输入动物并按Enter...",
+        "optional": "（可选）"
+      },
+      "favoriteFood": {
+        "label": "你最喜欢的食物是什么？",
+        "placeholder": "输入食物并按Enter...",
+        "optional": "（可选）"
+      },
+      "hobbies": {
+        "label": "你喜欢做什么来娱乐？",
+        "placeholder": "输入活动并按Enter...",
+        "optional": "（可选）"
+      },
+      "specialRequest": {
+        "label": "有什么特别的想要包含在你的故事中吗？",
+        "placeholder": "输入特殊故事元素并按Enter...",
+        "optional": "（可选）"
+      }
+    },
+    "grades": {
+      "PreK": "学前班",
+      "K": "幼儿园",
+      "1st": "一年级",
+      "2nd": "二年级",
+      "3rd": "三年级",
+      "4th": "四年级",
+      "5th": "五年级",
+      "6th": "六年级",
+      "7th": "七年级",
+      "8th": "八年级",
+      "9th": "九年级",
+      "10th": "十年级",
+      "11th": "十一年级"
+    },
+    "languages": {
+      "en": "英语",
+      "ar": "阿拉伯语",
+      "es": "西班牙语",
+      "zh": "中文（普通话）",
+      "hi": "印地语",
+      "pt": "葡萄牙语",
+      "fr": "法语"
+    },
+    "buttons": {
+      "backToHome": "返回首页",
+      "createStory": "创建我的故事！"
+    },
+    "validation": {
+      "contentWarning": "内容警告",
+      "inappropriateContent": "请为儿童故事使用适当的语言！",
+      "tooManyRequests": "请求过多",
+      "waitToSubmit": "请稍等再提交。",
+      "contentIssue": "内容问题",
+      "reviewInputs": "请检查你的输入内容是否合适。"
+    }
+  }
+}

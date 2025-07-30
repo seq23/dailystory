@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { TagInput } from "@/components/ui/tag-input";
 import { ColorPicker } from "@/components/ui/color-picker";
 import { AvatarPicker } from "@/components/ui/avatar-picker";
-import { ChevronRight, User, GraduationCap, Heart, Star } from "lucide-react";
+import { ChevronRight, User, GraduationCap, Heart, Star, Globe } from "lucide-react";
 import { ContentSecurity, SecurityLogger } from "@/utils/security";
 import { useToast } from "@/hooks/use-toast";
 
@@ -16,6 +17,8 @@ export interface UserInfo {
   name: string;
   age: number;
   grade: string;
+  nativeLanguage: string;
+  learningGoal: "improve-english-reading" | "learn-english-language" | "both";
   avatar: {
     type: "boy" | "girl";
     skinTone: "pale" | "light" | "medium" | "olive" | "dark";
@@ -35,11 +38,14 @@ interface UserInfoFormProps {
 }
 
 export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const [formData, setFormData] = useState<UserInfo>({
     name: "",
     age: 6,
     grade: "",
+    nativeLanguage: "en",
+    learningGoal: "improve-english-reading",
     avatar: {
       type: "boy",
       skinTone: "light"
@@ -82,8 +88,8 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
           });
           
           toast({
-            title: "Content Warning",
-            description: "Please use appropriate language for children's stories!",
+            title: t("userInfoForm.validation.contentWarning"),
+            description: t("userInfoForm.validation.inappropriateContent"),
             variant: "destructive"
           });
           return;
@@ -101,8 +107,8 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
     const userIdentifier = formData.name + Date.now(); // Simple identifier
     if (!ContentSecurity.checkRateLimit(userIdentifier)) {
       toast({
-        title: "Too Many Requests",
-        description: "Please wait a moment before submitting again.",
+        title: t("userInfoForm.validation.tooManyRequests"),
+        description: t("userInfoForm.validation.waitToSubmit"),
         variant: "destructive"
       });
       return;
@@ -119,8 +125,8 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
       });
       
       toast({
-        title: "Content Issue",
-        description: "Please review your inputs for appropriate content.",
+        title: t("userInfoForm.validation.contentIssue"),
+        description: t("userInfoForm.validation.reviewInputs"),
         variant: "destructive"
       });
       return;
@@ -142,9 +148,17 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
     return formData.name && 
            formData.age && 
            formData.grade && 
+           formData.nativeLanguage &&
+           formData.learningGoal &&
            formData.avatar.type &&
            formData.avatar.skinTone;
     // favoriteColor, favoriteAnimal, hobbies, favoriteFood, and specialRequest are now optional
+  };
+
+  // Handle language change and update UI language
+  const handleLanguageChange = (newLanguage: string) => {
+    setFormData(prev => ({ ...prev, nativeLanguage: newLanguage }));
+    i18n.changeLanguage(newLanguage);
   };
 
   return (
@@ -158,10 +172,10 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
             </div>
           </div>
           <h2 className="text-2xl md:text-4xl font-bold text-foreground mb-2">
-            Tell us about yourself!
+            {t("userInfoForm.title")}
           </h2>
           <p className="text-muted-foreground text-base md:text-lg px-2">
-            Help us create the perfect story just for you
+            {t("userInfoForm.subtitle")}
           </p>
         </div>
 
@@ -171,34 +185,34 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
           <div className="space-y-4 md:space-y-6">
             <h3 className="text-xl md:text-2xl font-semibold text-foreground flex items-center gap-2">
               <User className="w-5 h-5 md:w-6 md:h-6 text-primary" />
-              About You
+              {t("userInfoForm.sections.aboutYou")}
             </h3>
             
             <div className="space-y-3 md:space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-base md:text-lg font-semibold text-foreground">
-                  What is your first name?
+                  {t("userInfoForm.fields.name.label")}
                 </Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => handleInputChange("name", e.target.value)}
-                  placeholder="Type your name here..."
+                  placeholder={t("userInfoForm.fields.name.placeholder")}
                   className="text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-primary/20 focus:border-primary/50"
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="age" className="text-base md:text-lg font-semibold text-foreground">
-                  How old are you?
+                  {t("userInfoForm.fields.age.label")}
                 </Label>
                 <Select value={formData.age.toString()} onValueChange={(value) => handleInputChange("age", parseInt(value))}>
                   <SelectTrigger className="text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-primary/20">
-                    <SelectValue placeholder="Pick your age" />
+                    <SelectValue placeholder={t("userInfoForm.fields.age.placeholder")} />
                   </SelectTrigger>
                   <SelectContent>
                     {[3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].map(age => (
-                      <SelectItem key={age} value={age.toString()}>{age} years old</SelectItem>
+                      <SelectItem key={age} value={age.toString()}>{age} {t("userInfoForm.fields.age.yearsOld")}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -206,61 +220,97 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
 
               <div className="space-y-2">
                 <Label htmlFor="grade" className="text-base md:text-lg font-semibold text-foreground">
-                  What grade are you in?
+                  {t("userInfoForm.fields.grade.label")}
                 </Label>
                 <Select value={formData.grade} onValueChange={(value) => handleInputChange("grade", value)}>
                   <SelectTrigger className="text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-primary/20">
-                    <SelectValue placeholder="Select your grade" />
+                    <SelectValue placeholder={t("userInfoForm.fields.grade.placeholder")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="PreK">Pre-K</SelectItem>
-                    <SelectItem value="K">Kindergarten</SelectItem>
-                    <SelectItem value="1st">1st Grade</SelectItem>
-                    <SelectItem value="2nd">2nd Grade</SelectItem>
-                    <SelectItem value="3rd">3rd Grade</SelectItem>
-                    <SelectItem value="4th">4th Grade</SelectItem>
-                    <SelectItem value="5th">5th Grade</SelectItem>
-                    <SelectItem value="6th">6th Grade</SelectItem>
-                    <SelectItem value="7th">7th Grade</SelectItem>
-                    <SelectItem value="8th">8th Grade</SelectItem>
-                    <SelectItem value="9th">9th Grade</SelectItem>
-                    <SelectItem value="10th">10th Grade</SelectItem>
-                    <SelectItem value="11th">11th Grade</SelectItem>
+                    <SelectItem value="PreK">{t("userInfoForm.grades.PreK")}</SelectItem>
+                    <SelectItem value="K">{t("userInfoForm.grades.K")}</SelectItem>
+                    <SelectItem value="1st">{t("userInfoForm.grades.1st")}</SelectItem>
+                    <SelectItem value="2nd">{t("userInfoForm.grades.2nd")}</SelectItem>
+                    <SelectItem value="3rd">{t("userInfoForm.grades.3rd")}</SelectItem>
+                    <SelectItem value="4th">{t("userInfoForm.grades.4th")}</SelectItem>
+                    <SelectItem value="5th">{t("userInfoForm.grades.5th")}</SelectItem>
+                    <SelectItem value="6th">{t("userInfoForm.grades.6th")}</SelectItem>
+                    <SelectItem value="7th">{t("userInfoForm.grades.7th")}</SelectItem>
+                    <SelectItem value="8th">{t("userInfoForm.grades.8th")}</SelectItem>
+                    <SelectItem value="9th">{t("userInfoForm.grades.9th")}</SelectItem>
+                    <SelectItem value="10th">{t("userInfoForm.grades.10th")}</SelectItem>
+                    <SelectItem value="11th">{t("userInfoForm.grades.11th")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="nativeLanguage" className="text-base md:text-lg font-semibold text-foreground">
+                  {t("userInfoForm.fields.nativeLanguage.label")}
+                </Label>
+                <Select value={formData.nativeLanguage} onValueChange={handleLanguageChange}>
+                  <SelectTrigger className="text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-primary/20">
+                    <SelectValue placeholder={t("userInfoForm.fields.nativeLanguage.placeholder")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="en">{t("userInfoForm.languages.en")}</SelectItem>
+                    <SelectItem value="ar">{t("userInfoForm.languages.ar")}</SelectItem>
+                    <SelectItem value="es">{t("userInfoForm.languages.es")}</SelectItem>
+                    <SelectItem value="zh">{t("userInfoForm.languages.zh")}</SelectItem>
+                    <SelectItem value="hi">{t("userInfoForm.languages.hi")}</SelectItem>
+                    <SelectItem value="pt">{t("userInfoForm.languages.pt")}</SelectItem>
+                    <SelectItem value="fr">{t("userInfoForm.languages.fr")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="learningGoal" className="text-base md:text-lg font-semibold text-foreground">
+                  {t("userInfoForm.fields.learningGoal.label")}
+                </Label>
+                <Select value={formData.learningGoal} onValueChange={(value) => handleInputChange("learningGoal", value)}>
+                  <SelectTrigger className="text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-primary/20">
+                    <SelectValue placeholder={t("userInfoForm.fields.learningGoal.placeholder")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="improve-english-reading">{t("userInfoForm.fields.learningGoal.options.improve-english-reading")}</SelectItem>
+                    <SelectItem value="learn-english-language">{t("userInfoForm.fields.learningGoal.options.learn-english-language")}</SelectItem>
+                    <SelectItem value="both">{t("userInfoForm.fields.learningGoal.options.both")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="readingAbility" className="text-base md:text-lg font-semibold text-foreground">
-                  What reading level feels right for you?
+                  {t("userInfoForm.fields.readingAbility.label")}
                 </Label>
                 <Select value={formData.readingAbility} onValueChange={(value) => handleInputChange("readingAbility", value)}>
                   <SelectTrigger className="text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-primary/20 bg-white dark:bg-gray-800 z-50">
-                    <SelectValue placeholder="Choose your reading level" />
+                    <SelectValue placeholder={t("userInfoForm.fields.readingAbility.placeholder")} />
                   </SelectTrigger>
                   <SelectContent className="bg-white dark:bg-gray-800 border-2 border-primary/20 rounded-xl md:rounded-2xl shadow-lg z-50">
                     <SelectItem value="easy" className="text-sm md:text-lg p-2 md:p-3 hover:bg-primary/10">
                       <div className="flex flex-col items-start text-left">
-                        <span className="font-semibold text-green-600">Easy Reading</span>
-                        <span className="text-xs text-muted-foreground hidden sm:block">(K-1st grade: Simple words & short sentences)</span>
+                        <span className="font-semibold text-green-600">{t("userInfoForm.fields.readingAbility.levels.easy.title")}</span>
+                        <span className="text-xs text-muted-foreground hidden sm:block">{t("userInfoForm.fields.readingAbility.levels.easy.description")}</span>
                       </div>
                     </SelectItem>
                     <SelectItem value="medium" className="text-sm md:text-lg p-2 md:p-3 hover:bg-primary/10">
                       <div className="flex flex-col items-start text-left">
-                        <span className="font-semibold text-yellow-600">Medium Reading</span>
-                        <span className="text-xs text-muted-foreground hidden sm:block">(2nd-4th grade: Moderate vocabulary & sentences)</span>
+                        <span className="font-semibold text-yellow-600">{t("userInfoForm.fields.readingAbility.levels.medium.title")}</span>
+                        <span className="text-xs text-muted-foreground hidden sm:block">{t("userInfoForm.fields.readingAbility.levels.medium.description")}</span>
                       </div>
                     </SelectItem>
                     <SelectItem value="hard" className="text-sm md:text-lg p-2 md:p-3 hover:bg-primary/10">
                       <div className="flex flex-col items-start text-left">
-                        <span className="font-semibold text-orange-600">Advanced Reading</span>
-                        <span className="text-xs text-muted-foreground hidden sm:block">(5th-8th grade: Advanced vocabulary & complex sentences)</span>
+                        <span className="font-semibold text-orange-600">{t("userInfoForm.fields.readingAbility.levels.hard.title")}</span>
+                        <span className="text-xs text-muted-foreground hidden sm:block">{t("userInfoForm.fields.readingAbility.levels.hard.description")}</span>
                       </div>
                     </SelectItem>
                     <SelectItem value="expert" className="text-sm md:text-lg p-2 md:p-3 hover:bg-primary/10">
                       <div className="flex flex-col items-start text-left">
-                        <span className="font-semibold text-red-600">Expert Reading</span>
-                        <span className="text-xs text-muted-foreground hidden sm:block">(9th-12th grade: Expert vocabulary & sophisticated writing)</span>
+                        <span className="font-semibold text-red-600">{t("userInfoForm.fields.readingAbility.levels.expert.title")}</span>
+                        <span className="text-xs text-muted-foreground hidden sm:block">{t("userInfoForm.fields.readingAbility.levels.expert.description")}</span>
                       </div>
                     </SelectItem>
                   </SelectContent>
@@ -269,7 +319,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
 
               <div className="space-y-2">
                 <Label htmlFor="avatar" className="text-base md:text-lg font-semibold text-foreground">
-                  Which avatar do you want?
+                  {t("userInfoForm.fields.avatar.label")}
                 </Label>
                 <AvatarPicker
                   value={formData.avatar}
@@ -283,14 +333,14 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
           <div className="space-y-4 md:space-y-6">
             <h3 className="text-xl md:text-2xl font-semibold text-foreground flex items-center gap-2">
               <Heart className="w-5 h-5 md:w-6 md:h-6 text-primary" />
-              Your Favorites
+              {t("userInfoForm.sections.yourFavorites")}
             </h3>
             
             <div className="space-y-3 md:space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="favoriteColor" className="text-base md:text-lg font-semibold text-foreground">
-                  What is your favorite color or shade?
-                  <span className="text-xs md:text-sm text-muted-foreground ml-2">(Optional)</span>
+                  {t("userInfoForm.fields.favoriteColor.label")}
+                  <span className="text-xs md:text-sm text-muted-foreground ml-2">{t("userInfoForm.fields.favoriteColor.optional")}</span>
                 </Label>
                 <ColorPicker
                   value={formData.favoriteColor}
@@ -300,39 +350,39 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
 
               <div className="space-y-2">
                 <Label htmlFor="favoriteAnimal" className="text-base md:text-lg font-semibold text-foreground">
-                  What's your favorite animal?
-                  <span className="text-xs md:text-sm text-muted-foreground ml-2">(Optional)</span>
+                  {t("userInfoForm.fields.favoriteAnimal.label")}
+                  <span className="text-xs md:text-sm text-muted-foreground ml-2">{t("userInfoForm.fields.favoriteAnimal.optional")}</span>
                 </Label>
                 <TagInput
                   value={formData.favoriteAnimal}
                   onChange={(value) => handleInputChange("favoriteAnimal", value)}
-                  placeholder="Type animals and press Enter..."
+                  placeholder={t("userInfoForm.fields.favoriteAnimal.placeholder")}
                   className="text-base md:text-lg min-h-[50px] md:min-h-[60px]"
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="favoriteFood" className="text-base md:text-lg font-semibold text-foreground">
-                  What's your favorite food?
-                  <span className="text-xs md:text-sm text-muted-foreground ml-2">(Optional)</span>
+                  {t("userInfoForm.fields.favoriteFood.label")}
+                  <span className="text-xs md:text-sm text-muted-foreground ml-2">{t("userInfoForm.fields.favoriteFood.optional")}</span>
                 </Label>
                 <TagInput
                   value={formData.favoriteFood}
                   onChange={(value) => handleInputChange("favoriteFood", value)}
-                  placeholder="Type foods and press Enter..."
+                  placeholder={t("userInfoForm.fields.favoriteFood.placeholder")}
                   className="text-base md:text-lg min-h-[50px] md:min-h-[60px]"
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="hobbies" className="text-base md:text-lg font-semibold text-foreground">
-                  What do you like to do for fun?
-                  <span className="text-xs md:text-sm text-muted-foreground ml-2">(Optional)</span>
+                  {t("userInfoForm.fields.hobbies.label")}
+                  <span className="text-xs md:text-sm text-muted-foreground ml-2">{t("userInfoForm.fields.hobbies.optional")}</span>
                 </Label>
                 <TagInput
                   value={formData.hobbies}
                   onChange={(value) => handleInputChange("hobbies", value)}
-                  placeholder="Type activities and press Enter..."
+                  placeholder={t("userInfoForm.fields.hobbies.placeholder")}
                   className="text-base md:text-lg min-h-[50px] md:min-h-[60px]"
                 />
               </div>
@@ -343,18 +393,18 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
           <div className="space-y-4 md:space-y-6 lg:col-span-2">
             <h3 className="text-xl md:text-2xl font-semibold text-foreground flex items-center gap-2">
               <Star className="w-5 h-5 md:w-6 md:h-6 text-primary" />
-              Additional Info
+              {t("userInfoForm.sections.additionalInfo")}
             </h3>
             
             <div className="space-y-2">
               <Label htmlFor="specialRequest" className="text-base md:text-lg font-semibold text-foreground">
-                Tell us if there is anything special you want to include in your story?
-                <span className="text-xs md:text-sm text-muted-foreground ml-2">(Optional)</span>
+                {t("userInfoForm.fields.specialRequest.label")}
+                <span className="text-xs md:text-sm text-muted-foreground ml-2">{t("userInfoForm.fields.specialRequest.optional")}</span>
               </Label>
               <TagInput
                 value={formData.specialRequest}
                 onChange={(value) => handleInputChange("specialRequest", value)}
-                placeholder="Type special story elements and press Enter..."
+                placeholder={t("userInfoForm.fields.specialRequest.placeholder")}
                 className="text-base md:text-lg min-h-[80px] md:min-h-[100px]"
               />
             </div>
@@ -369,7 +419,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
             onClick={onBack}
             className="flex-1 sm:max-w-xs order-2 sm:order-1"
           >
-            Back to Home
+            {t("userInfoForm.buttons.backToHome")}
           </Button>
           <Button
             variant="fun"
@@ -378,7 +428,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
             disabled={!isFormComplete()}
             className="flex-1 sm:max-w-xs order-1 sm:order-2"
           >
-            Create My Story!
+            {t("userInfoForm.buttons.createStory")}
             <ChevronRight className="w-5 h-5 ml-2" />
           </Button>
         </div>
