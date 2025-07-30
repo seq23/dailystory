@@ -744,32 +744,6 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                       </div>
                     </div>
                   )}
-                  
-                  {/* Custom Image Generation Button */}
-                  <div className="absolute bottom-4 right-4">
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            onClick={() => generateCustomIllustration(currentParagraph, currentStory)}
-                            disabled={isGeneratingImage}
-                            variant="outline"
-                            size="sm"
-                            className="bg-white/90 backdrop-blur-sm border-2 border-purple-300 text-purple-700 hover:bg-purple-50 shadow-lg rounded-full w-12 h-12 p-0"
-                          >
-                            {isGeneratingImage ? (
-                              <div className="w-4 h-4 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
-                            ) : (
-                              <Wand2 className="w-4 h-4" />
-                            )}
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="left" className="bg-purple-700 text-white border-purple-500">
-                          Generate custom image for this page
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
                 </div>
               </CardContent>
             </Card>
