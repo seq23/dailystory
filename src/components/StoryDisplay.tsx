@@ -757,25 +757,46 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                           />
                         ))}
                       </div>
+                    </div>
+                    
+                    <Button
+                      onClick={handleNext}
+                      disabled={currentParagraph >= totalPages - 1}
+                      variant="outline"
+                      size="sm"
+                      className="rounded-full"
+                    >
+                      Next →
+                    </Button>
+                  </div>
+
+                  {/* Page Management Section */}
+                  <div className="mt-4 pt-3 border-t border-gray-100">
+                    <div className="flex items-center justify-center space-x-3">
+                      <span className="text-sm text-gray-600 font-medium">Story Length:</span>
                       
-                      {/* Page Controls */}
-                      <div className="flex space-x-1 relative">
+                      <div className="flex items-center space-x-2">
                         <Button
                           onClick={handleReducePages}
                           variant="outline"
                           size="sm"
-                          className="rounded-full text-xs px-2"
+                          className="rounded-full text-xs px-3 hover:bg-red-50 hover:border-red-200 hover:text-red-600"
                           disabled={story.length <= 1}
                         >
-                          <Minus className="w-3 h-3" />
+                          <Minus className="w-3 h-3 mr-1" />
+                          Remove Page
                         </Button>
+                        
+                        <span className="text-sm font-bold text-purple-600 px-2">
+                          {totalPages} page{totalPages !== 1 ? 's' : ''}
+                        </span>
                         
                         <div className="relative">
                           <Button
                             onClick={handleAddPages}
                             variant="outline"
                             size="sm"
-                            className={`rounded-full text-xs px-2 transition-all duration-300 ${
+                            className={`rounded-full text-xs px-3 hover:bg-green-50 hover:border-green-200 hover:text-green-600 transition-all duration-300 ${
                               showAddPagesAlert 
                                 ? 'animate-bounce bg-yellow-200 border-yellow-400 text-yellow-800 shadow-lg scale-110 animate-pulse' 
                                 : ''
@@ -786,7 +807,8 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                                 : undefined
                             }}
                           >
-                            <Plus className="w-3 h-3" />
+                            <Plus className="w-3 h-3 mr-1" />
+                            Add Page
                             {showAddPagesAlert && " ⚡"}
                           </Button>
                           
@@ -809,16 +831,6 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                         </div>
                       </div>
                     </div>
-                    
-                    <Button
-                      onClick={handleNext}
-                      disabled={currentParagraph >= totalPages - 1}
-                      variant="outline"
-                      size="sm"
-                      className="rounded-full"
-                    >
-                      Next →
-                    </Button>
                   </div>
                 </div>
               </div>
