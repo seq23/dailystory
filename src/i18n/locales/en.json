@@ -53,7 +53,14 @@
       "easier": "Easier",
       "harder": "Harder",
       "tutorialTitle": "💡 Tip: Make stories easier or harder!",
-      "tutorialText": "Click these buttons to adjust difficulty"
+      "tutorialText": "Click these buttons to adjust difficulty",
+      "tutorialSteps": {
+        "step1": "Welcome! Timer auto-started at 10:15. Green + adds time, orange - removes time.",
+        "step2": "Speaker button reads aloud, microphone records you reading.",
+        "step3": "Easier/Harder buttons adjust story difficulty as you read.",
+        "step4": "Add/Remove Pages buttons change your story length.",
+        "step5": "Happy reading! Enjoy your personalized adventure!"
+      }
     },
     "illustration": {
       "creating": "Creating magical illustration...",

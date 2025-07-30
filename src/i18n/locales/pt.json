@@ -109,7 +109,14 @@
       "easier": "Mais Fácil",
       "harder": "Mais Difícil",
       "tutorialTitle": "💡 Dica: Torne as histórias mais fáceis ou mais difíceis!",
-      "tutorialText": "Clique nestes botões para ajustar a dificuldade"
+      "tutorialText": "Clique nestes botões para ajustar a dificuldade",
+      "tutorialSteps": {
+        "step1": "Bem-vindo! O cronômetro iniciou automaticamente às 10:15. Verde + adiciona tempo, laranja - remove tempo.",
+        "step2": "O botão do alto-falante lê em voz alta, o microfone grava sua leitura.",
+        "step3": "Os botões Mais fácil/Mais difícil ajustam a dificuldade da história enquanto você lê.",
+        "step4": "Os botões Adicionar/Remover páginas alteram o comprimento da sua história.",
+        "step5": "Boa leitura! Aproveite sua aventura personalizada!"
+      }
     },
     "illustration": {
       "creating": "Criando ilustração mágica...",

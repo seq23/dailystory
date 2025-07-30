@@ -81,8 +81,8 @@ interface StoryDisplayProps {
 }
 
 const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDisplayProps) => {
-  const { t } = useTranslation();
   const { toast } = useToast();
+  const { t } = useTranslation();
   
   // Core state
   const [currentParagraph, setCurrentParagraph] = useState(0);
@@ -302,11 +302,11 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
   useEffect(() => {
     if (showTutorial && story.length > 0) {
       const tutorialSteps = [
-        { message: "Welcome! Timer auto-started at 10:15. Green + adds time, orange - removes time.", duration: 3000, target: "timer" },
-        { message: "Speaker button reads aloud, microphone records you reading.", duration: 3000, target: "audio" },
-        { message: "Easier/Harder buttons adjust story difficulty as you read.", duration: 3000, target: "difficulty" },
-        { message: "Add/Remove Pages buttons change your story length.", duration: 3000, target: "pages" },
-        { message: "Happy reading! Enjoy your personalized adventure!", duration: 3000, target: "center" }
+        { message: t("storyDisplay.difficulty.tutorialSteps.step1"), duration: 3000, target: "timer" },
+        { message: t("storyDisplay.difficulty.tutorialSteps.step2"), duration: 3000, target: "audio" },
+        { message: t("storyDisplay.difficulty.tutorialSteps.step3"), duration: 3000, target: "difficulty" },
+        { message: t("storyDisplay.difficulty.tutorialSteps.step4"), duration: 3000, target: "pages" },
+        { message: t("storyDisplay.difficulty.tutorialSteps.step5"), duration: 3000, target: "center" }
       ];
 
       let currentStep = 0;
@@ -995,11 +995,11 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                   </div>
                   <div className="text-sm">
                     {showTutorial && tutorialStep < 5 ? [
-                      "Welcome! Timer auto-started at 10:15. Green + adds time, orange - removes time.",
-                      "Speaker button reads aloud, microphone records you reading.",
-                      "Easier/Harder buttons adjust story difficulty as you read.",
-                      "Add/Remove Pages buttons change your story length.",
-                      "Happy reading! Enjoy your personalized adventure!"
+                      t("storyDisplay.difficulty.tutorialSteps.step1"),
+                      t("storyDisplay.difficulty.tutorialSteps.step2"),
+                      t("storyDisplay.difficulty.tutorialSteps.step3"),
+                      t("storyDisplay.difficulty.tutorialSteps.step4"),
+                      t("storyDisplay.difficulty.tutorialSteps.step5")
                     ][tutorialStep] : ""}
                   </div>
                 </div>
