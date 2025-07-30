@@ -276,31 +276,66 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
     }
   }, [currentParagraph, story.length, timeRemaining, hasShownAddPagesAlert]);
 
-  // Tutorial system for new sessions
   useEffect(() => {
     if (showTutorial && story.length > 0) {
       const tutorialSteps = [
-        { message: "Welcome! Timer auto-started at 10:10. Green + adds time, orange - removes time.", duration: 2500 },
-        { message: "Speaker button reads aloud, microphone records you reading.", duration: 2000 },
-        { message: "Easier/Harder buttons adjust story difficulty as you read.", duration: 1500 },
-        { message: "Add/Remove Pages buttons change your story length.", duration: 2000 },
-        { message: "Happy reading! Enjoy your personalized adventure!", duration: 2000 }
+        { message: "Welcome! Timer auto-started at 10:10. Green + adds time, orange - removes time.", duration: 2500, target: "timer" },
+        { message: "Speaker button reads aloud, microphone records you reading.", duration: 2000, target: "audio" },
+        { message: "Easier/Harder buttons adjust story difficulty as you read.", duration: 1500, target: "difficulty" },
+        { message: "Add/Remove Pages buttons change your story length.", duration: 2000, target: "pages" },
+        { message: "Happy reading! Enjoy your personalized adventure!", duration: 2000, target: "center" }
       ];
 
-      if (tutorialStep < tutorialSteps.length) {
-        const timer = setTimeout(() => {
-          if (tutorialStep === tutorialSteps.length - 1) {
-            setShowTutorial(false);
-            setTutorialStep(0);
-          } else {
-            setTutorialStep(prev => prev + 1);
+      let currentStep = 0;
+      
+      const showNextStep = () => {
+        if (currentStep < tutorialSteps.length) {
+          setTutorialStep(currentStep);
+          
+          // Add highlighting class to target element
+          const targetElement = document.querySelector(`[data-tutorial-target="${tutorialSteps[currentStep].target}"]`);
+          if (targetElement) {
+            targetElement.classList.add('tutorial-highlight');
           }
-        }, tutorialSteps[tutorialStep].duration);
+          
+          // Remove highlighting from previous element
+          if (currentStep > 0) {
+            const prevTargetElement = document.querySelector(`[data-tutorial-target="${tutorialSteps[currentStep - 1].target}"]`);
+            if (prevTargetElement) {
+              prevTargetElement.classList.remove('tutorial-highlight');
+            }
+          }
 
-        return () => clearTimeout(timer);
-      }
+          setTimeout(() => {
+            currentStep++;
+            if (currentStep < tutorialSteps.length) {
+              showNextStep();
+            } else {
+              setShowTutorial(false);
+              setHasShownTutorial(true);
+              // Remove highlighting from last element
+              const lastTargetElement = document.querySelector(`[data-tutorial-target="${tutorialSteps[currentStep - 1].target}"]`);
+              if (lastTargetElement) {
+                lastTargetElement.classList.remove('tutorial-highlight');
+              }
+            }
+          }, tutorialSteps[currentStep].duration);
+        }
+      };
+
+      const timer = setTimeout(() => {
+        showNextStep();
+      }, 1000);
+
+      return () => {
+        clearTimeout(timer);
+        // Clean up any remaining highlights
+        document.querySelectorAll('.tutorial-highlight').forEach(el => {
+          el.classList.remove('tutorial-highlight');
+        });
+      };
     }
-  }, [showTutorial, tutorialStep, story.length]);
+  }, [showTutorial, story.length, hasShownTutorial]);
 
   const totalPages = story.length;
   const currentStory = story[currentParagraph] || "Loading your adventure...";
@@ -515,6 +550,9 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       console.log('Generating image with prompt:', prompt);
       console.log('Using Runware service:', runwareService);
       
+      console.log('Generating image with prompt:', prompt);
+      console.log('Using Runware service:', runwareService);
+      
       // Use a simpler approach that bypasses some security layers
       const result = await runwareService.generateImage({
         positivePrompt: prompt,
@@ -551,7 +589,29 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       setIsGeneratingImage(false);
     }
   };
+  
+  // Tutorial positioning functions
+  const getTutorialPosition = () => {
+    switch (tutorialStep) {
+      case 0: return "top-24 right-6"; // Timer area
+      case 1: return "top-1/2 left-6 transform -translate-y-1/2"; // Audio controls
+      case 2: return "top-1/2 left-6 transform -translate-y-1/2"; // Difficulty controls  
+      case 3: return "top-1/2 left-6 transform -translate-y-1/2"; // Page controls
+      case 4: return "top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"; // Center
+      default: return "bottom-6 right-6";
+    }
+  };
 
+  const getArrowPosition = () => {
+    switch (tutorialStep) {
+      case 0: return "top-full left-8"; // Point up to timer
+      case 1: return "right-full top-6"; // Point right to controls
+      case 2: return "right-full top-6"; // Point right to controls
+      case 3: return "right-full top-6"; // Point right to controls
+      case 4: return "hidden"; // No arrow for center message
+      default: return "hidden";
+    }
+  };
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -696,7 +756,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                 {/* Controls */}
                 <div className="space-y-4 mt-6">
                   {/* Audio & Recording */}
-                  <div className="flex justify-center space-x-3">
+                  <div className="flex justify-center space-x-3" data-tutorial-target="audio">
                     <Button
                       onClick={() => isPlaying ? stopTextToSpeech() : playTextToSpeech(currentStory)}
                       variant="outline"
@@ -717,7 +777,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                   </div>
 
                   {/* Difficulty */}
-                  <div className="flex justify-center space-x-2">
+                  <div className="flex justify-center space-x-2" data-tutorial-target="difficulty">
                     <Button
                       onClick={handleMakeEasier}
                       disabled={currentDifficulty === "easy"}
@@ -781,7 +841,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                   </div>
 
                   {/* Page Management Section */}
-                  <div className="mt-4 pt-3 border-t border-gray-100">
+                  <div className="mt-4 pt-3 border-t border-gray-100" data-tutorial-target="pages">
                     <div className="flex items-center justify-center space-x-3">
                       <span className="text-sm text-gray-600 font-medium">Story Length:</span>
                       
@@ -866,6 +926,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         pagesRemaining={totalPages - currentParagraph - 1}
         currentParagraph={currentParagraph}
         onSessionEnded={handleFinishSession}
+        tutorialTarget="timer"
       />
 
 
@@ -893,14 +954,13 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         </div>
       )}
 
-      {/* Tutorial Overlay */}
-      {showTutorial && (
-        <div className="fixed bottom-4 left-4 right-4 z-40 pointer-events-none">
-          <div className="max-w-md mx-auto pointer-events-auto">
-            <Card className="bg-blue-500 text-white p-4 rounded-2xl shadow-2xl border-0 animate-slide-up">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                  <span className="text-lg">🎯</span>
+        {/* Floating Tutorial - Positioned dynamically */}
+        {showTutorial && (
+          <div className={`fixed z-50 transition-all duration-500 ease-out ${getTutorialPosition()}`}>
+            <Card className="bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-2xl rounded-2xl p-6 max-w-sm animate-scale-in">
+              <div className="flex items-start gap-4">
+                <div className="bg-white/20 rounded-full p-2 flex-shrink-0">
+                  <span className="text-2xl">🎯</span>
                 </div>
                 <div className="flex-1">
                   <div className="text-sm font-medium mb-1">
@@ -920,6 +980,10 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                   onClick={() => {
                     setShowTutorial(false);
                     setTutorialStep(0);
+                    // Clean up highlights
+                    document.querySelectorAll('.tutorial-highlight').forEach(el => {
+                      el.classList.remove('tutorial-highlight');
+                    });
                   }}
                   variant="ghost"
                   size="sm"
@@ -928,7 +992,12 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                   ×
                 </Button>
               </div>
-              <div className="mt-3">
+              
+              {/* Animated Arrow Pointer */}
+              <div className={`absolute ${getArrowPosition()} w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-purple-600`} />
+              
+              {/* Progress Bar */}
+              <div className="mt-4">
                 <div className="w-full bg-white/20 rounded-full h-2">
                   <div 
                     className="bg-white h-2 rounded-full transition-all duration-300"
@@ -938,8 +1007,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
               </div>
             </Card>
           </div>
-        </div>
-      )}
+        )}
     </div>
   );
 };

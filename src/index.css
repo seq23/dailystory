@@ -185,3 +185,21 @@ All colors MUST be HSL.
 .animate-float {
   animation: float 6s ease-in-out infinite;
 }
+
+/* Tutorial highlight animations */
+@keyframes tutorialShake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+  20%, 40%, 60%, 80% { transform: translateX(2px); }
+}
+
+@keyframes tutorialFlash {
+  0%, 100% { background-color: transparent; }
+  50% { background-color: rgba(168, 85, 247, 0.2); }
+}
+
+.tutorial-highlight {
+  animation: tutorialShake 0.6s ease-in-out infinite, tutorialFlash 1s ease-in-out infinite;
+  border-radius: 0.5rem;
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.4);
+}

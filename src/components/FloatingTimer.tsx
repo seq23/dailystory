@@ -14,6 +14,7 @@ interface FloatingTimerProps {
   pagesRemaining?: number;
   currentParagraph?: number;
   onSessionEnded: () => void;
+  tutorialTarget?: string;
 }
 
 export const FloatingTimer = ({ 
@@ -25,7 +26,8 @@ export const FloatingTimer = ({
   onAddPages,
   pagesRemaining = 0,
   currentParagraph = 0,
-  onSessionEnded
+  onSessionEnded,
+  tutorialTarget
 }: FloatingTimerProps) => {
   const [showCelebration, setShowCelebration] = useState(false);
   const [showAddPagesAlert, setShowAddPagesAlert] = useState(false);
@@ -142,7 +144,7 @@ export const FloatingTimer = ({
   return (
     <TooltipProvider>
       {/* Floating Timer Container */}
-      <div className="fixed bottom-8 right-8 z-50 flex flex-col items-center gap-4" style={{ marginRight: 'max(1rem, env(safe-area-inset-right))', marginBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+      <div className="fixed bottom-8 right-8 z-50 flex flex-col items-center gap-4" data-tutorial-target={tutorialTarget} style={{ marginRight: 'max(1rem, env(safe-area-inset-right))', marginBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
         {/* Circular Timer */}
         <div className="relative">
           {/* Celebration Animation */}
