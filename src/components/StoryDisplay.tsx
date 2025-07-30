@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { BookOpen, Home, RotateCcw, Volume2, VolumeX, TrendingUp, TrendingDown, Plus, Star, Heart, Sparkles } from "lucide-react";
+import { BookOpen, Home, RotateCcw, Volume2, VolumeX, TrendingUp, TrendingDown, Plus, Star, Heart, Sparkles, Wand2, Zap } from "lucide-react";
 import type { UserInfo } from "./UserInfoForm";
 import ancientBookBg from "@/assets/ancient-book-bg.jpg";
 import illustration1 from "@/assets/story-illustration-1.jpg";
@@ -94,29 +94,40 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
   const [hasShownDifficultyAlert, setHasShownDifficultyAlert] = useState(false);
   const [showTutorialBubble, setShowTutorialBubble] = useState(true);
   const [lastStoryVariant, setLastStoryVariant] = useState<number | null>(null);
-
-  // Auto-dismiss tutorial bubble after 6 seconds (with 5 second delay)
-  useEffect(() => {
-    if (showTutorialBubble && currentParagraph === 0) {
-      // Wait 5 seconds before starting the 6-second flash animation
-      const delayTimer = setTimeout(() => {
-        const flashTimer = setTimeout(() => {
-          setShowTutorialBubble(false);
-        }, 6000);
-        
-        return () => clearTimeout(flashTimer);
-      }, 5000);
-      
-      return () => clearTimeout(delayTimer);
-    }
-  }, [showTutorialBubble, currentParagraph]);
-  
   const [currentIllustration, setCurrentIllustration] = useState<string>("");
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [customIllustrations, setCustomIllustrations] = useState<Map<number, string>>(new Map());
   const [illustrationGenerationQueue, setIllustrationGenerationQueue] = useState<number[]>([]);
   const [runwareService] = useState<SecureRunwareService>(() => new SecureRunwareService("LRRGqlrg67zH8uss6lMjVvc54pVOrznM"));
   const [openAIService] = useState<any>(() => createOpenAITTSService());
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [audioQueue, setAudioQueue] = useState<HTMLAudioElement[]>([]);
+  const currentAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Auto-dismiss tutorial bubble after 6 seconds (with 5 second delay)
+  useEffect(() => {
+    if (showTutorialBubble && currentParagraph === 0) {
+      const delayTimer = setTimeout(() => {
+        const flashTimer = setTimeout(() => {
+          setShowTutorialBubble(false);
+        }, 6000);
+        return () => clearTimeout(flashTimer);
+      }, 5000);
+      return () => clearTimeout(delayTimer);
+    }
+  }, [showTutorialBubble, currentParagraph]);
+
+  const illustrations = [
+    illustration1, illustration2, illustration3, illustration4, illustration5,
+    illustration6, illustration7, illustration8, illustration9, illustration10,
+    illustration11, illustration12, illustration13, illustration14, illustration15,
+    illustration16, illustration17, illustration18, illustration19, illustration20,
+    illustration21, illustration22, illustration23, illustration24, illustration25,
+    illustration26, illustration27, illustration28, illustration29, illustration30,
+    illustration31, illustration32, illustration33, illustration34, illustration35,
+    illustration36, illustration37, illustration38, illustration39, illustration40,
+    illustration41, illustration42, illustration43, illustration44
+  ];
 
   const getUserAvatar = () => {
     const avatarImages = {
@@ -135,17 +146,14 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         dark: avatarGirlDark,
       },
     };
-    
     return avatarImages[userInfo.avatar.type]?.[userInfo.avatar.skinTone] || avatarBoyLight;
   };
 
   const getAvatarDescription = (includeAppearance = false) => {
     const genderDesc = userInfo.avatar.type === "boy" ? "young boy" : "young girl";
-    
     if (!includeAppearance) {
       return `a ${genderDesc}`;
     }
-    
     const skinToneDesc = {
       pale: "very light skin",
       light: "light skin", 
@@ -153,12 +161,10 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       olive: "olive skin",
       dark: "dark skin"
     }[userInfo.avatar.skinTone];
-    
     return `a happy ${genderDesc} with ${skinToneDesc}`;
   };
 
   const generateStoryExtension = (info: UserInfo, difficulty: DifficultyLevel, extensionNumber: number): string[] => {
-    // Use the new inclusive story generator for culturally adapted extensions
     return InclusiveStoryGenerator.generateCulturallyAdaptedStory(
       info, 
       difficulty, 
@@ -168,7 +174,6 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
   };
 
   const generateInitialStory = (info: UserInfo, difficulty: DifficultyLevel): string[] => {
-    // Use the new inclusive story generator for culturally adapted initial stories
     return InclusiveStoryGenerator.generateCulturallyAdaptedStory(
       info, 
       difficulty, 
@@ -176,85 +181,76 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
     );
   };
 
-  useEffect(() => {
-    const generateIllustration = async (paragraphIndex: number) => {
-      if (customIllustrations.has(paragraphIndex)) {
-        return; // Skip if already generated
-      }
+  const generateCustomIllustration = async (paragraphIndex: number, storyParagraph: string) => {
+    if (isGeneratingImage || customIllustrations.has(paragraphIndex)) return;
 
-      const storyParagraph = story[paragraphIndex];
-      if (!storyParagraph) {
-        return; // Skip if paragraph is empty
-      }
-
+    try {
       setIsGeneratingImage(true);
-      try {
-        const prompt = createChildFriendlyPrompt(
-          storyParagraph,
-          userInfo.name
-        );
+      setIllustrationGenerationQueue(prev => [...prev, paragraphIndex]);
 
-        const imageUrl = await runwareService.generateImage({
-          positivePrompt: prompt,
-          model: "runware:100@1",
-          numberResults: 1,
-          outputFormat: "WEBP"
-        });
+      const prompt = createChildFriendlyPrompt(
+        storyParagraph,
+        userInfo.name
+      );
 
-        if (imageUrl) {
-          const newIllustrations = new Map(customIllustrations);
-          newIllustrations.set(paragraphIndex, imageUrl.imageURL || "");
-          setCustomIllustrations(newIllustrations);
-          await cacheImage(imageUrl.imageURL || "", paragraphIndex.toString()); // Cache the image
-        }
-      } catch (error) {
-        console.error("Error generating image:", error);
-      } finally {
-        setIsGeneratingImage(false);
-        setIllustrationGenerationQueue(prevQueue => prevQueue.slice(1)); // Remove the processed index
+      const imageUrl = await runwareService.generateImage({
+        positivePrompt: prompt,
+        model: "runware:100@1",
+        numberResults: 1,
+        outputFormat: "WEBP"
+      });
+
+      if (imageUrl) {
+        const newIllustrations = new Map(customIllustrations);
+        newIllustrations.set(paragraphIndex, imageUrl.imageURL || "");
+        setCustomIllustrations(newIllustrations);
+        await cacheImage(imageUrl.imageURL || "", paragraphIndex.toString());
       }
-    };
-
-    if (illustrationGenerationQueue.length > 0 && !isGeneratingImage) {
-      generateIllustration(illustrationGenerationQueue[0]);
+    } catch (error) {
+      console.error("Error generating illustration:", error);
+    } finally {
+      setIsGeneratingImage(false);
+      setIllustrationGenerationQueue(prev => prev.filter(i => i !== paragraphIndex));
     }
-  }, [illustrationGenerationQueue, isGeneratingImage, story, userInfo, customIllustrations, runwareService, t]);
+  };
 
-  useEffect(() => {
-    // Queue illustrations for the first three paragraphs
-    const initialQueue = Array.from({ length: Math.min(3, story.length) }, (_, i) => i);
-    setIllustrationGenerationQueue(initialQueue);
-  }, [story]);
-
-  useEffect(() => {
-    if (story.length > 0 && currentParagraph < story.length && !customIllustrations.has(currentParagraph)) {
-      // If the current paragraph doesn't have an illustration, add it to the queue
-      setIllustrationGenerationQueue(prevQueue => [...prevQueue, currentParagraph]);
+  const playTextToSpeech = async (text: string) => {
+    if (isPlaying) return;
+    
+    try {
+      setIsPlaying(true);
+      const audioUrl = await openAIService.synthesize(text, userInfo.nativeLanguage || 'en');
+      
+      if (audioUrl) {
+        const audio = new HTMLAudioElement();
+        audio.src = audioUrl;
+        currentAudioRef.current = audio;
+        
+        audio.onended = () => {
+          setIsPlaying(false);
+          currentAudioRef.current = null;
+        };
+        
+        audio.onerror = () => {
+          setIsPlaying(false);
+          currentAudioRef.current = null;
+        };
+        
+        await audio.play();
+      }
+    } catch (error) {
+      console.error("Error playing text-to-speech:", error);
+      setIsPlaying(false);
     }
-  }, [currentParagraph, story, customIllustrations]);
+  };
 
-  useEffect(() => {
-    if (timeRemaining <= 0) {
-      onSessionEnded();
+  const stopTextToSpeech = () => {
+    if (currentAudioRef.current) {
+      currentAudioRef.current.pause();
+      currentAudioRef.current = null;
     }
-
-    if (isReading && timeRemaining > 0) {
-      const timerId = setTimeout(() => {
-        setTimeRemaining(time => time - 1);
-      }, 1000);
-
-      return () => clearTimeout(timerId);
-    }
-  }, [isReading, timeRemaining, onSessionEnded]);
-
-  useEffect(() => {
-    // Check if the current difficulty level is different from the user's preferred level
-    const preferredDifficulty = userInfo.difficultyLevel || (userInfo.age <= 6 ? "easy" : userInfo.age <= 9 ? "medium" : userInfo.age <= 12 ? "hard" : "expert");
-    if (currentDifficulty !== preferredDifficulty && !hasShownDifficultyAlert) {
-      alert(t("storyDisplay.alerts.difficultyMismatch", { preferredDifficulty }));
-      setHasShownDifficultyAlert(true);
-    }
-  }, [currentDifficulty, userInfo, hasShownDifficultyAlert, t]);
+    setIsPlaying(false);
+  };
 
   const totalPages = story.length;
   const currentStory = story[currentParagraph] || "";
@@ -264,17 +260,37 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
     setStory(initialStory);
   }, [userInfo, currentDifficulty]);
 
+  useEffect(() => {
+    if (story.length > 0) {
+      const illustrationIndex = currentParagraph % illustrations.length;
+      setCurrentIllustration(illustrations[illustrationIndex]);
+    }
+  }, [currentParagraph, story.length]);
+
+  useEffect(() => {
+    const checkDifficulty = () => {
+      const preferredDifficulty = userInfo.difficultyLevel || (userInfo.age <= 6 ? "easy" : userInfo.age <= 9 ? "medium" : userInfo.age <= 12 ? "hard" : "expert");
+      if (currentDifficulty !== preferredDifficulty && !hasShownDifficultyAlert) {
+        alert(t("storyDisplay.alerts.difficultyMismatch", { preferredDifficulty }));
+        setHasShownDifficultyAlert(true);
+      }
+    };
+    checkDifficulty();
+  }, [currentDifficulty, userInfo, hasShownDifficultyAlert, t]);
+
   const handleNext = () => {
     if (currentParagraph < totalPages - 1) {
       setCurrentParagraph(currentParagraph + 1);
       setShowTutorialBubble(false);
     }
+    stopTextToSpeech();
   };
 
   const handlePrevious = () => {
     if (currentParagraph > 0) {
       setCurrentParagraph(currentParagraph - 1);
     }
+    stopTextToSpeech();
   };
 
   const handleAddTime = () => {
@@ -282,172 +298,300 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
   };
 
   const handleAddPages = () => {
-    // Generate new story pages without adding time
     const extensionPages = generateStoryExtension(userInfo, currentDifficulty, storyExtensions);
     setStory(prev => [...prev, ...extensionPages]);
     setStoryExtensions(prev => prev + 1);
   };
 
+  const handleDifficultyChange = (newDifficulty: DifficultyLevel) => {
+    setCurrentDifficulty(newDifficulty);
+    const newStory = generateInitialStory(userInfo, newDifficulty);
+    setStory(newStory);
+    setCurrentParagraph(0);
+  };
+
   return (
     <TooltipProvider>
-    <div className="min-h-screen bg-gradient-hero relative overflow-hidden">
-      {/* Magical floating elements */}
-      <div className="absolute inset-0 pointer-events-none">
-        <Star className="absolute top-20 left-4 md:left-10 text-accent w-4 h-4 md:w-6 md:h-6 animate-float" />
-        <Heart className="absolute top-32 right-8 md:right-16 text-primary-glow w-4 h-4 md:w-5 md:h-5 animate-bounce-gentle" />
-        <Sparkles className="absolute bottom-32 left-8 md:left-20 text-secondary w-5 h-5 md:w-7 md:h-7 animate-wiggle" />
-        <Star className="absolute bottom-20 right-16 md:right-32 text-accent w-3 h-3 md:w-4 md:h-4 animate-float" />
-      </div>
-
-      {/* Header with navigation */}
-      <header className="relative z-20 p-4 sm:p-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src={time2ReadLogo} alt="Time2Read" className="w-12 h-12 rounded-xl shadow-elegant" />
-            <h1 className="text-2xl md:text-3xl font-bold text-text-primary font-comic">
-              {t("storyDisplay.header.title")}
-            </h1>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <Button
-              onClick={onNewStory}
-              variant="outline"
-              className="bg-card-surface/80 backdrop-blur-sm border-primary/20 hover:bg-card-surface hover:border-primary/40 font-comic text-sm sm:text-base"
-            >
-              <RotateCcw className="w-4 h-4 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">{t("storyDisplay.navigation.newStory")}</span>
-              <span className="sm:hidden">{t("storyDisplay.navigation.newStoryShort")}</span>
-            </Button>
-            
-            <Button
-              onClick={onHome}
-              variant="outline" 
-              className="bg-card-surface/80 backdrop-blur-sm border-primary/20 hover:bg-card-surface hover:border-primary/40 font-comic text-sm sm:text-base"
-            >
-              <Home className="w-4 h-4 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">{t("storyDisplay.navigation.home")}</span>
-              <span className="sm:hidden">{t("storyDisplay.navigation.homeShort")}</span>
-            </Button>
-          </div>
+      <div className="min-h-screen bg-gradient-hero relative overflow-hidden">
+        {/* Magical floating elements with enhanced animations */}
+        <div className="absolute inset-0 pointer-events-none z-0">
+          <Star className="absolute top-20 left-4 md:left-10 text-accent w-4 h-4 md:w-6 md:h-6 animate-float opacity-70" />
+          <Heart className="absolute top-32 right-8 md:right-16 text-primary-glow w-4 h-4 md:w-5 md:h-5 animate-bounce-gentle opacity-60" />
+          <Sparkles className="absolute bottom-32 left-8 md:left-20 text-secondary w-5 h-5 md:w-7 md:h-7 animate-wiggle opacity-80" />
+          <Star className="absolute bottom-20 right-16 md:right-32 text-accent w-3 h-3 md:w-4 md:h-4 animate-float opacity-75" />
+          <Wand2 className="absolute top-1/2 left-4 text-primary-glow w-5 h-5 animate-pulse opacity-50" />
+          <Zap className="absolute top-1/3 right-4 text-accent w-4 h-4 animate-bounce opacity-60" />
         </div>
-      </header>
 
-      <main className="relative z-10 px-4 sm:px-6 pb-32">
-        <Card className="mx-auto max-w-4xl bg-card-surface/95 backdrop-blur-sm border-card-border shadow-elegant rounded-3xl overflow-hidden">
-          <div className="relative">
-            {/* Progress indicator */}
-            <div className="p-4 sm:p-6 pb-3 sm:pb-4">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <BookOpen className="w-5 h-5 text-primary" />
-                  <span className="text-sm font-medium text-text-secondary font-comic">
-                    {t("storyDisplay.progress.page")} {currentParagraph + 1} {t("storyDisplay.progress.of")} {totalPages}
-                  </span>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1">
-                    <TrendingUp className="w-4 h-4 text-secondary" />
-                    <span className="text-xs font-medium text-text-secondary font-comic capitalize">
-                      {currentDifficulty}
-                    </span>
-                  </div>
-                </div>
+        {/* Enhanced Header with professional styling */}
+        <header className="relative z-20 p-4 sm:p-6 bg-gradient-to-r from-primary/10 to-secondary/10 backdrop-blur-sm border-b border-primary/20">
+          <div className="flex items-center justify-between max-w-7xl mx-auto">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="relative">
+                <img src={time2ReadLogo} alt="Time2Read" className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl shadow-elegant transition-transform hover:scale-105" />
+                <div className="absolute -top-1 -right-1 w-4 h-4 bg-accent rounded-full animate-pulse"></div>
               </div>
-              
-              <Progress 
-                value={(currentParagraph / (totalPages - 1)) * 100} 
-                className="h-2 bg-surface-soft"
-              />
+              <div>
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-text-primary font-comic">
+                  {t("storyDisplay.header.title")}
+                </h1>
+                <p className="text-xs sm:text-sm text-text-secondary font-comic opacity-80">
+                  {userInfo.name}'s Reading Adventure
+                </p>
+              </div>
             </div>
+            
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={onNewStory}
+                    variant="outline"
+                    size="sm"
+                    className="bg-gradient-subtle hover:bg-gradient-primary transition-all duration-300 border-primary/30 hover:border-primary/50 font-comic text-xs sm:text-sm shadow-soft hover:shadow-glow"
+                  >
+                    <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">{t("storyDisplay.navigation.newStory")}</span>
+                    <span className="sm:hidden">New</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Generate a new story adventure</p>
+                </TooltipContent>
+              </Tooltip>
+              
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={onHome}
+                    variant="outline"
+                    size="sm"
+                    className="bg-gradient-subtle hover:bg-gradient-secondary transition-all duration-300 border-secondary/30 hover:border-secondary/50 font-comic text-xs sm:text-sm shadow-soft hover:shadow-elegant"
+                  >
+                    <Home className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">{t("storyDisplay.navigation.home")}</span>
+                    <span className="sm:hidden">Home</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Return to the main menu</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          </div>
+        </header>
 
-            {/* Story content */}
-            <div className="px-4 sm:px-6 pb-6">
-              <div 
-                className="bg-gradient-soft rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-12 text-center relative overflow-hidden shadow-soft"
-                style={{
-                  backgroundImage: `url(${ancientBookBg})`,
-                  backgroundBlendMode: 'soft-light',
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center'
-                }}
-              >
-                {/* Content overlay for better readability */}
-                <div className="absolute inset-0 bg-surface-primary/90 rounded-2xl sm:rounded-3xl"></div>
-                
-                <div className="relative z-10">
-                  <div className="mb-6 sm:mb-8">
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 rounded-full overflow-hidden shadow-elegant border-4 border-primary/20">
-                      <img 
-                        src={getUserAvatar()} 
-                        alt={`${userInfo.name}'s avatar`}
-                        className="w-full h-full object-cover"
+        <main className="relative z-10 px-3 sm:px-6 pb-32 pt-6">
+          <div className="max-w-6xl mx-auto">
+            {/* Enhanced Progress Section */}
+            <div className="mb-6">
+              <Card className="bg-card-surface/95 backdrop-blur-sm border-card-border shadow-elegant rounded-2xl p-4 sm:p-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-primary flex items-center justify-center shadow-glow">
+                      <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-sm sm:text-base font-bold text-text-primary font-comic">
+                          {t("storyDisplay.progress.page")} {currentParagraph + 1} {t("storyDisplay.progress.of")} {totalPages}
+                        </span>
+                        {showTutorialBubble && currentParagraph === 0 && (
+                          <div className="bg-accent text-white px-2 py-1 rounded-full text-xs font-comic animate-bounce-gentle">
+                            Click words to learn!
+                          </div>
+                        )}
+                      </div>
+                      <Progress 
+                        value={(currentParagraph / Math.max(1, totalPages - 1)) * 100} 
+                        className="h-2 sm:h-3 w-48 sm:w-64 bg-surface-soft"
                       />
                     </div>
-                    <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-text-primary mb-2 font-comic">
-                      {userInfo.name}'s {t("storyDisplay.content.adventure")}
-                    </h2>
-                    <div className="text-sm text-text-secondary font-comic">
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 bg-gradient-subtle rounded-xl px-3 py-2 shadow-soft">
+                      <TrendingUp className="w-4 h-4 text-secondary" />
+                      <span className="text-xs sm:text-sm font-bold text-text-primary font-comic capitalize">
+                        {currentDifficulty} Level
+                      </span>
+                    </div>
+                    
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={() => isPlaying ? stopTextToSpeech() : playTextToSpeech(currentStory)}
+                          variant="outline"
+                          size="sm"
+                          className="bg-gradient-primary hover:bg-gradient-primary/80 text-white border-primary/50 rounded-xl shadow-glow"
+                        >
+                          {isPlaying ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{isPlaying ? "Stop reading" : "Read aloud"}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                </div>
+              </Card>
+            </div>
+
+            {/* Enhanced Story Content */}
+            <Card className="bg-card-surface/95 backdrop-blur-sm border-card-border shadow-elegant rounded-3xl overflow-hidden">
+              <div className="relative">
+                {/* Story Header with Avatar */}
+                <div className="bg-gradient-to-r from-primary/20 to-secondary/20 p-4 sm:p-6 text-center border-b border-primary/10">
+                  <div className="flex items-center justify-center gap-4 mb-4">
+                    <div className="relative">
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden shadow-elegant border-4 border-primary/30 bg-gradient-primary p-1">
+                        <img 
+                          src={getUserAvatar()} 
+                          alt={`${userInfo.name}'s avatar`}
+                          className="w-full h-full object-cover rounded-full"
+                        />
+                      </div>
+                      <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-accent rounded-full flex items-center justify-center">
+                        <Star className="w-3 h-3 text-white" />
+                      </div>
+                    </div>
+                    <div className="text-left">
+                      <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-text-primary font-comic">
+                        {userInfo.name}'s Adventure
+                      </h2>
                       {userInfo.hobbies && (
-                        <span>{t("storyDisplay.content.featuring")} {userInfo.hobbies}</span>
+                        <p className="text-sm sm:text-base text-text-secondary font-comic">
+                          Featuring: {userInfo.hobbies}
+                        </p>
                       )}
                     </div>
                   </div>
+                </div>
 
-                  <div className="max-w-3xl mx-auto">
-                    <p className={`leading-relaxed font-comic text-center ${
-                      currentDifficulty === "easy" ? 'text-2xl sm:text-3xl lg:text-4xl font-bold' :
-                      userInfo.age <= 7 ? 'text-lg sm:text-xl lg:text-2xl' : 
-                      userInfo.age <= 9 ? 'text-base sm:text-lg lg:text-xl' : 
-                      'text-sm sm:text-base lg:text-lg'
-                    }`}>
-                      {processTextForPhonetics(currentStory, "", currentDifficulty, userInfo)}
-                    </p>
+                {/* Story Content with Illustration */}
+                <div className="grid lg:grid-cols-2 gap-6 p-4 sm:p-6 lg:p-8">
+                  {/* Illustration Section */}
+                  <div className="order-2 lg:order-1">
+                    <div className="relative rounded-2xl overflow-hidden shadow-elegant bg-gradient-subtle">
+                      <img 
+                        src={customIllustrations.get(currentParagraph) || currentIllustration}
+                        alt="Story illustration"
+                        className="w-full h-64 sm:h-80 lg:h-96 object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                      
+                      {/* Custom illustration button */}
+                      <div className="absolute top-4 right-4">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              onClick={() => generateCustomIllustration(currentParagraph, currentStory)}
+                              disabled={isGeneratingImage || customIllustrations.has(currentParagraph)}
+                              size="sm"
+                              className="bg-primary/90 hover:bg-primary text-white rounded-xl shadow-glow"
+                            >
+                              {isGeneratingImage && illustrationGenerationQueue.includes(currentParagraph) ? (
+                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                              ) : (
+                                <Wand2 className="w-4 h-4" />
+                              )}
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Generate custom illustration</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Text Section */}
+                  <div className="order-1 lg:order-2 flex flex-col justify-center">
+                    <div className="bg-gradient-to-br from-surface-primary/50 to-surface-soft/50 rounded-2xl p-6 sm:p-8 shadow-soft border border-primary/10">
+                      <div className="text-center mb-6">
+                        <div className="inline-flex items-center gap-2 bg-accent/10 rounded-full px-4 py-2 mb-4">
+                          <Sparkles className="w-4 h-4 text-accent" />
+                          <span className="text-sm font-comic text-accent">Chapter {currentParagraph + 1}</span>
+                        </div>
+                      </div>
+
+                      <div className="prose prose-lg max-w-none">
+                        <p className={`leading-relaxed font-comic text-center text-text-primary ${
+                          currentDifficulty === "easy" ? 'text-xl sm:text-2xl lg:text-3xl font-bold' :
+                          userInfo.age <= 7 ? 'text-lg sm:text-xl lg:text-2xl' : 
+                          userInfo.age <= 9 ? 'text-base sm:text-lg lg:text-xl' : 
+                          'text-sm sm:text-base lg:text-lg'
+                        }`}>
+                          {processTextForPhonetics(currentStory, "", currentDifficulty, userInfo)}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                {/* Navigation Controls */}
-                <div className="flex justify-between items-center gap-2 mt-8">
-                  <Button
-                    onClick={handlePrevious}
-                    disabled={currentParagraph === 0}
-                    className="bg-gradient-secondary hover:shadow-soft font-comic rounded-xl sm:rounded-2xl px-3 sm:px-6 text-sm sm:text-base"
-                  >
-                    <span className="hidden sm:inline">← {t("storyDisplay.navigation.previous")}</span>
-                    <span className="sm:hidden">{t("storyDisplay.navigation.previousShort")}</span>
-                  </Button>
-                  
-                  <Button
-                    onClick={handleNext}
-                    disabled={currentParagraph >= totalPages - 1}
-                    className="bg-gradient-primary hover:shadow-glow font-comic rounded-xl sm:rounded-2xl px-3 sm:px-6 text-sm sm:text-base"
-                  >
-                    <span className="hidden sm:inline">{t("storyDisplay.navigation.next")} →</span>
-                    <span className="sm:hidden">{t("storyDisplay.navigation.nextShort")}</span>
-                  </Button>
+                {/* Enhanced Navigation Controls */}
+                <div className="bg-gradient-to-r from-surface-soft/50 to-surface-primary/50 p-4 sm:p-6 border-t border-primary/10">
+                  <div className="flex justify-between items-center gap-4 max-w-2xl mx-auto">
+                    <Button
+                      onClick={handlePrevious}
+                      disabled={currentParagraph === 0}
+                      className="bg-gradient-secondary hover:bg-gradient-secondary/80 disabled:bg-surface-soft disabled:text-text-secondary font-comic rounded-2xl px-4 sm:px-8 py-3 text-sm sm:text-base shadow-soft hover:shadow-elegant transition-all duration-300 disabled:cursor-not-allowed"
+                    >
+                      <span className="flex items-center gap-2">
+                        <span>←</span>
+                        <span className="hidden sm:inline">{t("storyDisplay.navigation.previous")}</span>
+                        <span className="sm:hidden">Back</span>
+                      </span>
+                    </Button>
+                    
+                    <div className="flex items-center gap-2">
+                      <div className="flex -space-x-1">
+                        {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => (
+                          <div
+                            key={i}
+                            className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-300 ${
+                              i === currentParagraph % 5 
+                                ? 'bg-primary scale-125 shadow-glow' 
+                                : 'bg-surface-soft'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <Button
+                      onClick={handleNext}
+                      disabled={currentParagraph >= totalPages - 1}
+                      className="bg-gradient-primary hover:bg-gradient-primary/80 disabled:bg-surface-soft disabled:text-text-secondary font-comic rounded-2xl px-4 sm:px-8 py-3 text-sm sm:text-base shadow-glow hover:shadow-elegant transition-all duration-300 disabled:cursor-not-allowed"
+                    >
+                      <span className="flex items-center gap-2">
+                        <span className="hidden sm:inline">{t("storyDisplay.navigation.next")}</span>
+                        <span className="sm:hidden">Next</span>
+                        <span>→</span>
+                      </span>
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </div>
+            </Card>
           </div>
-        </Card>
-      </main>
+        </main>
 
-      {/* Floating Timer */}
-      <FloatingTimer
-        timeRemaining={timeRemaining}
-        isReading={isReading}
-        onToggleReading={() => setIsReading(!isReading)}
-        onAddTime={handleAddTime}
-        onAddPages={handleAddPages}
-        pagesRemaining={totalPages - currentParagraph - 1}
-        currentParagraph={currentParagraph}
-        onSessionEnded={onSessionEnded}
-      />
-    </div>
+        {/* Enhanced Floating Timer */}
+        <FloatingTimer
+          timeRemaining={timeRemaining}
+          isReading={isReading}
+          onToggleReading={() => setIsReading(!isReading)}
+          onAddTime={handleAddTime}
+          onAddPages={handleAddPages}
+          pagesRemaining={totalPages - currentParagraph - 1}
+          currentParagraph={currentParagraph}
+          onSessionEnded={onSessionEnded}
+        />
+      </div>
     </TooltipProvider>
   );
 };
 
-console.log("StoryDisplay component loaded"); // Force module refresh
+console.log("StoryDisplay component loaded");
 export default StoryDisplay;
