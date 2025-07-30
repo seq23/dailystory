@@ -1,11 +1,9 @@
 import { useState, useEffect, useRef } from "react";
-import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { BookOpen, Home, RotateCcw, Volume2, VolumeX, TrendingUp, TrendingDown, Plus, Star, Heart, Sparkles } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 import type { UserInfo } from "./UserInfoForm";
 import ancientBookBg from "@/assets/ancient-book-bg.jpg";
 import illustration1 from "@/assets/story-illustration-1.jpg";
@@ -70,7 +68,6 @@ import { SecurityValidator } from "@/utils/securityValidation";
 import { SecurityMonitor } from "@/utils/monitoring";
 import { createChildFriendlyPrompt } from "@/services/runwareService";
 import { createOpenAITTSService } from "@/services/textToSpeechService";
-import { MultilingualStoryService, type StoryLanguage } from "@/services/multilingualStoryService";
 
 type DifficultyLevel = "easy" | "medium" | "hard" | "expert";
 
@@ -82,8 +79,6 @@ interface StoryDisplayProps {
 }
 
 export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDisplayProps) => {
-  const { t } = useTranslation();
-  const { toast } = useToast();
   const [currentParagraph, setCurrentParagraph] = useState(0);
   const [isReading, setIsReading] = useState(true);
   const [timeRemaining, setTimeRemaining] = useState(10 * 60 + 10);
@@ -157,18 +152,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: S
     return `a happy ${genderDesc} with ${skinToneDesc}`;
   };
 
-  const generateStoryExtension = async (info: UserInfo, difficulty: DifficultyLevel, extensionNumber: number): Promise<string[]> => {
-    const storyLanguage = (info.storyLanguage || "English") as StoryLanguage;
-    
-    // First try to generate native story in target language
-    if (storyLanguage !== "English") {
-      const nativeStory = MultilingualStoryService.generateNativeStory(info, difficulty, storyLanguage, extensionNumber);
-      if (nativeStory.length > 0) {
-        return nativeStory;
-      }
-    }
-
-    // Fall back to English generation with translation
+  const generateStoryExtension = (info: UserInfo, difficulty: DifficultyLevel, extensionNumber: number): string[] => {
     const avatarDesc = getAvatarDescription();
     const hobbies = info.hobbies;
     
@@ -255,25 +239,24 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: S
       }
     };
 
-    const englishStory = createExtensionByDifficulty();
+    const selectedExtension = createExtensionByDifficulty();
     
-    // Translate if needed
-    if (storyLanguage !== "English") {
-      try {
-        const translatedStory = await MultilingualStoryService.translateStoryContent(
-          englishStory, 
-          storyLanguage, 
-          info, 
-          difficulty
-        );
-        return translatedStory;
-      } catch (error) {
-        console.error('Translation failed, using English:', error);
-        return englishStory;
+    const difficultySettings = {
+      easy: { words: 25 },
+      medium: { words: 50 },
+      hard: { words: 75 },
+      expert: { words: 100 }
+    };
+    
+    const settings = difficultySettings[difficulty];
+    
+    return selectedExtension.map(paragraph => {
+      const words = paragraph.split(' ');
+      if (words.length > settings.words) {
+        return words.slice(0, settings.words).join(' ') + '...';
       }
-    }
-    
-    return englishStory;
+      return paragraph;
+    });
   };
 
   const generateInitialStory = (info: UserInfo, difficulty: DifficultyLevel): string[] => {
@@ -561,9 +544,9 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: S
   useEffect(() => {
     if (story.length > 0) {
       // Add 1-2 second delay before updating story text for difficulty changes
-      const difficultyChangeTimer = setTimeout(async () => {
+      const difficultyChangeTimer = setTimeout(() => {
         const currentPageCount = story.length;
-        const baseStory = await generateInitialStory(userInfo, currentDifficulty);
+        const baseStory = generateInitialStory(userInfo, currentDifficulty);
         
         // If user has added pages beyond the base 10, preserve those pages by regenerating extensions
         if (currentPageCount > baseStory.length) {
@@ -572,7 +555,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: S
           
           let updatedStory = [...baseStory];
           for (let i = 0; i < extensionsNeeded; i++) {
-            const extensionPages = await generateStoryExtension(userInfo, currentDifficulty, i);
+            const extensionPages = generateStoryExtension(userInfo, currentDifficulty, i);
             updatedStory = [...updatedStory, ...extensionPages];
           }
           
@@ -726,25 +709,11 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: S
     }
   };
 
-  const handleAddPages = async () => {
-    if (storyExtensions < 3) {
-      // Generate new story pages without adding time
-      const extensionPages = await generateStoryExtension(userInfo, currentDifficulty, storyExtensions);
-      setStory(prev => [...prev, ...extensionPages]);
-      setStoryExtensions(prev => prev + 1);
-      
-      // Show success message
-      toast({
-        title: t('story.storyExtended'),
-        duration: 3000,
-      });
-    } else {
-      // Show limit reached message
-      toast({
-        title: t('story.noMoreExtensions'),
-        duration: 3000,
-      });
-    }
+  const handleAddPages = () => {
+    // Generate new story pages without adding time
+    const extensionPages = generateStoryExtension(userInfo, currentDifficulty, storyExtensions);
+    setStory(prev => [...prev, ...extensionPages]);
+    setStoryExtensions(prev => prev + 1);
   };
 
   return (
@@ -800,7 +769,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: S
                 className="font-comic hover:scale-105 transition-transform bg-white/80 hover:bg-white text-xs sm:text-sm px-2 sm:px-4"
               >
                 <Home className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
-                <span className="hidden sm:inline">{t('story.home')}</span>
+                <span className="hidden sm:inline">Home</span>
               </Button>
               
               <Button
@@ -809,7 +778,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: S
                 className="font-comic hover:scale-105 transition-transform bg-gradient-primary hover:shadow-glow text-xs sm:text-sm px-2 sm:px-4"
               >
                 <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
-                <span className="hidden sm:inline">{t('story.newStory')}</span>
+                <span className="hidden sm:inline">New Story</span>
               </Button>
             </div>
           </div>
@@ -983,7 +952,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: S
                     disabled={currentParagraph === 0}
                     className="bg-gradient-secondary hover:shadow-soft font-comic rounded-xl sm:rounded-2xl px-3 sm:px-6 text-sm sm:text-base"
                   >
-                    <span className="hidden sm:inline">← {t('story.previousParagraph')}</span>
+                    <span className="hidden sm:inline">← Previous</span>
                     <span className="sm:hidden">←</span>
                   </Button>
                   
@@ -992,7 +961,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: S
                     disabled={currentParagraph >= totalPages - 1}
                     className="bg-gradient-primary hover:shadow-glow font-comic rounded-xl sm:rounded-2xl px-3 sm:px-6 text-sm sm:text-base"
                   >
-                    <span className="hidden sm:inline">{t('story.nextParagraph')} →</span>
+                    <span className="hidden sm:inline">Next →</span>
                     <span className="sm:hidden">→</span>
                   </Button>
                 </div>
