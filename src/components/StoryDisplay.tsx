@@ -812,8 +812,8 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                           disabled={story.length <= 1}
                         >
                           <div className="relative">
-                            <BookOpen className="w-3 h-3 mr-1" />
-                            <Minus className="w-2 h-2 absolute -top-1 -right-1 bg-white rounded-full" />
+                            <BookOpen className="w-4 h-4 mr-1" />
+                            <Minus className="w-1.5 h-1.5 absolute -top-0.5 -right-0.5 bg-white rounded-full" />
                           </div>
                           Remove Pages
                         </Button>
@@ -839,8 +839,8 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                             }}
                           >
                             <div className="relative">
-                              <BookOpen className="w-3 h-3 mr-1" />
-                              <Plus className="w-2 h-2 absolute -top-1 -right-1 bg-white rounded-full" />
+                              <BookOpen className="w-4 h-4 mr-1" />
+                              <Plus className="w-1.5 h-1.5 absolute -top-0.5 -right-0.5 bg-white rounded-full" />
                             </div>
                             Add Pages
                             {showAddPagesAlert && " ⚡"}
