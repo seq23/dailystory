@@ -75,7 +75,7 @@ interface StoryDisplayProps {
   userInfo: UserInfo;
   onHome: () => void;
   onNewStory: () => void;
-  onSessionEnded: () => void;
+  onSessionEnded: (stats?: any) => void;
 }
 
 const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDisplayProps) => {
@@ -437,14 +437,16 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
 
   const handleFinishSession = () => {
     // Update final reading stats
-    setReadingStats(prev => ({
-      ...prev,
+    const finalStats = {
+      ...readingStats,
       pagesRead: currentParagraph + 1,
-      timeSpent: Math.floor((Date.now() - prev.startTime) / 1000)
-    }));
+      timeSpent: Math.floor((Date.now() - readingStats.startTime) / 1000),
+      totalPages: totalPages,
+      currentDifficulty
+    };
     
     // Navigate to session ended with stats
-    onSessionEnded();
+    onSessionEnded(finalStats);
   };
 
   const playTextToSpeech = async (text: string) => {
@@ -613,26 +615,6 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         </div>
       </header>
 
-      {/* Fixed Progress Bar at Top */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-purple-100">
-        <div className="max-w-7xl mx-auto px-4 py-3">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-purple-700">
-              Page {currentParagraph + 1} of {totalPages}
-            </span>
-            <span className="text-sm text-purple-600">
-              {currentDifficulty === "easy" ? "Pre-K - 1st Grade" :
-               currentDifficulty === "medium" ? "2nd - 3rd Grade" :
-               currentDifficulty === "hard" ? "4th - 5th Grade" :
-               "6th Grade+"}
-            </span>
-          </div>
-          <Progress 
-            value={(currentParagraph / Math.max(1, totalPages - 1)) * 100} 
-            className="h-2 bg-purple-100"
-          />
-        </div>
-      </div>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 pt-24 pb-6">
@@ -886,32 +868,6 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         onSessionEnded={handleFinishSession}
       />
 
-      {/* Floating Reading Stats - LEFT SIDE */}
-      <div className="fixed top-32 left-4 z-40">
-        <Card className="bg-white/95 backdrop-blur-sm shadow-xl rounded-xl p-4 text-sm border-0">
-          <h4 className="font-bold text-purple-800 mb-3 flex items-center">
-            📊 Reading Progress
-          </h4>
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">Words:</span>
-              <span className="font-bold text-purple-700">{readingStats.wordsRead}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">Time:</span>
-              <span className="font-bold text-green-700">{formatTime(readingStats.timeSpent)}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">Pages:</span>
-              <span className="font-bold text-blue-700">{currentParagraph + 1}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">Accuracy:</span>
-              <span className="font-bold text-orange-700">{readingStats.accuracy}%</span>
-            </div>
-          </div>
-        </Card>
-      </div>
 
       {/* Countdown Overlay */}
       {showFinishCountdown && (

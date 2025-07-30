@@ -9,6 +9,7 @@ type AppState = "welcome" | "form" | "story";
 const Index = () => {
   const [currentState, setCurrentState] = useState<AppState>("welcome");
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const [sessionStats, setSessionStats] = useState<any>(null);
   const navigate = useNavigate();
 
   const handleGetStarted = () => {
@@ -23,18 +24,22 @@ const Index = () => {
   const handleBackToWelcome = () => {
     setCurrentState("welcome");
     setUserInfo(null);
+    setSessionStats(null);
   };
 
   const handleBackToForm = () => {
     setCurrentState("form");
+    setSessionStats(null);
   };
 
   const handleNewStory = () => {
     setCurrentState("form");
+    setSessionStats(null);
   };
 
-  const handleSessionEnded = () => {
-    navigate("/session-ended");
+  const handleSessionEnded = (stats?: any) => {
+    setSessionStats(stats);
+    navigate("/session-ended", { state: { sessionStats: stats } });
   };
 
   switch (currentState) {
