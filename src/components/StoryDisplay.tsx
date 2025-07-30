@@ -156,6 +156,14 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         // Set illustration
         const illustrationIndex = Math.floor(Math.random() * illustrations.length);
         setCurrentIllustration(illustrations[illustrationIndex]);
+        
+        // Auto-generate custom illustration for the first page
+        if (generatedStory.length > 0) {
+          // Small delay to ensure component is ready
+          setTimeout(() => {
+            generateCustomIllustration(0, generatedStory[0]);
+          }, 500);
+        }
       } catch (error) {
         console.error('Error generating story:', error);
         toast({
@@ -304,21 +312,33 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
 
   const handleNext = () => {
     if (currentParagraph < totalPages - 1) {
-      setCurrentParagraph(prev => prev + 1);
+      const nextParagraph = currentParagraph + 1;
+      setCurrentParagraph(nextParagraph);
       
       // Set new illustration
-      const illustrationIndex = (currentParagraph + 1) % illustrations.length;
+      const illustrationIndex = nextParagraph % illustrations.length;
       setCurrentIllustration(illustrations[illustrationIndex]);
+      
+      // Auto-generate custom illustration for the new page
+      if (story[nextParagraph]) {
+        generateCustomIllustration(nextParagraph, story[nextParagraph]);
+      }
     }
   };
 
   const handlePrevious = () => {
     if (currentParagraph > 0) {
-      setCurrentParagraph(prev => prev - 1);
+      const prevParagraph = currentParagraph - 1;
+      setCurrentParagraph(prevParagraph);
       
       // Set illustration
-      const illustrationIndex = (currentParagraph - 1) % illustrations.length;
+      const illustrationIndex = prevParagraph % illustrations.length;
       setCurrentIllustration(illustrations[illustrationIndex]);
+      
+      // Auto-generate custom illustration for the previous page if needed
+      if (story[prevParagraph]) {
+        generateCustomIllustration(prevParagraph, story[prevParagraph]);
+      }
     }
   };
 
@@ -590,26 +610,15 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
                 
-                {/* Generate Image Button */}
-                <div className="absolute top-4 right-4">
-                  <Button
-                    onClick={() => {
-                      console.log('=== Generate Image Button Clicked ===');
-                      console.log('Current paragraph:', currentParagraph);
-                      console.log('Current story:', currentStory);
-                      generateCustomIllustration(currentParagraph, currentStory);
-                    }}
-                    disabled={isGeneratingImage || customIllustrations.has(currentParagraph)}
-                    size="sm"
-                    className="bg-white/90 hover:bg-white text-gray-700 rounded-xl shadow-lg"
-                  >
-                    {isGeneratingImage ? (
-                      <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <Wand2 className="w-4 h-4" />
-                    )}
-                  </Button>
-                </div>
+                {/* Image Generation Status */}
+                {isGeneratingImage && (
+                  <div className="absolute top-4 right-4">
+                    <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg px-3 py-2 flex items-center space-x-2">
+                      <div className="w-4 h-4 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+                      <span className="text-sm font-medium text-gray-700">Creating image...</span>
+                    </div>
+                  </div>
+                )}
 
                 {/* Chapter Badge */}
                 <div className="absolute bottom-4 left-4">
