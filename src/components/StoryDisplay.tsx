@@ -425,7 +425,15 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
   };
 
   const generateCustomIllustration = async (pageIndex: number, storyText: string) => {
-    if (isGeneratingImage || customIllustrations.has(pageIndex)) return;
+    console.log('=== generateCustomIllustration called ===');
+    console.log('pageIndex:', pageIndex, 'storyText length:', storyText?.length);
+    console.log('isGeneratingImage:', isGeneratingImage);
+    console.log('customIllustrations.has(pageIndex):', customIllustrations.has(pageIndex));
+    
+    if (isGeneratingImage || customIllustrations.has(pageIndex)) {
+      console.log('Exiting early - already generating or exists');
+      return;
+    }
     
     try {
       setIsGeneratingImage(true);
@@ -585,7 +593,12 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                 {/* Generate Image Button */}
                 <div className="absolute top-4 right-4">
                   <Button
-                    onClick={() => generateCustomIllustration(currentParagraph, currentStory)}
+                    onClick={() => {
+                      console.log('=== Generate Image Button Clicked ===');
+                      console.log('Current paragraph:', currentParagraph);
+                      console.log('Current story:', currentStory);
+                      generateCustomIllustration(currentParagraph, currentStory);
+                    }}
                     disabled={isGeneratingImage || customIllustrations.has(currentParagraph)}
                     size="sm"
                     className="bg-white/90 hover:bg-white text-gray-700 rounded-xl shadow-lg"
