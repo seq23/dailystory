@@ -126,6 +126,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
   const [isPlaying, setIsPlaying] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [hasPlayedAudioForPage, setHasPlayedAudioForPage] = useState<Set<number>>(new Set());
+  const [audioSpeed, setAudioSpeed] = useState(0.9); // Default speed
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   
@@ -534,7 +535,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         currentAudioRef.current = null;
       }
       
-      await openAIService.speakText(text, { speed: 0.9 });
+      await openAIService.speakText(text, { speed: audioSpeed });
       setIsPlaying(false);
     } catch (error) {
       console.error('Error playing text-to-speech:', error);
@@ -813,6 +814,24 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                     >
                       {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
                     </Button>
+                  </div>
+
+                  {/* Audio Speed Controls */}
+                  <div className="flex justify-center items-center space-x-2">
+                    <span className="text-xs text-gray-600 font-medium">Speed:</span>
+                    <div className="flex space-x-1">
+                      {[0.5, 0.75, 1.0, 1.25].map((speed) => (
+                        <Button
+                          key={speed}
+                          onClick={() => setAudioSpeed(speed)}
+                          variant={audioSpeed === speed ? "default" : "outline"}
+                          size="sm"
+                          className="rounded-full text-xs px-3 py-1 h-7"
+                        >
+                          {speed}x
+                        </Button>
+                      ))}
+                    </div>
                   </div>
 
                   {/* Difficulty */}
