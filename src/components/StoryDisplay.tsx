@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { BookOpen, Home, RotateCcw, Volume2, VolumeX, TrendingUp, TrendingDown, Plus, Minus, Star, Heart, Sparkles, Wand2, Play, Pause, Timer, Mic, MicOff } from "lucide-react";
@@ -160,7 +160,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
           setHasShownTutorial(true);
         }
         
-        const generatedStory = InclusiveStoryGenerator.generateCulturallyAdaptedStory(userInfo, currentDifficulty);
+        const generatedStory = InclusiveStoryGenerator.generateCulturallyAdaptedStory(userInfo, currentDifficulty, false, 10);
         setStory(generatedStory);
         
         // Calculate word count for stats and reset reading stats
@@ -676,85 +676,22 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       </header>
 
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 pt-24 pb-6">
-
-        {/* Story Layout */}
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Large Image Section - LEFT */}
-          <div className="lg:col-span-2">
-            <Card className="bg-white/95 shadow-xl rounded-3xl overflow-hidden border-0">
-              <div className="relative">
-                <img 
-                  src={customIllustrations.get(currentParagraph) || currentIllustration}
-                  alt="Story illustration"
-                  className="w-full h-96 lg:h-[500px] object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-                
-                {/* Image Generation Status */}
-                {isGeneratingImage && (
-                  <div className="absolute top-4 right-4">
-                    <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg px-3 py-2 flex items-center space-x-2">
-                      <div className="w-4 h-4 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
-                      <span className="text-sm font-medium text-gray-700">Creating image...</span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Chapter Badge */}
-                <div className="absolute bottom-4 left-4">
-                  <div className="bg-white/95 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg">
-                    <div className="flex items-center space-x-2">
-                      <Sparkles className="w-4 h-4 text-purple-600" />
-                      <span className="text-sm font-bold text-purple-800">Chapter {currentParagraph + 1}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </div>
-
-          {/* Story Text - RIGHT */}
-          <div className="lg:col-span-1">
-            <Card className="bg-white/95 shadow-xl rounded-3xl overflow-hidden border-0 h-full">
-              {/* Story Header */}
-              <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-4 text-white">
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 rounded-xl overflow-hidden shadow-lg border-2 border-white/30">
-                    <img 
-                      src={getUserAvatar()} 
-                      alt={`${userInfo.name}'s avatar`}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div>
-                    <h2 className="text-lg font-bold">
-                      {userInfo.name}'s Adventure
-                    </h2>
-                    <p className="text-purple-100 text-sm">
-                      Let's read together!
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Story Content */}
-              <div className="p-6 flex-1 flex flex-col justify-between min-h-[400px]">
-                <div className="flex-1 flex items-center justify-center">
-                  <div className="text-center">
-                    <p className={`leading-relaxed font-medium text-gray-800 ${
-                      currentDifficulty === "easy" ? 'text-xl font-bold' :
-                      currentDifficulty === "medium" ? 'text-lg' :
-                      'text-base'
-                    }`}>
-                      {processTextForPhonetics(currentStory, "", currentDifficulty, userInfo)}
-                    </p>
+      {/* Main Content Container - Increased reading area */}
+      <div className="flex-1 max-w-6xl mx-auto px-4 py-6 pt-20 pb-32">
+        <div className="grid lg:grid-cols-2 gap-8 items-start">
+          {/* Story Content - Larger area */}
+          <div className="order-2 lg:order-1">
+            <Card className="bg-white/95 backdrop-blur-sm shadow-2xl rounded-3xl border-2 border-purple-200/50 overflow-hidden min-h-[600px]">
+              <CardContent className="p-8">
+                {/* Story Text */}
+                <div className="prose prose-lg max-w-none">
+                  <div className="text-2xl leading-relaxed text-gray-800 font-medium space-y-4">
+                    {processTextForPhonetics(currentStory, "", currentDifficulty, userInfo)}
                   </div>
                 </div>
                 
                 {/* Controls */}
-                <div className="space-y-4 mt-6">
+                <div className="space-y-4 mt-8">
                   {/* Audio & Recording */}
                   <div className="flex justify-center space-x-3" data-tutorial-target="audio">
                     <Button
@@ -874,11 +811,6 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                                 ? 'animate-bounce bg-yellow-200 border-yellow-400 text-yellow-800 shadow-lg scale-110 animate-pulse' 
                                 : ''
                             }`}
-                            style={{
-                              animation: showAddPagesAlert 
-                                ? 'jump 0.6s ease-in-out infinite alternate, flash 0.8s ease-in-out infinite' 
-                                : undefined
-                            }}
                           >
                             <div className="relative">
                               <BookOpen className="w-4 h-4 mr-1" />
@@ -909,11 +841,53 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                     </div>
                   </div>
                 </div>
-              </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Illustration - Constrained to reading area */}
+          <div className="order-1 lg:order-2">
+            <Card className="bg-white/95 backdrop-blur-sm shadow-2xl rounded-3xl border-2 border-purple-200/50 overflow-hidden max-h-[600px]">
+              <CardContent className="p-6">
+                <div className="relative w-full h-[500px] bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl overflow-hidden flex items-center justify-center">
+                  {currentIllustration ? (
+                    <img 
+                      src={customIllustrations.get(currentParagraph) || currentIllustration}
+                      alt="Story illustration"
+                      className="w-full h-full object-cover rounded-2xl"
+                    />
+                  ) : (
+                    <div className="text-center">
+                      <div className="text-6xl mb-4">📖</div>
+                      <p className="text-purple-600 font-medium">Your story illustration is loading...</p>
+                    </div>
+                  )}
+                  
+                  {/* Image Generation Status */}
+                  {isGeneratingImage && (
+                    <div className="absolute top-4 right-4">
+                      <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg px-3 py-2 flex items-center space-x-2">
+                        <div className="w-4 h-4 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+                        <span className="text-sm font-medium text-gray-700">Creating image...</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Chapter Badge */}
+                  <div className="absolute bottom-4 left-4">
+                    <div className="bg-white/95 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg">
+                      <div className="flex items-center space-x-2">
+                        <Sparkles className="w-4 h-4 text-purple-600" />
+                        <span className="text-sm font-bold text-purple-800">Chapter {currentParagraph + 1}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
             </Card>
           </div>
         </div>
-      </main>
+      </div>
 
       {/* Floating Timer */}
       <FloatingTimer 
