@@ -69,6 +69,8 @@ import { SecurityValidator } from "@/utils/securityValidation";
 import { SecurityMonitor } from "@/utils/monitoring";
 import { createChildFriendlyPrompt } from "@/services/runwareService";
 import { createOpenAITTSService } from "@/services/textToSpeechService";
+import InclusiveStoryGenerator from "@/services/inclusiveStoryGenerator";
+import CulturalAdaptationService from "@/services/culturalAdaptationService";
 
 type DifficultyLevel = "easy" | "medium" | "hard" | "expert";
 
@@ -155,114 +157,23 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: S
   };
 
   const generateStoryExtension = (info: UserInfo, difficulty: DifficultyLevel, extensionNumber: number): string[] => {
-    const avatarDesc = getAvatarDescription();
-    const hobbies = info.hobbies;
-    
-    // Create different extension content based on difficulty level with author-inspired styles
-    const createExtensionByDifficulty = () => {
-      if (difficulty === "easy") {
-        // Dr. Seuss / Eric Carle / Mo Willems style - rhyming, repetitive, playful
-        const easyExtensions = [
-          [
-            `Oh my! What does ${info.name} spy? A wiggly, giggly butterfly!`,
-            `"Come play!" says the butterfly. "Let's fly high in the big blue sky!"`,
-            `Up, up, up they go! Flying fast, flying slow.`,
-            `They dance with clouds so white and round. Then gently float back to the ground.`,
-            `"Thank you, friend!" says ${info.name} with glee. "Flying was fun as fun can be!"`
-          ],
-          [
-            `Buzz, buzz! What's that sound? A busy bee flying all around!`,
-            `The bee loves ${info.hobbies} just like ${info.name}. "Let's play together!" the bee exclaims.`,
-            `They hop and skip and laugh with joy. Every flower is like a toy!`,
-            `Red flowers, blue flowers, yellow too! So many colors, bright and new!`,
-            `"Goodbye!" hums the happy bee. "You're the best friend there could be!"`
-          ]
-        ];
-        return easyExtensions[extensionNumber % easyExtensions.length];
-      } else if (difficulty === "medium") {
-        // Magic Tree House / Junie B. Jones style - adventure with wonder
-        const mediumExtensions = [
-          [
-            `${info.name} discovered something amazing while enjoying ${info.hobbies}. A shimmering doorway appeared right in their backyard!`,
-            `"This is impossible!" ${info.name} whispered, but stepped through anyway. On the other side was a land of talking animals who needed help.`,
-            `A wise old elephant wearing spectacles approached. "We've been waiting for someone just like you," she said with a warm smile.`,
-            `The animals had lost their way home after a terrible storm. ${info.name} used their knowledge of ${info.hobbies} to create a clever solution.`,
-            `"You saved us!" cheered all the animals. They threw a wonderful party with music, dancing, and the most delicious cake ${info.name} had ever tasted.`
-          ],
-          [
-            `While practicing ${info.hobbies}, ${info.name} noticed their reflection winking back from a puddle. "That's odd," they thought, and touched the water.`,
-            `Suddenly, ${info.name} was pulled into a mirror world where everything was backwards and upside-down, but surprisingly friendly.`,
-            `A backwards girl named Eman (which was "Name" spelled backwards) became their guide. "Welcome to our topsy-turvy town!" she laughed.`,
-            `Together, they solved the mystery of the disappearing rainbow by following clues hidden in riddles and rhymes throughout the strange land.`,
-            `When it was time to leave, Eman gave ${info.name} a special backwards watch. "This will always remind you that different can be wonderful!"`
-          ]
-        ];
-        return mediumExtensions[extensionNumber % mediumExtensions.length];
-      } else if (difficulty === "hard") {
-        // Harry Potter / Holes style - deeper adventure with character growth
-        const hardExtensions = [
-          [
-            `${info.name} had always felt different, but never more so than the day a peculiar letter arrived. It was written in silver ink that seemed to move across the page.`,
-            `The letter invited ${info.name} to join the Academy of Extraordinary Talents, where students learned to master abilities related to their greatest passions—like ${info.hobbies}.`,
-            `At the academy, ${info.name} met other gifted students and learned from Professor Sage, a mysterious teacher who claimed to be over 200 years old.`,
-            `But something was wrong. Strange shadows were stealing students' talents, leaving them ordinary again. ${info.name} realized they might be the only one who could stop it.`,
-            `Using creativity, courage, and everything they'd learned about ${info.hobbies}, ${info.name} uncovered the truth and restored everyone's gifts. The academy was safe once more.`
-          ],
-          [
-            `${info.name} never expected that their family's old attic would hold the key to a centuries-old mystery. Hidden beneath dusty boards was an ancient journal.`,
-            `The journal belonged to a young inventor who had mysteriously vanished while working on a device powered by the very thing ${info.name} loved most: ${info.hobbies}.`,
-            `Following the journal's clues led ${info.name} on a thrilling treasure hunt through their own town, discovering secret passages and hidden messages.`,
-            `Each puzzle solved revealed more about the inventor's noble quest to help others and the dangerous forces that tried to stop him.`,
-            `In the end, ${info.name} not only solved the mystery but found the inventor's greatest creation—a device that could make anyone's dreams come true, if they were brave enough to try.`
-          ]
-        ];
-        return hardExtensions[extensionNumber % hardExtensions.length];
-      } else { // expert
-        // Suzanne Collins / advanced middle-grade style - complex themes with sophisticated narrative
-        const expertExtensions = [
-          [
-            `${info.name} lived in a world where creativity was carefully controlled, and their passion for ${info.hobbies} marked them as dangerously different from others their age.`,
-            `When the government announced a competition to find the most talented young person in the nation, ${info.name} faced an impossible choice: hide their abilities or risk everything.`,
-            `The competition was more than it seemed—a test not just of skill, but of character, loyalty, and the willingness to stand up for what's right, even when it's difficult.`,
-            `As ${info.name} advanced through increasingly challenging rounds, they uncovered a conspiracy that threatened to destroy the very creativity they were meant to celebrate.`,
-            `With time running out and allies few, ${info.name} had to decide whether to play it safe or use their unique talents to expose the truth and protect future generations.`,
-            `Through courage, intelligence, and the power of ${info.hobbies}, ${info.name} not only won the competition but changed their world forever, proving that young people can make a real difference.`
-          ],
-          [
-            `The letter arrived on ${info.name}'s thirteenth birthday, but it wasn't a normal invitation—it was a summons to defend their right to pursue ${info.hobbies} in a world that had forgotten their value.`,
-            `${info.name} discovered they were part of a secret network of young people working to preserve arts, creativity, and free thinking in a society that valued only efficiency and control.`,
-            `Their mentor, a former rebel who had lost everything fighting for creative freedom, taught ${info.name} that true strength comes from knowing who you are and what you believe in.`,
-            `When the authorities discovered the network, ${info.name} and their friends had to go underground, using their various talents to stay hidden while planning their resistance.`,
-            `The final confrontation required ${info.name} to make a speech that would be broadcast to the entire nation, knowing it could change everything—or cost them their freedom.`,
-            `In the end, ${info.name}'s words and dedication to ${info.hobbies} inspired a revolution of creativity that swept across the country, proving that passion and truth are stronger than fear.`
-          ]
-        ];
-        return expertExtensions[extensionNumber % expertExtensions.length];
-      }
-    };
-
-    const selectedExtension = createExtensionByDifficulty();
-    
-    const difficultySettings = {
-      easy: { words: 25 },
-      medium: { words: 50 },
-      hard: { words: 75 },
-      expert: { words: 100 }
-    };
-    
-    const settings = difficultySettings[difficulty];
-    
-    return selectedExtension.map(paragraph => {
-      const words = paragraph.split(' ');
-      if (words.length > settings.words) {
-        return words.slice(0, settings.words).join(' ') + '...';
-      }
-      return paragraph;
-    });
+    // Use the new inclusive story generator for culturally adapted extensions
+    return InclusiveStoryGenerator.generateCulturallyAdaptedStory(
+      info, 
+      difficulty, 
+      true, // isExtension = true
+      extensionNumber
+    );
   };
 
   const generateInitialStory = (info: UserInfo, difficulty: DifficultyLevel): string[] => {
-    const avatarDesc = getAvatarDescription();
+    // Use the new inclusive story generator for culturally adapted initial stories
+    return InclusiveStoryGenerator.generateCulturallyAdaptedStory(
+      info, 
+      difficulty, 
+      false // isExtension = false
+    );
+  };
     const hobbies = info.hobbies;
     
     const difficultySettings = {
