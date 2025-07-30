@@ -280,11 +280,10 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
   useEffect(() => {
     if (showTutorial && story.length > 0) {
       const tutorialSteps = [
-        { message: "Welcome! Your timer has started at 10:10 and is counting down. Click the center button to pause/start.", duration: 4000 },
-        { message: "Use the green + button to add 10 minutes if you need more time.", duration: 3000 },
-        { message: "Use the orange - button to remove 10 minutes if you want less time.", duration: 3000 },
-        { message: "Click the speaker button to have the story read aloud, or the microphone to record yourself reading.", duration: 4000 },
-        { message: "Use the 'Easier' and 'Harder' buttons to adjust the story difficulty as you read.", duration: 3000 },
+        { message: "Welcome! Timer auto-started at 10:10. Green + adds time, orange - removes time.", duration: 2500 },
+        { message: "Speaker button reads aloud, microphone records you reading.", duration: 2000 },
+        { message: "Easier/Harder buttons adjust story difficulty as you read.", duration: 1500 },
+        { message: "Add/Remove Pages buttons change your story length.", duration: 2000 },
         { message: "Happy reading! Enjoy your personalized adventure!", duration: 2000 }
       ];
 
@@ -812,8 +811,11 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                           className="rounded-full text-xs px-3 hover:bg-red-50 hover:border-red-200 hover:text-red-600"
                           disabled={story.length <= 1}
                         >
-                          <Minus className="w-3 h-3 mr-1" />
-                          Remove Page
+                          <div className="relative">
+                            <BookOpen className="w-3 h-3 mr-1" />
+                            <Minus className="w-2 h-2 absolute -top-1 -right-1 bg-white rounded-full" />
+                          </div>
+                          Remove Pages
                         </Button>
                         
                         <span className="text-sm font-bold text-purple-600 px-2">
@@ -836,8 +838,11 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                                 : undefined
                             }}
                           >
-                            <Plus className="w-3 h-3 mr-1" />
-                            Add Page
+                            <div className="relative">
+                              <BookOpen className="w-3 h-3 mr-1" />
+                              <Plus className="w-2 h-2 absolute -top-1 -right-1 bg-white rounded-full" />
+                            </div>
+                            Add Pages
                             {showAddPagesAlert && " ⚡"}
                           </Button>
                           
@@ -943,15 +948,14 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                 </div>
                 <div className="flex-1">
                   <div className="text-sm font-medium mb-1">
-                    Tutorial {tutorialStep + 1}/6
+                    Tutorial {tutorialStep + 1}/5
                   </div>
                   <div className="text-sm">
-                    {showTutorial && tutorialStep < 6 ? [
-                      "Welcome! Your timer has started at 10:10 and is counting down. Click the center button to pause/start.",
-                      "Use the green + button to add 10 minutes if you need more time.",
-                      "Use the orange - button to remove 10 minutes if you want less time.",
-                      "Click the speaker button to have the story read aloud, or the microphone to record yourself reading.",
-                      "Use the 'Easier' and 'Harder' buttons to adjust the story difficulty as you read.",
+                    {showTutorial && tutorialStep < 5 ? [
+                      "Welcome! Timer auto-started at 10:10. Green + adds time, orange - removes time.",
+                      "Speaker button reads aloud, microphone records you reading.",
+                      "Easier/Harder buttons adjust story difficulty as you read.",
+                      "Add/Remove Pages buttons change your story length.",
                       "Happy reading! Enjoy your personalized adventure!"
                     ][tutorialStep] : ""}
                   </div>
@@ -972,7 +976,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                 <div className="w-full bg-white/20 rounded-full h-2">
                   <div 
                     className="bg-white h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${((tutorialStep + 1) / 6) * 100}%` }}
+                    style={{ width: `${((tutorialStep + 1) / 5) * 100}%` }}
                   />
                 </div>
               </div>
