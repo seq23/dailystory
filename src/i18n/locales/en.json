@@ -120,8 +120,24 @@
           "expert": {
             "title": "Expert Reading",
             "description": "(9th-12th grade: Expert vocabulary & sophisticated writing)"
-          }
-        }
+    }
+  },
+  "interactiveWord": {
+    "hearIt": "Hear it",
+    "explain": "Explain",
+    "translate": "Translate",
+    "synonym": "Synonym",
+    "example": "Example",
+    "etymology": "Origin",
+    "difficulty": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate", 
+      "advanced": "Advanced"
+    },
+    "loading": "Loading...",
+    "playbackError": "Could not play audio",
+    "translationError": "Translation not available"
+  }
       },
       "avatar": {
         "label": "Which avatar do you want?"

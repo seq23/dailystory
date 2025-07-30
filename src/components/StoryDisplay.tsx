@@ -942,7 +942,7 @@ export const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: S
                       userInfo.age <= 9 ? 'text-base sm:text-lg lg:text-xl' : 
                       'text-sm sm:text-base lg:text-lg'
                     }`}>
-                      {processTextForPhonetics(currentStory, "", currentDifficulty)}
+                      {processTextForPhonetics(currentStory, "", currentDifficulty, userInfo)}
                     </p>
                   </div>
                 </div>

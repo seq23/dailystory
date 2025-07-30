@@ -121,6 +121,22 @@
       "previousShort": "←",
       "nextShort": "→"
     }
+  },
+  "interactiveWord": {
+    "hearIt": "सुनें",
+    "explain": "समझाएं",
+    "translate": "अनुवाद करें",
+    "synonym": "समानार्थी",
+    "example": "उदाहरण",
+    "etymology": "मूल",
+    "difficulty": {
+      "beginner": "शुरुआती",
+      "intermediate": "मध्यम",
+      "advanced": "उन्नत"
+    },
+    "loading": "लोड हो रहा है...",
+    "playbackError": "ऑडियो नहीं चला सके",
+    "translationError": "अनुवाद उपलब्ध नहीं"
   }
       },
       "avatar": {

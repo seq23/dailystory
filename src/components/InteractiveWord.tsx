@@ -1,17 +1,30 @@
 import { useState, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { getPhoneticSpelling } from "@/utils/phoneticDictionary";
-import { Volume2, HelpCircle } from "lucide-react";
+import { Volume2, HelpCircle, Languages, BookOpen, Lightbulb } from "lucide-react";
 import { createOpenAITTSService } from "@/services/textToSpeechService";
+import type { UserInfo } from "./UserInfoForm";
 
 interface InteractiveWordProps {
   word: string;
   className?: string;
   difficulty?: "easy" | "medium" | "hard" | "expert";
+  userInfo?: UserInfo; // New prop to adapt behavior
 }
 
-export const InteractiveWord = ({ word, className = "", difficulty = "easy" }: InteractiveWordProps) => {
+export const InteractiveWord = ({ 
+  word, 
+  className = "", 
+  difficulty = "easy",
+  userInfo 
+}: InteractiveWordProps) => {
+  const { t, i18n } = useTranslation();
   const [showTooltip, setShowTooltip] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [wordExplanation, setWordExplanation] = useState<string>("");
+  const [wordTranslation, setWordTranslation] = useState<string>("");
+  const [isLoadingExplanation, setIsLoadingExplanation] = useState(false);
+  const [isLoadingTranslation, setIsLoadingTranslation] = useState(false);
   const [ttsService, setTtsService] = useState<any>(null);
   const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const phoneticSpelling = getPhoneticSpelling(word);
@@ -21,6 +34,21 @@ export const InteractiveWord = ({ word, className = "", difficulty = "easy" }: I
     const service = createOpenAITTSService();
     setTtsService(service);
   }, []);
+
+  // Determine if user is a native English speaker
+  const isNativeEnglishSpeaker = userInfo?.nativeLanguage === "en";
+  const isESLLearner = userInfo?.nativeLanguage !== "en";
+  const userNativeLanguage = userInfo?.nativeLanguage || "en";
+
+  // Determine word difficulty level for visual indicators
+  const getWordComplexity = (word: string) => {
+    const cleanWord = word.toLowerCase().replace(/[.,!?;:'"()]/g, '');
+    if (cleanWord.length <= 4) return "beginner";
+    if (cleanWord.length <= 7) return "intermediate";
+    return "advanced";
+  };
+
+  const wordComplexity = getWordComplexity(word);
 
   const handleMouseEnter = () => {
     if (hideTimeoutRef.current) {
@@ -43,12 +71,14 @@ export const InteractiveWord = ({ word, className = "", difficulty = "easy" }: I
     setIsPlaying(true);
     try {
       if (ttsService) {
-        await ttsService.speakText(word);
+        // For ESL learners, use slower pronunciation
+        const speed = isESLLearner ? 0.7 : 0.9;
+        await ttsService.speakText(word, { speed });
       } else {
         // Fallback to browser speech synthesis
         if ('speechSynthesis' in window) {
           const utterance = new SpeechSynthesisUtterance(word.replace(/[.,!?;:'"()]/g, ''));
-          utterance.rate = 0.7;
+          utterance.rate = isESLLearner ? 0.6 : 0.7;
           utterance.pitch = 1.2;
           speechSynthesis.speak(utterance);
         }
@@ -62,42 +92,118 @@ export const InteractiveWord = ({ word, className = "", difficulty = "easy" }: I
 
   const handleExplain = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (isPlaying) return;
+    if (isPlaying || isLoadingExplanation) return;
     
-    setIsPlaying(true);
+    setIsLoadingExplanation(true);
     try {
       const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
       
       if (ttsService) {
-        console.log('Explaining word with OpenAI TTS:', cleanWord);
-        await ttsService.explainWord(cleanWord);
-      } else {
-        console.log('No TTS service available, using fallback');
-        // Fallback explanation
-        const explanationText = `The word is: ${cleanWord}`;
-        
-        if ('speechSynthesis' in window) {
-          const utterance = new SpeechSynthesisUtterance(explanationText);
-          utterance.rate = 0.7;
-          utterance.pitch = 1.1;
-          speechSynthesis.speak(utterance);
+        if (isNativeEnglishSpeaker) {
+          // For native speakers: age-appropriate English explanation
+          const explanation = await getEnglishWordExplanation(cleanWord, userInfo);
+          setWordExplanation(explanation);
+          await ttsService.speakText(explanation);
+        } else {
+          // For ESL learners: explanation in native language
+          const explanation = await getTranslatedWordExplanation(cleanWord, userNativeLanguage);
+          setWordExplanation(explanation);
+          await ttsService.speakText(explanation);
         }
       }
     } catch (error) {
       console.error('Error explaining word:', error);
     } finally {
-      setIsPlaying(false);
+      setIsLoadingExplanation(false);
     }
   };
 
-  // Determine if word should be interactive based on difficulty level
+  const handleTranslate = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isLoadingTranslation || isNativeEnglishSpeaker) return;
+    
+    setIsLoadingTranslation(true);
+    try {
+      const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
+      const translation = await getWordTranslation(cleanWord, userNativeLanguage);
+      setWordTranslation(translation);
+    } catch (error) {
+      console.error('Error translating word:', error);
+      setWordTranslation(t("interactiveWord.translationError"));
+    } finally {
+      setIsLoadingTranslation(false);
+    }
+  };
+
+  // Enhanced word explanation for native English speakers
+  const getEnglishWordExplanation = async (word: string, userInfo?: UserInfo): Promise<string> => {
+    if (!ttsService) throw new Error('TTS service not available');
+    
+    const prompt = `Define "${word}" for a ${userInfo?.age || 8}-year-old native English speaker. Include:
+    1. Simple definition
+    2. Example in a sentence
+    ${userInfo?.age && userInfo.age > 10 ? '3. One synonym' : ''}
+    Keep it under 30 words total.`;
+
+    return await ttsService.getAIResponse(prompt);
+  };
+
+  // Translated explanation for ESL learners
+  const getTranslatedWordExplanation = async (word: string, targetLanguage: string): Promise<string> => {
+    if (!ttsService) throw new Error('TTS service not available');
+    
+    const languageNames = {
+      'ar': 'Arabic',
+      'es': 'Spanish', 
+      'zh': 'Chinese',
+      'hi': 'Hindi',
+      'pt': 'Portuguese',
+      'fr': 'French'
+    };
+
+    const langName = languageNames[targetLanguage as keyof typeof languageNames] || targetLanguage;
+    
+    const prompt = `Explain the English word "${word}" in ${langName} for a language learner. Include:
+    1. Translation in ${langName}
+    2. Simple explanation in ${langName}
+    3. Example sentence using the word in English with ${langName} context
+    Keep it concise and educational.`;
+
+    return await ttsService.getAIResponse(prompt);
+  };
+
+  // Word translation for ESL learners
+  const getWordTranslation = async (word: string, targetLanguage: string): Promise<string> => {
+    if (!ttsService) throw new Error('TTS service not available');
+    
+    const languageNames = {
+      'ar': 'Arabic',
+      'es': 'Spanish',
+      'zh': 'Chinese', 
+      'hi': 'Hindi',
+      'pt': 'Portuguese',
+      'fr': 'French'
+    };
+
+    const langName = languageNames[targetLanguage as keyof typeof languageNames] || targetLanguage;
+    
+    const prompt = `Translate the English word "${word}" to ${langName}. Give only the most common translation, no explanation.`;
+
+    return await ttsService.getAIResponse(prompt);
+  };
+
+  // Determine if word should be interactive based on difficulty level and user type
   const shouldBeInteractive = () => {
     const cleanWord = word.toLowerCase().replace(/[.,!?;:'"()]/g, '');
     
-    // Easy level: all words are interactive
-    if (difficulty === "easy") return true;
+    // For ESL learners, more words are interactive to help with learning
+    if (isESLLearner) {
+      if (difficulty === "easy") return cleanWord.length > 2;
+      return cleanWord.length > 3;
+    }
     
-    // Other levels: only words longer than 4 letters
+    // For native speakers, focus on more complex words
+    if (difficulty === "easy") return cleanWord.length > 4;
     return cleanWord.length > 4;
   };
 
@@ -105,15 +211,33 @@ export const InteractiveWord = ({ word, className = "", difficulty = "easy" }: I
     return <span className={className}>{word}</span>;
   }
 
+  // Visual indicators for word complexity
+  const getWordIndicatorColor = () => {
+    switch (wordComplexity) {
+      case "beginner": return "decoration-green-400";
+      case "intermediate": return "decoration-yellow-400";  
+      case "advanced": return "decoration-red-400";
+      default: return "decoration-primary/30";
+    }
+  };
+
   return (
     <span
       className={`relative inline-block cursor-pointer ${className} ${isPlaying ? 'opacity-70' : ''}`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <span className="underline decoration-primary/30 decoration-dotted hover:decoration-primary/60 transition-colors">
+      <span className={`underline decoration-dotted hover:decoration-solid transition-all ${getWordIndicatorColor()}`}>
         {word}
       </span>
+      
+      {/* Complexity indicator for advanced users */}
+      {userInfo?.age && userInfo.age > 10 && (
+        <span className={`absolute -top-1 -right-1 w-2 h-2 rounded-full ${
+          wordComplexity === "beginner" ? "bg-green-400" :
+          wordComplexity === "intermediate" ? "bg-yellow-400" : "bg-red-400"
+        }`} />
+      )}
       
       {showTooltip && (
         <div 
@@ -121,29 +245,73 @@ export const InteractiveWord = ({ word, className = "", difficulty = "easy" }: I
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
-          <div className="bg-popover border text-popover-foreground px-3 py-2 rounded-lg shadow-lg text-sm font-medium whitespace-nowrap">
-            <div className="flex items-center gap-2 mb-2">
-              {phoneticSpelling && (
+          <div className="bg-popover border text-popover-foreground px-3 py-2 rounded-lg shadow-lg text-sm font-medium max-w-xs">
+            {/* Phonetic spelling */}
+            {phoneticSpelling && (
+              <div className="flex items-center gap-2 mb-2">
                 <span className="text-xs text-muted-foreground">"{phoneticSpelling}"</span>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
+                {userInfo?.age && userInfo.age > 8 && (
+                  <span className="text-xs bg-secondary/50 px-1 rounded">
+                    {t(`interactiveWord.difficulty.${wordComplexity}`)}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Word explanation or translation */}
+            {(wordExplanation || wordTranslation) && (
+              <div className="mb-2 text-xs">
+                {wordTranslation && (
+                  <div className="font-semibold text-primary mb-1">{wordTranslation}</div>
+                )}
+                {wordExplanation && (
+                  <div className="text-muted-foreground">{wordExplanation}</div>
+                )}
+              </div>
+            )}
+            
+            {/* Action buttons */}
+            <div className="flex items-center gap-1 flex-wrap">
               <button
                 onClick={handlePronounce}
                 className="flex items-center gap-1 text-xs bg-secondary hover:bg-secondary/80 px-2 py-1 rounded transition-colors"
                 disabled={isPlaying}
               >
                 <Volume2 className="w-3 h-3" />
-                Hear it
+                {t("interactiveWord.hearIt")}
               </button>
+              
               <button
                 onClick={handleExplain}
                 className="flex items-center gap-1 text-xs bg-secondary hover:bg-secondary/80 px-2 py-1 rounded transition-colors"
-                disabled={isPlaying}
+                disabled={isPlaying || isLoadingExplanation}
               >
                 <HelpCircle className="w-3 h-3" />
-                Explain
+                {isLoadingExplanation ? t("interactiveWord.loading") : t("interactiveWord.explain")}
               </button>
+
+              {/* Translation button for ESL learners only */}
+              {isESLLearner && (
+                <button
+                  onClick={handleTranslate}
+                  className="flex items-center gap-1 text-xs bg-secondary hover:bg-secondary/80 px-2 py-1 rounded transition-colors"
+                  disabled={isLoadingTranslation}
+                >
+                  <Languages className="w-3 h-3" />
+                  {isLoadingTranslation ? t("interactiveWord.loading") : t("interactiveWord.translate")}
+                </button>
+              )}
+
+              {/* Etymology button for advanced native speakers */}
+              {isNativeEnglishSpeaker && userInfo?.age && userInfo.age > 12 && (
+                <button
+                  onClick={() => {/* TODO: Implement etymology lookup */}}
+                  className="flex items-center gap-1 text-xs bg-secondary hover:bg-secondary/80 px-2 py-1 rounded transition-colors"
+                >
+                  <Lightbulb className="w-3 h-3" />
+                  {t("interactiveWord.etymology")}
+                </button>
+              )}
             </div>
           </div>
           {/* Arrow pointing down */}

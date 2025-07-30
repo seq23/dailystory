@@ -19,7 +19,7 @@ export class OpenAITTSService {
     this.model = config.model || "tts-1"; // tts-1 for speed, tts-1-hd for quality
   }
 
-  async speakText(text: string): Promise<void> {
+  async speakText(text: string, options?: { speed?: number }): Promise<void> {
     // Clean the text for speech
     const cleanText = text.replace(/[.,!?;:'"()]/g, '').trim();
     
@@ -45,7 +45,7 @@ export class OpenAITTSService {
           input: cleanText,
           voice: this.voice,
           response_format: 'mp3',
-          speed: 0.9 // Slightly slower for children
+          speed: options?.speed || 0.9 // Use provided speed or default
         })
       });
 
@@ -157,6 +157,44 @@ export class OpenAITTSService {
       return data.choices[0]?.message?.content?.trim() || `A word that means something special.`;
     } catch (error) {
       console.error('Error generating definition:', error);
+      throw error;
+    }
+  }
+
+  // Method to get AI-powered explanations and translations
+  async getAIResponse(prompt: string): Promise<string> {
+    try {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4.1-2025-04-14',
+          messages: [
+            {
+              role: 'system',
+              content: 'You are a helpful assistant for children learning English. Provide clear, accurate, and age-appropriate responses.'
+            },
+            {
+              role: 'user',
+              content: prompt
+            }
+          ],
+          max_tokens: 100,
+          temperature: 0.3
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`OpenAI API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.choices[0]?.message?.content?.trim() || 'Sorry, I could not provide an explanation.';
+    } catch (error) {
+      console.error('Error getting AI response:', error);
       throw error;
     }
   }

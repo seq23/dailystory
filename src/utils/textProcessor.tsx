@@ -1,7 +1,12 @@
 import { InteractiveWord } from "@/components/InteractiveWord";
 
 // Function to process text and wrap words in InteractiveWord components
-export const processTextForPhonetics = (text: string, className: string = "", difficulty: "easy" | "medium" | "hard" | "expert" = "easy"): React.ReactNode[] => {
+export const processTextForPhonetics = (
+  text: string, 
+  className: string = "", 
+  difficulty: "easy" | "medium" | "hard" | "expert" = "easy",
+  userInfo?: any // Add userInfo parameter
+): React.ReactNode[] => {
   // Split text by spaces but preserve punctuation attached to words
   const words = text.split(/(\s+)/);
   
@@ -22,6 +27,7 @@ export const processTextForPhonetics = (text: string, className: string = "", di
         word={word} 
         className={className}
         difficulty={difficulty}
+        userInfo={userInfo}
       />
     );
   }).filter(Boolean);

@@ -121,6 +121,22 @@
       "previousShort": "←",
       "nextShort": "→"
     }
+  },
+  "interactiveWord": {
+    "hearIt": "听一听",
+    "explain": "解释",
+    "translate": "翻译",
+    "synonym": "同义词",
+    "example": "例子",
+    "etymology": "词源",
+    "difficulty": {
+      "beginner": "初学者",
+      "intermediate": "中级",
+      "advanced": "高级"
+    },
+    "loading": "加载中...",
+    "playbackError": "无法播放音频",
+    "translationError": "翻译不可用"
   }
       },
       "avatar": {

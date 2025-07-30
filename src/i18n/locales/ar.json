@@ -121,6 +121,22 @@
       "previousShort": "←",
       "nextShort": "→"
     }
+  },
+  "interactiveWord": {
+    "hearIt": "استمع إليها",
+    "explain": "اشرح",
+    "translate": "ترجم",
+    "synonym": "مرادف",
+    "example": "مثال",
+    "etymology": "الأصل",
+    "difficulty": {
+      "beginner": "مبتدئ",
+      "intermediate": "متوسط",
+      "advanced": "متقدم"
+    },
+    "loading": "جاري التحميل...",
+    "playbackError": "لا يمكن تشغيل الصوت",
+    "translationError": "الترجمة غير متوفرة"
   }
       },
       "avatar": {

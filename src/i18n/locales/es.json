@@ -121,6 +121,22 @@
       "previousShort": "←",
       "nextShort": "→"
     }
+  },
+  "interactiveWord": {
+    "hearIt": "Escúchala",
+    "explain": "Explicar",
+    "translate": "Traducir",
+    "synonym": "Sinónimo",
+    "example": "Ejemplo", 
+    "etymology": "Origen",
+    "difficulty": {
+      "beginner": "Principiante",
+      "intermediate": "Intermedio",
+      "advanced": "Avanzado"
+    },
+    "loading": "Cargando...",
+    "playbackError": "No se pudo reproducir el audio",
+    "translationError": "Traducción no disponible"
   }
       },
       "avatar": {
