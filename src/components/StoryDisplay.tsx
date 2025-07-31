@@ -788,10 +788,12 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         
         // Detect if user's favorite animal is mentioned in the story or if "together" suggests companions
         const hasUserAnimal = lowerText.includes(favoriteAnimal.toLowerCase()) || lowerText.includes('together') || lowerText.includes('they walked') || lowerText.includes('they went');
-        const animalInScene = hasUserAnimal ? `${favoriteColor} ${favoriteAnimal}` : 'a friendly companion';
+        const animalInScene = hasUserAnimal ? `one single ${favoriteColor} ${favoriteAnimal}` : 'a friendly companion';
         
         // Scene detection with user preferences integrated and better action detection
-        if (lowerText.includes('walked') || lowerText.includes('walking') || lowerText.includes('went')) {
+        if (lowerText.includes('said') && lowerText.includes(favoriteAnimal.toLowerCase())) {
+          return `a child having a conversation with their ${animalInScene}, showing the ${favoriteAnimal} speaking or looking warmly at the child`;
+        } else if (lowerText.includes('walked') || lowerText.includes('walking') || lowerText.includes('went')) {
           return `a child walking ${hasUserAnimal ? `with their ${animalInScene}` : ''} through a magical landscape${lowerText.includes('secret') ? ' towards a mysterious secret place' : ''}`;
         } else if (lowerText.includes('woke') || lowerText.includes('morning')) {
           return `a child waking up in a cozy bedroom with morning sunlight streaming through the window${hasUserAnimal ? ` with their ${animalInScene} nearby` : ''}`;
@@ -814,7 +816,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       const characterDescription = getCharacterDescription();
       
       // Build prompt in the exact format requested by user with strong anti-text instructions
-      const prompt = `NO TEXT NO WORDS NO LETTERS NO NAMES NO WRITING NO CAPTIONS NO TITLES ANYWHERE IN IMAGE. A beautiful childrens book illustration depicting the scene ${sceneDescription} featuring ${characterDescription}, with a happy and cheerful atmosphere, warm earth tones and natural colors, contemporary childrens book art style, appealing to all children regardless of gender, diverse and inclusive, safe and wholesome content, high quality professional artwork. CRITICAL: absolutely no text, words, letters, names, titles, captions, or any written content visible anywhere in the image. Pure visual illustration only, completely text-free.`;
+      const prompt = `NO TEXT NO WORDS NO LETTERS NO NAMES NO WRITING NO CAPTIONS NO TITLES ANYWHERE IN IMAGE. A beautiful childrens book illustration depicting the scene ${sceneDescription} featuring ${characterDescription}, with a happy and cheerful atmosphere, warm earth tones and natural colors, contemporary childrens book art style, appealing to all children regardless of gender, diverse and inclusive, safe and wholesome content, high quality professional artwork. CRITICAL: Show exactly one child and exactly one animal companion only, no duplicates, no extra characters. CRITICAL: absolutely no text, words, letters, names, titles, captions, or any written content visible anywhere in the image. Pure visual illustration only, completely text-free.`;
       
       console.log('Enhanced consistency prompt:', prompt);
       console.log('Main character for consistency:', storyCharacters.mainCharacter);
