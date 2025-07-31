@@ -448,7 +448,8 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       setCustomIllustrations(new Map());
       
       // Determine best page to start on (try to maintain position, but don't exceed new story length)
-      const targetPage = Math.min(previousPage, Math.max(0, generatedStory.length - 1));
+      const maxPageIndex = Math.max(0, generatedStory.length - 1);
+      const targetPage = Math.min(previousPage, maxPageIndex);
       setCurrentParagraph(targetPage);
       
       // Immediately set default illustration for current page to avoid blank state
