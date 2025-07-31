@@ -3,6 +3,12 @@ import CulturalAdaptationService from "./culturalAdaptationService";
 
 type DifficultyLevel = "easy" | "medium" | "hard" | "expert";
 
+interface StoryArcPoint {
+  phase: 'introduction' | 'rising_action' | 'climax' | 'falling_action' | 'resolution';
+  focus: string;
+  tension: number;
+}
+
 export class EnhancedStoryGenerator {
   
   static generateIntelligentStory(
@@ -11,8 +17,6 @@ export class EnhancedStoryGenerator {
     pageCount: number = 10
   ): string[] {
     
-    const culturalContext = CulturalAdaptationService.getCulturalContext(userInfo.nativeLanguage || 'en');
-    const culturalElements = CulturalAdaptationService.getCulturalElements(userInfo);
     const characterName = userInfo.name?.trim() || 'child';
     
     // Create an intelligent story planner that prevents repetition
@@ -31,7 +35,12 @@ export class EnhancedStoryGenerator {
       
       // Intelligent content generation that builds narrative
       generatePageContent(pageIndex: number, section: string, previousPages: string[]): string {
-        const arcPoint = storyPlanner.storyArc[pageIndex];
+        // Ensure we have a valid arc point for this page index
+        const arcPoint = storyPlanner.storyArc[pageIndex] || {
+          phase: 'resolution' as const,
+          focus: 'default',
+          tension: 1
+        };
         
         // Analyze previous content to avoid repetition
         const previousContent = previousPages.join(' ').toLowerCase();
@@ -65,7 +74,7 @@ export class EnhancedStoryGenerator {
   private static createUniquePageContent(
     pageIndex: number, 
     section: string, 
-    arcPoint: any, 
+    arcPoint: StoryArcPoint, 
     previousContent: string,
     characterName: string,
     userInfo: UserInfo,
@@ -74,24 +83,23 @@ export class EnhancedStoryGenerator {
   ): string {
     
     // Ensure character name consistency
-    const mainChar = characterName;
-    const secondaryChar = secondaryCharacter;
+    
     
     // Generate content based on story arc and user preferences
     const contentGenerators = {
-      introduction: () => EnhancedStoryGenerator.generateIntroductionContent(pageIndex, mainChar, userInfo, difficulty),
-      rising_action: () => EnhancedStoryGenerator.generateRisingActionContent(pageIndex, mainChar, secondaryChar, userInfo, difficulty, previousContent),
-      climax: () => EnhancedStoryGenerator.generateClimaxContent(pageIndex, mainChar, secondaryChar, userInfo, difficulty),
-      falling_action: () => EnhancedStoryGenerator.generateFallingActionContent(pageIndex, mainChar, secondaryChar, userInfo, difficulty),
-      resolution: () => EnhancedStoryGenerator.generateResolutionContent(pageIndex, mainChar, secondaryChar, userInfo, difficulty)
+      introduction: () => EnhancedStoryGenerator.generateIntroductionContent(pageIndex, characterName, userInfo, difficulty),
+      rising_action: () => EnhancedStoryGenerator.generateRisingActionContent(pageIndex, characterName, secondaryCharacter, userInfo, difficulty, previousContent),
+      climax: () => EnhancedStoryGenerator.generateClimaxContent(pageIndex, characterName, secondaryCharacter, userInfo, difficulty),
+      falling_action: () => EnhancedStoryGenerator.generateFallingActionContent(pageIndex, characterName, secondaryCharacter, userInfo, difficulty),
+      resolution: () => EnhancedStoryGenerator.generateResolutionContent(pageIndex, characterName, secondaryCharacter, userInfo, difficulty)
     };
     
-    const generator = contentGenerators[arcPoint.phase as keyof typeof contentGenerators];
-    return generator ? generator() : EnhancedStoryGenerator.generateDefaultContent(pageIndex, mainChar, difficulty);
+    const generator = contentGenerators[arcPoint.phase];
+    return generator ? generator() : EnhancedStoryGenerator.generateDefaultContent(pageIndex, characterName, difficulty);
   }
    
-  private static createStoryArc(pageCount: number, difficulty: DifficultyLevel) {
-    const arc = [];
+  private static createStoryArc(pageCount: number, difficulty: DifficultyLevel): StoryArcPoint[] {
+    const arc: StoryArcPoint[] = [];
     
     // Define story structure based on page count
     const structure = {
@@ -210,7 +218,7 @@ export class EnhancedStoryGenerator {
     };
     
     const difficultyTemplates = templates[difficulty] || templates.medium;
-    return difficultyTemplates[pageIndex % difficultyTemplates.length];
+    return difficultyTemplates[Math.min(pageIndex, difficultyTemplates.length - 1)];
   }
   
   private static generateRisingActionContent(
@@ -243,7 +251,7 @@ export class EnhancedStoryGenerator {
     };
     
     const templates = adventureTemplates[difficulty] || adventureTemplates.medium;
-    return templates[pageIndex % templates.length];
+    return templates[Math.min(pageIndex, templates.length - 1)];
   }
   
   private static generateClimaxContent(
