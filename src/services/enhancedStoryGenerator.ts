@@ -21,59 +21,32 @@ export class EnhancedStoryGenerator {
       usedActions: new Set<string>(),
       usedSettings: new Set<string>(),
       usedObjects: new Set<string>(),
-      storyArc: this.createStoryArc(pageCount, difficulty),
+      storyArc: EnhancedStoryGenerator.createStoryArc(pageCount, difficulty),
       characterConsistency: {
         mainCharacter: characterName,
-        secondaryCharacter: userInfo.favoriteAnimal?.toLowerCase() || this.selectConsistentCharacter(),
-        characterTraits: this.defineCharacterTraits(userInfo),
+        secondaryCharacter: userInfo.favoriteAnimal?.toLowerCase() || EnhancedStoryGenerator.selectConsistentCharacter(),
+        characterTraits: EnhancedStoryGenerator.defineCharacterTraits(userInfo),
         relationshipDevelopment: []
       },
       
       // Intelligent content generation that builds narrative
       generatePageContent(pageIndex: number, section: string, previousPages: string[]): string {
-        const arcPoint = this.storyArc[pageIndex];
+        const arcPoint = storyPlanner.storyArc[pageIndex];
         
         // Analyze previous content to avoid repetition
         const previousContent = previousPages.join(' ').toLowerCase();
         
         // Generate content based on story arc and avoid repetition
-        return this.createUniquePageContent(
+        return EnhancedStoryGenerator.createUniquePageContent(
           pageIndex, 
           section, 
           arcPoint, 
           previousContent,
           characterName,
           userInfo,
-          difficulty
+          difficulty,
+          storyPlanner.characterConsistency.secondaryCharacter
         );
-      },
-      
-      // Create unique page content that builds on previous pages
-      createUniquePageContent(
-        pageIndex: number, 
-        section: string, 
-        arcPoint: any, 
-        previousContent: string,
-        characterName: string,
-        userInfo: UserInfo,
-        difficulty: DifficultyLevel
-      ): string {
-        
-        // Ensure character name consistency
-        const mainChar = characterName;
-        const secondaryChar = this.characterConsistency.secondaryCharacter;
-        
-        // Generate content based on story arc and user preferences
-        const contentGenerators = {
-          introduction: () => this.generateIntroductionContent(pageIndex, mainChar, userInfo, difficulty),
-          rising_action: () => this.generateRisingActionContent(pageIndex, mainChar, secondaryChar, userInfo, difficulty, previousContent),
-          climax: () => this.generateClimaxContent(pageIndex, mainChar, secondaryChar, userInfo, difficulty),
-          falling_action: () => this.generateFallingActionContent(pageIndex, mainChar, secondaryChar, userInfo, difficulty),
-          resolution: () => this.generateResolutionContent(pageIndex, mainChar, secondaryChar, userInfo, difficulty)
-        };
-        
-        const generator = contentGenerators[arcPoint.phase as keyof typeof contentGenerators];
-        return generator ? generator() : this.generateDefaultContent(pageIndex, mainChar, difficulty);
       }
     };
     
@@ -81,7 +54,7 @@ export class EnhancedStoryGenerator {
     const storyPages: string[] = [];
     
     for (let i = 0; i < pageCount; i++) {
-      const section = this.determineSection(i, pageCount);
+      const section = EnhancedStoryGenerator.determineSection(i, pageCount);
       const pageContent = storyPlanner.generatePageContent(i, section, storyPages);
       storyPages.push(pageContent);
     }
@@ -89,6 +62,34 @@ export class EnhancedStoryGenerator {
     return storyPages;
   }
   
+  private static createUniquePageContent(
+    pageIndex: number, 
+    section: string, 
+    arcPoint: any, 
+    previousContent: string,
+    characterName: string,
+    userInfo: UserInfo,
+    difficulty: DifficultyLevel,
+    secondaryCharacter: string
+  ): string {
+    
+    // Ensure character name consistency
+    const mainChar = characterName;
+    const secondaryChar = secondaryCharacter;
+    
+    // Generate content based on story arc and user preferences
+    const contentGenerators = {
+      introduction: () => EnhancedStoryGenerator.generateIntroductionContent(pageIndex, mainChar, userInfo, difficulty),
+      rising_action: () => EnhancedStoryGenerator.generateRisingActionContent(pageIndex, mainChar, secondaryChar, userInfo, difficulty, previousContent),
+      climax: () => EnhancedStoryGenerator.generateClimaxContent(pageIndex, mainChar, secondaryChar, userInfo, difficulty),
+      falling_action: () => EnhancedStoryGenerator.generateFallingActionContent(pageIndex, mainChar, secondaryChar, userInfo, difficulty),
+      resolution: () => EnhancedStoryGenerator.generateResolutionContent(pageIndex, mainChar, secondaryChar, userInfo, difficulty)
+    };
+    
+    const generator = contentGenerators[arcPoint.phase as keyof typeof contentGenerators];
+    return generator ? generator() : EnhancedStoryGenerator.generateDefaultContent(pageIndex, mainChar, difficulty);
+  }
+   
   private static createStoryArc(pageCount: number, difficulty: DifficultyLevel) {
     const arc = [];
     
@@ -198,7 +199,7 @@ export class EnhancedStoryGenerator {
       ],
       hard: [
         `${characterName} stood at the edge of the forest, feeling a mixture of excitement and curiosity about what lay beyond the familiar path.`,
-        `There was something different about this morning that made ${characterName} feel ready for adventure, though they couldn't quite explain what it was.`,
+        `There was something different about this morning that made ${characterName} feel ready for adventure, though they could not quite explain what it was.`,
         `The world seemed full of possibilities as ${characterName} set out to explore, carrying nothing but curiosity and an open heart.`
       ],
       expert: [
@@ -226,7 +227,7 @@ export class EnhancedStoryGenerator {
     if (!hasMetCharacter) {
       const meetingTemplates = {
         easy: `"Hello!" says a friendly ${secondaryCharacter}. ${characterName} smiles.`,
-        medium: `A gentle ${secondaryCharacter} appeared from behind a tree, looking kind and wise. "${characterName}," it said softly, "I've been hoping to meet you."`,
+        medium: `A gentle ${secondaryCharacter} appeared from behind a tree, looking kind and wise. "${characterName}," it said softly, "I have been hoping to meet you."`,
         hard: `The ${secondaryCharacter} that emerged from the shadows moved with quiet grace, its eyes holding the kind of wisdom that comes from many years of watching and learning.`,
         expert: `When the ${secondaryCharacter} spoke, its voice carried the weight of ancient stories and the gentleness of rain on leaves. "I have been waiting," it said, "not for someone special, but for someone ready to see."`
       };
@@ -235,7 +236,7 @@ export class EnhancedStoryGenerator {
     }
     
     const adventureTemplates = {
-      easy: [`${characterName} and the ${secondaryCharacter} play together. They are happy.`, `"Let's find something special!" says ${characterName}.`],
+      easy: [`${characterName} and the ${secondaryCharacter} play together. They are happy.`, `"Let us find something special!" says ${characterName}.`],
       medium: [`Together, ${characterName} and the ${secondaryCharacter} began to explore the magical world around them.`, `The ${secondaryCharacter} showed ${characterName} hidden paths that sparkled with mystery.`],
       hard: [`The ${secondaryCharacter} revealed that it needed ${characterName}'s help with something important that had been lost for a very long time.`, `${characterName} felt honored to be trusted with such an important quest by their new friend.`],
       expert: [`"The thing about trust," the ${secondaryCharacter} explained carefully, "is that it grows not from promises, but from shared understanding of what matters most."`, `${characterName} began to realize that this journey was about more than finding something lost—it was about discovering something within themselves.`]
@@ -256,8 +257,8 @@ export class EnhancedStoryGenerator {
     const climaxTemplates = {
       easy: `${characterName} finds the special thing! "We did it!" they cheer.`,
       medium: `With courage and determination, ${characterName} helped solve the mystery that had puzzled the ${secondaryCharacter} for so long.`,
-      hard: `The moment ${characterName} understood what needed to be done, everything became clear. It wasn't about finding something outside—it was about discovering the strength that had been inside all along.`,
-      expert: `In that pivotal moment, ${characterName} realized that the greatest discoveries happen not when we find what we're looking for, but when we understand that we already carry everything we need within ourselves.`
+      hard: `The moment ${characterName} understood what needed to be done, everything became clear. It was not about finding something outside—it was about discovering the strength that had been inside all along.`,
+      expert: `In that pivotal moment, ${characterName} realized that the greatest discoveries happen not when we find what we are looking for, but when we understand that we already carry everything we need within ourselves.`
     };
     
     return climaxTemplates[difficulty] || climaxTemplates.medium;
