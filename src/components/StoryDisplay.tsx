@@ -22,6 +22,8 @@ interface StoryDisplayProps {
   onNewStory: () => void;
   onHome: () => void;
   onSessionEnded: (stats: SessionStats) => void;
+  isPremium?: boolean;
+  onUpgrade?: () => void;
 }
 
 const StoryDisplay: React.FC<StoryDisplayProps> = ({
@@ -29,6 +31,8 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
   onNewStory,
   onHome,
   onSessionEnded,
+  isPremium = false,
+  onUpgrade,
 }) => {
   const { toast } = useToast();
   
@@ -160,10 +164,47 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
     onSessionEnded(sessionStats);
   };
 
-  const handleNewStory = () => {
-    setCurrentPage(0);
-    setTimeRemaining(APP_CONFIG.FREE_SESSION_DURATION);
-    onNewStory();
+  const handleNewStory = async () => {
+    if (isPremium) {
+      // Premium users: Generate new story directly
+      setCurrentPage(0);
+      setTimeRemaining(APP_CONFIG.FREE_SESSION_DURATION);
+      setIsLoading(true);
+      
+      try {
+        const storyConfig = {
+          age: userInfo.age,
+          gradeLevel: userInfo.gradeLevel || userInfo.grade,
+          readingLevel: currentDifficulty,
+          interests: userInfo.interests || [userInfo.hobbies || 'adventure'],
+          theme: 'adventure',
+          userName: userInfo.name
+        };
+
+        const generatedStory = await adaptiveStoryGenerator.generateStory(storyConfig);
+        setStory(generatedStory.pages);
+        setStoryImages(generatedStory.images || []);
+        setWordsRead(generatedStory.wordCount);
+        
+        toast({
+          title: "New Story Ready! 📚",
+          description: `A fresh ${generatedStory.readingLevel} level story has been created!`,
+          duration: 3000,
+        });
+      } catch (error) {
+        console.error('Failed to generate new story:', error);
+        toast({
+          title: "Error",
+          description: "Failed to generate new story. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      // Free users: Go back to information form
+      onNewStory();
+    }
   };
   
   // Function to change difficulty easier/harder

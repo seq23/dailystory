@@ -21,10 +21,26 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
   const [userProfile, setUserProfile] = useState<any>(null);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isPremium, setIsPremium] = useState(false);
 
   useEffect(() => {
     loadUserProfile();
+    checkSubscription();
   }, [user.id]);
+
+  const checkSubscription = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('check-subscription', {
+        body: { user_id: user.id }
+      });
+
+      if (!error && data?.subscribed) {
+        setIsPremium(true);
+      }
+    } catch (error) {
+      console.error('Failed to check subscription:', error);
+    }
+  };
 
   const loadUserProfile = async () => {
     try {
@@ -177,8 +193,10 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
             <StoryDisplay
               userInfo={userInfo}
               onHome={() => setCurrentView("progress")}
-              onNewStory={() => setCurrentView("story")}
+              onNewStory={() => setCurrentView("profile")}
               onSessionEnded={() => setCurrentView("progress")}
+              isPremium={isPremium}
+              onUpgrade={() => setCurrentView("progress")}
             />
           </TabsContent>
 
