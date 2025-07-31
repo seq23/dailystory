@@ -14,7 +14,7 @@ import { ProgressTrackingService, ReadingProgress } from "@/services/progressTra
 import { createOpenAITTSService } from "@/services/textToSpeechService";
 import { useToast } from "@/hooks/use-toast";
 import { StoryGeneratorService } from "@/services/storyGenerator";
-import { ImprovedImageGenerator } from "@/services/improvedImageGenerator";
+import { CulturalImageGenerator } from "@/services/culturalImageGenerator";
 import illustration1 from "@/assets/story-illustration-1.jpg";
 import illustration2 from "@/assets/story-illustration-2.jpg";
 import illustration3 from "@/assets/story-illustration-3.jpg";
@@ -693,19 +693,21 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       // Minimal delay for responsiveness
       await new Promise(resolve => setTimeout(resolve, 100));
       
-      // Use improved image generator with fallback
+      // Use enhanced cultural image generator
       let prompt;
       try {
-        prompt = ImprovedImageGenerator.generateImagePrompt({
+        prompt = CulturalImageGenerator.generateCulturallyAwarePrompt({
           storyText,
           pageIndex,
           userInfo,
           difficulty: currentDifficulty,
-          totalPages: story.length
+          totalPages: story.length,
+          culturalElements: storyConfig?.culturalElements,
+          authorStyle: storyConfig?.authorStyle
         });
       } catch (error) {
-        console.error('Improved image generator failed, using simple prompt:', error);
-        prompt = `Beautiful children's book illustration of ${userInfo.name || 'a child'} in a magical adventure, ${currentDifficulty} difficulty level, safe for children, no text in image`;
+        console.error('Cultural image generator failed, using safe fallback:', error);
+        prompt = `Beautiful, safe children's book illustration of ${userInfo.name || 'a child'} in a wonderful adventure, ${currentDifficulty} difficulty level, culturally inclusive, safe for children, no text in image, joyful and warm atmosphere`;
       }
       
       console.log('Improved prompt:', prompt);
@@ -913,10 +915,13 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                   `}>
                     {processTextForPhonetics(currentStory, "", currentDifficulty, userInfo)}
                     
-                    {/* Word count indicator for easy level */}
+                    {/* Enhanced reading info for easy level */}
                     {currentDifficulty === 'easy' && (
-                      <div className="text-xs text-muted-foreground mt-4">
-                        {currentStory.split(' ').length} {currentStory.split(' ').length === 1 ? 'word' : 'words'}
+                      <div className="text-xs text-muted-foreground mt-4 space-y-1">
+                        <div>{currentStory.split(' ').length} {currentStory.split(' ').length === 1 ? 'word' : 'words'}</div>
+                        {storyConfig?.authorStyle && (
+                          <div className="text-purple-600">📖 {storyConfig.authorStyle}</div>
+                        )}
                       </div>
                     )}
                   </div>

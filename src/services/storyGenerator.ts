@@ -1,4 +1,5 @@
 // Centralized story generation service that coordinates all story generators
+import { ComprehensiveStoryGenerator } from "./comprehensiveStoryGenerator";
 import { EarlyReaderStoryGenerator } from "./earlyReaderStoryGenerator";
 import { ImprovedStoryGenerator } from "./improvedStoryGenerator";
 import InclusiveStoryGenerator from "./inclusiveStoryGenerator";
@@ -14,35 +15,36 @@ export class StoryGeneratorService {
     pageCount: number = 10
   ): Promise<{ pages: string[]; config: any }> {
     try {
-      console.log(`Generating word-limited story for difficulty: ${difficulty}`);
+      console.log(`Generating comprehensive culturally-aware story for difficulty: ${difficulty}`);
       
-      // Primary: Use early reader generator for optimal word limits
-      const result = EarlyReaderStoryGenerator.generateStory(userInfo, difficulty, pageCount);
+      // Primary: Use comprehensive generator with full feature set
+      const result = ComprehensiveStoryGenerator.generateStory(userInfo, difficulty, pageCount);
       
       if (result.pages && result.pages.length > 0) {
-        console.log(`Successfully generated ${result.pages.length} pages with word limits`);
+        console.log(`Successfully generated ${result.pages.length} pages with comprehensive generator`);
+        console.log(`Author style: ${result.authorStyle}`);
+        console.log(`Cultural elements included: ${JSON.stringify(result.culturalElements)}`);
         return result;
       }
       
-      throw new Error('Early reader generator returned empty story');
+      throw new Error('Comprehensive generator returned empty story');
       
     } catch (error) {
-      console.warn('Early reader generator failed, using fallback:', error);
+      console.warn('Comprehensive generator failed, using early reader fallback:', error);
       
       try {
-        // Fallback: Use improved story generator and split into word-limited pages
-        const fallbackStory = ImprovedStoryGenerator.generateStory(userInfo, difficulty, pageCount);
-        const config = EarlyReaderStoryGenerator.getReadingConfigForDifficulty(difficulty);
+        // Fallback 1: Use early reader generator with word limits
+        const fallbackResult = EarlyReaderStoryGenerator.generateStory(userInfo, difficulty, pageCount);
         
-        if (fallbackStory && fallbackStory.length > 0) {
-          console.log(`Successfully generated ${fallbackStory.length} pages with fallback generator`);
-          return { pages: fallbackStory, config };
+        if (fallbackResult.pages && fallbackResult.pages.length > 0) {
+          console.log(`Successfully generated ${fallbackResult.pages.length} pages with early reader fallback`);
+          return fallbackResult;
         }
         
-        throw new Error('Fallback generator returned empty story');
+        throw new Error('Early reader fallback returned empty story');
         
       } catch (fallbackError) {
-        console.error('Both story generators failed:', fallbackError);
+        console.error('Early reader fallback failed, using final fallback:', fallbackError);
         
         // Last resort: Return a simple default story with config
         const defaultStory = this.getDefaultStory(userInfo, difficulty);
