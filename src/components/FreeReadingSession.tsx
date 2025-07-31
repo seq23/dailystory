@@ -773,8 +773,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
               }
             }}
             onEndSession={() => {
-              setTimeRemaining(0);
-              setSessionEnded(true);
+              // FloatingTimer will handle the celebration and redirect
             }}
             pagesRemaining={story.length - currentPage}
             currentParagraph={currentPage}

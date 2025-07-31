@@ -623,14 +623,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
             }
           }}
           onEndSession={() => {
-            setTimeRemaining(0);
-            onSessionEnded({
-              timeSpent: Math.floor((Date.now() - sessionStartTime.getTime()) / 1000),
-              wordsRead,
-              pagesRead: currentPage + 1,
-              startTime: sessionStartTime.getTime(),
-              accuracy: 100
-            });
+            // FloatingTimer will handle the celebration and redirect
           }}
           pagesRemaining={story.length - currentPage}
           currentParagraph={currentPage}

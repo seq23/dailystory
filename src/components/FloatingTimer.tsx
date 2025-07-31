@@ -65,60 +65,68 @@ export const FloatingTimer = ({
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
+  // Function to trigger celebration animation
+  const triggerCelebration = () => {
+    setShowCelebration(true);
+    
+    // Play celebration sound 3 times
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    
+    // Create a pleasant celebration melody
+    const playNote = (frequency: number, startTime: number, duration: number) => {
+      const osc = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      
+      osc.connect(gain);
+      gain.connect(audioContext.destination);
+      
+      osc.frequency.setValueAtTime(frequency, startTime);
+      gain.gain.setValueAtTime(0, startTime);
+      gain.gain.linearRampToValueAtTime(0.1, startTime + 0.1);
+      gain.gain.linearRampToValueAtTime(0, startTime + duration);
+      
+      osc.start(startTime);
+      osc.stop(startTime + duration);
+    };
+    
+    // Play the melody 3 times with delays
+    const playMelody = (startOffset: number) => {
+      const now = audioContext.currentTime + startOffset;
+      playNote(523.25, now, 0.2); // C5
+      playNote(659.25, now + 0.2, 0.2); // E5
+      playNote(783.99, now + 0.4, 0.2); // G5
+      playNote(1046.50, now + 0.6, 0.4); // C6 - slightly longer for ending
+    };
+    
+    // Play 3 times with 1-second gaps
+    playMelody(0);        // First play
+    playMelody(1.5);      // Second play after 1.5 seconds
+    playMelody(3);        // Third play after 3 seconds
+    
+    // Clean up audio context after all melodies complete
+    setTimeout(() => {
+      audioContext.close().catch(() => {
+        // Ignore errors if context is already closed
+      });
+    }, 6000);
+    
+    // Navigate to session ended page after 3 seconds
+    setTimeout(() => {
+      onSessionEnded();
+    }, 3000);
+  };
+
   // Handle timer completion
   useEffect(() => {
     if (timeRemaining === 0 && !showCelebration) {
-      setShowCelebration(true);
-      
-      // Play celebration sound 3 times
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      
-      // Create a pleasant celebration melody
-      const playNote = (frequency: number, startTime: number, duration: number) => {
-        const osc = audioContext.createOscillator();
-        const gain = audioContext.createGain();
-        
-        osc.connect(gain);
-        gain.connect(audioContext.destination);
-        
-        osc.frequency.setValueAtTime(frequency, startTime);
-        gain.gain.setValueAtTime(0, startTime);
-        gain.gain.linearRampToValueAtTime(0.1, startTime + 0.1);
-        gain.gain.linearRampToValueAtTime(0, startTime + duration);
-        
-        osc.start(startTime);
-        osc.stop(startTime + duration);
-      };
-      
-      // Play the melody 3 times with delays
-      const playMelody = (startOffset: number) => {
-        const now = audioContext.currentTime + startOffset;
-        playNote(523.25, now, 0.2); // C5
-        playNote(659.25, now + 0.2, 0.2); // E5
-        playNote(783.99, now + 0.4, 0.2); // G5
-        playNote(1046.50, now + 0.6, 0.4); // C6 - slightly longer for ending
-      };
-      
-      // Play 3 times with 1-second gaps
-      playMelody(0);        // First play
-      playMelody(1.5);      // Second play after 1.5 seconds
-      playMelody(3);        // Third play after 3 seconds
-      
-      // Clean up audio context after all melodies complete
-      setTimeout(() => {
-        audioContext.close().catch(() => {
-          // Ignore errors if context is already closed
-        });
-      }, 6000);
-      
-      // No toast notification for timer completion
-
-      // Navigate to session ended page after 5 seconds
-      setTimeout(() => {
-        onSessionEnded();
-      }, 5000);
+      triggerCelebration();
     }
-  }, [timeRemaining, showCelebration, toast, onSessionEnded]);
+  }, [timeRemaining, showCelebration, onSessionEnded]);
+
+  // Handle manual end session
+  const handleEndSession = () => {
+    triggerCelebration();
+  };
 
   // Color based on time remaining
   const getTimerColor = () => {
@@ -271,7 +279,7 @@ export const FloatingTimer = ({
                 <Button
                   variant="outline"
                   size="lg"
-                  onClick={onEndSession}
+                  onClick={handleEndSession}
                   className="bg-gradient-to-b from-white to-red-50 backdrop-blur-sm border-2 border-red-400/50 text-red-600 hover:bg-red-500 hover:text-white shadow-lg w-12 h-12 sm:w-16 sm:h-16 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-xl"
                 >
                   <X className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -287,14 +295,15 @@ export const FloatingTimer = ({
       
       {/* Celebration Overlay */}
       {showCelebration && (
-        <div className="fixed inset-0 z-40 overflow-hidden">
-          {/* Close button */}
-          <button
-            onClick={() => setShowCelebration(false)}
-            className="absolute top-4 right-4 bg-white text-amber-600 rounded-full w-10 h-10 flex items-center justify-center text-xl font-bold hover:scale-110 transition-transform shadow-lg z-50 pointer-events-auto"
-          >
-            ×
-          </button>
+        <div className="fixed inset-0 z-40 overflow-hidden bg-black/20 backdrop-blur-sm">
+          {/* Congratulations Message */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="bg-white rounded-2xl shadow-2xl p-8 text-center animate-scale-in border-4 border-amber-200">
+              <div className="text-6xl mb-4">🎉</div>
+              <h2 className="text-3xl font-bold text-amber-600 mb-2">Congratulations!</h2>
+              <p className="text-lg text-gray-600">Great reading session!</p>
+            </div>
+          </div>
           
           {/* Celebration animations - pointer-events-none for all animated elements */}
           <div className="pointer-events-none">
