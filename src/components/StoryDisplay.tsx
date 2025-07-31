@@ -496,9 +496,12 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         const illustrationIndex = nextParagraph % illustrations.length;
         setCurrentIllustration(illustrations[illustrationIndex]);
         
-        // Auto-generate custom illustration for the new page
+        // Auto-generate custom illustration for the new page with delay
         if (story[nextParagraph]) {
-          generateCustomIllustration(nextParagraph, story[nextParagraph]);
+          // Add 1-2 second delay when navigating to new page
+          setTimeout(() => {
+            generateCustomIllustration(nextParagraph, story[nextParagraph]);
+          }, 1200);
         }
       }
     }
@@ -517,9 +520,12 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         const illustrationIndex = prevParagraph % illustrations.length;
         setCurrentIllustration(illustrations[illustrationIndex]);
         
-        // Auto-generate custom illustration for the previous page if needed
+        // Auto-generate custom illustration for the previous page with delay
         if (story[prevParagraph]) {
-          generateCustomIllustration(prevParagraph, story[prevParagraph]);
+          // Add 1-2 second delay when navigating to previous page
+          setTimeout(() => {
+            generateCustomIllustration(prevParagraph, story[prevParagraph]);
+          }, 1200);
         }
       }
     }
@@ -694,8 +700,8 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
 
 
   const generateCustomIllustration = async (pageIndex: number, storyText: string) => {
-    console.log('=== Generating improved illustration ===');
-    console.log('Page:', pageIndex, 'Story length:', storyText?.length);
+    console.log('=== Generating page-specific illustration ===');
+    console.log('Page:', pageIndex, 'Story text:', storyText);
     
     // Validate inputs
     if (isGeneratingImage || customIllustrations.has(pageIndex) || !storyText?.trim()) {
@@ -706,27 +712,34 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
     try {
       setIsGeneratingImage(true);
       
-      // Minimal delay for responsiveness
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // 1-2 second delay as requested by user
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Use enhanced cultural image generator
-      let prompt;
-      try {
-        prompt = CulturalImageGenerator.generateCulturallyAwarePrompt({
-          storyText,
-          pageIndex,
-          userInfo,
-          difficulty: currentDifficulty,
-          totalPages: story.length,
-          culturalElements: storyConfig?.culturalElements,
-          authorStyle: storyConfig?.authorStyle
-        });
-      } catch (error) {
-        console.error('Cultural image generator failed, using safe fallback:', error);
-        prompt = `Beautiful, safe children's book illustration of ${userInfo.name || 'a child'} in a wonderful adventure, ${currentDifficulty} difficulty level, culturally inclusive, safe for children, no text in image, joyful and warm atmosphere`;
-      }
+      // Create character description based on user info
+      const getCharacterDescription = () => {
+        const gender = userInfo.avatar?.type === 'boy' ? 'boy' : 'girl';
+        const isYoung = currentDifficulty === 'easy' || currentDifficulty === 'medium';
+        const agePrefix = isYoung ? 'young ' : '';
+        
+        const skinTones = {
+          pale: 'light skin',
+          light: 'light skin',
+          medium: 'medium skin', 
+          olive: 'olive skin',
+          dark: 'dark skin'
+        } as const;
+        
+        const skinTone = skinTones[userInfo.avatar?.skinTone || 'medium'] || 'medium skin';
+        const name = userInfo.name?.trim() || 'child';
+        
+        return `${agePrefix}${gender} named ${name} with ${skinTone}`;
+      };
       
-      console.log('Improved prompt:', prompt);
+      // Generate prompt following the user's exact format
+      const characterDesc = getCharacterDescription();
+      const prompt = `A beautiful childrens book illustration depicting the scene where ${characterDesc} in the setting described in the story based on this story context: ${storyText} with a happy and cheerful atmosphere, warm earth tones and natural colors, contemporary childrens book art style, appealing to all children regardless of gender, diverse and inclusive, safe and wholesome content, high quality professional artwork`;
+      
+      console.log('Page-specific prompt:', prompt);
       
       // Generate image with optimized settings
       const result = await runwareService.generateImage({
