@@ -91,7 +91,8 @@
     "subtitle": "Tell us about yourself so we can create amazing stories just for you.",
     "sections": {
       "aboutYou": "About You",
-      "yourFavorites": "Your Favorites"
+      "yourFavorites": "Your Favorites",
+      "additionalInfo": "Tell Us More"
     },
     "fields": {
       "name": {
