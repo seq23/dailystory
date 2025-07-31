@@ -1,4 +1,4 @@
-import type { UserInfo } from "@/components/UserInfoForm";
+import type { UserInfo } from "@/types";
 
 export interface CulturalContext {
   region: string;

@@ -83,7 +83,8 @@ export class EarlyReaderStoryGenerator {
   }
 
   private static createEasyStory(characterName: string, favoriteAnimal: string): string {
-    return `${characterName} sees a ${favoriteAnimal}. The ${favoriteAnimal} is happy. ${characterName} smiles. They play together. The ${favoriteAnimal} runs fast. ${characterName} runs too. They are friends. The sun shines bright. ${characterName} and the ${favoriteAnimal} rest. They had fun today.`;
+    // Create story with very short sentences for 6 words max per page
+    return `${characterName} sees a ${favoriteAnimal}. The ${favoriteAnimal} is happy. ${characterName} smiles at ${favoriteAnimal}. They play together nicely. The ${favoriteAnimal} runs very fast. ${characterName} runs too quickly. They are best friends. The sun shines very bright. ${characterName} feels so happy. The ${favoriteAnimal} feels happy too.`;
   }
 
   private static createMediumStory(characterName: string, favoriteAnimal: string, culturalContext: any): string {

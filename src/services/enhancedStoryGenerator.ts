@@ -1,7 +1,5 @@
-import type { UserInfo } from "@/components/UserInfoForm";
+import type { UserInfo, DifficultyLevel } from "@/types";
 import CulturalAdaptationService from "./culturalAdaptationService";
-
-type DifficultyLevel = "easy" | "medium" | "hard" | "expert";
 
 interface StoryArcPoint {
   phase: 'introduction' | 'rising_action' | 'climax' | 'falling_action' | 'resolution';

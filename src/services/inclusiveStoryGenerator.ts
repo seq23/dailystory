@@ -1,7 +1,5 @@
-import type { UserInfo } from "@/components/UserInfoForm";
+import type { UserInfo, DifficultyLevel } from "@/types";
 import CulturalAdaptationService from "./culturalAdaptationService";
-
-type DifficultyLevel = "easy" | "medium" | "hard" | "expert";
 
 // Author-inspired writing styles by difficulty level
 const AUTHOR_STYLES = {

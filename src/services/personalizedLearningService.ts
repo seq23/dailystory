@@ -1,4 +1,4 @@
-import type { UserInfo } from "@/components/UserInfoForm";
+import type { UserInfo, DifficultyLevel } from "@/types";
 import type { ReadingProgress } from "./progressTrackingService";
 
 export interface LearningChallenge {
