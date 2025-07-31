@@ -16,9 +16,11 @@ import avatarGirlMedium from "@/assets/avatar-girl-medium.jpg"
 import avatarGirlOlive from "@/assets/avatar-girl-olive.jpg"
 import avatarGirlDark from "@/assets/avatar-girl-dark.jpg"
 
+import type { AvatarType, SkinTone } from "@/types"
+
 interface AvatarSelection {
-  type: "boy" | "girl"
-  skinTone: "pale" | "light" | "medium" | "olive" | "dark"
+  type: AvatarType
+  skinTone: SkinTone
 }
 
 interface AvatarPickerProps {
@@ -56,15 +58,17 @@ export const AvatarPicker = React.forwardRef<
   HTMLDivElement,
   AvatarPickerProps
 >(({ value, onChange, className }, ref) => {
-  const handleTypeChange = (type: "boy" | "girl") => {
+  const handleTypeChange = (type: AvatarType) => {
     onChange({ ...value, type })
   }
 
-  const handleSkinToneChange = (skinTone: "pale" | "light" | "medium" | "olive" | "dark") => {
+  const handleSkinToneChange = (skinTone: SkinTone) => {
     onChange({ ...value, skinTone })
   }
 
-  const currentAvatar = avatarImages[value.type]?.[value.skinTone]
+  // For "prefer-not-to-answer", default to boy avatar for display but we'll handle pronouns separately
+  const displayType = value.type === "prefer-not-to-answer" ? "boy" : value.type
+  const currentAvatar = avatarImages[displayType as "boy" | "girl"]?.[value.skinTone]
 
   return (
     <div ref={ref} className={cn("space-y-4", className)}>
@@ -76,7 +80,7 @@ export const AvatarPicker = React.forwardRef<
         <RadioGroup
           value={value.type}
           onValueChange={handleTypeChange}
-          className="flex gap-4"
+          className="flex gap-4 flex-wrap"
         >
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="boy" id="boy" />
@@ -85,6 +89,10 @@ export const AvatarPicker = React.forwardRef<
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="girl" id="girl" />
             <Label htmlFor="girl" className="text-base cursor-pointer">Girl</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="prefer-not-to-answer" id="prefer-not-to-answer" />
+            <Label htmlFor="prefer-not-to-answer" className="text-base cursor-pointer">Prefer not to answer</Label>
           </div>
         </RadioGroup>
       </div>

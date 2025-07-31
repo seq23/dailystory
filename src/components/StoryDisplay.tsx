@@ -724,7 +724,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         const name = userInfo.name || 'child';
         const isYoung = currentDifficulty === 'easy' || currentDifficulty === 'medium';
         const agePrefix = isYoung ? 'young ' : '';
-        const gender = userInfo.avatar?.type === 'boy' ? 'boy' : 'girl';
+        const gender = userInfo.avatar?.type === 'prefer-not-to-answer' ? 'child' : userInfo.avatar?.type || 'boy';
         
         const skinTones = {
           pale: 'very light skin',

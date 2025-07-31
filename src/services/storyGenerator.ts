@@ -51,11 +51,12 @@ export class StoryGeneratorService {
       // Fallback: Generate new pages
       const result = await this.generateStory(userInfo, difficulty, pageCount);
       const name = userInfo.name || 'Alex';
-      const pronouns = userInfo.avatar?.type === 'girl' ? 'her' : 'his';
+      const gender = userInfo.avatar?.type || 'boy';
+      const pronoun = gender === 'girl' ? 'her' : gender === 'prefer-not-to-answer' ? 'their' : 'his';
       
       // Add continuation context to first page
       if (result.pages.length > 0) {
-        result.pages[0] = `Meanwhile, ${name} continued ${pronouns} adventure. ${result.pages[0]}`;
+        result.pages[0] = `Meanwhile, ${name} continued ${pronoun} adventure. ${result.pages[0]}`;
       }
       
       return result;
@@ -75,6 +76,8 @@ export class StoryGeneratorService {
       const gender = userInfo.avatar?.type || 'boy';
       if (gender === 'girl') {
         return { subject: 'she', object: 'her', possessive: 'her' };
+      } else if (gender === 'prefer-not-to-answer') {
+        return { subject: 'they', object: 'them', possessive: 'their' };
       } else {
         return { subject: 'he', object: 'him', possessive: 'his' };
       }
@@ -216,6 +219,8 @@ export class StoryGeneratorService {
       const gender = userInfo.avatar?.type || 'boy';
       if (gender === 'girl') {
         return { subject: 'she', object: 'her', possessive: 'her' };
+      } else if (gender === 'prefer-not-to-answer') {
+        return { subject: 'they', object: 'them', possessive: 'their' };
       } else {
         return { subject: 'he', object: 'him', possessive: 'his' };
       }

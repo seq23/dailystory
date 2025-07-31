@@ -4,7 +4,7 @@ export type DifficultyLevel = "easy" | "medium" | "hard" | "expert";
 export type LanguageCode = "en" | "ar" | "es" | "zh" | "hi" | "pt" | "fr";
 export type LearningGoal = "improve-english-reading" | "learn-english-language" | "both";
 export type SkinTone = "pale" | "light" | "medium" | "olive" | "dark";
-export type AvatarType = "boy" | "girl";
+export type AvatarType = "boy" | "girl" | "prefer-not-to-answer";
 export type Grade = "PreK" | "K" | "1st" | "2nd" | "3rd" | "4th" | "5th" | "6th+";
 
 export interface Avatar {
