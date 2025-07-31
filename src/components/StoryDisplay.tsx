@@ -786,37 +786,48 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         const favoriteAnimal = userInfo.favoriteAnimal || 'cat';
         const favoriteColor = userInfo.favoriteColor || 'blue';
         
-        // Detect if user's favorite animal is mentioned in the story or if pronouns/actions suggest companions
-        const hasUserAnimal = lowerText.includes(favoriteAnimal.toLowerCase()) || 
-                              lowerText.includes('together') || 
-                              lowerText.includes('they walked') || 
-                              lowerText.includes('they went') ||
-                              lowerText.includes('they shared') ||
-                              lowerText.includes('they had') ||
-                              (lowerText.includes('they') && !lowerText.includes('they were') && !lowerText.includes('they are'));
+        // Detect if user's favorite animal should be in the scene based on explicit references
+        const animalMentioned = lowerText.includes(favoriteAnimal.toLowerCase()) || 
+                               lowerText.includes('the cat') || 
+                               lowerText.includes('the dog') || 
+                               lowerText.includes('the animal');
+        
+        // Detect companionship actions that indicate both characters are present
+        const companionshipActions = lowerText.includes('together') || 
+                                   lowerText.includes('they walked') || 
+                                   lowerText.includes('they went') ||
+                                   lowerText.includes('they shared') ||
+                                   lowerText.includes('they played') ||
+                                   lowerText.includes('they had fun') ||
+                                   lowerText.includes('they became') ||
+                                   lowerText.includes('they solved') ||
+                                   lowerText.includes('they journeyed') ||
+                                   lowerText.includes('they faced');
+        
+        const hasUserAnimal = animalMentioned || companionshipActions;
         const animalInScene = hasUserAnimal ? `one single ${favoriteColor} ${favoriteAnimal}` : 'a friendly companion';
         
-        // Scene detection with user preferences integrated and better action detection
-        if (lowerText.includes('said') && lowerText.includes(favoriteAnimal.toLowerCase())) {
+        // Scene detection with precise animal inclusion logic
+        if (lowerText.includes('said') && animalMentioned) {
           return `a child having a conversation with their ${animalInScene}, showing the ${favoriteAnimal} speaking or looking warmly at the child`;
         } else if (lowerText.includes('walked') || lowerText.includes('walking') || lowerText.includes('went')) {
-          return `a child walking ${hasUserAnimal ? `with their ${animalInScene}` : ''} through a magical landscape${lowerText.includes('secret') ? ' towards a mysterious secret place' : ''}`;
+          return `a child walking ${hasUserAnimal ? `with their ${animalInScene}` : 'alone'} through a magical landscape${lowerText.includes('secret') ? ' towards a mysterious secret place' : ''}`;
         } else if (lowerText.includes('woke') || lowerText.includes('morning')) {
           return `a child waking up in a cozy bedroom with morning sunlight streaming through the window${hasUserAnimal ? ` with their ${animalInScene} nearby` : ''}`;
         } else if (lowerText.includes('outside') || lowerText.includes('garden')) {
-          return `a child in a beautiful garden with ${favoriteColor} flowers and trees${hasUserAnimal ? ` playing with ${animalInScene}` : ''}`;
+          return `a child in a beautiful garden with ${favoriteColor} flowers and trees${hasUserAnimal ? ` with their ${animalInScene}` : ''}`;
         } else if (lowerText.includes('playing') || lowerText.includes('play')) {
-          return `a child happily playing in a safe outdoor environment${hasUserAnimal ? ` with ${animalInScene}` : ''}`;
+          return `a child happily playing in a safe outdoor environment${hasUserAnimal ? ` with their ${animalInScene}` : ''}`;
         } else if (lowerText.includes('friend') || lowerText.includes('animal') || lowerText.includes('met') || lowerText.includes('appeared')) {
           return `a child meeting their ${animalInScene}`;
         } else if (lowerText.includes('adventure') || lowerText.includes('exploring')) {
-          return `a child on an exciting but safe adventure${hasUserAnimal ? ` with ${animalInScene}` : ''}`;
-        } else if (lowerText.includes('shared')) {
+          return `a child on an exciting but safe adventure${hasUserAnimal ? ` with their ${animalInScene}` : ''}`;
+        } else if (lowerText.includes('shared') && hasUserAnimal) {
           return `a child and their ${animalInScene} together enjoying shared adventures in a magical landscape`;
-        } else if (lowerText.includes('together')) {
+        } else if (lowerText.includes('together') && hasUserAnimal) {
           return `a child together with their ${animalInScene} in a heartwarming scene`;
         } else {
-          return `a child in a peaceful, happy scene${hasUserAnimal ? ` with ${animalInScene}` : ''}`;
+          return `a child in a peaceful, happy scene${hasUserAnimal ? ` with their ${animalInScene}` : ''}`;
         }
       };
 
