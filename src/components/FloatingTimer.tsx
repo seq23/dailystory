@@ -146,7 +146,7 @@ export const FloatingTimer = ({
   return (
     <TooltipProvider>
       {/* Floating Timer Container */}
-      <div className="fixed bottom-16 right-2 sm:bottom-20 sm:right-4 md:bottom-24 md:right-6 z-40 flex flex-col items-center gap-2 sm:gap-4" data-tutorial-target={tutorialTarget} style={{ marginRight: 'max(0.5rem, env(safe-area-inset-right))', marginBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}>
+      <div className="fixed bottom-4 right-4 z-30 flex flex-col items-center gap-2" data-tutorial-target={tutorialTarget} style={{ marginRight: 'max(0.5rem, env(safe-area-inset-right))', marginBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}>
         {/* Circular Timer */}
         <div className="relative">
           {/* Celebration Animation */}
@@ -185,7 +185,7 @@ export const FloatingTimer = ({
           )}
           
           {/* Main Timer Circle */}
-          <div className="relative w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36 bg-white/95 backdrop-blur-sm rounded-full shadow-2xl border-3 sm:border-4 border-amber-300/60 flex items-center justify-center">
+          <div className="relative w-20 h-20 sm:w-24 sm:h-24 bg-white/95 backdrop-blur-sm rounded-full shadow-2xl border-2 sm:border-3 border-amber-300/60 flex items-center justify-center">
             {/* Progress Circle */}
             <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 100 100">
               {/* Background circle */}
@@ -216,7 +216,7 @@ export const FloatingTimer = ({
             {/* Time Display */}
             <div className="relative z-10 text-center">
               <div 
-                className="text-sm sm:text-lg md:text-2xl font-bold" 
+                className="text-xs sm:text-sm font-bold" 
                 style={{ color: getTimerColor() }}
               >
                 {formatTime(timeRemaining)}
@@ -239,9 +239,9 @@ export const FloatingTimer = ({
                 variant="outline"
                 size="lg"
                 onClick={onToggleReading}
-                className="bg-white/95 backdrop-blur-sm border-2 sm:border-3 border-purple-400 text-purple-700 hover:bg-purple-50 shadow-xl w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full p-0 transition-all duration-200 hover:scale-105"
+                className="bg-white/95 backdrop-blur-sm border-2 border-purple-400 text-purple-700 hover:bg-purple-50 shadow-xl w-8 h-8 sm:w-10 sm:h-10 rounded-full p-0 transition-all duration-200 hover:scale-105"
               >
-                {isReading ? <Pause className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" /> : <Play className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 ml-0.5" />}
+                {isReading ? <Pause className="w-3 h-3 sm:w-4 sm:h-4" /> : <Play className="w-3 h-3 sm:w-4 sm:h-4 ml-0.5" />}
               </Button>
             </TooltipTrigger>
             <TooltipContent side="top" className="bg-purple-700 text-white border-purple-500">
