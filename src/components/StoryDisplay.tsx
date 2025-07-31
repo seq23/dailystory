@@ -166,14 +166,59 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
-      {/* Simple Timer Display */}
+      {/* Professional Premium Timer Display */}
       {timeRemaining > 0 && (
-        <div className="fixed top-4 right-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg border">
-          <div className="flex items-center gap-2">
-            <Timer className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium">
-              {Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')} remaining
-            </span>
+        <div className="fixed bottom-6 right-6 sm:right-8 z-50 flex flex-col items-center gap-4" style={{ marginRight: 'max(1rem, env(safe-area-inset-right))', marginBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+          
+          {/* Main Timer Circle - Professional & Larger */}
+          <div className="relative">
+            {/* Main Timer Circle */}
+            <div className="relative w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-white to-gray-50 backdrop-blur-sm rounded-full shadow-2xl border-4 border-white/80 flex items-center justify-center ring-4 ring-green-500/20">
+              {/* Outer glow ring */}
+              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-green-500/10 to-transparent animate-pulse"></div>
+              
+              {/* Progress Circle */}
+              <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 120 120">
+                {/* Background circle */}
+                <circle
+                  cx="60"
+                  cy="60"
+                  r="50"
+                  stroke="hsl(var(--muted))"
+                  strokeWidth="6"
+                  fill="none"
+                  opacity="0.3"
+                />
+                {/* Progress circle */}
+                <circle
+                  cx="60"
+                  cy="60"
+                  r="50"
+                  stroke={timeRemaining <= 300 ? "#ef4444" : "#22c55e"}
+                  strokeWidth="6"
+                  fill="none"
+                  strokeDasharray={2 * Math.PI * 50}
+                  strokeDashoffset={2 * Math.PI * 50 - ((timeRemaining / APP_CONFIG.FREE_SESSION_DURATION) * 2 * Math.PI * 50)}
+                  className="transition-all duration-1000 ease-out filter drop-shadow-lg"
+                  strokeLinecap="round"
+                />
+              </svg>
+              
+              {/* Time Display */}
+              <div className="relative z-10 text-center">
+                <div className={`text-sm sm:text-lg font-bold tracking-tight ${timeRemaining <= 300 ? 'text-red-500' : 'text-green-600'}`}>
+                  {Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')}
+                </div>
+                <div className="text-[10px] sm:text-xs text-muted-foreground font-medium">
+                  Premium
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Premium Badge */}
+          <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-3 py-1 rounded-full shadow-lg border-2 border-white/50 text-xs font-bold">
+            ✨ UNLIMITED
           </div>
         </div>
       )}
