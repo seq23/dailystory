@@ -73,7 +73,9 @@ export const GuestExperience = () => {
       );
     
     case "login":
-      return <LoginScreen userInfo={userInfo} onBack={handleBackToReading} />;
+      // If user has no userInfo, they came from welcome screen, so go back to welcome
+      // If user has userInfo, they came from reading session, so go back to reading
+      return <LoginScreen userInfo={userInfo} onBack={userInfo ? handleBackToReading : handleBackToWelcome} />;
     
     default:
       return <WelcomeHero onGetStarted={handleGetStarted} />;
