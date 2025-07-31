@@ -162,8 +162,8 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/30 flex items-center justify-center p-2 md:p-4">
-      <Card className="w-full max-w-4xl bg-gradient-card shadow-card border-0 rounded-2xl md:rounded-3xl p-4 md:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/30 flex items-center justify-center p-2 sm:p-4 md:p-6">
+      <Card className="w-full max-w-4xl bg-gradient-card shadow-card border-0 rounded-xl sm:rounded-2xl md:rounded-3xl p-3 sm:p-4 md:p-8">
         {/* Header */}
         <div className="text-center mb-6 md:mb-8">
           <div className="flex justify-center mb-3 md:mb-4">
@@ -180,7 +180,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
         </div>
 
         {/* All Form Fields */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6 md:mb-8">
           {/* Basic Info Section */}
           <div className="space-y-4 md:space-y-6">
             <h3 className="text-xl md:text-2xl font-semibold text-foreground flex items-center gap-2">

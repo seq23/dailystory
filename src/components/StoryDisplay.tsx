@@ -753,48 +753,49 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
     <AdaptiveUI userInfo={userInfo} className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
       {/* Simple Header */}
       <header className="bg-white/90 backdrop-blur-sm shadow-sm border-b border-purple-100">
-        <div className="max-w-7xl mx-auto px-4 py-3">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 py-2 sm:py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <img src={time2ReadLogo} alt="Time2Read" className="w-10 h-10 rounded-lg" />
-              <h1 className="text-xl font-bold text-purple-800">
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <img src={time2ReadLogo} alt="Time2Read" className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg" />
+              <h1 className="text-sm sm:text-lg md:text-xl font-bold text-purple-800 truncate">
                 {userInfo.name}'s {t("storyDisplay.header.readingTime")}
               </h1>
             </div>
             
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1 sm:space-x-2">
               <Button
                 onClick={() => setShowProgressDashboard(true)}
                 variant="ghost"
                 size="sm"
-                className="text-purple-600 hover:bg-purple-50"
+                className="text-purple-600 hover:bg-purple-50 hidden sm:flex"
               >
                 <BarChart3 className="w-4 h-4 mr-1" />
-                {t("storyDisplay.header.progress")}
+                <span className="hidden md:inline">{t("storyDisplay.header.progress")}</span>
               </Button>
               <Button
                 onClick={() => setShowLearningPath(true)}
                 variant="ghost"
                 size="sm"
-                className="text-blue-600 hover:bg-blue-50"
+                className="text-blue-600 hover:bg-blue-50 hidden sm:flex"
               >
                 <Target className="w-4 h-4 mr-1" />
-                {t("learningPath.challenges")}
+                <span className="hidden md:inline">{t("learningPath.challenges")}</span>
               </Button>
               <Button 
                 onClick={handleFinishSession} 
-                className="bg-green-500 hover:bg-green-600 text-white rounded-full"
+                className="bg-green-500 hover:bg-green-600 text-white rounded-full text-xs sm:text-sm"
                 size="sm"
               >
-                {t("storyDisplay.header.done")}
+                <span className="hidden sm:inline">{t("storyDisplay.header.done")}</span>
+                <span className="sm:hidden">Done</span>
               </Button>
-              <Button onClick={onNewStory} variant="outline" size="sm" className="rounded-full">
+              <Button onClick={onNewStory} variant="outline" size="sm" className="rounded-full hidden sm:flex">
                 <RotateCcw className="w-4 h-4 mr-1" />
-                {t("storyDisplay.header.newStory")}
+                <span className="hidden md:inline">{t("storyDisplay.header.newStory")}</span>
               </Button>
               <Button onClick={onHome} variant="outline" size="sm" className="rounded-full">
-                <Home className="w-4 h-4 mr-1" />
-                {t("storyDisplay.header.home")}
+                <Home className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1" />
+                <span className="hidden sm:inline">{t("storyDisplay.header.home")}</span>
               </Button>
             </div>
           </div>
@@ -803,13 +804,13 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
 
 
       {/* Main Content Container - Increased reading area */}
-      <div className="flex-1 max-w-6xl mx-auto px-4 py-6 pt-20 pb-32">
-        <div className="grid lg:grid-cols-2 gap-8 items-start">
+      <div className="flex-1 max-w-6xl mx-auto px-2 sm:px-4 py-4 sm:py-6 pt-4 sm:pt-20 pb-24 sm:pb-32">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 items-start">
           {/* Illustration - Now on the left */}
-          <div className="order-1 lg:order-1">
-            <Card className="bg-white/95 backdrop-blur-sm shadow-2xl rounded-3xl border-2 border-purple-200/50 overflow-hidden max-h-[600px]">
-              <CardContent className="p-6">
-                <div className="relative w-full h-[500px] bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl overflow-hidden flex items-center justify-center">
+          <div className="order-2 lg:order-1">
+            <Card className="bg-white/95 backdrop-blur-sm shadow-2xl rounded-2xl sm:rounded-3xl border-2 border-purple-200/50 overflow-hidden max-h-[300px] sm:max-h-[400px] lg:max-h-[600px]">
+              <CardContent className="p-3 sm:p-6">
+                <div className="relative w-full h-[250px] sm:h-[350px] lg:h-[500px] bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl sm:rounded-2xl overflow-hidden flex items-center justify-center">
                   {currentIllustration ? (
                     <img 
                       src={customIllustrations.get(currentParagraph) || currentIllustration}
@@ -838,33 +839,33 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
           </div>
           
           {/* Story Content - Now on the right */}
-          <div className="order-2 lg:order-2">
-            <Card className="bg-white/95 backdrop-blur-sm shadow-2xl rounded-3xl border-2 border-purple-200/50 overflow-hidden min-h-[600px]">
-              <CardContent className="p-8">
+          <div className="order-1 lg:order-2">
+            <Card className="bg-white/95 backdrop-blur-sm shadow-2xl rounded-2xl sm:rounded-3xl border-2 border-purple-200/50 overflow-hidden min-h-[400px] sm:min-h-[500px] lg:min-h-[600px]">
+              <CardContent className="p-4 sm:p-6 lg:p-8">
                 {/* Story Text */}
-                <div className="prose prose-lg max-w-none">
-                  <div className="text-2xl leading-relaxed text-gray-800 font-medium space-y-4">
+                <div className="prose prose-sm sm:prose-base lg:prose-lg max-w-none">
+                  <div className="text-lg sm:text-xl lg:text-2xl leading-relaxed text-gray-800 font-medium space-y-3 sm:space-y-4">
                     {processTextForPhonetics(currentStory, "", currentDifficulty, userInfo)}
                   </div>
                 </div>
                 
                 {/* Controls */}
-                <div className="space-y-4 mt-8">
+                <div className="space-y-3 sm:space-y-4 mt-4 sm:mt-6 lg:mt-8">
                   {/* Audio & Recording */}
-                  <div className="flex justify-center space-x-3" data-tutorial-target="audio">
+                  <div className="flex justify-center space-x-2 sm:space-x-3" data-tutorial-target="audio">
                     <Button
                       onClick={() => playTextToSpeech(currentStory)}
                       variant="outline"
                       size="sm"
-                      className="rounded-full bg-blue-50 border-blue-200 hover:bg-blue-100"
+                      className="rounded-full bg-blue-50 border-blue-200 hover:bg-blue-100 p-2 sm:p-3"
                       disabled={isPlaying || hasPlayedAudioForPage.has(currentParagraph)}
                     >
                       {isPlaying ? (
-                        <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                        <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
                       ) : hasPlayedAudioForPage.has(currentParagraph) ? (
-                        <VolumeX className="w-4 h-4" />
+                        <VolumeX className="w-3 h-3 sm:w-4 sm:h-4" />
                       ) : (
-                        <Volume2 className="w-4 h-4" />
+                        <Volume2 className="w-3 h-3 sm:w-4 sm:h-4" />
                       )}
                     </Button>
 
@@ -872,15 +873,15 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                       onClick={() => isRecording ? stopRecording() : startRecording()}
                       variant={isRecording ? "destructive" : "outline"}
                       size="sm"
-                      className="rounded-full"
+                      className="rounded-full p-2 sm:p-3"
                     >
-                      {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                      {isRecording ? <MicOff className="w-3 h-3 sm:w-4 sm:h-4" /> : <Mic className="w-3 h-3 sm:w-4 sm:h-4" />}
                     </Button>
                   </div>
 
                   {/* Audio Speed Controls */}
                   <div className="flex justify-center items-center space-x-2">
-                    <span className="text-xs text-gray-600 font-medium">{t("storyDisplay.controls.speed")}</span>
+                    <span className="text-xs text-gray-600 font-medium hidden sm:inline">{t("storyDisplay.controls.speed")}</span>
                     <div className="flex space-x-1">
                       {[0.5, 0.75, 1.0].map((speed) => (
                         <Button
@@ -888,7 +889,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                           onClick={() => setAudioSpeed(speed)}
                           variant={audioSpeed === speed ? "default" : "outline"}
                           size="sm"
-                          className="rounded-full text-xs px-3 py-1 h-7"
+                          className="rounded-full text-xs px-2 sm:px-3 py-1 h-6 sm:h-7"
                         >
                           {speed}x
                         </Button>

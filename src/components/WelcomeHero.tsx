@@ -48,13 +48,13 @@ export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
     <div className="min-h-screen bg-gradient-hero flex flex-col relative overflow-hidden">
       {/* Header with Company Branding and Language Selector */}
       <header className="relative z-20 bg-black/15 backdrop-blur-sm border-b border-white/20">
-        <div className="container mx-auto px-6 py-6">
+        <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-6">
           <div className="flex items-center justify-between">
             {/* Language Selector */}
-            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-3 py-2 border border-white/20">
-              <Globe className="w-4 h-4 text-white" />
+            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-2 sm:px-3 py-1 sm:py-2 border border-white/20">
+              <Globe className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
               <Select value={i18n.language} onValueChange={handleLanguageChange}>
-                <SelectTrigger className="w-[140px] border-none bg-transparent text-white text-sm h-auto p-0 focus:ring-0">
+                <SelectTrigger className="w-[100px] sm:w-[140px] border-none bg-transparent text-white text-xs sm:text-sm h-auto p-0 focus:ring-0">
                   <SelectValue placeholder={t("welcomeHero.languageSelector.placeholder")} />
                 </SelectTrigger>
                 <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
@@ -70,30 +70,30 @@ export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
             </div>
 
             {/* Company Logo */}
-            <div className="flex items-center gap-4 hover-scale transition-all duration-300">
+            <div className="flex items-center gap-2 sm:gap-4 hover-scale transition-all duration-300">
               <img 
                 src={logoImage} 
                 alt="Time 2 Read Logo" 
-                className="w-12 h-12 md:w-16 md:h-16 drop-shadow-lg"
+                className="w-8 h-8 sm:w-12 sm:h-12 md:w-16 md:h-16 drop-shadow-lg"
               />
               <div className="flex flex-col">
                 <div className="flex items-center font-comic">
-                  <h1 className="text-2xl md:text-4xl font-bold text-white drop-shadow-lg">
+                  <h1 className="text-lg sm:text-2xl md:text-4xl font-bold text-white drop-shadow-lg">
                     Time
                   </h1>
-                  <span className="text-4xl md:text-6xl font-schoolbell text-yellow-300 drop-shadow-lg mx-0.5 transform rotate-3">
+                  <span className="text-2xl sm:text-4xl md:text-6xl font-schoolbell text-yellow-300 drop-shadow-lg mx-0.5 transform rotate-3">
                     2
                   </span>
-                  <h1 className="text-2xl md:text-4xl font-bold text-white drop-shadow-lg">
+                  <h1 className="text-lg sm:text-2xl md:text-4xl font-bold text-white drop-shadow-lg">
                     Read!
                   </h1>
                 </div>
-                <p className="text-sm text-white/80 hidden md:block">{t("welcomeHero.companyTagline")}</p>
+                <p className="text-xs sm:text-sm text-white/80 hidden sm:block">{t("welcomeHero.companyTagline")}</p>
               </div>
             </div>
 
             {/* Spacer for balance */}
-            <div className="w-[140px]"></div>
+            <div className="w-[100px] sm:w-[140px]"></div>
           </div>
         </div>
       </header>

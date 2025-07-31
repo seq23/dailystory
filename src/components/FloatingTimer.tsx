@@ -146,7 +146,7 @@ export const FloatingTimer = ({
   return (
     <TooltipProvider>
       {/* Floating Timer Container */}
-      <div className="fixed bottom-8 right-8 z-50 flex flex-col items-center gap-4" data-tutorial-target={tutorialTarget} style={{ marginRight: 'max(1rem, env(safe-area-inset-right))', marginBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+      <div className="fixed bottom-4 right-2 sm:bottom-6 sm:right-4 md:bottom-8 md:right-8 z-50 flex flex-col items-center gap-2 sm:gap-4" data-tutorial-target={tutorialTarget} style={{ marginRight: 'max(0.5rem, env(safe-area-inset-right))', marginBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}>
         {/* Circular Timer */}
         <div className="relative">
           {/* Celebration Animation */}
@@ -156,11 +156,11 @@ export const FloatingTimer = ({
               {[...Array(12)].map((_, i) => (
                 <div
                   key={i}
-                  className="absolute w-3 h-3 rounded-full animate-bounce"
+                  className="absolute w-2 h-2 sm:w-3 sm:h-3 rounded-full animate-bounce"
                   style={{
                     backgroundColor: ['#fbbf24', '#f59e0b', '#d97706', '#92400e'][i % 4],
-                    left: `${Math.cos((i * 30) * Math.PI / 180) * 50 + 45}px`,
-                    top: `${Math.sin((i * 30) * Math.PI / 180) * 50 + 45}px`,
+                    left: `${Math.cos((i * 30) * Math.PI / 180) * (window.innerWidth < 640 ? 35 : 50) + (window.innerWidth < 640 ? 32 : 45)}px`,
+                    top: `${Math.sin((i * 30) * Math.PI / 180) * (window.innerWidth < 640 ? 35 : 50) + (window.innerWidth < 640 ? 32 : 45)}px`,
                     animationDelay: `${i * 0.1}s`,
                     animationDuration: '2s'
                   }}
@@ -172,10 +172,10 @@ export const FloatingTimer = ({
                 {[...Array(8)].map((_, i) => (
                   <div
                     key={i}
-                    className="absolute w-2 h-2 bg-yellow-400 rounded-full animate-ping"
+                    className="absolute w-1.5 h-1.5 sm:w-2 sm:h-2 bg-yellow-400 rounded-full animate-ping"
                     style={{
-                      left: `${Math.cos((i * 45) * Math.PI / 180) * 60 + 42}px`,
-                      top: `${Math.sin((i * 45) * Math.PI / 180) * 60 + 42}px`,
+                      left: `${Math.cos((i * 45) * Math.PI / 180) * (window.innerWidth < 640 ? 45 : 60) + (window.innerWidth < 640 ? 30 : 42)}px`,
+                      top: `${Math.sin((i * 45) * Math.PI / 180) * (window.innerWidth < 640 ? 45 : 60) + (window.innerWidth < 640 ? 30 : 42)}px`,
                       animationDelay: `${i * 0.2}s`
                     }}
                   />
@@ -185,7 +185,7 @@ export const FloatingTimer = ({
           )}
           
           {/* Main Timer Circle */}
-          <div className="relative w-36 h-36 bg-white/95 backdrop-blur-sm rounded-full shadow-2xl border-4 border-amber-300/60 flex items-center justify-center">
+          <div className="relative w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36 bg-white/95 backdrop-blur-sm rounded-full shadow-2xl border-3 sm:border-4 border-amber-300/60 flex items-center justify-center">
             {/* Progress Circle */}
             <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 100 100">
               {/* Background circle */}
@@ -216,13 +216,13 @@ export const FloatingTimer = ({
             {/* Time Display */}
             <div className="relative z-10 text-center">
               <div 
-                className="text-2xl font-bold" 
+                className="text-sm sm:text-lg md:text-2xl font-bold" 
                 style={{ color: getTimerColor() }}
               >
                 {formatTime(timeRemaining)}
               </div>
               {timeRemaining >= 20 * 60 && (
-                <div className="text-xs text-amber-600 font-medium mt-1">
+                <div className="text-xs text-amber-600 font-medium mt-1 hidden sm:block">
                   {t("floatingTimer.maxLimit")}
                 </div>
               )}
@@ -239,9 +239,9 @@ export const FloatingTimer = ({
                 variant="outline"
                 size="lg"
                 onClick={onToggleReading}
-                className="bg-white/95 backdrop-blur-sm border-3 border-purple-400 text-purple-700 hover:bg-purple-50 shadow-xl w-14 h-14 rounded-full p-0 transition-all duration-200 hover:scale-105"
+                className="bg-white/95 backdrop-blur-sm border-2 sm:border-3 border-purple-400 text-purple-700 hover:bg-purple-50 shadow-xl w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full p-0 transition-all duration-200 hover:scale-105"
               >
-                {isReading ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 ml-0.5" />}
+                {isReading ? <Pause className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" /> : <Play className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 ml-0.5" />}
               </Button>
             </TooltipTrigger>
             <TooltipContent side="top" className="bg-purple-700 text-white border-purple-500">
@@ -252,16 +252,16 @@ export const FloatingTimer = ({
           {/* Surrounding Action Buttons */}
           <div className="absolute inset-0 pointer-events-none">
             {/* Add Time Button - Top Left */}
-            <div className="absolute -top-4 -left-16 pointer-events-auto">
+            <div className="absolute -top-2 sm:-top-3 md:-top-4 -left-8 sm:-left-12 md:-left-16 pointer-events-auto">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={onAddTime}
-                    className="bg-white/95 backdrop-blur-sm border-2 border-green-400 text-green-700 hover:bg-green-50 shadow-lg w-14 h-14 rounded-full p-0 transition-all duration-200 hover:scale-110"
+                    className="bg-white/95 backdrop-blur-sm border-2 border-green-400 text-green-700 hover:bg-green-50 shadow-lg w-8 h-8 sm:w-10 sm:h-10 md:w-14 md:h-14 rounded-full p-0 transition-all duration-200 hover:scale-110"
                   >
-                    <Plus className="w-5 h-5" />
+                    <Plus className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="top" className="bg-green-700 text-white border-green-500">
@@ -272,7 +272,7 @@ export const FloatingTimer = ({
 
             {/* Subtract Time Button - Top Right */}
             {onSubtractTime && (
-              <div className="absolute -top-4 -right-16 pointer-events-auto">
+              <div className="absolute -top-2 sm:-top-3 md:-top-4 -right-8 sm:-right-12 md:-right-16 pointer-events-auto">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
@@ -280,9 +280,9 @@ export const FloatingTimer = ({
                       size="sm"
                       onClick={onSubtractTime}
                       disabled={timeRemaining <= 10 * 60}
-                      className="bg-white/95 backdrop-blur-sm border-2 border-orange-400 text-orange-700 hover:bg-orange-50 shadow-lg w-14 h-14 rounded-full p-0 disabled:opacity-50 transition-all duration-200 hover:scale-110"
+                      className="bg-white/95 backdrop-blur-sm border-2 border-orange-400 text-orange-700 hover:bg-orange-50 shadow-lg w-8 h-8 sm:w-10 sm:h-10 md:w-14 md:h-14 rounded-full p-0 disabled:opacity-50 transition-all duration-200 hover:scale-110"
                     >
-                      <Minus className="w-5 h-5" />
+                      <Minus className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent side="top" className="bg-orange-700 text-white border-orange-500">
