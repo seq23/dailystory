@@ -52,11 +52,22 @@ export class StoryGeneratorService {
       const result = await this.generateStory(userInfo, difficulty, pageCount);
       const name = userInfo.name || 'Alex';
       const gender = userInfo.avatar?.type || 'boy';
-      const pronoun = gender === 'girl' ? 'her' : gender === 'prefer-not-to-answer' ? 'their' : 'his';
+      const language = userInfo.nativeLanguage || 'en';
+      
+      let pronoun: string;
+      let continuationText: string;
+      
+      if (language === 'es') {
+        pronoun = 'su';
+        continuationText = `Mientras tanto, ${name} continuó ${pronoun} aventura.`;
+      } else {
+        pronoun = gender === 'girl' ? 'her' : gender === 'prefer-not-to-answer' ? 'their' : 'his';
+        continuationText = `Meanwhile, ${name} continued ${pronoun} adventure.`;
+      }
       
       // Add continuation context to first page
       if (result.pages.length > 0) {
-        result.pages[0] = `Meanwhile, ${name} continued ${pronoun} adventure. ${result.pages[0]}`;
+        result.pages[0] = `${continuationText} ${result.pages[0]}`;
       }
       
       return result;
@@ -70,23 +81,119 @@ export class StoryGeneratorService {
     const name = userInfo.name || 'Alex';
     const animal = userInfo.favoriteAnimal || 'cat';
     const color = userInfo.favoriteColor || 'blue';
+    const language = userInfo.nativeLanguage || 'en';
     
     // Get proper pronouns based on user's gender selection
     const getPronouns = () => {
       const gender = userInfo.avatar?.type || 'boy';
-      if (gender === 'girl') {
-        return { subject: 'she', object: 'her', possessive: 'her' };
-      } else if (gender === 'prefer-not-to-answer') {
-        return { subject: 'they', object: 'them', possessive: 'their' };
+      if (language === 'es') {
+        if (gender === 'girl') {
+          return { subject: 'ella', object: 'la', possessive: 'su' };
+        } else {
+          return { subject: 'él', object: 'lo', possessive: 'su' };
+        }
       } else {
-        return { subject: 'he', object: 'him', possessive: 'his' };
+        if (gender === 'girl') {
+          return { subject: 'she', object: 'her', possessive: 'her' };
+        } else if (gender === 'prefer-not-to-answer') {
+          return { subject: 'they', object: 'them', possessive: 'their' };
+        } else {
+          return { subject: 'he', object: 'him', possessive: 'his' };
+        }
       }
     };
     
     const pronouns = getPronouns();
     
     // Multiple story variations for each difficulty level to ensure variety
-    const storyVariations = {
+    const storyVariations = language === 'es' ? {
+      easy: [
+        // Variation 1: Aventura Matutina
+        [
+          `${name} se despertó temprano una mañana.`,
+          `Afuera, ${name} vio algo maravilloso.`,
+          `Un ${animal} ${color} amigable estaba jugando.`,
+          `"¡Hola!" dijo ${name} con una sonrisa.`,
+          `El ${animal} se acercó a jugar.`,
+          `${pronouns.subject.charAt(0).toUpperCase() + pronouns.subject.slice(1)} se divirtieron mucho juntos.`,
+          `${name} le dio comida al ${animal}.`,
+          `"¡Gracias!" el ${animal} parecía decir.`,
+          `${pronouns.subject.charAt(0).toUpperCase() + pronouns.subject.slice(1)} se convirtieron en los mejores amigos.`,
+          `Cada día estaba lleno de alegría.`
+        ],
+        // Variation 2: Descubrimiento en el Jardín
+        [
+          `${name} estaba jugando en el jardín.`,
+          `${pronouns.subject.charAt(0).toUpperCase() + pronouns.subject.slice(1)} escuchó un sonido suave.`,
+          `Detrás de una flor ${color} estaba sentado un pequeño ${animal}.`,
+          `El ${animal} se veía perdido y asustado.`,
+          `${name} se sentó muy tranquilo.`,
+          `"No te preocupes," susurró ${name} suavemente.`,
+          `El ${animal} se acercó lentamente.`,
+          `${name} fue muy gentil y amable.`,
+          `Pronto estuvieron jugando juntos felizmente.`,
+          `${name} había encontrado un nuevo amigo maravilloso.`
+        ],
+        // Variation 3: Historia del Día Lluvioso
+        [
+          `Estaba lloviendo afuera hoy.`,
+          `${name} se sintió un poco triste por dentro.`,
+          `Entonces ${pronouns.subject} vio un ${animal} ${color} afuera.`,
+          `El ${animal} se estaba mojando mucho.`,
+          `${name} abrió la puerta rápidamente.`,
+          `"¡Entra!" gritó ${name} cálidamente.`,
+          `El ${animal} corrió adentro agradecido.`,
+          `${pronouns.subject.charAt(0).toUpperCase() + pronouns.subject.slice(1)} se secó junto al fuego cálido.`,
+          `Ahora el día lluvioso se sintió perfecto.`,
+          `${name} aprendió que ayudar se siente maravilloso.`
+        ]
+      ],
+      medium: [
+        // Variation 1: Encuentro Mágico
+        [
+          `A ${name} le encantaba explorar el mundo a su alrededor.`,
+          `Una tarde soleada, algo mágico sucedió.`,
+          `Un hermoso ${animal} ${color} apareció en su jardín.`,
+          `Este no era un ${animal} ordinario - era especial.`,
+          `"He estado esperando a alguien como tú," dijo gentilmente.`,
+          `${name} se sintió emocionado y un poco nervioso también.`,
+          `Juntos, caminaron a un lugar secreto.`,
+          `El ${animal} le mostró a ${name} maravillas ocultas por todas partes.`,
+          `"Tienes un corazón bondadoso," dijo el ${animal} cálidamente.`,
+          `Desde ese día, compartieron aventuras increíbles.`
+        ]
+      ],
+      hard: [
+        // Variation 1: Misión de Coraje
+        [
+          `${name} siempre se había sentido diferente de otros niños.`,
+          `Mientras los amigos jugaban juegos normales, ${name} soñaba con aventuras más grandes.`,
+          `Una noche, un extraordinario ${animal} ${color} llegó a su puerta.`,
+          `"Necesito tu ayuda," dijo el ${animal} urgentemente.`,
+          `"Hay problemas en el bosque encantado, y solo alguien con tu coraje puede ayudar."`,
+          `${name} no dudó - esta era la aventura que había estado esperando.`,
+          `${pronouns.subject.charAt(0).toUpperCase() + pronouns.subject.slice(1)} viajó por senderos misteriosos llenos de maravilla y peligro.`,
+          `En el camino, ${name} descubrió fuerzas ocultas y nueva confianza.`,
+          `Juntos, resolvieron el misterio antiguo del bosque.`,
+          `${name} regresó a casa cambiado para siempre, sabiendo que era verdaderamente especial.`
+        ]
+      ],
+      expert: [
+        // Variation 1: Puente del Mundo
+        [
+          `${name} siempre había poseído un don inusual para entender el mundo de manera diferente.`,
+          `Cuando otros veían cosas ordinarias, ${name} vislumbraba la magia extraordinaria oculta debajo.`,
+          `La llegada de un sabio ${animal} ${color} confirmó lo que ${name} había sospechado por mucho tiempo.`,
+          `"Tu perspectiva es necesaria para sanar una grieta antigua entre nuestros mundos," explicó.`,
+          `Esto no se trataba solo de ayudar - se trataba del destino y propósito de ${name}.`,
+          `El viaje pondría a prueba no solo el coraje de ${name} sino su sabiduría y compasión.`,
+          `A través de pruebas que desafiaron todo lo que ${name} creía sobre sí mismo, perseveró.`,
+          `El ${animal} se convirtió no solo en un guía, sino en un maestro de las verdades más profundas de la vida.`,
+          `Al final de la historia, ${name} no solo había salvado ambos mundos sino descubierto su verdadera vocación.`,
+          `La aventura había terminado, pero el verdadero viaje de propósito de ${name} apenas había comenzado.`
+        ]
+      ]
+    } : {
       easy: [
         // Variation 1: Morning Adventure
         [
@@ -333,16 +440,25 @@ export class StoryGeneratorService {
   private static getContinuationPages(userInfo: UserInfo, difficulty: DifficultyLevel, pageCount: number): string[] {
     const name = userInfo.name || 'Alex';
     const animal = userInfo.favoriteAnimal || 'cat';
+    const language = userInfo.nativeLanguage || 'en';
     
     // Get proper pronouns based on user's gender selection
     const getPronouns = () => {
       const gender = userInfo.avatar?.type || 'boy';
-      if (gender === 'girl') {
-        return { subject: 'she', object: 'her', possessive: 'her' };
-      } else if (gender === 'prefer-not-to-answer') {
-        return { subject: 'they', object: 'them', possessive: 'their' };
+      if (language === 'es') {
+        if (gender === 'girl') {
+          return { subject: 'ella', object: 'la', possessive: 'su' };
+        } else {
+          return { subject: 'él', object: 'lo', possessive: 'su' };
+        }
       } else {
-        return { subject: 'he', object: 'him', possessive: 'his' };
+        if (gender === 'girl') {
+          return { subject: 'she', object: 'her', possessive: 'her' };
+        } else if (gender === 'prefer-not-to-answer') {
+          return { subject: 'they', object: 'them', possessive: 'their' };
+        } else {
+          return { subject: 'he', object: 'him', possessive: 'his' };
+        }
       }
     };
     
