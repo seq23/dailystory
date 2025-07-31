@@ -89,75 +89,104 @@
   "userInfoForm": {
     "title": "Let's Create Your Perfect Story!",
     "subtitle": "Tell us about yourself so we can create amazing stories just for you.",
+    "sections": {
+      "aboutYou": "About You",
+      "yourFavorites": "Your Favorites"
+    },
     "fields": {
       "name": {
         "label": "What's your name?",
         "placeholder": "Enter your name"
       },
       "age": {
-        "label": "How old are you?"
+        "label": "How old are you?",
+        "placeholder": "Select your age",
+        "yearsOld": "years old"
       },
       "grade": {
         "label": "What grade are you in?",
-        "placeholder": "Enter your grade (e.g., 3rd grade, Year 5)"
+        "placeholder": "Select your grade"
       },
       "nativeLanguage": {
         "label": "What language do you speak at home?",
-        "placeholder": "Select your native language",
-        "options": {
-          "en": "English",
-          "es": "Spanish",
-          "fr": "French",
-          "ar": "Arabic",
-          "hi": "Hindi",
-          "pt": "Portuguese",
-          "zh": "Chinese"
-        }
+        "placeholder": "Select your native language"
       },
       "learningGoal": {
         "label": "What do you want to improve?",
+        "placeholder": "Select your goal",
         "options": {
           "improve-english-reading": "Get better at reading English",
           "learn-english-language": "Learn English as a new language",
           "both": "Both reading and language skills"
         }
       },
-      "interests": {
-        "label": "What do you love?",
-        "subtitle": "Pick your favorite things (choose up to 3)",
-        "options": {
-          "animals": "Animals & Pets",
-          "adventure": "Adventure & Exploration",
-          "sports": "Sports & Games",
-          "science": "Science & Discovery",
-          "fantasy": "Magic & Fantasy",
-          "friendship": "Friends & Family",
-          "nature": "Nature & Environment",
-          "vehicles": "Cars, Trains & Flying",
-          "art": "Art & Creativity",
-          "music": "Music & Dancing"
-        }
-      },
       "readingAbility": {
         "label": "How well do you read?",
-        "options": {
-          "easy": "I'm just starting to read",
-          "medium": "I can read simple books",
-          "hard": "I can read chapter books",
-          "expert": "I love reading big books"
+        "placeholder": "Select your reading level",
+        "levels": {
+          "easy": {
+            "title": "I'm just starting to read",
+            "description": "Simple words and short sentences"
+          },
+          "medium": {
+            "title": "I can read simple books",
+            "description": "Longer sentences and paragraphs"
+          },
+          "hard": {
+            "title": "I can read chapter books",
+            "description": "Complex stories and vocabulary"
+          },
+          "expert": {
+            "title": "I love reading big books",
+            "description": "Advanced vocabulary and concepts"
+          }
         }
+      },
+      "avatar": {
+        "label": "Which avatar do you want?"
+      },
+      "favoriteColor": {
+        "label": "What is your favorite color or shade?",
+        "optional": "(Optional)"
+      },
+      "favoriteAnimal": {
+        "label": "What's your favorite animal?",
+        "placeholder": "Type your favorite animal",
+        "optional": "(Optional)"
+      },
+      "favoriteFood": {
+        "label": "What's your favorite food?",
+        "placeholder": "Type your favorite food",
+        "optional": "(Optional)"
+      },
+      "hobbies": {
+        "label": "What do you love doing?",
+        "placeholder": "Tell us your hobbies and interests",
+        "optional": "(Optional)"
       },
       "specialRequest": {
         "label": "Anything special you'd like in your story?",
         "placeholder": "Tell us about characters, places, or themes you'd love to see..."
       }
     },
-    "avatar": {
-      "label": "Which avatar do you want?"
+    "grades": {
+      "PreK": "Pre-K",
+      "K": "Kindergarten",
+      "1st": "1st Grade",
+      "2nd": "2nd Grade", 
+      "3rd": "3rd Grade",
+      "4th": "4th Grade",
+      "5th": "5th Grade",
+      "6th": "6th Grade"
     },
-    "favoriteColor": {
-      "label": "What is your favorite color or shade?",
-      "optional": "(Optional)"
+    "languages": {
+      "en": "English",
+      "es": "Spanish", 
+      "fr": "French",
+      "ar": "Arabic",
+      "hi": "Hindi",
+      "pt": "Portuguese",
+      "zh": "Chinese"
     },
     "submit": "Create My Story! ✨",
     "back": "← Back",
@@ -165,9 +194,12 @@
       "nameRequired": "Please tell us your name",
       "ageRequired": "Please tell us your age",
       "gradeRequired": "Please tell us your grade",
-      "interestsRequired": "Please pick at least one thing you love",
-      "maxInterests": "Please pick only 3 favorites",
-      "readingAbilityRequired": "Please tell us about your reading level"
+      "contentWarning": "Content Warning",
+      "inappropriateContent": "Please use child-friendly language",
+      "tooManyRequests": "Too Many Requests",
+      "waitToSubmit": "Please wait before submitting again",
+      "contentIssue": "Content Issue",
+      "reviewInputs": "Please review your inputs for appropriate content"
     }
   },
   "storyDisplay": {
