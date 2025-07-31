@@ -55,8 +55,25 @@ export class OpenAITTSService {
         throw new Error('TTS Error: No audio data received from service');
       }
 
-      // The response from the edge function is already an ArrayBuffer
-      const audioBlob = new Blob([data], { type: 'audio/mpeg' });
+      console.log('TTS Response data type:', typeof data, 'Length:', data?.byteLength || data?.length);
+
+      // The response from the edge function should be an ArrayBuffer
+      let audioBlob;
+      if (data instanceof ArrayBuffer) {
+        audioBlob = new Blob([data], { type: 'audio/mpeg' });
+      } else if (data instanceof Uint8Array) {
+        audioBlob = new Blob([data], { type: 'audio/mpeg' });
+      } else {
+        // If it's base64 string, convert it
+        const binaryString = atob(data);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        audioBlob = new Blob([bytes], { type: 'audio/mpeg' });
+      }
+      
+      console.log('Created audio blob:', audioBlob.size, 'bytes, type:', audioBlob.type);
       const audioUrl = URL.createObjectURL(audioBlob);
       
       // Cache the audio URL
@@ -87,24 +104,40 @@ export class OpenAITTSService {
 
   private async playAudio(audioUrl: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      const audio = new Audio(audioUrl);
+      const audio = new Audio();
+      
+      audio.onloadstart = () => {
+        console.log('Audio loading started');
+      };
       
       audio.onloadeddata = () => {
-        console.log('Audio loaded successfully');
+        console.log('Audio data loaded successfully');
+      };
+      
+      audio.oncanplaythrough = () => {
+        console.log('Audio can play through');
       };
       
       audio.onended = () => {
         console.log('Audio playback completed');
+        URL.revokeObjectURL(audioUrl); // Clean up the blob URL
         resolve();
       };
       
       audio.onerror = (e) => {
         console.error('Audio playback failed:', e);
-        reject(new Error('Audio playback failed'));
+        console.error('Audio error details:', audio.error);
+        URL.revokeObjectURL(audioUrl); // Clean up the blob URL
+        reject(new Error(`Audio playback failed: ${audio.error?.message || 'Unknown error'}`));
       };
+      
+      // Set the source and attempt to play
+      audio.src = audioUrl;
+      audio.load(); // Explicitly load the audio
       
       audio.play().catch((playError) => {
         console.error('Audio play() failed:', playError);
+        URL.revokeObjectURL(audioUrl); // Clean up the blob URL
         reject(playError);
       });
     });
