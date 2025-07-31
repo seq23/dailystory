@@ -266,14 +266,16 @@ export const InteractiveWord = ({
           }`}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
+          onTouchStart={(e) => e.stopPropagation()}
           style={{
             left: '50%',
             transform: 'translateX(-50%)',
-            maxWidth: 'min(320px, 85vw)',
-            minWidth: '280px'
+            maxWidth: 'min(340px, 90vw)',
+            minWidth: 'min(280px, 85vw)',
+            width: 'max-content'
           }}
         >
-          <div className="bg-white border border-gray-200 text-gray-900 px-4 py-3 rounded-lg shadow-2xl text-sm font-medium backdrop-blur-sm w-full"
+          <div className="bg-white border border-gray-200 text-gray-900 px-3 py-3 sm:px-4 rounded-lg shadow-2xl text-xs sm:text-sm font-medium backdrop-blur-sm w-full"
                style={{ 
                  boxShadow: '0 10px 40px -10px rgba(0, 0, 0, 0.3)',
                  border: '1px solid rgba(0, 0, 0, 0.1)'
@@ -306,7 +308,7 @@ export const InteractiveWord = ({
             <div className="flex items-center gap-1 flex-wrap">
               <button
                 onClick={handlePronounce}
-                className="flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded transition-colors"
+                className="flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1.5 sm:py-1 rounded transition-colors touch-manipulation min-h-[32px] sm:min-h-auto"
                 disabled={isPlaying}
               >
                 <Volume2 className="w-3 h-3" />
@@ -315,7 +317,7 @@ export const InteractiveWord = ({
               
               <button
                 onClick={handleExplain}
-                className="flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded transition-colors"
+                className="flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1.5 sm:py-1 rounded transition-colors touch-manipulation min-h-[32px] sm:min-h-auto"
                 disabled={isPlaying || isLoadingExplanation}
               >
                 <HelpCircle className="w-3 h-3" />
@@ -326,7 +328,7 @@ export const InteractiveWord = ({
               {isESLLearner && (
                 <button
                   onClick={handleTranslate}
-                  className="flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded transition-colors"
+                  className="flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1.5 sm:py-1 rounded transition-colors touch-manipulation min-h-[32px] sm:min-h-auto"
                   disabled={isLoadingTranslation}
                 >
                   <Languages className="w-3 h-3" />
@@ -338,7 +340,7 @@ export const InteractiveWord = ({
               {isNativeEnglishSpeaker && userInfo?.age && userInfo.age > 12 && (
                 <button
                   onClick={() => {/* TODO: Implement etymology lookup */}}
-                  className="flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded transition-colors"
+                  className="flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1.5 sm:py-1 rounded transition-colors touch-manipulation min-h-[32px] sm:min-h-auto"
                 >
                   <Lightbulb className="w-3 h-3" />
                   {t("interactiveWord.etymology")}
