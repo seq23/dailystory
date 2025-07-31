@@ -4,5 +4,103 @@
     "titleHighlight": "Solo para Ti",
     "subtitle": "Descubre historias mágicas creadas específicamente para los intereses, nivel de lectura y trasfondo cultural de tu hijo.",
     "companyTagline": "Un Asistente de Lectura Personalizado para Cada Niño"
+  },
+  "userInfoForm": {
+    "title": "¡Cuéntanos sobre ti!",
+    "sections": {
+      "aboutYou": "Acerca de ti",
+      "favorites": "Tus favoritos",
+      "additionalInfo": "Cuéntanos más"
+    },
+    "fields": {
+      "name": {
+        "label": "¿Cómo te llamas?",
+        "placeholder": "Tu nombre"
+      },
+      "age": {
+        "label": "¿Cuántos años tienes?",
+        "placeholder": "Tu edad"
+      },
+      "grade": {
+        "label": "¿En qué grado estás?",
+        "placeholder": "Selecciona tu grado"
+      },
+      "learningGoal": {
+        "label": "¿Qué te gustaría mejorar?",
+        "placeholder": "Selecciona tu objetivo"
+      },
+      "skinTone": {
+        "label": "Tono de piel"
+      },
+      "gender": {
+        "label": "Género"
+      },
+      "favoriteAnimals": {
+        "label": "Animales favoritos",
+        "placeholder": "gato, perro, león..."
+      },
+      "favoriteColors": {
+        "label": "Colores favoritos"
+      },
+      "favoriteHobbies": {
+        "label": "Pasatiempos favoritos",
+        "placeholder": "fútbol, arte, música..."
+      },
+      "favoriteSubjects": {
+        "label": "Materias favoritas",
+        "placeholder": "matemáticas, ciencias, historia..."
+      },
+      "favoriteFood": {
+        "label": "Comida favorita",
+        "placeholder": "pizza, helado, fruta..."
+      },
+      "favoritePlaces": {
+        "label": "Lugares favoritos",
+        "placeholder": "playa, bosque, ciudad..."
+      },
+      "difficultyLevel": {
+        "label": "Nivel de dificultad",
+        "placeholder": "Selecciona el nivel"
+      },
+      "readingAbility": {
+        "label": "Habilidad de lectura",
+        "placeholder": "Selecciona tu nivel"
+      },
+      "specialRequest": {
+        "label": "¿Algo especial que te gustaría en tu historia?",
+        "placeholder": "Cuéntanos sobre personajes, lugares o temas que te encantaría ver...",
+        "optional": "(Opcional)"
+      }
+    },
+    "grades": {
+      "kindergarten": "Kinder",
+      "1st": "1er grado",
+      "2nd": "2do grado",
+      "3rd": "3er grado",
+      "4th": "4to grado",
+      "5th": "5to grado",
+      "6th": "6to grado",
+      "7th": "7mo grado",
+      "8th": "8vo grado"
+    },
+    "learningGoals": {
+      "reading": "Mejorar la lectura",
+      "vocabulary": "Expandir vocabulario",
+      "comprehension": "Comprensión de lectura",
+      "fluency": "Fluidez en la lectura",
+      "confidence": "Confianza en la lectura"
+    },
+    "submit": "¡Crear mi historia! ✨",
+    "back": "← Atrás",
+    "buttons": {
+      "backToHome": "← Volver al inicio",
+      "createStory": "¡Crear mi historia! ✨"
+    },
+    "validation": {
+      "nameRequired": "Por favor dinos tu nombre",
+      "ageRequired": "Por favor dinos tu edad",
+      "gradeRequired": "Por favor selecciona tu grado",
+      "learningGoalRequired": "Por favor selecciona tu objetivo de aprendizaje"
+    }
   }
 }
