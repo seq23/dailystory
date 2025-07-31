@@ -7,7 +7,7 @@ import type { UserInfo, SessionStats } from "@/types";
 import { InteractiveAudioReading } from "@/components/InteractiveAudioReading";
 import { ElevenLabsAudio } from "@/components/ElevenLabsAudio";
 import { EarlyReaderStoryGenerator } from "@/services/earlyReaderStoryGenerator";
-import { ReadingSessionTutorial } from "@/components/ReadingSessionTutorial";
+
 import { APP_CONFIG } from "@/constants/app";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
@@ -58,7 +58,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   const [showProgressReport, setShowProgressReport] = useState(false);
   const [sessionEnded, setSessionEnded] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [showTutorial, setShowTutorial] = useState(true);
+  const [tutorialStep, setTutorialStep] = useState(0);
 
   // Character consistency - store original character details
   const [establishedCharacter, setEstablishedCharacter] = useState<any>(null);
@@ -105,9 +105,16 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     setWordsRead(immediateFallback.join(' ').split(' ').length);
     setIsLoading(false); // No loading screen!
     
-    // AUTO-START: Begin timer immediately (no button needed)
+    // AUTO-START: Begin timer immediately and start tutorial
     setSessionStarted(true);
     setSessionStartTime(new Date());
+    
+    // Start tutorial sequence
+    setTimeout(() => setTutorialStep(1), 1000);
+    setTimeout(() => setTutorialStep(2), 4000);
+    setTimeout(() => setTutorialStep(3), 7000);
+    setTimeout(() => setTutorialStep(4), 10000);
+    setTimeout(() => setTutorialStep(0), 13000); // End tutorial
     
     // Background generation happens but no initial toast
     
@@ -727,18 +734,13 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
 
   return (
     <>
-      <ReadingSessionTutorial 
-        isVisible={showTutorial}
-        onComplete={() => setShowTutorial(false)}
-        onSkip={() => setShowTutorial(false)}
-      />
       
       <div className={`min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 ${
         celebrationStep === 1 ? 'animate-pulse' : ''
       }`}>
-        {/* Enhanced Professional Floating Timer with Controls - Left Side to avoid covering nav buttons */}
+        {/* Enhanced Professional Floating Timer with Controls - Above Free Trial Badge */}
         {sessionStarted && timeRemaining > 0 && !sessionEnded && (
-          <div className="fixed bottom-6 left-6 z-40 flex flex-col items-center gap-2 sm:gap-3">{" "}
+          <div className="fixed bottom-20 left-6 z-40 flex flex-col items-center gap-2 sm:gap-3">
             
             {/* Main Timer Circle - Professional & Larger */}
             <div className="relative">
@@ -1112,6 +1114,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                         }}
                         disabled={currentPage === 0}
                         variant="outline"
+                        className={tutorialStep === 4 ? 'animate-pulse ring-4 ring-yellow-400 ring-opacity-75 border-yellow-400' : ''}
                       >
                         {t("freeReadingSession.navigation.previous")}
                       </Button>
@@ -1142,8 +1145,9 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                         }}
                         disabled={currentPage >= story.length - 1}
                         variant="outline"
+                        className={tutorialStep === 4 ? 'animate-pulse ring-4 ring-yellow-400 ring-opacity-75 border-yellow-400' : ''}
                       >
-                        {t("freeReadingSession.navigation.next")}
+                        {tutorialStep === 4 ? "📖 Navigate pages!" : t("freeReadingSession.navigation.next")}
                       </Button>
                     </div>
                   </CardContent>
