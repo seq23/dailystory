@@ -198,6 +198,10 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
       const newStory = await adaptiveStoryGenerator.generateStory(storyConfig);
       setStory(newStory.pages);
       setWordsRead(newStory.wordCount);
+      
+      // Images will be generated in background by the story generator
+      // Fallback illustrations continue to display while new images load
+      
     } catch (error) {
       console.error('Failed to change difficulty:', error);
     } finally {

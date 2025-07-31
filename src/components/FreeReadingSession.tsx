@@ -197,6 +197,31 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     const newDifficulty = difficultyLevels[newIndex];
     setCurrentDifficulty(newDifficulty);
     setCurrentPage(0);
+    
+    // Generate new story with proper image support
+    try {
+      const characterDescription = userInfo.avatar ? `, a curious and brave ${userInfo.avatar.type === 'boy' ? 'boy' : userInfo.avatar.type === 'girl' ? 'girl' : 'child'}` : '';
+      
+      const storyConfig = {
+        age: userInfo.age,
+        gradeLevel: userInfo.gradeLevel || userInfo.grade,
+        readingLevel: newDifficulty,
+        interests: userInfo.interests || [userInfo.hobbies || 'adventure'],
+        theme: 'adventure',
+        userName: userInfo.name,
+        characterDescription
+      };
+
+      const newStory = await adaptiveStoryGenerator.generateStory(storyConfig);
+      setStory(newStory.pages);
+      setWordsRead(newStory.wordCount);
+      
+      // Images will be generated in background by the story generator
+      // Current fallback illustrations will display immediately while new images load
+      
+    } catch (error) {
+      console.error('Failed to change difficulty:', error);
+    }
   };
   
   // Function to add more pages to the story
