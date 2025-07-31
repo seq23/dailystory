@@ -14,8 +14,9 @@ interface FloatingTimerProps {
   onEndSession: () => void;
   pagesRemaining?: number;
   currentParagraph?: number;
-  onSessionEnded: () => void;
+  onSessionEnded: (sessionStats?: any) => void;
   tutorialStep?: number;
+  sessionStats?: any; // Session data to pass to end page
 }
 
 export const FloatingTimer = ({ 
@@ -27,7 +28,8 @@ export const FloatingTimer = ({
   pagesRemaining = 0,
   currentParagraph = 0,
   onSessionEnded,
-  tutorialStep = 0
+  tutorialStep = 0,
+  sessionStats
 }: FloatingTimerProps) => {
   const { t } = useTranslation();
   const [showCelebration, setShowCelebration] = useState(false);
@@ -112,7 +114,7 @@ export const FloatingTimer = ({
     
     // Navigate to session ended page after 3 seconds
     setTimeout(() => {
-      onSessionEnded();
+      onSessionEnded(sessionStats);
     }, 3000);
   };
 

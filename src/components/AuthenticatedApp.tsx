@@ -194,7 +194,10 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
               userInfo={userInfo}
               onHome={() => setCurrentView("progress")}
               onNewStory={() => setCurrentView("profile")}
-              onSessionEnded={() => setCurrentView("progress")}
+              onSessionEnded={(stats) => {
+                // Navigate to SessionEnded page with stats
+                window.location.href = `/session-ended?stats=${encodeURIComponent(JSON.stringify({...stats, isPremium}))}`
+              }}
               isPremium={isPremium}
               onUpgrade={() => setCurrentView("progress")}
             />

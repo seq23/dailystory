@@ -176,6 +176,23 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
     onSessionEnded(sessionStats);
   };
 
+  // Calculate session stats for premium users
+  const calculateStats = () => {
+    const timeSpent = sessionStartTime ? 
+      Math.floor((Date.now() - sessionStartTime.getTime()) / 1000) : 
+      APP_CONFIG.FREE_SESSION_DURATION - timeRemaining;
+    
+    return {
+      wordsRead,
+      timeSpent,
+      pagesRead: currentPage + 1,
+      totalPages: story.length,
+      accuracy: 100, // Placeholder - would be calculated based on comprehension questions
+      currentDifficulty: userInfo.readingLevel || currentDifficulty,
+      readingSpeed: Math.round((wordsRead / (timeSpent / 60)) || 0)
+    };
+  };
+
   const handleNewStory = async () => {
     if (isPremium) {
       // Premium users: Generate new story directly
@@ -627,13 +644,11 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
           }}
           pagesRemaining={story.length - currentPage}
           currentParagraph={currentPage}
-          onSessionEnded={() => onSessionEnded({
-            timeSpent: Math.floor((Date.now() - sessionStartTime.getTime()) / 1000),
-            wordsRead,
-            pagesRead: currentPage + 1,
-            startTime: sessionStartTime.getTime(),
-            accuracy: 100
-          })}
+          onSessionEnded={(sessionStats) => {
+            const stats = sessionStats || calculateStats();
+            onSessionEnded(stats);
+          }}
+          sessionStats={calculateStats()}
         />
       )}
       

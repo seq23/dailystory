@@ -28,6 +28,7 @@ interface FreeReadingSessionProps {
   onCreateAccount: () => void;
   onHome?: () => void;
   onNewStory?: () => void;
+  onSessionEnded?: (stats: any) => void;
 }
 
 export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
@@ -36,6 +37,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   onCreateAccount,
   onHome,
   onNewStory,
+  onSessionEnded,
 }) => {
   const { toast } = useToast();
   const { t } = useTranslation();
@@ -722,14 +724,24 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     const timeSpent = APP_CONFIG.FREE_SESSION_DURATION - timeRemaining;
     const readingSpeed = Math.round((wordsRead / (timeSpent / 60)) || 0);
     const pagesRead = currentPage + 1;
+    const completionRate = Math.round((pagesRead / story.length) * 100);
     
     return {
-      timeSpent,
       wordsRead,
+      timeSpent,
       pagesRead,
+      totalPages: story.length,
+      accuracy: 100, // Placeholder - would be calculated based on comprehension questions
+      currentDifficulty: userInfo.readingLevel || 'medium',
       readingSpeed,
-      completionRate: Math.round((pagesRead / story.length) * 100)
+      completionRate
     };
+  };
+
+  // Navigate to session ended page
+  const navigateToSessionEnd = (sessionStats?: any) => {
+    const stats = sessionStats || calculateStats();
+    onSessionEnded?.(stats);
   };
 
   if (isLoading) {
@@ -777,7 +789,8 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
             }}
             pagesRemaining={story.length - currentPage}
             currentParagraph={currentPage}
-            onSessionEnded={() => setSessionEnded(true)}
+            onSessionEnded={navigateToSessionEnd}
+            sessionStats={calculateStats()}
           />
         )}
 

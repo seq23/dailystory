@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Home, BookOpen, Clock, TrendingUp, Target, BookText } from "lucide-react";
+import { Home, BookOpen, Clock, TrendingUp, Target, BookText, Crown, Sparkles, Star } from "lucide-react";
 import { useLocation } from "react-router-dom";
 
 interface ReadingStats {
@@ -16,11 +16,30 @@ interface SessionEndedProps {
   onHome: () => void;
   onNewStory: () => void;
   sessionStats?: ReadingStats;
+  isPremium?: boolean;
+  onUpgrade?: () => void;
 }
 
-const SessionEnded = ({ onHome, onNewStory }: SessionEndedProps) => {
+const SessionEnded = ({ onHome, onNewStory, isPremium = false, onUpgrade }: SessionEndedProps) => {
   const location = useLocation();
-  const sessionStats = location.state?.sessionStats;
+  
+  // Get stats from URL parameters or location state
+  let sessionStats = location.state?.sessionStats;
+  let userIsPremium = isPremium;
+  
+  // Check for stats in URL query parameters
+  const urlParams = new URLSearchParams(location.search);
+  const statsParam = urlParams.get('stats');
+  if (statsParam) {
+    try {
+      const parsedStats = JSON.parse(decodeURIComponent(statsParam));
+      sessionStats = parsedStats;
+      userIsPremium = parsedStats.isPremium || false;
+    } catch (error) {
+      console.error('Failed to parse stats from URL:', error);
+    }
+  }
+  
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
@@ -36,24 +55,42 @@ const SessionEnded = ({ onHome, onNewStory }: SessionEndedProps) => {
     }
   };
 
+  const getEncouragementMessage = () => {
+    if (!sessionStats) return "Great job on completing your reading session!";
+    
+    if (sessionStats.pagesRead >= 8) {
+      return "Outstanding reading achievement! You're becoming a reading champion!";
+    } else if (sessionStats.pagesRead >= 5) {
+      return "Excellent work! You're making great progress!";
+    } else if (sessionStats.pagesRead >= 3) {
+      return "Great start! Keep up the wonderful reading habit!";
+    } else {
+      return "Every page counts! You're on your way to becoming a great reader!";
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-2xl mx-auto bg-white/90 backdrop-blur-sm shadow-2xl border-2 border-amber-200">
         <CardContent className="p-8 text-center space-y-6">
-          {/* Icon */}
+          {/* Icon and Title */}
           <div className="flex justify-center">
             <div className="bg-amber-100 rounded-full p-4">
-              <Clock className="w-12 h-12 text-amber-600" />
+              <div className="relative">
+                <Clock className="w-12 h-12 text-amber-600" />
+                {userIsPremium && (
+                  <Crown className="w-6 h-6 text-yellow-500 absolute -top-2 -right-2" />
+                )}
+              </div>
             </div>
           </div>
           
-          {/* Title */}
           <div className="space-y-2">
             <h1 className="text-2xl font-bold text-gray-800">
-              Session Completed!
+              {userIsPremium ? "Premium Session Completed!" : "Reading Session Completed!"}
             </h1>
             <p className="text-gray-600">
-              Great job on completing your reading session!
+              {getEncouragementMessage()}
             </p>
           </div>
 
@@ -67,15 +104,17 @@ const SessionEnded = ({ onHome, onNewStory }: SessionEndedProps) => {
                     Reading Progress
                   </span>
                   <span className="text-sm text-purple-600">
-                    {sessionStats.pagesRead} of {sessionStats.totalPages} pages
+                    {sessionStats.pagesRead} of {sessionStats.totalPages || sessionStats.pagesRead} pages
                   </span>
                 </div>
                 <div className="w-full bg-purple-100 rounded-full h-3 overflow-hidden">
                   <div 
                     className="h-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-500 ease-out"
                     style={{ 
-                      width: `${(sessionStats.pagesRead / sessionStats.totalPages) * 100}%`,
-                      minWidth: sessionStats.totalPages > 0 ? `${100 / sessionStats.totalPages}%` : '0%'
+                      width: sessionStats.totalPages ? 
+                        `${(sessionStats.pagesRead / sessionStats.totalPages) * 100}%` : 
+                        '100%',
+                      minWidth: '8%'
                     }}
                   />
                 </div>
@@ -103,10 +142,50 @@ const SessionEnded = ({ onHome, onNewStory }: SessionEndedProps) => {
                 
                 <div className="bg-purple-50 rounded-lg p-4 text-center">
                   <TrendingUp className="w-6 h-6 text-purple-600 mx-auto mb-2" />
-                  <div className="text-lg font-bold text-purple-700">{getDifficultyLabel(sessionStats.currentDifficulty)}</div>
+                  <div className="text-lg font-bold text-purple-700">
+                    {sessionStats.currentDifficulty ? getDifficultyLabel(sessionStats.currentDifficulty) : 'Reading Level'}
+                  </div>
                   <div className="text-sm text-purple-600">Level</div>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* Upgrade Suggestion for Free Users */}
+          {!userIsPremium && (
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-lg p-6 space-y-4">
+              <div className="flex items-center justify-center gap-2">
+                <Crown className="w-6 h-6 text-amber-600" />
+                <h3 className="text-lg font-bold text-amber-700">Unlock Premium Benefits!</h3>
+              </div>
+              <div className="space-y-2 text-sm text-amber-600">
+                <div className="flex items-center gap-2">
+                  <Star className="w-4 h-4" />
+                  <span>Unlimited reading sessions</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4" />
+                  <span>Custom story difficulty adjustment</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <BookOpen className="w-4 h-4" />
+                  <span>Extended story library with more topics</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4" />
+                  <span>Advanced progress tracking & analytics</span>
+                </div>
+              </div>
+              {onUpgrade && (
+                <Button
+                  onClick={onUpgrade}
+                  className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-medium py-3"
+                  size="lg"
+                >
+                  <Crown className="w-5 h-5 mr-2" />
+                  Upgrade to Premium
+                </Button>
+              )}
             </div>
           )}
           

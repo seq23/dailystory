@@ -70,6 +70,10 @@ export const GuestExperience = () => {
             onCreateAccount={handleCreateAccount}
             onHome={() => setCurrentState("welcome")}
             onNewStory={() => setCurrentState("form")}
+            onSessionEnded={(stats) => {
+              // Navigate to SessionEnded page with stats
+              window.location.href = `/session-ended?stats=${encodeURIComponent(JSON.stringify({...stats, isPremium: false}))}`
+            }}
           />
         </div>
       ) : null;
