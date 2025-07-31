@@ -770,7 +770,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   return (
     <>
       
-      <div className={`min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 ${
+      <div className={`min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex flex-col ${
         celebrationStep === 1 ? 'animate-pulse' : ''
       }`}>
         {/* FloatingTimer Component */}
@@ -962,96 +962,103 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
             </div>
           </header>
 
-          {/* Main Content - Mobile Optimized */}
-          <main className="container mx-auto px-2 sm:px-4 py-4 sm:py-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 max-w-6xl mx-auto">
-              {/* Story Illustration - Mobile Optimized */}
-              <div className="order-2 lg:order-1">
-                <Card className="h-[300px] sm:h-[400px] lg:h-[500px] xl:h-[600px]">
-                  <CardContent className="p-3 sm:p-4 lg:p-6 h-full">
-                    <img 
-                      src={storyImages[currentPage]?.url || illustrations[currentPage % illustrations.length]}
-                      alt={`Story illustration for page ${currentPage + 1}`}
-                      className="w-full h-full object-cover rounded-lg"
-                    />
-                  </CardContent>
-                </Card>
-              </div>
+          {/* Main Content - Overhauled Layout with Proper Scrolling */}
+          <main className="flex-1 flex flex-col overflow-hidden">
+            <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 flex-1 flex flex-col">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 max-w-6xl mx-auto flex-1 overflow-hidden">
+                
+                {/* Story Illustration - Mobile Optimized */}
+                <div className="order-2 lg:order-1 flex flex-col">
+                  <Card className="flex-1 min-h-[300px] sm:min-h-[400px] lg:min-h-[500px]">
+                    <CardContent className="p-3 sm:p-4 lg:p-6 h-full">
+                      <img 
+                        src={storyImages[currentPage]?.url || illustrations[currentPage % illustrations.length]}
+                        alt={`Story illustration for page ${currentPage + 1}`}
+                        className="w-full h-full object-cover rounded-lg"
+                      />
+                    </CardContent>
+                  </Card>
+                </div>
 
-              {/* Story Text - Mobile Optimized */}
-              <div className="order-1 lg:order-2">
-                <Card className="h-auto min-h-[450px] sm:min-h-[500px] lg:h-[500px] xl:h-[600px] flex flex-col transition-all duration-300 hover:shadow-lg overflow-hidden">
-                  <CardContent className="p-3 sm:p-4 lg:p-6 flex-1 flex flex-col overflow-hidden">
-                    {/* Difficulty Level Selector - Easier/Harder */}
-                    <div className="mb-4 reading-level-controls">
-                      <div className="flex gap-3 justify-center items-center">
-                        <div className="relative group">
-                          <Button
-                            onClick={() => changeDifficulty('easier')}
-                            disabled={!canDecreaseDifficulty() || isLoading}
-                            variant="outline"
-                            size="sm"
-                            className="p-2 transition-all duration-200 hover:scale-105 hover:shadow-md"
-                          >
-                            <ChevronDown className="w-4 h-4" />
-                          </Button>
-                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
-                            {t('freeReadingSession.readingLevel.easier')}
-                          </div>
-                        </div>
-                        
-                        <span className="text-sm font-medium text-gray-600">
-                          {t('freeReadingSession.readingLevel.label')}
-                        </span>
-                        
-                        <div className="relative group">
-                          <Button
-                            onClick={() => changeDifficulty('harder')}
-                            disabled={!canIncreaseDifficulty() || isLoading}
-                            variant="outline"
-                            size="sm"
-                            className="p-2 transition-all duration-200 hover:scale-105 hover:shadow-md"
-                          >
-                            <ChevronUp className="w-4 h-4" />
-                          </Button>
-                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
-                            {t('freeReadingSession.readingLevel.harder')}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Progress Bar */}
-                    <div className="mb-6">
-                      <Progress value={progress} className="h-2" />
-                       <p className="text-sm text-gray-600 mt-2 text-center">
-                         Reading Progress: {Math.round(progress)}%
-                       </p>
-                    </div>
-
-                    {/* Story Text with Interactive Words */}
-                    <div className="flex-1 flex items-center justify-center">
-                      <div className="text-center">
-                        {/* Apply reading level configuration */}
-                        {(() => {
-                          const config = EarlyReaderStoryGenerator.getReadingConfigForDifficulty(currentDifficulty);
-                          return (
-                            <div className={`${config.fontSize} ${config.lineHeight} ${config.spacing} font-medium text-gray-800 max-w-full break-words hyphens-auto`}>
-                              {processTextForPhonetics(
-                                currentStory, 
-                                "", 
-                                currentDifficulty as "easy" | "medium" | "hard" | "expert",
-                                userInfo
-                              )}
+                {/* Story Text Panel - Overhauled with Proper Layout */}
+                <div className="order-1 lg:order-2 flex flex-col">
+                  <Card className="flex-1 flex flex-col overflow-hidden transition-all duration-300 hover:shadow-lg">
+                    
+                    {/* Fixed Header Section */}
+                    <div className="flex-shrink-0 p-3 sm:p-4 lg:p-6 border-b border-gray-100">
+                      {/* Difficulty Level Selector */}
+                      <div className="mb-4 reading-level-controls">
+                        <div className="flex gap-3 justify-center items-center">
+                          <div className="relative group">
+                            <Button
+                              onClick={() => changeDifficulty('easier')}
+                              disabled={!canDecreaseDifficulty() || isLoading}
+                              variant="outline"
+                              size="sm"
+                              className="p-2 transition-all duration-200 hover:scale-105 hover:shadow-md"
+                            >
+                              <ChevronDown className="w-4 h-4" />
+                            </Button>
+                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                              {t('freeReadingSession.readingLevel.easier')}
                             </div>
-                          );
-                        })()}
+                          </div>
+                          
+                          <span className="text-sm font-medium text-gray-600">
+                            {t('freeReadingSession.readingLevel.label')}
+                          </span>
+                          
+                          <div className="relative group">
+                            <Button
+                              onClick={() => changeDifficulty('harder')}
+                              disabled={!canIncreaseDifficulty() || isLoading}
+                              variant="outline"
+                              size="sm"
+                              className="p-2 transition-all duration-200 hover:scale-105 hover:shadow-md"
+                            >
+                              <ChevronUp className="w-4 h-4" />
+                            </Button>
+                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                              {t('freeReadingSession.readingLevel.harder')}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Progress Bar */}
+                      <div className="mb-4">
+                        <Progress value={progress} className="h-2" />
+                        <p className="text-sm text-gray-600 mt-2 text-center">
+                          Reading Progress: {Math.round(progress)}%
+                        </p>
                       </div>
                     </div>
 
-                    {/* Audio Controls */}
+                    {/* Scrollable Story Content */}
+                    <div className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6">
+                      <div className="flex items-center justify-center min-h-full">
+                        <div className="text-center w-full">
+                          {/* Apply reading level configuration with proper responsive design */}
+                          {(() => {
+                            const config = EarlyReaderStoryGenerator.getReadingConfigForDifficulty(currentDifficulty);
+                            return (
+                              <div className={`${config.fontSize} ${config.lineHeight} ${config.spacing} font-medium text-gray-800 max-w-full break-words hyphens-auto leading-relaxed`}>
+                                {processTextForPhonetics(
+                                  currentStory, 
+                                  "", 
+                                  currentDifficulty as "easy" | "medium" | "hard" | "expert",
+                                  userInfo
+                                )}
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Audio Controls Section */}
                     {sessionStarted && (
-                      <div className="mt-6 audio-controls">
+                      <div className="flex-shrink-0 p-3 sm:p-4 lg:p-6 border-t border-gray-100 audio-controls">
                         <InteractiveAudioReading 
                           text={currentStory}
                           userInfo={userInfo}
@@ -1060,82 +1067,84 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                       </div>
                     )}
 
-                    {/* Navigation - Fixed bottom positioning */}
-                    <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-100 story-navigation">
-                      <Button 
-                        onClick={() => {
-                          setCurrentPage(Math.max(0, currentPage - 1));
-                        }}
-                        disabled={currentPage === 0}
-                        variant="outline"
-                        size="sm"
-                        className="flex-shrink-0"
-                      >
-                        {t("freeReadingSession.navigation.previous")}
-                      </Button>
-                      
-                      <div className="flex flex-col items-center gap-1 px-2">
-                        <span className="text-xs sm:text-sm font-medium text-gray-600 whitespace-nowrap">
-                          {currentPage + 1} / {story.length}
-                        </span>
-                        <div className="relative group">
-                          <Button
-                            onClick={addMorePages}
-                            disabled={isLoading}
-                            variant="outline"
-                            size="sm"
-                            className={`p-1.5 sm:p-2 transition-all duration-300 ${
-                              showAddPagesAlert 
-                                ? 'animate-bounce bg-amber-100 border-amber-400 text-amber-700 shadow-lg ring-2 ring-amber-300' 
-                                : 'bg-blue-50 hover:bg-blue-100 border-blue-200'
-                            }`}
-                          >
-                            <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
-                          </Button>
-                          
-                          {/* Alert Tooltip with X button */}
-                          {showAddPagesAlert && (
-                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-amber-600 text-white px-2 py-1 rounded text-xs whitespace-nowrap z-10 animate-pulse">
-                              <div className="flex items-center gap-2">
-                                <span>⏰ Add more pages now!</span>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setShowAddPagesAlert(false);
-                                  }}
-                                  className="text-white hover:text-amber-200 transition-colors"
-                                >
-                                  <X className="w-3 h-3" />
-                                </button>
+                    {/* Fixed Navigation Footer */}
+                    <div className="flex-shrink-0 p-3 sm:p-4 lg:p-6 border-t border-gray-100 bg-gray-50/50">
+                      <div className="flex justify-between items-center story-navigation">
+                        <Button 
+                          onClick={() => {
+                            setCurrentPage(Math.max(0, currentPage - 1));
+                          }}
+                          disabled={currentPage === 0}
+                          variant="outline"
+                          size="sm"
+                          className="flex-shrink-0 min-w-[80px]"
+                        >
+                          {t("freeReadingSession.navigation.previous")}
+                        </Button>
+                        
+                        <div className="flex flex-col items-center gap-1 px-2">
+                          <span className="text-xs sm:text-sm font-medium text-gray-600 whitespace-nowrap">
+                            {currentPage + 1} / {story.length}
+                          </span>
+                          <div className="relative group">
+                            <Button
+                              onClick={addMorePages}
+                              disabled={isLoading}
+                              variant="outline"
+                              size="sm"
+                              className={`p-1.5 sm:p-2 transition-all duration-300 ${
+                                showAddPagesAlert 
+                                  ? 'animate-bounce bg-amber-100 border-amber-400 text-amber-700 shadow-lg ring-2 ring-amber-300' 
+                                  : 'bg-blue-50 hover:bg-blue-100 border-blue-200'
+                              }`}
+                            >
+                              <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
+                            </Button>
+                            
+                            {/* Alert Tooltip with X button */}
+                            {showAddPagesAlert && (
+                              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-amber-600 text-white px-2 py-1 rounded text-xs whitespace-nowrap z-50 animate-pulse">
+                                <div className="flex items-center gap-2">
+                                  <span>⏰ Add more pages now!</span>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setShowAddPagesAlert(false);
+                                    }}
+                                    className="text-white hover:text-amber-200 transition-colors"
+                                  >
+                                    <X className="w-3 h-3" />
+                                  </button>
+                                </div>
+                                {/* Arrow pointing down */}
+                                <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-l-2 border-r-2 border-t-4 border-transparent border-t-amber-600"></div>
                               </div>
-                              {/* Arrow pointing down */}
-                              <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-l-2 border-r-2 border-t-4 border-transparent border-t-amber-600"></div>
-                            </div>
-                          )}
-                          
-                          {/* Regular Tooltip */}
-                          {!showAddPagesAlert && (
-                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 rounded text-xs transition-all duration-300 pointer-events-none whitespace-nowrap z-10 bg-gray-800 text-white opacity-0 group-hover:opacity-100">
-                              Add 5 more pages
-                            </div>
-                          )}
+                            )}
+                            
+                            {/* Regular Tooltip */}
+                            {!showAddPagesAlert && (
+                              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 rounded text-xs transition-all duration-300 pointer-events-none whitespace-nowrap z-50 bg-gray-800 text-white opacity-0 group-hover:opacity-100">
+                                Add 5 more pages
+                              </div>
+                            )}
+                          </div>
                         </div>
+                        
+                        <Button 
+                          onClick={() => {
+                            setCurrentPage(Math.min(story.length - 1, currentPage + 1));
+                          }}
+                          disabled={currentPage >= story.length - 1}
+                          variant="outline"
+                          size="sm"
+                          className="flex-shrink-0 min-w-[80px]"
+                        >
+                          {t("freeReadingSession.navigation.next")}
+                        </Button>
                       </div>
-                      
-                      <Button 
-                        onClick={() => {
-                          setCurrentPage(Math.min(story.length - 1, currentPage + 1));
-                        }}
-                        disabled={currentPage >= story.length - 1}
-                        variant="outline"
-                        size="sm"
-                        className="flex-shrink-0"
-                      >
-                        {t("freeReadingSession.navigation.next")}
-                      </Button>
                     </div>
-                  </CardContent>
-                </Card>
+                  </Card>
+                </div>
               </div>
             </div>
           </main>
