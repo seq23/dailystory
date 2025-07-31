@@ -211,55 +211,53 @@ export class InclusiveStoryGenerator {
     progress: any,
     targetWords: number
   ): string {
-    // Mo Willems style: Simple dialogue, repetition, emotional expressions
-    // Dr. Seuss style: Rhyme, rhythm, playful language
-    // Eric Carle style: Simple concepts, exploration, discovery
+    // Ultra-simple vocabulary for beginning readers
+    // Using only the most basic sight words and simple concepts
     
     if (section === 'introduction') {
       if (pageIndex === 0) {
-        // Mo Willems style introduction with emotion
-        return `This is ${characterName}. ${characterName} is VERY excited today! "I want an adventure!" says ${characterName}. "A BIG adventure!"`;
+        // Simple introduction with very basic words
+        return `This is ${characterName}. ${characterName} is happy. ${characterName} wants to play!`;
       } else if (pageIndex === 1) {
-        // Intelligently introduce activity if provided
+        // Introduce activity with simple words
         if (elementTracker.shouldIntroduceElement(pageIndex, section, 'activity')) {
-          return `${characterName} loves ${elementTracker.activity}! ${characterName} goes here. ${characterName} goes there. ${characterName} goes everywhere!`;
+          return `${characterName} likes to ${elementTracker.activity}. It is fun! ${characterName} goes out to play.`;
         }
-        // Dr. Seuss style rhythm and exploration
-        return `${characterName} goes here. ${characterName} goes there. ${characterName} goes everywhere! Where will ${characterName} go? Nobody knows!`;
+        // Simple movement and exploration
+        return `${characterName} walks. ${characterName} looks. ${characterName} sees many things!`;
       } else {
-        // Eric Carle style discovery
-        return `Look! Look! What does ${characterName} see? The ${elementTracker.setting}! It is big and bright and beautiful!`;
+        // Simple discovery with basic words
+        return `Look! ${characterName} sees a big tree. The tree is in a nice place. It looks good!`;
       }
     } else if (section === 'adventure') {
+      const animal = elementTracker.getAppropriateElement('character', ['cat', 'dog', 'bird']);
+      
       if (!progress.metCharacter) {
-        // Intelligently introduce user's favorite animal
-        const animal = elementTracker.getAppropriateElement('character', ['friendly dragon', 'wise owl', 'happy rabbit']);
-        return `"Hello!" says a voice. ${characterName} looks up. "HELLO!" ${characterName} says back. It is a friendly ${animal}!`;
+        // Meet new friend with simple language
+        return `"Hi!" says a ${animal}. ${characterName} says "Hi!" back. The ${animal} is nice!`;
       } else if (!progress.foundObject) {
-        // Dr. Seuss style problem introduction with rhythm
-        return `"Oh no! Oh me! I lost my ${elementTracker.object}!" says the ${elementTracker.getAppropriateElement('character', ['friend'])}. "Will you help? Will you please?"`;
+        // Simple problem with easy words
+        return `"Oh no!" says the ${animal}. "I lost my toy! Can you help me look?"`;
       } else if (!progress.facedChallenge) {
-        // Eric Carle style methodical searching
-        return `They look here. They look there. Under the rock? No! Behind the tree? No! Where can it be?`;
+        // Simple searching with basic vocabulary
+        return `They look here. They look there. Is it here? No. Is it there? No.`;
       } else {
-        // Mo Willems style excitement and discovery
-        return `"THERE!" shouts ${characterName}. "I found it! I found it!" The ${elementTracker.object} sparkles in the grass!`;
+        // Simple discovery with excitement
+        return `"There it is!" says ${characterName}. "I see it! I see your toy!" They are happy!`;
       }
     } else {
       if (!progress.learnedLesson) {
-        // Intelligently introduce food element if provided
+        // Simple gratitude and sharing
         if (elementTracker.shouldIntroduceElement(pageIndex, section, 'food')) {
-          return `"Thank you! Let's share some ${elementTracker.food}!" says the friend. ${characterName} feels happy. Very, very happy!`;
+          return `"Thank you!" says the friend. "Let us eat ${elementTracker.food}!" They share and smile.`;
         }
-        // Mo Willems style emotional resolution
-        return `"Thank you! Thank you!" says the friend. ${characterName} feels happy. Very, very happy!`;
+        return `"Thank you!" says the friend. ${characterName} feels good. Being nice is good!`;
       } else {
-        // Intelligently weave in special theme if provided
+        // Simple lesson with basic vocabulary
         if (elementTracker.shouldIntroduceElement(pageIndex, section, 'specialTheme')) {
-          return `${characterName} learned about ${elementTracker.value} and ${elementTracker.specialTheme} today. Being kind is the best way! Hip hooray!`;
+          return `${characterName} had fun today. ${characterName} was nice. Being nice is good!`;
         }
-        // Dr. Seuss style wisdom with rhythm
-        return `${characterName} learned about ${elementTracker.value} today. Being kind is the best way! Hip hooray!`;
+        return `${characterName} was nice today. Being nice makes friends. ${characterName} is happy!`;
       }
     }
   }
