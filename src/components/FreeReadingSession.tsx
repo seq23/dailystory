@@ -386,8 +386,8 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                 <div className={`text-sm sm:text-lg font-bold tracking-tight ${timeRemaining <= 300 ? 'text-red-500' : 'text-purple-600'}`}>
                   {Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')}
                 </div>
-                <div className="text-xs sm:text-sm text-muted-foreground font-medium">
-                  Reading Time
+                <div className="text-[10px] sm:text-xs text-gray-600 font-medium leading-tight">
+                  Free Time
                 </div>
               </div>
             </div>

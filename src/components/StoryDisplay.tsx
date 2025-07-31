@@ -210,7 +210,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                 <div className={`text-xs sm:text-sm font-bold tracking-tight ${timeRemaining <= 300 ? 'text-red-500' : 'text-green-600'}`}>
                   {Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')}
                 </div>
-                <div className="text-[10px] sm:text-xs text-muted-foreground font-medium">
+                <div className="text-[8px] sm:text-[10px] text-gray-600 font-medium leading-tight">
                   Premium
                 </div>
               </div>
