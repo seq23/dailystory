@@ -26,7 +26,9 @@ export const InteractiveWord = ({
   const [isLoadingExplanation, setIsLoadingExplanation] = useState(false);
   const [isLoadingTranslation, setIsLoadingTranslation] = useState(false);
   const [ttsService, setTtsService] = useState<any>(null);
+  const [tooltipPosition, setTooltipPosition] = useState<'top' | 'bottom'>('top');
   const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const wordRef = useRef<HTMLSpanElement>(null);
   const phoneticSpelling = getPhoneticSpelling(word);
 
   useEffect(() => {
@@ -55,6 +57,21 @@ export const InteractiveWord = ({
       clearTimeout(hideTimeoutRef.current);
       hideTimeoutRef.current = null;
     }
+    
+    // Calculate optimal position for tooltip
+    if (wordRef.current) {
+      const rect = wordRef.current.getBoundingClientRect();
+      const spaceAbove = rect.top;
+      const spaceBelow = window.innerHeight - rect.bottom;
+      
+      // If there's less than 200px above or we're in the top 20% of viewport, show below
+      if (spaceAbove < 200 || rect.top < window.innerHeight * 0.2) {
+        setTooltipPosition('bottom');
+      } else {
+        setTooltipPosition('top');
+      }
+    }
+    
     setShowTooltip(true);
   };
 
@@ -223,6 +240,7 @@ export const InteractiveWord = ({
 
   return (
     <span
+      ref={wordRef}
       className={`relative inline-block cursor-pointer ${className} ${isPlaying ? 'opacity-70' : ''}`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -241,17 +259,25 @@ export const InteractiveWord = ({
       
       {showTooltip && (
         <div 
-          className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 z-50"
+          className={`absolute left-1/2 transform -translate-x-1/2 z-50 min-w-max ${
+            tooltipPosition === 'top' 
+              ? 'bottom-full mb-2' 
+              : 'top-full mt-2'
+          }`}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
+          style={{
+            maxWidth: '90vw',
+            minWidth: 'max-content'
+          }}
         >
-          <div className="bg-popover border text-popover-foreground px-3 py-2 rounded-lg shadow-lg text-sm font-medium max-w-xs">
+          <div className="bg-white border border-gray-200 text-gray-900 px-3 py-2 rounded-lg shadow-xl text-sm font-medium max-w-xs backdrop-blur-sm">
             {/* Phonetic spelling */}
             {phoneticSpelling && (
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-xs text-muted-foreground">"{phoneticSpelling}"</span>
+                <span className="text-xs text-gray-500">"{phoneticSpelling}"</span>
                 {userInfo?.age && userInfo.age > 8 && (
-                  <span className="text-xs bg-secondary/50 px-1 rounded">
+                  <span className="text-xs bg-gray-100 px-1 rounded">
                     {t(`interactiveWord.difficulty.${wordComplexity}`)}
                   </span>
                 )}
@@ -262,10 +288,10 @@ export const InteractiveWord = ({
             {(wordExplanation || wordTranslation) && (
               <div className="mb-2 text-xs">
                 {wordTranslation && (
-                  <div className="font-semibold text-primary mb-1">{wordTranslation}</div>
+                  <div className="font-semibold text-blue-600 mb-1">{wordTranslation}</div>
                 )}
                 {wordExplanation && (
-                  <div className="text-muted-foreground">{wordExplanation}</div>
+                  <div className="text-gray-600">{wordExplanation}</div>
                 )}
               </div>
             )}
@@ -274,7 +300,7 @@ export const InteractiveWord = ({
             <div className="flex items-center gap-1 flex-wrap">
               <button
                 onClick={handlePronounce}
-                className="flex items-center gap-1 text-xs bg-secondary hover:bg-secondary/80 px-2 py-1 rounded transition-colors"
+                className="flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded transition-colors"
                 disabled={isPlaying}
               >
                 <Volume2 className="w-3 h-3" />
@@ -283,7 +309,7 @@ export const InteractiveWord = ({
               
               <button
                 onClick={handleExplain}
-                className="flex items-center gap-1 text-xs bg-secondary hover:bg-secondary/80 px-2 py-1 rounded transition-colors"
+                className="flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded transition-colors"
                 disabled={isPlaying || isLoadingExplanation}
               >
                 <HelpCircle className="w-3 h-3" />
@@ -294,7 +320,7 @@ export const InteractiveWord = ({
               {isESLLearner && (
                 <button
                   onClick={handleTranslate}
-                  className="flex items-center gap-1 text-xs bg-secondary hover:bg-secondary/80 px-2 py-1 rounded transition-colors"
+                  className="flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded transition-colors"
                   disabled={isLoadingTranslation}
                 >
                   <Languages className="w-3 h-3" />
@@ -306,7 +332,7 @@ export const InteractiveWord = ({
               {isNativeEnglishSpeaker && userInfo?.age && userInfo.age > 12 && (
                 <button
                   onClick={() => {/* TODO: Implement etymology lookup */}}
-                  className="flex items-center gap-1 text-xs bg-secondary hover:bg-secondary/80 px-2 py-1 rounded transition-colors"
+                  className="flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded transition-colors"
                 >
                   <Lightbulb className="w-3 h-3" />
                   {t("interactiveWord.etymology")}
@@ -314,8 +340,14 @@ export const InteractiveWord = ({
               )}
             </div>
           </div>
-          {/* Arrow pointing down */}
-          <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-border"></div>
+          {/* Dynamic arrow positioning */}
+          <div 
+            className={`absolute left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-transparent ${
+              tooltipPosition === 'top'
+                ? 'top-full border-t-4 border-t-gray-200'
+                : 'bottom-full border-b-4 border-b-gray-200'
+            }`}
+          ></div>
         </div>
       )}
     </span>
