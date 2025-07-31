@@ -537,6 +537,8 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       );
       
       setStory(prev => [...prev, ...result.pages]);
+      // IMPORTANT: Do NOT update storyConfig to maintain consistency with original story
+      // The continuation should use the same visual config as the existing story
       setShowAddPagesAlert(false); // Hide current alert but don't reset the flag
       
       toast({

@@ -77,7 +77,15 @@ export class StoryGeneratorService {
       
       if (pages && pages.length > 0) {
         console.log(`Successfully generated ${pages.length} continuation pages`);
-        const config = EarlyReaderStoryGenerator.getReadingConfigForDifficulty(difficulty);
+        // Use the same config structure as the main story generator to maintain consistency
+        const config = {
+          maxWordsPerPage: difficulty === 'easy' ? 6 : difficulty === 'medium' ? 35 : difficulty === 'hard' ? 65 : 85,
+          fontSize: difficulty === 'easy' ? 'text-4xl md:text-5xl lg:text-6xl' : 
+                   difficulty === 'medium' ? 'text-3xl md:text-4xl lg:text-5xl' :
+                   difficulty === 'hard' ? 'text-2xl md:text-3xl lg:text-4xl' : 'text-xl md:text-2xl lg:text-3xl',
+          lineHeight: 'leading-relaxed',
+          spacing: 'space-y-4'
+        };
         return { pages, config };
       }
       
