@@ -59,7 +59,7 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
             // Include all the user info from free trial
             ...(userInfo && {
               grade_level: userInfo.gradeLevel || userInfo.grade,
-              interests: userInfo.interests || [userInfo.hobbies],
+              interests: userInfo.interests ? userInfo.interests.join(',') : userInfo.hobbies,
               reading_level: userInfo.readingLevel || userInfo.difficultyLevel,
               native_language: userInfo.nativeLanguage
             })
