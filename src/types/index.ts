@@ -16,6 +16,7 @@ export interface UserInfo {
   name: string;
   age: number;
   grade: Grade;
+  gradeLevel?: Grade; // Add this for compatibility
   nativeLanguage: LanguageCode;
   learningGoal: LearningGoal;
   avatar: Avatar;
@@ -26,6 +27,8 @@ export interface UserInfo {
   specialRequest: string;
   difficultyLevel?: DifficultyLevel;
   readingAbility?: DifficultyLevel;
+  readingLevel?: string; // Add this for compatibility
+  interests?: string[]; // Add this for compatibility
 }
 
 export interface StorySegment {

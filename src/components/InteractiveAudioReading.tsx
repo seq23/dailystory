@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Volume2, VolumeX, Pause, Play, SkipForward, SkipBack } from 'lucide-react';
-import { OpenAITTSService } from '@/services/openaiTTSService';
+import { createOpenAITTSService } from '@/services/textToSpeechService';
 import type { UserInfo } from '@/types';
 
 interface InteractiveAudioReadingProps {
@@ -19,7 +19,7 @@ export const InteractiveAudioReading = ({
 }: InteractiveAudioReadingProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentWordIndex, setCurrentWordIndex] = useState(-1);
-  const [ttsService] = useState(() => new OpenAITTSService());
+  const [ttsService] = useState(() => createOpenAITTSService());
   const [words, setWords] = useState<string[]>([]);
   const [audioSpeed, setAudioSpeed] = useState(userInfo.nativeLanguage === 'en' ? 1.0 : 0.8);
   
@@ -44,9 +44,8 @@ export const InteractiveAudioReading = ({
       const wordsPerSecond = totalWords / (estimatedDuration / 1000);
       const wordInterval = 1000 / wordsPerSecond / audioSpeed;
 
-      // Start TTS
-      const voice = userInfo.nativeLanguage === 'en' ? 'alloy' : 'nova';
-      ttsService.speakText(text, { voice, speed: audioSpeed });
+      // Start TTS  
+      await ttsService.speakText(text, { speed: audioSpeed });
 
       // Highlight words with timing
       highlightWords(wordInterval);
@@ -78,7 +77,6 @@ export const InteractiveAudioReading = ({
   const stopReading = () => {
     setIsPlaying(false);
     setCurrentWordIndex(-1);
-    ttsService.stopCurrentAudio();
     
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
