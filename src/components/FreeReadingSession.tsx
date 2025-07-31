@@ -58,7 +58,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   const [showProgressReport, setShowProgressReport] = useState(false);
   const [sessionEnded, setSessionEnded] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [showTutorial, setShowTutorial] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(true);
 
   // Character consistency - store original character details
   const [establishedCharacter, setEstablishedCharacter] = useState<any>(null);
@@ -205,7 +205,41 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
               for (let i = 0; i < Math.min(pages.length, 10); i++) {
                 try {
                   console.log(`Starting image generation for page ${i + 1}...`);
-                  // Image generation would happen here - for now using placeholders
+                  // Try to generate custom image using Runware service
+                  const customImagePrompt = `Beautiful illustration for children's story: ${pages[i].slice(0, 100)}. Child-friendly, colorful, safe content for kids reading app.`;
+                  
+                  try {
+                    // Call Runware image generation edge function
+                    const response = await fetch('/api/supabase/functions/v1/runware-generate-image', {
+                      method: 'POST',
+                      headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY || ''}`
+                      },
+                      body: JSON.stringify({ 
+                        prompt: customImagePrompt,
+                        width: 1024,
+                        height: 1024
+                      })
+                    });
+                    
+                    if (response.ok) {
+                      const imageData = await response.json();
+                      if (imageData.imageURL) {
+                        const pageImage = { url: imageData.imageURL, prompt: pages[i] };
+                        setStoryImages(prev => {
+                          const newImages = [...prev];
+                          newImages[i] = pageImage;
+                          return newImages;
+                        });
+                        continue; // Successfully generated custom image
+                      }
+                    }
+                  } catch (imageError) {
+                    console.log('Custom image generation failed, using fallback:', imageError);
+                  }
+                  
+                  // Fallback to stock illustrations
                   const pageImage = { 
                     url: illustrations[i % illustrations.length], 
                     prompt: pages[i] 
@@ -351,11 +385,45 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
         const startProgressiveImageGeneration = async () => {
           for (let i = 0; i < Math.min(pages.length, 10); i++) {
             try {
-              // Using placeholder images for now
-              const pageImage = { 
-                url: illustrations[i % illustrations.length], 
-                prompt: pages[i] 
-              };
+                  // Try to generate custom image using Runware service
+                  const customImagePrompt = `Beautiful illustration for children's story: ${pages[i].slice(0, 100)}. Child-friendly, colorful, safe content for kids reading app.`;
+                  
+                  try {
+                    // Call Runware image generation edge function
+                    const response = await fetch('/api/supabase/functions/v1/runware-generate-image', {
+                      method: 'POST',
+                      headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY || ''}`
+                      },
+                      body: JSON.stringify({ 
+                        prompt: customImagePrompt,
+                        width: 1024,
+                        height: 1024
+                      })
+                    });
+                    
+                    if (response.ok) {
+                      const imageData = await response.json();
+                      if (imageData.imageURL) {
+                        const pageImage = { url: imageData.imageURL, prompt: pages[i] };
+                        setStoryImages(prev => {
+                          const newImages = [...prev];
+                          newImages[i] = pageImage;
+                          return newImages;
+                        });
+                        continue; // Successfully generated custom image
+                      }
+                    }
+                  } catch (imageError) {
+                    console.log('Custom image generation failed, using fallback:', imageError);
+                  }
+                  
+                  // Fallback to stock illustrations
+                  const pageImage = { 
+                    url: illustrations[i % illustrations.length], 
+                    prompt: pages[i] 
+                  };
               
               if (pageImage.url) {
                 setStoryImages(prevImages => {
@@ -446,7 +514,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                 method: 'POST',
                 headers: { 
                   'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY || ''}`
+                  'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY || ''}`
                 },
                 body: JSON.stringify({ 
                   positivePrompt: customImagePrompt,
@@ -668,9 +736,9 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
       <div className={`min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 ${
         celebrationStep === 1 ? 'animate-pulse' : ''
       }`}>
-        {/* Enhanced Professional Floating Timer with Controls - Top Right, Mobile Optimized */}
+        {/* Enhanced Professional Floating Timer with Controls - Left Side to avoid covering nav buttons */}
         {sessionStarted && timeRemaining > 0 && !sessionEnded && (
-          <div className="fixed top-2 right-2 sm:right-4 md:right-6 z-50 flex flex-col items-center gap-2 sm:gap-3" style={{ marginRight: 'max(0.5rem, env(safe-area-inset-right))', marginTop: 'max(0.5rem, env(safe-area-inset-top))' }}>
+          <div className="fixed bottom-6 left-6 z-40 flex flex-col items-center gap-2 sm:gap-3">{" "}
             
             {/* Main Timer Circle - Professional & Larger */}
             <div className="relative">

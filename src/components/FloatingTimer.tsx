@@ -41,9 +41,9 @@ export const FloatingTimer = ({
   const [hasShownAddPagesAlert, setHasShownAddPagesAlert] = useState(false);
   const { toast } = useToast();
   
-  // Flash "add more pages" alert for 3 seconds when 1 page left (only once per session)
+  // Flash "add more pages" alert for 3 seconds when on next-to-last page with >1 minute remaining
   useEffect(() => {
-    if (timeRemaining > 1 * 60 && pagesRemaining === 1 && !hasShownAddPagesAlert && !showAddPagesAlert) {
+    if (timeRemaining > 1 * 60 && pagesRemaining === 2 && !hasShownAddPagesAlert && !showAddPagesAlert) {
       setHasShownAddPagesAlert(true);
       setShowAddPagesAlert(true);
       
