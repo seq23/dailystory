@@ -1,6 +1,5 @@
 // Enhanced story generator with word limits for early readers
 import type { UserInfo, DifficultyLevel } from "@/types";
-import CulturalAdaptationService from "./culturalAdaptationService";
 
 interface ReadingConfig {
   maxWordsPerPage: number;
