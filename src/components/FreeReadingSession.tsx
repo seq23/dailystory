@@ -750,7 +750,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                         </div>
                         
                         <span className="text-sm font-medium text-gray-600">
-                          Level {getDifficultyIndex() + 1} of 4
+                          Reading Level
                         </span>
                         
                         <div className="relative group">
