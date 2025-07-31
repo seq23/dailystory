@@ -436,27 +436,36 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
 
   const regenerateStoryWithNewDifficulty = async (newDifficulty: DifficultyLevel) => {
     try {
+      // Store current page to maintain reading position if possible
+      const previousPage = currentParagraph;
+      
       // Only regenerate story content, don't reset timer or session stats
       // Use enhanced story generator for better flow and consistency
       const generatedStory = EnhancedStoryGenerator.generateIntelligentStory(userInfo, newDifficulty, 10);
       setStory(generatedStory);
       
-      // Reset to first page for new story
-      setCurrentParagraph(0);
-      
       // Clear custom illustrations for new story
       setCustomIllustrations(new Map());
       
-      // Set new illustration
-      const illustrationIndex = Math.floor(Math.random() * illustrations.length);
+      // Determine best page to start on (try to maintain position, but don't exceed new story length)
+      const targetPage = Math.min(previousPage, Math.max(0, generatedStory.length - 1));
+      setCurrentParagraph(targetPage);
+      
+      // Immediately set default illustration for current page to avoid blank state
+      const illustrationIndex = targetPage % illustrations.length;
       setCurrentIllustration(illustrations[illustrationIndex]);
       
-      // Auto-generate custom illustration for the first page
-      if (generatedStory.length > 0) {
-        setTimeout(() => {
-          generateCustomIllustration(0, generatedStory[0]);
-        }, 500);
+      // Auto-generate custom illustration for the current page
+      if (generatedStory.length > 0 && generatedStory[targetPage]) {
+        // Start image generation immediately without delay for better UX
+        generateCustomIllustration(targetPage, generatedStory[targetPage]);
       }
+      
+      toast({
+        title: "Story Updated",
+        description: `Difficulty changed to ${newDifficulty}. Generating new illustrations...`,
+        variant: "default"
+      });
     } catch (error) {
       console.error('Error regenerating story with new difficulty:', error);
       toast({
@@ -472,13 +481,18 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       const nextParagraph = currentParagraph + 1;
       setCurrentParagraph(nextParagraph);
       
-      // Set new illustration
-      const illustrationIndex = nextParagraph % illustrations.length;
-      setCurrentIllustration(illustrations[illustrationIndex]);
-      
-      // Auto-generate custom illustration for the new page
-      if (story[nextParagraph]) {
-        generateCustomIllustration(nextParagraph, story[nextParagraph]);
+      // Check if we already have a custom illustration for this page
+      if (customIllustrations.has(nextParagraph)) {
+        setCurrentIllustration(customIllustrations.get(nextParagraph)!);
+      } else {
+        // Set default illustration first
+        const illustrationIndex = nextParagraph % illustrations.length;
+        setCurrentIllustration(illustrations[illustrationIndex]);
+        
+        // Auto-generate custom illustration for the new page
+        if (story[nextParagraph]) {
+          generateCustomIllustration(nextParagraph, story[nextParagraph]);
+        }
       }
     }
   };
@@ -488,13 +502,18 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       const prevParagraph = currentParagraph - 1;
       setCurrentParagraph(prevParagraph);
       
-      // Set illustration
-      const illustrationIndex = prevParagraph % illustrations.length;
-      setCurrentIllustration(illustrations[illustrationIndex]);
-      
-      // Auto-generate custom illustration for the previous page if needed
-      if (story[prevParagraph]) {
-        generateCustomIllustration(prevParagraph, story[prevParagraph]);
+      // Check if we already have a custom illustration for this page
+      if (customIllustrations.has(prevParagraph)) {
+        setCurrentIllustration(customIllustrations.get(prevParagraph)!);
+      } else {
+        // Set default illustration first
+        const illustrationIndex = prevParagraph % illustrations.length;
+        setCurrentIllustration(illustrations[illustrationIndex]);
+        
+        // Auto-generate custom illustration for the previous page if needed
+        if (story[prevParagraph]) {
+          generateCustomIllustration(prevParagraph, story[prevParagraph]);
+        }
       }
     }
   };
@@ -692,11 +711,17 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       return;
     }
     
+    // Ensure we have valid story text
+    if (!storyText || storyText.trim().length === 0) {
+      console.log('No valid story text provided');
+      return;
+    }
+    
     try {
       setIsGeneratingImage(true);
       
-      // Reduced delay for faster generation as requested
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Minimal delay for immediate responsiveness
+      await new Promise(resolve => setTimeout(resolve, 100));
       
       // Create story-specific prompt that includes avatar and story character consistency
       const prompt = StorySpecificImageGenerator.generateStorySpecificPrompt({
@@ -707,9 +732,6 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         storyCharacter: extractStoryCharacterFromAllPages(story), // Extract consistent character from all story pages
         allStoryPages: story
       });
-      
-      console.log('Generating image with prompt:', prompt);
-      console.log('Using Runware service:', runwareService);
       
       console.log('Generating image with prompt:', prompt);
       console.log('Using Runware service:', runwareService);
@@ -729,11 +751,20 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       console.log('Image generation result:', result);
       
       if (result?.imageURL) {
+        // Update custom illustrations map
         setCustomIllustrations(prev => new Map(prev.set(pageIndex, result.imageURL)));
         
+        // Only update current illustration if we're still on the same page
         if (pageIndex === currentParagraph) {
           setCurrentIllustration(result.imageURL);
+          console.log('Updated current illustration for page:', pageIndex);
         }
+        
+        toast({
+          title: "Illustration Ready",
+          description: `Custom illustration generated for page ${pageIndex + 1}`,
+          variant: "default"
+        });
         
       } else {
         console.error('No image URL in result:', result);
@@ -745,6 +776,12 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         message: error.message,
         stack: error.stack,
         runwareService: runwareService
+      });
+      
+      toast({
+        title: "Illustration Generation Failed",
+        description: "Using default illustration instead.",
+        variant: "destructive"
       });
     } finally {
       setIsGeneratingImage(false);
