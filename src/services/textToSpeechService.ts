@@ -44,9 +44,15 @@ export class OpenAITTSService {
         }
       });
 
+      console.log('TTS Supabase response:', { data: data ? 'received' : 'null', error });
+
       if (error) {
-        console.error('TTS Supabase Error:', error);
-        throw new Error(`TTS Error: ${error.message}`);
+        console.error('TTS Supabase Error details:', error);
+        throw new Error(`TTS Error: ${error.message || JSON.stringify(error)}`);
+      }
+
+      if (!data) {
+        throw new Error('TTS Error: No audio data received from service');
       }
 
       // The response from the edge function is already an ArrayBuffer
@@ -58,15 +64,20 @@ export class OpenAITTSService {
       
       await this.playAudio(audioUrl);
     } catch (error) {
-      console.error('Error generating speech:', error);
+      console.error('Error generating speech - Full error:', error);
+      console.error('Error type:', typeof error);
+      console.error('Error message:', error?.message);
+      console.error('Error stack:', error?.stack);
       
       // Provide specific error message
-      if (error.message?.includes('OpenAI API key not configured')) {
+      if (error?.message?.includes('OpenAI API key not configured')) {
         toast.error('OpenAI API key is missing. Please configure it in project settings.');
-      } else if (error.message?.includes('TTS Error')) {
-        toast.error('Speech generation failed. Trying fallback voice...');
+      } else if (error?.message?.includes('TTS Error')) {
+        toast.error(`TTS Error: ${error.message}. Using fallback voice...`);
+      } else if (error?.message?.includes('No audio data')) {
+        toast.error('Audio generation failed. Using fallback voice...');
       } else {
-        toast.error('Audio service temporarily unavailable.');
+        toast.error(`Audio error: ${error?.message || 'Unknown error'}. Using fallback...`);
       }
       
       // Fallback to browser speech synthesis
