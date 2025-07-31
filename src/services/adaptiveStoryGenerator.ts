@@ -7,6 +7,7 @@ export interface StoryGenerationConfig {
   interests: string[];
   theme?: string;
   wordLimit?: number;
+  userName?: string; // Add userName parameter
 }
 
 export interface GeneratedStory {

@@ -47,13 +47,15 @@ readingLevel === 'intermediate' ?
 
 Create a complete story that is engaging, educational, and perfectly suited for the reading level. The story should incorporate the child's interests and follow the theme.
 
+${config.userName ? `The child's name is ${config.userName}. You can include their name in the story or create characters that they can relate to.` : ''}
+
 Respond with a JSON object containing:
 {
   "title": "An engaging title that reflects the theme",
   "content": "The complete story text following all specifications"
 }`
 
-    const userPrompt = `Please write a ${theme} story for a ${config.age}-year-old child who is interested in ${interests.join(', ')}. Make it exactly right for their reading level and incorporate their interests naturally into the story.`
+    const userPrompt = `Please write a ${theme} story for a ${config.age}-year-old child${config.userName ? ` named ${config.userName}` : ''} who is interested in ${interests.join(', ')}. Make it exactly right for their reading level and incorporate their interests naturally into the story.`
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',

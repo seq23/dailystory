@@ -66,48 +66,71 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     advanced: { label: '6th-12th Grade', author: 'J.K. Rowling', color: 'purple' }
   };
 
-  // Generate story on component mount
+  // Generate story on component mount - prevent duplicate calls
   useEffect(() => {
+    if (!userInfo.name) return; // Don't generate if name is missing
+    
+    let isCancelled = false; // Prevent race conditions
+    
     const generateStory = async () => {
       try {
         setIsLoading(true);
         
         console.log('Generating story for user:', userInfo.name);
         
+        // Build interests array from non-empty user preferences
+        const interests = [
+          userInfo.hobbies, 
+          userInfo.favoriteAnimal, 
+          userInfo.specialRequest,
+          userInfo.favoriteFood
+        ].filter(item => item && item.trim().length > 0);
+        
+        // If no interests, add some defaults based on age
+        if (interests.length === 0) {
+          interests.push(userInfo.age <= 6 ? 'animals' : userInfo.age <= 8 ? 'friendship' : 'adventure');
+        }
+        
         const storyConfig = {
           age: userInfo.age,
           gradeLevel: userInfo.gradeLevel || userInfo.grade,
           readingLevel: currentDifficulty,
-          interests: [userInfo.hobbies, userInfo.favoriteAnimal, userInfo.specialRequest].filter(Boolean),
-          theme: userInfo.specialRequest || 'adventure'
+          interests: interests,
+          theme: userInfo.specialRequest || 'adventure',
+          userName: userInfo.name // Add the user's name
         };
 
         console.log('Story config:', storyConfig);
 
-        const generatedStory = await adaptiveStoryGenerator.generateStory(storyConfig);
-        
-        console.log('Generated story:', generatedStory);
-        
-        // Ensure we have exactly 10 pages
-        const targetPages = 10;
-        let pages = generatedStory.pages;
-        
-        if (pages.length < targetPages) {
-          // Pad with additional content if needed
-          const additionalPages = targetPages - pages.length;
-          for (let i = 0; i < additionalPages; i++) {
-            pages.push(`The adventure continues...`);
+        if (!isCancelled) {
+          const generatedStory = await adaptiveStoryGenerator.generateStory(storyConfig);
+          
+          if (!isCancelled) {
+            console.log('Generated story:', generatedStory);
+            
+            // Ensure we have exactly 10 pages
+            const targetPages = 10;
+            let pages = generatedStory.pages;
+            
+            if (pages.length < targetPages) {
+              // Pad with additional content if needed
+              const additionalPages = targetPages - pages.length;
+              for (let i = 0; i < additionalPages; i++) {
+                pages.push(`${userInfo.name}'s adventure continues with more exciting discoveries...`);
+              }
+            } else if (pages.length > targetPages) {
+              // Trim to exactly 10 pages
+              pages = pages.slice(0, targetPages);
+            }
+            
+            setStory(pages);
+            setWordsRead(generatedStory.wordCount);
           }
-        } else if (pages.length > targetPages) {
-          // Trim to exactly 10 pages
-          pages = pages.slice(0, targetPages);
         }
         
-        setStory(pages);
-        setWordsRead(generatedStory.wordCount);
-        
       } catch (error) {
-        console.error('Failed to generate story:', error);
+        if (!isCancelled) {
+          console.error('Failed to generate story:', error);
         toast({
           title: "Story Generation Error",
           description: "Using a simple story for your reading session.",
@@ -152,13 +175,22 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
         
         setStory(fallbackStory);
         setWordsRead(fallbackStory.join(' ').split(' ').length);
+      }
       } finally {
-        setIsLoading(false);
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
       }
     };
 
+    
     generateStory();
-  }, [userInfo, toast, currentDifficulty]);
+    
+    // Cleanup function to prevent race conditions
+    return () => {
+      isCancelled = true;
+    };
+  }, [userInfo.name, currentDifficulty]); // Only depend on name and difficulty, not entire userInfo object
 
   // Function to regenerate story with new difficulty
   const changeDifficulty = async (newDifficulty: typeof currentDifficulty) => {
