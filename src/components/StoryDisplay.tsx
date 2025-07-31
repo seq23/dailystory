@@ -826,9 +826,9 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       </header>
 
 
-      {/* Main Content Container - Increased reading area */}
-      <div className="flex-1 max-w-6xl mx-auto px-2 sm:px-4 py-4 sm:py-6 pt-4 sm:pt-20 pb-24 sm:pb-32">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 items-start">
+      {/* Main Content Container - Full width and height */}
+      <div className="flex-1 w-full px-2 sm:px-4 py-4 sm:py-6 pt-4 sm:pt-20 pb-24 sm:pb-32 min-h-screen">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 items-start h-full">
           {/* Illustration - Now on the left */}
           <div className="order-2 lg:order-1">
             <Card className="bg-white/95 backdrop-blur-sm shadow-2xl rounded-2xl sm:rounded-3xl border-2 border-purple-200/50 overflow-hidden max-h-[300px] sm:max-h-[400px] lg:max-h-[600px]">
@@ -863,7 +863,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
           
           {/* Story Content - Now on the right */}
           <div className="order-1 lg:order-2">
-            <Card className="bg-white/95 backdrop-blur-sm shadow-2xl rounded-2xl sm:rounded-3xl border-2 border-purple-200/50 overflow-hidden min-h-[400px] sm:min-h-[500px] lg:min-h-[600px]">
+            <Card className="bg-white/95 backdrop-blur-sm shadow-2xl rounded-2xl sm:rounded-3xl border-2 border-purple-200/50 overflow-visible min-h-[600px] sm:min-h-[700px] lg:min-h-[800px]">
               <CardContent className="p-4 sm:p-6 lg:p-8">
                 {/* Story Text */}
                 <div className="prose prose-sm sm:prose-base lg:prose-lg max-w-none">
