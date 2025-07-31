@@ -809,8 +809,8 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       const sceneDescription = extractSceneElements(storyText);
       const characterDescription = getCharacterDescription();
       
-      // Build prompt in the exact format requested by user
-      const prompt = `A beautiful childrens book illustration depicting the scene ${sceneDescription} featuring ${characterDescription}, with a happy and cheerful atmosphere, warm earth tones and natural colors, contemporary childrens book art style, appealing to all children regardless of gender, diverse and inclusive, safe and wholesome content, high quality professional artwork, absolutely no text or words visible anywhere in the image`;
+      // Build prompt in the exact format requested by user with strong anti-text instructions
+      const prompt = `NO TEXT NO WORDS NO LETTERS NO NAMES NO WRITING NO CAPTIONS NO TITLES ANYWHERE IN IMAGE. A beautiful childrens book illustration depicting the scene ${sceneDescription} featuring ${characterDescription}, with a happy and cheerful atmosphere, warm earth tones and natural colors, contemporary childrens book art style, appealing to all children regardless of gender, diverse and inclusive, safe and wholesome content, high quality professional artwork. CRITICAL: absolutely no text, words, letters, names, titles, captions, or any written content visible anywhere in the image. Pure visual illustration only, completely text-free.`;
       
       console.log('Enhanced consistency prompt:', prompt);
       console.log('Main character for consistency:', storyCharacters.mainCharacter);
