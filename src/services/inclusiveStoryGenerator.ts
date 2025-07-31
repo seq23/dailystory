@@ -79,51 +79,75 @@ export class InclusiveStoryGenerator {
     const createCohesiveStory = () => {
       const storyPages: string[] = [];
       
-      // Enhanced story elements that incorporate user preferences
+      // Enhanced story elements that incorporate user preferences intelligently
       const getPersonalizedElements = () => {
-        const animal = userInfo.favoriteAnimal 
-          ? userInfo.favoriteAnimal.toLowerCase()
-          : ["dragon", "owl", "rabbit", "deer", "fox"][Math.floor(Math.random() * 5)];
+        // Create a smart element tracker to ensure organic integration
+        const elementTracker = {
+          animal: userInfo.favoriteAnimal ? userInfo.favoriteAnimal.toLowerCase() : null,
+          setting: culturalElements.setting || "magical forest",
+          object: userInfo.favoriteColor ? `glowing ${userInfo.favoriteColor.toLowerCase()} crystal` : "glowing crystal",
+          value: culturalElements.value || "kindness",
+          food: userInfo.favoriteFood ? userInfo.favoriteFood.toLowerCase() : null,
+          activity: userInfo.hobbies ? userInfo.hobbies.toLowerCase() : null,
+          specialTheme: userInfo.specialRequest ? userInfo.specialRequest.toLowerCase() : null,
+          
+          // Track usage to ensure organic distribution
+          usedElements: new Set(),
+          
+          // Smart element selection based on story context
+          getAppropriateElement: function(context: string, fallbacks: string[]) {
+            const contextMap = {
+              'character': this.animal,
+              'food': this.food,
+              'activity': this.activity,
+              'theme': this.specialTheme
+            };
+            
+            const element = contextMap[context as keyof typeof contextMap];
+            if (element && !this.usedElements.has(context)) {
+              this.usedElements.add(context);
+              return element;
+            }
+            
+            // Return fallback if user element not available or already used
+            return fallbacks[Math.floor(Math.random() * fallbacks.length)];
+          },
+          
+          // Check if we should introduce a user element at this point
+          shouldIntroduceElement: function(pageIndex: number, section: string, elementType: string) {
+            const element = this[elementType as keyof Omit<typeof this, 'usedElements' | 'getAppropriateElement' | 'shouldIntroduceElement'>];
+            if (!element || this.usedElements.has(elementType)) return false;
+            
+            // Smart timing based on story structure
+            if (section === 'introduction' && elementType === 'activity' && pageIndex === 1) return true;
+            if (section === 'adventure' && elementType === 'animal' && pageIndex >= 3) return true;
+            if (section === 'adventure' && elementType === 'food' && pageIndex >= 5) return true;
+            if (section === 'resolution' && elementType === 'specialTheme' && pageIndex >= 8) return true;
+            
+            return false;
+          }
+        };
         
-        const setting = culturalElements.setting || "magical forest";
-        
-        const object = userInfo.favoriteColor 
-          ? `glowing ${userInfo.favoriteColor.toLowerCase()} crystal`
-          : "glowing crystal";
-        
-        const value = culturalElements.value || "kindness";
-        
-        const food = userInfo.favoriteFood 
-          ? userInfo.favoriteFood.toLowerCase()
-          : "magical berries";
-        
-        const activity = userInfo.hobbies 
-          ? userInfo.hobbies.toLowerCase()
-          : "exploring";
-        
-        return { animal, setting, object, value, food, activity };
+        return elementTracker;
       };
       
-      const { animal, setting, object, value, food, activity } = getPersonalizedElements();
+      const elementTracker = getPersonalizedElements();
       
       // Create story structure based on difficulty
       const createStoryStructure = () => {
         if (difficulty === "easy") {
-          // Simple 3-act structure: Meet character → Adventure → Resolution
           return {
-            introduction: Math.ceil(pageCount * 0.3), // 30% introduction
-            adventure: Math.ceil(pageCount * 0.5),     // 50% adventure
-            resolution: Math.floor(pageCount * 0.2)    // 20% resolution
+            introduction: Math.ceil(pageCount * 0.3),
+            adventure: Math.ceil(pageCount * 0.5),
+            resolution: Math.floor(pageCount * 0.2)
           };
         } else if (difficulty === "medium") {
-          // Classic story arc: Setup → Inciting incident → Rising action → Climax → Resolution
           return {
             introduction: Math.ceil(pageCount * 0.2),
             adventure: Math.ceil(pageCount * 0.6),
             resolution: Math.floor(pageCount * 0.2)
           };
         } else {
-          // Complex structure with character development and subplots
           return {
             introduction: Math.ceil(pageCount * 0.25),
             adventure: Math.ceil(pageCount * 0.55),
@@ -156,13 +180,13 @@ export class InclusiveStoryGenerator {
         let page = "";
         
         if (difficulty === "easy") {
-          page = this.generateEasyPage(i, currentSection, characterName, animal, setting, object, value, food, activity, storyProgress, targetWords);
+          page = this.generateEasyPageWithElements(i, currentSection, characterName, elementTracker, storyProgress, targetWords);
         } else if (difficulty === "medium") {
-          page = this.generateMediumPage(i, currentSection, characterName, animal, setting, object, value, food, activity, storyProgress, targetWords);
+          page = this.generateMediumPageWithElements(i, currentSection, characterName, elementTracker, storyProgress, targetWords);
         } else if (difficulty === "hard") {
-          page = this.generateHardPage(i, currentSection, characterName, animal, setting, object, value, food, activity, storyProgress, targetWords);
+          page = this.generateHardPageWithElements(i, currentSection, characterName, elementTracker, storyProgress, targetWords);
         } else {
-          page = this.generateExpertPage(i, currentSection, characterName, animal, setting, object, value, food, activity, storyProgress, targetWords);
+          page = this.generateExpertPageWithElements(i, currentSection, characterName, elementTracker, storyProgress, targetWords);
         }
         
         storyPages.push(page);
@@ -178,16 +202,11 @@ export class InclusiveStoryGenerator {
     return createCohesiveStory();
   }
 
-  private static generateEasyPage(
+  private static generateEasyPageWithElements(
     pageIndex: number,
     section: string,
     characterName: string,
-    animal: string,
-    setting: string,
-    object: string,
-    value: string,
-    food: string,
-    activity: string,
+    elementTracker: any,
     progress: any,
     targetWords: number
   ): string {
@@ -200,47 +219,55 @@ export class InclusiveStoryGenerator {
         // Mo Willems style introduction with emotion
         return `This is ${characterName}. ${characterName} is VERY excited today! "I want an adventure!" says ${characterName}. "A BIG adventure!"`;
       } else if (pageIndex === 1) {
+        // Intelligently introduce activity if provided
+        if (elementTracker.shouldIntroduceElement(pageIndex, section, 'activity')) {
+          return `${characterName} loves ${elementTracker.activity}! ${characterName} goes here. ${characterName} goes there. ${characterName} goes everywhere!`;
+        }
         // Dr. Seuss style rhythm and exploration
         return `${characterName} goes here. ${characterName} goes there. ${characterName} goes everywhere! Where will ${characterName} go? Nobody knows!`;
       } else {
         // Eric Carle style discovery
-        return `Look! Look! What does ${characterName} see? The ${setting}! It is big and bright and beautiful!`;
+        return `Look! Look! What does ${characterName} see? The ${elementTracker.setting}! It is big and bright and beautiful!`;
       }
     } else if (section === 'adventure') {
       if (!progress.metCharacter) {
-        // Mo Willems style dialogue and surprise
+        // Intelligently introduce user's favorite animal
+        const animal = elementTracker.getAppropriateElement('character', ['friendly dragon', 'wise owl', 'happy rabbit']);
         return `"Hello!" says a voice. ${characterName} looks up. "HELLO!" ${characterName} says back. It is a friendly ${animal}!`;
       } else if (!progress.foundObject) {
         // Dr. Seuss style problem introduction with rhythm
-        return `"Oh no! Oh me! I lost my ${object}!" says the ${animal}. "Will you help? Will you please?"`;
+        return `"Oh no! Oh me! I lost my ${elementTracker.object}!" says the ${elementTracker.getAppropriateElement('character', ['friend'])}. "Will you help? Will you please?"`;
       } else if (!progress.facedChallenge) {
         // Eric Carle style methodical searching
         return `They look here. They look there. Under the rock? No! Behind the tree? No! Where can it be?`;
       } else {
         // Mo Willems style excitement and discovery
-        return `"THERE!" shouts ${characterName}. "I found it! I found it!" The ${object} sparkles in the grass!`;
+        return `"THERE!" shouts ${characterName}. "I found it! I found it!" The ${elementTracker.object} sparkles in the grass!`;
       }
     } else {
       if (!progress.learnedLesson) {
+        // Intelligently introduce food element if provided
+        if (elementTracker.shouldIntroduceElement(pageIndex, section, 'food')) {
+          return `"Thank you! Let's share some ${elementTracker.food}!" says the friend. ${characterName} feels happy. Very, very happy!`;
+        }
         // Mo Willems style emotional resolution
-        return `"Thank you! Thank you!" says the ${animal}. ${characterName} feels happy. Very, very happy!`;
+        return `"Thank you! Thank you!" says the friend. ${characterName} feels happy. Very, very happy!`;
       } else {
+        // Intelligently weave in special theme if provided
+        if (elementTracker.shouldIntroduceElement(pageIndex, section, 'specialTheme')) {
+          return `${characterName} learned about ${elementTracker.value} and ${elementTracker.specialTheme} today. Being kind is the best way! Hip hooray!`;
+        }
         // Dr. Seuss style wisdom with rhythm
-        return `${characterName} learned about ${value} today. Being kind is the best way! Hip hooray!`;
+        return `${characterName} learned about ${elementTracker.value} today. Being kind is the best way! Hip hooray!`;
       }
     }
   }
 
-  private static generateMediumPage(
+  private static generateMediumPageWithElements(
     pageIndex: number,
     section: string,
     characterName: string,
-    animal: string,
-    setting: string,
-    object: string,
-    value: string,
-    food: string,
-    activity: string,
+    elementTracker: any,
     progress: any,
     targetWords: number
   ): string {
@@ -252,47 +279,55 @@ export class InclusiveStoryGenerator {
         // Kevin Henkes style quiet beginning with emotion
         return `${characterName} woke up that morning with a flutter of excitement in their chest. Something wonderful was waiting, though they couldn't quite say what it might be.`;
       } else if (pageIndex === 1) {
+        // Intelligently introduce activity element
+        if (elementTracker.shouldIntroduceElement(pageIndex, section, 'activity')) {
+          return `After spending some time ${elementTracker.activity}, ${characterName} felt ready for adventure. The path to the ${elementTracker.setting} wound through patches of wildflowers and past a babbling brook.`;
+        }
         // Jan Brett style detailed setting description
-        return `The path to the ${setting} wound through patches of wildflowers and past a babbling brook where dragonflies danced in the dappled sunlight.`;
+        return `The path to the ${elementTracker.setting} wound through patches of wildflowers and past a babbling brook where dragonflies danced in the dappled sunlight.`;
       } else {
         // Kevin Henkes style wonder and discovery
-        return `When ${characterName} first glimpsed the ${setting}, they stopped and caught their breath. It was more beautiful than anything they had ever imagined.`;
+        return `When ${characterName} first glimpsed the ${elementTracker.setting}, they stopped and caught their breath. It was more beautiful than anything they had ever imagined.`;
       }
     } else if (section === 'adventure') {
       if (!progress.metCharacter) {
         // Kevin Henkes style gentle introduction of characters
+        const animal = elementTracker.getAppropriateElement('character', ['wise owl', 'gentle deer', 'kind rabbit']);
         return `A soft rustling in the bushes made ${characterName} turn around. There, with kind eyes and a gentle smile, sat a ${animal} who seemed both wise and friendly.`;
       } else if (!progress.foundObject) {
         // Jan Brett style storytelling with emotional depth
-        return `"I've lost something very precious," the ${animal} said quietly. "My grandmother's ${object}. Without it, I feel like a part of my heart is missing."`;
+        return `"I've lost something very precious," the friend said quietly. "My grandmother's ${elementTracker.object}. Without it, I feel like a part of my heart is missing."`;
       } else if (!progress.facedChallenge) {
         // Kevin Henkes style patient, methodical approach
-        return `Together, ${characterName} and the ${animal} searched with care and patience, checking each hollow log and looking beneath every fallen leaf.`;
+        return `Together, ${characterName} and their new friend searched with care and patience, checking each hollow log and looking beneath every fallen leaf.`;
       } else {
         // Jan Brett style magical discovery moment
-        return `Suddenly, a glimmer caught ${characterName}'s eye. There, nestled among the roots of an ancient oak tree, the ${object} lay waiting like a precious secret.`;
+        return `Suddenly, a glimmer caught ${characterName}'s eye. There, nestled among the roots of an ancient oak tree, the ${elementTracker.object} lay waiting like a precious secret.`;
       }
     } else {
       if (!progress.learnedLesson) {
+        // Intelligently introduce food element
+        if (elementTracker.shouldIntroduceElement(pageIndex, section, 'food')) {
+          return `Their friend's eyes filled with happy tears. "Let's celebrate with some ${elementTracker.food}," it whispered. "You've shown me what true ${elementTracker.value} looks like."`;
+        }
         // Kevin Henkes style emotional connection and gratitude
-        return `The ${animal}'s eyes filled with happy tears. "You helped me when you didn't have to," it whispered. "That's what true ${value} looks like."`;
+        return `Their friend's eyes filled with happy tears. "You helped me when you didn't have to," it whispered. "That's what true ${elementTracker.value} looks like."`;
       } else {
+        // Intelligently weave in special theme
+        if (elementTracker.shouldIntroduceElement(pageIndex, section, 'specialTheme')) {
+          return `As ${characterName} walked home through the golden afternoon light, they thought about ${elementTracker.specialTheme} and how ${elementTracker.value} makes the world more beautiful.`;
+        }
         // Jan Brett style warm, cozy ending
-        return `As ${characterName} walked home through the golden afternoon light, their heart felt as warm as a cup of hot cocoa on a winter day. They had learned that ${value} makes the world more beautiful.`;
+        return `As ${characterName} walked home through the golden afternoon light, their heart felt as warm as a cup of hot cocoa on a winter day. They had learned that ${elementTracker.value} makes the world more beautiful.`;
       }
     }
   }
 
-  private static generateHardPage(
+  private static generateHardPageWithElements(
     pageIndex: number,
     section: string,
     characterName: string,
-    animal: string,
-    setting: string,
-    object: string,
-    value: string,
-    food: string,
-    activity: string,
+    elementTracker: any,
     progress: any,
     targetWords: number
   ): string {
@@ -305,47 +340,55 @@ export class InclusiveStoryGenerator {
         // Roald Dahl style whimsical beginning
         return `${characterName} was having what grown-ups might call "one of those days," but what ${characterName} secretly suspected was the beginning of something absolutely scrumptious and wonderfully unexpected.`;
       } else if (pageIndex === 1) {
+        // Intelligently introduce activity element
+        if (elementTracker.shouldIntroduceElement(pageIndex, section, 'activity')) {
+          return `After spending the morning ${elementTracker.activity}, ${characterName} had been feeling a bit restless. The mysterious ${elementTracker.setting} that everyone whispered about suddenly seemed like the perfect destination.`;
+        }
         // Beverly Cleary style realistic approach to adventure
-        return `The truth was, ${characterName} had been feeling a bit ordinary lately. Not sad exactly, but not particularly excited either—until they remembered the mysterious ${setting} that everyone whispered about but no one seemed to visit.`;
+        return `The truth was, ${characterName} had been feeling a bit ordinary lately. Not sad exactly, but not particularly excited either—until they remembered the mysterious ${elementTracker.setting} that everyone whispered about but no one seemed to visit.`;
       } else {
         // Judy Blume style honest emotional reaction
-        return `Standing at the edge of the ${setting}, ${characterName} felt a mixture of nervousness and excitement that made their stomach flip like a pancake on Sunday morning.`;
+        return `Standing at the edge of the ${elementTracker.setting}, ${characterName} felt a mixture of nervousness and excitement that made their stomach flip like a pancake on Sunday morning.`;
       }
     } else if (section === 'adventure') {
       if (!progress.metCharacter) {
         // Roald Dahl style quirky character introduction
+        const animal = elementTracker.getAppropriateElement('character', ['peculiar owl', 'magnificent fox', 'extraordinary rabbit']);
         return `"Well, blow me down with a feather!" exclaimed a voice from above. ${characterName} looked up to see a most peculiar ${animal} wearing what appeared to be tiny spectacles and a very serious expression.`;
       } else if (!progress.foundObject) {
         // Beverly Cleary style realistic problem-solving
-        return `The ${animal} explained the situation with the kind of practical honesty that adults often forgot to use. "I've lost my ${object}, and frankly, I'm not sure how I'm going to get it back without help."`;
+        return `The friend explained the situation with the kind of practical honesty that adults often forgot to use. "I've lost my ${elementTracker.object}, and frankly, I'm not sure how I'm going to get it back without help."`;
       } else if (!progress.facedChallenge) {
         // Judy Blume style persistence through difficulty
         return `The search was harder than ${characterName} had expected. There were moments when they wanted to give up, when their feet hurt and their confidence wavered, but something inside kept them going.`;
       } else {
         // Roald Dahl style triumphant discovery
-        return `"Great galloping galoshes!" shouted ${characterName}, using a phrase they'd never used before but which seemed perfectly appropriate. There, gleaming like a star that had fallen to earth, was the ${object}!`;
+        return `"Great galloping galoshes!" shouted ${characterName}, using a phrase they'd never used before but which seemed perfectly appropriate. There, gleaming like a star that had fallen to earth, was the ${elementTracker.object}!`;
       }
     } else {
       if (!progress.learnedLesson) {
+        // Intelligently introduce food element
+        if (elementTracker.shouldIntroduceElement(pageIndex, section, 'food')) {
+          return `Their friend looked at ${characterName} with genuine admiration. "Let's celebrate with some ${elementTracker.food}," it said thoughtfully. "You've shown me what real courage looks like."`;
+        }
         // Beverly Cleary style realistic gratitude and recognition
-        return `The ${animal} looked at ${characterName} with genuine admiration. "You know," it said thoughtfully, "most people would have given up by now. But you didn't. That tells me something important about who you are."`;
+        return `Their friend looked at ${characterName} with genuine admiration. "You know," it said thoughtfully, "most people would have given up by now. But you didn't. That tells me something important about who you are."`;
       } else {
+        // Intelligently weave in special theme
+        if (elementTracker.shouldIntroduceElement(pageIndex, section, 'specialTheme')) {
+          return `Walking home, ${characterName} realized they felt different somehow—not because anything magical had happened, but because they had discovered they were capable of both ${elementTracker.value} and pursuing ${elementTracker.specialTheme} with courage.`;
+        }
         // Judy Blume style mature reflection on growth
-        return `Walking home, ${characterName} realized they felt different somehow—not because anything magical had happened to them, but because they had discovered they were capable of more ${value} than they'd ever imagined.`;
+        return `Walking home, ${characterName} realized they felt different somehow—not because anything magical had happened to them, but because they had discovered they were capable of more ${elementTracker.value} than they'd ever imagined.`;
       }
     }
   }
 
-  private static generateExpertPage(
+  private static generateExpertPageWithElements(
     pageIndex: number,
     section: string,
     characterName: string,
-    animal: string,
-    setting: string,
-    object: string,
-    value: string,
-    food: string,
-    activity: string,
+    elementTracker: any,
     progress: any,
     targetWords: number
   ): string {
@@ -358,33 +401,46 @@ export class InclusiveStoryGenerator {
         // Kate DiCamillo style lyrical beginning with deep emotion
         return `There are moments in life when the ordinary world seems to crack open just enough to reveal something luminous beneath, and for ${characterName}, this particular morning felt heavy with that kind of possibility.`;
       } else if (pageIndex === 1) {
+        // Intelligently introduce activity element
+        if (elementTracker.shouldIntroduceElement(pageIndex, section, 'activity')) {
+          return `After spending time in quiet contemplation through ${elementTracker.activity}, ${characterName} approached the ${elementTracker.setting}, trying to imagine how many others had stood here, each seeing something different in the landscape before them.`;
+        }
         // R.J. Palacio style perspective and empathy
-        return `As ${characterName} approached the ${setting}, they tried to imagine how many other people had stood in this exact spot, each carrying their own hopes and fears, each seeing something different in the landscape before them.`;
+        return `As ${characterName} approached the ${elementTracker.setting}, they tried to imagine how many other people had stood in this exact spot, each carrying their own hopes and fears, each seeing something different in the landscape before them.`;
       } else {
         // Angie Thomas style authentic voice and empowerment
-        return `The thing about ${characterName} was that they had always felt different—not in a way that made them sad, but in a way that made them notice things others missed, like the way light moved differently here, as if the ${setting} itself was alive.`;
+        return `The thing about ${characterName} was that they had always felt different—not in a way that made them sad, but in a way that made them notice things others missed, like the way light moved differently here, as if the ${elementTracker.setting} itself was alive.`;
       }
     } else if (section === 'adventure') {
       if (!progress.metCharacter) {
         // Kate DiCamillo style magical realism and profound connection
+        const animal = elementTracker.getAppropriateElement('character', ['ancient owl', 'wise fox', 'gentle deer']);
         return `When the ${animal} spoke, its voice carried the weight of ancient stories and the gentleness of rainfall. "I have been waiting," it said, "not for someone special, but for someone willing to see."`;
       } else if (!progress.foundObject) {
         // R.J. Palacio style understanding through different perspectives
-        return `"The ${object} isn't lost," the ${animal} explained carefully, watching ${characterName}'s face. "It's hidden from those who aren't ready to understand that power and ${value} are the same thing."`;
+        return `"The ${elementTracker.object} isn't lost," their companion explained carefully, watching ${characterName}'s face. "It's hidden from those who aren't ready to understand that power and ${elementTracker.value} are the same thing."`;
       } else if (!progress.facedChallenge) {
         // Angie Thomas style inner strength and social awareness
-        return `The real challenge wasn't physical—it was learning to trust that their own voice mattered, that their own understanding of ${value} was not only valid but necessary in a world that often seemed to have forgotten what kindness looked like.`;
+        return `The real challenge wasn't physical—it was learning to trust that their own voice mattered, that their own understanding of ${elementTracker.value} was not only valid but necessary in a world that often seemed to have forgotten what kindness looked like.`;
       } else {
         // Kate DiCamillo style moment of profound recognition
-        return `When ${characterName} finally understood where the ${object} had been all along—not hidden in the ${setting} but carried within their own capacity for ${value}—the world around them seemed to exhale with relief.`;
+        return `When ${characterName} finally understood where the ${elementTracker.object} had been all along—not hidden in the ${elementTracker.setting} but carried within their own capacity for ${elementTracker.value}—the world around them seemed to exhale with relief.`;
       }
     } else {
       if (!progress.learnedLesson) {
+        // Intelligently introduce food element with deeper meaning
+        if (elementTracker.shouldIntroduceElement(pageIndex, section, 'food')) {
+          return `"You chose to see me," their companion said simply, "and in sharing something as simple as ${elementTracker.food}, you showed me that ${elementTracker.value} connects us across all differences."`;
+        }
         // R.J. Palacio style wisdom about empathy and connection
-        return `"You chose to see me," the ${animal} said simply, "and in doing so, you chose to see yourself. This is how ${value} works—it connects us across all the differences that might otherwise keep us apart."`;
+        return `"You chose to see me," their companion said simply, "and in doing so, you chose to see yourself. This is how ${elementTracker.value} works—it connects us across all the differences that might otherwise keep us apart."`;
       } else {
+        // Intelligently weave in special theme with social consciousness
+        if (elementTracker.shouldIntroduceElement(pageIndex, section, 'specialTheme')) {
+          return `As ${characterName} returned to their everyday world, they carried not just memories of magic, but understanding that they had the power to create change, to spread ${elementTracker.value}, and to help others discover ${elementTracker.specialTheme} in their own lives.`;
+        }
         // Angie Thomas style empowerment and social responsibility
-        return `As ${characterName} returned to their everyday world, they carried with them not just the memory of magic, but the understanding that they had the power to create change, to spread ${value}, and to help others find their own light in a world that needed more illumination.`;
+        return `As ${characterName} returned to their everyday world, they carried with them not just the memory of magic, but the understanding that they had the power to create change, to spread ${elementTracker.value}, and to help others find their own light in a world that needed more illumination.`;
       }
     }
   }
