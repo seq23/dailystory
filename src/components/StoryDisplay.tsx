@@ -765,43 +765,43 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         }
       }
       
-      // Enhanced language-specific prompts with professional quality and consistency
+      // Enhanced language-specific prompts with premium quality and NO TEXT
       const getLanguageSpecificPrompt = (nativeLanguage: string) => {
         const basePrompts = {
           en: {
-            base: "A museum-quality, professional children's book illustration in exquisite watercolor style showing",
-            context: "perfectly capturing the scene:",
-            atmosphere: "rendered with masterful artistic technique, luminous colors, perfect lighting, flawless composition, consistent character design, award-winning children's book artistry, gallery-worthy illustration, highly detailed professional artwork, safe wholesome content, picture book perfection"
+            base: "A premium, gallery-quality children's book illustration in sophisticated watercolor and digital art style showing",
+            context: "depicting the scene:",
+            atmosphere: "rendered with exceptional artistic mastery, rich vibrant colors, perfect professional lighting, flawless composition, award-winning illustration quality, Pixar-level character design, consistent character appearance, no text or words anywhere in the image, pristine children's book artistry, museum-quality artwork, safe wholesome content"
           },
           es: {
-            base: "Una ilustración profesional de calidad de museo para libro infantil en exquisito estilo acuarela mostrando",
-            context: "capturando perfectamente la escena:",
-            atmosphere: "renderizada con técnica artística magistral, colores luminosos, iluminación perfecta, composición impecable, diseño de personajes consistente, arte galardonado de libros infantiles, ilustración digna de galería, obra de arte profesional muy detallada, contenido seguro y saludable, perfección de libro ilustrado"
+            base: "Una ilustración premium de calidad de galería para libro infantil en sofisticado estilo de acuarela y arte digital mostrando",
+            context: "representando la escena:",
+            atmosphere: "renderizada con maestría artística excepcional, colores ricos y vibrantes, iluminación profesional perfecta, composición impecable, calidad de ilustración galardonada, diseño de personajes nivel Pixar, apariencia de personajes consistente, sin texto o palabras en ningún lugar de la imagen, arte inmaculado de libros infantiles, obra de arte de calidad de museo, contenido seguro y saludable"
           },
           fr: {
-            base: "Une illustration professionnelle de qualité muséale pour livre d'enfants en style aquarelle exquis montrant",
-            context: "capturant parfaitement la scène:",
-            atmosphere: "rendue avec une technique artistique magistrale, des couleurs lumineuses, un éclairage parfait, une composition impeccable, un design de personnage cohérent, un art primé de livre pour enfants, une illustration digne de galerie, une œuvre d'art professionnelle très détaillée, un contenu sûr et sain, la perfection du livre d'images"
+            base: "Une illustration premium de qualité galerie pour livre d'enfants en style aquarelle sophistiqué et art numérique montrant",
+            context: "dépeignant la scène:",
+            atmosphere: "rendue avec une maîtrise artistique exceptionnelle, des couleurs riches et vibrantes, un éclairage professionnel parfait, une composition impeccable, une qualité d'illustration primée, un design de personnage niveau Pixar, une apparence de personnage cohérente, aucun texte ou mot nulle part dans l'image, un art immaculé de livre pour enfants, une œuvre d'art de qualité muséale, un contenu sûr et sain"
           },
           pt: {
-            base: "Uma ilustração profissional de qualidade de museu para livro infantil em estilo aquarela requintado mostrando",
-            context: "capturando perfeitamente a cena:",
-            atmosphere: "renderizada com técnica artística magistral, cores luminosas, iluminação perfeita, composição impecável, design de personagem consistente, arte premiada de livros infantis, ilustração digna de galeria, obra de arte profissional muito detalhada, conteúdo seguro e saudável, perfeição de livro ilustrado"
+            base: "Uma ilustração premium de qualidade de galeria para livro infantil em estilo sofisticado de aquarela e arte digital mostrando",
+            context: "retratando a cena:",
+            atmosphere: "renderizada com maestria artística excepcional, cores ricas e vibrantes, iluminação profissional perfeita, composição impecável, qualidade de ilustração premiada, design de personagem nível Pixar, aparência de personagem consistente, sem texto ou palavras em lugar algum na imagem, arte imaculada de livros infantis, obra de arte de qualidade de museu, conteúdo seguro e saudável"
           },
           ar: {
-            base: "رسم توضيحي احترافي بجودة متحف لكتاب أطفال بأسلوب ألوان مائية رائع يُظهر",
-            context: "يلتقط المشهد بشكل مثالي:",
-            atmosphere: "مُقدم بتقنية فنية بارعة، ألوان مضيئة، إضاءة مثالية، تركيب لا تشوبه شائبة، تصميم شخصيات متسق، فن حائز على جوائز لكتب الأطفال، رسم توضيحي يليق بالمعرض، عمل فني احترافي مفصل جداً، محتوى آمن وصحي، كمال كتاب مصور"
+            base: "رسم توضيحي متميز بجودة معرض لكتاب أطفال بأسلوب ألوان مائية متطور وفن رقمي يُظهر",
+            context: "يصور المشهد:",
+            atmosphere: "مُقدم بإتقان فني استثنائي، ألوان غنية ونابضة بالحياة، إضاءة مهنية مثالية، تركيب لا تشوبه شائبة، جودة رسم توضيحي حائز على جوائز، تصميم شخصيات بمستوى بيكسار، مظهر شخصيات متسق، بدون نص أو كلمات في أي مكان في الصورة، فن نقي لكتب الأطفال، عمل فني بجودة متحف، محتوى آمن وصحي"
           },
           zh: {
-            base: "一幅博物馆级专业儿童书籍水彩风格插图，展示",
-            context: "完美捕捉场景：",
-            atmosphere: "以精湛的艺术技巧渲染，明亮的色彩，完美的光照，无瑕的构图，一致的角色设计，获奖儿童书籍艺术，画廊级插图，高度详细的专业艺术作品，安全健康的内容，图画书的完美"
+            base: "一幅高级画廊品质的儿童书籍插图，采用精致的水彩和数字艺术风格，展示",
+            context: "描绘场景：",
+            atmosphere: "以卓越的艺术技巧渲染，丰富鲜艳的色彩，完美的专业灯光，无瑕的构图，获奖插图质量，皮克斯级角色设计，一致的角色外观，图像中任何地方都没有文字或单词，纯净的儿童书籍艺术，博物馆品质的艺术作品，安全健康的内容"
           },
           hi: {
-            base: "एक संग्रहालय-गुणवत्ता का, पेशेवर बच्चों की पुस्तक का उत्कृष्ट जल रंग शैली में चित्रण दिखा रहा है",
-            context: "दृश्य को पूर्ण रूप से कैप्चर करते हुए:",
-            atmosphere: "कुशल कलात्मक तकनीक के साथ प्रस्तुत, चमकदार रंग, सही प्रकाश व्यवस्था, निर्दोष संरचना, निरंतर चरित्र डिज़ाइन, पुरस्कार विजेता बच्चों की पुस्तक कलाकृति, गैलरी-योग्य चित्रण, अत्यधिक विस्तृत पेशेवर कलाकृति, सुरक्षित स्वस्थ सामग्री, चित्र पुस्तक की पूर्णता"
+            base: "एक प्रीमियम, गैलरी-गुणवत्ता का बच्चों की पुस्तक का चित्रण परिष्कृत जल रंग और डिजिटल कला शैली में दिखा रहा है",
+            context: "दृश्य का चित्रण:",
+            atmosphere: "असाधारण कलात्मक निपुणता के साथ प्रस्तुत, समृद्ध जीवंत रंग, सही पेशेवर प्रकाश व्यवस्था, निर्दोष संरचना, पुरस्कार विजेता चित्रण गुणवत्ता, पिक्सार-स्तर चरित्र डिज़ाइन, निरंतर चरित्र रूप, छवि में कहीं भी कोई पाठ या शब्द नहीं, निर्मल बच्चों की पुस्तक कलाकृति, संग्रहालय-गुणवत्ता कलाकृति, सुरक्षित स्वस्थ सामग्री"
           }
         };
         
@@ -836,7 +836,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       
       // Generate enhanced prompt in the user's native language
       const langPrompt = getLanguageSpecificPrompt(userInfo.nativeLanguage || 'en');
-      const prompt = `${langPrompt.base} ${sceneDetails} ${langPrompt.context} ${storyText}. ${langPrompt.atmosphere}. CRITICAL: ALWAYS show ${userInScene} as the main character with exact ethnic representation - ${userInfo.name} with authentic ${userInfo.avatar?.skinTone === 'dark' ? 'African/African American' : userInfo.avatar?.skinTone || 'medium'} features and ${userInfo.avatar?.type || 'child'} characteristics. Accurate ethnic representation is essential.`;
+      const prompt = `${langPrompt.base} ${sceneDetails} ${langPrompt.context} ${storyText}. ${langPrompt.atmosphere}. CRITICAL: ALWAYS show ${userInScene} as the main character with exact ethnic representation - ${userInfo.name} with authentic ${userInfo.avatar?.skinTone === 'dark' ? 'African/African American' : userInfo.avatar?.skinTone || 'medium'} features and ${userInfo.avatar?.type || 'child'} characteristics. ABSOLUTELY NO TEXT, WORDS, OR LETTERS anywhere in the image. Pure visual storytelling only.`;
       
       console.log('Enhanced consistency prompt:', prompt);
       console.log('Main character for consistency:', storyCharacters.mainCharacter);
