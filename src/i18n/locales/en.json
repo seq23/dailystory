@@ -20,6 +20,14 @@
       "privacyPolicy": "Privacy Policy",
       "termsOfService": "Terms of Service",
       "contactUs": "Contact Us"
+    },
+    "features": {
+      "reading": {
+        "title": "Adaptive Reading",
+        "subtitle": "Grows with your child"
+      },
+      "personalized": "Personalized Stories",
+      "gradeLevel": "Grade-Appropriate Content"
     }
   },
   "loginScreen": {

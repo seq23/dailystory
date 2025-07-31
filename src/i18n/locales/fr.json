@@ -20,6 +20,14 @@
       "privacyPolicy": "Politique de Confidentialité",
       "termsOfService": "Conditions de Service",
       "contactUs": "Nous Contacter"
+    },
+    "features": {
+      "reading": {
+        "title": "Lecture Adaptative",
+        "subtitle": "Grandit avec votre enfant"
+      },
+      "personalized": "Histoires Personnalisées",
+      "gradeLevel": "Contenu Adapté au Niveau"
     }
   },
   "loginScreen": {
