@@ -259,7 +259,7 @@ export const InteractiveWord = ({
       
       {showTooltip && (
         <div 
-          className={`absolute left-1/2 transform -translate-x-1/2 z-50 min-w-max ${
+          className={`fixed z-[9999] ${
             tooltipPosition === 'top' 
               ? 'bottom-full mb-2' 
               : 'top-full mt-2'
@@ -267,11 +267,17 @@ export const InteractiveWord = ({
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
           style={{
-            maxWidth: '90vw',
-            minWidth: 'max-content'
+            left: '50%',
+            transform: 'translateX(-50%)',
+            maxWidth: 'min(320px, 85vw)',
+            minWidth: '280px'
           }}
         >
-          <div className="bg-white border border-gray-200 text-gray-900 px-3 py-2 rounded-lg shadow-xl text-sm font-medium max-w-xs backdrop-blur-sm">
+          <div className="bg-white border border-gray-200 text-gray-900 px-4 py-3 rounded-lg shadow-2xl text-sm font-medium backdrop-blur-sm w-full"
+               style={{ 
+                 boxShadow: '0 10px 40px -10px rgba(0, 0, 0, 0.3)',
+                 border: '1px solid rgba(0, 0, 0, 0.1)'
+               }}>
             {/* Phonetic spelling */}
             {phoneticSpelling && (
               <div className="flex items-center gap-2 mb-2">
