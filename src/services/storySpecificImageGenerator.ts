@@ -23,46 +23,56 @@ export class StorySpecificImageGenerator {
     // Create consistent main character description based on avatar
     const mainCharacter = this.createMainCharacterDescription(userInfo);
     
-    // Extract story elements from current page
+    // Extract story elements from current page and all pages for consistency
     const storyElements = this.extractStoryElements(storyText, storyCharacter, allStoryPages);
     
     // Determine image focus based on story content
     const imageFocus = this.determineImageFocus(storyText, pageIndex, storyElements);
     
-    // Build the prompt
-    let prompt = "Beautiful children's book illustration, ";
+    // Build the prompt with enhanced consistency and quality
+    let prompt = "Professional children's book illustration, ";
     
-    // Art style based on difficulty
+    // Art style based on difficulty with enhanced quality
     const artStyle = this.getArtStyleForDifficulty(difficulty);
     prompt += `${artStyle}, `;
     
-    // Build scene based on focus
+    // Ensure character consistency across all images
+    prompt += `ALWAYS show the SAME main character: ${mainCharacter}, `;
+    
+    // Add secondary character consistency if present
+    if (storyElements.secondaryCharacter) {
+      prompt += `ALWAYS show the SAME ${storyElements.secondaryCharacter} with consistent appearance, `;
+    }
+    
+    // Build scene based on focus with enhanced storytelling
     switch (imageFocus.type) {
       case 'character-introduction':
-        prompt += `showing ${mainCharacter}`;
+        prompt += `scene: ${mainCharacter}`;
         if (imageFocus.setting) {
-          prompt += ` in ${imageFocus.setting}`;
+          prompt += ` standing in ${imageFocus.setting}`;
         }
         if (imageFocus.activity) {
           prompt += ` ${imageFocus.activity}`;
         }
+        prompt += `, clear view of character's face and clothing`;
         break;
         
       case 'character-meeting':
-        prompt += `showing ${mainCharacter} meeting ${storyElements.secondaryCharacter}`;
+        prompt += `scene: ${mainCharacter} meeting a friendly ${storyElements.secondaryCharacter}`;
         if (imageFocus.setting) {
           prompt += ` in ${imageFocus.setting}`;
         }
         if (imageFocus.emotion) {
-          prompt += `, both looking ${imageFocus.emotion}`;
+          prompt += `, both characters looking ${imageFocus.emotion}`;
         }
+        prompt += `, clear interaction between the two characters`;
         break;
         
       case 'adventure-scene':
         if (storyElements.secondaryCharacter) {
-          prompt += `showing ${mainCharacter} and ${storyElements.secondaryCharacter}`;
+          prompt += `scene: ${mainCharacter} and the ${storyElements.secondaryCharacter}`;
         } else {
-          prompt += `showing ${mainCharacter}`;
+          prompt += `scene: ${mainCharacter}`;
         }
         if (imageFocus.action) {
           prompt += ` ${imageFocus.action}`;
@@ -70,37 +80,44 @@ export class StorySpecificImageGenerator {
         if (imageFocus.setting) {
           prompt += ` in ${imageFocus.setting}`;
         }
+        prompt += `, dynamic action scene showing movement and engagement`;
         break;
         
       case 'object-focus':
-        prompt += `featuring ${imageFocus.object}`;
+        prompt += `scene: featuring ${imageFocus.object}`;
         if (imageFocus.setting) {
-          prompt += ` in ${imageFocus.setting}`;
+          prompt += ` prominently displayed in ${imageFocus.setting}`;
         }
         if (mainCharacter && imageFocus.includeCharacter) {
-          prompt += ` with ${mainCharacter} nearby`;
+          prompt += ` with ${mainCharacter} discovering or interacting with it`;
         }
+        prompt += `, object should be clearly visible and important to the scene`;
         break;
         
       case 'setting-focus':
-        prompt += `beautiful ${imageFocus.setting}`;
+        prompt += `scene: beautiful detailed view of ${imageFocus.setting}`;
         if (imageFocus.mood) {
           prompt += ` with ${imageFocus.mood} atmosphere`;
         }
+        if (mainCharacter) {
+          prompt += ` showing ${mainCharacter} exploring the environment`;
+        }
+        prompt += `, rich environmental details and immersive background`;
         break;
         
       default:
-        prompt += `showing ${mainCharacter}`;
+        prompt += `scene: ${mainCharacter}`;
         if (imageFocus.setting) {
           prompt += ` in ${imageFocus.setting}`;
         }
+        prompt += `, showing character clearly in the environment`;
     }
     
-    // Add cultural elements
+    // Add cultural elements with improved integration
     prompt += this.addCulturalContext(culturalContext, userInfo.nativeLanguage);
     
-    // Add quality and safety modifiers
-    prompt += ", warm and inviting lighting, safe and friendly environment, high quality digital art, child-appropriate content";
+    // Add enhanced quality and consistency modifiers
+    prompt += ", consistent character design throughout story, warm and inviting lighting, safe and friendly environment, high quality digital art, child-appropriate content, NO text or words in image, perfect character continuity";
     
     return prompt;
   }
@@ -115,20 +132,59 @@ export class StorySpecificImageGenerator {
       dark: "dark skin"
     }[userInfo.avatar?.skinTone] || "medium skin";
     
-    const characterName = userInfo.name || 'child';
+    // Ensure consistent character name spelling throughout the story
+    const characterName = userInfo.name?.trim() || 'child';
     
-    return `${genderDesc} named ${characterName} with ${skinToneDesc}`;
+    // Add consistent character details for better visual continuity
+    const characterDetails = [];
+    if (userInfo.favoriteColor) {
+      characterDetails.push(`wearing ${userInfo.favoriteColor.toLowerCase()} clothing`);
+    }
+    
+    const baseDescription = `${genderDesc} named ${characterName} with ${skinToneDesc}`;
+    
+    return characterDetails.length > 0 
+      ? `${baseDescription}, ${characterDetails.join(', ')}`
+      : baseDescription;
   }
   
   private static extractStoryElements(storyText: string, storyCharacter?: string, allStoryPages?: string[]) {
     const lowerText = storyText.toLowerCase();
     
-    // Extract animals/characters mentioned
-    const animalKeywords = ['cat', 'dog', 'bird', 'owl', 'deer', 'rabbit', 'fox', 'bear', 'elephant', 'lion', 'tiger', 'horse', 'cow', 'pig', 'sheep', 'goat', 'duck', 'chicken', 'fish', 'turtle', 'frog', 'butterfly', 'bee', 'spider', 'mouse', 'rat', 'squirrel', 'chipmunk'];
+    // Extract animals/characters mentioned with better name recognition
+    const animalKeywords = [
+      'cat', 'kitten', 'dog', 'puppy', 'bird', 'eagle', 'owl', 'hawk', 'parrot', 'robin',
+      'deer', 'rabbit', 'bunny', 'fox', 'bear', 'cub', 'elephant', 'lion', 'tiger', 
+      'horse', 'pony', 'cow', 'pig', 'sheep', 'lamb', 'goat', 'duck', 'chicken', 
+      'fish', 'turtle', 'frog', 'butterfly', 'bee', 'spider', 'mouse', 'rat', 
+      'squirrel', 'chipmunk', 'raccoon', 'badger', 'hedgehog', 'dragon', 'unicorn'
+    ];
     
+    // First, look for the story character from previous pages to maintain consistency
     let secondaryCharacter = storyCharacter || null;
     
-    // If we don't have a story character, try to find one
+    // If we have all story pages, analyze them for consistent character naming
+    if (allStoryPages && allStoryPages.length > 0) {
+      const characterFrequency = new Map<string, number>();
+      
+      // Count mentions of each animal across all pages
+      for (const page of allStoryPages) {
+        const pageLower = page.toLowerCase();
+        for (const animal of animalKeywords) {
+          if (pageLower.includes(animal)) {
+            characterFrequency.set(animal, (characterFrequency.get(animal) || 0) + 1);
+          }
+        }
+      }
+      
+      // Select the most frequently mentioned character for consistency
+      if (characterFrequency.size > 0) {
+        const mostFrequent = [...characterFrequency.entries()].sort((a, b) => b[1] - a[1])[0];
+        secondaryCharacter = mostFrequent[0];
+      }
+    }
+    
+    // If no character found yet, search current page
     if (!secondaryCharacter) {
       for (const animal of animalKeywords) {
         if (lowerText.includes(animal)) {
@@ -138,24 +194,35 @@ export class StorySpecificImageGenerator {
       }
     }
     
-    // Extract settings
+    // Extract settings with better context awareness
     const settingKeywords = {
       'forest': 'magical forest',
+      'woods': 'enchanted woods',
       'garden': 'beautiful garden',
       'park': 'sunny park',
       'home': 'cozy home',
+      'house': 'warm house',
       'school': 'friendly school',
       'beach': 'sandy beach',
+      'ocean': 'sparkling ocean',
       'mountain': 'green mountains',
       'castle': 'fairy tale castle',
       'library': 'warm library',
       'kitchen': 'bright kitchen',
       'bedroom': 'cozy bedroom',
       'playground': 'fun playground',
-      'farm': 'peaceful farm'
+      'farm': 'peaceful farm',
+      'meadow': 'flower-filled meadow',
+      'valley': 'sunny valley',
+      'river': 'flowing river',
+      'lake': 'peaceful lake',
+      'cave': 'mysterious cave',
+      'village': 'friendly village',
+      'town': 'bustling town'
     };
     
     let setting = null;
+    // Look for setting in current text first, then check all pages for consistency
     for (const [keyword, description] of Object.entries(settingKeywords)) {
       if (lowerText.includes(keyword)) {
         setting = description;
@@ -163,7 +230,21 @@ export class StorySpecificImageGenerator {
       }
     }
     
-    // Extract objects
+    // If no setting found in current page, check previous pages for consistency
+    if (!setting && allStoryPages) {
+      for (const page of allStoryPages) {
+        const pageLower = page.toLowerCase();
+        for (const [keyword, description] of Object.entries(settingKeywords)) {
+          if (pageLower.includes(keyword)) {
+            setting = description;
+            break;
+          }
+        }
+        if (setting) break;
+      }
+    }
+    
+    // Extract objects with better recognition
     const objectKeywords = {
       'book': 'magical book',
       'toy': 'colorful toy',
@@ -173,8 +254,18 @@ export class StorySpecificImageGenerator {
       'cake': 'delicious cake',
       'cookie': 'sweet cookie',
       'crystal': 'glowing crystal',
+      'gem': 'sparkling gem',
       'treasure': 'shiny treasure',
-      'gift': 'wrapped gift'
+      'chest': 'treasure chest',
+      'gift': 'wrapped gift',
+      'present': 'special present',
+      'star': 'glowing star',
+      'crown': 'golden crown',
+      'key': 'magical key',
+      'map': 'treasure map',
+      'wand': 'magic wand',
+      'sword': 'brave sword',
+      'shield': 'protective shield'
     };
     
     let object = null;
@@ -185,18 +276,31 @@ export class StorySpecificImageGenerator {
       }
     }
     
-    // Extract emotions/actions
+    // Extract emotions/actions with better context
     const actionKeywords = {
       'walking': 'walking together',
       'running': 'running happily',
       'playing': 'playing together',
       'looking': 'searching carefully',
+      'searching': 'looking carefully',
       'finding': 'discovering something',
+      'discovering': 'finding something wonderful',
       'helping': 'helping each other',
       'smiling': 'smiling warmly',
       'laughing': 'laughing joyfully',
       'talking': 'talking together',
-      'reading': 'reading together'
+      'speaking': 'chatting friendly',
+      'reading': 'reading together',
+      'exploring': 'exploring together',
+      'dancing': 'dancing happily',
+      'singing': 'singing beautifully',
+      'flying': 'soaring through the sky',
+      'swimming': 'swimming gracefully',
+      'climbing': 'climbing carefully',
+      'hiding': 'playing hide and seek',
+      'sleeping': 'resting peacefully',
+      'eating': 'sharing a meal',
+      'celebrating': 'celebrating joyfully'
     };
     
     let action = null;

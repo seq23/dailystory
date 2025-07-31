@@ -14,6 +14,7 @@ import { ProgressTrackingService, ReadingProgress } from "@/services/progressTra
 import { createOpenAITTSService } from "@/services/textToSpeechService";
 import { useToast } from "@/hooks/use-toast";
 import InclusiveStoryGenerator from "@/services/inclusiveStoryGenerator";
+import EnhancedStoryGenerator from "@/services/enhancedStoryGenerator";
 import illustration1 from "@/assets/story-illustration-1.jpg";
 import illustration2 from "@/assets/story-illustration-2.jpg";
 import illustration3 from "@/assets/story-illustration-3.jpg";
@@ -186,7 +187,8 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
           setHasShownTutorial(true);
         }
         
-        const generatedStory = InclusiveStoryGenerator.generateCulturallyAdaptedStory(userInfo, currentDifficulty, false, 10);
+        // Use enhanced story generator for better flow and consistency
+        const generatedStory = EnhancedStoryGenerator.generateIntelligentStory(userInfo, currentDifficulty, 10);
         setStory(generatedStory);
         
         // Calculate word count for stats and reset reading stats
@@ -435,7 +437,8 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
   const regenerateStoryWithNewDifficulty = async (newDifficulty: DifficultyLevel) => {
     try {
       // Only regenerate story content, don't reset timer or session stats
-      const generatedStory = InclusiveStoryGenerator.generateCulturallyAdaptedStory(userInfo, newDifficulty, false, 10);
+      // Use enhanced story generator for better flow and consistency
+      const generatedStory = EnhancedStoryGenerator.generateIntelligentStory(userInfo, newDifficulty, 10);
       setStory(generatedStory);
       
       // Reset to first page for new story

@@ -82,7 +82,7 @@ export class InclusiveStoryGenerator {
       
       // Enhanced story elements that incorporate user preferences intelligently
       const getPersonalizedElements = () => {
-        // Create a smart element tracker to ensure organic integration
+        // Create a smart element tracker to ensure organic integration and prevent repetition
         const elementTracker = {
           animal: userInfo.favoriteAnimal ? userInfo.favoriteAnimal.toLowerCase() : null,
           setting: culturalElements.setting || "magical forest",
@@ -92,9 +92,17 @@ export class InclusiveStoryGenerator {
           activity: userInfo.hobbies ? userInfo.hobbies.toLowerCase() : null,
           specialTheme: userInfo.specialRequest ? userInfo.specialRequest.toLowerCase() : null,
           
-          // Track usage to ensure organic distribution
+          // Track story progression and prevent repetition
           usedElements: new Set(),
+          usedPhrases: new Set(),
           selectedCharacter: null as string | null,
+          storyMemory: {
+            introducedCharacters: new Set(),
+            visitedPlaces: new Set(),
+            foundObjects: new Set(),
+            learnedLessons: new Set(),
+            sharedMoments: new Set()
+          },
           
           // Smart element selection based on story context
           getAppropriateElement: function(context: string, fallbacks: string[]) {
@@ -111,8 +119,13 @@ export class InclusiveStoryGenerator {
               return element;
             }
             
-            // Return fallback if user element not available or already used
-            return fallbacks[Math.floor(Math.random() * fallbacks.length)];
+            // Return unused fallback to prevent repetition
+            const unusedFallbacks = fallbacks.filter(f => !this.usedElements.has(f));
+            const selectedFallback = unusedFallbacks.length > 0 
+              ? unusedFallbacks[Math.floor(Math.random() * unusedFallbacks.length)]
+              : fallbacks[Math.floor(Math.random() * fallbacks.length)];
+            this.usedElements.add(selectedFallback);
+            return selectedFallback;
           },
           
           // Get consistent character throughout the story
@@ -124,17 +137,44 @@ export class InclusiveStoryGenerator {
             if (this.animal && !this.usedElements.has('character')) {
               this.selectedCharacter = this.animal;
               this.usedElements.add('character');
+              this.storyMemory.introducedCharacters.add(this.selectedCharacter);
               return this.selectedCharacter;
             }
             
             // Select one character and stick with it
             this.selectedCharacter = fallbacks[Math.floor(Math.random() * fallbacks.length)];
+            this.storyMemory.introducedCharacters.add(this.selectedCharacter);
             return this.selectedCharacter;
+          },
+          
+          // Generate unique content that builds on previous pages
+          generateUniqueContent: function(pageIndex: number, section: string, baseTemplate: string) {
+            const contentVariations = {
+              greetings: ["Hello!", "Hi there!", "Nice to meet you!", "What a lovely day!", "How wonderful!"],
+              movements: ["walked slowly", "ran quickly", "skipped happily", "wandered curiously", "explored carefully"],
+              discoveries: ["found something amazing", "discovered a secret", "spotted something special", "noticed something magical", "uncovered a surprise"],
+              emotions: ["felt excited", "was curious", "became happy", "grew confident", "felt grateful"],
+              actions: ["helped their friend", "shared something special", "solved a problem", "made a discovery", "learned something new"]
+            };
+            
+            // Ensure no repetition within categories
+            for (const [category, variations] of Object.entries(contentVariations)) {
+              if (baseTemplate.includes(category)) {
+                const unusedVariations = variations.filter(v => !this.usedPhrases.has(v));
+                if (unusedVariations.length > 0) {
+                  const selected = unusedVariations[Math.floor(Math.random() * unusedVariations.length)];
+                  this.usedPhrases.add(selected);
+                  baseTemplate = baseTemplate.replace(category, selected);
+                }
+              }
+            }
+            
+            return baseTemplate;
           },
           
           // Check if we should introduce a user element at this point
           shouldIntroduceElement: function(pageIndex: number, section: string, elementType: string) {
-            const element = this[elementType as keyof Omit<typeof this, 'usedElements' | 'getAppropriateElement' | 'shouldIntroduceElement'>];
+            const element = this[elementType as keyof Omit<typeof this, 'usedElements' | 'usedPhrases' | 'storyMemory' | 'getAppropriateElement' | 'shouldIntroduceElement' | 'generateUniqueContent'>];
             if (!element || this.usedElements.has(elementType)) return false;
             
             // Smart timing based on story structure
