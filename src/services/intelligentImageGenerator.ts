@@ -36,10 +36,11 @@ export class IntelligentImageGenerator {
       const seed = this.generateUniqueSeed();
       
       // Call Supabase edge function for secure API access
-      const response = await fetch('/supabase/functions/v1/runware-generate-image', {
+      const response = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/runware-generate-image', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino'}`
         },
         body: JSON.stringify({
           positivePrompt: prompt,
