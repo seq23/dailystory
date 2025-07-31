@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
-import { Check, Star, Zap, ArrowLeft } from "lucide-react";
+import { Check, Star, Zap, ArrowLeft, X } from "lucide-react";
 import type { UserInfo } from "@/types";
 
 interface LoginScreenProps {
@@ -162,6 +162,16 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
       >
         <ArrowLeft className="w-4 h-4 mr-2" />
         {onBack ? "Back to Free Trial" : "Back"}
+      </Button>
+
+      {/* Close button (X) in top-right corner */}
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={onBack || (() => window.history.back())}
+        className="absolute top-4 right-4 text-white hover:bg-white/10 hover:bg-red-500/20 transition-colors p-2"
+      >
+        <X className="w-5 h-5" />
       </Button>
       
       <Card className="w-full max-w-2xl mx-auto bg-white/95 backdrop-blur-sm border-white/20 shadow-2xl">
