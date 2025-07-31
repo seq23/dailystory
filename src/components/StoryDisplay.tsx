@@ -768,23 +768,29 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         }
       }
       
-      // Extract key scene elements from story text
+      // Extract key scene elements from story text and integrate user preferences
       const extractSceneElements = (text: string) => {
         const lowerText = text.toLowerCase();
+        const favoriteAnimal = userInfo.favoriteAnimal || 'cat';
+        const favoriteColor = userInfo.favoriteColor || 'blue';
         
-        // Simple scene detection
+        // Detect if user's favorite animal is mentioned in the story
+        const hasUserAnimal = lowerText.includes(favoriteAnimal.toLowerCase());
+        const animalInScene = hasUserAnimal ? `${favoriteColor} ${favoriteAnimal}` : 'a friendly companion';
+        
+        // Scene detection with user preferences integrated
         if (lowerText.includes('woke') || lowerText.includes('morning')) {
-          return 'a child waking up in a cozy bedroom with morning sunlight streaming through the window';
+          return `a child waking up in a cozy bedroom with morning sunlight streaming through the window${hasUserAnimal ? ` with their ${animalInScene} nearby` : ''}`;
         } else if (lowerText.includes('outside') || lowerText.includes('garden')) {
-          return 'a child in a beautiful garden with flowers and trees';
+          return `a child in a beautiful garden with ${favoriteColor} flowers and trees${hasUserAnimal ? ` playing with ${animalInScene}` : ''}`;
         } else if (lowerText.includes('playing') || lowerText.includes('play')) {
-          return 'a child happily playing in a safe outdoor environment';
+          return `a child happily playing in a safe outdoor environment${hasUserAnimal ? ` with ${animalInScene}` : ''}`;
         } else if (lowerText.includes('friend') || lowerText.includes('animal')) {
-          return 'a child meeting a friendly animal companion';
+          return `a child meeting their ${animalInScene}`;
         } else if (lowerText.includes('adventure') || lowerText.includes('exploring')) {
-          return 'a child on an exciting but safe adventure';
+          return `a child on an exciting but safe adventure${hasUserAnimal ? ` with ${animalInScene}` : ''}`;
         } else {
-          return 'a child in a peaceful, happy scene';
+          return `a child in a peaceful, happy scene${hasUserAnimal ? ` with ${animalInScene}` : ''}`;
         }
       };
 
