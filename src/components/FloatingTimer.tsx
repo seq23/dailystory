@@ -58,12 +58,12 @@ export const FloatingTimer = ({
     }
   }, [pagesRemaining]);
   
-  // Tutorial auto-advance
+  // Tutorial auto-advance - 15 seconds max
   useEffect(() => {
-    if (tutorialStep > 0 && tutorialStep <= 4) {
+    if (tutorialStep > 0 && tutorialStep <= 3) {
       const timer = setTimeout(() => {
         // Auto-advance tutorial (parent component handles this)
-      }, 3000);
+      }, 5000); // 5 seconds per step = 15 seconds total
       return () => clearTimeout(timer);
     }
   }, [tutorialStep]);
@@ -249,7 +249,7 @@ export const FloatingTimer = ({
         </div>
         
         {/* Control Buttons in Curved U-Shape */}
-        <div className="relative w-48 sm:w-56 h-24 sm:h-28">
+        <div className="relative w-40 sm:w-48 h-20 sm:h-24">
           {/* Play/Pause Button - Center Bottom */}
           <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2">
             <Tooltip open={tutorialStep === 1}>
@@ -269,8 +269,8 @@ export const FloatingTimer = ({
             </Tooltip>
           </div>
           
-          {/* Add Time Button - Left Curve */}
-          <div className="absolute bottom-4 sm:bottom-6 left-2 sm:left-4">
+          {/* Add Time Button - Right Curve */}
+          <div className="absolute bottom-4 sm:bottom-6 right-2 sm:right-4">
             <Tooltip open={tutorialStep === 2}>
               <TooltipTrigger asChild>
                 <Button
@@ -288,30 +288,9 @@ export const FloatingTimer = ({
             </Tooltip>
           </div>
 
-          {/* Subtract Time Button - Right Curve */}
-          {onSubtractTime && (
-            <div className="absolute bottom-4 sm:bottom-6 right-2 sm:right-4">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    onClick={onSubtractTime}
-                    disabled={timeRemaining <= 10 * 60}
-                    className="bg-gradient-to-b from-white to-orange-50 backdrop-blur-sm border-2 border-orange-400/50 text-orange-600 hover:bg-orange-500 hover:text-white shadow-lg w-12 h-12 sm:w-16 sm:h-16 rounded-full p-0 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-110 hover:shadow-xl"
-                  >
-                    <Minus className="w-5 h-5 sm:w-6 sm:h-6" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="bg-orange-600 text-white border-orange-500 font-medium">
-                  {t("floatingTimer.reduceTime")}
-                </TooltipContent>
-              </Tooltip>
-            </div>
-          )}
 
-          {/* Add Pages Button - Top Left Curve */}
-          <div className="absolute top-0 left-8 sm:left-12">
+          {/* Add Pages Button - Top Center */}
+          <div className="absolute top-0 left-1/2 transform -translate-x-1/2">
             <Tooltip open={tutorialStep === 3}>
               <TooltipTrigger asChild>
                 <Button

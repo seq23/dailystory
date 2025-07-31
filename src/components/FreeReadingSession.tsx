@@ -750,11 +750,6 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                 description: t("freeReadingSession.timeAdded.description"),
               });
             }}
-            onSubtractTime={() => {
-              if (timeRemaining > 10 * 60) {
-                setTimeRemaining(prev => Math.max(10 * 60, prev - 5 * 60));
-              }
-            }}
             onAddPages={addMorePages}
             pagesRemaining={story.length - currentPage}
             currentParagraph={currentPage}

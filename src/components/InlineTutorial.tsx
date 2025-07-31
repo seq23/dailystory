@@ -24,42 +24,26 @@ export const InlineTutorial = ({ isActive, onComplete }: InlineTutorialProps) =>
   const tutorialSteps = [
     {
       id: 1,
-      title: "Timer Controls",
-      description: "Use these buttons to control your reading timer. Play/pause to start reading, and add time when you need more!",
+      title: "Reading Timer",
+      description: "Click the play button to start your reading timer! Pause anytime you need a break.",
       targetSelector: "#floating-timer",
-      position: { top: "50%", left: "20%" },
+      position: { top: "50%", left: "25%" },
       arrow: "right"
     },
     {
       id: 2,
-      title: "Story Navigation",
-      description: "Navigate through your story pages using these arrow buttons. Go back or forward at your own pace!",
-      targetSelector: ".story-navigation",
-      position: { top: "85%", left: "45%" },
-      arrow: "up"
+      title: "Add More Time",
+      description: "Need more time? Click the + button to add 5 more minutes to your reading session!",
+      targetSelector: "#floating-timer",
+      position: { top: "60%", left: "25%" },
+      arrow: "right"
     },
     {
       id: 3,
-      title: "Audio Playback",
-      description: "Listen to the story being read aloud! Click play and adjust the reading speed to your preference.",
-      targetSelector: ".audio-controls",
-      position: { top: "20%", right: "20%" },
-      arrow: "left"
-    },
-    {
-      id: 4,
-      title: "Reading Levels",
-      description: "Choose your reading level! Start with Easy mode and work your way up as you improve.",
-      targetSelector: ".reading-level-controls",
-      position: { top: "15%", left: "50%" },
-      arrow: "down"
-    },
-    {
-      id: 5,
       title: "Add More Pages",
-      description: "Running out of story? Click here to add 5 more pages to keep the adventure going!",
+      description: "Want to keep reading? Click the book icon to add 5 more pages to your story!",
       targetSelector: "#floating-timer",
-      position: { top: "35%", left: "15%" },
+      position: { top: "40%", left: "25%" },
       arrow: "right"
     }
   ];
@@ -136,12 +120,12 @@ export const InlineTutorial = ({ isActive, onComplete }: InlineTutorialProps) =>
     }
   }, [currentStep, isVisible, currentStepData]);
 
-  // Auto-advance tutorial after 10 seconds
+  // Auto-advance tutorial after 15 seconds total
   useEffect(() => {
     if (isVisible) {
       const timer = setTimeout(() => {
         completeTutorial();
-      }, 10000);
+      }, 15000); // 15 seconds total
       
       return () => clearTimeout(timer);
     }
