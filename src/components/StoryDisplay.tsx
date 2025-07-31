@@ -92,6 +92,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
   const [isReading, setIsReading] = useState(true); // Auto-start reading
   const [timeRemaining, setTimeRemaining] = useState(APP_CONFIG.FREE_SESSION_DURATION);
   const [story, setStory] = useState<string[]>([]);
+  const [storyConfig, setStoryConfig] = useState<any>(null);
   const [currentDifficulty, setCurrentDifficulty] = useState<DifficultyLevel>(
     userInfo.difficultyLevel || (userInfo.age <= 6 ? "easy" : userInfo.age <= 9 ? "medium" : userInfo.age <= 12 ? "hard" : "expert")
   );
@@ -187,12 +188,13 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
           setHasShownTutorial(true);
         }
         
-        // Use centralized story generation service
-        const generatedStory = await StoryGeneratorService.generateStory(userInfo, currentDifficulty, 10);
-        setStory(generatedStory);
+        // Use centralized story generation service with word limits
+        const result = await StoryGeneratorService.generateStory(userInfo, currentDifficulty, 10);
+        setStory(result.pages);
+        setStoryConfig(result.config);
         
         // Calculate word count for stats and reset reading stats
-        const wordCount = generatedStory.join(' ').split(' ').filter(word => word.length > 0).length;
+        const wordCount = result.pages.join(' ').split(' ').filter(word => word.length > 0).length;
         setSessionStartTime(new Date());
         setSessionWordsRead(wordCount);
         
@@ -209,10 +211,10 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         setCurrentIllustration(illustrations[illustrationIndex]);
         
         // Auto-generate custom illustration for the first page
-        if (generatedStory.length > 0) {
+        if (result.pages.length > 0) {
           // Small delay to ensure component is ready
           setTimeout(() => {
-            generateCustomIllustration(0, generatedStory[0]);
+            generateCustomIllustration(0, result.pages[0]);
           }, 500);
         }
       } catch (error) {
@@ -442,8 +444,9 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       // Only regenerate story content, don't reset timer or session stats
       // Use improved story generator with fallback
       let generatedStory;
-      generatedStory = await StoryGeneratorService.generateStory(userInfo, newDifficulty, 10);
-      setStory(generatedStory);
+      const result = await StoryGeneratorService.generateStory(userInfo, newDifficulty, 10);
+      setStory(result.pages);
+      setStoryConfig(result.config);
       
       // Clear custom illustrations for new story
       setCustomIllustrations(new Map());
@@ -521,9 +524,9 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
     try {
       // Generate continuation that flows from current story context
       const currentStoryContext = story.slice(-3).join(' '); // Get last 3 pages for context
-      const extension = await StoryGeneratorService.generateStory(userInfo, currentDifficulty, 5);
+      const result = await StoryGeneratorService.generateStory(userInfo, currentDifficulty, 5);
       
-      setStory(prev => [...prev, ...extension]);
+      setStory(prev => [...prev, ...result.pages]);
       setShowAddPagesAlert(false); // Hide current alert but don't reset the flag
       
       toast({
@@ -532,7 +535,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       });
       
       // Update reading stats
-      const newWordCount = extension.join(' ').split(' ').filter(word => word.length > 0).length;
+      const newWordCount = result.pages.join(' ').split(' ').filter(word => word.length > 0).length;
       setSessionWordsRead(prev => prev + newWordCount);
       setReadingStats(prev => ({
         ...prev,
@@ -893,14 +896,29 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
           <div className="order-1 lg:order-2">
             <Card className="bg-white/95 backdrop-blur-sm shadow-2xl rounded-2xl sm:rounded-3xl border-2 border-purple-200/50 overflow-visible min-h-[600px] sm:min-h-[700px] lg:min-h-[800px]">
               <CardContent className="p-4 sm:p-6 lg:p-8">
-                {/* Story Text */}
+                {/* Story Text with Dynamic Word-Limited Sizing */}
                 <div className="prose prose-sm sm:prose-base lg:prose-lg max-w-none">
-                  <div className={`leading-relaxed text-gray-800 font-medium space-y-3 sm:space-y-4 ${
-                    currentDifficulty === 'easy' 
-                      ? 'text-3xl sm:text-4xl lg:text-5xl' 
-                      : 'text-lg sm:text-xl lg:text-2xl'
-                  }`}>
+                  <div className={`
+                    leading-relaxed text-gray-800 font-medium text-center space-y-3 sm:space-y-4
+                    ${storyConfig?.fontSize || (
+                      currentDifficulty === 'easy' 
+                        ? 'text-4xl sm:text-5xl lg:text-6xl' 
+                        : currentDifficulty === 'medium'
+                        ? 'text-3xl sm:text-4xl lg:text-5xl'
+                        : currentDifficulty === 'hard'
+                        ? 'text-2xl sm:text-3xl lg:text-4xl'
+                        : 'text-xl sm:text-2xl lg:text-3xl'
+                    )}
+                    ${storyConfig?.lineHeight || 'leading-relaxed'}
+                  `}>
                     {processTextForPhonetics(currentStory, "", currentDifficulty, userInfo)}
+                    
+                    {/* Word count indicator for easy level */}
+                    {currentDifficulty === 'easy' && (
+                      <div className="text-xs text-muted-foreground mt-4">
+                        {currentStory.split(' ').length} {currentStory.split(' ').length === 1 ? 'word' : 'words'}
+                      </div>
+                    )}
                   </div>
                 </div>
                 
