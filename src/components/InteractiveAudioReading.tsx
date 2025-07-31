@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Volume2, VolumeX, Pause, Play, SkipForward, SkipBack } from 'lucide-react';
+import { Play } from 'lucide-react';
 import { createOpenAITTSService } from '@/services/textToSpeechService';
 import type { UserInfo } from '@/types';
 
@@ -32,7 +32,7 @@ export const InteractiveAudioReading = ({
   }, [text]);
 
   const startReading = async () => {
-    if (!isEnabled) return;
+    if (!isEnabled || isPlaying) return;
     
     try {
       setIsPlaying(true);
@@ -84,20 +84,11 @@ export const InteractiveAudioReading = ({
     }
   };
 
-  const toggleReading = () => {
-    if (isPlaying) {
-      stopReading();
-    } else {
-      startReading();
-    }
-  };
-
   const adjustSpeed = (newSpeed: number) => {
     setAudioSpeed(newSpeed);
+    // Note: If audio is playing, user needs to restart to use new speed
     if (isPlaying) {
       stopReading();
-      // Auto-restart with new speed after brief pause
-      setTimeout(() => startReading(), 100);
     }
   };
 
@@ -113,21 +104,18 @@ export const InteractiveAudioReading = ({
     <div className="flex items-center justify-center gap-2 p-2 bg-blue-50 rounded-lg">
       <div className="relative group">
         <Button
-          onClick={toggleReading}
+          onClick={startReading}
+          disabled={isPlaying}
           variant="outline"
           size="sm"
-          className="rounded-full hover:bg-blue-100 transition-colors"
+          className="rounded-full hover:bg-blue-100 transition-colors disabled:opacity-50"
         >
-          {isPlaying ? (
-            <Pause className="w-4 h-4" />
-          ) : (
-            <Play className="w-4 h-4" />
-          )}
+          <Play className="w-4 h-4" />
         </Button>
         
         {/* Tooltip */}
         <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
-          {isPlaying ? 'Pause audio reading' : 'Play audio reading'}
+          {isPlaying ? 'Audio playing...' : 'Play audio reading'}
         </div>
       </div>
 
@@ -160,8 +148,8 @@ export const InteractiveAudioReading = ({
       </div>
 
       {isPlaying && (
-        <div className="text-xs text-blue-600">
-          Reading... ({currentWordIndex + 1}/{words.length})
+        <div className="text-xs text-blue-600 font-medium">
+          🎵 Playing audio... ({currentWordIndex + 1}/{words.length})
         </div>
       )}
     </div>
