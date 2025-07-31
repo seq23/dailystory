@@ -444,7 +444,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       // Only regenerate story content, don't reset timer or session stats
       // Use improved story generator with fallback
       let generatedStory;
-      const result = await StoryGeneratorService.generateStory(userInfo, newDifficulty, 10);
+      const result = await StoryGeneratorService.generateStory(userInfo, newDifficulty, story.length || 10);
       setStory(result.pages);
       setStoryConfig(result.config);
       
