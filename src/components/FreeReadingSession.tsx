@@ -362,81 +362,90 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     <div className={`min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 ${
       celebrationStep === 1 ? 'animate-pulse' : ''
     }`}>
-      {/* Enhanced Floating Timer with Controls */}
+      {/* Enhanced Professional Floating Timer with Controls */}
       {sessionStarted && timeRemaining > 0 && !sessionEnded && (
-        <div className="fixed top-6 right-6 z-50">
+        <div className="fixed bottom-6 right-6 sm:right-8 z-50 flex flex-col items-center gap-6" style={{ marginRight: 'max(1rem, env(safe-area-inset-right))', marginBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+          
+          {/* Main Timer Circle - Professional & Larger */}
           <div className="relative">
-            {/* Main Circular Timer */}
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 p-1 shadow-2xl animate-pulse">
-              <div className="w-full h-full rounded-full bg-white flex flex-col items-center justify-center relative overflow-hidden">
-                {/* Progress Ring */}
-                <div className="absolute inset-0">
-                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="40"
-                      stroke="#f0f0f0"
-                      strokeWidth="8"
-                      fill="transparent"
-                    />
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="40"
-                      stroke={timeRemaining <= 300 ? "#ef4444" : "#8b5cf6"}
-                      strokeWidth="8"
-                      fill="transparent"
-                      strokeDasharray={`${(timeRemaining / APP_CONFIG.FREE_SESSION_DURATION) * 251.2} 251.2`}
-                      className="transition-all duration-1000 ease-in-out"
-                    />
-                  </svg>
+            {/* Main Timer Circle - Much Larger & Professional */}
+            <div className="relative w-32 h-32 sm:w-40 sm:h-40 bg-gradient-to-br from-white to-gray-50 backdrop-blur-sm rounded-full shadow-2xl border-4 border-white/80 flex items-center justify-center ring-4 ring-purple-500/20">
+              {/* Outer glow ring */}
+              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-purple-500/10 to-transparent animate-pulse"></div>
+              
+              {/* Progress Circle */}
+              <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 160 160">
+                {/* Background circle */}
+                <circle
+                  cx="80"
+                  cy="80"
+                  r="70"
+                  stroke="hsl(var(--muted))"
+                  strokeWidth="8"
+                  fill="none"
+                  opacity="0.3"
+                />
+                {/* Progress circle */}
+                <circle
+                  cx="80"
+                  cy="80"
+                  r="70"
+                  stroke={timeRemaining <= 300 ? "#ef4444" : "#8b5cf6"}
+                  strokeWidth="8"
+                  fill="none"
+                  strokeDasharray={2 * Math.PI * 70}
+                  strokeDashoffset={2 * Math.PI * 70 - ((timeRemaining / APP_CONFIG.FREE_SESSION_DURATION) * 2 * Math.PI * 70)}
+                  className="transition-all duration-1000 ease-out filter drop-shadow-lg"
+                  strokeLinecap="round"
+                />
+              </svg>
+              
+              {/* Time Display */}
+              <div className="relative z-10 text-center">
+                <div className={`text-lg sm:text-2xl font-bold tracking-tight ${timeRemaining <= 300 ? 'text-red-500' : 'text-purple-600'}`}>
+                  {Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')}
                 </div>
-                
-                {/* Timer Display */}
-                <div className="text-center z-10">
-                  <div className={`text-lg font-bold ${timeRemaining <= 300 ? 'text-red-500' : 'text-purple-600'}`}>
-                    {Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {t("freeReadingSession.timer.freeTime")}
-                  </div>
+                <div className="text-xs sm:text-sm text-muted-foreground font-medium">
+                  Reading Time
                 </div>
               </div>
             </div>
-            
-            {/* Control Buttons */}
-            <div className="absolute -bottom-16 left-1/2 transform -translate-x-1/2 flex gap-2">
-              {/* Pause/Play Button */}
+          </div>
+          
+          {/* Control Buttons in Curved U-Shape */}
+          <div className="relative w-48 sm:w-56 h-24 sm:h-28">
+            {/* Pause/Play Button - Center Bottom */}
+            <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2">
               <Button
-                size="sm"
-                variant="outline"
-                className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 text-white border-0 hover:from-blue-500 hover:to-blue-700 shadow-lg"
+                size="lg"
                 onClick={() => {
                   // Toggle timer pause/play logic here
                   toast({
-                    title: "Timer Paused",
-                    description: "Click again to resume",
+                    title: "Timer Feature",
+                    description: "Pause/resume coming soon!",
                     duration: 2000,
                   });
                 }}
+                className="bg-gradient-to-b from-white to-gray-50 backdrop-blur-sm border-2 border-purple-500/30 text-purple-600 hover:bg-purple-500 hover:text-white shadow-xl w-16 h-16 sm:w-20 sm:h-20 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-2xl hover:border-purple-500/50"
               >
-                ⏯️
+                <Timer className="w-6 h-6 sm:w-8 sm:h-8" />
               </Button>
-              
-              {/* Reduce Time Button - 5 minutes, disabled under 5:00 */}
+            </div>
+            
+            {/* Reduce Time Button - Left Curve */}
+            <div className="absolute bottom-4 sm:bottom-6 left-2 sm:left-4">
               <Button
-                size="sm"
                 variant="outline"
-                disabled={timeRemaining <= 300} // Disable when 5:00 or under
-                className={`w-8 h-8 rounded-full border-0 shadow-lg transition-all duration-200 ${
+                size="lg"
+                disabled={timeRemaining <= 300}
+                className={`bg-gradient-to-b from-white to-orange-50 backdrop-blur-sm border-2 border-orange-400/50 text-orange-600 hover:bg-orange-500 hover:text-white shadow-lg w-12 h-12 sm:w-16 sm:h-16 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-xl ${
                   timeRemaining <= 300 
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                    : 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white hover:from-yellow-500 hover:to-orange-600 hover:scale-110'
+                    ? 'opacity-50 cursor-not-allowed' 
+                    : ''
                 }`}
                 onClick={() => {
-                  if (timeRemaining > 300) { // Only work if above 5:00
-                    setTimeRemaining(prev => Math.max(300, prev - 300)); // Reduce by 5 minutes (300 seconds)
+                  if (timeRemaining > 300) {
+                    setTimeRemaining(prev => Math.max(300, prev - 300));
                     toast({
                       title: "Time Reduced",
                       description: "Removed 5 minutes from timer",
@@ -445,14 +454,16 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                   }
                 }}
               >
-                ➖
+                <Clock className="w-5 h-5 sm:w-6 sm:h-6" />
               </Button>
-              
-              {/* End Early Button */}
+            </div>
+
+            {/* End Session Button - Right Curve */}
+            <div className="absolute bottom-4 sm:bottom-6 right-2 sm:right-4">
               <Button
-                size="sm"
                 variant="outline"
-                className="w-8 h-8 rounded-full bg-gradient-to-r from-red-400 to-red-600 text-white border-0 hover:from-red-500 hover:to-red-700 shadow-lg"
+                size="lg"
+                className="bg-gradient-to-b from-white to-red-50 backdrop-blur-sm border-2 border-red-400/50 text-red-600 hover:bg-red-500 hover:text-white shadow-lg w-12 h-12 sm:w-16 sm:h-16 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-xl"
                 onClick={() => {
                   setTimeRemaining(0);
                   handleSessionEnd();
@@ -463,8 +474,36 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                   });
                 }}
               >
-                🛑
+                <Star className="w-5 h-5 sm:w-6 sm:h-6" />
               </Button>
+            </div>
+
+            {/* Pages Counter - Top Left Curve */}
+            <div className="absolute top-0 left-8 sm:left-12">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-b from-white to-gray-50 border-2 border-gray-300/50 shadow-lg flex items-center justify-center">
+                <div className="text-center">
+                  <div className="text-xs sm:text-sm font-bold text-gray-700">
+                    {currentPage + 1}
+                  </div>
+                  <div className="text-[10px] sm:text-xs text-gray-500 font-medium">
+                    page
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Total Pages - Top Right Curve */}
+            <div className="absolute top-0 right-8 sm:right-12">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-b from-white to-blue-50 border-2 border-blue-400/50 shadow-lg flex items-center justify-center">
+                <div className="text-center">
+                  <div className="text-xs sm:text-sm font-bold text-blue-600">
+                    {story.length}
+                  </div>
+                  <div className="text-[10px] sm:text-xs text-blue-500 font-medium">
+                    total
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
