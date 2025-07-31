@@ -238,11 +238,41 @@
     }
   },
   "storyDisplay": {
+    "header": {
+      "readingTime": "Tiempo de Lectura",
+      "progress": "Progreso",
+      "done": "✨ ¡Terminé!",
+      "newStory": "Nueva Historia", 
+      "home": "Inicio"
+    },
     "controls": {
       "previous": "← Anterior"
     },
     "navigation": {
       "pageCounter": "Página {{current}} de {{total}}"
+    },
+    "difficulty": {
+      "tutorialSteps": {
+        "step1": "¡Bienvenido! El temporizador se inició automáticamente a las 10:15. Verde + agrega tiempo, naranja - quita tiempo.",
+        "step2": "El botón del altavoz lee en voz alta, el micrófono graba tu lectura.",
+        "step3": "Los botones Más fácil/Más difícil ajustan la dificultad de la historia mientras lees.",
+        "step4": "Los botones Agregar/Quitar páginas cambian la longitud de tu historia.",
+        "step5": "¡Feliz lectura! ¡Disfruta tu aventura personalizada!"
+      }
+    },
+    "alerts": {
+      "almostDone": "¡Casi terminado!",
+      "clickToAdd": "¡Haz clic en + para agregar más páginas!"
+    },
+    "countdown": {
+      "timesUp": "¡Se acabó el tiempo!",
+      "goingToReport": "Yendo a tu reporte de lectura en...",
+      "goNow": "Ir Ahora ✨"
+    },
+    "tutorial": {
+      "step": "Tutorial",
+      "of": "de 5"
+    }
   },
   "adaptiveUI": {
     "eslMode": "Modo de Aprendizaje de Inglés",
@@ -261,6 +291,7 @@
       "tip1": "Haz clic en palabras para aprender sinónimos y significados",
       "tip2": "Usa los botones de dificultad para desafiarte",
       "tip3": "Las historias ayudan a construir vocabulario y comprensión"
+    }
   },
   "floatingTimer": {
     "timeRemaining": "Tiempo",
@@ -288,6 +319,4 @@
       "description": "¡Has completado tu sesión de lectura!"
     }
   }
-}
-}
 }

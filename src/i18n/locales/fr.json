@@ -188,7 +188,16 @@
     },
     "tutorial": {
       "step": "Tutoriel",
-      "of": "de"
+      "of": "de 5"
+    },
+    "difficulty": {
+      "tutorialSteps": {
+        "step1": "Bienvenue! Le minuteur s'est démarré automatiquement à 10:15. Vert + ajoute du temps, orange - enlève du temps.",
+        "step2": "Le bouton haut-parleur lit à haute voix, le microphone enregistre votre lecture.",
+        "step3": "Les boutons Plus facile/Plus difficile ajustent la difficulté de l'histoire pendant que vous lisez.",
+        "step4": "Les boutons Ajouter/Retirer des pages changent la longueur de votre histoire.",
+        "step5": "Bonne lecture! Profitez de votre aventure personnalisée!"
+      }
     }
   },
   "interactiveWord": {
@@ -206,14 +215,6 @@
     "loading": "Chargement...",
     "playbackError": "Impossible de lire l'audio",
     "translationError": "Traduction non disponible"
-  },
-  "storyDisplay": {
-    "controls": {
-      "previous": "← Précédent"
-    },
-    "navigation": {
-      "pageCounter": "Page {{current}} sur {{total}}"
-    }
   },
   "adaptiveUI": {
     "eslMode": "Mode d'Apprentissage de l'Anglais",
@@ -240,6 +241,7 @@
     "addTime": "Ajouter 10 minutes",
     "reduceTime": "Retirer 10 minutes",
     "addPages": "Ajouter plus de pages",
+    "maxLimit": "Limite max",
     "addPagesAlert": {
       "title": "Presque fini!",
       "description": "Cliquez sur + pour ajouter plus de pages!",
@@ -253,6 +255,10 @@
     "timeReduced": {
       "title": "Temps réduit!",
       "description": "10 minutes retirées de votre temps de lecture."
+    },
+    "celebration": {
+      "title": "🎉 Félicitations!",
+      "description": "Vous avez terminé votre session de lecture!"
     }
   }
 }

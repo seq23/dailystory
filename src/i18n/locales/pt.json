@@ -212,11 +212,35 @@
     }
   },
   "storyDisplay": {
+    "header": {
+      "readingTime": "Tempo de Leitura",
+      "progress": "Progresso",
+      "done": "✨ Terminei!",
+      "newStory": "Nova História",
+      "home": "Início"
+    },
     "controls": {
       "previous": "← Anterior"
     },
     "navigation": {
       "pageCounter": "Página {{current}} de {{total}}"
+    },
+    "difficulty": {
+      "tutorialSteps": {
+        "step1": "Bem-vindo! O cronômetro iniciou automaticamente às 10:15. Verde + adiciona tempo, laranja - remove tempo.",
+        "step2": "O botão do alto-falante lê em voz alta, o microfone grava sua leitura.",
+        "step3": "Os botões Mais fácil/Mais difícil ajustam a dificuldade da história enquanto você lê.",
+        "step4": "Os botões Adicionar/Remover páginas alteram o comprimento da sua história.",
+        "step5": "Feliz leitura! Aproveite sua aventura personalizada!"
+      }
+    },
+    "alerts": {
+      "almostDone": "Quase terminando!",
+      "clickToAdd": "Clique em + para adicionar mais páginas!"
+    },
+    "tutorial": {
+      "step": "Tutorial",
+      "of": "de 5"
     }
   },
   "adaptiveUI": {

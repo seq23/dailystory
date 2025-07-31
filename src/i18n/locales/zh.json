@@ -212,11 +212,35 @@
     }
   },
   "storyDisplay": {
+    "header": {
+      "readingTime": "阅读时间",
+      "progress": "进度",
+      "done": "✨ 完成了！",
+      "newStory": "新故事",
+      "home": "首页"
+    },
     "controls": {
       "previous": "← 上一页"
     },
     "navigation": {
       "pageCounter": "第 {{current}} 页，共 {{total}} 页"
+    },
+    "difficulty": {
+      "tutorialSteps": {
+        "step1": "欢迎！计时器已自动开始，时间为10:15。绿色+增加时间，橙色-减少时间。",
+        "step2": "扬声器按钮朗读，麦克风按钮录制您的朗读。",
+        "step3": "简单/困难按钮在您阅读时调整故事难度。",
+        "step4": "添加/删除页面按钮改变您故事的长度。",
+        "step5": "快乐阅读！享受您的个性化冒险！"
+      }
+    },
+    "alerts": {
+      "almostDone": "快完成了！",
+      "clickToAdd": "点击+添加更多页面！"
+    },
+    "tutorial": {
+      "step": "教程",
+      "of": "共5步"
     }
   },
   "adaptiveUI": {
