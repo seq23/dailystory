@@ -61,10 +61,10 @@ export const FloatingTimer = ({
   const shouldShakeTooltip = showAddPagesAlert;
   
   // Calculate progress for circular progress (based on current session time)
-  const maxTime = 30 * 60; // Maximum 30 minutes
-  const currentSessionTime = timeRemaining > 20 * 60 ? 30 * 60 : 
-                            timeRemaining > 15 * 60 ? 20 * 60 :
-                            timeRemaining > 10 * 60 ? 15 * 60 : 10 * 60;
+  const maxTime = 20 * 60; // Maximum 20 minutes for free version
+  const currentSessionTime = timeRemaining > 15 * 60 ? 20 * 60 : 
+                            timeRemaining > 10 * 60 ? 15 * 60 :
+                            timeRemaining > 5 * 60 ? 10 * 60 : 5 * 60;
   const progress = ((currentSessionTime - timeRemaining) / currentSessionTime) * 100;
   const circumference = 2 * Math.PI * 42; // radius of 42
   const strokeDashoffset = circumference - (progress / 100) * circumference;
@@ -129,10 +129,10 @@ export const FloatingTimer = ({
         duration: 5000,
       });
 
-      // Navigate to session ended page after 6 seconds
+      // Navigate to session ended page after 5 seconds
       setTimeout(() => {
         onSessionEnded();
-      }, 6000);
+      }, 5000);
     }
   }, [timeRemaining, showCelebration, toast, onSessionEnded]);
 
@@ -221,7 +221,7 @@ export const FloatingTimer = ({
               >
                 {formatTime(timeRemaining)}
               </div>
-              {timeRemaining >= 40 * 60 && (
+              {timeRemaining >= 20 * 60 && (
                 <div className="text-xs text-amber-600 font-medium mt-1">
                   {t("floatingTimer.maxLimit")}
                 </div>

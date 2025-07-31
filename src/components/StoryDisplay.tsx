@@ -89,7 +89,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
   // Core state
   const [currentParagraph, setCurrentParagraph] = useState(0);
   const [isReading, setIsReading] = useState(true); // Auto-start reading
-  const [timeRemaining, setTimeRemaining] = useState(615); // 10 minutes 15 seconds
+  const [timeRemaining, setTimeRemaining] = useState(20 * 60); // 20 minutes for free version
   const [story, setStory] = useState<string[]>([]);
   const [currentDifficulty, setCurrentDifficulty] = useState<DifficultyLevel>(
     userInfo.difficultyLevel || (userInfo.age <= 6 ? "easy" : userInfo.age <= 9 ? "medium" : userInfo.age <= 12 ? "hard" : "expert")
@@ -166,22 +166,17 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
   useEffect(() => {
     const generateStory = async () => {
       try {
-        // Reset progress bar and reading state for new session
+        // Reset progress bar and reading state for new session (free version)
         setCurrentParagraph(0);
         setIsReading(true); // Auto-start reading
-        setTimeRemaining(615); // Reset to 10:15 (615 seconds)
+        setTimeRemaining(20 * 60); // Reset to 20 minutes (1200 seconds)
         setHasShownAddPagesAlert(false); // Reset alert flag for new session
         setCustomIllustrations(new Map()); // Clear custom illustrations
         
-        // Initialize or load progress tracking
-        const existingProgress = ProgressTrackingService.loadProgress();
-        if (existingProgress && existingProgress.userId.includes(userInfo.name.toLowerCase())) {
-          setReadingProgress(existingProgress);
-        } else {
-          const newProgress = ProgressTrackingService.initializeProgress(userInfo);
-          setReadingProgress(newProgress);
-          ProgressTrackingService.saveProgress(newProgress);
-        }
+        // Initialize fresh progress tracking for each session (free version - no persistence)
+        const newProgress = ProgressTrackingService.initializeProgress(userInfo);
+        setReadingProgress(newProgress);
+        // Don't save progress for free version - reset every session
         
         // Start tutorial for new session only if not shown before
         if (!hasShownTutorial) {
@@ -516,8 +511,12 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
   };
 
   const handleAddTime = () => {
-    // Add 10 minutes (600 seconds), but don't go over 30 minutes (1800 seconds)
-    setTimeRemaining(prev => Math.min(prev + 600, 1800));
+    // Add 5 minutes (300 seconds), but don't go over 20 minutes (1200 seconds)
+    setTimeRemaining(prev => Math.min(prev + 300, 20 * 60));
+    toast({
+      title: t("storyDisplay.timeAdded"),
+      description: t("storyDisplay.timeAddedDescription"),
+    });
   };
 
   const handleReduceTime = () => {
@@ -543,10 +542,29 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
   };
 
   const handleFinishSession = () => {
+    setIsReading(false);
+    
     // Calculate actual session stats
     const actualTimeSpent = Math.floor((Date.now() - sessionStartTime.getTime()) / 1000);
+    const sessionTimeSpent = (20 * 60) - timeRemaining;
+    const isFullSession = sessionTimeSpent >= (20 * 60);
     const actualWordsRead = sessionWordsRead;
     const actualPagesRead = currentParagraph + 1; // Current page + 1 since it's 0-indexed
+    
+    // Update reading progress (but don't save for free version)
+    if (readingProgress) {
+      const updatedProgress = ProgressTrackingService.updateReadingSession(
+        readingProgress,
+        {
+          wordsRead: actualWordsRead,
+          timeSpent: sessionTimeSpent,
+          storiesCompleted: actualPagesRead >= totalPages ? 1 : 0,
+          comprehensionScore: readingStats.accuracy
+        }
+      );
+      setReadingProgress(updatedProgress);
+      // Don't save progress for free version - reset every session
+    }
     
     // Create session stats for SessionEnded component
     const sessionStats = {
