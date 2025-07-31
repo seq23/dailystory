@@ -9,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { TagInput } from "@/components/ui/tag-input";
 import { ColorPicker } from "@/components/ui/color-picker";
 import { AvatarPicker } from "@/components/ui/avatar-picker";
-import { ChevronRight, User, GraduationCap, Heart, Star, Globe } from "lucide-react";
+import { TutorialOverlay } from "@/components/TutorialOverlay";
+import { ChevronRight, User, GraduationCap, Heart, Star, Globe, Sparkles } from "lucide-react";
 import { ContentSecurity, SecurityLogger } from "@/utils/security";
 import { useToast } from "@/hooks/use-toast";
 import type { UserInfo, Grade, LanguageCode, LearningGoal } from "@/types";
@@ -24,6 +25,7 @@ interface UserInfoFormProps {
 export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
+  const [showTutorial, setShowTutorial] = useState(true);
   const [formData, setFormData] = useState<UserInfo>({
     name: "",
     age: 6,
@@ -134,31 +136,51 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/30 flex items-center justify-center p-2 sm:p-4 md:p-6 pb-safe">
-      <Card className="w-full max-w-4xl bg-gradient-card shadow-card border-0 rounded-xl sm:rounded-2xl md:rounded-3xl p-3 sm:p-4 md:p-8 touch-feedback">
-        {/* Header */}
-        <div className="text-center mb-6 md:mb-8">
-          <div className="flex justify-center mb-3 md:mb-4">
-            <div className="p-3 md:p-4 bg-gradient-primary rounded-full text-white shadow-soft">
-              <User className="w-8 h-8 md:w-12 md:h-12" />
-            </div>
-          </div>
-          <h2 className="text-2xl md:text-4xl font-bold text-foreground mb-2">
-            {t("userInfoForm.title")}
-          </h2>
-          <p className="text-muted-foreground text-base md:text-lg px-2">
-            {t("userInfoForm.subtitle")}
-          </p>
+    <>
+      <TutorialOverlay 
+        isVisible={showTutorial}
+        onComplete={() => setShowTutorial(false)}
+        onSkip={() => setShowTutorial(false)}
+      />
+      
+      <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/20 flex items-center justify-center p-2 sm:p-4 md:p-6 pb-safe relative overflow-hidden">
+        {/* Floating background elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-20 left-20 w-32 h-32 bg-primary/10 rounded-full animate-float blur-xl"></div>
+          <div className="absolute top-40 right-32 w-24 h-24 bg-secondary/20 rounded-full animate-bounce-gentle blur-lg"></div>
+          <div className="absolute bottom-32 left-1/4 w-20 h-20 bg-accent/15 rounded-full animate-float blur-lg"></div>
+          <div className="absolute bottom-20 right-20 w-28 h-28 bg-primary/15 rounded-full animate-bounce-gentle blur-xl"></div>
         </div>
 
-        {/* All Form Fields */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6 md:mb-8">
-          {/* Basic Info Section */}
-          <div className="space-y-4 md:space-y-6">
-            <h3 className="text-xl md:text-2xl font-semibold text-foreground flex items-center gap-2">
-              <User className="w-5 h-5 md:w-6 md:h-6 text-primary" />
-              {t("userInfoForm.sections.aboutYou")}
-            </h3>
+        <Card className="relative z-10 w-full max-w-5xl bg-gradient-card shadow-2xl border-0 rounded-2xl sm:rounded-3xl md:rounded-3xl p-4 sm:p-6 md:p-10 touch-feedback backdrop-blur-sm bg-white/95 dark:bg-gray-900/95">
+          {/* Header */}
+          <div className="text-center mb-8 md:mb-10" id="welcome-title">
+            <div className="flex justify-center mb-4 md:mb-6">
+              <div className="relative p-4 md:p-6 bg-gradient-primary rounded-full text-white shadow-glow">
+                <Sparkles className="w-10 h-10 md:w-16 md:h-16 animate-pulse" />
+                <div className="absolute inset-0 bg-white/20 rounded-full animate-ping"></div>
+              </div>
+            </div>
+            <h2 className="text-3xl md:text-5xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent mb-3 md:mb-4">
+              {t("userInfoForm.title")}
+            </h2>
+            <p className="text-muted-foreground text-lg md:text-xl px-4 leading-relaxed">
+              {t("userInfoForm.subtitle")}
+            </p>
+          </div>
+
+          {/* All Form Fields */}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 md:gap-10 mb-8 md:mb-12">
+            {/* Basic Info Section */}
+            <div className="space-y-6 md:space-y-8" id="basic-info-section">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-gradient-primary/20 rounded-full">
+                  <User className="w-6 h-6 md:w-8 md:h-8 text-primary" />
+                </div>
+                <h3 className="text-2xl md:text-3xl font-bold text-foreground">
+                  {t("userInfoForm.sections.aboutYou")}
+                </h3>
+              </div>
             
             <div className="space-y-3 md:space-y-4">
               <div className="space-y-2">
@@ -297,12 +319,16 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
             </div>
           </div>
 
-          {/* Favorites Section */}
-          <div className="space-y-4 md:space-y-6">
-            <h3 className="text-xl md:text-2xl font-semibold text-foreground flex items-center gap-2">
-              <Heart className="w-5 h-5 md:w-6 md:h-6 text-primary" />
-              {t("userInfoForm.sections.yourFavorites")}
-            </h3>
+            {/* Favorites Section */}
+            <div className="space-y-6 md:space-y-8" id="favorites-section">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-gradient-primary/20 rounded-full">
+                  <Heart className="w-6 h-6 md:w-8 md:h-8 text-primary" />
+                </div>
+                <h3 className="text-2xl md:text-3xl font-bold text-foreground">
+                  {t("userInfoForm.sections.yourFavorites")}
+                </h3>
+              </div>
             
             <div className="space-y-3 md:space-y-4">
               <div className="space-y-2">
@@ -357,12 +383,16 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
             </div>
           </div>
 
-          {/* Additional Info Section */}
-          <div className="space-y-4 md:space-y-6 lg:col-span-2">
-            <h3 className="text-xl md:text-2xl font-semibold text-foreground flex items-center gap-2">
-              <Star className="w-5 h-5 md:w-6 md:h-6 text-primary" />
-              {t("userInfoForm.sections.additionalInfo")}
-            </h3>
+            {/* Additional Info Section */}
+            <div className="space-y-6 md:space-y-8 xl:col-span-2" id="special-request-section">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-gradient-primary/20 rounded-full">
+                  <Star className="w-6 h-6 md:w-8 md:h-8 text-primary" />
+                </div>
+                <h3 className="text-2xl md:text-3xl font-bold text-foreground">
+                  {t("userInfoForm.sections.additionalInfo")}
+                </h3>
+              </div>
             
             <div className="space-y-2">
               <Label htmlFor="specialRequest" className="text-base md:text-lg font-semibold text-foreground">
@@ -379,28 +409,31 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
           </div>
         </div>
 
-        {/* Navigation buttons */}
-        <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-between">
-          <Button
-            variant="playful"
-            size="lg"
-            onClick={onBack}
-            className="flex-1 sm:max-w-xs order-2 sm:order-1"
-          >
-            {t("userInfoForm.buttons.backToHome")}
-          </Button>
-          <Button
-            variant="fun"
-            size="lg"
-            onClick={handleSubmit}
-            disabled={!isFormComplete()}
-            className="flex-1 sm:max-w-xs order-1 sm:order-2"
-          >
-            {t("userInfoForm.buttons.createStory")}
-            <ChevronRight className="w-5 h-5 ml-2" />
-          </Button>
-        </div>
-      </Card>
-    </div>
+          {/* Navigation buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 md:gap-6 justify-between pt-8 border-t border-primary/20">
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={onBack}
+              className="flex-1 sm:max-w-xs order-2 sm:order-1 text-lg py-6 rounded-xl hover:scale-105 transition-all duration-200"
+            >
+              {t("userInfoForm.buttons.backToHome")}
+            </Button>
+            <Button
+              id="create-story-button"
+              variant="default"
+              size="lg"
+              onClick={handleSubmit}
+              disabled={!isFormComplete()}
+              className="flex-1 sm:max-w-xs order-1 sm:order-2 bg-gradient-primary hover:scale-105 transition-all duration-200 text-lg py-6 rounded-xl shadow-glow disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+            >
+              <Sparkles className="w-5 h-5 mr-2 animate-pulse" />
+              {t("userInfoForm.buttons.createStory")}
+              <ChevronRight className="w-5 h-5 ml-2" />
+            </Button>
+          </div>
+        </Card>
+      </div>
+    </>
   );
 };

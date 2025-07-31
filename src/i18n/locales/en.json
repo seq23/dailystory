@@ -300,6 +300,28 @@
       "reviewInputs": "Please review your inputs for appropriate content"
     }
   },
+  "tutorial": {
+    "step1": {
+      "title": "Welcome to Time2Read!",
+      "description": "Let's take a quick tour to help you create amazing personalized stories for your child."
+    },
+    "step2": {
+      "title": "Tell Us About Your Child",
+      "description": "Fill in your child's basic information like name, age, and reading level. This helps us create the perfect story difficulty."
+    },
+    "step3": {
+      "title": "Share Their Favorites",
+      "description": "Add their favorite animals, colors, and foods to personalize the story content. These details make the story more engaging!"
+    },
+    "step4": {
+      "title": "Special Requests",
+      "description": "Want a story about space adventures or magical kingdoms? Add any special themes or topics here!"
+    },
+    "step5": {
+      "title": "Create Your Story",
+      "description": "Once you've filled in the details, click here to generate a personalized reading adventure that's perfect for your child!"
+    }
+  },
   "interactiveWord": {
     "hearIt": "Hear It",
     "explain": "Explain",
