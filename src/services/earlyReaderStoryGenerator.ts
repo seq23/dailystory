@@ -57,7 +57,7 @@ export class EarlyReaderStoryGenerator {
     const storyContent = this.createStoryContent(characterName, favoriteAnimal, difficulty);
     
     // Split into pages respecting word limits
-    const pages = this.splitIntoPages(storyContent, config.maxWordsPerPage, pageCount);
+    const pages = this.splitIntoPages(storyContent, config.maxWordsPerPage, pageCount, characterName, favoriteAnimal, difficulty);
     
     return { pages, config };
   }
@@ -96,7 +96,14 @@ export class EarlyReaderStoryGenerator {
     return `${characterName} possessed an extraordinary gift that few understood - the ability to communicate with animals through empathy and intuition. When a magnificent ${favoriteAnimal} appeared during the Festival of Lights, speaking in urgent whispers that only ${characterName} could comprehend, everything changed. The ${favoriteAnimal} revealed that ${characterName}'s unique talent was needed to prevent an ancient curse from befalling the enchanted realm. Together, they embarked on a perilous journey through mystical landscapes, facing challenges that tested not only their courage but also their faith in each other. Through wisdom, determination, and the unbreakable bond of true friendship, they ultimately restored harmony to their world and discovered that the greatest magic lies in understanding and compassion.`;
   }
 
-  private static splitIntoPages(text: string, maxWordsPerPage: number, targetPageCount: number): string[] {
+  private static splitIntoPages(
+    text: string, 
+    maxWordsPerPage: number, 
+    targetPageCount: number,
+    characterName?: string,
+    favoriteAnimal?: string,
+    difficulty?: DifficultyLevel
+  ): string[] {
     // Split by sentence boundaries while preserving punctuation
     const sentences = text.match(/[^.!?]*[.!?]+/g) || [text];
     const pages: string[] = [];
@@ -129,27 +136,83 @@ export class EarlyReaderStoryGenerator {
       pages.push(currentPage.trim());
     }
 
-    // Ensure we have enough pages by extending if needed
+    // Ensure we maintain exactly targetPageCount pages regardless of difficulty
+    if (pages.length > targetPageCount) {
+      return pages.slice(0, targetPageCount);
+    }
+    
+    // If we need more pages, duplicate and extend content proportionally
     while (pages.length < targetPageCount && pages.length > 0) {
       const lastPage = pages[pages.length - 1];
-      if (lastPage.includes('.')) {
-        const parts = lastPage.split('.');
-        if (parts.length > 2) {
-          // Split the last page into two
-          const mid = Math.ceil(parts.length / 2);
-          const firstHalf = parts.slice(0, mid).join('.') + '.';
-          const secondHalf = parts.slice(mid).join('.') + '.';
+      if (lastPage.includes('.') && lastPage.split('.').length > 2) {
+        // Split the last page into two parts
+        const sentences = lastPage.split('.').filter(s => s.trim().length > 0);
+        if (sentences.length >= 2) {
+          const mid = Math.ceil(sentences.length / 2);
+          const firstHalf = sentences.slice(0, mid).join('.') + '.';
+          const secondHalf = sentences.slice(mid).join('.') + '.';
           pages[pages.length - 1] = firstHalf;
           pages.push(secondHalf);
         } else {
-          break;
+          // Add a simple continuation page
+          const defaultName = characterName || 'Alex';
+          const defaultAnimal = favoriteAnimal || 'cat';
+          pages.push(`${defaultName} continued their wonderful adventure with the ${defaultAnimal}.`);
         }
       } else {
-        break;
+        // Add continuation content based on difficulty level
+        const defaultName = characterName || 'Alex';
+        const defaultAnimal = favoriteAnimal || 'cat';
+        const defaultDifficulty = difficulty || 'medium';
+        const continuationPage = this.generateContinuationPage(defaultName, defaultAnimal, defaultDifficulty, pages.length);
+        pages.push(continuationPage);
       }
     }
 
+    // Always return exactly targetPageCount pages
     return pages.slice(0, targetPageCount);
+  }
+
+  private static generateContinuationPage(
+    characterName: string, 
+    favoriteAnimal: string, 
+    difficulty: DifficultyLevel,
+    pageNumber: number
+  ): string {
+    const continuations = {
+      easy: [
+        `${characterName} and ${favoriteAnimal} play.`,
+        `They run and jump.`,
+        `${characterName} is very happy.`,
+        `The ${favoriteAnimal} smiles too.`,
+        `They find new friends.`,
+        `Everyone plays together nicely.`
+      ],
+      medium: [
+        `${characterName} discovered something amazing with their ${favoriteAnimal} friend.`,
+        `They explored a new part of their magical world together.`,
+        `The ${favoriteAnimal} showed ${characterName} a hidden treasure.`,
+        `Together they solved a fun puzzle and felt proud.`,
+        `${characterName} and the ${favoriteAnimal} helped other animals.`,
+        `Their friendship grew stronger with each adventure.`
+      ],
+      hard: [
+        `${characterName} realized that their adventure with the ${favoriteAnimal} was teaching them important lessons about courage and friendship.`,
+        `The wise ${favoriteAnimal} shared ancient secrets about the magical forest that had been hidden for generations.`,
+        `Together, ${characterName} and the ${favoriteAnimal} encountered mysterious creatures who needed their help to solve a complex problem.`,
+        `${characterName} discovered they had special abilities that only appeared when working together with their ${favoriteAnimal} companion.`,
+        `The bond between ${characterName} and the ${favoriteAnimal} created a powerful magic that transformed their entire world.`
+      ],
+      expert: [
+        `${characterName} contemplated the profound connection they shared with the ${favoriteAnimal}, understanding that their relationship transcended ordinary friendship and had become something truly extraordinary.`,
+        `The ancient ${favoriteAnimal} revealed that ${characterName} possessed a rare gift - the ability to bridge two worlds and bring harmony between seemingly opposing forces.`,
+        `Through trials that tested both their intellect and emotional resilience, ${characterName} and the ${favoriteAnimal} discovered that their greatest strength lay not in their individual abilities, but in their unwavering trust in each other.`,
+        `${characterName} realized that their journey with the ${favoriteAnimal} was part of a larger destiny, one that would require them to make difficult choices that would affect not just themselves, but their entire community.`
+      ]
+    };
+    
+    const options = continuations[difficulty];
+    return options[pageNumber % options.length];
   }
 
   static getReadingConfigForDifficulty(difficulty: DifficultyLevel): ReadingConfig {

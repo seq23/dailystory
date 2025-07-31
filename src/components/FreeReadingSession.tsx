@@ -306,25 +306,27 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
 
         console.log('Maintaining character consistency for difficulty change:', establishedCharacter.userName);
 
-        // Generate new story at the new difficulty level
+        // Generate new story at the new difficulty level with SAME page count
+        const currentPageCount = story.length; // Maintain current number of pages
         const { pages: newPages, config: newConfig } = EarlyReaderStoryGenerator.generateStory(
           userInfo, 
           newDifficulty as 'easy' | 'medium' | 'hard' | 'expert', 
-          10
+          currentPageCount // Use current page count, not fixed 10
         );
         const updatedStory = { pages: newPages, config: newConfig, images: [], wordCount: newPages.join(' ').split(' ').length };
         
-        // Smoothly update the story content (no reload feeling)
-        const targetPages = 10;
+        // Ensure exact same page count (no change in navigation)
         let pages = updatedStory.pages;
-        
-        if (pages.length < targetPages) {
-          const additionalPages = targetPages - pages.length;
-          for (let i = 0; i < additionalPages; i++) {
-            pages.push(`${userInfo.name}'s adventure continues with more exciting discoveries...`);
+        if (pages.length !== currentPageCount) {
+          // Force exactly the same number of pages
+          if (pages.length < currentPageCount) {
+            const additionalPages = currentPageCount - pages.length;
+            for (let i = 0; i < additionalPages; i++) {
+              pages.push(`${userInfo.name}'s adventure continues with more exciting discoveries...`);
+            }
+          } else {
+            pages = pages.slice(0, currentPageCount);
           }
-        } else if (pages.length > targetPages) {
-          pages = pages.slice(0, targetPages);
         }
         
         // Update story and images smoothly
@@ -433,19 +435,52 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
       const generateNewPageImages = async () => {
         for (let i = 0; i < newPages.length; i++) {
           try {
-            // Using placeholder images for now
+            // Try to generate custom image using Runware service
+            const customImagePrompt = `Beautiful illustration for children's story: ${newPages[i].slice(0, 100)}. Child-friendly, colorful, safe content for kids reading app.`;
+            
+            try {
+              // Call Runware image generation edge function
+              const response = await fetch('/api/supabase/functions/v1/runware-generate-image', {
+                method: 'POST',
+                headers: { 
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY || ''}`
+                },
+                body: JSON.stringify({ 
+                  positivePrompt: customImagePrompt,
+                  width: 1024,
+                  height: 1024 
+                })
+              });
+              
+              if (response.ok) {
+                const data = await response.json();
+                const imageUrl = data.imageURL || data.output?.[0];
+                if (imageUrl) {
+                  const pageImage = { url: imageUrl, prompt: newPages[i] };
+                  setStoryImages(prevImages => {
+                    const newImages = [...prevImages];
+                    newImages[startPageIndex + i] = pageImage;
+                    return newImages;
+                  });
+                  continue; // Successfully generated custom image
+                }
+              }
+            } catch (imageError) {
+              console.log('Custom image generation failed, using fallback:', imageError);
+            }
+            
+            // Fallback to stock illustrations
             const pageImage = { 
               url: illustrations[(startPageIndex + i) % illustrations.length], 
               prompt: newPages[i] 
             };
             
-            if (pageImage.url) {
-              setStoryImages(prevImages => {
-                const newImages = [...prevImages];
-                newImages[startPageIndex + i] = pageImage;
-                return newImages;
-              });
-            }
+            setStoryImages(prevImages => {
+              const newImages = [...prevImages];
+              newImages[startPageIndex + i] = pageImage;
+              return newImages;
+            });
           } catch (error) {
             console.error(`Failed to generate image for new page ${startPageIndex + i + 1}:`, error);
           }

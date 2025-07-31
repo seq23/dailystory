@@ -140,8 +140,8 @@ export const FloatingTimer = ({
 
   return (
     <TooltipProvider>
-      {/* Floating Timer Container */}
-      <div className="fixed bottom-6 right-6 sm:right-8 z-30 flex flex-col items-center gap-6" data-tutorial-target={tutorialTarget} style={{ marginRight: 'max(1rem, env(safe-area-inset-right))', marginBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+      {/* Floating Timer Container - Fixed positioning to avoid overlap */}
+      <div className="fixed bottom-6 left-6 sm:left-8 z-30 flex flex-col items-center gap-6" data-tutorial-target={tutorialTarget} style={{ marginLeft: 'max(1rem, env(safe-area-inset-left))', marginBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
         
         {/* Main Timer Circle - Professional & Larger */}
         <div className="relative">
