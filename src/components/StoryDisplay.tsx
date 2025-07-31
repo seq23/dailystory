@@ -707,14 +707,20 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       // Minimal delay for responsiveness
       await new Promise(resolve => setTimeout(resolve, 100));
       
-      // Use improved image generator for better quality
-      const prompt = ImprovedImageGenerator.generateImagePrompt({
-        storyText,
-        pageIndex,
-        userInfo,
-        difficulty: currentDifficulty,
-        totalPages: story.length
-      });
+      // Use improved image generator with fallback
+      let prompt;
+      try {
+        prompt = ImprovedImageGenerator.generateImagePrompt({
+          storyText,
+          pageIndex,
+          userInfo,
+          difficulty: currentDifficulty,
+          totalPages: story.length
+        });
+      } catch (error) {
+        console.error('Improved image generator failed, using simple prompt:', error);
+        prompt = `Beautiful children's book illustration of ${userInfo.name || 'a child'} in a magical adventure, ${currentDifficulty} difficulty level, safe for children, no text in image`;
+      }
       
       console.log('Improved prompt:', prompt);
       
