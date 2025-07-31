@@ -12,6 +12,8 @@ import { APP_CONFIG } from "@/constants/app";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import { processTextForPhonetics } from "@/utils/textProcessor";
+import { InlineTutorial } from "@/components/InlineTutorial";
+import { FloatingTimer } from "@/components/FloatingTimer";
 
 // Import fallback illustrations
 import illustration1 from "@/assets/story-illustration-1.jpg";
@@ -58,7 +60,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   const [showProgressReport, setShowProgressReport] = useState(false);
   const [sessionEnded, setSessionEnded] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [tutorialStep, setTutorialStep] = useState(0);
+  const [tutorialActive, setTutorialActive] = useState(true);
 
   // Character consistency - store original character details
   const [establishedCharacter, setEstablishedCharacter] = useState<any>(null);
@@ -109,12 +111,8 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     setSessionStarted(true);
     setSessionStartTime(new Date());
     
-    // Start tutorial sequence
-    setTimeout(() => setTutorialStep(1), 1000);
-    setTimeout(() => setTutorialStep(2), 4000);
-    setTimeout(() => setTutorialStep(3), 7000);
-    setTimeout(() => setTutorialStep(4), 10000);
-    setTimeout(() => setTutorialStep(0), 13000); // End tutorial
+    // Start tutorial - simplified
+    // Tutorial will auto-start with the new InlineTutorial component
     
     // Background generation happens but no initial toast
     
@@ -1029,7 +1027,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                 <Card className="h-auto min-h-[400px] sm:h-[400px] lg:h-[500px] xl:h-[600px] flex flex-col transition-all duration-300 hover:shadow-lg">
                   <CardContent className="p-3 sm:p-4 lg:p-6 flex-1 flex flex-col">
                     {/* Difficulty Level Selector - Easier/Harder */}
-                    <div className="mb-4">
+                    <div className="mb-4 reading-level-controls">
                       <div className="flex gap-3 justify-center items-center">
                         <div className="relative group">
                           <Button
@@ -1097,7 +1095,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
 
                     {/* Audio Controls */}
                     {sessionStarted && (
-                      <div className="mt-6">
+                      <div className="mt-6 audio-controls">
                         <InteractiveAudioReading 
                           text={currentStory}
                           userInfo={userInfo}
@@ -1114,7 +1112,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                         }}
                         disabled={currentPage === 0}
                         variant="outline"
-                        className={tutorialStep === 4 ? 'animate-pulse ring-4 ring-yellow-400 ring-opacity-75 border-yellow-400' : ''}
+                        className="story-navigation"
                       >
                         {t("freeReadingSession.navigation.previous")}
                       </Button>
@@ -1145,9 +1143,9 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                         }}
                         disabled={currentPage >= story.length - 1}
                         variant="outline"
-                        className={tutorialStep === 4 ? 'animate-pulse ring-4 ring-yellow-400 ring-opacity-75 border-yellow-400' : ''}
+                        className="story-navigation"
                       >
-                        {tutorialStep === 4 ? "📖 Navigate pages!" : t("freeReadingSession.navigation.next")}
+                        {t("freeReadingSession.navigation.next")}
                       </Button>
                     </div>
                   </CardContent>
@@ -1155,6 +1153,12 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
               </div>
             </div>
           </main>
+          
+          {/* New Inline Tutorial */}
+          <InlineTutorial 
+            isActive={tutorialActive} 
+            onComplete={() => setTutorialActive(false)} 
+          />
         </>
       )}
       </div>
