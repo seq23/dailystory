@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { getPhoneticSpelling } from "@/utils/phoneticDictionary";
-import { Volume2, HelpCircle, Languages, BookOpen, Lightbulb } from "lucide-react";
-import { createOpenAITTSService } from "@/services/textToSpeechService";
+import { Volume2, HelpCircle, Languages, BookOpen, Lightbulb, Plus } from "lucide-react";
+import { OpenAITTSService } from "@/services/openaiTTSService";
 import type { UserInfo } from "@/types";
 
 interface InteractiveWordProps {
@@ -33,7 +33,7 @@ export const InteractiveWord = ({
 
   useEffect(() => {
     // Initialize OpenAI TTS service
-    const service = createOpenAITTSService();
+    const service = new OpenAITTSService();
     setTtsService(service);
   }, []);
 
@@ -101,8 +101,9 @@ export const InteractiveWord = ({
     try {
       if (ttsService) {
         // For ESL learners, use slower pronunciation
-        const speed = isESLLearner ? 0.7 : 0.9;
-        await ttsService.speakText(word, { speed });
+        const speed = isESLLearner ? 0.7 : 1.0;
+        const voice = isESLLearner ? 'nova' : 'alloy';
+        await ttsService.speakText(word, { speed, voice });
       } else {
         // Fallback to browser speech synthesis
         if ('speechSynthesis' in window) {
@@ -127,17 +128,18 @@ export const InteractiveWord = ({
     try {
       const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
       
-      if (ttsService) {
-        if (isNativeEnglishSpeaker) {
-          // For native speakers: age-appropriate English explanation
-          const explanation = await getEnglishWordExplanation(cleanWord, userInfo);
-          setWordExplanation(explanation);
-          await ttsService.speakText(explanation);
-        } else {
-          // For ESL learners: explanation in native language
-          const explanation = await getTranslatedWordExplanation(cleanWord, userNativeLanguage);
-          setWordExplanation(explanation);
-          await ttsService.speakText(explanation);
+      // Simple explanation for now - can be enhanced with AI later
+      if (isNativeEnglishSpeaker) {
+        const explanation = `"${cleanWord}" is a ${cleanWord.length <= 4 ? 'simple' : 'more complex'} word that appears in this story.`;
+        setWordExplanation(explanation);
+        if (ttsService) {
+          await ttsService.speakText(explanation, { voice: 'alloy' });
+        }
+      } else {
+        const explanation = `"${cleanWord}" is an English word. Click translate to see it in your language.`;
+        setWordExplanation(explanation);
+        if (ttsService) {
+          await ttsService.speakText(explanation, { voice: 'nova' });
         }
       }
     } catch (error) {
@@ -154,8 +156,17 @@ export const InteractiveWord = ({
     setIsLoadingTranslation(true);
     try {
       const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
-      const translation = await getWordTranslation(cleanWord, userNativeLanguage);
-      setWordTranslation(translation);
+      // Simple translation placeholder - can be enhanced with translation API
+      const languageNames: Record<string, string> = {
+        'ar': 'Arabic',
+        'es': 'Spanish',
+        'zh': 'Chinese',
+        'hi': 'Hindi',
+        'pt': 'Portuguese',
+        'fr': 'French'
+      };
+      const langName = languageNames[userNativeLanguage] || userNativeLanguage;
+      setWordTranslation(`Translation to ${langName} will be available soon!`);
     } catch (error) {
       console.error('Error translating word:', error);
       setWordTranslation(t("interactiveWord.translationError"));
@@ -164,61 +175,25 @@ export const InteractiveWord = ({
     }
   };
 
-  // Enhanced word explanation for native English speakers
-  const getEnglishWordExplanation = async (word: string, userInfo?: UserInfo): Promise<string> => {
-    if (!ttsService) throw new Error('TTS service not available');
-    
-    const prompt = `Define "${word}" for a ${userInfo?.age || 8}-year-old native English speaker. Include:
-    1. Simple definition
-    2. Example in a sentence
-    ${userInfo?.age && userInfo.age > 10 ? '3. One synonym' : ''}
-    Keep it under 30 words total.`;
+  const handleAddToVocabulary = () => {
+    const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
+    if (cleanWord.length < 2) return;
 
-    return await ttsService.getAIResponse(prompt);
-  };
-
-  // Translated explanation for ESL learners
-  const getTranslatedWordExplanation = async (word: string, targetLanguage: string): Promise<string> => {
-    if (!ttsService) throw new Error('TTS service not available');
-    
-    const languageNames = {
-      'ar': 'Arabic',
-      'es': 'Spanish', 
-      'zh': 'Chinese',
-      'hi': 'Hindi',
-      'pt': 'Portuguese',
-      'fr': 'French'
+    const vocabularyWord = {
+      word: cleanWord,
+      definition: wordExplanation || `A word from your story`,
+      translation: wordTranslation,
+      difficulty: getWordComplexity(cleanWord) as 'beginner' | 'intermediate' | 'advanced',
+      dateAdded: new Date(),
+      timesReviewed: 0,
+      mastered: false,
+      storyContext: word
     };
 
-    const langName = languageNames[targetLanguage as keyof typeof languageNames] || targetLanguage;
-    
-    const prompt = `Explain the English word "${word}" in ${langName} for a language learner. Include:
-    1. Translation in ${langName}
-    2. Simple explanation in ${langName}
-    3. Example sentence using the word in English with ${langName} context
-    Keep it concise and educational.`;
-
-    return await ttsService.getAIResponse(prompt);
-  };
-
-  // Word translation for ESL learners
-  const getWordTranslation = async (word: string, targetLanguage: string): Promise<string> => {
-    if (!ttsService) throw new Error('TTS service not available');
-    
-    const languageNames = {
-      'ar': 'Arabic',
-      'es': 'Spanish',
-      'zh': 'Chinese', 
-      'hi': 'Hindi',
-      'pt': 'Portuguese',
-      'fr': 'French'
-    };
-
-    const langName = languageNames[targetLanguage as keyof typeof languageNames] || targetLanguage;
-    
-    const prompt = `Translate the English word "${word}" to ${langName}. Give only the most common translation, no explanation.`;
-
-    return await ttsService.getAIResponse(prompt);
+    // Add to global vocabulary collection
+    if ((window as any).addToVocabulary) {
+      (window as any).addToVocabulary(vocabularyWord);
+    }
   };
 
   // Determine if word should be interactive based on difficulty level and user type
@@ -355,6 +330,15 @@ export const InteractiveWord = ({
                   {isLoadingTranslation ? t("interactiveWord.loading") : t("interactiveWord.translate")}
                 </button>
               )}
+
+              {/* Add to vocabulary button */}
+              <button
+                onClick={handleAddToVocabulary}
+                className="flex items-center gap-1 text-xs bg-purple-100 hover:bg-purple-200 px-2 py-1.5 sm:py-1 rounded transition-colors touch-manipulation min-h-[32px] sm:min-h-auto text-purple-700"
+              >
+                <Plus className="w-3 h-3" />
+                {t("interactiveWord.addToVocabulary", "Save Word")}
+              </button>
 
               {/* Etymology button for advanced native speakers */}
               {isNativeEnglishSpeaker && userInfo?.age && userInfo.age > 12 && (

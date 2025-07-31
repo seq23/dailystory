@@ -11,6 +11,11 @@ import type { UserInfo, DifficultyLevel, SessionStats } from "@/types";
 import ProgressDashboard from "@/components/ProgressDashboard";
 import LearningPathDashboard from "@/components/LearningPathDashboard";
 import AdaptiveUI from "@/components/AdaptiveUI";
+import { InteractiveAudioReading } from "@/components/InteractiveAudioReading";
+import { ReadingRewardsSystem } from "@/components/ReadingRewardsSystem";
+import { VocabularyCollector } from "@/components/VocabularyCollector";
+import { ComprehensionQuiz } from "@/components/ComprehensionQuiz";
+import { MiniGames } from "@/components/MiniGames";
 import { StoryGeneratorService } from "@/services/storyGenerator";
 import { SecureRunwareService } from "@/services/secureRunwareService";
 import { ProgressTrackingService } from "@/services/progressTrackingService";
@@ -297,7 +302,13 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                   {/* Controls */}
                   <div className="space-y-3 sm:space-y-4 mt-4 sm:mt-6 lg:mt-8">
                     {/* Audio & Recording */}
-                    <TooltipProvider>
+                     <TooltipProvider>
+                       {/* Audio Reading Controls */}
+                       <InteractiveAudioReading 
+                         text={currentStory}
+                         userInfo={userInfo}
+                         isEnabled={true}
+                       />
                       <div className="flex justify-center space-x-2 sm:space-x-3">
                         <Tooltip>
                           <TooltipTrigger asChild>
