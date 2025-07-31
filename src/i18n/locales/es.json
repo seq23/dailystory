@@ -10,344 +10,86 @@
       "item3": "¡Genial para aventuras al aire libre - lee en cualquier lugar, en cualquier momento!",
       "item4": "Transforma cualquier espacio en una experiencia mágica de biblioteca."
     },
-    "headline": "Donde Cada Historia es Hecha Solo para Ti",
-    "subheadline": "Descubre historias mágicas creadas específicamente para los intereses, nivel de lectura y trasfondo cultural de tu hijo.",
-    "getStarted": "Crea Tu Aventura",
-    "languageSelector": {
-      "placeholder": "Idioma"
-    },
-    "features": {
-      "reading": {
-        "title": "Lectura Adaptativa",
-        "subtitle": "Se ajusta a tu nivel"
-      },
-      "personalized": "Historias Hechas para Ti",
-      "gradeLevel": "Perfecto para Tu Grado",
-      "culturallyAdapted": {
-        "title": "Historias Culturalmente Adaptadas",
-        "description": "Historias que reflejan el trasfondo y experiencias de tu hijo"
-      },
-      "ageAppropriate": {
-        "title": "Contenido Apropiado para la Edad",
-        "description": "Contenido perfectamente ajustado a la etapa de desarrollo de tu hijo"
-      },
-      "interactiveElements": {
-        "title": "Aprendizaje Interactivo",
-        "description": "Elementos atractivos que hacen el aprendizaje divertido y efectivo"
-      }
-    },
     "ctaButton": "Crea Tu Aventura",
     "signIn": "Iniciar Sesión",
     "safetyNote": "Contenido seguro y educativo para todos los niños.",
-    "userProfilesTitle": "Hecho para Cada Niño",
-    "userProfiles": {
-      "nativeEnglish": "Hablantes nativos de inglés mejorando habilidades de lectura",
-      "eslLearners": "Estudiantes aprendiendo inglés como segundo idioma",
-      "visualLearners": "Niños que aprenden mejor con imágenes e historias",
-      "culturallyDiverse": "Niños de trasfondos culturales diversos"
-    },
-    "howItWorks": {
-      "title": "Cómo Funciona",
-      "step1": {
-        "title": "Cuéntanos Sobre Ti",
-        "description": "Comparte tus intereses, nivel de lectura y preferencias"
-      },
-      "step2": {
-        "title": "Obtén Tu Historia",
-        "description": "Recibe una historia personalizada creada solo para ti"
-      },
-      "step3": {
-        "title": "Lee y Aprende",
-        "description": "Disfruta la lectura interactiva con funciones útiles"
-      }
-    },
     "footer": {
       "companyName": "Time 2 Read",
       "description": "Haciendo la lectura divertida y accesible para cada niño.",
       "copyright": "Todos los derechos reservados.",
       "privacyPolicy": "Política de Privacidad",
       "termsOfService": "Términos de Servicio",
-      "contactUs": "Contáctanos",
-      "contact": "Contáctanos",
-      "mission": "Nuestra misión es hacer la lectura accesible, divertida y culturalmente relevante para cada niño."
-    },
-    "pricing": {
-      "title": "Precios Simples y Transparentes",
-      "subtitle": "Elige el plan que mejor funcione para tu familia",
-      "free": {
-        "title": "Gratis",
-        "price": "$0",
-        "period": "para siempre",
-        "features": [
-          "5 historias personalizadas por mes",
-          "Funciones básicas de lectura",
-          "Soporte de la comunidad"
-        ],
-        "cta": "Comenzar Gratis"
-      }
+      "contactUs": "Contáctanos"
     }
   },
-  "userInfoForm": {
-    "title": "¡Cuéntanos sobre ti!",
-    "sections": {
-      "aboutYou": "Acerca de ti",
-      "yourFavorites": "Tus favoritos",
-      "additionalInfo": "Cuéntanos más"
+  "loginScreen": {
+    "title": {
+      "upgrade": "Actualizar a Premium",
+      "join": "Únete a Time2Read Premium"
     },
-    "fields": {
-      "name": {
-        "label": "¿Cómo te llamas?",
-        "placeholder": "Tu nombre"
-      },
-      "age": {
-        "label": "¿Cuántos años tienes?",
-        "placeholder": "Tu edad",
-        "yearsOld": "años"
-      },
-      "grade": {
-        "label": "¿En qué grado estás?",
-        "placeholder": "Selecciona tu grado"
-      },
-      "nativeLanguage": {
-        "label": "¿Cuál es tu idioma nativo?",
-        "placeholder": "Selecciona tu idioma"
-      },
-      "learningGoal": {
-        "label": "¿Qué te gustaría mejorar?",
-        "placeholder": "Selecciona tu objetivo",
-        "options": {
-          "improve-english-reading": "Mejorar mi lectura en inglés",
-          "learn-english-language": "Aprender inglés como nuevo idioma",
-          "both": "Ambos - mejorar lectura y aprender inglés"
+    "subtitle": {
+      "upgrade": "Continúa con tu información guardada y desbloquea historias ilimitadas",
+      "join": "Desbloquea historias personalizadas ilimitadas y funciones avanzadas"
+    },
+    "trialInfoSaved": "✨ ¡Tu información de la prueba gratuita se ha completado automáticamente!",
+    "tabs": {
+      "createAccount": "Crear Cuenta",
+      "signIn": "Iniciar Sesión"
+    },
+    "plans": {
+      "monthly": {
+        "title": "Plan Mensual",
+        "price": "$10",
+        "period": "/mes",
+        "features": {
+          "unlimited": "Historias ilimitadas",
+          "aiFeatures": "Funciones de IA avanzadas"
         }
       },
-      "readingAbility": {
-        "label": "¿Cómo describirías tu habilidad de lectura?",
-        "placeholder": "Selecciona tu nivel",
-        "levels": {
-          "easy": {
-            "title": "Estoy empezando a leer",
-            "description": "Me gusta que me lean o leo palabras simples"
-          },
-          "medium": {
-            "title": "Puedo leer oraciones",
-            "description": "Leo libros cortos con algunas palabras difíciles"
-          },
-          "hard": {
-            "title": "Leo libros por mi cuenta",
-            "description": "Leo capítulos y historias más largas"
-          },
-          "expert": {
-            "title": "Soy un lector avanzado",
-            "description": "Leo libros complejos y disfruto historias desafiantes"
-          }
+      "annual": {
+        "title": "Plan Anual",
+        "price": "$100",
+        "period": "/año",
+        "savings": "Ahorra $20",
+        "features": {
+          "unlimited": "Historias ilimitadas",
+          "aiFeatures": "Funciones de IA avanzadas"
         }
-      },
-      "avatar": {
-        "label": "Elige tu avatar"
-      },
-      "favoriteColor": {
-        "label": "¿Cuál es tu color o tono favorito?",
-        "optional": "(Opcional)"
-      },
-      "favoriteAnimal": {
-        "label": "¿Cuál es tu animal favorito?",
-        "placeholder": "perro, gato, león, delfín...",
-        "optional": "(Opcional)"
-      },
-      "skinTone": {
-        "label": "Tono de piel"
-      },
-      "gender": {
-        "label": "Género"
-      },
-      "favoriteAnimals": {
-        "label": "Animales favoritos",
-        "placeholder": "gato, perro, león..."
-      },
-      "favoriteColors": {
-        "label": "Colores favoritos"
-      },
-      "hobbies": {
-        "label": "¿Qué te encanta hacer?",
-        "placeholder": "fútbol, dibujar, bailar, videojuegos...",
-        "optional": "(Opcional)"
-      },
-      "favoriteSubjects": {
-        "label": "Materias favoritas",
-        "placeholder": "matemáticas, ciencias, historia..."
-      },
-      "favoriteFood": {
-        "label": "¿Cuál es tu comida favorita?",
-        "placeholder": "pizza, helado, tacos, fruta...",
-        "optional": "(Opcional)"
-      },
-      "favoritePlaces": {
-        "label": "Lugares favoritos",
-        "placeholder": "playa, bosque, ciudad..."
-      },
-      "difficultyLevel": {
-        "label": "Nivel de dificultad",
-        "placeholder": "Selecciona el nivel"
-      },
-      "specialRequest": {
-        "label": "¿Algo especial que te gustaría en tu historia?",
-        "placeholder": "dinosaurios, princesas, aventuras espaciales, magia...",
-        "optional": "(Opcional)"
       }
     },
-    "grades": {
-      "PreK": "Pre-Kinder",
-      "K": "Kinder",
-      "kindergarten": "Kinder",
-      "1st": "1er grado",
-      "2nd": "2do grado",
-      "3rd": "3er grado",
-      "4th": "4to grado",
-      "5th": "5to grado",
-      "6th": "6to grado",
-      "7th": "7mo grado",
-      "8th": "8vo grado"
+    "form": {
+      "labels": {
+        "displayName": "Nombre de Usuario",
+        "email": "Correo Electrónico",
+        "password": "Contraseña"
+      },
+      "placeholders": {
+        "displayName": "Ingresa tu nombre de usuario",
+        "email": "Ingresa tu correo electrónico",
+        "password": "Ingresa tu contraseña"
+      },
+      "buttons": {
+        "creating": "Creando Cuenta...",
+        "createAccount": "Crear Cuenta",
+        "signingIn": "Iniciando Sesión...",
+        "signIn": "Iniciar Sesión",
+        "processing": "Procesando...",
+        "startPayment": "Iniciar Pago"
+      }
     },
-    "languages": {
-      "en": "Inglés",
-      "ar": "Árabe",
-      "es": "Español",
-      "zh": "Chino",
-      "hi": "Hindi",
-      "pt": "Portugués",
-      "fr": "Francés"
+    "payment": {
+      "instruction": "Completa la creación de cuenta primero, luego procede con el pago seguro",
+      "monthly": "$10/mes",
+      "annual": "$100/año"
     },
-    "learningGoals": {
-      "reading": "Mejorar la lectura",
-      "vocabulary": "Expandir vocabulario",
-      "comprehension": "Comprensión de lectura",
-      "fluency": "Fluidez en la lectura",
-      "confidence": "Confianza en la lectura"
-    },
-    "submit": "¡Crear mi historia! ✨",
-    "back": "← Atrás",
-    "buttons": {
-      "backToHome": "← Volver al inicio",
-      "createStory": "¡Crear mi historia! ✨"
-    },
-    "validation": {
-      "nameRequired": "Por favor dinos tu nombre",
-      "ageRequired": "Por favor dinos tu edad",
-      "gradeRequired": "Por favor selecciona tu grado",
-      "learningGoalRequired": "Por favor selecciona tu objetivo de aprendizaje"
-    }
-  },
-  "storyDisplay": {
-    "header": {
-      "readingTime": "Tiempo de Lectura",
-      "progress": "Progreso",
-      "done": "✨ ¡Terminé!",
-      "newStory": "Nueva Historia", 
-      "home": "Inicio"
-    },
-    "controls": {
-      "previous": "← Anterior"
-    },
-    "tooltips": {
-      "audioButton": "Escucha esta página leída en voz alta (una vez por página)",
-      "microphoneButton": "Grábate leyendo (Función Premium)",
-      "makeEasier": "Hacer la historia más fácil",
-      "makeHarder": "Hacer la historia más difícil", 
-      "addPages": "Agregar 5 páginas",
-      "removePages": "Quitar página"
+    "guarantees": {
+      "moneyBack": "✓ Garantía de devolución de dinero de 30 días",
+      "cancelAnytime": "✓ Cancela en cualquier momento",
+      "securePayment": "✓ Procesamiento de pago seguro"
     },
     "navigation": {
-      "pageCounter": "Página {{current}} de {{total}}"
-    },
-    "difficulty": {
-      "tutorialSteps": {
-        "step1": "¡Tu temporizador de 20 minutos está corriendo! Usa + para agregar tiempo, - para reducir tiempo.",
-        "step2": "El botón del altavoz lee en voz alta, el micrófono graba tu lectura.",
-        "step3": "Los botones Más fácil/Más difícil ajustan la dificultad de la historia mientras lees.",
-        "step4": "Los botones Agregar/Quitar páginas cambian la longitud de tu historia.",
-        "step5": "¡Feliz lectura! ¡Disfruta tu aventura personalizada!"
-      }
-    },
-    "alerts": {
-      "almostDone": "¡Casi terminado!",
-      "clickToAdd": "¡Haz clic en + para agregar más páginas!"
-    },
-    "countdown": {
-      "timesUp": "¡Se acabó el tiempo!",
-      "goingToReport": "Yendo a tu reporte de lectura en...",
-      "goNow": "Ir Ahora ✨"
-    },
-    "tutorial": {
-      "step": "Tutorial",
-      "of": "de 5"
+      "backToTrial": "Volver a la Prueba Gratuita",
+      "back": "Atrás"
     }
-  },
-  "adaptiveUI": {
-    "eslMode": "Modo de Aprendizaje de Inglés",
-    "nativeMode": "Modo de Mejora de Lectura",
-    "learningGoal": "Objetivo de Aprendizaje",
-    "languageSupport": "Soporte de Idioma Activo", 
-    "languageSupportDesc": "Historias y explicaciones adaptadas para estudiantes de inglés",
-    "eslHelp": {
-      "title": "Consejos para Aprender Inglés",
-      "tip1": "Haz clic en cualquier palabra para traducciones y explicaciones",
-      "tip2": "Usa el botón de audio para escuchar la pronunciación",
-      "tip3": "Las historias están adaptadas para ayudarte a aprender inglés"
-    },
-    "nativeHelp": {
-      "title": "Consejos para Mejorar la Lectura",
-      "tip1": "Haz clic en palabras para aprender sinónimos y significados",
-      "tip2": "Usa los botones de dificultad para desafiarte",
-      "tip3": "Las historias ayudan a construir vocabulario y comprensión"
-    }
-  },
-  "floatingTimer": {
-    "timeRemaining": "Tiempo",
-    "pausePlay": "Pausar/Reproducir Temporizador",
-    "addTime": "Agregar 10 minutos",
-    "reduceTime": "Quitar 10 minutos", 
-    "addPages": "Agregar más páginas",
-    "maxLimit": "Límite máximo",
-    "addPagesAlert": {
-      "title": "¡Casi terminado!",
-      "description": "¡Haz clic en + para agregar más páginas!",
-      "shortTitle": "Casi terminado",
-      "shortDescription": "¡Haz clic en + para agregar más páginas!"
-    },
-    "timeAdded": {
-      "title": "¡Más tiempo agregado!",
-      "description": "¡Tienes 10 minutos más para leer!"
-    },
-    "timeReduced": {
-      "title": "¡Tiempo reducido!",
-      "description": "10 minutos quitados de tu tiempo de lectura."
-    },
-    "celebration": {
-      "title": "🎉 ¡Felicitaciones!",
-      "description": "¡Has completado tu sesión de lectura!"
-    }
-  },
-  "learningPath": {
-    "currentPath": "Tu Viaje de Aprendizaje",
-    "progress": "Progreso",
-    "completed": "completado",
-    "challengesCompleted": "Desafíos Completados",
-    "totalTime": "Tiempo Total",
-    "pointsEarned": "Puntos Ganados",
-    "nextRecommended": "Recomendado Siguiente",
-    "start": "Empezar",
-    "startChallenge": "Empezar Desafío",
-    "cancel": "Cancelar",
-    "loading": "Creando tu camino de aprendizaje personalizado...",
-    "personalizedFor": "Camino de aprendizaje personalizado para",
-    "overview": "Resumen",
-    "challenges": "Todos los Desafíos",
-    "vocabularyChallenge": "Desafío de Vocabulario",
-    "vocabularyDescription": "Aprende nuevas palabras a través de juegos interactivos.",
-    "comprehensionChallenge": "Comprensión de Lectura",
-    "comprehensionDescription": "Lee historias y responde preguntas para probar tu comprensión.",
-    "phonicsChallenge": "Práctica de Fonética",
-    "phonicsDescription": "Practica pronunciación y patrones de sonido."
   }
 }

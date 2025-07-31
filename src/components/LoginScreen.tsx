@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Check, Star, Zap, ArrowLeft, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { UserInfo } from "@/types";
 
 interface LoginScreenProps {
@@ -16,6 +17,7 @@ interface LoginScreenProps {
 }
 
 export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
+  const { t } = useTranslation();
   const [signUpData, setSignUpData] = useState({
     email: "",
     password: "",
@@ -159,10 +161,10 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
         size="sm"
         onClick={onBack || (() => window.history.back())}
         className="absolute top-4 left-4 text-white hover:bg-white/10"
-      >
-        <ArrowLeft className="w-4 h-4 mr-2" />
-        {onBack ? "Back to Free Trial" : "Back"}
-      </Button>
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          {onBack ? t("loginScreen.navigation.backToTrial") : t("loginScreen.navigation.back")}
+        </Button>
 
       {/* Close button (X) in top-right corner */}
       <Button
@@ -177,18 +179,18 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
       <Card className="w-full max-w-2xl mx-auto bg-white/95 backdrop-blur-sm border-white/20 shadow-2xl">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            {userInfo ? "Upgrade to Premium" : "Join Time2Read Premium"}
+            {userInfo ? t("loginScreen.title.upgrade") : t("loginScreen.title.join")}
           </CardTitle>
           <CardDescription className="text-lg">
             {userInfo 
-              ? "Continue with your saved information and unlock unlimited stories" 
-              : "Unlock unlimited personalized stories and advanced features"
+              ? t("loginScreen.subtitle.upgrade")
+              : t("loginScreen.subtitle.join")
             }
           </CardDescription>
           {userInfo && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4">
               <p className="text-sm text-blue-800">
-                ✨ Your information from the free trial has been pre-filled below!
+                {t("loginScreen.trialInfoSaved")}
               </p>
             </div>
           )}
@@ -197,8 +199,8 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
         <CardContent>
           <Tabs defaultValue="signup" className="space-y-6">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signup">Create Account</TabsTrigger>
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
+              <TabsTrigger value="signup">{t("loginScreen.tabs.createAccount")}</TabsTrigger>
+              <TabsTrigger value="signin">{t("loginScreen.tabs.signIn")}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="signup" className="space-y-6">
@@ -214,22 +216,22 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
                 >
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-semibold">Monthly Plan</h3>
+                      <h3 className="font-semibold">{t("loginScreen.plans.monthly.title")}</h3>
                       {signUpData.selectedPlan === "monthly" && (
                         <Check className="w-5 h-5 text-primary" />
                       )}
                     </div>
                     <div className="text-2xl font-bold text-primary mb-2">
-                      $10<span className="text-sm text-gray-500">/month</span>
+                      {t("loginScreen.plans.monthly.price")}<span className="text-sm text-gray-500">{t("loginScreen.plans.monthly.period")}</span>
                     </div>
                     <ul className="text-sm space-y-1">
                       <li className="flex items-center gap-2">
                         <Star className="w-4 h-4 text-yellow-500" />
-                        Unlimited stories
+                        {t("loginScreen.plans.monthly.features.unlimited")}
                       </li>
                       <li className="flex items-center gap-2">
                         <Zap className="w-4 h-4 text-blue-500" />
-                        Advanced AI features
+                        {t("loginScreen.plans.monthly.features.aiFeatures")}
                       </li>
                     </ul>
                   </CardContent>
@@ -244,26 +246,26 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
                   onClick={() => setSignUpData(prev => ({ ...prev, selectedPlan: "annual" }))}
                 >
                   <Badge className="absolute -top-2 -right-2 bg-green-500">
-                    Save $20
+                    {t("loginScreen.plans.annual.savings")}
                   </Badge>
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-semibold">Annual Plan</h3>
+                      <h3 className="font-semibold">{t("loginScreen.plans.annual.title")}</h3>
                       {signUpData.selectedPlan === "annual" && (
                         <Check className="w-5 h-5 text-primary" />
                       )}
                     </div>
                     <div className="text-2xl font-bold text-primary mb-2">
-                      $100<span className="text-sm text-gray-500">/year</span>
+                      {t("loginScreen.plans.annual.price")}<span className="text-sm text-gray-500">{t("loginScreen.plans.annual.period")}</span>
                     </div>
                     <ul className="text-sm space-y-1">
                       <li className="flex items-center gap-2">
                         <Star className="w-4 h-4 text-yellow-500" />
-                        Unlimited stories
+                        {t("loginScreen.plans.annual.features.unlimited")}
                       </li>
                       <li className="flex items-center gap-2">
                         <Zap className="w-4 h-4 text-blue-500" />
-                        Advanced AI features
+                        {t("loginScreen.plans.annual.features.aiFeatures")}
                       </li>
                     </ul>
                   </CardContent>
@@ -273,40 +275,40 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
               {/* Sign Up Form */}
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signup-name">Display Name</Label>
+                  <Label htmlFor="signup-name">{t("loginScreen.form.labels.displayName")}</Label>
                   <Input
                     id="signup-name"
                     type="text"
                     value={signUpData.displayName}
                     onChange={(e) => setSignUpData(prev => ({ ...prev, displayName: e.target.value }))}
-                    placeholder="Enter your display name"
+                    placeholder={t("loginScreen.form.placeholders.displayName")}
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
+                  <Label htmlFor="signup-email">{t("loginScreen.form.labels.email")}</Label>
                   <Input
                     id="signup-email"
                     type="email"
                     value={signUpData.email}
                     onChange={(e) => setSignUpData(prev => ({ ...prev, email: e.target.value }))}
-                    placeholder="Enter your email"
+                    placeholder={t("loginScreen.form.placeholders.email")}
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-password">Password</Label>
+                  <Label htmlFor="signup-password">{t("loginScreen.form.labels.password")}</Label>
                   <Input
                     id="signup-password"
                     type="password"
                     value={signUpData.password}
                     onChange={(e) => setSignUpData(prev => ({ ...prev, password: e.target.value }))}
-                    placeholder="Enter your password"
+                    placeholder={t("loginScreen.form.placeholders.password")}
                     required
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Creating Account..." : "Create Account"}
+                  {loading ? t("loginScreen.form.buttons.creating") : t("loginScreen.form.buttons.createAccount")}
                 </Button>
               </form>
 
@@ -317,10 +319,10 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
                   className="w-full bg-green-600 hover:bg-green-700"
                   disabled={loading || !signUpData.email}
                 >
-                  {loading ? "Processing..." : `Start Payment - ${signUpData.selectedPlan === "monthly" ? "$10/month" : "$100/year"}`}
+                  {loading ? t("loginScreen.form.buttons.processing") : `${t("loginScreen.form.buttons.startPayment")} - ${signUpData.selectedPlan === "monthly" ? t("loginScreen.payment.monthly") : t("loginScreen.payment.annual")}`}
                 </Button>
                 <p className="text-xs text-gray-500 text-center mt-2">
-                  Complete account creation first, then proceed with secure payment
+                  {t("loginScreen.payment.instruction")}
                 </p>
               </div>
             </TabsContent>
@@ -328,38 +330,38 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signin-email">Email</Label>
+                  <Label htmlFor="signin-email">{t("loginScreen.form.labels.email")}</Label>
                   <Input
                     id="signin-email"
                     type="email"
                     value={signInData.email}
                     onChange={(e) => setSignInData(prev => ({ ...prev, email: e.target.value }))}
-                    placeholder="Enter your email"
+                    placeholder={t("loginScreen.form.placeholders.email")}
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signin-password">Password</Label>
+                  <Label htmlFor="signin-password">{t("loginScreen.form.labels.password")}</Label>
                   <Input
                     id="signin-password"
                     type="password"
                     value={signInData.password}
                     onChange={(e) => setSignInData(prev => ({ ...prev, password: e.target.value }))}
-                    placeholder="Enter your password"
+                    placeholder={t("loginScreen.form.placeholders.password")}
                     required
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Signing in..." : "Sign In"}
+                  {loading ? t("loginScreen.form.buttons.signingIn") : t("loginScreen.form.buttons.signIn")}
                 </Button>
               </form>
             </TabsContent>
           </Tabs>
 
           <div className="mt-6 text-center text-sm text-gray-500">
-            <p>✓ 30-day money-back guarantee</p>
-            <p>✓ Cancel anytime</p>
-            <p>✓ Secure payment processing</p>
+            <p>{t("loginScreen.guarantees.moneyBack")}</p>
+            <p>{t("loginScreen.guarantees.cancelAnytime")}</p>
+            <p>{t("loginScreen.guarantees.securePayment")}</p>
           </div>
         </CardContent>
       </Card>

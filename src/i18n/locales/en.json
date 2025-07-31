@@ -87,6 +87,76 @@
       }
     }
   },
+  "loginScreen": {
+    "title": {
+      "upgrade": "Upgrade to Premium",
+      "join": "Join Time2Read Premium"
+    },
+    "subtitle": {
+      "upgrade": "Continue with your saved information and unlock unlimited stories",
+      "join": "Unlock unlimited personalized stories and advanced features"
+    },
+    "trialInfoSaved": "✨ Your information from the free trial has been pre-filled below!",
+    "tabs": {
+      "createAccount": "Create Account",
+      "signIn": "Sign In"
+    },
+    "plans": {
+      "monthly": {
+        "title": "Monthly Plan",
+        "price": "$10",
+        "period": "/month",
+        "features": {
+          "unlimited": "Unlimited stories",
+          "aiFeatures": "Advanced AI features"
+        }
+      },
+      "annual": {
+        "title": "Annual Plan",
+        "price": "$100",
+        "period": "/year",
+        "savings": "Save $20",
+        "features": {
+          "unlimited": "Unlimited stories",
+          "aiFeatures": "Advanced AI features"
+        }
+      }
+    },
+    "form": {
+      "labels": {
+        "displayName": "Display Name",
+        "email": "Email",
+        "password": "Password"
+      },
+      "placeholders": {
+        "displayName": "Enter your display name",
+        "email": "Enter your email",
+        "password": "Enter your password"
+      },
+      "buttons": {
+        "creating": "Creating Account...",
+        "createAccount": "Create Account",
+        "signingIn": "Signing in...",
+        "signIn": "Sign In",
+        "processing": "Processing...",
+        "startPayment": "Start Payment"
+      }
+    },
+    "payment": {
+      "instruction": "Complete account creation first, then proceed with secure payment",
+      "monthly": "$10/month",
+      "annual": "$100/year"
+    },
+    "guarantees": {
+      "moneyBack": "✓ 30-day money-back guarantee",
+      "cancelAnytime": "✓ Cancel anytime",
+      "securePayment": "✓ Secure payment processing"
+    },
+    "navigation": {
+      "backToTrial": "Back to Free Trial",
+      "back": "Back"
+    }
+  },
   "userInfoForm": {
     "title": "Let's Create Your Perfect Story!",
     "subtitle": "Tell us about yourself so we can create amazing stories just for you.",
@@ -208,153 +278,5 @@
       "contentIssue": "Content Issue",
       "reviewInputs": "Please review your inputs for appropriate content"
     }
-  },
-  "storyDisplay": {
-    "header": {
-      "readingTime": "Reading Time",
-      "progress": "Progress",
-      "done": "✨ I'm Done!",
-      "newStory": "New Story",
-      "home": "Home"
-    },
-    "controls": {
-      "speed": "Speed:",
-      "easier": "Easier",
-      "harder": "Harder",
-      "back": "← Back",
-      "next": "Next →",
-      "previous": "← Previous"
-    },
-    "navigation": {
-      "pageCounter": "Page {{current}} of {{total}}"
-    },
-    "pages": {
-      "storyLength": "Story Length:",
-      "removePages": "Remove Pages",
-      "addPages": "Add Pages",
-      "page": "page",
-      "pages": "pages"
-    },
-    "alerts": {
-      "almostDone": "Almost done!",
-      "clickToAdd": "Click + to add more pages!"
-    },
-    "countdown": {
-      "timesUp": "Time's Up!",
-      "goingToReport": "Going to your reading report in...",
-      "goNow": "Go Now ✨"
-    },
-    "tutorial": {
-      "step": "Tutorial",
-      "of": "5"
-    },
-    "tooltips": {
-      "audioButton": "Listen to this page being read aloud (once per page)",
-      "microphoneButton": "Record yourself reading (Premium feature)",
-      "makeEasier": "Make the story easier",
-      "makeHarder": "Make the story harder", 
-      "addPages": "Add 5 pages",
-      "removePages": "Remove page"
-    },
-    "difficulty": {
-      "level": "Level",
-      "easier": "Easier",
-      "harder": "Harder",
-      "tutorialTitle": "💡 Tip: Make stories easier or harder!",
-      "tutorialText": "Click these buttons to adjust difficulty",
-      "tutorialSteps": {
-        "step1": "Your 20-minute reading timer is running! Use + to add time, - to reduce time.",
-        "step2": "Speaker button reads aloud, microphone records you reading.",
-        "step3": "Easier/Harder buttons adjust story difficulty as you read.",
-        "step4": "Add/Remove Pages buttons change your story length.",
-        "step5": "Happy reading! Enjoy your personalized adventure!"
-      }
-    },
-    "illustration": {
-      "creating": "Creating magical illustration..."
-    }
-  },
-  "interactiveWord": {
-    "hearIt": "Hear It",
-    "explain": "Explain",
-    "translate": "Translate",
-    "synonym": "Synonym",
-    "example": "Example",
-    "etymology": "Origin",
-    "difficulty": {
-      "beginner": "Beginner",
-      "intermediate": "Intermediate", 
-      "advanced": "Advanced"
-    },
-    "loading": "Loading...",
-    "playbackError": "Could not play audio",
-    "translationError": "Translation not available"
-  },
-  "adaptiveUI": {
-    "eslMode": "ESL Learning Mode",
-    "nativeMode": "Reading Enhancement Mode", 
-    "learningGoal": "Learning Goal",
-    "languageSupport": "Language Support Active",
-    "languageSupportDesc": "Stories and word explanations adapted for English learners",
-    "eslHelp": {
-      "title": "ESL Learning Tips",
-      "tip1": "Click any word for translations and explanations",
-      "tip2": "Use the audio button to hear pronunciation",
-      "tip3": "Stories are adapted to help you learn English"
-    },
-    "nativeHelp": {
-      "title": "Reading Enhancement Tips", 
-      "tip1": "Click words to learn synonyms and meanings",
-      "tip2": "Use difficulty buttons to challenge yourself",
-      "tip3": "Stories help build vocabulary and comprehension"
-    }
-  },
-  "floatingTimer": {
-    "timeRemaining": "Time",
-    "pausePlay": "Pause/Play Timer", 
-    "addTime": "Add 10 minutes",
-    "reduceTime": "Remove 10 minutes",
-    "addPages": "Add more pages",
-    "maxLimit": "Max limit",
-    "addPagesAlert": {
-      "title": "Almost done!",
-      "description": "Click + to add more pages!",
-      "shortTitle": "Almost done",
-      "shortDescription": "Click + to add more pages!"
-    },
-    "timeAdded": {
-      "title": "More time added!",
-      "description": "You have 10 more minutes to read!"
-    },
-    "timeReduced": {
-      "title": "Time reduced!", 
-      "description": "10 minutes removed from your reading time."
-    },
-    "celebration": {
-      "title": "🎉 Congratulations!",
-      "description": "You've completed your reading session!"
-    }
-  },
-  "learningPath": {
-    "currentPath": "Your Learning Journey",
-    "progress": "Progress", 
-    "completed": "completed",
-    "challengesCompleted": "Challenges Completed",
-    "totalTime": "Total Time",
-    "pointsEarned": "Points Earned",
-    "nextRecommended": "Recommended Next",
-    "start": "Start",
-    "startChallenge": "Start Challenge",
-    "cancel": "Cancel",
-    "loading": "Creating your personalized learning path...",
-    "personalizedFor": "Personalized learning path for",
-    "overview": "Overview",
-    "challenges": "All Challenges",
-    "vocabularyChallenge": "Vocabulary Challenge",
-    "vocabularyDescription": "Learn new words through interactive matching games.",
-    "comprehensionChallenge": "Reading Comprehension",
-    "comprehensionDescription": "Read stories and answer questions to test understanding.",
-    "phonicsChallenge": "Phonics Practice",
-    "phonicsDescription": "Practice pronunciation and sound patterns."
   }
 }
