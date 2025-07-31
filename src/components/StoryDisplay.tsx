@@ -9,6 +9,8 @@ import { InteractiveAudioReading } from "@/components/InteractiveAudioReading";
 import { EarlyReaderStoryGenerator } from "@/services/earlyReaderStoryGenerator";
 import { APP_CONFIG } from "@/constants/app";
 import { useToast } from "@/hooks/use-toast";
+import { InlineTutorial } from "@/components/InlineTutorial";
+import { FloatingTimer } from "@/components/FloatingTimer";
 
 // Import fallback illustrations
 import illustration1 from "@/assets/story-illustration-1.jpg";
@@ -49,6 +51,9 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
   const [wordsRead, setWordsRead] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [showFinishCountdown, setShowFinishCountdown] = useState(false);
+  const [tutorialActive, setTutorialActive] = useState(true);
+  const [showAddPagesAlert, setShowAddPagesAlert] = useState(false);
+  const [hasShownAddPagesAlert, setHasShownAddPagesAlert] = useState(false);
 
   // Fallback illustrations
   const illustrations = [illustration1, illustration2, illustration3, illustration4, illustration5];
@@ -263,6 +268,29 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
       setIsLoading(false);
     }
   };
+
+  // Flash "add more pages" alert when on next-to-last page with >1 minute remaining
+  useEffect(() => {
+    const pagesLeft = story.length - currentPage;
+    if (timeRemaining > 1 * 60 && pagesLeft === 1 && !hasShownAddPagesAlert && !showAddPagesAlert) {
+      setHasShownAddPagesAlert(true);
+      setShowAddPagesAlert(true);
+      
+      const timer = setTimeout(() => {
+        setShowAddPagesAlert(false);
+      }, 4000); // Show for 4 seconds
+      
+      return () => clearTimeout(timer);
+    }
+  }, [timeRemaining, currentPage, story.length, hasShownAddPagesAlert, showAddPagesAlert]);
+  
+  // Reset the flag when more pages are added or we move away from the last page
+  useEffect(() => {
+    const pagesLeft = story.length - currentPage;
+    if (pagesLeft > 1) {
+      setHasShownAddPagesAlert(false);
+    }
+  }, [currentPage, story.length]);
   
   // Function to add more pages to the story
   const addMorePages = async () => {
@@ -523,7 +551,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                 </div>
 
                 {/* Audio Controls */}
-                <div className="mt-6">
+                <div className="mt-6 audio-controls">
                   <InteractiveAudioReading 
                     text={currentStory}
                     userInfo={userInfo}
@@ -532,7 +560,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                 </div>
 
                 {/* Navigation */}
-                <div className="flex justify-between items-center mt-6">
+                <div className="flex justify-between items-center mt-6 story-navigation reading-level-controls">
                   <Button 
                     onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
                     disabled={currentPage === 0}
@@ -551,12 +579,20 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                         disabled={isLoading}
                         variant="outline"
                         size="sm"
-                        className="p-2"
+                        className={`p-1.5 sm:p-2 transition-all duration-300 ${
+                          showAddPagesAlert 
+                            ? 'animate-bounce bg-amber-100 border-amber-400 text-amber-700 shadow-lg ring-2 ring-amber-300' 
+                            : 'bg-blue-50 hover:bg-blue-100 border-blue-200'
+                        }`}
                       >
-                        <Plus className="w-4 h-4" />
+                        <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
                       </Button>
-                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-                        Add 5 more pages
+                      <div className={`absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 rounded text-xs transition-all duration-300 pointer-events-none whitespace-nowrap z-10 ${
+                        showAddPagesAlert 
+                          ? 'bg-amber-600 text-white opacity-100 animate-pulse' 
+                          : 'bg-gray-800 text-white opacity-0 group-hover:opacity-100'
+                      }`}>
+                        {showAddPagesAlert ? '⏰ Add more pages now!' : 'Add 5 more pages'}
                       </div>
                     </div>
                   </div>
@@ -574,6 +610,45 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
           </div>
         </div>
       </main>
+      
+      {/* FloatingTimer Component for Premium Users */}
+      {isPremium && (
+        <FloatingTimer
+          timeRemaining={timeRemaining}
+          isReading={!isPaused}
+          onToggleReading={() => setIsPaused(!isPaused)}
+          onReduceTime={() => {
+            if (timeRemaining > 5 * 60) {
+              setTimeRemaining(prev => Math.max(5 * 60, prev - 5 * 60));
+            }
+          }}
+          onEndSession={() => {
+            setTimeRemaining(0);
+            onSessionEnded({
+              timeSpent: Math.floor((Date.now() - sessionStartTime.getTime()) / 1000),
+              wordsRead,
+              pagesRead: currentPage + 1,
+              startTime: sessionStartTime.getTime(),
+              accuracy: 100
+            });
+          }}
+          pagesRemaining={story.length - currentPage}
+          currentParagraph={currentPage}
+          onSessionEnded={() => onSessionEnded({
+            timeSpent: Math.floor((Date.now() - sessionStartTime.getTime()) / 1000),
+            wordsRead,
+            pagesRead: currentPage + 1,
+            startTime: sessionStartTime.getTime(),
+            accuracy: 100
+          })}
+        />
+      )}
+      
+      {/* Tutorial for Premium Users */}
+      <InlineTutorial 
+        isActive={tutorialActive} 
+        onComplete={() => setTutorialActive(false)} 
+      />
     </div>
   );
 };
