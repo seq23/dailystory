@@ -192,7 +192,7 @@
     },
     "difficulty": {
       "tutorialSteps": {
-        "step1": "Bienvenue! Le minuteur s'est démarré automatiquement à 10:15. Vert + ajoute du temps, orange - enlève du temps.",
+        "step1": "Votre minuteur de 20 minutes fonctionne ! Utilisez + pour ajouter du temps, - pour réduire le temps.",
         "step2": "Le bouton haut-parleur lit à haute voix, le microphone enregistre votre lecture.",
         "step3": "Les boutons Plus facile/Plus difficile ajustent la difficulté de l'histoire pendant que vous lisez.",
         "step4": "Les boutons Ajouter/Retirer des pages changent la longueur de votre histoire.",

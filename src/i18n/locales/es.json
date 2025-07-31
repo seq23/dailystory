@@ -253,7 +253,7 @@
     },
     "difficulty": {
       "tutorialSteps": {
-        "step1": "¡Bienvenido! El temporizador se inició automáticamente a las 10:15. Verde + agrega tiempo, naranja - quita tiempo.",
+        "step1": "¡Tu temporizador de 20 minutos está corriendo! Usa + para agregar tiempo, - para reducir tiempo.",
         "step2": "El botón del altavoz lee en voz alta, el micrófono graba tu lectura.",
         "step3": "Los botones Más fácil/Más difícil ajustan la dificultad de la historia mientras lees.",
         "step4": "Los botones Agregar/Quitar páginas cambian la longitud de tu historia.",

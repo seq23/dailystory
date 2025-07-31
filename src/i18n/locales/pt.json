@@ -111,7 +111,7 @@
       "tutorialTitle": "💡 Dica: Torne as histórias mais fáceis ou mais difíceis!",
       "tutorialText": "Clique nestes botões para ajustar a dificuldade",
       "tutorialSteps": {
-        "step1": "Bem-vindo! O cronômetro iniciou automaticamente às 10:15. Verde + adiciona tempo, laranja - remove tempo.",
+        "step1": "Seu cronômetro de 20 minutos está rodando! Use + para adicionar tempo, - para reduzir tempo.",
         "step2": "O botão do alto-falante lê em voz alta, o microfone grava sua leitura.",
         "step3": "Os botões Mais fácil/Mais difícil ajustam a dificuldade da história enquanto você lê.",
         "step4": "Os botões Adicionar/Remover páginas alteram o comprimento da sua história.",
@@ -227,7 +227,7 @@
     },
     "difficulty": {
       "tutorialSteps": {
-        "step1": "Bem-vindo! O cronômetro iniciou automaticamente às 10:15. Verde + adiciona tempo, laranja - remove tempo.",
+        "step1": "Seu cronômetro de 20 minutos está rodando! Use + para adicionar tempo, - para reduzir tempo.",
         "step2": "O botão do alto-falante lê em voz alta, o microfone grava sua leitura.",
         "step3": "Os botões Mais fácil/Mais difícil ajustam a dificuldade da história enquanto você lê.",
         "step4": "Os botões Adicionar/Remover páginas alteram o comprimento da sua história.",

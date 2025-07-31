@@ -254,7 +254,7 @@
       "tutorialTitle": "💡 Tip: Make stories easier or harder!",
       "tutorialText": "Click these buttons to adjust difficulty",
       "tutorialSteps": {
-        "step1": "Welcome! Timer auto-started at 10:15. Green + adds time, orange - removes time.",
+        "step1": "Your 20-minute reading timer is running! Use + to add time, - to reduce time.",
         "step2": "Speaker button reads aloud, microphone records you reading.",
         "step3": "Easier/Harder buttons adjust story difficulty as you read.",
         "step4": "Add/Remove Pages buttons change your story length.",
