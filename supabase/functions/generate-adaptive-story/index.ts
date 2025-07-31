@@ -105,24 +105,33 @@ STORY STRUCTURE:
 
 Create a complete, engaging story that makes ${userName} feel like the hero of their own adventure.`
 
-    const userPrompt = `Write a ${theme} story where ${userName}, a ${characterDesc}, goes on an amazing adventure. 
+    const userPrompt = `Write a captivating ${theme} story featuring ${userName}, a ${characterDesc}. This should read like a real children's book with natural flow and pacing.
 
-ORGANIC INTEGRATION GUIDELINES:
-You have these elements to weave into the story naturally and intelligently:
+STORY ELEMENTS TO WEAVE IN NATURALLY:
+Available elements (use only what fits organically into your narrative):
 - Favorite color: ${favoriteColor}
 - Favorite animal: ${favoriteAnimal}  
 - Interests: ${userInterests.join(', ')}
 ${hobbies ? `- Hobby: ${hobbies}` : ''}
 ${favoriteFood ? `- Favorite food: ${favoriteFood}` : ''}
 
-IMPORTANT: You don't need to include ALL these elements. Choose 2-3 that fit naturally into your ${theme} story. For example:
-- If it's a magic story and they like blue and dogs, maybe ${userName} discovers a magical blue crystal that helps them talk to a wise dog
-- If it's an adventure story and they like soccer and pizza, maybe ${userName} uses soccer skills to escape danger, then celebrates with pizza
-- Be creative and natural - only include what makes sense for the story flow
+WRITING APPROACH:
+- Let the story flow naturally like a published children's book
+- Don't force all elements into the beginning - spread them throughout when they naturally fit
+- Some elements might appear early, others in the middle or end
+- Focus on creating engaging scenes, character development, and a satisfying narrative arc
+- ${userName} should feel like a real, relatable character going on a genuine adventure
 
-Make ${userName} brave, clever, and kind. The story should be exactly right for a ${userAge}-year-old at ${readingLevel} reading level. Make it feel like ${userName} is really the hero!
+STORY STRUCTURE:
+- Start with an engaging opening that draws readers in
+- Build the world and character naturally
+- Let the adventure unfold with proper pacing
+- Include moments of challenge, discovery, and triumph
+- End with a satisfying conclusion that feels complete
 
-Write this as a complete story that flows naturally from beginning to end, without mentioning page numbers.`
+Make this feel like a real book that ${userName} would love to read about themselves. Age-appropriate for ${userAge} years old at ${readingLevel} level.
+
+Write as a complete, flowing narrative without page breaks or section markers.`
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
