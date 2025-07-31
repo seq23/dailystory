@@ -14,7 +14,7 @@ import { ProgressTrackingService, ReadingProgress } from "@/services/progressTra
 import { createOpenAITTSService } from "@/services/textToSpeechService";
 import { useToast } from "@/hooks/use-toast";
 import { StoryGeneratorService } from "@/services/storyGenerator";
-import { CulturalImageGenerator } from "@/services/culturalImageGenerator";
+
 import illustration1 from "@/assets/story-illustration-1.jpg";
 import illustration2 from "@/assets/story-illustration-2.jpg";
 import illustration3 from "@/assets/story-illustration-3.jpg";
@@ -212,10 +212,10 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         
         // Auto-generate custom illustration for the first page
         if (result.pages.length > 0) {
-          // Small delay to ensure component is ready
+          // 1-2 second delay for first page image generation
           setTimeout(() => {
             generateCustomIllustration(0, result.pages[0]);
-          }, 500);
+          }, 1500);
         }
       } catch (error) {
         console.error('Error generating story:', error);
@@ -465,12 +465,12 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       const illustrationIndex = targetPage % illustrations.length;
       setCurrentIllustration(illustrations[illustrationIndex]);
       
-      // Auto-generate custom illustration for the current page immediately
+      // Auto-generate custom illustration for the current page with delay
       if (result.pages.length > 0 && result.pages[targetPage]) {
-        // Force immediate generation to ensure image appears
+        // Add 1-2 second delay when difficulty changes
         setTimeout(() => {
           generateCustomIllustration(targetPage, result.pages[targetPage]);
-        }, 200); // Slightly longer delay to ensure story state is updated
+        }, 1500);
       }
       
     } catch (error) {
