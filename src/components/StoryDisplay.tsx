@@ -719,31 +719,43 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       // Extract main characters from the entire story for consistency
       const fullStoryText = story.join(' ').toLowerCase();
       
-      // ALWAYS start with the user as the main character with accurate ethnic representation
-      const userCharacterDescription = () => {
-        const gender = userInfo.avatar?.type || 'child';
-        const age = userInfo.age || 8;
-        const isEnglishSpeaker = userInfo.nativeLanguage === 'en';
+      // Get character description (moved here to be available early)
+      const getCharacterDescription = () => {
+        const name = userInfo.name || 'child';
+        const isYoung = currentDifficulty === 'easy' || currentDifficulty === 'medium';
+        const agePrefix = isYoung ? 'young ' : '';
+        const gender = userInfo.avatar?.type === 'boy' ? 'boy' : 'girl';
         
-        // Accurate skin tone and ethnic representation
-        const skinToneMap = {
-          pale: 'very light skin, European features',
-          light: 'light skin, Caucasian features', 
-          medium: 'medium brown skin, mixed heritage features',
-          olive: 'olive-toned skin, Mediterranean or Middle Eastern features',
-          dark: isEnglishSpeaker 
-            ? 'beautiful dark brown skin, authentic African American features including natural curly or coily hair texture, fuller lips, broader nose, and distinctive African heritage facial structure'
-            : 'dark brown skin, African or African American features with beautiful dark skin tone'
-        };
+        const skinTones = {
+          pale: 'very light skin',
+          light: 'light skin',
+          medium: 'medium skin',
+          olive: 'olive skin',
+          dark: 'beautiful dark brown skin'
+        } as const;
         
-        const skinTone = skinToneMap[userInfo.avatar?.skinTone || 'medium'];
+        const skinTone = skinTones[userInfo.avatar?.skinTone || 'medium'];
         
-        return `${userInfo.name}, a ${age}-year-old ${gender} with ${skinTone}`;
+        // Enhanced representation for dark-skinned characters
+        if (userInfo.avatar?.skinTone === 'dark') {
+          const ethnicDescription = userInfo.nativeLanguage === 'en' 
+            ? 'African American' 
+            : 'African heritage';
+          return `${agePrefix}${gender} of ${ethnicDescription} named ${name} with ${skinTone}, authentic features including natural curly or coily hair texture, fuller lips, broader nose, and distinctive facial structure`;
+        }
+        
+        let characterDesc = `${agePrefix}${gender} named ${name} with ${skinTone}`;
+        
+        if (userInfo.favoriteColor) {
+          characterDesc += `, wearing ${userInfo.favoriteColor.toLowerCase()} clothing`;
+        }
+        
+        return characterDesc;
       };
-      
-      // Character consistency mapping - USER is ALWAYS the main character
+
+      // Character consistency mapping - USER is ALWAYS the main character  
       const storyCharacters = {
-        mainCharacter: userCharacterDescription(), // User is always main character
+        mainCharacter: getCharacterDescription(), // Use the consistent character description function
         characterColor: '',
         characterType: '',
         secondaryCharacters: [] as string[]
@@ -794,37 +806,6 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         }
       };
 
-      // Get character description
-      const getCharacterDescription = () => {
-        const name = userInfo.name || 'child';
-        const isYoung = currentDifficulty === 'easy' || currentDifficulty === 'medium';
-        const agePrefix = isYoung ? 'young ' : '';
-        const gender = userInfo.avatar?.type === 'boy' ? 'boy' : 'girl';
-        
-        const skinTones = {
-          pale: 'very light skin',
-          light: 'light skin',
-          medium: 'medium skin',
-          olive: 'olive skin',
-          dark: 'beautiful dark brown skin'
-        } as const;
-        
-        const skinTone = skinTones[userInfo.avatar?.skinTone || 'medium'];
-        
-        // Enhanced representation for African/African American characters
-        if (userInfo.avatar?.skinTone === 'dark' && userInfo.nativeLanguage === 'en') {
-          return `${agePrefix}African American ${gender} named ${name} with ${skinTone}, authentic African American features including natural curly or coily hair texture, fuller lips, broader nose, and distinctive African heritage facial structure`;
-        }
-        
-        let characterDesc = `${agePrefix}${gender} named ${name} with ${skinTone}`;
-        
-        if (userInfo.favoriteColor) {
-          characterDesc += `, wearing ${userInfo.favoriteColor.toLowerCase()} clothing`;
-        }
-        
-        return characterDesc;
-      };
-      
       const sceneDescription = extractSceneElements(storyText);
       const characterDescription = getCharacterDescription();
       
