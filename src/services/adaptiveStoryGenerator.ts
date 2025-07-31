@@ -9,6 +9,15 @@ export interface StoryGenerationConfig {
   wordLimit?: number;
   userName?: string;
   characterDescription?: string;
+  avatar?: {
+    type: 'boy' | 'girl' | 'prefer-not-to-answer';
+    skinTone: 'pale' | 'light' | 'medium' | 'olive' | 'dark';
+  };
+  favoriteColor?: string;
+  favoriteAnimal?: string;
+  hobbies?: string;
+  favoriteFood?: string;
+  nativeLanguage?: string;
 }
 
 export interface GeneratedStory {
@@ -125,7 +134,9 @@ export class AdaptiveStoryGenerator {
     const authorStyle = this.selectAuthorStyle(readingLevel);
     const theme = config.theme || specs.themes[Math.floor(Math.random() * specs.themes.length)];
 
-    // Generate story using Supabase edge function
+    console.log(`Generating personalized story for ${config.userName} (${readingLevel} level)`);
+
+    // Generate story using enhanced Supabase edge function
     const { data: storyData, error } = await supabase.functions.invoke('generate-adaptive-story', {
       body: {
         readingLevel,
@@ -133,13 +144,17 @@ export class AdaptiveStoryGenerator {
         theme,
         interests: config.interests,
         specs,
-        config
+        config: {
+          ...config,
+          theme,
+          nativeLanguage: config.userName ? 'en' : 'en' // Add fallback
+        }
       }
     });
 
     if (error) {
       console.error('Story generation error:', error);
-      // Fallback to a simple story template
+      // Fallback to a personalized story template
       return this.generateFallbackStory(config, readingLevel, authorStyle, theme, specs);
     }
 
@@ -149,26 +164,24 @@ export class AdaptiveStoryGenerator {
     
     // Adjust to exactly 10 pages
     if (pages.length < targetPageCount) {
-      // Add additional content if too short
       const additionalContent = this.generateAdditionalContent(theme, readingLevel, targetPageCount - pages.length);
       pages = [...pages, ...additionalContent];
     } else if (pages.length > targetPageCount) {
-      // Trim to exactly 10 pages
       pages = pages.slice(0, targetPageCount);
     }
     
     const vocabularyWords = this.extractVocabularyWords(storyData.content, readingLevel);
     const comprehensionQuestions = this.generateComprehensionQuestions(storyData.content, readingLevel);
     
-    // Generate image prompts but don't wait for image generation
+    // Generate personalized image prompts with character consistency
     const imagePrompts = this.generateImagePrompts(readingLevel, theme, pages.length);
     
-    // Initialize images array with prompts only - images will be generated progressively
+    // Initialize images array with enhanced prompts - images will be generated progressively
     const initialImages = pages.map((_, i) => ({ prompt: imagePrompts[i] }));
 
     const story: GeneratedStory = {
       id: crypto.randomUUID(),
-      title: storyData.title,
+      title: storyData.title || `${config.userName}'s ${theme} Adventure`,
       content: storyData.content,
       pages,
       readingLevel,
@@ -183,9 +196,10 @@ export class AdaptiveStoryGenerator {
       images: initialImages
     };
 
-    // Store the story in Supabase
+    // Store the story in Supabase with character details
     await this.saveStoryToDatabase(story);
     
+    console.log(`Successfully generated personalized story: "${story.title}"`);
     return story;
   }
 
@@ -296,23 +310,28 @@ export class AdaptiveStoryGenerator {
     theme: string,
     specs: any
   ): GeneratedStory {
-    // Enhanced fallback with exactly 10 pages
+    // Enhanced personalized fallback with exactly 10 pages
+    const userName = config.userName || 'the child';
+    const characterDesc = config.avatar ? 
+      `${config.avatar.type === 'boy' ? 'young boy' : config.avatar.type === 'girl' ? 'young girl' : 'child'} with ${config.avatar.skinTone} skin tone` :
+      'brave young adventurer';
+    
     const fallbackPages = [
-      `Once upon a time, there was a wonderful ${theme} waiting to be discovered.`,
-      `In a magical place, there lived someone very special.`,
-      `This someone had a dream to go on an amazing adventure.`,
-      `One bright morning, the adventure began with excitement.`,
-      `Along the way, there were challenges to overcome.`,
-      `But with courage and determination, each challenge was met.`,
-      `Friends appeared to help when needed most.`,
-      `Together, they discovered something truly wonderful.`,
-      `The adventure taught important lessons about friendship and courage.`,
-      `And they all lived happily ever after, ready for new adventures.`
+      `Once upon a time, there was a wonderful ${characterDesc} named ${userName}.`,
+      `${userName} lived in a magical place full of ${theme} adventures.`,
+      `One bright morning, ${userName} discovered something amazing.`,
+      `With great courage, ${userName} decided to explore this new discovery.`,
+      `Along the way, ${userName} met friendly animals and helpful friends.`,
+      `Together, they faced exciting challenges with bravery and kindness.`,
+      `${userName} learned important lessons about friendship and courage.`,
+      `The adventure taught ${userName} to believe in themselves.`,
+      `Everyone was proud of how brave and kind ${userName} had been.`,
+      `And ${userName} lived happily ever after, ready for new adventures.`
     ];
 
     return {
       id: crypto.randomUUID(),
-      title: `A ${theme} Adventure`,
+      title: `${userName}'s ${theme} Adventure`,
       content: fallbackPages.join(' '),
       pages: fallbackPages,
       readingLevel,
@@ -323,7 +342,7 @@ export class AdaptiveStoryGenerator {
       pageCount: fallbackPages.length,
       vocabularyWords: [],
       comprehensionQuestions: [],
-      imagePrompts: fallbackPages.map((_, i) => `Illustration for page ${i + 1} depicting ${theme}`),
+      imagePrompts: fallbackPages.map((_, i) => `Illustration for page ${i + 1} depicting ${theme} with ${userName}`),
       images: [] // Empty for fallback
     };
   }

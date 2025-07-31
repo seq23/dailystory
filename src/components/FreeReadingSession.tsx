@@ -130,7 +130,13 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
           interests: interests,
           theme: userInfo.specialRequest || 'adventure',
           userName: userInfo.name,
-          characterDescription
+          characterDescription,
+          avatar: userInfo.avatar,
+          favoriteColor: userInfo.favoriteColor,
+          favoriteAnimal: userInfo.favoriteAnimal,
+          hobbies: userInfo.hobbies,
+          favoriteFood: userInfo.favoriteFood,
+          nativeLanguage: userInfo.nativeLanguage || 'en'
         };
 
         console.log('Story config:', storyConfig);
@@ -269,7 +275,13 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
           interests: interests,
           theme: userInfo.specialRequest || 'adventure',
           userName: userInfo.name,
-          characterDescription
+          characterDescription,
+          avatar: userInfo.avatar,
+          favoriteColor: userInfo.favoriteColor,
+          favoriteAnimal: userInfo.favoriteAnimal,
+          hobbies: userInfo.hobbies,
+          favoriteFood: userInfo.favoriteFood,
+          nativeLanguage: userInfo.nativeLanguage || 'en'
         };
 
         // Generate new story at the new difficulty level
@@ -365,7 +377,13 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
         interests: userInfo.interests || [userInfo.hobbies || 'adventure'],
         theme: 'adventure',
         userName: userInfo.name,
-        characterDescription
+        characterDescription,
+        avatar: userInfo.avatar,
+        favoriteColor: userInfo.favoriteColor,
+        favoriteAnimal: userInfo.favoriteAnimal,
+        hobbies: userInfo.hobbies,
+        favoriteFood: userInfo.favoriteFood,
+        nativeLanguage: userInfo.nativeLanguage || 'en'
       };
 
       const extendedStory = await adaptiveStoryGenerator.generateStory(storyConfig);
