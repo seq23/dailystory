@@ -430,17 +430,22 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                 ⏯️
               </Button>
               
-              {/* Reduce Time Button */}
+              {/* Reduce Time Button - 5 minutes, disabled under 5:00 */}
               <Button
                 size="sm"
                 variant="outline"
-                className="w-8 h-8 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0 hover:from-yellow-500 hover:to-orange-600 shadow-lg"
+                disabled={timeRemaining <= 300} // Disable when 5:00 or under
+                className={`w-8 h-8 rounded-full border-0 shadow-lg transition-all duration-200 ${
+                  timeRemaining <= 300 
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                    : 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white hover:from-yellow-500 hover:to-orange-600 hover:scale-110'
+                }`}
                 onClick={() => {
-                  if (timeRemaining > 60) {
-                    setTimeRemaining(prev => Math.max(60, prev - 60));
+                  if (timeRemaining > 300) { // Only work if above 5:00
+                    setTimeRemaining(prev => Math.max(300, prev - 300)); // Reduce by 5 minutes (300 seconds)
                     toast({
                       title: "Time Reduced",
-                      description: "Removed 1 minute",
+                      description: "Removed 5 minutes from timer",
                       duration: 2000,
                     });
                   }
