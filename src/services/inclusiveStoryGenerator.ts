@@ -41,14 +41,15 @@ export class InclusiveStoryGenerator {
     userInfo: UserInfo, 
     difficulty: DifficultyLevel,
     isExtension: boolean = false,
-    pageCount: number = 10
+    pageCount: number = 10,
+    existingContext?: string
   ): string[] {
     
     const isESLLearner = userInfo.nativeLanguage !== 'en';
     const isNativeEnglishSpeaker = userInfo.nativeLanguage === 'en';
     
     if (isExtension) {
-      return this.generateCulturalExtension(userInfo, difficulty, pageCount, isESLLearner);
+      return this.generateCulturalExtension(userInfo, difficulty, pageCount, isESLLearner, existingContext);
     } else {
       return this.generateCulturalInitialStory(userInfo, difficulty, isESLLearner, pageCount);
     }
@@ -460,7 +461,8 @@ export class InclusiveStoryGenerator {
     userInfo: UserInfo, 
     difficulty: DifficultyLevel, 
     pageCount: number,
-    isESLLearner: boolean
+    isESLLearner: boolean,
+    existingContext?: string
   ): string[] {
     
     const culturalElements = CulturalAdaptationService.getCulturalElements(userInfo);
@@ -488,44 +490,79 @@ export class InclusiveStoryGenerator {
     const createCohesiveExtension = () => {
       const extensionPages: string[] = [];
       
-      // Continue the story naturally from where it left off
+      // Analyze existing context for narrative elements
+      const contextAnalysis = existingContext ? {
+        hasAnimal: existingContext.includes(animal),
+        hasObject: existingContext.includes(object),
+        hasFood: existingContext.includes(food),
+        lastSentiment: existingContext.includes('happy') ? 'positive' : 
+                     existingContext.includes('sad') ? 'negative' : 'neutral',
+        currentLocation: existingContext.includes(setting) ? setting : 'unknown'
+      } : {};
+      
+      // Generate progressive story continuation based on existing narrative
       for (let i = 0; i < pageCount; i++) {
         let page = "";
+        const storyPhase = i < pageCount/2 ? 'development' : 'climax';
         
         if (difficulty === "easy") {
-          const continuationTemplates = [
-            `${characterName} has more friends to meet! Look who is coming to say hello!`,
-            `The ${animal} shows ${characterName} a new place. "Come see!" says the ${animal}.`,
-            `${characterName} learns something new every day. Learning is so much fun!`,
-            `"Let's play!" says ${characterName}. All the friends want to play together.`,
-            `More adventures wait for ${characterName}. What will happen next?`
+          const continuationTemplates = storyPhase === 'development' ? [
+            `${characterName} and the ${animal} explore new parts of the ${setting}. "What's that?" asks ${characterName}, pointing to something shiny.`,
+            `The friends find a hidden path covered with ${food} trees. "We can share these!" says ${characterName} happily.`,
+            `A new friend appears - a wise turtle carrying stories. "Tell us an adventure!" asks ${characterName}.`,
+            `${characterName} learns to help others, just like the ${animal} helped them. Being kind feels wonderful!`,
+            `The sun shines brightly as ${characterName} discovers a magical garden where ${value} grows like flowers.`
+          ] : [
+            `All the friends gather together to celebrate their adventures. "We did it!" cheers ${characterName}.`,
+            `${characterName} finds the most special ${object} - one that glows with friendship and ${value}.`,
+            `The ${animal} shows ${characterName} how to make the ${setting} even more beautiful for everyone.`,
+            `${characterName} realizes that the best treasure is having good friends who care about ${value}.`,
+            `"Let's have another adventure tomorrow!" says ${characterName}, already excited for what comes next.`
           ];
           page = continuationTemplates[i % continuationTemplates.length];
         } else if (difficulty === "medium") {
-          const continuationTemplates = [
-            `As their friendship with the ${animal} deepened, ${characterName} discovered there were many more secrets hidden in the ${setting}.`,
-            `The ${animal} introduced ${characterName} to other creatures who had their own stories of ${value} and friendship to share.`,
-            `Each new day brought fresh adventures and opportunities for ${characterName} to practice what they had learned about ${value}.`,
-            `The magical ${setting} seemed to grow more wonderful each time ${characterName} visited, revealing new paths and hidden treasures.`,
-            `${characterName} began to understand that every ending was really just the beginning of a new and even more exciting chapter.`
+          const continuationTemplates = storyPhase === 'development' ? [
+            `As ${characterName} and the ${animal} journeyed deeper into the ${setting}, they discovered ancient symbols carved into the trees that seemed to tell the story of ${value}.`,
+            `The path led them to a village where other children were learning the same lessons about ${value} that ${characterName} had discovered.`,
+            `${characterName} began to understand that their adventure was part of a larger tapestry, where every act of ${value} created ripples of positive change.`,
+            `They encountered an elder who had been waiting for someone with ${characterName}'s understanding of ${value} to help solve an important challenge.`,
+            `The ${object} revealed new powers when ${characterName} used it not for personal gain, but to help others in the ${setting}.`
+          ] : [
+            `${characterName} realized that their greatest strength came from combining their own talents with the wisdom they had learned about ${value}.`,
+            `The celebration feast featured ${food} from every corner of the ${setting}, shared by all the friends ${characterName} had made along the way.`,
+            `As the adventure drew to a close, ${characterName} understood that every ending was simply the beginning of a new chapter in the story of ${value}.`,
+            `The ${animal} presented ${characterName} with a special gift - the knowledge that they could return to the ${setting} whenever they needed to remember their strength.`,
+            `${characterName} looked forward to sharing their newfound wisdom about ${value} with friends back home, knowing that the adventure would continue in their everyday life.`
           ];
           page = continuationTemplates[i % continuationTemplates.length];
         } else if (difficulty === "hard") {
-          const continuationTemplates = [
-            `Word of ${characterName}'s acts of ${value} had spread throughout the ${setting}, attracting other adventurers who sought to learn from their example.`,
-            `The ${animal} revealed that the ${object} was just one of many artifacts that needed guardians who truly understood the responsibility that comes with power.`,
-            `${characterName} found themselves becoming a mentor to younger travelers, sharing the wisdom they had gained through their own challenging journey.`,
-            `New mysteries emerged from the depths of the ${setting}, each one requiring ${characterName} to apply their growing understanding of ${value} in different ways.`,
-            `The ripple effects of ${characterName}'s choices continued to spread, creating positive changes that would benefit generations of future adventurers.`
+          const continuationTemplates = storyPhase === 'development' ? [
+            `The network of relationships ${characterName} had built throughout the ${setting} began to reveal a deeper pattern - each connection strengthened their understanding of ${value}.`,
+            `${characterName} faced a complex moral dilemma where the right choice wasn't immediately clear, requiring them to synthesize everything they had learned about ${value}.`,
+            `The ${animal} revealed that the ${object} was actually a test, and ${characterName}'s true power lay in their capacity to inspire ${value} in others.`,
+            `A crisis in the ${setting} called for ${characterName} to lead a diverse group of characters, each bringing different strengths to solve the challenge through ${value}.`,
+            `${characterName} discovered that their journey had been preparing them to become a bridge between different communities, using ${value} as the foundation for understanding.`
+          ] : [
+            `The resolution required ${characterName} to make a sacrifice that demonstrated their complete understanding of what ${value} truly means in practice.`,
+            `${characterName} realized that the most profound transformations happen not through grand gestures, but through consistent daily choices guided by ${value}.`,
+            `The celebration became a planning session, where ${characterName} and their allies designed systems to ensure that ${value} would flourish throughout the ${setting}.`,
+            `As ${characterName} prepared to transition from student to teacher, they understood that their adventure was part of an ongoing cycle of growth and ${value}.`,
+            `The story concluded with ${characterName} establishing new traditions that would help future adventurers discover their own relationship with ${value}.`
           ];
           page = continuationTemplates[i % continuationTemplates.length];
         } else { // expert
-          const continuationTemplates = [
-            `The profound transformation ${characterName} had undergone in the ${setting} began to manifest in ways that transcended the boundaries between the magical realm and the everyday world.`,
-            `Other seekers, drawn by an inexplicable pull, began to arrive at the ${setting}, each bringing their own questions about the nature of ${value} and purpose.`,
-            `${characterName} discovered that their journey had been preparing them not just to find answers, but to help others frame the right questions about their own paths.`,
-            `The ${animal} revealed that the greatest magic lay not in the artifacts or spells, but in the web of connections that ${value} creates between all living beings.`,
-            `As ${characterName} prepared to return to their ordinary life, they carried with them the understanding that magic and ${value} are not separate from daily existence, but the very foundation upon which a meaningful life is built.`
+          const continuationTemplates = storyPhase === 'development' ? [
+            `${characterName}'s integration of ${value} into their worldview began to catalyze transformations that extended far beyond the immediate scope of their adventure in the ${setting}.`,
+            `The philosophical implications of ${characterName}'s journey became apparent as they encountered others whose lives had been touched by the ripple effects of their choices.`,
+            `A meta-narrative emerged as ${characterName} realized they were both protagonist of their own story and supporting character in the larger epic of collective ${value}.`,
+            `The boundaries between the magical elements of the ${setting} and the profound realities of human connection began to dissolve, revealing the deeper truths that ${value} represents.`,
+            `${characterName} confronted the paradox that true mastery of ${value} requires embracing uncertainty and remaining open to continuous learning and growth.`
+          ] : [
+            `The resolution transcended simple problem-solving as ${characterName} helped establish new frameworks for understanding how ${value} operates at individual, community, and universal levels.`,
+            `${characterName}'s journey culminated in the recognition that the most authentic expression of ${value} is the courage to remain vulnerable and present in each moment.`,
+            `The ${setting} transformed into a living metaphor for the interior landscape where ${characterName} would continue to practice and deepen their relationship with ${value}.`,
+            `As the adventure concluded, ${characterName} understood that graduation from one level of understanding simply marked the beginning of deeper questions about the nature of ${value}.`,
+            `The final chapter revealed that ${characterName}'s entire journey had been preparing them to help others write their own stories of discovery, growth, and authentic expression of ${value}.`
           ];
           page = continuationTemplates[i % continuationTemplates.length];
         }

@@ -498,19 +498,35 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
 
   const handleAddPages = async () => {
     try {
-      // Add 5 pages each time
-      const extension = InclusiveStoryGenerator.generateCulturallyAdaptedStory(userInfo, currentDifficulty, true, 5);
+      // Generate continuation that flows from current story context
+      const currentStoryContext = story.slice(-3).join(' '); // Get last 3 pages for context
+      const extension = InclusiveStoryGenerator.generateCulturallyAdaptedStory(
+        userInfo, 
+        currentDifficulty, 
+        true, // isExtension
+        5,    // pageCount
+        currentStoryContext // Pass current context for seamless continuation
+      );
+      
       setStory(prev => [...prev, ...extension]);
       setShowAddPagesAlert(false); // Hide current alert but don't reset the flag
       
       toast({
         title: "Story Extended! 📖",
-        description: `Added 5 more pages to your adventure.`,
+        description: "5 new pages have been added to your adventure!",
       });
+      
+      // Update reading stats
+      const newWordCount = extension.join(' ').split(' ').filter(word => word.length > 0).length;
+      setSessionWordsRead(prev => prev + newWordCount);
+      setReadingStats(prev => ({
+        ...prev,
+        wordsRead: prev.wordsRead + newWordCount
+      }));
     } catch (error) {
-      console.error('Error extending story:', error);
+      console.error('Error adding pages:', error);
       toast({
-        title: "Extension Error",
+        title: "Error",
         description: "Unable to add more pages. Please try again.",
         variant: "destructive"
       });
