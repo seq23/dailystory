@@ -972,61 +972,63 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                   </div>
 
                   {/* Page Management Section */}
-                  <div className="mt-4 pt-3 border-t border-gray-100" data-tutorial-target="pages">
-                    <div className="flex items-center justify-center space-x-3">
-                      <span className="text-sm text-gray-600 font-medium">{t("storyDisplay.pages.storyLength")}</span>
+                  <div className="mt-3 sm:mt-4 pt-2 sm:pt-3 border-t border-gray-100" data-tutorial-target="pages">
+                    <div className="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-3">
+                      <span className="text-xs sm:text-sm text-gray-600 font-medium">{t("storyDisplay.pages.storyLength")}</span>
                       
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center justify-center space-x-1 sm:space-x-2 w-full sm:w-auto">
                         <Button
                           onClick={handleReducePages}
                           variant="outline"
                           size="sm"
-                          className="rounded-full text-xs px-3 hover:bg-red-50 hover:border-red-200 hover:text-red-600"
+                          className="rounded-full text-xs px-2 sm:px-3 py-1 h-8 hover:bg-red-50 hover:border-red-200 hover:text-red-600 flex-shrink-0"
                           disabled={story.length <= 1}
                         >
-                          <div className="relative">
-                            <BookOpen className="w-4 h-4 mr-1" />
-                            <Minus className="w-1.5 h-1.5 absolute -top-0.5 -right-0.5 bg-white rounded-full" />
-                            </div>
-                            {t("storyDisplay.pages.removePages")}
-                          </Button>
-                          
-                          <span className="text-sm font-bold text-purple-600 px-2">
-                            {totalPages} {totalPages !== 1 ? t("storyDisplay.pages.pages") : t("storyDisplay.pages.page")}
+                          <div className="relative flex items-center">
+                            <BookOpen className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                            <Minus className="w-1 h-1 sm:w-1.5 sm:h-1.5 absolute -top-0.5 -right-0.5 bg-white rounded-full" />
+                          </div>
+                          <span className="hidden sm:inline">{t("storyDisplay.pages.removePages")}</span>
+                          <span className="sm:hidden">-</span>
+                        </Button>
+                        
+                        <span className="text-xs sm:text-sm font-bold text-purple-600 px-1 sm:px-2 text-center min-w-[60px] sm:min-w-[80px]">
+                          {totalPages} {totalPages !== 1 ? t("storyDisplay.pages.pages") : t("storyDisplay.pages.page")}
                         </span>
                         
-                        <div className="relative">
+                        <div className="relative flex-shrink-0">
                           <Button
                             onClick={handleAddPages}
                             variant="outline"
                             size="sm"
-                            className={`rounded-full text-xs px-3 hover:bg-green-50 hover:border-green-200 hover:text-green-600 transition-all duration-300 ${
+                            className={`rounded-full text-xs px-2 sm:px-3 py-1 h-8 hover:bg-green-50 hover:border-green-200 hover:text-green-600 transition-all duration-300 ${
                               showAddPagesAlert 
                                 ? 'animate-bounce bg-yellow-200 border-yellow-400 text-yellow-800 shadow-lg scale-110 animate-pulse' 
                                 : ''
                             }`}
                           >
-                            <div className="relative">
-                              <BookOpen className="w-4 h-4 mr-1" />
-                              <Plus className="w-1.5 h-1.5 absolute -top-0.5 -right-0.5 bg-white rounded-full" />
+                            <div className="relative flex items-center">
+                              <BookOpen className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                              <Plus className="w-1 h-1 sm:w-1.5 sm:h-1.5 absolute -top-0.5 -right-0.5 bg-white rounded-full" />
                             </div>
-                            {t("storyDisplay.pages.addPages")}
-                            {showAddPagesAlert && " ⚡"}
+                            <span className="hidden sm:inline">{t("storyDisplay.pages.addPages")}</span>
+                            <span className="sm:hidden">+</span>
+                            {showAddPagesAlert && <span className="ml-1">⚡</span>}
                           </Button>
                           
                           {/* Animated Alert Bubble */}
                           {showAddPagesAlert && (
-                            <div className="absolute -top-16 -left-8 z-50 animate-bounce">
-                              <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white px-4 py-2 rounded-2xl shadow-xl border-2 border-yellow-300 relative animate-pulse">
-                                <div className="flex items-center space-x-2">
-                                  <span className="text-lg">📖</span>
-                                   <div>
-                                     <div className="text-sm font-bold">{t("storyDisplay.alerts.almostDone")}</div>
-                                     <div className="text-xs">{t("storyDisplay.alerts.clickToAdd")}</div>
+                            <div className="absolute -top-12 sm:-top-16 -left-4 sm:-left-8 z-50 animate-bounce">
+                              <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white px-2 sm:px-4 py-1 sm:py-2 rounded-xl sm:rounded-2xl shadow-xl border-2 border-yellow-300 relative animate-pulse max-w-[200px] sm:max-w-none">
+                                <div className="flex items-center space-x-1 sm:space-x-2">
+                                  <span className="text-sm sm:text-lg">📖</span>
+                                  <div>
+                                    <div className="text-xs sm:text-sm font-bold">{t("storyDisplay.alerts.almostDone")}</div>
+                                    <div className="text-xs hidden sm:block">{t("storyDisplay.alerts.clickToAdd")}</div>
                                   </div>
                                 </div>
                                 {/* Arrow pointing down */}
-                                <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-yellow-400"></div>
+                                <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 sm:border-l-8 border-r-4 sm:border-r-8 border-t-4 sm:border-t-8 border-l-transparent border-r-transparent border-t-yellow-400"></div>
                               </div>
                             </div>
                           )}
