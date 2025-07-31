@@ -126,7 +126,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
   const [isPlaying, setIsPlaying] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [hasPlayedAudioForPage, setHasPlayedAudioForPage] = useState<Set<number>>(new Set());
-  const [audioSpeed, setAudioSpeed] = useState(0.9); // Default speed
+  const [audioSpeed, setAudioSpeed] = useState(0.75); // Default speed
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   
@@ -814,7 +814,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                   <div className="flex justify-center items-center space-x-2">
                     <span className="text-xs text-gray-600 font-medium">{t("storyDisplay.controls.speed")}</span>
                     <div className="flex space-x-1">
-                      {[0.5, 0.75, 1.0, 1.25].map((speed) => (
+                      {[0.5, 0.75, 1.0].map((speed) => (
                         <Button
                           key={speed}
                           onClick={() => setAudioSpeed(speed)}
