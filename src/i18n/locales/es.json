@@ -151,6 +151,7 @@
       },
       "favoriteAnimal": {
         "label": "¿Cuál es tu animal favorito?",
+        "placeholder": "perro, gato, león, delfín...",
         "optional": "(Opcional)"
       },
       "skinTone": {
@@ -166,17 +167,19 @@
       "favoriteColors": {
         "label": "Colores favoritos"
       },
-      "favoriteHobbies": {
-        "label": "Pasatiempos favoritos",
-        "placeholder": "fútbol, arte, música..."
+      "hobbies": {
+        "label": "¿Qué te encanta hacer?",
+        "placeholder": "fútbol, dibujar, bailar, videojuegos...",
+        "optional": "(Opcional)"
       },
       "favoriteSubjects": {
         "label": "Materias favoritas",
         "placeholder": "matemáticas, ciencias, historia..."
       },
       "favoriteFood": {
-        "label": "Comida favorita",
-        "placeholder": "pizza, helado, fruta..."
+        "label": "¿Cuál es tu comida favorita?",
+        "placeholder": "pizza, helado, tacos, fruta...",
+        "optional": "(Opcional)"
       },
       "favoritePlaces": {
         "label": "Lugares favoritos",
@@ -188,7 +191,7 @@
       },
       "specialRequest": {
         "label": "¿Algo especial que te gustaría en tu historia?",
-        "placeholder": "Cuéntanos sobre personajes, lugares o temas que te encantaría ver...",
+        "placeholder": "dinosaurios, princesas, aventuras espaciales, magia...",
         "optional": "(Opcional)"
       }
     },

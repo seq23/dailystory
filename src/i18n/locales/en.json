@@ -152,22 +152,22 @@
       },
       "favoriteAnimal": {
         "label": "What's your favorite animal?",
-        "placeholder": "Type your favorite animal",
+        "placeholder": "dog, cat, lion, dolphin...",
         "optional": "(Optional)"
       },
       "favoriteFood": {
         "label": "What's your favorite food?",
-        "placeholder": "Type your favorite food",
+        "placeholder": "pizza, ice cream, apples, cookies...",
         "optional": "(Optional)"
       },
       "hobbies": {
         "label": "What do you love doing?",
-        "placeholder": "Tell us your hobbies and interests",
+        "placeholder": "soccer, drawing, dancing, video games...",
         "optional": "(Optional)"
       },
       "specialRequest": {
         "label": "Anything special you'd like in your story?",
-        "placeholder": "Tell us about characters, places, or themes you'd love to see...",
+        "placeholder": "dinosaurs, princesses, space adventures, magic...",
         "optional": "(Optional)"
       }
     },

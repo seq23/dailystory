@@ -99,22 +99,22 @@
       },
       "favoriteAnimal": {
         "label": "Quel est votre animal préféré ?",
-        "placeholder": "Tapez des animaux et appuyez sur Entrée...",
+        "placeholder": "chien, chat, lion, dauphin...",
         "optional": "(Optionnel)"
       },
       "favoriteFood": {
         "label": "Quelle est votre nourriture préférée ?",
-        "placeholder": "Tapez des aliments et appuyez sur Entrée...",
+        "placeholder": "pizza, glace, pomme, biscuits...",
         "optional": "(Optionnel)"
       },
       "hobbies": {
         "label": "Qu'aimez-vous faire pour vous amuser ?",
-        "placeholder": "Tapez des activités et appuyez sur Entrée...",
+        "placeholder": "football, dessiner, danser, jeux vidéo...",
         "optional": "(Optionnel)"
       },
       "specialRequest": {
         "label": "Y a-t-il quelque chose de spécial que vous voulez inclure dans votre histoire ?",
-        "placeholder": "Tapez des éléments spéciaux de l'histoire et appuyez sur Entrée...",
+        "placeholder": "dinosaures, princesses, aventures spatiales, magie...",
         "optional": "(Optionnel)"
       }
     },

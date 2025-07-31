@@ -155,22 +155,22 @@
       },
       "favoriteAnimal": {
         "label": "ما هو حيوانك المفضل؟",
-        "placeholder": "اكتب الحيوانات واضغط Enter...",
+        "placeholder": "قطة، كلب، أسد، دولفين...",
         "optional": "(اختياري)"
       },
       "favoriteFood": {
         "label": "ما هو طعامك المفضل؟",
-        "placeholder": "اكتب الأطعمة واضغط Enter...",
+        "placeholder": "بيتزا، آيس كريم، تفاح، كعك...",
         "optional": "(اختياري)"
       },
       "hobbies": {
         "label": "ماذا تحب أن تفعل للمتعة؟",
-        "placeholder": "اكتب الأنشطة واضغط Enter...",
+        "placeholder": "كرة القدم، الرسم، الرقص، ألعاب الفيديو...",
         "optional": "(اختياري)"
       },
       "specialRequest": {
         "label": "أخبرنا إذا كان هناك شيء خاص تريد تضمينه في قصتك؟",
-        "placeholder": "اكتب عناصر القصة الخاصة واضغط Enter...",
+        "placeholder": "ديناصورات، أميرات، مغامرات فضائية، سحر...",
         "optional": "(اختياري)"
       }
     },

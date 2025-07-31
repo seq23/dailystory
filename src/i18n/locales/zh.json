@@ -155,22 +155,22 @@
       },
       "favoriteAnimal": {
         "label": "你最喜欢的动物是什么？",
-        "placeholder": "输入动物并按Enter...",
+        "placeholder": "狗、猫、狮子、海豚...",
         "optional": "（可选）"
       },
       "favoriteFood": {
         "label": "你最喜欢的食物是什么？",
-        "placeholder": "输入食物并按Enter...",
+        "placeholder": "披萨、冰淇淋、苹果、饼干...",
         "optional": "（可选）"
       },
       "hobbies": {
         "label": "你喜欢做什么来娱乐？",
-        "placeholder": "输入活动并按Enter...",
+        "placeholder": "足球、画画、跳舞、电子游戏...",
         "optional": "（可选）"
       },
       "specialRequest": {
         "label": "有什么特别的想要包含在你的故事中吗？",
-        "placeholder": "输入特殊故事元素并按Enter...",
+        "placeholder": "恐龙、公主、太空冒险、魔法...",
         "optional": "（可选）"
       }
     },
