@@ -66,17 +66,35 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     advanced: { label: '6th-12th Grade', author: 'J.K. Rowling', color: 'purple' }
   };
 
-  // Generate story on component mount - prevent duplicate calls
+  // Generate story on component mount - show immediate fallback then upgrade
   useEffect(() => {
-    if (!userInfo.name) return; // Don't generate if name is missing
+    if (!userInfo.name) return;
     
-    let isCancelled = false; // Prevent race conditions
+    // IMMEDIATE: Show fallback story right away (no loading screen)
+    const immediateFallback = [
+      `Welcome ${userInfo.name}! Your adventure is starting...`,
+      "Once upon a time, in a magical world of stories...",
+      "There lived characters waiting to meet you.",
+      "Adventures, mysteries, and fun await around every corner.",
+      "Each page brings new discoveries and excitement.",
+      "The story grows more amazing as you read on.",
+      "Characters come to life with every word you read.",
+      "Magic happens when imagination meets curiosity.",
+      "Your journey through this tale is just beginning.",
+      "Get ready for the most wonderful reading adventure!"
+    ];
     
-    const generateStory = async () => {
+    // Set immediate story to prevent loading screen
+    setStory(immediateFallback);
+    setWordsRead(immediateFallback.join(' ').split(' ').length);
+    setIsLoading(false); // No loading screen!
+    
+    // BACKGROUND: Generate real story asynchronously
+    let isCancelled = false;
+    
+    const generateRealStory = async () => {
       try {
-        setIsLoading(true);
-        
-        console.log('Generating story for user:', userInfo.name);
+        console.log('Generating enhanced story for user:', userInfo.name);
         
         // Build interests array from non-empty user preferences
         const interests = [
@@ -97,7 +115,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
           readingLevel: currentDifficulty,
           interests: interests,
           theme: userInfo.specialRequest || 'adventure',
-          userName: userInfo.name // Add the user's name
+          userName: userInfo.name
         };
 
         console.log('Story config:', storyConfig);
@@ -106,85 +124,49 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
           const generatedStory = await adaptiveStoryGenerator.generateStory(storyConfig);
           
           if (!isCancelled) {
-            console.log('Generated story:', generatedStory);
+            console.log('Generated enhanced story, replacing fallback...');
             
             // Ensure we have exactly 10 pages
             const targetPages = 10;
             let pages = generatedStory.pages;
             
             if (pages.length < targetPages) {
-              // Pad with additional content if needed
               const additionalPages = targetPages - pages.length;
               for (let i = 0; i < additionalPages; i++) {
                 pages.push(`${userInfo.name}'s adventure continues with more exciting discoveries...`);
               }
             } else if (pages.length > targetPages) {
-              // Trim to exactly 10 pages
               pages = pages.slice(0, targetPages);
             }
             
+            // Smoothly replace the fallback story
             setStory(pages);
             setWordsRead(generatedStory.wordCount);
+            
+            // Show success message
+            toast({
+              title: "Enhanced Story Ready!",
+              description: "Your personalized story has been generated",
+              duration: 3000,
+            });
           }
         }
         
       } catch (error) {
         if (!isCancelled) {
-          console.error('Failed to generate story:', error);
-        toast({
-          title: "Story Generation Error",
-          description: "Using a simple story for your reading session.",
-          variant: "default"
-        });
-        
-        // Enhanced fallback story that's exactly 10 pages
-        const fallbackStory = userInfo.age <= 5 ? [
-          `Hello ${userInfo.name}! Let's read together.`,
-          "The cat sat on the mat.",
-          "The cat was happy and purr.",
-          "The cat played with a red ball.",
-          "The ball rolled and rolled.",
-          "The cat ran fast to catch it.",
-          "They played in the sunny yard.",
-          "Soon it was time to rest.",
-          "The cat curled up for a nap.",
-          "The end. Great reading!"
-        ] : userInfo.age <= 8 ? [
-          `Hi ${userInfo.name}! Here's your adventure.`,
-          "Once upon a time, there was a brave little mouse named Max.",
-          "Max lived in a cozy hole under the kitchen floor.",
-          "One day, Max decided to explore the big house above.",
-          "He found many interesting things on his journey.",
-          "Max made new friends along the way.",
-          "Together they solved puzzles and had fun.",
-          "They shared snacks and told stories.",
-          "When the day ended, they were all happy.",
-          "And they all lived happily ever after!"
-        ] : [
-          `Welcome ${userInfo.name}! Your story begins now.`,
-          "In a small village nestled between rolling hills, lived a curious girl named Luna.",
-          "She had always wondered about the mysterious forest that bordered her town.",
-          "When strange lights began appearing among the trees each night, Luna knew she had to investigate.",
-          "With her backpack and flashlight, she ventured into the forest one evening.",
-          "There, she discovered a magical secret that would change everything she thought she knew.",
-          "The lights were coming from a hidden community of friendly forest creatures.",
-          "They had been waiting for someone like Luna to help them solve an important problem.",
-          "Together, they worked to protect their magical home from danger.",
-          "Luna's adventure was just beginning, and she couldn't wait for tomorrow!"
-        ];
-        
-        setStory(fallbackStory);
-        setWordsRead(fallbackStory.join(' ').split(' ').length);
-      }
-      } finally {
-        if (!isCancelled) {
-          setIsLoading(false);
+          console.error('Failed to generate enhanced story:', error);
+          toast({
+            title: "Using Simple Story",
+            description: "Enhanced story generation failed, but you can still read!",
+            variant: "default"
+          });
+          // Keep the fallback story that's already showing
         }
       }
     };
-
     
-    generateStory();
+    // Start background story generation (non-blocking)
+    generateRealStory();
     
     // Cleanup function to prevent race conditions
     return () => {
