@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { BookOpen, Timer, Star, Crown, Sparkles, TrendingUp, Award, Clock } from "lucide-react";
+import { BookOpen, Timer, Star, Crown, Sparkles, TrendingUp, Award, Clock, Play, Pause, Minus, X } from "lucide-react";
 import type { UserInfo, SessionStats } from "@/types";
 import { InteractiveAudioReading } from "@/components/InteractiveAudioReading";
 import { adaptiveStoryGenerator } from "@/services/adaptiveStoryGenerator";
@@ -49,6 +49,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   const [showCelebration, setShowCelebration] = useState(false);
   const [showProgressReport, setShowProgressReport] = useState(false);
   const [sessionEnded, setSessionEnded] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
 
   // Celebration state
   const [celebrationStep, setCelebrationStep] = useState(0); // 0: animation, 1: shaking, 2: progress
@@ -213,9 +214,9 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     }
   };
 
-  // Timer countdown (only starts when session is started)
+  // Timer countdown (only starts when session is started and not paused)
   useEffect(() => {
-    if (!sessionStarted || timeRemaining <= 0 || sessionEnded) return;
+    if (!sessionStarted || timeRemaining <= 0 || sessionEnded || isPaused) return;
 
     const timer = setInterval(() => {
       setTimeRemaining(prev => {
@@ -228,7 +229,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [sessionStarted, timeRemaining, sessionEnded]);
+  }, [sessionStarted, timeRemaining, sessionEnded, isPaused]);
 
   // Celebration animations and sounds
   const startCelebration = () => {
@@ -412,99 +413,66 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
             </div>
           </div>
           
-          {/* Control Buttons in Curved U-Shape */}
-          <div className="relative w-48 sm:w-56 h-24 sm:h-28">
-            {/* Pause/Play Button - Center Bottom */}
-            <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2">
-              <Button
-                size="lg"
-                onClick={() => {
-                  // Toggle timer pause/play logic here
+          {/* 3 Control Buttons Only */}
+          <div className="flex gap-6 items-center">
+            
+            {/* 1. Pause/Resume Button - Center */}
+            <Button
+              size="lg"
+              onClick={() => {
+                setIsPaused(!isPaused);
+                toast({
+                  title: isPaused ? "Timer Resumed" : "Timer Paused",
+                  description: isPaused ? "Reading session continues" : "Reading session paused",
+                  duration: 2000,
+                });
+              }}
+              className="bg-gradient-to-b from-white to-gray-50 backdrop-blur-sm border-2 border-purple-500/30 text-purple-600 hover:bg-purple-500 hover:text-white shadow-xl w-16 h-16 sm:w-20 sm:h-20 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-2xl hover:border-purple-500/50"
+            >
+              {isPaused ? <Play className="w-6 h-6 sm:w-8 sm:h-8" /> : <Pause className="w-6 h-6 sm:w-8 sm:h-8" />}
+            </Button>
+            
+            {/* 2. Reduce Time Button - Left */}
+            <Button
+              variant="outline"
+              size="lg"
+              disabled={timeRemaining <= 300}
+              className={`bg-gradient-to-b from-white to-orange-50 backdrop-blur-sm border-2 border-orange-400/50 text-orange-600 hover:bg-orange-500 hover:text-white shadow-lg w-14 h-14 sm:w-16 sm:h-16 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-xl ${
+                timeRemaining <= 300 
+                  ? 'opacity-50 cursor-not-allowed' 
+                  : ''
+              }`}
+              onClick={() => {
+                if (timeRemaining > 300) {
+                  setTimeRemaining(prev => Math.max(300, prev - 300));
                   toast({
-                    title: "Timer Feature",
-                    description: "Pause/resume coming soon!",
+                    title: "Time Reduced",
+                    description: "Removed 5 minutes from timer",
                     duration: 2000,
                   });
-                }}
-                className="bg-gradient-to-b from-white to-gray-50 backdrop-blur-sm border-2 border-purple-500/30 text-purple-600 hover:bg-purple-500 hover:text-white shadow-xl w-16 h-16 sm:w-20 sm:h-20 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-2xl hover:border-purple-500/50"
-              >
-                <Timer className="w-6 h-6 sm:w-8 sm:h-8" />
-              </Button>
-            </div>
-            
-            {/* Reduce Time Button - Left Curve */}
-            <div className="absolute bottom-4 sm:bottom-6 left-2 sm:left-4">
-              <Button
-                variant="outline"
-                size="lg"
-                disabled={timeRemaining <= 300}
-                className={`bg-gradient-to-b from-white to-orange-50 backdrop-blur-sm border-2 border-orange-400/50 text-orange-600 hover:bg-orange-500 hover:text-white shadow-lg w-12 h-12 sm:w-16 sm:h-16 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-xl ${
-                  timeRemaining <= 300 
-                    ? 'opacity-50 cursor-not-allowed' 
-                    : ''
-                }`}
-                onClick={() => {
-                  if (timeRemaining > 300) {
-                    setTimeRemaining(prev => Math.max(300, prev - 300));
-                    toast({
-                      title: "Time Reduced",
-                      description: "Removed 5 minutes from timer",
-                      duration: 2000,
-                    });
-                  }
-                }}
-              >
-                <Clock className="w-5 h-5 sm:w-6 sm:h-6" />
-              </Button>
-            </div>
+                }
+              }}
+            >
+              <Minus className="w-5 h-5 sm:w-6 sm:h-6" />
+            </Button>
 
-            {/* End Session Button - Right Curve */}
-            <div className="absolute bottom-4 sm:bottom-6 right-2 sm:right-4">
-              <Button
-                variant="outline"
-                size="lg"
-                className="bg-gradient-to-b from-white to-red-50 backdrop-blur-sm border-2 border-red-400/50 text-red-600 hover:bg-red-500 hover:text-white shadow-lg w-12 h-12 sm:w-16 sm:h-16 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-xl"
-                onClick={() => {
-                  setTimeRemaining(0);
-                  handleSessionEnd();
-                  toast({
-                    title: "Session Ended",
-                    description: "Great job reading!",
-                    duration: 3000,
-                  });
-                }}
-              >
-                <Star className="w-5 h-5 sm:w-6 sm:h-6" />
-              </Button>
-            </div>
-
-            {/* Pages Counter - Top Left Curve */}
-            <div className="absolute top-0 left-8 sm:left-12">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-b from-white to-gray-50 border-2 border-gray-300/50 shadow-lg flex items-center justify-center">
-                <div className="text-center">
-                  <div className="text-xs sm:text-sm font-bold text-gray-700">
-                    {currentPage + 1}
-                  </div>
-                  <div className="text-[10px] sm:text-xs text-gray-500 font-medium">
-                    page
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Total Pages - Top Right Curve */}
-            <div className="absolute top-0 right-8 sm:right-12">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-b from-white to-blue-50 border-2 border-blue-400/50 shadow-lg flex items-center justify-center">
-                <div className="text-center">
-                  <div className="text-xs sm:text-sm font-bold text-blue-600">
-                    {story.length}
-                  </div>
-                  <div className="text-[10px] sm:text-xs text-blue-500 font-medium">
-                    total
-                  </div>
-                </div>
-              </div>
-            </div>
+            {/* 3. End Session Button - Right */}
+            <Button
+              variant="outline"
+              size="lg"
+              className="bg-gradient-to-b from-white to-red-50 backdrop-blur-sm border-2 border-red-400/50 text-red-600 hover:bg-red-500 hover:text-white shadow-lg w-14 h-14 sm:w-16 sm:h-16 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-xl"
+              onClick={() => {
+                setTimeRemaining(0);
+                handleSessionEnd();
+                toast({
+                  title: "Session Ended",
+                  description: "Great job reading!",
+                  duration: 3000,
+                });
+              }}
+            >
+              <X className="w-5 h-5 sm:w-6 sm:h-6" />
+            </Button>
           </div>
         </div>
       )}

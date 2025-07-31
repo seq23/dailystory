@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { BookOpen, Home, RotateCcw, Volume2, Timer } from "lucide-react";
+import { BookOpen, Home, RotateCcw, Volume2, Timer, Play, Pause, Minus, X } from "lucide-react";
 
 import type { UserInfo, SessionStats } from "@/types";
 import { InteractiveAudioReading } from "@/components/InteractiveAudioReading";
@@ -41,6 +41,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
   const [timeRemaining, setTimeRemaining] = useState(APP_CONFIG.FREE_SESSION_DURATION);
   const [sessionStartTime] = useState<Date>(new Date());
   const [wordsRead, setWordsRead] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
   const [showFinishCountdown, setShowFinishCountdown] = useState(false);
 
   // Fallback illustrations
@@ -113,9 +114,9 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
     generateStory();
   }, [userInfo, toast]);
 
-  // Timer countdown
+  // Timer countdown (with pause support)
   useEffect(() => {
-    if (timeRemaining <= 0) return;
+    if (timeRemaining <= 0 || isPaused) return;
 
     const timer = setInterval(() => {
       setTimeRemaining(prev => {
@@ -128,7 +129,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeRemaining]);
+  }, [timeRemaining, isPaused]);
 
   const handleSessionEnd = () => {
     const sessionStats: SessionStats = {
@@ -214,6 +215,57 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                 </div>
               </div>
             </div>
+          </div>
+          
+          {/* 3 Control Buttons Only */}
+          <div className="flex gap-4 items-center">
+            
+            {/* 1. Pause/Resume Button - Center */}
+            <Button
+              size="lg"
+              onClick={() => setIsPaused(!isPaused)}
+              className="bg-gradient-to-b from-white to-gray-50 backdrop-blur-sm border-2 border-green-500/30 text-green-600 hover:bg-green-500 hover:text-white shadow-xl w-12 h-12 sm:w-16 sm:h-16 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-2xl hover:border-green-500/50"
+            >
+              {isPaused ? <Play className="w-4 h-4 sm:w-6 sm:h-6" /> : <Pause className="w-4 h-4 sm:w-6 sm:h-6" />}
+            </Button>
+            
+            {/* 2. Reduce Time Button - Left */}
+            <Button
+              variant="outline"
+              size="lg"
+              disabled={timeRemaining <= 300}
+              className={`bg-gradient-to-b from-white to-orange-50 backdrop-blur-sm border-2 border-orange-400/50 text-orange-600 hover:bg-orange-500 hover:text-white shadow-lg w-10 h-10 sm:w-14 sm:h-14 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-xl ${
+                timeRemaining <= 300 
+                  ? 'opacity-50 cursor-not-allowed' 
+                  : ''
+              }`}
+              onClick={() => {
+                if (timeRemaining > 300) {
+                  setTimeRemaining(prev => Math.max(300, prev - 300));
+                }
+              }}
+            >
+              <Minus className="w-3 h-3 sm:w-5 sm:h-5" />
+            </Button>
+
+            {/* 3. End Session Button - Right */}
+            <Button
+              variant="outline"
+              size="lg"
+              className="bg-gradient-to-b from-white to-red-50 backdrop-blur-sm border-2 border-red-400/50 text-red-600 hover:bg-red-500 hover:text-white shadow-lg w-10 h-10 sm:w-14 sm:h-14 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-xl"
+              onClick={() => {
+                setTimeRemaining(0);
+                onSessionEnded({
+                  timeSpent: APP_CONFIG.FREE_SESSION_DURATION - timeRemaining,
+                  wordsRead,
+                  pagesRead: currentPage + 1,
+                  startTime: sessionStartTime.getTime(),
+                  accuracy: 100
+                });
+              }}
+            >
+              <X className="w-3 h-3 sm:w-5 sm:h-5" />
+            </Button>
           </div>
           
           {/* Premium Badge */}
