@@ -105,7 +105,8 @@ export class EarlyReaderStoryGenerator {
   }
 
   private static splitIntoPages(text: string, maxWordsPerPage: number, targetPageCount: number): string[] {
-    const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+    // Split by sentence boundaries while preserving punctuation
+    const sentences = text.match(/[^.!?]*[.!?]+/g) || [text];
     const pages: string[] = [];
     let currentPage = '';
     let currentWordCount = 0;
@@ -116,14 +117,14 @@ export class EarlyReaderStoryGenerator {
       // If adding this sentence would exceed word limit, start new page
       if (currentWordCount > 0 && currentWordCount + words.length > maxWordsPerPage) {
         if (currentPage.trim()) {
-          pages.push(currentPage.trim() + '.');
+          pages.push(currentPage.trim());
         }
         currentPage = sentence.trim();
         currentWordCount = words.length;
       } else {
         // Add sentence to current page
         if (currentPage) {
-          currentPage += '. ' + sentence.trim();
+          currentPage += ' ' + sentence.trim();
         } else {
           currentPage = sentence.trim();
         }
@@ -133,7 +134,7 @@ export class EarlyReaderStoryGenerator {
 
     // Add final page if there's content
     if (currentPage.trim()) {
-      pages.push(currentPage.trim() + '.');
+      pages.push(currentPage.trim());
     }
 
     // Ensure we have enough pages by extending if needed
