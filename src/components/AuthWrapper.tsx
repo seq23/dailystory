@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthenticatedApp } from "@/components/AuthenticatedApp";
-import { LoginScreen } from "@/components/LoginScreen";
+import { GuestExperience } from "@/components/GuestExperience";
 
 export const AuthWrapper = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -38,7 +38,7 @@ export const AuthWrapper = () => {
   }
 
   if (!user) {
-    return <LoginScreen />;
+    return <GuestExperience />;
   }
 
   return <AuthenticatedApp user={user} />;

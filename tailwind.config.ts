@@ -165,6 +165,16 @@ export default {
 						transform: 'scale(1) rotate(360deg)',
 						opacity: '1'
 					}
+				},
+				'scale-in': {
+					'0%': {
+						transform: 'scale(0.8)',
+						opacity: '0'
+					},
+					'100%': {
+						transform: 'scale(1)',
+						opacity: '1'
+					}
 				}
 			},
 			animation: {
@@ -175,7 +185,8 @@ export default {
 				'wiggle': 'wiggle 0.5s ease-in-out',
 				'shake-hard': 'shake-hard 0.8s ease-in-out infinite',
 				'flash': 'flash 1s ease-in-out infinite',
-				'celebration': 'celebration 1.5s ease-out forwards'
+				'celebration': 'celebration 1.5s ease-out forwards',
+				'scale-in': 'scale-in 0.3s ease-out'
 			}
 		}
 	},
