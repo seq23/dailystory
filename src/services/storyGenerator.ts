@@ -73,11 +73,13 @@ export class StoryGeneratorService {
   
   /**
    * High-quality story templates using the new template system
+   * NOTE: Currently focused on English reading education only
    */
   private static getHighQualityStory(userInfo: UserInfo, difficulty: DifficultyLevel, pageCount: number = 10): string[] {
-    const language = userInfo.nativeLanguage || 'en';
+    // Always use English for stories - this is an English reading education app
+    const language = 'en';
     
-    // Get a random story template for this language and difficulty
+    // Get a random story template for English and this difficulty
     const template = getRandomStoryTemplate(language, difficulty);
     
     // Process the template with user data
@@ -99,7 +101,8 @@ export class StoryGeneratorService {
    * Generate continuation pages for adding to existing stories
    */
   private static getContinuationPages(userInfo: UserInfo, difficulty: DifficultyLevel, pageCount: number): string[] {
-    const language = userInfo.nativeLanguage || 'en';
+    // Always use English for stories - this is an English reading education app
+    const language = 'en';
     
     // Create a simple continuation template and process it
     const continuationTemplate = {
