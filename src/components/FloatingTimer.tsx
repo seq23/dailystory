@@ -232,20 +232,20 @@ export const FloatingTimer = ({
         
         {/* Circular Control Buttons in Arc Formation */}
         <div className="relative flex items-center justify-center">
-          {/* Center Play/Pause Button */}
+          {/* Center Play/Pause Button - More Prominent */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 variant="outline"
                 size="lg"
                 onClick={onToggleReading}
-                className="bg-white/95 backdrop-blur-sm border-2 border-purple-400 text-purple-700 hover:bg-purple-50 shadow-xl w-8 h-8 sm:w-10 sm:h-10 rounded-full p-0 transition-all duration-200 hover:scale-105"
+                className="bg-white/95 backdrop-blur-sm border-3 border-purple-500 text-purple-700 hover:bg-purple-50 shadow-2xl w-12 h-12 sm:w-16 sm:h-16 rounded-full p-0 transition-all duration-200 hover:scale-110 hover:shadow-purple-400/50"
               >
-                {isReading ? <Pause className="w-3 h-3 sm:w-4 sm:h-4" /> : <Play className="w-3 h-3 sm:w-4 sm:h-4 ml-0.5" />}
+                {isReading ? <Pause className="w-5 h-5 sm:w-7 sm:h-7" /> : <Play className="w-5 h-5 sm:w-7 sm:h-7 ml-0.5" />}
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="top" className="bg-purple-700 text-white border-purple-500">
-              {isReading ? t("floatingTimer.pausePlay") : t("floatingTimer.pausePlay")}
+            <TooltipContent side="top" className="bg-purple-700 text-white border-purple-500 font-medium">
+              {isReading ? t("floatingTimer.pauseTimer") : t("floatingTimer.resumeTimer")}
             </TooltipContent>
           </Tooltip>
 
