@@ -867,7 +867,11 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
               <CardContent className="p-4 sm:p-6 lg:p-8">
                 {/* Story Text */}
                 <div className="prose prose-sm sm:prose-base lg:prose-lg max-w-none">
-                  <div className="text-lg sm:text-xl lg:text-2xl leading-relaxed text-gray-800 font-medium space-y-3 sm:space-y-4">
+                  <div className={`leading-relaxed text-gray-800 font-medium space-y-3 sm:space-y-4 ${
+                    currentDifficulty === 'easy' 
+                      ? 'text-3xl sm:text-4xl lg:text-5xl' 
+                      : 'text-lg sm:text-xl lg:text-2xl'
+                  }`}>
                     {processTextForPhonetics(currentStory, "", currentDifficulty, userInfo)}
                   </div>
                 </div>

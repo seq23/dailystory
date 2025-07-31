@@ -68,7 +68,7 @@ export class InclusiveStoryGenerator {
     
     // Determine words per page based on difficulty level
     const wordsPerPage = {
-      easy: 15,      // Pre-K - 1st Grade: 10-20 words
+      easy: 6,       // Pre-K - Kindergarten: Maximum 6 words per page
       medium: 35,    // 2nd - 3rd Grade: 25-45 words  
       hard: 65,      // 4th - 5th Grade: 50-80 words
       expert: 85     // 6th Grade+: 70-100 words
@@ -211,53 +211,43 @@ export class InclusiveStoryGenerator {
     progress: any,
     targetWords: number
   ): string {
-    // Ultra-simple vocabulary for beginning readers
-    // Using only the most basic sight words and simple concepts
+    // Maximum 6 words per page for beginning readers
+    // Using only the most basic sight words
     
     if (section === 'introduction') {
       if (pageIndex === 0) {
-        // Simple introduction with very basic words
-        return `This is ${characterName}. ${characterName} is happy. ${characterName} wants to play!`;
+        // 4 words maximum
+        return `This is ${characterName}. Hello!`;
       } else if (pageIndex === 1) {
-        // Introduce activity with simple words
-        if (elementTracker.shouldIntroduceElement(pageIndex, section, 'activity')) {
-          return `${characterName} likes to ${elementTracker.activity}. It is fun! ${characterName} goes out to play.`;
-        }
-        // Simple movement and exploration
-        return `${characterName} walks. ${characterName} looks. ${characterName} sees many things!`;
+        // 6 words maximum
+        return `${characterName} likes to play. Fun!`;
       } else {
-        // Simple discovery with basic words
-        return `Look! ${characterName} sees a big tree. The tree is in a nice place. It looks good!`;
+        // 6 words maximum
+        return `Look! ${characterName} sees a tree.`;
       }
     } else if (section === 'adventure') {
       const animal = elementTracker.getAppropriateElement('character', ['cat', 'dog', 'bird']);
       
       if (!progress.metCharacter) {
-        // Meet new friend with simple language
-        return `"Hi!" says a ${animal}. ${characterName} says "Hi!" back. The ${animal} is nice!`;
+        // 5 words maximum
+        return `"Hi!" says the ${animal}.`;
       } else if (!progress.foundObject) {
-        // Simple problem with easy words
-        return `"Oh no!" says the ${animal}. "I lost my toy! Can you help me look?"`;
+        // 6 words maximum
+        return `"Help me find my toy!"`;
       } else if (!progress.facedChallenge) {
-        // Simple searching with basic vocabulary
-        return `They look here. They look there. Is it here? No. Is it there? No.`;
+        // 6 words maximum
+        return `They look here and there.`;
       } else {
-        // Simple discovery with excitement
-        return `"There it is!" says ${characterName}. "I see it! I see your toy!" They are happy!`;
+        // 6 words maximum
+        return `"I found it!" says ${characterName}.`;
       }
     } else {
       if (!progress.learnedLesson) {
-        // Simple gratitude and sharing
-        if (elementTracker.shouldIntroduceElement(pageIndex, section, 'food')) {
-          return `"Thank you!" says the friend. "Let us eat ${elementTracker.food}!" They share and smile.`;
-        }
-        return `"Thank you!" says the friend. ${characterName} feels good. Being nice is good!`;
+        // 6 words maximum
+        return `"Thank you!" They are happy.`;
       } else {
-        // Simple lesson with basic vocabulary
-        if (elementTracker.shouldIntroduceElement(pageIndex, section, 'specialTheme')) {
-          return `${characterName} had fun today. ${characterName} was nice. Being nice is good!`;
-        }
-        return `${characterName} was nice today. Being nice makes friends. ${characterName} is happy!`;
+        // 6 words maximum
+        return `${characterName} was nice. Good job!`;
       }
     }
   }
