@@ -71,7 +71,7 @@ import avatarGirlDark from "@/assets/avatar-girl-dark.jpg";
 import time2ReadLogo from "@/assets/time2read-logo.png";
 import { processTextForPhonetics } from "@/utils/textProcessor";
 import { SecureRunwareService } from "@/services/secureRunwareService";
-import { createChildFriendlyPrompt } from "@/services/runwareService";
+import { StorySpecificImageGenerator } from "@/services/storySpecificImageGenerator";
 
 type DifficultyLevel = "easy" | "medium" | "hard" | "expert";
 
@@ -658,6 +658,26 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
     setIsPlaying(false);
   };
 
+  // Helper function to extract consistent story character from all pages
+  const extractStoryCharacterFromAllPages = (allPages: string[]): string | undefined => {
+    const allText = allPages.join(' ').toLowerCase();
+    const animalKeywords = ['cat', 'dog', 'bird', 'owl', 'deer', 'rabbit', 'fox', 'bear', 'elephant', 'lion', 'tiger', 'horse', 'cow', 'pig', 'sheep', 'goat', 'duck', 'chicken', 'fish', 'turtle', 'frog', 'butterfly', 'bee', 'spider', 'mouse', 'rat', 'squirrel', 'chipmunk'];
+    
+    // Find the first animal mentioned in the story
+    for (const animal of animalKeywords) {
+      if (allText.includes(animal)) {
+        return animal;
+      }
+    }
+    
+    // Check for user's favorite animal if no story animal found
+    if (userInfo.favoriteAnimal) {
+      return userInfo.favoriteAnimal.toLowerCase();
+    }
+    
+    return undefined;
+  };
+
   const generateCustomIllustration = async (pageIndex: number, storyText: string) => {
     console.log('=== generateCustomIllustration called ===');
     console.log('pageIndex:', pageIndex, 'storyText length:', storyText?.length);
@@ -675,8 +695,15 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       // Reduced delay for faster generation as requested
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      // Create culturally competent prompt
-      const prompt = createChildFriendlyPrompt(storyText, userInfo, pageIndex);
+      // Create story-specific prompt that includes avatar and story character consistency
+      const prompt = StorySpecificImageGenerator.generateStorySpecificPrompt({
+        storyText,
+        pageIndex,
+        userInfo,
+        difficulty: currentDifficulty,
+        storyCharacter: extractStoryCharacterFromAllPages(story), // Extract consistent character from all story pages
+        allStoryPages: story
+      });
       
       console.log('Generating image with prompt:', prompt);
       console.log('Using Runware service:', runwareService);
