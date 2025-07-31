@@ -203,7 +203,8 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   const addMorePages = async () => {
     if (isLoading) return;
     
-    setIsLoading(true);
+    // Don't affect timer or session - just extend the story
+    const tempLoading = true;
     try {
       const characterDescription = userInfo.avatar ? `, a curious and brave ${userInfo.avatar.type === 'boy' ? 'boy' : userInfo.avatar.type === 'girl' ? 'girl' : 'child'}` : '';
       
@@ -218,14 +219,16 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
       };
 
       const extendedStory = await adaptiveStoryGenerator.generateStory(storyConfig);
-      // Add 5 more pages from the new story
+      // Add 5 more pages from the new story without affecting timer
       const newPages = extendedStory.pages.slice(0, 5);
       setStory(prev => [...prev, ...newPages]);
+      
+      // Update word count for session stats but don't reset timer
+      setWordsRead(prev => prev + newPages.join(' ').split(' ').length);
     } catch (error) {
       console.error('Failed to add more pages:', error);
-    } finally {
-      setIsLoading(false);
     }
+    // No setIsLoading to avoid affecting UI state
   };
 
   // Start session when user begins reading

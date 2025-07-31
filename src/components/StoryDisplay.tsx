@@ -209,7 +209,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
   const addMorePages = async () => {
     if (isLoading) return;
     
-    setIsLoading(true);
+    // Don't affect timer or session - just extend the story
     try {
       const characterDescription = userInfo.avatar ? `, a curious and brave ${userInfo.avatar.type === 'boy' ? 'boy' : userInfo.avatar.type === 'girl' ? 'girl' : 'child'}` : '';
       
@@ -224,14 +224,16 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
       };
 
       const extendedStory = await adaptiveStoryGenerator.generateStory(storyConfig);
-      // Add 5 more pages from the new story
+      // Add 5 more pages from the new story without affecting timer
       const newPages = extendedStory.pages.slice(0, 5);
       setStory(prev => [...prev, ...newPages]);
+      
+      // Update word count for session stats but don't reset timer
+      setWordsRead(prev => prev + newPages.join(' ').split(' ').length);
     } catch (error) {
       console.error('Failed to add more pages:', error);
-    } finally {
-      setIsLoading(false);
     }
+    // No loading state changes to avoid UI disruption
   };
 
   if (isLoading) {
