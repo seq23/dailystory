@@ -14,9 +14,10 @@ import carouselImage4 from "@/assets/carousel-4-library-reading.jpg";
 
 interface WelcomeHeroProps {
   onGetStarted: () => void;
+  onSignIn?: () => void;
 }
 
-export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
+export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
   const { t, i18n } = useTranslation();
   const [api, setApi] = useState<CarouselApi>();
   const [isShaking, setIsShaking] = useState(true);
@@ -93,8 +94,19 @@ export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
               </div>
             </div>
 
-            {/* Spacer for balance */}
-            <div className="w-[100px] sm:w-[140px]"></div>
+            {/* Sign In Button */}
+            <div className="flex items-center">
+              {onSignIn && (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={onSignIn}
+                  className="bg-white/10 border-white/30 text-white hover:bg-white/20 text-xs sm:text-sm"
+                >
+                  {t("welcomeHero.signIn")}
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </header>

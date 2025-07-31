@@ -45,7 +45,7 @@ export const GuestExperience = () => {
 
   switch (currentState) {
     case "welcome":
-      return <WelcomeHero onGetStarted={handleGetStarted} />;
+      return <WelcomeHero onGetStarted={handleGetStarted} onSignIn={handleCreateAccount} />;
     
     case "form":
       return (
