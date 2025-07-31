@@ -829,12 +829,12 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                             <ChevronDown className="w-4 h-4" />
                           </Button>
                           <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
-                            Make story easier
+                            {t('freeReadingSession.readingLevel.easier')}
                           </div>
                         </div>
                         
                         <span className="text-sm font-medium text-gray-600">
-                          Reading Level
+                          {t('freeReadingSession.readingLevel.label')}
                         </span>
                         
                         <div className="relative group">
@@ -848,7 +848,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                             <ChevronUp className="w-4 h-4" />
                           </Button>
                           <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
-                            Make story harder
+                            {t('freeReadingSession.readingLevel.harder')}
                           </div>
                         </div>
                       </div>

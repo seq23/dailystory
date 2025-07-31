@@ -142,6 +142,7 @@
         "wordsPerMin": "Words/Min",
         "storyProgress": "Story Progress"
       },
+      },
       "premium": {
         "title": "Unlock Premium Features!",
         "features": {
@@ -154,6 +155,11 @@
         "upgradeNow": "Upgrade Now",
         "createAccount": "Create Account"
       }
+    },
+    "readingLevel": {
+      "label": "Reading Level",
+      "easier": "Make story easier",
+      "harder": "Make story harder"
     }
   },
   "userInfoForm": {

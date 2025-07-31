@@ -150,6 +150,11 @@
         "upgradeNow": "Mettre à Niveau Maintenant",
         "createAccount": "Créer un Compte"
       }
+    },
+    "readingLevel": {
+      "label": "Niveau de Lecture",
+      "easier": "Rendre l'histoire plus facile",
+      "harder": "Rendre l'histoire plus difficile"
     }
   },
   "userInfoForm": {
