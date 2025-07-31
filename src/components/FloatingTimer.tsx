@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Play, Pause, Plus, Minus, BookOpen } from "lucide-react";
@@ -29,6 +30,7 @@ export const FloatingTimer = ({
   onSessionEnded,
   tutorialTarget
 }: FloatingTimerProps) => {
+  const { t } = useTranslation();
   const [showCelebration, setShowCelebration] = useState(false);
   const [showAddPagesAlert, setShowAddPagesAlert] = useState(false);
   const [hasShownAddPagesAlert, setHasShownAddPagesAlert] = useState(false);
@@ -122,8 +124,8 @@ export const FloatingTimer = ({
       
       // Show toast notification
       toast({
-        title: "🎉 Congratulations!",
-        description: "You've completed your reading session!",
+        title: t("floatingTimer.celebration.title"),
+        description: t("floatingTimer.celebration.description"),
         duration: 5000,
       });
 
@@ -221,7 +223,7 @@ export const FloatingTimer = ({
               </div>
               {timeRemaining >= 40 * 60 && (
                 <div className="text-xs text-amber-600 font-medium mt-1">
-                  Max limit
+                  {t("floatingTimer.maxLimit")}
                 </div>
               )}
             </div>
@@ -243,7 +245,7 @@ export const FloatingTimer = ({
               </Button>
             </TooltipTrigger>
             <TooltipContent side="top" className="bg-purple-700 text-white border-purple-500">
-              {isReading ? "Pause Timer" : "Start Timer"}
+              {isReading ? t("floatingTimer.pausePlay") : t("floatingTimer.pausePlay")}
             </TooltipContent>
           </Tooltip>
 
@@ -263,7 +265,7 @@ export const FloatingTimer = ({
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="top" className="bg-green-700 text-white border-green-500">
-                  Add 10 minutes
+                  {t("floatingTimer.addTime")}
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -284,7 +286,7 @@ export const FloatingTimer = ({
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent side="top" className="bg-orange-700 text-white border-orange-500">
-                    Remove 10 minutes
+                    {t("floatingTimer.reduceTime")}
                   </TooltipContent>
                 </Tooltip>
               </div>

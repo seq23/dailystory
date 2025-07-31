@@ -298,6 +298,32 @@
       "tip1": "Click words to learn synonyms and meanings",
       "tip2": "Use difficulty buttons to challenge yourself",
       "tip3": "Stories help build vocabulary and comprehension"
+  },
+  "floatingTimer": {
+    "timeRemaining": "Time",
+    "pausePlay": "Pause/Play Timer", 
+    "addTime": "Add 10 minutes",
+    "reduceTime": "Remove 10 minutes",
+    "addPages": "Add more pages",
+    "maxLimit": "Max limit",
+    "addPagesAlert": {
+      "title": "Almost done!",
+      "description": "Click + to add more pages!",
+      "shortTitle": "Almost done",
+      "shortDescription": "Click + to add more pages!"
+    },
+    "timeAdded": {
+      "title": "More time added!",
+      "description": "You have 10 more minutes to read!"
+    },
+    "timeReduced": {
+      "title": "Time reduced!", 
+      "description": "10 minutes removed from your reading time."
+    },
+    "celebration": {
+      "title": "🎉 Congratulations!",
+      "description": "You've completed your reading session!"
     }
   }
+}
 }

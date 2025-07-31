@@ -237,5 +237,27 @@
       "tip2": "使用难度按钮挑战自己",
       "tip3": "故事有助于建立词汇和理解能力"
     }
+  },
+  "floatingTimer": {
+    "timeRemaining": "时间",
+    "pausePlay": "暂停/播放计时器",
+    "addTime": "增加10分钟",
+    "reduceTime": "减少10分钟",
+    "addPages": "添加更多页面",
+    "addPagesAlert": {
+      "title": "快完成了！",
+      "description": "点击+添加更多页面！",
+      "shortTitle": "快完成了",
+      "shortDescription": "点击+添加更多页面！"
+    },
+    "timeAdded": {
+      "title": "时间已增加！",
+      "description": "您有额外的10分钟阅读时间！"
+    },
+    "celebration": {
+      "title": "🎉 恭喜！",
+      "description": "您已完成阅读会话！"
+    },
+    "maxLimit": "最大限制"
   }
 }

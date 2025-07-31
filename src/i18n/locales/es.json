@@ -261,7 +261,33 @@
       "tip1": "Haz clic en palabras para aprender sinónimos y significados",
       "tip2": "Usa los botones de dificultad para desafiarte",
       "tip3": "Las historias ayudan a construir vocabulario y comprensión"
+  },
+  "floatingTimer": {
+    "timeRemaining": "Tiempo",
+    "pausePlay": "Pausar/Reproducir Temporizador",
+    "addTime": "Agregar 10 minutos",
+    "reduceTime": "Quitar 10 minutos", 
+    "addPages": "Agregar más páginas",
+    "maxLimit": "Límite máximo",
+    "addPagesAlert": {
+      "title": "¡Casi terminado!",
+      "description": "¡Haz clic en + para agregar más páginas!",
+      "shortTitle": "Casi terminado",
+      "shortDescription": "¡Haz clic en + para agregar más páginas!"
+    },
+    "timeAdded": {
+      "title": "¡Más tiempo agregado!",
+      "description": "¡Tienes 10 minutos más para leer!"
+    },
+    "timeReduced": {
+      "title": "¡Tiempo reducido!",
+      "description": "10 minutos quitados de tu tiempo de lectura."
+    },
+    "celebration": {
+      "title": "🎉 ¡Felicitaciones!",
+      "description": "¡Has completado tu sesión de lectura!"
     }
   }
+}
 }
 }

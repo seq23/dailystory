@@ -233,5 +233,26 @@
       "tip2": "Utilisez les boutons de difficulté pour vous défier",
       "tip3": "Les histoires aident à construire le vocabulaire et la compréhension"
     }
+  },
+  "floatingTimer": {
+    "timeRemaining": "Temps",
+    "pausePlay": "Pause/Lecture Minuteur",
+    "addTime": "Ajouter 10 minutes",
+    "reduceTime": "Retirer 10 minutes",
+    "addPages": "Ajouter plus de pages",
+    "addPagesAlert": {
+      "title": "Presque fini!",
+      "description": "Cliquez sur + pour ajouter plus de pages!",
+      "shortTitle": "Presque fini",
+      "shortDescription": "Cliquez sur + pour ajouter plus de pages!"
+    },
+    "timeAdded": {
+      "title": "Plus de temps ajouté!",
+      "description": "Vous avez 10 minutes de plus pour lire!"
+    },
+    "timeReduced": {
+      "title": "Temps réduit!",
+      "description": "10 minutes retirées de votre temps de lecture."
+    }
   }
 }

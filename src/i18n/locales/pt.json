@@ -237,5 +237,27 @@
       "tip2": "Use os botões de dificuldade para se desafiar",
       "tip3": "As histórias ajudam a construir vocabulário e compreensão"
     }
+  },
+  "floatingTimer": {
+    "timeRemaining": "Tempo",
+    "pausePlay": "Pausar/Reproduzir Timer",
+    "addTime": "Adicionar 10 minutos",
+    "reduceTime": "Remover 10 minutos",
+    "addPages": "Adicionar mais páginas",
+    "addPagesAlert": {
+      "title": "Quase terminando!",
+      "description": "Clique em + para adicionar mais páginas!",
+      "shortTitle": "Quase terminando",
+      "shortDescription": "Clique em + para adicionar mais páginas!"
+    },
+    "timeAdded": {
+      "title": "Mais tempo adicionado!",
+      "description": "Você tem 10 minutos a mais para ler!"
+    },
+    "celebration": {
+      "title": "🎉 Parabéns!",
+      "description": "Você completou sua sessão de leitura!"
+    },
+    "maxLimit": "Limite máximo"
   }
 }
