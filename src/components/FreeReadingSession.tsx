@@ -350,7 +350,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
           <h2 className="text-2xl font-bold text-gray-800 mb-2">{t("freeReadingSession.loading.title")}</h2>
           <p className="text-gray-600">
             {userInfo.name 
-              ? t("freeReadingSession.loading.description", { name: userInfo.name })
+              ? `Generating personalized content for ${userInfo.name}`
               : "Generating personalized content..."
             }
           </p>
