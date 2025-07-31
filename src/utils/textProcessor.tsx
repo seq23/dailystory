@@ -25,7 +25,11 @@ export const processTextForPhonetics = (
       <InteractiveWord 
         key={index} 
         word={word} 
-        className={className}
+        className={`${className} ${
+          className.includes(`word-${index}`) 
+            ? 'bg-yellow-200 animate-pulse' 
+            : ''
+        }`}
         difficulty={difficulty}
         userInfo={userInfo}
       />

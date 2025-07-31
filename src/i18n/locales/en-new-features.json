@@ -1,0 +1,50 @@
+{
+  "rewards": {
+    "achievements": {
+      "firstStory": {
+        "title": "Story Explorer",
+        "desc": "Complete your first story"
+      },
+      "wordMaster50": {
+        "title": "Word Explorer", 
+        "desc": "Read 50 words"
+      },
+      "wordMaster200": {
+        "title": "Word Champion",
+        "desc": "Read 200 words"
+      },
+      "timeReader5": {
+        "title": "Reading Sprinter",
+        "desc": "Read for 5 minutes"
+      },
+      "pageTurner": {
+        "title": "Page Turner",
+        "desc": "Read 10 pages"
+      },
+      "dedicatedReader": {
+        "title": "Dedicated Reader",
+        "desc": "Read for 15 minutes"
+      }
+    }
+  },
+  "vocabulary": {
+    "title": "My Vocabulary Collection"
+  },
+  "comprehension": {
+    "title": "Story Quiz",
+    "whoIsMainCharacter": "Who is the main character in this story?",
+    "whatHappened": "What happened in the story?",
+    "trueFalse": "The story takes place during the day.",
+    "howDidCharacterFeel": "How did the character feel?",
+    "whatMightHappenNext": "What might happen next?",
+    "perfect": "Perfect!",
+    "goodJob": "Good job!",
+    "keepTrying": "Keep trying!"
+  },
+  "miniGames": {
+    "title": "Reading Games"
+  },
+  "interactiveWord": {
+    "addToVocabulary": "Save Word"
+  }
+}

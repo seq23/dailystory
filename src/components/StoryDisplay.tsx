@@ -16,6 +16,7 @@ import { ReadingRewardsSystem } from "@/components/ReadingRewardsSystem";
 import { VocabularyCollector } from "@/components/VocabularyCollector";
 import { ComprehensionQuiz } from "@/components/ComprehensionQuiz";
 import { MiniGames } from "@/components/MiniGames";
+import { ParentDashboard } from "@/components/ParentDashboard";
 import { StoryGeneratorService } from "@/services/storyGenerator";
 import { SecureRunwareService } from "@/services/secureRunwareService";
 import { ProgressTrackingService } from "@/services/progressTrackingService";
@@ -141,6 +142,14 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
   // Premium feature alert
   const [showPremiumAlert, setShowPremiumAlert] = useState(false);
 
+  // New feature states
+  const [showVocabularyCollector, setShowVocabularyCollector] = useState(false);
+  const [showComprehensionQuiz, setShowComprehensionQuiz] = useState(false);
+  const [showMiniGames, setShowMiniGames] = useState(false);
+  const [showParentDashboard, setShowParentDashboard] = useState(false);
+  const [achievementsEarned, setAchievementsEarned] = useState<any[]>([]);
+  const [currentWordIndex, setCurrentWordIndex] = useState(-1);
+
   // Services - lazy initialization
   const runwareServiceRef = useRef<SecureRunwareService | null>(null);
   const ttsServiceRef = useRef<any>(null);
@@ -210,6 +219,34 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
     setShowPremiumAlert(true);
   };
 
+  // Handle quiz completion
+  const handleQuizComplete = (score: number, totalQuestions: number) => {
+    toast({
+      title: "Quiz Complete!",
+      description: `You scored ${score}/${totalQuestions}! Great job reading!`,
+      duration: 3000,
+    });
+  };
+
+  // Handle mini-game completion
+  const handleMiniGameComplete = (score: number) => {
+    toast({
+      title: "Game Complete!",
+      description: `You scored ${score} points! Keep up the great reading!`,
+      duration: 3000,
+    });
+  };
+
+  // Handle achievement earned
+  const handleAchievementEarned = (achievement: any) => {
+    setAchievementsEarned(prev => [...prev, achievement]);
+  };
+
+  // Handle word highlighting for audio reading
+  const handleWordHighlight = (wordIndex: number) => {
+    setCurrentWordIndex(wordIndex);
+  };
+
   // Get user avatar
   const getUserAvatar = () => {
     const avatarType = userInfo.avatar?.type || 'boy';
@@ -260,6 +297,16 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
             </div>
             
             <div className="flex items-center space-x-1 sm:space-x-2">
+              <Button 
+                onClick={() => setShowParentDashboard(true)} 
+                variant="outline" 
+                size="sm" 
+                className="rounded-full bg-indigo-50 border-indigo-200 hover:bg-indigo-100"
+              >
+                <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1" />
+                <span className="hidden sm:inline">Progress</span>
+              </Button>
+              
               <Button onClick={onHome} variant="outline" size="sm" className="rounded-full">
                 <Home className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1" />
                 <span className="hidden sm:inline">Home</span>
@@ -292,10 +339,10 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
             <div className="order-1 lg:order-2">
               <Card className="bg-white/95 backdrop-blur-sm shadow-2xl rounded-2xl sm:rounded-3xl border-2 border-purple-200/50 overflow-visible min-h-[600px] sm:min-h-[700px] lg:min-h-[800px]">
                 <CardContent className="p-4 sm:p-6 lg:p-8">
-                  {/* Story Text */}
+                  {/* Story Text with word highlighting */}
                   <div className="prose prose-sm sm:prose-base lg:prose-lg max-w-none">
                     <div className="leading-relaxed text-gray-800 font-medium text-center space-y-3 sm:space-y-4 text-xl sm:text-2xl lg:text-3xl">
-                      {processTextForPhonetics(currentStory, "", currentDifficulty, userInfo)}
+                      {processTextForPhonetics(currentStory, currentWordIndex === -1 ? "" : `word-${currentWordIndex}`, currentDifficulty, userInfo)}
                     </div>
                   </div>
                   
@@ -417,8 +464,8 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                       </Tooltip>
                     </div>
 
-                    {/* Navigation */}
-                    <div className="flex justify-center space-x-2">
+                    {/* Navigation & Learning Features */}
+                    <div className="flex justify-center space-x-2 flex-wrap gap-y-2">
                       <Button
                         variant="outline"
                         size="sm"
@@ -427,6 +474,34 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                         onClick={() => setCurrentParagraph(Math.max(0, currentParagraph - 1))}
                       >
                         ← Previous
+                      </Button>
+
+                      {/* Learning Feature Buttons */}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="rounded-full bg-purple-50 border-purple-200 hover:bg-purple-100"
+                        onClick={() => setShowVocabularyCollector(true)}
+                      >
+                        📚 My Words
+                      </Button>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="rounded-full bg-blue-50 border-blue-200 hover:bg-blue-100"
+                        onClick={() => setShowComprehensionQuiz(true)}
+                      >
+                        🧠 Quiz
+                      </Button>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="rounded-full bg-green-50 border-green-200 hover:bg-green-100"
+                        onClick={() => setShowMiniGames(true)}
+                      >
+                        🎮 Games
                       </Button>
                       
                       <Button
@@ -444,8 +519,48 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
               </Card>
             </div>
           </div>
+
+          {/* Reading Rewards System */}
+          <div className="mt-6">
+            <ReadingRewardsSystem
+              userInfo={userInfo}
+              wordsRead={sessionWordsRead}
+              pagesRead={currentParagraph + 1}
+              timeSpent={Math.floor((Date.now() - sessionStartTime.getTime()) / 1000)}
+              onRewardEarned={handleAchievementEarned}
+            />
+          </div>
         </div>
       </div>
+
+      {/* Feature Modals */}
+      <VocabularyCollector
+        userInfo={userInfo}
+        isVisible={showVocabularyCollector}
+        onClose={() => setShowVocabularyCollector(false)}
+      />
+
+      <ComprehensionQuiz
+        userInfo={userInfo}
+        storyText={currentStory}
+        isVisible={showComprehensionQuiz}
+        onComplete={handleQuizComplete}
+        onClose={() => setShowComprehensionQuiz(false)}
+      />
+
+      <MiniGames
+        userInfo={userInfo}
+        storyText={currentStory}
+        isVisible={showMiniGames}
+        onComplete={handleMiniGameComplete}
+        onClose={() => setShowMiniGames(false)}
+      />
+
+      <ParentDashboard
+        userInfo={userInfo}
+        isVisible={showParentDashboard}
+        onClose={() => setShowParentDashboard(false)}
+      />
 
       {/* Premium Feature Alert */}
       <AlertDialog open={showPremiumAlert} onOpenChange={setShowPremiumAlert}>
