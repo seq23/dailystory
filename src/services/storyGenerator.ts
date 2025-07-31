@@ -242,7 +242,7 @@ export class StoryGeneratorService {
       medium: [
         `The next day brought a new adventure for ${name}.`,
         `The ${animal} had discovered something interesting nearby.`,
-        `Together, ${pronouns.subject} set off to investigate this mystery.`,
+        `Together, they set off to investigate this mystery.`,
         `What ${pronouns.subject} found surprised ${pronouns.object} both completely.`,
         `${name} realized this was just the beginning.`,
         `Each day would bring new discoveries and joy.`,
