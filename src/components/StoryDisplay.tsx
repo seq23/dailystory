@@ -167,9 +167,9 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
-      {/* Professional Premium Timer Display */}
+      {/* Professional Premium Timer Display - Top Right */}
       {timeRemaining > 0 && (
-        <div className="fixed bottom-6 right-6 sm:right-8 z-50 flex flex-col items-center gap-4" style={{ marginRight: 'max(1rem, env(safe-area-inset-right))', marginBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+        <div className="fixed top-6 right-6 sm:right-8 z-50 flex flex-col items-center gap-4" style={{ marginRight: 'max(1rem, env(safe-area-inset-right))', marginTop: 'max(1rem, env(safe-area-inset-top))' }}>
           
           {/* Main Timer Circle - Professional & Larger */}
           <div className="relative">
