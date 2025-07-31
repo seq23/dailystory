@@ -134,8 +134,8 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/30 flex items-center justify-center p-2 sm:p-4 md:p-6">
-      <Card className="w-full max-w-4xl bg-gradient-card shadow-card border-0 rounded-xl sm:rounded-2xl md:rounded-3xl p-3 sm:p-4 md:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/30 flex items-center justify-center p-2 sm:p-4 md:p-6 pb-safe">
+      <Card className="w-full max-w-4xl bg-gradient-card shadow-card border-0 rounded-xl sm:rounded-2xl md:rounded-3xl p-3 sm:p-4 md:p-8 touch-feedback">
         {/* Header */}
         <div className="text-center mb-6 md:mb-8">
           <div className="flex justify-center mb-3 md:mb-4">
@@ -170,7 +170,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                   value={formData.name}
                   onChange={(e) => handleInputChange("name", e.target.value)}
                   placeholder={t("userInfoForm.fields.name.placeholder")}
-                  className="text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-primary/20 focus:border-primary/50"
+                  className="text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-primary/20 focus:border-primary/50 touch-target"
                 />
               </div>
 
@@ -179,7 +179,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                   {t("userInfoForm.fields.age.label")}
                 </Label>
                 <Select value={formData.age.toString()} onValueChange={(value) => handleInputChange("age", parseInt(value))}>
-                  <SelectTrigger className="text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-primary/20">
+                  <SelectTrigger className="text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-primary/20 touch-target">
                     <SelectValue placeholder={t("userInfoForm.fields.age.placeholder")} />
                   </SelectTrigger>
                   <SelectContent>

@@ -198,8 +198,57 @@ All colors MUST be HSL.
   50% { background-color: rgba(168, 85, 247, 0.2); }
 }
 
-.tutorial-highlight {
-  animation: tutorialShake 0.6s ease-in-out infinite, tutorialFlash 1s ease-in-out infinite;
-  border-radius: 0.5rem;
-  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.4);
+/* Mobile & Touch Optimizations */
+@layer utilities {
+  /* Safe area utilities for mobile devices */
+  .pb-safe {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  
+  .pt-safe {
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+  
+  .pl-safe {
+    padding-left: max(1rem, env(safe-area-inset-left));
+  }
+  
+  .pr-safe {
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+  
+  /* Touch-friendly button sizing */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Improved touch feedback */
+  .touch-feedback {
+    -webkit-tap-highlight-color: rgba(var(--primary), 0.1);
+    tap-highlight-color: rgba(var(--primary), 0.1);
+  }
+  
+  /* Prevent zoom on inputs on iOS */
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+  
+  /* Mobile scroll optimization */
+  .mobile-scroll {
+    -webkit-overflow-scrolling: touch;
+    overflow-scrolling: touch;
+  }
+  
+  /* Hide scrollbars but allow scrolling */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }

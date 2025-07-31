@@ -624,14 +624,14 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     <div className={`min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 ${
       celebrationStep === 1 ? 'animate-pulse' : ''
     }`}>
-      {/* Enhanced Professional Floating Timer with Controls - Top Right, Smaller */}
+      {/* Enhanced Professional Floating Timer with Controls - Top Right, Mobile Optimized */}
       {sessionStarted && timeRemaining > 0 && !sessionEnded && (
-        <div className="fixed top-2 right-4 sm:right-6 z-50 flex flex-col items-center gap-3" style={{ marginRight: 'max(0.5rem, env(safe-area-inset-right))', marginTop: 'max(0.5rem, env(safe-area-inset-top))' }}>
+        <div className="fixed top-2 right-2 sm:right-4 md:right-6 z-50 flex flex-col items-center gap-2 sm:gap-3" style={{ marginRight: 'max(0.5rem, env(safe-area-inset-right))', marginTop: 'max(0.5rem, env(safe-area-inset-top))' }}>
           
           {/* Main Timer Circle - Professional & Larger */}
           <div className="relative">
             {/* Main Timer Circle - Smaller & Professional */}
-            <div className="relative w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-white to-gray-50 backdrop-blur-sm rounded-full shadow-xl border-3 border-white/80 flex items-center justify-center ring-2 ring-purple-500/20">
+            <div className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-gradient-to-br from-white to-gray-50 backdrop-blur-sm rounded-full shadow-xl border-2 sm:border-3 border-white/80 flex items-center justify-center ring-2 ring-purple-500/20">
               {/* Outer glow ring */}
               <div className="absolute inset-0 rounded-full bg-gradient-to-br from-purple-500/10 to-transparent animate-pulse"></div>
               
@@ -870,22 +870,23 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-2">
-                  {/* Navigation buttons - always visible */}
-                  <Button onClick={onNewStory} variant="outline" size="sm">
-                    <RotateCcw className="w-4 h-4 mr-2" />
-                    New Story
+                <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-2">
+                  {/* Navigation buttons - Mobile responsive */}
+                  <Button onClick={onNewStory} variant="outline" size="sm" className="text-xs sm:text-sm px-2 sm:px-3">
+                    <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">New Story</span>
                   </Button>
-                  <Button onClick={onHome} variant="outline" size="sm">
-                    <Home className="w-4 h-4 mr-2" />
-                    Home
+                  <Button onClick={onHome} variant="outline" size="sm" className="text-xs sm:text-sm px-2 sm:px-3">
+                    <Home className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">Home</span>
                   </Button>
                   
-                  {/* Start session button - only show if session hasn't started */}
+                  {/* Start session button - Mobile responsive */}
                   {!sessionStarted && (
-                    <Button onClick={startSession} className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white">
-                      <Sparkles className="w-4 h-4 mr-2" />
-                      {t("freeReadingSession.session.startReading")}
+                    <Button onClick={startSession} className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white text-xs sm:text-sm px-2 sm:px-4">
+                      <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                      <span className="hidden xs:inline">{t("freeReadingSession.session.startReading")}</span>
+                      <span className="xs:hidden">Start</span>
                     </Button>
                   )}
                 </div>
@@ -893,13 +894,13 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
             </div>
           </header>
 
-          {/* Main Content */}
-          <main className="container mx-auto px-4 py-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
-              {/* Story Illustration */}
+          {/* Main Content - Mobile Optimized */}
+          <main className="container mx-auto px-2 sm:px-4 py-4 sm:py-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 max-w-6xl mx-auto">
+              {/* Story Illustration - Mobile Optimized */}
               <div className="order-2 lg:order-1">
-                <Card className="h-[500px] lg:h-[600px]">
-                  <CardContent className="p-6 h-full">
+                <Card className="h-[300px] sm:h-[400px] lg:h-[500px] xl:h-[600px]">
+                  <CardContent className="p-3 sm:p-4 lg:p-6 h-full">
                     <img 
                       src={storyImages[currentPage]?.url || illustrations[currentPage % illustrations.length]}
                       alt={`Story illustration for page ${currentPage + 1}`}
@@ -909,10 +910,10 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                 </Card>
               </div>
 
-              {/* Story Text */}
+              {/* Story Text - Mobile Optimized */}
               <div className="order-1 lg:order-2">
-                <Card className="h-[500px] lg:h-[600px] flex flex-col transition-all duration-300 hover:shadow-lg">
-                  <CardContent className="p-6 flex-1 flex flex-col">
+                <Card className="h-auto min-h-[400px] sm:h-[400px] lg:h-[500px] xl:h-[600px] flex flex-col transition-all duration-300 hover:shadow-lg">
+                  <CardContent className="p-3 sm:p-4 lg:p-6 flex-1 flex flex-col">
                     {/* Difficulty Level Selector - Easier/Harder */}
                     <div className="mb-4">
                       <div className="flex gap-3 justify-center items-center">

@@ -306,7 +306,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
   const currentIllustration = currentImage;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 pb-safe">
       {/* Professional Premium Timer Display - Top Right, Smaller */}
       {timeRemaining > 0 && (
         <div className="fixed top-2 right-4 sm:right-6 z-50 flex flex-col items-center gap-3" style={{ marginRight: 'max(0.5rem, env(safe-area-inset-right))', marginTop: 'max(0.5rem, env(safe-area-inset-top))' }}>
@@ -419,31 +419,31 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
       <header className="bg-white/90 backdrop-blur-sm shadow-sm border-b">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <BookOpen className="w-8 h-8 text-primary" />
               <div>
-                <h1 className="text-xl font-bold text-gray-800">{userInfo.name}'s Reading Adventure</h1>
+                <h1 className="text-lg sm:text-xl font-bold text-gray-800">{userInfo.name}'s Reading Adventure</h1>
                 <p className="text-sm text-gray-600">Page {currentPage + 1} of {story.length}</p>
               </div>
             </div>
-            
-            <div className="flex items-center gap-2">
+          
+          <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-2">
               <Button onClick={handleNewStory} variant="outline" size="sm">
-                <RotateCcw className="w-4 h-4 mr-2" />
-                New Story
+              <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">New Story</span>
               </Button>
-              <Button onClick={onHome} variant="outline" size="sm">
-                <Home className="w-4 h-4 mr-2" />
-                Home
+              <Button onClick={onHome} variant="outline" size="sm" className="text-xs sm:text-sm px-2 sm:px-3">
+              <Home className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Home</span>
               </Button>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+      {/* Main Content - Mobile Optimized */}
+      <main className="container mx-auto px-2 sm:px-4 py-4 sm:py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 max-w-6xl mx-auto">
           {/* Story Illustration */}
           <div className="order-2 lg:order-1">
             <Card className="h-[500px] lg:h-[600px]">
