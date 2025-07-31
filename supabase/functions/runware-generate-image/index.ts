@@ -41,29 +41,41 @@ serve(async (req) => {
     let enhancedPrompt = positivePrompt;
     
     if (characterName && characterDescription) {
-      // Map skin tone to consistent descriptions
+      // Enhanced skin tone mapping for accurate representation
       const skinToneMap = {
-        'pale': 'very light skin tone',
-        'light': 'light skin tone', 
-        'medium': 'medium skin tone',
-        'olive': 'olive skin tone',
-        'dark': 'dark skin tone'
+        'pale': 'very light skin tone, pale complexion',
+        'light': 'light skin tone, fair complexion', 
+        'medium': 'medium skin tone, warm brown complexion',
+        'olive': 'olive skin tone, Mediterranean complexion',
+        'dark': 'dark skin tone, beautiful deep brown African/African American complexion'
       };
       
       const consistentSkinTone = skinToneMap[skinTone] || 'medium skin tone';
-      const genderDesc = avatarType === 'boy' ? 'young boy' : avatarType === 'girl' ? 'young girl' : 'child';
+      const genderDesc = avatarType === 'boy' ? 'young Black boy' : avatarType === 'girl' ? 'young Black girl' : 'young Black child';
       
-      // Create consistent character appearance description
-      const characterConsistency = `${genderDesc} named ${characterName} with ${consistentSkinTone}, same character appearance throughout the story`;
+      // Create highly specific character description for darker skin tones
+      let characterConsistency;
+      if (skinTone === 'dark') {
+        characterConsistency = `${genderDesc} named ${characterName} with ${consistentSkinTone}, beautiful African/African American features, realistic representation, same character throughout`;
+      } else {
+        characterConsistency = `${genderDesc} named ${characterName} with ${consistentSkinTone}, same character appearance throughout the story`;
+      }
       
-      // Enhance the prompt with character consistency
-      enhancedPrompt = `A beautiful children's book illustration depicting ${characterConsistency} in the scene: ${positivePrompt}. CRITICAL: The character ${characterName} must always have the same ${consistentSkinTone} and appear as the same ${genderDesc} in every image. Consistent character design, warm and welcoming children's book art style, high quality, safe for children`;
+      // Enhanced prompt with better representation
+      if (skinTone === 'dark') {
+        enhancedPrompt = `A vibrant, realistic children's book illustration depicting ${characterConsistency} in the scene: ${positivePrompt}. CRITICAL: The character ${characterName} must have beautiful dark skin tone with African/African American features, realistic and accurate representation, vibrant colors, detailed but child-appropriate, warm and welcoming children's book art style, diverse and inclusive, high quality, safe for children`;
+      } else {
+        enhancedPrompt = `A beautiful children's book illustration depicting ${characterConsistency} in the scene: ${positivePrompt}. CRITICAL: The character ${characterName} must always have the same ${consistentSkinTone} and appear as the same ${genderDesc} in every image. Consistent character design, warm and welcoming children's book art style, high quality, safe for children`;
+      }
       
-      console.log(`Generating image ${pageIndex + 1} for ${characterName} (${genderDesc} with ${consistentSkinTone})`);
+      console.log(`Generating enhanced image ${pageIndex + 1} for ${characterName} (${genderDesc} with ${consistentSkinTone})`);
     }
 
-    // Add quality and style enhancers
-    enhancedPrompt += `, children's book illustration style, warm colors, friendly atmosphere, high quality artwork, detailed but child-appropriate, consistent art style`;
+    // Enhanced quality and style enhancers with better representation
+    enhancedPrompt += `, vibrant children's book illustration style, realistic skin tones, accurate representation, warm colors, friendly atmosphere, high quality detailed artwork, child-appropriate, consistent art style, diverse and inclusive`;
+
+    // Enhanced negative prompt for better skin tone accuracy
+    const negativePrompt = "blurry, low quality, distorted, scary, inappropriate, adult content, violence, weapons, dark themes, inconsistent character, different character, wrong skin tone, inaccurate skin color, whitewashed, wrong gender, pale when should be dark, light when should be dark";
 
     // Create WebSocket connection to Runware
     const ws = new WebSocket("wss://ws-api.runware.ai/v1");
@@ -102,23 +114,22 @@ serve(async (req) => {
             if (item.taskType === "authentication") {
               console.log("Authenticated with Runware");
               
-              // Send image generation request with enhanced parameters
+              // Send image generation request with enhanced parameters for accurate representation
               const taskUUID = crypto.randomUUID();
               const imageMessage = [{
                 taskType: "imageInference",
                 taskUUID,
                 positivePrompt: enhancedPrompt,
+                negativePrompt: negativePrompt,
                 model,
                 width,
                 height,
                 numberResults,
                 outputFormat,
-                steps: 4, // Fast generation
-                CFGScale: Math.max(1, CFGScale), // Ensure minimum guidance
+                steps: 6, // Increased steps for better quality and accuracy
+                CFGScale: Math.max(2, CFGScale), // Higher guidance for better prompt adherence
                 scheduler,
                 strength,
-                // Add negative prompt for better quality
-                negativePrompt: "blurry, low quality, distorted, scary, inappropriate, adult content, violence, weapons, dark themes, inconsistent character, different character, wrong skin tone, wrong gender",
                 ...(seed && { seed })
               }];
               

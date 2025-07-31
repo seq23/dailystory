@@ -447,7 +447,7 @@ export class AdaptiveStoryGenerator {
     return images;
   }
 
-  // New method to generate a single image for a specific page
+  // Enhanced method to generate a single image for a specific page with accurate representation
   async generatePageImage(
     pageIndex: number,
     pageContent: string,
@@ -458,44 +458,54 @@ export class AdaptiveStoryGenerator {
   ): Promise<{url?: string, prompt: string}> {
     // Extract character details from config
     const characterName = config.userName || 'the main character';
-    const characterDescription = config.characterDescription || '';
+    const skinTone = config.avatar?.skinTone || 'medium';
+    const avatarType = config.avatar?.type || 'child';
     
-    // Determine skin tone and gender from character description or avatar
+    // Enhanced skin tone mapping for accurate representation
     const skinToneMap: {[key: string]: string} = {
-      'dark': 'dark skin',
-      'medium': 'medium skin tone', 
-      'light': 'light skin',
-      'olive': 'olive skin tone',
-      'pale': 'pale skin'
+      'pale': 'very light skin tone, pale complexion',
+      'light': 'light skin tone, fair complexion',
+      'medium': 'medium skin tone, warm brown complexion',
+      'olive': 'olive skin tone, Mediterranean complexion',
+      'dark': 'dark skin tone, beautiful deep brown African/African American complexion'
     };
     
-    // Extract skin tone from character description
-    let skinTone = 'medium skin tone'; // default
-    Object.keys(skinToneMap).forEach(tone => {
-      if (characterDescription.toLowerCase().includes(tone)) {
-        skinTone = skinToneMap[tone];
-      }
-    });
+    const consistentSkinTone = skinToneMap[skinTone] || 'medium skin tone';
     
-    // Determine gender
-    const gender = characterDescription.toLowerCase().includes('girl') ? 'girl' : 
-                  characterDescription.toLowerCase().includes('boy') ? 'boy' : 'child';
+    // Enhanced gender and ethnicity descriptions
+    let genderDesc;
+    if (skinTone === 'dark') {
+      genderDesc = avatarType === 'boy' ? 'young Black boy' : avatarType === 'girl' ? 'young Black girl' : 'young Black child';
+    } else {
+      genderDesc = avatarType === 'boy' ? 'young boy' : avatarType === 'girl' ? 'young girl' : 'child';
+    }
     
     const artStyle = {
-      beginner: 'simple and bright children\'s book illustration with bold colors and clear shapes',
-      elementary: 'colorful and friendly children\'s book illustration with clear details', 
+      beginner: 'vibrant and simple children\'s book illustration with bold colors and clear shapes',
+      elementary: 'colorful and realistic children\'s book illustration with clear details', 
       intermediate: 'detailed children\'s book illustration with realistic elements and rich backgrounds',
       advanced: 'sophisticated children\'s book artwork with complex scenes and atmospheric details'
-    }[readingLevel] || 'colorful children\'s book illustration';
+    }[readingLevel] || 'vibrant children\'s book illustration';
     
-    // Create story-specific prompt
-    const prompt = `A beautiful children's book illustration depicting the scene where young ${gender} named ${characterName} with ${skinTone} in the setting described in this story page: "${pageContent.substring(0, 200)}..." based on the story "${storyTitle}" about ${theme}, with a happy and cheerful atmosphere, warm earth tones and natural colors, contemporary children's book art style, ${artStyle}, appealing to all children regardless of gender, diverse and inclusive, high quality, safe for children`;
+    // Create enhanced prompt with accurate representation
+    let prompt;
+    if (skinTone === 'dark') {
+      prompt = `A vibrant, realistic children's book illustration showing ${genderDesc} named ${characterName} with ${consistentSkinTone} and beautiful African/African American features in the scene: "${pageContent.substring(0, 200)}..." This is from the story "${storyTitle}" about ${theme}. The illustration should have vibrant colors, realistic skin tone representation, ${artStyle}, diverse and inclusive, high quality, safe for children, accurate and respectful representation`;
+    } else {
+      prompt = `A beautiful children's book illustration depicting ${genderDesc} named ${characterName} with ${consistentSkinTone} in the scene: "${pageContent.substring(0, 200)}..." from the story "${storyTitle}" about ${theme}, with a happy and cheerful atmosphere, ${artStyle}, appealing to all children, diverse and inclusive, high quality, safe for children`;
+    }
     
     try {
-      console.log(`Generating image for page ${pageIndex + 1}...`);
+      console.log(`Generating enhanced image for page ${pageIndex + 1} for ${characterName} (${genderDesc} with ${consistentSkinTone})`);
       const { data: imageData, error } = await supabase.functions.invoke('runware-generate-image', {
         body: {
           positivePrompt: prompt,
+          characterName,
+          characterDescription: `${genderDesc} with ${consistentSkinTone}`,
+          skinTone,
+          avatarType,
+          storyTheme: theme,
+          pageIndex,
           model: "runware:100@1",
           width: 1024,
           height: 1024,
@@ -505,7 +515,7 @@ export class AdaptiveStoryGenerator {
       });
       
       if (!error && imageData?.imageURL) {
-        console.log(`Generated image for page ${pageIndex + 1}: ${imageData.imageURL}`);
+        console.log(`Generated accurate image for page ${pageIndex + 1}: ${imageData.imageURL}`);
         return { url: imageData.imageURL, prompt };
       } else {
         console.warn(`Failed to generate image for page ${pageIndex + 1}:`, error);
