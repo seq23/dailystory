@@ -92,10 +92,10 @@ export class StoryGeneratorService {
         `A friendly ${color} ${animal} was playing.`,
         `"Hello!" said ${name} with a smile.`,
         `The ${animal} came over to play.`,
-        `They had so much fun together.`,
+        `${pronouns.subject.charAt(0).toUpperCase() + pronouns.subject.slice(1)} had so much fun together.`,
         `${name} gave the ${animal} some food.`,
         `"Thank you!" the ${animal} seemed to say.`,
-        `They became the very best friends.`,
+        `${pronouns.subject.charAt(0).toUpperCase() + pronouns.subject.slice(1)} became the very best friends.`,
         `Every day was full of joy.`
       ],
       medium: [
@@ -144,23 +144,23 @@ export class StoryGeneratorService {
       const continuationTemplates = {
         easy: [
           `${name} and the ${animal} played every day.`,
-          `They found new friends to join them.`,
+          `${pronouns.subject.charAt(0).toUpperCase() + pronouns.subject.slice(1)} found new friends to join ${pronouns.object}.`,
           `The ${animal} taught ${name} fun games.`,
           `${name} learned to be even kinder.`,
-          `Their friendship grew stronger each day.`,
+          `${pronouns.possessive.charAt(0).toUpperCase() + pronouns.possessive.slice(1)} friendship grew stronger each day.`,
           `Everyone loved ${name} and the ${animal}.`,
-          `They helped other children too.`,
+          `${pronouns.subject.charAt(0).toUpperCase() + pronouns.subject.slice(1)} helped other children too.`,
           `The neighborhood became happier.`,
           `${name} felt proud and grateful.`,
           `It was the best friendship ever.`
         ],
         medium: [
           `${name} and the ${animal} explored new places together.`,
-          `Each adventure taught them valuable lessons about friendship.`,
-          `They helped other creatures they met along the way.`,
+          `Each adventure taught ${pronouns.object} valuable lessons about friendship.`,
+          `${pronouns.subject.charAt(0).toUpperCase() + pronouns.subject.slice(1)} helped other creatures ${pronouns.subject} met along the way.`,
           `${name} grew more confident with each passing day.`,
           `The ${animal} shared ancient wisdom about kindness and courage.`,
-          `Their bond became an inspiration to everyone around them.`,
+          `${pronouns.possessive.charAt(0).toUpperCase() + pronouns.possessive.slice(1)} bond became an inspiration to everyone around ${pronouns.object}.`,
           `Other children began to notice ${name}'s special gift.`,
           `${name} learned that helping others brought the greatest joy.`,
           `The adventures continued, but now with new friends joining.`,
@@ -171,23 +171,23 @@ export class StoryGeneratorService {
           `New challenges arrived, each one teaching important life lessons.`,
           `The ${animal} remained a loyal companion through every trial.`,
           `${name} learned that true strength comes from caring about others.`,
-          `They faced fears that once seemed impossible to overcome.`,
+          `${pronouns.subject.charAt(0).toUpperCase() + pronouns.subject.slice(1)} faced fears that once seemed impossible to overcome.`,
           `With each victory, ${name}'s confidence and wisdom grew.`,
           `The partnership with the ${animal} evolved into deep mutual respect.`,
           `Other young people sought ${name}'s advice and friendship.`,
           `${name} discovered that leadership means lifting others up.`,
-          `Their story became a legend that inspired future generations.`
+          `${pronouns.possessive.charAt(0).toUpperCase() + pronouns.possessive.slice(1)} story became a legend that inspired future generations.`
         ],
         expert: [
-          `${name}'s journey had awakened abilities they never knew existed.`,
-          `The complexity of their mission required both intellect and emotional intelligence.`,
-          `Working alongside the ${animal}, they tackled problems that affected entire communities.`,
+          `${name}'s journey had awakened abilities ${pronouns.subject} never knew existed.`,
+          `The complexity of ${pronouns.possessive} mission required both intellect and emotional intelligence.`,
+          `Working alongside the ${animal}, ${pronouns.subject} tackled problems that affected entire communities.`,
           `Each success brought new responsibilities and deeper understanding.`,
           `${name} learned to balance personal desires with collective needs.`,
           `The relationship with the ${animal} became a model of partnership and trust.`,
-          `Their work began to bridge divides between different groups and cultures.`,
+          `${pronouns.possessive.charAt(0).toUpperCase() + pronouns.possessive.slice(1)} work began to bridge divides between different groups and cultures.`,
           `${name} discovered that true heroism lies in consistent, everyday choices.`,
-          `The legacy they were building would outlast any single adventure.`,
+          `The legacy ${pronouns.subject} were building would outlast any single adventure.`,
           `${name} understood that this was only the beginning of a life dedicated to service.`
         ]
       };
@@ -231,10 +231,10 @@ export class StoryGeneratorService {
     const continuationTemplates = {
       easy: [
         `${name} and the ${animal} went exploring.`,
-        `They found a beautiful flower.`,
+        `${pronouns.subject.charAt(0).toUpperCase() + pronouns.subject.slice(1)} found a beautiful flower.`,
         `"Look at this!" said ${name}.`,
         `The ${animal} was very excited.`,
-        `They picked flowers for home.`,
+        `${pronouns.subject.charAt(0).toUpperCase() + pronouns.subject.slice(1)} picked flowers for home.`,
         `What a wonderful day it was!`,
         `${name} felt so happy.`,
         `The ${animal} was happy too.`
@@ -242,31 +242,31 @@ export class StoryGeneratorService {
       medium: [
         `The next day brought a new adventure for ${name}.`,
         `The ${animal} had discovered something interesting nearby.`,
-        `Together, they set off to investigate this mystery.`,
-        `What they found surprised them both completely.`,
+        `Together, ${pronouns.subject} set off to investigate this mystery.`,
+        `What ${pronouns.subject} found surprised ${pronouns.object} both completely.`,
         `${name} realized this was just the beginning.`,
         `Each day would bring new discoveries and joy.`,
-        `Their friendship continued to grow stronger.`,
+        `${pronouns.possessive.charAt(0).toUpperCase() + pronouns.possessive.slice(1)} friendship continued to grow stronger.`,
         `The world seemed full of endless possibilities.`
       ],
       hard: [
         `${name}'s adventures were far from over.`,
-        `New challenges emerged that would test their growing wisdom.`,
+        `New challenges emerged that would test ${pronouns.possessive} growing wisdom.`,
         `The ${animal} proved to be an invaluable guide and friend.`,
-        `Together, they faced each obstacle with determination.`,
-        `${name} discovered inner strength they never knew existed.`,
-        `The lessons learned would serve them well in future trials.`,
-        `Their bond deepened through shared experiences and trust.`,
-        `Each victory made them more confident and capable.`
+        `Together, ${pronouns.subject} faced each obstacle with determination.`,
+        `${name} discovered inner strength ${pronouns.subject} never knew existed.`,
+        `The lessons learned would serve ${pronouns.object} well in future trials.`,
+        `${pronouns.possessive.charAt(0).toUpperCase() + pronouns.possessive.slice(1)} bond deepened through shared experiences and trust.`,
+        `Each victory made ${pronouns.object} more confident and capable.`
       ],
       expert: [
         `${name}'s journey of growth and discovery continued to unfold.`,
-        `The complexities of their world revealed new layers of understanding.`,
-        `Working with the ${animal}, they tackled increasingly difficult challenges.`,
+        `The complexities of ${pronouns.possessive} world revealed new layers of understanding.`,
+        `Working with the ${animal}, ${pronouns.subject} tackled increasingly difficult challenges.`,
         `Each experience taught valuable lessons about leadership and compassion.`,
-        `${name} began to see how their actions affected the broader community.`,
+        `${name} began to see how ${pronouns.possessive} actions affected the broader community.`,
         `The partnership evolved into a powerful force for positive change.`,
-        `Their story became an inspiration for others facing similar struggles.`,
+        `${pronouns.possessive.charAt(0).toUpperCase() + pronouns.possessive.slice(1)} story became an inspiration for others facing similar struggles.`,
         `${name} understood that true success meant lifting others up as well.`
       ]
     };
