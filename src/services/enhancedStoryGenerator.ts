@@ -82,9 +82,6 @@ export class EnhancedStoryGenerator {
     secondaryCharacter: string
   ): string {
     
-    // Ensure character name consistency
-    
-    
     // Generate content based on story arc and user preferences
     const contentGenerators = {
       introduction: () => EnhancedStoryGenerator.generateIntroductionContent(pageIndex, characterName, userInfo, difficulty),
