@@ -34,6 +34,89 @@
       "placeholder": "选择语言"
     }
   },
+  "loginScreen": {
+    "title": {
+      "upgrade": "升级到高级版",
+      "join": "加入Time2Read高级版"
+    },
+    "subtitle": {
+      "upgrade": "继续使用您保存的信息并解锁无限故事",
+      "join": "解锁无限个性化故事和高级功能"
+    },
+    "trialInfoSaved": "✨ 您的免费试用信息已自动填入！",
+    "tabs": {
+      "createAccount": "创建账户",
+      "signIn": "登录"
+    },
+    "plans": {
+      "monthly": {
+        "title": "月度计划",
+        "price": "$10",
+        "period": "/月",
+        "features": {
+          "unlimited": "无限故事",
+          "aiFeatures": "高级AI功能"
+        }
+      },
+      "annual": {
+        "title": "年度计划",
+        "price": "$100",
+        "period": "/年",
+        "savings": "节省$20",
+        "features": {
+          "unlimited": "无限故事",
+          "aiFeatures": "高级AI功能"
+        }
+      }
+    },
+    "form": {
+      "labels": {
+        "displayName": "显示名称",
+        "email": "电子邮件",
+        "password": "密码"
+      },
+      "placeholders": {
+        "displayName": "输入您的显示名称",
+        "email": "输入您的电子邮件",
+        "password": "输入您的密码"
+      },
+      "buttons": {
+        "creating": "创建账户中...",
+        "createAccount": "创建账户",
+        "signingIn": "登录中...",
+        "signIn": "登录",
+        "processing": "处理中...",
+        "startPayment": "开始付款"
+      },
+      "errors": {
+        "fillAllFields": "请填写所有字段",
+        "unexpected": "发生意外错误",
+        "completeSignup": "请先完成注册",
+        "signInFirst": "请先登录以继续付款",
+        "paymentNotConfigured": "付款系统尚未配置。请联系支持。",
+        "paymentFailed": "创建付款会话失败",
+        "paymentProcessFailed": "启动付款流程失败"
+      },
+      "success": {
+        "accountCreated": "账户已创建！请检查您的电子邮件以验证您的账户，然后继续付款。",
+        "signedIn": "登录成功！"
+      }
+    },
+    "payment": {
+      "instruction": "先完成账户创建，然后进行安全付款",
+      "monthly": "$10/月",
+      "annual": "$100/年"
+    },
+    "guarantees": {
+      "moneyBack": "✓ 30天退款保证",
+      "cancelAnytime": "✓ 随时取消",
+      "securePayment": "✓ 安全付款处理"
+    },
+    "navigation": {
+      "backToTrial": "返回免费试用",
+      "back": "返回"
+    }
+  },
   "userInfoForm": {
     "title": "告诉我们关于你的信息！",
     "subtitle": "帮助我们为你创建完美的故事",

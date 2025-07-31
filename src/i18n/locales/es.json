@@ -28,6 +28,10 @@
       },
       "personalized": "Historias Personalizadas",
       "gradeLevel": "Contenido Apropiado por Grado"
+    },
+    "languageSelector": {
+      "label": "Elige tu idioma",
+      "placeholder": "Seleccionar idioma"
     }
   },
   "loginScreen": {
@@ -83,6 +87,19 @@
         "signIn": "Iniciar Sesión",
         "processing": "Procesando...",
         "startPayment": "Iniciar Pago"
+      },
+      "errors": {
+        "fillAllFields": "Por favor, complete todos los campos",
+        "unexpected": "Ocurrió un error inesperado",
+        "completeSignup": "Por favor, complete el registro primero",
+        "signInFirst": "Por favor, inicie sesión primero para proceder con el pago",
+        "paymentNotConfigured": "Sistema de pago no configurado aún. Por favor, contacte al soporte.",
+        "paymentFailed": "Error al crear la sesión de pago",
+        "paymentProcessFailed": "Error al iniciar el proceso de pago"
+      },
+      "success": {
+        "accountCreated": "¡Cuenta creada! Por favor revise su correo para verificar su cuenta, luego proceda con el pago.",
+        "signedIn": "¡Sesión iniciada exitosamente!"
       }
     },
     "payment": {

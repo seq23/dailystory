@@ -34,6 +34,89 @@
       "placeholder": "Selecionar idioma"
     }
   },
+  "loginScreen": {
+    "title": {
+      "upgrade": "Atualize para Premium",
+      "join": "Junte-se ao Time2Read Premium"
+    },
+    "subtitle": {
+      "upgrade": "Continue com suas informações salvas e desbloqueie histórias ilimitadas",
+      "join": "Desbloqueie histórias personalizadas ilimitadas e recursos avançados"
+    },
+    "trialInfoSaved": "✨ Suas informações do teste grátis foram preenchidas automaticamente!",
+    "tabs": {
+      "createAccount": "Criar Conta",
+      "signIn": "Entrar"
+    },
+    "plans": {
+      "monthly": {
+        "title": "Plano Mensal",
+        "price": "$10",
+        "period": "/mês",
+        "features": {
+          "unlimited": "Histórias ilimitadas",
+          "aiFeatures": "Recursos avançados de IA"
+        }
+      },
+      "annual": {
+        "title": "Plano Anual",
+        "price": "$100",
+        "period": "/ano",
+        "savings": "Economize $20",
+        "features": {
+          "unlimited": "Histórias ilimitadas",
+          "aiFeatures": "Recursos avançados de IA"
+        }
+      }
+    },
+    "form": {
+      "labels": {
+        "displayName": "Nome de Exibição",
+        "email": "E-mail",
+        "password": "Senha"
+      },
+      "placeholders": {
+        "displayName": "Digite seu nome de exibição",
+        "email": "Digite seu e-mail",
+        "password": "Digite sua senha"
+      },
+      "buttons": {
+        "creating": "Criando Conta...",
+        "createAccount": "Criar Conta",
+        "signingIn": "Entrando...",
+        "signIn": "Entrar",
+        "processing": "Processando...",
+        "startPayment": "Iniciar Pagamento"
+      },
+      "errors": {
+        "fillAllFields": "Por favor, preencha todos os campos",
+        "unexpected": "Ocorreu um erro inesperado",
+        "completeSignup": "Por favor, complete o cadastro primeiro",
+        "signInFirst": "Por favor, entre primeiro para prosseguir com o pagamento",
+        "paymentNotConfigured": "Sistema de pagamento ainda não configurado. Entre em contato com o suporte.",
+        "paymentFailed": "Falha ao criar sessão de pagamento",
+        "paymentProcessFailed": "Falha ao iniciar processo de pagamento"
+      },
+      "success": {
+        "accountCreated": "Conta criada! Por favor, verifique seu email para confirmar sua conta, depois prossiga com o pagamento.",
+        "signedIn": "Entrou com sucesso!"
+      }
+    },
+    "payment": {
+      "instruction": "Complete a criação da conta primeiro, depois prossiga com o pagamento seguro",
+      "monthly": "$10/mês",
+      "annual": "$100/ano"
+    },
+    "guarantees": {
+      "moneyBack": "✓ Garantia de reembolso de 30 dias",
+      "cancelAnytime": "✓ Cancele a qualquer momento",
+      "securePayment": "✓ Processamento de pagamento seguro"
+    },
+    "navigation": {
+      "backToTrial": "Voltar ao Teste Grátis",
+      "back": "Voltar"
+    }
+  },
   "userInfoForm": {
     "title": "Nos conte sobre você!",
     "subtitle": "Nos ajude a criar a história perfeita para você",

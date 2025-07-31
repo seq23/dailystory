@@ -34,6 +34,89 @@
       "placeholder": "اختر اللغة"
     }
   },
+  "loginScreen": {
+    "title": {
+      "upgrade": "الترقية إلى بريميوم",
+      "join": "انضم إلى Time2Read بريميوم"
+    },
+    "subtitle": {
+      "upgrade": "تابع مع معلوماتك المحفوظة واكتشف القصص غير المحدودة",
+      "join": "اكتشف القصص الشخصية غير المحدودة والميزات المتقدمة"
+    },
+    "trialInfoSaved": "✨ تم ملء معلوماتك من التجربة المجانية تلقائياً!",
+    "tabs": {
+      "createAccount": "إنشاء حساب",
+      "signIn": "تسجيل الدخول"
+    },
+    "plans": {
+      "monthly": {
+        "title": "الخطة الشهرية",
+        "price": "$10",
+        "period": "/شهر",
+        "features": {
+          "unlimited": "قصص غير محدودة",
+          "aiFeatures": "ميزات الذكاء الاصطناعي المتقدمة"
+        }
+      },
+      "annual": {
+        "title": "الخطة السنوية",
+        "price": "$100",
+        "period": "/سنة",
+        "savings": "وفر $20",
+        "features": {
+          "unlimited": "قصص غير محدودة",
+          "aiFeatures": "ميزات الذكاء الاصطناعي المتقدمة"
+        }
+      }
+    },
+    "form": {
+      "labels": {
+        "displayName": "اسم العرض",
+        "email": "البريد الإلكتروني",
+        "password": "كلمة المرور"
+      },
+      "placeholders": {
+        "displayName": "أدخل اسم العرض",
+        "email": "أدخل بريدك الإلكتروني",
+        "password": "أدخل كلمة المرور"
+      },
+      "buttons": {
+        "creating": "إنشاء الحساب...",
+        "createAccount": "إنشاء حساب",
+        "signingIn": "تسجيل الدخول...",
+        "signIn": "تسجيل الدخول",
+        "processing": "المعالجة...",
+        "startPayment": "بدء الدفع"
+      },
+      "errors": {
+        "fillAllFields": "يرجى ملء جميع الحقول",
+        "unexpected": "حدث خطأ غير متوقع",
+        "completeSignup": "يرجى إكمال التسجيل أولاً",
+        "signInFirst": "يرجى تسجيل الدخول أولاً للمتابعة مع الدفع",
+        "paymentNotConfigured": "نظام الدفع غير مكون بعد. يرجى الاتصال بالدعم.",
+        "paymentFailed": "فشل في إنشاء جلسة الدفع",
+        "paymentProcessFailed": "فشل في بدء عملية الدفع"
+      },
+      "success": {
+        "accountCreated": "تم إنشاء الحساب! يرجى فحص بريدك الإلكتروني للتحقق من حسابك، ثم المتابعة مع الدفع.",
+        "signedIn": "تم تسجيل الدخول بنجاح!"
+      }
+    },
+    "payment": {
+      "instruction": "أكمل إنشاء الحساب أولاً، ثم تابع مع الدفع الآمن",
+      "monthly": "$10/شهر",
+      "annual": "$100/سنة"
+    },
+    "guarantees": {
+      "moneyBack": "✓ ضمان استرداد الأموال لمدة 30 يوماً",
+      "cancelAnytime": "✓ إلغاء في أي وقت",
+      "securePayment": "✓ معالجة الدفع الآمنة"
+    },
+    "navigation": {
+      "backToTrial": "العودة إلى التجربة المجانية",
+      "back": "رجوع"
+    }
+  },
   "userInfoForm": {
     "title": "أخبرنا عن نفسك!",
     "subtitle": "ساعدنا في إنشاء القصة المثالية خصيصاً لك",

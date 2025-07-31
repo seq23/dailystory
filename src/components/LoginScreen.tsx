@@ -43,7 +43,7 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!signUpData.email || !signUpData.password || !signUpData.displayName) {
-      toast.error("Please fill in all fields");
+      toast.error(t("loginScreen.form.errors.fillAllFields"));
       return;
     }
 
@@ -72,11 +72,11 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
       if (error) {
         toast.error(error.message);
       } else {
-        toast.success("Account created! Please check your email to verify your account, then proceed with payment.");
+        toast.success(t("loginScreen.form.success.accountCreated"));
         // Don't redirect yet - user needs to verify email first
       }
     } catch (error) {
-      toast.error("An unexpected error occurred");
+      toast.error(t("loginScreen.form.errors.unexpected"));
       console.error(error);
     } finally {
       setLoading(false);
@@ -86,7 +86,7 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!signInData.email || !signInData.password) {
-      toast.error("Please fill in all fields");
+      toast.error(t("loginScreen.form.errors.fillAllFields"));
       return;
     }
 
@@ -100,11 +100,11 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
       if (error) {
         toast.error(error.message);
       } else {
-        toast.success("Signed in successfully!");
+        toast.success(t("loginScreen.form.success.signedIn"));
         // The AuthWrapper will handle redirecting to the main app
       }
     } catch (error) {
-      toast.error("An unexpected error occurred");
+      toast.error(t("loginScreen.form.errors.unexpected"));
       console.error(error);
     } finally {
       setLoading(false);
@@ -113,7 +113,7 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
 
   const handleStartPayment = async () => {
     if (!signUpData.email) {
-      toast.error("Please complete sign up first");
+      toast.error(t("loginScreen.form.errors.completeSignup"));
       return;
     }
 
@@ -121,7 +121,7 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
       setLoading(true);
       const { data: session } = await supabase.auth.getSession();
       if (!session.session) {
-        toast.error("Please sign in first to proceed with payment");
+        toast.error(t("loginScreen.form.errors.signInFirst"));
         return;
       }
 
@@ -134,9 +134,9 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
 
       if (error) {
         if (error.message?.includes("STRIPE_SECRET_KEY")) {
-          toast.error("Payment system not configured yet. Please contact support.");
+          toast.error(t("loginScreen.form.errors.paymentNotConfigured"));
         } else {
-          toast.error(error.message || "Failed to create payment session");
+          toast.error(error.message || t("loginScreen.form.errors.paymentFailed"));
         }
         return;
       }
@@ -146,7 +146,7 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
         window.open(data.url, '_blank');
       }
     } catch (error) {
-      toast.error("Failed to start payment process");
+      toast.error(t("loginScreen.form.errors.paymentProcessFailed"));
       console.error(error);
     } finally {
       setLoading(false);

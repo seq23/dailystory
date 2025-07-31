@@ -28,6 +28,10 @@
       },
       "personalized": "Personalized Stories",
       "gradeLevel": "Grade-Appropriate Content"
+    },
+    "languageSelector": {
+      "label": "Choose your language",
+      "placeholder": "Select language"
     }
   },
   "loginScreen": {
@@ -83,6 +87,19 @@
         "signIn": "Sign In",
         "processing": "Processing...",
         "startPayment": "Start Payment"
+      },
+      "errors": {
+        "fillAllFields": "Please fill in all fields",
+        "unexpected": "An unexpected error occurred",
+        "completeSignup": "Please complete sign up first",
+        "signInFirst": "Please sign in first to proceed with payment",
+        "paymentNotConfigured": "Payment system not configured yet. Please contact support.",
+        "paymentFailed": "Failed to create payment session",
+        "paymentProcessFailed": "Failed to start payment process"
+      },
+      "success": {
+        "accountCreated": "Account created! Please check your email to verify your account, then proceed with payment.",
+        "signedIn": "Signed in successfully!"
       }
     },
     "payment": {
