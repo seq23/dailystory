@@ -153,18 +153,16 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
 
   return (
     <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4">
-      {/* Back button if coming from guest experience */}
-      {onBack && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onBack}
-          className="absolute top-4 left-4 text-white hover:bg-white/10"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Free Trial
-        </Button>
-      )}
+      {/* Back button - always show one */}
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={onBack || (() => window.history.back())}
+        className="absolute top-4 left-4 text-white hover:bg-white/10"
+      >
+        <ArrowLeft className="w-4 h-4 mr-2" />
+        {onBack ? "Back to Free Trial" : "Back"}
+      </Button>
       
       <Card className="w-full max-w-2xl mx-auto bg-white/95 backdrop-blur-sm border-white/20 shadow-2xl">
         <CardHeader className="text-center">
