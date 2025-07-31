@@ -35,8 +35,8 @@ export const ElevenLabsAudio = ({ text, userInfo, isPremium = false, onUpgrade }
     setIsLoading(true);
     
     try {
-      // Create audio from ElevenLabs API
-      const response = await fetch('/api/elevenlabs-tts', {
+      // Call our Supabase edge function
+      const response = await fetch('https://cpzeuogomaixamrtnnmj.functions.supabase.co/elevenlabs-tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

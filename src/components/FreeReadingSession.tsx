@@ -5,6 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { BookOpen, Timer, Star, Crown, Sparkles, TrendingUp, Award, Clock, Play, Pause, Minus, X, ChevronUp, ChevronDown, Plus } from "lucide-react";
 import type { UserInfo, SessionStats } from "@/types";
 import { InteractiveAudioReading } from "@/components/InteractiveAudioReading";
+import { ElevenLabsAudio } from "@/components/ElevenLabsAudio";
 import { adaptiveStoryGenerator } from "@/services/adaptiveStoryGenerator";
 import { APP_CONFIG } from "@/constants/app";
 import { useToast } from "@/hooks/use-toast";
