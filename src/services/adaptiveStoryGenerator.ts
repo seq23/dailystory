@@ -160,11 +160,11 @@ export class AdaptiveStoryGenerator {
     const vocabularyWords = this.extractVocabularyWords(storyData.content, readingLevel);
     const comprehensionQuestions = this.generateComprehensionQuestions(storyData.content, readingLevel);
     
-    // Generate images in background - but wait a bit for them
+    // Generate image prompts but don't wait for image generation
     const imagePrompts = this.generateImagePrompts(readingLevel, theme, pages.length);
     
-    // Start generating images and store them
-    const images = await this.generateStoryImages(readingLevel, theme, pages, config, storyData.title);
+    // Initialize images array with prompts only - images will be generated progressively
+    const initialImages = pages.map((_, i) => ({ prompt: imagePrompts[i] }));
 
     const story: GeneratedStory = {
       id: crypto.randomUUID(),
@@ -180,7 +180,7 @@ export class AdaptiveStoryGenerator {
       vocabularyWords,
       comprehensionQuestions,
       imagePrompts: imagePrompts,
-      images: images
+      images: initialImages
     };
 
     // Store the story in Supabase
@@ -426,6 +426,76 @@ export class AdaptiveStoryGenerator {
     }
     
     return images;
+  }
+
+  // New method to generate a single image for a specific page
+  async generatePageImage(
+    pageIndex: number,
+    pageContent: string,
+    config: StoryGenerationConfig,
+    storyTitle: string,
+    theme: string,
+    readingLevel: string
+  ): Promise<{url?: string, prompt: string}> {
+    // Extract character details from config
+    const characterName = config.userName || 'the main character';
+    const characterDescription = config.characterDescription || '';
+    
+    // Determine skin tone and gender from character description or avatar
+    const skinToneMap: {[key: string]: string} = {
+      'dark': 'dark skin',
+      'medium': 'medium skin tone', 
+      'light': 'light skin',
+      'olive': 'olive skin tone',
+      'pale': 'pale skin'
+    };
+    
+    // Extract skin tone from character description
+    let skinTone = 'medium skin tone'; // default
+    Object.keys(skinToneMap).forEach(tone => {
+      if (characterDescription.toLowerCase().includes(tone)) {
+        skinTone = skinToneMap[tone];
+      }
+    });
+    
+    // Determine gender
+    const gender = characterDescription.toLowerCase().includes('girl') ? 'girl' : 
+                  characterDescription.toLowerCase().includes('boy') ? 'boy' : 'child';
+    
+    const artStyle = {
+      beginner: 'simple and bright children\'s book illustration with bold colors and clear shapes',
+      elementary: 'colorful and friendly children\'s book illustration with clear details', 
+      intermediate: 'detailed children\'s book illustration with realistic elements and rich backgrounds',
+      advanced: 'sophisticated children\'s book artwork with complex scenes and atmospheric details'
+    }[readingLevel] || 'colorful children\'s book illustration';
+    
+    // Create story-specific prompt
+    const prompt = `A beautiful children's book illustration depicting the scene where young ${gender} named ${characterName} with ${skinTone} in the setting described in this story page: "${pageContent.substring(0, 200)}..." based on the story "${storyTitle}" about ${theme}, with a happy and cheerful atmosphere, warm earth tones and natural colors, contemporary children's book art style, ${artStyle}, appealing to all children regardless of gender, diverse and inclusive, high quality, safe for children`;
+    
+    try {
+      console.log(`Generating image for page ${pageIndex + 1}...`);
+      const { data: imageData, error } = await supabase.functions.invoke('runware-generate-image', {
+        body: {
+          positivePrompt: prompt,
+          model: "runware:100@1",
+          width: 1024,
+          height: 1024,
+          numberResults: 1,
+          outputFormat: "WEBP"
+        }
+      });
+      
+      if (!error && imageData?.imageURL) {
+        console.log(`Generated image for page ${pageIndex + 1}: ${imageData.imageURL}`);
+        return { url: imageData.imageURL, prompt };
+      } else {
+        console.warn(`Failed to generate image for page ${pageIndex + 1}:`, error);
+        return { prompt }; // Just store the prompt if generation fails
+      }
+    } catch (imgError) {
+      console.warn(`Image generation failed for page ${pageIndex + 1}:`, imgError);
+      return { prompt }; // Just store the prompt if generation fails
+    }
   }
 
   // Generate images asynchronously in background

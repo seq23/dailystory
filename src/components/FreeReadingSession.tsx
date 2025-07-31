@@ -134,6 +134,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
         console.log('Story config:', storyConfig);
 
         if (!isCancelled) {
+          // Generate story content immediately (fast)
           const generatedStory = await adaptiveStoryGenerator.generateStory(storyConfig);
           setStoryImages(generatedStory.images || []);
           
@@ -153,16 +154,51 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
               pages = pages.slice(0, targetPages);
             }
             
-            // Smoothly replace the fallback story
+            // Smoothly replace the fallback story - NOW MUCH FASTER!
             setStory(pages);
             setWordsRead(generatedStory.wordCount);
             
             // Show success message
             toast({
-              title: "Enhanced Story Ready!",
-              description: "Your personalized story has been generated",
+              title: "Story Ready!",
+              description: "Custom images are generating in the background",
               duration: 3000,
             });
+
+            // Now generate images progressively in the background
+            const startProgressiveImageGeneration = async () => {
+              for (let i = 0; i < Math.min(pages.length, 10); i++) {
+                try {
+                  console.log(`Starting image generation for page ${i + 1}...`);
+                  const pageImage = await adaptiveStoryGenerator.generatePageImage(
+                    i,
+                    pages[i],
+                    storyConfig,
+                    generatedStory.title,
+                    generatedStory.theme,
+                    generatedStory.readingLevel
+                  );
+                  
+                  if (!isCancelled && pageImage.url) {
+                    // Update the specific page image when it's ready
+                    setStoryImages(prevImages => {
+                      const newImages = [...prevImages];
+                      newImages[i] = pageImage;
+                      return newImages;
+                    });
+                    console.log(`Updated image for page ${i + 1}`);
+                  }
+                } catch (error) {
+                  console.error(`Failed to generate image for page ${i + 1}:`, error);
+                }
+                
+                // Small delay between generations to avoid overwhelming the API
+                await new Promise(resolve => setTimeout(resolve, 1000));
+              }
+            };
+
+            // Start progressive image generation (non-blocking)
+            startProgressiveImageGeneration();
           }
         }
         
