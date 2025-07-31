@@ -159,8 +159,9 @@ export class AdaptiveStoryGenerator {
     const vocabularyWords = this.extractVocabularyWords(storyData.content, readingLevel);
     const comprehensionQuestions = this.generateComprehensionQuestions(storyData.content, readingLevel);
     
-    // Generate images for each page using Runware
-    const images = await this.generateStoryImages(readingLevel, theme, pages);
+    // Generate images in background - don't wait for them
+    const imagePrompts = this.generateImagePrompts(readingLevel, theme, pages.length);
+    this.generateStoryImagesAsync(readingLevel, theme, pages); // Background task
 
     const story: GeneratedStory = {
       id: crypto.randomUUID(),
@@ -175,8 +176,7 @@ export class AdaptiveStoryGenerator {
       pageCount: pages.length,
       vocabularyWords,
       comprehensionQuestions,
-      imagePrompts: images.map(img => img.prompt || `Illustration for page depicting ${theme}`),
-      images: images // Add the actual generated images
+      imagePrompts: imagePrompts
     };
 
     // Store the story in Supabase
@@ -386,6 +386,14 @@ export class AdaptiveStoryGenerator {
     }
     
     return images;
+  }
+
+  // Generate images asynchronously in background
+  private generateStoryImagesAsync(readingLevel: string, theme: string, pages: string[]): void {
+    // Don't await this - let it run in background
+    this.generateStoryImages(readingLevel, theme, pages).catch(error => {
+      console.warn('Background image generation failed:', error);
+    });
   }
 }
 
