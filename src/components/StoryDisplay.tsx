@@ -534,12 +534,13 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
   const handleAddPages = async () => {
     try {
       // Generate continuation that flows from current story context
-      const currentStoryContext = story.slice(-3).join(' '); // Get last 3 pages for context
+      // Pass the ENTIRE existing story context, not just last 3 pages
+      const fullStoryContext = story.join(' '); // Full story for complete context
       const result = await StoryGeneratorService.generateStoryContinuation(
         userInfo, 
         currentDifficulty, 
         5, 
-        currentStoryContext
+        fullStoryContext
       );
       
       setStory(prev => [...prev, ...result.pages]);
