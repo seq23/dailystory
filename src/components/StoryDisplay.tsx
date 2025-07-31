@@ -790,7 +790,10 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         const animalMentioned = lowerText.includes(favoriteAnimal.toLowerCase()) || 
                                lowerText.includes('the cat') || 
                                lowerText.includes('the dog') || 
-                               lowerText.includes('the animal');
+                               lowerText.includes('the animal') ||
+                               lowerText.includes('it said') ||
+                               lowerText.includes('said gently') ||
+                               lowerText.includes('said warmly');
         
         // Detect companionship actions that indicate both characters are present
         const companionshipActions = lowerText.includes('together') || 
@@ -834,8 +837,8 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       const sceneDescription = extractSceneElements(storyText);
       const characterDescription = getCharacterDescription();
       
-      // Build prompt in the exact format requested by user with strong anti-text and anti-duplicate instructions
-      const prompt = `NO TEXT NO WORDS NO LETTERS NO NAMES NO WRITING NO CAPTIONS NO TITLES ANYWHERE IN IMAGE. A beautiful childrens book illustration depicting the scene ${sceneDescription} featuring ${characterDescription}, with a happy and cheerful atmosphere, warm earth tones and natural colors, contemporary childrens book art style, appealing to all children regardless of gender, diverse and inclusive, safe and wholesome content, high quality professional artwork. CRITICAL: Show exactly ONE child and exactly ONE single animal companion only - never show multiple animals, never show duplicate cats, never show twin animals, never show more than one animal of any kind. CRITICAL: absolutely no text, words, letters, names, titles, captions, or any written content visible anywhere in the image. Pure visual illustration only, completely text-free. IMPORTANT: Only one animal, not two, not multiple, just one single animal companion.`;
+      // Build prompt in the exact format requested by user with extremely strong instructions
+      const prompt = `ABSOLUTELY NO TEXT NO WORDS NO LETTERS NO NAMES NO WRITING NO CAPTIONS NO TITLES NO LABELS ANYWHERE IN THE IMAGE EVER. A beautiful childrens book illustration depicting the scene ${sceneDescription} featuring ${characterDescription}, with a happy and cheerful atmosphere, warm earth tones and natural colors, contemporary childrens book art style, appealing to all children regardless of gender, diverse and inclusive, safe and wholesome content, high quality professional artwork. CRITICAL ANIMAL SPECIFICATION: If an animal appears, it must be exactly a ${userInfo.favoriteColor || 'blue'} ${userInfo.favoriteAnimal || 'cat'}, not any other type of animal, not orange, not brown, not any other color except ${userInfo.favoriteColor || 'blue'}. CRITICAL CHARACTER COUNT: Show exactly ONE child and exactly ONE animal companion maximum - never show multiple animals, never show duplicate cats, never show twin animals, never show more than one animal of any kind. CRITICAL TEXT PROHIBITION: NEVER EVER show any text, words, letters, names like "${userInfo.name}", titles, captions, labels, signs, or any written content anywhere in the image under any circumstances. Pure visual illustration only, completely and utterly text-free. IMPORTANT: Only one ${userInfo.favoriteColor || 'blue'} ${userInfo.favoriteAnimal || 'cat'}, not two, not multiple, just one single animal companion if any animal appears at all.`;
       
       console.log('Enhanced consistency prompt:', prompt);
       console.log('Main character for consistency:', storyCharacters.mainCharacter);
