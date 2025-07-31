@@ -343,24 +343,24 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     <div className={`min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 ${
       celebrationStep === 1 ? 'animate-pulse' : ''
     }`}>
-      {/* Enhanced Professional Floating Timer with Controls - Top Right */}
+      {/* Enhanced Professional Floating Timer with Controls - Top Right, Smaller */}
       {sessionStarted && timeRemaining > 0 && !sessionEnded && (
-        <div className="fixed top-6 right-6 sm:right-8 z-50 flex flex-col items-center gap-4" style={{ marginRight: 'max(1rem, env(safe-area-inset-right))', marginTop: 'max(1rem, env(safe-area-inset-top))' }}>
+        <div className="fixed top-2 right-4 sm:right-6 z-50 flex flex-col items-center gap-3" style={{ marginRight: 'max(0.5rem, env(safe-area-inset-right))', marginTop: 'max(0.5rem, env(safe-area-inset-top))' }}>
           
           {/* Main Timer Circle - Professional & Larger */}
           <div className="relative">
-            {/* Main Timer Circle - Much Larger & Professional */}
-            <div className="relative w-32 h-32 sm:w-40 sm:h-40 bg-gradient-to-br from-white to-gray-50 backdrop-blur-sm rounded-full shadow-2xl border-4 border-white/80 flex items-center justify-center ring-4 ring-purple-500/20">
+            {/* Main Timer Circle - Smaller & Professional */}
+            <div className="relative w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-white to-gray-50 backdrop-blur-sm rounded-full shadow-xl border-3 border-white/80 flex items-center justify-center ring-2 ring-purple-500/20">
               {/* Outer glow ring */}
               <div className="absolute inset-0 rounded-full bg-gradient-to-br from-purple-500/10 to-transparent animate-pulse"></div>
               
               {/* Progress Circle */}
-              <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 160 160">
+              <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 100 100">
                 {/* Background circle */}
                 <circle
-                  cx="80"
-                  cy="80"
-                  r="70"
+                  cx="50"
+                  cy="50"
+                  r="42"
                   stroke="hsl(var(--muted))"
                   strokeWidth="8"
                   fill="none"
@@ -368,14 +368,14 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                 />
                 {/* Progress circle */}
                 <circle
-                  cx="80"
-                  cy="80"
-                  r="70"
+                  cx="50"
+                  cy="50"
+                  r="42"
                   stroke={timeRemaining <= 300 ? "#ef4444" : "#8b5cf6"}
-                  strokeWidth="8"
+                  strokeWidth="6"
                   fill="none"
-                  strokeDasharray={2 * Math.PI * 70}
-                  strokeDashoffset={2 * Math.PI * 70 - ((timeRemaining / APP_CONFIG.FREE_SESSION_DURATION) * 2 * Math.PI * 70)}
+                  strokeDasharray={2 * Math.PI * 42}
+                  strokeDashoffset={2 * Math.PI * 42 - ((timeRemaining / APP_CONFIG.FREE_SESSION_DURATION) * 2 * Math.PI * 42)}
                   className="transition-all duration-1000 ease-out filter drop-shadow-lg"
                   strokeLinecap="round"
                 />
@@ -383,7 +383,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
               
               {/* Time Display */}
               <div className="relative z-10 text-center">
-                <div className={`text-lg sm:text-2xl font-bold tracking-tight ${timeRemaining <= 300 ? 'text-red-500' : 'text-purple-600'}`}>
+                <div className={`text-sm sm:text-lg font-bold tracking-tight ${timeRemaining <= 300 ? 'text-red-500' : 'text-purple-600'}`}>
                   {Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')}
                 </div>
                 <div className="text-xs sm:text-sm text-muted-foreground font-medium">
@@ -394,7 +394,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
           </div>
           
           {/* 3 Control Buttons Only */}
-          <div className="flex gap-6 items-center">
+          <div className="flex gap-4 items-center">
             
             {/* 1. Pause/Resume Button - Center */}
             <Button
@@ -403,9 +403,9 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                 setIsPaused(!isPaused);
                 // No toast for pause/resume
               }}
-              className="bg-gradient-to-b from-white to-gray-50 backdrop-blur-sm border-2 border-purple-500/30 text-purple-600 hover:bg-purple-500 hover:text-white shadow-xl w-16 h-16 sm:w-20 sm:h-20 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-2xl hover:border-purple-500/50"
-            >
-              {isPaused ? <Play className="w-6 h-6 sm:w-8 sm:h-8" /> : <Pause className="w-6 h-6 sm:w-8 sm:h-8" />}
+                className="bg-gradient-to-b from-white to-gray-50 backdrop-blur-sm border-2 border-purple-500/30 text-purple-600 hover:bg-purple-500 hover:text-white shadow-xl w-12 h-12 sm:w-14 sm:h-14 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-2xl hover:border-purple-500/50"
+              >
+                {isPaused ? <Play className="w-4 h-4 sm:w-5 sm:h-5" /> : <Pause className="w-4 h-4 sm:w-5 sm:h-5" />}
             </Button>
             
             {/* 2. Reduce Time Button - Left */}
@@ -413,7 +413,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
               variant="outline"
               size="lg"
               disabled={timeRemaining <= 300}
-              className={`bg-gradient-to-b from-white to-orange-50 backdrop-blur-sm border-2 border-orange-400/50 text-orange-600 hover:bg-orange-500 hover:text-white shadow-lg w-14 h-14 sm:w-16 sm:h-16 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-xl ${
+              className={`bg-gradient-to-b from-white to-orange-50 backdrop-blur-sm border-2 border-orange-400/50 text-orange-600 hover:bg-orange-500 hover:text-white shadow-lg w-10 h-10 sm:w-12 sm:h-12 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-xl ${
                 timeRemaining <= 300 
                   ? 'opacity-50 cursor-not-allowed' 
                   : ''
@@ -425,21 +425,21 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                 }
               }}
             >
-              <Minus className="w-5 h-5 sm:w-6 sm:h-6" />
+              <Minus className="w-3 h-3 sm:w-4 sm:h-4" />
             </Button>
 
             {/* 3. End Session Button - Right */}
             <Button
               variant="outline"
               size="lg"
-              className="bg-gradient-to-b from-white to-red-50 backdrop-blur-sm border-2 border-red-400/50 text-red-600 hover:bg-red-500 hover:text-white shadow-lg w-14 h-14 sm:w-16 sm:h-16 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-xl"
+              className="bg-gradient-to-b from-white to-red-50 backdrop-blur-sm border-2 border-red-400/50 text-red-600 hover:bg-red-500 hover:text-white shadow-lg w-10 h-10 sm:w-12 sm:h-12 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-xl"
               onClick={() => {
                 setTimeRemaining(0);
                 handleSessionEnd();
                 // No toast for session end
               }}
             >
-              <X className="w-5 h-5 sm:w-6 sm:h-6" />
+              <X className="w-3 h-3 sm:w-4 sm:h-4" />
             </Button>
           </div>
         </div>

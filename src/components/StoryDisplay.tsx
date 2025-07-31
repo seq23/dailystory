@@ -167,24 +167,24 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
-      {/* Professional Premium Timer Display - Top Right */}
+      {/* Professional Premium Timer Display - Top Right, Smaller */}
       {timeRemaining > 0 && (
-        <div className="fixed top-6 right-6 sm:right-8 z-50 flex flex-col items-center gap-4" style={{ marginRight: 'max(1rem, env(safe-area-inset-right))', marginTop: 'max(1rem, env(safe-area-inset-top))' }}>
+        <div className="fixed top-2 right-4 sm:right-6 z-50 flex flex-col items-center gap-3" style={{ marginRight: 'max(0.5rem, env(safe-area-inset-right))', marginTop: 'max(0.5rem, env(safe-area-inset-top))' }}>
           
           {/* Main Timer Circle - Professional & Larger */}
           <div className="relative">
             {/* Main Timer Circle */}
-            <div className="relative w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-white to-gray-50 backdrop-blur-sm rounded-full shadow-2xl border-4 border-white/80 flex items-center justify-center ring-4 ring-green-500/20">
+            <div className="relative w-18 h-18 sm:w-20 sm:h-20 bg-gradient-to-br from-white to-gray-50 backdrop-blur-sm rounded-full shadow-xl border-3 border-white/80 flex items-center justify-center ring-2 ring-green-500/20">
               {/* Outer glow ring */}
               <div className="absolute inset-0 rounded-full bg-gradient-to-br from-green-500/10 to-transparent animate-pulse"></div>
               
               {/* Progress Circle */}
-              <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 120 120">
+              <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 80 80">
                 {/* Background circle */}
                 <circle
-                  cx="60"
-                  cy="60"
-                  r="50"
+                  cx="40"
+                  cy="40"
+                  r="32"
                   stroke="hsl(var(--muted))"
                   strokeWidth="6"
                   fill="none"
@@ -192,14 +192,14 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                 />
                 {/* Progress circle */}
                 <circle
-                  cx="60"
-                  cy="60"
-                  r="50"
+                  cx="40"
+                  cy="40"
+                  r="32"
                   stroke={timeRemaining <= 300 ? "#ef4444" : "#22c55e"}
-                  strokeWidth="6"
+                  strokeWidth="5"
                   fill="none"
-                  strokeDasharray={2 * Math.PI * 50}
-                  strokeDashoffset={2 * Math.PI * 50 - ((timeRemaining / APP_CONFIG.FREE_SESSION_DURATION) * 2 * Math.PI * 50)}
+                  strokeDasharray={2 * Math.PI * 32}
+                  strokeDashoffset={2 * Math.PI * 32 - ((timeRemaining / APP_CONFIG.FREE_SESSION_DURATION) * 2 * Math.PI * 32)}
                   className="transition-all duration-1000 ease-out filter drop-shadow-lg"
                   strokeLinecap="round"
                 />
@@ -207,7 +207,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
               
               {/* Time Display */}
               <div className="relative z-10 text-center">
-                <div className={`text-sm sm:text-lg font-bold tracking-tight ${timeRemaining <= 300 ? 'text-red-500' : 'text-green-600'}`}>
+                <div className={`text-xs sm:text-sm font-bold tracking-tight ${timeRemaining <= 300 ? 'text-red-500' : 'text-green-600'}`}>
                   {Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')}
                 </div>
                 <div className="text-[10px] sm:text-xs text-muted-foreground font-medium">
@@ -218,15 +218,15 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
           </div>
           
           {/* 3 Control Buttons Only */}
-          <div className="flex gap-4 items-center">
+          <div className="flex gap-3 items-center">
             
             {/* 1. Pause/Resume Button - Center */}
             <Button
               size="lg"
               onClick={() => setIsPaused(!isPaused)}
-              className="bg-gradient-to-b from-white to-gray-50 backdrop-blur-sm border-2 border-green-500/30 text-green-600 hover:bg-green-500 hover:text-white shadow-xl w-12 h-12 sm:w-16 sm:h-16 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-2xl hover:border-green-500/50"
+              className="bg-gradient-to-b from-white to-gray-50 backdrop-blur-sm border-2 border-green-500/30 text-green-600 hover:bg-green-500 hover:text-white shadow-xl w-10 h-10 sm:w-12 sm:h-12 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-2xl hover:border-green-500/50"
             >
-              {isPaused ? <Play className="w-4 h-4 sm:w-6 sm:h-6" /> : <Pause className="w-4 h-4 sm:w-6 sm:h-6" />}
+              {isPaused ? <Play className="w-3 h-3 sm:w-4 sm:h-4" /> : <Pause className="w-3 h-3 sm:w-4 sm:h-4" />}
             </Button>
             
             {/* 2. Reduce Time Button - Left */}
@@ -234,7 +234,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
               variant="outline"
               size="lg"
               disabled={timeRemaining <= 300}
-              className={`bg-gradient-to-b from-white to-orange-50 backdrop-blur-sm border-2 border-orange-400/50 text-orange-600 hover:bg-orange-500 hover:text-white shadow-lg w-10 h-10 sm:w-14 sm:h-14 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-xl ${
+              className={`bg-gradient-to-b from-white to-orange-50 backdrop-blur-sm border-2 border-orange-400/50 text-orange-600 hover:bg-orange-500 hover:text-white shadow-lg w-8 h-8 sm:w-10 sm:h-10 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-xl ${
                 timeRemaining <= 300 
                   ? 'opacity-50 cursor-not-allowed' 
                   : ''
@@ -245,14 +245,14 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                 }
               }}
             >
-              <Minus className="w-3 h-3 sm:w-5 sm:h-5" />
+              <Minus className="w-2 h-2 sm:w-3 sm:h-3" />
             </Button>
 
             {/* 3. End Session Button - Right */}
             <Button
               variant="outline"
               size="lg"
-              className="bg-gradient-to-b from-white to-red-50 backdrop-blur-sm border-2 border-red-400/50 text-red-600 hover:bg-red-500 hover:text-white shadow-lg w-10 h-10 sm:w-14 sm:h-14 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-xl"
+              className="bg-gradient-to-b from-white to-red-50 backdrop-blur-sm border-2 border-red-400/50 text-red-600 hover:bg-red-500 hover:text-white shadow-lg w-8 h-8 sm:w-10 sm:h-10 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-xl"
               onClick={() => {
                 setTimeRemaining(0);
                 onSessionEnded({
@@ -264,12 +264,12 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                 });
               }}
             >
-              <X className="w-3 h-3 sm:w-5 sm:h-5" />
+              <X className="w-2 h-2 sm:w-3 sm:h-3" />
             </Button>
           </div>
           
           {/* Premium Badge */}
-          <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-3 py-1 rounded-full shadow-lg border-2 border-white/50 text-xs font-bold">
+          <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-2 py-1 rounded-full shadow-lg border-2 border-white/50 text-xs font-bold">
             ✨ UNLIMITED
           </div>
         </div>
