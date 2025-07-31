@@ -303,7 +303,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
       
       const timer = setTimeout(() => {
         setShowAddPagesAlert(false);
-      }, 4000); // Show for 4 seconds
+      }, 2500); // Show for 2.5 seconds
       
       return () => clearTimeout(timer);
     }
@@ -1092,13 +1092,33 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                           >
                             <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
                           </Button>
-                          <div className={`absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 rounded text-xs transition-all duration-300 pointer-events-none whitespace-nowrap z-10 ${
-                            showAddPagesAlert 
-                              ? 'bg-amber-600 text-white opacity-100 animate-pulse' 
-                              : 'bg-gray-800 text-white opacity-0 group-hover:opacity-100'
-                          }`}>
-                            {showAddPagesAlert ? '⏰ Add more pages now!' : 'Add 5 more pages'}
-                          </div>
+                          
+                          {/* Alert Tooltip with X button */}
+                          {showAddPagesAlert && (
+                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-amber-600 text-white px-2 py-1 rounded text-xs whitespace-nowrap z-10 animate-pulse">
+                              <div className="flex items-center gap-2">
+                                <span>⏰ Add more pages now!</span>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setShowAddPagesAlert(false);
+                                  }}
+                                  className="text-white hover:text-amber-200 transition-colors"
+                                >
+                                  <X className="w-3 h-3" />
+                                </button>
+                              </div>
+                              {/* Arrow pointing down */}
+                              <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-l-2 border-r-2 border-t-4 border-transparent border-t-amber-600"></div>
+                            </div>
+                          )}
+                          
+                          {/* Regular Tooltip */}
+                          {!showAddPagesAlert && (
+                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 rounded text-xs transition-all duration-300 pointer-events-none whitespace-nowrap z-10 bg-gray-800 text-white opacity-0 group-hover:opacity-100">
+                              Add 5 more pages
+                            </div>
+                          )}
                         </div>
                       </div>
                       
