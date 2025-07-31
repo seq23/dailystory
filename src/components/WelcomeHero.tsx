@@ -224,8 +224,8 @@ export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
               size="xl" 
               onClick={onGetStarted}
               className={`relative hover:scale-105 shadow-glow transition-all duration-300 hover:shadow-2xl hover:shadow-primary/50 group overflow-hidden ${
-                isShaking ? 'animate-shake-hard' : 'animate-bounce-gentle hover:animate-none'
-              }`}
+                isShaking ? 'animate-shake-hard' : 'animate-bounce-gentle'
+              } hover:animate-none`}
             >
               <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 via-pink-400/20 to-blue-400/20 animate-pulse group-hover:animate-none"></div>
               <BookOpen className="w-6 h-6 relative z-10 animate-pulse group-hover:animate-none" />

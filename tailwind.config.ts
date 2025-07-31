@@ -137,11 +137,11 @@ export default {
 					'0%, 100%': {
 						transform: 'translateX(0)'
 					},
-					'10%, 30%, 50%, 70%, 90%': {
-						transform: 'translateX(-8px)'
+					'5%, 15%, 25%, 35%, 45%, 55%, 65%, 75%, 85%, 95%': {
+						transform: 'translateX(-12px)'
 					},
-					'20%, 40%, 60%, 80%': {
-						transform: 'translateX(8px)'
+					'10%, 20%, 30%, 40%, 50%, 60%, 70%, 80%, 90%': {
+						transform: 'translateX(12px)'
 					}
 				}
 			},
@@ -151,7 +151,7 @@ export default {
 				'bounce-gentle': 'bounce-gentle 2s ease-in-out infinite',
 				'float': 'float 3s ease-in-out infinite',
 				'wiggle': 'wiggle 0.5s ease-in-out',
-				'shake-hard': 'shake-hard 0.6s ease-in-out'
+				'shake-hard': 'shake-hard 0.8s ease-in-out infinite'
 			}
 		}
 	},
