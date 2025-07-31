@@ -217,9 +217,9 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     return () => {
       isCancelled = true;
     };
-  }, [userInfo.name, currentDifficulty]); // Only depend on name and difficulty, not entire userInfo object
+  }, [userInfo.name]); // Remove currentDifficulty dependency to prevent reload feeling
 
-  // Function to change difficulty easier/harder
+  // Function to change difficulty easier/harder - SMOOTH, NO RELOAD
   const changeDifficulty = async (direction: 'easier' | 'harder') => {
     const currentIndex = getDifficultyIndex();
     let newIndex: number;
@@ -233,34 +233,118 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     }
     
     const newDifficulty = difficultyLevels[newIndex];
-    setCurrentDifficulty(newDifficulty);
-    setCurrentPage(0);
     
-    // Generate new story with proper image support
-    try {
-      const characterDescription = userInfo.avatar ? `, a curious and brave ${userInfo.avatar.type === 'boy' ? 'boy' : userInfo.avatar.type === 'girl' ? 'girl' : 'child'}` : '';
-      
-      const storyConfig = {
-        age: userInfo.age,
-        gradeLevel: userInfo.gradeLevel || userInfo.grade,
-        readingLevel: newDifficulty,
-        interests: userInfo.interests || [userInfo.hobbies || 'adventure'],
-        theme: 'adventure',
-        userName: userInfo.name,
-        characterDescription
-      };
+    // Show immediate feedback
+    toast({
+      title: `Updating to ${newDifficulty} level...`,
+      description: "Story is being adjusted for you",
+      duration: 2000,
+    });
+    
+    // Update difficulty immediately (no page reload)
+    setCurrentDifficulty(newDifficulty);
+    
+    // Generate new story content smoothly in background
+    const generateUpdatedStory = async () => {
+      try {
+        const characterDescription = userInfo.avatar ? `, a curious and brave ${userInfo.avatar.type === 'boy' ? 'boy' : userInfo.avatar.type === 'girl' ? 'girl' : 'child'}` : '';
+        
+        const interests = [
+          userInfo.hobbies, 
+          userInfo.favoriteAnimal, 
+          userInfo.specialRequest,
+          userInfo.favoriteFood
+        ].filter(item => item && item.trim().length > 0);
+        
+        if (interests.length === 0) {
+          interests.push(userInfo.age <= 6 ? 'animals' : userInfo.age <= 8 ? 'friendship' : 'adventure');
+        }
+        
+        const storyConfig = {
+          age: userInfo.age,
+          gradeLevel: userInfo.gradeLevel || userInfo.grade,
+          readingLevel: newDifficulty,
+          interests: interests,
+          theme: userInfo.specialRequest || 'adventure',
+          userName: userInfo.name,
+          characterDescription
+        };
 
-      const newStory = await adaptiveStoryGenerator.generateStory(storyConfig);
-      setStory(newStory.pages);
-      setStoryImages(newStory.images || []);
-      setWordsRead(newStory.wordCount);
-      
-      // Images will be generated in background by the story generator
-      // Current fallback illustrations will display immediately while new images load
-      
-    } catch (error) {
-      console.error('Failed to change difficulty:', error);
-    }
+        // Generate new story at the new difficulty level
+        const updatedStory = await adaptiveStoryGenerator.generateStory(storyConfig);
+        
+        // Smoothly update the story content (no reload feeling)
+        const targetPages = 10;
+        let pages = updatedStory.pages;
+        
+        if (pages.length < targetPages) {
+          const additionalPages = targetPages - pages.length;
+          for (let i = 0; i < additionalPages; i++) {
+            pages.push(`${userInfo.name}'s adventure continues with more exciting discoveries...`);
+          }
+        } else if (pages.length > targetPages) {
+          pages = pages.slice(0, targetPages);
+        }
+        
+        // Update story and images smoothly
+        setStory(pages);
+        setStoryImages(updatedStory.images || []);
+        setWordsRead(updatedStory.wordCount);
+        
+        // Keep user on same relative page position
+        const maxPage = Math.max(0, pages.length - 1);
+        setCurrentPage(Math.min(currentPage, maxPage));
+        
+        // Success feedback
+        toast({
+          title: "Story Updated!",
+          description: `Now reading at ${newDifficulty} level`,
+          duration: 2000,
+        });
+
+        // Start progressive image generation for new content
+        const startProgressiveImageGeneration = async () => {
+          for (let i = 0; i < Math.min(pages.length, 10); i++) {
+            try {
+              const pageImage = await adaptiveStoryGenerator.generatePageImage(
+                i,
+                pages[i],
+                storyConfig,
+                updatedStory.title,
+                updatedStory.theme,
+                updatedStory.readingLevel
+              );
+              
+              if (pageImage.url) {
+                setStoryImages(prevImages => {
+                  const newImages = [...prevImages];
+                  newImages[i] = pageImage;
+                  return newImages;
+                });
+              }
+            } catch (error) {
+              console.error(`Failed to generate image for page ${i + 1}:`, error);
+            }
+            
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+        };
+
+        // Start progressive image generation (non-blocking)
+        startProgressiveImageGeneration();
+        
+      } catch (error) {
+        console.error('Failed to update story for new difficulty:', error);
+        toast({
+          title: "Update Failed",
+          description: "Keeping current story content",
+          duration: 2000,
+        });
+      }
+    };
+    
+    // Start background story update (non-blocking)
+    generateUpdatedStory();
   };
   
   // Function to add more pages to the story
