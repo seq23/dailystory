@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Play, Pause, Plus, Minus, X } from "lucide-react";
+import { Play, Pause, Minus, X } from "lucide-react";
 
 import { useToast } from "@/hooks/use-toast";
 
@@ -10,7 +10,6 @@ interface FloatingTimerProps {
   timeRemaining: number;
   isReading: boolean;
   onToggleReading: () => void;
-  onAddTime: () => void;
   onReduceTime?: () => void;
   onEndSession: () => void;
   pagesRemaining?: number;
@@ -23,7 +22,6 @@ export const FloatingTimer = ({
   timeRemaining, 
   isReading, 
   onToggleReading, 
-  onAddTime,
   onReduceTime,
   onEndSession,
   pagesRemaining = 0,
@@ -36,12 +34,12 @@ export const FloatingTimer = ({
   const { toast } = useToast();
   
   
-  // Tutorial auto-advance - 15 seconds max
+  // Tutorial auto-advance - 10 seconds max
   useEffect(() => {
-    if (tutorialStep > 0 && tutorialStep <= 3) {
+    if (tutorialStep > 0 && tutorialStep <= 2) {
       const timer = setTimeout(() => {
         // Auto-advance tutorial (parent component handles this)
-      }, 5000); // 5 seconds per step = 15 seconds total
+      }, 5000); // 5 seconds per step = 10 seconds total
       return () => clearTimeout(timer);
     }
   }, [tutorialStep]);
@@ -224,7 +222,7 @@ export const FloatingTimer = ({
         </div>
         
         {/* Control Buttons in Curved U-Shape */}
-        <div className="relative w-44 sm:w-52 h-20 sm:h-24">
+        <div className="relative w-36 sm:w-44 h-20 sm:h-24">
           {/* Play/Pause Button - Center Bottom */}
           <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2">
             <Tooltip open={tutorialStep === 1}>
@@ -244,48 +242,30 @@ export const FloatingTimer = ({
             </Tooltip>
           </div>
           
-          {/* Add Time Button - Left Curve */}
+
+
+          {/* Reduce Time Button - Left Curve */}
           <div className="absolute bottom-4 sm:bottom-6 left-2 sm:left-4">
             <Tooltip open={tutorialStep === 2}>
               <TooltipTrigger asChild>
                 <Button
                   variant="outline"
                   size="lg"
-                  onClick={onAddTime}
-                  className={`bg-gradient-to-b from-white to-green-50 backdrop-blur-sm border-2 border-green-400/50 text-green-600 hover:bg-green-500 hover:text-white shadow-lg w-12 h-12 sm:w-16 sm:h-16 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-xl ${getTutorialClasses(2)}`}
-                >
-                  <Plus className="w-5 h-5 sm:w-6 sm:h-6" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top" className="bg-green-600 text-white border-green-500 font-medium">
-                {tutorialStep === 2 ? "⏰ Add 5 more minutes to your reading time!" : "Add 5 Minutes"}
-              </TooltipContent>
-            </Tooltip>
-          </div>
-
-
-          {/* Reduce Time Button - Right Curve */}
-          <div className="absolute bottom-4 sm:bottom-6 right-2 sm:right-4">
-            <Tooltip open={tutorialStep === 3}>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="lg"
                   onClick={onReduceTime}
                   disabled={timeRemaining <= 5 * 60}
-                  className={`bg-gradient-to-b from-white to-orange-50 backdrop-blur-sm border-2 border-orange-400/50 text-orange-600 hover:bg-orange-500 hover:text-white shadow-lg w-12 h-12 sm:w-16 sm:h-16 rounded-full p-0 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-110 hover:shadow-xl ${getTutorialClasses(3)}`}
+                  className={`bg-gradient-to-b from-white to-orange-50 backdrop-blur-sm border-2 border-orange-400/50 text-orange-600 hover:bg-orange-500 hover:text-white shadow-lg w-12 h-12 sm:w-16 sm:h-16 rounded-full p-0 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-110 hover:shadow-xl ${getTutorialClasses(2)}`}
                 >
                   <Minus className="w-5 h-5 sm:w-6 sm:h-6" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="top" className="bg-orange-600 text-white border-orange-500 font-medium">
-                {tutorialStep === 3 ? "⏰ Reduce time by 5 minutes!" : "Reduce 5 Minutes"}
+                {tutorialStep === 2 ? "⏰ Reduce time by 5 minutes!" : "Reduce 5 Minutes"}
               </TooltipContent>
             </Tooltip>
           </div>
 
-          {/* End Session Button - Top Center */}
-          <div className="absolute top-0 left-1/2 transform -translate-x-1/2">
+          {/* End Session Button - Right Curve */}
+          <div className="absolute bottom-4 sm:bottom-6 right-2 sm:right-4">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button

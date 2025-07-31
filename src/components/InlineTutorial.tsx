@@ -32,18 +32,10 @@ export const InlineTutorial = ({ isActive, onComplete }: InlineTutorialProps) =>
     },
     {
       id: 2,
-      title: "Add More Time",
-      description: "Need more time? Click the + button to add 5 more minutes to your reading session!",
-      targetSelector: "#floating-timer",
-      position: { top: "60%", left: "25%" },
-      arrow: "right"
-    },
-    {
-      id: 3,
-      title: "Reduce Time or End Session",
+      title: "Timer Controls",
       description: "Use the - button to reduce time by 5 minutes, or the X button to end your session anytime!",
       targetSelector: "#floating-timer",
-      position: { top: "40%", left: "25%" },
+      position: { top: "60%", left: "25%" },
       arrow: "right"
     }
   ];
@@ -120,12 +112,12 @@ export const InlineTutorial = ({ isActive, onComplete }: InlineTutorialProps) =>
     }
   }, [currentStep, isVisible, currentStepData]);
 
-  // Auto-advance tutorial after 15 seconds total
+  // Auto-advance tutorial after 10 seconds total (2 steps x 5 seconds each)
   useEffect(() => {
     if (isVisible) {
       const timer = setTimeout(() => {
         completeTutorial();
-      }, 15000); // 15 seconds total
+      }, 10000); // 10 seconds total
       
       return () => clearTimeout(timer);
     }

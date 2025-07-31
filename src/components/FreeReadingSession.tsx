@@ -742,14 +742,6 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
             timeRemaining={timeRemaining}
             isReading={!isPaused}
             onToggleReading={() => setIsPaused(!isPaused)}
-            onAddTime={() => {
-              const newTime = Math.min(timeRemaining + 5 * 60, APP_CONFIG.FREE_SESSION_DURATION);
-              setTimeRemaining(newTime);
-              toast({
-                title: t("freeReadingSession.timeAdded.title"),
-                description: t("freeReadingSession.timeAdded.description"),
-              });
-            }}
             onReduceTime={() => {
               if (timeRemaining > 5 * 60) {
                 setTimeRemaining(prev => Math.max(5 * 60, prev - 5 * 60));
