@@ -20,8 +20,8 @@ export class StorySpecificImageGenerator {
     // Get cultural context
     const culturalContext = CulturalAdaptationService.getCulturalContext(userInfo.nativeLanguage || 'en');
     
-    // Create consistent main character description based on avatar
-    const mainCharacter = this.createMainCharacterDescription(userInfo);
+    // Create consistent main character description based on avatar and difficulty
+    const mainCharacter = this.createMainCharacterDescription(userInfo, difficulty);
     
     // Extract story elements from current page and all pages for consistency
     const storyElements = this.extractStoryElements(storyText, storyCharacter, allStoryPages);
@@ -123,9 +123,9 @@ export class StorySpecificImageGenerator {
     return prompt;
   }
   
-  private static createMainCharacterDescription(userInfo: UserInfo): string {
-    // Adjust character age representation based on reading difficulty
-    const difficultyLevel = userInfo.difficultyLevel || 'easy';
+  private static createMainCharacterDescription(userInfo: UserInfo, difficulty: DifficultyLevel): string {
+    // Use the passed difficulty parameter instead of userInfo.difficultyLevel
+    const difficultyLevel = difficulty;
     let genderDesc = userInfo.avatar?.type === "boy" ? "young boy" : "young girl";
     
     // Make characters slightly older-looking for higher difficulty levels
