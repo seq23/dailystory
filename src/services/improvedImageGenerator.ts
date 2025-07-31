@@ -1,6 +1,4 @@
-import type { UserInfo } from "@/components/UserInfoForm";
-
-type DifficultyLevel = "easy" | "medium" | "hard" | "expert";
+import type { UserInfo, DifficultyLevel } from "@/types";
 
 export interface ImageGenerationContext {
   storyText: string;
@@ -64,9 +62,9 @@ export class ImprovedImageGenerator {
       medium: 'medium skin', 
       olive: 'olive skin',
       dark: 'dark skin'
-    };
+    } as const;
     
-    const skinTone = skinTones[userInfo.avatar?.skinTone] || 'medium skin';
+    const skinTone = skinTones[userInfo.avatar?.skinTone || 'medium'] || 'medium skin';
     const name = userInfo.name?.trim() || 'child';
     
     // Add clothing color if provided

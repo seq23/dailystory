@@ -26,7 +26,7 @@ import PersonalizedLearningService, {
   VocabularyGame,
   ComprehensionQuiz 
 } from "@/services/personalizedLearningService";
-import type { UserInfo } from "@/components/UserInfoForm";
+import type { UserInfo } from "@/types";
 import type { ReadingProgress } from "@/services/progressTrackingService";
 
 interface LearningPathDashboardProps {

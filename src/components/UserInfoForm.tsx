@@ -12,25 +12,9 @@ import { AvatarPicker } from "@/components/ui/avatar-picker";
 import { ChevronRight, User, GraduationCap, Heart, Star, Globe } from "lucide-react";
 import { ContentSecurity, SecurityLogger } from "@/utils/security";
 import { useToast } from "@/hooks/use-toast";
+import type { UserInfo, Grade, LanguageCode, LearningGoal } from "@/types";
 
-export interface UserInfo {
-  name: string;
-  age: number;
-  grade: string;
-  nativeLanguage: string;
-  learningGoal: "improve-english-reading" | "learn-english-language" | "both";
-  avatar: {
-    type: "boy" | "girl";
-    skinTone: "pale" | "light" | "medium" | "olive" | "dark";
-  };
-  favoriteColor: string;
-  favoriteAnimal: string;
-  hobbies: string;
-  favoriteFood: string;
-  specialRequest: string;
-  difficultyLevel?: "easy" | "medium" | "hard" | "expert";
-  readingAbility?: "easy" | "medium" | "hard" | "expert";
-}
+export type { UserInfo } from "@/types";
 
 interface UserInfoFormProps {
   onSubmit: (userInfo: UserInfo) => void;
@@ -43,7 +27,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
   const [formData, setFormData] = useState<UserInfo>({
     name: "",
     age: 6,
-    grade: "",
+    grade: "PreK",
     nativeLanguage: "en",
     learningGoal: "improve-english-reading",
     avatar: {
@@ -141,7 +125,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
       grade: formData.grade
     });
     
-    onSubmit({ ...formData, difficultyLevel: difficulty });
+    onSubmit({ ...formData, difficultyLevel: difficulty } as UserInfo);
   };
 
   const isFormComplete = () => {
@@ -156,7 +140,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
   };
 
   // Handle language change and update UI language
-  const handleLanguageChange = (newLanguage: string) => {
+  const handleLanguageChange = (newLanguage: LanguageCode) => {
     setFormData(prev => ({ ...prev, nativeLanguage: newLanguage }));
     i18n.changeLanguage(newLanguage);
   };

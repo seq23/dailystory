@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { WelcomeHero } from "@/components/WelcomeHero";
-import { UserInfoForm, type UserInfo } from "@/components/UserInfoForm";
+import { UserInfoForm } from "@/components/UserInfoForm";
+import type { UserInfo } from "@/types";
 import StoryDisplay from "@/components/StoryDisplay";
 
 type AppState = "welcome" | "form" | "story";

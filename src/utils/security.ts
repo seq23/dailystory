@@ -1,4 +1,5 @@
 // Enhanced Security Utilities for Children's Story App
+import { APP_CONFIG } from "@/constants/app";
 
 // Content filtering and sanitization
 export class ContentSecurity {
@@ -220,7 +221,11 @@ export class ContentSecurity {
   /**
    * Rate limiting for form submissions
    */
-  static checkRateLimit(identifier: string, maxSubmissions = 5, windowMs = 60000): boolean {
+  static checkRateLimit(
+    identifier: string, 
+    maxSubmissions: number = APP_CONFIG.MAX_SUBMISSIONS_PER_MINUTE, 
+    windowMs: number = APP_CONFIG.RATE_LIMIT_WINDOW
+  ): boolean {
     const now = Date.now();
     const userSubmissions = this.submissionCounts.get(identifier);
 

@@ -6,15 +6,14 @@ import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { BookOpen, Home, RotateCcw, Volume2, VolumeX, TrendingUp, TrendingDown, Plus, Minus, Star, Heart, Sparkles, Wand2, Play, Pause, Timer, Mic, MicOff, BarChart3, Target } from "lucide-react";
 import { FloatingTimer } from "./FloatingTimer";
-import type { UserInfo } from "./UserInfoForm";
+import type { UserInfo, DifficultyLevel, SessionStats } from "@/types";
 import ProgressDashboard from "@/components/ProgressDashboard";
 import LearningPathDashboard from "@/components/LearningPathDashboard";
 import AdaptiveUI from "@/components/AdaptiveUI";
 import { ProgressTrackingService, ReadingProgress } from "@/services/progressTrackingService";
 import { createOpenAITTSService } from "@/services/textToSpeechService";
 import { useToast } from "@/hooks/use-toast";
-import InclusiveStoryGenerator from "@/services/inclusiveStoryGenerator";
-import { ImprovedStoryGenerator } from "@/services/improvedStoryGenerator";
+import { StoryGeneratorService } from "@/services/storyGenerator";
 import { ImprovedImageGenerator } from "@/services/improvedImageGenerator";
 import illustration1 from "@/assets/story-illustration-1.jpg";
 import illustration2 from "@/assets/story-illustration-2.jpg";
@@ -73,8 +72,9 @@ import avatarGirlDark from "@/assets/avatar-girl-dark.jpg";
 import time2ReadLogo from "@/assets/time2read-logo.png";
 import { processTextForPhonetics } from "@/utils/textProcessor";
 import { SecureRunwareService } from "@/services/secureRunwareService";
+import { APP_CONFIG } from "@/constants/app";
 
-type DifficultyLevel = "easy" | "medium" | "hard" | "expert";
+// Remove duplicate type definition - using centralized types
 
 interface StoryDisplayProps {
   userInfo: UserInfo;
@@ -90,7 +90,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
   // Core state
   const [currentParagraph, setCurrentParagraph] = useState(0);
   const [isReading, setIsReading] = useState(true); // Auto-start reading
-  const [timeRemaining, setTimeRemaining] = useState(20 * 60); // 20 minutes for free version
+  const [timeRemaining, setTimeRemaining] = useState(APP_CONFIG.FREE_SESSION_DURATION);
   const [story, setStory] = useState<string[]>([]);
   const [currentDifficulty, setCurrentDifficulty] = useState<DifficultyLevel>(
     userInfo.difficultyLevel || (userInfo.age <= 6 ? "easy" : userInfo.age <= 9 ? "medium" : userInfo.age <= 12 ? "hard" : "expert")
@@ -138,7 +138,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
   // Services - Initialize with debugging
   const [runwareService] = useState<SecureRunwareService>(() => {
     console.log('Initializing Runware service with API key');
-    const service = new SecureRunwareService("LRRGqlrg67zH8uss6lMjVvc54pVOrznM");
+    const service = new SecureRunwareService(APP_CONFIG.RUNWARE_API_KEY);
     console.log('Runware service created:', service);
     return service;
   });
@@ -171,7 +171,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         // Reset progress bar and reading state for new session (free version)
         setCurrentParagraph(0);
         setIsReading(true); // Auto-start reading
-        setTimeRemaining(20 * 60); // Reset to 20 minutes (1200 seconds)
+        setTimeRemaining(APP_CONFIG.FREE_SESSION_DURATION);
         setHasShownAddPagesAlert(false); // Reset alert flag for new session
         setCustomIllustrations(new Map()); // Clear custom illustrations
         
@@ -187,14 +187,8 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
           setHasShownTutorial(true);
         }
         
-        // Use improved story generator with fallback to original system
-        let generatedStory;
-        try {
-          generatedStory = ImprovedStoryGenerator.generateStory(userInfo, currentDifficulty, 10);
-        } catch (error) {
-          console.error('Improved story generator failed, using fallback:', error);
-          generatedStory = InclusiveStoryGenerator.generateCulturallyAdaptedStory(userInfo, currentDifficulty);
-        }
+        // Use centralized story generation service
+        const generatedStory = await StoryGeneratorService.generateStory(userInfo, currentDifficulty, 10);
         setStory(generatedStory);
         
         // Calculate word count for stats and reset reading stats
@@ -264,7 +258,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
             setIsReading(false);
             // Start 5-second countdown before auto-finishing
             setShowFinishCountdown(true);
-            setCountdownSeconds(5);
+            setCountdownSeconds(APP_CONFIG.COUNTDOWN_DURATION);
           }
           return newTime;
         });
@@ -315,18 +309,18 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       
       setTimeout(() => {
         setShowAddPagesAlert(false);
-      }, 3000); // 3 seconds as requested
+      }, APP_CONFIG.ALERT_DURATION);
     }
   }, [currentParagraph, story.length, timeRemaining, hasShownAddPagesAlert]);
 
   useEffect(() => {
     if (showTutorial && story.length > 0) {
       const tutorialSteps = [
-        { message: t("storyDisplay.difficulty.tutorialSteps.step1"), duration: 3000, target: "timer" },
-        { message: t("storyDisplay.difficulty.tutorialSteps.step2"), duration: 3000, target: "audio" },
-        { message: t("storyDisplay.difficulty.tutorialSteps.step3"), duration: 3000, target: "difficulty" },
-        { message: t("storyDisplay.difficulty.tutorialSteps.step4"), duration: 3000, target: "pages" },
-        { message: t("storyDisplay.difficulty.tutorialSteps.step5"), duration: 3000, target: "center" }
+        { message: t("storyDisplay.difficulty.tutorialSteps.step1"), duration: APP_CONFIG.TUTORIAL_STEP_DURATION, target: "timer" },
+        { message: t("storyDisplay.difficulty.tutorialSteps.step2"), duration: APP_CONFIG.TUTORIAL_STEP_DURATION, target: "audio" },
+        { message: t("storyDisplay.difficulty.tutorialSteps.step3"), duration: APP_CONFIG.TUTORIAL_STEP_DURATION, target: "difficulty" },
+        { message: t("storyDisplay.difficulty.tutorialSteps.step4"), duration: APP_CONFIG.TUTORIAL_STEP_DURATION, target: "pages" },
+        { message: t("storyDisplay.difficulty.tutorialSteps.step5"), duration: APP_CONFIG.TUTORIAL_STEP_DURATION, target: "center" }
       ];
 
       let currentStep = 0;
@@ -448,12 +442,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       // Only regenerate story content, don't reset timer or session stats
       // Use improved story generator with fallback
       let generatedStory;
-      try {
-        generatedStory = ImprovedStoryGenerator.generateStory(userInfo, newDifficulty, 10);
-      } catch (error) {
-        console.error('Improved story generator failed, using fallback:', error);
-        generatedStory = InclusiveStoryGenerator.generateCulturallyAdaptedStory(userInfo, newDifficulty);
-      }
+      generatedStory = await StoryGeneratorService.generateStory(userInfo, newDifficulty, 10);
       setStory(generatedStory);
       
       // Clear custom illustrations for new story
@@ -532,13 +521,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
     try {
       // Generate continuation that flows from current story context
       const currentStoryContext = story.slice(-3).join(' '); // Get last 3 pages for context
-      const extension = InclusiveStoryGenerator.generateCulturallyAdaptedStory(
-        userInfo, 
-        currentDifficulty, 
-        true, // isExtension
-        5,    // pageCount
-        currentStoryContext // Pass current context for seamless continuation
-      );
+      const extension = await StoryGeneratorService.generateStory(userInfo, currentDifficulty, 5);
       
       setStory(prev => [...prev, ...extension]);
       setShowAddPagesAlert(false); // Hide current alert but don't reset the flag

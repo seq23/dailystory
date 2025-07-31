@@ -1,4 +1,5 @@
-import { UserInfo } from "@/components/UserInfoForm";
+import type { UserInfo } from "@/types";
+import { APP_CONFIG } from "@/constants/app";
 
 export interface ReadingProgress {
   userId: string;
@@ -75,7 +76,7 @@ export interface VocabularyWord {
 }
 
 export class ProgressTrackingService {
-  private static readonly STORAGE_KEY = 'time2read_progress';
+  private static readonly STORAGE_KEY = APP_CONFIG.PROGRESS_STORAGE_KEY;
   
   static initializeProgress(userInfo: UserInfo): ReadingProgress {
     const userId = this.generateUserId(userInfo);
@@ -99,7 +100,7 @@ export class ProgressTrackingService {
     };
     
     // Add specific progress tracking based on user type
-    if (userInfo.nativeLanguage === 'English') {
+    if (userInfo.nativeLanguage === 'en') {
       baseProgress.nativeProgress = {
         readingLevel: userInfo.readingAbility || 'medium',
         vocabularyGrowth: 0,
@@ -170,7 +171,7 @@ export class ProgressTrackingService {
   ): ReadingProgress {
     const updatedProgress = { ...progress };
     
-    if (userInfo.nativeLanguage === 'English' && updatedProgress.nativeProgress) {
+    if (userInfo.nativeLanguage === 'en' && updatedProgress.nativeProgress) {
       // For native speakers, track complex vocabulary
       if (word.difficulty === 'hard' || word.difficulty === 'expert') {
         if (!updatedProgress.nativeProgress.complexWordsEncountered.includes(word.word)) {
@@ -197,7 +198,7 @@ export class ProgressTrackingService {
   static generatePersonalizedRecommendations(progress: ReadingProgress, userInfo: UserInfo): string[] {
     const recommendations: string[] = [];
     
-    if (userInfo.nativeLanguage === 'English' && progress.nativeProgress) {
+    if (userInfo.nativeLanguage === 'en' && progress.nativeProgress) {
       // Recommendations for native speakers
       if (progress.readingSpeed < 100) {
         recommendations.push("Try reading shorter stories to build speed and confidence");
@@ -239,20 +240,20 @@ export class ProgressTrackingService {
       {
         week: currentWeek,
         type: 'stories_completed',
-        target: userInfo.nativeLanguage === 'English' ? 7 : 5, // Adjust for ESL learners
+        target: userInfo.nativeLanguage === 'en' ? 7 : 5, // Adjust for ESL learners
         current: 0,
         completed: false
       },
       {
         week: currentWeek,
         type: 'reading_time',
-        target: userInfo.nativeLanguage === 'English' ? 1800 : 1200, // 30 min vs 20 min
+        target: userInfo.nativeLanguage === 'en' ? 1800 : 1200, // 30 min vs 20 min
         current: 0,
         completed: false
       }
     ];
     
-    if (userInfo.nativeLanguage !== 'English') {
+    if (userInfo.nativeLanguage !== 'en') {
       goals.push({
         week: currentWeek,
         type: 'vocabulary_learned',

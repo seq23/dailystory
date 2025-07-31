@@ -15,7 +15,7 @@ import {
   Volume2
 } from "lucide-react";
 import { ReadingProgress, Achievement, WeeklyGoal } from "@/services/progressTrackingService";
-import { UserInfo } from "@/components/UserInfoForm";
+import type { UserInfo } from "@/types";
 
 interface ProgressDashboardProps {
   progress: ReadingProgress;
@@ -26,7 +26,7 @@ interface ProgressDashboardProps {
 const ProgressDashboard = ({ progress, userInfo, onClose }: ProgressDashboardProps) => {
   const [selectedTab, setSelectedTab] = useState<'overview' | 'achievements' | 'goals'>('overview');
   
-  const isNativeEnglish = userInfo.nativeLanguage === 'English';
+  const isNativeEnglish = userInfo.nativeLanguage === 'en';
   
   const formatTime = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600);

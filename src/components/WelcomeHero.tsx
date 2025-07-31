@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BookOpen, Sparkles, Heart, Globe } from "lucide-react";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from "@/components/ui/carousel";
+import { APP_CONFIG } from "@/constants/app";
 import heroImage from "@/assets/hero-image-diverse-clear.jpg";
 import logoImage from "@/assets/time2read-logo.png";
 import carouselImage1 from "@/assets/carousel-1-car-reading.jpg";
@@ -25,7 +26,7 @@ export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
 
     const autoplay = setInterval(() => {
       api.scrollNext();
-    }, 4000); // Change slide every 4 seconds
+    }, APP_CONFIG.CAROUSEL_AUTO_ADVANCE);
 
     return () => clearInterval(autoplay);
   }, [api]);

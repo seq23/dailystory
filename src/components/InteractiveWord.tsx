@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { getPhoneticSpelling } from "@/utils/phoneticDictionary";
 import { Volume2, HelpCircle, Languages, BookOpen, Lightbulb } from "lucide-react";
 import { createOpenAITTSService } from "@/services/textToSpeechService";
-import type { UserInfo } from "./UserInfoForm";
+import type { UserInfo } from "@/types";
 
 interface InteractiveWordProps {
   word: string;
