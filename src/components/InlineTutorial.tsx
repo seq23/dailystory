@@ -27,15 +27,15 @@ export const InlineTutorial = ({ isActive, onComplete }: InlineTutorialProps) =>
       title: "Reading Timer",
       description: "Click the play button to start your reading timer! Pause anytime you need a break.",
       targetSelector: "#floating-timer",
-      position: { top: "50%", left: "25%" },
+      position: { top: "20%", left: "10%", maxWidth: "300px" },
       arrow: "right"
     },
     {
       id: 2,
-      title: "Timer Controls",
+      title: "Timer Controls", 
       description: "Use the - button to reduce time by 5 minutes, or the X button to end your session anytime!",
       targetSelector: "#floating-timer",
-      position: { top: "60%", left: "25%" },
+      position: { top: "30%", left: "10%", maxWidth: "300px" },
       arrow: "right"
     },
     {
@@ -43,7 +43,7 @@ export const InlineTutorial = ({ isActive, onComplete }: InlineTutorialProps) =>
       title: "Story Navigation",
       description: "Navigate through your story pages using these arrow buttons. Go back or forward at your own pace!",
       targetSelector: ".story-navigation",
-      position: { top: "85%", left: "45%" },
+      position: { bottom: "20%", left: "50%", transform: "translateX(-50%)", maxWidth: "300px" },
       arrow: "up"
     },
     {
@@ -51,7 +51,7 @@ export const InlineTutorial = ({ isActive, onComplete }: InlineTutorialProps) =>
       title: "Add More Pages",
       description: "Want more story? Click the + button to automatically add 5 more pages to continue your adventure!",
       targetSelector: ".story-navigation",
-      position: { top: "80%", left: "45%" },
+      position: { bottom: "25%", left: "50%", transform: "translateX(-50%)", maxWidth: "300px" },
       arrow: "up"
     },
     {
@@ -59,7 +59,7 @@ export const InlineTutorial = ({ isActive, onComplete }: InlineTutorialProps) =>
       title: "Read Aloud",
       description: "Listen to your story! Click play to hear it read aloud and adjust the speed with the controls.",
       targetSelector: ".audio-controls",
-      position: { top: "25%", right: "20%" },
+      position: { top: "60%", right: "10%", maxWidth: "300px" },
       arrow: "left"
     },
     {
@@ -67,7 +67,7 @@ export const InlineTutorial = ({ isActive, onComplete }: InlineTutorialProps) =>
       title: "Reading Levels",
       description: "Adjust difficulty! Use 'Easier' or 'Harder' buttons to match your reading level perfectly.",
       targetSelector: ".reading-level-controls",
-      position: { top: "15%", left: "50%" },
+      position: { top: "10%", left: "50%", transform: "translateX(-50%)", maxWidth: "300px" },
       arrow: "down"
     }
   ];
@@ -162,10 +162,21 @@ export const InlineTutorial = ({ isActive, onComplete }: InlineTutorialProps) =>
       {/* Overlay */}
       <div className="absolute inset-0 bg-black/20 animate-fade-in" />
       
-      {/* Tutorial Popup */}
+      {/* Tutorial Popup - Smart positioning to stay on screen */}
       <div 
         className="absolute pointer-events-auto animate-scale-in"
-        style={currentStepData.position}
+        style={{
+          ...currentStepData.position,
+          // Ensure popup stays within viewport
+          transform: `translate(${
+            // Adjust horizontal position if too close to edges
+            (currentStepData.position.left && parseFloat(currentStepData.position.left.replace('%', '')) > 75) ? '-100%' :
+            (currentStepData.position.right && parseFloat(currentStepData.position.right.replace('%', '')) > 75) ? '-100%' : '0'
+          }, ${
+            // Adjust vertical position if too close to edges  
+            (currentStepData.position.top && parseFloat(currentStepData.position.top.replace('%', '')) > 75) ? '-100%' : '0'
+          })`
+        }}
       >
         <div className="relative">
           {/* Arrow pointing to target */}
@@ -173,11 +184,11 @@ export const InlineTutorial = ({ isActive, onComplete }: InlineTutorialProps) =>
             {getArrowIcon(currentStepData.arrow)}
           </div>
           
-          {/* Tutorial Card */}
-          <div className="bg-white rounded-xl shadow-2xl border-2 border-primary/20 p-6 max-w-xs">
+          {/* Tutorial Card - Responsive sizing */}
+          <div className="bg-white rounded-xl shadow-2xl border-2 border-primary/20 p-4 sm:p-6 max-w-[280px] sm:max-w-xs mx-4">
             {/* Header */}
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-lg font-bold text-primary">{currentStepData.title}</h3>
+              <h3 className="text-base sm:text-lg font-bold text-primary pr-2">{currentStepData.title}</h3>
               <Button
                 variant="ghost"
                 size="sm"

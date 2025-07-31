@@ -943,8 +943,8 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
 
               {/* Story Text - Mobile Optimized */}
               <div className="order-1 lg:order-2">
-                <Card className="h-auto min-h-[400px] sm:h-[400px] lg:h-[500px] xl:h-[600px] flex flex-col transition-all duration-300 hover:shadow-lg">
-                  <CardContent className="p-3 sm:p-4 lg:p-6 flex-1 flex flex-col">
+                <Card className="h-auto min-h-[450px] sm:min-h-[500px] lg:h-[500px] xl:h-[600px] flex flex-col transition-all duration-300 hover:shadow-lg overflow-hidden">
+                  <CardContent className="p-3 sm:p-4 lg:p-6 flex-1 flex flex-col overflow-hidden">
                     {/* Difficulty Level Selector - Easier/Harder */}
                     <div className="mb-4 reading-level-controls">
                       <div className="flex gap-3 justify-center items-center">
@@ -999,7 +999,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                         {(() => {
                           const config = EarlyReaderStoryGenerator.getReadingConfigForDifficulty(currentDifficulty);
                           return (
-                            <div className={`${config.fontSize} ${config.lineHeight} ${config.spacing} font-medium text-gray-800 max-w-2xl mx-auto`}>
+                            <div className={`${config.fontSize} ${config.lineHeight} ${config.spacing} font-medium text-gray-800 max-w-full break-words hyphens-auto`}>
                               {processTextForPhonetics(
                                 currentStory, 
                                 "", 
@@ -1023,21 +1023,22 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                       </div>
                     )}
 
-                    {/* Navigation */}
-                    <div className="flex justify-between items-center mt-6">
+                    {/* Navigation - Fixed bottom positioning */}
+                    <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-100 story-navigation">
                       <Button 
                         onClick={() => {
                           setCurrentPage(Math.max(0, currentPage - 1));
                         }}
                         disabled={currentPage === 0}
                         variant="outline"
-                        className="story-navigation"
+                        size="sm"
+                        className="flex-shrink-0"
                       >
                         {t("freeReadingSession.navigation.previous")}
                       </Button>
                       
-                      <div className="flex flex-col items-center gap-2">
-                        <span className="text-sm font-medium text-gray-600">
+                      <div className="flex flex-col items-center gap-1 px-2">
+                        <span className="text-xs sm:text-sm font-medium text-gray-600 whitespace-nowrap">
                           {currentPage + 1} / {story.length}
                         </span>
                         <div className="relative group">
@@ -1046,11 +1047,11 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                             disabled={isLoading}
                             variant="outline"
                             size="sm"
-                            className="p-2"
+                            className="p-1.5 sm:p-2 bg-blue-50 hover:bg-blue-100 border-blue-200"
                           >
-                            <Plus className="w-4 h-4" />
+                            <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
                           </Button>
-                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
                             Add 5 more pages
                           </div>
                         </div>
@@ -1062,7 +1063,8 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                         }}
                         disabled={currentPage >= story.length - 1}
                         variant="outline"
-                        className="story-navigation"
+                        size="sm"
+                        className="flex-shrink-0"
                       >
                         {t("freeReadingSession.navigation.next")}
                       </Button>
