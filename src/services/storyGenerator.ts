@@ -1,13 +1,9 @@
-// Centralized story generation service that coordinates all story generators
-import { ComprehensiveStoryGenerator } from "./comprehensiveStoryGenerator";
-import { EarlyReaderStoryGenerator } from "./earlyReaderStoryGenerator";
-import { ImprovedStoryGenerator } from "./improvedStoryGenerator";
-import InclusiveStoryGenerator from "./inclusiveStoryGenerator";
+// Centralized story generation service with high-quality templates
 import type { UserInfo, DifficultyLevel } from "@/types";
 
 export class StoryGeneratorService {
   /**
-   * Main story generation method with word limits for early readers
+   * Main story generation method with high-quality templates
    */
   static async generateStory(
     userInfo: UserInfo, 
@@ -15,42 +11,18 @@ export class StoryGeneratorService {
     pageCount: number = 10
   ): Promise<{ pages: string[]; config: any }> {
     try {
-      console.log(`Generating comprehensive culturally-aware story for difficulty: ${difficulty}`);
+      console.log(`Generating high-quality story for difficulty: ${difficulty}`);
       
-      // Primary: Use comprehensive generator with full feature set
-      const result = ComprehensiveStoryGenerator.generateStory(userInfo, difficulty, pageCount);
+      // Use our carefully crafted templates
+      const pages = this.getHighQualityStory(userInfo, difficulty, pageCount);
+      const config = this.getReadingConfigForDifficulty(difficulty);
       
-      if (result.pages && result.pages.length > 0) {
-        console.log(`Successfully generated ${result.pages.length} pages with comprehensive generator`);
-        console.log(`Author style: ${result.authorStyle}`);
-        console.log(`Cultural elements included: ${JSON.stringify(result.culturalElements)}`);
-        return result;
-      }
-      
-      throw new Error('Comprehensive generator returned empty story');
+      console.log(`Successfully generated ${pages.length} pages`);
+      return { pages, config };
       
     } catch (error) {
-      console.warn('Comprehensive generator failed, using early reader fallback:', error);
-      
-      try {
-        // Fallback 1: Use early reader generator with word limits
-        const fallbackResult = EarlyReaderStoryGenerator.generateStory(userInfo, difficulty, pageCount);
-        
-        if (fallbackResult.pages && fallbackResult.pages.length > 0) {
-          console.log(`Successfully generated ${fallbackResult.pages.length} pages with early reader fallback`);
-          return fallbackResult;
-        }
-        
-        throw new Error('Early reader fallback returned empty story');
-        
-      } catch (fallbackError) {
-        console.error('Early reader fallback failed, using final fallback:', fallbackError);
-        
-        // Last resort: Return a simple default story with config
-        const defaultStory = this.getDefaultStory(userInfo, difficulty, pageCount);
-        const config = EarlyReaderStoryGenerator.getReadingConfigForDifficulty(difficulty);
-        return { pages: defaultStory, config };
-      }
+      console.error('Story generation failed:', error);
+      throw error;
     }
   }
   
@@ -66,35 +38,17 @@ export class StoryGeneratorService {
     try {
       console.log(`Generating story continuation for difficulty: ${difficulty}`);
       
-      // Use inclusive generator which supports extensions
-      const pages = InclusiveStoryGenerator.generateCulturallyAdaptedStory(
-        userInfo, 
-        difficulty, 
-        true, // isExtension = true
-        pageCount, 
-        existingContext
-      );
+      // Generate continuation pages
+      const pages = this.getContinuationPages(userInfo, difficulty, pageCount);
+      const config = this.getReadingConfigForDifficulty(difficulty);
       
-      if (pages && pages.length > 0) {
-        console.log(`Successfully generated ${pages.length} continuation pages`);
-        // Use the same config structure as the main story generator to maintain consistency
-        const config = {
-          maxWordsPerPage: difficulty === 'easy' ? 6 : difficulty === 'medium' ? 35 : difficulty === 'hard' ? 65 : 85,
-          fontSize: difficulty === 'easy' ? 'text-4xl md:text-5xl lg:text-6xl' : 
-                   difficulty === 'medium' ? 'text-3xl md:text-4xl lg:text-5xl' :
-                   difficulty === 'hard' ? 'text-2xl md:text-3xl lg:text-4xl' : 'text-xl md:text-2xl lg:text-3xl',
-          lineHeight: 'leading-relaxed',
-          spacing: 'space-y-4'
-        };
-        return { pages, config };
-      }
-      
-      throw new Error('Story continuation generator returned empty pages');
+      console.log(`Successfully generated ${pages.length} continuation pages`);
+      return { pages, config };
       
     } catch (error) {
       console.warn('Story continuation failed, generating new pages:', error);
       
-      // Fallback: Generate new pages but prefix with continuation language
+      // Fallback: Generate new pages
       const result = await this.generateStory(userInfo, difficulty, pageCount);
       const name = userInfo.name || 'Alex';
       
@@ -108,40 +62,61 @@ export class StoryGeneratorService {
   }
   
   /**
-   * Default story as last resort - respects the requested page count
+   * High-quality story templates that read like real children's books
    */
-  private static getDefaultStory(userInfo: UserInfo, difficulty: DifficultyLevel, pageCount: number = 10): string[] {
+  private static getHighQualityStory(userInfo: UserInfo, difficulty: DifficultyLevel, pageCount: number = 10): string[] {
     const name = userInfo.name || 'Alex';
     const animal = userInfo.favoriteAnimal || 'cat';
+    const color = userInfo.favoriteColor || 'blue';
     
     const stories = {
       easy: [
-        `${name} woke up on a sunny morning.`,
-        `${name} saw a friendly ${animal} in the garden.`,
-        `They played together happily.`,
+        `${name} woke up early one morning.`,
+        `Outside, ${name} saw something wonderful.`,
+        `A friendly ${color} ${animal} was playing.`,
+        `"Hello!" said ${name} with a smile.`,
+        `The ${animal} came over to play.`,
+        `They had so much fun together.`,
         `${name} gave the ${animal} some food.`,
-        `They became best friends forever.`
+        `"Thank you!" the ${animal} seemed to say.`,
+        `They became the very best friends.`,
+        `Every day was full of joy.`
       ],
       medium: [
-        `${name} discovered something magical in the backyard.`,
-        `A beautiful ${animal} was waiting by the old oak tree.`,
-        `The ${animal} seemed to be trying to tell ${name} something important.`,
-        `Together, they explored the hidden path behind the garden.`,
-        `${name} and the ${animal} found a wonderful secret that made them both very happy.`
+        `${name} loved exploring the world around them.`,
+        `One sunny afternoon, something magical happened.`,
+        `A beautiful ${color} ${animal} appeared in the garden.`,
+        `This wasn't just any ordinary ${animal} - it was special.`,
+        `"I've been waiting for someone like you," it said gently.`,
+        `${name} felt excited and a little nervous too.`,
+        `Together, they walked to a secret place.`,
+        `The ${animal} showed ${name} hidden wonders everywhere.`,
+        `"You have a kind heart," said the ${animal} warmly.`,
+        `From that day on, they shared amazing adventures.`
       ],
       hard: [
-        `${name} had always been curious about the mysterious sounds coming from the forest.`,
-        `One afternoon, while exploring, ${name} encountered an extraordinary ${animal}.`,
-        `This wasn't an ordinary ${animal} - it had an important message to share.`,
-        `The ${animal} led ${name} on an adventure through places they had never seen before.`,
-        `Through courage and kindness, ${name} helped solve an ancient mystery and made a lifelong friend.`
+        `${name} had always felt different from other children.`,
+        `While friends played normal games, ${name} dreamed of greater adventures.`,
+        `One evening, an extraordinary ${color} ${animal} arrived at their door.`,
+        `"I need your help," the ${animal} said urgently.`,
+        `"There's trouble in the enchanted forest, and only someone with your courage can help."`,
+        `${name} didn't hesitate - this was the adventure they'd been waiting for.`,
+        `They journeyed through mysterious paths filled with wonder and danger.`,
+        `Along the way, ${name} discovered hidden strengths and newfound confidence.`,
+        `Together, they solved the forest's ancient mystery.`,
+        `${name} returned home forever changed, knowing they were truly special.`
       ],
       expert: [
-        `${name} had always possessed an unusual ability to understand animals, though no one believed it.`,
-        `When a remarkable ${animal} appeared at their doorstep speaking in urgent whispers, everything changed.`,
-        `The ${animal} revealed that ${name}'s unique gift was needed to prevent a great catastrophe.`,
-        `Together, they embarked on a perilous journey through enchanted realms and faced numerous challenges.`,
-        `Through wisdom, bravery, and the power of friendship, ${name} and the ${animal} saved their world and discovered the true meaning of heroism.`
+        `${name} had always possessed an unusual gift for understanding the world differently.`,
+        `When others saw ordinary things, ${name} glimpsed the extraordinary magic hidden beneath.`,
+        `The arrival of a wise ${color} ${animal} confirmed what ${name} had long suspected.`,
+        `"Your perspective is needed to heal an ancient rift between our worlds," it explained.`,
+        `This wasn't just about helping - it was about ${name}'s destiny and purpose.`,
+        `The journey would test not only ${name}'s courage but their wisdom and compassion.`,
+        `Through trials that challenged everything ${name} believed about themselves, they persevered.`,
+        `The ${animal} became not just a guide, but a teacher of life's deeper truths.`,
+        `By story's end, ${name} had not only saved both worlds but discovered their true calling.`,
+        `The adventure was over, but ${name}'s real journey of purpose had just begun.`
       ]
     };
     
@@ -152,32 +127,52 @@ export class StoryGeneratorService {
       const extendedStory = [...baseStory];
       const continuationTemplates = {
         easy: [
-          `${name} and the ${animal} went on another adventure.`,
-          `They found more friends to play with.`,
-          `${name} learned something new today.`,
-          `The ${animal} showed ${name} a special place.`,
-          `They had so much fun together.`
+          `${name} and the ${animal} played every day.`,
+          `They found new friends to join them.`,
+          `The ${animal} taught ${name} fun games.`,
+          `${name} learned to be even kinder.`,
+          `Their friendship grew stronger each day.`,
+          `Everyone loved ${name} and the ${animal}.`,
+          `They helped other children too.`,
+          `The neighborhood became happier.`,
+          `${name} felt proud and grateful.`,
+          `It was the best friendship ever.`
         ],
         medium: [
-          `${name} and the ${animal} continued their journey together.`,
-          `They discovered new wonders along the way.`,
-          `Each day brought new lessons and friendships.`,
-          `${name} grew wiser with every adventure.`,
-          `The bond between them grew stronger each day.`
+          `${name} and the ${animal} explored new places together.`,
+          `Each adventure taught them valuable lessons about friendship.`,
+          `They helped other creatures they met along the way.`,
+          `${name} grew more confident with each passing day.`,
+          `The ${animal} shared ancient wisdom about kindness and courage.`,
+          `Their bond became an inspiration to everyone around them.`,
+          `Other children began to notice ${name}'s special gift.`,
+          `${name} learned that helping others brought the greatest joy.`,
+          `The adventures continued, but now with new friends joining.`,
+          `${name} realized that magic exists in everyday moments.`
         ],
         hard: [
-          `${name}'s adventures with the ${animal} had only just begun.`,
-          `New challenges awaited them around every corner.`,
-          `Together, they faced each obstacle with courage and wisdom.`,
-          `Their friendship became a source of strength for both.`,
-          `Every experience taught them valuable lessons about life.`
+          `${name}'s reputation as a brave problem-solver began to spread.`,
+          `New challenges arrived, each one teaching important life lessons.`,
+          `The ${animal} remained a loyal companion through every trial.`,
+          `${name} learned that true strength comes from caring about others.`,
+          `They faced fears that once seemed impossible to overcome.`,
+          `With each victory, ${name}'s confidence and wisdom grew.`,
+          `The partnership with the ${animal} evolved into deep mutual respect.`,
+          `Other young people sought ${name}'s advice and friendship.`,
+          `${name} discovered that leadership means lifting others up.`,
+          `Their story became a legend that inspired future generations.`
         ],
         expert: [
-          `${name}'s journey with the ${animal} opened doorways to greater understanding.`,
-          `The complexities of their world revealed deeper truths about friendship and purpose.`,
-          `Through shared experiences, they developed an unshakeable bond.`,
-          `Each challenge they overcame together strengthened their resolve.`,
-          `Their partnership became a beacon of hope for others facing similar struggles.`
+          `${name}'s journey had awakened abilities they never knew existed.`,
+          `The complexity of their mission required both intellect and emotional intelligence.`,
+          `Working alongside the ${animal}, they tackled problems that affected entire communities.`,
+          `Each success brought new responsibilities and deeper understanding.`,
+          `${name} learned to balance personal desires with collective needs.`,
+          `The relationship with the ${animal} became a model of partnership and trust.`,
+          `Their work began to bridge divides between different groups and cultures.`,
+          `${name} discovered that true heroism lies in consistent, everyday choices.`,
+          `The legacy they were building would outlast any single adventure.`,
+          `${name} understood that this was only the beginning of a life dedicated to service.`
         ]
       };
       
@@ -194,5 +189,100 @@ export class StoryGeneratorService {
     
     // If we need fewer pages, return a slice of the base story
     return baseStory.slice(0, pageCount);
+  }
+  
+  /**
+   * Generate continuation pages for adding to existing stories
+   */
+  private static getContinuationPages(userInfo: UserInfo, difficulty: DifficultyLevel, pageCount: number): string[] {
+    const name = userInfo.name || 'Alex';
+    const animal = userInfo.favoriteAnimal || 'cat';
+    
+    const continuationTemplates = {
+      easy: [
+        `${name} and the ${animal} went exploring.`,
+        `They found a beautiful flower.`,
+        `"Look at this!" said ${name}.`,
+        `The ${animal} was very excited.`,
+        `They picked flowers for home.`,
+        `What a wonderful day it was!`,
+        `${name} felt so happy.`,
+        `The ${animal} was happy too.`
+      ],
+      medium: [
+        `The next day brought a new adventure for ${name}.`,
+        `The ${animal} had discovered something interesting nearby.`,
+        `Together, they set off to investigate this mystery.`,
+        `What they found surprised them both completely.`,
+        `${name} realized this was just the beginning.`,
+        `Each day would bring new discoveries and joy.`,
+        `Their friendship continued to grow stronger.`,
+        `The world seemed full of endless possibilities.`
+      ],
+      hard: [
+        `${name}'s adventures were far from over.`,
+        `New challenges emerged that would test their growing wisdom.`,
+        `The ${animal} proved to be an invaluable guide and friend.`,
+        `Together, they faced each obstacle with determination.`,
+        `${name} discovered inner strength they never knew existed.`,
+        `The lessons learned would serve them well in future trials.`,
+        `Their bond deepened through shared experiences and trust.`,
+        `Each victory made them more confident and capable.`
+      ],
+      expert: [
+        `${name}'s journey of growth and discovery continued to unfold.`,
+        `The complexities of their world revealed new layers of understanding.`,
+        `Working with the ${animal}, they tackled increasingly difficult challenges.`,
+        `Each experience taught valuable lessons about leadership and compassion.`,
+        `${name} began to see how their actions affected the broader community.`,
+        `The partnership evolved into a powerful force for positive change.`,
+        `Their story became an inspiration for others facing similar struggles.`,
+        `${name} understood that true success meant lifting others up as well.`
+      ]
+    };
+    
+    const templates = continuationTemplates[difficulty] || continuationTemplates.easy;
+    const pages: string[] = [];
+    
+    for (let i = 0; i < pageCount; i++) {
+      const templateIndex = i % templates.length;
+      pages.push(templates[templateIndex]);
+    }
+    
+    return pages;
+  }
+  
+  /**
+   * Get reading configuration for difficulty level
+   */
+  private static getReadingConfigForDifficulty(difficulty: DifficultyLevel) {
+    const configs = {
+      easy: {
+        maxWordsPerPage: 6,
+        fontSize: 'text-4xl md:text-5xl lg:text-6xl',
+        lineHeight: 'leading-relaxed',
+        spacing: 'space-y-4'
+      },
+      medium: {
+        maxWordsPerPage: 35,
+        fontSize: 'text-3xl md:text-4xl lg:text-5xl',
+        lineHeight: 'leading-relaxed',
+        spacing: 'space-y-4'
+      },
+      hard: {
+        maxWordsPerPage: 65,
+        fontSize: 'text-2xl md:text-3xl lg:text-4xl',
+        lineHeight: 'leading-relaxed',
+        spacing: 'space-y-4'
+      },
+      expert: {
+        maxWordsPerPage: 85,
+        fontSize: 'text-xl md:text-2xl lg:text-3xl',
+        lineHeight: 'leading-relaxed',
+        spacing: 'space-y-4'
+      }
+    };
+    
+    return configs[difficulty] || configs.easy;
   }
 }
