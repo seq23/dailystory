@@ -14,7 +14,173 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          created_at: string
+          date_of_birth: string | null
+          display_name: string | null
+          grade_level: string | null
+          id: string
+          interests: string[] | null
+          native_language: string | null
+          reading_level: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date_of_birth?: string | null
+          display_name?: string | null
+          grade_level?: string | null
+          id?: string
+          interests?: string[] | null
+          native_language?: string | null
+          reading_level?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date_of_birth?: string | null
+          display_name?: string | null
+          grade_level?: string | null
+          id?: string
+          interests?: string[] | null
+          native_language?: string | null
+          reading_level?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      reading_sessions: {
+        Row: {
+          completed_at: string | null
+          comprehension_score: number | null
+          created_at: string
+          difficulty_rating: number | null
+          id: string
+          started_at: string
+          story_id: string
+          time_spent: number | null
+          user_id: string
+          words_read: number | null
+        }
+        Insert: {
+          completed_at?: string | null
+          comprehension_score?: number | null
+          created_at?: string
+          difficulty_rating?: number | null
+          id?: string
+          started_at?: string
+          story_id: string
+          time_spent?: number | null
+          user_id: string
+          words_read?: number | null
+        }
+        Update: {
+          completed_at?: string | null
+          comprehension_score?: number | null
+          created_at?: string
+          difficulty_rating?: number | null
+          id?: string
+          started_at?: string
+          story_id?: string
+          time_spent?: number | null
+          user_id?: string
+          words_read?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reading_sessions_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "stories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stories: {
+        Row: {
+          age_group: string
+          author_style: string | null
+          comprehension_questions: Json | null
+          content: string
+          created_at: string
+          id: string
+          image_urls: string[] | null
+          page_count: number | null
+          reading_level: string
+          theme: string | null
+          title: string
+          vocabulary_words: string[] | null
+          word_count: number | null
+        }
+        Insert: {
+          age_group: string
+          author_style?: string | null
+          comprehension_questions?: Json | null
+          content: string
+          created_at?: string
+          id?: string
+          image_urls?: string[] | null
+          page_count?: number | null
+          reading_level: string
+          theme?: string | null
+          title: string
+          vocabulary_words?: string[] | null
+          word_count?: number | null
+        }
+        Update: {
+          age_group?: string
+          author_style?: string | null
+          comprehension_questions?: Json | null
+          content?: string
+          created_at?: string
+          id?: string
+          image_urls?: string[] | null
+          page_count?: number | null
+          reading_level?: string
+          theme?: string | null
+          title?: string
+          vocabulary_words?: string[] | null
+          word_count?: number | null
+        }
+        Relationships: []
+      }
+      vocabulary_progress: {
+        Row: {
+          definition: string | null
+          first_encountered_at: string
+          id: string
+          last_reviewed_at: string | null
+          mastery_level: number | null
+          times_encountered: number | null
+          user_id: string
+          word: string
+        }
+        Insert: {
+          definition?: string | null
+          first_encountered_at?: string
+          id?: string
+          last_reviewed_at?: string | null
+          mastery_level?: number | null
+          times_encountered?: number | null
+          user_id: string
+          word: string
+        }
+        Update: {
+          definition?: string | null
+          first_encountered_at?: string
+          id?: string
+          last_reviewed_at?: string | null
+          mastery_level?: number | null
+          times_encountered?: number | null
+          user_id?: string
+          word?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
