@@ -213,10 +213,12 @@ export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
               variant="hero" 
               size="xl" 
               onClick={onGetStarted}
-              className="animate-bounce-gentle hover:animate-none shadow-glow"
+              className="relative animate-bounce-gentle hover:animate-none hover:scale-105 shadow-glow transition-all duration-300 hover:shadow-2xl hover:shadow-primary/50 group overflow-hidden"
             >
-              <BookOpen className="w-6 h-6" />
-              {t("welcomeHero.ctaButton")}
+              <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 via-pink-400/20 to-blue-400/20 animate-pulse group-hover:animate-none"></div>
+              <BookOpen className="w-6 h-6 relative z-10 animate-pulse group-hover:animate-none" />
+              <span className="relative z-10">{t("welcomeHero.ctaButton")}</span>
+              <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </Button>
 
             <p className="text-white/70 mt-4 text-sm">
