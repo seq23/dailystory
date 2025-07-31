@@ -2,20 +2,88 @@
 
 // Content filtering and sanitization
 export class ContentSecurity {
-  // Age-appropriate content filtering - different words for different grade levels
+  // Multilingual inappropriate words database
+  private static multilingualInappropriateWords = {
+    // English
+    en: [
+      'damn', 'hell', 'crap', 'piss', 'ass', 'bitch', 'bastard', 'shit', 'fuck', 'fucking',
+      'motherfucker', 'asshole', 'dickhead', 'prick', 'cock', 'pussy', 'whore', 'slut',
+      'retard', 'gay', 'homo', 'fag', 'nigger', 'spic', 'chink', 'kike', 'dick',
+      'sex', 'sexual', 'porn', 'naked', 'nude', 'boobs', 'penis', 'vagina', 'orgasm',
+      'masturbate', 'horny', 'sexy', 'erotic', 'prostitute', 'rape', 'molest',
+      'drunk', 'weed', 'marijuana', 'cocaine', 'heroin', 'meth', 'drugs', 'smoking',
+      'cigarette', 'alcohol', 'beer', 'vodka', 'whiskey',
+      'suicide', 'depression', 'cutting', 'self-harm', 'anorexia', 'bulimia',
+      'shoot', 'shooting', 'shot', 'kill', 'killing', 'killed', 'killer', 'gun', 'guns', 'gunshot',
+      'stab', 'stabbing', 'stabbed', 'stabs'
+    ],
+
+    // Spanish
+    es: [
+      'puta', 'hijo de puta', 'mierda', 'joder', 'coño', 'cabrón', 'pendejo', 'maricón',
+      'puto', 'culo', 'verga', 'chingar', 'pinche', 'mamón', 'culero', 'ojete',
+      'sexo', 'sexual', 'porno', 'desnudo', 'senos', 'pene', 'vagina', 'orgasmo',
+      'masturbarse', 'caliente', 'erótico', 'prostituta', 'violar', 'drogas',
+      'marihuana', 'cocaína', 'heroína', 'alcohol', 'cerveza', 'vodka',
+      'suicidio', 'depresión', 'cortarse', 'anorexia', 'bulimia',
+      'matar', 'matando', 'asesino', 'pistola', 'arma', 'disparar', 'apuñalar'
+    ],
+
+    // Arabic (transliterated common inappropriate words)
+    ar: [
+      'شرموطة', 'عاهرة', 'زانية', 'كلب', 'حقير', 'لعين', 'ملعون', 'نذل',
+      'جنس', 'جنسي', 'إباحي', 'عاري', 'قضيب', 'مهبل', 'ثدي',
+      'مخدرات', 'حشيش', 'كوكايين', 'هيروين', 'كحول', 'خمر',
+      'انتحار', 'اكتئاب', 'إيذاء الذات', 'فقدان الشهية',
+      'قتل', 'قاتل', 'مسدس', 'سلاح', 'يطلق النار', 'يطعن'
+    ],
+
+    // Chinese (Simplified)
+    zh: [
+      '妓女', '婊子', '操', '他妈的', '狗屎', '混蛋', '王八蛋', '傻逼',
+      '性', '性行为', '色情', '裸体', '胸部', '阴茎', '阴道', '性高潮',
+      '手淫', '性感', '色情的', '妓女', '强奸', '猥亵',
+      '毒品', '大麻', '可卡因', '海洛因', '甲基苯丙胺', '酒精', '啤酒',
+      '自杀', '抑郁症', '自残', '厌食症', '贪食症',
+      '杀', '杀死', '杀手', '枪', '射击', '刺'
+    ],
+
+    // Hindi (Devanagari script)
+    hi: [
+      'रंडी', 'वेश्या', 'कुत्ता', 'साला', 'हरामी', 'मादरचोद', 'भोसड़ी के',
+      'सेक्स', 'यौन', 'अश्लील', 'नग्न', 'स्तन', 'लिंग', 'योनि',
+      'हस्तमैथुन', 'कामुक', 'वेश्या', 'बलात्कार',
+      'ड्रग्स', 'गांजा', 'कोकीन', 'हेरोइन', 'शराब', 'बीयर',
+      'आत्महत्या', 'अवसाद', 'आत्म-नुकसान', 'एनोरेक्सिया',
+      'मारना', 'हत्या', 'हत्यारा', 'बंदूक', 'गोली', 'छुरा'
+    ],
+
+    // Portuguese
+    pt: [
+      'puta', 'filho da puta', 'merda', 'foder', 'caralho', 'cu', 'buceta', 'porra',
+      'viado', 'bicha', 'gay', 'veado', 'piranha', 'cadela',
+      'sexo', 'sexual', 'pornô', 'nu', 'seios', 'pênis', 'vagina', 'orgasmo',
+      'masturbar', 'tesão', 'erótico', 'prostituta', 'estuprar',
+      'drogas', 'maconha', 'cocaína', 'heroína', 'álcool', 'cerveja',
+      'suicídio', 'depressão', 'auto-mutilação', 'anorexia', 'bulimia',
+      'matar', 'matando', 'assassino', 'pistola', 'arma', 'atirar', 'esfaquear'
+    ],
+
+    // French
+    fr: [
+      'putain', 'salope', 'connard', 'connasse', 'merde', 'bordel', 'con', 'bite',
+      'couille', 'chatte', 'foutre', 'enculé', 'bâtard', 'fils de pute',
+      'sexe', 'sexuel', 'porno', 'nu', 'seins', 'pénis', 'vagin', 'orgasme',
+      'masturber', 'excité', 'érotique', 'prostituée', 'violer',
+      'drogues', 'marijuana', 'cocaïne', 'héroïne', 'alcool', 'bière',
+      'suicide', 'dépression', 'automutilation', 'anorexie', 'boulimie',
+      'tuer', 'tuant', 'assassin', 'pistolet', 'arme', 'tirer', 'poignarder'
+    ]
+  };
+
+  // Combined list for backwards compatibility
   private static strictlyInappropriateWords = [
-    // Always inappropriate regardless of age
-    'damn', 'hell', 'crap', 'piss', 'ass', 'bitch', 'bastard', 'shit', 'fuck', 'fucking',
-    'motherfucker', 'asshole', 'dickhead', 'prick', 'cock', 'pussy', 'whore', 'slut',
-    'retard', 'gay', 'homo', 'fag', 'nigger', 'spic', 'chink', 'kike', 'dick',
-    'sex', 'sexual', 'porn', 'naked', 'nude', 'boobs', 'penis', 'vagina', 'orgasm',
-    'masturbate', 'horny', 'sexy', 'erotic', 'prostitute', 'rape', 'molest',
-    'drunk', 'weed', 'marijuana', 'cocaine', 'heroin', 'meth', 'drugs', 'smoking',
-    'cigarette', 'alcohol', 'beer', 'vodka', 'whiskey',
-    'suicide', 'depression', 'cutting', 'self-harm', 'anorexia', 'bulimia',
-    // Violence-related words now blocked for all ages
-    'shoot', 'shooting', 'shot', 'kill', 'killing', 'killed', 'killer', 'gun', 'guns', 'gunshot',
-    'stab', 'stabbing', 'stabbed', 'stabs'
+    ...ContentSecurity.multilingualInappropriateWords.en
   ];
 
   // Words inappropriate only for youngest children (PreK-2nd grade) but OK for 3rd grade and up
@@ -41,9 +109,9 @@ export class ContentSecurity {
   private static submissionCounts = new Map<string, { count: number; timestamp: number }>();
 
   /**
-   * Enhanced content filtering with age-appropriate validation
+   * Enhanced content filtering with age-appropriate validation and multilingual support
    */
-  static isContentAppropriate(text: string, grade?: string): { appropriate: boolean; reason?: string } {
+  static isContentAppropriate(text: string, grade?: string, userLanguage?: string): { appropriate: boolean; reason?: string } {
     if (!text || typeof text !== 'string') {
       return { appropriate: false, reason: 'Invalid input' };
     }
@@ -51,26 +119,51 @@ export class ContentSecurity {
     // Normalize the text by removing special characters and applying substitution patterns
     let normalizedText = text.toLowerCase().trim();
     
-    // Apply character substitution patterns
+    // Apply character substitution patterns (only for Latin characters)
     this.substitutionPatterns.forEach(({ pattern, replacement }) => {
       normalizedText = normalizedText.replace(pattern, replacement);
     });
 
-    // Remove non-alphabetic characters except spaces
-    normalizedText = normalizedText.replace(/[^a-z\s]/g, '');
+    // For non-Latin scripts, preserve original characters; for Latin, remove non-alphabetic
+    const isLatinScript = /^[a-zA-Z\s\u00C0-\u017F\u1E00-\u1EFF]*$/.test(text);
+    if (isLatinScript) {
+      normalizedText = normalizedText.replace(/[^a-z\s]/g, '');
+    }
 
     // Determine if user is in youngest grades (PreK-2nd grade only)
     const isYoungestChild = !grade || ['PreK', 'K', '1st', '2nd'].includes(grade);
 
-    // Always check strictly inappropriate words
-    for (const word of this.strictlyInappropriateWords) {
-      const wordPattern = new RegExp(`\\b${word}\\b`, 'i');
-      if (wordPattern.test(normalizedText)) {
-        return { appropriate: false, reason: `Inappropriate content detected: ${word}` };
+    // Get appropriate word lists based on user's language
+    const languagesToCheck = ['en']; // Always check English
+    if (userLanguage && userLanguage !== 'en' && this.multilingualInappropriateWords[userLanguage as keyof typeof this.multilingualInappropriateWords]) {
+      languagesToCheck.push(userLanguage);
+    }
+
+    // Check inappropriate words in all relevant languages
+    for (const lang of languagesToCheck) {
+      const inappropriateWords = this.multilingualInappropriateWords[lang as keyof typeof this.multilingualInappropriateWords] || [];
+      
+      for (const word of inappropriateWords) {
+        // For non-Latin scripts, check for exact matches or substrings
+        // For Latin scripts, use word boundaries
+        const isWordInLatinScript = /^[a-zA-Z\s\u00C0-\u017F\u1E00-\u1EFF]*$/.test(word);
+        
+        let isFound = false;
+        if (isWordInLatinScript) {
+          const wordPattern = new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+          isFound = wordPattern.test(normalizedText);
+        } else {
+          // For non-Latin scripts, check if the word appears in the text
+          isFound = text.toLowerCase().includes(word.toLowerCase()) || normalizedText.includes(word.toLowerCase());
+        }
+        
+        if (isFound) {
+          return { appropriate: false, reason: `Inappropriate content detected in ${lang.toUpperCase()}` };
+        }
       }
     }
 
-    // Check age-restricted words only for youngest children (PreK-2nd grade)
+    // Check age-restricted words only for youngest children (PreK-2nd grade) - English only for now
     if (isYoungestChild) {
       for (const word of this.youngerChildrenRestrictedWords) {
         const wordPattern = new RegExp(`\\b${word}\\b`, 'i');
