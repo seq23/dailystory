@@ -719,49 +719,47 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       // Extract main characters from the entire story for consistency
       const fullStoryText = story.join(' ').toLowerCase();
       
-      // Character consistency mapping
+      // ALWAYS start with the user as the main character
+      const userCharacterDescription = () => {
+        const gender = userInfo.avatar?.type || 'child';
+        const skinToneMap = {
+          pale: 'very light skin',
+          light: 'light skin', 
+          medium: 'medium skin tone',
+          olive: 'olive-toned skin',
+          dark: 'dark skin'
+        };
+        const skinTone = skinToneMap[userInfo.avatar?.skinTone || 'medium'];
+        const age = userInfo.age || 8;
+        
+        return `${userInfo.name}, a ${age}-year-old ${gender} with ${skinTone}`;
+      };
+      
+      // Character consistency mapping - USER is ALWAYS the main character
       const storyCharacters = {
-        mainCharacter: '',
+        mainCharacter: userCharacterDescription(), // User is always main character
         characterColor: '',
         characterType: '',
         secondaryCharacters: [] as string[]
       };
       
-      // Identify main character from story content
+      // Find secondary characters (animals, friends) from story content
       const animals = ['cat', 'dog', 'rabbit', 'bear', 'fox', 'bird', 'mouse', 'elephant', 'lion', 'tiger', 'owl', 'squirrel', 'deer', 'wolf'];
       const colors = ['blue', 'red', 'yellow', 'green', 'purple', 'orange', 'pink', 'white', 'black', 'brown', 'golden', 'silver', 'gray', 'grey'];
       
-      // Find the main animal character with color
+      // Find secondary animal characters with colors for story context
       for (const animal of animals) {
         if (fullStoryText.includes(animal)) {
-          storyCharacters.characterType = animal;
-          // Look for color modifiers
           for (const color of colors) {
             if (fullStoryText.includes(`${color} ${animal}`) || fullStoryText.includes(`${color}-${animal}`)) {
-              storyCharacters.characterColor = color;
-              storyCharacters.mainCharacter = `${color} ${animal}`;
+              storyCharacters.secondaryCharacters.push(`${color} ${animal}`);
               break;
             }
           }
-          if (!storyCharacters.mainCharacter) {
-            storyCharacters.mainCharacter = animal;
+          if (!storyCharacters.secondaryCharacters.some(char => char.includes(animal))) {
+            storyCharacters.secondaryCharacters.push(animal);
           }
-          break;
         }
-      }
-      
-      // If no animal found, use the user as main character
-      if (!storyCharacters.mainCharacter) {
-        const gender = userInfo.avatar?.type === 'boy' ? 'boy' : 'girl';
-        const skinTone = userInfo.avatar?.skinTone || 'medium';
-        const skinDescriptions = {
-          pale: 'very light',
-          light: 'light',
-          medium: 'medium',
-          olive: 'olive-toned',
-          dark: 'dark'
-        };
-        storyCharacters.mainCharacter = `${userInfo.name}, a ${userInfo.age}-year-old ${gender} with ${skinDescriptions[skinTone]} skin`;
       }
       
       // Enhanced language-specific prompts with beauty and consistency
@@ -811,27 +809,31 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       const currentPageText = storyText.toLowerCase();
       let sceneDetails = "";
       
+      // ALWAYS include the user as the main character in every scene
+      const userInScene = storyCharacters.mainCharacter;
+      const secondaryChar = storyCharacters.secondaryCharacters[0] || 'a friendly companion';
+      
       if (currentPageText.includes("hello") || currentPageText.includes("said")) {
-        sceneDetails = `${storyCharacters.mainCharacter} speaking or greeting with warm, expressive eyes and friendly body language`;
+        sceneDetails = `${userInScene} speaking or greeting ${secondaryChar} with warm, expressive eyes and friendly body language`;
       } else if (currentPageText.includes("adventure") || currentPageText.includes("explore")) {
-        sceneDetails = `${storyCharacters.mainCharacter} on an exciting adventure through a magical, detailed landscape`;
+        sceneDetails = `${userInScene} on an exciting adventure with ${secondaryChar} through a magical, detailed landscape`;
       } else if (currentPageText.includes("friend") || currentPageText.includes("meet")) {
-        sceneDetails = `${storyCharacters.mainCharacter} meeting other characters in a heartwarming, beautifully detailed scene`;
+        sceneDetails = `${userInScene} meeting ${secondaryChar} in a heartwarming, beautifully detailed scene`;
       } else if (currentPageText.includes("play") || currentPageText.includes("fun")) {
-        sceneDetails = `${storyCharacters.mainCharacter} playing joyfully with beautiful environmental details`;
+        sceneDetails = `${userInScene} playing joyfully with ${secondaryChar} in a beautiful environment`;
       } else if (currentPageText.includes("home") || currentPageText.includes("house")) {
-        sceneDetails = `${storyCharacters.mainCharacter} in a cozy, beautifully illustrated home setting`;
+        sceneDetails = `${userInScene} in a cozy, beautifully illustrated home setting`;
       } else if (currentPageText.includes("garden") || currentPageText.includes("flower")) {
-        sceneDetails = `${storyCharacters.mainCharacter} in a vibrant garden with stunning floral details`;
+        sceneDetails = `${userInScene} in a vibrant garden with stunning floral details`;
       } else if (currentPageText.includes("forest") || currentPageText.includes("tree")) {
-        sceneDetails = `${storyCharacters.mainCharacter} in an enchanted forest with magnificent trees and lighting`;
+        sceneDetails = `${userInScene} in an enchanted forest with magnificent trees and lighting`;
       } else {
-        sceneDetails = `${storyCharacters.mainCharacter} in a magical storybook scene with beautiful details`;
+        sceneDetails = `${userInScene} in a magical storybook scene with beautiful details`;
       }
       
       // Generate enhanced prompt in the user's native language
       const langPrompt = getLanguageSpecificPrompt(userInfo.nativeLanguage || 'en');
-      const prompt = `${langPrompt.base} ${sceneDetails} ${langPrompt.context} ${storyText}. ${langPrompt.atmosphere}. IMPORTANT: Always show the same character - ${storyCharacters.mainCharacter} - with identical appearance in every image.`;
+      const prompt = `${langPrompt.base} ${sceneDetails} ${langPrompt.context} ${storyText}. ${langPrompt.atmosphere}. CRITICAL: ALWAYS show ${userInScene} as the main character with exact appearance - ${userInfo.name} with ${userInfo.avatar?.skinTone || 'medium'} skin tone and ${userInfo.avatar?.type || 'child'} characteristics. Character consistency is essential.`;
       
       console.log('Enhanced consistency prompt:', prompt);
       console.log('Main character for consistency:', storyCharacters.mainCharacter);
