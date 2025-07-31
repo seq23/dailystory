@@ -28,7 +28,7 @@ export class EnhancedStoryGenerator {
       storyArc: EnhancedStoryGenerator.createStoryArc(pageCount, difficulty),
       characterConsistency: {
         mainCharacter: characterName,
-        secondaryCharacter: userInfo.favoriteAnimal?.toLowerCase() || EnhancedStoryGenerator.selectConsistentCharacter(),
+        secondaryCharacter: (userInfo.favoriteAnimal?.toLowerCase()?.trim() || EnhancedStoryGenerator.selectConsistentCharacter()).replace(/[^a-z]/g, ''),
         characterTraits: EnhancedStoryGenerator.defineCharacterTraits(userInfo),
         relationshipDevelopment: []
       },
@@ -98,13 +98,23 @@ export class EnhancedStoryGenerator {
   private static createStoryArc(pageCount: number, difficulty: DifficultyLevel): StoryArcPoint[] {
     const arc: StoryArcPoint[] = [];
     
-    // Define story structure based on page count
+    // Define story structure based on page count - ensure total doesn't exceed pageCount
+    const baseStructure = {
+      introduction: Math.max(1, Math.floor(pageCount * 0.2)),
+      rising_action: Math.max(1, Math.floor(pageCount * 0.4)),
+      climax: Math.max(1, Math.floor(pageCount * 0.2)),
+      falling_action: Math.max(1, Math.floor(pageCount * 0.1)),
+      resolution: Math.max(1, Math.floor(pageCount * 0.1))
+    };
+    
+    // Ensure total equals pageCount by adjusting the largest section
+    const total = Object.values(baseStructure).reduce((sum, val) => sum + val, 0);
+    const difference = pageCount - total;
+    
+    // Add remaining pages to rising_action (the main story content)
     const structure = {
-      introduction: Math.ceil(pageCount * 0.2),
-      rising_action: Math.ceil(pageCount * 0.4),
-      climax: Math.ceil(pageCount * 0.2),
-      falling_action: Math.ceil(pageCount * 0.1),
-      resolution: Math.ceil(pageCount * 0.1)
+      ...baseStructure,
+      rising_action: baseStructure.rising_action + difference
     };
     
     let currentPage = 0;
@@ -124,7 +134,7 @@ export class EnhancedStoryGenerator {
       arc.push({
         phase: 'rising_action',
         focus: 'character_meeting_and_problem',
-        tension: 2 + i
+        tension: 2 + Math.min(i, 3) // Cap tension growth
       });
       currentPage++;
     }
@@ -150,7 +160,7 @@ export class EnhancedStoryGenerator {
     }
     
     // Resolution pages
-    while (currentPage < pageCount) {
+    for (let i = 0; i < structure.resolution; i++) {
       arc.push({
         phase: 'resolution',
         focus: 'happy_ending',
@@ -159,7 +169,17 @@ export class EnhancedStoryGenerator {
       currentPage++;
     }
     
-    return arc;
+    // Safety check - ensure we have exactly pageCount items
+    while (arc.length < pageCount) {
+      arc.push({
+        phase: 'resolution',
+        focus: 'happy_ending',
+        tension: 1
+      });
+    }
+    
+    // Trim if somehow we exceeded (shouldn't happen with fixed math)
+    return arc.slice(0, pageCount);
   }
   
   private static selectConsistentCharacter(): string {
@@ -231,49 +251,56 @@ export class EnhancedStoryGenerator {
     previousContent: string
   ): string {
     
-    const hasMetCharacter = previousContent.includes(secondaryCharacter);
+    const hasMetCharacter = previousContent.includes(secondaryCharacter || 'unknown');
     
     if (!hasMetCharacter) {
+      // Ensure secondaryCharacter is defined
+      const safeSecondaryCharacter = secondaryCharacter || 'friendly animal';
+      
       const meetingTemplates = {
         // Pre-K to 1st Grade: Very simple dialogue, basic emotions
-        easy: `${characterName} sees a nice ${secondaryCharacter}. "Hi!" says the ${secondaryCharacter}.`,
+        easy: `${characterName} sees a nice ${safeSecondaryCharacter}. "Hi!" says the ${safeSecondaryCharacter}.`,
         // 2nd-3rd Grade: Simple conversation, clear emotions
-        medium: `A friendly ${secondaryCharacter} came out from behind a big tree. "Hello, ${characterName}!" it said with a warm smile. "I have been waiting to meet you."`,
+        medium: `A friendly ${safeSecondaryCharacter} came out from behind a big tree. "Hello, ${characterName}!" it said with a warm smile. "I have been waiting to meet you."`,
         // 4th-5th Grade: More descriptive language, character development
-        hard: `Through the dappled sunlight emerged a wise-looking ${secondaryCharacter}, its gentle eyes sparkling with intelligence and kindness. "I have been watching you, ${characterName}," it said softly, "and I believe you might be exactly the friend I have been hoping to find."`,
+        hard: `Through the dappled sunlight emerged a wise-looking ${safeSecondaryCharacter}, its gentle eyes sparkling with intelligence and kindness. "I have been watching you, ${characterName}," it said softly, "and I believe you might be exactly the friend I have been hoping to find."`,
         // 6th-12th Grade: Complex characterization, deeper themes
-        expert: `The ${secondaryCharacter} that materialized from the shadows moved with an otherworldly grace, as if it existed simultaneously in this world and another. When it spoke, its voice carried centuries of wisdom: "Every soul calls out for connection, ${characterName}, and yours has been singing a song that resonates with mine across the vast loneliness of existence."`
+        expert: `The ${safeSecondaryCharacter} that materialized from the shadows moved with an otherworldly grace, as if it existed simultaneously in this world and another. When it spoke, its voice carried centuries of wisdom: "Every soul calls out for connection, ${characterName}, and yours has been singing a song that resonates with mine across the vast loneliness of existence."`
       };
       
       return meetingTemplates[difficulty] || meetingTemplates.medium;
     }
     
+    // Ensure secondaryCharacter is defined for all templates
+    const safeSecondaryCharacter = secondaryCharacter || 'friend';
+    
     const adventureTemplates = {
       // Pre-K to 1st Grade: Simple actions, basic concepts
       easy: [
-        `${characterName} and the ${secondaryCharacter} walk together.`, 
+        `${characterName} and the ${safeSecondaryCharacter} walk together.`, 
         `"Let us find something good!" says ${characterName}.`
       ],
       // 2nd-3rd Grade: Clear plot development, simple adventures
       medium: [
-        `${characterName} and the ${secondaryCharacter} began exploring the magical forest together, looking for hidden treasures.`, 
-        `The ${secondaryCharacter} showed ${characterName} secret paths where flowers glowed softly in the shade.`
+        `${characterName} and the ${safeSecondaryCharacter} began exploring the magical forest together, looking for hidden treasures.`, 
+        `The ${safeSecondaryCharacter} showed ${characterName} secret paths where flowers glowed softly in the shade.`
       ],
       // 4th-5th Grade: Complex plots, character relationships
       hard: [
-        `As they ventured deeper into the enchanted woodland, the ${secondaryCharacter} confided in ${characterName} about an ancient mystery that had puzzled forest creatures for generations.`, 
+        `As they ventured deeper into the enchanted woodland, the ${safeSecondaryCharacter} confided in ${characterName} about an ancient mystery that had puzzled forest creatures for generations.`, 
         `${characterName} listened carefully as their new companion explained how the delicate balance of their magical world depended on finding something precious that had been lost long ago.`
       ],
       // 6th-12th Grade: Sophisticated themes, psychological depth
       expert: [
-        `"Understanding," the ${secondaryCharacter} mused as they walked, "is not simply about solving puzzles or finding lost objects—it is about recognizing the interconnectedness of all living things and accepting responsibility for the role we play in the larger tapestry of existence."`, 
+        `"Understanding," the ${safeSecondaryCharacter} mused as they walked, "is not simply about solving puzzles or finding lost objects—it is about recognizing the interconnectedness of all living things and accepting responsibility for the role we play in the larger tapestry of existence."`, 
         `${characterName} began to comprehend that this journey would demand more than physical courage; it would require the emotional maturity to confront uncomfortable truths about the nature of sacrifice, loyalty, and the sometimes painful necessity of personal growth.`
       ]
     };
     
     const templates = adventureTemplates[difficulty] || adventureTemplates.medium;
-    // Use a safer index calculation for adventure templates since they might be called multiple times
-    const templateIndex = Math.abs(pageIndex - 3) % templates.length; // pageIndex - 3 because rising action starts around page 3
+    // Use safer index calculation to prevent negative numbers and ensure proper rotation
+    const safePageIndex = Math.max(0, pageIndex);
+    const templateIndex = safePageIndex % templates.length;
     return templates[templateIndex];
   }
   
@@ -285,11 +312,14 @@ export class EnhancedStoryGenerator {
     difficulty: DifficultyLevel
   ): string {
     
+    // Ensure secondaryCharacter is defined
+    const safeSecondaryCharacter = secondaryCharacter || 'friend';
+    
     const climaxTemplates = {
       // Pre-K to 1st Grade: Simple resolution, clear success
       easy: `${characterName} finds it! "We did it!" they say happily.`,
       // 2nd-3rd Grade: Clear problem-solving, teamwork  
-      medium: `Working together with great teamwork, ${characterName} and the ${secondaryCharacter} finally solved the mystery that had been puzzling everyone for so long.`,
+      medium: `Working together with great teamwork, ${characterName} and the ${safeSecondaryCharacter} finally solved the mystery that had been puzzling everyone for so long.`,
       // 4th-5th Grade: Internal growth, complex problem-solving
       hard: `In a moment of brilliant insight, ${characterName} realized that the solution had been within their reach all along—it just required looking at the problem from a completely different perspective and trusting in their own abilities.`,
       // 6th-12th Grade: Philosophical resolution, character transformation
@@ -307,15 +337,18 @@ export class EnhancedStoryGenerator {
     difficulty: DifficultyLevel
   ): string {
     
+    // Ensure secondaryCharacter is defined
+    const safeSecondaryCharacter = secondaryCharacter || 'friend';
+    
     const templates = {
       // Pre-K to 1st Grade: Simple gratitude, basic emotions
-      easy: `"Thank you, ${characterName}!" says the happy ${secondaryCharacter}.`,
+      easy: `"Thank you, ${characterName}!" says the happy ${safeSecondaryCharacter}.`,
       // 2nd-3rd Grade: Friendship celebration, shared joy
-      medium: `${characterName} and the ${secondaryCharacter} hugged and danced around with joy, celebrating their amazing adventure and new friendship together.`,
+      medium: `${characterName} and the ${safeSecondaryCharacter} hugged and danced around with joy, celebrating their amazing adventure and new friendship together.`,
       // 4th-5th Grade: Meaningful bonds, personal growth
       hard: `As they shared this moment of triumph, ${characterName} understood that they had gained something far more valuable than solving a mystery—they had discovered the deep satisfaction that comes from using your talents to help others and formed a friendship that would last forever.`,
       // 6th-12th Grade: Complex emotional resolution, life lessons
-      expert: `"You have given me something far more precious than what we sought," the ${secondaryCharacter} reflected with profound gratitude. "You have demonstrated that true courage lies not in the absence of fear, but in choosing compassion despite uncertainty, and in doing so, you have taught me that healing occurs not through solitary strength, but through the vulnerable act of accepting and offering help."`
+      expert: `"You have given me something far more precious than what we sought," the ${safeSecondaryCharacter} reflected with profound gratitude. "You have demonstrated that true courage lies not in the absence of fear, but in choosing compassion despite uncertainty, and in doing so, you have taught me that healing occurs not through solitary strength, but through the vulnerable act of accepting and offering help."`
     };
     
     return templates[difficulty] || templates.medium;
@@ -328,6 +361,9 @@ export class EnhancedStoryGenerator {
     userInfo: UserInfo, 
     difficulty: DifficultyLevel
   ): string {
+    
+    // Ensure secondaryCharacter is defined
+    const safeSecondaryCharacter = secondaryCharacter || 'friend';
     
     const templates = {
       // Pre-K to 1st Grade: Simple ending, basic emotions
