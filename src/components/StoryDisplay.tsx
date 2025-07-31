@@ -735,11 +735,55 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         return `${agePrefix}${gender} named ${name} with ${skinTone}`;
       };
       
-      // Generate prompt following the user's exact format
-      const characterDesc = getCharacterDescription();
-      const prompt = `A beautiful childrens book illustration depicting the scene where ${characterDesc} in the setting described in the story based on this story context: ${storyText} with a happy and cheerful atmosphere, warm earth tones and natural colors, contemporary childrens book art style, appealing to all children regardless of gender, diverse and inclusive, safe and wholesome content, high quality professional artwork`;
+      // Get language-specific prompt components
+      const getLanguageSpecificPrompt = (nativeLanguage: string) => {
+        const basePrompts = {
+          en: {
+            base: "A beautiful childrens book illustration depicting the scene where",
+            context: "in the setting described in the story based on this story context:",
+            atmosphere: "with a happy and cheerful atmosphere, warm earth tones and natural colors, contemporary childrens book art style, appealing to all children regardless of gender, diverse and inclusive, safe and wholesome content, high quality professional artwork"
+          },
+          es: {
+            base: "Una hermosa ilustración de libro infantil que representa la escena donde",
+            context: "en el entorno descrito en la historia basado en este contexto de la historia:",
+            atmosphere: "con una atmósfera feliz y alegre, tonos tierra cálidos y colores naturales, estilo de arte de libro infantil contemporáneo, atractivo para todos los niños sin importar el género, diverso e inclusivo, contenido seguro y saludable, obra de arte profesional de alta calidad"
+          },
+          fr: {
+            base: "Une belle illustration de livre pour enfants représentant la scène où",
+            context: "dans le cadre décrit dans l'histoire basé sur ce contexte d'histoire:",
+            atmosphere: "avec une atmosphère heureuse et joyeuse, des tons de terre chauds et des couleurs naturelles, style d'art de livre pour enfants contemporain, attrayant pour tous les enfants quel que soit le sexe, diversifié et inclusif, contenu sûr et sain, œuvre d'art professionnelle de haute qualité"
+          },
+          pt: {
+            base: "Uma bela ilustração de livro infantil retratando a cena onde",
+            context: "no cenário descrito na história baseado neste contexto da história:",
+            atmosphere: "com uma atmosfera feliz e alegre, tons de terra quentes e cores naturais, estilo de arte de livro infantil contemporâneo, atraente para todas as crianças independentemente do gênero, diverso e inclusivo, conteúdo seguro e saudável, arte profissional de alta qualidade"
+          },
+          ar: {
+            base: "رسم توضيحي جميل لكتاب أطفال يصور المشهد حيث",
+            context: "في البيئة الموصوفة في القصة بناءً على هذا السياق:",
+            atmosphere: "بأجواء سعيدة ومبهجة، ألوان أرضية دافئة وألوان طبيعية، أسلوب فني معاصر لكتب الأطفال، جذاب لجميع الأطفال بغض النظر عن الجنس، متنوع وشامل، محتوى آمن وصحي، عمل فني احترافي عالي الجودة"
+          },
+          zh: {
+            base: "一幅美丽的儿童书籍插图，描绘了这样的场景",
+            context: "在故事中描述的背景下，基于这个故事情境：",
+            atmosphere: "营造快乐和愉悦的氛围，温暖的大地色调和自然色彩，现代儿童书籍艺术风格，对所有儿童都有吸引力，不分性别，多样化和包容性，安全健康的内容，高质量的专业艺术作品"
+          },
+          hi: {
+            base: "एक सुंदर बच्चों की पुस्तक का चित्रण जो उस दृश्य को दर्शाता है जहां",
+            context: "कहानी में वर्णित सेटिंग में इस कहानी के संदर्भ के आधार पर:",
+            atmosphere: "खुश और हर्षित माहौल के साथ, गर्म मिट्टी के टोन और प्राकृतिक रंग, समकालीन बच्चों की पुस्तक कला शैली, लिंग की परवाह किए बिना सभी बच्चों के लिए आकर्षक, विविध और समावेशी, सुरक्षित और स्वस्थ सामग्री, उच्च गुणवत्ता की पेशेवर कलाकृति"
+          }
+        };
+        
+        return basePrompts[nativeLanguage as keyof typeof basePrompts] || basePrompts.en;
+      };
       
-      console.log('Page-specific prompt:', prompt);
+      // Generate prompt in the user's native language
+      const characterDesc = getCharacterDescription();
+      const langPrompt = getLanguageSpecificPrompt(userInfo.nativeLanguage || 'en');
+      const prompt = `${langPrompt.base} ${characterDesc} ${langPrompt.context} ${storyText} ${langPrompt.atmosphere}`;
+      
+      console.log('Multilingual page-specific prompt:', prompt);
       
       // Generate image with optimized settings
       const result = await runwareService.generateImage({
