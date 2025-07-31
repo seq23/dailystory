@@ -1091,7 +1091,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent side="top" className="bg-white border shadow-lg z-50">
-                          <p className="text-sm">Listen to this page being read aloud</p>
+                          <p className="text-sm">Listen to this page being read aloud (once per page)</p>
                         </TooltipContent>
                       </Tooltip>
 
