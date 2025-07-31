@@ -404,20 +404,58 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
   const handleMakeEasier = () => {
     if (currentDifficulty === "medium") {
       setCurrentDifficulty("easy");
+      regenerateStoryWithNewDifficulty("easy");
     } else if (currentDifficulty === "hard") {
       setCurrentDifficulty("medium");
+      regenerateStoryWithNewDifficulty("medium");
     } else if (currentDifficulty === "expert") {
       setCurrentDifficulty("hard");
+      regenerateStoryWithNewDifficulty("hard");
     }
   };
 
   const handleMakeHarder = () => {
     if (currentDifficulty === "easy") {
       setCurrentDifficulty("medium");
+      regenerateStoryWithNewDifficulty("medium");
     } else if (currentDifficulty === "medium") {
       setCurrentDifficulty("hard");
+      regenerateStoryWithNewDifficulty("hard");
     } else if (currentDifficulty === "hard") {
       setCurrentDifficulty("expert");
+      regenerateStoryWithNewDifficulty("expert");
+    }
+  };
+
+  const regenerateStoryWithNewDifficulty = async (newDifficulty: DifficultyLevel) => {
+    try {
+      // Only regenerate story content, don't reset timer or session stats
+      const generatedStory = InclusiveStoryGenerator.generateCulturallyAdaptedStory(userInfo, newDifficulty, false, 10);
+      setStory(generatedStory);
+      
+      // Reset to first page for new story
+      setCurrentParagraph(0);
+      
+      // Clear custom illustrations for new story
+      setCustomIllustrations(new Map());
+      
+      // Set new illustration
+      const illustrationIndex = Math.floor(Math.random() * illustrations.length);
+      setCurrentIllustration(illustrations[illustrationIndex]);
+      
+      // Auto-generate custom illustration for the first page
+      if (generatedStory.length > 0) {
+        setTimeout(() => {
+          generateCustomIllustration(0, generatedStory[0]);
+        }, 500);
+      }
+    } catch (error) {
+      console.error('Error regenerating story with new difficulty:', error);
+      toast({
+        title: "Story Update Error",
+        description: "Unable to update story difficulty. Please try again.",
+        variant: "destructive"
+      });
     }
   };
 
