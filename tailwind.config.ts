@@ -132,6 +132,17 @@ export default {
 					'50%': {
 						transform: 'rotate(3deg)'
 					}
+				},
+				'shake-hard': {
+					'0%, 100%': {
+						transform: 'translateX(0)'
+					},
+					'10%, 30%, 50%, 70%, 90%': {
+						transform: 'translateX(-8px)'
+					},
+					'20%, 40%, 60%, 80%': {
+						transform: 'translateX(8px)'
+					}
 				}
 			},
 			animation: {
@@ -139,7 +150,8 @@ export default {
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'bounce-gentle': 'bounce-gentle 2s ease-in-out infinite',
 				'float': 'float 3s ease-in-out infinite',
-				'wiggle': 'wiggle 0.5s ease-in-out'
+				'wiggle': 'wiggle 0.5s ease-in-out',
+				'shake-hard': 'shake-hard 0.6s ease-in-out'
 			}
 		}
 	},
