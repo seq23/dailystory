@@ -524,7 +524,12 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
     try {
       // Generate continuation that flows from current story context
       const currentStoryContext = story.slice(-3).join(' '); // Get last 3 pages for context
-      const result = await StoryGeneratorService.generateStory(userInfo, currentDifficulty, 5);
+      const result = await StoryGeneratorService.generateStoryContinuation(
+        userInfo, 
+        currentDifficulty, 
+        5, 
+        currentStoryContext
+      );
       
       setStory(prev => [...prev, ...result.pages]);
       setShowAddPagesAlert(false); // Hide current alert but don't reset the flag

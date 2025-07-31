@@ -55,6 +55,51 @@ export class StoryGeneratorService {
   }
   
   /**
+   * Generate story continuation that flows from existing story context
+   */
+  static async generateStoryContinuation(
+    userInfo: UserInfo, 
+    difficulty: DifficultyLevel, 
+    pageCount: number = 5,
+    existingContext: string = ""
+  ): Promise<{ pages: string[]; config: any }> {
+    try {
+      console.log(`Generating story continuation for difficulty: ${difficulty}`);
+      
+      // Use inclusive generator which supports extensions
+      const pages = InclusiveStoryGenerator.generateCulturallyAdaptedStory(
+        userInfo, 
+        difficulty, 
+        true, // isExtension = true
+        pageCount, 
+        existingContext
+      );
+      
+      if (pages && pages.length > 0) {
+        console.log(`Successfully generated ${pages.length} continuation pages`);
+        const config = EarlyReaderStoryGenerator.getReadingConfigForDifficulty(difficulty);
+        return { pages, config };
+      }
+      
+      throw new Error('Story continuation generator returned empty pages');
+      
+    } catch (error) {
+      console.warn('Story continuation failed, generating new pages:', error);
+      
+      // Fallback: Generate new pages but prefix with continuation language
+      const result = await this.generateStory(userInfo, difficulty, pageCount);
+      const name = userInfo.name || 'Alex';
+      
+      // Add continuation context to first page
+      if (result.pages.length > 0) {
+        result.pages[0] = `Meanwhile, ${name} continued their adventure. ${result.pages[0]}`;
+      }
+      
+      return result;
+    }
+  }
+  
+  /**
    * Default story as last resort
    */
   private static getDefaultStory(userInfo: UserInfo, difficulty: DifficultyLevel): string[] {
