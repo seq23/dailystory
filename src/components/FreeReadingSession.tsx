@@ -9,6 +9,7 @@ import { adaptiveStoryGenerator } from "@/services/adaptiveStoryGenerator";
 import { APP_CONFIG } from "@/constants/app";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
+import { processTextForPhonetics } from "@/utils/textProcessor";
 
 // Import fallback illustrations
 import illustration1 from "@/assets/story-illustration-1.jpg";
@@ -862,16 +863,21 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                        </p>
                     </div>
 
-                    {/* Story Text */}
+                    {/* Story Text with Interactive Words */}
                     <div className="flex-1 flex items-center justify-center">
                       <div className="text-center">
-                        <p className={`${
+                        <div className={`${
                           userInfo.age <= 5 ? 'text-3xl' : 
                           userInfo.age <= 8 ? 'text-2xl' : 
                           'text-xl'
                         } font-medium leading-relaxed text-gray-800 max-w-md mx-auto`}>
-                          {currentStory}
-                        </p>
+                          {processTextForPhonetics(
+                            currentStory, 
+                            "", 
+                            currentDifficulty as "easy" | "medium" | "hard" | "expert",
+                            userInfo
+                          )}
+                        </div>
                       </div>
                     </div>
 

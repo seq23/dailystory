@@ -282,5 +282,19 @@
       "contentIssue": "Content Issue",
       "reviewInputs": "Please review your inputs for appropriate content"
     }
+  },
+  "interactiveWord": {
+    "hearIt": "Hear It",
+    "explain": "Explain",
+    "translate": "Translate", 
+    "loading": "Loading...",
+    "addToVocabulary": "Save Word",
+    "etymology": "Word Origin",
+    "translationError": "Translation not available",
+    "difficulty": {
+      "beginner": "Easy",
+      "intermediate": "Medium", 
+      "advanced": "Hard"
+    }
   }
 }

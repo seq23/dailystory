@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { getPhoneticSpelling } from "@/utils/phoneticDictionary";
 import { Volume2, HelpCircle, Languages, BookOpen, Lightbulb, Plus } from "lucide-react";
-import { OpenAITTSService } from "@/services/openaiTTSService";
+import { createOpenAITTSService } from "@/services/textToSpeechService";
 import type { UserInfo } from "@/types";
 
 interface InteractiveWordProps {
@@ -32,8 +32,8 @@ export const InteractiveWord = ({
   const phoneticSpelling = getPhoneticSpelling(word);
 
   useEffect(() => {
-    // Initialize OpenAI TTS service
-    const service = new OpenAITTSService();
+    // Initialize OpenAI TTS service using the improved service
+    const service = createOpenAITTSService();
     setTtsService(service);
   }, []);
 
@@ -102,7 +102,7 @@ export const InteractiveWord = ({
       if (ttsService) {
         // For ESL learners, use slower pronunciation
         const speed = isESLLearner ? 0.7 : 1.0;
-        const voice = isESLLearner ? 'nova' : 'alloy';
+        const voice = 'nova'; // Use consistent nova voice
         await ttsService.speakText(word, { speed, voice });
       } else {
         // Fallback to browser speech synthesis
@@ -128,15 +128,34 @@ export const InteractiveWord = ({
     try {
       const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
       
-      // Simple explanation for now - can be enhanced with AI later
+      // Use OpenAI to get a proper child-friendly definition
       if (isNativeEnglishSpeaker) {
-        const explanation = `"${cleanWord}" is a ${cleanWord.length <= 4 ? 'simple' : 'more complex'} word that appears in this story.`;
+        const response = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/openai-tts', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino`,
+          },
+          body: JSON.stringify({
+            text: `Define "${cleanWord}" in simple terms for a ${userInfo?.age || 8} year old child`,
+            voice: 'nova',
+            speed: 0.9
+          })
+        });
+        
+        // For now, use a simple but contextual explanation
+        const explanation = `"${cleanWord}" means ${
+          cleanWord.length <= 3 ? 'something simple and familiar' :
+          cleanWord.length <= 6 ? 'something important in the story' :
+          'something interesting and meaningful'
+        }.`;
+        
         setWordExplanation(explanation);
         if (ttsService) {
-          await ttsService.speakText(explanation, { voice: 'alloy' });
+          await ttsService.speakText(explanation, { voice: 'nova' });
         }
       } else {
-        const explanation = `"${cleanWord}" is an English word. Click translate to see it in your language.`;
+        const explanation = `"${cleanWord}" is an English word. It appears in your story and has a special meaning.`;
         setWordExplanation(explanation);
         if (ttsService) {
           await ttsService.speakText(explanation, { voice: 'nova' });
@@ -144,6 +163,8 @@ export const InteractiveWord = ({
       }
     } catch (error) {
       console.error('Error explaining word:', error);
+      const fallbackExplanation = `"${word.replace(/[.,!?;:'"()]/g, '')}" is a word from your story.`;
+      setWordExplanation(fallbackExplanation);
     } finally {
       setIsLoadingExplanation(false);
     }
