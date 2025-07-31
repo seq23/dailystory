@@ -105,10 +105,22 @@ STORY STRUCTURE:
 
 Create a complete, engaging story that makes ${userName} feel like the hero of their own adventure.`
 
-    const userPrompt = `Write a ${theme} story where ${userName}, a ${characterDesc}, goes on an amazing adventure. The story should naturally include their favorite color (${favoriteColor}), their favorite animal (${favoriteAnimal}), and their interests (${userInterests.join(', ')}). Make ${userName} brave, clever, and kind. The story should be exactly right for a ${userAge}-year-old at ${readingLevel} reading level. Make it feel like ${userName} is really the hero!
+    const userPrompt = `Write a ${theme} story where ${userName}, a ${characterDesc}, goes on an amazing adventure. 
 
-${hobbies ? `Include ${userName}'s hobby of ${hobbies} in a meaningful way.` : ''}
-${favoriteFood ? `Maybe include ${userName}'s favorite food (${favoriteFood}) at an appropriate moment.` : ''}
+ORGANIC INTEGRATION GUIDELINES:
+You have these elements to weave into the story naturally and intelligently:
+- Favorite color: ${favoriteColor}
+- Favorite animal: ${favoriteAnimal}  
+- Interests: ${userInterests.join(', ')}
+${hobbies ? `- Hobby: ${hobbies}` : ''}
+${favoriteFood ? `- Favorite food: ${favoriteFood}` : ''}
+
+IMPORTANT: You don't need to include ALL these elements. Choose 2-3 that fit naturally into your ${theme} story. For example:
+- If it's a magic story and they like blue and dogs, maybe ${userName} discovers a magical blue crystal that helps them talk to a wise dog
+- If it's an adventure story and they like soccer and pizza, maybe ${userName} uses soccer skills to escape danger, then celebrates with pizza
+- Be creative and natural - only include what makes sense for the story flow
+
+Make ${userName} brave, clever, and kind. The story should be exactly right for a ${userAge}-year-old at ${readingLevel} reading level. Make it feel like ${userName} is really the hero!
 
 Write this as a complete story that flows naturally from beginning to end, without mentioning page numbers.`
 
