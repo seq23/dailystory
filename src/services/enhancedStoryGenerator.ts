@@ -275,7 +275,9 @@ export class EnhancedStoryGenerator {
     };
     
     const templates = adventureTemplates[difficulty] || adventureTemplates.medium;
-    return templates[Math.min(pageIndex, templates.length - 1)];
+    // Use a safer index calculation for adventure templates since they might be called multiple times
+    const templateIndex = Math.abs(pageIndex - 3) % templates.length; // pageIndex - 3 because rising action starts around page 3
+    return templates[templateIndex];
   }
   
   private static generateClimaxContent(
@@ -289,7 +291,7 @@ export class EnhancedStoryGenerator {
     const climaxTemplates = {
       // Pre-K to 1st Grade: Simple resolution, clear success
       easy: `${characterName} finds it! "We did it!" they say happily.`,
-      // 2nd-3rd Grade: Clear problem-solving, teamwork
+      // 2nd-3rd Grade: Clear problem-solving, teamwork  
       medium: `Working together with great teamwork, ${characterName} and the ${secondaryCharacter} finally solved the mystery that had been puzzling everyone for so long.`,
       // 4th-5th Grade: Internal growth, complex problem-solving
       hard: `In a moment of brilliant insight, ${characterName} realized that the solution had been within their reach all along—it just required looking at the problem from a completely different perspective and trusting in their own abilities.`,
@@ -349,7 +351,15 @@ export class EnhancedStoryGenerator {
     characterName: string, 
     difficulty: DifficultyLevel
   ): string {
-    return `${characterName} continued their journey, learning and growing with each step.`;
+    // Provide age-appropriate default content
+    const defaults = {
+      easy: `${characterName} has fun.`,
+      medium: `${characterName} continued their adventure with excitement.`,
+      hard: `${characterName} reflected on the journey ahead, feeling both nervous and excited about what they might discover.`,
+      expert: `${characterName} contemplated the profound implications of their choices and the ripple effects that every decision creates in the complex tapestry of existence.`
+    };
+    
+    return defaults[difficulty] || defaults.medium;
   }
 }
 
