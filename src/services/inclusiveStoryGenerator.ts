@@ -3,6 +3,38 @@ import CulturalAdaptationService from "./culturalAdaptationService";
 
 type DifficultyLevel = "easy" | "medium" | "hard" | "expert";
 
+// Author-inspired writing styles by difficulty level
+const AUTHOR_STYLES = {
+  easy: {
+    authors: ["Mo Willems", "Eric Carle", "Dr. Seuss"],
+    characteristics: "Simple, repetitive language with rhythm and rhyme. Large, clear text with lots of white space. Playful, fun tone with silly situations. Short sentences with basic vocabulary.",
+    wordCount: "10-20 words per page",
+    fontSize: "large",
+    structure: "Simple cause-and-effect, repetitive patterns"
+  },
+  medium: {
+    authors: ["Kevin Henkes", "Jan Brett"],
+    characteristics: "Gentle storytelling with emotional depth. Rich descriptions but accessible language. Character-driven stories with clear beginning, middle, end. Moderate sentence complexity.",
+    wordCount: "25-45 words per page",
+    fontSize: "medium-large",
+    structure: "Clear story arc with character development"
+  },
+  hard: {
+    authors: ["Roald Dahl", "Beverly Cleary", "Judy Blume"],
+    characteristics: "Engaging plots with humor and heart. More complex vocabulary and sentence structures. Character relationships and personal growth. Dialogue and varied pacing.",
+    wordCount: "50-80 words per page",
+    fontSize: "medium",
+    structure: "Multiple plot threads, character development"
+  },
+  expert: {
+    authors: ["Kate DiCamillo", "R.J. Palacio", "Angie Thomas"],
+    characteristics: "Sophisticated themes and complex character relationships. Rich, descriptive language with literary devices. Nuanced emotional content. Advanced vocabulary and varied sentence structures.",
+    wordCount: "70-100 words per page",
+    fontSize: "standard",
+    structure: "Complex narratives with multiple themes"
+  }
+};
+
 export class InclusiveStoryGenerator {
   
   static generateCulturallyAdaptedStory(
@@ -82,19 +114,20 @@ export class InclusiveStoryGenerator {
         let wordCount = 0;
         
         if (difficulty === "easy") {
-          // Simple, short sentences for early readers with personalized elements
+          // Dr. Seuss / Mo Willems / Eric Carle inspired style
+          // Simple, repetitive language with rhythm. Large text, lots of white space
           const easyTemplates = [
-            `${characterName} saw a big ${animals[i % animals.length]}.`,
-            `They walked to the ${settings[i % settings.length]}.`,
-            `The ${animals[i % animals.length]} was very friendly.`,
-            `${characterName} felt happy and excited.`,
-            `They found a special ${objects[i % objects.length]}.`,
-            `${characterName} learned about ${values[i % values.length]}.`,
-            userInfo.favoriteColor ? `Everything was beautiful and ${userInfo.favoriteColor.toLowerCase()}.` : `The sun was bright and warm.`,
-            `${characterName} smiled with joy.`,
-            userInfo.favoriteFood ? `They shared some ${foods[i % foods.length]} together.` : `Friends came to help too.`,
-            userInfo.hobbies ? `${characterName} enjoyed ${activities[i % activities.length]}.` : `Everyone had a good time.`,
-            userInfo.specialRequest ? `${characterName} remembered their special wish about ${userInfo.specialRequest.toLowerCase()}.` : `The day was full of wonder.`
+            `${characterName} sees! ${characterName} sees a big, big ${animals[i % animals.length]}!`,
+            `"Hello!" says ${characterName}. "Hello!" says the ${animals[i % animals.length]}.`,
+            `They go. They go to the ${settings[i % settings.length]}.`,
+            `${characterName} looks. ${characterName} looks and sees!`,
+            `What is that? What is that ${objects[i % objects.length]}?`,
+            `It is good! It is very, very good!`,
+            userInfo.favoriteColor ? `${userInfo.favoriteColor} things! ${userInfo.favoriteColor} things everywhere!` : `Pretty things! Pretty things everywhere!`,
+            `${characterName} smiles. Big smiles! Happy smiles!`,
+            userInfo.favoriteFood ? `Yum, yum! ${foods[i % foods.length]} to share!` : `Good food! Good food to share!`,
+            userInfo.hobbies ? `Fun time! ${activities[i % activities.length]} is fun!` : `Play time! Play time is fun!`,
+            userInfo.specialRequest ? `${characterName} thinks about ${userInfo.specialRequest.toLowerCase()}. Good thoughts!` : `Good day! Very good day!`
           ];
           
           while (wordCount < targetWords) {
@@ -108,19 +141,20 @@ export class InclusiveStoryGenerator {
             }
           }
         } else if (difficulty === "medium") {
-          // More complex sentences for intermediate readers with enhanced personalization
+          // Kevin Henkes / Jan Brett inspired style
+          // Gentle storytelling with emotional depth, accessible language, clear story structure
           const mediumTemplates = [
-            `${characterName} was exploring the magical ${settings[i % settings.length]} when they discovered a mysterious ${objects[i % objects.length]}.`,
-            `The wise ${animals[i % animals.length]} told them about an ancient secret hidden in the ${settings[i % settings.length]}.`,
-            `Together, they embarked on an exciting adventure through the ${settings[i % settings.length]}.`,
-            `${characterName} learned important lessons about ${values[i % values.length]} and how it helps everyone.`,
-            `The journey was challenging but filled with wonderful surprises and new discoveries.`,
-            userInfo.hobbies ? `${characterName} used their skills in ${activities[i % activities.length]} to solve the puzzle.` : `${characterName} used their knowledge of reading to solve the puzzle.`,
-            `The ${animals[i % animals.length]} became ${characterName}'s trusted companion on this adventure.`,
-            `They worked together to overcome obstacles and help others in need.`,
-            userInfo.favoriteColor ? `The magical world shimmered with beautiful ${userInfo.favoriteColor.toLowerCase()} light that guided their way.` : `The magical world shimmered with rainbow light that guided their way.`,
-            userInfo.favoriteFood ? `When they felt hungry, they discovered delicious ${foods[i % foods.length]} growing magically from the trees.` : `When they felt hungry, they discovered magical fruits growing from the trees.`,
-            userInfo.specialRequest ? `${characterName} remembered their special dream: ${userInfo.specialRequest.toLowerCase()}, and it became part of their magical journey.` : `${characterName} felt grateful for this magical opportunity to learn and grow.`
+            `One sunny morning, ${characterName} stepped into the gentle world of the ${settings[i % settings.length]}, where everything felt peaceful and welcoming.`,
+            `A kind ${animals[i % animals.length]} approached slowly, its eyes twinkling with wisdom and warmth, ready to share an important story.`,
+            `"Sometimes," whispered the ${animals[i % animals.length]}, "the most beautiful treasures are found when we learn about ${values[i % values.length]}."`,
+            `${characterName} felt a warm glow in their heart as they discovered the special ${objects[i % objects.length]} hidden among the soft leaves.`,
+            `The adventure unfolded like a gentle dream, each moment teaching ${characterName} something wonderful about friendship and kindness.`,
+            userInfo.hobbies ? `Using their love of ${activities[i % activities.length]}, ${characterName} found a creative way to help their new friend.` : `With patience and care, ${characterName} found a gentle way to help their new friend.`,
+            `The ${animals[i % animals.length]} smiled softly, knowing that ${characterName} had a generous heart full of ${values[i % values.length]}.`,
+            `Together they worked, sharing quiet moments of understanding and building a friendship that would last forever.`,
+            userInfo.favoriteColor ? `The world around them glowed with soft ${userInfo.favoriteColor.toLowerCase()} hues, making everything feel magical and serene.` : `The world around them glowed with soft, warm colors, making everything feel magical and serene.`,
+            userInfo.favoriteFood ? `They shared a simple meal of ${foods[i % foods.length]}, savoring both the food and their growing friendship.` : `They shared a simple meal together, savoring both the food and their growing friendship.`,
+            userInfo.specialRequest ? `${characterName} thought quietly about ${userInfo.specialRequest.toLowerCase()}, feeling grateful for this gentle lesson about what truly matters.` : `${characterName} felt grateful for this gentle lesson about what truly matters in life.`
           ];
           
           while (wordCount < targetWords) {
@@ -133,23 +167,52 @@ export class InclusiveStoryGenerator {
               break;
             }
           }
-        } else {
-          // Complex sentences and vocabulary for advanced readers with full personalization
+        } else if (difficulty === "hard") {
+          // Roald Dahl / Beverly Cleary / Judy Blume inspired style
+          // Engaging plots with humor and heart, complex vocabulary, character relationships
           const hardTemplates = [
-            `${characterName} embarked on an extraordinary adventure through the enchanting ${settings[i % settings.length]}, where they encountered a magnificent ${animals[i % animals.length]} who possessed ancient wisdom about ${values[i % values.length]}.`,
-            `The mysterious ${objects[i % objects.length]} glowed with an ethereal light, revealing intricate patterns that seemed to tell the story of forgotten civilizations and their understanding of ${values[i % values.length]}.`,
-            `Through perseverance and determination, ${characterName} overcame numerous obstacles, learning valuable lessons about resilience, empathy, and the importance of ${values[i % values.length]} in building strong communities.`,
-            `The adventure challenged their problem-solving skills and encouraged them to think creatively about solutions to complex puzzles while maintaining their commitment to ${values[i % values.length]}.`,
-            `As the journey continued, ${characterName} discovered that true strength comes not from physical power, but from the courage to be kind and the wisdom to understand that ${values[i % values.length]} guides all meaningful actions.`,
-            userInfo.hobbies ? `${characterName}'s expertise in ${activities[i % activities.length]} became instrumental in helping the ${animals[i % animals.length]} restore balance to the ${settings[i % settings.length]}.` : `${characterName}'s expertise in learning became instrumental in helping the ${animals[i % animals.length]} restore balance to the ${settings[i % settings.length]}.`,
-            `The experience taught ${characterName} that leadership means inspiring others to discover their own potential while staying true to the principles of ${values[i % values.length]}.`,
-            userInfo.favoriteColor ? `The realm itself seemed to respond to ${characterName}'s presence, with magnificent ${userInfo.favoriteColor.toLowerCase()} aurora dancing across the sky whenever they demonstrated acts of ${values[i % values.length]}.` : `The realm itself seemed to respond to ${characterName}'s presence, with magnificent rainbows dancing across the sky whenever they demonstrated acts of ${values[i % values.length]}.`,
-            userInfo.favoriteFood ? `During their quest, ${characterName} discovered that sharing their knowledge of ${foods[i % foods.length]} helped build bridges between different communities they encountered.` : `During their quest, ${characterName} discovered that sharing knowledge helped build bridges between different communities they encountered.`,
-            userInfo.specialRequest ? `Most remarkably, ${characterName} found that their deepest aspiration - ${userInfo.specialRequest.toLowerCase()} - was not just a personal dream, but a gift that could inspire positive change throughout the ${settings[i % settings.length]}.` : `Most remarkably, ${characterName} found that their compassionate heart was not just a personal strength, but a gift that could inspire positive change throughout the ${settings[i % settings.length]}.`
+            `${characterName} couldn't believe their eyes when they stumbled upon the extraordinary ${settings[i % settings.length]}, a place where the impossible seemed perfectly ordinary and magic hummed in the air.`,
+            `"Well, I'll be jiggered!" exclaimed the peculiar ${animals[i % animals.length]}, adjusting its spectacles and peering at ${characterName} with unmistakable curiosity. "Another visitor! How absolutely scrumptious!"`,
+            `The ${objects[i % objects.length]} wasn't just any ordinary treasure - it was bursting with mysterious energy that made ${characterName}'s fingertips tingle with excitement and anticipation.`,
+            `What started as a simple exploration quickly transformed into a rollicking adventure filled with unexpected twists, delightful surprises, and valuable lessons about ${values[i % values.length]}.`,
+            `${characterName} discovered that growing up sometimes means facing challenges that seem impossible, but with determination and a dash of creativity, even the most daunting problems have solutions.`,
+            userInfo.hobbies ? `"Your talent for ${activities[i % activities.length]} is exactly what we need!" declared the ${animals[i % animals.length]}, clapping its paws together with genuine enthusiasm.` : `"Your curiosity and courage are exactly what we need!" declared the ${animals[i % animals.length]}, clapping its paws together with genuine enthusiasm.`,
+            `The friendship between ${characterName} and the ${animals[i % animals.length]} grew stronger with each shared laugh, each moment of understanding, and each act of mutual support.`,
+            `Sometimes the most important lessons come disguised as ordinary moments, and ${characterName} was beginning to understand the true meaning of ${values[i % values.length]}.`,
+            userInfo.favoriteColor ? `The entire landscape seemed to pulse with vibrant ${userInfo.favoriteColor.toLowerCase()} energy, as if the world itself was celebrating ${characterName}'s journey of discovery.` : `The entire landscape seemed to pulse with vibrant rainbow energy, as if the world itself was celebrating ${characterName}'s journey of discovery.`,
+            userInfo.favoriteFood ? `"Nothing brings creatures together quite like sharing delicious ${foods[i % foods.length]}," chuckled the ${animals[i % animals.length]}, setting out a feast that would make any celebration complete.` : `"Nothing brings creatures together quite like sharing delicious food," chuckled the ${animals[i % animals.length]}, setting out a feast that would make any celebration complete.`,
+            userInfo.specialRequest ? `As ${characterName} reflected on their adventure, they realized that their dream of ${userInfo.specialRequest.toLowerCase()} wasn't just a personal wish - it was a gift they could share with everyone they met.` : `As ${characterName} reflected on their adventure, they realized that kindness isn't just a personal quality - it's a gift they could share with everyone they met.`
           ];
           
           while (wordCount < targetWords) {
             const template = hardTemplates[Math.floor(Math.random() * hardTemplates.length)];
+            const words = template.split(' ').length;
+            if (wordCount + words <= targetWords + 10) {
+              page += (page ? " " : "") + template;
+              wordCount += words;
+            } else {
+              break;
+            }
+          }
+        } else {
+          // Kate DiCamillo / R.J. Palacio / Angie Thomas inspired style  
+          // Sophisticated themes, complex character relationships, literary devices, nuanced emotions
+          const expertTemplates = [
+            `In the profound stillness of the ${settings[i % settings.length]}, ${characterName} encountered a moment of such unexpected beauty that it would forever change their understanding of what it means to truly see the world.`,
+            `The ancient ${animals[i % animals.length]} regarded ${characterName} with eyes that held the accumulated wisdom of countless seasons, speaking in a voice that resonated with the timeless truths about ${values[i % values.length]}.`,
+            `Sometimes, ${characterName} reflected, the most transformative journeys begin not with grand gestures or dramatic moments, but with the quiet courage to listen - really listen - to the stories that surround us every day.`,
+            `The ${objects[i % objects.length]} seemed almost alive with memory, each surface telling a story of triumph and struggle, of love found and lost, of the eternal human quest to understand our place in the vast tapestry of existence.`,
+            `What ${characterName} was learning about ${values[i % values.length]} couldn't be captured in simple words or easy explanations - it was something that had to be felt, experienced, and allowed to settle deep within the soul.`,
+            userInfo.hobbies ? `Through the lens of ${activities[i % activities.length]}, ${characterName} began to see how individual passions and talents are threads in a larger fabric, connecting us all in ways both visible and invisible.` : `Through quiet observation and reflection, ${characterName} began to see how individual experiences are threads in a larger fabric, connecting us all in ways both visible and invisible.`,
+            `The relationship between ${characterName} and the ${animals[i % animals.length]} transcended simple friendship, becoming a testament to the profound connections that can form when two beings truly see and accept each other.`,
+            `In this place where time seemed to move differently, ${characterName} understood that growing up isn't about reaching a destination, but about learning to navigate the beautiful complexity of being human.`,
+            userInfo.favoriteColor ? `The world around them shifted and shimmered with subtle ${userInfo.favoriteColor.toLowerCase()} light, as if the universe itself was responding to the depth of their emotional connection and understanding.` : `The world around them shifted and shimmered with subtle, ethereal light, as if the universe itself was responding to the depth of their emotional connection and understanding.`,
+            userInfo.favoriteFood ? `They shared not just ${foods[i % foods.length]}, but stories and silences, laughter and tears, creating the kind of memory that becomes a touchstone for all future moments of connection.` : `They shared not just food, but stories and silences, laughter and tears, creating the kind of memory that becomes a touchstone for all future moments of connection.`,
+            userInfo.specialRequest ? `${characterName} came to understand that ${userInfo.specialRequest.toLowerCase()} wasn't simply a personal aspiration, but a responsibility - a way of honoring the interconnectedness of all life and the sacred trust we have to care for one another.` : `${characterName} came to understand that compassion wasn't simply a personal quality, but a responsibility - a way of honoring the interconnectedness of all life and the sacred trust we have to care for one another.`
+          ];
+          
+          while (wordCount < targetWords) {
+            const template = expertTemplates[Math.floor(Math.random() * expertTemplates.length)];
             const words = template.split(' ').length;
             if (wordCount + words <= targetWords + 12) {
               page += (page ? " " : "") + template;
