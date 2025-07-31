@@ -167,7 +167,8 @@
       },
       "specialRequest": {
         "label": "Anything special you'd like in your story?",
-        "placeholder": "Tell us about characters, places, or themes you'd love to see..."
+        "placeholder": "Tell us about characters, places, or themes you'd love to see...",
+        "optional": "(Optional)"
       }
     },
     "grades": {
@@ -191,6 +192,10 @@
     },
     "submit": "Create My Story! ✨",
     "back": "← Back",
+    "buttons": {
+      "backToHome": "← Back to Home",
+      "createStory": "Create My Story! ✨"
+    },
     "validation": {
       "nameRequired": "Please tell us your name",
       "ageRequired": "Please tell us your age",
