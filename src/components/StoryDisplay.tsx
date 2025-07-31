@@ -762,43 +762,43 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         }
       }
       
-      // Enhanced language-specific prompts with beauty and consistency
+      // Enhanced language-specific prompts with professional quality and consistency
       const getLanguageSpecificPrompt = (nativeLanguage: string) => {
         const basePrompts = {
           en: {
-            base: "An absolutely stunning, museum-quality children's book illustration in rich watercolor style showing",
+            base: "A museum-quality, professional children's book illustration in exquisite watercolor style showing",
             context: "perfectly capturing the scene:",
-            atmosphere: "with exquisite detail, luminous colors, magical lighting, consistent character design throughout the story, professional children's book artistry, enchanting and beautiful composition, safe wholesome content"
+            atmosphere: "rendered with masterful artistic technique, luminous colors, perfect lighting, flawless composition, consistent character design, award-winning children's book artistry, gallery-worthy illustration, highly detailed professional artwork, safe wholesome content, picture book perfection"
           },
           es: {
-            base: "Una ilustración absolutamente impresionante de calidad de museo para libro infantil en rico estilo acuarela mostrando",
+            base: "Una ilustración profesional de calidad de museo para libro infantil en exquisito estilo acuarela mostrando",
             context: "capturando perfectamente la escena:",
-            atmosphere: "con detalles exquisitos, colores luminosos, iluminación mágica, diseño de personajes consistente a lo largo de la historia, arte profesional de libros infantiles, composición encantadora y hermosa, contenido seguro y saludable"
+            atmosphere: "renderizada con técnica artística magistral, colores luminosos, iluminación perfecta, composición impecable, diseño de personajes consistente, arte galardonado de libros infantiles, ilustración digna de galería, obra de arte profesional muy detallada, contenido seguro y saludable, perfección de libro ilustrado"
           },
           fr: {
-            base: "Une illustration absolument époustouflante de qualité muséale pour livre d'enfants en riche style aquarelle montrant",
+            base: "Une illustration professionnelle de qualité muséale pour livre d'enfants en style aquarelle exquis montrant",
             context: "capturant parfaitement la scène:",
-            atmosphere: "avec des détails exquis, des couleurs lumineuses, un éclairage magique, un design de personnage cohérent tout au long de l'histoire, art professionnel de livre pour enfants, composition enchanteresse et belle, contenu sûr et sain"
+            atmosphere: "rendue avec une technique artistique magistrale, des couleurs lumineuses, un éclairage parfait, une composition impeccable, un design de personnage cohérent, un art primé de livre pour enfants, une illustration digne de galerie, une œuvre d'art professionnelle très détaillée, un contenu sûr et sain, la perfection du livre d'images"
           },
           pt: {
-            base: "Uma ilustração absolutamente deslumbrante de qualidade de museu para livro infantil em rico estilo aquarela mostrando",
+            base: "Uma ilustração profissional de qualidade de museu para livro infantil em estilo aquarela requintado mostrando",
             context: "capturando perfeitamente a cena:",
-            atmosphere: "com detalhes requintados, cores luminosas, iluminação mágica, design de personagem consistente ao longo da história, arte profissional de livros infantis, composição encantadora e bela, conteúdo seguro e saudável"
+            atmosphere: "renderizada com técnica artística magistral, cores luminosas, iluminação perfeita, composição impecável, design de personagem consistente, arte premiada de livros infantis, ilustração digna de galeria, obra de arte profissional muito detalhada, conteúdo seguro e saudável, perfeição de livro ilustrado"
           },
           ar: {
-            base: "رسم توضيحي مذهل تماماً بجودة متحف لكتاب أطفال بأسلوب ألوان مائية غني يُظهر",
+            base: "رسم توضيحي احترافي بجودة متحف لكتاب أطفال بأسلوب ألوان مائية رائع يُظهر",
             context: "يلتقط المشهد بشكل مثالي:",
-            atmosphere: "بتفاصيل رائعة، ألوان مضيئة، إضاءة سحرية، تصميم شخصيات متسق عبر القصة، فن احترافي لكتب الأطفال، تركيب ساحر وجميل، محتوى آمن وصحي"
+            atmosphere: "مُقدم بتقنية فنية بارعة، ألوان مضيئة، إضاءة مثالية، تركيب لا تشوبه شائبة، تصميم شخصيات متسق، فن حائز على جوائز لكتب الأطفال، رسم توضيحي يليق بالمعرض، عمل فني احترافي مفصل جداً، محتوى آمن وصحي، كمال كتاب مصور"
           },
           zh: {
-            base: "一幅绝对令人惊叹的博物馆级儿童书籍水彩风格插图，展示",
+            base: "一幅博物馆级专业儿童书籍水彩风格插图，展示",
             context: "完美捕捉场景：",
-            atmosphere: "具有精美的细节、明亮的色彩、神奇的光照、贯穿整个故事的一致角色设计、专业儿童书籍艺术、迷人美丽的构图、安全健康的内容"
+            atmosphere: "以精湛的艺术技巧渲染，明亮的色彩，完美的光照，无瑕的构图，一致的角色设计，获奖儿童书籍艺术，画廊级插图，高度详细的专业艺术作品，安全健康的内容，图画书的完美"
           },
           hi: {
-            base: "एक बिल्कुल आश्चर्यजनक, संग्रहालय-गुणवत्ता का बच्चों की पुस्तक का समृद्ध जल रंग शैली में चित्रण दिखा रहा है",
+            base: "एक संग्रहालय-गुणवत्ता का, पेशेवर बच्चों की पुस्तक का उत्कृष्ट जल रंग शैली में चित्रण दिखा रहा है",
             context: "दृश्य को पूर्ण रूप से कैप्चर करते हुए:",
-            atmosphere: "उत्कृष्ट विवरण, चमकदार रंग, जादुई प्रकाश, पूरी कहानी में निरंतर चरित्र डिज़ाइन, पेशेवर बच्चों की पुस्तक कलाकृति, मनमोहक और सुंदर रचना, सुरक्षित स्वस्थ सामग्री के साथ"
+            atmosphere: "कुशल कलात्मक तकनीक के साथ प्रस्तुत, चमकदार रंग, सही प्रकाश व्यवस्था, निर्दोष संरचना, निरंतर चरित्र डिज़ाइन, पुरस्कार विजेता बच्चों की पुस्तक कलाकृति, गैलरी-योग्य चित्रण, अत्यधिक विस्तृत पेशेवर कलाकृति, सुरक्षित स्वस्थ सामग्री, चित्र पुस्तक की पूर्णता"
           }
         };
         
