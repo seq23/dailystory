@@ -51,10 +51,11 @@ export class StoryGeneratorService {
       // Fallback: Generate new pages
       const result = await this.generateStory(userInfo, difficulty, pageCount);
       const name = userInfo.name || 'Alex';
+      const pronouns = userInfo.avatar?.type === 'girl' ? 'her' : 'his';
       
       // Add continuation context to first page
       if (result.pages.length > 0) {
-        result.pages[0] = `Meanwhile, ${name} continued their adventure. ${result.pages[0]}`;
+        result.pages[0] = `Meanwhile, ${name} continued ${pronouns} adventure. ${result.pages[0]}`;
       }
       
       return result;
@@ -68,6 +69,18 @@ export class StoryGeneratorService {
     const name = userInfo.name || 'Alex';
     const animal = userInfo.favoriteAnimal || 'cat';
     const color = userInfo.favoriteColor || 'blue';
+    
+    // Get proper pronouns based on user's gender selection
+    const getPronouns = () => {
+      const gender = userInfo.avatar?.type || 'boy';
+      if (gender === 'girl') {
+        return { subject: 'she', object: 'her', possessive: 'her' };
+      } else {
+        return { subject: 'he', object: 'him', possessive: 'his' };
+      }
+    };
+    
+    const pronouns = getPronouns();
     
     const stories = {
       easy: [
@@ -83,9 +96,9 @@ export class StoryGeneratorService {
         `Every day was full of joy.`
       ],
       medium: [
-        `${name} loved exploring the world around them.`,
+        `${name} loved exploring the world around ${pronouns.object}.`,
         `One sunny afternoon, something magical happened.`,
-        `A beautiful ${color} ${animal} appeared in the garden.`,
+        `A beautiful ${color} ${animal} appeared in ${pronouns.possessive} garden.`,
         `This wasn't just any ordinary ${animal} - it was special.`,
         `"I've been waiting for someone like you," it said gently.`,
         `${name} felt excited and a little nervous too.`,
@@ -97,14 +110,14 @@ export class StoryGeneratorService {
       hard: [
         `${name} had always felt different from other children.`,
         `While friends played normal games, ${name} dreamed of greater adventures.`,
-        `One evening, an extraordinary ${color} ${animal} arrived at their door.`,
+        `One evening, an extraordinary ${color} ${animal} arrived at ${pronouns.possessive} door.`,
         `"I need your help," the ${animal} said urgently.`,
         `"There's trouble in the enchanted forest, and only someone with your courage can help."`,
-        `${name} didn't hesitate - this was the adventure they'd been waiting for.`,
-        `They journeyed through mysterious paths filled with wonder and danger.`,
+        `${name} didn't hesitate - this was the adventure ${pronouns.subject} had been waiting for.`,
+        `${pronouns.subject.charAt(0).toUpperCase() + pronouns.subject.slice(1)} journeyed through mysterious paths filled with wonder and danger.`,
         `Along the way, ${name} discovered hidden strengths and newfound confidence.`,
         `Together, they solved the forest's ancient mystery.`,
-        `${name} returned home forever changed, knowing they were truly special.`
+        `${name} returned home forever changed, knowing ${pronouns.subject} was truly special.`
       ],
       expert: [
         `${name} had always possessed an unusual gift for understanding the world differently.`,
@@ -112,10 +125,10 @@ export class StoryGeneratorService {
         `The arrival of a wise ${color} ${animal} confirmed what ${name} had long suspected.`,
         `"Your perspective is needed to heal an ancient rift between our worlds," it explained.`,
         `This wasn't just about helping - it was about ${name}'s destiny and purpose.`,
-        `The journey would test not only ${name}'s courage but their wisdom and compassion.`,
-        `Through trials that challenged everything ${name} believed about themselves, they persevered.`,
+        `The journey would test not only ${name}'s courage but ${pronouns.possessive} wisdom and compassion.`,
+        `Through trials that challenged everything ${name} believed about ${pronouns.object}self, ${pronouns.subject} persevered.`,
         `The ${animal} became not just a guide, but a teacher of life's deeper truths.`,
-        `By story's end, ${name} had not only saved both worlds but discovered their true calling.`,
+        `By story's end, ${name} had not only saved both worlds but discovered ${pronouns.possessive} true calling.`,
         `The adventure was over, but ${name}'s real journey of purpose had just begun.`
       ]
     };
@@ -197,6 +210,18 @@ export class StoryGeneratorService {
   private static getContinuationPages(userInfo: UserInfo, difficulty: DifficultyLevel, pageCount: number): string[] {
     const name = userInfo.name || 'Alex';
     const animal = userInfo.favoriteAnimal || 'cat';
+    
+    // Get proper pronouns based on user's gender selection
+    const getPronouns = () => {
+      const gender = userInfo.avatar?.type || 'boy';
+      if (gender === 'girl') {
+        return { subject: 'she', object: 'her', possessive: 'her' };
+      } else {
+        return { subject: 'he', object: 'him', possessive: 'his' };
+      }
+    };
+    
+    const pronouns = getPronouns();
     
     const continuationTemplates = {
       easy: [
