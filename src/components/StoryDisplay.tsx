@@ -1169,6 +1169,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                       </TooltipContent>
                     </Tooltip>
                   </div>
+                  </div>
 
                    {/* Page Counter */}
                    <div className="text-center mb-4">
@@ -1287,20 +1288,21 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 sm:border-l-8 border-r-4 sm:border-r-8 border-t-4 sm:border-t-8 border-l-transparent border-r-transparent border-t-yellow-400"></div>
                                </div>
                              </div>
-                           )}
-                         </div>
+                            )}
+                          </div>
+                        </div>
                        </div>
-                      </div>
-                    </div>
-                  </div>
+                     </div>
+                   </div>
                  </div>
-               </CardContent>
-             </Card>
-           </div>
-         </div>
-       </div>
+                 
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
 
-      {/* Floating Timer */}
+       {/* Floating Timer */}
       <FloatingTimer 
         timeRemaining={timeRemaining}
         isReading={isReading}
