@@ -550,18 +550,21 @@ export class InclusiveStoryGenerator {
         const storyPhase = i < pageCount/2 ? 'development' : 'climax';
         
         if (difficulty === "easy") {
+          // Easy difficulty: Maximum 6 words per page
           const continuationTemplates = storyPhase === 'development' ? [
-            `${characterName} and the ${animal} explore new parts of the ${setting}. "What's that?" asks ${characterName}, pointing to something shiny.`,
-            `The friends find a hidden path covered with ${food} trees. "We can share these!" says ${characterName} happily.`,
-            `A new friend appears - a wise turtle carrying stories. "Tell us an adventure!" asks ${characterName}.`,
-            `${characterName} learns to help others, just like the ${animal} helped them. Being kind feels wonderful!`,
-            `The sun shines brightly as ${characterName} discovers a magical garden where ${value} grows like flowers.`
+            `${characterName} finds new friends.`,
+            `The ${animal} shows magic.`,
+            `They play together happily.`,
+            `${characterName} learns to help.`,
+            `Everything sparkles and glows.`,
+            `Friends share special things.`
           ] : [
-            `All the friends gather together to celebrate their adventures. "We did it!" cheers ${characterName}.`,
-            `${characterName} finds the most special ${object} - one that glows with friendship and ${value}.`,
-            `The ${animal} shows ${characterName} how to make the ${setting} even more beautiful for everyone.`,
-            `${characterName} realizes that the best treasure is having good friends who care about ${value}.`,
-            `"Let's have another adventure tomorrow!" says ${characterName}, already excited for what comes next.`
+            `Everyone celebrates together now.`,
+            `${characterName} feels very happy.`,
+            `The ${animal} smiles big.`,
+            `All friends hug tight.`,
+            `Tomorrow brings more fun.`,
+            `The adventure continues on.`
           ];
           page = continuationTemplates[i % continuationTemplates.length];
         } else if (difficulty === "medium") {

@@ -541,6 +541,10 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       // The continuation should use the same visual config as the existing story
       setShowAddPagesAlert(false); // Hide current alert but don't reset the flag
       
+      // CRITICAL: Do NOT update storyConfig to maintain visual consistency
+      // The continuation uses the existing story's configuration to ensure
+      // font sizes, word limits, and styling remain identical
+      
       toast({
         title: "Story Extended! 📖",
         description: "5 new pages have been added to your adventure!",
