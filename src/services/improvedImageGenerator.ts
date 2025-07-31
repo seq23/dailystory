@@ -127,15 +127,20 @@ export class ImprovedImageGenerator {
       'castle': 'a fairy tale castle'
     };
     
-    // Simple animal detection
+    // Simple animal detection - prioritized for story elements
     const animals = {
       'cat': 'a friendly cat',
+      'kitten': 'a cute kitten',
       'dog': 'a happy dog',
+      'puppy': 'a playful puppy',
       'bird': 'a colorful bird',
       'rabbit': 'a cute rabbit',
+      'bunny': 'a fluffy bunny',
       'bear': 'a gentle bear',
       'deer': 'a graceful deer',
-      'fox': 'a clever fox'
+      'fox': 'a clever fox',
+      'owl': 'a wise owl',
+      'butterfly': 'a beautiful butterfly'
     };
     
     // Find first match in order of priority
