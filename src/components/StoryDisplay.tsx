@@ -187,8 +187,14 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
           setHasShownTutorial(true);
         }
         
-        // Use improved story generator for better quality and no repetition
-        const generatedStory = ImprovedStoryGenerator.generateStory(userInfo, currentDifficulty, 10);
+        // Use improved story generator with fallback to original system
+        let generatedStory;
+        try {
+          generatedStory = ImprovedStoryGenerator.generateStory(userInfo, currentDifficulty, 10);
+        } catch (error) {
+          console.error('Improved story generator failed, using fallback:', error);
+          generatedStory = InclusiveStoryGenerator.generateCulturallyAdaptedStory(userInfo, currentDifficulty);
+        }
         setStory(generatedStory);
         
         // Calculate word count for stats and reset reading stats
@@ -440,8 +446,14 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       const previousPage = currentParagraph;
       
       // Only regenerate story content, don't reset timer or session stats
-      // Use improved story generator for better quality and no repetition
-      const generatedStory = ImprovedStoryGenerator.generateStory(userInfo, newDifficulty, 10);
+      // Use improved story generator with fallback
+      let generatedStory;
+      try {
+        generatedStory = ImprovedStoryGenerator.generateStory(userInfo, newDifficulty, 10);
+      } catch (error) {
+        console.error('Improved story generator failed, using fallback:', error);
+        generatedStory = InclusiveStoryGenerator.generateCulturallyAdaptedStory(userInfo, newDifficulty);
+      }
       setStory(generatedStory);
       
       // Clear custom illustrations for new story
