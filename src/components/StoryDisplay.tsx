@@ -440,11 +440,11 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
     try {
       // Store current page to maintain reading position if possible
       const previousPage = currentParagraph;
+      const currentStoryLength = story.length;
       
       // Only regenerate story content, don't reset timer or session stats
-      // Use improved story generator with fallback
-      let generatedStory;
-      const result = await StoryGeneratorService.generateStory(userInfo, newDifficulty, story.length || 10);
+      // Use improved story generator with current story length to maintain page count
+      const result = await StoryGeneratorService.generateStory(userInfo, newDifficulty, currentStoryLength);
       setStory(result.pages);
       setStoryConfig(result.config);
       
@@ -452,7 +452,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       setCustomIllustrations(new Map());
       
       // Determine best page to start on (try to maintain position, but don't exceed new story length)
-      const maxPageIndex = Math.max(0, generatedStory.length - 1);
+      const maxPageIndex = Math.max(0, result.pages.length - 1);
       const targetPage = Math.min(previousPage, maxPageIndex);
       setCurrentParagraph(targetPage);
       
@@ -461,10 +461,10 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       setCurrentIllustration(illustrations[illustrationIndex]);
       
       // Auto-generate custom illustration for the current page immediately
-      if (generatedStory.length > 0 && generatedStory[targetPage]) {
+      if (result.pages.length > 0 && result.pages[targetPage]) {
         // Force immediate generation to ensure image appears
         setTimeout(() => {
-          generateCustomIllustration(targetPage, generatedStory[targetPage]);
+          generateCustomIllustration(targetPage, result.pages[targetPage]);
         }, 200); // Slightly longer delay to ensure story state is updated
       }
       

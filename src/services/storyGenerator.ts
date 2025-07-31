@@ -47,7 +47,7 @@ export class StoryGeneratorService {
         console.error('Early reader fallback failed, using final fallback:', fallbackError);
         
         // Last resort: Return a simple default story with config
-        const defaultStory = this.getDefaultStory(userInfo, difficulty);
+        const defaultStory = this.getDefaultStory(userInfo, difficulty, pageCount);
         const config = EarlyReaderStoryGenerator.getReadingConfigForDifficulty(difficulty);
         return { pages: defaultStory, config };
       }
@@ -100,9 +100,9 @@ export class StoryGeneratorService {
   }
   
   /**
-   * Default story as last resort
+   * Default story as last resort - respects the requested page count
    */
-  private static getDefaultStory(userInfo: UserInfo, difficulty: DifficultyLevel): string[] {
+  private static getDefaultStory(userInfo: UserInfo, difficulty: DifficultyLevel, pageCount: number = 10): string[] {
     const name = userInfo.name || 'Alex';
     const animal = userInfo.favoriteAnimal || 'cat';
     
@@ -137,6 +137,54 @@ export class StoryGeneratorService {
       ]
     };
     
-    return stories[difficulty] || stories.easy;
+    const baseStory = stories[difficulty] || stories.easy;
+    
+    // If we need more pages than the base story provides, extend it
+    if (pageCount > baseStory.length) {
+      const extendedStory = [...baseStory];
+      const continuationTemplates = {
+        easy: [
+          `${name} and the ${animal} went on another adventure.`,
+          `They found more friends to play with.`,
+          `${name} learned something new today.`,
+          `The ${animal} showed ${name} a special place.`,
+          `They had so much fun together.`
+        ],
+        medium: [
+          `${name} and the ${animal} continued their journey together.`,
+          `They discovered new wonders along the way.`,
+          `Each day brought new lessons and friendships.`,
+          `${name} grew wiser with every adventure.`,
+          `The bond between them grew stronger each day.`
+        ],
+        hard: [
+          `${name}'s adventures with the ${animal} had only just begun.`,
+          `New challenges awaited them around every corner.`,
+          `Together, they faced each obstacle with courage and wisdom.`,
+          `Their friendship became a source of strength for both.`,
+          `Every experience taught them valuable lessons about life.`
+        ],
+        expert: [
+          `${name}'s journey with the ${animal} opened doorways to greater understanding.`,
+          `The complexities of their world revealed deeper truths about friendship and purpose.`,
+          `Through shared experiences, they developed an unshakeable bond.`,
+          `Each challenge they overcame together strengthened their resolve.`,
+          `Their partnership became a beacon of hope for others facing similar struggles.`
+        ]
+      };
+      
+      const templates = continuationTemplates[difficulty] || continuationTemplates.easy;
+      
+      // Add pages until we reach the requested count
+      for (let i = baseStory.length; i < pageCount; i++) {
+        const templateIndex = (i - baseStory.length) % templates.length;
+        extendedStory.push(templates[templateIndex]);
+      }
+      
+      return extendedStory;
+    }
+    
+    // If we need fewer pages, return a slice of the base story
+    return baseStory.slice(0, pageCount);
   }
 }
