@@ -32,55 +32,40 @@ export class OpenAITTSService {
     }
 
     try {
-      // Use Supabase edge function for TTS
+      // Use direct fetch instead of supabase.functions.invoke to get raw binary data
       const speedToUse = options?.speed || this.speed;
       console.log(`TTS Request: voice=${this.voice}, speed=${speedToUse}, text="${cleanText.substring(0, 50)}..."`);
       
-      const { data, error } = await supabase.functions.invoke('openai-tts', {
-        body: {
+      const response = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/openai-tts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino'}`,
+        },
+        body: JSON.stringify({
           text: cleanText,
           voice: this.voice,
           speed: speedToUse
-        }
+        })
       });
 
-      console.log('TTS Supabase response:', { data: data ? 'received' : 'null', error });
-
-      if (error) {
-        console.error('TTS Supabase Error details:', error);
-        throw new Error(`TTS Error: ${error.message || JSON.stringify(error)}`);
-      }
-
-      if (!data) {
-        throw new Error('TTS Error: No audio data received from service');
-      }
-
-      console.log('TTS Response data type:', typeof data, 'Constructor:', data?.constructor?.name);
-      console.log('Data preview (first 50 chars):', data instanceof ArrayBuffer ? 'ArrayBuffer' : String(data).substring(0, 50));
-
-      // Handle different response formats from Supabase edge function
-      let audioBlob;
+      console.log('TTS Response status:', response.status, response.statusText);
       
-      if (data instanceof ArrayBuffer) {
-        console.log('Handling as ArrayBuffer, size:', data.byteLength);
-        audioBlob = new Blob([data], { type: 'audio/mpeg' });
-      } else if (data instanceof Uint8Array) {
-        console.log('Handling as Uint8Array, size:', data.length);
-        audioBlob = new Blob([data], { type: 'audio/mpeg' });
-      } else if (typeof data === 'string') {
-        console.log('Handling as string, length:', data.length);
-        // Don't try to decode as base64, treat as binary string
-        const bytes = new Uint8Array(data.length);
-        for (let i = 0; i < data.length; i++) {
-          bytes[i] = data.charCodeAt(i);
-        }
-        audioBlob = new Blob([bytes], { type: 'audio/mpeg' });
-      } else {
-        console.log('Unknown data type, trying direct blob creation');
-        audioBlob = new Blob([data], { type: 'audio/mpeg' });
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('TTS Error response:', errorText);
+        throw new Error(`TTS Error: ${response.status} ${response.statusText} - ${errorText}`);
       }
+
+      // Get the raw binary audio data
+      const audioBuffer = await response.arrayBuffer();
+      console.log('Received audio ArrayBuffer:', audioBuffer.byteLength, 'bytes');
+
       
+      // Create audio blob directly from the ArrayBuffer
+      const audioBlob = new Blob([audioBuffer], { type: 'audio/mpeg' });
       console.log('Created audio blob:', audioBlob.size, 'bytes, type:', audioBlob.type);
+      
       const audioUrl = URL.createObjectURL(audioBlob);
       
       // Cache the audio URL
