@@ -36,6 +36,11 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   const [currentPage, setCurrentPage] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [sessionStarted, setSessionStarted] = useState(false);
+  const [currentDifficulty, setCurrentDifficulty] = useState<'beginner' | 'elementary' | 'intermediate' | 'advanced'>(
+    userInfo.readingAbility === 'easy' ? 'beginner' :
+    userInfo.readingAbility === 'medium' ? 'elementary' :
+    userInfo.readingAbility === 'hard' ? 'intermediate' : 'advanced'
+  );
   
   // Session state
   const [timeRemaining, setTimeRemaining] = useState(APP_CONFIG.FREE_SESSION_DURATION);
@@ -53,49 +58,96 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   // Fallback illustrations
   const illustrations = [illustration1, illustration2, illustration3, illustration4, illustration5];
 
+  // Difficulty level mappings
+  const difficultyLevels = {
+    beginner: { label: 'PreK-1st Grade', author: 'Dr. Seuss', color: 'green' },
+    elementary: { label: '2nd-3rd Grade', author: 'Junie B. Jones', color: 'blue' },
+    intermediate: { label: '4th-5th Grade', author: 'Judy Blume', color: 'orange' },
+    advanced: { label: '6th-12th Grade', author: 'J.K. Rowling', color: 'purple' }
+  };
+
   // Generate story on component mount
   useEffect(() => {
     const generateStory = async () => {
       try {
         setIsLoading(true);
         
+        console.log('Generating story for user:', userInfo.name);
+        
         const storyConfig = {
           age: userInfo.age,
           gradeLevel: userInfo.gradeLevel || userInfo.grade,
-          readingLevel: (userInfo.readingLevel || 'beginner') as 'beginner' | 'elementary' | 'intermediate' | 'advanced',
-          interests: userInfo.interests || [userInfo.hobbies || 'adventure'],
-          theme: 'adventure'
+          readingLevel: currentDifficulty,
+          interests: [userInfo.hobbies, userInfo.favoriteAnimal, userInfo.specialRequest].filter(Boolean),
+          theme: userInfo.specialRequest || 'adventure'
         };
 
+        console.log('Story config:', storyConfig);
+
         const generatedStory = await adaptiveStoryGenerator.generateStory(storyConfig);
-        setStory(generatedStory.pages);
+        
+        console.log('Generated story:', generatedStory);
+        
+        // Ensure we have exactly 10 pages
+        const targetPages = 10;
+        let pages = generatedStory.pages;
+        
+        if (pages.length < targetPages) {
+          // Pad with additional content if needed
+          const additionalPages = targetPages - pages.length;
+          for (let i = 0; i < additionalPages; i++) {
+            pages.push(`The adventure continues...`);
+          }
+        } else if (pages.length > targetPages) {
+          // Trim to exactly 10 pages
+          pages = pages.slice(0, targetPages);
+        }
+        
+        setStory(pages);
         setWordsRead(generatedStory.wordCount);
         
       } catch (error) {
         console.error('Failed to generate story:', error);
+        toast({
+          title: "Story Generation Error",
+          description: "Using a simple story for your reading session.",
+          variant: "default"
+        });
         
-        // Fallback story based on age
+        // Enhanced fallback story that's exactly 10 pages
         const fallbackStory = userInfo.age <= 5 ? [
+          `Hello ${userInfo.name}! Let's read together.`,
           "The cat sat on the mat.",
-          "The cat was happy.",
-          "The cat played with a ball.",
-          "The ball was red.",
-          "The cat ran fast.",
-          "The end."
+          "The cat was happy and purr.",
+          "The cat played with a red ball.",
+          "The ball rolled and rolled.",
+          "The cat ran fast to catch it.",
+          "They played in the sunny yard.",
+          "Soon it was time to rest.",
+          "The cat curled up for a nap.",
+          "The end. Great reading!"
         ] : userInfo.age <= 8 ? [
+          `Hi ${userInfo.name}! Here's your adventure.`,
           "Once upon a time, there was a brave little mouse named Max.",
-          "Max lived in a cozy hole under the kitchen.",
-          "One day, Max decided to explore the big house.",
-          "He found many interesting things.",
+          "Max lived in a cozy hole under the kitchen floor.",
+          "One day, Max decided to explore the big house above.",
+          "He found many interesting things on his journey.",
           "Max made new friends along the way.",
+          "Together they solved puzzles and had fun.",
+          "They shared snacks and told stories.",
+          "When the day ended, they were all happy.",
           "And they all lived happily ever after!"
         ] : [
+          `Welcome ${userInfo.name}! Your story begins now.`,
           "In a small village nestled between rolling hills, lived a curious girl named Luna.",
           "She had always wondered about the mysterious forest that bordered her town.",
           "When strange lights began appearing among the trees each night, Luna knew she had to investigate.",
-          "With her backpack and flashlight, she ventured into the forest.",
-          "There, she discovered a magical secret that would change everything.",
-          "Luna's adventure was just beginning!"
+          "With her backpack and flashlight, she ventured into the forest one evening.",
+          "There, she discovered a magical secret that would change everything she thought she knew.",
+          "The lights were coming from a hidden community of friendly forest creatures.",
+          "They had been waiting for someone like Luna to help them solve an important problem.",
+          "Together, they worked to protect their magical home from danger.",
+          "Luna's adventure was just beginning, and she couldn't wait for tomorrow!"
         ];
         
         setStory(fallbackStory);
@@ -106,7 +158,21 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     };
 
     generateStory();
-  }, [userInfo]);
+  }, [userInfo, toast, currentDifficulty]);
+
+  // Function to regenerate story with new difficulty
+  const changeDifficulty = async (newDifficulty: typeof currentDifficulty) => {
+    if (newDifficulty === currentDifficulty) return;
+    
+    setCurrentDifficulty(newDifficulty);
+    setCurrentPage(0); // Reset to first page
+    
+    toast({
+      title: `Switching to ${difficultyLevels[newDifficulty].label}`,
+      description: `Story style inspired by ${difficultyLevels[newDifficulty].author}`,
+      duration: 3000,
+    });
+  };
 
   // Start session when user begins reading
   const startSession = () => {
@@ -445,6 +511,30 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
               <div className="order-1 lg:order-2">
                 <Card className="h-[500px] lg:h-[600px] flex flex-col">
                   <CardContent className="p-6 flex-1 flex flex-col">
+                    {/* Difficulty Level Selector */}
+                    <div className="mb-4">
+                      <div className="flex flex-wrap gap-2 justify-center">
+                        {Object.entries(difficultyLevels).map(([level, info]) => (
+                          <Button
+                            key={level}
+                            onClick={() => changeDifficulty(level as typeof currentDifficulty)}
+                            variant={currentDifficulty === level ? "default" : "outline"}
+                            size="sm"
+                            className={`text-xs ${
+                              currentDifficulty === level 
+                                ? `bg-${info.color}-500 hover:bg-${info.color}-600` 
+                                : `border-${info.color}-300 hover:bg-${info.color}-50`
+                            }`}
+                          >
+                            {info.label}
+                          </Button>
+                        ))}
+                      </div>
+                      <p className="text-center text-xs text-gray-500 mt-1">
+                        Current style: {difficultyLevels[currentDifficulty].author}
+                      </p>
+                    </div>
+
                     {/* Progress Bar */}
                     <div className="mb-6">
                       <Progress value={progress} className="h-2" />

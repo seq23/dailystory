@@ -28,6 +28,7 @@ export interface GeneratedStory {
     explanation: string;
   }[];
   imagePrompts: string[];
+  images?: Array<{url?: string, prompt: string}>; // Make images optional
 }
 
 const AUTHOR_STYLES = {
@@ -140,11 +141,25 @@ export class AdaptiveStoryGenerator {
       return this.generateFallbackStory(config, readingLevel, authorStyle, theme, specs);
     }
 
-    // Parse the generated story into pages
-    const pages = this.parseStoryIntoPages(storyData.content, specs.maxWordsPerPage);
+    // Parse the generated story into pages - ensure exactly 10 pages
+    const targetPageCount = 10;
+    let pages = this.parseStoryIntoPages(storyData.content, specs.maxWordsPerPage);
+    
+    // Adjust to exactly 10 pages
+    if (pages.length < targetPageCount) {
+      // Add additional content if too short
+      const additionalContent = this.generateAdditionalContent(theme, readingLevel, targetPageCount - pages.length);
+      pages = [...pages, ...additionalContent];
+    } else if (pages.length > targetPageCount) {
+      // Trim to exactly 10 pages
+      pages = pages.slice(0, targetPageCount);
+    }
+    
     const vocabularyWords = this.extractVocabularyWords(storyData.content, readingLevel);
     const comprehensionQuestions = this.generateComprehensionQuestions(storyData.content, readingLevel);
-    const imagePrompts = this.generateImagePrompts(readingLevel, theme, pages.length);
+    
+    // Generate images for each page using Runware
+    const images = await this.generateStoryImages(readingLevel, theme, pages);
 
     const story: GeneratedStory = {
       id: crypto.randomUUID(),
@@ -159,7 +174,8 @@ export class AdaptiveStoryGenerator {
       pageCount: pages.length,
       vocabularyWords,
       comprehensionQuestions,
-      imagePrompts
+      imagePrompts: images.map(img => img.prompt || `Illustration for page depicting ${theme}`),
+      images: images // Add the actual generated images
     };
 
     // Store the story in Supabase
@@ -275,29 +291,100 @@ export class AdaptiveStoryGenerator {
     theme: string,
     specs: any
   ): GeneratedStory {
-    const fallbackContent = readingLevel === 'beginner' 
-      ? "The cat sat on the mat. The cat was happy. The cat played with a ball. The ball was red. The cat ran fast. The end."
-      : readingLevel === 'elementary'
-      ? "Once upon a time, there was a brave little mouse named Max. Max lived in a cozy hole under the kitchen. One day, Max decided to explore the big house. He found many interesting things and made new friends along the way."
-      : "In a small village nestled between rolling hills, lived a curious girl named Luna. She had always wondered about the mysterious forest that bordered her town. When strange lights began appearing among the trees each night, Luna knew she had to investigate and discover the magical secret hidden within.";
-
-    const pages = this.parseStoryIntoPages(fallbackContent, specs.maxWordsPerPage);
+    // Enhanced fallback with exactly 10 pages
+    const fallbackPages = [
+      `Once upon a time, there was a wonderful ${theme} waiting to be discovered.`,
+      `In a magical place, there lived someone very special.`,
+      `This someone had a dream to go on an amazing adventure.`,
+      `One bright morning, the adventure began with excitement.`,
+      `Along the way, there were challenges to overcome.`,
+      `But with courage and determination, each challenge was met.`,
+      `Friends appeared to help when needed most.`,
+      `Together, they discovered something truly wonderful.`,
+      `The adventure taught important lessons about friendship and courage.`,
+      `And they all lived happily ever after, ready for new adventures.`
+    ];
 
     return {
       id: crypto.randomUUID(),
       title: `A ${theme} Adventure`,
-      content: fallbackContent,
-      pages,
+      content: fallbackPages.join(' '),
+      pages: fallbackPages,
       readingLevel,
       ageGroup: specs.ageRange,
       authorStyle,
       theme,
-      wordCount: fallbackContent.split(' ').length,
-      pageCount: pages.length,
-      vocabularyWords: this.extractVocabularyWords(fallbackContent, readingLevel),
-      comprehensionQuestions: this.generateComprehensionQuestions(fallbackContent, readingLevel),
-      imagePrompts: this.generateImagePrompts(readingLevel, theme, pages.length)
+      wordCount: this.countWords(fallbackPages.join(' ')),
+      pageCount: fallbackPages.length,
+      vocabularyWords: [],
+      comprehensionQuestions: [],
+      imagePrompts: fallbackPages.map((_, i) => `Illustration for page ${i + 1} depicting ${theme}`),
+      images: [] // Empty for fallback
     };
+  }
+
+  private countWords(text: string): number {
+    return text.split(' ').filter(word => word.trim().length > 0).length;
+  }
+
+  private generateAdditionalContent(theme: string, readingLevel: string, count: number): string[] {
+    const additional: string[] = [];
+    for (let i = 0; i < count; i++) {
+      additional.push(`The ${theme} adventure continued with new discoveries and excitement.`);
+    }
+    return additional;
+  }
+
+  private async generateStoryImages(readingLevel: string, theme: string, pages: string[]): Promise<Array<{url?: string, prompt: string}>> {
+    const images: Array<{url?: string, prompt: string}> = [];
+    
+    try {
+      // Generate images for each page using Runware
+      for (let i = 0; i < Math.min(pages.length, 10); i++) {
+        const complexity = {
+          beginner: 'Simple, bright, cartoon-style illustration with bold colors',
+          elementary: 'Colorful, friendly illustration with clear details',
+          intermediate: 'Detailed illustration with realistic elements',
+          advanced: 'Sophisticated artwork with complex scenes'
+        }[readingLevel] || 'Colorful, child-friendly illustration';
+        
+        const prompt = `${complexity} depicting ${theme}, children's book style, page ${i + 1} illustration, high quality, safe for children`;
+        
+        try {
+          const { data: imageData, error } = await supabase.functions.invoke('runware-generate-image', {
+            body: {
+              positivePrompt: prompt,
+              model: "runware:100@1",
+              width: 1024,
+              height: 1024,
+              numberResults: 1,
+              outputFormat: "WEBP"
+            }
+          });
+          
+          if (!error && imageData?.imageURL) {
+            images.push({ url: imageData.imageURL, prompt });
+          } else {
+            console.warn(`Failed to generate image for page ${i + 1}:`, error);
+            images.push({ prompt }); // Just store the prompt if generation fails
+          }
+        } catch (imgError) {
+          console.warn(`Image generation failed for page ${i + 1}:`, imgError);
+          images.push({ prompt }); // Just store the prompt if generation fails
+        }
+        
+        // Add a small delay between requests to avoid overwhelming the API
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+    } catch (error) {
+      console.error('Error generating story images:', error);
+      // Return prompts only if image generation fails
+      pages.forEach((_, i) => {
+        images.push({ prompt: `Illustration for page ${i + 1} depicting ${theme}` });
+      });
+    }
+    
+    return images;
   }
 }
 
