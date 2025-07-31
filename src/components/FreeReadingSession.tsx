@@ -612,10 +612,10 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                   <BookOpen className="w-8 h-8 text-primary" />
                   <div>
                     <h1 className="text-xl font-bold text-gray-800">
-                      {sessionStarted ? t("freeReadingSession.session.title", { name: userInfo.name }) : t("freeReadingSession.session.titleNotStarted")}
+                      {sessionStarted ? `${userInfo.name}'s Reading Adventure` : t("freeReadingSession.session.titleNotStarted")}
                     </h1>
                     <p className="text-sm text-gray-600">
-                      {sessionStarted ? t("freeReadingSession.session.subtitle", { currentPage: currentPage + 1, totalPages: story.length }) : t("freeReadingSession.session.subtitleNotStarted")}
+                      {sessionStarted ? `Page ${currentPage + 1} of ${story.length}` : t("freeReadingSession.session.subtitleNotStarted")}
                     </p>
                   </div>
                 </div>
