@@ -164,7 +164,7 @@ export class AdaptiveStoryGenerator {
     const imagePrompts = this.generateImagePrompts(readingLevel, theme, pages.length);
     
     // Start generating images and store them
-    const images = await this.generateStoryImages(readingLevel, theme, pages);
+    const images = await this.generateStoryImages(readingLevel, theme, pages, config, storyData.title);
 
     const story: GeneratedStory = {
       id: crypto.randomUUID(),
@@ -340,20 +340,54 @@ export class AdaptiveStoryGenerator {
     return additional;
   }
 
-  private async generateStoryImages(readingLevel: string, theme: string, pages: string[]): Promise<Array<{url?: string, prompt: string}>> {
+  private async generateStoryImages(
+    readingLevel: string, 
+    theme: string, 
+    pages: string[], 
+    config: StoryGenerationConfig,
+    storyTitle: string
+  ): Promise<Array<{url?: string, prompt: string}>> {
     const images: Array<{url?: string, prompt: string}> = [];
+    
+    // Extract character details from config
+    const characterName = config.userName || 'the main character';
+    const characterDescription = config.characterDescription || '';
+    
+    // Determine skin tone and gender from character description or avatar
+    const skinToneMap: {[key: string]: string} = {
+      'dark': 'dark skin',
+      'medium': 'medium skin tone', 
+      'light': 'light skin',
+      'olive': 'olive skin tone',
+      'pale': 'pale skin'
+    };
+    
+    // Extract skin tone from character description
+    let skinTone = 'medium skin tone'; // default
+    Object.keys(skinToneMap).forEach(tone => {
+      if (characterDescription.toLowerCase().includes(tone)) {
+        skinTone = skinToneMap[tone];
+      }
+    });
+    
+    // Determine gender
+    const gender = characterDescription.toLowerCase().includes('girl') ? 'girl' : 
+                  characterDescription.toLowerCase().includes('boy') ? 'boy' : 'child';
+    
+    const artStyle = {
+      beginner: 'simple and bright children\'s book illustration with bold colors and clear shapes',
+      elementary: 'colorful and friendly children\'s book illustration with clear details', 
+      intermediate: 'detailed children\'s book illustration with realistic elements and rich backgrounds',
+      advanced: 'sophisticated children\'s book artwork with complex scenes and atmospheric details'
+    }[readingLevel] || 'colorful children\'s book illustration';
     
     try {
       // Generate images for each page using Runware
       for (let i = 0; i < Math.min(pages.length, 10); i++) {
-        const complexity = {
-          beginner: 'Simple, bright, cartoon-style illustration with bold colors',
-          elementary: 'Colorful, friendly illustration with clear details',
-          intermediate: 'Detailed illustration with realistic elements',
-          advanced: 'Sophisticated artwork with complex scenes'
-        }[readingLevel] || 'Colorful, child-friendly illustration';
+        const pageContent = pages[i];
         
-        const prompt = `${complexity} depicting ${theme}, children's book style, page ${i + 1} illustration, high quality, safe for children`;
+        // Create story-specific prompt following the user's example format
+        const prompt = `A beautiful children's book illustration depicting the scene where young ${gender} named ${characterName} with ${skinTone} in the setting described in this story page: "${pageContent.substring(0, 200)}..." based on the story "${storyTitle}" about ${theme}, with a happy and cheerful atmosphere, warm earth tones and natural colors, contemporary children's book art style, ${artStyle}, appealing to all children regardless of gender, diverse and inclusive, high quality, safe for children`;
         
         try {
           const { data: imageData, error } = await supabase.functions.invoke('runware-generate-image', {
@@ -369,6 +403,7 @@ export class AdaptiveStoryGenerator {
           
           if (!error && imageData?.imageURL) {
             images.push({ url: imageData.imageURL, prompt });
+            console.log(`Generated personalized image ${i + 1}/${pages.length} for ${characterName}`);
           } else {
             console.warn(`Failed to generate image for page ${i + 1}:`, error);
             images.push({ prompt }); // Just store the prompt if generation fails
@@ -384,8 +419,9 @@ export class AdaptiveStoryGenerator {
     } catch (error) {
       console.error('Error generating story images:', error);
       // Return prompts only if image generation fails
-      pages.forEach((_, i) => {
-        images.push({ prompt: `Illustration for page ${i + 1} depicting ${theme}` });
+      pages.forEach((page, i) => {
+        const fallbackPrompt = `Children's book illustration for page ${i + 1} showing ${characterName} with ${skinTone} in ${theme} setting, based on: ${page.substring(0, 100)}...`;
+        images.push({ prompt: fallbackPrompt });
       });
     }
     
@@ -393,9 +429,9 @@ export class AdaptiveStoryGenerator {
   }
 
   // Generate images asynchronously in background
-  private generateStoryImagesAsync(readingLevel: string, theme: string, pages: string[]): void {
+  private generateStoryImagesAsync(readingLevel: string, theme: string, pages: string[], config: StoryGenerationConfig, storyTitle: string): void {
     // Don't await this - let it run in background
-    this.generateStoryImages(readingLevel, theme, pages).catch(error => {
+    this.generateStoryImages(readingLevel, theme, pages, config, storyTitle).catch(error => {
       console.warn('Background image generation failed:', error);
     });
   }
