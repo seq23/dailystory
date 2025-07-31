@@ -143,5 +143,127 @@
         "createAccount": "Crear Cuenta"
       }
     }
+  },
+  "userInfoForm": {
+    "title": "¡Vamos a Crear Tu Historia Perfecta!",
+    "subtitle": "Cuéntanos sobre ti para que podamos crear historias increíbles solo para ti.",
+    "sections": {
+      "aboutYou": "Acerca de Ti",
+      "yourFavorites": "Tus Favoritos",
+      "additionalInfo": "Cuéntanos Más"
+    },
+    "fields": {
+      "name": {
+        "label": "¿Cómo te llamas?",
+        "placeholder": "Ingresa tu nombre"
+      },
+      "age": {
+        "label": "¿Cuántos años tienes?",
+        "placeholder": "Selecciona tu edad",
+        "yearsOld": "años"
+      },
+      "grade": {
+        "label": "¿En qué grado estás?",
+        "placeholder": "Selecciona tu grado"
+      },
+      "nativeLanguage": {
+        "label": "¿Qué idioma hablas en casa?",
+        "placeholder": "Selecciona tu idioma nativo"
+      },
+      "learningGoal": {
+        "label": "¿Qué quieres mejorar?",
+        "placeholder": "Selecciona tu objetivo",
+        "options": {
+          "improve-english-reading": "Mejorar la lectura en inglés",
+          "learn-english-language": "Aprender inglés como nuevo idioma",
+          "both": "Tanto lectura como habilidades del idioma"
+        }
+      },
+      "readingAbility": {
+        "label": "¿Qué tan bien lees?",
+        "placeholder": "Selecciona tu nivel de lectura",
+        "levels": {
+          "easy": {
+            "title": "Estoy empezando a leer",
+            "description": "Palabras simples y oraciones cortas"
+          },
+          "medium": {
+            "title": "Puedo leer libros simples",
+            "description": "Oraciones más largas y párrafos"
+          },
+          "hard": {
+            "title": "Puedo leer libros por capítulos",
+            "description": "Historias complejas y vocabulario"
+          },
+          "expert": {
+            "title": "Me encanta leer libros grandes",
+            "description": "Vocabulario y conceptos avanzados"
+          }
+        }
+      },
+      "avatar": {
+        "label": "¿Qué avatar quieres?"
+      },
+      "favoriteColor": {
+        "label": "¿Cuál es tu color o tono favorito?",
+        "optional": "(Opcional)"
+      },
+      "favoriteAnimal": {
+        "label": "¿Cuál es tu animal favorito?",
+        "placeholder": "perro, gato, león, delfín...",
+        "optional": "(Opcional)"
+      },
+      "favoriteFood": {
+        "label": "¿Cuál es tu comida favorita?",
+        "placeholder": "pizza, helado, manzanas, galletas...",
+        "optional": "(Opcional)"
+      },
+      "hobbies": {
+        "label": "¿Qué te encanta hacer?",
+        "placeholder": "fútbol, dibujar, bailar, videojuegos...",
+        "optional": "(Opcional)"
+      },
+      "specialRequest": {
+        "label": "¿Algo especial que te gustaría en tu historia?",
+        "placeholder": "dinosaurios, princesas, aventuras espaciales, magia...",
+        "optional": "(Opcional)"
+      }
+    },
+    "grades": {
+      "PreK": "Pre-K",
+      "K": "Jardín de Infantes",
+      "1st": "1er Grado",
+      "2nd": "2do Grado", 
+      "3rd": "3er Grado",
+      "4th": "4to Grado",
+      "5th": "5to Grado",
+      "6th": "6to Grado"
+    },
+    "languages": {
+      "en": "Inglés",
+      "es": "Español", 
+      "fr": "Francés",
+      "ar": "Árabe",
+      "hi": "Hindi",
+      "pt": "Portugués",
+      "zh": "Chino"
+    },
+    "submit": "¡Crear Mi Historia! ✨",
+    "back": "← Atrás",
+    "buttons": {
+      "backToHome": "← Volver a Inicio",
+      "createStory": "¡Crear Mi Historia! ✨"
+    },
+    "validation": {
+      "nameRequired": "Por favor dinos tu nombre",
+      "ageRequired": "Por favor dinos tu edad",
+      "gradeRequired": "Por favor dinos tu grado",
+      "contentWarning": "Advertencia de Contenido",
+      "inappropriateContent": "Por favor usa lenguaje apropiado para niños",
+      "tooManyRequests": "Demasiadas Solicitudes",
+      "waitToSubmit": "Por favor espera antes de enviar nuevamente",
+      "contentIssue": "Problema de Contenido",
+      "reviewInputs": "Por favor revisa tus entradas para contenido apropiado"
+    }
   }
 }

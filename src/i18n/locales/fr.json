@@ -143,5 +143,127 @@
         "createAccount": "Créer un Compte"
       }
     }
+  },
+  "userInfoForm": {
+    "title": "Créons Votre Histoire Parfaite !",
+    "subtitle": "Parlez-nous de vous pour que nous puissions créer des histoires incroyables juste pour vous.",
+    "sections": {
+      "aboutYou": "À Propos de Vous",
+      "yourFavorites": "Vos Favoris",
+      "additionalInfo": "Dites-nous En Plus"
+    },
+    "fields": {
+      "name": {
+        "label": "Comment vous appelez-vous ?",
+        "placeholder": "Entrez votre nom"
+      },
+      "age": {
+        "label": "Quel âge avez-vous ?",
+        "placeholder": "Sélectionnez votre âge",
+        "yearsOld": "ans"
+      },
+      "grade": {
+        "label": "En quelle classe êtes-vous ?",
+        "placeholder": "Sélectionnez votre classe"
+      },
+      "nativeLanguage": {
+        "label": "Quelle langue parlez-vous à la maison ?",
+        "placeholder": "Sélectionnez votre langue maternelle"
+      },
+      "learningGoal": {
+        "label": "Que voulez-vous améliorer ?",
+        "placeholder": "Sélectionnez votre objectif",
+        "options": {
+          "improve-english-reading": "Améliorer la lecture en anglais",
+          "learn-english-language": "Apprendre l'anglais comme nouvelle langue",
+          "both": "Les compétences de lecture et de langue"
+        }
+      },
+      "readingAbility": {
+        "label": "À quel point lisez-vous bien ?",
+        "placeholder": "Sélectionnez votre niveau de lecture",
+        "levels": {
+          "easy": {
+            "title": "Je commence à lire",
+            "description": "Mots simples et phrases courtes"
+          },
+          "medium": {
+            "title": "Je peux lire des livres simples",
+            "description": "Phrases plus longues et paragraphes"
+          },
+          "hard": {
+            "title": "Je peux lire des livres à chapitres",
+            "description": "Histoires complexes et vocabulaire"
+          },
+          "expert": {
+            "title": "J'adore lire de gros livres",
+            "description": "Vocabulaire et concepts avancés"
+          }
+        }
+      },
+      "avatar": {
+        "label": "Quel avatar voulez-vous ?"
+      },
+      "favoriteColor": {
+        "label": "Quelle est votre couleur ou nuance préférée ?",
+        "optional": "(Optionnel)"
+      },
+      "favoriteAnimal": {
+        "label": "Quel est votre animal préféré ?",
+        "placeholder": "chien, chat, lion, dauphin...",
+        "optional": "(Optionnel)"
+      },
+      "favoriteFood": {
+        "label": "Quelle est votre nourriture préférée ?",
+        "placeholder": "pizza, glace, pommes, biscuits...",
+        "optional": "(Optionnel)"
+      },
+      "hobbies": {
+        "label": "Qu'aimez-vous faire ?",
+        "placeholder": "football, dessiner, danser, jeux vidéo...",
+        "optional": "(Optionnel)"
+      },
+      "specialRequest": {
+        "label": "Quelque chose de spécial que vous aimeriez dans votre histoire ?",
+        "placeholder": "dinosaures, princesses, aventures spatiales, magie...",
+        "optional": "(Optionnel)"
+      }
+    },
+    "grades": {
+      "PreK": "Pré-K",
+      "K": "Maternelle",
+      "1st": "1ère Année",
+      "2nd": "2ème Année", 
+      "3rd": "3ème Année",
+      "4th": "4ème Année",
+      "5th": "5ème Année",
+      "6th": "6ème Année"
+    },
+    "languages": {
+      "en": "Anglais",
+      "es": "Espagnol", 
+      "fr": "Français",
+      "ar": "Arabe",
+      "hi": "Hindi",
+      "pt": "Portugais",
+      "zh": "Chinois"
+    },
+    "submit": "Créer Mon Histoire ! ✨",
+    "back": "← Retour",
+    "buttons": {
+      "backToHome": "← Retour à l'Accueil",
+      "createStory": "Créer Mon Histoire ! ✨"
+    },
+    "validation": {
+      "nameRequired": "Veuillez nous dire votre nom",
+      "ageRequired": "Veuillez nous dire votre âge",
+      "gradeRequired": "Veuillez nous dire votre classe",
+      "contentWarning": "Avertissement de Contenu",
+      "inappropriateContent": "Veuillez utiliser un langage adapté aux enfants",
+      "tooManyRequests": "Trop de Demandes",
+      "waitToSubmit": "Veuillez attendre avant de soumettre à nouveau",
+      "contentIssue": "Problème de Contenu",
+      "reviewInputs": "Veuillez réviser vos entrées pour un contenu approprié"
+    }
   }
 }
