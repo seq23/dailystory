@@ -768,78 +768,62 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         }
       }
       
-      // Enhanced language-specific prompts with premium quality and NO TEXT
-      const getLanguageSpecificPrompt = (nativeLanguage: string) => {
-        const basePrompts = {
-          en: {
-            base: "A premium, gallery-quality children's book illustration in sophisticated watercolor and digital art style showing",
-            context: "depicting the scene:",
-            atmosphere: "rendered with exceptional artistic mastery, rich vibrant colors, perfect professional lighting, flawless composition, award-winning illustration quality, Pixar-level character design, consistent character appearance, no text or words anywhere in the image, pristine children's book artistry, museum-quality artwork, safe wholesome content"
-          },
-          es: {
-            base: "Una ilustración premium de calidad de galería para libro infantil en sofisticado estilo de acuarela y arte digital mostrando",
-            context: "representando la escena:",
-            atmosphere: "renderizada con maestría artística excepcional, colores ricos y vibrantes, iluminación profesional perfecta, composición impecable, calidad de ilustración galardonada, diseño de personajes nivel Pixar, apariencia de personajes consistente, sin texto o palabras en ningún lugar de la imagen, arte inmaculado de libros infantiles, obra de arte de calidad de museo, contenido seguro y saludable"
-          },
-          fr: {
-            base: "Une illustration premium de qualité galerie pour livre d'enfants en style aquarelle sophistiqué et art numérique montrant",
-            context: "dépeignant la scène:",
-            atmosphere: "rendue avec une maîtrise artistique exceptionnelle, des couleurs riches et vibrantes, un éclairage professionnel parfait, une composition impeccable, une qualité d'illustration primée, un design de personnage niveau Pixar, une apparence de personnage cohérente, aucun texte ou mot nulle part dans l'image, un art immaculé de livre pour enfants, une œuvre d'art de qualité muséale, un contenu sûr et sain"
-          },
-          pt: {
-            base: "Uma ilustração premium de qualidade de galeria para livro infantil em estilo sofisticado de aquarela e arte digital mostrando",
-            context: "retratando a cena:",
-            atmosphere: "renderizada com maestria artística excepcional, cores ricas e vibrantes, iluminação profissional perfeita, composição impecável, qualidade de ilustração premiada, design de personagem nível Pixar, aparência de personagem consistente, sem texto ou palavras em lugar algum na imagem, arte imaculada de livros infantis, obra de arte de qualidade de museu, conteúdo seguro e saudável"
-          },
-          ar: {
-            base: "رسم توضيحي متميز بجودة معرض لكتاب أطفال بأسلوب ألوان مائية متطور وفن رقمي يُظهر",
-            context: "يصور المشهد:",
-            atmosphere: "مُقدم بإتقان فني استثنائي، ألوان غنية ونابضة بالحياة، إضاءة مهنية مثالية، تركيب لا تشوبه شائبة، جودة رسم توضيحي حائز على جوائز، تصميم شخصيات بمستوى بيكسار، مظهر شخصيات متسق، بدون نص أو كلمات في أي مكان في الصورة، فن نقي لكتب الأطفال، عمل فني بجودة متحف، محتوى آمن وصحي"
-          },
-          zh: {
-            base: "一幅高级画廊品质的儿童书籍插图，采用精致的水彩和数字艺术风格，展示",
-            context: "描绘场景：",
-            atmosphere: "以卓越的艺术技巧渲染，丰富鲜艳的色彩，完美的专业灯光，无瑕的构图，获奖插图质量，皮克斯级角色设计，一致的角色外观，图像中任何地方都没有文字或单词，纯净的儿童书籍艺术，博物馆品质的艺术作品，安全健康的内容"
-          },
-          hi: {
-            base: "एक प्रीमियम, गैलरी-गुणवत्ता का बच्चों की पुस्तक का चित्रण परिष्कृत जल रंग और डिजिटल कला शैली में दिखा रहा है",
-            context: "दृश्य का चित्रण:",
-            atmosphere: "असाधारण कलात्मक निपुणता के साथ प्रस्तुत, समृद्ध जीवंत रंग, सही पेशेवर प्रकाश व्यवस्था, निर्दोष संरचना, पुरस्कार विजेता चित्रण गुणवत्ता, पिक्सार-स्तर चरित्र डिज़ाइन, निरंतर चरित्र रूप, छवि में कहीं भी कोई पाठ या शब्द नहीं, निर्मल बच्चों की पुस्तक कलाकृति, संग्रहालय-गुणवत्ता कलाकृति, सुरक्षित स्वस्थ सामग्री"
-          }
-        };
+      // Extract key scene elements from story text
+      const extractSceneElements = (text: string) => {
+        const lowerText = text.toLowerCase();
         
-        return basePrompts[nativeLanguage as keyof typeof basePrompts] || basePrompts.en;
+        // Simple scene detection
+        if (lowerText.includes('woke') || lowerText.includes('morning')) {
+          return 'a child waking up in a cozy bedroom with morning sunlight streaming through the window';
+        } else if (lowerText.includes('outside') || lowerText.includes('garden')) {
+          return 'a child in a beautiful garden with flowers and trees';
+        } else if (lowerText.includes('playing') || lowerText.includes('play')) {
+          return 'a child happily playing in a safe outdoor environment';
+        } else if (lowerText.includes('friend') || lowerText.includes('animal')) {
+          return 'a child meeting a friendly animal companion';
+        } else if (lowerText.includes('adventure') || lowerText.includes('exploring')) {
+          return 'a child on an exciting but safe adventure';
+        } else {
+          return 'a child in a peaceful, happy scene';
+        }
+      };
+
+      // Get character description
+      const getCharacterDescription = () => {
+        const name = userInfo.name || 'child';
+        const isYoung = currentDifficulty === 'easy' || currentDifficulty === 'medium';
+        const agePrefix = isYoung ? 'young ' : '';
+        const gender = userInfo.avatar?.type === 'boy' ? 'boy' : 'girl';
+        
+        const skinTones = {
+          pale: 'very light skin',
+          light: 'light skin',
+          medium: 'medium skin',
+          olive: 'olive skin',
+          dark: 'beautiful dark brown skin'
+        } as const;
+        
+        const skinTone = skinTones[userInfo.avatar?.skinTone || 'medium'];
+        
+        // Enhanced representation for African/African American characters
+        if (userInfo.avatar?.skinTone === 'dark' && userInfo.nativeLanguage === 'en') {
+          return `${agePrefix}African American ${gender} named ${name} with ${skinTone}, authentic African American features including natural curly or coily hair texture, fuller lips, broader nose, and distinctive African heritage facial structure`;
+        }
+        
+        let characterDesc = `${agePrefix}${gender} named ${name} with ${skinTone}`;
+        
+        if (userInfo.favoriteColor) {
+          characterDesc += `, wearing ${userInfo.favoriteColor.toLowerCase()} clothing`;
+        }
+        
+        return characterDesc;
       };
       
-      // Analyze current page for specific scene elements
-      const currentPageText = storyText.toLowerCase();
-      let sceneDetails = "";
+      const sceneDescription = extractSceneElements(storyText);
+      const characterDescription = getCharacterDescription();
       
-      // ALWAYS include the user as the main character in every scene
-      const userInScene = storyCharacters.mainCharacter;
-      const secondaryChar = storyCharacters.secondaryCharacters[0] || 'a friendly companion';
-      
-      if (currentPageText.includes("hello") || currentPageText.includes("said")) {
-        sceneDetails = `${userInScene} speaking or greeting ${secondaryChar} with warm, expressive eyes and friendly body language`;
-      } else if (currentPageText.includes("adventure") || currentPageText.includes("explore")) {
-        sceneDetails = `${userInScene} on an exciting adventure with ${secondaryChar} through a magical, detailed landscape`;
-      } else if (currentPageText.includes("friend") || currentPageText.includes("meet")) {
-        sceneDetails = `${userInScene} meeting ${secondaryChar} in a heartwarming, beautifully detailed scene`;
-      } else if (currentPageText.includes("play") || currentPageText.includes("fun")) {
-        sceneDetails = `${userInScene} playing joyfully with ${secondaryChar} in a beautiful environment`;
-      } else if (currentPageText.includes("home") || currentPageText.includes("house")) {
-        sceneDetails = `${userInScene} in a cozy, beautifully illustrated home setting`;
-      } else if (currentPageText.includes("garden") || currentPageText.includes("flower")) {
-        sceneDetails = `${userInScene} in a vibrant garden with stunning floral details`;
-      } else if (currentPageText.includes("forest") || currentPageText.includes("tree")) {
-        sceneDetails = `${userInScene} in an enchanted forest with magnificent trees and lighting`;
-      } else {
-        sceneDetails = `${userInScene} in a magical storybook scene with beautiful details`;
-      }
-      
-      // Generate enhanced prompt in the user's native language
-      const langPrompt = getLanguageSpecificPrompt(userInfo.nativeLanguage || 'en');
-      const prompt = `NO TEXT NO WORDS NO LETTERS NO WRITING ANYWHERE IN IMAGE. ${langPrompt.base} ${sceneDetails} ${langPrompt.context} ${storyText}. ${langPrompt.atmosphere}. CRITICAL: ALWAYS show ${userInScene} as the main character with exact ethnic representation - ${userInfo.name} with ${userInfo.avatar?.skinTone === 'dark' && userInfo.nativeLanguage === 'en' ? 'authentic African American features including natural curly/coily hair, fuller lips, broader nose, and distinctive African heritage facial structure with beautiful dark brown skin' : `authentic ${userInfo.avatar?.skinTone || 'medium'} features`} and ${userInfo.avatar?.type || 'child'} characteristics. ABSOLUTELY NO TEXT, WORDS, LETTERS, CAPTIONS, SUBTITLES, OR ANY WRITTEN CONTENT anywhere in the image. Pure visual illustration only. Image must be completely text-free.`;
+      // Build prompt in the exact format requested by user
+      const prompt = `A beautiful childrens book illustration depicting the scene ${sceneDescription} featuring ${characterDescription}, with a happy and cheerful atmosphere, warm earth tones and natural colors, contemporary childrens book art style, appealing to all children regardless of gender, diverse and inclusive, safe and wholesome content, high quality professional artwork, absolutely no text or words visible anywhere in the image`;
       
       console.log('Enhanced consistency prompt:', prompt);
       console.log('Main character for consistency:', storyCharacters.mainCharacter);
