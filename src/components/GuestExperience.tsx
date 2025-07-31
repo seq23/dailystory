@@ -68,6 +68,8 @@ export const GuestExperience = () => {
             userInfo={userInfo}
             onUpgrade={handleUpgrade}
             onCreateAccount={handleCreateAccount}
+            onHome={() => setCurrentState("welcome")}
+            onNewStory={() => setCurrentState("form")}
           />
         </div>
       ) : null;

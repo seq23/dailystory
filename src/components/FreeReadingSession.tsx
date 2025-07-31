@@ -2,11 +2,11 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { BookOpen, Timer, Star, Crown, Sparkles, TrendingUp, Award, Clock, Play, Pause, Minus, X, ChevronUp, ChevronDown, Plus } from "lucide-react";
+import { BookOpen, Timer, Star, Crown, Sparkles, TrendingUp, Award, Clock, Play, Pause, Minus, X, ChevronUp, ChevronDown, Plus, Home, RotateCcw } from "lucide-react";
 import type { UserInfo, SessionStats } from "@/types";
 import { InteractiveAudioReading } from "@/components/InteractiveAudioReading";
 import { ElevenLabsAudio } from "@/components/ElevenLabsAudio";
-import { adaptiveStoryGenerator } from "@/services/adaptiveStoryGenerator";
+import { EarlyReaderStoryGenerator } from "@/services/earlyReaderStoryGenerator";
 import { APP_CONFIG } from "@/constants/app";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
@@ -23,12 +23,16 @@ interface FreeReadingSessionProps {
   userInfo: UserInfo;
   onUpgrade: () => void;
   onCreateAccount: () => void;
+  onHome?: () => void;
+  onNewStory?: () => void;
 }
 
 export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   userInfo,
   onUpgrade,
   onCreateAccount,
+  onHome,
+  onNewStory,
 }) => {
   const { toast } = useToast();
   const { t } = useTranslation();
@@ -39,10 +43,10 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   const [currentPage, setCurrentPage] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [sessionStarted, setSessionStarted] = useState(false);
-  const [currentDifficulty, setCurrentDifficulty] = useState<'beginner' | 'elementary' | 'intermediate' | 'advanced'>(
-    userInfo.readingAbility === 'easy' ? 'beginner' :
-    userInfo.readingAbility === 'medium' ? 'elementary' :
-    userInfo.readingAbility === 'hard' ? 'intermediate' : 'advanced'
+  const [currentDifficulty, setCurrentDifficulty] = useState<'easy' | 'medium' | 'hard' | 'expert'>(
+    userInfo.readingAbility === 'easy' ? 'easy' :
+    userInfo.readingAbility === 'medium' ? 'medium' :
+    userInfo.readingAbility === 'hard' ? 'hard' : 'expert'
   );
   
   // Session state
@@ -67,7 +71,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   const illustrations = [illustration1, illustration2, illustration3, illustration4, illustration5];
 
   // Difficulty level mappings - 4 levels but only 2 buttons
-  const difficultyLevels = ['beginner', 'elementary', 'intermediate', 'advanced'] as const;
+  const difficultyLevels = ['easy', 'medium', 'hard', 'expert'] as const;
   
   const getDifficultyIndex = () => {
     return difficultyLevels.indexOf(currentDifficulty);
@@ -158,8 +162,13 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
         console.log('Story config:', storyConfig);
 
         if (!isCancelled) {
-          // Generate story content immediately (fast)
-          const generatedStory = await adaptiveStoryGenerator.generateStory(storyConfig);
+          // Generate story content using the new generator
+          const { pages, config } = EarlyReaderStoryGenerator.generateStory(
+            userInfo, 
+            currentDifficulty as 'easy' | 'medium' | 'hard' | 'expert', 
+            10
+          );
+          const generatedStory = { pages, config, images: [], wordCount: pages.join(' ').split(' ').length, title: `${userInfo.name}'s Adventure`, theme: 'adventure', readingLevel: currentDifficulty };
           setStoryImages(generatedStory.images || []);
           
           if (!isCancelled) {
@@ -194,14 +203,11 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
               for (let i = 0; i < Math.min(pages.length, 10); i++) {
                 try {
                   console.log(`Starting image generation for page ${i + 1}...`);
-                  const pageImage = await adaptiveStoryGenerator.generatePageImage(
-                    i,
-                    pages[i],
-                    storyConfig,
-                    generatedStory.title,
-                    generatedStory.theme,
-                    generatedStory.readingLevel
-                  );
+                  // Image generation would happen here - for now using placeholders
+                  const pageImage = { 
+                    url: illustrations[i % illustrations.length], 
+                    prompt: pages[i] 
+                  };
                   
                   if (!isCancelled && pageImage.url) {
                     // Update the specific page image when it's ready
@@ -301,7 +307,12 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
         console.log('Maintaining character consistency for difficulty change:', establishedCharacter.userName);
 
         // Generate new story at the new difficulty level
-        const updatedStory = await adaptiveStoryGenerator.generateStory(storyConfig);
+        const { pages: newPages, config: newConfig } = EarlyReaderStoryGenerator.generateStory(
+          userInfo, 
+          newDifficulty as 'easy' | 'medium' | 'hard' | 'expert', 
+          10
+        );
+        const updatedStory = { pages: newPages, config: newConfig, images: [], wordCount: newPages.join(' ').split(' ').length };
         
         // Smoothly update the story content (no reload feeling)
         const targetPages = 10;
@@ -336,14 +347,11 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
         const startProgressiveImageGeneration = async () => {
           for (let i = 0; i < Math.min(pages.length, 10); i++) {
             try {
-              const pageImage = await adaptiveStoryGenerator.generatePageImage(
-                i,
-                pages[i],
-                storyConfig,
-                updatedStory.title,
-                updatedStory.theme,
-                updatedStory.readingLevel
-              );
+              // Using placeholder images for now
+              const pageImage = { 
+                url: illustrations[i % illustrations.length], 
+                prompt: pages[i] 
+              };
               
               if (pageImage.url) {
                 setStoryImages(prevImages => {
@@ -402,10 +410,14 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
 
       console.log('Maintaining character consistency for page extension:', establishedCharacter.userName);
 
-      const extendedStory = await adaptiveStoryGenerator.generateStory(storyConfig);
+      // Generate new pages using the new generator
+      const { pages: newPages, config } = EarlyReaderStoryGenerator.generateStory(
+        userInfo, 
+        currentDifficulty as 'easy' | 'medium' | 'hard' | 'expert', 
+        5
+      );
       
       // Add new pages and generate images for them
-      const newPages = extendedStory.pages.slice(0, 5);
       const startPageIndex = story.length;
       setStory(prev => [...prev, ...newPages]);
       
@@ -421,14 +433,11 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
       const generateNewPageImages = async () => {
         for (let i = 0; i < newPages.length; i++) {
           try {
-            const pageImage = await adaptiveStoryGenerator.generatePageImage(
-              startPageIndex + i,
-              newPages[i],
-              storyConfig,
-              extendedStory.title || 'Adventure Story',
-              extendedStory.theme || 'adventure',
-              storyConfig.readingLevel
-            );
+            // Using placeholder images for now
+            const pageImage = { 
+              url: illustrations[(startPageIndex + i) % illustrations.length], 
+              prompt: newPages[i] 
+            };
             
             if (pageImage.url) {
               setStoryImages(prevImages => {
@@ -861,12 +870,25 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                   </div>
                 </div>
                 
-                {!sessionStarted && (
-                  <Button onClick={startSession} className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white">
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    {t("freeReadingSession.session.startReading")}
+                <div className="flex items-center gap-2">
+                  {/* Navigation buttons - always visible */}
+                  <Button onClick={onNewStory} variant="outline" size="sm">
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    New Story
                   </Button>
-                )}
+                  <Button onClick={onHome} variant="outline" size="sm">
+                    <Home className="w-4 h-4 mr-2" />
+                    Home
+                  </Button>
+                  
+                  {/* Start session button - only show if session hasn't started */}
+                  {!sessionStarted && (
+                    <Button onClick={startSession} className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white">
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      {t("freeReadingSession.session.startReading")}
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           </header>
@@ -941,18 +963,20 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                     {/* Story Text with Interactive Words */}
                     <div className="flex-1 flex items-center justify-center">
                       <div className="text-center">
-                        <div className={`${
-                          userInfo.age <= 5 ? 'text-3xl' : 
-                          userInfo.age <= 8 ? 'text-2xl' : 
-                          'text-xl'
-                        } font-medium leading-relaxed text-gray-800 max-w-md mx-auto`}>
-                          {processTextForPhonetics(
-                            currentStory, 
-                            "", 
-                            currentDifficulty as "easy" | "medium" | "hard" | "expert",
-                            userInfo
-                          )}
-                        </div>
+                        {/* Apply reading level configuration */}
+                        {(() => {
+                          const config = EarlyReaderStoryGenerator.getReadingConfigForDifficulty(currentDifficulty);
+                          return (
+                            <div className={`${config.fontSize} ${config.lineHeight} ${config.spacing} font-medium text-gray-800 max-w-2xl mx-auto`}>
+                              {processTextForPhonetics(
+                                currentStory, 
+                                "", 
+                                currentDifficulty as "easy" | "medium" | "hard" | "expert",
+                                userInfo
+                              )}
+                            </div>
+                          );
+                        })()}
                       </div>
                     </div>
 
