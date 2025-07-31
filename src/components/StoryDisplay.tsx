@@ -719,18 +719,21 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       // Extract main characters from the entire story for consistency
       const fullStoryText = story.join(' ').toLowerCase();
       
-      // ALWAYS start with the user as the main character
+      // ALWAYS start with the user as the main character with accurate ethnic representation
       const userCharacterDescription = () => {
         const gender = userInfo.avatar?.type || 'child';
-        const skinToneMap = {
-          pale: 'very light skin',
-          light: 'light skin', 
-          medium: 'medium skin tone',
-          olive: 'olive-toned skin',
-          dark: 'dark skin'
-        };
-        const skinTone = skinToneMap[userInfo.avatar?.skinTone || 'medium'];
         const age = userInfo.age || 8;
+        
+        // Accurate skin tone and ethnic representation
+        const skinToneMap = {
+          pale: 'very light skin, European features',
+          light: 'light skin, Caucasian features', 
+          medium: 'medium brown skin, mixed heritage features',
+          olive: 'olive-toned skin, Mediterranean or Middle Eastern features',
+          dark: 'dark brown skin, African or African American features with beautiful dark skin tone'
+        };
+        
+        const skinTone = skinToneMap[userInfo.avatar?.skinTone || 'medium'];
         
         return `${userInfo.name}, a ${age}-year-old ${gender} with ${skinTone}`;
       };
@@ -833,7 +836,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       
       // Generate enhanced prompt in the user's native language
       const langPrompt = getLanguageSpecificPrompt(userInfo.nativeLanguage || 'en');
-      const prompt = `${langPrompt.base} ${sceneDetails} ${langPrompt.context} ${storyText}. ${langPrompt.atmosphere}. CRITICAL: ALWAYS show ${userInScene} as the main character with exact appearance - ${userInfo.name} with ${userInfo.avatar?.skinTone || 'medium'} skin tone and ${userInfo.avatar?.type || 'child'} characteristics. Character consistency is essential.`;
+      const prompt = `${langPrompt.base} ${sceneDetails} ${langPrompt.context} ${storyText}. ${langPrompt.atmosphere}. CRITICAL: ALWAYS show ${userInScene} as the main character with exact ethnic representation - ${userInfo.name} with authentic ${userInfo.avatar?.skinTone === 'dark' ? 'African/African American' : userInfo.avatar?.skinTone || 'medium'} features and ${userInfo.avatar?.type || 'child'} characteristics. Accurate ethnic representation is essential.`;
       
       console.log('Enhanced consistency prompt:', prompt);
       console.log('Main character for consistency:', storyCharacters.mainCharacter);
