@@ -58,17 +58,29 @@ export const InteractiveWord = ({
       hideTimeoutRef.current = null;
     }
     
-    // Calculate optimal position for tooltip
+    // Calculate optimal position for tooltip with viewport awareness
     if (wordRef.current) {
       const rect = wordRef.current.getBoundingClientRect();
-      const spaceAbove = rect.top;
-      const spaceBelow = window.innerHeight - rect.bottom;
+      const viewportHeight = window.innerHeight;
+      const viewportWidth = window.innerWidth;
+      const estimatedTooltipHeight = 160; // Estimated height including content and padding
+      const estimatedTooltipWidth = 320; // Estimated width
       
-      // If there's less than 200px above or we're in the top 20% of viewport, show below
-      if (spaceAbove < 200 || rect.top < window.innerHeight * 0.2) {
+      // Check available space in all directions
+      const spaceAbove = rect.top;
+      const spaceBelow = viewportHeight - rect.bottom;
+      const spaceLeft = rect.left;
+      const spaceRight = viewportWidth - rect.right;
+      
+      // Determine optimal vertical position
+      // Prefer showing below unless there's insufficient space
+      if (spaceBelow >= estimatedTooltipHeight || spaceBelow > spaceAbove) {
         setTooltipPosition('bottom');
-      } else {
+      } else if (spaceAbove >= estimatedTooltipHeight) {
         setTooltipPosition('top');
+      } else {
+        // If neither direction has enough space, choose the one with more space
+        setTooltipPosition(spaceBelow > spaceAbove ? 'bottom' : 'top');
       }
     }
     
@@ -259,11 +271,7 @@ export const InteractiveWord = ({
       
       {showTooltip && (
         <div 
-          className={`fixed z-[9999] ${
-            tooltipPosition === 'top' 
-              ? 'bottom-full mb-2' 
-              : 'top-full mt-2'
-          }`}
+          className="absolute z-[9999]"
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
           onTouchStart={(e) => e.stopPropagation()}
@@ -272,7 +280,9 @@ export const InteractiveWord = ({
             transform: 'translateX(-50%)',
             maxWidth: 'min(340px, 90vw)',
             minWidth: 'min(280px, 85vw)',
-            width: 'max-content'
+            width: 'max-content',
+            [tooltipPosition === 'top' ? 'bottom' : 'top']: '100%',
+            [tooltipPosition === 'top' ? 'marginBottom' : 'marginTop']: '8px'
           }}
         >
           <div className="bg-white border border-gray-200 text-gray-900 px-3 py-3 sm:px-4 rounded-lg shadow-2xl text-xs sm:text-sm font-medium backdrop-blur-sm w-full"
