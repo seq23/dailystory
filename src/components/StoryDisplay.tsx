@@ -8,6 +8,7 @@ import { BookOpen, Home, RotateCcw, Volume2, VolumeX, TrendingUp, TrendingDown, 
 import { FloatingTimer } from "./FloatingTimer";
 import type { UserInfo } from "./UserInfoForm";
 import ProgressDashboard from "@/components/ProgressDashboard";
+import AdaptiveUI from "@/components/AdaptiveUI";
 import { ProgressTrackingService, ReadingProgress } from "@/services/progressTrackingService";
 import { createOpenAITTSService } from "@/services/textToSpeechService";
 import { useToast } from "@/hooks/use-toast";
@@ -729,7 +730,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+    <AdaptiveUI userInfo={userInfo} className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
       {/* Simple Header */}
       <header className="bg-white/90 backdrop-blur-sm shadow-sm border-b border-purple-100">
         <div className="max-w-7xl mx-auto px-4 py-3">
@@ -1112,7 +1113,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
             onClose={() => setShowProgressDashboard(false)}
           />
         )}
-    </div>
+    </AdaptiveUI>
   );
 };
 

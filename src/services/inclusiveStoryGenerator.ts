@@ -47,18 +47,42 @@ export class InclusiveStoryGenerator {
     const createCulturalStoryByDifficulty = () => {
       const storyPages: string[] = [];
       
-      // Base story elements
-      const animals = ["friendly dragon", "wise owl", "playful rabbit", "gentle deer", "curious fox"];
-      const settings = [culturalElements.setting, "magical forest", "enchanted garden", "crystal cave", "rainbow bridge"];
-      const objects = ["glowing crystal", "magic book", "golden key", "silver compass", "rainbow gem"];
-      const values = [culturalElements.value, "kindness", "courage", "friendship", "wisdom"];
+      // Enhanced story elements that incorporate user preferences
+      const getPersonalizedElements = () => {
+        // Base elements with fallbacks if user didn't provide preferences
+        const animals = userInfo.favoriteAnimal 
+          ? [`friendly ${userInfo.favoriteAnimal.toLowerCase()}`, "wise owl", "playful rabbit", "gentle deer", "curious fox"]
+          : ["friendly dragon", "wise owl", "playful rabbit", "gentle deer", "curious fox"];
+        
+        const settings = [culturalElements.setting, "magical forest", "enchanted garden", "crystal cave", "rainbow bridge"];
+        
+        const objects = userInfo.favoriteColor 
+          ? [`glowing ${userInfo.favoriteColor.toLowerCase()} crystal`, "magic book", "golden key", "silver compass", `${userInfo.favoriteColor.toLowerCase()} gem`]
+          : ["glowing crystal", "magic book", "golden key", "silver compass", "rainbow gem"];
+        
+        const values = [culturalElements.value, "kindness", "courage", "friendship", "wisdom"];
+        
+        // Add food-related elements if user provided favorite food
+        const foods = userInfo.favoriteFood 
+          ? [`delicious ${userInfo.favoriteFood.toLowerCase()}`, "magical treats", "sweet berries", "golden honey"]
+          : ["magical treats", "sweet berries", "golden honey", "crystal water"];
+        
+        // Add hobby-related activities if user provided hobbies
+        const activities = userInfo.hobbies 
+          ? [userInfo.hobbies.toLowerCase(), "exploring", "learning", "helping others"]
+          : ["exploring", "learning", "helping others", "solving puzzles"];
+        
+        return { animals, settings, objects, values, foods, activities };
+      };
+      
+      const { animals, settings, objects, values, foods, activities } = getPersonalizedElements();
       
       for (let i = 0; i < pageCount; i++) {
         let page = "";
         let wordCount = 0;
         
         if (difficulty === "easy") {
-          // Simple, short sentences for early readers
+          // Simple, short sentences for early readers with personalized elements
           const easyTemplates = [
             `${characterName} saw a big ${animals[i % animals.length]}.`,
             `They walked to the ${settings[i % settings.length]}.`,
@@ -66,10 +90,11 @@ export class InclusiveStoryGenerator {
             `${characterName} felt happy and excited.`,
             `They found a special ${objects[i % objects.length]}.`,
             `${characterName} learned about ${values[i % values.length]}.`,
-            `The sun was bright and warm.`,
+            userInfo.favoriteColor ? `Everything was beautiful and ${userInfo.favoriteColor.toLowerCase()}.` : `The sun was bright and warm.`,
             `${characterName} smiled with joy.`,
-            `Friends came to help too.`,
-            `Everyone had a good time.`
+            userInfo.favoriteFood ? `They shared some ${foods[i % foods.length]} together.` : `Friends came to help too.`,
+            userInfo.hobbies ? `${characterName} enjoyed ${activities[i % activities.length]}.` : `Everyone had a good time.`,
+            userInfo.specialRequest ? `${characterName} remembered their special wish about ${userInfo.specialRequest.toLowerCase()}.` : `The day was full of wonder.`
           ];
           
           while (wordCount < targetWords) {
@@ -83,16 +108,19 @@ export class InclusiveStoryGenerator {
             }
           }
         } else if (difficulty === "medium") {
-          // More complex sentences for intermediate readers
+          // More complex sentences for intermediate readers with enhanced personalization
           const mediumTemplates = [
             `${characterName} was exploring the magical ${settings[i % settings.length]} when they discovered a mysterious ${objects[i % objects.length]}.`,
             `The wise ${animals[i % animals.length]} told them about an ancient secret hidden in the ${settings[i % settings.length]}.`,
             `Together, they embarked on an exciting adventure through the ${settings[i % settings.length]}.`,
             `${characterName} learned important lessons about ${values[i % values.length]} and how it helps everyone.`,
             `The journey was challenging but filled with wonderful surprises and new discoveries.`,
-            `${characterName} used their knowledge of ${userInfo.hobbies || "reading"} to solve the puzzle.`,
+            userInfo.hobbies ? `${characterName} used their skills in ${activities[i % activities.length]} to solve the puzzle.` : `${characterName} used their knowledge of reading to solve the puzzle.`,
             `The ${animals[i % animals.length]} became ${characterName}'s trusted companion on this adventure.`,
-            `They worked together to overcome obstacles and help others in need.`
+            `They worked together to overcome obstacles and help others in need.`,
+            userInfo.favoriteColor ? `The magical world shimmered with beautiful ${userInfo.favoriteColor.toLowerCase()} light that guided their way.` : `The magical world shimmered with rainbow light that guided their way.`,
+            userInfo.favoriteFood ? `When they felt hungry, they discovered delicious ${foods[i % foods.length]} growing magically from the trees.` : `When they felt hungry, they discovered magical fruits growing from the trees.`,
+            userInfo.specialRequest ? `${characterName} remembered their special dream: ${userInfo.specialRequest.toLowerCase()}, and it became part of their magical journey.` : `${characterName} felt grateful for this magical opportunity to learn and grow.`
           ];
           
           while (wordCount < targetWords) {
@@ -106,15 +134,18 @@ export class InclusiveStoryGenerator {
             }
           }
         } else {
-          // Complex sentences and vocabulary for advanced readers
+          // Complex sentences and vocabulary for advanced readers with full personalization
           const hardTemplates = [
             `${characterName} embarked on an extraordinary adventure through the enchanting ${settings[i % settings.length]}, where they encountered a magnificent ${animals[i % animals.length]} who possessed ancient wisdom about ${values[i % values.length]}.`,
             `The mysterious ${objects[i % objects.length]} glowed with an ethereal light, revealing intricate patterns that seemed to tell the story of forgotten civilizations and their understanding of ${values[i % values.length]}.`,
             `Through perseverance and determination, ${characterName} overcame numerous obstacles, learning valuable lessons about resilience, empathy, and the importance of ${values[i % values.length]} in building strong communities.`,
             `The adventure challenged their problem-solving skills and encouraged them to think creatively about solutions to complex puzzles while maintaining their commitment to ${values[i % values.length]}.`,
             `As the journey continued, ${characterName} discovered that true strength comes not from physical power, but from the courage to be kind and the wisdom to understand that ${values[i % values.length]} guides all meaningful actions.`,
-            `${characterName}'s expertise in ${userInfo.hobbies || "learning"} became instrumental in helping the ${animals[i % animals.length]} restore balance to the ${settings[i % settings.length]}.`,
-            `The experience taught ${characterName} that leadership means inspiring others to discover their own potential while staying true to the principles of ${values[i % values.length]}.`
+            userInfo.hobbies ? `${characterName}'s expertise in ${activities[i % activities.length]} became instrumental in helping the ${animals[i % animals.length]} restore balance to the ${settings[i % settings.length]}.` : `${characterName}'s expertise in learning became instrumental in helping the ${animals[i % animals.length]} restore balance to the ${settings[i % settings.length]}.`,
+            `The experience taught ${characterName} that leadership means inspiring others to discover their own potential while staying true to the principles of ${values[i % values.length]}.`,
+            userInfo.favoriteColor ? `The realm itself seemed to respond to ${characterName}'s presence, with magnificent ${userInfo.favoriteColor.toLowerCase()} aurora dancing across the sky whenever they demonstrated acts of ${values[i % values.length]}.` : `The realm itself seemed to respond to ${characterName}'s presence, with magnificent rainbows dancing across the sky whenever they demonstrated acts of ${values[i % values.length]}.`,
+            userInfo.favoriteFood ? `During their quest, ${characterName} discovered that sharing their knowledge of ${foods[i % foods.length]} helped build bridges between different communities they encountered.` : `During their quest, ${characterName} discovered that sharing knowledge helped build bridges between different communities they encountered.`,
+            userInfo.specialRequest ? `Most remarkably, ${characterName} found that their deepest aspiration - ${userInfo.specialRequest.toLowerCase()} - was not just a personal dream, but a gift that could inspire positive change throughout the ${settings[i % settings.length]}.` : `Most remarkably, ${characterName} found that their compassionate heart was not just a personal strength, but a gift that could inspire positive change throughout the ${settings[i % settings.length]}.`
           ];
           
           while (wordCount < targetWords) {

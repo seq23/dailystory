@@ -280,5 +280,24 @@
     "loading": "Loading...",
     "playbackError": "Could not play audio",
     "translationError": "Translation not available"
+  },
+  "adaptiveUI": {
+    "eslMode": "ESL Learning Mode",
+    "nativeMode": "Reading Enhancement Mode", 
+    "learningGoal": "Learning Goal",
+    "languageSupport": "Language Support Active",
+    "languageSupportDesc": "Stories and word explanations adapted for English learners",
+    "eslHelp": {
+      "title": "ESL Learning Tips",
+      "tip1": "Click any word for translations and explanations",
+      "tip2": "Use the audio button to hear pronunciation",
+      "tip3": "Stories are adapted to help you learn English"
+    },
+    "nativeHelp": {
+      "title": "Reading Enhancement Tips", 
+      "tip1": "Click words to learn synonyms and meanings",
+      "tip2": "Use difficulty buttons to challenge yourself",
+      "tip3": "Stories help build vocabulary and comprehension"
+    }
   }
 }

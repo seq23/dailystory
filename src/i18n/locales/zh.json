@@ -218,5 +218,24 @@
     "navigation": {
       "pageCounter": "第 {{current}} 页，共 {{total}} 页"
     }
+  },
+  "adaptiveUI": {
+    "eslMode": "英语学习模式",
+    "nativeMode": "阅读提升模式",
+    "learningGoal": "学习目标",
+    "languageSupport": "语言支持已激活",
+    "languageSupportDesc": "为英语学习者量身定制的故事和词汇解释",
+    "eslHelp": {
+      "title": "英语学习小贴士",
+      "tip1": "点击任何单词获取翻译和解释",
+      "tip2": "使用音频按钮听发音",
+      "tip3": "故事专为帮助您学习英语而设计"
+    },
+    "nativeHelp": {
+      "title": "阅读提升小贴士",
+      "tip1": "点击单词学习同义词和含义",
+      "tip2": "使用难度按钮挑战自己",
+      "tip3": "故事有助于建立词汇和理解能力"
+    }
   }
 }

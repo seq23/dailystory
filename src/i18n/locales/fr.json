@@ -214,5 +214,24 @@
     "navigation": {
       "pageCounter": "Page {{current}} sur {{total}}"
     }
+  },
+  "adaptiveUI": {
+    "eslMode": "Mode d'Apprentissage de l'Anglais",
+    "nativeMode": "Mode d'Amélioration de la Lecture",
+    "learningGoal": "Objectif d'Apprentissage",
+    "languageSupport": "Support Linguistique Actif",
+    "languageSupportDesc": "Histoires et explications adaptées pour les apprenants d'anglais",
+    "eslHelp": {
+      "title": "Conseils pour Apprendre l'Anglais",
+      "tip1": "Cliquez sur n'importe quel mot pour les traductions et explications",
+      "tip2": "Utilisez le bouton audio pour entendre la pronunciation",
+      "tip3": "Les histoires sont adaptées pour vous aider à apprendre l'anglais"
+    },
+    "nativeHelp": {
+      "title": "Conseils pour Améliorer la Lecture",
+      "tip1": "Cliquez sur les mots pour apprendre les synonymes et significations",
+      "tip2": "Utilisez les boutons de difficulté pour vous défier",
+      "tip3": "Les histoires aident à construire le vocabulaire et la compréhension"
+    }
   }
 }

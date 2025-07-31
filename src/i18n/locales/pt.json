@@ -218,5 +218,24 @@
     "navigation": {
       "pageCounter": "Página {{current}} de {{total}}"
     }
+  },
+  "adaptiveUI": {
+    "eslMode": "Modo de Aprendizado de Inglês",
+    "nativeMode": "Modo de Melhoria de Leitura",
+    "learningGoal": "Objetivo de Aprendizado",
+    "languageSupport": "Suporte de Idioma Ativo",
+    "languageSupportDesc": "Histórias e explicações adaptadas para estudantes de inglês",
+    "eslHelp": {
+      "title": "Dicas para Aprender Inglês",
+      "tip1": "Clique em qualquer palavra para traduções e explicações",
+      "tip2": "Use o botão de áudio para ouvir a pronúncia",
+      "tip3": "As histórias são adaptadas para ajudá-lo a aprender inglês"
+    },
+    "nativeHelp": {
+      "title": "Dicas para Melhorar a Leitura",
+      "tip1": "Clique nas palavras para aprender sinônimos e significados",
+      "tip2": "Use os botões de dificuldade para se desafiar",
+      "tip3": "As histórias ajudam a construir vocabulário e compreensão"
+    }
   }
 }
