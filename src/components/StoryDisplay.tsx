@@ -6,7 +6,7 @@ import { BookOpen, Home, RotateCcw, Volume2, Timer, Play, Pause, Minus, X, Chevr
 
 import type { UserInfo, SessionStats } from "@/types";
 import { InteractiveAudioReading } from "@/components/InteractiveAudioReading";
-import { adaptiveStoryGenerator } from "@/services/adaptiveStoryGenerator";
+import { EarlyReaderStoryGenerator } from "@/services/earlyReaderStoryGenerator";
 import { APP_CONFIG } from "@/constants/app";
 import { useToast } from "@/hooks/use-toast";
 
@@ -41,7 +41,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
   const [storyImages, setStoryImages] = useState<Array<{url?: string, prompt: string}>>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [currentDifficulty, setCurrentDifficulty] = useState<'beginner' | 'elementary' | 'intermediate' | 'advanced'>('beginner');
+  const [currentDifficulty, setCurrentDifficulty] = useState<'easy' | 'medium' | 'hard' | 'expert'>('easy');
   
   // Session state
   const [timeRemaining, setTimeRemaining] = useState(APP_CONFIG.FREE_SESSION_DURATION);
@@ -54,7 +54,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
   const illustrations = [illustration1, illustration2, illustration3, illustration4, illustration5];
   
   // Difficulty level mappings - 4 levels but only 2 buttons
-  const difficultyLevels = ['beginner', 'elementary', 'intermediate', 'advanced'] as const;
+  const difficultyLevels = ['easy', 'medium', 'hard', 'expert'] as const;
   
   const getDifficultyIndex = () => {
     return difficultyLevels.indexOf(currentDifficulty);
@@ -69,19 +69,26 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
       try {
         setIsLoading(true);
         
-        const initialDifficulty = (userInfo.readingLevel || userInfo.difficultyLevel || 'beginner') as 'beginner' | 'elementary' | 'intermediate' | 'advanced';
+        const readingLevel = userInfo.readingLevel || (userInfo as any).difficultyLevel || 'easy';
+        const initialDifficulty = (readingLevel === 'beginner' ? 'easy' :
+                                   readingLevel === 'elementary' ? 'medium' :
+                                   readingLevel === 'intermediate' ? 'hard' : 
+                                   readingLevel === 'advanced' ? 'expert' : 'easy') as 'easy' | 'medium' | 'hard' | 'expert';
         setCurrentDifficulty(initialDifficulty);
         
-        const storyConfig = {
-          age: userInfo.age,
-          gradeLevel: userInfo.gradeLevel || userInfo.grade,
-          readingLevel: initialDifficulty,
-          interests: userInfo.interests || [userInfo.hobbies || 'adventure'],
-          theme: 'adventure',
-          userName: userInfo.name
+        // Generate story using the new generator
+        const { pages, config } = EarlyReaderStoryGenerator.generateStory(
+          userInfo, 
+          initialDifficulty, 
+          10
+        );
+        const generatedStory = { 
+          pages, 
+          config, 
+          images: [], 
+          wordCount: pages.join(' ').split(' ').length, 
+          readingLevel: initialDifficulty 
         };
-
-        const generatedStory = await adaptiveStoryGenerator.generateStory(storyConfig);
         setStory(generatedStory.pages);
         setStoryImages(generatedStory.images || []);
         setWordsRead(generatedStory.wordCount);
@@ -172,16 +179,20 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
       setIsLoading(true);
       
       try {
-        const storyConfig = {
-          age: userInfo.age,
-          gradeLevel: userInfo.gradeLevel || userInfo.grade,
-          readingLevel: currentDifficulty,
-          interests: userInfo.interests || [userInfo.hobbies || 'adventure'],
-          theme: 'adventure',
-          userName: userInfo.name
+        // Generate new story using the new generator
+        const { pages, config } = EarlyReaderStoryGenerator.generateStory(
+          userInfo, 
+          currentDifficulty, 
+          10
+        );
+        const generatedStory = { 
+          pages, 
+          config, 
+          images: [], 
+          wordCount: pages.join(' ').split(' ').length, 
+          readingLevel: currentDifficulty 
         };
-
-        const generatedStory = await adaptiveStoryGenerator.generateStory(storyConfig);
+        
         setStory(generatedStory.pages);
         setStoryImages(generatedStory.images || []);
         setWordsRead(generatedStory.wordCount);
@@ -226,19 +237,19 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
     setCurrentPage(0);
     
     try {
-      const characterDescription = userInfo.avatar ? `, a curious and brave ${userInfo.avatar.type === 'boy' ? 'boy' : userInfo.avatar.type === 'girl' ? 'girl' : 'child'}` : '';
-      
-      const storyConfig = {
-        age: userInfo.age,
-        gradeLevel: userInfo.gradeLevel || userInfo.grade,
-        readingLevel: newDifficulty,
-        interests: userInfo.interests || [userInfo.hobbies || 'adventure'],
-        theme: 'adventure',
-        userName: userInfo.name,
-        characterDescription
+      // Generate new story at the new difficulty level
+      const { pages, config } = EarlyReaderStoryGenerator.generateStory(
+        userInfo, 
+        newDifficulty, 
+        10
+      );
+      const newStory = { 
+        pages, 
+        config, 
+        images: [], 
+        wordCount: pages.join(' ').split(' ').length 
       };
-
-      const newStory = await adaptiveStoryGenerator.generateStory(storyConfig);
+      
       setStory(newStory.pages);
       setStoryImages(newStory.images || []);
       setWordsRead(newStory.wordCount);
@@ -259,26 +270,16 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
     
     // Don't affect timer or session - just extend the story
     try {
-      const characterDescription = userInfo.avatar ? `, a curious and brave ${userInfo.avatar.type === 'boy' ? 'boy' : userInfo.avatar.type === 'girl' ? 'girl' : 'child'}` : '';
+      // Generate extended story using the new generator
+      const { pages: newPages, config } = EarlyReaderStoryGenerator.generateStory(
+        userInfo, 
+        currentDifficulty, 
+        5
+      );
       
-      const storyConfig = {
-        age: userInfo.age,
-        gradeLevel: userInfo.gradeLevel || userInfo.grade,
-        readingLevel: currentDifficulty,
-        interests: userInfo.interests || [userInfo.hobbies || 'adventure'],
-        theme: 'adventure',
-        userName: userInfo.name,
-        characterDescription
-      };
-
-      const extendedStory = await adaptiveStoryGenerator.generateStory(storyConfig);
-      // Add 5 more pages from the new story without affecting timer
-      const newPages = extendedStory.pages.slice(0, 5);
-      const newImages = extendedStory.images?.slice(0, 5) || [];
+      // Add new pages and update word count
       setStory(prev => [...prev, ...newPages]);
-      setStoryImages(prev => [...prev, ...newImages]);
-      
-      // Update word count for session stats but don't reset timer
+      setStoryImages(prev => [...prev, ...newPages.map(() => ({ url: '', prompt: '' }))]);
       setWordsRead(prev => prev + newPages.join(' ').split(' ').length);
     } catch (error) {
       console.error('Failed to add more pages:', error);
@@ -507,16 +508,17 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                   </p>
                 </div>
 
-                {/* Story Text */}
+                {/* Story Text with Reading Level Configuration */}
                 <div className="flex-1 flex items-center justify-center">
                   <div className="text-center">
-                    <p className={`${
-                      userInfo.age <= 5 ? 'text-3xl' : 
-                      userInfo.age <= 8 ? 'text-2xl' : 
-                      'text-xl'
-                    } font-medium leading-relaxed text-gray-800 max-w-md mx-auto`}>
-                      {currentStory}
-                    </p>
+                    {(() => {
+                      const config = EarlyReaderStoryGenerator.getReadingConfigForDifficulty(currentDifficulty);
+                      return (
+                        <div className={`${config.fontSize} ${config.lineHeight} ${config.spacing} font-medium text-gray-800 max-w-2xl mx-auto`}>
+                          {currentStory}
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
 
