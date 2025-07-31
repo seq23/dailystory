@@ -17,6 +17,7 @@ import { VocabularyCollector } from "@/components/VocabularyCollector";
 import { ComprehensionQuiz } from "@/components/ComprehensionQuiz";
 import { MiniGames } from "@/components/MiniGames";
 import { ParentDashboard } from "@/components/ParentDashboard";
+import { IntelligentImageGenerator } from "@/services/intelligentImageGenerator";
 import { StoryGeneratorService } from "@/services/storyGenerator";
 import { SecureRunwareService } from "@/services/secureRunwareService";
 import { ProgressTrackingService } from "@/services/progressTrackingService";
@@ -130,6 +131,8 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
   // Image generation state
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [customIllustrations, setCustomIllustrations] = useState<Map<number, string>>(new Map());
+  const [imageGenerator] = useState(() => new IntelligentImageGenerator());
+  const [currentImageURL, setCurrentImageURL] = useState<string>("");
   
   // Audio/TTS
   const [isPlaying, setIsPlaying] = useState(false);
@@ -151,8 +154,68 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
   const [currentWordIndex, setCurrentWordIndex] = useState(-1);
 
   // Services - lazy initialization
-  const runwareServiceRef = useRef<SecureRunwareService | null>(null);
+  const runwareServiceRef = useRef<any>(null);
   const ttsServiceRef = useRef<any>(null);
+
+  // Generate story-specific image when story or page changes
+  useEffect(() => {
+    if (story.length > 0 && currentParagraph < story.length) {
+      generateStoryImage();
+    }
+  }, [story, currentParagraph, userInfo]);
+
+  const generateStoryImage = async () => {
+    try {
+      setIsGeneratingImage(true);
+      
+      const storyText = story[currentParagraph];
+      if (!storyText) return;
+
+      // Check if we already have an image for this page
+      const existingImage = customIllustrations.get(currentParagraph);
+      if (existingImage) {
+        setCurrentImageURL(existingImage);
+        setIsGeneratingImage(false);
+        return;
+      }
+
+      // Generate new image
+      const generatedImage = await imageGenerator.generateStoryImage({
+        storyText,
+        userInfo,
+        pageNumber: currentParagraph,
+        previousImages: Array.from(customIllustrations.values())
+      });
+
+      // Cache the generated image
+      const newIllustrations = new Map(customIllustrations);
+      newIllustrations.set(currentParagraph, generatedImage.imageURL);
+      setCustomIllustrations(newIllustrations);
+      setCurrentImageURL(generatedImage.imageURL);
+
+      toast({
+        title: "✨ New illustration created!",
+        description: "A unique image has been generated for this page.",
+        duration: 3000,
+      });
+
+    } catch (error) {
+      console.error('Failed to generate story image:', error);
+      
+      // Fallback to existing illustration system
+      const fallbackImage = illustrations[currentParagraph % illustrations.length];
+      setCurrentImageURL(fallbackImage);
+      
+      toast({
+        title: "Using default illustration",
+        description: "Custom image generation unavailable. Add your Runware API key for personalized images.",
+        variant: "default",
+        duration: 5000,
+      });
+    } finally {
+      setIsGeneratingImage(false);
+    }
+  };
 
   // Initialize language from user preferences
   useEffect(() => {
@@ -274,7 +337,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
 
   const currentStory = story[currentParagraph] || "Loading your magical story...";
   const totalPages = story.length;
-  const currentIllustration = customIllustrations.get(currentParagraph) || illustrations[currentParagraph % illustrations.length];
+  const currentIllustration = currentImageURL || customIllustrations.get(currentParagraph) || illustrations[currentParagraph % illustrations.length];
 
   return (
     <AdaptiveUI userInfo={userInfo} className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
@@ -325,6 +388,16 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
               <Card className="bg-white/95 backdrop-blur-sm shadow-2xl rounded-2xl sm:rounded-3xl border-2 border-purple-200/50 overflow-hidden h-[600px] sm:h-[700px] lg:h-[800px]">
                 <CardContent className="p-3 sm:p-6 h-full">
                   <div className="relative w-full h-full bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl sm:rounded-2xl overflow-hidden flex items-center justify-center">
+                    {isGeneratingImage && (
+                      <div className="absolute inset-0 bg-black/20 flex items-center justify-center z-10">
+                        <div className="bg-white rounded-lg p-4 shadow-lg">
+                          <div className="flex items-center gap-3">
+                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
+                            <span className="text-purple-600 font-medium">Creating your illustration...</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                     <img 
                       src={currentIllustration} 
                       alt={`Story illustration for page ${currentParagraph + 1}`}
@@ -474,6 +547,17 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                         onClick={() => setCurrentParagraph(Math.max(0, currentParagraph - 1))}
                       >
                         ← Previous
+                      </Button>
+
+                      {/* Regenerate Image Button */}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="rounded-full bg-yellow-50 border-yellow-200 hover:bg-yellow-100"
+                        onClick={generateStoryImage}
+                        disabled={isGeneratingImage}
+                      >
+                        {isGeneratingImage ? "🎨 Creating..." : "🎨 New Image"}
                       </Button>
 
                       {/* Learning Feature Buttons */}
