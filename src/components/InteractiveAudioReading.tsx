@@ -22,6 +22,7 @@ export const InteractiveAudioReading = ({
   const [ttsService] = useState(() => createOpenAITTSService());
   const [words, setWords] = useState<string[]>([]);
   const [audioSpeed, setAudioSpeed] = useState(userInfo.nativeLanguage === 'en' ? 1.0 : 0.8);
+  const [hasPlayedAudio, setHasPlayedAudio] = useState(false); // Track if audio has been played
   
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -32,7 +33,7 @@ export const InteractiveAudioReading = ({
   }, [text]);
 
   const startReading = async () => {
-    if (!isEnabled || isPlaying) return;
+    if (!isEnabled || isPlaying || hasPlayedAudio) return;
     
     try {
       setIsPlaying(true);
@@ -46,6 +47,9 @@ export const InteractiveAudioReading = ({
 
       // Start TTS  
       await ttsService.speakText(text, { speed: audioSpeed });
+
+      // Mark audio as played for free users
+      setHasPlayedAudio(true);
 
       // Highlight words with timing
       highlightWords(wordInterval);
@@ -90,7 +94,18 @@ export const InteractiveAudioReading = ({
     if (isPlaying) {
       stopReading();
     }
+    // Reset the played state when speed changes so they can try the new speed
+    if (hasPlayedAudio) {
+      setHasPlayedAudio(false);
+    }
   };
+
+  // Reset hasPlayedAudio when text changes (new page)
+  useEffect(() => {
+    setHasPlayedAudio(false);
+    setIsPlaying(false);
+    setCurrentWordIndex(-1);
+  }, [text]);
 
   if (!isEnabled) {
     return (
@@ -101,26 +116,40 @@ export const InteractiveAudioReading = ({
   }
 
   return (
-    <div className="flex items-center justify-center gap-2 p-2 bg-blue-50 rounded-lg">
-      <div className="relative group">
-        <Button
-          onClick={startReading}
-          disabled={isPlaying}
-          variant="outline"
-          size="sm"
-          className="rounded-full hover:bg-blue-100 transition-colors disabled:opacity-50"
-        >
-          <Play className="w-4 h-4" />
-        </Button>
-        
-        {/* Tooltip */}
-        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
-          {isPlaying ? 'Audio playing...' : 'Play audio reading'}
+    <div className="flex flex-col items-center gap-3 p-3 bg-blue-50 rounded-lg border">
+      {/* Audio Button */}
+      <div className="flex items-center gap-2">
+        <div className="relative group">
+          <Button
+            onClick={startReading}
+            disabled={isPlaying || hasPlayedAudio}
+            variant="outline"
+            size="sm"
+            className={`rounded-full hover:bg-blue-100 transition-colors ${
+              hasPlayedAudio ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+          >
+            <Play className="w-4 h-4" />
+          </Button>
+          
+          {/* Tooltip */}
+          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
+            {hasPlayedAudio ? 'Audio used (1x per page for free users)' : 
+             isPlaying ? 'Audio playing...' : 'Play audio reading'}
+          </div>
         </div>
+        
+        {/* Status indicator */}
+        {hasPlayedAudio && (
+          <span className="text-xs text-orange-600 font-medium">
+            ✓ Audio used
+          </span>
+        )}
       </div>
 
       {/* Speed controls */}
       <div className="flex items-center gap-1">
+        <span className="text-xs text-gray-600 mr-2">Speed:</span>
         <Button
           onClick={() => adjustSpeed(0.5)}
           variant="ghost"
@@ -146,10 +175,25 @@ export const InteractiveAudioReading = ({
           1x
         </Button>
       </div>
-
+      
+      {/* Status and upgrade prompt */}
       {isPlaying && (
         <div className="text-xs text-blue-600 font-medium">
           🎵 Playing audio... ({currentWordIndex + 1}/{words.length})
+        </div>
+      )}
+      
+      {hasPlayedAudio && (
+        <div className="text-center mt-1">
+          <div className="text-xs text-orange-600 mb-1">
+            🎧 Free users get 1 audio per page
+          </div>
+          <div className="text-xs text-gray-600">
+            Want unlimited audio? 
+            <button className="ml-1 text-blue-600 hover:text-blue-800 underline font-medium">
+              Upgrade to Premium
+            </button>
+          </div>
         </div>
       )}
     </div>
