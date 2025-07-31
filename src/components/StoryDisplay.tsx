@@ -700,7 +700,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
 
 
   const generateCustomIllustration = async (pageIndex: number, storyText: string) => {
-    console.log('=== Generating page-specific illustration ===');
+    console.log('=== Generating page-specific illustration with character consistency ===');
     console.log('Page:', pageIndex, 'Story text:', storyText);
     
     // Validate inputs
@@ -715,85 +715,135 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       // 1-2 second delay as requested by user
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Create character description based on user info
-      const getCharacterDescription = () => {
-        const gender = userInfo.avatar?.type === 'boy' ? 'boy' : 'girl';
-        const isYoung = currentDifficulty === 'easy' || currentDifficulty === 'medium';
-        const agePrefix = isYoung ? 'young ' : '';
-        
-        const skinTones = {
-          pale: 'light skin',
-          light: 'light skin',
-          medium: 'medium skin', 
-          olive: 'olive skin',
-          dark: 'dark skin'
-        } as const;
-        
-        const skinTone = skinTones[userInfo.avatar?.skinTone || 'medium'] || 'medium skin';
-        const name = userInfo.name?.trim() || 'child';
-        
-        return `${agePrefix}${gender} named ${name} with ${skinTone}`;
+      // Extract main characters from the entire story for consistency
+      const fullStoryText = story.join(' ').toLowerCase();
+      
+      // Character consistency mapping
+      const storyCharacters = {
+        mainCharacter: '',
+        characterColor: '',
+        characterType: '',
+        secondaryCharacters: [] as string[]
       };
       
-      // Get language-specific prompt components
+      // Identify main character from story content
+      const animals = ['cat', 'dog', 'rabbit', 'bear', 'fox', 'bird', 'mouse', 'elephant', 'lion', 'tiger', 'owl', 'squirrel', 'deer', 'wolf'];
+      const colors = ['blue', 'red', 'yellow', 'green', 'purple', 'orange', 'pink', 'white', 'black', 'brown', 'golden', 'silver', 'gray', 'grey'];
+      
+      // Find the main animal character with color
+      for (const animal of animals) {
+        if (fullStoryText.includes(animal)) {
+          storyCharacters.characterType = animal;
+          // Look for color modifiers
+          for (const color of colors) {
+            if (fullStoryText.includes(`${color} ${animal}`) || fullStoryText.includes(`${color}-${animal}`)) {
+              storyCharacters.characterColor = color;
+              storyCharacters.mainCharacter = `${color} ${animal}`;
+              break;
+            }
+          }
+          if (!storyCharacters.mainCharacter) {
+            storyCharacters.mainCharacter = animal;
+          }
+          break;
+        }
+      }
+      
+      // If no animal found, use the user as main character
+      if (!storyCharacters.mainCharacter) {
+        const gender = userInfo.avatar?.type === 'boy' ? 'boy' : 'girl';
+        const skinTone = userInfo.avatar?.skinTone || 'medium';
+        const skinDescriptions = {
+          pale: 'very light',
+          light: 'light',
+          medium: 'medium',
+          olive: 'olive-toned',
+          dark: 'dark'
+        };
+        storyCharacters.mainCharacter = `${userInfo.name}, a ${userInfo.age}-year-old ${gender} with ${skinDescriptions[skinTone]} skin`;
+      }
+      
+      // Enhanced language-specific prompts with beauty and consistency
       const getLanguageSpecificPrompt = (nativeLanguage: string) => {
         const basePrompts = {
           en: {
-            base: "A beautiful childrens book illustration depicting the scene where",
-            context: "in the setting described in the story based on this story context:",
-            atmosphere: "with a happy and cheerful atmosphere, warm earth tones and natural colors, contemporary childrens book art style, appealing to all children regardless of gender, diverse and inclusive, safe and wholesome content, high quality professional artwork"
+            base: "An absolutely stunning, museum-quality children's book illustration in rich watercolor style showing",
+            context: "perfectly capturing the scene:",
+            atmosphere: "with exquisite detail, luminous colors, magical lighting, consistent character design throughout the story, professional children's book artistry, enchanting and beautiful composition, safe wholesome content"
           },
           es: {
-            base: "Una hermosa ilustración de libro infantil que representa la escena donde",
-            context: "en el entorno descrito en la historia basado en este contexto de la historia:",
-            atmosphere: "con una atmósfera feliz y alegre, tonos tierra cálidos y colores naturales, estilo de arte de libro infantil contemporáneo, atractivo para todos los niños sin importar el género, diverso e inclusivo, contenido seguro y saludable, obra de arte profesional de alta calidad"
+            base: "Una ilustración absolutamente impresionante de calidad de museo para libro infantil en rico estilo acuarela mostrando",
+            context: "capturando perfectamente la escena:",
+            atmosphere: "con detalles exquisitos, colores luminosos, iluminación mágica, diseño de personajes consistente a lo largo de la historia, arte profesional de libros infantiles, composición encantadora y hermosa, contenido seguro y saludable"
           },
           fr: {
-            base: "Une belle illustration de livre pour enfants représentant la scène où",
-            context: "dans le cadre décrit dans l'histoire basé sur ce contexte d'histoire:",
-            atmosphere: "avec une atmosphère heureuse et joyeuse, des tons de terre chauds et des couleurs naturelles, style d'art de livre pour enfants contemporain, attrayant pour tous les enfants quel que soit le sexe, diversifié et inclusif, contenu sûr et sain, œuvre d'art professionnelle de haute qualité"
+            base: "Une illustration absolument époustouflante de qualité muséale pour livre d'enfants en riche style aquarelle montrant",
+            context: "capturant parfaitement la scène:",
+            atmosphere: "avec des détails exquis, des couleurs lumineuses, un éclairage magique, un design de personnage cohérent tout au long de l'histoire, art professionnel de livre pour enfants, composition enchanteresse et belle, contenu sûr et sain"
           },
           pt: {
-            base: "Uma bela ilustração de livro infantil retratando a cena onde",
-            context: "no cenário descrito na história baseado neste contexto da história:",
-            atmosphere: "com uma atmosfera feliz e alegre, tons de terra quentes e cores naturais, estilo de arte de livro infantil contemporâneo, atraente para todas as crianças independentemente do gênero, diverso e inclusivo, conteúdo seguro e saudável, arte profissional de alta qualidade"
+            base: "Uma ilustração absolutamente deslumbrante de qualidade de museu para livro infantil em rico estilo aquarela mostrando",
+            context: "capturando perfeitamente a cena:",
+            atmosphere: "com detalhes requintados, cores luminosas, iluminação mágica, design de personagem consistente ao longo da história, arte profissional de livros infantis, composição encantadora e bela, conteúdo seguro e saudável"
           },
           ar: {
-            base: "رسم توضيحي جميل لكتاب أطفال يصور المشهد حيث",
-            context: "في البيئة الموصوفة في القصة بناءً على هذا السياق:",
-            atmosphere: "بأجواء سعيدة ومبهجة، ألوان أرضية دافئة وألوان طبيعية، أسلوب فني معاصر لكتب الأطفال، جذاب لجميع الأطفال بغض النظر عن الجنس، متنوع وشامل، محتوى آمن وصحي، عمل فني احترافي عالي الجودة"
+            base: "رسم توضيحي مذهل تماماً بجودة متحف لكتاب أطفال بأسلوب ألوان مائية غني يُظهر",
+            context: "يلتقط المشهد بشكل مثالي:",
+            atmosphere: "بتفاصيل رائعة، ألوان مضيئة، إضاءة سحرية، تصميم شخصيات متسق عبر القصة، فن احترافي لكتب الأطفال، تركيب ساحر وجميل، محتوى آمن وصحي"
           },
           zh: {
-            base: "一幅美丽的儿童书籍插图，描绘了这样的场景",
-            context: "在故事中描述的背景下，基于这个故事情境：",
-            atmosphere: "营造快乐和愉悦的氛围，温暖的大地色调和自然色彩，现代儿童书籍艺术风格，对所有儿童都有吸引力，不分性别，多样化和包容性，安全健康的内容，高质量的专业艺术作品"
+            base: "一幅绝对令人惊叹的博物馆级儿童书籍水彩风格插图，展示",
+            context: "完美捕捉场景：",
+            atmosphere: "具有精美的细节、明亮的色彩、神奇的光照、贯穿整个故事的一致角色设计、专业儿童书籍艺术、迷人美丽的构图、安全健康的内容"
           },
           hi: {
-            base: "एक सुंदर बच्चों की पुस्तक का चित्रण जो उस दृश्य को दर्शाता है जहां",
-            context: "कहानी में वर्णित सेटिंग में इस कहानी के संदर्भ के आधार पर:",
-            atmosphere: "खुश और हर्षित माहौल के साथ, गर्म मिट्टी के टोन और प्राकृतिक रंग, समकालीन बच्चों की पुस्तक कला शैली, लिंग की परवाह किए बिना सभी बच्चों के लिए आकर्षक, विविध और समावेशी, सुरक्षित और स्वस्थ सामग्री, उच्च गुणवत्ता की पेशेवर कलाकृति"
+            base: "एक बिल्कुल आश्चर्यजनक, संग्रहालय-गुणवत्ता का बच्चों की पुस्तक का समृद्ध जल रंग शैली में चित्रण दिखा रहा है",
+            context: "दृश्य को पूर्ण रूप से कैप्चर करते हुए:",
+            atmosphere: "उत्कृष्ट विवरण, चमकदार रंग, जादुई प्रकाश, पूरी कहानी में निरंतर चरित्र डिज़ाइन, पेशेवर बच्चों की पुस्तक कलाकृति, मनमोहक और सुंदर रचना, सुरक्षित स्वस्थ सामग्री के साथ"
           }
         };
         
         return basePrompts[nativeLanguage as keyof typeof basePrompts] || basePrompts.en;
       };
       
-      // Generate prompt in the user's native language
-      const characterDesc = getCharacterDescription();
+      // Analyze current page for specific scene elements
+      const currentPageText = storyText.toLowerCase();
+      let sceneDetails = "";
+      
+      if (currentPageText.includes("hello") || currentPageText.includes("said")) {
+        sceneDetails = `${storyCharacters.mainCharacter} speaking or greeting with warm, expressive eyes and friendly body language`;
+      } else if (currentPageText.includes("adventure") || currentPageText.includes("explore")) {
+        sceneDetails = `${storyCharacters.mainCharacter} on an exciting adventure through a magical, detailed landscape`;
+      } else if (currentPageText.includes("friend") || currentPageText.includes("meet")) {
+        sceneDetails = `${storyCharacters.mainCharacter} meeting other characters in a heartwarming, beautifully detailed scene`;
+      } else if (currentPageText.includes("play") || currentPageText.includes("fun")) {
+        sceneDetails = `${storyCharacters.mainCharacter} playing joyfully with beautiful environmental details`;
+      } else if (currentPageText.includes("home") || currentPageText.includes("house")) {
+        sceneDetails = `${storyCharacters.mainCharacter} in a cozy, beautifully illustrated home setting`;
+      } else if (currentPageText.includes("garden") || currentPageText.includes("flower")) {
+        sceneDetails = `${storyCharacters.mainCharacter} in a vibrant garden with stunning floral details`;
+      } else if (currentPageText.includes("forest") || currentPageText.includes("tree")) {
+        sceneDetails = `${storyCharacters.mainCharacter} in an enchanted forest with magnificent trees and lighting`;
+      } else {
+        sceneDetails = `${storyCharacters.mainCharacter} in a magical storybook scene with beautiful details`;
+      }
+      
+      // Generate enhanced prompt in the user's native language
       const langPrompt = getLanguageSpecificPrompt(userInfo.nativeLanguage || 'en');
-      const prompt = `${langPrompt.base} ${characterDesc} ${langPrompt.context} ${storyText} ${langPrompt.atmosphere}`;
+      const prompt = `${langPrompt.base} ${sceneDetails} ${langPrompt.context} ${storyText}. ${langPrompt.atmosphere}. IMPORTANT: Always show the same character - ${storyCharacters.mainCharacter} - with identical appearance in every image.`;
       
-      console.log('Multilingual page-specific prompt:', prompt);
+      console.log('Enhanced consistency prompt:', prompt);
+      console.log('Main character for consistency:', storyCharacters.mainCharacter);
       
-      // Generate image with optimized settings
+      // Generate image with enhanced settings for quality
       const result = await runwareService.generateImage({
         positivePrompt: prompt,
         model: "runware:100@1",
-        width: 512,
-        height: 512,
+        width: 1024, // Higher resolution for beauty
+        height: 1024,
         numberResults: 1,
         outputFormat: "WEBP",
-        CFGScale: 7, // Better adherence to prompt
+        CFGScale: 8, // Higher for better prompt adherence
         scheduler: "FlowMatchEulerDiscreteScheduler"
       });
       
