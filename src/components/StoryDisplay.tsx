@@ -103,6 +103,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
   const [showTutorial, setShowTutorial] = useState(false);
   const [tutorialStep, setTutorialStep] = useState(0);
   const [hasShownTutorial, setHasShownTutorial] = useState(false);
+  const [showCongratulations, setShowCongratulations] = useState(false);
   
   // Progress tracking
   const [readingProgress, setReadingProgress] = useState<ReadingProgress | null>(null);
@@ -276,7 +277,13 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         setCountdownSeconds(prev => {
           const newCount = prev - 1;
           if (newCount === 0) {
-            handleFinishSession();
+            // Show congratulations before finishing
+            setShowCongratulations(true);
+            setShowFinishCountdown(false);
+            // Finish session after celebration
+            setTimeout(() => {
+              handleFinishSession();
+            }, 3000);
           }
           return newCount;
         });
@@ -1078,6 +1085,78 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
             >
               {t("storyDisplay.countdown.goNow")}
             </Button>
+          </Card>
+        </div>
+      )}
+
+      {/* Congratulations Screen */}
+      {showCongratulations && (
+        <div className="fixed inset-0 z-50 bg-gradient-to-br from-purple-600 via-pink-600 to-orange-500 flex items-center justify-center overflow-hidden">
+          <div className="absolute inset-0 bg-black/20"></div>
+          
+          {/* Floating particles/confetti effect */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            {Array.from({ length: 20 }, (_, i) => (
+              <div
+                key={i}
+                className="absolute animate-float opacity-80"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                  animationDelay: `${Math.random() * 2}s`,
+                  animationDuration: `${3 + Math.random() * 2}s`
+                }}
+              >
+                {['🌟', '⭐', '✨', '🎉', '🎊', '📚', '🏆'][Math.floor(Math.random() * 7)]}
+              </div>
+            ))}
+          </div>
+          
+          <Card className="relative z-10 bg-white/95 backdrop-blur-sm rounded-3xl p-8 sm:p-12 text-center max-w-2xl mx-4 shadow-2xl border-0 animate-celebration">
+            <div className="animate-bounce-gentle">
+              <div className="text-8xl sm:text-9xl mb-6 animate-shake-hard">🎉</div>
+              
+              <h1 className="text-4xl sm:text-6xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 bg-clip-text text-transparent mb-4 animate-flash">
+                CONGRATULATIONS!
+              </h1>
+              
+              <div className="text-xl sm:text-2xl font-bold text-gray-800 mb-6 animate-shake-hard">
+                🏆 Amazing Reading Session! 🏆
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4 mb-8">
+                <div className="bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl p-4 animate-wiggle">
+                  <div className="text-3xl mb-2">📖</div>
+                  <div className="text-sm text-gray-600">Pages Read</div>
+                  <div className="text-2xl font-bold text-blue-600">{currentParagraph + 1}</div>
+                </div>
+                
+                <div className="bg-gradient-to-br from-green-100 to-green-200 rounded-2xl p-4 animate-wiggle" style={{animationDelay: '0.2s'}}>
+                  <div className="text-3xl mb-2">⏱️</div>
+                  <div className="text-sm text-gray-600">Time Reading</div>
+                  <div className="text-2xl font-bold text-green-600">{formatTime((20 * 60) - timeRemaining)}</div>
+                </div>
+              </div>
+              
+              <div className="text-lg text-gray-700 mb-6 animate-flash">
+                You're becoming a reading superstar! 🌟
+              </div>
+              
+              <div className="flex justify-center space-x-2">
+                {['🌟', '⭐', '✨', '🏆', '🎊'].map((emoji, i) => (
+                  <span 
+                    key={i} 
+                    className="text-4xl animate-bounce-gentle" 
+                    style={{animationDelay: `${i * 0.1}s`}}
+                  >
+                    {emoji}
+                  </span>
+                ))}
+              </div>
+            </div>
+            
+            <div className="absolute -top-4 -right-4 text-6xl animate-spin-slow">🎯</div>
+            <div className="absolute -bottom-4 -left-4 text-6xl animate-bounce">🚀</div>
           </Card>
         </div>
       )}

@@ -143,6 +143,28 @@ export default {
 					'10%, 20%, 30%, 40%, 50%, 60%, 70%, 80%, 90%': {
 						transform: 'translateX(12px)'
 					}
+				},
+				'flash': {
+					'0%, 50%, 100%': {
+						opacity: '1'
+					},
+					'25%, 75%': {
+						opacity: '0.3'
+					}
+				},
+				'celebration': {
+					'0%': {
+						transform: 'scale(0) rotate(0deg)',
+						opacity: '0'
+					},
+					'50%': {
+						transform: 'scale(1.2) rotate(180deg)',
+						opacity: '1'
+					},
+					'100%': {
+						transform: 'scale(1) rotate(360deg)',
+						opacity: '1'
+					}
 				}
 			},
 			animation: {
@@ -151,7 +173,9 @@ export default {
 				'bounce-gentle': 'bounce-gentle 2s ease-in-out infinite',
 				'float': 'float 3s ease-in-out infinite',
 				'wiggle': 'wiggle 0.5s ease-in-out',
-				'shake-hard': 'shake-hard 0.8s ease-in-out infinite'
+				'shake-hard': 'shake-hard 0.8s ease-in-out infinite',
+				'flash': 'flash 1s ease-in-out infinite',
+				'celebration': 'celebration 1.5s ease-out forwards'
 			}
 		}
 	},
