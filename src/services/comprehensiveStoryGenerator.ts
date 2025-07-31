@@ -243,6 +243,17 @@ export class ComprehensiveStoryGenerator {
       pages.push(currentPage.trim() + '.');
     }
 
+    // Ensure we have exactly the target page count
+    if (pages.length < targetPageCount) {
+      // If we have fewer pages than requested, duplicate and extend the story
+      const originalPages = [...pages];
+      while (pages.length < targetPageCount) {
+        const sourceIndex = (pages.length - originalPages.length) % originalPages.length;
+        const extension = originalPages[sourceIndex];
+        pages.push(extension);
+      }
+    }
+
     return pages.slice(0, targetPageCount);
   }
   

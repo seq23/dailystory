@@ -442,9 +442,14 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       const previousPage = currentParagraph;
       const currentStoryLength = story.length;
       
+      console.log(`Regenerating story: current length ${currentStoryLength}, difficulty ${newDifficulty}`);
+      
       // Only regenerate story content, don't reset timer or session stats
       // Use improved story generator with current story length to maintain page count
       const result = await StoryGeneratorService.generateStory(userInfo, newDifficulty, currentStoryLength);
+      
+      console.log(`Generated story: received ${result.pages.length} pages, expected ${currentStoryLength}`);
+      
       setStory(result.pages);
       setStoryConfig(result.config);
       
