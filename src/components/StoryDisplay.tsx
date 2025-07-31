@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { BookOpen, Home, RotateCcw, Volume2, VolumeX, TrendingUp, TrendingDown, Plus, Minus, Star, Heart, Sparkles, Wand2, Play, Pause, Timer, Mic, MicOff, BarChart3, Target } from "lucide-react";
 import { FloatingTimer } from "./FloatingTimer";
 import type { UserInfo, DifficultyLevel, SessionStats } from "@/types";
@@ -135,6 +136,9 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
   const [audioSpeed, setAudioSpeed] = useState(0.75); // Default speed
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  
+  // Premium feature alert
+  const [showPremiumAlert, setShowPremiumAlert] = useState(false);
   
   // Services - Initialize with debugging
   const [runwareService] = useState<SecureRunwareService>(() => {
@@ -909,6 +913,11 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       default: return "hidden";
     }
   };
+  const handleMicrophoneClick = () => {
+    // Show premium alert instead of starting recording
+    setShowPremiumAlert(true);
+  };
+
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -1061,32 +1070,48 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                 {/* Controls */}
                 <div className="space-y-3 sm:space-y-4 mt-4 sm:mt-6 lg:mt-8">
                   {/* Audio & Recording */}
-                  <div className="flex justify-center space-x-2 sm:space-x-3" data-tutorial-target="audio">
-                    <Button
-                      onClick={() => playTextToSpeech(currentStory)}
-                      variant="outline"
-                      size="sm"
-                      className="rounded-full bg-blue-50 border-blue-200 hover:bg-blue-100 p-2 sm:p-3"
-                      disabled={isPlaying || hasPlayedAudioForPage.has(currentParagraph)}
-                    >
-                      {isPlaying ? (
-                        <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                      ) : hasPlayedAudioForPage.has(currentParagraph) ? (
-                        <VolumeX className="w-3 h-3 sm:w-4 sm:h-4" />
-                      ) : (
-                        <Volume2 className="w-3 h-3 sm:w-4 sm:h-4" />
-                      )}
-                    </Button>
+                  <TooltipProvider>
+                    <div className="flex justify-center space-x-2 sm:space-x-3" data-tutorial-target="audio">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            onClick={() => playTextToSpeech(currentStory)}
+                            variant="outline"
+                            size="sm"
+                            className="rounded-full bg-blue-50 border-blue-200 hover:bg-blue-100 p-2 sm:p-3"
+                            disabled={isPlaying || hasPlayedAudioForPage.has(currentParagraph)}
+                          >
+                            {isPlaying ? (
+                              <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                            ) : hasPlayedAudioForPage.has(currentParagraph) ? (
+                              <VolumeX className="w-3 h-3 sm:w-4 sm:h-4" />
+                            ) : (
+                              <Volume2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                            )}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="bg-white border shadow-lg z-50">
+                          <p className="text-sm">Listen to this page being read aloud</p>
+                        </TooltipContent>
+                      </Tooltip>
 
-                    <Button
-                      onClick={() => isRecording ? stopRecording() : startRecording()}
-                      variant={isRecording ? "destructive" : "outline"}
-                      size="sm"
-                      className="rounded-full p-2 sm:p-3"
-                    >
-                      {isRecording ? <MicOff className="w-3 h-3 sm:w-4 sm:h-4" /> : <Mic className="w-3 h-3 sm:w-4 sm:h-4" />}
-                    </Button>
-                  </div>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            onClick={handleMicrophoneClick}
+                            variant={isRecording ? "destructive" : "outline"}
+                            size="sm"
+                            className="rounded-full p-2 sm:p-3"
+                          >
+                            {isRecording ? <MicOff className="w-3 h-3 sm:w-4 sm:h-4" /> : <Mic className="w-3 h-3 sm:w-4 sm:h-4" />}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="bg-white border shadow-lg z-50">
+                          <p className="text-sm">Record yourself reading (Premium feature)</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                  </TooltipProvider>
 
                   {/* Audio Speed Controls */}
                   <div className="flex justify-center items-center space-x-2">
@@ -1448,6 +1473,36 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
           }}
         />
       )}
+
+      {/* Premium Feature Alert */}
+      <AlertDialog open={showPremiumAlert} onOpenChange={setShowPremiumAlert}>
+        <AlertDialogContent className="bg-white border shadow-lg max-w-md mx-4">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center space-x-2 text-purple-700">
+              <Mic className="w-5 h-5" />
+              <span>Premium Feature</span>
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-600 space-y-2">
+              <p>The recording feature allows you to:</p>
+              <ul className="list-disc list-inside space-y-1 text-sm">
+                <li>Record yourself reading aloud</li>
+                <li>Track pronunciation improvements</li>
+                <li>Get personalized feedback</li>
+                <li>Build reading confidence</li>
+              </ul>
+              <p className="text-purple-600 font-medium">This feature will be available with premium accounts when we add user profiles and payments.</p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction 
+              onClick={() => setShowPremiumAlert(false)}
+              className="bg-purple-600 hover:bg-purple-700 text-white"
+            >
+              Got it!
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdaptiveUI>
   );
 };
