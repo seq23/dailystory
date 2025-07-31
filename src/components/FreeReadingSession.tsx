@@ -677,9 +677,9 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                     {/* Progress Bar */}
                     <div className="mb-6">
                       <Progress value={progress} className="h-2" />
-                      <p className="text-sm text-gray-600 mt-2 text-center">
-                        {t("freeReadingSession.progress.readingProgress", { percent: Math.round(progress) })}
-                      </p>
+                       <p className="text-sm text-gray-600 mt-2 text-center">
+                         Reading Progress: {Math.round(progress)}%
+                       </p>
                     </div>
 
                     {/* Story Text */}
@@ -719,9 +719,9 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                         {t("freeReadingSession.navigation.previous")}
                       </Button>
                       
-                      <span className="text-sm font-medium text-gray-600">
-                        {t("freeReadingSession.navigation.pageInfo", { current: currentPage + 1, total: story.length })}
-                      </span>
+                       <span className="text-sm font-medium text-gray-600">
+                         {currentPage + 1} / {story.length}
+                       </span>
                       
                       <Button 
                         onClick={() => {
