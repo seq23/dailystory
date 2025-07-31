@@ -14,7 +14,8 @@ import { ProgressTrackingService, ReadingProgress } from "@/services/progressTra
 import { createOpenAITTSService } from "@/services/textToSpeechService";
 import { useToast } from "@/hooks/use-toast";
 import InclusiveStoryGenerator from "@/services/inclusiveStoryGenerator";
-import EnhancedStoryGenerator from "@/services/enhancedStoryGenerator";
+import { ImprovedStoryGenerator } from "@/services/improvedStoryGenerator";
+import { ImprovedImageGenerator } from "@/services/improvedImageGenerator";
 import illustration1 from "@/assets/story-illustration-1.jpg";
 import illustration2 from "@/assets/story-illustration-2.jpg";
 import illustration3 from "@/assets/story-illustration-3.jpg";
@@ -72,7 +73,6 @@ import avatarGirlDark from "@/assets/avatar-girl-dark.jpg";
 import time2ReadLogo from "@/assets/time2read-logo.png";
 import { processTextForPhonetics } from "@/utils/textProcessor";
 import { SecureRunwareService } from "@/services/secureRunwareService";
-import { StorySpecificImageGenerator } from "@/services/storySpecificImageGenerator";
 
 type DifficultyLevel = "easy" | "medium" | "hard" | "expert";
 
@@ -187,8 +187,8 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
           setHasShownTutorial(true);
         }
         
-        // Use enhanced story generator for better flow and consistency
-        const generatedStory = EnhancedStoryGenerator.generateIntelligentStory(userInfo, currentDifficulty, 10);
+        // Use improved story generator for better quality and no repetition
+        const generatedStory = ImprovedStoryGenerator.generateStory(userInfo, currentDifficulty, 10);
         setStory(generatedStory);
         
         // Calculate word count for stats and reset reading stats
@@ -440,8 +440,8 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       const previousPage = currentParagraph;
       
       // Only regenerate story content, don't reset timer or session stats
-      // Use enhanced story generator for better flow and consistency
-      const generatedStory = EnhancedStoryGenerator.generateIntelligentStory(userInfo, newDifficulty, 10);
+      // Use improved story generator for better quality and no repetition
+      const generatedStory = ImprovedStoryGenerator.generateStory(userInfo, newDifficulty, 10);
       setStory(generatedStory);
       
       // Clear custom illustrations for new story
@@ -456,10 +456,12 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       const illustrationIndex = targetPage % illustrations.length;
       setCurrentIllustration(illustrations[illustrationIndex]);
       
-      // Auto-generate custom illustration for the current page
+      // Auto-generate custom illustration for the current page immediately
       if (generatedStory.length > 0 && generatedStory[targetPage]) {
-        // Start image generation immediately without delay for better UX
-        generateCustomIllustration(targetPage, generatedStory[targetPage]);
+        // Force immediate generation to ensure image appears
+        setTimeout(() => {
+          generateCustomIllustration(targetPage, generatedStory[targetPage]);
+        }, 200); // Slightly longer delay to ensure story state is updated
       }
       
     } catch (error) {
@@ -676,101 +678,68 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
     setIsPlaying(false);
   };
 
-  // Helper function to extract consistent story character from all pages
-  const extractStoryCharacterFromAllPages = (allPages: string[]): string | undefined => {
-    const allText = allPages.join(' ').toLowerCase();
-    const animalKeywords = ['cat', 'dog', 'bird', 'owl', 'deer', 'rabbit', 'fox', 'bear', 'elephant', 'lion', 'tiger', 'horse', 'cow', 'pig', 'sheep', 'goat', 'duck', 'chicken', 'fish', 'turtle', 'frog', 'butterfly', 'bee', 'spider', 'mouse', 'rat', 'squirrel', 'chipmunk'];
-    
-    // Find the first animal mentioned in the story
-    for (const animal of animalKeywords) {
-      if (allText.includes(animal)) {
-        return animal;
-      }
-    }
-    
-    // Check for user's favorite animal if no story animal found
-    if (userInfo.favoriteAnimal) {
-      return userInfo.favoriteAnimal.toLowerCase();
-    }
-    
-    return undefined;
-  };
 
   const generateCustomIllustration = async (pageIndex: number, storyText: string) => {
-    console.log('=== generateCustomIllustration called ===');
-    console.log('pageIndex:', pageIndex, 'storyText length:', storyText?.length);
-    console.log('isGeneratingImage:', isGeneratingImage);
-    console.log('customIllustrations.has(pageIndex):', customIllustrations.has(pageIndex));
+    console.log('=== Generating improved illustration ===');
+    console.log('Page:', pageIndex, 'Story length:', storyText?.length);
     
-    if (isGeneratingImage || customIllustrations.has(pageIndex)) {
-      console.log('Exiting early - already generating or exists');
-      return;
-    }
-    
-    // Ensure we have valid story text
-    if (!storyText || storyText.trim().length === 0) {
-      console.log('No valid story text provided');
+    // Validate inputs
+    if (isGeneratingImage || customIllustrations.has(pageIndex) || !storyText?.trim()) {
+      console.log('Skipping generation - invalid conditions');
       return;
     }
     
     try {
       setIsGeneratingImage(true);
       
-      // Minimal delay for immediate responsiveness
+      // Minimal delay for responsiveness
       await new Promise(resolve => setTimeout(resolve, 100));
       
-      // Create story-specific prompt that includes avatar and story character consistency
-      const prompt = StorySpecificImageGenerator.generateStorySpecificPrompt({
+      // Use improved image generator for better quality
+      const prompt = ImprovedImageGenerator.generateImagePrompt({
         storyText,
         pageIndex,
         userInfo,
         difficulty: currentDifficulty,
-        storyCharacter: extractStoryCharacterFromAllPages(story), // Extract consistent character from all story pages
-        allStoryPages: story
+        totalPages: story.length
       });
       
-      console.log('Generating image with prompt:', prompt);
-      console.log('Using Runware service:', runwareService);
+      console.log('Improved prompt:', prompt);
       
-      // Use a simpler approach that bypasses some security layers
+      // Generate image with optimized settings
       const result = await runwareService.generateImage({
         positivePrompt: prompt,
         model: "runware:100@1",
-        width: 512, // Reduced for faster generation
-        height: 512, // Reduced for faster generation
+        width: 512,
+        height: 512,
         numberResults: 1,
         outputFormat: "WEBP",
-        CFGScale: 3, // Reduced for speed
+        CFGScale: 7, // Better adherence to prompt
         scheduler: "FlowMatchEulerDiscreteScheduler"
       });
       
-      console.log('Image generation result:', result);
+      console.log('Generation result:', result);
       
       if (result?.imageURL) {
-        // Update custom illustrations map
+        // Update illustrations map
         setCustomIllustrations(prev => new Map(prev.set(pageIndex, result.imageURL)));
         
-        // Only update current illustration if we're still on the same page
+        // Update current illustration if we're still on this page
         if (pageIndex === currentParagraph) {
           setCurrentIllustration(result.imageURL);
           console.log('Updated current illustration for page:', pageIndex);
         }
         
-        
       } else {
-        console.error('No image URL in result:', result);
-        throw new Error('No image URL received from service');
+        console.error('No image URL in result');
+        throw new Error('Failed to generate image');
       }
     } catch (error) {
-      console.error('Error generating illustration:', error);
-      console.error('Error details:', {
-        message: error.message,
-        stack: error.stack,
-        runwareService: runwareService
-      });
+      console.error('Image generation failed:', error);
       
+      // Show error notification only for actual failures
       toast({
-        title: "Illustration Generation Failed",
+        title: "Image Generation Failed",
         description: "Using default illustration instead.",
         variant: "destructive"
       });
