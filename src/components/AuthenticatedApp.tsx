@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookOpen, BarChart3, Settings, LogOut } from "lucide-react";
 import type { UserInfo, Grade, LanguageCode, LearningGoal } from "@/types";
+import { ProgressDashboard } from "@/components/ProgressDashboard";
+import { ParentDashboard } from "@/components/ParentDashboard";
 
 interface AuthenticatedAppProps {
   user: User;
@@ -181,17 +183,23 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
           </TabsContent>
 
           <TabsContent value="progress">
-            <div className="text-center p-8">
-              <h2 className="text-2xl font-bold mb-4">Reading Progress</h2>
-              <p className="text-gray-600">Coming soon: Detailed reading analytics and achievement tracking</p>
-            </div>
+            {userInfo && (
+              <ProgressDashboard
+                userInfo={userInfo}
+                isVisible={true}
+                onClose={() => {}}
+              />
+            )}
           </TabsContent>
 
           <TabsContent value="parent">
-            <div className="text-center p-8">
-              <h2 className="text-2xl font-bold mb-4">Parent Dashboard</h2>
-              <p className="text-gray-600">Coming soon: Detailed progress reports and learning analytics</p>
-            </div>
+            {userInfo && (
+              <ParentDashboard
+                userInfo={userInfo}
+                isVisible={true}
+                onClose={() => {}}
+              />
+            )}
           </TabsContent>
 
           <TabsContent value="profile">
