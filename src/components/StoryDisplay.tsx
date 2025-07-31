@@ -914,16 +914,6 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                     ${storyConfig?.lineHeight || 'leading-relaxed'}
                   `}>
                     {processTextForPhonetics(currentStory, "", currentDifficulty, userInfo)}
-                    
-                    {/* Enhanced reading info for easy level */}
-                    {currentDifficulty === 'easy' && (
-                      <div className="text-xs text-muted-foreground mt-4 space-y-1">
-                        <div>{currentStory.split(' ').length} {currentStory.split(' ').length === 1 ? 'word' : 'words'}</div>
-                        {storyConfig?.authorStyle && (
-                          <div className="text-purple-600">📖 {storyConfig.authorStyle}</div>
-                        )}
-                      </div>
-                    )}
                   </div>
                 </div>
                 
