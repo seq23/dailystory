@@ -45,39 +45,58 @@ export const GuestExperience = () => {
 
   switch (currentState) {
     case "welcome":
-      return <WelcomeHero onGetStarted={handleGetStarted} onSignIn={handleCreateAccount} />;
+      return (
+        <div className="animate-fade-in">
+          <WelcomeHero onGetStarted={handleGetStarted} onSignIn={handleCreateAccount} />
+        </div>
+      );
     
     case "form":
       return (
-        <UserInfoForm 
-          onSubmit={handleFormSubmit} 
-          onBack={handleBackToWelcome}
-        />
+        <div className="animate-fade-in">
+          <UserInfoForm 
+            onSubmit={handleFormSubmit} 
+            onBack={handleBackToWelcome}
+          />
+        </div>
       );
     
     case "reading":
       return userInfo ? (
-        <FreeReadingSession 
-          userInfo={userInfo}
-          onUpgrade={handleUpgrade}
-          onCreateAccount={handleCreateAccount}
-        />
+        <div className="animate-fade-in">
+          <FreeReadingSession 
+            userInfo={userInfo}
+            onUpgrade={handleUpgrade}
+            onCreateAccount={handleCreateAccount}
+          />
+        </div>
       ) : null;
     
     case "upgrade":
       return (
-        <PremiumUpgrade
-          onBack={handleBackToReading}
-          onSubscribe={handleSubscribe}
-        />
+        <div className="animate-fade-in">
+          <PremiumUpgrade
+            onBack={handleBackToReading}
+            onSubscribe={handleSubscribe}
+          />
+        </div>
       );
     
     case "login":
-      // If user has no userInfo, they came from welcome screen, so go back to welcome
-      // If user has userInfo, they came from reading session, so go back to reading
-      return <LoginScreen userInfo={userInfo} onBack={userInfo ? handleBackToReading : handleBackToWelcome} />;
+      return (
+        <div className="animate-fade-in">
+          <LoginScreen 
+            userInfo={userInfo} 
+            onBack={userInfo ? handleBackToReading : handleBackToWelcome} 
+          />
+        </div>
+      );
     
     default:
-      return <WelcomeHero onGetStarted={handleGetStarted} />;
+      return (
+        <div className="animate-fade-in">
+          <WelcomeHero onGetStarted={handleGetStarted} />
+        </div>
+      );
   }
 };
