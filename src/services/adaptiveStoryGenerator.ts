@@ -134,7 +134,10 @@ export class AdaptiveStoryGenerator {
     const authorStyle = this.selectAuthorStyle(readingLevel);
     const theme = config.theme || specs.themes[Math.floor(Math.random() * specs.themes.length)];
 
-    console.log(`Generating personalized story for ${config.userName} (${readingLevel} level)`);
+    console.log(`Generating story for ${config.userName} (${readingLevel} level) - Character consistency maintained`);
+
+    // CRITICAL: Mark this as character-established story
+    const isCharacterEstablished = !!config.userName && !!config.avatar;
 
     // Generate story using enhanced Supabase edge function
     const { data: storyData, error } = await supabase.functions.invoke('generate-adaptive-story', {
@@ -147,7 +150,8 @@ export class AdaptiveStoryGenerator {
         config: {
           ...config,
           theme,
-          nativeLanguage: config.userName ? 'en' : 'en' // Add fallback
+          nativeLanguage: config.nativeLanguage || 'en',
+          characterEstablished: isCharacterEstablished
         }
       }
     });
@@ -173,11 +177,14 @@ export class AdaptiveStoryGenerator {
     const vocabularyWords = this.extractVocabularyWords(storyData.content, readingLevel);
     const comprehensionQuestions = this.generateComprehensionQuestions(storyData.content, readingLevel);
     
-    // Generate personalized image prompts with character consistency
+    // CRITICAL: Only generate image prompts, don't auto-generate images yet
+    // Let the component control when/if images are generated to maintain character consistency
     const imagePrompts = this.generateImagePrompts(readingLevel, theme, pages.length);
     
-    // Initialize images array with enhanced prompts - images will be generated progressively
-    const initialImages = pages.map((_, i) => ({ prompt: imagePrompts[i] }));
+    // Initialize images array with enhanced prompts only - actual generation controlled by component
+    const initialImages = pages.map((_, i) => ({ 
+      prompt: `${imagePrompts[i]} - Character: ${config.userName || 'main character'} as ${config.avatar?.type || 'child'} with ${config.avatar?.skinTone || 'medium'} skin tone` 
+    }));
 
     const story: GeneratedStory = {
       id: crypto.randomUUID(),

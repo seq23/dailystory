@@ -54,6 +54,10 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   const [sessionEnded, setSessionEnded] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
 
+  // Character consistency - store original character details
+  const [establishedCharacter, setEstablishedCharacter] = useState<any>(null);
+  const [originalStoryConfig, setOriginalStoryConfig] = useState<any>(null);
+
   // Celebration state
   const [celebrationStep, setCelebrationStep] = useState(0); // 0: animation, 1: shaking, 2: progress
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -138,6 +142,18 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
           favoriteFood: userInfo.favoriteFood,
           nativeLanguage: userInfo.nativeLanguage || 'en'
         };
+
+        // Store the original character details for consistency
+        setOriginalStoryConfig(storyConfig);
+        setEstablishedCharacter({
+          userName: userInfo.name,
+          characterDescription,
+          avatar: userInfo.avatar,
+          favoriteColor: userInfo.favoriteColor,
+          favoriteAnimal: userInfo.favoriteAnimal,
+          hobbies: userInfo.hobbies,
+          favoriteFood: userInfo.favoriteFood
+        });
 
         console.log('Story config:', storyConfig);
 
@@ -268,21 +284,21 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
           interests.push(userInfo.age <= 6 ? 'animals' : userInfo.age <= 8 ? 'friendship' : 'adventure');
         }
         
+        // CRITICAL: Use established character details, only change reading level
         const storyConfig = {
-          age: userInfo.age,
-          gradeLevel: userInfo.gradeLevel || userInfo.grade,
-          readingLevel: newDifficulty,
-          interests: interests,
-          theme: userInfo.specialRequest || 'adventure',
-          userName: userInfo.name,
-          characterDescription,
-          avatar: userInfo.avatar,
-          favoriteColor: userInfo.favoriteColor,
-          favoriteAnimal: userInfo.favoriteAnimal,
-          hobbies: userInfo.hobbies,
-          favoriteFood: userInfo.favoriteFood,
-          nativeLanguage: userInfo.nativeLanguage || 'en'
+          ...originalStoryConfig,
+          readingLevel: newDifficulty, // Only update difficulty
+          // Keep all original character details unchanged
+          userName: establishedCharacter.userName,
+          characterDescription: establishedCharacter.characterDescription,
+          avatar: establishedCharacter.avatar,
+          favoriteColor: establishedCharacter.favoriteColor,
+          favoriteAnimal: establishedCharacter.favoriteAnimal,
+          hobbies: establishedCharacter.hobbies,
+          favoriteFood: establishedCharacter.favoriteFood
         };
+
+        console.log('Maintaining character consistency for difficulty change:', establishedCharacter.userName);
 
         // Generate new story at the new difficulty level
         const updatedStory = await adaptiveStoryGenerator.generateStory(storyConfig);
@@ -370,28 +386,34 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     try {
       const characterDescription = userInfo.avatar ? `, a curious and brave ${userInfo.avatar.type === 'boy' ? 'boy' : userInfo.avatar.type === 'girl' ? 'girl' : 'child'}` : '';
       
+      // CRITICAL: Use established character details for additional pages
       const storyConfig = {
-        age: userInfo.age,
-        gradeLevel: userInfo.gradeLevel || userInfo.grade,
-        readingLevel: currentDifficulty,
-        interests: userInfo.interests || [userInfo.hobbies || 'adventure'],
-        theme: 'adventure',
-        userName: userInfo.name,
-        characterDescription,
-        avatar: userInfo.avatar,
-        favoriteColor: userInfo.favoriteColor,
-        favoriteAnimal: userInfo.favoriteAnimal,
-        hobbies: userInfo.hobbies,
-        favoriteFood: userInfo.favoriteFood,
-        nativeLanguage: userInfo.nativeLanguage || 'en'
+        ...originalStoryConfig,
+        // Keep all original character details unchanged
+        userName: establishedCharacter.userName,
+        characterDescription: establishedCharacter.characterDescription,
+        avatar: establishedCharacter.avatar,
+        favoriteColor: establishedCharacter.favoriteColor,
+        favoriteAnimal: establishedCharacter.favoriteAnimal,
+        hobbies: establishedCharacter.hobbies,
+        favoriteFood: establishedCharacter.favoriteFood,
+        theme: 'adventure' // Can use same or different theme for extension
       };
 
+      console.log('Maintaining character consistency for page extension:', establishedCharacter.userName);
+
       const extendedStory = await adaptiveStoryGenerator.generateStory(storyConfig);
-      // Add 5 more pages from the new story without affecting timer
+      
+      // CRITICAL: Don't generate new images for additional pages - character already established
+      // Just add text pages, reuse character details for any future image generation
       const newPages = extendedStory.pages.slice(0, 5);
-      const newImages = extendedStory.images?.slice(0, 5) || [];
       setStory(prev => [...prev, ...newPages]);
-      setStoryImages(prev => [...prev, ...newImages]);
+      
+      // For any future image generation, ensure we use established character
+      const placeholderImages = newPages.map((_, i) => ({ 
+        prompt: `Consistent character ${establishedCharacter.userName} as established in the story` 
+      }));
+      setStoryImages(prev => [...prev, ...placeholderImages]);
       
       // Update word count for session stats but don't reset timer
       setWordsRead(prev => prev + newPages.join(' ').split(' ').length);
