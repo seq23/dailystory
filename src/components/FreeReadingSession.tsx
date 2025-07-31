@@ -89,6 +89,18 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     setWordsRead(immediateFallback.join(' ').split(' ').length);
     setIsLoading(false); // No loading screen!
     
+    // AUTO-START: Begin timer immediately (no button needed)
+    setSessionStarted(true);
+    setSessionStartTime(new Date());
+    
+    setTimeout(() => {
+      toast({
+        title: "Free Reading Session Started! 📚",
+        description: "You have 20 minutes of free reading time. Enjoy!",
+        duration: 4000,
+      });
+    }, 1000); // Small delay so user sees the story first
+    
     // BACKGROUND: Generate real story asynchronously
     let isCancelled = false;
     
@@ -594,10 +606,10 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                   <BookOpen className="w-8 h-8 text-primary" />
                   <div>
                     <h1 className="text-xl font-bold text-gray-800">
-                      {sessionStarted ? `${userInfo.name}'s Reading Adventure` : t("freeReadingSession.session.titleNotStarted")}
+                      {userInfo.name}'s Reading Adventure
                     </h1>
                     <p className="text-sm text-gray-600">
-                      {sessionStarted ? `Page ${currentPage + 1} of ${story.length}` : t("freeReadingSession.session.subtitleNotStarted")}
+                      Page {currentPage + 1} of {story.length}
                     </p>
                   </div>
                 </div>
@@ -692,7 +704,6 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                     <div className="flex justify-between items-center mt-6">
                       <Button 
                         onClick={() => {
-                          if (!sessionStarted) startSession();
                           setCurrentPage(Math.max(0, currentPage - 1));
                         }}
                         disabled={currentPage === 0}
@@ -707,7 +718,6 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                       
                       <Button 
                         onClick={() => {
-                          if (!sessionStarted) startSession();
                           setCurrentPage(Math.min(story.length - 1, currentPage + 1));
                         }}
                         disabled={currentPage >= story.length - 1}
