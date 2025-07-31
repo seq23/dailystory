@@ -16,8 +16,23 @@ import AdaptiveUI from "@/components/AdaptiveUI";
 export default function StoryDisplayFixed() {
   const { t } = useTranslation();
   
+  // Mock userInfo for the fixed component
+  const mockUserInfo = {
+    name: "Test User",
+    age: 8,
+    grade: "2nd" as const,
+    nativeLanguage: "en" as const,
+    learningGoal: "improve-english-reading" as const,
+    avatar: { type: "boy" as const, skinTone: "medium" as const },
+    favoriteColor: "blue",
+    favoriteAnimal: "dog",
+    hobbies: "reading",
+    favoriteFood: "pizza",
+    specialRequest: ""
+  };
+  
   return (
-    <AdaptiveUI className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+    <AdaptiveUI userInfo={mockUserInfo} className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
       <div className="p-4">
         <Card className="bg-white/95 backdrop-blur-sm shadow-2xl rounded-2xl border-2 border-purple-200/50">
           <CardContent className="p-6">
