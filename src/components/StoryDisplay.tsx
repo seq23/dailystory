@@ -225,7 +225,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
     };
 
     generateStory();
-  }, [userInfo, currentDifficulty]);
+  }, [userInfo]);
 
   // Update reading stats when reading
   useEffect(() => {
