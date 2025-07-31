@@ -12,8 +12,8 @@ export class OpenAITTSService {
   private audioCache: Map<string, string> = new Map();
 
   constructor(config: TextToSpeechConfig) {
-    // Use child-friendly voices - shimmer is gentle and soothing
-    this.voice = config.voice || "shimmer"; // Available: alloy, echo, fable, onyx, nova, shimmer
+    // Use child-friendly voices - nova is clear and natural for children
+    this.voice = config.voice || "nova"; // Nova is more natural than shimmer
     this.speed = config.speed || 0.9;
   }
 
@@ -127,7 +127,7 @@ export class OpenAITTSService {
 // Create OpenAI TTS service instance
 export const createOpenAITTSService = () => {
   return new OpenAITTSService({
-    voice: 'shimmer', // Gentle and soothing voice for kids
+    voice: 'nova', // Clear and natural voice for kids
     speed: 0.9 // Default speed
   });
 };

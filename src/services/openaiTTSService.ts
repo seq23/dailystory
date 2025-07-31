@@ -19,14 +19,14 @@ export class OpenAITTSService {
       let audioUrl = this.audioCache.get(cacheKey);
       
       if (!audioUrl) {
-        const response = await fetch('/supabase/functions/v1/openai-tts', {
+        const response = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/openai-tts', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
             text: text.replace(/[.,!?;:'"()]/g, ''), // Clean text
-            voice: options.voice || 'alloy',
+            voice: options.voice || 'nova', // Use more natural voice
             speed: options.speed || 1.0
           })
         });

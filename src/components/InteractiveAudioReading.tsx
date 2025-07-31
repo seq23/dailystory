@@ -111,18 +111,25 @@ export const InteractiveAudioReading = ({
 
   return (
     <div className="flex items-center justify-center gap-2 p-2 bg-blue-50 rounded-lg">
-      <Button
-        onClick={toggleReading}
-        variant="outline"
-        size="sm"
-        className="rounded-full"
-      >
-        {isPlaying ? (
-          <Pause className="w-4 h-4" />
-        ) : (
-          <Play className="w-4 h-4" />
-        )}
-      </Button>
+      <div className="relative group">
+        <Button
+          onClick={toggleReading}
+          variant="outline"
+          size="sm"
+          className="rounded-full hover:bg-blue-100 transition-colors"
+        >
+          {isPlaying ? (
+            <Pause className="w-4 h-4" />
+          ) : (
+            <Play className="w-4 h-4" />
+          )}
+        </Button>
+        
+        {/* Tooltip */}
+        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
+          {isPlaying ? 'Pause audio reading' : 'Play audio reading'}
+        </div>
+      </div>
 
       {/* Speed controls */}
       <div className="flex items-center gap-1">
