@@ -941,6 +941,14 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         <div className="max-w-7xl mx-auto px-2 sm:px-4 py-2 sm:py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2 sm:space-x-3">
+              {/* User Avatar */}
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden border-2 border-purple-200 shadow-sm">
+                <img 
+                  src={getUserAvatar()} 
+                  alt={`${userInfo.name}'s avatar`}
+                  className="w-full h-full object-cover"
+                />
+              </div>
               <img src={time2ReadLogo} alt="Time2Read" className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg" />
               <h1 className="text-sm sm:text-lg md:text-xl font-bold text-purple-800 truncate">
                 {userInfo.name}'s {t("storyDisplay.header.readingTime")}
