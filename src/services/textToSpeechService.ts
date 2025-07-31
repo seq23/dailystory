@@ -55,22 +55,29 @@ export class OpenAITTSService {
         throw new Error('TTS Error: No audio data received from service');
       }
 
-      console.log('TTS Response data type:', typeof data, 'Length:', data?.byteLength || data?.length);
+      console.log('TTS Response data type:', typeof data, 'Constructor:', data?.constructor?.name);
+      console.log('Data preview (first 50 chars):', data instanceof ArrayBuffer ? 'ArrayBuffer' : String(data).substring(0, 50));
 
-      // The response from the edge function should be an ArrayBuffer
+      // Handle different response formats from Supabase edge function
       let audioBlob;
+      
       if (data instanceof ArrayBuffer) {
+        console.log('Handling as ArrayBuffer, size:', data.byteLength);
         audioBlob = new Blob([data], { type: 'audio/mpeg' });
       } else if (data instanceof Uint8Array) {
+        console.log('Handling as Uint8Array, size:', data.length);
         audioBlob = new Blob([data], { type: 'audio/mpeg' });
-      } else {
-        // If it's base64 string, convert it
-        const binaryString = atob(data);
-        const bytes = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-          bytes[i] = binaryString.charCodeAt(i);
+      } else if (typeof data === 'string') {
+        console.log('Handling as string, length:', data.length);
+        // Don't try to decode as base64, treat as binary string
+        const bytes = new Uint8Array(data.length);
+        for (let i = 0; i < data.length; i++) {
+          bytes[i] = data.charCodeAt(i);
         }
         audioBlob = new Blob([bytes], { type: 'audio/mpeg' });
+      } else {
+        console.log('Unknown data type, trying direct blob creation');
+        audioBlob = new Blob([data], { type: 'audio/mpeg' });
       }
       
       console.log('Created audio blob:', audioBlob.size, 'bytes, type:', audioBlob.type);
