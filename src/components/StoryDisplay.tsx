@@ -1,90 +1,21 @@
 import { useState, useEffect, useRef } from "react";
-import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { BookOpen, Home, RotateCcw, Volume2, VolumeX, TrendingUp, TrendingDown, Plus, Minus, Star, Heart, Sparkles, Wand2, Play, Pause, Timer, Mic, MicOff, BarChart3, Target } from "lucide-react";
-import { FloatingTimer } from "./FloatingTimer";
-import type { UserInfo, DifficultyLevel, SessionStats } from "@/types";
-import ProgressDashboard from "@/components/ProgressDashboard";
-import LearningPathDashboard from "@/components/LearningPathDashboard";
-import AdaptiveUI from "@/components/AdaptiveUI";
+import { BookOpen, Home, RotateCcw, Volume2, Timer } from "lucide-react";
+
+import type { UserInfo, SessionStats } from "@/types";
 import { InteractiveAudioReading } from "@/components/InteractiveAudioReading";
-import { ReadingRewardsSystem } from "@/components/ReadingRewardsSystem";
-import { VocabularyCollector } from "@/components/VocabularyCollector";
-import { ComprehensionQuiz } from "@/components/ComprehensionQuiz";
-import { MiniGames } from "@/components/MiniGames";
-import { ParentDashboard } from "@/components/ParentDashboard";
-import { IntelligentImageGenerator } from "@/services/intelligentImageGenerator";
-import { StoryGeneratorService } from "@/services/storyGenerator";
-import { SecureRunwareService } from "@/services/secureRunwareService";
-import { ProgressTrackingService } from "@/services/progressTrackingService";
-import { createOpenAITTSService } from "@/services/textToSpeechService";
-import { PersonalizedLearningService } from "@/services/personalizedLearningService";
-import { processTextForPhonetics } from "@/utils/textProcessor";
+import { adaptiveStoryGenerator } from "@/services/adaptiveStoryGenerator";
 import { APP_CONFIG } from "@/constants/app";
 import { useToast } from "@/hooks/use-toast";
 
-// Import all illustrations
+// Import fallback illustrations
 import illustration1 from "@/assets/story-illustration-1.jpg";
 import illustration2 from "@/assets/story-illustration-2.jpg";
 import illustration3 from "@/assets/story-illustration-3.jpg";
 import illustration4 from "@/assets/story-illustration-4.jpg";
 import illustration5 from "@/assets/story-illustration-5.jpg";
-import illustration6 from "@/assets/story-illustration-6.jpg";
-import illustration7 from "@/assets/story-illustration-7.jpg";
-import illustration8 from "@/assets/story-illustration-8.jpg";
-import illustration9 from "@/assets/story-illustration-9.jpg";
-import illustration10 from "@/assets/story-illustration-10.jpg";
-import illustration11 from "@/assets/story-illustration-11.jpg";
-import illustration12 from "@/assets/story-illustration-12.jpg";
-import illustration13 from "@/assets/story-illustration-13.jpg";
-import illustration14 from "@/assets/story-illustration-14.jpg";
-import illustration15 from "@/assets/story-illustration-15.jpg";
-import illustration16 from "@/assets/story-illustration-16.jpg";
-import illustration17 from "@/assets/story-illustration-17.jpg";
-import illustration18 from "@/assets/story-illustration-18.jpg";
-import illustration19 from "@/assets/story-illustration-19.jpg";
-import illustration20 from "@/assets/story-illustration-20.jpg";
-import illustration21 from "@/assets/story-illustration-21.jpg";
-import illustration22 from "@/assets/story-illustration-22.jpg";
-import illustration23 from "@/assets/story-illustration-23.jpg";
-import illustration24 from "@/assets/story-illustration-24.jpg";
-import illustration25 from "@/assets/story-illustration-25.jpg";
-import illustration26 from "@/assets/story-illustration-26.jpg";
-import illustration27 from "@/assets/story-illustration-27.jpg";
-import illustration28 from "@/assets/story-illustration-28.jpg";
-import illustration29 from "@/assets/story-illustration-29.jpg";
-import illustration30 from "@/assets/story-illustration-30.jpg";
-import illustration31 from "@/assets/story-illustration-31.jpg";
-import illustration32 from "@/assets/story-illustration-32.jpg";
-import illustration33 from "@/assets/story-illustration-33.jpg";
-import illustration34 from "@/assets/story-illustration-34.jpg";
-import illustration35 from "@/assets/story-illustration-35.jpg";
-import illustration36 from "@/assets/story-illustration-36.jpg";
-import illustration37 from "@/assets/story-illustration-37.jpg";
-import illustration38 from "@/assets/story-illustration-38.jpg";
-import illustration39 from "@/assets/story-illustration-39.jpg";
-import illustration40 from "@/assets/story-illustration-40.jpg";
-import illustration41 from "@/assets/story-illustration-41.jpg";
-import illustration42 from "@/assets/story-illustration-42.jpg";
-import illustration43 from "@/assets/story-illustration-43.jpg";
-import illustration44 from "@/assets/story-illustration-44.jpg";
-
-// Import avatar images
-import avatarBoyPale from "@/assets/avatar-boy-pale.jpg";
-import avatarBoyLight from "@/assets/avatar-boy-light.jpg"; 
-import avatarBoyMedium from "@/assets/avatar-boy-medium.jpg";
-import avatarBoyOlive from "@/assets/avatar-boy-olive.jpg";
-import avatarBoyDark from "@/assets/avatar-boy-dark.jpg";
-import avatarGirlPale from "@/assets/avatar-girl-pale.jpg";
-import avatarGirlLight from "@/assets/avatar-girl-light.jpg";
-import avatarGirlMedium from "@/assets/avatar-girl-medium.jpg";
-import avatarGirlOlive from "@/assets/avatar-girl-olive.jpg";
-import avatarGirlDark from "@/assets/avatar-girl-dark.jpg";
-import time2ReadLogo from "@/assets/time2read-logo.png";
 
 interface StoryDisplayProps {
   userInfo: UserInfo;
@@ -99,280 +30,174 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
   onHome,
   onSessionEnded,
 }) => {
-  const { t, i18n } = useTranslation();
   const { toast } = useToast();
-
+  
   // Story state
   const [story, setStory] = useState<string[]>([]);
-  const [currentParagraph, setCurrentParagraph] = useState(0);
-  const [currentDifficulty, setCurrentDifficulty] = useState<DifficultyLevel>(userInfo.readingAbility || 'easy');
-  const [storyConfig, setStoryConfig] = useState<any>(null);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
   
-  // Reading session state
-  const [isReading, setIsReading] = useState(false);
+  // Session state
   const [timeRemaining, setTimeRemaining] = useState(APP_CONFIG.FREE_SESSION_DURATION);
-  const [sessionStartTime, setSessionStartTime] = useState<Date>(new Date());
-  const [sessionWordsRead, setSessionWordsRead] = useState(0);
+  const [sessionStartTime] = useState<Date>(new Date());
+  const [wordsRead, setWordsRead] = useState(0);
   const [showFinishCountdown, setShowFinishCountdown] = useState(false);
-  const [countdownSeconds, setCountdownSeconds] = useState(5);
-  const [showCongratulations, setShowCongratulations] = useState(false);
-  
-  // Progress tracking state
-  const [readingProgress, setReadingProgress] = useState<any>(null);
-  const [showProgressDashboard, setShowProgressDashboard] = useState(false);
-  const [showLearningPath, setShowLearningPath] = useState(false);
-  
-  // Tutorial state
-  const [showTutorial, setShowTutorial] = useState(false);
-  const [tutorialStep, setTutorialStep] = useState(0);
-  const [hasShownTutorial, setHasShownTutorial] = useState(false);
-  const [showAddPagesAlert, setHasShownAddPagesAlert] = useState(false);
-  
-  // Image generation state
-  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
-  const [customIllustrations, setCustomIllustrations] = useState<Map<number, string>>(new Map());
-  const [imageGenerator] = useState(() => new IntelligentImageGenerator());
-  const [currentImageURL, setCurrentImageURL] = useState<string>("");
-  
-  // Audio/TTS
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
-  const [hasPlayedAudioForPage, setHasPlayedAudioForPage] = useState<Set<number>>(new Set());
-  const [audioSpeed, setAudioSpeed] = useState(0.75);
-  const currentAudioRef = useRef<HTMLAudioElement | null>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  
-  // Premium feature alert
-  const [showPremiumAlert, setShowPremiumAlert] = useState(false);
 
-  // New feature states
-  const [showVocabularyCollector, setShowVocabularyCollector] = useState(false);
-  const [showComprehensionQuiz, setShowComprehensionQuiz] = useState(false);
-  const [showMiniGames, setShowMiniGames] = useState(false);
-  const [showParentDashboard, setShowParentDashboard] = useState(false);
-  const [achievementsEarned, setAchievementsEarned] = useState<any[]>([]);
-  const [currentWordIndex, setCurrentWordIndex] = useState(-1);
+  // Fallback illustrations
+  const illustrations = [illustration1, illustration2, illustration3, illustration4, illustration5];
 
-  // Services - lazy initialization
-  const runwareServiceRef = useRef<any>(null);
-  const ttsServiceRef = useRef<any>(null);
-
-  // Generate story-specific image when story or page changes
-  useEffect(() => {
-    if (story.length > 0 && currentParagraph < story.length) {
-      generateStoryImage();
-    }
-  }, [story, currentParagraph, userInfo]);
-
-  const generateStoryImage = async () => {
-    try {
-      setIsGeneratingImage(true);
-      
-      const storyText = story[currentParagraph];
-      if (!storyText) return;
-
-      // Check if we already have an image for this page
-      const existingImage = customIllustrations.get(currentParagraph);
-      if (existingImage) {
-        setCurrentImageURL(existingImage);
-        setIsGeneratingImage(false);
-        return;
-      }
-
-      // Generate new image
-      const generatedImage = await imageGenerator.generateStoryImage({
-        storyText,
-        userInfo,
-        pageNumber: currentParagraph,
-        previousImages: Array.from(customIllustrations.values())
-      });
-
-      // Cache the generated image
-      const newIllustrations = new Map(customIllustrations);
-      newIllustrations.set(currentParagraph, generatedImage.imageURL);
-      setCustomIllustrations(newIllustrations);
-      setCurrentImageURL(generatedImage.imageURL);
-
-      toast({
-        title: "✨ New illustration created!",
-        description: "A unique image has been generated for this page.",
-        duration: 3000,
-      });
-
-    } catch (error) {
-      console.error('Failed to generate story image:', error);
-      
-      // Fallback to existing illustration system
-      const fallbackImage = illustrations[currentParagraph % illustrations.length];
-      setCurrentImageURL(fallbackImage);
-      
-      toast({
-        title: "Using default illustration",
-        description: "Custom image generation unavailable. Add your Runware API key for personalized images.",
-        variant: "default",
-        duration: 5000,
-      });
-    } finally {
-      setIsGeneratingImage(false);
-    }
-  };
-
-  // Initialize language from user preferences
-  useEffect(() => {
-    if (userInfo.nativeLanguage && userInfo.nativeLanguage !== i18n.language) {
-      i18n.changeLanguage(userInfo.nativeLanguage);
-    }
-  }, [userInfo.nativeLanguage, i18n]);
-
-  // Illustrations array
-  const illustrations = [
-    illustration1, illustration2, illustration3, illustration4, illustration5,
-    illustration6, illustration7, illustration8, illustration9, illustration10,
-    illustration11, illustration12, illustration13, illustration14, illustration15,
-    illustration16, illustration17, illustration18, illustration19, illustration20,
-    illustration21, illustration22, illustration23, illustration24, illustration25,
-    illustration26, illustration27, illustration28, illustration29, illustration30,
-    illustration31, illustration32, illustration33, illustration34, illustration35,
-    illustration36, illustration37, illustration38, illustration39, illustration40,
-    illustration41, illustration42, illustration43, illustration44
-  ];
-
-  // Generate initial story and setup reading stats
+  // Generate story on component mount
   useEffect(() => {
     const generateStory = async () => {
       try {
-        setCurrentParagraph(0);
-        setIsReading(true);
-        setTimeRemaining(APP_CONFIG.FREE_SESSION_DURATION);
-        setHasShownAddPagesAlert(false);
-        setCustomIllustrations(new Map());
+        setIsLoading(true);
         
-        const newProgress = ProgressTrackingService.initializeProgress(userInfo);
-        setReadingProgress(newProgress);
+        const storyConfig = {
+          age: userInfo.age,
+          gradeLevel: userInfo.gradeLevel || userInfo.grade,
+          readingLevel: (userInfo.readingLevel || 'beginner') as 'beginner' | 'elementary' | 'intermediate' | 'advanced',
+          interests: userInfo.interests || [userInfo.hobbies || 'adventure'],
+          theme: 'adventure'
+        };
+
+        const generatedStory = await adaptiveStoryGenerator.generateStory(storyConfig);
+        setStory(generatedStory.pages);
+        setWordsRead(generatedStory.wordCount);
         
-        if (!hasShownTutorial) {
-          setShowTutorial(true);
-          setTutorialStep(0);
-          setHasShownTutorial(true);
-        }
-        
-        const result = await StoryGeneratorService.generateStory(userInfo, currentDifficulty, 10);
-        setStory(result.pages);
-        setStoryConfig(result.config);
-        
-        const wordCount = result.pages.join(' ').split(' ').filter(word => word.length > 0).length;
-        setSessionStartTime(new Date());
-        setSessionWordsRead(wordCount);
+        toast({
+          title: "Story Ready! 📚",
+          description: `A new ${generatedStory.readingLevel} level story has been created just for you!`,
+          duration: 3000,
+        });
         
       } catch (error) {
         console.error('Failed to generate story:', error);
+        
+        // Fallback story based on age
+        const fallbackStory = userInfo.age <= 5 ? [
+          "The cat sat on the mat.",
+          "The cat was happy.",
+          "The cat played with a ball.",
+          "The ball was red.",
+          "The cat ran fast.",
+          "The end."
+        ] : userInfo.age <= 8 ? [
+          "Once upon a time, there was a brave little mouse named Max.",
+          "Max lived in a cozy hole under the kitchen.",
+          "One day, Max decided to explore the big house.",
+          "He found many interesting things.",
+          "Max made new friends along the way.",
+          "And they all lived happily ever after!"
+        ] : [
+          "In a small village nestled between rolling hills, lived a curious girl named Luna.",
+          "She had always wondered about the mysterious forest that bordered her town.",
+          "When strange lights began appearing among the trees each night, Luna knew she had to investigate.",
+          "With her backpack and flashlight, she ventured into the forest.",
+          "There, she discovered a magical secret that would change everything.",
+          "Luna's adventure was just beginning!"
+        ];
+        
+        setStory(fallbackStory);
+        setWordsRead(fallbackStory.join(' ').split(' ').length);
+        
         toast({
-          title: "Story Generation Error",
-          description: "Failed to create your story. Please try again.",
-          variant: "destructive"
+          title: "Using Sample Story",
+          description: "Generated a story for you to enjoy reading!",
+          duration: 3000,
         });
+      } finally {
+        setIsLoading(false);
       }
     };
 
     generateStory();
-  }, [userInfo, currentDifficulty, hasShownTutorial, toast]);
+  }, [userInfo, toast]);
 
-  // Handle microphone click
-  const handleMicrophoneClick = () => {
-    setShowPremiumAlert(true);
-  };
+  // Timer countdown
+  useEffect(() => {
+    if (timeRemaining <= 0) return;
 
-  // Handle quiz completion
-  const handleQuizComplete = (score: number, totalQuestions: number) => {
-    toast({
-      title: "Quiz Complete!",
-      description: `You scored ${score}/${totalQuestions}! Great job reading!`,
-      duration: 3000,
-    });
-  };
+    const timer = setInterval(() => {
+      setTimeRemaining(prev => {
+        if (prev <= 1) {
+          handleSessionEnd();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
 
-  // Handle mini-game completion
-  const handleMiniGameComplete = (score: number) => {
-    toast({
-      title: "Game Complete!",
-      description: `You scored ${score} points! Keep up the great reading!`,
-      duration: 3000,
-    });
-  };
+    return () => clearInterval(timer);
+  }, [timeRemaining]);
 
-  // Handle achievement earned
-  const handleAchievementEarned = (achievement: any) => {
-    setAchievementsEarned(prev => [...prev, achievement]);
-  };
-
-  // Handle word highlighting for audio reading
-  const handleWordHighlight = (wordIndex: number) => {
-    setCurrentWordIndex(wordIndex);
-  };
-
-  // Get user avatar
-  const getUserAvatar = () => {
-    const avatarType = userInfo.avatar?.type || 'boy';
-    const skinTone = userInfo.avatar?.skinTone || 'medium';
-    
-    const avatarMap = {
-      'boy': {
-        'pale': avatarBoyPale,
-        'light': avatarBoyLight,
-        'medium': avatarBoyMedium,
-        'olive': avatarBoyOlive,
-        'dark': avatarBoyDark,
-      },
-      'girl': {
-        'pale': avatarGirlPale,
-        'light': avatarGirlLight,
-        'medium': avatarGirlMedium,
-        'olive': avatarGirlOlive,
-        'dark': avatarGirlDark,
-      }
+  const handleSessionEnd = () => {
+    const sessionStats: SessionStats = {
+      wordsRead,
+      timeSpent: APP_CONFIG.FREE_SESSION_DURATION - timeRemaining,
+      pagesRead: currentPage + 1,
+      startTime: sessionStartTime.getTime(),
+      accuracy: 100 // Placeholder
     };
     
-    return avatarMap[avatarType]?.[skinTone] || avatarBoyMedium;
+    onSessionEnded(sessionStats);
   };
 
-  const currentStory = story[currentParagraph] || "Loading your magical story...";
-  const totalPages = story.length;
-  const currentIllustration = currentImageURL || customIllustrations.get(currentParagraph) || illustrations[currentParagraph % illustrations.length];
+  const handleNewStory = () => {
+    setCurrentPage(0);
+    setTimeRemaining(APP_CONFIG.FREE_SESSION_DURATION);
+    onNewStory();
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Creating Your Story...</h2>
+          <p className="text-gray-600">Personalizing content for {userInfo.name}</p>
+        </div>
+      </div>
+    );
+  }
+
+  const currentStory = story[currentPage] || "Loading...";
+  const progress = ((currentPage + 1) / story.length) * 100;
+  const currentIllustration = illustrations[currentPage % illustrations.length];
 
   return (
-    <AdaptiveUI userInfo={userInfo} className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+      {/* Simple Timer Display */}
+      {timeRemaining > 0 && (
+        <div className="fixed top-4 right-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg border">
+          <div className="flex items-center gap-2">
+            <Timer className="w-4 h-4 text-primary" />
+            <span className="text-sm font-medium">
+              {Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')} remaining
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
-      <header className="bg-white/90 backdrop-blur-sm shadow-sm border-b border-purple-100">
-        <div className="max-w-7xl mx-auto px-2 sm:px-4 py-2 sm:py-3">
+      <header className="bg-white/90 backdrop-blur-sm shadow-sm border-b">
+        <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2 sm:space-x-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden border-2 border-purple-200 shadow-sm">
-                <img 
-                  src={getUserAvatar()} 
-                  alt={`${userInfo.name}'s avatar`}
-                  className="w-full h-full object-cover"
-                />
+            <div className="flex items-center gap-3">
+              <BookOpen className="w-8 h-8 text-primary" />
+              <div>
+                <h1 className="text-xl font-bold text-gray-800">{userInfo.name}'s Reading Adventure</h1>
+                <p className="text-sm text-gray-600">Page {currentPage + 1} of {story.length}</p>
               </div>
-              <img src={time2ReadLogo} alt="Time2Read" className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg" />
-              <h1 className="text-sm sm:text-lg md:text-xl font-bold text-purple-800 truncate">
-                {userInfo.name}'s Reading Time
-              </h1>
             </div>
             
-            <div className="flex items-center space-x-1 sm:space-x-2">
-              <Button 
-                onClick={() => setShowParentDashboard(true)} 
-                variant="outline" 
-                size="sm" 
-                className="rounded-full bg-indigo-50 border-indigo-200 hover:bg-indigo-100"
-              >
-                <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1" />
-                <span className="hidden sm:inline">Progress</span>
+            <div className="flex items-center gap-2">
+              <Button onClick={handleNewStory} variant="outline" size="sm">
+                <RotateCcw className="w-4 h-4 mr-2" />
+                New Story
               </Button>
-              
-              <Button onClick={onHome} variant="outline" size="sm" className="rounded-full">
-                <Home className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1" />
-                <span className="hidden sm:inline">Home</span>
+              <Button onClick={onHome} variant="outline" size="sm">
+                <Home className="w-4 h-4 mr-2" />
+                Home
               </Button>
             </div>
           </div>
@@ -380,302 +205,83 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
       </header>
 
       {/* Main Content */}
-      <div className="flex-1 p-2 sm:p-4 lg:p-6">
-        <div className="max-w-7xl mx-auto h-full">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 items-stretch h-full">
-            {/* Illustration */}
-            <div className="order-2 lg:order-1">
-              <Card className="bg-white/95 backdrop-blur-sm shadow-2xl rounded-2xl sm:rounded-3xl border-2 border-purple-200/50 overflow-hidden h-[600px] sm:h-[700px] lg:h-[800px]">
-                <CardContent className="p-3 sm:p-6 h-full">
-                  <div className="relative w-full h-full bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl sm:rounded-2xl overflow-hidden flex items-center justify-center">
-                    {isGeneratingImage && (
-                      <div className="absolute inset-0 bg-black/20 flex items-center justify-center z-10">
-                        <div className="bg-white rounded-lg p-4 shadow-lg">
-                          <div className="flex items-center gap-3">
-                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
-                            <span className="text-purple-600 font-medium">Creating your illustration...</span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                    <img 
-                      src={currentIllustration} 
-                      alt={`Story illustration for page ${currentParagraph + 1}`}
-                      className="w-full h-full object-cover rounded-xl sm:rounded-2xl"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-            
-            {/* Story Content */}
-            <div className="order-1 lg:order-2">
-              <Card className="bg-white/95 backdrop-blur-sm shadow-2xl rounded-2xl sm:rounded-3xl border-2 border-purple-200/50 overflow-visible min-h-[600px] sm:min-h-[700px] lg:min-h-[800px]">
-                <CardContent className="p-4 sm:p-6 lg:p-8">
-                  {/* Story Text with word highlighting */}
-                  <div className="prose prose-sm sm:prose-base lg:prose-lg max-w-none">
-                    <div className="leading-relaxed text-gray-800 font-medium text-center space-y-3 sm:space-y-4 text-xl sm:text-2xl lg:text-3xl">
-                      {processTextForPhonetics(currentStory, currentWordIndex === -1 ? "" : `word-${currentWordIndex}`, currentDifficulty, userInfo)}
-                    </div>
-                  </div>
-                  
-                  {/* Controls */}
-                  <div className="space-y-3 sm:space-y-4 mt-4 sm:mt-6 lg:mt-8">
-                    {/* Audio & Recording */}
-                     <TooltipProvider>
-                       {/* Audio Reading Controls */}
-                       <InteractiveAudioReading 
-                         text={currentStory}
-                         userInfo={userInfo}
-                         isEnabled={true}
-                       />
-                      <div className="flex justify-center space-x-2 sm:space-x-3">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="rounded-full bg-blue-50 border-blue-200 hover:bg-blue-100 p-2 sm:p-3"
-                            >
-                              <Volume2 className="w-3 h-3 sm:w-4 sm:h-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent side="top" className="bg-white border shadow-lg z-50">
-                            <p className="text-sm">{t("storyDisplay.tooltips.audioButton")}</p>
-                          </TooltipContent>
-                        </Tooltip>
-
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              onClick={handleMicrophoneClick}
-                              variant="outline"
-                              size="sm"
-                              className="rounded-full p-2 sm:p-3"
-                            >
-                              <Mic className="w-3 h-3 sm:w-4 sm:h-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent side="top" className="bg-white border shadow-lg z-50">
-                            <p className="text-sm">{t("storyDisplay.tooltips.microphoneButton")}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </div>
-                    </TooltipProvider>
-
-                    {/* Difficulty */}
-                    <div className="flex justify-center space-x-2">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="rounded-full text-xs"
-                          >
-                            <TrendingDown className="w-3 h-3 mr-1" />
-                            Easier
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="bg-white border shadow-lg z-50">
-                          <p className="text-sm">{t("storyDisplay.tooltips.makeEasier")}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                      
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="rounded-full text-xs"
-                          >
-                            <TrendingUp className="w-3 h-3 mr-1" />
-                            Harder
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="bg-white border shadow-lg z-50">
-                          <p className="text-sm">{t("storyDisplay.tooltips.makeHarder")}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-
-                    {/* Page Management */}
-                    <div className="flex items-center justify-center space-x-2">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="rounded-full text-xs"
-                          >
-                            <Minus className="w-3 h-3 mr-1" />
-                            Remove
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="bg-white border shadow-lg z-50">
-                          <p className="text-sm">{t("storyDisplay.tooltips.removePages")}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                      
-                      <span className="text-sm font-bold text-purple-600 px-2">
-                        {totalPages} pages
-                      </span>
-                      
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="rounded-full text-xs"
-                          >
-                            <Plus className="w-3 h-3 mr-1" />
-                            Add
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="bg-white border shadow-lg z-50">
-                          <p className="text-sm">{t("storyDisplay.tooltips.addPages")}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-
-                    {/* Navigation & Learning Features */}
-                    <div className="flex justify-center space-x-2 flex-wrap gap-y-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="rounded-full"
-                        disabled={currentParagraph === 0}
-                        onClick={() => setCurrentParagraph(Math.max(0, currentParagraph - 1))}
-                      >
-                        ← Previous
-                      </Button>
-
-                      {/* Regenerate Image Button */}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="rounded-full bg-yellow-50 border-yellow-200 hover:bg-yellow-100"
-                        onClick={generateStoryImage}
-                        disabled={isGeneratingImage}
-                      >
-                        {isGeneratingImage ? "🎨 Creating..." : "🎨 New Image"}
-                      </Button>
-
-                      {/* Learning Feature Buttons */}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="rounded-full bg-purple-50 border-purple-200 hover:bg-purple-100"
-                        onClick={() => setShowVocabularyCollector(true)}
-                      >
-                        📚 My Words
-                      </Button>
-
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="rounded-full bg-blue-50 border-blue-200 hover:bg-blue-100"
-                        onClick={() => setShowComprehensionQuiz(true)}
-                      >
-                        🧠 Quiz
-                      </Button>
-
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="rounded-full bg-green-50 border-green-200 hover:bg-green-100"
-                        onClick={() => setShowMiniGames(true)}
-                      >
-                        🎮 Games
-                      </Button>
-                      
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="rounded-full"
-                        disabled={currentParagraph >= totalPages - 1}
-                        onClick={() => setCurrentParagraph(Math.min(totalPages - 1, currentParagraph + 1))}
-                      >
-                        Next →
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+      <main className="container mx-auto px-4 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+          {/* Story Illustration */}
+          <div className="order-2 lg:order-1">
+            <Card className="h-[500px] lg:h-[600px]">
+              <CardContent className="p-6 h-full">
+                <img 
+                  src={currentIllustration}
+                  alt={`Story illustration for page ${currentPage + 1}`}
+                  className="w-full h-full object-cover rounded-lg"
+                />
+              </CardContent>
+            </Card>
           </div>
 
-          {/* Reading Rewards System */}
-          <div className="mt-6">
-            <ReadingRewardsSystem
-              userInfo={userInfo}
-              wordsRead={sessionWordsRead}
-              pagesRead={currentParagraph + 1}
-              timeSpent={Math.floor((Date.now() - sessionStartTime.getTime()) / 1000)}
-              onRewardEarned={handleAchievementEarned}
-            />
+          {/* Story Text */}
+          <div className="order-1 lg:order-2">
+            <Card className="h-[500px] lg:h-[600px] flex flex-col">
+              <CardContent className="p-6 flex-1 flex flex-col">
+                {/* Progress Bar */}
+                <div className="mb-6">
+                  <Progress value={progress} className="h-2" />
+                  <p className="text-sm text-gray-600 mt-2 text-center">
+                    Reading Progress: {Math.round(progress)}%
+                  </p>
+                </div>
+
+                {/* Story Text */}
+                <div className="flex-1 flex items-center justify-center">
+                  <div className="text-center">
+                    <p className={`${
+                      userInfo.age <= 5 ? 'text-3xl' : 
+                      userInfo.age <= 8 ? 'text-2xl' : 
+                      'text-xl'
+                    } font-medium leading-relaxed text-gray-800 max-w-md mx-auto`}>
+                      {currentStory}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Audio Controls */}
+                <div className="mt-6">
+                  <InteractiveAudioReading 
+                    text={currentStory}
+                    userInfo={userInfo}
+                    isEnabled={true}
+                  />
+                </div>
+
+                {/* Navigation */}
+                <div className="flex justify-between items-center mt-6">
+                  <Button 
+                    onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
+                    disabled={currentPage === 0}
+                    variant="outline"
+                  >
+                    ← Previous
+                  </Button>
+                  
+                  <span className="text-sm font-medium text-gray-600">
+                    {currentPage + 1} / {story.length}
+                  </span>
+                  
+                  <Button 
+                    onClick={() => setCurrentPage(Math.min(story.length - 1, currentPage + 1))}
+                    disabled={currentPage >= story.length - 1}
+                    variant="outline"
+                  >
+                    Next →
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
-      </div>
-
-      {/* Feature Modals */}
-      <VocabularyCollector
-        userInfo={userInfo}
-        isVisible={showVocabularyCollector}
-        onClose={() => setShowVocabularyCollector(false)}
-      />
-
-      <ComprehensionQuiz
-        userInfo={userInfo}
-        storyText={currentStory}
-        isVisible={showComprehensionQuiz}
-        onComplete={handleQuizComplete}
-        onClose={() => setShowComprehensionQuiz(false)}
-      />
-
-      <MiniGames
-        userInfo={userInfo}
-        storyText={currentStory}
-        isVisible={showMiniGames}
-        onComplete={handleMiniGameComplete}
-        onClose={() => setShowMiniGames(false)}
-      />
-
-      <ParentDashboard
-        userInfo={userInfo}
-        isVisible={showParentDashboard}
-        onClose={() => setShowParentDashboard(false)}
-      />
-
-      {/* Premium Feature Alert */}
-      <AlertDialog open={showPremiumAlert} onOpenChange={setShowPremiumAlert}>
-        <AlertDialogContent className="bg-white border shadow-lg max-w-md mx-4">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center space-x-2 text-purple-700">
-              <Mic className="w-5 h-5" />
-              <span>Premium Feature</span>
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-600 space-y-2">
-              <p>The recording feature allows you to:</p>
-              <ul className="list-disc list-inside space-y-1 text-sm">
-                <li>Record yourself reading aloud</li>
-                <li>Track pronunciation improvements</li>
-                <li>Get personalized feedback</li>
-                <li>Build reading confidence</li>
-              </ul>
-              <p className="text-purple-600 font-medium">This feature will be available with premium accounts when we add user profiles and payments.</p>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogAction 
-              onClick={() => setShowPremiumAlert(false)}
-              className="bg-purple-600 hover:bg-purple-700 text-white"
-            >
-              Got it!
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </AdaptiveUI>
+      </main>
+    </div>
   );
 };
 
