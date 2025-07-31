@@ -52,7 +52,7 @@ export class ContentSecurity {
     hi: [
       'रंडी', 'वेश्या', 'कुत्ता', 'साला', 'हरामी', 'मादरचोद', 'भोसड़ी के',
       'सेक्स', 'यौन', 'अश्लील', 'नग्न', 'स्तन', 'लिंग', 'योनि',
-      'हस्तमैथुन', 'कामुक', 'वेश्या', 'बलात्कार',
+      'हस्तमैथुन', 'कामुक', 'बलात्कार',
       'ड्रग्स', 'गांजा', 'कोकीन', 'हेरोइन', 'शराब', 'बीयर',
       'आत्महत्या', 'अवसाद', 'आत्म-नुकसान', 'एनोरेक्सिया',
       'मारना', 'हत्या', 'हत्यारा', 'बंदूक', 'गोली', 'छुरा'
@@ -119,14 +119,15 @@ export class ContentSecurity {
     // Normalize the text by removing special characters and applying substitution patterns
     let normalizedText = text.toLowerCase().trim();
     
+    // Determine if the text is primarily Latin script before normalization
+    const isLatinScript = /^[a-zA-Z\s\u00C0-\u017F\u1E00-\u1EFF0-9.,!?;:'"()\-]*$/.test(text);
+    
     // Apply character substitution patterns (only for Latin characters)
-    this.substitutionPatterns.forEach(({ pattern, replacement }) => {
-      normalizedText = normalizedText.replace(pattern, replacement);
-    });
-
-    // For non-Latin scripts, preserve original characters; for Latin, remove non-alphabetic
-    const isLatinScript = /^[a-zA-Z\s\u00C0-\u017F\u1E00-\u1EFF]*$/.test(text);
     if (isLatinScript) {
+      this.substitutionPatterns.forEach(({ pattern, replacement }) => {
+        normalizedText = normalizedText.replace(pattern, replacement);
+      });
+      // Remove non-alphabetic characters except spaces for Latin scripts
       normalizedText = normalizedText.replace(/[^a-z\s]/g, '');
     }
 
@@ -144,37 +145,56 @@ export class ContentSecurity {
       const inappropriateWords = this.multilingualInappropriateWords[lang as keyof typeof this.multilingualInappropriateWords] || [];
       
       for (const word of inappropriateWords) {
-        // For non-Latin scripts, check for exact matches or substrings
-        // For Latin scripts, use word boundaries
-        const isWordInLatinScript = /^[a-zA-Z\s\u00C0-\u017F\u1E00-\u1EFF]*$/.test(word);
-        
-        let isFound = false;
-        if (isWordInLatinScript) {
-          const wordPattern = new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
-          isFound = wordPattern.test(normalizedText);
-        } else {
-          // For non-Latin scripts, check if the word appears in the text
-          isFound = text.toLowerCase().includes(word.toLowerCase()) || normalizedText.includes(word.toLowerCase());
-        }
-        
-        if (isFound) {
-          return { appropriate: false, reason: `Inappropriate content detected in ${lang.toUpperCase()}` };
+        try {
+          // For non-Latin scripts, check for exact matches or substrings
+          // For Latin scripts, use word boundaries
+          const isWordInLatinScript = /^[a-zA-Z\s\u00C0-\u017F\u1E00-\u1EFF]*$/.test(word);
+          
+          let isFound = false;
+          if (isWordInLatinScript) {
+            // Use word boundaries for Latin script words
+            const escapedWord = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const wordPattern = new RegExp(`\\b${escapedWord}\\b`, 'i');
+            isFound = wordPattern.test(normalizedText);
+          } else {
+            // For non-Latin scripts, check both original and normalized text
+            const lowerWord = word.toLowerCase();
+            const lowerText = text.toLowerCase();
+            isFound = lowerText.includes(lowerWord) || normalizedText.includes(lowerWord);
+          }
+          
+          if (isFound) {
+            return { appropriate: false, reason: `Inappropriate content detected in ${lang.toUpperCase()}` };
+          }
+        } catch (regexError) {
+          // Handle regex errors gracefully - treat as potential threat
+          console.warn(`Regex error checking word "${word}":`, regexError);
+          if (text.toLowerCase().includes(word.toLowerCase())) {
+            return { appropriate: false, reason: `Inappropriate content detected in ${lang.toUpperCase()}` };
+          }
         }
       }
     }
 
     // Check age-restricted words only for youngest children (PreK-2nd grade) - English only for now
-    if (isYoungestChild) {
+    if (isYoungestChild && isLatinScript) {
       for (const word of this.youngerChildrenRestrictedWords) {
-        const wordPattern = new RegExp(`\\b${word}\\b`, 'i');
-        if (wordPattern.test(normalizedText)) {
-          return { appropriate: false, reason: `Content not appropriate for youngest children: ${word}` };
+        try {
+          const wordPattern = new RegExp(`\\b${word}\\b`, 'i');
+          if (wordPattern.test(normalizedText)) {
+            return { appropriate: false, reason: `Content not appropriate for youngest children: ${word}` };
+          }
+        } catch (regexError) {
+          console.warn(`Regex error checking age-restricted word "${word}":`, regexError);
+          if (normalizedText.includes(word.toLowerCase())) {
+            return { appropriate: false, reason: `Content not appropriate for youngest children: ${word}` };
+          }
         }
       }
     }
 
-    // Check for repeated characters (potential obfuscation)
-    if (/(.)\1{4,}/.test(normalizedText)) {
+    // Check for repeated characters (potential obfuscation) - only for Latin scripts
+    if (isLatinScript && /(.)\1{4,}/.test(normalizedText)) {
       return { appropriate: false, reason: 'Suspicious character repetition detected' };
     }
 
