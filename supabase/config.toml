@@ -1,1 +1,11 @@
 project_id = "cpzeuogomaixamrtnnmj"
+
+# Add function configurations
+[functions.generate-adaptive-story]
+verify_jwt = false
+
+[functions.openai-tts]
+verify_jwt = false
+
+[functions.runware-generate-image]
+verify_jwt = false
