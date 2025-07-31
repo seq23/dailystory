@@ -94,13 +94,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     setSessionStarted(true);
     setSessionStartTime(new Date());
     
-    setTimeout(() => {
-      toast({
-        title: "Free Reading Session Started! 📚",
-        description: "You have 20 minutes of free reading time. Enjoy!",
-        duration: 4000,
-      });
-    }, 1000); // Small delay so user sees the story first
+    // Background generation happens but no initial toast
     
     // BACKGROUND: Generate real story asynchronously
     let isCancelled = false;
@@ -168,12 +162,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
       } catch (error) {
         if (!isCancelled) {
           console.error('Failed to generate enhanced story:', error);
-          toast({
-            title: "Using Simple Story",
-            description: "Enhanced story generation failed, but you can still read!",
-            variant: "default"
-          });
-          // Keep the fallback story that's already showing
+          // No toast for fallback
         }
       }
     };
@@ -193,24 +182,15 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     
     setCurrentDifficulty(newDifficulty);
     setCurrentPage(0); // Reset to first page
-    
-    toast({
-      title: `Switching to ${difficultyLevels[newDifficulty].label}`,
-      description: `Story style inspired by ${difficultyLevels[newDifficulty].author}`,
-      duration: 3000,
-    });
+    // No toast for difficulty change
   };
 
   // Start session when user begins reading
   const startSession = () => {
     if (!sessionStarted) {
       setSessionStarted(true);
-      setSessionStartTime(new Date());
-      toast({
-        title: "Free Reading Session Started! 📚",
-        description: "You have 20 minutes of free reading time. Enjoy!",
-        duration: 4000,
-      });
+    setSessionStartTime(new Date());
+    // No toast for session restart
     }
   };
 
@@ -421,11 +401,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
               size="lg"
               onClick={() => {
                 setIsPaused(!isPaused);
-                toast({
-                  title: isPaused ? "Timer Resumed" : "Timer Paused",
-                  description: isPaused ? "Reading session continues" : "Reading session paused",
-                  duration: 2000,
-                });
+                // No toast for pause/resume
               }}
               className="bg-gradient-to-b from-white to-gray-50 backdrop-blur-sm border-2 border-purple-500/30 text-purple-600 hover:bg-purple-500 hover:text-white shadow-xl w-16 h-16 sm:w-20 sm:h-20 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-2xl hover:border-purple-500/50"
             >
@@ -445,11 +421,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
               onClick={() => {
                 if (timeRemaining > 300) {
                   setTimeRemaining(prev => Math.max(300, prev - 300));
-                  toast({
-                    title: "Time Reduced",
-                    description: "Removed 5 minutes from timer",
-                    duration: 2000,
-                  });
+                  // No toast for time reduction
                 }
               }}
             >
@@ -464,11 +436,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
               onClick={() => {
                 setTimeRemaining(0);
                 handleSessionEnd();
-                toast({
-                  title: "Session Ended",
-                  description: "Great job reading!",
-                  duration: 3000,
-                });
+                // No toast for session end
               }}
             >
               <X className="w-5 h-5 sm:w-6 sm:h-6" />

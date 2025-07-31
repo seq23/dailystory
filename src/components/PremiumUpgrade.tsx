@@ -81,12 +81,7 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({
       }
     } catch (error) {
       console.error('Subscription error:', error);
-      toast({
-        title: "Payment Error",
-        description: "Failed to start subscription process. Please try again.",
-        variant: "destructive",
-        duration: 5000,
-      });
+      // No toast for payment errors
     } finally {
       setIsLoading(false);
     }

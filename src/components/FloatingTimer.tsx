@@ -122,12 +122,7 @@ export const FloatingTimer = ({
         });
       }, 6000);
       
-      // Show toast notification
-      toast({
-        title: t("floatingTimer.celebration.title"),
-        description: t("floatingTimer.celebration.description"),
-        duration: 5000,
-      });
+      // No toast notification for timer completion
 
       // Navigate to session ended page after 5 seconds
       setTimeout(() => {

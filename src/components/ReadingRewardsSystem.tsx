@@ -116,12 +116,8 @@ export const ReadingRewardsSystem = ({
       achievement.unlocked && !achievements.find(a => a.id === achievement.id && a.unlocked)
     );
 
+    // No toast notifications for achievements
     newlyUnlocked.forEach(achievement => {
-      toast({
-        title: "🎉 Achievement Unlocked!",
-        description: `${achievement.title}: ${achievement.description}`,
-        duration: 5000,
-      });
       onRewardEarned?.(achievement);
     });
 

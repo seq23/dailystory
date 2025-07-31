@@ -71,11 +71,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
             originalValue: value
           });
           
-          toast({
-            title: t("userInfoForm.validation.contentWarning"),
-            description: t("userInfoForm.validation.inappropriateContent"),
-            variant: "destructive"
-          });
+          // Content warning handled silently
           return;
         }
       }
@@ -90,11 +86,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
     // Rate limiting check
     const userIdentifier = formData.name + Date.now(); // Simple identifier
     if (!ContentSecurity.checkRateLimit(userIdentifier)) {
-      toast({
-        title: t("userInfoForm.validation.tooManyRequests"),
-        description: t("userInfoForm.validation.waitToSubmit"),
-        variant: "destructive"
-      });
+      // Rate limit handled silently
       return;
     }
 
@@ -108,11 +100,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
         formData: { ...formData, name: '[REDACTED]' }
       });
       
-      toast({
-        title: t("userInfoForm.validation.contentIssue"),
-        description: t("userInfoForm.validation.reviewInputs"),
-        variant: "destructive"
-      });
+      // Content validation handled silently
       return;
     }
 
