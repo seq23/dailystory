@@ -55,7 +55,7 @@ export class EarlyReaderStoryGenerator {
     const favoriteAnimal = userInfo.favoriteAnimal?.toLowerCase()?.trim() || 'cat';
     
     // Generate story content based on difficulty
-    const storyContent = this.createStoryContent(characterName, favoriteAnimal, difficulty, userInfo);
+    const storyContent = this.createStoryContent(characterName, favoriteAnimal, difficulty);
     
     // Split into pages respecting word limits
     const pages = this.splitIntoPages(storyContent, config.maxWordsPerPage, pageCount);
@@ -66,20 +66,17 @@ export class EarlyReaderStoryGenerator {
   private static createStoryContent(
     characterName: string,
     favoriteAnimal: string,
-    difficulty: DifficultyLevel,
-    userInfo: UserInfo
+    difficulty: DifficultyLevel
   ): string {
-    const culturalContext = CulturalAdaptationService.getCulturalContext(userInfo.nativeLanguage || 'en');
-    
     switch (difficulty) {
       case 'easy':
         return this.createEasyStory(characterName, favoriteAnimal);
       case 'medium':
-        return this.createMediumStory(characterName, favoriteAnimal, culturalContext);
+        return this.createMediumStory(characterName, favoriteAnimal);
       case 'hard':
-        return this.createHardStory(characterName, favoriteAnimal, culturalContext);
+        return this.createHardStory(characterName, favoriteAnimal);
       case 'expert':
-        return this.createExpertStory(characterName, favoriteAnimal, culturalContext);
+        return this.createExpertStory(characterName, favoriteAnimal);
     }
   }
 
@@ -88,21 +85,16 @@ export class EarlyReaderStoryGenerator {
     return `${characterName} sees a ${favoriteAnimal}. The ${favoriteAnimal} is happy. ${characterName} smiles at ${favoriteAnimal}. They play together nicely. The ${favoriteAnimal} runs very fast. ${characterName} runs too quickly. They are best friends. The sun shines very bright. ${characterName} feels so happy. The ${favoriteAnimal} feels happy too.`;
   }
 
-  private static createMediumStory(characterName: string, favoriteAnimal: string, culturalContext: any): string {
-    const setting = culturalContext.settings[0] || 'park';
-    return `${characterName} walked to the ${setting} on a sunny morning. A friendly ${favoriteAnimal} appeared from behind a tree. The ${favoriteAnimal} seemed lost and lonely. ${characterName} offered some food from their backpack. Together they explored the beautiful ${setting}. They discovered a hidden path filled with flowers. The ${favoriteAnimal} showed ${characterName} its favorite hiding spot. They became best friends and promised to meet again tomorrow.`;
+  private static createMediumStory(characterName: string, favoriteAnimal: string): string {
+    return `${characterName} walked to the park on a sunny morning. A friendly ${favoriteAnimal} appeared from behind a tree. The ${favoriteAnimal} seemed lost and lonely. ${characterName} offered some food from their backpack. Together they explored the beautiful park. They discovered a hidden path filled with flowers. The ${favoriteAnimal} showed ${characterName} its favorite hiding spot. They became best friends and promised to meet again tomorrow.`;
   }
 
-  private static createHardStory(characterName: string, favoriteAnimal: string, culturalContext: any): string {
-    const setting = culturalContext.settings[0] || 'magical forest';
-    const food = culturalContext.foods[0] || 'berries';
-    return `${characterName} had always been curious about the mysterious ${setting} near their home. One afternoon, while exploring the winding paths, they encountered an extraordinary ${favoriteAnimal}. This wasn't an ordinary creature - it seemed to understand human emotions and possessed an unusual intelligence. The ${favoriteAnimal} led ${characterName} to a secret grove where magical ${food} grew. Through acts of kindness and courage, ${characterName} helped the ${favoriteAnimal} solve an ancient problem that had troubled the forest for generations. Their friendship became legendary among all the woodland creatures.`;
+  private static createHardStory(characterName: string, favoriteAnimal: string): string {
+    return `${characterName} had always been curious about the mysterious forest near their home. One afternoon, while exploring the winding paths, they encountered an extraordinary ${favoriteAnimal}. This wasn't an ordinary creature - it seemed to understand human emotions and possessed an unusual intelligence. The ${favoriteAnimal} led ${characterName} to a secret grove where magical berries grew. Through acts of kindness and courage, ${characterName} helped the ${favoriteAnimal} solve an ancient problem that had troubled the forest for generations. Their friendship became legendary among all the woodland creatures.`;
   }
 
-  private static createExpertStory(characterName: string, favoriteAnimal: string, culturalContext: any): string {
-    const setting = culturalContext.settings[0] || 'enchanted realm';
-    const celebration = culturalContext.celebrations[0] || 'Festival of Lights';
-    return `${characterName} possessed an extraordinary gift that few understood - the ability to communicate with animals through empathy and intuition. When a magnificent ${favoriteAnimal} appeared during the ${celebration}, speaking in urgent whispers that only ${characterName} could comprehend, everything changed. The ${favoriteAnimal} revealed that ${characterName}'s unique talent was needed to prevent an ancient curse from befalling the ${setting}. Together, they embarked on a perilous journey through mystical landscapes, facing challenges that tested not only their courage but also their faith in each other. Through wisdom, determination, and the unbreakable bond of true friendship, they ultimately restored harmony to their world and discovered that the greatest magic lies in understanding and compassion.`;
+  private static createExpertStory(characterName: string, favoriteAnimal: string): string {
+    return `${characterName} possessed an extraordinary gift that few understood - the ability to communicate with animals through empathy and intuition. When a magnificent ${favoriteAnimal} appeared during the Festival of Lights, speaking in urgent whispers that only ${characterName} could comprehend, everything changed. The ${favoriteAnimal} revealed that ${characterName}'s unique talent was needed to prevent an ancient curse from befalling the enchanted realm. Together, they embarked on a perilous journey through mystical landscapes, facing challenges that tested not only their courage but also their faith in each other. Through wisdom, determination, and the unbreakable bond of true friendship, they ultimately restored harmony to their world and discovered that the greatest magic lies in understanding and compassion.`;
   }
 
   private static splitIntoPages(text: string, maxWordsPerPage: number, targetPageCount: number): string[] {

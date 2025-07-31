@@ -28,7 +28,7 @@ serve(async (req) => {
     const favoriteAnimal = config.favoriteAnimal || 'cat';
     const hobbies = config.hobbies || '';
     const favoriteFood = config.favoriteFood || '';
-    const nativeLanguage = config.nativeLanguage || 'en';
+    
     
     // Character details for consistency
     const avatarType = config.avatar?.type || 'child';
@@ -45,7 +45,7 @@ CHILD PROFILE:
 - Age: ${userAge} (Grade ${userGrade})
 - Character: ${characterDesc}
 - Reading Level: ${readingLevel}
-- Native Language: ${nativeLanguage}
+
 - Interests: ${userInterests.join(', ')}
 - Favorite Color: ${favoriteColor}
 - Favorite Animal: ${favoriteAnimal}
