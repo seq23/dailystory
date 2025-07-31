@@ -191,29 +191,42 @@ export class InclusiveStoryGenerator {
     progress: any,
     targetWords: number
   ): string {
+    // Mo Willems style: Simple dialogue, repetition, emotional expressions
+    // Dr. Seuss style: Rhyme, rhythm, playful language
+    // Eric Carle style: Simple concepts, exploration, discovery
+    
     if (section === 'introduction') {
       if (pageIndex === 0) {
-        return `This is ${characterName}. ${characterName} is very happy today! ${characterName} wants to go on a big adventure.`;
+        // Mo Willems style introduction with emotion
+        return `This is ${characterName}. ${characterName} is VERY excited today! "I want an adventure!" says ${characterName}. "A BIG adventure!"`;
       } else if (pageIndex === 1) {
-        return `${characterName} walks and walks. ${characterName} sees trees. ${characterName} sees flowers. Where will ${characterName} go?`;
+        // Dr. Seuss style rhythm and exploration
+        return `${characterName} goes here. ${characterName} goes there. ${characterName} goes everywhere! Where will ${characterName} go? Nobody knows!`;
       } else {
-        return `Look! ${characterName} sees the ${setting}! It looks magical and fun. "I want to explore!" says ${characterName}.`;
+        // Eric Carle style discovery
+        return `Look! Look! What does ${characterName} see? The ${setting}! It is big and bright and beautiful!`;
       }
     } else if (section === 'adventure') {
       if (!progress.metCharacter) {
-        return `"Hello!" says a voice. ${characterName} looks around. A friendly ${animal} waves at ${characterName}. "Hi there!"`;
+        // Mo Willems style dialogue and surprise
+        return `"Hello!" says a voice. ${characterName} looks up. "HELLO!" ${characterName} says back. It is a friendly ${animal}!`;
       } else if (!progress.foundObject) {
-        return `"I lost my special ${object}," says the ${animal}. "Can you help me find it?" ${characterName} nods. "Yes! I will help!"`;
+        // Dr. Seuss style problem introduction with rhythm
+        return `"Oh no! Oh me! I lost my ${object}!" says the ${animal}. "Will you help? Will you please?"`;
       } else if (!progress.facedChallenge) {
-        return `They look and look. They look under rocks. They look behind trees. Where could the ${object} be?`;
+        // Eric Carle style methodical searching
+        return `They look here. They look there. Under the rock? No! Behind the tree? No! Where can it be?`;
       } else {
-        return `"There it is!" shouts ${characterName}. The ${object} is hiding in the tall grass. It glows and sparkles!`;
+        // Mo Willems style excitement and discovery
+        return `"THERE!" shouts ${characterName}. "I found it! I found it!" The ${object} sparkles in the grass!`;
       }
     } else {
       if (!progress.learnedLesson) {
-        return `"Thank you!" says the ${animal}. "You are very kind." ${characterName} feels warm and happy inside.`;
+        // Mo Willems style emotional resolution
+        return `"Thank you! Thank you!" says the ${animal}. ${characterName} feels happy. Very, very happy!`;
       } else {
-        return `${characterName} learned about ${value} today. What a wonderful adventure! ${characterName} can't wait for tomorrow.`;
+        // Dr. Seuss style wisdom with rhythm
+        return `${characterName} learned about ${value} today. Being kind is the best way! Hip hooray!`;
       }
     }
   }
@@ -231,29 +244,41 @@ export class InclusiveStoryGenerator {
     progress: any,
     targetWords: number
   ): string {
+    // Kevin Henkes style: Gentle emotions, quiet moments, family-like warmth
+    // Jan Brett style: Rich detail, seasonal elements, cozy settings
+    
     if (section === 'introduction') {
       if (pageIndex === 0) {
-        return `${characterName} woke up feeling excited about the day ahead. Something special was going to happen, though ${characterName} didn't know what it would be yet.`;
+        // Kevin Henkes style quiet beginning with emotion
+        return `${characterName} woke up that morning with a flutter of excitement in their chest. Something wonderful was waiting, though they couldn't quite say what it might be.`;
       } else if (pageIndex === 1) {
-        return `After breakfast, ${characterName} decided to take a walk through the peaceful ${setting}. The morning air was fresh and filled with the sweet scent of blooming flowers.`;
+        // Jan Brett style detailed setting description
+        return `The path to the ${setting} wound through patches of wildflowers and past a babbling brook where dragonflies danced in the dappled sunlight.`;
       } else {
-        return `As ${characterName} wandered deeper into the ${setting}, the trees seemed to whisper secrets and the path sparkled with dewdrops like tiny diamonds.`;
+        // Kevin Henkes style wonder and discovery
+        return `When ${characterName} first glimpsed the ${setting}, they stopped and caught their breath. It was more beautiful than anything they had ever imagined.`;
       }
     } else if (section === 'adventure') {
       if (!progress.metCharacter) {
-        return `Suddenly, ${characterName} heard a soft whimpering sound coming from behind a large oak tree. There sat a gentle ${animal}, looking very sad and worried.`;
+        // Kevin Henkes style gentle introduction of characters
+        return `A soft rustling in the bushes made ${characterName} turn around. There, with kind eyes and a gentle smile, sat a ${animal} who seemed both wise and friendly.`;
       } else if (!progress.foundObject) {
-        return `"I've lost my precious ${object}," explained the ${animal} with tears in its eyes. "It was a gift from my grandmother, and without it, I feel so lost."`;
+        // Jan Brett style storytelling with emotional depth
+        return `"I've lost something very precious," the ${animal} said quietly. "My grandmother's ${object}. Without it, I feel like a part of my heart is missing."`;
       } else if (!progress.facedChallenge) {
-        return `${characterName} and the ${animal} searched everywhere together. They climbed hills, crossed streams, and even looked in the darkest corners of the forest.`;
+        // Kevin Henkes style patient, methodical approach
+        return `Together, ${characterName} and the ${animal} searched with care and patience, checking each hollow log and looking beneath every fallen leaf.`;
       } else {
-        return `Just when they were about to give up, ${characterName} spotted something glowing softly beneath a pile of autumn leaves. It was the ${object}!`;
+        // Jan Brett style magical discovery moment
+        return `Suddenly, a glimmer caught ${characterName}'s eye. There, nestled among the roots of an ancient oak tree, the ${object} lay waiting like a precious secret.`;
       }
     } else {
       if (!progress.learnedLesson) {
-        return `The ${animal}'s face lit up with joy and gratitude. "You didn't have to help me," it said, "but you chose to anyway. That shows true ${value}."`;
+        // Kevin Henkes style emotional connection and gratitude
+        return `The ${animal}'s eyes filled with happy tears. "You helped me when you didn't have to," it whispered. "That's what true ${value} looks like."`;
       } else {
-        return `As ${characterName} walked home, their heart felt full of warmth. They had discovered that the greatest adventures come from helping others and showing ${value}.`;
+        // Jan Brett style warm, cozy ending
+        return `As ${characterName} walked home through the golden afternoon light, their heart felt as warm as a cup of hot cocoa on a winter day. They had learned that ${value} makes the world more beautiful.`;
       }
     }
   }
@@ -271,29 +296,42 @@ export class InclusiveStoryGenerator {
     progress: any,
     targetWords: number
   ): string {
+    // Roald Dahl style: Whimsical language, unexpected twists, "scrumptious" vocabulary
+    // Beverly Cleary style: Real emotions, relatable problems, character growth
+    // Judy Blume style: Honest feelings, complex situations, personal development
+    
     if (section === 'introduction') {
       if (pageIndex === 0) {
-        return `${characterName} had always been curious about the mysterious ${setting} that lay beyond the edge of their neighborhood. Today, with a backpack full of supplies and a heart full of determination, they decided it was finally time to explore.`;
+        // Roald Dahl style whimsical beginning
+        return `${characterName} was having what grown-ups might call "one of those days," but what ${characterName} secretly suspected was the beginning of something absolutely scrumptious and wonderfully unexpected.`;
       } else if (pageIndex === 1) {
-        return `The entrance to the ${setting} was marked by two ancient stone pillars covered in strange symbols. As ${characterName} passed between them, the air seemed to shimmer with an otherworldly energy that made their skin tingle with anticipation.`;
+        // Beverly Cleary style realistic approach to adventure
+        return `The truth was, ${characterName} had been feeling a bit ordinary lately. Not sad exactly, but not particularly excited either—until they remembered the mysterious ${setting} that everyone whispered about but no one seemed to visit.`;
       } else {
-        return `Every step deeper into the ${setting} revealed new wonders: flowers that chimed like bells in the breeze, streams that flowed uphill, and butterflies whose wings left trails of glittering stardust in the air.`;
+        // Judy Blume style honest emotional reaction
+        return `Standing at the edge of the ${setting}, ${characterName} felt a mixture of nervousness and excitement that made their stomach flip like a pancake on Sunday morning.`;
       }
     } else if (section === 'adventure') {
       if (!progress.metCharacter) {
-        return `"Excuse me, young traveler," came a melodious voice from above. ${characterName} looked up to see a magnificent ${animal} perched on a branch, its wise eyes reflecting centuries of knowledge and experience.`;
+        // Roald Dahl style quirky character introduction
+        return `"Well, blow me down with a feather!" exclaimed a voice from above. ${characterName} looked up to see a most peculiar ${animal} wearing what appeared to be tiny spectacles and a very serious expression.`;
       } else if (!progress.foundObject) {
-        return `The ${animal} explained that long ago, a powerful ${object} had been hidden in the ${setting} to protect it from those who would misuse its magic. "But now," it said sadly, "the balance of our world depends on finding it again."`;
+        // Beverly Cleary style realistic problem-solving
+        return `The ${animal} explained the situation with the kind of practical honesty that adults often forgot to use. "I've lost my ${object}, and frankly, I'm not sure how I'm going to get it back without help."`;
       } else if (!progress.facedChallenge) {
-        return `The quest led ${characterName} through treacherous ravines and across rickety bridges suspended over misty chasms. Each obstacle tested not only their physical courage but also their commitment to helping others.`;
+        // Judy Blume style persistence through difficulty
+        return `The search was harder than ${characterName} had expected. There were moments when they wanted to give up, when their feet hurt and their confidence wavered, but something inside kept them going.`;
       } else {
-        return `At the heart of the ${setting}, in a grove where sunlight danced through crystal leaves, ${characterName} discovered the ${object} resting on a pedestal of living stone, pulsing with gentle, warm light.`;
+        // Roald Dahl style triumphant discovery
+        return `"Great galloping galoshes!" shouted ${characterName}, using a phrase they'd never used before but which seemed perfectly appropriate. There, gleaming like a star that had fallen to earth, was the ${object}!`;
       }
     } else {
       if (!progress.learnedLesson) {
-        return `"You could have kept the ${object} for yourself," observed the ${animal} with deep respect, "but instead you chose to return it to where it belongs. This is the true meaning of ${value}."`;
+        // Beverly Cleary style realistic gratitude and recognition
+        return `The ${animal} looked at ${characterName} with genuine admiration. "You know," it said thoughtfully, "most people would have given up by now. But you didn't. That tells me something important about who you are."`;
       } else {
-        return `As ${characterName} made their way home, they realized that the real treasure hadn't been the magical ${object}, but the understanding that ${value} and selflessness are the most powerful forces in any world.`;
+        // Judy Blume style mature reflection on growth
+        return `Walking home, ${characterName} realized they felt different somehow—not because anything magical had happened to them, but because they had discovered they were capable of more ${value} than they'd ever imagined.`;
       }
     }
   }
@@ -311,29 +349,42 @@ export class InclusiveStoryGenerator {
     progress: any,
     targetWords: number
   ): string {
+    // Kate DiCamillo style: Lyrical language, profound themes, emotional depth
+    // R.J. Palacio style: Empathy, perspective-taking, social awareness
+    // Angie Thomas style: Authentic voice, social consciousness, empowerment
+    
     if (section === 'introduction') {
       if (pageIndex === 0) {
-        return `In the quiet moments before dawn, when the world exists in that liminal space between night and day, ${characterName} found themselves drawn to the ancient ${setting} that had haunted their dreams for weeks. There was something there, calling to them—a purpose they couldn't yet name but felt with every fiber of their being.`;
+        // Kate DiCamillo style lyrical beginning with deep emotion
+        return `There are moments in life when the ordinary world seems to crack open just enough to reveal something luminous beneath, and for ${characterName}, this particular morning felt heavy with that kind of possibility.`;
       } else if (pageIndex === 1) {
-        return `The ${setting} existed in a realm where the laws of physics seemed more like gentle suggestions, where time moved in spirals rather than straight lines, and where every shadow held the potential for revelation. ${characterName} stepped forward, understanding instinctively that they were crossing a threshold from which there would be no return.`;
+        // R.J. Palacio style perspective and empathy
+        return `As ${characterName} approached the ${setting}, they tried to imagine how many other people had stood in this exact spot, each carrying their own hopes and fears, each seeing something different in the landscape before them.`;
       } else {
-        return `Each breath of the ethereal air filled ${characterName} with a profound sense of connection to something far greater than themselves. The very ground beneath their feet pulsed with the heartbeat of ancient wisdom, and the trees whispered stories in languages that predated human memory.`;
+        // Angie Thomas style authentic voice and empowerment
+        return `The thing about ${characterName} was that they had always felt different—not in a way that made them sad, but in a way that made them notice things others missed, like the way light moved differently here, as if the ${setting} itself was alive.`;
       }
     } else if (section === 'adventure') {
       if (!progress.metCharacter) {
-        return `"I have been waiting for you, ${characterName}," spoke a voice that seemed to emanate from the very essence of the ${setting} itself. Before them materialized a ${animal} whose presence radiated such depth of understanding that ${characterName} immediately knew they were in the presence of a being who had witnessed the rise and fall of civilizations.`;
+        // Kate DiCamillo style magical realism and profound connection
+        return `When the ${animal} spoke, its voice carried the weight of ancient stories and the gentleness of rainfall. "I have been waiting," it said, "not for someone special, but for someone willing to see."`;
       } else if (!progress.foundObject) {
-        return `The ${animal} spoke of the ${object}, an artifact that existed as both a physical manifestation and a metaphysical concept—a bridge between the world of what is and the realm of what could be. "It has chosen you," the ${animal} explained, "not because you are perfect, but because you understand the weight of ${value}."`;
+        // R.J. Palacio style understanding through different perspectives
+        return `"The ${object} isn't lost," the ${animal} explained carefully, watching ${characterName}'s face. "It's hidden from those who aren't ready to understand that power and ${value} are the same thing."`;
       } else if (!progress.facedChallenge) {
-        return `The journey to the ${object} became a pilgrimage through the landscape of ${characterName}'s own soul. Each challenge they faced reflected an aspect of their character that needed to be examined, refined, and ultimately transcended. The external quest had become an internal transformation.`;
+        // Angie Thomas style inner strength and social awareness
+        return `The real challenge wasn't physical—it was learning to trust that their own voice mattered, that their own understanding of ${value} was not only valid but necessary in a world that often seemed to have forgotten what kindness looked like.`;
       } else {
-        return `When ${characterName} finally stood before the ${object}, they understood that the true test was not in claiming it, but in recognizing that its power came not from possession but from the wisdom to know when and how to use it—and more importantly, when not to use it at all.`;
+        // Kate DiCamillo style moment of profound recognition
+        return `When ${characterName} finally understood where the ${object} had been all along—not hidden in the ${setting} but carried within their own capacity for ${value}—the world around them seemed to exhale with relief.`;
       }
     } else {
       if (!progress.learnedLesson) {
-        return `"The greatest magic," the ${animal} observed as ${characterName} made their choice, "lies not in the artifacts we seek or the powers we acquire, but in the recognition that ${value} is both the journey and the destination, the question and the answer."`;
+        // R.J. Palacio style wisdom about empathy and connection
+        return `"You chose to see me," the ${animal} said simply, "and in doing so, you chose to see yourself. This is how ${value} works—it connects us across all the differences that might otherwise keep us apart."`;
       } else {
-        return `As ${characterName} emerged from the ${setting}, forever changed by their encounter with the profound mysteries of existence, they carried with them not just memories of magic, but the understanding that every choice, every act of ${value}, ripples outward to touch lives they may never know—and that this responsibility is both the burden and the gift of being truly human.`;
+        // Angie Thomas style empowerment and social responsibility
+        return `As ${characterName} returned to their everyday world, they carried with them not just the memory of magic, but the understanding that they had the power to create change, to spread ${value}, and to help others find their own light in a world that needed more illumination.`;
       }
     }
   }
