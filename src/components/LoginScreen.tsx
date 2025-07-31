@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,15 +7,31 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
-import { Check, Star, Zap } from "lucide-react";
+import { Check, Star, Zap, ArrowLeft } from "lucide-react";
+import type { UserInfo } from "@/types";
 
-export const LoginScreen = () => {
+interface LoginScreenProps {
+  userInfo?: UserInfo | null;
+  onBack?: () => void;
+}
+
+export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
   const [signUpData, setSignUpData] = useState({
     email: "",
     password: "",
     displayName: "",
     selectedPlan: "monthly" as "monthly" | "annual"
   });
+  
+  // Pre-fill with userInfo if available
+  useEffect(() => {
+    if (userInfo) {
+      setSignUpData(prev => ({
+        ...prev,
+        displayName: userInfo.name || ""
+      }));
+    }
+  }, [userInfo]);
   const [signInData, setSignInData] = useState({
     email: "",
     password: ""
@@ -39,7 +55,14 @@ export const LoginScreen = () => {
           emailRedirectTo: redirectUrl,
           data: {
             display_name: signUpData.displayName,
-            selected_plan: signUpData.selectedPlan
+            selected_plan: signUpData.selectedPlan,
+            // Include all the user info from free trial
+            ...(userInfo && {
+              grade_level: userInfo.gradeLevel || userInfo.grade,
+              interests: userInfo.interests || [userInfo.hobbies],
+              reading_level: userInfo.readingLevel || userInfo.difficultyLevel,
+              native_language: userInfo.nativeLanguage
+            })
           }
         }
       });
@@ -130,14 +153,37 @@ export const LoginScreen = () => {
 
   return (
     <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4">
+      {/* Back button if coming from guest experience */}
+      {onBack && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onBack}
+          className="absolute top-4 left-4 text-white hover:bg-white/10"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Free Trial
+        </Button>
+      )}
+      
       <Card className="w-full max-w-2xl mx-auto bg-white/95 backdrop-blur-sm border-white/20 shadow-2xl">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            Join Time2Read Premium
+            {userInfo ? "Upgrade to Premium" : "Join Time2Read Premium"}
           </CardTitle>
           <CardDescription className="text-lg">
-            Unlock unlimited personalized stories and advanced features
+            {userInfo 
+              ? "Continue with your saved information and unlock unlimited stories" 
+              : "Unlock unlimited personalized stories and advanced features"
+            }
           </CardDescription>
+          {userInfo && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4">
+              <p className="text-sm text-blue-800">
+                ✨ Your information from the free trial has been pre-filled below!
+              </p>
+            </div>
+          )}
         </CardHeader>
         
         <CardContent>

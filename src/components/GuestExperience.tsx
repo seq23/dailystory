@@ -73,7 +73,7 @@ export const GuestExperience = () => {
       );
     
     case "login":
-      return <LoginScreen />;
+      return <LoginScreen userInfo={userInfo} onBack={handleBackToReading} />;
     
     default:
       return <WelcomeHero onGetStarted={handleGetStarted} />;
