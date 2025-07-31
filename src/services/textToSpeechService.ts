@@ -1,22 +1,20 @@
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface TextToSpeechConfig {
-  apiKey: string;
   voice?: string;
-  model?: string;
+  speed?: number;
 }
 
 export class OpenAITTSService {
-  private apiKey: string;
   private voice: string;
-  private model: string;
+  private speed: number;
   private audioCache: Map<string, string> = new Map();
 
   constructor(config: TextToSpeechConfig) {
-    this.apiKey = config.apiKey;
     // Use child-friendly voices - shimmer is gentle and soothing
     this.voice = config.voice || "shimmer"; // Available: alloy, echo, fable, onyx, nova, shimmer
-    this.model = config.model || "tts-1"; // tts-1 for speed, tts-1-hd for quality
+    this.speed = config.speed || 0.9;
   }
 
   async speakText(text: string, options?: { speed?: number }): Promise<void> {
@@ -34,30 +32,21 @@ export class OpenAITTSService {
     }
 
     try {
-      const response = await fetch('https://api.openai.com/v1/audio/speech', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: this.model,
-          input: cleanText,
+      // Use Supabase edge function for TTS
+      const { data, error } = await supabase.functions.invoke('openai-tts', {
+        body: {
+          text: cleanText,
           voice: this.voice,
-          response_format: 'mp3',
-          speed: options?.speed || 0.9 // Use provided speed or default
-        })
+          speed: options?.speed || this.speed
+        }
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        if (response.status === 429) {
-          throw new Error('OpenAI API quota exceeded. Please check your billing.');
-        }
-        throw new Error(`OpenAI TTS API error: ${response.status}`);
+      if (error) {
+        throw new Error(`TTS Error: ${error.message}`);
       }
 
-      const audioBlob = await response.blob();
+      // Convert the response to audio blob
+      const audioBlob = new Blob([data], { type: 'audio/mpeg' });
       const audioUrl = URL.createObjectURL(audioBlob);
       
       // Cache the audio URL
@@ -66,7 +55,7 @@ export class OpenAITTSService {
       await this.playAudio(audioUrl);
     } catch (error) {
       console.error('Error generating speech:', error);
-      toast.error('Failed to generate speech. Please check your API key.');
+      toast.error('Failed to generate speech.');
       
       // Fallback to browser speech synthesis
       this.fallbackToWebSpeech(cleanText);
@@ -125,88 +114,20 @@ export class OpenAITTSService {
   }
 
   private async getWordDefinition(word: string): Promise<string> {
-    try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-4.1-2025-04-14',
-          messages: [
-            {
-              role: 'system',
-              content: 'You are a helpful assistant that creates simple, child-friendly definitions for words. Keep definitions under 15 words and use simple language that a child can understand. Be clear and concise.'
-            },
-            {
-              role: 'user',
-              content: `Define the word "${word}" in simple terms for a child.`
-            }
-          ],
-          max_tokens: 50,
-          temperature: 0.3
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`OpenAI API error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      return data.choices[0]?.message?.content?.trim() || `A word that means something special.`;
-    } catch (error) {
-      console.error('Error generating definition:', error);
-      throw error;
-    }
+    // Return a simple fallback definition
+    return `A word that means something special.`;
   }
 
   // Method to get AI-powered explanations and translations
   async getAIResponse(prompt: string): Promise<string> {
-    try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-4.1-2025-04-14',
-          messages: [
-            {
-              role: 'system',
-              content: 'You are a helpful assistant for children learning English. Provide clear, accurate, and age-appropriate responses.'
-            },
-            {
-              role: 'user',
-              content: prompt
-            }
-          ],
-          max_tokens: 100,
-          temperature: 0.3
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`OpenAI API error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      return data.choices[0]?.message?.content?.trim() || 'Sorry, I could not provide an explanation.';
-    } catch (error) {
-      console.error('Error getting AI response:', error);
-      throw error;
-    }
+    return 'Sorry, I could not provide an explanation.';
   }
 }
 
 // Create OpenAI TTS service instance
 export const createOpenAITTSService = () => {
-  const OPENAI_API_KEY = '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';
-  
   return new OpenAITTSService({
-    apiKey: OPENAI_API_KEY,
     voice: 'shimmer', // Gentle and soothing voice for kids
-    model: 'tts-1' // Fast model
+    speed: 0.9 // Default speed
   });
 };
