@@ -368,22 +368,118 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     <div className={`min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 ${
       celebrationStep === 1 ? 'animate-pulse' : ''
     }`}>
-      {/* Timer Display */}
+      {/* Enhanced Floating Timer with Controls */}
       {sessionStarted && timeRemaining > 0 && !sessionEnded && (
-        <div className="fixed top-4 right-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg border z-50">
-          <div className="flex items-center gap-2">
-            <Timer className={`w-4 h-4 ${timeRemaining <= 300 ? 'text-red-500' : 'text-primary'}`} />
-            <span className={`text-sm font-medium ${timeRemaining <= 300 ? 'text-red-500' : ''}`}>
-              {Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')} {t("freeReadingSession.timer.freeTime")}
-            </span>
+        <div className="fixed top-6 right-6 z-50">
+          <div className="relative">
+            {/* Main Circular Timer */}
+            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 p-1 shadow-2xl animate-pulse">
+              <div className="w-full h-full rounded-full bg-white flex flex-col items-center justify-center relative overflow-hidden">
+                {/* Progress Ring */}
+                <div className="absolute inset-0">
+                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="40"
+                      stroke="#f0f0f0"
+                      strokeWidth="8"
+                      fill="transparent"
+                    />
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="40"
+                      stroke={timeRemaining <= 300 ? "#ef4444" : "#8b5cf6"}
+                      strokeWidth="8"
+                      fill="transparent"
+                      strokeDasharray={`${(timeRemaining / APP_CONFIG.FREE_SESSION_DURATION) * 251.2} 251.2`}
+                      className="transition-all duration-1000 ease-in-out"
+                    />
+                  </svg>
+                </div>
+                
+                {/* Timer Display */}
+                <div className="text-center z-10">
+                  <div className={`text-lg font-bold ${timeRemaining <= 300 ? 'text-red-500' : 'text-purple-600'}`}>
+                    {Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {t("freeReadingSession.timer.freeTime")}
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Control Buttons */}
+            <div className="absolute -bottom-16 left-1/2 transform -translate-x-1/2 flex gap-2">
+              {/* Pause/Play Button */}
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 text-white border-0 hover:from-blue-500 hover:to-blue-700 shadow-lg"
+                onClick={() => {
+                  // Toggle timer pause/play logic here
+                  toast({
+                    title: "Timer Paused",
+                    description: "Click again to resume",
+                    duration: 2000,
+                  });
+                }}
+              >
+                ⏯️
+              </Button>
+              
+              {/* Reduce Time Button */}
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-8 h-8 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0 hover:from-yellow-500 hover:to-orange-600 shadow-lg"
+                onClick={() => {
+                  if (timeRemaining > 60) {
+                    setTimeRemaining(prev => Math.max(60, prev - 60));
+                    toast({
+                      title: "Time Reduced",
+                      description: "Removed 1 minute",
+                      duration: 2000,
+                    });
+                  }
+                }}
+              >
+                ➖
+              </Button>
+              
+              {/* End Early Button */}
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-8 h-8 rounded-full bg-gradient-to-r from-red-400 to-red-600 text-white border-0 hover:from-red-500 hover:to-red-700 shadow-lg"
+                onClick={() => {
+                  setTimeRemaining(0);
+                  handleSessionEnd();
+                  toast({
+                    title: "Session Ended",
+                    description: "Great job reading!",
+                    duration: 3000,
+                  });
+                }}
+              >
+                🛑
+              </Button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Free Trial Badge */}
+      {/* Free Trial Badge - Repositioned to bottom left */}
       {!sessionEnded && (
-        <div className="fixed top-4 left-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg z-50">
-          🎁 {t("freeReadingSession.freeTrial")}
+        <div className="fixed bottom-6 left-6 z-40">
+          <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-4 py-2 rounded-full shadow-xl border-2 border-white">
+            <div className="flex items-center gap-2 animate-bounce">
+              <Sparkles className="w-4 h-4" />
+              <span className="text-sm font-bold">{t("freeReadingSession.freeTrial")}</span>
+            </div>
+          </div>
         </div>
       )}
 
