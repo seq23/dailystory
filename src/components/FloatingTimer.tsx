@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Play, Pause, Plus, Minus, BookOpen } from "lucide-react";
+import { Play, Pause, Plus, Minus, X } from "lucide-react";
 
 import { useToast } from "@/hooks/use-toast";
 
@@ -11,8 +11,8 @@ interface FloatingTimerProps {
   isReading: boolean;
   onToggleReading: () => void;
   onAddTime: () => void;
-  onSubtractTime?: () => void;
-  onAddPages: () => void;
+  onReduceTime?: () => void;
+  onEndSession: () => void;
   pagesRemaining?: number;
   currentParagraph?: number;
   onSessionEnded: () => void;
@@ -24,8 +24,8 @@ export const FloatingTimer = ({
   isReading, 
   onToggleReading, 
   onAddTime,
-  onSubtractTime,
-  onAddPages,
+  onReduceTime,
+  onEndSession,
   pagesRemaining = 0,
   currentParagraph = 0,
   onSessionEnded,
@@ -33,30 +33,8 @@ export const FloatingTimer = ({
 }: FloatingTimerProps) => {
   const { t } = useTranslation();
   const [showCelebration, setShowCelebration] = useState(false);
-  const [showAddPagesAlert, setShowAddPagesAlert] = useState(false);
-  const [hasShownAddPagesAlert, setHasShownAddPagesAlert] = useState(false);
   const { toast } = useToast();
   
-  // Flash "add more pages" alert for 3 seconds when on next-to-last page with >1 minute remaining
-  useEffect(() => {
-    if (timeRemaining > 1 * 60 && pagesRemaining === 1 && !hasShownAddPagesAlert && !showAddPagesAlert) {
-      setHasShownAddPagesAlert(true);
-      setShowAddPagesAlert(true);
-      
-      const timer = setTimeout(() => {
-        setShowAddPagesAlert(false);
-      }, 3000);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [timeRemaining, pagesRemaining, hasShownAddPagesAlert, showAddPagesAlert]);
-  
-  // Reset the flag when more pages are added or we move away from the last page
-  useEffect(() => {
-    if (pagesRemaining > 1) {
-      setHasShownAddPagesAlert(false);
-    }
-  }, [pagesRemaining]);
   
   // Tutorial auto-advance - 15 seconds max
   useEffect(() => {
@@ -81,9 +59,6 @@ export const FloatingTimer = ({
                             timeRemaining > 10 * 60 ? 15 * 60 :
                             timeRemaining > 5 * 60 ? 10 * 60 : 5 * 60;
   const progress = ((currentSessionTime - timeRemaining) / currentSessionTime) * 100;
-
-  // Check if we should encourage adding pages (5+ minutes left, 1 page remaining)
-  const shouldShakeTooltip = showAddPagesAlert;
   
   // Format time for display
   const formatTime = (seconds: number) => {
@@ -249,7 +224,7 @@ export const FloatingTimer = ({
         </div>
         
         {/* Control Buttons in Curved U-Shape */}
-        <div className="relative w-40 sm:w-48 h-20 sm:h-24">
+        <div className="relative w-44 sm:w-52 h-20 sm:h-24">
           {/* Play/Pause Button - Center Bottom */}
           <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2">
             <Tooltip open={tutorialStep === 1}>
@@ -269,8 +244,8 @@ export const FloatingTimer = ({
             </Tooltip>
           </div>
           
-          {/* Add Time Button - Right Curve */}
-          <div className="absolute bottom-4 sm:bottom-6 right-2 sm:right-4">
+          {/* Add Time Button - Left Curve */}
+          <div className="absolute bottom-4 sm:bottom-6 left-2 sm:left-4">
             <Tooltip open={tutorialStep === 2}>
               <TooltipTrigger asChild>
                 <Button
@@ -283,45 +258,49 @@ export const FloatingTimer = ({
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="top" className="bg-green-600 text-white border-green-500 font-medium">
-                {tutorialStep === 2 ? "⏰ Add 5 more minutes to your reading time!" : t("floatingTimer.addTime")}
+                {tutorialStep === 2 ? "⏰ Add 5 more minutes to your reading time!" : "Add 5 Minutes"}
               </TooltipContent>
             </Tooltip>
           </div>
 
 
-          {/* Add Pages Button - Top Center */}
-          <div className="absolute top-0 left-1/2 transform -translate-x-1/2">
+          {/* Reduce Time Button - Right Curve */}
+          <div className="absolute bottom-4 sm:bottom-6 right-2 sm:right-4">
             <Tooltip open={tutorialStep === 3}>
               <TooltipTrigger asChild>
                 <Button
                   variant="outline"
                   size="lg"
-                  onClick={onAddPages}
-                  className={`bg-gradient-to-b from-white to-blue-50 backdrop-blur-sm border-2 border-blue-400/50 text-blue-600 hover:bg-blue-500 hover:text-white shadow-lg w-12 h-12 sm:w-16 sm:h-16 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-xl ${
-                    shouldShakeTooltip ? 'animate-bounce border-amber-400 bg-gradient-to-b from-amber-50 to-amber-100 text-amber-700' : ''
-                  } ${getTutorialClasses(3)}`}
+                  onClick={onReduceTime}
+                  disabled={timeRemaining <= 5 * 60}
+                  className={`bg-gradient-to-b from-white to-orange-50 backdrop-blur-sm border-2 border-orange-400/50 text-orange-600 hover:bg-orange-500 hover:text-white shadow-lg w-12 h-12 sm:w-16 sm:h-16 rounded-full p-0 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-110 hover:shadow-xl ${getTutorialClasses(3)}`}
                 >
-                  <BookOpen className="w-5 h-5 sm:w-6 sm:h-6" />
+                  <Minus className="w-5 h-5 sm:w-6 sm:h-6" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="top" className={`font-medium ${shouldShakeTooltip ? 'bg-amber-600 text-white border-amber-500' : 'bg-blue-600 text-white border-blue-500'}`}>
-                {tutorialStep === 3 ? "📖 Add 5 more pages to your story!" : (shouldShakeTooltip ? '⏰ Add more pages!' : 'Add More Pages')}
+              <TooltipContent side="top" className="bg-orange-600 text-white border-orange-500 font-medium">
+                {tutorialStep === 3 ? "⏰ Reduce time by 5 minutes!" : "Reduce 5 Minutes"}
               </TooltipContent>
             </Tooltip>
           </div>
 
-          {/* Status Indicator - Top Right Curve */}
-          <div className="absolute top-0 right-8 sm:right-12">
-            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-b from-white to-gray-50 border-2 border-gray-300/50 shadow-lg flex items-center justify-center">
-              <div className="text-center">
-                <div className="text-xs sm:text-sm font-bold text-gray-700">
-                  {pagesRemaining}
-                </div>
-                <div className="text-[10px] sm:text-xs text-gray-500 font-medium">
-                  pages
-                </div>
-              </div>
-            </div>
+          {/* End Session Button - Top Center */}
+          <div className="absolute top-0 left-1/2 transform -translate-x-1/2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={onEndSession}
+                  className="bg-gradient-to-b from-white to-red-50 backdrop-blur-sm border-2 border-red-400/50 text-red-600 hover:bg-red-500 hover:text-white shadow-lg w-12 h-12 sm:w-16 sm:h-16 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-xl"
+                >
+                  <X className="w-5 h-5 sm:w-6 sm:h-6" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="bg-red-600 text-white border-red-500 font-medium">
+                End Reading Session
+              </TooltipContent>
+            </Tooltip>
           </div>
         </div>
       </div>

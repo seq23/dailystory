@@ -40,8 +40,8 @@ export const InlineTutorial = ({ isActive, onComplete }: InlineTutorialProps) =>
     },
     {
       id: 3,
-      title: "Add More Pages",
-      description: "Want to keep reading? Click the book icon to add 5 more pages to your story!",
+      title: "Reduce Time or End Session",
+      description: "Use the - button to reduce time by 5 minutes, or the X button to end your session anytime!",
       targetSelector: "#floating-timer",
       position: { top: "40%", left: "25%" },
       arrow: "right"
