@@ -8,6 +8,7 @@ import { InteractiveAudioReading } from "@/components/InteractiveAudioReading";
 import { adaptiveStoryGenerator } from "@/services/adaptiveStoryGenerator";
 import { APP_CONFIG } from "@/constants/app";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 // Import fallback illustrations
 import illustration1 from "@/assets/story-illustration-1.jpg";
@@ -28,6 +29,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   onCreateAccount,
 }) => {
   const { toast } = useToast();
+  const { t } = useTranslation();
   
   // Story state
   const [story, setStory] = useState<string[]>([]);
@@ -246,8 +248,8 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Creating Your Free Story...</h2>
-          <p className="text-gray-600">Generating personalized content for {userInfo.name}</p>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">{t("freeReadingSession.loading.title")}</h2>
+          <p className="text-gray-600">{t("freeReadingSession.loading.description", { name: userInfo.name })}</p>
         </div>
       </div>
     );
@@ -268,7 +270,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
           <div className="flex items-center gap-2">
             <Timer className={`w-4 h-4 ${timeRemaining <= 300 ? 'text-red-500' : 'text-primary'}`} />
             <span className={`text-sm font-medium ${timeRemaining <= 300 ? 'text-red-500' : ''}`}>
-              {Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')} free time
+              {Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')} {t("freeReadingSession.timer.freeTime")}
             </span>
           </div>
         </div>
@@ -277,7 +279,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
       {/* Free Trial Badge */}
       {!sessionEnded && (
         <div className="fixed top-4 left-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg z-50">
-          🎁 FREE TRIAL
+          🎁 {t("freeReadingSession.freeTrial")}
         </div>
       )}
 
@@ -309,9 +311,9 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
               <div className="text-center animate-scale-in">
                 <div className="text-6xl mb-4">🎉</div>
                 <h1 className="text-4xl font-bold text-yellow-600 mb-2 animate-bounce">
-                  Congratulations!
+                  {t("freeReadingSession.celebration.congratulations")}
                 </h1>
-                <p className="text-xl text-gray-700">You completed your free reading session!</p>
+                <p className="text-xl text-gray-700">{t("freeReadingSession.celebration.sessionComplete")}</p>
               </div>
             </div>
           )}
@@ -332,34 +334,34 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                 <div className="w-16 h-16 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Award className="w-8 h-8 text-white" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">Reading Session Complete!</h2>
-                <p className="text-gray-600">Here's what you accomplished:</p>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">{t("freeReadingSession.progressReport.title")}</h2>
+                <p className="text-gray-600">{t("freeReadingSession.progressReport.description")}</p>
               </div>
 
               {/* Stats */}
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-primary">{stats.wordsRead}</div>
-                  <div className="text-sm text-gray-600">Words Read</div>
+                  <div className="text-sm text-gray-600">{t("freeReadingSession.progressReport.stats.wordsRead")}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-primary">{stats.pagesRead}</div>
-                  <div className="text-sm text-gray-600">Pages</div>
+                  <div className="text-sm text-gray-600">{t("freeReadingSession.progressReport.stats.pages")}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-primary">{Math.floor(stats.timeSpent / 60)}m</div>
-                  <div className="text-sm text-gray-600">Reading Time</div>
+                  <div className="text-sm text-gray-600">{t("freeReadingSession.progressReport.stats.readingTime")}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-primary">{stats.readingSpeed}</div>
-                  <div className="text-sm text-gray-600">Words/Min</div>
+                  <div className="text-sm text-gray-600">{t("freeReadingSession.progressReport.stats.wordsPerMin")}</div>
                 </div>
               </div>
 
               {/* Progress bar */}
               <div className="mb-6">
                 <div className="flex justify-between text-sm mb-2">
-                  <span>Story Progress</span>
+                  <span>{t("freeReadingSession.progressReport.stats.storyProgress")}</span>
                   <span>{stats.completionRate}%</span>
                 </div>
                 <Progress value={stats.completionRate} className="h-3" />
@@ -369,23 +371,23 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
               <div className="border-t pt-6">
                 <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-lg p-4 mb-4">
                   <Crown className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-                  <h3 className="font-bold text-purple-800 mb-2">Unlock Premium Features!</h3>
+                  <h3 className="font-bold text-purple-800 mb-2">{t("freeReadingSession.progressReport.premium.title")}</h3>
                   <ul className="text-sm text-purple-700 text-left space-y-1">
-                    <li>✨ Unlimited reading time</li>
-                    <li>📚 Thousands of stories</li>
-                    <li>🎯 Personalized learning path</li>
-                    <li>📊 Detailed progress tracking</li>
-                    <li>🏆 Reading achievements & rewards</li>
+                    <li>{t("freeReadingSession.progressReport.premium.features.unlimitedTime")}</li>
+                    <li>{t("freeReadingSession.progressReport.premium.features.thousandsStories")}</li>
+                    <li>{t("freeReadingSession.progressReport.premium.features.personalizedPath")}</li>
+                    <li>{t("freeReadingSession.progressReport.premium.features.progressTracking")}</li>
+                    <li>{t("freeReadingSession.progressReport.premium.features.achievements")}</li>
                   </ul>
                 </div>
 
                 <div className="flex gap-2">
                   <Button onClick={onUpgrade} className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
                     <Crown className="w-4 h-4 mr-2" />
-                    Upgrade Now
+                    {t("freeReadingSession.progressReport.premium.upgradeNow")}
                   </Button>
                   <Button onClick={onCreateAccount} variant="outline" className="flex-1">
-                    Create Account
+                    {t("freeReadingSession.progressReport.premium.createAccount")}
                   </Button>
                 </div>
               </div>
@@ -405,10 +407,10 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                   <BookOpen className="w-8 h-8 text-primary" />
                   <div>
                     <h1 className="text-xl font-bold text-gray-800">
-                      {sessionStarted ? `${userInfo.name}'s Reading Adventure` : 'Free Reading Trial'}
+                      {sessionStarted ? t("freeReadingSession.session.title", { name: userInfo.name }) : t("freeReadingSession.session.titleNotStarted")}
                     </h1>
                     <p className="text-sm text-gray-600">
-                      {sessionStarted ? `Page ${currentPage + 1} of ${story.length}` : 'Click "Start Reading" to begin your 20-minute trial'}
+                      {sessionStarted ? t("freeReadingSession.session.subtitle", { currentPage: currentPage + 1, totalPages: story.length }) : t("freeReadingSession.session.subtitleNotStarted")}
                     </p>
                   </div>
                 </div>
@@ -416,7 +418,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                 {!sessionStarted && (
                   <Button onClick={startSession} className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white">
                     <Sparkles className="w-4 h-4 mr-2" />
-                    Start Reading
+                    {t("freeReadingSession.session.startReading")}
                   </Button>
                 )}
               </div>
@@ -447,7 +449,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                     <div className="mb-6">
                       <Progress value={progress} className="h-2" />
                       <p className="text-sm text-gray-600 mt-2 text-center">
-                        Reading Progress: {Math.round(progress)}%
+                        {t("freeReadingSession.progress.readingProgress", { percent: Math.round(progress) })}
                       </p>
                     </div>
 
@@ -485,11 +487,11 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                         disabled={currentPage === 0}
                         variant="outline"
                       >
-                        ← Previous
+                        {t("freeReadingSession.navigation.previous")}
                       </Button>
                       
                       <span className="text-sm font-medium text-gray-600">
-                        {currentPage + 1} / {story.length}
+                        {t("freeReadingSession.navigation.pageInfo", { current: currentPage + 1, total: story.length })}
                       </span>
                       
                       <Button 
@@ -500,7 +502,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                         disabled={currentPage >= story.length - 1}
                         variant="outline"
                       >
-                        Next →
+                        {t("freeReadingSession.navigation.next")}
                       </Button>
                     </div>
                   </CardContent>

@@ -10,81 +10,16 @@
       "item3": "Great for outdoor adventures - read anywhere, anytime!",
       "item4": "Transform any space into a magical library experience."
     },
-    "headline": "Where Every Story is Made Just for You",
-    "subheadline": "Discover magical stories created specifically for your child's interests, reading level, and cultural background.",
-    "getStarted": "Create Your Adventure",
-    "languageSelector": {
-      "placeholder": "Language"
-    },
-    "features": {
-      "reading": {
-        "title": "Adaptive Reading",
-        "subtitle": "Adjusts to your level"
-      },
-      "personalized": "Stories Made for You",
-      "gradeLevel": "Perfect for Your Grade",
-      "culturallyAdapted": {
-        "title": "Culturally Adapted Stories",
-        "description": "Stories that reflect your child's background and experiences"
-      },
-      "ageAppropriate": {
-        "title": "Age-Appropriate Content",
-        "description": "Content perfectly matched to your child's developmental stage"
-      },
-      "interactiveElements": {
-        "title": "Interactive Learning",
-        "description": "Engaging elements that make learning fun and effective"
-      }
-    },
     "ctaButton": "Create Your Adventure",
     "signIn": "Sign In",
     "safetyNote": "Safe, educational content for all children.",
-    "userProfilesTitle": "Made for Every Child",
-    "userProfiles": {
-      "nativeEnglish": "Native English speakers improving reading skills",
-      "eslLearners": "Students learning English as a second language",
-      "visualLearners": "Children who learn best with images and stories",
-      "culturallyDiverse": "Kids from diverse cultural backgrounds"
-    },
-    "howItWorks": {
-      "title": "How It Works",
-      "step1": {
-        "title": "Tell Us About Yourself",
-        "description": "Share your interests, reading level, and preferences"
-      },
-      "step2": {
-        "title": "Get Your Story",
-        "description": "Receive a personalized story created just for you"
-      },
-      "step3": {
-        "title": "Read & Learn",
-        "description": "Enjoy interactive reading with helpful features"
-      }
-    },
     "footer": {
       "companyName": "Time 2 Read",
       "description": "Making reading fun and accessible for every child.",
       "copyright": "All rights reserved.",
       "privacyPolicy": "Privacy Policy",
       "termsOfService": "Terms of Service",
-      "contactUs": "Contact Us",
-      "contact": "Contact Us",
-      "mission": "Our mission is to make reading accessible, enjoyable, and culturally relevant for every child."
-    },
-    "pricing": {
-      "title": "Simple, Transparent Pricing",
-      "subtitle": "Choose the plan that works best for your family",
-      "free": {
-        "title": "Free",
-        "price": "$0",
-        "period": "forever",
-        "features": [
-          "5 personalized stories per month",
-          "Basic reading features",
-          "Community support"
-        ],
-        "cta": "Get Started Free"
-      }
+      "contactUs": "Contact Us"
     }
   },
   "loginScreen": {
@@ -155,6 +90,62 @@
     "navigation": {
       "backToTrial": "Back to Free Trial",
       "back": "Back"
+    }
+  },
+  "freeReadingSession": {
+    "loading": {
+      "title": "Creating Your Free Story...",
+      "description": "Generating personalized content for {name}"
+    },
+    "timer": {
+      "freeTime": "free time"
+    },
+    "freeTrial": "🎁 FREE TRIAL",
+    "session": {
+      "title": "{name}'s Reading Adventure",
+      "titleNotStarted": "Free Reading Trial",
+      "subtitle": "Page {currentPage} of {totalPages}",
+      "subtitleNotStarted": "Click \"Start Reading\" to begin your 20-minute trial",
+      "startReading": "Start Reading",
+      "sessionStarted": {
+        "title": "Free Reading Session Started! 📚",
+        "description": "You have 20 minutes of free reading time. Enjoy!"
+      }
+    },
+    "progress": {
+      "readingProgress": "Reading Progress: {percent}%"
+    },
+    "navigation": {
+      "previous": "← Previous",
+      "next": "Next →",
+      "pageInfo": "{current} / {total}"
+    },
+    "celebration": {
+      "congratulations": "Congratulations!",
+      "sessionComplete": "You completed your free reading session!"
+    },
+    "progressReport": {
+      "title": "Reading Session Complete!",
+      "description": "Here's what you accomplished:",
+      "stats": {
+        "wordsRead": "Words Read",
+        "pages": "Pages",
+        "readingTime": "Reading Time",
+        "wordsPerMin": "Words/Min",
+        "storyProgress": "Story Progress"
+      },
+      "premium": {
+        "title": "Unlock Premium Features!",
+        "features": {
+          "unlimitedTime": "✨ Unlimited reading time",
+          "thousandsStories": "📚 Thousands of stories",
+          "personalizedPath": "🎯 Personalized learning path",
+          "progressTracking": "📊 Detailed progress tracking",
+          "achievements": "🏆 Reading achievements & rewards"
+        },
+        "upgradeNow": "Upgrade Now",
+        "createAccount": "Create Account"
+      }
     }
   },
   "userInfoForm": {

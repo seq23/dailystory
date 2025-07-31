@@ -91,5 +91,57 @@
       "backToTrial": "Volver a la Prueba Gratuita",
       "back": "Atrás"
     }
+  },
+  "freeReadingSession": {
+    "loading": {
+      "title": "Creando Tu Historia Gratuita...",
+      "description": "Generando contenido personalizado para {name}"
+    },
+    "timer": {
+      "freeTime": "tiempo gratis"
+    },
+    "freeTrial": "PRUEBA GRATUITA",
+    "session": {
+      "title": "Aventura de Lectura de {name}",
+      "titleNotStarted": "Prueba de Lectura Gratuita",
+      "subtitle": "Página {currentPage} de {totalPages}",
+      "subtitleNotStarted": "Haz clic en \"Comenzar a Leer\" para iniciar tu prueba de 20 minutos",
+      "startReading": "Comenzar a Leer"
+    },
+    "progress": {
+      "readingProgress": "Progreso de Lectura: {percent}%"
+    },
+    "navigation": {
+      "previous": "← Anterior",
+      "next": "Siguiente →",
+      "pageInfo": "{current} / {total}"
+    },
+    "celebration": {
+      "congratulations": "¡Felicitaciones!",
+      "sessionComplete": "¡Completaste tu sesión de lectura gratuita!"
+    },
+    "progressReport": {
+      "title": "¡Sesión de Lectura Completa!",
+      "description": "Esto es lo que lograste:",
+      "stats": {
+        "wordsRead": "Palabras Leídas",
+        "pages": "Páginas",
+        "readingTime": "Tiempo de Lectura",
+        "wordsPerMin": "Palabras/Min",
+        "storyProgress": "Progreso del Historia"
+      },
+      "premium": {
+        "title": "¡Desbloquea Funciones Premium!",
+        "features": {
+          "unlimitedTime": "✨ Tiempo de lectura ilimitado",
+          "thousandsStories": "📚 Miles de historias",
+          "personalizedPath": "🎯 Ruta de aprendizaje personalizada",
+          "progressTracking": "📊 Seguimiento detallado del progreso",
+          "achievements": "🏆 Logros y recompensas de lectura"
+        },
+        "upgradeNow": "Actualizar Ahora",
+        "createAccount": "Crear Cuenta"
+      }
+    }
   }
 }
