@@ -176,6 +176,27 @@ export const createChildFriendlyPrompt = (storyText: string, userInfo?: any, pag
   const sanitizedStoryText = storyText.replace(/[<>\"'&]/g, '').trim();
   const lowerText = sanitizedStoryText.toLowerCase();
   
+  // Determine illustration focus based on story content
+  const determineImageFocus = (text: string, pageIndex: number) => {
+    const settingWords = ['forest', 'castle', 'garden', 'beach', 'mountain', 'school', 'home', 'park', 'library', 'kitchen', 'bedroom', 'playground', 'farm', 'city', 'space', 'room', 'place'];
+    const objectWords = ['book', 'toy', 'ball', 'flower', 'tree', 'house', 'car', 'bike', 'boat', 'plane', 'train', 'cake', 'cookie', 'food', 'rainbow', 'star', 'sun', 'moon'];
+    const actionWords = ['walking', 'running', 'playing', 'eating', 'reading', 'sleeping', 'dancing', 'singing', 'helping', 'learning', 'exploring', 'flying', 'swimming', 'climbing', 'building', 'cooking'];
+    
+    const hasSettingFocus = settingWords.some(word => text.includes(word));
+    const hasObjectFocus = objectWords.some(word => text.includes(word));
+    const hasActionFocus = actionWords.some(word => text.includes(word));
+    
+    // Vary focus intelligently - not every image needs the main character
+    if (pageIndex % 4 === 0) return 'character'; // Every 4th page focuses on character
+    if (pageIndex % 3 === 0 && hasSettingFocus) return 'setting'; // Focus on environment
+    if (pageIndex % 2 === 0 && hasObjectFocus) return 'object'; // Focus on key objects
+    if (hasActionFocus) return 'action'; // Focus on the action happening
+    if (hasSettingFocus) return 'setting';
+    return Math.random() > 0.6 ? 'character' : 'scene'; // Random variation
+  };
+  
+  const imageFocus = determineImageFocus(lowerText, pageIndex);
+  
   // Cultural competency based on native language
   const getCulturalElements = (nativeLanguage: string) => {
     const culturalSettings = {
@@ -263,29 +284,31 @@ export const createChildFriendlyPrompt = (storyText: string, userInfo?: any, pag
   let objects: string[] = [];
   let mood = "happy and cheerful";
   
-  // ALWAYS include the main character first with precise details
-  if (userInfo) {
-    const genderDesc = userInfo.avatar?.type === "boy" ? "young boy" : "young girl";
-    const skinToneDesc = {
-      pale: "very light skin",
-      light: "light skin", 
-      medium: "medium skin",
-      olive: "olive skin",
-      dark: "dark skin"
-    }[userInfo.avatar?.skinTone] || "medium skin";
-    
-    const mainCharacter = `${genderDesc} named ${userInfo.name || 'the main character'} with ${skinToneDesc}`;
-    characters.push(mainCharacter);
-    
-    // Intelligently add favorite animal based on story context
-    if (userInfo.favoriteAnimal) {
-      const animalInStory = keyWords.some(word => 
-        word.includes(userInfo.favoriteAnimal.toLowerCase()) ||
-        firstSentence.includes(userInfo.favoriteAnimal.toLowerCase())
-      );
+  // Conditionally include characters based on image focus
+  if (imageFocus === 'character' || imageFocus === 'action' || pageIndex === 0) {
+    if (userInfo) {
+      const genderDesc = userInfo.avatar?.type === "boy" ? "young boy" : "young girl";
+      const skinToneDesc = {
+        pale: "very light skin",
+        light: "light skin", 
+        medium: "medium skin",
+        olive: "olive skin",
+        dark: "dark skin"
+      }[userInfo.avatar?.skinTone] || "medium skin";
       
-      if (animalInStory || lowerText.includes('animal') || lowerText.includes('friend') || pageIndex === 0) {
-        characters.push(`friendly ${userInfo.favoriteAnimal.toLowerCase()}`);
+      const mainCharacter = `${genderDesc} named ${userInfo.name || 'the main character'} with ${skinToneDesc}`;
+      characters.push(mainCharacter);
+      
+      // Intelligently add favorite animal based on story context
+      if (userInfo.favoriteAnimal) {
+        const animalInStory = keyWords.some(word => 
+          word.includes(userInfo.favoriteAnimal.toLowerCase()) ||
+          firstSentence.includes(userInfo.favoriteAnimal.toLowerCase())
+        );
+        
+        if (animalInStory || lowerText.includes('animal') || lowerText.includes('friend') || pageIndex === 0) {
+          characters.push(`friendly ${userInfo.favoriteAnimal.toLowerCase()}`);
+        }
       }
     }
   }
@@ -405,42 +428,74 @@ export const createChildFriendlyPrompt = (storyText: string, userInfo?: any, pag
     }
   });
   
-  // Build comprehensive prompt that closely follows the story
-  let prompt = "A beautiful children's book illustration depicting ";
+  // Build intelligent prompt based on determined focus
+  let prompt = "A beautiful children's book illustration ";
   
-  // Start with a direct reference to the story scene
-  if (mainScene || setting || objects.length > 0) {
-    prompt += "the scene where ";
-  }
-  
-  // Add characters first (user's character is always primary)
-  if (characters.length > 0) {
-    prompt += characters.slice(0, 2).join(' and ') + " ";
-  } else {
-    prompt += "a happy child ";
-  }
-  
-  // Add the main action/scene from the story
-  if (mainScene) {
-    prompt += mainScene + " ";
-  } else {
-    // If no specific action detected, try to infer from story context
-    prompt += "is featured in the story ";
-  }
-  
-  // Add culturally appropriate setting with story context
-  if (setting) {
-    prompt += "in " + setting + " ";
-  } else if (storyWords.length > 5) {
-    // Use cultural landscape if no specific setting found
-    prompt += `in ${culturalElements.landscape} `;
-  } else {
-    prompt += "in a magical, safe place ";
-  }
-  
-  // Add objects that appear in the story
-  if (objects.length > 0) {
-    prompt += "surrounded by " + objects.slice(0, 3).join(', ') + " ";
+  // Build prompt based on image focus
+  switch (imageFocus) {
+    case 'setting':
+      prompt += `showcasing ${setting || culturalElements.landscape}`;
+      if (objects.length > 0) {
+        prompt += ` with ${objects.slice(0, 2).join(' and ')}`;
+      }
+      if (mainScene) {
+        prompt += ` where ${mainScene.replace('walking through', 'someone might walk through').replace('playing together', 'children play').replace(/ing /g, 'ing takes place ')}`;
+      }
+      break;
+      
+    case 'object':
+      const mainObject = objects.length > 0 ? objects[0] : 'magical objects from the story';
+      prompt += `featuring ${mainObject}`;
+      if (setting) {
+        prompt += ` in ${setting}`;
+      }
+      if (mainScene) {
+        prompt += ` during ${mainScene.replace(/ing /g, 'ing activities ')}`;
+      }
+      break;
+      
+    case 'action':
+      prompt += `depicting ${mainScene || 'an engaging story moment'}`;
+      if (characters.length > 0) {
+        prompt += ` with ${characters.slice(0, 2).join(' and ')}`;
+      }
+      if (setting) {
+        prompt += ` in ${setting}`;
+      }
+      break;
+      
+    case 'scene':
+      prompt += `showing the story environment`;
+      if (setting) {
+        prompt += ` of ${setting}`;
+      }
+      if (objects.length > 0) {
+        prompt += ` with ${objects.slice(0, 2).join(' and ')}`;
+      }
+      prompt += ` creating the perfect backdrop for the story`;
+      break;
+      
+    case 'character':
+    default:
+      prompt += "depicting ";
+      if (characters.length > 0) {
+        prompt += characters.slice(0, 2).join(' and ') + " ";
+      } else {
+        prompt += "a happy child ";
+      }
+      
+      if (mainScene) {
+        prompt += mainScene + " ";
+      } else {
+        prompt += "in the story ";
+      }
+      
+      if (setting) {
+        prompt += "in " + setting + " ";
+      } else {
+        prompt += `in ${culturalElements.landscape} `;
+      }
+      break;
   }
   
   // Include intelligent story context - focus on the most important elements
