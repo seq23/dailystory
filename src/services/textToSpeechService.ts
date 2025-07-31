@@ -14,8 +14,8 @@ export class OpenAITTSService {
 
   constructor(config: TextToSpeechConfig) {
     this.apiKey = config.apiKey;
-    // Use child-friendly voices - nova is great for children's content
-    this.voice = config.voice || "nova"; // Available: alloy, echo, fable, onyx, nova, shimmer
+    // Use child-friendly voices - fable is perfect for storytelling
+    this.voice = config.voice || "fable"; // Available: alloy, echo, fable, onyx, nova, shimmer
     this.model = config.model || "tts-1"; // tts-1 for speed, tts-1-hd for quality
   }
 
@@ -206,7 +206,7 @@ export const createOpenAITTSService = () => {
   
   return new OpenAITTSService({
     apiKey: OPENAI_API_KEY,
-    voice: 'nova', // Child-friendly voice
+    voice: 'fable', // Perfect storytelling voice for kids
     model: 'tts-1' // Fast model
   });
 };
