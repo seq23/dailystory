@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { BookOpen, Timer, Star, Crown, Sparkles, TrendingUp, Award, Clock, Play, Pause, Minus, X } from "lucide-react";
+import { BookOpen, Timer, Star, Crown, Sparkles, TrendingUp, Award, Clock, Play, Pause, Minus, X, ChevronUp, ChevronDown, Plus } from "lucide-react";
 import type { UserInfo, SessionStats } from "@/types";
 import { InteractiveAudioReading } from "@/components/InteractiveAudioReading";
 import { adaptiveStoryGenerator } from "@/services/adaptiveStoryGenerator";
@@ -59,13 +59,15 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   // Fallback illustrations
   const illustrations = [illustration1, illustration2, illustration3, illustration4, illustration5];
 
-  // Difficulty level mappings
-  const difficultyLevels = {
-    beginner: { label: 'PreK-1st Grade', author: 'Dr. Seuss', color: 'green' },
-    elementary: { label: '2nd-3rd Grade', author: 'Junie B. Jones', color: 'blue' },
-    intermediate: { label: '4th-5th Grade', author: 'Judy Blume', color: 'orange' },
-    advanced: { label: '6th-12th Grade', author: 'J.K. Rowling', color: 'purple' }
+  // Difficulty level mappings - 4 levels but only 2 buttons
+  const difficultyLevels = ['beginner', 'elementary', 'intermediate', 'advanced'] as const;
+  
+  const getDifficultyIndex = () => {
+    return difficultyLevels.indexOf(currentDifficulty);
   };
+  
+  const canDecreaseDifficulty = () => getDifficultyIndex() > 0;
+  const canIncreaseDifficulty = () => getDifficultyIndex() < difficultyLevels.length - 1;
 
   // Generate story on component mount - show immediate fallback then upgrade
   useEffect(() => {
@@ -116,13 +118,16 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
           interests.push(userInfo.age <= 6 ? 'animals' : userInfo.age <= 8 ? 'friendship' : 'adventure');
         }
         
+        const characterDescription = userInfo.avatar ? `, a curious and brave ${userInfo.avatar.type === 'boy' ? 'boy' : userInfo.avatar.type === 'girl' ? 'girl' : 'child'}` : '';
+        
         const storyConfig = {
           age: userInfo.age,
           gradeLevel: userInfo.gradeLevel || userInfo.grade,
           readingLevel: currentDifficulty,
           interests: interests,
           theme: userInfo.specialRequest || 'adventure',
-          userName: userInfo.name
+          userName: userInfo.name,
+          characterDescription
         };
 
         console.log('Story config:', storyConfig);
@@ -176,13 +181,51 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     };
   }, [userInfo.name, currentDifficulty]); // Only depend on name and difficulty, not entire userInfo object
 
-  // Function to regenerate story with new difficulty
-  const changeDifficulty = async (newDifficulty: typeof currentDifficulty) => {
-    if (newDifficulty === currentDifficulty) return;
+  // Function to change difficulty easier/harder
+  const changeDifficulty = async (direction: 'easier' | 'harder') => {
+    const currentIndex = getDifficultyIndex();
+    let newIndex: number;
     
+    if (direction === 'easier' && canDecreaseDifficulty()) {
+      newIndex = currentIndex - 1;
+    } else if (direction === 'harder' && canIncreaseDifficulty()) {
+      newIndex = currentIndex + 1;
+    } else {
+      return; // No change possible
+    }
+    
+    const newDifficulty = difficultyLevels[newIndex];
     setCurrentDifficulty(newDifficulty);
-    setCurrentPage(0); // Reset to first page
-    // No toast for difficulty change
+    setCurrentPage(0);
+  };
+  
+  // Function to add more pages to the story
+  const addMorePages = async () => {
+    if (isLoading) return;
+    
+    setIsLoading(true);
+    try {
+      const characterDescription = userInfo.avatar ? `, a curious and brave ${userInfo.avatar.type === 'boy' ? 'boy' : userInfo.avatar.type === 'girl' ? 'girl' : 'child'}` : '';
+      
+      const storyConfig = {
+        age: userInfo.age,
+        gradeLevel: userInfo.gradeLevel || userInfo.grade,
+        readingLevel: currentDifficulty,
+        interests: userInfo.interests || [userInfo.hobbies || 'adventure'],
+        theme: 'adventure',
+        userName: userInfo.name,
+        characterDescription
+      };
+
+      const extendedStory = await adaptiveStoryGenerator.generateStory(storyConfig);
+      // Add 5 more pages from the new story
+      const newPages = extendedStory.pages.slice(0, 5);
+      setStory(prev => [...prev, ...newPages]);
+    } catch (error) {
+      console.error('Failed to add more pages:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Start session when user begins reading
@@ -619,28 +662,43 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
               <div className="order-1 lg:order-2">
                 <Card className="h-[500px] lg:h-[600px] flex flex-col">
                   <CardContent className="p-6 flex-1 flex flex-col">
-                    {/* Difficulty Level Selector */}
+                    {/* Difficulty Level Selector - Easier/Harder */}
                     <div className="mb-4">
-                      <div className="flex flex-wrap gap-2 justify-center">
-                        {Object.entries(difficultyLevels).map(([level, info]) => (
+                      <div className="flex gap-3 justify-center items-center">
+                        <div className="relative group">
                           <Button
-                            key={level}
-                            onClick={() => changeDifficulty(level as typeof currentDifficulty)}
-                            variant={currentDifficulty === level ? "default" : "outline"}
+                            onClick={() => changeDifficulty('easier')}
+                            disabled={!canDecreaseDifficulty() || isLoading}
+                            variant="outline"
                             size="sm"
-                            className={`text-xs ${
-                              currentDifficulty === level 
-                                ? `bg-${info.color}-500 hover:bg-${info.color}-600` 
-                                : `border-${info.color}-300 hover:bg-${info.color}-50`
-                            }`}
+                            className="p-2"
                           >
-                            {info.label}
+                            <ChevronDown className="w-4 h-4" />
                           </Button>
-                        ))}
+                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+                            Make story easier
+                          </div>
+                        </div>
+                        
+                        <span className="text-sm font-medium text-gray-600">
+                          Level {getDifficultyIndex() + 1} of 4
+                        </span>
+                        
+                        <div className="relative group">
+                          <Button
+                            onClick={() => changeDifficulty('harder')}
+                            disabled={!canIncreaseDifficulty() || isLoading}
+                            variant="outline"
+                            size="sm"
+                            className="p-2"
+                          >
+                            <ChevronUp className="w-4 h-4" />
+                          </Button>
+                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+                            Make story harder
+                          </div>
+                        </div>
                       </div>
-                      <p className="text-center text-xs text-gray-500 mt-1">
-                        Current style: {difficultyLevels[currentDifficulty].author}
-                      </p>
                     </div>
 
                     {/* Progress Bar */}
@@ -687,9 +745,25 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                         {t("freeReadingSession.navigation.previous")}
                       </Button>
                       
-                       <span className="text-sm font-medium text-gray-600">
-                         {currentPage + 1} / {story.length}
-                       </span>
+                      <div className="flex flex-col items-center gap-2">
+                        <span className="text-sm font-medium text-gray-600">
+                          {currentPage + 1} / {story.length}
+                        </span>
+                        <div className="relative group">
+                          <Button
+                            onClick={addMorePages}
+                            disabled={isLoading}
+                            variant="outline"
+                            size="sm"
+                            className="p-2"
+                          >
+                            <Plus className="w-4 h-4" />
+                          </Button>
+                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+                            Add 5 more pages
+                          </div>
+                        </div>
+                      </div>
                       
                       <Button 
                         onClick={() => {

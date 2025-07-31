@@ -55,7 +55,8 @@ Respond with a JSON object containing:
   "content": "The complete story text following all specifications"
 }`
 
-    const userPrompt = `Please write a ${theme} story for a ${config.age}-year-old child${config.userName ? ` named ${config.userName}` : ''} who is interested in ${interests.join(', ')}. Make it exactly right for their reading level and incorporate their interests naturally into the story.`
+    const characterDescription = config.characterDescription || '';
+    const userPrompt = `Please write a ${theme} story for a ${config.age}-year-old child named ${config.userName} who is interested in ${interests.join(', ')}. The main character should be ${config.userName} ${characterDescription}. Make ${config.userName} the hero of the story. The story should flow like a real book with logical progression, never mention page numbers in the text, and make it exactly right for their reading level. Incorporate their interests naturally into the story and make sure ${config.userName} is actively involved in the adventure.`
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
