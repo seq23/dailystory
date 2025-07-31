@@ -90,7 +90,7 @@
     "title": "¡Cuéntanos sobre ti!",
     "sections": {
       "aboutYou": "Acerca de ti",
-      "favorites": "Tus favoritos",
+      "yourFavorites": "Tus favoritos",
       "additionalInfo": "Cuéntanos más"
     },
     "fields": {
@@ -100,15 +100,58 @@
       },
       "age": {
         "label": "¿Cuántos años tienes?",
-        "placeholder": "Tu edad"
+        "placeholder": "Tu edad",
+        "yearsOld": "años"
       },
       "grade": {
         "label": "¿En qué grado estás?",
         "placeholder": "Selecciona tu grado"
       },
+      "nativeLanguage": {
+        "label": "¿Cuál es tu idioma nativo?",
+        "placeholder": "Selecciona tu idioma"
+      },
       "learningGoal": {
         "label": "¿Qué te gustaría mejorar?",
-        "placeholder": "Selecciona tu objetivo"
+        "placeholder": "Selecciona tu objetivo",
+        "options": {
+          "improve-english-reading": "Mejorar mi lectura en inglés",
+          "learn-english-language": "Aprender inglés como nuevo idioma",
+          "both": "Ambos - mejorar lectura y aprender inglés"
+        }
+      },
+      "readingAbility": {
+        "label": "¿Cómo describirías tu habilidad de lectura?",
+        "placeholder": "Selecciona tu nivel",
+        "levels": {
+          "easy": {
+            "title": "Estoy empezando a leer",
+            "description": "Me gusta que me lean o leo palabras simples"
+          },
+          "medium": {
+            "title": "Puedo leer oraciones",
+            "description": "Leo libros cortos con algunas palabras difíciles"
+          },
+          "hard": {
+            "title": "Leo libros por mi cuenta",
+            "description": "Leo capítulos y historias más largas"
+          },
+          "expert": {
+            "title": "Soy un lector avanzado",
+            "description": "Leo libros complejos y disfruto historias desafiantes"
+          }
+        }
+      },
+      "avatar": {
+        "label": "Elige tu avatar"
+      },
+      "favoriteColor": {
+        "label": "¿Cuál es tu color o tono favorito?",
+        "optional": "(Opcional)"
+      },
+      "favoriteAnimal": {
+        "label": "¿Cuál es tu animal favorito?",
+        "optional": "(Opcional)"
       },
       "skinTone": {
         "label": "Tono de piel"
@@ -143,10 +186,6 @@
         "label": "Nivel de dificultad",
         "placeholder": "Selecciona el nivel"
       },
-      "readingAbility": {
-        "label": "Habilidad de lectura",
-        "placeholder": "Selecciona tu nivel"
-      },
       "specialRequest": {
         "label": "¿Algo especial que te gustaría en tu historia?",
         "placeholder": "Cuéntanos sobre personajes, lugares o temas que te encantaría ver...",
@@ -154,6 +193,8 @@
       }
     },
     "grades": {
+      "PreK": "Pre-Kinder",
+      "K": "Kinder",
       "kindergarten": "Kinder",
       "1st": "1er grado",
       "2nd": "2do grado",
@@ -163,6 +204,15 @@
       "6th": "6to grado",
       "7th": "7mo grado",
       "8th": "8vo grado"
+    },
+    "languages": {
+      "en": "Inglés",
+      "ar": "Árabe",
+      "es": "Español",
+      "zh": "Chino",
+      "hi": "Hindi",
+      "pt": "Portugués",
+      "fr": "Francés"
     },
     "learningGoals": {
       "reading": "Mejorar la lectura",
