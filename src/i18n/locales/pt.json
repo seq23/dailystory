@@ -283,5 +283,27 @@
       "description": "Você completou sua sessão de leitura!"
     },
     "maxLimit": "Limite máximo"
+  },
+  "learningPath": {
+    "currentPath": "Sua Jornada de Aprendizado",
+    "progress": "Progresso",
+    "completed": "concluído",
+    "challengesCompleted": "Desafios Concluídos",
+    "totalTime": "Tempo Total",
+    "pointsEarned": "Pontos Ganhos",
+    "nextRecommended": "Próximo Recomendado",
+    "start": "Começar",
+    "startChallenge": "Começar Desafio",
+    "cancel": "Cancelar",
+    "loading": "Criando seu caminho de aprendizado personalizado...",
+    "personalizedFor": "Caminho de aprendizado personalizado para",
+    "overview": "Visão Geral",
+    "challenges": "Todos os Desafios",
+    "vocabularyChallenge": "Desafio de Vocabulário",
+    "vocabularyDescription": "Aprenda novas palavras através de jogos interativos.",
+    "comprehensionChallenge": "Compreensão de Leitura",
+    "comprehensionDescription": "Leia histórias e responda perguntas para testar sua compreensão.",
+    "phonicsChallenge": "Prática de Fonética",
+    "phonicsDescription": "Pratique pronúncia e padrões sonoros."
   }
 }

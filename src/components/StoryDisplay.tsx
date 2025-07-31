@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { BookOpen, Home, RotateCcw, Volume2, VolumeX, TrendingUp, TrendingDown, Plus, Minus, Star, Heart, Sparkles, Wand2, Play, Pause, Timer, Mic, MicOff, BarChart3 } from "lucide-react";
+import { BookOpen, Home, RotateCcw, Volume2, VolumeX, TrendingUp, TrendingDown, Plus, Minus, Star, Heart, Sparkles, Wand2, Play, Pause, Timer, Mic, MicOff, BarChart3, Target } from "lucide-react";
 import { FloatingTimer } from "./FloatingTimer";
 import type { UserInfo } from "./UserInfoForm";
 import ProgressDashboard from "@/components/ProgressDashboard";
+import LearningPathDashboard from "@/components/LearningPathDashboard";
 import AdaptiveUI from "@/components/AdaptiveUI";
 import { ProgressTrackingService, ReadingProgress } from "@/services/progressTrackingService";
 import { createOpenAITTSService } from "@/services/textToSpeechService";
@@ -106,6 +107,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
   // Progress tracking
   const [readingProgress, setReadingProgress] = useState<ReadingProgress | null>(null);
   const [showProgressDashboard, setShowProgressDashboard] = useState(false);
+  const [showLearningPath, setShowLearningPath] = useState(false);
   const [sessionStartTime, setSessionStartTime] = useState<Date>(new Date());
   const [sessionWordsRead, setSessionWordsRead] = useState(0);
   
@@ -752,6 +754,15 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                 <BarChart3 className="w-4 h-4 mr-1" />
                 {t("storyDisplay.header.progress")}
               </Button>
+              <Button
+                onClick={() => setShowLearningPath(true)}
+                variant="ghost"
+                size="sm"
+                className="text-blue-600 hover:bg-blue-50"
+              >
+                <Target className="w-4 h-4 mr-1" />
+                {t("learningPath.challenges")}
+              </Button>
               <Button 
                 onClick={handleFinishSession} 
                 className="bg-green-500 hover:bg-green-600 text-white rounded-full"
@@ -1106,13 +1117,35 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         )}
         
         {/* Progress Dashboard */}
-        {showProgressDashboard && readingProgress && (
-          <ProgressDashboard
-            progress={readingProgress}
-            userInfo={userInfo}
-            onClose={() => setShowProgressDashboard(false)}
-          />
-        )}
+      {showProgressDashboard && readingProgress && (
+        <ProgressDashboard
+          progress={readingProgress}
+          userInfo={userInfo}
+          onClose={() => setShowProgressDashboard(false)}
+        />
+      )}
+
+      {showLearningPath && readingProgress && (
+        <LearningPathDashboard
+          userInfo={userInfo}
+          progress={readingProgress}
+          onClose={() => setShowLearningPath(false)}
+          onChallengeComplete={(challengeId, score) => {
+            // Update progress when challenges are completed
+            const updatedProgress = {
+               ...readingProgress,
+               // Add points tracking to the progress (this could be enhanced by updating the ReadingProgress interface)
+               storiesCompleted: readingProgress.storiesCompleted + 1
+            };
+            setReadingProgress(updatedProgress);
+            ProgressTrackingService.saveProgress(updatedProgress);
+            toast({
+              title: "Challenge Complete!",
+              description: `You earned ${score} points!`,
+            });
+          }}
+        />
+      )}
     </AdaptiveUI>
   );
 };

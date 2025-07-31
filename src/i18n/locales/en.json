@@ -325,5 +325,27 @@
       "title": "🎉 Congratulations!",
       "description": "You've completed your reading session!"
     }
+  },
+  "learningPath": {
+    "currentPath": "Your Learning Journey",
+    "progress": "Progress", 
+    "completed": "completed",
+    "challengesCompleted": "Challenges Completed",
+    "totalTime": "Total Time",
+    "pointsEarned": "Points Earned",
+    "nextRecommended": "Recommended Next",
+    "start": "Start",
+    "startChallenge": "Start Challenge",
+    "cancel": "Cancel",
+    "loading": "Creating your personalized learning path...",
+    "personalizedFor": "Personalized learning path for",
+    "overview": "Overview",
+    "challenges": "All Challenges",
+    "vocabularyChallenge": "Vocabulary Challenge",
+    "vocabularyDescription": "Learn new words through interactive matching games.",
+    "comprehensionChallenge": "Reading Comprehension",
+    "comprehensionDescription": "Read stories and answer questions to test understanding.",
+    "phonicsChallenge": "Phonics Practice",
+    "phonicsDescription": "Practice pronunciation and sound patterns."
   }
 }

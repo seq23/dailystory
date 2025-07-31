@@ -283,5 +283,27 @@
       "description": "您已完成阅读会话！"
     },
     "maxLimit": "最大限制"
+  },
+  "learningPath": {
+    "currentPath": "您的学习之旅",
+    "progress": "进度",
+    "completed": "已完成",
+    "challengesCompleted": "已完成挑战",
+    "totalTime": "总时间",
+    "pointsEarned": "获得积分",
+    "nextRecommended": "推荐下一个",
+    "start": "开始",
+    "startChallenge": "开始挑战",
+    "cancel": "取消",
+    "loading": "正在创建您的个性化学习路径...",
+    "personalizedFor": "为您定制的学习路径",
+    "overview": "概览",
+    "challenges": "所有挑战",
+    "vocabularyChallenge": "词汇挑战",
+    "vocabularyDescription": "通过互动游戏学习新单词。",
+    "comprehensionChallenge": "阅读理解",
+    "comprehensionDescription": "阅读故事并回答问题以测试理解能力。",
+    "phonicsChallenge": "语音练习",
+    "phonicsDescription": "练习发音和语音模式。"
   }
 }

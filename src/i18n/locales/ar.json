@@ -283,5 +283,27 @@
       "description": "لقد أكملت جلسة القراءة الخاصة بك!"
     },
     "maxLimit": "الحد الأقصى"
+  },
+  "learningPath": {
+    "currentPath": "رحلة التعلم الخاصة بك",
+    "progress": "التقدم",
+    "completed": "مكتمل",
+    "challengesCompleted": "التحديات المكتملة",
+    "totalTime": "الوقت الإجمالي",
+    "pointsEarned": "النقاط المكتسبة",
+    "nextRecommended": "الموصى به التالي",
+    "start": "ابدأ",
+    "startChallenge": "ابدأ التحدي",
+    "cancel": "إلغاء",
+    "loading": "إنشاء مسار التعلم الشخصي الخاص بك...",
+    "personalizedFor": "مسار تعلم شخصي لـ",
+    "overview": "نظرة عامة",
+    "challenges": "جميع التحديات",
+    "vocabularyChallenge": "تحدي المفردات",
+    "vocabularyDescription": "تعلم كلمات جديدة من خلال الألعاب التفاعلية.",
+    "comprehensionChallenge": "فهم القراءة",
+    "comprehensionDescription": "اقرأ القصص وأجب على الأسئلة لاختبار الفهم.",
+    "phonicsChallenge": "ممارسة الصوتيات",
+    "phonicsDescription": "مارس النطق وأنماط الصوت."
   }
 }

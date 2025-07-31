@@ -283,5 +283,27 @@
       "description": "आपने अपना पढ़ने का सत्र पूरा कर लिया है!"
     },
     "maxLimit": "अधिकतम सीमा"
+  },
+  "learningPath": {
+    "currentPath": "आपकी सीखने की यात्रा",
+    "progress": "प्रगति",
+    "completed": "पूर्ण",
+    "challengesCompleted": "पूर्ण चुनौतियां",
+    "totalTime": "कुल समय",
+    "pointsEarned": "अर्जित अंक",
+    "nextRecommended": "अगली सिफारिश",
+    "start": "शुरू करें",
+    "startChallenge": "चुनौती शुरू करें",
+    "cancel": "रद्द करें",
+    "loading": "आपका व्यक्तिगत सीखने का रास्ता बनाया जा रहा है...",
+    "personalizedFor": "के लिए व्यक्तिगत सीखने का रास्ता",
+    "overview": "अवलोकन",
+    "challenges": "सभी चुनौतियां",
+    "vocabularyChallenge": "शब्दावली चुनौती",
+    "vocabularyDescription": "इंटरैक्टिव गेम्स के माध्यम से नए शब्द सीखें।",
+    "comprehensionChallenge": "पठन बोध",
+    "comprehensionDescription": "कहानियां पढ़ें और समझ का परीक्षण करने के लिए प्रश्नों के उत्तर दें।",
+    "phonicsChallenge": "ध्वनि विज्ञान अभ्यास",
+    "phonicsDescription": "उच्चारण और ध्वनि पैटर्न का अभ्यास करें।"
   }
 }
