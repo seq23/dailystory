@@ -18,7 +18,7 @@ export class SecurityValidator {
     try {
       if (typeof input === 'string') {
         // Check content appropriateness
-        const contentCheck = ContentSecurity.isContentAppropriate(input);
+        const contentCheck = ContentSecurity.isContentAppropriate(input, undefined, undefined);
         if (!contentCheck.appropriate) {
           errors.push(`Inappropriate content detected: ${contentCheck.reason}`);
           SecurityMonitor.logEvent('security', 'inappropriate_content_blocked', {

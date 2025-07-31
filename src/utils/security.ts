@@ -258,7 +258,7 @@ export class ContentSecurity {
 
     for (let i = 0; i < story.length; i++) {
       const paragraph = story[i];
-      const validation = this.isContentAppropriate(paragraph, grade);
+      const validation = this.isContentAppropriate(paragraph, grade, undefined);
       
       if (!validation.appropriate) {
         issues.push(`Paragraph ${i + 1}: ${validation.reason}`);

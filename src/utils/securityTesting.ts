@@ -119,7 +119,7 @@ export class SecurityTester {
     // Test inappropriate content detection
     for (const content of inappropriateContent) {
       try {
-        const result = ContentSecurity.isContentAppropriate(content);
+        const result = ContentSecurity.isContentAppropriate(content, undefined, undefined);
         this.addTestResult(
           `Content Filter: Block inappropriate - "${content.substring(0, 30)}..."`,
           !result.appropriate,
@@ -137,7 +137,7 @@ export class SecurityTester {
     // Test appropriate content passes
     for (const content of appropriateContent) {
       try {
-        const result = ContentSecurity.isContentAppropriate(content);
+        const result = ContentSecurity.isContentAppropriate(content, undefined, undefined);
         this.addTestResult(
           `Content Filter: Allow appropriate - "${content.substring(0, 30)}..."`,
           result.appropriate,
@@ -332,7 +332,7 @@ export class SecurityTester {
       },
       {
         name: 'Content filtering speed',
-        operation: () => ContentSecurity.isContentAppropriate('This is a test story about a happy cat'),
+        operation: () => ContentSecurity.isContentAppropriate('This is a test story about a happy cat', undefined, undefined),
         iterations: 500
       },
       {
