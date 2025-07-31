@@ -11,34 +11,35 @@ interface ReadingConfig {
 
 export class EarlyReaderStoryGenerator {
   
-  // Configure reading experience by difficulty level
+  // Configure reading experience by difficulty level (2 minutes reading per page)
+  // Average reading speeds: PreK-1st: 20-50 WPM, 2nd-3rd: 80-120 WPM, 4th-5th: 140-160 WPM, 6th-12th: 200-300 WPM
   private static getReadingConfig(difficulty: DifficultyLevel): ReadingConfig {
     switch (difficulty) {
-      case 'easy':
+      case 'easy': // PreK-1st grade (Julia Donaldson, Mo Willems, Dr. Seuss, Kevin Henkes style)
         return {
-          maxWordsPerPage: 6,
-          fontSize: 'text-4xl md:text-5xl lg:text-6xl',
+          maxWordsPerPage: 6, // Very simple for early readers
+          fontSize: 'text-5xl md:text-6xl lg:text-7xl', // Bigger text for early readers
           lineHeight: 'leading-relaxed',
+          spacing: 'space-y-6'
+        };
+      case 'medium': // 2nd-3rd grade (Jeff Kinney, Roald Dahl, Dav Pilkey, Andrea Beaty style)
+        return {
+          maxWordsPerPage: 200, // ~2 min at 100 WPM average
+          fontSize: 'text-2xl md:text-3xl lg:text-4xl',
+          lineHeight: 'leading-normal',
           spacing: 'space-y-4'
         };
-      case 'medium':
+      case 'hard': // 4th-5th grade (Katherine Applegate, C.S. Lewis, J.K. Rowling style)
         return {
-          maxWordsPerPage: 12,
-          fontSize: 'text-3xl md:text-4xl lg:text-5xl',
+          maxWordsPerPage: 300, // ~2 min at 150 WPM average
+          fontSize: 'text-xl md:text-2xl lg:text-3xl',
           lineHeight: 'leading-normal',
           spacing: 'space-y-3'
         };
-      case 'hard':
+      case 'expert': // 6th-12th grade (Sharon Creech, Louis Sachar, Suzanne Collins, John Green style)
         return {
-          maxWordsPerPage: 20,
-          fontSize: 'text-2xl md:text-3xl lg:text-4xl',
-          lineHeight: 'leading-normal',
-          spacing: 'space-y-2'
-        };
-      case 'expert':
-        return {
-          maxWordsPerPage: 35,
-          fontSize: 'text-xl md:text-2xl lg:text-3xl',
+          maxWordsPerPage: 500, // ~2 min at 250 WPM average
+          fontSize: 'text-lg md:text-xl lg:text-2xl',
           lineHeight: 'leading-snug',
           spacing: 'space-y-2'
         };

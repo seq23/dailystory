@@ -72,28 +72,33 @@ CRITICAL PERSONALIZATION RULES:
 
 WRITING STYLE FOR ${readingLevel.toUpperCase()}:
 ${readingLevel === 'beginner' ? 
-  `- Simple, repetitive patterns like Dr. Seuss
-  - 4-8 words per sentence maximum
-  - Basic sight words and simple concepts
-  - Rhyming patterns when possible
-  - Focus on colors, shapes, and basic emotions` :
+  `- Write like Julia Donaldson, Mo Willems, Dr. Seuss, and Kevin Henkes
+  - Maximum 6 words per page only
+  - Very simple sentences with repetitive patterns
+  - Focus on rhythm, rhyme, and emotional connection
+  - Use basic sight words and simple concepts
+  - Emphasize friendship, discovery, and gentle adventures` :
 readingLevel === 'elementary' ? 
-  `- Conversational tone like Junie B. Jones
-  - 10-20 words per sentence
-  - Simple dialogue and character emotions
-  - Relatable everyday situations
-  - Gentle humor and friendship themes` :
+  `- Write like Jeff Kinney, Roald Dahl, Dav Pilkey, and Andrea Beaty
+  - Approximately 200 words per page for 2-minute reading time
+  - Conversational tone with humor and relatability
+  - Include simple dialogue and character emotions
+  - Focus on friendship, problem-solving, and everyday adventures
+  - Use descriptive language that's accessible but engaging` :
 readingLevel === 'intermediate' ?
-  `- Rich descriptions like Roald Dahl
+  `- Write like Katherine Applegate, C.S. Lewis, and J.K. Rowling
+  - Approximately 300 words per page for 2-minute reading time
+  - Rich descriptions and character development
   - Complex sentences with varied structure
-  - Character development and mild conflict
-  - Descriptive language and figurative speech
-  - Problem-solving and growing up themes` :
-  `- Sophisticated style like J.K. Rowling
-  - Complex plots and character arcs
-  - Rich world-building and themes
+  - Include mild conflict and emotional depth
+  - Use figurative language and deeper themes about growing up` :
+  `- Write like Sharon Creech, Anna Sewell, Louis Sachar, Jacqueline Woodson, Suzanne Collins, John Green, and Markus Zusak
+  - Approximately 500 words per page for 2-minute reading time
+  - Sophisticated storytelling with complex plots
+  - Rich world-building and character arcs
   - Advanced vocabulary and literary devices
-  - Identity and moral decision themes`
+  - Explore themes of identity, relationships, and moral decisions
+  - Randomly vary difficulty within 6th-12th grade range`
 }
 
 STORY STRUCTURE:
