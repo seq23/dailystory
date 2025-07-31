@@ -94,6 +94,7 @@ export class InclusiveStoryGenerator {
           
           // Track usage to ensure organic distribution
           usedElements: new Set(),
+          selectedCharacter: null as string | null,
           
           // Smart element selection based on story context
           getAppropriateElement: function(context: string, fallbacks: string[]) {
@@ -112,6 +113,23 @@ export class InclusiveStoryGenerator {
             
             // Return fallback if user element not available or already used
             return fallbacks[Math.floor(Math.random() * fallbacks.length)];
+          },
+          
+          // Get consistent character throughout the story
+          getStoryCharacter: function(fallbacks: string[]) {
+            if (this.selectedCharacter) {
+              return this.selectedCharacter;
+            }
+            
+            if (this.animal && !this.usedElements.has('character')) {
+              this.selectedCharacter = this.animal;
+              this.usedElements.add('character');
+              return this.selectedCharacter;
+            }
+            
+            // Select one character and stick with it
+            this.selectedCharacter = fallbacks[Math.floor(Math.random() * fallbacks.length)];
+            return this.selectedCharacter;
           },
           
           // Check if we should introduce a user element at this point
@@ -226,7 +244,7 @@ export class InclusiveStoryGenerator {
         return `Look! ${characterName} sees a tree.`;
       }
     } else if (section === 'adventure') {
-      const animal = elementTracker.getAppropriateElement('character', ['cat', 'dog', 'bird']);
+      const animal = elementTracker.getStoryCharacter(['cat', 'dog', 'bird']);
       
       if (!progress.metCharacter) {
         // 5 words maximum
@@ -281,7 +299,7 @@ export class InclusiveStoryGenerator {
     } else if (section === 'adventure') {
       if (!progress.metCharacter) {
         // Kevin Henkes style gentle introduction of characters
-        const animal = elementTracker.getAppropriateElement('character', ['wise owl', 'gentle deer', 'kind rabbit']);
+        const animal = elementTracker.getStoryCharacter(['wise owl', 'gentle deer', 'kind rabbit']);
         return `A soft rustling in the bushes made ${characterName} turn around. There, with kind eyes and a gentle smile, sat a ${animal} who seemed both wise and friendly.`;
       } else if (!progress.foundObject) {
         // Jan Brett style storytelling with emotional depth
@@ -342,7 +360,7 @@ export class InclusiveStoryGenerator {
     } else if (section === 'adventure') {
       if (!progress.metCharacter) {
         // Roald Dahl style quirky character introduction
-        const animal = elementTracker.getAppropriateElement('character', ['peculiar owl', 'magnificent fox', 'extraordinary rabbit']);
+        const animal = elementTracker.getStoryCharacter(['peculiar owl', 'magnificent fox', 'extraordinary rabbit']);
         return `"Well, blow me down with a feather!" exclaimed a voice from above. ${characterName} looked up to see a most peculiar ${animal} wearing what appeared to be tiny spectacles and a very serious expression.`;
       } else if (!progress.foundObject) {
         // Beverly Cleary style realistic problem-solving
@@ -403,7 +421,7 @@ export class InclusiveStoryGenerator {
     } else if (section === 'adventure') {
       if (!progress.metCharacter) {
         // Kate DiCamillo style magical realism and profound connection
-        const animal = elementTracker.getAppropriateElement('character', ['ancient owl', 'wise fox', 'gentle deer']);
+        const animal = elementTracker.getStoryCharacter(['ancient owl', 'wise fox', 'gentle deer']);
         return `When the ${animal} spoke, its voice carried the weight of ancient stories and the gentleness of rainfall. "I have been waiting," it said, "not for someone special, but for someone willing to see."`;
       } else if (!progress.foundObject) {
         // R.J. Palacio style understanding through different perspectives
