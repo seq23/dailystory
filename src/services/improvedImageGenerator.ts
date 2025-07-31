@@ -36,6 +36,8 @@ export class ImprovedImageGenerator {
     // Add main scene element
     if (mainElement.action) {
       prompt += `${mainElement.action} `;
+    } else if (mainElement.animal) {
+      prompt += `with ${mainElement.animal} `;
     } else if (mainElement.object) {
       prompt += `with ${mainElement.object} `;
     } else if (mainElement.setting) {
@@ -57,7 +59,7 @@ export class ImprovedImageGenerator {
     const gender = userInfo.avatar?.type === 'boy' ? 'boy' : 'girl';
     
     const skinTones = {
-      pale: 'light skin',
+      pale: 'very light skin',
       light: 'light skin',
       medium: 'medium skin', 
       olive: 'olive skin',
@@ -67,7 +69,14 @@ export class ImprovedImageGenerator {
     const skinTone = skinTones[userInfo.avatar?.skinTone] || 'medium skin';
     const name = userInfo.name?.trim() || 'child';
     
-    return `${agePrefix}${gender} named ${name} with ${skinTone}`;
+    // Add clothing color if provided
+    let characterDesc = `${agePrefix}${gender} named ${name} with ${skinTone}`;
+    
+    if (userInfo.favoriteColor) {
+      characterDesc += `, wearing ${userInfo.favoriteColor.toLowerCase()} clothing`;
+    }
+    
+    return characterDesc;
   }
   
   private static extractPrimaryElement(storyText: string): {
