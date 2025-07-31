@@ -23,8 +23,8 @@ export class OpenAITTSService {
     
     if (!cleanText) return;
 
-    // Check cache first
-    const cacheKey = `${cleanText}_${this.voice}`;
+    // Check cache first - include speed in cache key for different speeds
+    const cacheKey = `${cleanText}_${this.voice}_${options?.speed || this.speed}`;
     if (this.audioCache.has(cacheKey)) {
       const audioUrl = this.audioCache.get(cacheKey)!;
       await this.playAudio(audioUrl);
@@ -33,11 +33,14 @@ export class OpenAITTSService {
 
     try {
       // Use Supabase edge function for TTS
+      const speedToUse = options?.speed || this.speed;
+      console.log(`TTS Request: voice=${this.voice}, speed=${speedToUse}, text="${cleanText.substring(0, 50)}..."`);
+      
       const { data, error } = await supabase.functions.invoke('openai-tts', {
         body: {
           text: cleanText,
           voice: this.voice,
-          speed: options?.speed || this.speed
+          speed: speedToUse
         }
       });
 

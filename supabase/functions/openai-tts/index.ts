@@ -12,7 +12,9 @@ serve(async (req) => {
   }
 
   try {
-    const { text, voice = "alloy", speed = 1.0 } = await req.json()
+    const { text, voice = "nova", speed = 1.0 } = await req.json()
+    
+    console.log(`TTS Function called: voice=${voice}, speed=${speed}, textLength=${text?.length}`)
     
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY')
     if (!openaiApiKey) {
@@ -29,16 +31,19 @@ serve(async (req) => {
         model: 'tts-1-hd', // Use high-definition model for better quality
         input: text,
         voice: voice, // alloy, echo, fable, onyx, nova, shimmer
-        speed: speed,
+        speed: speed, // This is the key parameter for speed control
         response_format: 'mp3'
       }),
     })
 
     if (!response.ok) {
+      const errorText = await response.text()
+      console.error(`OpenAI API error: ${response.status} ${response.statusText}`, errorText)
       throw new Error(`OpenAI API error: ${response.statusText}`)
     }
 
     const audioBuffer = await response.arrayBuffer()
+    console.log(`TTS Success: Generated ${audioBuffer.byteLength} bytes of audio`)
     
     return new Response(audioBuffer, {
       headers: {
