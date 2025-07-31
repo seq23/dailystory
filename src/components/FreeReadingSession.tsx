@@ -310,12 +310,18 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   };
 
   if (isLoading) {
+    console.log('FreeReadingSession userInfo:', userInfo); // Debug log
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <h2 className="text-2xl font-bold text-gray-800 mb-2">{t("freeReadingSession.loading.title")}</h2>
-          <p className="text-gray-600">{t("freeReadingSession.loading.description", { name: userInfo.name })}</p>
+          <p className="text-gray-600">
+            {userInfo.name 
+              ? t("freeReadingSession.loading.description", { name: userInfo.name })
+              : "Generating personalized content..."
+            }
+          </p>
         </div>
       </div>
     );
