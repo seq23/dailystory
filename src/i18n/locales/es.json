@@ -1,9 +1,90 @@
 {
   "welcomeHero": {
-    "title": "Donde Cada Historia es Hecha Solo para Ti",
+    "title": "Donde Cada Historia es Hecha",
     "titleHighlight": "Solo para Ti",
     "subtitle": "Descubre historias mágicas creadas específicamente para los intereses, nivel de lectura y trasfondo cultural de tu hijo.",
-    "companyTagline": "Un Asistente de Lectura Personalizado para Cada Niño"
+    "companyTagline": "Un Asistente de Lectura Personalizado para Cada Niño",
+    "carousel": {
+      "item1": "¡Time 2 Read puede usarse como un asistente mágico de lectura de verano en viajes por carretera!",
+      "item2": "Perfecto para sesiones de lectura acogedoras en casa con historias personalizadas.",
+      "item3": "¡Genial para aventuras al aire libre - lee en cualquier lugar, en cualquier momento!",
+      "item4": "Transforma cualquier espacio en una experiencia mágica de biblioteca."
+    },
+    "headline": "Donde Cada Historia es Hecha Solo para Ti",
+    "subheadline": "Descubre historias mágicas creadas específicamente para los intereses, nivel de lectura y trasfondo cultural de tu hijo.",
+    "getStarted": "Crea Tu Aventura",
+    "languageSelector": {
+      "placeholder": "Idioma"
+    },
+    "features": {
+      "reading": {
+        "title": "Lectura Adaptativa",
+        "subtitle": "Se ajusta a tu nivel"
+      },
+      "personalized": "Historias Hechas para Ti",
+      "gradeLevel": "Perfecto para Tu Grado",
+      "culturallyAdapted": {
+        "title": "Historias Culturalmente Adaptadas",
+        "description": "Historias que reflejan el trasfondo y experiencias de tu hijo"
+      },
+      "ageAppropriate": {
+        "title": "Contenido Apropiado para la Edad",
+        "description": "Contenido perfectamente ajustado a la etapa de desarrollo de tu hijo"
+      },
+      "interactiveElements": {
+        "title": "Aprendizaje Interactivo",
+        "description": "Elementos atractivos que hacen el aprendizaje divertido y efectivo"
+      }
+    },
+    "ctaButton": "Crea Tu Aventura",
+    "safetyNote": "Contenido seguro y educativo para todos los niños.",
+    "userProfilesTitle": "Hecho para Cada Niño",
+    "userProfiles": {
+      "nativeEnglish": "Hablantes nativos de inglés mejorando habilidades de lectura",
+      "eslLearners": "Estudiantes aprendiendo inglés como segundo idioma",
+      "visualLearners": "Niños que aprenden mejor con imágenes e historias",
+      "culturallyDiverse": "Niños de trasfondos culturales diversos"
+    },
+    "howItWorks": {
+      "title": "Cómo Funciona",
+      "step1": {
+        "title": "Cuéntanos Sobre Ti",
+        "description": "Comparte tus intereses, nivel de lectura y preferencias"
+      },
+      "step2": {
+        "title": "Obtén Tu Historia",
+        "description": "Recibe una historia personalizada creada solo para ti"
+      },
+      "step3": {
+        "title": "Lee y Aprende",
+        "description": "Disfruta la lectura interactiva con funciones útiles"
+      }
+    },
+    "footer": {
+      "companyName": "Time 2 Read",
+      "description": "Haciendo la lectura divertida y accesible para cada niño.",
+      "copyright": "Todos los derechos reservados.",
+      "privacyPolicy": "Política de Privacidad",
+      "termsOfService": "Términos de Servicio",
+      "contactUs": "Contáctanos",
+      "contact": "Contáctanos",
+      "mission": "Nuestra misión es hacer la lectura accesible, divertida y culturalmente relevante para cada niño."
+    },
+    "pricing": {
+      "title": "Precios Simples y Transparentes",
+      "subtitle": "Elige el plan que mejor funcione para tu familia",
+      "free": {
+        "title": "Gratis",
+        "price": "$0",
+        "period": "para siempre",
+        "features": [
+          "5 historias personalizadas por mes",
+          "Funciones básicas de lectura",
+          "Soporte de la comunidad"
+        ],
+        "cta": "Comenzar Gratis"
+      }
+    }
   },
   "userInfoForm": {
     "title": "¡Cuéntanos sobre ti!",
