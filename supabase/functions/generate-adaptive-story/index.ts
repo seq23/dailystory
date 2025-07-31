@@ -113,12 +113,21 @@ Create a complete, engaging story that makes ${userName} feel like the hero of t
     const userPrompt = `Write a captivating ${theme} story featuring ${userName}, a ${characterDesc}. This should read like a real children's book with natural flow and pacing.
 
 STORY ELEMENTS TO WEAVE IN NATURALLY:
-Available elements (use only what fits organically into your narrative):
+IMPORTANT: Select only 2-3 elements that naturally fit your ${theme} story. Don't force all elements into the narrative. Choose the most relevant ones:
+
+Available elements (intelligently select 2-3 that fit organically):
 - Favorite color: ${favoriteColor}
 - Favorite animal: ${favoriteAnimal}  
 - Interests: ${userInterests.join(', ')}
 ${hobbies ? `- Hobby: ${hobbies}` : ''}
 ${favoriteFood ? `- Favorite food: ${favoriteFood}` : ''}
+
+SELECTION GUIDANCE:
+- For adventure themes: Consider animal, hobbies, and interests that relate to exploration
+- For friendship themes: Focus on interests and activities that bring people together  
+- For magic themes: Choose elements that could have magical properties (colors, animals, objects)
+- For mystery themes: Select elements that could be clues or helpful tools
+- ONLY use elements that enhance your specific story - ignore others that don't fit naturally
 
 COPYRIGHT AWARENESS:
 If any user inputs reference copyrighted characters, brands, or content (like Godzilla, Pokemon, Disney characters, etc.), create original alternatives that capture the spirit:
