@@ -235,18 +235,35 @@ export const createChildFriendlyPrompt = (storyText: string, userInfo?: any, pag
 
   const culturalElements = getCulturalElements(userInfo?.nativeLanguage || 'en');
   
-  // Extract key elements directly from the story text
+  // Enhanced story text analysis with smarter keyword extraction
+  const storyWords = lowerText.split(/\s+/);
+  const storyContext = sanitizedStoryText;
+  
+  // Use AI-like text analysis to extract key narrative elements
+  const extractKeyElements = (text: string) => {
+    const words = text.toLowerCase().split(/\s+/);
+    const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+    
+    // Extract the most important nouns and actions from the first sentence
+    const firstSentence = sentences[0]?.toLowerCase() || "";
+    const keyWords = words.filter(word => 
+      word.length > 3 && 
+      !['the', 'and', 'was', 'were', 'that', 'this', 'with', 'have', 'they', 'from', 'been', 'said', 'each', 'which', 'their', 'would', 'there', 'could', 'other'].includes(word)
+    ).slice(0, 5);
+    
+    return { keyWords, firstSentence, sentences };
+  };
+  
+  const { keyWords, firstSentence, sentences } = extractKeyElements(storyContext);
+  
+  // Initialize story elements arrays
+  let characters: string[] = [];
   let mainScene = "";
-  let characters = [];
   let setting = "";
-  let objects = [];
+  let objects: string[] = [];
   let mood = "happy and cheerful";
   
-  // Enhanced story text analysis - extract more specific details from the actual story
-  const storyWords = lowerText.split(/\s+/);
-  const storyContext = sanitizedStoryText; // Keep original capitalization for better context
-  
-  // ALWAYS include the main character first if userInfo is provided
+  // ALWAYS include the main character first with precise details
   if (userInfo) {
     const genderDesc = userInfo.avatar?.type === "boy" ? "young boy" : "young girl";
     const skinToneDesc = {
@@ -257,31 +274,45 @@ export const createChildFriendlyPrompt = (storyText: string, userInfo?: any, pag
       dark: "dark skin"
     }[userInfo.avatar?.skinTone] || "medium skin";
     
-    // Create a detailed character description
     const mainCharacter = `${genderDesc} named ${userInfo.name || 'the main character'} with ${skinToneDesc}`;
     characters.push(mainCharacter);
     
-    // Add favorite animal if mentioned in story or if it's a key part of user info
-    if (userInfo.favoriteAnimal && (lowerText.includes(userInfo.favoriteAnimal.toLowerCase()) || lowerText.includes('animal') || lowerText.includes('friend'))) {
-      characters.push(`friendly ${userInfo.favoriteAnimal.toLowerCase()}`);
+    // Intelligently add favorite animal based on story context
+    if (userInfo.favoriteAnimal) {
+      const animalInStory = keyWords.some(word => 
+        word.includes(userInfo.favoriteAnimal.toLowerCase()) ||
+        firstSentence.includes(userInfo.favoriteAnimal.toLowerCase())
+      );
+      
+      if (animalInStory || lowerText.includes('animal') || lowerText.includes('friend') || pageIndex === 0) {
+        characters.push(`friendly ${userInfo.favoriteAnimal.toLowerCase()}`);
+      }
     }
   }
   
-  // Analyze the story text more comprehensively
-  
-  // Detect other characters
-  const animalKeywords = {
-    'cat': 'cute cat', 'dog': 'happy dog', 'bird': 'colorful bird', 'rabbit': 'fluffy rabbit',
-    'bear': 'friendly bear', 'lion': 'majestic lion', 'elephant': 'gentle elephant', 
-    'horse': 'beautiful horse', 'fish': 'bright fish', 'butterfly': 'colorful butterfly',
-    'dragon': 'friendly dragon', 'unicorn': 'magical unicorn'
+  // Smart detection based on story keywords and context
+  const detectMainAction = (text: string, keyWords: string[]) => {
+    const actionMap = {
+      'walking': 'walking through', 'running': 'running happily',
+      'playing': 'playing together', 'eating': 'enjoying a meal',
+      'reading': 'reading a book', 'sleeping': 'peacefully resting',
+      'dancing': 'dancing joyfully', 'singing': 'singing happily',
+      'helping': 'helping each other', 'learning': 'discovering something new',
+      'exploring': 'exploring together', 'flying': 'flying through the air',
+      'swimming': 'swimming in water', 'climbing': 'climbing safely',
+      'building': 'building something creative', 'cooking': 'cooking together'
+    };
+    
+    // Check story keywords first, then action keywords
+    for (const [action, description] of Object.entries(actionMap)) {
+      if (keyWords.includes(action) || text.includes(action)) {
+        return description;
+      }
+    }
+    return "";
   };
   
-  Object.entries(animalKeywords).forEach(([keyword, description]) => {
-    if (lowerText.includes(keyword)) {
-      characters.push(description);
-    }
-  });
+  mainScene = detectMainAction(lowerText, keyWords);
   
   // Setting detection with more context
   const settingKeywords = {
@@ -412,10 +443,11 @@ export const createChildFriendlyPrompt = (storyText: string, userInfo?: any, pag
     prompt += "surrounded by " + objects.slice(0, 3).join(', ') + " ";
   }
   
-  // Include a snippet of the actual story context for better accuracy
+  // Include intelligent story context - focus on the most important elements
   if (storyContext.length > 20) {
-    const relevantWords = storyWords.slice(0, 8).join(' ');
-    prompt += `based on this story context: "${relevantWords}..." `;
+    // Use the key words we extracted for better context
+    const contextPhrase = keyWords.length > 0 ? keyWords.slice(0, 4).join(' ') : storyWords.slice(0, 6).join(' ');
+    prompt += `depicting the story moment: "${contextPhrase}" `;
   }
   
   // Add cultural elements based on user's background

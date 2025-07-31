@@ -649,8 +649,8 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
     try {
       setIsGeneratingImage(true);
       
-      // Add 1-2 second delay as requested
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Reduced delay for faster generation as requested
+      await new Promise(resolve => setTimeout(resolve, 500));
       
       // Create culturally competent prompt
       const prompt = createChildFriendlyPrompt(storyText, userInfo, pageIndex);
@@ -665,11 +665,11 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       const result = await runwareService.generateImage({
         positivePrompt: prompt,
         model: "runware:100@1",
-        width: 768,
-        height: 768,
+        width: 512, // Reduced for faster generation
+        height: 512, // Reduced for faster generation
         numberResults: 1,
         outputFormat: "WEBP",
-        CFGScale: 7,
+        CFGScale: 3, // Reduced for speed
         scheduler: "FlowMatchEulerDiscreteScheduler"
       });
       

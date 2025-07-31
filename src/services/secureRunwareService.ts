@@ -255,12 +255,12 @@ export class SecureRunwareService {
           taskUUID,
           positivePrompt: params.positivePrompt,
           model: params.model || "runware:100@1",
-          width: params.width || 768,
-          height: params.height || 768,
+          width: params.width || 512,
+          height: params.height || 512,
           numberResults: params.numberResults || 1,
           outputFormat: params.outputFormat || "WEBP",
-          steps: 4,
-          CFGScale: params.CFGScale || 7,
+          steps: 2, // Reduced from 4 for faster generation
+          CFGScale: params.CFGScale || 3, // Reduced from 7 for speed
           scheduler: params.scheduler || "FlowMatchEulerDiscreteScheduler",
           strength: params.strength || 0.8,
           lora: params.lora || [],
@@ -297,7 +297,7 @@ export class SecureRunwareService {
           }
         });
 
-        // Set request timeout
+        // Set request timeout - reduced for faster experience
         setTimeout(() => {
           if (this.messageCallbacks.has(taskUUID)) {
             this.messageCallbacks.delete(taskUUID);
@@ -307,7 +307,7 @@ export class SecureRunwareService {
             }, 'medium');
             reject(new Error("Image generation timeout"));
           }
-        }, 60000); // 60 second timeout
+        }, 15000); // Reduced from 60 to 15 seconds
 
         this.sendMessage(message);
       });
