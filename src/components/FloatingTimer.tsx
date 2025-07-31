@@ -146,21 +146,22 @@ export const FloatingTimer = ({
   return (
     <TooltipProvider>
       {/* Floating Timer Container */}
-      <div className="fixed bottom-4 right-6 sm:right-8 z-30 flex flex-col items-center gap-2" data-tutorial-target={tutorialTarget} style={{ marginRight: 'max(0.5rem, env(safe-area-inset-right))', marginBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}>
-        {/* Circular Timer */}
+      <div className="fixed bottom-6 right-6 sm:right-8 z-30 flex flex-col items-center gap-6" data-tutorial-target={tutorialTarget} style={{ marginRight: 'max(1rem, env(safe-area-inset-right))', marginBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+        
+        {/* Main Timer Circle - Professional & Larger */}
         <div className="relative">
           {/* Celebration Animation */}
           {showCelebration && (
             <div className="absolute inset-0 pointer-events-none">
               {/* Confetti particles */}
-              {[...Array(12)].map((_, i) => (
+              {[...Array(16)].map((_, i) => (
                 <div
                   key={i}
-                  className="absolute w-2 h-2 sm:w-3 sm:h-3 rounded-full animate-bounce"
+                  className="absolute w-3 h-3 sm:w-4 sm:h-4 rounded-full animate-bounce"
                   style={{
                     backgroundColor: ['#fbbf24', '#f59e0b', '#d97706', '#92400e'][i % 4],
-                    left: `${Math.cos((i * 30) * Math.PI / 180) * (window.innerWidth < 640 ? 35 : 50) + (window.innerWidth < 640 ? 32 : 45)}px`,
-                    top: `${Math.sin((i * 30) * Math.PI / 180) * (window.innerWidth < 640 ? 35 : 50) + (window.innerWidth < 640 ? 32 : 45)}px`,
+                    left: `${Math.cos((i * 22.5) * Math.PI / 180) * 80 + 80}px`,
+                    top: `${Math.sin((i * 22.5) * Math.PI / 180) * 80 + 80}px`,
                     animationDelay: `${i * 0.1}s`,
                     animationDuration: '2s'
                   }}
@@ -169,14 +170,14 @@ export const FloatingTimer = ({
               
               {/* Sparkle effect */}
               <div className="absolute inset-0 animate-spin">
-                {[...Array(8)].map((_, i) => (
+                {[...Array(12)].map((_, i) => (
                   <div
                     key={i}
-                    className="absolute w-1.5 h-1.5 sm:w-2 sm:h-2 bg-yellow-400 rounded-full animate-ping"
+                    className="absolute w-2 h-2 sm:w-3 sm:h-3 bg-yellow-400 rounded-full animate-ping"
                     style={{
-                      left: `${Math.cos((i * 45) * Math.PI / 180) * (window.innerWidth < 640 ? 45 : 60) + (window.innerWidth < 640 ? 30 : 42)}px`,
-                      top: `${Math.sin((i * 45) * Math.PI / 180) * (window.innerWidth < 640 ? 45 : 60) + (window.innerWidth < 640 ? 30 : 42)}px`,
-                      animationDelay: `${i * 0.2}s`
+                      left: `${Math.cos((i * 30) * Math.PI / 180) * 90 + 75}px`,
+                      top: `${Math.sin((i * 30) * Math.PI / 180) * 90 + 75}px`,
+                      animationDelay: `${i * 0.15}s`
                     }}
                   />
                 ))}
@@ -184,31 +185,34 @@ export const FloatingTimer = ({
             </div>
           )}
           
-          {/* Main Timer Circle */}
-          <div className="relative w-20 h-20 sm:w-24 sm:h-24 bg-white/95 backdrop-blur-sm rounded-full shadow-2xl border-2 sm:border-3 border-amber-300/60 flex items-center justify-center">
+          {/* Main Timer Circle - Much Larger & Professional */}
+          <div className="relative w-32 h-32 sm:w-40 sm:h-40 bg-gradient-to-br from-white to-gray-50 backdrop-blur-sm rounded-full shadow-2xl border-4 border-white/80 flex items-center justify-center ring-4 ring-primary/20">
+            {/* Outer glow ring */}
+            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/10 to-transparent animate-pulse"></div>
+            
             {/* Progress Circle */}
-            <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 100 100">
+            <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 160 160">
               {/* Background circle */}
               <circle
-                cx="50"
-                cy="50"
-                r="42"
-                stroke="#fbbf24"
-                strokeWidth="4"
+                cx="80"
+                cy="80"
+                r="70"
+                stroke="hsl(var(--muted))"
+                strokeWidth="8"
                 fill="none"
-                opacity="0.2"
+                opacity="0.3"
               />
               {/* Progress circle */}
               <circle
-                cx="50"
-                cy="50"
-                r="42"
+                cx="80"
+                cy="80"
+                r="70"
                 stroke={getTimerColor()}
-                strokeWidth="4"
+                strokeWidth="8"
                 fill="none"
-                strokeDasharray={circumference}
-                strokeDashoffset={strokeDashoffset}
-                className="transition-all duration-1000 ease-out"
+                strokeDasharray={2 * Math.PI * 70}
+                strokeDashoffset={2 * Math.PI * 70 - (progress / 100) * 2 * Math.PI * 70}
+                className="transition-all duration-1000 ease-out filter drop-shadow-lg"
                 strokeLinecap="round"
               />
             </svg>
@@ -216,82 +220,118 @@ export const FloatingTimer = ({
             {/* Time Display */}
             <div className="relative z-10 text-center">
               <div 
-                className="text-xs sm:text-sm font-bold" 
+                className="text-lg sm:text-2xl font-bold tracking-tight" 
                 style={{ color: getTimerColor() }}
               >
                 {formatTime(timeRemaining)}
               </div>
               {timeRemaining >= 20 * 60 && (
-                <div className="text-xs text-amber-600 font-medium mt-1 hidden sm:block">
+                <div className="text-xs sm:text-sm text-muted-foreground font-medium mt-1">
                   {t("floatingTimer.maxLimit")}
                 </div>
               )}
+              <div className="text-xs sm:text-sm text-muted-foreground font-medium">
+                Reading Time
+              </div>
             </div>
           </div>
         </div>
         
-        {/* Circular Control Buttons in Arc Formation */}
-        <div className="relative flex items-center justify-center">
-          {/* Center Play/Pause Button - More Prominent */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={onToggleReading}
-                className="bg-white/95 backdrop-blur-sm border-3 border-purple-500 text-purple-700 hover:bg-purple-50 shadow-2xl w-12 h-12 sm:w-16 sm:h-16 rounded-full p-0 transition-all duration-200 hover:scale-110 hover:shadow-purple-400/50"
-              >
-                {isReading ? <Pause className="w-5 h-5 sm:w-7 sm:h-7" /> : <Play className="w-5 h-5 sm:w-7 sm:h-7 ml-0.5" />}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="top" className="bg-purple-700 text-white border-purple-500 font-medium">
-              {isReading ? t("floatingTimer.pauseTimer") : t("floatingTimer.resumeTimer")}
-            </TooltipContent>
-          </Tooltip>
+        {/* Control Buttons in Curved U-Shape */}
+        <div className="relative w-48 sm:w-56 h-24 sm:h-28">
+          {/* Play/Pause Button - Center Bottom */}
+          <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={onToggleReading}
+                  className="bg-gradient-to-b from-white to-gray-50 backdrop-blur-sm border-2 border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground shadow-xl w-16 h-16 sm:w-20 sm:h-20 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-2xl hover:border-primary/50"
+                >
+                  {isReading ? <Pause className="w-6 h-6 sm:w-8 sm:h-8" /> : <Play className="w-6 h-6 sm:w-8 sm:h-8 ml-1" />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="bg-primary text-primary-foreground border-primary/30 font-medium">
+                {isReading ? t("floatingTimer.pauseTimer") : t("floatingTimer.resumeTimer")}
+              </TooltipContent>
+            </Tooltip>
+          </div>
+          
+          {/* Add Time Button - Left Curve */}
+          <div className="absolute bottom-4 sm:bottom-6 left-2 sm:left-4">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={onAddTime}
+                  className="bg-gradient-to-b from-white to-green-50 backdrop-blur-sm border-2 border-green-400/50 text-green-600 hover:bg-green-500 hover:text-white shadow-lg w-12 h-12 sm:w-16 sm:h-16 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-xl"
+                >
+                  <Plus className="w-5 h-5 sm:w-6 sm:h-6" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="bg-green-600 text-white border-green-500 font-medium">
+                {t("floatingTimer.addTime")}
+              </TooltipContent>
+            </Tooltip>
+          </div>
 
-          {/* Surrounding Action Buttons */}
-          <div className="absolute inset-0 pointer-events-none">
-            {/* Add Time Button - Top Left */}
-            <div className="absolute -top-2 sm:-top-3 md:-top-4 -left-8 sm:-left-12 md:-left-16 pointer-events-auto">
+          {/* Subtract Time Button - Right Curve */}
+          {onSubtractTime && (
+            <div className="absolute bottom-4 sm:bottom-6 right-2 sm:right-4">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
                     variant="outline"
-                    size="sm"
-                    onClick={onAddTime}
-                    className="bg-white/95 backdrop-blur-sm border-2 border-green-400 text-green-700 hover:bg-green-50 shadow-lg w-8 h-8 sm:w-10 sm:h-10 md:w-14 md:h-14 rounded-full p-0 transition-all duration-200 hover:scale-110"
+                    size="lg"
+                    onClick={onSubtractTime}
+                    disabled={timeRemaining <= 10 * 60}
+                    className="bg-gradient-to-b from-white to-orange-50 backdrop-blur-sm border-2 border-orange-400/50 text-orange-600 hover:bg-orange-500 hover:text-white shadow-lg w-12 h-12 sm:w-16 sm:h-16 rounded-full p-0 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-110 hover:shadow-xl"
                   >
-                    <Plus className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" />
+                    <Minus className="w-5 h-5 sm:w-6 sm:h-6" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent side="top" className="bg-green-700 text-white border-green-500">
-                  {t("floatingTimer.addTime")}
+                <TooltipContent side="top" className="bg-orange-600 text-white border-orange-500 font-medium">
+                  {t("floatingTimer.reduceTime")}
                 </TooltipContent>
               </Tooltip>
             </div>
+          )}
 
-            {/* Subtract Time Button - Top Right */}
-            {onSubtractTime && (
-              <div className="absolute -top-2 sm:-top-3 md:-top-4 -right-8 sm:-right-12 md:-right-16 pointer-events-auto">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={onSubtractTime}
-                      disabled={timeRemaining <= 10 * 60}
-                      className="bg-white/95 backdrop-blur-sm border-2 border-orange-400 text-orange-700 hover:bg-orange-50 shadow-lg w-8 h-8 sm:w-10 sm:h-10 md:w-14 md:h-14 rounded-full p-0 disabled:opacity-50 transition-all duration-200 hover:scale-110"
-                    >
-                      <Minus className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="bg-orange-700 text-white border-orange-500">
-                    {t("floatingTimer.reduceTime")}
-                  </TooltipContent>
-                </Tooltip>
+          {/* Add Pages Button - Top Left Curve */}
+          <div className="absolute top-0 left-8 sm:left-12">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={onAddPages}
+                  className={`bg-gradient-to-b from-white to-blue-50 backdrop-blur-sm border-2 border-blue-400/50 text-blue-600 hover:bg-blue-500 hover:text-white shadow-lg w-12 h-12 sm:w-16 sm:h-16 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-xl ${
+                    shouldShakeTooltip ? 'animate-bounce border-amber-400 bg-gradient-to-b from-amber-50 to-amber-100 text-amber-700' : ''
+                  }`}
+                >
+                  <BookOpen className="w-5 h-5 sm:w-6 sm:h-6" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top" className={`font-medium ${shouldShakeTooltip ? 'bg-amber-600 text-white border-amber-500' : 'bg-blue-600 text-white border-blue-500'}`}>
+                {shouldShakeTooltip ? '⏰ Add more pages!' : 'Add More Pages'}
+              </TooltipContent>
+            </Tooltip>
+          </div>
+
+          {/* Status Indicator - Top Right Curve */}
+          <div className="absolute top-0 right-8 sm:right-12">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-b from-white to-gray-50 border-2 border-gray-300/50 shadow-lg flex items-center justify-center">
+              <div className="text-center">
+                <div className="text-xs sm:text-sm font-bold text-gray-700">
+                  {pagesRemaining}
+                </div>
+                <div className="text-[10px] sm:text-xs text-gray-500 font-medium">
+                  pages
+                </div>
               </div>
-            )}
-
+            </div>
           </div>
         </div>
       </div>
