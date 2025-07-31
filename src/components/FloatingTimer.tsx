@@ -146,7 +146,7 @@ export const FloatingTimer = ({
   return (
     <TooltipProvider>
       {/* Floating Timer Container */}
-      <div className="fixed bottom-4 right-2 sm:bottom-6 sm:right-4 md:bottom-8 md:right-8 z-50 flex flex-col items-center gap-2 sm:gap-4" data-tutorial-target={tutorialTarget} style={{ marginRight: 'max(0.5rem, env(safe-area-inset-right))', marginBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}>
+      <div className="fixed bottom-16 right-2 sm:bottom-20 sm:right-4 md:bottom-24 md:right-6 z-40 flex flex-col items-center gap-2 sm:gap-4" data-tutorial-target={tutorialTarget} style={{ marginRight: 'max(0.5rem, env(safe-area-inset-right))', marginBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}>
         {/* Circular Timer */}
         <div className="relative">
           {/* Celebration Animation */}
