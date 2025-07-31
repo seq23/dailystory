@@ -7,6 +7,7 @@ import type { UserInfo, SessionStats } from "@/types";
 import { InteractiveAudioReading } from "@/components/InteractiveAudioReading";
 import { ElevenLabsAudio } from "@/components/ElevenLabsAudio";
 import { EarlyReaderStoryGenerator } from "@/services/earlyReaderStoryGenerator";
+import { ReadingSessionTutorial } from "@/components/ReadingSessionTutorial";
 import { APP_CONFIG } from "@/constants/app";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
@@ -57,6 +58,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   const [showProgressReport, setShowProgressReport] = useState(false);
   const [sessionEnded, setSessionEnded] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
 
   // Character consistency - store original character details
   const [establishedCharacter, setEstablishedCharacter] = useState<any>(null);
@@ -656,110 +658,117 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   const stats = calculateStats();
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 ${
-      celebrationStep === 1 ? 'animate-pulse' : ''
-    }`}>
-      {/* Enhanced Professional Floating Timer with Controls - Top Right, Mobile Optimized */}
-      {sessionStarted && timeRemaining > 0 && !sessionEnded && (
-        <div className="fixed top-2 right-2 sm:right-4 md:right-6 z-50 flex flex-col items-center gap-2 sm:gap-3" style={{ marginRight: 'max(0.5rem, env(safe-area-inset-right))', marginTop: 'max(0.5rem, env(safe-area-inset-top))' }}>
-          
-          {/* Main Timer Circle - Professional & Larger */}
-          <div className="relative">
-            {/* Main Timer Circle - Smaller & Professional */}
-            <div className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-gradient-to-br from-white to-gray-50 backdrop-blur-sm rounded-full shadow-xl border-2 sm:border-3 border-white/80 flex items-center justify-center ring-2 ring-purple-500/20">
-              {/* Outer glow ring */}
-              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-purple-500/10 to-transparent animate-pulse"></div>
-              
-              {/* Progress Circle */}
-              <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 100 100">
-                {/* Background circle */}
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="42"
-                  stroke="hsl(var(--muted))"
-                  strokeWidth="8"
-                  fill="none"
-                  opacity="0.3"
-                />
-                {/* Progress circle */}
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="42"
-                  stroke={timeRemaining <= 300 ? "#ef4444" : "#8b5cf6"}
-                  strokeWidth="6"
-                  fill="none"
-                  strokeDasharray={2 * Math.PI * 42}
-                  strokeDashoffset={2 * Math.PI * 42 - ((timeRemaining / APP_CONFIG.FREE_SESSION_DURATION) * 2 * Math.PI * 42)}
-                  className="transition-all duration-1000 ease-out filter drop-shadow-lg"
-                  strokeLinecap="round"
-                />
-              </svg>
-              
-              {/* Time Display */}
-              <div className="relative z-10 text-center">
-                <div className={`text-sm sm:text-lg font-bold tracking-tight ${timeRemaining <= 300 ? 'text-red-500' : 'text-purple-600'}`}>
-                  {Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')}
-                </div>
-                <div className="text-[10px] sm:text-xs text-gray-600 font-medium leading-tight">
-                  Free Time
+    <>
+      <ReadingSessionTutorial 
+        isVisible={showTutorial}
+        onComplete={() => setShowTutorial(false)}
+        onSkip={() => setShowTutorial(false)}
+      />
+      
+      <div className={`min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 ${
+        celebrationStep === 1 ? 'animate-pulse' : ''
+      }`}>
+        {/* Enhanced Professional Floating Timer with Controls - Top Right, Mobile Optimized */}
+        {sessionStarted && timeRemaining > 0 && !sessionEnded && (
+          <div className="fixed top-2 right-2 sm:right-4 md:right-6 z-50 flex flex-col items-center gap-2 sm:gap-3" style={{ marginRight: 'max(0.5rem, env(safe-area-inset-right))', marginTop: 'max(0.5rem, env(safe-area-inset-top))' }}>
+            
+            {/* Main Timer Circle - Professional & Larger */}
+            <div className="relative">
+              {/* Main Timer Circle - Smaller & Professional */}
+              <div className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-gradient-to-br from-white to-gray-50 backdrop-blur-sm rounded-full shadow-xl border-2 sm:border-3 border-white/80 flex items-center justify-center ring-2 ring-purple-500/20">
+                {/* Outer glow ring */}
+                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-purple-500/10 to-transparent animate-pulse"></div>
+                
+                {/* Progress Circle */}
+                <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 100 100">
+                  {/* Background circle */}
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="42"
+                    stroke="hsl(var(--muted))"
+                    strokeWidth="8"
+                    fill="none"
+                    opacity="0.3"
+                  />
+                  {/* Progress circle */}
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="42"
+                    stroke={timeRemaining <= 300 ? "#ef4444" : "#8b5cf6"}
+                    strokeWidth="6"
+                    fill="none"
+                    strokeDasharray={2 * Math.PI * 42}
+                    strokeDashoffset={2 * Math.PI * 42 - ((timeRemaining / APP_CONFIG.FREE_SESSION_DURATION) * 2 * Math.PI * 42)}
+                    className="transition-all duration-1000 ease-out filter drop-shadow-lg"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                
+                {/* Time Display */}
+                <div className="relative z-10 text-center">
+                  <div className={`text-sm sm:text-lg font-bold tracking-tight ${timeRemaining <= 300 ? 'text-red-500' : 'text-purple-600'}`}>
+                    {Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')}
+                  </div>
+                  <div className="text-[10px] sm:text-xs text-gray-600 font-medium leading-tight">
+                    Free Time
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          
-          {/* 3 Control Buttons Only */}
-          <div className="flex gap-4 items-center">
             
-            {/* 1. Pause/Resume Button - Center */}
-            <Button
-              size="lg"
-              onClick={() => {
-                setIsPaused(!isPaused);
-                // No toast for pause/resume
-              }}
-                className="bg-gradient-to-b from-white to-gray-50 backdrop-blur-sm border-2 border-purple-500/30 text-purple-600 hover:bg-purple-500 hover:text-white shadow-xl w-12 h-12 sm:w-14 sm:h-14 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-2xl hover:border-purple-500/50"
+            {/* 3 Control Buttons Only */}
+            <div className="flex gap-4 items-center">
+              
+              {/* 1. Pause/Resume Button - Center */}
+              <Button
+                size="lg"
+                onClick={() => {
+                  setIsPaused(!isPaused);
+                  // No toast for pause/resume
+                }}
+                  className="bg-gradient-to-b from-white to-gray-50 backdrop-blur-sm border-2 border-purple-500/30 text-purple-600 hover:bg-purple-500 hover:text-white shadow-xl w-12 h-12 sm:w-14 sm:h-14 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-2xl hover:border-purple-500/50"
+                >
+                  {isPaused ? <Play className="w-4 h-4 sm:w-5 sm:h-5" /> : <Pause className="w-4 h-4 sm:w-5 sm:h-5" />}
+              </Button>
+              
+              {/* 2. Reduce Time Button - Left */}
+              <Button
+                variant="outline"
+                size="lg"
+                disabled={timeRemaining <= 300}
+                className={`bg-gradient-to-b from-white to-orange-50 backdrop-blur-sm border-2 border-orange-400/50 text-orange-600 hover:bg-orange-500 hover:text-white shadow-lg w-10 h-10 sm:w-12 sm:h-12 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-xl ${
+                  timeRemaining <= 300 
+                    ? 'opacity-50 cursor-not-allowed' 
+                    : ''
+                }`}
+                onClick={() => {
+                  if (timeRemaining > 300) {
+                    setTimeRemaining(prev => Math.max(300, prev - 300));
+                    // No toast for time reduction
+                  }
+                }}
               >
-                {isPaused ? <Play className="w-4 h-4 sm:w-5 sm:h-5" /> : <Pause className="w-4 h-4 sm:w-5 sm:h-5" />}
-            </Button>
-            
-            {/* 2. Reduce Time Button - Left */}
-            <Button
-              variant="outline"
-              size="lg"
-              disabled={timeRemaining <= 300}
-              className={`bg-gradient-to-b from-white to-orange-50 backdrop-blur-sm border-2 border-orange-400/50 text-orange-600 hover:bg-orange-500 hover:text-white shadow-lg w-10 h-10 sm:w-12 sm:h-12 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-xl ${
-                timeRemaining <= 300 
-                  ? 'opacity-50 cursor-not-allowed' 
-                  : ''
-              }`}
-              onClick={() => {
-                if (timeRemaining > 300) {
-                  setTimeRemaining(prev => Math.max(300, prev - 300));
-                  // No toast for time reduction
-                }
-              }}
-            >
-              <Minus className="w-3 h-3 sm:w-4 sm:h-4" />
-            </Button>
+                <Minus className="w-3 h-3 sm:w-4 sm:h-4" />
+              </Button>
 
-            {/* 3. End Session Button - Right */}
-            <Button
-              variant="outline"
-              size="lg"
-              className="bg-gradient-to-b from-white to-red-50 backdrop-blur-sm border-2 border-red-400/50 text-red-600 hover:bg-red-500 hover:text-white shadow-lg w-10 h-10 sm:w-12 sm:h-12 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-xl"
-              onClick={() => {
-                setTimeRemaining(0);
-                handleSessionEnd();
-                // No toast for session end
-              }}
-            >
-              <X className="w-3 h-3 sm:w-4 sm:h-4" />
-            </Button>
+              {/* 3. End Session Button - Right */}
+              <Button
+                variant="outline"
+                size="lg"
+                className="bg-gradient-to-b from-white to-red-50 backdrop-blur-sm border-2 border-red-400/50 text-red-600 hover:bg-red-500 hover:text-white shadow-lg w-10 h-10 sm:w-12 sm:h-12 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-xl"
+                onClick={() => {
+                  setTimeRemaining(0);
+                  handleSessionEnd();
+                  // No toast for session end
+                }}
+              >
+                <X className="w-3 h-3 sm:w-4 sm:h-4" />
+              </Button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
       {/* Free Trial Badge - Repositioned to bottom left */}
       {!sessionEnded && (
@@ -1076,6 +1085,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
           </main>
         </>
       )}
-    </div>
+      </div>
+    </>
   );
 };

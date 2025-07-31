@@ -9,7 +9,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { TagInput } from "@/components/ui/tag-input";
 import { ColorPicker } from "@/components/ui/color-picker";
 import { AvatarPicker } from "@/components/ui/avatar-picker";
-import { TutorialOverlay } from "@/components/TutorialOverlay";
 import { ChevronRight, User, GraduationCap, Heart, Star, Globe, Sparkles } from "lucide-react";
 import { ContentSecurity, SecurityLogger } from "@/utils/security";
 import { useToast } from "@/hooks/use-toast";
@@ -25,7 +24,6 @@ interface UserInfoFormProps {
 export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
-  const [showTutorial, setShowTutorial] = useState(true);
   const [formData, setFormData] = useState<UserInfo>({
     name: "",
     age: 6,
@@ -136,14 +134,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
   };
 
   return (
-    <>
-      <TutorialOverlay 
-        isVisible={showTutorial}
-        onComplete={() => setShowTutorial(false)}
-        onSkip={() => setShowTutorial(false)}
-      />
-      
-      <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/20 flex items-center justify-center p-2 sm:p-4 md:p-6 pb-safe relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/20 flex items-center justify-center p-2 sm:p-4 md:p-6 pb-safe relative overflow-hidden">
         {/* Floating background elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-20 left-20 w-32 h-32 bg-primary/10 rounded-full animate-float blur-xl"></div>
@@ -434,6 +425,5 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
           </div>
         </Card>
       </div>
-    </>
-  );
+    );
 };

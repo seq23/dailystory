@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Play, Pause, Plus, Minus, BookOpen } from "lucide-react";
+import { ReadingSessionTutorial } from "@/components/ReadingSessionTutorial";
 import { useToast } from "@/hooks/use-toast";
 
 interface FloatingTimerProps {
@@ -16,6 +17,8 @@ interface FloatingTimerProps {
   currentParagraph?: number;
   onSessionEnded: () => void;
   tutorialTarget?: string;
+  showTutorial?: boolean;
+  onTutorialComplete?: () => void;
 }
 
 export const FloatingTimer = ({ 
@@ -28,7 +31,9 @@ export const FloatingTimer = ({
   pagesRemaining = 0,
   currentParagraph = 0,
   onSessionEnded,
-  tutorialTarget
+  tutorialTarget,
+  showTutorial = false,
+  onTutorialComplete
 }: FloatingTimerProps) => {
   const { t } = useTranslation();
   const [showCelebration, setShowCelebration] = useState(false);
@@ -139,9 +144,16 @@ export const FloatingTimer = ({
   };
 
   return (
-    <TooltipProvider>
+    <>
+      <ReadingSessionTutorial 
+        isVisible={showTutorial}
+        onComplete={onTutorialComplete || (() => {})}
+        onSkip={onTutorialComplete || (() => {})}
+      />
+      
+      <TooltipProvider>
       {/* Floating Timer Container - Fixed positioning to avoid overlap */}
-      <div className="fixed bottom-6 left-6 sm:left-8 z-30 flex flex-col items-center gap-6" data-tutorial-target={tutorialTarget} style={{ marginLeft: 'max(1rem, env(safe-area-inset-left))', marginBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+      <div className="fixed bottom-6 left-6 sm:left-8 z-30 flex flex-col items-center gap-6" id="floating-timer" data-tutorial-target={tutorialTarget} style={{ marginLeft: 'max(1rem, env(safe-area-inset-left))', marginBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
         
         {/* Main Timer Circle - Professional & Larger */}
         <div className="relative">
@@ -377,6 +389,7 @@ export const FloatingTimer = ({
           </div>
         </div>
       )}
-    </TooltipProvider>
+      </TooltipProvider>
+    </>
   );
 };

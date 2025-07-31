@@ -335,5 +335,31 @@
       "intermediate": "Medium", 
       "advanced": "Hard"
     }
+  },
+  "readingTutorial": {
+    "step1": {
+      "title": "Meet Your Reading Timer!",
+      "description": "This floating timer tracks your reading time and gives you control over your session. Let's explore what each button does!"
+    },
+    "step2": {
+      "title": "Play & Pause",
+      "description": "Click the center button to start or pause your reading timer. The timer only counts when you're actively reading!"
+    },
+    "step3": {
+      "title": "Add More Time",
+      "description": "Need more reading time? Click the green + button to add extra minutes to your session!"
+    },
+    "step4": {
+      "title": "Add More Pages",
+      "description": "Want to continue the adventure? Click this button to add 5 more pages to your story!"
+    },
+    "step5": {
+      "title": "Adjust Difficulty",
+      "description": "Too easy or too hard? Use these arrow buttons to make the text easier or more challenging for your reading level!"
+    },
+    "step6": {
+      "title": "Navigation & Controls",
+      "description": "Use 'New Story' to create a different adventure, or 'Home' to return to the main page. Previous/Next buttons move between story pages!"
+    }
   }
 }
