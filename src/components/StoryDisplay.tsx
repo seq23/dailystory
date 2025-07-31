@@ -786,21 +786,25 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         const favoriteAnimal = userInfo.favoriteAnimal || 'cat';
         const favoriteColor = userInfo.favoriteColor || 'blue';
         
-        // Detect if user's favorite animal is mentioned in the story
-        const hasUserAnimal = lowerText.includes(favoriteAnimal.toLowerCase());
+        // Detect if user's favorite animal is mentioned in the story or if "together" suggests companions
+        const hasUserAnimal = lowerText.includes(favoriteAnimal.toLowerCase()) || lowerText.includes('together') || lowerText.includes('they walked') || lowerText.includes('they went');
         const animalInScene = hasUserAnimal ? `${favoriteColor} ${favoriteAnimal}` : 'a friendly companion';
         
-        // Scene detection with user preferences integrated
-        if (lowerText.includes('woke') || lowerText.includes('morning')) {
+        // Scene detection with user preferences integrated and better action detection
+        if (lowerText.includes('walked') || lowerText.includes('walking') || lowerText.includes('went')) {
+          return `a child walking ${hasUserAnimal ? `with their ${animalInScene}` : ''} through a magical landscape${lowerText.includes('secret') ? ' towards a mysterious secret place' : ''}`;
+        } else if (lowerText.includes('woke') || lowerText.includes('morning')) {
           return `a child waking up in a cozy bedroom with morning sunlight streaming through the window${hasUserAnimal ? ` with their ${animalInScene} nearby` : ''}`;
         } else if (lowerText.includes('outside') || lowerText.includes('garden')) {
           return `a child in a beautiful garden with ${favoriteColor} flowers and trees${hasUserAnimal ? ` playing with ${animalInScene}` : ''}`;
         } else if (lowerText.includes('playing') || lowerText.includes('play')) {
           return `a child happily playing in a safe outdoor environment${hasUserAnimal ? ` with ${animalInScene}` : ''}`;
-        } else if (lowerText.includes('friend') || lowerText.includes('animal')) {
+        } else if (lowerText.includes('friend') || lowerText.includes('animal') || lowerText.includes('met') || lowerText.includes('appeared')) {
           return `a child meeting their ${animalInScene}`;
         } else if (lowerText.includes('adventure') || lowerText.includes('exploring')) {
           return `a child on an exciting but safe adventure${hasUserAnimal ? ` with ${animalInScene}` : ''}`;
+        } else if (lowerText.includes('together')) {
+          return `a child together with their ${animalInScene} in a heartwarming scene`;
         } else {
           return `a child in a peaceful, happy scene${hasUserAnimal ? ` with ${animalInScene}` : ''}`;
         }
