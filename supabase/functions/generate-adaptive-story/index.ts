@@ -115,6 +115,13 @@ Available elements (use only what fits organically into your narrative):
 ${hobbies ? `- Hobby: ${hobbies}` : ''}
 ${favoriteFood ? `- Favorite food: ${favoriteFood}` : ''}
 
+COPYRIGHT AWARENESS:
+If any user inputs reference copyrighted characters, brands, or content (like Godzilla, Pokemon, Disney characters, etc.), create original alternatives that capture the spirit:
+- Instead of "Godzilla" → create "Gigantus the friendly giant lizard" or "Mega-Rex the gentle giant"
+- Instead of "Pokemon" → create "magical creature companions" or "wonder pets"
+- Instead of "Batman" → create "Night Hero" or "Cape Guardian"
+- Use descriptive, original names that evoke similar feelings without copyright issues
+
 WRITING APPROACH:
 - Let the story flow naturally like a published children's book
 - Don't force all elements into the beginning - spread them throughout when they naturally fit
