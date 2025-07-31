@@ -462,11 +462,6 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         generateCustomIllustration(targetPage, generatedStory[targetPage]);
       }
       
-      toast({
-        title: "Story Updated",
-        description: `Difficulty changed to ${newDifficulty}. Generating new illustrations...`,
-        variant: "default"
-      });
     } catch (error) {
       console.error('Error regenerating story with new difficulty:', error);
       toast({
@@ -761,11 +756,6 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
           console.log('Updated current illustration for page:', pageIndex);
         }
         
-        toast({
-          title: "Illustration Ready",
-          description: `Custom illustration generated for page ${pageIndex + 1}`,
-          variant: "default"
-        });
         
       } else {
         console.error('No image URL in result:', result);
