@@ -75,166 +75,278 @@ export class InclusiveStoryGenerator {
     
     const targetWords = wordsPerPage[difficulty] || 35;
     
-    // Create different story variants based on difficulty and cultural context
-    const createCulturalStoryByDifficulty = () => {
+    // Create a cohesive story that flows like a book
+    const createCohesiveStory = () => {
       const storyPages: string[] = [];
       
       // Enhanced story elements that incorporate user preferences
       const getPersonalizedElements = () => {
-        // Base elements with fallbacks if user didn't provide preferences
-        const animals = userInfo.favoriteAnimal 
-          ? [`friendly ${userInfo.favoriteAnimal.toLowerCase()}`, "wise owl", "playful rabbit", "gentle deer", "curious fox"]
-          : ["friendly dragon", "wise owl", "playful rabbit", "gentle deer", "curious fox"];
+        const animal = userInfo.favoriteAnimal 
+          ? userInfo.favoriteAnimal.toLowerCase()
+          : ["dragon", "owl", "rabbit", "deer", "fox"][Math.floor(Math.random() * 5)];
         
-        const settings = [culturalElements.setting, "magical forest", "enchanted garden", "crystal cave", "rainbow bridge"];
+        const setting = culturalElements.setting || "magical forest";
         
-        const objects = userInfo.favoriteColor 
-          ? [`glowing ${userInfo.favoriteColor.toLowerCase()} crystal`, "magic book", "golden key", "silver compass", `${userInfo.favoriteColor.toLowerCase()} gem`]
-          : ["glowing crystal", "magic book", "golden key", "silver compass", "rainbow gem"];
+        const object = userInfo.favoriteColor 
+          ? `glowing ${userInfo.favoriteColor.toLowerCase()} crystal`
+          : "glowing crystal";
         
-        const values = [culturalElements.value, "kindness", "courage", "friendship", "wisdom"];
+        const value = culturalElements.value || "kindness";
         
-        // Add food-related elements if user provided favorite food
-        const foods = userInfo.favoriteFood 
-          ? [`delicious ${userInfo.favoriteFood.toLowerCase()}`, "magical treats", "sweet berries", "golden honey"]
-          : ["magical treats", "sweet berries", "golden honey", "crystal water"];
+        const food = userInfo.favoriteFood 
+          ? userInfo.favoriteFood.toLowerCase()
+          : "magical berries";
         
-        // Add hobby-related activities if user provided hobbies
-        const activities = userInfo.hobbies 
-          ? [userInfo.hobbies.toLowerCase(), "exploring", "learning", "helping others"]
-          : ["exploring", "learning", "helping others", "solving puzzles"];
+        const activity = userInfo.hobbies 
+          ? userInfo.hobbies.toLowerCase()
+          : "exploring";
         
-        return { animals, settings, objects, values, foods, activities };
+        return { animal, setting, object, value, food, activity };
       };
       
-      const { animals, settings, objects, values, foods, activities } = getPersonalizedElements();
+      const { animal, setting, object, value, food, activity } = getPersonalizedElements();
+      
+      // Create story structure based on difficulty
+      const createStoryStructure = () => {
+        if (difficulty === "easy") {
+          // Simple 3-act structure: Meet character → Adventure → Resolution
+          return {
+            introduction: Math.ceil(pageCount * 0.3), // 30% introduction
+            adventure: Math.ceil(pageCount * 0.5),     // 50% adventure
+            resolution: Math.floor(pageCount * 0.2)    // 20% resolution
+          };
+        } else if (difficulty === "medium") {
+          // Classic story arc: Setup → Inciting incident → Rising action → Climax → Resolution
+          return {
+            introduction: Math.ceil(pageCount * 0.2),
+            adventure: Math.ceil(pageCount * 0.6),
+            resolution: Math.floor(pageCount * 0.2)
+          };
+        } else {
+          // Complex structure with character development and subplots
+          return {
+            introduction: Math.ceil(pageCount * 0.25),
+            adventure: Math.ceil(pageCount * 0.55),
+            resolution: Math.floor(pageCount * 0.2)
+          };
+        }
+      };
+      
+      const structure = createStoryStructure();
+      let currentSection = 'introduction';
+      let sectionPageCount = 0;
+      let storyProgress = {
+        metCharacter: false,
+        foundObject: false,
+        facedChallenge: false,
+        learnedLesson: false,
+        journeyComplete: false
+      };
       
       for (let i = 0; i < pageCount; i++) {
-        let page = "";
-        let wordCount = 0;
-        
-        if (difficulty === "easy") {
-          // Dr. Seuss / Mo Willems / Eric Carle inspired style
-          // Simple, repetitive language with rhythm. Large text, lots of white space
-          const easyTemplates = [
-            `${characterName} sees! ${characterName} sees a big, big ${animals[i % animals.length]}!`,
-            `"Hello!" says ${characterName}. "Hello!" says the ${animals[i % animals.length]}.`,
-            `They go. They go to the ${settings[i % settings.length]}.`,
-            `${characterName} looks. ${characterName} looks and sees!`,
-            `What is that? What is that ${objects[i % objects.length]}?`,
-            `It is good! It is very, very good!`,
-            userInfo.favoriteColor ? `${userInfo.favoriteColor} things! ${userInfo.favoriteColor} things everywhere!` : `Pretty things! Pretty things everywhere!`,
-            `${characterName} smiles. Big smiles! Happy smiles!`,
-            userInfo.favoriteFood ? `Yum, yum! ${foods[i % foods.length]} to share!` : `Good food! Good food to share!`,
-            userInfo.hobbies ? `Fun time! ${activities[i % activities.length]} is fun!` : `Play time! Play time is fun!`,
-            userInfo.specialRequest ? `${characterName} thinks about ${userInfo.specialRequest.toLowerCase()}. Good thoughts!` : `Good day! Very good day!`
-          ];
-          
-          while (wordCount < targetWords) {
-            const template = easyTemplates[Math.floor(Math.random() * easyTemplates.length)];
-            const words = template.split(' ').length;
-            if (wordCount + words <= targetWords + 5) {
-              page += (page ? " " : "") + template;
-              wordCount += words;
-            } else {
-              break;
-            }
-          }
-        } else if (difficulty === "medium") {
-          // Kevin Henkes / Jan Brett inspired style
-          // Gentle storytelling with emotional depth, accessible language, clear story structure
-          const mediumTemplates = [
-            `One sunny morning, ${characterName} stepped into the gentle world of the ${settings[i % settings.length]}, where everything felt peaceful and welcoming.`,
-            `A kind ${animals[i % animals.length]} approached slowly, its eyes twinkling with wisdom and warmth, ready to share an important story.`,
-            `"Sometimes," whispered the ${animals[i % animals.length]}, "the most beautiful treasures are found when we learn about ${values[i % values.length]}."`,
-            `${characterName} felt a warm glow in their heart as they discovered the special ${objects[i % objects.length]} hidden among the soft leaves.`,
-            `The adventure unfolded like a gentle dream, each moment teaching ${characterName} something wonderful about friendship and kindness.`,
-            userInfo.hobbies ? `Using their love of ${activities[i % activities.length]}, ${characterName} found a creative way to help their new friend.` : `With patience and care, ${characterName} found a gentle way to help their new friend.`,
-            `The ${animals[i % animals.length]} smiled softly, knowing that ${characterName} had a generous heart full of ${values[i % values.length]}.`,
-            `Together they worked, sharing quiet moments of understanding and building a friendship that would last forever.`,
-            userInfo.favoriteColor ? `The world around them glowed with soft ${userInfo.favoriteColor.toLowerCase()} hues, making everything feel magical and serene.` : `The world around them glowed with soft, warm colors, making everything feel magical and serene.`,
-            userInfo.favoriteFood ? `They shared a simple meal of ${foods[i % foods.length]}, savoring both the food and their growing friendship.` : `They shared a simple meal together, savoring both the food and their growing friendship.`,
-            userInfo.specialRequest ? `${characterName} thought quietly about ${userInfo.specialRequest.toLowerCase()}, feeling grateful for this gentle lesson about what truly matters.` : `${characterName} felt grateful for this gentle lesson about what truly matters in life.`
-          ];
-          
-          while (wordCount < targetWords) {
-            const template = mediumTemplates[Math.floor(Math.random() * mediumTemplates.length)];
-            const words = template.split(' ').length;
-            if (wordCount + words <= targetWords + 8) {
-              page += (page ? " " : "") + template;
-              wordCount += words;
-            } else {
-              break;
-            }
-          }
-        } else if (difficulty === "hard") {
-          // Roald Dahl / Beverly Cleary / Judy Blume inspired style
-          // Engaging plots with humor and heart, complex vocabulary, character relationships
-          const hardTemplates = [
-            `${characterName} couldn't believe their eyes when they stumbled upon the extraordinary ${settings[i % settings.length]}, a place where the impossible seemed perfectly ordinary and magic hummed in the air.`,
-            `"Well, I'll be jiggered!" exclaimed the peculiar ${animals[i % animals.length]}, adjusting its spectacles and peering at ${characterName} with unmistakable curiosity. "Another visitor! How absolutely scrumptious!"`,
-            `The ${objects[i % objects.length]} wasn't just any ordinary treasure - it was bursting with mysterious energy that made ${characterName}'s fingertips tingle with excitement and anticipation.`,
-            `What started as a simple exploration quickly transformed into a rollicking adventure filled with unexpected twists, delightful surprises, and valuable lessons about ${values[i % values.length]}.`,
-            `${characterName} discovered that growing up sometimes means facing challenges that seem impossible, but with determination and a dash of creativity, even the most daunting problems have solutions.`,
-            userInfo.hobbies ? `"Your talent for ${activities[i % activities.length]} is exactly what we need!" declared the ${animals[i % animals.length]}, clapping its paws together with genuine enthusiasm.` : `"Your curiosity and courage are exactly what we need!" declared the ${animals[i % animals.length]}, clapping its paws together with genuine enthusiasm.`,
-            `The friendship between ${characterName} and the ${animals[i % animals.length]} grew stronger with each shared laugh, each moment of understanding, and each act of mutual support.`,
-            `Sometimes the most important lessons come disguised as ordinary moments, and ${characterName} was beginning to understand the true meaning of ${values[i % values.length]}.`,
-            userInfo.favoriteColor ? `The entire landscape seemed to pulse with vibrant ${userInfo.favoriteColor.toLowerCase()} energy, as if the world itself was celebrating ${characterName}'s journey of discovery.` : `The entire landscape seemed to pulse with vibrant rainbow energy, as if the world itself was celebrating ${characterName}'s journey of discovery.`,
-            userInfo.favoriteFood ? `"Nothing brings creatures together quite like sharing delicious ${foods[i % foods.length]}," chuckled the ${animals[i % animals.length]}, setting out a feast that would make any celebration complete.` : `"Nothing brings creatures together quite like sharing delicious food," chuckled the ${animals[i % animals.length]}, setting out a feast that would make any celebration complete.`,
-            userInfo.specialRequest ? `As ${characterName} reflected on their adventure, they realized that their dream of ${userInfo.specialRequest.toLowerCase()} wasn't just a personal wish - it was a gift they could share with everyone they met.` : `As ${characterName} reflected on their adventure, they realized that kindness isn't just a personal quality - it's a gift they could share with everyone they met.`
-          ];
-          
-          while (wordCount < targetWords) {
-            const template = hardTemplates[Math.floor(Math.random() * hardTemplates.length)];
-            const words = template.split(' ').length;
-            if (wordCount + words <= targetWords + 10) {
-              page += (page ? " " : "") + template;
-              wordCount += words;
-            } else {
-              break;
-            }
-          }
-        } else {
-          // Kate DiCamillo / R.J. Palacio / Angie Thomas inspired style  
-          // Sophisticated themes, complex character relationships, literary devices, nuanced emotions
-          const expertTemplates = [
-            `In the profound stillness of the ${settings[i % settings.length]}, ${characterName} encountered a moment of such unexpected beauty that it would forever change their understanding of what it means to truly see the world.`,
-            `The ancient ${animals[i % animals.length]} regarded ${characterName} with eyes that held the accumulated wisdom of countless seasons, speaking in a voice that resonated with the timeless truths about ${values[i % values.length]}.`,
-            `Sometimes, ${characterName} reflected, the most transformative journeys begin not with grand gestures or dramatic moments, but with the quiet courage to listen - really listen - to the stories that surround us every day.`,
-            `The ${objects[i % objects.length]} seemed almost alive with memory, each surface telling a story of triumph and struggle, of love found and lost, of the eternal human quest to understand our place in the vast tapestry of existence.`,
-            `What ${characterName} was learning about ${values[i % values.length]} couldn't be captured in simple words or easy explanations - it was something that had to be felt, experienced, and allowed to settle deep within the soul.`,
-            userInfo.hobbies ? `Through the lens of ${activities[i % activities.length]}, ${characterName} began to see how individual passions and talents are threads in a larger fabric, connecting us all in ways both visible and invisible.` : `Through quiet observation and reflection, ${characterName} began to see how individual experiences are threads in a larger fabric, connecting us all in ways both visible and invisible.`,
-            `The relationship between ${characterName} and the ${animals[i % animals.length]} transcended simple friendship, becoming a testament to the profound connections that can form when two beings truly see and accept each other.`,
-            `In this place where time seemed to move differently, ${characterName} understood that growing up isn't about reaching a destination, but about learning to navigate the beautiful complexity of being human.`,
-            userInfo.favoriteColor ? `The world around them shifted and shimmered with subtle ${userInfo.favoriteColor.toLowerCase()} light, as if the universe itself was responding to the depth of their emotional connection and understanding.` : `The world around them shifted and shimmered with subtle, ethereal light, as if the universe itself was responding to the depth of their emotional connection and understanding.`,
-            userInfo.favoriteFood ? `They shared not just ${foods[i % foods.length]}, but stories and silences, laughter and tears, creating the kind of memory that becomes a touchstone for all future moments of connection.` : `They shared not just food, but stories and silences, laughter and tears, creating the kind of memory that becomes a touchstone for all future moments of connection.`,
-            userInfo.specialRequest ? `${characterName} came to understand that ${userInfo.specialRequest.toLowerCase()} wasn't simply a personal aspiration, but a responsibility - a way of honoring the interconnectedness of all life and the sacred trust we have to care for one another.` : `${characterName} came to understand that compassion wasn't simply a personal quality, but a responsibility - a way of honoring the interconnectedness of all life and the sacred trust we have to care for one another.`
-          ];
-          
-          while (wordCount < targetWords) {
-            const template = expertTemplates[Math.floor(Math.random() * expertTemplates.length)];
-            const words = template.split(' ').length;
-            if (wordCount + words <= targetWords + 12) {
-              page += (page ? " " : "") + template;
-              wordCount += words;
-            } else {
-              break;
-            }
-          }
+        // Determine current story section
+        if (currentSection === 'introduction' && sectionPageCount >= structure.introduction) {
+          currentSection = 'adventure';
+          sectionPageCount = 0;
+        } else if (currentSection === 'adventure' && sectionPageCount >= structure.adventure) {
+          currentSection = 'resolution';
+          sectionPageCount = 0;
         }
         
-        // Ensure we have content for the page
-        if (!page.trim()) {
-          page = `${characterName} continued their amazing adventure, learning more about ${values[i % values.length]} with each step.`;
+        let page = "";
+        
+        if (difficulty === "easy") {
+          page = this.generateEasyPage(i, currentSection, characterName, animal, setting, object, value, food, activity, storyProgress, targetWords);
+        } else if (difficulty === "medium") {
+          page = this.generateMediumPage(i, currentSection, characterName, animal, setting, object, value, food, activity, storyProgress, targetWords);
+        } else if (difficulty === "hard") {
+          page = this.generateHardPage(i, currentSection, characterName, animal, setting, object, value, food, activity, storyProgress, targetWords);
+        } else {
+          page = this.generateExpertPage(i, currentSection, characterName, animal, setting, object, value, food, activity, storyProgress, targetWords);
         }
         
         storyPages.push(page);
+        sectionPageCount++;
+        
+        // Update story progress
+        this.updateStoryProgress(i, currentSection, storyProgress);
       }
       
       return storyPages;
     };
 
-    return createCulturalStoryByDifficulty();
+    return createCohesiveStory();
+  }
+
+  private static generateEasyPage(
+    pageIndex: number,
+    section: string,
+    characterName: string,
+    animal: string,
+    setting: string,
+    object: string,
+    value: string,
+    food: string,
+    activity: string,
+    progress: any,
+    targetWords: number
+  ): string {
+    if (section === 'introduction') {
+      if (pageIndex === 0) {
+        return `This is ${characterName}. ${characterName} is very happy today! ${characterName} wants to go on a big adventure.`;
+      } else if (pageIndex === 1) {
+        return `${characterName} walks and walks. ${characterName} sees trees. ${characterName} sees flowers. Where will ${characterName} go?`;
+      } else {
+        return `Look! ${characterName} sees the ${setting}! It looks magical and fun. "I want to explore!" says ${characterName}.`;
+      }
+    } else if (section === 'adventure') {
+      if (!progress.metCharacter) {
+        return `"Hello!" says a voice. ${characterName} looks around. A friendly ${animal} waves at ${characterName}. "Hi there!"`;
+      } else if (!progress.foundObject) {
+        return `"I lost my special ${object}," says the ${animal}. "Can you help me find it?" ${characterName} nods. "Yes! I will help!"`;
+      } else if (!progress.facedChallenge) {
+        return `They look and look. They look under rocks. They look behind trees. Where could the ${object} be?`;
+      } else {
+        return `"There it is!" shouts ${characterName}. The ${object} is hiding in the tall grass. It glows and sparkles!`;
+      }
+    } else {
+      if (!progress.learnedLesson) {
+        return `"Thank you!" says the ${animal}. "You are very kind." ${characterName} feels warm and happy inside.`;
+      } else {
+        return `${characterName} learned about ${value} today. What a wonderful adventure! ${characterName} can't wait for tomorrow.`;
+      }
+    }
+  }
+
+  private static generateMediumPage(
+    pageIndex: number,
+    section: string,
+    characterName: string,
+    animal: string,
+    setting: string,
+    object: string,
+    value: string,
+    food: string,
+    activity: string,
+    progress: any,
+    targetWords: number
+  ): string {
+    if (section === 'introduction') {
+      if (pageIndex === 0) {
+        return `${characterName} woke up feeling excited about the day ahead. Something special was going to happen, though ${characterName} didn't know what it would be yet.`;
+      } else if (pageIndex === 1) {
+        return `After breakfast, ${characterName} decided to take a walk through the peaceful ${setting}. The morning air was fresh and filled with the sweet scent of blooming flowers.`;
+      } else {
+        return `As ${characterName} wandered deeper into the ${setting}, the trees seemed to whisper secrets and the path sparkled with dewdrops like tiny diamonds.`;
+      }
+    } else if (section === 'adventure') {
+      if (!progress.metCharacter) {
+        return `Suddenly, ${characterName} heard a soft whimpering sound coming from behind a large oak tree. There sat a gentle ${animal}, looking very sad and worried.`;
+      } else if (!progress.foundObject) {
+        return `"I've lost my precious ${object}," explained the ${animal} with tears in its eyes. "It was a gift from my grandmother, and without it, I feel so lost."`;
+      } else if (!progress.facedChallenge) {
+        return `${characterName} and the ${animal} searched everywhere together. They climbed hills, crossed streams, and even looked in the darkest corners of the forest.`;
+      } else {
+        return `Just when they were about to give up, ${characterName} spotted something glowing softly beneath a pile of autumn leaves. It was the ${object}!`;
+      }
+    } else {
+      if (!progress.learnedLesson) {
+        return `The ${animal}'s face lit up with joy and gratitude. "You didn't have to help me," it said, "but you chose to anyway. That shows true ${value}."`;
+      } else {
+        return `As ${characterName} walked home, their heart felt full of warmth. They had discovered that the greatest adventures come from helping others and showing ${value}.`;
+      }
+    }
+  }
+
+  private static generateHardPage(
+    pageIndex: number,
+    section: string,
+    characterName: string,
+    animal: string,
+    setting: string,
+    object: string,
+    value: string,
+    food: string,
+    activity: string,
+    progress: any,
+    targetWords: number
+  ): string {
+    if (section === 'introduction') {
+      if (pageIndex === 0) {
+        return `${characterName} had always been curious about the mysterious ${setting} that lay beyond the edge of their neighborhood. Today, with a backpack full of supplies and a heart full of determination, they decided it was finally time to explore.`;
+      } else if (pageIndex === 1) {
+        return `The entrance to the ${setting} was marked by two ancient stone pillars covered in strange symbols. As ${characterName} passed between them, the air seemed to shimmer with an otherworldly energy that made their skin tingle with anticipation.`;
+      } else {
+        return `Every step deeper into the ${setting} revealed new wonders: flowers that chimed like bells in the breeze, streams that flowed uphill, and butterflies whose wings left trails of glittering stardust in the air.`;
+      }
+    } else if (section === 'adventure') {
+      if (!progress.metCharacter) {
+        return `"Excuse me, young traveler," came a melodious voice from above. ${characterName} looked up to see a magnificent ${animal} perched on a branch, its wise eyes reflecting centuries of knowledge and experience.`;
+      } else if (!progress.foundObject) {
+        return `The ${animal} explained that long ago, a powerful ${object} had been hidden in the ${setting} to protect it from those who would misuse its magic. "But now," it said sadly, "the balance of our world depends on finding it again."`;
+      } else if (!progress.facedChallenge) {
+        return `The quest led ${characterName} through treacherous ravines and across rickety bridges suspended over misty chasms. Each obstacle tested not only their physical courage but also their commitment to helping others.`;
+      } else {
+        return `At the heart of the ${setting}, in a grove where sunlight danced through crystal leaves, ${characterName} discovered the ${object} resting on a pedestal of living stone, pulsing with gentle, warm light.`;
+      }
+    } else {
+      if (!progress.learnedLesson) {
+        return `"You could have kept the ${object} for yourself," observed the ${animal} with deep respect, "but instead you chose to return it to where it belongs. This is the true meaning of ${value}."`;
+      } else {
+        return `As ${characterName} made their way home, they realized that the real treasure hadn't been the magical ${object}, but the understanding that ${value} and selflessness are the most powerful forces in any world.`;
+      }
+    }
+  }
+
+  private static generateExpertPage(
+    pageIndex: number,
+    section: string,
+    characterName: string,
+    animal: string,
+    setting: string,
+    object: string,
+    value: string,
+    food: string,
+    activity: string,
+    progress: any,
+    targetWords: number
+  ): string {
+    if (section === 'introduction') {
+      if (pageIndex === 0) {
+        return `In the quiet moments before dawn, when the world exists in that liminal space between night and day, ${characterName} found themselves drawn to the ancient ${setting} that had haunted their dreams for weeks. There was something there, calling to them—a purpose they couldn't yet name but felt with every fiber of their being.`;
+      } else if (pageIndex === 1) {
+        return `The ${setting} existed in a realm where the laws of physics seemed more like gentle suggestions, where time moved in spirals rather than straight lines, and where every shadow held the potential for revelation. ${characterName} stepped forward, understanding instinctively that they were crossing a threshold from which there would be no return.`;
+      } else {
+        return `Each breath of the ethereal air filled ${characterName} with a profound sense of connection to something far greater than themselves. The very ground beneath their feet pulsed with the heartbeat of ancient wisdom, and the trees whispered stories in languages that predated human memory.`;
+      }
+    } else if (section === 'adventure') {
+      if (!progress.metCharacter) {
+        return `"I have been waiting for you, ${characterName}," spoke a voice that seemed to emanate from the very essence of the ${setting} itself. Before them materialized a ${animal} whose presence radiated such depth of understanding that ${characterName} immediately knew they were in the presence of a being who had witnessed the rise and fall of civilizations.`;
+      } else if (!progress.foundObject) {
+        return `The ${animal} spoke of the ${object}, an artifact that existed as both a physical manifestation and a metaphysical concept—a bridge between the world of what is and the realm of what could be. "It has chosen you," the ${animal} explained, "not because you are perfect, but because you understand the weight of ${value}."`;
+      } else if (!progress.facedChallenge) {
+        return `The journey to the ${object} became a pilgrimage through the landscape of ${characterName}'s own soul. Each challenge they faced reflected an aspect of their character that needed to be examined, refined, and ultimately transcended. The external quest had become an internal transformation.`;
+      } else {
+        return `When ${characterName} finally stood before the ${object}, they understood that the true test was not in claiming it, but in recognizing that its power came not from possession but from the wisdom to know when and how to use it—and more importantly, when not to use it at all.`;
+      }
+    } else {
+      if (!progress.learnedLesson) {
+        return `"The greatest magic," the ${animal} observed as ${characterName} made their choice, "lies not in the artifacts we seek or the powers we acquire, but in the recognition that ${value} is both the journey and the destination, the question and the answer."`;
+      } else {
+        return `As ${characterName} emerged from the ${setting}, forever changed by their encounter with the profound mysteries of existence, they carried with them not just memories of magic, but the understanding that every choice, every act of ${value}, ripples outward to touch lives they may never know—and that this responsibility is both the burden and the gift of being truly human.`;
+      }
+    }
+  }
+
+  private static updateStoryProgress(pageIndex: number, section: string, progress: any): void {
+    if (section === 'adventure') {
+      if (pageIndex > 2 && !progress.metCharacter) progress.metCharacter = true;
+      if (pageIndex > 4 && !progress.foundObject) progress.foundObject = true;
+      if (pageIndex > 6 && !progress.facedChallenge) progress.facedChallenge = true;
+    } else if (section === 'resolution') {
+      if (!progress.learnedLesson) progress.learnedLesson = true;
+      if (pageIndex > 8) progress.journeyComplete = true;
+    }
   }
 
   private static generateCulturalExtension(
@@ -247,56 +359,77 @@ export class InclusiveStoryGenerator {
     const culturalElements = CulturalAdaptationService.getCulturalElements(userInfo);
     const characterName = userInfo.name;
     
-    const createCulturalExtensionByDifficulty = () => {
-      if (difficulty === "easy") {
-        const culturalEasyExtensions = [
-          [
-            `Oh look! ${characterName} finds a friend from ${culturalElements.setting}!`,
-            `"Hello!" says the friend. "Would you like to share some ${culturalElements.food}?"`,
-            `They sit together and talk about ${culturalElements.value}. This makes them both feel happy!`,
-            `${characterName} shows their friend how to do ${userInfo.hobbies}. Sharing is so much fun!`,
-            `"Thank you for being kind," says the friend. "You have a good heart, and that makes you a good friend!"`
-          ],
-          [
-            `${characterName} hears music from ${culturalElements.celebration} in the distance.`,
-            `"Come dance with us!" call the other children. "Today we celebrate together!"`,
-            `They dance and laugh while eating ${culturalElements.food}. Everyone is included in the fun!`,
-            `${characterName} teaches others about ${userInfo.hobbies}. Everyone learns something new!`,
-            `"Different traditions make life colorful," thinks ${characterName}. "I'm glad we can all be friends!"`
-          ]
-        ];
+    // Get the same story elements from the main story for consistency
+    const animal = userInfo.favoriteAnimal 
+      ? userInfo.favoriteAnimal.toLowerCase()
+      : ["dragon", "owl", "rabbit", "deer", "fox"][Math.floor(Math.random() * 5)];
+    
+    const setting = culturalElements.setting || "magical forest";
+    const object = userInfo.favoriteColor 
+      ? `glowing ${userInfo.favoriteColor.toLowerCase()} crystal`
+      : "glowing crystal";
+    
+    const value = culturalElements.value || "kindness";
+    const food = userInfo.favoriteFood 
+      ? userInfo.favoriteFood.toLowerCase()
+      : "magical berries";
+    
+    const activity = userInfo.hobbies 
+      ? userInfo.hobbies.toLowerCase()
+      : "exploring";
+    
+    const createCohesiveExtension = () => {
+      const extensionPages: string[] = [];
+      
+      // Continue the story naturally from where it left off
+      for (let i = 0; i < pageCount; i++) {
+        let page = "";
         
-        return culturalEasyExtensions[0].slice(0, pageCount);
+        if (difficulty === "easy") {
+          const continuationTemplates = [
+            `${characterName} has more friends to meet! Look who is coming to say hello!`,
+            `The ${animal} shows ${characterName} a new place. "Come see!" says the ${animal}.`,
+            `${characterName} learns something new every day. Learning is so much fun!`,
+            `"Let's play!" says ${characterName}. All the friends want to play together.`,
+            `More adventures wait for ${characterName}. What will happen next?`
+          ];
+          page = continuationTemplates[i % continuationTemplates.length];
+        } else if (difficulty === "medium") {
+          const continuationTemplates = [
+            `As their friendship with the ${animal} deepened, ${characterName} discovered there were many more secrets hidden in the ${setting}.`,
+            `The ${animal} introduced ${characterName} to other creatures who had their own stories of ${value} and friendship to share.`,
+            `Each new day brought fresh adventures and opportunities for ${characterName} to practice what they had learned about ${value}.`,
+            `The magical ${setting} seemed to grow more wonderful each time ${characterName} visited, revealing new paths and hidden treasures.`,
+            `${characterName} began to understand that every ending was really just the beginning of a new and even more exciting chapter.`
+          ];
+          page = continuationTemplates[i % continuationTemplates.length];
+        } else if (difficulty === "hard") {
+          const continuationTemplates = [
+            `Word of ${characterName}'s acts of ${value} had spread throughout the ${setting}, attracting other adventurers who sought to learn from their example.`,
+            `The ${animal} revealed that the ${object} was just one of many artifacts that needed guardians who truly understood the responsibility that comes with power.`,
+            `${characterName} found themselves becoming a mentor to younger travelers, sharing the wisdom they had gained through their own challenging journey.`,
+            `New mysteries emerged from the depths of the ${setting}, each one requiring ${characterName} to apply their growing understanding of ${value} in different ways.`,
+            `The ripple effects of ${characterName}'s choices continued to spread, creating positive changes that would benefit generations of future adventurers.`
+          ];
+          page = continuationTemplates[i % continuationTemplates.length];
+        } else { // expert
+          const continuationTemplates = [
+            `The profound transformation ${characterName} had undergone in the ${setting} began to manifest in ways that transcended the boundaries between the magical realm and the everyday world.`,
+            `Other seekers, drawn by an inexplicable pull, began to arrive at the ${setting}, each bringing their own questions about the nature of ${value} and purpose.`,
+            `${characterName} discovered that their journey had been preparing them not just to find answers, but to help others frame the right questions about their own paths.`,
+            `The ${animal} revealed that the greatest magic lay not in the artifacts or spells, but in the web of connections that ${value} creates between all living beings.`,
+            `As ${characterName} prepared to return to their ordinary life, they carried with them the understanding that magic and ${value} are not separate from daily existence, but the very foundation upon which a meaningful life is built.`
+          ];
+          page = continuationTemplates[i % continuationTemplates.length];
+        }
         
-      } else if (difficulty === "medium") {
-        const culturalMediumExtensions = [
-          [
-            `${characterName} decided to organize a special event that would bring together friends from different cultural backgrounds.`,
-            `They planned activities that included ${userInfo.hobbies} and foods like ${culturalElements.food} from various communities.`,
-            `At first, some friends felt shy about sharing their traditions, but ${characterName} helped everyone feel welcome and valued.`,
-            `The event became a beautiful celebration where everyone learned about ${culturalElements.value} from different perspectives.`,
-            `"When we share our cultures with respect and curiosity," ${characterName} realized, "we all become richer in understanding and friendship."`
-          ]
-        ];
-        
-        return culturalMediumExtensions[0];
-        
-      } else { // hard and expert
-        const culturalAdvancedExtensions = [
-          [
-            `${characterName}'s growing understanding of cultural diversity led them to start a community project that addressed real social challenges.`,
-            `By combining their skills in ${userInfo.hobbies} with their commitment to ${culturalElements.value}, they created something that made a meaningful difference.`,
-            `The project attracted participants from many backgrounds, including elders who shared wisdom and young people who brought fresh perspectives.`,
-            `Together, they developed solutions that honored traditional knowledge while embracing innovative approaches to community building.`,
-            `"True leadership," ${characterName} learned, "comes from helping others discover their own power to create positive change in the world."`
-          ]
-        ];
-        
-        return culturalAdvancedExtensions[0];
+        extensionPages.push(page);
       }
+      
+      return extensionPages;
     };
 
-    return createCulturalExtensionByDifficulty() || [];
+    return createCohesiveExtension();
   }
 
   // Helper method to add learning-focused elements for different user types
