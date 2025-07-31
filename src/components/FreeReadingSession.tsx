@@ -404,16 +404,50 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
 
       const extendedStory = await adaptiveStoryGenerator.generateStory(storyConfig);
       
-      // CRITICAL: Don't generate new images for additional pages - character already established
-      // Just add text pages, reuse character details for any future image generation
+      // Add new pages and generate images for them
       const newPages = extendedStory.pages.slice(0, 5);
+      const startPageIndex = story.length;
       setStory(prev => [...prev, ...newPages]);
       
-      // For any future image generation, ensure we use established character
+      // Initialize placeholder images
       const placeholderImages = newPages.map((_, i) => ({ 
-        prompt: `Consistent character ${establishedCharacter.userName} as established in the story` 
+        url: '', 
+        prompt: `Consistent character ${establishedCharacter.userName} as established in the story`,
+        pageIndex: startPageIndex + i
       }));
       setStoryImages(prev => [...prev, ...placeholderImages]);
+      
+      // Generate images for new pages progressively
+      const generateNewPageImages = async () => {
+        for (let i = 0; i < newPages.length; i++) {
+          try {
+            const pageImage = await adaptiveStoryGenerator.generatePageImage(
+              startPageIndex + i,
+              newPages[i],
+              storyConfig,
+              extendedStory.title || 'Adventure Story',
+              extendedStory.theme || 'adventure',
+              storyConfig.readingLevel
+            );
+            
+            if (pageImage.url) {
+              setStoryImages(prevImages => {
+                const newImages = [...prevImages];
+                newImages[startPageIndex + i] = pageImage;
+                return newImages;
+              });
+            }
+          } catch (error) {
+            console.error(`Failed to generate image for new page ${startPageIndex + i + 1}:`, error);
+          }
+          
+          // Add delay between requests
+          await new Promise(resolve => setTimeout(resolve, 1500));
+        }
+      };
+
+      // Start progressive image generation (non-blocking)
+      generateNewPageImages();
       
       // Update word count for session stats but don't reset timer
       setWordsRead(prev => prev + newPages.join(' ').split(' ').length);
