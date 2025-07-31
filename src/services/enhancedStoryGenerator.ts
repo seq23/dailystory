@@ -195,25 +195,29 @@ export class EnhancedStoryGenerator {
   ): string {
     
     const templates = {
+      // Pre-K to 1st Grade: 3-8 words max, simple sight words only
       easy: [
-        `This is ${characterName}. ${characterName} is happy.`,
-        `${characterName} likes to play. Today is special.`,
-        `Look! ${characterName} sees something new.`
+        `This is ${characterName}.`,
+        `${characterName} is happy today.`,
+        `Look! ${characterName} sees something fun.`
       ],
+      // 2nd-3rd Grade: 15-25 words, simple sentences, basic vocabulary
       medium: [
-        `${characterName} woke up feeling excited about the day ahead. Something wonderful was waiting to be discovered.`,
-        `The morning sun shone brightly as ${characterName} stepped outside, ready for whatever adventure might come.`,
-        `${characterName} had always loved exploring, and today felt like the perfect day for a new journey.`
+        `${characterName} woke up on a bright sunny morning. Today felt like a special day for a new adventure.`,
+        `The birds were singing as ${characterName} stepped outside. Something exciting was waiting to be discovered.`,
+        `${characterName} loved to explore new places. This morning seemed perfect for finding something wonderful.`
       ],
+      // 4th-5th Grade: 25-40 words, compound sentences, richer vocabulary
       hard: [
-        `${characterName} stood at the edge of the forest, feeling a mixture of excitement and curiosity about what lay beyond the familiar path.`,
-        `There was something different about this morning that made ${characterName} feel ready for adventure, though they could not quite explain what it was.`,
-        `The world seemed full of possibilities as ${characterName} set out to explore, carrying nothing but curiosity and an open heart.`
+        `${characterName} stood at the bedroom window, watching the golden sunlight dance across the garden below. Something about this particular morning whispered promises of adventure and discovery.`,
+        `As ${characterName} laced up their favorite shoes, anticipation bubbled in their chest like a fizzy drink. The familiar neighborhood suddenly seemed full of unexplored mysteries.`,
+        `The world outside looked different today, though ${characterName} could not quite explain why. Perhaps it was the way the shadows fell, or how the breeze carried hints of magic.`
       ],
+      // 6th-12th Grade: 40+ words, complex sentences, sophisticated themes
       expert: [
-        `${characterName} contemplated the threshold before them, understanding that some journeys change us in ways we cannot anticipate or undo.`,
-        `The morning held that peculiar quality of light that suggests important things are about to unfold, and ${characterName} felt ready to meet whatever awaited.`,
-        `In the space between familiar and unknown, ${characterName} found themselves at the beginning of something that would test everything they thought they knew about courage and friendship.`
+        `${characterName} understood that certain mornings arrive carrying the weight of transformation, and as they gazed through the frost-touched window, they sensed that today would challenge everything they believed about courage, friendship, and the delicate boundary between the ordinary and extraordinary.`,
+        `There exists a particular quality of light that appears just before important events unfold, and ${characterName} recognized it immediately as they stepped into the crisp morning air, feeling both the familiar comfort of home and the electric anticipation of change.`,
+        `The threshold between childhood and whatever comes next had always seemed distant to ${characterName}, but this morning brought with it an awareness that some journeys begin not with dramatic fanfare, but with the simple decision to step forward into the unknown.`
       ]
     };
     
@@ -234,20 +238,40 @@ export class EnhancedStoryGenerator {
     
     if (!hasMetCharacter) {
       const meetingTemplates = {
-        easy: `"Hello!" says a friendly ${secondaryCharacter}. ${characterName} smiles.`,
-        medium: `A gentle ${secondaryCharacter} appeared from behind a tree, looking kind and wise. "${characterName}," it said softly, "I have been hoping to meet you."`,
-        hard: `The ${secondaryCharacter} that emerged from the shadows moved with quiet grace, its eyes holding the kind of wisdom that comes from many years of watching and learning.`,
-        expert: `When the ${secondaryCharacter} spoke, its voice carried the weight of ancient stories and the gentleness of rain on leaves. "I have been waiting," it said, "not for someone special, but for someone ready to see."`
+        // Pre-K to 1st Grade: Very simple dialogue, basic emotions
+        easy: `${characterName} sees a nice ${secondaryCharacter}. "Hi!" says the ${secondaryCharacter}.`,
+        // 2nd-3rd Grade: Simple conversation, clear emotions
+        medium: `A friendly ${secondaryCharacter} came out from behind a big tree. "Hello, ${characterName}!" it said with a warm smile. "I have been waiting to meet you."`,
+        // 4th-5th Grade: More descriptive language, character development
+        hard: `Through the dappled sunlight emerged a wise-looking ${secondaryCharacter}, its gentle eyes sparkling with intelligence and kindness. "I have been watching you, ${characterName}," it said softly, "and I believe you might be exactly the friend I have been hoping to find."`,
+        // 6th-12th Grade: Complex characterization, deeper themes
+        expert: `The ${secondaryCharacter} that materialized from the shadows moved with an otherworldly grace, as if it existed simultaneously in this world and another. When it spoke, its voice carried centuries of wisdom: "Every soul calls out for connection, ${characterName}, and yours has been singing a song that resonates with mine across the vast loneliness of existence."`
       };
       
       return meetingTemplates[difficulty] || meetingTemplates.medium;
     }
     
     const adventureTemplates = {
-      easy: [`${characterName} and the ${secondaryCharacter} play together. They are happy.`, `"Let us find something special!" says ${characterName}.`],
-      medium: [`Together, ${characterName} and the ${secondaryCharacter} began to explore the magical world around them.`, `The ${secondaryCharacter} showed ${characterName} hidden paths that sparkled with mystery.`],
-      hard: [`The ${secondaryCharacter} revealed that it needed ${characterName}'s help with something important that had been lost for a very long time.`, `${characterName} felt honored to be trusted with such an important quest by their new friend.`],
-      expert: [`"The thing about trust," the ${secondaryCharacter} explained carefully, "is that it grows not from promises, but from shared understanding of what matters most."`, `${characterName} began to realize that this journey was about more than finding something lost—it was about discovering something within themselves.`]
+      // Pre-K to 1st Grade: Simple actions, basic concepts
+      easy: [
+        `${characterName} and the ${secondaryCharacter} walk together.`, 
+        `"Let us find something good!" says ${characterName}.`
+      ],
+      // 2nd-3rd Grade: Clear plot development, simple adventures
+      medium: [
+        `${characterName} and the ${secondaryCharacter} began exploring the magical forest together, looking for hidden treasures.`, 
+        `The ${secondaryCharacter} showed ${characterName} secret paths where flowers glowed softly in the shade.`
+      ],
+      // 4th-5th Grade: Complex plots, character relationships
+      hard: [
+        `As they ventured deeper into the enchanted woodland, the ${secondaryCharacter} confided in ${characterName} about an ancient mystery that had puzzled forest creatures for generations.`, 
+        `${characterName} listened carefully as their new companion explained how the delicate balance of their magical world depended on finding something precious that had been lost long ago.`
+      ],
+      // 6th-12th Grade: Sophisticated themes, psychological depth
+      expert: [
+        `"Understanding," the ${secondaryCharacter} mused as they walked, "is not simply about solving puzzles or finding lost objects—it is about recognizing the interconnectedness of all living things and accepting responsibility for the role we play in the larger tapestry of existence."`, 
+        `${characterName} began to comprehend that this journey would demand more than physical courage; it would require the emotional maturity to confront uncomfortable truths about the nature of sacrifice, loyalty, and the sometimes painful necessity of personal growth.`
+      ]
     };
     
     const templates = adventureTemplates[difficulty] || adventureTemplates.medium;
@@ -263,10 +287,14 @@ export class EnhancedStoryGenerator {
   ): string {
     
     const climaxTemplates = {
-      easy: `${characterName} finds the special thing! "We did it!" they cheer.`,
-      medium: `With courage and determination, ${characterName} helped solve the mystery that had puzzled the ${secondaryCharacter} for so long.`,
-      hard: `The moment ${characterName} understood what needed to be done, everything became clear. It was not about finding something outside—it was about discovering the strength that had been inside all along.`,
-      expert: `In that pivotal moment, ${characterName} realized that the greatest discoveries happen not when we find what we are looking for, but when we understand that we already carry everything we need within ourselves.`
+      // Pre-K to 1st Grade: Simple resolution, clear success
+      easy: `${characterName} finds it! "We did it!" they say happily.`,
+      // 2nd-3rd Grade: Clear problem-solving, teamwork
+      medium: `Working together with great teamwork, ${characterName} and the ${secondaryCharacter} finally solved the mystery that had been puzzling everyone for so long.`,
+      // 4th-5th Grade: Internal growth, complex problem-solving
+      hard: `In a moment of brilliant insight, ${characterName} realized that the solution had been within their reach all along—it just required looking at the problem from a completely different perspective and trusting in their own abilities.`,
+      // 6th-12th Grade: Philosophical resolution, character transformation
+      expert: `The epiphany arrived not as a sudden flash of understanding, but as a gradual awakening to the profound truth that ${characterName} had been seeking external validation for internal wisdom they already possessed, and that true discovery lies not in finding what is lost, but in recognizing what was never missing.`
     };
     
     return climaxTemplates[difficulty] || climaxTemplates.medium;
@@ -281,10 +309,14 @@ export class EnhancedStoryGenerator {
   ): string {
     
     const templates = {
-      easy: `The ${secondaryCharacter} says "Thank you, ${characterName}!"`,
-      medium: `${characterName} and the ${secondaryCharacter} celebrated their success together, feeling proud of what they had accomplished.`,
-      hard: `The gratitude in the ${secondaryCharacter}'s eyes told ${characterName} that their friendship had created something beautiful and lasting.`,
-      expert: `"You have given me something more valuable than what we found," the ${secondaryCharacter} said quietly. "You have shown me what it means to trust and be trusted in return."`
+      // Pre-K to 1st Grade: Simple gratitude, basic emotions
+      easy: `"Thank you, ${characterName}!" says the happy ${secondaryCharacter}.`,
+      // 2nd-3rd Grade: Friendship celebration, shared joy
+      medium: `${characterName} and the ${secondaryCharacter} hugged and danced around with joy, celebrating their amazing adventure and new friendship together.`,
+      // 4th-5th Grade: Meaningful bonds, personal growth
+      hard: `As they shared this moment of triumph, ${characterName} understood that they had gained something far more valuable than solving a mystery—they had discovered the deep satisfaction that comes from using your talents to help others and formed a friendship that would last forever.`,
+      // 6th-12th Grade: Complex emotional resolution, life lessons
+      expert: `"You have given me something far more precious than what we sought," the ${secondaryCharacter} reflected with profound gratitude. "You have demonstrated that true courage lies not in the absence of fear, but in choosing compassion despite uncertainty, and in doing so, you have taught me that healing occurs not through solitary strength, but through the vulnerable act of accepting and offering help."`
     };
     
     return templates[difficulty] || templates.medium;
@@ -299,10 +331,14 @@ export class EnhancedStoryGenerator {
   ): string {
     
     const templates = {
-      easy: `${characterName} goes home happy. What a good day!`,
-      medium: `As ${characterName} headed home, they carried with them the warmth of new friendship and the joy of helping someone special.`,
-      hard: `${characterName} returned home knowing that they had not only helped a friend but had also discovered new depths of courage and kindness within themselves.`,
-      expert: `The journey home felt different to ${characterName}—not because the path had changed, but because they now walked it with the understanding that every act of compassion creates ripples that extend far beyond what we can see.`
+      // Pre-K to 1st Grade: Simple ending, basic emotions
+      easy: `${characterName} goes home happy. What a fun day!`,
+      // 2nd-3rd Grade: Warm conclusion, lasting friendship
+      medium: `As ${characterName} walked home, their heart felt warm and full of happiness from making such a wonderful new friend and having such an amazing adventure.`,
+      // 4th-5th Grade: Personal reflection, growth awareness
+      hard: `Walking home through the familiar neighborhood that now seemed somehow brighter and more full of possibilities, ${characterName} reflected on how this incredible day had taught them about the power of kindness, the value of helping others, and the joy that comes from stepping outside your comfort zone to make new friends.`,
+      // 6th-12th Grade: Deep philosophical reflection, life perspective
+      expert: `The journey home felt fundamentally different to ${characterName}—not because the physical landscape had changed, but because they now carried within themselves an expanded understanding of their place in the intricate web of relationships that bind all living beings together, and with this awareness came both the responsibility and the profound privilege of being someone capable of making a meaningful difference in the world.`
     };
     
     return templates[difficulty] || templates.medium;
