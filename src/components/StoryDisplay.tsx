@@ -810,15 +810,17 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         const hasUserAnimal = animalMentioned || companionshipActions;
         const animalInScene = hasUserAnimal ? `one single ${favoriteColor} ${favoriteAnimal}` : 'a friendly companion';
         
-        // Scene detection with precise animal inclusion logic
+        // Scene detection with precise animal inclusion logic and better action detection
         if (lowerText.includes('said') && animalMentioned) {
-          return `a child having a conversation with their ${animalInScene}, showing the ${favoriteAnimal} speaking or looking warmly at the child`;
+          return `a child having a conversation with their ${animalInScene}, showing the ${userInfo.favoriteAnimal || 'cat'} speaking or looking warmly at the child`;
+        } else if (lowerText.includes('set off') || lowerText.includes('investigate')) {
+          return `a child and their ${animalInScene} actively investigating and exploring, walking together through a mysterious landscape, looking curious and determined`;
         } else if (lowerText.includes('walked') || lowerText.includes('walking') || lowerText.includes('went')) {
           return `a child walking ${hasUserAnimal ? `with their ${animalInScene}` : 'alone'} through a magical landscape${lowerText.includes('secret') ? ' towards a mysterious secret place' : ''}`;
         } else if (lowerText.includes('woke') || lowerText.includes('morning')) {
           return `a child waking up in a cozy bedroom with morning sunlight streaming through the window${hasUserAnimal ? ` with their ${animalInScene} nearby` : ''}`;
         } else if (lowerText.includes('outside') || lowerText.includes('garden')) {
-          return `a child in a beautiful garden with ${favoriteColor} flowers and trees${hasUserAnimal ? ` with their ${animalInScene}` : ''}`;
+          return `a child in a beautiful garden with ${userInfo.favoriteColor || 'blue'} flowers and trees${hasUserAnimal ? ` with their ${animalInScene}` : ''}`;
         } else if (lowerText.includes('playing') || lowerText.includes('play')) {
           return `a child happily playing in a safe outdoor environment${hasUserAnimal ? ` with their ${animalInScene}` : ''}`;
         } else if (lowerText.includes('friend') || lowerText.includes('animal') || lowerText.includes('met') || lowerText.includes('appeared')) {
@@ -837,8 +839,8 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       const sceneDescription = extractSceneElements(storyText);
       const characterDescription = getCharacterDescription();
       
-      // Build prompt in the exact format requested by user with extremely strong instructions
-      const prompt = `ABSOLUTELY NO TEXT NO WORDS NO LETTERS NO NAMES NO WRITING NO CAPTIONS NO TITLES NO LABELS ANYWHERE IN THE IMAGE EVER. A beautiful childrens book illustration depicting the scene ${sceneDescription} featuring ${characterDescription}, with a happy and cheerful atmosphere, warm earth tones and natural colors, contemporary childrens book art style, appealing to all children regardless of gender, diverse and inclusive, safe and wholesome content, high quality professional artwork. CRITICAL ANIMAL SPECIFICATION: If an animal appears, it must be exactly a ${userInfo.favoriteColor || 'blue'} ${userInfo.favoriteAnimal || 'cat'}, not any other type of animal, not orange, not brown, not any other color except ${userInfo.favoriteColor || 'blue'}. CRITICAL CHARACTER COUNT: Show exactly ONE child and exactly ONE animal companion maximum - never show multiple animals, never show duplicate cats, never show twin animals, never show more than one animal of any kind. CRITICAL TEXT PROHIBITION: NEVER EVER show any text, words, letters, names like "${userInfo.name}", titles, captions, labels, signs, or any written content anywhere in the image under any circumstances. Pure visual illustration only, completely and utterly text-free. IMPORTANT: Only one ${userInfo.favoriteColor || 'blue'} ${userInfo.favoriteAnimal || 'cat'}, not two, not multiple, just one single animal companion if any animal appears at all.`;
+      // Build prompt with extremely aggressive text prevention and action-focused descriptions
+      const prompt = `EXTREME TEXT PROHIBITION: NO TEXT NO WORDS NO LETTERS NO NAMES NO WRITING NO CAPTIONS NO TITLES NO LABELS ABSOLUTELY NEVER SHOW THE NAME "${userInfo.name?.toUpperCase()}" OR ANY OTHER TEXT ANYWHERE IN THE IMAGE UNDER ANY CIRCUMSTANCES. A beautiful childrens book illustration depicting the scene ${sceneDescription} featuring ${characterDescription}, with a happy and cheerful atmosphere, warm earth tones and natural colors, contemporary childrens book art style, appealing to all children regardless of gender, diverse and inclusive, safe and wholesome content, high quality professional artwork. CRITICAL ANIMAL SPECIFICATION: If an animal appears, it must be exactly a ${userInfo.favoriteColor || 'blue'} ${userInfo.favoriteAnimal || 'cat'}, not any other type of animal, not orange, not brown, not any other color except ${userInfo.favoriteColor || 'blue'}. CRITICAL CHARACTER COUNT: Show exactly ONE child and exactly ONE animal companion maximum - never show multiple animals, never show duplicate cats, never show twin animals, never show more than one animal of any kind. CRITICAL TEXT PROHIBITION: NEVER EVER EVER show any text, words, letters, names, titles, captions, labels, signs, or any written content anywhere in the image including "${userInfo.name}" or any other names. Pure visual illustration only, completely and utterly text-free. IMPORTANT: Only one ${userInfo.favoriteColor || 'blue'} ${userInfo.favoriteAnimal || 'cat'}, not two, not multiple, just one single animal companion if any animal appears at all.`;
       
       console.log('Enhanced consistency prompt:', prompt);
       console.log('Main character for consistency:', storyCharacters.mainCharacter);
