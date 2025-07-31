@@ -76,7 +76,8 @@ export class CulturalImageGenerator {
     const gender = userInfo.avatar?.type === 'boy' ? 'boy' : 'girl';
     const name = userInfo.name?.trim() || 'child';
     
-    // Enhanced skin tone descriptions that are respectful and accurate
+    // Use the user's selected avatar skin tone for consistent representation in images only
+    // Never mention skin tone in story text, only in image generation prompts
     const skinToneDescriptions = {
       pale: 'very light skin tone',
       light: 'light skin tone',
@@ -90,6 +91,7 @@ export class CulturalImageGenerator {
     // Cultural clothing and appearance elements
     const culturalAppearance = this.getCulturalAppearanceElements(culturalContext, userInfo);
     
+    // Create character description for image generation (main character only)
     let characterDesc = `a ${gender} named ${name} with ${skinTone}`;
     
     // Add cultural appearance elements
