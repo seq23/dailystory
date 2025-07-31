@@ -206,5 +206,13 @@
     "loading": "Chargement...",
     "playbackError": "Impossible de lire l'audio",
     "translationError": "Traduction non disponible"
+  },
+  "storyDisplay": {
+    "controls": {
+      "previous": "← Précédent"
+    },
+    "navigation": {
+      "pageCounter": "Page {{current}} sur {{total}}"
+    }
   }
 }

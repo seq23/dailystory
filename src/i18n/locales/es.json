@@ -236,5 +236,13 @@
       "gradeRequired": "Por favor selecciona tu grado",
       "learningGoalRequired": "Por favor selecciona tu objetivo de aprendizaje"
     }
+  },
+  "storyDisplay": {
+    "controls": {
+      "previous": "← Anterior"
+    },
+    "navigation": {
+      "pageCounter": "Página {{current}} de {{total}}"
+    }
   }
 }

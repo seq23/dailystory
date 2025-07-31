@@ -221,7 +221,11 @@
       "easier": "Easier",
       "harder": "Harder",
       "back": "← Back",
-      "next": "Next →"
+      "next": "Next →",
+      "previous": "← Previous"
+    },
+    "navigation": {
+      "pageCounter": "Page {{current}} of {{total}}"
     },
     "pages": {
       "storyLength": "Story Length:",

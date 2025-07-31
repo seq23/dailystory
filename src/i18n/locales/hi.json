@@ -210,5 +210,13 @@
       "contentIssue": "सामग्री की समस्या",
       "reviewInputs": "कृपया उपयुक्त सामग्री के लिए अपने इनपुट की समीक्षा करें।"
     }
+  },
+  "storyDisplay": {
+    "controls": {
+      "previous": "← पिछला"
+    },
+    "navigation": {
+      "pageCounter": "पृष्ठ {{current}} का {{total}}"
+    }
   }
 }

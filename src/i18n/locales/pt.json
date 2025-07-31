@@ -210,5 +210,13 @@
       "contentIssue": "Problema de Conteúdo",
       "reviewInputs": "Por favor, revise suas entradas para conteúdo apropriado."
     }
+  },
+  "storyDisplay": {
+    "controls": {
+      "previous": "← Anterior"
+    },
+    "navigation": {
+      "pageCounter": "Página {{current}} de {{total}}"
+    }
   }
 }

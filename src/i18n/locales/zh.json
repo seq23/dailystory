@@ -210,5 +210,13 @@
       "contentIssue": "内容问题",
       "reviewInputs": "请检查你的输入内容是否合适。"
     }
+  },
+  "storyDisplay": {
+    "controls": {
+      "previous": "← 上一页"
+    },
+    "navigation": {
+      "pageCounter": "第 {{current}} 页，共 {{total}} 页"
+    }
   }
 }

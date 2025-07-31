@@ -853,8 +853,18 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
                     </Button>
                   </div>
 
-                  {/* Navigation */}
-                  <div className="flex justify-between items-center">
+                   {/* Page Counter */}
+                   <div className="text-center mb-4">
+                     <span className="text-sm font-medium text-muted-foreground">
+                       {t("storyDisplay.navigation.pageCounter", { 
+                         current: currentParagraph + 1, 
+                         total: totalPages 
+                       })}
+                     </span>
+                   </div>
+
+                   {/* Navigation */}
+                   <div className="flex justify-between items-center">
                     <Button
                       onClick={handlePrevious}
                       disabled={currentParagraph === 0}
