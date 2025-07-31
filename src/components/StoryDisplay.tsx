@@ -723,6 +723,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       const userCharacterDescription = () => {
         const gender = userInfo.avatar?.type || 'child';
         const age = userInfo.age || 8;
+        const isEnglishSpeaker = userInfo.nativeLanguage === 'en';
         
         // Accurate skin tone and ethnic representation
         const skinToneMap = {
@@ -730,7 +731,9 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
           light: 'light skin, Caucasian features', 
           medium: 'medium brown skin, mixed heritage features',
           olive: 'olive-toned skin, Mediterranean or Middle Eastern features',
-          dark: 'dark brown skin, African or African American features with beautiful dark skin tone'
+          dark: isEnglishSpeaker 
+            ? 'beautiful dark brown skin, authentic African American features including natural curly or coily hair texture, fuller lips, broader nose, and distinctive African heritage facial structure'
+            : 'dark brown skin, African or African American features with beautiful dark skin tone'
         };
         
         const skinTone = skinToneMap[userInfo.avatar?.skinTone || 'medium'];
@@ -836,7 +839,7 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
       
       // Generate enhanced prompt in the user's native language
       const langPrompt = getLanguageSpecificPrompt(userInfo.nativeLanguage || 'en');
-      const prompt = `${langPrompt.base} ${sceneDetails} ${langPrompt.context} ${storyText}. ${langPrompt.atmosphere}. CRITICAL: ALWAYS show ${userInScene} as the main character with exact ethnic representation - ${userInfo.name} with authentic ${userInfo.avatar?.skinTone === 'dark' ? 'African/African American' : userInfo.avatar?.skinTone || 'medium'} features and ${userInfo.avatar?.type || 'child'} characteristics. ABSOLUTELY NO TEXT, WORDS, OR LETTERS anywhere in the image. Pure visual storytelling only.`;
+      const prompt = `${langPrompt.base} ${sceneDetails} ${langPrompt.context} ${storyText}. ${langPrompt.atmosphere}. CRITICAL: ALWAYS show ${userInScene} as the main character with exact ethnic representation - ${userInfo.name} with ${userInfo.avatar?.skinTone === 'dark' && userInfo.nativeLanguage === 'en' ? 'authentic African American features including natural curly/coily hair, fuller lips, broader nose, and distinctive African heritage facial structure with beautiful dark brown skin' : `authentic ${userInfo.avatar?.skinTone || 'medium'} features`} and ${userInfo.avatar?.type || 'child'} characteristics. ABSOLUTELY NO TEXT, WORDS, OR LETTERS anywhere in the image. Pure visual storytelling only.`;
       
       console.log('Enhanced consistency prompt:', prompt);
       console.log('Main character for consistency:', storyCharacters.mainCharacter);
