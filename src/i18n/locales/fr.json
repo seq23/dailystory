@@ -261,6 +261,16 @@
       "description": "Vous avez terminé votre session de lecture!"
     }
   },
+  "storyDisplay": {
+    "tooltips": {
+      "audioButton": "Écouter cette page lue à haute voix (une fois par page)",
+      "microphoneButton": "Enregistrez-vous en train de lire (Fonction Premium)",
+      "makeEasier": "Rendre l'histoire plus facile",
+      "makeHarder": "Rendre l'histoire plus difficile", 
+      "addPages": "Ajouter 5 pages",
+      "removePages": "Supprimer la page"
+    }
+  },
   "learningPath": {
     "currentPath": "Votre Parcours d'Apprentissage",
     "progress": "Progrès",

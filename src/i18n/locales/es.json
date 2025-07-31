@@ -248,6 +248,14 @@
     "controls": {
       "previous": "← Anterior"
     },
+    "tooltips": {
+      "audioButton": "Escucha esta página leída en voz alta (una vez por página)",
+      "microphoneButton": "Grábate leyendo (Función Premium)",
+      "makeEasier": "Hacer la historia más fácil",
+      "makeHarder": "Hacer la historia más difícil", 
+      "addPages": "Agregar 5 páginas",
+      "removePages": "Quitar página"
+    },
     "navigation": {
       "pageCounter": "Página {{current}} de {{total}}"
     },

@@ -262,6 +262,16 @@
       "tip3": "故事有助于建立词汇和理解能力"
     }
   },
+  "storyDisplay": {
+    "tooltips": {
+      "audioButton": "听这一页朗读 (每页一次)",
+      "microphoneButton": "录制自己阅读 (高级功能)",
+      "makeEasier": "让故事更简单",
+      "makeHarder": "让故事更难", 
+      "addPages": "添加5页",
+      "removePages": "删除页面"
+    }
+  },
   "floatingTimer": {
     "timeRemaining": "时间",
     "pausePlay": "暂停/播放计时器",

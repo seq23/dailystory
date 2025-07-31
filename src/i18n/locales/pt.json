@@ -262,6 +262,16 @@
       "tip3": "As histórias ajudam a construir vocabulário e compreensão"
     }
   },
+  "storyDisplay": {
+    "tooltips": {
+      "audioButton": "Ouça esta página lida em voz alta (uma vez por página)",
+      "microphoneButton": "Grave-se lendo (Recurso Premium)",
+      "makeEasier": "Tornar a história mais fácil",
+      "makeHarder": "Tornar a história mais difícil", 
+      "addPages": "Adicionar 5 páginas",
+      "removePages": "Remover página"
+    }
+  },
   "floatingTimer": {
     "timeRemaining": "Tempo",
     "pausePlay": "Pausar/Reproduzir Timer",

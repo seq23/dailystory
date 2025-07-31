@@ -247,6 +247,14 @@
       "step": "Tutorial",
       "of": "5"
     },
+    "tooltips": {
+      "audioButton": "Listen to this page being read aloud (once per page)",
+      "microphoneButton": "Record yourself reading (Premium feature)",
+      "makeEasier": "Make the story easier",
+      "makeHarder": "Make the story harder", 
+      "addPages": "Add 5 pages",
+      "removePages": "Remove page"
+    },
     "difficulty": {
       "level": "Level",
       "easier": "Easier",

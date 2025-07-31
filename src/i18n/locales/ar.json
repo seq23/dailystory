@@ -262,6 +262,16 @@
       "tip3": "القصص تساعد في بناء المفردات والفهم"
     }
   },
+  "storyDisplay": {
+    "tooltips": {
+      "audioButton": "استمع إلى هذه الصفحة مقروءة بصوت عالٍ (مرة واحدة لكل صفحة)",
+      "microphoneButton": "سجل نفسك وأنت تقرأ (ميزة مميزة)",
+      "makeEasier": "اجعل القصة أسهل",
+      "makeHarder": "اجعل القصة أصعب", 
+      "addPages": "أضف 5 صفحات",
+      "removePages": "إزالة الصفحة"
+    }
+  },
   "floatingTimer": {
     "timeRemaining": "الوقت",
     "pausePlay": "إيقاف/تشغيل المؤقت",
