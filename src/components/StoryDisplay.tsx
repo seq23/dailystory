@@ -786,8 +786,14 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
         const favoriteAnimal = userInfo.favoriteAnimal || 'cat';
         const favoriteColor = userInfo.favoriteColor || 'blue';
         
-        // Detect if user's favorite animal is mentioned in the story or if "together" suggests companions
-        const hasUserAnimal = lowerText.includes(favoriteAnimal.toLowerCase()) || lowerText.includes('together') || lowerText.includes('they walked') || lowerText.includes('they went');
+        // Detect if user's favorite animal is mentioned in the story or if pronouns/actions suggest companions
+        const hasUserAnimal = lowerText.includes(favoriteAnimal.toLowerCase()) || 
+                              lowerText.includes('together') || 
+                              lowerText.includes('they walked') || 
+                              lowerText.includes('they went') ||
+                              lowerText.includes('they shared') ||
+                              lowerText.includes('they had') ||
+                              (lowerText.includes('they') && !lowerText.includes('they were') && !lowerText.includes('they are'));
         const animalInScene = hasUserAnimal ? `one single ${favoriteColor} ${favoriteAnimal}` : 'a friendly companion';
         
         // Scene detection with user preferences integrated and better action detection
@@ -805,6 +811,8 @@ const StoryDisplay = ({ userInfo, onHome, onNewStory, onSessionEnded }: StoryDis
           return `a child meeting their ${animalInScene}`;
         } else if (lowerText.includes('adventure') || lowerText.includes('exploring')) {
           return `a child on an exciting but safe adventure${hasUserAnimal ? ` with ${animalInScene}` : ''}`;
+        } else if (lowerText.includes('shared')) {
+          return `a child and their ${animalInScene} together enjoying shared adventures in a magical landscape`;
         } else if (lowerText.includes('together')) {
           return `a child together with their ${animalInScene} in a heartwarming scene`;
         } else {
