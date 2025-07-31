@@ -34,6 +34,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
   
   // Story state
   const [story, setStory] = useState<string[]>([]);
+  const [storyImages, setStoryImages] = useState<Array<{url?: string, prompt: string}>>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [currentDifficulty, setCurrentDifficulty] = useState<'beginner' | 'elementary' | 'intermediate' | 'advanced'>('beginner');
@@ -78,6 +79,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
 
         const generatedStory = await adaptiveStoryGenerator.generateStory(storyConfig);
         setStory(generatedStory.pages);
+        setStoryImages(generatedStory.images || []);
         setWordsRead(generatedStory.wordCount);
         
         toast({
@@ -197,6 +199,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
 
       const newStory = await adaptiveStoryGenerator.generateStory(storyConfig);
       setStory(newStory.pages);
+      setStoryImages(newStory.images || []);
       setWordsRead(newStory.wordCount);
       
       // Images will be generated in background by the story generator
@@ -230,7 +233,9 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
       const extendedStory = await adaptiveStoryGenerator.generateStory(storyConfig);
       // Add 5 more pages from the new story without affecting timer
       const newPages = extendedStory.pages.slice(0, 5);
+      const newImages = extendedStory.images?.slice(0, 5) || [];
       setStory(prev => [...prev, ...newPages]);
+      setStoryImages(prev => [...prev, ...newImages]);
       
       // Update word count for session stats but don't reset timer
       setWordsRead(prev => prev + newPages.join(' ').split(' ').length);
@@ -254,7 +259,9 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
 
   const currentStory = story[currentPage] || "Loading...";
   const progress = ((currentPage + 1) / story.length) * 100;
-  const currentIllustration = illustrations[currentPage % illustrations.length];
+  // Use custom generated image if available, otherwise fallback
+  const currentImage = storyImages[currentPage]?.url || illustrations[currentPage % illustrations.length];
+  const currentIllustration = currentImage;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">

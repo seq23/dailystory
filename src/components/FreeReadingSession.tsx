@@ -33,6 +33,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   
   // Story state
   const [story, setStory] = useState<string[]>([]);
+  const [storyImages, setStoryImages] = useState<Array<{url?: string, prompt: string}>>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [sessionStarted, setSessionStarted] = useState(false);
@@ -134,6 +135,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
 
         if (!isCancelled) {
           const generatedStory = await adaptiveStoryGenerator.generateStory(storyConfig);
+          setStoryImages(generatedStory.images || []);
           
           if (!isCancelled) {
             console.log('Generated enhanced story, replacing fallback...');
@@ -214,6 +216,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
 
       const newStory = await adaptiveStoryGenerator.generateStory(storyConfig);
       setStory(newStory.pages);
+      setStoryImages(newStory.images || []);
       setWordsRead(newStory.wordCount);
       
       // Images will be generated in background by the story generator
@@ -246,7 +249,9 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
       const extendedStory = await adaptiveStoryGenerator.generateStory(storyConfig);
       // Add 5 more pages from the new story without affecting timer
       const newPages = extendedStory.pages.slice(0, 5);
+      const newImages = extendedStory.images?.slice(0, 5) || [];
       setStory(prev => [...prev, ...newPages]);
+      setStoryImages(prev => [...prev, ...newImages]);
       
       // Update word count for session stats but don't reset timer
       setWordsRead(prev => prev + newPages.join(' ').split(' ').length);
@@ -678,7 +683,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                 <Card className="h-[500px] lg:h-[600px]">
                   <CardContent className="p-6 h-full">
                     <img 
-                      src={currentIllustration}
+                      src={storyImages[currentPage]?.url || illustrations[currentPage % illustrations.length]}
                       alt={`Story illustration for page ${currentPage + 1}`}
                       className="w-full h-full object-cover rounded-lg"
                     />

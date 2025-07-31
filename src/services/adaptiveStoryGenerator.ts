@@ -160,9 +160,11 @@ export class AdaptiveStoryGenerator {
     const vocabularyWords = this.extractVocabularyWords(storyData.content, readingLevel);
     const comprehensionQuestions = this.generateComprehensionQuestions(storyData.content, readingLevel);
     
-    // Generate images in background - don't wait for them
+    // Generate images in background - but wait a bit for them
     const imagePrompts = this.generateImagePrompts(readingLevel, theme, pages.length);
-    this.generateStoryImagesAsync(readingLevel, theme, pages); // Background task
+    
+    // Start generating images and store them
+    const images = await this.generateStoryImages(readingLevel, theme, pages);
 
     const story: GeneratedStory = {
       id: crypto.randomUUID(),
@@ -177,7 +179,8 @@ export class AdaptiveStoryGenerator {
       pageCount: pages.length,
       vocabularyWords,
       comprehensionQuestions,
-      imagePrompts: imagePrompts
+      imagePrompts: imagePrompts,
+      images: images
     };
 
     // Store the story in Supabase
