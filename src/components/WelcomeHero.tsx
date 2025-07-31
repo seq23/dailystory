@@ -40,6 +40,7 @@ export const WelcomeHero = ({ onGetStarted }: WelcomeHeroProps) => {
   }, []);
 
   const handleLanguageChange = (newLanguage: string) => {
+    console.log("Language changed to:", newLanguage);
     i18n.changeLanguage(newLanguage);
   };
 

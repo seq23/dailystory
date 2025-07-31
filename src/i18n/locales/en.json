@@ -298,6 +298,7 @@
       "tip1": "Click words to learn synonyms and meanings",
       "tip2": "Use difficulty buttons to challenge yourself",
       "tip3": "Stories help build vocabulary and comprehension"
+    }
   },
   "floatingTimer": {
     "timeRemaining": "Time",
@@ -325,5 +326,4 @@
       "description": "You've completed your reading session!"
     }
   }
-}
 }
