@@ -116,14 +116,23 @@ export class StorySpecificImageGenerator {
     // Add cultural elements with improved integration
     prompt += this.addCulturalContext(culturalContext, userInfo.nativeLanguage);
     
-    // Add enhanced quality and consistency modifiers
-    prompt += ", consistent character design throughout story, warm and inviting lighting, safe and friendly environment, high quality digital art, child-appropriate content, NO text or words in image, perfect character continuity";
+    // Add age-appropriate quality and complexity modifiers based on difficulty
+    const qualityModifiers = this.getQualityModifiersForDifficulty(difficulty);
+    prompt += `, ${qualityModifiers}`;
     
     return prompt;
   }
   
   private static createMainCharacterDescription(userInfo: UserInfo): string {
-    const genderDesc = userInfo.avatar?.type === "boy" ? "young boy" : "young girl";
+    // Adjust character age representation based on reading difficulty
+    const difficultyLevel = userInfo.difficultyLevel || 'easy';
+    let genderDesc = userInfo.avatar?.type === "boy" ? "young boy" : "young girl";
+    
+    // Make characters slightly older-looking for higher difficulty levels
+    if (difficultyLevel === 'hard' || difficultyLevel === 'expert') {
+      genderDesc = userInfo.avatar?.type === "boy" ? "boy" : "girl";
+    }
+    
     const skinToneDesc = {
       pale: "very light skin",
       light: "light skin", 
@@ -139,6 +148,13 @@ export class StorySpecificImageGenerator {
     const characterDetails = [];
     if (userInfo.favoriteColor) {
       characterDetails.push(`wearing ${userInfo.favoriteColor.toLowerCase()} clothing`);
+    }
+    
+    // Add age-appropriate clothing style based on difficulty
+    if (difficultyLevel === 'expert') {
+      characterDetails.push('in realistic everyday clothing');
+    } else if (difficultyLevel === 'hard') {
+      characterDetails.push('in detailed adventure-appropriate clothing');
     }
     
     const baseDescription = `${genderDesc} named ${characterName} with ${skinToneDesc}`;
@@ -403,15 +419,32 @@ export class StorySpecificImageGenerator {
   private static getArtStyleForDifficulty(difficulty: DifficultyLevel): string {
     switch (difficulty) {
       case 'easy':
-        return 'simple and colorful children\'s book style, large clear shapes, bright cheerful colors';
+        return 'cartoon-style children\'s book illustration, simple and friendly characters, bold outlines, bright saturated colors, cheerful and whimsical art style similar to Disney animation';
       case 'medium':
-        return 'warm and detailed children\'s book illustration, gentle watercolor style';
+        return 'semi-realistic children\'s book illustration, detailed character expressions, soft lighting, warm watercolor and digital art blend, gentle realism with illustrated charm';
       case 'hard':
-        return 'detailed children\'s book illustration with rich textures and engaging details';
+        return 'realistic children\'s book illustration with detailed textures, natural lighting and shadows, photographic quality with artistic enhancement, detailed backgrounds and environments';
       case 'expert':
-        return 'sophisticated children\'s book illustration with complex composition and beautiful artistic details';
+        return 'photorealistic illustration style, complex lighting and composition, detailed natural textures, sophisticated artistic rendering similar to high-end animated films, realistic proportions and expressions';
       default:
-        return 'beautiful children\'s book illustration';
+        return 'beautiful children\'s book illustration with age-appropriate artistic style';
+    }
+  }
+  
+  private static getQualityModifiersForDifficulty(difficulty: DifficultyLevel): string {
+    const baseModifiers = "consistent character design throughout story, safe and friendly environment, child-appropriate content, NO text or words in image, perfect character continuity";
+    
+    switch (difficulty) {
+      case 'easy':
+        return `${baseModifiers}, simple clear composition, bright cheerful lighting, easy to understand visual elements, bold and fun character expressions`;
+      case 'medium':
+        return `${baseModifiers}, warm atmospheric lighting, moderate detail level, engaging character interactions, balanced composition with clear focal points`;
+      case 'hard':
+        return `${baseModifiers}, natural realistic lighting with soft shadows, rich environmental details, complex scene composition, sophisticated color palette, detailed character expressions`;
+      case 'expert':
+        return `${baseModifiers}, cinematic lighting and composition, photorealistic textures and materials, advanced atmospheric effects, museum-quality artistic detail, professional illustration standards`;
+      default:
+        return `${baseModifiers}, high quality digital art`;
     }
   }
   
