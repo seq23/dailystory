@@ -12,6 +12,7 @@ export const InlineTutorial = ({ isActive, onComplete }: InlineTutorialProps) =>
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
+    console.log('Tutorial isActive changed:', isActive);
     if (isActive) {
       setIsVisible(true);
       setCurrentStep(0);
