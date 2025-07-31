@@ -42,10 +42,11 @@ export class OpenAITTSService {
       });
 
       if (error) {
+        console.error('TTS Supabase Error:', error);
         throw new Error(`TTS Error: ${error.message}`);
       }
 
-      // Convert the response to audio blob
+      // The response from the edge function is already an ArrayBuffer
       const audioBlob = new Blob([data], { type: 'audio/mpeg' });
       const audioUrl = URL.createObjectURL(audioBlob);
       
@@ -55,7 +56,15 @@ export class OpenAITTSService {
       await this.playAudio(audioUrl);
     } catch (error) {
       console.error('Error generating speech:', error);
-      toast.error('Failed to generate speech.');
+      
+      // Provide specific error message
+      if (error.message?.includes('OpenAI API key not configured')) {
+        toast.error('OpenAI API key is missing. Please configure it in project settings.');
+      } else if (error.message?.includes('TTS Error')) {
+        toast.error('Speech generation failed. Trying fallback voice...');
+      } else {
+        toast.error('Audio service temporarily unavailable.');
+      }
       
       // Fallback to browser speech synthesis
       this.fallbackToWebSpeech(cleanText);
@@ -65,9 +74,25 @@ export class OpenAITTSService {
   private async playAudio(audioUrl: string): Promise<void> {
     return new Promise((resolve, reject) => {
       const audio = new Audio(audioUrl);
-      audio.onended = () => resolve();
-      audio.onerror = () => reject(new Error('Audio playback failed'));
-      audio.play().catch(reject);
+      
+      audio.onloadeddata = () => {
+        console.log('Audio loaded successfully');
+      };
+      
+      audio.onended = () => {
+        console.log('Audio playback completed');
+        resolve();
+      };
+      
+      audio.onerror = (e) => {
+        console.error('Audio playback failed:', e);
+        reject(new Error('Audio playback failed'));
+      };
+      
+      audio.play().catch((playError) => {
+        console.error('Audio play() failed:', playError);
+        reject(playError);
+      });
     });
   }
 
