@@ -39,7 +39,10 @@ export class StorySpecificImageGenerator {
     
     // Add secondary character consistency if present
     if (storyElements.secondaryCharacter) {
-      prompt += `ALWAYS show the SAME ${storyElements.secondaryCharacter} with consistent appearance, `;
+      const characterDescription = storyElements.characterAttributes && storyElements.characterAttributes.length > 0 
+        ? `${storyElements.characterAttributes.join(' ')} ${storyElements.secondaryCharacter}`
+        : storyElements.secondaryCharacter;
+      prompt += `ALWAYS show the SAME ${characterDescription} with consistent appearance, `;
     }
     
     // Build scene based on focus with enhanced storytelling
@@ -56,7 +59,10 @@ export class StorySpecificImageGenerator {
         break;
         
       case 'character-meeting':
-        prompt += `scene: ${mainCharacter} meeting a friendly ${storyElements.secondaryCharacter}`;
+        const characterDesc = storyElements.characterAttributes && storyElements.characterAttributes.length > 0 
+          ? `${storyElements.characterAttributes.join(' ')} ${storyElements.secondaryCharacter}`
+          : storyElements.secondaryCharacter;
+        prompt += `scene: ${mainCharacter} meeting a friendly ${characterDesc}`;
         if (imageFocus.setting) {
           prompt += ` in ${imageFocus.setting}`;
         }
@@ -68,7 +74,10 @@ export class StorySpecificImageGenerator {
         
       case 'adventure-scene':
         if (storyElements.secondaryCharacter) {
-          prompt += `scene: ${mainCharacter} and the ${storyElements.secondaryCharacter}`;
+          const characterDesc = storyElements.characterAttributes && storyElements.characterAttributes.length > 0 
+            ? `${storyElements.characterAttributes.join(' ')} ${storyElements.secondaryCharacter}`
+            : storyElements.secondaryCharacter;
+          prompt += `scene: ${mainCharacter} and the ${characterDesc}`;
         } else {
           prompt += `scene: ${mainCharacter}`;
         }
@@ -174,37 +183,97 @@ export class StorySpecificImageGenerator {
       'squirrel', 'chipmunk', 'raccoon', 'badger', 'hedgehog', 'dragon', 'unicorn'
     ];
     
+    // Extract colors and descriptive attributes
+    const colorKeywords = [
+      'blue', 'red', 'green', 'yellow', 'purple', 'orange', 'pink', 'brown', 'black', 'white',
+      'golden', 'silver', 'gray', 'grey', 'violet', 'turquoise', 'crimson', 'emerald', 'magenta'
+    ];
+    
+    const sizeKeywords = [
+      'tiny', 'small', 'little', 'big', 'large', 'huge', 'giant', 'enormous', 'massive'
+    ];
+    
+    const attributeKeywords = [
+      'fluffy', 'soft', 'shiny', 'sparkly', 'glowing', 'magical', 'friendly', 'wise', 'clever',
+      'adorable', 'cute', 'beautiful', 'mysterious', 'ancient', 'young', 'old'
+    ];
+    
     // First, look for the story character from previous pages to maintain consistency
     let secondaryCharacter = storyCharacter || null;
+    let characterAttributes = [];
     
-    // If we have all story pages, analyze them for consistent character naming
-    if (allStoryPages && allStoryPages.length > 0) {
-      const characterFrequency = new Map<string, number>();
-      
-      // Count mentions of each animal across all pages
-      for (const page of allStoryPages) {
-        const pageLower = page.toLowerCase();
-        for (const animal of animalKeywords) {
-          if (pageLower.includes(animal)) {
-            characterFrequency.set(animal, (characterFrequency.get(animal) || 0) + 1);
+    // Enhanced character extraction with attributes
+    const extractCharacterWithAttributes = (text: string) => {
+      for (const animal of animalKeywords) {
+        const animalRegex = new RegExp(`\\b([a-zA-Z\\s]*?)\\b${animal}\\b`, 'gi');
+        const matches = text.match(animalRegex);
+        
+        if (matches) {
+          for (const match of matches) {
+            const cleanMatch = match.trim().toLowerCase();
+            const attributes = [];
+            
+            // Extract colors
+            for (const color of colorKeywords) {
+              if (cleanMatch.includes(color)) {
+                attributes.push(color);
+              }
+            }
+            
+            // Extract sizes
+            for (const size of sizeKeywords) {
+              if (cleanMatch.includes(size)) {
+                attributes.push(size);
+              }
+            }
+            
+            // Extract other attributes
+            for (const attr of attributeKeywords) {
+              if (cleanMatch.includes(attr)) {
+                attributes.push(attr);
+              }
+            }
+            
+            return {
+              character: animal,
+              attributes: attributes
+            };
           }
+        }
+      }
+      return null;
+    };
+    
+    // If we have all story pages, analyze them for consistent character naming with attributes
+    if (allStoryPages && allStoryPages.length > 0) {
+      const characterFrequency = new Map<string, { count: number; attributes: string[] }>();
+      
+      // Count mentions of each animal across all pages and collect attributes
+      for (const page of allStoryPages) {
+        const result = extractCharacterWithAttributes(page);
+        if (result) {
+          const existing = characterFrequency.get(result.character) || { count: 0, attributes: [] };
+          characterFrequency.set(result.character, {
+            count: existing.count + 1,
+            attributes: [...new Set([...existing.attributes, ...result.attributes])] // Merge unique attributes
+          });
         }
       }
       
       // Select the most frequently mentioned character for consistency
       if (characterFrequency.size > 0) {
-        const mostFrequent = [...characterFrequency.entries()].sort((a, b) => b[1] - a[1])[0];
+        const mostFrequent = [...characterFrequency.entries()].sort((a, b) => b[1].count - a[1].count)[0];
         secondaryCharacter = mostFrequent[0];
+        characterAttributes = mostFrequent[1].attributes;
       }
     }
     
-    // If no character found yet, search current page
+    // If no character found yet, search current page with attributes
     if (!secondaryCharacter) {
-      for (const animal of animalKeywords) {
-        if (lowerText.includes(animal)) {
-          secondaryCharacter = animal;
-          break;
-        }
+      const result = extractCharacterWithAttributes(storyText);
+      if (result) {
+        secondaryCharacter = result.character;
+        characterAttributes = result.attributes;
       }
     }
     
@@ -327,6 +396,7 @@ export class StorySpecificImageGenerator {
     
     return {
       secondaryCharacter,
+      characterAttributes,
       setting,
       object,
       action

@@ -53,7 +53,10 @@ export class CulturalImageGenerator {
     }
     
     if (storyElements.animal) {
-      prompt += `alongside ${storyElements.animal} `;
+      const animalDescription = storyElements.animalAttributes && storyElements.animalAttributes.length > 0 
+        ? `a ${storyElements.animalAttributes.join(' ')} ${storyElements.animal}`
+        : `a friendly ${storyElements.animal}`;
+      prompt += `alongside ${animalDescription} `;
     }
     
     // Add scene context
@@ -140,6 +143,7 @@ export class CulturalImageGenerator {
       setting: null as string | null,
       object: null as string | null,
       animal: null as string | null,
+      animalAttributes: [] as string[],
       cultural: null as string | null
     };
     
@@ -166,18 +170,56 @@ export class CulturalImageGenerator {
       'festival': culturalElements?.celebration || 'a colorful festival'
     };
     
-    // Animal detection with cultural variants
-    const animals = {
-      'cat': 'a friendly cat',
-      'dog': 'a loyal dog',
-      'bird': 'a beautiful bird',
-      'butterfly': 'a colorful butterfly',
-      'rabbit': 'a gentle rabbit',
-      'elephant': 'a wise elephant',
-      'lion': 'a majestic lion',
-      'tiger': 'a graceful tiger',
-      'panda': 'a cuddly panda'
-    };
+    // Enhanced animal detection with color and attribute extraction
+    const animalKeywords = [
+      'cat', 'kitten', 'dog', 'puppy', 'bird', 'butterfly', 'rabbit', 'bunny', 
+      'elephant', 'lion', 'tiger', 'panda', 'bear', 'fox', 'deer', 'owl', 'eagle',
+      'fish', 'turtle', 'frog', 'horse', 'cow', 'pig', 'sheep', 'duck', 'chicken'
+    ];
+    
+    // Color and attribute keywords for extraction
+    const colorKeywords = [
+      'blue', 'red', 'green', 'yellow', 'purple', 'orange', 'pink', 'brown', 'black', 'white',
+      'golden', 'silver', 'gray', 'grey', 'violet', 'turquoise', 'crimson', 'emerald', 'magenta'
+    ];
+    
+    const attributeKeywords = [
+      'tiny', 'small', 'little', 'big', 'large', 'huge', 'giant', 'fluffy', 'soft', 'shiny', 
+      'sparkly', 'glowing', 'magical', 'friendly', 'wise', 'clever', 'adorable', 'cute', 
+      'beautiful', 'mysterious', 'ancient', 'young', 'old'
+    ];
+    
+    // Extract animals with their descriptive attributes
+    for (const animal of animalKeywords) {
+      const animalRegex = new RegExp(`\\b([a-zA-Z\\s]*?)\\b${animal}\\b`, 'gi');
+      const matches = text.match(animalRegex);
+      
+      if (matches) {
+        elements.animal = animal;
+        const attributes = [];
+        
+        for (const match of matches) {
+          const cleanMatch = match.trim().toLowerCase();
+          
+          // Extract colors
+          for (const color of colorKeywords) {
+            if (cleanMatch.includes(color)) {
+              attributes.push(color);
+            }
+          }
+          
+          // Extract other attributes
+          for (const attr of attributeKeywords) {
+            if (cleanMatch.includes(attr)) {
+              attributes.push(attr);
+            }
+          }
+        }
+        
+        elements.animalAttributes = [...new Set(attributes)]; // Remove duplicates
+        break; // Use first found animal
+      }
+    }
     
     // Object detection with cultural items
     const objects = {
@@ -205,12 +247,8 @@ export class CulturalImageGenerator {
       }
     }
     
-    for (const [key, desc] of Object.entries(animals)) {
-      if (text.includes(key)) {
-        elements.animal = desc;
-        break;
-      }
-    }
+    // Animal elements are now handled in the enhanced extraction above
+    // No separate loop needed since we extract attributes with the animal
     
     for (const [key, desc] of Object.entries(objects)) {
       if (text.includes(key)) {
