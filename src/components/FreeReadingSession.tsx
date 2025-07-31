@@ -61,6 +61,8 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   const [sessionEnded, setSessionEnded] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [tutorialActive, setTutorialActive] = useState(true);
+  const [showAddPagesAlert, setShowAddPagesAlert] = useState(false);
+  const [hasShownAddPagesAlert, setHasShownAddPagesAlert] = useState(false);
 
   // Character consistency - store original character details
   const [establishedCharacter, setEstablishedCharacter] = useState<any>(null);
@@ -289,6 +291,29 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
       isCancelled = true;
     };
   }, [userInfo.name]); // Remove currentDifficulty dependency to prevent reload feeling
+
+  // Flash "add more pages" alert when on next-to-last page with >1 minute remaining
+  useEffect(() => {
+    const pagesLeft = story.length - currentPage;
+    if (timeRemaining > 1 * 60 && pagesLeft === 1 && !hasShownAddPagesAlert && !showAddPagesAlert && sessionStarted) {
+      setHasShownAddPagesAlert(true);
+      setShowAddPagesAlert(true);
+      
+      const timer = setTimeout(() => {
+        setShowAddPagesAlert(false);
+      }, 4000); // Show for 4 seconds
+      
+      return () => clearTimeout(timer);
+    }
+  }, [timeRemaining, currentPage, story.length, hasShownAddPagesAlert, showAddPagesAlert, sessionStarted]);
+  
+  // Reset the flag when more pages are added or we move away from the last page
+  useEffect(() => {
+    const pagesLeft = story.length - currentPage;
+    if (pagesLeft > 1) {
+      setHasShownAddPagesAlert(false);
+    }
+  }, [currentPage, story.length]);
 
   // Function to change difficulty easier/harder - SMOOTH, NO RELOAD
   const changeDifficulty = async (direction: 'easier' | 'harder') => {
@@ -1047,12 +1072,20 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                             disabled={isLoading}
                             variant="outline"
                             size="sm"
-                            className="p-1.5 sm:p-2 bg-blue-50 hover:bg-blue-100 border-blue-200"
+                            className={`p-1.5 sm:p-2 transition-all duration-300 ${
+                              showAddPagesAlert 
+                                ? 'animate-bounce bg-amber-100 border-amber-400 text-amber-700 shadow-lg ring-2 ring-amber-300' 
+                                : 'bg-blue-50 hover:bg-blue-100 border-blue-200'
+                            }`}
                           >
                             <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
                           </Button>
-                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
-                            Add 5 more pages
+                          <div className={`absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 rounded text-xs transition-all duration-300 pointer-events-none whitespace-nowrap z-10 ${
+                            showAddPagesAlert 
+                              ? 'bg-amber-600 text-white opacity-100 animate-pulse' 
+                              : 'bg-gray-800 text-white opacity-0 group-hover:opacity-100'
+                          }`}>
+                            {showAddPagesAlert ? '⏰ Add more pages now!' : 'Add 5 more pages'}
                           </div>
                         </div>
                       </div>
