@@ -37,6 +37,38 @@ export const InlineTutorial = ({ isActive, onComplete }: InlineTutorialProps) =>
       targetSelector: "#floating-timer",
       position: { top: "60%", left: "25%" },
       arrow: "right"
+    },
+    {
+      id: 3,
+      title: "Story Navigation",
+      description: "Navigate through your story pages using these arrow buttons. Go back or forward at your own pace!",
+      targetSelector: ".story-navigation",
+      position: { top: "85%", left: "45%" },
+      arrow: "up"
+    },
+    {
+      id: 4,
+      title: "Add More Pages",
+      description: "Want more story? Click the + button to automatically add 5 more pages to continue your adventure!",
+      targetSelector: ".story-navigation",
+      position: { top: "80%", left: "45%" },
+      arrow: "up"
+    },
+    {
+      id: 5,
+      title: "Read Aloud",
+      description: "Listen to your story! Click play to hear it read aloud and adjust the speed with the controls.",
+      targetSelector: ".audio-controls",
+      position: { top: "25%", right: "20%" },
+      arrow: "left"
+    },
+    {
+      id: 6,
+      title: "Reading Levels",
+      description: "Adjust difficulty! Use 'Easier' or 'Harder' buttons to match your reading level perfectly.",
+      targetSelector: ".reading-level-controls",
+      position: { top: "15%", left: "50%" },
+      arrow: "down"
     }
   ];
 
@@ -112,12 +144,12 @@ export const InlineTutorial = ({ isActive, onComplete }: InlineTutorialProps) =>
     }
   }, [currentStep, isVisible, currentStepData]);
 
-  // Auto-advance tutorial after 10 seconds total (2 steps x 5 seconds each)
+  // Auto-advance tutorial after 30 seconds total (6 steps x 5 seconds each)
   useEffect(() => {
     if (isVisible) {
       const timer = setTimeout(() => {
         completeTutorial();
-      }, 10000); // 10 seconds total
+      }, 30000); // 30 seconds total
       
       return () => clearTimeout(timer);
     }
