@@ -225,14 +225,24 @@ export const InteractiveWord = ({
   const shouldBeInteractive = () => {
     const cleanWord = word.toLowerCase().replace(/[.,!?;:'"()]/g, '');
     
+    // Never make the user's name interactive
+    if (userInfo?.name && cleanWord === userInfo.name.toLowerCase()) {
+      return false;
+    }
+    
+    // For easy difficulty, make ALL words interactive (except user's name)
+    if (difficulty === "easy") {
+      return cleanWord.length > 0;
+    }
+    
     // For ESL learners, more words are interactive to help with learning
     if (isESLLearner) {
-      if (difficulty === "easy") return cleanWord.length > 2;
+      if (difficulty === "medium") return cleanWord.length > 2;
       return cleanWord.length > 3;
     }
     
     // For native speakers, focus on more complex words
-    if (difficulty === "easy") return cleanWord.length > 4;
+    if (difficulty === "medium") return cleanWord.length > 4;
     return cleanWord.length > 4;
   };
 
