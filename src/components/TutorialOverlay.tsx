@@ -114,16 +114,61 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer }:
   };
 
   const getTooltipPosition = (target: string, position: string) => {
-    // Position calculations based on target element
-    const positions = {
-      "welcome-title": { top: "120px", left: "50%", transform: "translateX(-50%)" },
-      "basic-info-section": { top: "50%", left: "60%", transform: "translateY(-50%)" },
-      "favorites-section": { top: "50%", right: "60%", transform: "translateY(-50%)" },
-      "special-request-section": { bottom: "180px", left: "50%", transform: "translateX(-50%)" },
-      "create-story-button": { bottom: "120px", right: "50px" }
-    };
+    const element = document.getElementById(target);
+    if (!element) {
+      // Fallback positions when element not found
+      return { top: "20%", left: "20px", transform: "none" };
+    }
+
+    const rect = element.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
     
-    return positions[target as keyof typeof positions] || { top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
+    // Calculate safe positions that don't cover important content
+    const tooltipWidth = 500; // Max tooltip width
+    const tooltipHeight = 400; // Approximate tooltip height
+    const margin = 20;
+
+    let style: any = {};
+
+    switch (position) {
+      case "bottom":
+        style = {
+          top: `${Math.min(rect.bottom + 60, viewportHeight - tooltipHeight - margin)}px`,
+          left: `${Math.max(margin, Math.min(rect.left + rect.width/2 - tooltipWidth/2, viewportWidth - tooltipWidth - margin))}px`,
+          transform: "none"
+        };
+        break;
+      case "top":
+        style = {
+          bottom: `${Math.min(viewportHeight - rect.top + 60, viewportHeight - margin)}px`,
+          left: `${Math.max(margin, Math.min(rect.left + rect.width/2 - tooltipWidth/2, viewportWidth - tooltipWidth - margin))}px`,
+          transform: "none"
+        };
+        break;
+      case "right":
+        style = {
+          top: `${Math.max(margin, Math.min(rect.top + rect.height/2 - tooltipHeight/2, viewportHeight - tooltipHeight - margin))}px`,
+          left: `${Math.min(rect.right + 40, viewportWidth - tooltipWidth - margin)}px`,
+          transform: "none"
+        };
+        break;
+      case "left":
+        style = {
+          top: `${Math.max(margin, Math.min(rect.top + rect.height/2 - tooltipHeight/2, viewportHeight - tooltipHeight - margin))}px`,
+          right: `${Math.min(viewportWidth - rect.left + 40, viewportWidth - margin)}px`,
+          transform: "none"
+        };
+        break;
+      default:
+        style = {
+          top: "20%",
+          left: "20px",
+          transform: "none"
+        };
+    }
+    
+    return style;
   };
 
   if (!isVisible || currentStep >= tutorialSteps.length) {
@@ -160,10 +205,31 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer }:
 
         {/* Tooltip */}
         <div 
-          className={`absolute z-60 transition-all duration-300 ${isAnimating ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
+          className={`fixed z-60 transition-all duration-300 ${isAnimating ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
           style={tooltipStyle}
         >
-          <Card className="w-96 sm:w-[440px] md:w-[500px] bg-white dark:bg-gray-900 shadow-2xl border-2 border-primary/30 rounded-2xl overflow-hidden">
+          <Card className="w-80 sm:w-96 bg-white dark:bg-gray-900 shadow-2xl border-2 border-primary/30 rounded-2xl overflow-hidden">
+            {/* Big Fun Arrow */}
+            <div className="absolute -z-10">
+              <div 
+                className="w-0 h-0 animate-bounce"
+                style={{
+                  borderLeft: '20px solid transparent',
+                  borderRight: '20px solid transparent', 
+                  borderBottom: '30px solid #FFD700',
+                  position: 'absolute',
+                  top: step.position === 'bottom' ? '-45px' : 
+                       step.position === 'top' ? 'calc(100% + 15px)' : '50%',
+                  left: step.position === 'left' ? 'calc(100% + 15px)' : 
+                        step.position === 'right' ? '-45px' : '50%',
+                  transform: step.position === 'top' ? 'rotate(180deg)' :
+                            step.position === 'left' ? 'rotate(-90deg)' :
+                            step.position === 'right' ? 'rotate(90deg)' : 'none',
+                  transformOrigin: 'center',
+                  filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))'
+                }}
+              />
+            </div>
             <CardContent className="p-0">
               {/* Header */}
               <div className="bg-gradient-primary text-white p-4 relative overflow-hidden">

@@ -184,7 +184,7 @@
     },
     "fields": {
       "name": {
-        "label": "¿Cómo te llamas?",
+        "label": "¿Cuál es tu nombre?",
         "placeholder": "Ingresa tu nombre"
       },
       "age": {
@@ -295,5 +295,20 @@
       "contentIssue": "Problema de Contenido",
       "reviewInputs": "Por favor revisa tus entradas para contenido apropiado"
     }
+  },
+  "sessionEnded": {
+    "completed": "¡Sesión de Lectura Completada!",
+    "premiumCompleted": "¡Sesión Premium Completada!",
+    "readingProgress": "Progreso de Lectura",
+    "of": "de",
+    "pages": "páginas",
+    "wordsRead": "Palabras Leídas",
+    "timeSpent": "Tiempo Empleado",
+    "accuracy": "Precisión",
+    "readingLevel": "Nivel de Lectura",
+    "level": "Nivel",
+    "unlockPremium": "¡Desbloquea Beneficios Premium!",
+    "goToHome": "Ir al Inicio",
+    "startNewStory": "Comenzar Nueva Historia"
   }
 }

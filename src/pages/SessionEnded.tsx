@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Home, BookOpen, Clock, TrendingUp, Target, BookText, Crown, Sparkles, Star } from "lucide-react";
 import { useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 interface ReadingStats {
   wordsRead: number;
@@ -21,6 +22,7 @@ interface SessionEndedProps {
 }
 
 const SessionEnded = ({ onHome, onNewStory, isPremium = false, onUpgrade }: SessionEndedProps) => {
+  const { t } = useTranslation();
   const location = useLocation();
   
   // Get stats from URL parameters or location state
@@ -100,7 +102,7 @@ const SessionEnded = ({ onHome, onNewStory, isPremium = false, onUpgrade }: Sess
           
           <div className="space-y-2">
             <h1 className="text-2xl font-bold text-gray-800">
-              {userIsPremium ? "Premium Session Completed!" : "Reading Session Completed!"}
+              {userIsPremium ? t("sessionEnded.premiumCompleted", "Premium Session Completed!") : t("sessionEnded.completed", "Reading Session Completed!")}
             </h1>
             <p className="text-gray-600">
               {getEncouragementMessage()}
@@ -114,10 +116,10 @@ const SessionEnded = ({ onHome, onNewStory, isPremium = false, onUpgrade }: Sess
               <div className="bg-purple-50 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-purple-700">
-                    Reading Progress
+                    {t("sessionEnded.readingProgress", "Reading Progress")}
                   </span>
                   <span className="text-sm text-purple-600">
-                    {sessionStats.pagesRead} of {sessionStats.totalPages || sessionStats.pagesRead} pages
+                    {sessionStats.pagesRead} {t("sessionEnded.of", "of")} {sessionStats.totalPages || sessionStats.pagesRead} {t("sessionEnded.pages", "pages")}
                   </span>
                 </div>
                 <div className="w-full bg-purple-100 rounded-full h-3 overflow-hidden">
@@ -138,27 +140,27 @@ const SessionEnded = ({ onHome, onNewStory, isPremium = false, onUpgrade }: Sess
                 <div className="bg-blue-50 rounded-lg p-4 text-center">
                   <BookText className="w-6 h-6 text-blue-600 mx-auto mb-2" />
                   <div className="text-2xl font-bold text-blue-700">{sessionStats.wordsRead}</div>
-                  <div className="text-sm text-blue-600">Words Read</div>
+                  <div className="text-sm text-blue-600">{t("sessionEnded.wordsRead", "Words Read")}</div>
                 </div>
                 
                 <div className="bg-green-50 rounded-lg p-4 text-center">
                   <Clock className="w-6 h-6 text-green-600 mx-auto mb-2" />
                   <div className="text-2xl font-bold text-green-700">{formatTime(sessionStats.timeSpent)}</div>
-                  <div className="text-sm text-green-600">Time Spent</div>
+                  <div className="text-sm text-green-600">{t("sessionEnded.timeSpent", "Time Spent")}</div>
                 </div>
                 
                 <div className="bg-orange-50 rounded-lg p-4 text-center">
                   <Target className="w-6 h-6 text-orange-600 mx-auto mb-2" />
                   <div className="text-2xl font-bold text-orange-700">{sessionStats.accuracy}%</div>
-                  <div className="text-sm text-orange-600">Accuracy</div>
+                  <div className="text-sm text-orange-600">{t("sessionEnded.accuracy", "Accuracy")}</div>
                 </div>
                 
                 <div className="bg-purple-50 rounded-lg p-4 text-center">
                   <TrendingUp className="w-6 h-6 text-purple-600 mx-auto mb-2" />
                   <div className="text-lg font-bold text-purple-700">
-                    {sessionStats.currentDifficulty ? getDifficultyLabel(sessionStats.currentDifficulty) : 'Reading Level'}
+                    {sessionStats.currentDifficulty ? getDifficultyLabel(sessionStats.currentDifficulty) : t("sessionEnded.readingLevel", "Reading Level")}
                   </div>
-                  <div className="text-sm text-purple-600">Level</div>
+                  <div className="text-sm text-purple-600">{t("sessionEnded.level", "Level")}</div>
                 </div>
               </div>
             </div>
@@ -169,7 +171,7 @@ const SessionEnded = ({ onHome, onNewStory, isPremium = false, onUpgrade }: Sess
             <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-lg p-6 space-y-4">
               <div className="flex items-center justify-center gap-2">
                 <Crown className="w-6 h-6 text-amber-600" />
-                <h3 className="text-lg font-bold text-amber-700">Unlock Premium Benefits!</h3>
+                <h3 className="text-lg font-bold text-amber-700">{t("sessionEnded.unlockPremium", "Unlock Premium Benefits!")}</h3>
               </div>
               <div className="space-y-2 text-sm text-amber-600">
                 <div className="flex items-center gap-2">
@@ -204,24 +206,24 @@ const SessionEnded = ({ onHome, onNewStory, isPremium = false, onUpgrade }: Sess
           
           {/* Action Buttons */}
           <div className="space-y-3 pt-4">
-            <Button
-              onClick={handleHome}
-              className="w-full bg-amber-500 hover:bg-amber-600 text-white font-medium py-3"
-              size="lg"
-            >
-              <Home className="w-5 h-5 mr-2" />
-              Go to Home
-            </Button>
-            
-            <Button
-              onClick={handleNewStory}
-              variant="outline"
-              className="w-full border-2 border-amber-300 text-amber-700 hover:bg-amber-50 font-medium py-3"
-              size="lg"
-            >
-              <BookOpen className="w-5 h-5 mr-2" />
-              Start New Story
-            </Button>
+              <Button
+                onClick={handleHome}
+                className="w-full bg-amber-500 hover:bg-amber-600 text-white font-medium py-3"
+                size="lg"
+              >
+                <Home className="w-5 h-5 mr-2" />
+                {t("sessionEnded.goToHome", "Go to Home")}
+              </Button>
+              
+              <Button
+                onClick={handleNewStory}
+                variant="outline"
+                className="w-full border-2 border-amber-300 text-amber-700 hover:bg-amber-50 font-medium py-3"
+                size="lg"
+              >
+                <BookOpen className="w-5 h-5 mr-2" />
+                {t("sessionEnded.startNewStory", "Start New Story")}
+              </Button>
           </div>
         </CardContent>
       </Card>

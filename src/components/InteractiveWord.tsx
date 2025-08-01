@@ -196,35 +196,102 @@ export const InteractiveWord = ({
 
   // Enhanced word definition with context awareness
   const getWordDefinition = (word: string, context: string) => {
-    // Context-aware definitions to fix pronunciation issues like "skied" 
+    const cleanWord = word.toLowerCase().replace(/[.,!?;:'"()]/g, '');
+    
+    // Comprehensive word definitions for children
+    const definitions: Record<string, string> = {
+      // Common verbs
+      'inventing': 'creating or making something new that has never existed before',
+      'exploring': 'going to new places or trying to discover new things',
+      'discovering': 'finding something for the first time',
+      'creating': 'making something new',
+      'building': 'putting things together to make something',
+      'painting': 'using colors and brushes to make pictures',
+      'singing': 'making music with your voice',
+      'dancing': 'moving your body to music',
+      'playing': 'having fun with games or toys',
+      'running': 'moving very fast on your feet',
+      'jumping': 'pushing yourself up into the air',
+      'swimming': 'moving through water',
+      'flying': 'moving through the air',
+      'reading': 'looking at words and understanding what they mean',
+      'writing': 'making letters and words on paper',
+      'drawing': 'making pictures with pencils or crayons',
+      
+      // Animals
+      'elephant': 'a very big gray animal with a long nose called a trunk',
+      'giraffe': 'a tall animal with a very long neck and spots',
+      'lion': 'a big cat that lives in Africa and has a mane',
+      'tiger': 'a big orange cat with black stripes',
+      'bear': 'a big furry animal that likes honey',
+      'monkey': 'an animal that swings from trees and likes bananas',
+      'bird': 'an animal that has wings and can fly',
+      'fish': 'an animal that lives in water and has fins',
+      'dog': 'a friendly animal that people keep as pets',
+      'cat': 'a small furry animal that says meow',
+      
+      // Objects
+      'castle': 'a big stone building where kings and queens live',
+      'treasure': 'gold, silver, and jewels that are very valuable',
+      'ship': 'a big boat that can travel across the ocean',
+      'car': 'a vehicle with four wheels that people drive',
+      'airplane': 'a flying machine that takes people to faraway places',
+      'house': 'a building where people live',
+      'school': 'a place where children go to learn',
+      'park': 'a place with grass and trees where people can play',
+      'forest': 'a place with lots of trees',
+      'mountain': 'a very tall hill',
+      'ocean': 'a very big body of water',
+      'river': 'water that flows from one place to another',
+      
+      // Colors and descriptions
+      'magical': 'special and wonderful, like in fairy tales',
+      'beautiful': 'very pretty and nice to look at',
+      'brave': 'not afraid to do something scary',
+      'kind': 'nice and caring to others',
+      'smart': 'very good at learning and thinking',
+      'funny': 'making people laugh',
+      'happy': 'feeling good and cheerful',
+      'excited': 'feeling very happy about something',
+      'surprised': 'feeling amazed when something unexpected happens',
+      'proud': 'feeling good about something you did well'
+    };
+
+    // Check if we have a specific definition
+    if (definitions[cleanWord]) {
+      return definitions[cleanWord];
+    }
+
+    // Context-aware definitions for compound words
     const contextualDefinitions: Record<string, Record<string, string>> = {
       'skied': {
         'green skied': 'having a sky that is green in color',
-        'blue skied': 'having a sky that is blue in color',
+        'blue skied': 'having a sky that is blue in color', 
         'clear skied': 'having a clear, cloudless sky'
       }
     };
 
-    if (contextualDefinitions[word.toLowerCase()]) {
-      for (const [contextKey, definition] of Object.entries(contextualDefinitions[word.toLowerCase()])) {
+    if (contextualDefinitions[cleanWord]) {
+      for (const [contextKey, definition] of Object.entries(contextualDefinitions[cleanWord])) {
         if (context.toLowerCase().includes(contextKey)) {
           return definition;
         }
       }
     }
 
-    // Default age-appropriate definitions
-    return getAgeAppropriateDefinition(word);
+    // Age-appropriate fallback
+    return getAgeAppropriateDefinition(cleanWord);
   };
 
   const getAgeAppropriateDefinition = (word: string) => {
-    const simpleDefinitions: Record<string, string> = {
-      'cat': 'a furry animal that says meow',
-      'house': 'a place where people live',
-      'blue': 'a color like the sky or ocean',
-      'run': 'to move very fast with your legs'
-    };
-    return simpleDefinitions[word.toLowerCase()] || `a special word that means something important in your story`;
+    // For words we don't have specific definitions for, provide helpful context
+    if (word.length <= 3) {
+      return `a small word that helps make your story interesting`;
+    } else if (word.length <= 6) {
+      return `an important word that adds meaning to your story`;
+    } else {
+      return `a longer word that makes your story more detailed and exciting`;
+    }
   };
 
   const handleTranslate = async (e: React.MouseEvent) => {

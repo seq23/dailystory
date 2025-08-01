@@ -188,7 +188,7 @@
     },
     "fields": {
       "name": {
-        "label": "What's your name?",
+        "label": "What is your first name?",
         "placeholder": "Enter your name"
       },
       "age": {
@@ -361,5 +361,20 @@
       "title": "Navigation & Controls",
       "description": "Use 'New Story' to create a different adventure, or 'Home' to return to the main page. Previous/Next buttons move between story pages!"
     }
+  },
+  "sessionEnded": {
+    "completed": "Reading Session Completed!",
+    "premiumCompleted": "Premium Session Completed!",
+    "readingProgress": "Reading Progress",
+    "of": "of",
+    "pages": "pages",
+    "wordsRead": "Words Read",
+    "timeSpent": "Time Spent",
+    "accuracy": "Accuracy",
+    "readingLevel": "Reading Level",
+    "level": "Level",
+    "unlockPremium": "Unlock Premium Benefits!",
+    "goToHome": "Go to Home",
+    "startNewStory": "Start New Story"
   }
 }

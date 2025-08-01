@@ -75,7 +75,7 @@ export const AvatarPicker = React.forwardRef<
       {/* Avatar Type Selection */}
       <div className="space-y-3">
         <Label className="text-lg font-semibold text-foreground">
-          Gender:
+          Avatar Type:
         </Label>
         <RadioGroup
           value={value.type}
@@ -100,7 +100,7 @@ export const AvatarPicker = React.forwardRef<
       {/* Skin Tone Selection */}
       <div className="space-y-3">
         <Label className="text-lg font-semibold text-foreground">
-          Tone:
+          Skin Tone:
         </Label>
         <div className="flex gap-3 flex-wrap">
           {(Object.keys(skinToneColors) as Array<keyof typeof skinToneColors>).map((tone) => (
