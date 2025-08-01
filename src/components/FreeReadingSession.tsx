@@ -86,6 +86,8 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     return difficultyLevels.indexOf(currentDifficulty);
   };
   
+  const getCurrentDifficulty = () => currentDifficulty;
+  
   const canDecreaseDifficulty = () => getDifficultyIndex() > 0;
   const canIncreaseDifficulty = () => getDifficultyIndex() < difficultyLevels.length - 1;
 
@@ -115,11 +117,6 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     // AUTO-START: Begin timer immediately and start tutorial
     setSessionStarted(true);
     setSessionStartTime(new Date());
-    
-    // Start tutorial - simplified
-    // Tutorial will auto-start with the new InlineTutorial component
-    
-    // Background generation happens but no initial toast
     
     // BACKGROUND: Generate real story asynchronously
     let isCancelled = false;
@@ -192,7 +189,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
               pages = pages.slice(0, targetPages);
             }
             
-            // Smoothly replace the fallback story - NOW MUCH FASTER!
+            // Smoothly replace the fallback story
             setStory(pages);
             setWordsRead(generatedStory.wordCount);
             
@@ -203,50 +200,39 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
               duration: 3000,
             });
 
-            // Now generate images progressively in the background
+            // Now generate images progressively in the background using UnifiedImageService
             const startProgressiveImageGeneration = async () => {
+              // Establish character once for consistency across all images
+              const characterConsistency = UnifiedImageService.establishCharacterConsistency(userInfo);
+              console.log(`Starting progressive image generation with character consistency for ${characterConsistency.userName}`);
+              
               for (let i = 0; i < Math.min(pages.length, 10); i++) {
                 try {
-                  console.log(`Starting image generation for page ${i + 1}...`);
-                  // Try to generate custom image using Runware service with character consistency
-                  const customImagePrompt = `Beautiful illustration for children's story: ${pages[i].slice(0, 100)}. Child-friendly, colorful, safe content for kids reading app. NO TEXT, NO WORDS, NO LETTERS in the image.`;
+                  console.log(`Generating image ${i + 1}/${pages.length} for ${characterConsistency.userName}...`);
                   
-                  try {
-                    // Call Runware image generation edge function with character consistency
-                    const response = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/runware-generate-image', {
-                      method: 'POST',
-                      headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino'}`
-                      },
-                      body: JSON.stringify({ 
-                        positivePrompt: customImagePrompt,
-                        width: 1024,
-                        height: 1024,
-                        // Character consistency parameters for enhanced representation
-                        characterName: userInfo.name,
-                        characterDescription: establishedCharacter?.characterDescription || '',
-                        skinTone: userInfo.avatar?.skinTone || 'medium',
-                        avatarType: userInfo.avatar?.type || 'boy',
-                        pageIndex: i
-                      })
-                    });
-                    
-                    if (response.ok) {
-                      const imageData = await response.json();
-                      if (imageData.imageURL) {
-                        const pageImage = { url: imageData.imageURL, prompt: pages[i] };
-                        setStoryImages(prev => {
-                          const newImages = [...prev];
-                          newImages[i] = pageImage;
-                          return newImages;
-                        });
-                        continue; // Successfully generated custom image
-                      }
-                    }
-                  } catch (imageError) {
-                    console.log('Custom image generation failed, using fallback:', imageError);
-                  }
+                  const imageOptions = {
+                    pageIndex: i,
+                    totalPages: pages.length,
+                    storyText: pages[i],
+                    userInfo: userInfo,
+                    difficulty: getCurrentDifficulty(),
+                    establishedCharacter: characterConsistency,
+                    isNewStory: false
+                  };
+                  
+                  const generatedImage = await UnifiedImageService.generateStoryImage(imageOptions);
+                  
+                  // Update story images with generated result
+                  setStoryImages(prev => {
+                    const newImages = [...prev];
+                    newImages[i] = { url: generatedImage.url, prompt: generatedImage.prompt };
+                    return newImages;
+                  });
+                  
+                  console.log(`Successfully generated consistent image for ${characterConsistency.userName} (page ${i + 1})`);
+                  
+                } catch (imageError) {
+                  console.log(`Image generation failed for page ${i + 1}, using fallback:`, imageError);
                   
                   // Fallback to stock illustrations
                   const pageImage = { 
@@ -255,7 +241,6 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                   };
                   
                   if (!isCancelled && pageImage.url) {
-                    // Update the specific page image when it's ready
                     setStoryImages(prevImages => {
                       const newImages = [...prevImages];
                       newImages[i] = pageImage;
@@ -263,8 +248,6 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                     });
                     console.log(`Updated image for page ${i + 1}`);
                   }
-                } catch (error) {
-                  console.error(`Failed to generate image for page ${i + 1}:`, error);
                 }
                 
                 // Small delay between generations to avoid overwhelming the API
@@ -280,7 +263,6 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
       } catch (error) {
         if (!isCancelled) {
           console.error('Failed to generate enhanced story:', error);
-          // No toast for fallback
         }
       }
     };
@@ -292,7 +274,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     return () => {
       isCancelled = true;
     };
-  }, [userInfo.name]); // Remove currentDifficulty dependency to prevent reload feeling
+  }, [userInfo.name]);
 
   // Flash "add more pages" alert when on next-to-last page with >1 minute remaining
   useEffect(() => {
@@ -303,7 +285,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
       
       const timer = setTimeout(() => {
         setShowAddPagesAlert(false);
-      }, 2500); // Show for 2.5 seconds
+      }, 2500);
       
       return () => clearTimeout(timer);
     }
@@ -327,7 +309,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     } else if (direction === 'harder' && canIncreaseDifficulty()) {
       newIndex = currentIndex + 1;
     } else {
-      return; // No change possible
+      return;
     }
     
     const newDifficulty = difficultyLevels[newIndex];
@@ -345,48 +327,20 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     // Generate new story content smoothly in background
     const generateUpdatedStory = async () => {
       try {
-        const characterDescription = userInfo.avatar ? `, a curious and brave ${userInfo.avatar.type === 'boy' ? 'boy' : userInfo.avatar.type === 'girl' ? 'girl' : 'child'}` : '';
+        if (!establishedCharacter) return;
         
-        const interests = [
-          userInfo.hobbies, 
-          userInfo.favoriteAnimal, 
-          userInfo.specialRequest,
-          userInfo.favoriteFood
-        ].filter(item => item && item.trim().length > 0);
-        
-        if (interests.length === 0) {
-          interests.push(userInfo.age <= 6 ? 'animals' : userInfo.age <= 8 ? 'friendship' : 'adventure');
-        }
-        
-        // CRITICAL: Use established character details, only change reading level
-        const storyConfig = {
-          ...originalStoryConfig,
-          readingLevel: newDifficulty, // Only update difficulty
-          // Keep all original character details unchanged
-          userName: establishedCharacter.userName,
-          characterDescription: establishedCharacter.characterDescription,
-          avatar: establishedCharacter.avatar,
-          favoriteColor: establishedCharacter.favoriteColor,
-          favoriteAnimal: establishedCharacter.favoriteAnimal,
-          hobbies: establishedCharacter.hobbies,
-          favoriteFood: establishedCharacter.favoriteFood
-        };
-
-        console.log('Maintaining character consistency for difficulty change:', establishedCharacter.userName);
-
         // Generate new story at the new difficulty level with SAME page count
-        const currentPageCount = story.length; // Maintain current number of pages
+        const currentPageCount = story.length;
         const { pages: newPages, config: newConfig } = EarlyReaderStoryGenerator.generateStory(
           userInfo, 
           newDifficulty as 'easy' | 'medium' | 'hard' | 'expert', 
-          currentPageCount // Use current page count, not fixed 10
+          currentPageCount
         );
         const updatedStory = { pages: newPages, config: newConfig, images: [], wordCount: newPages.join(' ').split(' ').length };
         
         // Ensure exact same page count (no change in navigation)
         let pages = updatedStory.pages;
         if (pages.length !== currentPageCount) {
-          // Force exactly the same number of pages
           if (pages.length < currentPageCount) {
             const additionalPages = currentPageCount - pages.length;
             for (let i = 0; i < additionalPages; i++) {
@@ -399,7 +353,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
         
         // Update story and reset images for progressive generation
         setStory(pages);
-        setStoryImages([]); // Clear old images to start fresh generation
+        setStoryImages([]);
         setWordsRead(updatedStory.wordCount);
         
         // Keep user on same relative page position
@@ -414,55 +368,40 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
         });
 
         // IMMEDIATELY start progressive image generation for new content (NON-BLOCKING)
-        console.log('Starting progressive image generation after difficulty change. Established character:', establishedCharacter);
         const startProgressiveImageGeneration = async () => {
           for (let i = 0; i < Math.min(pages.length, 10); i++) {
             try {
-                  // Try to generate custom image using Runware service with character consistency
-                  const customImagePrompt = `Beautiful illustration for children's story: ${pages[i].slice(0, 100)}. Child-friendly, colorful, safe content for kids reading app. NO TEXT, NO WORDS, NO LETTERS in the image.`;
+              console.log(`Generating image ${i + 1}/${pages.length} for ${establishedCharacter.userName} at ${getCurrentDifficulty()} difficulty...`);
+              
+              const imageOptions = {
+                pageIndex: i,
+                totalPages: pages.length,
+                storyText: pages[i],
+                userInfo: userInfo,
+                difficulty: getCurrentDifficulty(),
+                establishedCharacter: establishedCharacter,
+                isNewStory: false
+              };
+              
+              const generatedImage = await UnifiedImageService.generateStoryImage(imageOptions);
+              
+              // Update story images with generated result
+              setStoryImages(prev => {
+                const newImages = [...prev];
+                newImages[i] = { url: generatedImage.url, prompt: generatedImage.prompt };
+                return newImages;
+              });
+              
+              console.log(`Successfully generated image for ${establishedCharacter.userName} (page ${i + 1}) after difficulty change`);
+              
+            } catch (imageError) {
+              console.log(`Image generation failed for page ${i + 1}, using fallback:`, imageError);
                   
-                  try {
-                    // Call Runware image generation edge function with character consistency
-                    const response = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/runware-generate-image', {
-                      method: 'POST',
-                      headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino'}`
-                      },
-                      body: JSON.stringify({ 
-                        positivePrompt: customImagePrompt,
-                        width: 1024,
-                        height: 1024,
-                        // Character consistency parameters for enhanced representation
-                        characterName: userInfo.name,
-                        characterDescription: establishedCharacter?.characterDescription || `a curious ${userInfo.avatar?.type || 'child'}`,
-                        skinTone: userInfo.avatar?.skinTone || 'medium',
-                        avatarType: userInfo.avatar?.type || 'boy',
-                        pageIndex: i
-                      })
-                    });
-                    
-                    if (response.ok) {
-                      const imageData = await response.json();
-                      if (imageData.imageURL) {
-                        const pageImage = { url: imageData.imageURL, prompt: pages[i] };
-                        setStoryImages(prev => {
-                          const newImages = [...prev];
-                          newImages[i] = pageImage;
-                          return newImages;
-                        });
-                        continue; // Successfully generated custom image
-                      }
-                    }
-                  } catch (imageError) {
-                    console.log('Custom image generation failed, using fallback:', imageError);
-                  }
-                  
-                  // Fallback to stock illustrations
-                  const pageImage = { 
-                    url: illustrations[i % illustrations.length], 
-                    prompt: pages[i] 
-                  };
+              // Fallback to stock illustrations
+              const pageImage = { 
+                url: illustrations[i % illustrations.length], 
+                prompt: pages[i] 
+              };
               
               if (pageImage.url) {
                 setStoryImages(prevImages => {
@@ -471,8 +410,6 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                   return newImages;
                 });
               }
-            } catch (error) {
-              console.error(`Failed to generate image for page ${i + 1}:`, error);
             }
             
             await new Promise(resolve => setTimeout(resolve, 1000));
@@ -498,27 +435,9 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   
   // Function to add more pages to the story
   const addMorePages = async () => {
-    if (isLoading) return;
+    if (isLoading || !establishedCharacter) return;
     
-    // Don't affect timer or session - just extend the story
-    const tempLoading = true;
     try {
-      const characterDescription = userInfo.avatar ? `, a curious and brave ${userInfo.avatar.type === 'boy' ? 'boy' : userInfo.avatar.type === 'girl' ? 'girl' : 'child'}` : '';
-      
-      // CRITICAL: Use established character details for additional pages
-      const storyConfig = {
-        ...originalStoryConfig,
-        // Keep all original character details unchanged
-        userName: establishedCharacter.userName,
-        characterDescription: establishedCharacter.characterDescription,
-        avatar: establishedCharacter.avatar,
-        favoriteColor: establishedCharacter.favoriteColor,
-        favoriteAnimal: establishedCharacter.favoriteAnimal,
-        hobbies: establishedCharacter.hobbies,
-        favoriteFood: establishedCharacter.favoriteFood,
-        theme: 'adventure' // Can use same or different theme for extension
-      };
-
       console.log('Maintaining character consistency for page extension:', establishedCharacter.userName);
 
       // Generate new pages using the new generator
@@ -540,50 +459,35 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
       }));
       setStoryImages(prev => [...prev, ...placeholderImages]);
       
-      // Generate images for new pages progressively
+      // Generate images for new pages progressively using UnifiedImageService
       const generateNewPageImages = async () => {
         for (let i = 0; i < newPages.length; i++) {
           try {
-            // Try to generate custom image using Runware service with character consistency
-            const customImagePrompt = `Beautiful illustration for children's story: ${newPages[i].slice(0, 100)}. Child-friendly, colorful, safe content for kids reading app. NO TEXT, NO WORDS, NO LETTERS in the image.`;
+            console.log(`Generating image for new page ${startPageIndex + i + 1} for ${establishedCharacter.userName}...`);
             
-            try {
-              // Call Runware image generation edge function with character consistency
-              const response = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/runware-generate-image', {
-                method: 'POST',
-                headers: { 
-                  'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino'}`
-                },
-                body: JSON.stringify({ 
-                  positivePrompt: customImagePrompt,
-                  width: 1024,
-                  height: 1024,
-                  // Character consistency parameters for enhanced representation
-                  characterName: userInfo.name,
-                  characterDescription: establishedCharacter?.characterDescription || '',
-                  skinTone: userInfo.avatar?.skinTone || 'medium',
-                  avatarType: userInfo.avatar?.type || 'boy',
-                  pageIndex: story.length + i // Correct page index for new pages
-                })
-              });
-              
-              if (response.ok) {
-                const data = await response.json();
-                const imageUrl = data.imageURL || data.output?.[0];
-                if (imageUrl) {
-                  const pageImage = { url: imageUrl, prompt: newPages[i] };
-                  setStoryImages(prevImages => {
-                    const newImages = [...prevImages];
-                    newImages[startPageIndex + i] = pageImage;
-                    return newImages;
-                  });
-                  continue; // Successfully generated custom image
-                }
-              }
-            } catch (imageError) {
-              console.log('Custom image generation failed, using fallback:', imageError);
-            }
+            const imageOptions = {
+              pageIndex: startPageIndex + i,
+              totalPages: story.length + newPages.length,
+              storyText: newPages[i],
+              userInfo: userInfo,
+              difficulty: getCurrentDifficulty(),
+              establishedCharacter: establishedCharacter,
+              isNewStory: false
+            };
+            
+            const generatedImage = await UnifiedImageService.generateStoryImage(imageOptions);
+            
+            // Update story images with generated result
+            setStoryImages(prev => {
+              const newImages = [...prev];
+              newImages[startPageIndex + i] = { url: generatedImage.url, prompt: generatedImage.prompt };
+              return newImages;
+            });
+            
+            console.log(`Successfully generated image for new page ${startPageIndex + i + 1}`);
+            
+          } catch (imageError) {
+            console.log(`Image generation failed for new page ${startPageIndex + i + 1}, using fallback:`, imageError);
             
             // Fallback to stock illustrations
             const pageImage = { 
@@ -596,8 +500,6 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
               newImages[startPageIndex + i] = pageImage;
               return newImages;
             });
-          } catch (error) {
-            console.error(`Failed to generate image for new page ${startPageIndex + i + 1}:`, error);
           }
           
           // Add delay between requests
@@ -613,15 +515,13 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     } catch (error) {
       console.error('Failed to add more pages:', error);
     }
-    // No setIsLoading to avoid affecting UI state
   };
 
   // Start session when user begins reading
   const startSession = () => {
     if (!sessionStarted) {
       setSessionStarted(true);
-    setSessionStartTime(new Date());
-    // No toast for session restart
+      setSessionStartTime(new Date());
     }
   };
 

@@ -373,70 +373,62 @@ export class AdaptiveStoryGenerator {
     config: StoryGenerationConfig,
     storyTitle: string
   ): Promise<Array<{url?: string, prompt: string}>> {
-    const images: Array<{url?: string, prompt: string}> = [];
+    // Import UnifiedImageService for character consistency
+    const { UnifiedImageService } = await import('@/services/unifiedImageService');
     
-    // Extract character details from config
-    const characterName = config.userName || 'the main character';
-    const characterDescription = config.characterDescription || '';
+    console.log(`Generating story images with character consistency for ${config.userName}`);
     
-    // Determine skin tone and gender from character description or avatar
-    const skinToneMap: {[key: string]: string} = {
-      'dark': 'dark skin',
-      'medium': 'medium skin tone', 
-      'light': 'light skin',
-      'olive': 'olive skin tone',
-      'pale': 'pale skin'
+    // Convert config to UserInfo format for compatibility
+    const userInfo = {
+      name: config.userName || 'Reader',
+      age: config.age,
+      grade: config.gradeLevel as any,
+      nativeLanguage: (config.nativeLanguage as any) || 'en',
+      learningGoal: 'improve-english-reading' as any,
+      avatar: config.avatar || { type: 'boy' as any, skinTone: 'medium' as any },
+      favoriteColor: config.favoriteColor || 'blue',
+      favoriteAnimal: config.favoriteAnimal || 'cat',
+      hobbies: config.hobbies || 'reading',
+      favoriteFood: config.favoriteFood || 'pizza',
+      specialRequest: ''
     };
     
-    // Extract skin tone from character description
-    let skinTone = 'medium skin tone'; // default
-    Object.keys(skinToneMap).forEach(tone => {
-      if (characterDescription.toLowerCase().includes(tone)) {
-        skinTone = skinToneMap[tone];
-      }
-    });
+    // Determine difficulty level from reading level
+    const difficultyMap = {
+      'beginner': 'easy' as const,
+      'elementary': 'medium' as const, 
+      'intermediate': 'hard' as const,
+      'advanced': 'expert' as const
+    };
+    const difficulty = difficultyMap[readingLevel as keyof typeof difficultyMap] || 'easy';
     
-    // Determine gender
-    const gender = characterDescription.toLowerCase().includes('girl') ? 'girl' : 
-                  characterDescription.toLowerCase().includes('boy') ? 'boy' : 'child';
-    
-    const artStyle = {
-      beginner: 'simple and bright children\'s book illustration with bold colors and clear shapes',
-      elementary: 'colorful and friendly children\'s book illustration with clear details', 
-      intermediate: 'detailed children\'s book illustration with realistic elements and rich backgrounds',
-      advanced: 'sophisticated children\'s book artwork with complex scenes and atmospheric details'
-    }[readingLevel] || 'colorful children\'s book illustration';
+    const images: Array<{url?: string, prompt: string}> = [];
     
     try {
-      // Generate images for each page using Runware
+      // Establish character consistency once
+      const establishedCharacter = UnifiedImageService.establishCharacterConsistency(userInfo);
+      
+      // Generate images for each page using UnifiedImageService
       for (let i = 0; i < Math.min(pages.length, 10); i++) {
-        const pageContent = pages[i];
-        
-        // Create story-specific prompt following the user's example format
-        const prompt = `A beautiful children's book illustration depicting the scene where young ${gender} named ${characterName} with ${skinTone} in the setting described in this story page: "${pageContent.substring(0, 200)}..." based on the story "${storyTitle}" about ${theme}, with a happy and cheerful atmosphere, warm earth tones and natural colors, contemporary children's book art style, ${artStyle}, appealing to all children regardless of gender, diverse and inclusive, high quality, safe for children, NO TEXT, NO WORDS, NO LETTERS in the image`;
-        
         try {
-          const { data: imageData, error } = await supabase.functions.invoke('runware-generate-image', {
-            body: {
-              positivePrompt: prompt,
-              model: "runware:100@1",
-              width: 1024,
-              height: 1024,
-              numberResults: 1,
-              outputFormat: "WEBP"
-            }
-          });
+          const imageOptions = {
+            pageIndex: i,
+            totalPages: pages.length,
+            storyText: pages[i],
+            userInfo: userInfo,
+            difficulty: difficulty,
+            establishedCharacter: establishedCharacter,
+            isNewStory: true
+          };
           
-          if (!error && imageData?.imageURL) {
-            images.push({ url: imageData.imageURL, prompt });
-            console.log(`Generated personalized image ${i + 1}/${pages.length} for ${characterName}`);
-          } else {
-            console.warn(`Failed to generate image for page ${i + 1}:`, error);
-            images.push({ prompt }); // Just store the prompt if generation fails
-          }
+          const generatedImage = await UnifiedImageService.generateStoryImage(imageOptions);
+          images.push({ url: generatedImage.url, prompt: generatedImage.prompt });
+          
+          console.log(`Generated consistent image ${i + 1}/${pages.length} for ${establishedCharacter.userName}`);
         } catch (imgError) {
           console.warn(`Image generation failed for page ${i + 1}:`, imgError);
-          images.push({ prompt }); // Just store the prompt if generation fails
+          const fallbackPrompt = `Children's book illustration for page ${i + 1} showing ${userInfo.name} with ${userInfo.avatar?.skinTone || 'medium'} skin tone in ${theme} setting`;
+          images.push({ prompt: fallbackPrompt }); // Just store the prompt if generation fails
         }
         
         // Add a small delay between requests to avoid overwhelming the API
@@ -446,7 +438,7 @@ export class AdaptiveStoryGenerator {
       console.error('Error generating story images:', error);
       // Return prompts only if image generation fails
       pages.forEach((page, i) => {
-        const fallbackPrompt = `Children's book illustration for page ${i + 1} showing ${characterName} with ${skinTone} in ${theme} setting, based on: ${page.substring(0, 100)}...`;
+        const fallbackPrompt = `Children's book illustration for page ${i + 1} showing ${userInfo.name} with ${userInfo.avatar?.skinTone || 'medium'} skin tone in ${theme} setting, based on: ${page.substring(0, 100)}...`;
         images.push({ prompt: fallbackPrompt });
       });
     }
