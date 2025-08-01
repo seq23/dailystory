@@ -74,23 +74,23 @@ serve(async (req) => {
         
         COPYRIGHT SAFE: If the prompt mentions copyrighted characters (Godzilla, Pokemon, Disney characters, etc.), create original alternatives that capture the spirit without copyright violation. For example, instead of "Godzilla" create "friendly giant lizard creature", instead of "Pokemon" create "magical animal companion".
         
-        CRITICAL: The character ${characterName} must have beautiful dark skin tone with African/African American features, realistic and accurate representation, vibrant colors, detailed but child-appropriate, warm and welcoming children's book art style, diverse and inclusive, high quality, safe for children`;
+        CRITICAL: The character ${characterName} must have beautiful dark skin tone with African/African American features, realistic and accurate representation, vibrant colors, detailed but child-appropriate, warm and welcoming children's book art style, diverse and inclusive, high quality, safe for children, NO TEXT OR WORDS IN IMAGE`;
       } else {
         enhancedPrompt = `A beautiful children's book illustration depicting ${characterConsistency} in the scene: ${positivePrompt}. 
         
         COPYRIGHT SAFE: If the prompt mentions copyrighted characters (Godzilla, Pokemon, Disney characters, etc.), create original alternatives that capture the spirit without copyright violation. For example, instead of "Godzilla" create "friendly giant lizard creature", instead of "Pokemon" create "magical animal companion".
         
-        CRITICAL: The character ${characterName} must always have the same ${consistentSkinTone} and appear as the same ${genderDesc} in every image. Consistent character design, warm and welcoming children's book art style, high quality, safe for children`;
+        CRITICAL: The character ${characterName} must always have the same ${consistentSkinTone} and appear as the same ${genderDesc} in every image. Consistent character design, warm and welcoming children's book art style, high quality, safe for children, NO TEXT OR WORDS IN IMAGE`;
       }
       
       console.log(`Generating enhanced image ${pageIndex + 1} for ${characterName} (${genderDesc} with ${consistentSkinTone})`);
     }
 
     // Enhanced quality and style enhancers with better representation
-    enhancedPrompt += `, vibrant children's book illustration style, realistic skin tones, accurate representation, warm colors, friendly atmosphere, high quality detailed artwork, child-appropriate, consistent art style, diverse and inclusive`;
+    enhancedPrompt += `, vibrant children's book illustration style, realistic skin tones, accurate representation, warm colors, friendly atmosphere, high quality detailed artwork, child-appropriate, consistent art style, diverse and inclusive, NO TEXT, NO WORDS, NO LETTERS`;
 
-    // Enhanced negative prompt for better skin tone accuracy and copyright safety
-    const negativePrompt = "blurry, low quality, distorted, scary, inappropriate, adult content, violence, weapons, dark themes, inconsistent character, different character, wrong skin tone, inaccurate skin color, whitewashed, wrong gender, pale when should be dark, light when should be dark, copyrighted characters, trademarked content, Godzilla, Pokemon, Disney characters, brand logos, commercial characters";
+    // CRITICAL: Enhanced negative prompt for better skin tone accuracy and ZERO TEXT
+    const negativePrompt = "text, words, letters, typography, writing, captions, subtitles, speech bubbles, signs, labels, books with visible text, newspapers, magazines, any readable content, blurry, low quality, distorted, scary, inappropriate, adult content, violence, weapons, dark themes, inconsistent character, different character, wrong skin tone, inaccurate skin color, whitewashed, wrong gender, pale when should be dark, light when should be dark, copyrighted characters, trademarked content, Godzilla, Pokemon, Disney characters, brand logos, commercial characters";
 
     // Create WebSocket connection to Runware
     const ws = new WebSocket("wss://ws-api.runware.ai/v1");

@@ -215,7 +215,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                 try {
                   console.log(`Starting image generation for page ${i + 1}...`);
                   // Try to generate custom image using Runware service with character consistency
-                  const customImagePrompt = `Beautiful illustration for children's story: ${pages[i].slice(0, 100)}. Child-friendly, colorful, safe content for kids reading app.`;
+                  const customImagePrompt = `Beautiful illustration for children's story: ${pages[i].slice(0, 100)}. Child-friendly, colorful, safe content for kids reading app. NO TEXT, NO WORDS, NO LETTERS in the image.`;
                   
                   try {
                     // Call Runware image generation edge function with character consistency
@@ -425,7 +425,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
           for (let i = 0; i < Math.min(pages.length, 10); i++) {
             try {
                   // Try to generate custom image using Runware service with character consistency
-                  const customImagePrompt = `Beautiful illustration for children's story: ${pages[i].slice(0, 100)}. Child-friendly, colorful, safe content for kids reading app.`;
+                  const customImagePrompt = `Beautiful illustration for children's story: ${pages[i].slice(0, 100)}. Child-friendly, colorful, safe content for kids reading app. NO TEXT, NO WORDS, NO LETTERS in the image.`;
                   
                   try {
                     // Call Runware image generation edge function with character consistency
@@ -551,7 +551,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
         for (let i = 0; i < newPages.length; i++) {
           try {
             // Try to generate custom image using Runware service with character consistency
-            const customImagePrompt = `Beautiful illustration for children's story: ${newPages[i].slice(0, 100)}. Child-friendly, colorful, safe content for kids reading app.`;
+            const customImagePrompt = `Beautiful illustration for children's story: ${newPages[i].slice(0, 100)}. Child-friendly, colorful, safe content for kids reading app. NO TEXT, NO WORDS, NO LETTERS in the image.`;
             
             try {
               // Call Runware image generation edge function with character consistency
