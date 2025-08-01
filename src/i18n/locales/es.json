@@ -348,5 +348,9 @@
     "reduceTime": "Reducir Tiempo por 5 Minutos",
     "endSession": "Finalizar Sesión de Lectura",
     "maxLimit": "Tiempo Máximo"
+  },
+  "readingLevels": {
+    "easier": "🌟 ¡Hacer la lectura más fácil y divertida!",
+    "harder": "🚀 ¡Aumenta el desafío de lectura!"
   }
 }

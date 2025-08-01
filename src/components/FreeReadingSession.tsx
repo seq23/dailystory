@@ -994,8 +994,13 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                             >
                               <ChevronDown className="w-4 h-4" />
                             </Button>
-                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-                              {t('freeReadingSession.readingLevel.easier')}
+                            <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-gradient-to-r from-green-500 to-blue-600 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-50 shadow-lg animate-bounce">
+                              <div className="flex items-center gap-2">
+                                <span>🌟</span>
+                                <span>Make reading easier & more enjoyable!</span>
+                              </div>
+                              {/* Arrow pointing up */}
+                              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 border-l-4 border-r-4 border-b-4 border-transparent border-b-green-500"></div>
                             </div>
                           </div>
                           
@@ -1013,8 +1018,13 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                             >
                               <ChevronUp className="w-4 h-4" />
                             </Button>
-                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-                              {t('freeReadingSession.readingLevel.harder')}
+                            <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-gradient-to-r from-purple-500 to-pink-600 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-50 shadow-lg animate-bounce">
+                              <div className="flex items-center gap-2">
+                                <span>🚀</span>
+                                <span>Level up your reading challenge!</span>
+                              </div>
+                              {/* Arrow pointing up */}
+                              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 border-l-4 border-r-4 border-b-4 border-transparent border-b-purple-500"></div>
                             </div>
                           </div>
                         </div>

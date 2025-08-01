@@ -476,5 +476,9 @@
     "reduceTime": "减少5分钟时间",
     "endSession": "结束阅读会话",
     "maxLimit": "最大时间"
+  },
+  "readingLevels": {
+    "easier": "🌟 让阅读更简单有趣！",
+    "harder": "🚀 提升阅读挑战！"
   }
 }

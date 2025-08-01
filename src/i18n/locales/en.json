@@ -414,5 +414,9 @@
     "reduceTime": "Reduce Time by 5 Minutes",
     "endSession": "End Reading Session",
     "maxLimit": "Max Time"
+  },
+  "readingLevels": {
+    "easier": "🌟 Make reading easier & more fun!",
+    "harder": "🚀 Challenge yourself with harder words!"
   }
 }
