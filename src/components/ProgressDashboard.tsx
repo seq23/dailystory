@@ -6,6 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookOpen, Clock, Star, Award, TrendingUp, Target, Zap, Brain } from "lucide-react";
 import { ReadingRewardsSystem } from "@/components/ReadingRewardsSystem";
 import { VocabularyCollector } from "@/components/VocabularyCollector";
+import { GamificationDashboard } from "@/components/GamificationDashboard";
+import { useGamification } from "@/hooks/useGamification";
 import type { UserInfo } from "@/types";
 
 interface ProgressDashboardProps {
@@ -52,6 +54,10 @@ interface SkillArea {
 }
 
 export const ProgressDashboard = ({ userInfo, isVisible, onClose }: ProgressDashboardProps) => {
+  // Initialize gamification for this user
+  const { userStats } = useGamification({
+    userId: userInfo?.name || 'guest'
+  });
   const [showVocabulary, setShowVocabulary] = useState(false);
   const [progress, setProgress] = useState<UserProgress>({
     storiesRead: 12,
@@ -160,12 +166,15 @@ export const ProgressDashboard = ({ userInfo, isVisible, onClose }: ProgressDash
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
+            {/* Gamification Dashboard */}
+            <GamificationDashboard userStats={userStats} compact={false} />
+
             {/* Key Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <Card className="bg-gradient-to-br from-blue-50 to-blue-100">
                 <CardContent className="p-6 text-center">
                   <BookOpen className="w-10 h-10 text-blue-600 mx-auto mb-3" />
-                  <div className="text-3xl font-bold text-blue-700">{progress.storiesRead}</div>
+                  <div className="text-3xl font-bold text-blue-700">{userStats.totalStoriesCompleted}</div>
                   <div className="text-sm text-blue-600">Stories Read</div>
                 </CardContent>
               </Card>
@@ -173,7 +182,7 @@ export const ProgressDashboard = ({ userInfo, isVisible, onClose }: ProgressDash
               <Card className="bg-gradient-to-br from-green-50 to-green-100">
                 <CardContent className="p-6 text-center">
                   <Clock className="w-10 h-10 text-green-600 mx-auto mb-3" />
-                  <div className="text-3xl font-bold text-green-700">{formatTime(progress.totalReadingTime)}</div>
+                  <div className="text-3xl font-bold text-green-700">{Math.round(userStats.totalTimeReading / 60)}h</div>
                   <div className="text-sm text-green-600">Reading Time</div>
                 </CardContent>
               </Card>
@@ -181,7 +190,7 @@ export const ProgressDashboard = ({ userInfo, isVisible, onClose }: ProgressDash
               <Card className="bg-gradient-to-br from-purple-50 to-purple-100">
                 <CardContent className="p-6 text-center">
                   <Star className="w-10 h-10 text-purple-600 mx-auto mb-3" />
-                  <div className="text-3xl font-bold text-purple-700">{progress.wordsLearned}</div>
+                  <div className="text-3xl font-bold text-purple-700">{userStats.vocabularyWordsLearned}</div>
                   <div className="text-sm text-purple-600">Words Learned</div>
                 </CardContent>
               </Card>
@@ -189,7 +198,7 @@ export const ProgressDashboard = ({ userInfo, isVisible, onClose }: ProgressDash
               <Card className="bg-gradient-to-br from-orange-50 to-orange-100">
                 <CardContent className="p-6 text-center">
                   <Award className="w-10 h-10 text-orange-600 mx-auto mb-3" />
-                  <div className="text-3xl font-bold text-orange-700">{progress.currentStreak}</div>
+                  <div className="text-3xl font-bold text-orange-700">{userStats.streak.currentStreak}</div>
                   <div className="text-sm text-orange-600">Day Streak</div>
                 </CardContent>
               </Card>
@@ -250,27 +259,8 @@ export const ProgressDashboard = ({ userInfo, isVisible, onClose }: ProgressDash
           </TabsContent>
 
           <TabsContent value="achievements" className="space-y-6">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {progress.achievements.map((achievement) => (
-                <Card key={achievement.id} className={`${getRarityColor(achievement.rarity)} p-1`}>
-                  <div className="bg-white rounded-lg p-4 h-full">
-                    <div className="text-center space-y-3">
-                      <div className="text-4xl">{achievement.icon}</div>
-                      <div>
-                        <h3 className="font-bold text-lg">{achievement.title}</h3>
-                        <p className="text-sm text-gray-600">{achievement.description}</p>
-                      </div>
-                      <Badge variant="secondary" className="text-xs">
-                        {achievement.rarity.toUpperCase()}
-                      </Badge>
-                      <div className="text-xs text-gray-500">
-                        Unlocked {formatRelativeTime(achievement.unlockedAt)}
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
+            {/* Enhanced Gamification Achievements */}
+            <GamificationDashboard userStats={userStats} compact={false} />
           </TabsContent>
 
           <TabsContent value="skills" className="space-y-6">

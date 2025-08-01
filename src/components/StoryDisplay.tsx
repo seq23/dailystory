@@ -12,6 +12,9 @@ import { APP_CONFIG } from "@/constants/app";
 import { useToast } from "@/hooks/use-toast";
 import { InlineTutorial } from "@/components/InlineTutorial";
 import { FloatingTimer } from "@/components/FloatingTimer";
+import { useGamification } from "@/hooks/useGamification";
+import { GamificationDashboard } from "@/components/GamificationDashboard";
+import { AchievementNotification } from "@/components/AchievementNotification";
 
 // Import avatar assets
 import avatarBoyPale from "@/assets/avatar-boy-pale.jpg";
@@ -50,6 +53,29 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
   onUpgrade,
 }) => {
   const { toast } = useToast();
+
+  // Initialize gamification
+  const {
+    userStats,
+    recordReadingSession,
+    addVocabularyWord,
+    getNextAchievement,
+    hasNewAchievements
+  } = useGamification({
+    userId: userInfo?.name || 'guest',
+    onAchievementUnlocked: (achievement) => {
+      console.log('New achievement unlocked:', achievement.title);
+    },
+    onLevelUp: (newLevel) => {
+      toast({
+        title: `🎉 Level Up!`,
+        description: `Congratulations! You've reached reading level ${newLevel}!`,
+        duration: 6000,
+      });
+    }
+  });
+
+  const [currentAchievement, setCurrentAchievement] = useState(null);
   
   // Story state
   const [story, setStory] = useState<string[]>([]);
@@ -284,13 +310,23 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
   }, [timeRemaining, isPaused]);
 
   const handleSessionEnd = () => {
+    const timeSpent = APP_CONFIG.FREE_SESSION_DURATION - timeRemaining;
     const sessionStats: SessionStats = {
       wordsRead,
-      timeSpent: APP_CONFIG.FREE_SESSION_DURATION - timeRemaining,
+      timeSpent,
       pagesRead: currentPage + 1,
       startTime: sessionStartTime.getTime(),
       accuracy: 100 // Placeholder
     };
+
+    // Record reading session for gamification
+    recordReadingSession({
+      wordsRead,
+      timeSpent,
+      pagesRead: currentPage + 1,
+      storyCompleted: currentPage >= story.length - 1,
+      readingSpeed: Math.round((wordsRead / (timeSpent / 60)) || 0)
+    });
     
     onSessionEnded(sessionStats);
   };
@@ -568,6 +604,16 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
       setCanAddMorePages(true);
     }
   }, [currentPage, story.length, canAddMorePages]);
+
+  // Check for new achievements and show them
+  useEffect(() => {
+    if (hasNewAchievements && !currentAchievement) {
+      const achievement = getNextAchievement();
+      if (achievement) {
+        setCurrentAchievement(achievement);
+      }
+    }
+  }, [hasNewAchievements, currentAchievement, getNextAchievement]);
 
   if (isLoading) {
     return (

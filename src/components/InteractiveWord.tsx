@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { getPhoneticSpelling } from "@/utils/phoneticDictionary";
 import { Volume2, HelpCircle, Languages, BookOpen, Lightbulb, Plus, Crown } from "lucide-react";
 import { createOpenAITTSService } from "@/services/textToSpeechService";
+import { useToast } from "@/hooks/use-toast";
 import type { UserInfo } from "@/types";
 
 interface InteractiveWordProps {
@@ -21,6 +22,7 @@ export const InteractiveWord = ({
   isPremium = false
 }: InteractiveWordProps) => {
   const { t, i18n } = useTranslation();
+  const { toast } = useToast();
   const [showTooltip, setShowTooltip] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [wordExplanation, setWordExplanation] = useState<string>("");
@@ -270,6 +272,17 @@ export const InteractiveWord = ({
     if ((window as any).addToVocabulary) {
       (window as any).addToVocabulary(vocabularyWord);
     }
+
+    // Track for gamification
+    if ((window as any).addVocabularyWord) {
+      (window as any).addVocabularyWord();
+    }
+
+    toast({
+      title: "Word Saved! 📝",
+      description: `"${cleanWord}" has been added to your vocabulary collection.`,
+      duration: 3000,
+    });
   };
 
   // Determine if word should be interactive based on difficulty level and user type
