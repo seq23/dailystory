@@ -403,9 +403,9 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
           }
         }
         
-        // Update story and images smoothly
+        // Update story and reset images for progressive generation
         setStory(pages);
-        setStoryImages(updatedStory.images || []);
+        setStoryImages([]); // Clear old images to start fresh generation
         setWordsRead(updatedStory.wordCount);
         
         // Keep user on same relative page position
@@ -419,7 +419,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
           duration: 2000,
         });
 
-        // Start progressive image generation for new content
+        // IMMEDIATELY start progressive image generation for new content (NON-BLOCKING)
         const startProgressiveImageGeneration = async () => {
           for (let i = 0; i < Math.min(pages.length, 10); i++) {
             try {
