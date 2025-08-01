@@ -999,8 +999,9 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
         onComplete={() => setTutorialActive(false)}
         onSkip={() => setTutorialActive(false)}
         onStartTimer={() => {
-          // Timer already manages its own state
-          console.log('Tutorial completed - timer continues');
+          // Auto-start the timer when tutorial completes (premium users)
+          setIsPaused(false);
+          console.log('Tutorial completed - timer auto-started at 20:59');
         }}
         onStepChange={setCurrentTutorialStep}
       />

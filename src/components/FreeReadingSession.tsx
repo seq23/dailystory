@@ -1130,8 +1130,12 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
             onComplete={() => setTutorialActive(false)}
             onSkip={() => setTutorialActive(false)}
             onStartTimer={() => {
-              // Timer already manages its own state 
-              console.log('Tutorial completed - timer continues');
+              // Auto-start the session when tutorial completes
+              if (!sessionStarted) {
+                setSessionStarted(true);
+                setSessionStartTime(new Date());
+              }
+              console.log('Tutorial completed - timer auto-started at 20:59');
             }}
             onStepChange={setCurrentTutorialStep}
           />

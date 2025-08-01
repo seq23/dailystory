@@ -1,7 +1,7 @@
 // Application-wide constants
 export const APP_CONFIG = {
   // Session timing
-  FREE_SESSION_DURATION: 20 * 60, // 20 minutes in seconds
+  FREE_SESSION_DURATION: 20 * 60 + 59, // 20 minutes and 59 seconds
   COUNTDOWN_DURATION: 5, // 5 seconds
   
   // Story configuration
