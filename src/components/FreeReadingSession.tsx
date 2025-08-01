@@ -1062,6 +1062,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                           </span>
                           <div className="relative group">
                             <Button
+                              id="add-pages-button"
                               onClick={addMorePages}
                               disabled={isLoading}
                               variant="outline"
