@@ -39,6 +39,24 @@ const SessionEnded = ({ onHome, onNewStory, isPremium = false, onUpgrade }: Sess
       console.error('Failed to parse stats from URL:', error);
     }
   }
+
+  // Handle navigation based on user type
+  const handleHome = () => {
+    window.history.pushState(null, '', '/');
+    window.location.reload();
+  };
+
+  const handleNewStory = () => {
+    if (userIsPremium) {
+      // Premium users: stay on same page, reload to restart
+      window.history.pushState(null, '', '/');
+      window.location.reload();
+    } else {
+      // Free users: go back to home and navigate to form
+      window.history.pushState(null, '', '/?action=new-story');
+      window.location.reload();
+    }
+  };
   
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -192,7 +210,7 @@ const SessionEnded = ({ onHome, onNewStory, isPremium = false, onUpgrade }: Sess
           {/* Action Buttons */}
           <div className="space-y-3 pt-4">
             <Button
-              onClick={onHome}
+              onClick={handleHome}
               className="w-full bg-amber-500 hover:bg-amber-600 text-white font-medium py-3"
               size="lg"
             >
@@ -201,7 +219,7 @@ const SessionEnded = ({ onHome, onNewStory, isPremium = false, onUpgrade }: Sess
             </Button>
             
             <Button
-              onClick={onNewStory}
+              onClick={handleNewStory}
               variant="outline"
               className="w-full border-2 border-amber-300 text-amber-700 hover:bg-amber-50 font-medium py-3"
               size="lg"

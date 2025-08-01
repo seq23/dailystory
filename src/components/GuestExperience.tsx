@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { WelcomeHero } from "@/components/WelcomeHero";
 import { UserInfoForm } from "@/components/UserInfoForm";
 import { FreeReadingSession } from "@/components/FreeReadingSession";
@@ -11,6 +11,19 @@ type GuestState = "welcome" | "form" | "reading" | "upgrade" | "login";
 export const GuestExperience = () => {
   const [currentState, setCurrentState] = useState<GuestState>("welcome");
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+
+  // Check for query parameters on component mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const action = urlParams.get('action');
+    
+    if (action === 'new-story') {
+      // User came from session ended page wanting to start new story
+      setCurrentState("form");
+      // Clean up the URL
+      window.history.replaceState({}, '', '/');
+    }
+  }, []);
 
   const handleGetStarted = () => {
     setCurrentState("form");
