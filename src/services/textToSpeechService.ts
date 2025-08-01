@@ -37,14 +37,11 @@ export class OpenAITTSService {
       console.log(`TTS Request: voice=${this.voice}, speed=${speedToUse}, text="${cleanText.substring(0, 50)}..."`);
       
       const { data, error } = await supabase.functions.invoke('openai-tts', {
-        body: JSON.stringify({
+        body: {
           text: cleanText,
           voice: this.voice,
           speed: speedToUse
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        }
       });
 
       if (error) {
@@ -165,19 +162,20 @@ export class OpenAITTSService {
 
     try {
       // Get comprehensive word data from dictionary service
+      console.log('Calling word-dictionary for:', cleanWord, 'userLevel:', userLevel);
+      
       const { data, error } = await supabase.functions.invoke('word-dictionary', {
-        body: JSON.stringify({
+        body: {
           word: cleanWord,
           userLevel: userLevel
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        }
       });
+
+      console.log('Dictionary response:', { data, error });
 
       if (error) {
         console.error('Dictionary service error:', error);
-        throw new Error('Failed to get word definition');
+        throw new Error(`Failed to get word definition: ${error.message}`);
       }
 
       const wordData = data;
@@ -200,15 +198,16 @@ export class OpenAITTSService {
     if (!cleanWord) return null;
 
     try {
+      console.log('Getting word data for:', cleanWord, 'userLevel:', userLevel);
+      
       const { data, error } = await supabase.functions.invoke('word-dictionary', {
-        body: JSON.stringify({
+        body: {
           word: cleanWord,
           userLevel: userLevel
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        }
       });
+
+      console.log('Word data response:', { data, error });
 
       if (error) {
         console.error('Dictionary service error:', error);
