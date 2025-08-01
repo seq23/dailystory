@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import "https://deno.land/x/xhr@0.1.0/mod.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -7,19 +6,37 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  console.log('OpenAI TTS function started')
+  
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    console.log('OpenAI TTS function called');
-    const { text, voice = "nova", speed = 1.0 } = await req.json()
+    console.log('Parsing request body...')
+    const requestBody = await req.text()
+    console.log('Raw request body:', requestBody)
+    
+    let parsedBody
+    try {
+      parsedBody = JSON.parse(requestBody)
+    } catch (parseError) {
+      console.error('JSON parse error:', parseError)
+      throw new Error('Invalid JSON in request body')
+    }
+    
+    const { text, voice = "nova", speed = 1.0 } = parsedBody
     
     console.log(`TTS Function called: voice=${voice}, speed=${speed}, textLength=${text?.length}`)
     console.log(`Request text preview: "${text?.substring(0, 100)}..."`)
     
+    if (!text) {
+      throw new Error('Text is required')
+    }
+    
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY')
     console.log(`OpenAI API key configured: ${openaiApiKey ? 'YES' : 'NO'}`)
+    console.log(`API key length: ${openaiApiKey?.length || 0}`)
     
     if (!openaiApiKey) {
       console.error('OpenAI API key not configured')
@@ -34,10 +51,10 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'tts-1-hd', // Use high-definition model for better quality
+        model: 'tts-1-hd',
         input: text,
-        voice: voice, // alloy, echo, fable, onyx, nova, shimmer
-        speed: speed, // This is the key parameter for speed control
+        voice: voice,
+        speed: speed,
         response_format: 'mp3'
       }),
     })
@@ -58,6 +75,8 @@ serve(async (req) => {
       String.fromCharCode(...new Uint8Array(audioBuffer))
     )
     
+    console.log(`Base64 audio length: ${base64Audio.length}`)
+    
     return new Response(
       JSON.stringify({ audioContent: base64Audio }),
       {
@@ -72,10 +91,11 @@ serve(async (req) => {
     console.error('TTS Error Details:', error)
     console.error('Error message:', error?.message)
     console.error('Error stack:', error?.stack)
+    console.error('Error name:', error?.name)
     
     return new Response(
       JSON.stringify({ 
-        error: error.message,
+        error: error?.message || 'Unknown error',
         details: 'Check function logs for more information'
       }),
       { 
