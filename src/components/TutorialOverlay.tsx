@@ -113,6 +113,35 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
           (floatingTimer as HTMLElement).style.transition = 'all 0.3s ease-out';
         }
       }
+
+      // ENHANCED HIGHLIGHTING FOR ADD PAGES BUTTON - Make it super prominent
+      if (step.target === "add-pages-button") {
+        // Make the button much more prominent
+        targetElement.classList.add(
+          'scale-150',
+          'ring-8',
+          'ring-yellow-400/80',
+          'ring-offset-4',
+          'bg-yellow-100',
+          'border-yellow-400',
+          'text-yellow-800'
+        );
+        (targetElement as HTMLElement).style.transform = 'scale(1.5)';
+        (targetElement as HTMLElement).style.transition = 'all 0.3s ease-out';
+        (targetElement as HTMLElement).style.zIndex = '60';
+        
+        // Also highlight the parent container
+        const parentContainer = targetElement.closest('.flex.flex-col.items-center.gap-2');
+        if (parentContainer) {
+          parentContainer.classList.add(
+            'ring-4',
+            'ring-yellow-300/50',
+            'rounded-xl',
+            'bg-yellow-50/50',
+            'p-4'
+          );
+        }
+      }
     }
 
     return () => {
@@ -148,6 +177,34 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
             );
             (floatingTimer as HTMLElement).style.transform = '';
             (floatingTimer as HTMLElement).style.transition = '';
+          }
+        }
+
+        // Clean up add pages button special styling
+        if (step.target === "add-pages-button") {
+          targetElement.classList.remove(
+            'scale-150',
+            'ring-8',
+            'ring-yellow-400/80',
+            'ring-offset-4',
+            'bg-yellow-100',
+            'border-yellow-400',
+            'text-yellow-800'
+          );
+          (targetElement as HTMLElement).style.transform = '';
+          (targetElement as HTMLElement).style.transition = '';
+          (targetElement as HTMLElement).style.zIndex = '';
+          
+          // Clean up parent container styling
+          const parentContainer = targetElement.closest('.flex.flex-col.items-center.gap-2');
+          if (parentContainer) {
+            parentContainer.classList.remove(
+              'ring-4',
+              'ring-yellow-300/50',
+              'rounded-xl',
+              'bg-yellow-50/50',
+              'p-4'
+            );
           }
         }
       }
