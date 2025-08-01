@@ -69,9 +69,15 @@ export const InteractiveWord = ({
       const rect = wordRef.current.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
       const viewportWidth = window.innerWidth;
-      const estimatedTooltipHeight = 160; // Estimated height including content and padding
-      const estimatedTooltipWidth = 320; // Estimated width
-      const margin = 16; // Safety margin from viewport edges
+      
+      // More accurate estimates based on actual content
+      const baseTooltipHeight = 120; // Base height for content
+      const buttonHeight = 40; // Height per button row
+      const extraButtons = (isESLLearner ? 1 : 0) + (isPremium ? 1 : 0) + 
+                          (isNativeEnglishSpeaker && userInfo?.age && userInfo.age > 12 ? 1 : 0);
+      const estimatedTooltipHeight = baseTooltipHeight + (Math.ceil(extraButtons / 2) * buttonHeight);
+      const estimatedTooltipWidth = Math.min(340, viewportWidth * 0.9); // Responsive width
+      const margin = 20; // Increased safety margin
       
       // Check available space in all directions
       const spaceAbove = rect.top;
@@ -80,18 +86,25 @@ export const InteractiveWord = ({
       const spaceRight = viewportWidth - rect.right;
       const wordCenter = rect.left + rect.width / 2;
       
-      // Determine optimal vertical position
+      // Enhanced vertical position logic with better bottom detection
       let vertical: 'top' | 'bottom' = 'bottom';
-      if (spaceBelow >= estimatedTooltipHeight || spaceBelow > spaceAbove) {
-        vertical = 'bottom';
-      } else if (spaceAbove >= estimatedTooltipHeight) {
+      
+      // If word is in bottom third of viewport, prefer top positioning
+      if (rect.bottom > viewportHeight * 0.67) {
         vertical = 'top';
+      } else if (spaceBelow < estimatedTooltipHeight + margin) {
+        // Not enough space below, check if top has more space
+        if (spaceAbove > spaceBelow && spaceAbove >= estimatedTooltipHeight + margin) {
+          vertical = 'top';
+        } else {
+          // Force top if bottom would definitely clip
+          vertical = 'top';
+        }
       } else {
-        // If neither direction has enough space, choose the one with more space
-        vertical = spaceBelow > spaceAbove ? 'bottom' : 'top';
+        vertical = 'bottom';
       }
       
-      // Determine optimal horizontal position and offset
+      // Enhanced horizontal position and offset calculation
       let horizontal: 'left' | 'center' | 'right' = 'center';
       let offset = 0;
       
@@ -101,13 +114,13 @@ export const InteractiveWord = ({
       const rightEdgeIfCentered = wordCenter + tooltipHalfWidth;
       
       if (leftEdgeIfCentered < margin) {
-        // Tooltip would be cut off on the left, align to left edge of word
+        // Tooltip would be cut off on the left
         horizontal = 'left';
         offset = Math.max(margin - rect.left, 0);
       } else if (rightEdgeIfCentered > viewportWidth - margin) {
-        // Tooltip would be cut off on the right, align to right edge of word
-        horizontal = 'right';
-        offset = Math.min(rect.right - (viewportWidth - margin), 0);
+        // Tooltip would be cut off on the right
+        horizontal = 'right'; 
+        offset = Math.max((rect.right + estimatedTooltipWidth) - (viewportWidth - margin), 0);
       } else {
         // Centered position works fine
         horizontal = 'center';
@@ -310,129 +323,126 @@ export const InteractiveWord = ({
       
       {showTooltip && (
         <div 
-          className="absolute z-[9999]"
+          className="fixed z-[99999] bg-white border border-gray-200 text-gray-900 px-3 py-3 sm:px-4 rounded-lg shadow-2xl text-xs sm:text-sm font-medium backdrop-blur-sm"
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
           onTouchStart={(e) => e.stopPropagation()}
           style={{
-            // Smart horizontal positioning to prevent cutoffs
+            // Fixed positioning based on word location
             ...(tooltipPosition.horizontal === 'left' ? {
-              left: `${tooltipPosition.offset}px`,
-              transform: 'translateX(0)'
+              left: `${Math.max(20, wordRef.current?.getBoundingClientRect().left || 0)}px`,
             } : tooltipPosition.horizontal === 'right' ? {
-              right: `${-tooltipPosition.offset}px`,
-              transform: 'translateX(0)'
+              right: `${Math.max(20, window.innerWidth - (wordRef.current?.getBoundingClientRect().right || window.innerWidth))}px`,
             } : {
-              left: '50%',
-              transform: 'translateX(-50%)'
+              left: `${Math.max(20, Math.min(window.innerWidth - 340, (wordRef.current?.getBoundingClientRect().left || 0) + (wordRef.current?.getBoundingClientRect().width || 0) / 2 - 170))}px`,
+            }),
+            ...(tooltipPosition.vertical === 'top' ? {
+              bottom: `${window.innerHeight - (wordRef.current?.getBoundingClientRect().top || 0) + 8}px`,
+            } : {
+              top: `${(wordRef.current?.getBoundingClientRect().bottom || 0) + 8}px`,
             }),
             maxWidth: 'min(340px, 90vw)',
             minWidth: 'min(280px, 85vw)',
             width: 'max-content',
-            [tooltipPosition.vertical === 'top' ? 'bottom' : 'top']: '100%',
-            [tooltipPosition.vertical === 'top' ? 'marginBottom' : 'marginTop']: '8px'
+            boxShadow: '0 10px 40px -10px rgba(0, 0, 0, 0.3)',
+            border: '1px solid rgba(0, 0, 0, 0.1)'
           }}
         >
-          <div className="bg-white border border-gray-200 text-gray-900 px-3 py-3 sm:px-4 rounded-lg shadow-2xl text-xs sm:text-sm font-medium backdrop-blur-sm w-full"
-               style={{ 
-                 boxShadow: '0 10px 40px -10px rgba(0, 0, 0, 0.3)',
-                 border: '1px solid rgba(0, 0, 0, 0.1)'
-               }}>
-            {/* Phonetic spelling */}
-            {phoneticSpelling && (
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-xs text-gray-500">"{phoneticSpelling}"</span>
-                {userInfo?.age && userInfo.age > 8 && (
-                  <span className="text-xs bg-gray-100 px-1 rounded">
-                    {t(`interactiveWord.difficulty.${wordComplexity}`)}
-                  </span>
-                )}
-              </div>
-            )}
-
-            {/* Word explanation or translation */}
-            {(wordExplanation || wordTranslation) && (
-              <div className="mb-2 text-xs">
-                {wordTranslation && (
-                  <div className="font-semibold text-blue-600 mb-1">{wordTranslation}</div>
-                )}
-                {wordExplanation && (
-                  <div className="text-gray-600">{wordExplanation}</div>
-                )}
-              </div>
-            )}
-            
-            {/* Action buttons */}
-            <div className="flex items-center gap-1 flex-wrap">
-              <button
-                onClick={handlePronounce}
-                className="flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1.5 sm:py-1 rounded transition-colors touch-manipulation min-h-[32px] sm:min-h-auto"
-                disabled={isPlaying}
-              >
-                <Volume2 className="w-3 h-3" />
-                {t("interactiveWord.hearIt")}
-              </button>
-              
-              <button
-                onClick={handleExplain}
-                className="flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1.5 sm:py-1 rounded transition-colors touch-manipulation min-h-[32px] sm:min-h-auto"
-                disabled={isPlaying || isLoadingExplanation}
-              >
-                <HelpCircle className="w-3 h-3" />
-                {isLoadingExplanation ? t("interactiveWord.loading") : t("interactiveWord.explain")}
-              </button>
-
-              {/* Translation button for ESL learners only */}
-              {isESLLearner && (
-                <button
-                  onClick={handleTranslate}
-                  className="flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1.5 sm:py-1 rounded transition-colors touch-manipulation min-h-[32px] sm:min-h-auto"
-                  disabled={isLoadingTranslation}
-                >
-                  <Languages className="w-3 h-3" />
-                  {isLoadingTranslation ? t("interactiveWord.loading") : t("interactiveWord.translate")}
-                </button>
-              )}
-
-              {/* Add to vocabulary button - Premium feature */}
-              <div className="relative group">
-                <button
-                  onClick={isPremium ? handleAddToVocabulary : undefined}
-                  className={`flex items-center gap-1 text-xs px-2 py-1.5 sm:py-1 rounded transition-colors touch-manipulation min-h-[32px] sm:min-h-auto ${
-                    isPremium 
-                      ? 'bg-purple-100 hover:bg-purple-200 text-purple-700 cursor-pointer' 
-                      : 'bg-gray-100 text-gray-500 cursor-not-allowed opacity-60'
-                  }`}
-                  disabled={!isPremium}
-                >
-                  {isPremium ? <Plus className="w-3 h-3" /> : <Crown className="w-3 h-3" />}
-                  {t("interactiveWord.addToVocabulary", "Save Word")}
-                </button>
-                
-                {/* Premium tooltip for free users */}
-                {!isPremium && (
-                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 shadow-lg">
-                    <div className="flex items-center gap-1">
-                      <Crown className="w-3 h-3" />
-                      <span>Premium Feature - Upgrade to save words!</span>
-                    </div>
-                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-l-4 border-r-4 border-t-4 border-transparent border-t-purple-600"></div>
-                  </div>
-                )}
-              </div>
-
-              {/* Etymology button for advanced native speakers */}
-              {isNativeEnglishSpeaker && userInfo?.age && userInfo.age > 12 && (
-                <button
-                  onClick={() => {/* TODO: Implement etymology lookup */}}
-                  className="flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1.5 sm:py-1 rounded transition-colors touch-manipulation min-h-[32px] sm:min-h-auto"
-                >
-                  <Lightbulb className="w-3 h-3" />
-                  {t("interactiveWord.etymology")}
-                </button>
+          {/* Phonetic spelling */}
+          {phoneticSpelling && (
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xs text-gray-500">"{phoneticSpelling}"</span>
+              {userInfo?.age && userInfo.age > 8 && (
+                <span className="text-xs bg-gray-100 px-1 rounded">
+                  {t(`interactiveWord.difficulty.${wordComplexity}`)}
+                </span>
               )}
             </div>
+          )}
+
+          {/* Word explanation or translation */}
+          {(wordExplanation || wordTranslation) && (
+            <div className="mb-2 text-xs">
+              {wordTranslation && (
+                <div className="font-semibold text-blue-600 mb-1">{wordTranslation}</div>
+              )}
+              {wordExplanation && (
+                <div className="text-gray-600">{wordExplanation}</div>
+              )}
+            </div>
+          )}
+          
+          {/* Action buttons */}
+          <div className="flex items-center gap-1 flex-wrap">
+            <button
+              onClick={handlePronounce}
+              className="flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1.5 sm:py-1 rounded transition-colors touch-manipulation min-h-[32px] sm:min-h-auto"
+              disabled={isPlaying}
+            >
+              <Volume2 className="w-3 h-3" />
+              {t("interactiveWord.hearIt")}
+            </button>
+            
+            <button
+              onClick={handleExplain}
+              className="flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1.5 sm:py-1 rounded transition-colors touch-manipulation min-h-[32px] sm:min-h-auto"
+              disabled={isPlaying || isLoadingExplanation}
+            >
+              <HelpCircle className="w-3 h-3" />
+              {isLoadingExplanation ? t("interactiveWord.loading") : t("interactiveWord.explain")}
+            </button>
+
+            {/* Translation button for ESL learners only */}
+            {isESLLearner && (
+              <button
+                onClick={handleTranslate}
+                className="flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1.5 sm:py-1 rounded transition-colors touch-manipulation min-h-[32px] sm:min-h-auto"
+                disabled={isLoadingTranslation}
+              >
+                <Languages className="w-3 h-3" />
+                {isLoadingTranslation ? t("interactiveWord.loading") : t("interactiveWord.translate")}
+              </button>
+            )}
+
+            {/* Add to vocabulary button - Premium feature */}
+            <div className="relative group">
+              <button
+                onClick={isPremium ? handleAddToVocabulary : undefined}
+                className={`flex items-center gap-1 text-xs px-2 py-1.5 sm:py-1 rounded transition-colors touch-manipulation min-h-[32px] sm:min-h-auto ${
+                  isPremium 
+                    ? 'bg-purple-100 hover:bg-purple-200 text-purple-700 cursor-pointer' 
+                    : 'bg-gray-100 text-gray-500 cursor-not-allowed opacity-60'
+                }`}
+                disabled={!isPremium}
+              >
+                {isPremium ? <Plus className="w-3 h-3" /> : <Crown className="w-3 h-3" />}
+                {t("interactiveWord.addToVocabulary", "Save Word")}
+              </button>
+              
+              {/* Premium tooltip for free users */}
+              {!isPremium && (
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 shadow-lg">
+                  <div className="flex items-center gap-1">
+                    <Crown className="w-3 h-3" />
+                    <span>Premium Feature - Upgrade to save words!</span>
+                  </div>
+                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-l-4 border-r-4 border-t-4 border-transparent border-t-purple-600"></div>
+                </div>
+              )}
+            </div>
+
+            {/* Etymology button for advanced native speakers */}
+            {isNativeEnglishSpeaker && userInfo?.age && userInfo.age > 12 && (
+              <button
+                onClick={() => {/* TODO: Implement etymology lookup */}}
+                className="flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1.5 sm:py-1 rounded transition-colors touch-manipulation min-h-[32px] sm:min-h-auto"
+              >
+                <Lightbulb className="w-3 h-3" />
+                {t("interactiveWord.etymology")}
+              </button>
+            )}
           </div>
+
           {/* Dynamic arrow positioning */}
           <div 
             className={`absolute w-0 h-0 border-l-4 border-r-4 border-transparent ${
@@ -451,7 +461,7 @@ export const InteractiveWord = ({
                 transform: 'translateX(-50%)'
               })
             }}
-          ></div>
+          />
         </div>
       )}
     </span>
