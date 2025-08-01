@@ -6,7 +6,7 @@ export type LearningGoal = "improve-english-reading" | "learn-english-language" 
 export type SkinTone = "pale" | "light" | "medium" | "olive" | "dark";
 export type AvatarType = "boy" | "girl" | "prefer-not-to-answer";
 export type HairStyle = "short" | "long" | "braids" | "dreadlocks" | "curly" | "straight";
-export type HairColor = "blonde" | "brown" | "black" | "red" | "gray" | "white";
+export type HairColor = "blonde" | "brown" | "black" | "red" | "gray";
 export type Grade = "PreK" | "K" | "1st" | "2nd" | "3rd" | "4th" | "5th" | "6th+";
 
 export interface Avatar {

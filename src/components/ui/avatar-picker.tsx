@@ -74,8 +74,7 @@ const hairColorInfo = {
   brown: { name: "Brown", color: "#8b4513", emoji: "🌰" },
   black: { name: "Black", color: "#2c2c2c", emoji: "🖤" },
   red: { name: "Red", color: "#cc6600", emoji: "🔥" },
-  gray: { name: "Gray", color: "#999999", emoji: "🌫️" },
-  white: { name: "White", color: "#f0f0f0", emoji: "🤍" }
+  gray: { name: "Gray", color: "#999999", emoji: "🌫️" }
 }
 
 const avatarTypeInfo = {
@@ -120,9 +119,16 @@ export const AvatarPicker = React.forwardRef<
     setSelectedPreview(newSelection)
   }
 
-  // For "prefer-not-to-answer", default to boy avatar for display but we'll handle pronouns separately
-  const displayType = value.type === "prefer-not-to-answer" ? "boy" : value.type
-  const currentAvatar = avatarImages[displayType as "boy" | "girl"]?.[value.skinTone]
+  // Use selectedPreview for immediate visual feedback
+
+  // Use selectedPreview for immediate visual feedback
+  const displayType = selectedPreview.type === "prefer-not-to-answer" ? "boy" : selectedPreview.type
+  const currentAvatar = avatarImages[displayType as "boy" | "girl"]?.[selectedPreview.skinTone]
+
+  // Update selectedPreview when value changes from parent
+  React.useEffect(() => {
+    setSelectedPreview(value)
+  }, [value])
 
   return (
     <div ref={ref} className={cn("space-y-6", className)}>
@@ -149,7 +155,7 @@ export const AvatarPicker = React.forwardRef<
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {(Object.keys(avatarTypeInfo) as Array<keyof typeof avatarTypeInfo>).map((type) => {
             const info = avatarTypeInfo[type]
-            const isSelected = value.type === type
+            const isSelected = selectedPreview.type === type
             const Icon = info.icon
             
             return (
@@ -197,7 +203,7 @@ export const AvatarPicker = React.forwardRef<
         <div className="grid grid-cols-5 gap-4">
           {(Object.keys(skinToneInfo) as Array<keyof typeof skinToneInfo>).map((tone) => {
             const info = skinToneInfo[tone]
-            const isSelected = value.skinTone === tone
+            const isSelected = selectedPreview.skinTone === tone
             
             return (
               <div key={tone} className="text-center space-y-2">
@@ -237,38 +243,46 @@ export const AvatarPicker = React.forwardRef<
         </div>
       </div>
 
-      {/* Hair Style Selection */}
+      {/* Hair Style Selection - Compact Circles */}
       <div className="space-y-4">
         <Label className="text-lg font-semibold text-foreground flex items-center gap-2">
           ✂️ Hair Style
         </Label>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-5 gap-3">
           {(Object.keys(hairStyleInfo) as Array<keyof typeof hairStyleInfo>).map((style) => {
             const info = hairStyleInfo[style]
-            const isSelected = value.hairStyle === style
+            const isSelected = selectedPreview.hairStyle === style
             
             return (
-              <Card 
-                key={style} 
-                className={cn(
-                  "cursor-pointer transition-all duration-200 hover:shadow-md border-2",
-                  isSelected 
-                    ? "border-primary bg-primary/5 shadow-lg" 
-                    : "border-gray-200 hover:border-primary/50"
-                )}
-                onClick={() => handleHairStyleChange(style)}
-              >
-                <CardContent className="p-3 text-center space-y-2">
-                  <div className="text-2xl">{info.emoji}</div>
-                  <div className="space-y-1">
-                    <h4 className="font-medium text-sm">{info.name}</h4>
-                    <p className="text-xs text-muted-foreground">{info.description}</p>
-                  </div>
-                  {isSelected && (
-                    <Badge variant="default" className="text-xs">✓</Badge>
+              <div key={style} className="text-center space-y-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => handleHairStyleChange(style)}
+                  className={cn(
+                    "w-16 h-16 rounded-full border-4 hover:scale-110 transition-all duration-200 relative overflow-hidden",
+                    isSelected 
+                      ? "border-primary shadow-xl scale-110 ring-4 ring-primary/20 bg-primary/10" 
+                      : "border-gray-300 hover:border-primary/50 shadow-md"
                   )}
-                </CardContent>
-              </Card>
+                  aria-label={`Select ${info.name}`}
+                >
+                  <span className="text-2xl">{info.emoji}</span>
+                  {isSelected && (
+                    <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
+                      <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                        <div className="w-2 h-2 bg-white rounded-full"></div>
+                      </div>
+                    </div>
+                  )}
+                </Button>
+                <div className="space-y-1">
+                  <p className="text-xs font-medium">{info.name}</p>
+                  {isSelected && (
+                    <Badge variant="outline" className="text-xs px-1">✓</Badge>
+                  )}
+                </div>
+              </div>
             )
           })}
         </div>
@@ -282,7 +296,7 @@ export const AvatarPicker = React.forwardRef<
         <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
           {(Object.keys(hairColorInfo) as Array<keyof typeof hairColorInfo>).map((color) => {
             const info = hairColorInfo[color]
-            const isSelected = value.hairColor === color
+            const isSelected = selectedPreview.hairColor === color
             
             return (
               <div key={color} className="text-center space-y-2">
@@ -329,7 +343,7 @@ export const AvatarPicker = React.forwardRef<
           <Card 
             className={cn(
               "cursor-pointer transition-all duration-200 hover:shadow-md border-2",
-              !value.hasFreckles 
+              !selectedPreview.hasFreckles 
                 ? "border-primary bg-primary/5 shadow-lg" 
                 : "border-gray-200 hover:border-primary/50"
             )}
@@ -341,7 +355,7 @@ export const AvatarPicker = React.forwardRef<
                 <h4 className="font-medium">No Freckles</h4>
                 <p className="text-xs text-muted-foreground">Smooth skin</p>
               </div>
-              {!value.hasFreckles && (
+              {!selectedPreview.hasFreckles && (
                 <Badge variant="default" className="text-xs">✓ Selected</Badge>
               )}
             </CardContent>
@@ -350,7 +364,7 @@ export const AvatarPicker = React.forwardRef<
           <Card 
             className={cn(
               "cursor-pointer transition-all duration-200 hover:shadow-md border-2",
-              value.hasFreckles 
+              selectedPreview.hasFreckles 
                 ? "border-primary bg-primary/5 shadow-lg" 
                 : "border-gray-200 hover:border-primary/50"
             )}
@@ -362,7 +376,7 @@ export const AvatarPicker = React.forwardRef<
                 <h4 className="font-medium">With Freckles</h4>
                 <p className="text-xs text-muted-foreground">Cute freckles</p>
               </div>
-              {value.hasFreckles && (
+              {selectedPreview.hasFreckles && (
                 <Badge variant="default" className="text-xs">✓ Selected</Badge>
               )}
             </CardContent>
@@ -384,13 +398,13 @@ export const AvatarPicker = React.forwardRef<
                   <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-primary shadow-2xl">
                     <img
                       src={currentAvatar}
-                      alt={`${value.type} avatar with ${value.skinTone} skin tone`}
+                      alt={`${selectedPreview.type} avatar with ${selectedPreview.skinTone} skin tone`}
                       className="w-full h-full object-cover"
                     />
                   </div>
                   <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-primary rounded-full flex items-center justify-center shadow-lg">
                     <span className="text-lg">
-                      {avatarTypeInfo[value.type]?.emoji}
+                      {avatarTypeInfo[selectedPreview.type]?.emoji}
                     </span>
                   </div>
                 </div>
@@ -403,18 +417,18 @@ export const AvatarPicker = React.forwardRef<
                   {/* Avatar Details Grid */}
                   <div className="grid grid-cols-2 gap-2 max-w-sm mx-auto">
                     <Badge variant="secondary" className="text-xs">
-                      {avatarTypeInfo[value.type]?.label}
+                      {avatarTypeInfo[selectedPreview.type]?.label}
                     </Badge>
                     <Badge variant="outline" className="text-xs">
-                      {skinToneInfo[value.skinTone]?.name} skin
+                      {skinToneInfo[selectedPreview.skinTone]?.name} skin
                     </Badge>
                     <Badge variant="outline" className="text-xs">
-                      {hairStyleInfo[value.hairStyle]?.name}
+                      {hairStyleInfo[selectedPreview.hairStyle]?.name}
                     </Badge>
                     <Badge variant="outline" className="text-xs">
-                      {hairColorInfo[value.hairColor]?.name} hair
+                      {hairColorInfo[selectedPreview.hairColor]?.name} hair
                     </Badge>
-                    {value.hasFreckles && (
+                    {selectedPreview.hasFreckles && (
                       <Badge variant="outline" className="text-xs col-span-2">
                         ✨ With freckles
                       </Badge>

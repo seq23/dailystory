@@ -13,7 +13,7 @@ export interface StoryGenerationConfig {
     type: 'boy' | 'girl' | 'prefer-not-to-answer';
     skinTone: 'pale' | 'light' | 'medium' | 'olive' | 'dark';
     hairStyle: 'short' | 'long' | 'braids' | 'dreadlocks' | 'curly' | 'straight';
-    hairColor: 'blonde' | 'brown' | 'black' | 'red' | 'gray' | 'white';
+    hairColor: 'blonde' | 'brown' | 'black' | 'red' | 'gray';
     hasFreckles: boolean;
   };
   favoriteColor?: string;
