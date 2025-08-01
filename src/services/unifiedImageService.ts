@@ -321,16 +321,16 @@ export class UnifiedImageService {
       case 'medium':
         return 'Colorful cartoon-style children\'s book illustration, warm animated art style, friendly cartoon characters, bright cheerful colors, beautiful simplified cartoon backgrounds, child-friendly cartoon aesthetic';
       case 'hard':
-        return 'Detailed realistic illustration, Studio Ghibli quality art style, more sophisticated but still child-appropriate';
+        return 'Realistic children\'s book illustration style, detailed semi-realistic art, natural proportions, realistic lighting and shadows, sophisticated illustration technique, painterly realistic style appropriate for ages 8-12';
       case 'expert':
-        return 'Photorealistic masterpiece, award-winning children\'s book illustration, highly detailed realistic art';
+        return 'Photorealistic detailed illustration, highly realistic children\'s book art, natural realistic proportions, sophisticated realistic detail, professional realistic illustration style for advanced young readers ages 10+';
       default:
         return 'Warm colorful cartoon-style children\'s book illustration';
     }
   }
 
   /**
-   * Get quality modifiers with ABSOLUTE NO TEXT rule and child-appropriate cartoon styling
+   * Get quality modifiers with ABSOLUTE NO TEXT rule and age-appropriate styling
    */
   private static getQualityModifiers(difficulty: DifficultyLevel): string {
     const strictNoText = 'ABSOLUTELY NO TEXT, NO WORDS, NO LETTERS, NO WRITING, NO SIGNS, NO BOOKS WITH VISIBLE TEXT, NO SPEECH BUBBLES, completely text-free image';
@@ -341,9 +341,9 @@ export class UnifiedImageService {
       case 'medium':
         return `${strictNoText}, colorful cartoon children's book art, warm animated illustration style, bright harmonious colors, friendly cartoon characters, beautiful simplified backgrounds, child-appropriate cartoon quality, engaging cartoon composition`;
       case 'hard':
-        return `${strictNoText}, detailed realistic children's book illustration, rich artistic detail, natural beautiful lighting, sophisticated but child-appropriate art style, professional illustration quality`;
+        return `${strictNoText}, realistic children's book illustration, natural realistic lighting, detailed realistic textures, sophisticated realistic art style, painterly realistic technique, realistic proportions and anatomy, professional realistic illustration quality for ages 8-12`;
       case 'expert':
-        return `${strictNoText}, masterpiece quality children's book art, cinematic lighting, photorealistic detail, museum-quality illustration, award-winning professional artwork`;
+        return `${strictNoText}, photorealistic detailed children's book art, highly realistic illustration technique, natural realistic lighting and shadows, sophisticated realistic detail, museum-quality realistic illustration, advanced realistic art style for young readers 10+`;
       default:
         return `${strictNoText}, warm colorful cartoon children's book illustration, safe for children, bright cheerful atmosphere`;
     }
