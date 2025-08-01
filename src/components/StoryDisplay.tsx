@@ -618,15 +618,18 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
         <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 flex-1 flex flex-col">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 max-w-6xl mx-auto flex-1 overflow-hidden">
             
-            {/* Story Illustration */}
+            {/* Story Illustration - Optimized for Perfect Fitting */}
             <div className="order-2 lg:order-1 flex flex-col">
               <Card className="flex-1 min-h-[400px] lg:min-h-[500px]">
-                <CardContent className="p-6 h-full">
-                  <img 
-                    src={currentIllustration}
-                    alt={`Story illustration for page ${currentPage + 1}`}
-                    className="w-full h-full object-cover rounded-lg"
-                  />
+                <CardContent className="p-4 h-full flex items-center justify-center">
+                  <div className="w-full h-full flex items-center justify-center bg-gray-50 rounded-lg overflow-hidden">
+                    <img 
+                      src={currentIllustration}
+                      alt={`Story illustration for page ${currentPage + 1}`}
+                      className="max-w-full max-h-full object-contain rounded-lg shadow-sm"
+                      style={{ aspectRatio: '4/3' }}
+                    />
+                  </div>
                 </CardContent>
               </Card>
             </div>

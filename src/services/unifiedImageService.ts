@@ -477,7 +477,7 @@ export class UnifiedImageService {
       body: JSON.stringify({ 
         positivePrompt: prompt,
         width: 1024,
-        height: 1024,
+        height: 768, // 4:3 aspect ratio optimal for story illustrations
         // Character consistency parameters for enhanced representation
         characterName: character.userName,
         characterDescription: character.characterDescription,
