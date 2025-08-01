@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { getPhoneticSpelling } from "@/utils/phoneticDictionary";
 import { Volume2, HelpCircle, Languages, BookOpen, Lightbulb, Plus, Crown } from "lucide-react";
 import { createOpenAITTSService } from "@/services/textToSpeechService";
+import { cleanChildrensTextForSpeech } from "@/utils/contextualPronunciation";
 import { useToast } from "@/hooks/use-toast";
 import type { UserInfo } from "@/types";
 
@@ -159,7 +160,13 @@ export const InteractiveWord = ({
       } else {
         // Fallback to browser speech synthesis
         if ('speechSynthesis' in window) {
-          const utterance = new SpeechSynthesisUtterance(word.replace(/[.,!?;:'"()]/g, ''));
+          // Use contextual preprocessing for consistent pronunciation
+          const textToProcess = context ? `${context} ${word}` : word;
+          const processedText = cleanChildrensTextForSpeech ? cleanChildrensTextForSpeech(textToProcess) : word;
+          const words = processedText.split(' ');
+          const processedWord = words[words.length - 1] || word;
+          
+          const utterance = new SpeechSynthesisUtterance(processedWord);
           utterance.rate = isESLLearner ? 0.6 : 0.7;
           utterance.pitch = 1.2;
           speechSynthesis.speak(utterance);

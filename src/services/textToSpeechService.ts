@@ -146,7 +146,9 @@ export class OpenAITTSService {
   private fallbackToWebSpeech(text: string): void {
     console.log('Using fallback web speech synthesis');
     if ('speechSynthesis' in window) {
-      const utterance = new SpeechSynthesisUtterance(text);
+      // Use contextual preprocessing for consistent pronunciation
+      const processedText = cleanChildrensTextForSpeech(text);
+      const utterance = new SpeechSynthesisUtterance(processedText);
       
       // Child-friendly settings
       utterance.rate = 0.6; // Much slower for children
@@ -183,6 +185,7 @@ export class OpenAITTSService {
 
   // Method to explain a word using the word dictionary service
   async explainWord(word: string, userLevel: 'easy' | 'medium' | 'hard' = 'easy'): Promise<void> {
+    // Use basic cleaning for API call but contextual processing for speech
     const cleanWord = word.replace(/[.,!?;:'"()]/g, '').trim();
     
     if (!cleanWord) return;
