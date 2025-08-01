@@ -165,17 +165,31 @@ export class UnifiedImageService {
   private static buildIntelligentScene(storyText: string, storyContext: any, character: EstablishedCharacter): string {
     const text = storyText.toLowerCase();
     
-    // INTELLIGENT INTERACTION DETECTION
-    // Look for character interactions with objects/animals/people
+    // INTELLIGENT INTERACTION DETECTION - Enhanced for better story matching
     const interactions = [
+      // Movement and action-focused interactions
+      { pattern: /run.*to.*house/i, description: `running toward a house` },
+      { pattern: /run.*to/i, description: `running toward something` },
+      { pattern: /walk.*to.*house/i, description: `walking toward a house` },
+      { pattern: /walk.*to/i, description: `walking toward something` },
+      { pattern: /running/i, description: `running energetically` },
+      { pattern: /walking/i, description: `walking purposefully` },
+      { pattern: /jumping/i, description: `jumping with joy` },
+      { pattern: /skipping/i, description: `skipping happily` },
+      
+      // Animal interactions
       { pattern: /meet.*cat/i, description: `meeting a friendly cat` },
       { pattern: /meet.*dog/i, description: `meeting a playful dog` },
       { pattern: /meet.*bird/i, description: `meeting a colorful bird` },
+      
+      // Object interactions
       { pattern: /find.*book/i, description: `discovering a magical book` },
       { pattern: /find.*treasure/i, description: `finding a treasure` },
       { pattern: /play.*ball/i, description: `playing with a ball` },
       { pattern: /chase.*butterfly/i, description: `chasing colorful butterflies` },
       { pattern: /read.*story/i, description: `reading a story` },
+      
+      // Activity interactions
       { pattern: /dance/i, description: `dancing joyfully` },
       { pattern: /sing/i, description: `singing happily` },
       { pattern: /explore/i, description: `exploring with curiosity` },
@@ -222,14 +236,18 @@ export class UnifiedImageService {
       }
     }
     
-    // COLOR + OBJECT DETECTION (for objects like "blue basketball", "red ball", etc.)
-    const objectWords = ['ball', 'basketball', 'book', 'flower', 'tree', 'toy', 'gift', 'hat', 'car', 'bike', 'balloon', 'apple', 'cookie', 'cup', 'box', 'bag'];
+    // COLOR + OBJECT DETECTION (for objects like "blue house", "red ball", etc.)
+    const objectWords = ['ball', 'basketball', 'book', 'flower', 'tree', 'toy', 'gift', 'hat', 'car', 'bike', 'balloon', 'apple', 'cookie', 'cup', 'box', 'bag', 'house', 'door', 'window', 'building'];
     
     for (const color of colorWords) {
       for (const object of objectWords) {
         const pattern = new RegExp(`${color}.*${object}|${object}.*${color}`, 'i');
         if (pattern.test(storyText)) {
-          return `playing with a ${color} ${object}`;
+          if (object === 'house') {
+            return `approaching a beautiful ${color} ${object}`;
+          } else {
+            return `playing with a ${color} ${object}`;
+          }
         }
       }
     }
@@ -264,10 +282,10 @@ export class UnifiedImageService {
     const setting = Object.entries(settings).find(([key]) => text.includes(key))?.[1] || null;
     
     // Detect objects mentioned in story - Enhanced list
-    const objects = ['book', 'ball', 'basketball', 'flower', 'tree', 'toy', 'gift', 'hat', 'car', 'bike', 'balloon', 'apple', 'cookie', 'cup', 'box', 'bag'];
+    const objects = ['book', 'ball', 'basketball', 'flower', 'tree', 'toy', 'gift', 'hat', 'car', 'bike', 'balloon', 'apple', 'cookie', 'cup', 'box', 'bag', 'house', 'door', 'window', 'building'];
     const detectedObjects = objects.filter(obj => text.includes(obj));
     
-    // ENHANCED: Detect color+object combinations in story
+    // ENHANCED: Detect color+object combinations in story (including houses, buildings)
     const colorObjectCombinations = [];
     const colorWords = ['red', 'blue', 'green', 'yellow', 'purple', 'pink', 'orange', 'black', 'white', 'brown', 'gray', 'silver', 'golden'];
     for (const color of colorWords) {
