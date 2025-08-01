@@ -81,12 +81,12 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
           readingLevel: profile.reading_level || 'beginner',
           interests: profile.interests || [],
           learningGoal: 'improve-english-reading' as LearningGoal,
-          avatar: { type: 'boy', skinTone: 'light' },
-          favoriteColor: '#3B82F6',
-          favoriteAnimal: 'cat',
-          hobbies: '',
-          favoriteFood: '',
-          specialRequest: ''
+          avatar: (profile as any).avatar || { type: 'boy', skinTone: 'medium' }, // Load from profile or default
+          favoriteColor: (profile as any).favorite_color || '#3B82F6',
+          favoriteAnimal: (profile as any).favorite_animal || 'cat',
+          hobbies: (profile as any).hobbies || '',
+          favoriteFood: (profile as any).favorite_food || '',
+          specialRequest: (profile as any).special_request || ''
         };
         setUserInfo(userInfoData);
         setCurrentView("story");
