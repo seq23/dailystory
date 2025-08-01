@@ -420,6 +420,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
         });
 
         // IMMEDIATELY start progressive image generation for new content (NON-BLOCKING)
+        console.log('Starting progressive image generation after difficulty change. Established character:', establishedCharacter);
         const startProgressiveImageGeneration = async () => {
           for (let i = 0; i < Math.min(pages.length, 10); i++) {
             try {
@@ -440,7 +441,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                         height: 1024,
                         // Character consistency parameters for enhanced representation
                         characterName: userInfo.name,
-                        characterDescription: establishedCharacter?.characterDescription || '',
+                        characterDescription: establishedCharacter?.characterDescription || `a curious ${userInfo.avatar?.type || 'child'}`,
                         skinTone: userInfo.avatar?.skinTone || 'medium',
                         avatarType: userInfo.avatar?.type || 'boy',
                         pageIndex: i

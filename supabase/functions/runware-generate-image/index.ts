@@ -51,9 +51,16 @@ serve(async (req) => {
       };
       
       const consistentSkinTone = skinToneMap[skinTone] || 'medium skin tone';
-      const genderDesc = avatarType === 'boy' ? 'young Black boy' : avatarType === 'girl' ? 'young Black girl' : 'young Black child';
       
-      // Create highly specific character description for darker skin tones
+      // Create appropriate gender and ethnicity descriptions based on skin tone
+      let genderDesc;
+      if (skinTone === 'dark') {
+        genderDesc = avatarType === 'boy' ? 'young Black boy' : avatarType === 'girl' ? 'young Black girl' : 'young Black child';
+      } else {
+        genderDesc = avatarType === 'boy' ? 'young boy' : avatarType === 'girl' ? 'young girl' : 'young child';
+      }
+      
+      // Create highly specific character description for all skin tones
       let characterConsistency;
       if (skinTone === 'dark') {
         characterConsistency = `${genderDesc} named ${characterName} with ${consistentSkinTone}, beautiful African/African American features, realistic representation, same character throughout`;
