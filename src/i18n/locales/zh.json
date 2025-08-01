@@ -292,7 +292,10 @@
       "tooManyRequests": "请求过多",
       "waitToSubmit": "请稍等再提交。",
       "contentIssue": "内容问题",
-      "reviewInputs": "请检查你的输入内容是否合适。"
+      "reviewInputs": "请检查您的输入以确保内容合适"
+    },
+    "tooltips": {
+      "nameRequired": "请先输入您孩子的姓名"
     }
   },
   "sessionEnded": {
@@ -309,11 +312,6 @@
     "unlockPremium": "解锁高级功能！",
     "goToHome": "回到首页",
     "startNewStory": "开始新故事"
-  },
-  "userInfoForm": {
-    "tooltips": {
-      "nameRequired": "请先输入您孩子的姓名"
-    }
   },
   "storyDisplay": {
     "header": {

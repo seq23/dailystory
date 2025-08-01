@@ -292,7 +292,10 @@
       "tooManyRequests": "Muitas Solicitações",
       "waitToSubmit": "Por favor, aguarde um momento antes de enviar novamente.",
       "contentIssue": "Problema de Conteúdo",
-      "reviewInputs": "Por favor, revise suas entradas para conteúdo apropriado."
+      "reviewInputs": "Por favor, revise suas entradas para conteúdo apropriado"
+    },
+    "tooltips": {
+      "nameRequired": "Por favor, digite o nome da sua criança primeiro"
     }
   },
   "sessionEnded": {
@@ -309,11 +312,6 @@
     "unlockPremium": "Desbloqueie Benefícios Premium!",
     "goToHome": "Ir para Casa",
     "startNewStory": "Começar Nova História"
-  },
-  "userInfoForm": {
-    "tooltips": {
-      "nameRequired": "Por favor, digite o nome da sua criança primeiro"
-    }
   },
   "storyDisplay": {
     "header": {

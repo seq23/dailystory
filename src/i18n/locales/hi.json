@@ -292,7 +292,10 @@
       "tooManyRequests": "बहुत सारे अनुरोध",
       "waitToSubmit": "कृपया दोबारा भेजने से पहले थोड़ा इंतजार करें।",
       "contentIssue": "सामग्री की समस्या",
-      "reviewInputs": "कृपया उपयुक्त सामग्री के लिए अपने इनपुट की समीक्षा करें।"
+      "reviewInputs": "कृपया उचित सामग्री के लिए अपने इनपुट की समीक्षा करें"
+    },
+    "tooltips": {
+      "nameRequired": "कृपया पहले अपने बच्चे का नाम दर्ज करें"
     }
   },
   "sessionEnded": {
@@ -309,11 +312,6 @@
     "unlockPremium": "प्रीमियम लाभ अनलॉक करें!",
     "goToHome": "मुख्य पृष्ठ पर जाएं",
     "startNewStory": "नई कहानी शुरू करें"
-  },
-  "userInfoForm": {
-    "tooltips": {
-      "nameRequired": "कृपया पहले अपने बच्चे का नाम दर्ज करें"
-    }
   },
   "storyDisplay": {
     "header": {

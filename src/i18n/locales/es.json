@@ -294,6 +294,9 @@
       "waitToSubmit": "Por favor espera antes de enviar nuevamente",
       "contentIssue": "Problema de Contenido",
       "reviewInputs": "Por favor revisa tus entradas para contenido apropiado"
+    },
+    "tooltips": {
+      "nameRequired": "Por favor ingresa el nombre de tu hijo primero"
     }
   },
   "sessionEnded": {
@@ -310,11 +313,6 @@
     "unlockPremium": "¡Desbloquea Beneficios Premium!",
     "goToHome": "Ir al Inicio",
     "startNewStory": "Comenzar Nueva Historia"
-  },
-  "userInfoForm": {
-    "tooltips": {
-      "nameRequired": "Por favor ingresa el nombre de tu hijo primero"
-    }
   },
   "tutorial": {
     "timer": {

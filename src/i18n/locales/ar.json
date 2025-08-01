@@ -293,6 +293,9 @@
       "waitToSubmit": "يرجى الانتظار قليلاً قبل الإرسال مرة أخرى.",
       "contentIssue": "مشكلة في المحتوى",
       "reviewInputs": "يرجى مراجعة المدخلات للتأكد من المحتوى المناسب."
+    },
+    "tooltips": {
+      "nameRequired": "يرجى إدخال اسم طفلك أولاً"
     }
   },
   "storyDisplay": {
@@ -430,10 +433,5 @@
     "unlockPremium": "افتح مزايا البريميوم!",
     "goToHome": "العودة للرئيسية",
     "startNewStory": "ابدأ قصة جديدة"
-  },
-  "userInfoForm": {
-    "tooltips": {
-      "nameRequired": "يرجى إدخال اسم طفلك أولاً"
-    }
   }
 }
