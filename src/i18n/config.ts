@@ -36,6 +36,11 @@ i18n
       order: ['localStorage'], // Only check localStorage, don't auto-detect from browser
       caches: ['localStorage'],
     },
+    // Force refresh of translations
+    load: 'languageOnly',
+    cleanCode: true,
+    keySeparator: '.',
+    nsSeparator: false,
   });
 
 export default i18n;

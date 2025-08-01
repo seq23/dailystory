@@ -340,26 +340,26 @@
       "almostDone": "Quase terminando!",
       "clickToAdd": "Clique em + para adicionar mais páginas!"
     },
-    "tutorial": {
-      "timer": {
-        "title": "⏰ Temporizador de Leitura",
-        "description": "Isso mostra seu tempo de leitura! Clique no botão play para iniciar/pausar seu temporizador. Use o botão menos para reduzir o tempo se necessário."
-      },
-      "navigation": {
-        "title": "📖 Navegação de Páginas", 
-        "description": "Use os botões Anterior e Próximo para se mover entre as páginas da história. O contador de páginas mostra sua posição atual."
-      },
-      "audio": {
-        "title": "🎵 Leitura de Áudio",
-        "description": "Clique para ouvir a história lida em voz alta! Perfeito para acompanhar e aprender pronúncia."
-      },
-      "difficulty": {
-        "title": "🎯 Nível de Leitura",
-        "description": "Torne a história mais fácil ou mais difícil instantaneamente! Seta para cima torna mais difícil, seta para baixo torna mais fácil para combinar com seu nível de leitura."
-      },
-      "step": "Tutorial",
-      "of": "de 5"
-    }
+  },
+  "tutorial": {
+    "timer": {
+      "title": "⏰ Temporizador de Leitura",
+      "description": "Isso mostra seu tempo de leitura! Clique no botão play para iniciar/pausar seu temporizador. Use o botão menos para reduzir o tempo se necessário."
+    },
+    "navigation": {
+      "title": "📖 Navegação de Páginas", 
+      "description": "Use os botões Anterior e Próximo para se mover entre as páginas da história. O contador de páginas mostra sua posição atual."
+    },
+    "audio": {
+      "title": "🎵 Leitura de Áudio",
+      "description": "Clique para ouvir a história lida em voz alta! Perfeito para acompanhar e aprender pronúncia."
+    },
+    "difficulty": {
+      "title": "🎯 Nível de Leitura",
+      "description": "Torne a história mais fácil ou mais difícil instantaneamente! Seta para cima torna mais difícil, seta para baixo torna mais fácil para combinar com seu nível de leitura."
+    },
+    "step": "Tutorial",
+    "of": "de 5"
   },
   "adaptiveUI": {
     "eslMode": "Modo de Aprendizado de Inglês",

@@ -24,11 +24,6 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer }:
   const [currentStep, setCurrentStep] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
 
-  // Debug logging for language support
-  console.log('Tutorial - Current language:', i18n.language);
-  console.log('Tutorial - Timer title translation:', t("tutorial.timer.title", "FALLBACK"));
-  console.log('Tutorial - Available translations:', i18n.getResourceBundle(i18n.language, 'translation'));
-  console.log('Tutorial - Tutorial section:', i18n.getResourceBundle(i18n.language, 'translation')?.tutorial);
 
   const tutorialSteps: TutorialStep[] = [
     {
@@ -60,11 +55,6 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer }:
       position: "bottom"
     }
   ];
-
-  // Force re-render when language changes
-  useEffect(() => {
-    console.log('Tutorial re-rendering due to language change:', i18n.language);
-  }, [i18n.language]);
 
   // Create pulsing highlight effect on target elements
   useEffect(() => {
