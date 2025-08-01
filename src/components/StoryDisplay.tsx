@@ -13,6 +13,18 @@ import { useToast } from "@/hooks/use-toast";
 import { InlineTutorial } from "@/components/InlineTutorial";
 import { FloatingTimer } from "@/components/FloatingTimer";
 
+// Import avatar assets
+import avatarBoyPale from "@/assets/avatar-boy-pale.jpg";
+import avatarBoyLight from "@/assets/avatar-boy-light.jpg";
+import avatarBoyMedium from "@/assets/avatar-boy-medium.jpg";
+import avatarBoyOlive from "@/assets/avatar-boy-olive.jpg";
+import avatarBoyDark from "@/assets/avatar-boy-dark.jpg";
+import avatarGirlPale from "@/assets/avatar-girl-pale.jpg";
+import avatarGirlLight from "@/assets/avatar-girl-light.jpg";
+import avatarGirlMedium from "@/assets/avatar-girl-medium.jpg";
+import avatarGirlOlive from "@/assets/avatar-girl-olive.jpg";
+import avatarGirlDark from "@/assets/avatar-girl-dark.jpg";
+
 // Import fallback illustrations
 import illustration1 from "@/assets/story-illustration-1.jpg";
 import illustration2 from "@/assets/story-illustration-2.jpg";
@@ -61,6 +73,33 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
 
   // Fallback illustrations
   const illustrations = [illustration1, illustration2, illustration3, illustration4, illustration5];
+  
+  // Avatar mapping for consistent display across all users
+  const getAvatarImage = (avatar: any) => {
+    if (!avatar) return avatarBoyMedium; // Default fallback
+    
+    const { type, skinTone } = avatar;
+    const avatarMap = {
+      boy: {
+        pale: avatarBoyPale,
+        light: avatarBoyLight,
+        medium: avatarBoyMedium,
+        olive: avatarBoyOlive,
+        dark: avatarBoyDark
+      },
+      girl: {
+        pale: avatarGirlPale,
+        light: avatarGirlLight,
+        medium: avatarGirlMedium,
+        olive: avatarGirlOlive,
+        dark: avatarGirlDark
+      }
+    };
+    
+    return avatarMap[type as keyof typeof avatarMap]?.[skinTone as keyof typeof avatarMap.boy] || avatarBoyMedium;
+  };
+  
+  const userAvatarImage = getAvatarImage(userInfo.avatar);
   
   // Difficulty level mappings - 4 levels but only 2 buttons
   const difficultyLevels = ['easy', 'medium', 'hard', 'expert'] as const;
@@ -630,7 +669,15 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 sm:gap-3">
-              <BookOpen className="w-8 h-8 text-primary" />
+              {/* User Avatar - Consistent across all users */}
+              <div className="flex items-center gap-3">
+                <img 
+                  src={userAvatarImage} 
+                  alt={`${userInfo.name}'s avatar`}
+                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-primary/20 shadow-sm"
+                />
+                <BookOpen className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
+              </div>
               <div>
                 <h1 className="text-lg sm:text-xl font-bold text-gray-800">{userInfo.name}'s Reading Adventure</h1>
                 <p className="text-sm text-gray-600">Page {currentPage + 1} of {story.length}</p>
