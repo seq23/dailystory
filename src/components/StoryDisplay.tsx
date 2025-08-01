@@ -7,6 +7,7 @@ import { BookOpen, Home, RotateCcw, Volume2, Timer, Play, Pause, Minus, X, Chevr
 import type { UserInfo, SessionStats } from "@/types";
 import { InteractiveAudioReading } from "@/components/InteractiveAudioReading";
 import { EarlyReaderStoryGenerator } from "@/services/earlyReaderStoryGenerator";
+import { UnifiedImageService, type EstablishedCharacter } from "@/services/unifiedImageService";
 import { APP_CONFIG } from "@/constants/app";
 import { useToast } from "@/hooks/use-toast";
 import { InlineTutorial } from "@/components/InlineTutorial";
@@ -55,6 +56,9 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
   const [showAddPagesAlert, setShowAddPagesAlert] = useState(false);
   const [hasShownAddPagesAlert, setHasShownAddPagesAlert] = useState(false);
 
+  // Character consistency - store original character details  
+  const [establishedCharacter, setEstablishedCharacter] = useState<EstablishedCharacter | null>(null);
+
   // Fallback illustrations
   const illustrations = [illustration1, illustration2, illustration3, illustration4, illustration5];
   
@@ -98,9 +102,53 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
         setStoryImages(generatedStory.images || []);
         setWordsRead(generatedStory.wordCount);
         
+        // Establish character consistency for intelligent image generation
+        const characterDetails = UnifiedImageService.establishCharacterConsistency(userInfo);
+        setEstablishedCharacter(characterDetails);
+        
+        // Generate intelligent images for all pages using UnifiedImageService
+        const generateImagesProgressively = async () => {
+          console.log(`Starting intelligent image generation for premium user ${characterDetails.userName}`);
+          
+          for (let i = 0; i < generatedStory.pages.length; i++) {
+            try {
+              const imageOptions = {
+                pageIndex: i,
+                totalPages: generatedStory.pages.length,
+                storyText: generatedStory.pages[i],
+                userInfo: userInfo,
+                difficulty: initialDifficulty,
+                establishedCharacter: characterDetails,
+                isNewStory: true
+              };
+              
+              const generatedImage = await UnifiedImageService.generateStoryImage(imageOptions);
+              
+              setStoryImages(prev => {
+                const newImages = [...prev];
+                newImages[i] = { url: generatedImage.url, prompt: generatedImage.prompt };
+                return newImages;
+              });
+              
+              console.log(`Generated intelligent image ${i + 1}/${generatedStory.pages.length} for premium user`);
+            } catch (error) {
+              console.error(`Failed to generate image for page ${i + 1}:`, error);
+              // Use fallback illustration
+              setStoryImages(prev => {
+                const newImages = [...prev];
+                newImages[i] = { url: illustrations[i % illustrations.length], prompt: `Fallback illustration for page ${i + 1}` };
+                return newImages;
+              });
+            }
+          }
+        };
+        
+        // Start progressive image generation
+        generateImagesProgressively();
+        
         toast({
           title: "Story Ready! 📚",
-          description: `A new ${generatedStory.readingLevel} level story has been created just for you!`,
+          description: `A new ${generatedStory.readingLevel} level story with intelligent images has been created just for you!`,
           duration: 3000,
         });
         
@@ -219,9 +267,50 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
         setStoryImages(generatedStory.images || []);
         setWordsRead(generatedStory.wordCount);
         
+        // Generate intelligent images for new story using established character
+        if (establishedCharacter) {
+          const generateImagesForNewStory = async () => {
+            console.log(`Generating images for new story for premium user ${establishedCharacter.userName}`);
+            
+            for (let i = 0; i < generatedStory.pages.length; i++) {
+              try {
+                const imageOptions = {
+                  pageIndex: i,
+                  totalPages: generatedStory.pages.length,
+                  storyText: generatedStory.pages[i],
+                  userInfo: userInfo,
+                  difficulty: currentDifficulty,
+                  establishedCharacter: establishedCharacter,
+                  isNewStory: true
+                };
+                
+                const generatedImage = await UnifiedImageService.generateStoryImage(imageOptions);
+                
+                setStoryImages(prev => {
+                  const newImages = [...prev];
+                  newImages[i] = { url: generatedImage.url, prompt: generatedImage.prompt };
+                  return newImages;
+                });
+                
+                console.log(`Generated intelligent image ${i + 1}/${generatedStory.pages.length} for new story`);
+              } catch (error) {
+                console.error(`Failed to generate image for page ${i + 1}:`, error);
+                // Use fallback illustration
+                setStoryImages(prev => {
+                  const newImages = [...prev];
+                  newImages[i] = { url: illustrations[i % illustrations.length], prompt: `Fallback illustration for page ${i + 1}` };
+                  return newImages;
+                });
+              }
+            }
+          };
+          
+          generateImagesForNewStory();
+        }
+        
         toast({
           title: "New Story Ready! 📚",
-          description: `A fresh ${generatedStory.readingLevel} level story has been created!`,
+          description: `A fresh ${generatedStory.readingLevel} level story with intelligent images has been created!`,
           duration: 3000,
         });
       } catch (error) {
@@ -276,8 +365,46 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
       setStoryImages(newStory.images || []);
       setWordsRead(newStory.wordCount);
       
-      // Images will be generated in background by the story generator
-      // Fallback illustrations continue to display while new images load
+      // Generate intelligent images for new difficulty level using character consistency
+      if (establishedCharacter) {
+        const generateImagesForNewDifficulty = async () => {
+          console.log(`Regenerating images for difficulty change to ${newDifficulty} for ${establishedCharacter.userName}`);
+          
+          for (let i = 0; i < newStory.pages.length; i++) {
+            try {
+              const imageOptions = {
+                pageIndex: i,
+                totalPages: newStory.pages.length,
+                storyText: newStory.pages[i],
+                userInfo: userInfo,
+                difficulty: newDifficulty,
+                establishedCharacter: establishedCharacter,
+                isNewStory: false
+              };
+              
+              const generatedImage = await UnifiedImageService.generateStoryImage(imageOptions);
+              
+              setStoryImages(prev => {
+                const newImages = [...prev];
+                newImages[i] = { url: generatedImage.url, prompt: generatedImage.prompt };
+                return newImages;
+              });
+              
+              console.log(`Generated intelligent image ${i + 1}/${newStory.pages.length} for difficulty ${newDifficulty}`);
+            } catch (error) {
+              console.error(`Failed to generate image for page ${i + 1} at new difficulty:`, error);
+              // Use fallback illustration
+              setStoryImages(prev => {
+                const newImages = [...prev];
+                newImages[i] = { url: illustrations[i % illustrations.length], prompt: `Fallback illustration for page ${i + 1}` };
+                return newImages;
+              });
+            }
+          }
+        };
+        
+        generateImagesForNewDifficulty();
+      }
       
     } catch (error) {
       console.error('Failed to change difficulty:', error);
