@@ -10,7 +10,7 @@ import { EarlyReaderStoryGenerator } from "@/services/earlyReaderStoryGenerator"
 import { UnifiedImageService, type EstablishedCharacter } from "@/services/unifiedImageService";
 import { APP_CONFIG } from "@/constants/app";
 import { useToast } from "@/hooks/use-toast";
-import { InlineTutorial } from "@/components/InlineTutorial";
+import { TutorialOverlay } from "@/components/TutorialOverlay";
 import { FloatingTimer } from "@/components/FloatingTimer";
 import { useGamification } from "@/hooks/useGamification";
 import { GamificationDashboard } from "@/components/GamificationDashboard";
@@ -989,10 +989,11 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
         />
       )}
       
-      {/* Tutorial for Premium Users */}
-      <InlineTutorial 
-        isActive={tutorialActive} 
-        onComplete={() => setTutorialActive(false)} 
+      {/* Improved Tutorial */}
+      <TutorialOverlay
+        isVisible={tutorialActive} 
+        onComplete={() => setTutorialActive(false)}
+        onSkip={() => setTutorialActive(false)}
       />
     </div>
   );

@@ -13,6 +13,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ChevronRight, User, GraduationCap, Heart, Star, Globe, Sparkles, AlertCircle } from "lucide-react";
 import { ContentSecurity, SecurityLogger } from "@/utils/security";
 import { useToast } from "@/hooks/use-toast";
+import { TutorialOverlay } from "@/components/TutorialOverlay";
 import type { UserInfo, Grade, LanguageCode, LearningGoal } from "@/types";
 
 export type { UserInfo } from "@/types";
@@ -25,6 +26,7 @@ interface UserInfoFormProps {
 export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
+  const [showTutorial, setShowTutorial] = useState(true); // Show tutorial by default
   const [formData, setFormData] = useState<UserInfo>({
     name: "",
     age: 6,
@@ -496,6 +498,13 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
             </Button>
           </div>
         </Card>
+
+        {/* Tutorial Overlay */}
+        <TutorialOverlay
+          isVisible={showTutorial}
+          onComplete={() => setShowTutorial(false)}
+          onSkip={() => setShowTutorial(false)}
+        />
       </div>
     );
-};
+  };

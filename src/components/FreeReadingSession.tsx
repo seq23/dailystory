@@ -13,7 +13,7 @@ import { APP_CONFIG } from "@/constants/app";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import { processTextForPhonetics } from "@/utils/textProcessor";
-import { InlineTutorial } from "@/components/InlineTutorial";
+import { TutorialOverlay } from "@/components/TutorialOverlay";
 import { FloatingTimer } from "@/components/FloatingTimer";
 
 // Import avatar assets
@@ -1120,10 +1120,11 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
             </div>
           </main>
           
-          {/* New Inline Tutorial */}
-          <InlineTutorial 
-            isActive={tutorialActive} 
-            onComplete={() => setTutorialActive(false)} 
+          {/* Improved Tutorial */}
+          <TutorialOverlay
+            isVisible={tutorialActive} 
+            onComplete={() => setTutorialActive(false)}
+            onSkip={() => setTutorialActive(false)}
           />
         </>
       )}
