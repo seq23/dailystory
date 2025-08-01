@@ -14,7 +14,7 @@ export class OpenAITTSService {
   constructor(config: TextToSpeechConfig) {
     // Use child-friendly voices - nova is clear and natural for children
     this.voice = config.voice || "nova"; // Nova is more natural than shimmer
-    this.speed = config.speed || 0.9;
+    this.speed = config.speed || 0.7; // Slower speed for children
   }
 
   async speakText(text: string, options?: { speed?: number }): Promise<void> {
@@ -45,8 +45,9 @@ export class OpenAITTSService {
       });
 
       if (error) {
-        console.error('TTS Supabase Error:', error);
-        throw new Error(`TTS Error: ${error.message}`);
+        console.error('TTS Supabase Error Details:', error);
+        console.error('Full error object:', JSON.stringify(error, null, 2));
+        throw new Error(`TTS Error: ${error.message || 'Unknown Supabase error'}`);
       }
 
       
@@ -73,6 +74,12 @@ export class OpenAITTSService {
       console.error('Error message:', error?.message);
       console.error('Error stack:', error?.stack);
       
+      // More detailed error logging
+      if (error?.message?.includes('Edge Function returned a non-2xx status code')) {
+        console.error('Edge function failed - this suggests the OpenAI TTS function has an error');
+        console.error('Check Supabase function logs for details');
+      }
+      
       // Provide specific error message
       if (error?.message?.includes('OpenAI API key not configured')) {
         toast.error('OpenAI API key is missing. Please configure it in project settings.');
@@ -84,7 +91,7 @@ export class OpenAITTSService {
         toast.error(`Audio error: ${error?.message || 'Unknown error'}. Using fallback...`);
       }
       
-      // Fallback to browser speech synthesis
+      // Fallback to browser speech synthesis with child-friendly settings
       this.fallbackToWebSpeech(cleanText);
     }
   }
@@ -131,26 +138,40 @@ export class OpenAITTSService {
   }
 
   private fallbackToWebSpeech(text: string): void {
+    console.log('Using fallback web speech synthesis');
     if ('speechSynthesis' in window) {
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 0.8;
-      utterance.pitch = 1.1;
+      
+      // Child-friendly settings
+      utterance.rate = 0.6; // Much slower for children
+      utterance.pitch = 1.2; // Slightly higher pitch for friendliness
       utterance.volume = 0.8;
       
       // Try to use a child-friendly voice
       const voices = speechSynthesis.getVoices();
+      console.log('Available voices:', voices.map(v => v.name));
+      
       const childVoice = voices.find(voice => 
-        voice.name.includes('child') || 
-        voice.name.includes('young') ||
-        voice.name.includes('Daniel') ||
-        voice.name.includes('Samantha')
+        voice.name.toLowerCase().includes('female') ||
+        voice.name.toLowerCase().includes('woman') ||
+        voice.name.toLowerCase().includes('child') || 
+        voice.name.toLowerCase().includes('young') ||
+        voice.name.toLowerCase().includes('karen') ||
+        voice.name.toLowerCase().includes('samantha') ||
+        voice.name.toLowerCase().includes('alex') ||
+        voice.name.toLowerCase().includes('victoria')
       );
       
       if (childVoice) {
+        console.log('Using child-friendly voice:', childVoice.name);
         utterance.voice = childVoice;
+      } else {
+        console.log('No child-friendly voice found, using default');
       }
       
       speechSynthesis.speak(utterance);
+    } else {
+      console.error('Speech synthesis not supported');
     }
   }
 
@@ -248,6 +269,6 @@ export class OpenAITTSService {
 export const createOpenAITTSService = () => {
   return new OpenAITTSService({
     voice: 'nova', // Clear and natural voice for kids
-    speed: 0.9 // Default speed
+    speed: 0.7 // Slower, child-friendly speed
   });
 };
