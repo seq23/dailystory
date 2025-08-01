@@ -575,4 +575,43 @@ export class UnifiedImageService {
   static setCurrentCharacter(character: EstablishedCharacter): void {
     this.currentCharacter = character;
   }
+
+  /**
+   * Smart fallback selection for free users using enhanced content analysis
+   */
+  static selectSmartFallback(
+    storyText: string, 
+    character: EstablishedCharacter, 
+    pageIndex: number, 
+    illustrations: string[]
+  ): GeneratedImage {
+    // Use the same intelligent scene analysis as premium users
+    const storyContext = this.analyzeStoryContent(storyText, character);
+    
+    // Build descriptive prompt for better fallback matching
+    const intelligentScene = this.buildIntelligentScene(storyText, storyContext, character);
+    
+    // Select best fitting illustration based on story content
+    let selectedIndex = pageIndex % illustrations.length;
+    
+    // Enhanced fallback selection based on story analysis
+    if (storyContext.mentionedAnimals.length > 0 || storyContext.mentionsFavoriteAnimal) {
+      // Animal stories - use illustrations 1, 3, 5 (tend to have animals)
+      const animalIllustrations = [0, 2, 4];
+      selectedIndex = animalIllustrations[pageIndex % animalIllustrations.length];
+    } else if (storyContext.objects.includes('pizza') || storyContext.objects.includes('food')) {
+      // Food/sharing stories - use illustrations 2, 4 (tend to have sharing/social scenes)
+      const foodIllustrations = [1, 3];
+      selectedIndex = foodIllustrations[pageIndex % foodIllustrations.length];
+    } else if (storyContext.setting) {
+      // Location-based stories - rotate through all illustrations
+      selectedIndex = pageIndex % illustrations.length;
+    }
+    
+    return {
+      url: illustrations[selectedIndex],
+      prompt: `Smart fallback: ${intelligentScene} - ${storyText.slice(0, 50)}...`,
+      pageIndex: pageIndex
+    };
+  }
 }

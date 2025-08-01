@@ -106,31 +106,50 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
         const characterDetails = UnifiedImageService.establishCharacterConsistency(userInfo);
         setEstablishedCharacter(characterDetails);
         
-        // Generate intelligent images for all pages using UnifiedImageService
+        // Generate intelligent images for all users - Premium gets AI, Free gets smart fallback selection
         const generateImagesProgressively = async () => {
-          console.log(`Starting intelligent image generation for premium user ${characterDetails.userName}`);
+          console.log(`Starting intelligent image generation for ${isPremium ? 'premium' : 'free'} user ${characterDetails.userName}`);
           
           for (let i = 0; i < generatedStory.pages.length; i++) {
             try {
-              const imageOptions = {
-                pageIndex: i,
-                totalPages: generatedStory.pages.length,
-                storyText: generatedStory.pages[i],
-                userInfo: userInfo,
-                difficulty: initialDifficulty,
-                establishedCharacter: characterDetails,
-                isNewStory: true
-              };
-              
-              const generatedImage = await UnifiedImageService.generateStoryImage(imageOptions);
-              
-              setStoryImages(prev => {
-                const newImages = [...prev];
-                newImages[i] = { url: generatedImage.url, prompt: generatedImage.prompt };
-                return newImages;
-              });
-              
-              console.log(`Generated intelligent image ${i + 1}/${generatedStory.pages.length} for premium user`);
+              if (isPremium) {
+                // Premium users: Generate AI images with enhanced food detection
+                const imageOptions = {
+                  pageIndex: i,
+                  totalPages: generatedStory.pages.length,
+                  storyText: generatedStory.pages[i],
+                  userInfo: userInfo,
+                  difficulty: initialDifficulty,
+                  establishedCharacter: characterDetails,
+                  isNewStory: true
+                };
+                
+                const generatedImage = await UnifiedImageService.generateStoryImage(imageOptions);
+                
+                setStoryImages(prev => {
+                  const newImages = [...prev];
+                  newImages[i] = { url: generatedImage.url, prompt: generatedImage.prompt };
+                  return newImages;
+                });
+                
+                console.log(`Generated intelligent AI image ${i + 1}/${generatedStory.pages.length} for premium user`);
+              } else {
+                // Free users: Smart fallback selection using same enhanced content analysis
+                const smartFallback = UnifiedImageService.selectSmartFallback(
+                  generatedStory.pages[i], 
+                  characterDetails, 
+                  i, 
+                  illustrations
+                );
+                
+                setStoryImages(prev => {
+                  const newImages = [...prev];
+                  newImages[i] = { url: smartFallback.url, prompt: smartFallback.prompt };
+                  return newImages;
+                });
+                
+                console.log(`Selected smart fallback image ${i + 1}/${generatedStory.pages.length} for free user`);
+              }
             } catch (error) {
               console.error(`Failed to generate image for page ${i + 1}:`, error);
               // Use fallback illustration
