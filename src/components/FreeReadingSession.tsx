@@ -7,6 +7,7 @@ import type { UserInfo, SessionStats } from "@/types";
 import { InteractiveAudioReading } from "@/components/InteractiveAudioReading";
 import { ElevenLabsAudio } from "@/components/ElevenLabsAudio";
 import { EarlyReaderStoryGenerator } from "@/services/earlyReaderStoryGenerator";
+import { UnifiedImageService, type EstablishedCharacter } from "@/services/unifiedImageService";
 
 import { APP_CONFIG } from "@/constants/app";
 import { useToast } from "@/hooks/use-toast";
@@ -66,8 +67,8 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   const [showAddPagesAlert, setShowAddPagesAlert] = useState(false);
   const [hasShownAddPagesAlert, setHasShownAddPagesAlert] = useState(false);
 
-  // Character consistency - store original character details
-  const [establishedCharacter, setEstablishedCharacter] = useState<any>(null);
+  // Character consistency - store original character details  
+  const [establishedCharacter, setEstablishedCharacter] = useState<EstablishedCharacter | null>(null);
   const [originalStoryConfig, setOriginalStoryConfig] = useState<any>(null);
 
   // Celebration state
@@ -160,15 +161,8 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
 
         // Store the original character details for consistency
         setOriginalStoryConfig(storyConfig);
-        setEstablishedCharacter({
-          userName: userInfo.name,
-          characterDescription,
-          avatar: userInfo.avatar,
-          favoriteColor: userInfo.favoriteColor,
-          favoriteAnimal: userInfo.favoriteAnimal,
-          hobbies: userInfo.hobbies,
-          favoriteFood: userInfo.favoriteFood
-        });
+        const characterDetails = UnifiedImageService.establishCharacterConsistency(userInfo);
+        setEstablishedCharacter(characterDetails);
 
         console.log('Story config:', storyConfig);
 
