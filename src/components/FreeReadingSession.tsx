@@ -214,11 +214,11 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
               for (let i = 0; i < Math.min(pages.length, 10); i++) {
                 try {
                   console.log(`Starting image generation for page ${i + 1}...`);
-                  // Try to generate custom image using Runware service
+                  // Try to generate custom image using Runware service with character consistency
                   const customImagePrompt = `Beautiful illustration for children's story: ${pages[i].slice(0, 100)}. Child-friendly, colorful, safe content for kids reading app.`;
                   
                   try {
-                    // Call Runware image generation edge function
+                    // Call Runware image generation edge function with character consistency
                     const response = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/runware-generate-image', {
                       method: 'POST',
                       headers: { 
@@ -226,9 +226,15 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                         'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino'}`
                       },
                       body: JSON.stringify({ 
-                        prompt: customImagePrompt,
+                        positivePrompt: customImagePrompt,
                         width: 1024,
-                        height: 1024
+                        height: 1024,
+                        // Character consistency parameters for enhanced representation
+                        characterName: userInfo.name,
+                        characterDescription: establishedCharacter?.characterDescription || '',
+                        skinTone: userInfo.avatar?.skinTone || 'medium',
+                        avatarType: userInfo.avatar?.type || 'boy',
+                        pageIndex: i
                       })
                     });
                     
@@ -417,11 +423,11 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
         const startProgressiveImageGeneration = async () => {
           for (let i = 0; i < Math.min(pages.length, 10); i++) {
             try {
-                  // Try to generate custom image using Runware service
+                  // Try to generate custom image using Runware service with character consistency
                   const customImagePrompt = `Beautiful illustration for children's story: ${pages[i].slice(0, 100)}. Child-friendly, colorful, safe content for kids reading app.`;
                   
                   try {
-                    // Call Runware image generation edge function
+                    // Call Runware image generation edge function with character consistency
                     const response = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/runware-generate-image', {
                       method: 'POST',
                       headers: { 
@@ -429,9 +435,15 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                         'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino'}`
                       },
                       body: JSON.stringify({ 
-                        prompt: customImagePrompt,
+                        positivePrompt: customImagePrompt,
                         width: 1024,
-                        height: 1024
+                        height: 1024,
+                        // Character consistency parameters for enhanced representation
+                        characterName: userInfo.name,
+                        characterDescription: establishedCharacter?.characterDescription || '',
+                        skinTone: userInfo.avatar?.skinTone || 'medium',
+                        avatarType: userInfo.avatar?.type || 'boy',
+                        pageIndex: i
                       })
                     });
                     
@@ -537,11 +549,11 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
       const generateNewPageImages = async () => {
         for (let i = 0; i < newPages.length; i++) {
           try {
-            // Try to generate custom image using Runware service
+            // Try to generate custom image using Runware service with character consistency
             const customImagePrompt = `Beautiful illustration for children's story: ${newPages[i].slice(0, 100)}. Child-friendly, colorful, safe content for kids reading app.`;
             
             try {
-              // Call Runware image generation edge function
+              // Call Runware image generation edge function with character consistency
               const response = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/runware-generate-image', {
                 method: 'POST',
                 headers: { 
@@ -551,7 +563,13 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                 body: JSON.stringify({ 
                   positivePrompt: customImagePrompt,
                   width: 1024,
-                  height: 1024 
+                  height: 1024,
+                  // Character consistency parameters for enhanced representation
+                  characterName: userInfo.name,
+                  characterDescription: establishedCharacter?.characterDescription || '',
+                  skinTone: userInfo.avatar?.skinTone || 'medium',
+                  avatarType: userInfo.avatar?.type || 'boy',
+                  pageIndex: story.length + i // Correct page index for new pages
                 })
               });
               
