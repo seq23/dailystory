@@ -25,10 +25,8 @@ export const InteractiveWord = ({
   const { toast } = useToast();
   const [showTooltip, setShowTooltip] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [wordExplanation, setWordExplanation] = useState<string>("");
-  const [wordTranslation, setWordTranslation] = useState<string>("");
-  const [isLoadingExplanation, setIsLoadingExplanation] = useState(false);
-  const [isLoadingTranslation, setIsLoadingTranslation] = useState(false);
+  const [wordData, setWordData] = useState<any>(null);
+  const [isLoadingWordData, setIsLoadingWordData] = useState(false);
   const [ttsService, setTtsService] = useState<any>(null);
   const [tooltipPosition, setTooltipPosition] = useState<{
     vertical: 'top' | 'bottom';
@@ -170,27 +168,23 @@ export const InteractiveWord = ({
 
   const handleExplain = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (isPlaying || isLoadingExplanation) return;
+    if (isPlaying || isLoadingWordData) return;
     
-    setIsLoadingExplanation(true);
+    setIsLoadingWordData(true);
     try {
-      const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
-      
-      // Enhanced explanation with sentence context
-      const sentence = word; // The full sentence context would be passed here
-      const explanation = `"${cleanWord}" means ${getWordDefinition(cleanWord, sentence)}. Here's how it's used: "${sentence}"`;
-      
-      setWordExplanation(explanation);
       if (ttsService) {
-        // Speak both explanation and word in context
-        await ttsService.speakText(`${explanation}. Listen to the word in context: ${sentence}`, { voice: 'nova', speed: isESLLearner ? 0.8 : 1.0 });
+        // Get comprehensive word data and speak it
+        const userLevel = difficulty === 'easy' ? 'easy' : difficulty === 'medium' ? 'medium' : 'hard';
+        await ttsService.explainWord(word, userLevel);
+        
+        // Also get the word data for display
+        const data = await ttsService.getWordData(word, userLevel);
+        setWordData(data);
       }
     } catch (error) {
       console.error('Error explaining word:', error);
-      const fallbackExplanation = `"${word.replace(/[.,!?;:'"()]/g, '')}" is a word from your story.`;
-      setWordExplanation(fallbackExplanation);
     } finally {
-      setIsLoadingExplanation(false);
+      setIsLoadingWordData(false);
     }
   };
 
@@ -296,9 +290,9 @@ export const InteractiveWord = ({
 
   const handleTranslate = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (isLoadingTranslation || isNativeEnglishSpeaker) return;
+    if (isLoadingWordData || isNativeEnglishSpeaker) return;
     
-    setIsLoadingTranslation(true);
+    setIsLoadingWordData(true);
     try {
       const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
       // Simple translation placeholder - can be enhanced with translation API
@@ -311,12 +305,15 @@ export const InteractiveWord = ({
         'fr': 'French'
       };
       const langName = languageNames[userNativeLanguage] || userNativeLanguage;
-      setWordTranslation(`Translation to ${langName} will be available soon!`);
+      // For now, just get word data since translation will be added later
+      if (ttsService) {
+        const data = await ttsService.getWordData(cleanWord, difficulty as 'easy' | 'medium' | 'hard');
+        setWordData(data);
+      }
     } catch (error) {
       console.error('Error translating word:', error);
-      setWordTranslation(t("interactiveWord.translationError"));
     } finally {
-      setIsLoadingTranslation(false);
+      setIsLoadingWordData(false);
     }
   };
 
@@ -326,8 +323,9 @@ export const InteractiveWord = ({
 
     const vocabularyWord = {
       word: cleanWord,
-      definition: wordExplanation || `A word from your story`,
-      translation: wordTranslation,
+      definition: wordData?.definition || `A word from your story`,
+      phonetic: wordData?.phonetic || '',
+      sampleSentence: wordData?.sampleSentence || word,
       difficulty: getWordComplexity(cleanWord) as 'beginner' | 'intermediate' | 'advanced',
       dateAdded: new Date(),
       timesReviewed: 0,
@@ -450,14 +448,11 @@ export const InteractiveWord = ({
           )}
 
           {/* Word explanation or translation */}
-          {(wordExplanation || wordTranslation) && (
+          {wordData && (
             <div className="mb-2 text-xs">
-              {wordTranslation && (
-                <div className="font-semibold text-blue-600 mb-1">{wordTranslation}</div>
-              )}
-              {wordExplanation && (
-                <div className="text-gray-600">{wordExplanation}</div>
-              )}
+              <div className="font-semibold text-blue-600 mb-1">{wordData.phonetic}</div>
+              <div className="text-gray-600 mb-1">{wordData.definition}</div>
+              <div className="text-gray-500 italic">"{wordData.sampleSentence}"</div>
             </div>
           )}
           
@@ -475,10 +470,10 @@ export const InteractiveWord = ({
             <button
               onClick={handleExplain}
               className="flex items-center justify-center gap-2 text-sm bg-green-50 hover:bg-green-100 border-2 border-green-200 px-4 py-3 rounded-lg transition-colors touch-manipulation min-h-[48px] font-semibold text-green-700 shadow-sm"
-              disabled={isPlaying || isLoadingExplanation}
+              disabled={isPlaying || isLoadingWordData}
             >
               <HelpCircle className="w-4 h-4" />
-              {isLoadingExplanation ? t("interactiveWord.loading") : t("interactiveWord.explain")}
+              {isLoadingWordData ? t("interactiveWord.loading") : t("interactiveWord.explain")}
             </button>
           </div>
 
@@ -490,10 +485,10 @@ export const InteractiveWord = ({
               <button
                 onClick={handleTranslate}
                 className="flex items-center gap-1 text-xs bg-purple-50 hover:bg-purple-100 border border-purple-200 px-3 py-2 rounded-md transition-colors touch-manipulation min-h-[36px] font-medium text-purple-700"
-                disabled={isLoadingTranslation}
+                disabled={isLoadingWordData}
               >
                 <Languages className="w-3 h-3" />
-                {isLoadingTranslation ? t("interactiveWord.loading") : t("interactiveWord.translate")}
+                {isLoadingWordData ? t("interactiveWord.loading") : t("interactiveWord.translate")}
               </button>
             )}
 

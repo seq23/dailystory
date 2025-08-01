@@ -157,16 +157,34 @@ export class OpenAITTSService {
     }
   }
 
-  // Method to explain a word using OpenAI
-  async explainWord(word: string): Promise<void> {
+  // Method to explain a word using the word dictionary service
+  async explainWord(word: string, userLevel: 'easy' | 'medium' | 'hard' = 'easy'): Promise<void> {
     const cleanWord = word.replace(/[.,!?;:'"()]/g, '').trim();
     
     if (!cleanWord) return;
 
     try {
-      // Get definition from OpenAI
-      const definition = await this.getWordDefinition(cleanWord);
-      const explanationText = `The word ${cleanWord} means: ${definition}`;
+      // Get comprehensive word data from dictionary service
+      const { data, error } = await supabase.functions.invoke('word-dictionary', {
+        body: JSON.stringify({
+          word: cleanWord,
+          userLevel: userLevel
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (error) {
+        console.error('Dictionary service error:', error);
+        throw new Error('Failed to get word definition');
+      }
+
+      const wordData = data;
+      
+      // Create comprehensive explanation text
+      const explanationText = `The word ${cleanWord} is pronounced ${wordData.phonetic}. It means: ${wordData.definition}. Here's an example: ${wordData.sampleSentence}`;
+      
       await this.speakText(explanationText);
     } catch (error) {
       console.error('Error explaining word:', error);
@@ -175,14 +193,55 @@ export class OpenAITTSService {
     }
   }
 
-  private async getWordDefinition(word: string): Promise<string> {
-    // Return a simple fallback definition
-    return `A word that means something special.`;
+  // Method to get word definition data without speaking
+  async getWordData(word: string, userLevel: 'easy' | 'medium' | 'hard' = 'easy'): Promise<any> {
+    const cleanWord = word.replace(/[.,!?;:'"()]/g, '').trim();
+    
+    if (!cleanWord) return null;
+
+    try {
+      const { data, error } = await supabase.functions.invoke('word-dictionary', {
+        body: JSON.stringify({
+          word: cleanWord,
+          userLevel: userLevel
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (error) {
+        console.error('Dictionary service error:', error);
+        return null;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error getting word data:', error);
+      return null;
+    }
   }
 
-  // Method to get AI-powered explanations and translations
-  async getAIResponse(prompt: string): Promise<string> {
-    return 'Sorry, I could not provide an explanation.';
+  // Method to pronounce just the word
+  async pronounceWord(word: string): Promise<void> {
+    const cleanWord = word.replace(/[.,!?;:'"()]/g, '').trim();
+    
+    if (!cleanWord) return;
+
+    try {
+      await this.speakText(cleanWord);
+    } catch (error) {
+      console.error('Error pronouncing word:', error);
+    }
+  }
+
+  private async getWordDefinition(word: string): Promise<string> {
+    try {
+      const wordData = await this.getWordData(word);
+      return wordData ? wordData.definition : 'A word that means something special.';
+    } catch (error) {
+      return 'A word that means something special.';
+    }
   }
 }
 

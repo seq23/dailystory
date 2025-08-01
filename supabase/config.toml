@@ -9,3 +9,6 @@ verify_jwt = false
 
 [functions.runware-generate-image]
 verify_jwt = false
+
+[functions.word-dictionary]
+verify_jwt = false
