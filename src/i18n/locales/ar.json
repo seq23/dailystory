@@ -399,5 +399,20 @@
     "comprehensionDescription": "اقرأ القصص وأجب على الأسئلة لاختبار الفهم.",
     "phonicsChallenge": "ممارسة الصوتيات",
     "phonicsDescription": "مارس النطق وأنماط الصوت."
+  },
+  "sessionEnded": {
+    "completed": "جلسة القراءة مكتملة!",
+    "premiumCompleted": "جلسة البريميوم مكتملة!",
+    "readingProgress": "تقدم القراءة",
+    "of": "من",
+    "pages": "صفحات",
+    "wordsRead": "الكلمات المقروءة",
+    "timeSpent": "الوقت المستغرق",
+    "accuracy": "الدقة",
+    "readingLevel": "مستوى القراءة",
+    "level": "المستوى",
+    "unlockPremium": "افتح مزايا البريميوم!",
+    "goToHome": "العودة للرئيسية",
+    "startNewStory": "ابدأ قصة جديدة"
   }
 }

@@ -295,6 +295,21 @@
       "reviewInputs": "请检查你的输入内容是否合适。"
     }
   },
+  "sessionEnded": {
+    "completed": "阅读会话完成！",
+    "premiumCompleted": "高级会话完成！",
+    "readingProgress": "阅读进度",
+    "of": "的",
+    "pages": "页",
+    "wordsRead": "已读单词",
+    "timeSpent": "花费时间",
+    "accuracy": "准确率",
+    "readingLevel": "阅读水平",
+    "level": "级别",
+    "unlockPremium": "解锁高级功能！",
+    "goToHome": "回到首页",
+    "startNewStory": "开始新故事"
+  },
   "storyDisplay": {
     "header": {
       "readingTime": "阅读时间",

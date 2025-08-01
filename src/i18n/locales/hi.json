@@ -295,6 +295,21 @@
       "reviewInputs": "कृपया उपयुक्त सामग्री के लिए अपने इनपुट की समीक्षा करें।"
     }
   },
+  "sessionEnded": {
+    "completed": "पठन सत्र पूरा हुआ!",
+    "premiumCompleted": "प्रीमियम सत्र पूरा हुआ!",
+    "readingProgress": "पठन प्रगति",
+    "of": "का",
+    "pages": "पृष्ठ",
+    "wordsRead": "पढ़े गए शब्द",
+    "timeSpent": "खर्च किया गया समय",
+    "accuracy": "सटीकता",
+    "readingLevel": "पठन स्तर",
+    "level": "स्तर",
+    "unlockPremium": "प्रीमियम लाभ अनलॉक करें!",
+    "goToHome": "मुख्य पृष्ठ पर जाएं",
+    "startNewStory": "नई कहानी शुरू करें"
+  },
   "storyDisplay": {
     "header": {
       "readingTime": "पढ़ने का समय",
