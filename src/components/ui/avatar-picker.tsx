@@ -4,6 +4,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
+import { DynamicAvatar } from "@/components/ui/dynamic-avatar"
 import { cn } from "@/lib/utils"
 import { User, Users, Sparkles } from "lucide-react"
 
@@ -121,9 +122,8 @@ export const AvatarPicker = React.forwardRef<
 
   // Use selectedPreview for immediate visual feedback
 
-  // Use selectedPreview for immediate visual feedback
-  const displayType = selectedPreview.type === "prefer-not-to-answer" ? "boy" : selectedPreview.type
-  const currentAvatar = avatarImages[displayType as "boy" | "girl"]?.[selectedPreview.skinTone]
+  // Use selectedPreview for immediate visual feedback - no need for static images anymore
+  const showPreview = true // We always show the dynamic avatar now
 
   // Update selectedPreview when value changes from parent
   React.useEffect(() => {
@@ -384,8 +384,8 @@ export const AvatarPicker = React.forwardRef<
         </div>
       </div>
 
-      {/* Enhanced Avatar Preview */}
-      {currentAvatar && (
+      {/* Enhanced Dynamic Avatar Preview */}
+      {showPreview && (
         <div className="space-y-4">
           <Label className="text-lg font-semibold text-foreground flex items-center gap-2">
             <Users className="w-5 h-5" />
@@ -395,13 +395,15 @@ export const AvatarPicker = React.forwardRef<
             <CardContent className="p-6">
               <div className="flex flex-col items-center space-y-4">
                 <div className="relative">
-                  <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-primary shadow-2xl">
-                    <img
-                      src={currentAvatar}
-                      alt={`${selectedPreview.type} avatar with ${selectedPreview.skinTone} skin tone`}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
+                  <DynamicAvatar
+                    type={selectedPreview.type}
+                    skinTone={selectedPreview.skinTone}
+                    hairStyle={selectedPreview.hairStyle}
+                    hairColor={selectedPreview.hairColor}
+                    hasFreckles={selectedPreview.hasFreckles}
+                    size={128}
+                    className="transition-all duration-500 ease-in-out"
+                  />
                   <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-primary rounded-full flex items-center justify-center shadow-lg">
                     <span className="text-lg">
                       {avatarTypeInfo[selectedPreview.type]?.emoji}
@@ -436,7 +438,7 @@ export const AvatarPicker = React.forwardRef<
                   </div>
                   
                   <p className="text-sm text-muted-foreground">
-                    This personalized avatar will star in all your stories!
+                    This personalized avatar will star in all your stories and updates instantly as you customize!
                   </p>
                 </div>
               </div>
