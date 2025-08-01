@@ -50,16 +50,19 @@ serve(async (req) => {
       throw new Error(`ElevenLabs API error: ${response.status}`);
     }
 
-    // Return audio data
+    // Convert audio data to base64 for consistency with our TTS service
     const audioData = await response.arrayBuffer();
+    const base64Audio = btoa(String.fromCharCode(...new Uint8Array(audioData)));
     
-    return new Response(audioData, {
-      headers: {
-        ...corsHeaders,
-        'Content-Type': 'audio/mpeg',
-        'Content-Length': audioData.byteLength.toString(),
-      },
-    });
+    return new Response(
+      JSON.stringify({ audioContent: base64Audio }),
+      {
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
 
   } catch (error) {
     console.error('Error in elevenlabs-tts function:', error);

@@ -12,8 +12,8 @@ export class OpenAITTSService {
   private audioCache: Map<string, string> = new Map();
 
   constructor(config: TextToSpeechConfig) {
-    // Use child-friendly voices - nova is clear and natural for children
-    this.voice = config.voice || "nova"; // Nova is more natural than shimmer
+    // Use child-friendly ElevenLabs voice - Sarah is warm and clear for children
+    this.voice = config.voice || "EXAVITQu4vr4xnSDxMaL"; // Sarah voice ID from ElevenLabs
     this.speed = config.speed || 0.7; // Slower speed for children
   }
 
@@ -35,9 +35,9 @@ export class OpenAITTSService {
       // Use Supabase functions.invoke for proper authentication
       const speedToUse = options?.speed || this.speed;
       console.log(`TTS Request: voice=${this.voice}, speed=${speedToUse}, text="${cleanText.substring(0, 50)}..."`);
-      console.log('About to call openai-tts function...');
+      console.log('About to call elevenlabs-tts function...');
       
-      const { data, error } = await supabase.functions.invoke('openai-tts', {
+      const { data, error } = await supabase.functions.invoke('elevenlabs-tts', {
         body: {
           text: cleanText,
           voice: this.voice,
@@ -270,10 +270,10 @@ export class OpenAITTSService {
   }
 }
 
-// Create OpenAI TTS service instance
+// Create ElevenLabs TTS service instance
 export const createOpenAITTSService = () => {
   return new OpenAITTSService({
-    voice: 'nova', // Clear and natural voice for kids
+    voice: 'EXAVITQu4vr4xnSDxMaL', // Sarah - clear and natural voice for kids
     speed: 0.7 // Slower, child-friendly speed
   });
 };
