@@ -312,41 +312,40 @@ export class UnifiedImageService {
   }
 
   /**
-   * Get professional art style based on difficulty level
+   * Get professional art style based on difficulty level and age
    */
   private static getArtStyleForDifficulty(difficulty: DifficultyLevel): string {
     switch (difficulty) {
       case 'easy':
-        return 'Bright colorful cartoon-style, Disney-quality animation style';
+        return 'Bright vibrant cartoon-style children\'s book illustration, warm colorful animated style like Disney Junior or Nick Jr, rounded friendly features, cozy indoor/outdoor settings with beautiful bright colors, cheerful and welcoming cartoon art';
       case 'medium':
-        return 'Beautiful hand-painted illustration style, Pixar-quality art';
+        return 'Colorful cartoon-style children\'s book illustration, warm animated art style, friendly cartoon characters, bright cheerful colors, beautiful simplified cartoon backgrounds, child-friendly cartoon aesthetic';
       case 'hard':
-        return 'Detailed realistic illustration, Studio Ghibli quality art style';
+        return 'Detailed realistic illustration, Studio Ghibli quality art style, more sophisticated but still child-appropriate';
       case 'expert':
-        return 'Photorealistic masterpiece, award-winning children\'s book illustration';
+        return 'Photorealistic masterpiece, award-winning children\'s book illustration, highly detailed realistic art';
       default:
-        return 'Professional children\'s book illustration style';
+        return 'Warm colorful cartoon-style children\'s book illustration';
     }
   }
 
   /**
-   * Get quality modifiers with ABSOLUTE NO TEXT rule and professional quality
+   * Get quality modifiers with ABSOLUTE NO TEXT rule and child-appropriate cartoon styling
    */
   private static getQualityModifiers(difficulty: DifficultyLevel): string {
     const strictNoText = 'ABSOLUTELY NO TEXT, NO WORDS, NO LETTERS, NO WRITING, NO SIGNS, NO BOOKS WITH VISIBLE TEXT, NO SPEECH BUBBLES, completely text-free image';
-    const professionalQuality = 'professionally illustrated, beautiful composition, perfect lighting, high-quality children\'s book art, award-winning illustration style';
     
     switch (difficulty) {
       case 'easy':
-        return `${strictNoText}, ${professionalQuality}, simple and cheerful, bright vibrant colors, clean cartoon style`;
+        return `${strictNoText}, warm vibrant cartoon-style illustration, bright cheerful colors, rounded friendly cartoon features, cozy comfortable settings, child-friendly cartoon aesthetic, simple clear composition, Disney Junior animation quality, welcoming and safe atmosphere`;
       case 'medium':
-        return `${strictNoText}, ${professionalQuality}, detailed and engaging, soft harmonious colors, polished illustration`;
+        return `${strictNoText}, colorful cartoon children's book art, warm animated illustration style, bright harmonious colors, friendly cartoon characters, beautiful simplified backgrounds, child-appropriate cartoon quality, engaging cartoon composition`;
       case 'hard':
-        return `${strictNoText}, ${professionalQuality}, rich artistic detail, natural beautiful lighting, sophisticated art style`;
+        return `${strictNoText}, detailed realistic children's book illustration, rich artistic detail, natural beautiful lighting, sophisticated but child-appropriate art style, professional illustration quality`;
       case 'expert':
-        return `${strictNoText}, ${professionalQuality}, masterpiece quality, cinematic lighting, photorealistic detail, museum-quality illustration`;
+        return `${strictNoText}, masterpiece quality children's book art, cinematic lighting, photorealistic detail, museum-quality illustration, award-winning professional artwork`;
       default:
-        return `${strictNoText}, ${professionalQuality}, safe for children, warm and welcoming`;
+        return `${strictNoText}, warm colorful cartoon children's book illustration, safe for children, bright cheerful atmosphere`;
     }
   }
 
