@@ -414,5 +414,10 @@
     "unlockPremium": "افتح مزايا البريميوم!",
     "goToHome": "العودة للرئيسية",
     "startNewStory": "ابدأ قصة جديدة"
+  },
+  "userInfoForm": {
+    "tooltips": {
+      "nameRequired": "يرجى إدخال اسم طفلك أولاً"
+    }
   }
 }

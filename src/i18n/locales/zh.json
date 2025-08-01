@@ -310,6 +310,11 @@
     "goToHome": "回到首页",
     "startNewStory": "开始新故事"
   },
+  "userInfoForm": {
+    "tooltips": {
+      "nameRequired": "请先输入您孩子的姓名"
+    }
+  },
   "storyDisplay": {
     "header": {
       "readingTime": "阅读时间",

@@ -310,5 +310,10 @@
     "unlockPremium": "Débloquez les Avantages Premium!",
     "goToHome": "Retour à l'Accueil",
     "startNewStory": "Commencer Nouvelle Histoire"
+  },
+  "userInfoForm": {
+    "tooltips": {
+      "nameRequired": "Veuillez d'abord entrer le prénom de votre enfant"
+    }
   }
 }

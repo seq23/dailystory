@@ -310,6 +310,11 @@
     "goToHome": "मुख्य पृष्ठ पर जाएं",
     "startNewStory": "नई कहानी शुरू करें"
   },
+  "userInfoForm": {
+    "tooltips": {
+      "nameRequired": "कृपया पहले अपने बच्चे का नाम दर्ज करें"
+    }
+  },
   "storyDisplay": {
     "header": {
       "readingTime": "पढ़ने का समय",

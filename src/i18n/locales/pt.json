@@ -310,6 +310,11 @@
     "goToHome": "Ir para Casa",
     "startNewStory": "Começar Nova História"
   },
+  "userInfoForm": {
+    "tooltips": {
+      "nameRequired": "Por favor, digite o nome da sua criança primeiro"
+    }
+  },
   "storyDisplay": {
     "header": {
       "readingTime": "Tempo de Leitura",
