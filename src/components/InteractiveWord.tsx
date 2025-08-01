@@ -38,10 +38,10 @@ export const InteractiveWord = ({
   const phoneticSpelling = getPhoneticSpelling(word);
 
   useEffect(() => {
-    // Initialize OpenAI TTS service using the improved service
-    const service = createOpenAITTSService();
+    // Initialize ElevenLabs TTS service with user info for language-appropriate speed
+    const service = createOpenAITTSService(userInfo);
     setTtsService(service);
-  }, []);
+  }, [userInfo]);
 
   // Determine if user is a native English speaker
   const isNativeEnglishSpeaker = userInfo?.nativeLanguage === "en";
@@ -146,10 +146,9 @@ export const InteractiveWord = ({
     setIsPlaying(true);
     try {
       if (ttsService) {
-        // For ESL learners, use slower pronunciation
-        const speed = isESLLearner ? 0.7 : 1.0;
-        const voice = 'nova'; // Use consistent nova voice
-        await ttsService.speakText(word, { speed, voice });
+        // ElevenLabs TTS service only accepts speed parameter
+        const speed = isESLLearner ? 0.6 : 0.7;
+        await ttsService.speakText(word, { speed });
       } else {
         // Fallback to browser speech synthesis
         if ('speechSynthesis' in window) {

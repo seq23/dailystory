@@ -271,9 +271,15 @@ export class OpenAITTSService {
 }
 
 // Create ElevenLabs TTS service instance
-export const createOpenAITTSService = () => {
+export const createOpenAITTSService = (userInfo?: any) => {
+  // Use Sarah voice for all users - it's child-friendly and works well for all languages
+  const voice = 'EXAVITQu4vr4xnSDxMaL'; // Sarah - clear and natural voice for kids
+  
+  // Adjust speed based on native language - slower for non-English speakers
+  const speed = userInfo?.nativeLanguage === 'en' ? 0.7 : 0.6;
+  
   return new OpenAITTSService({
-    voice: 'EXAVITQu4vr4xnSDxMaL', // Sarah - clear and natural voice for kids
-    speed: 0.7 // Slower, child-friendly speed
+    voice,
+    speed
   });
 };
