@@ -54,21 +54,29 @@ export class ImprovedImageGenerator {
   private static createSimpleCharacter(userInfo: UserInfo, difficulty: DifficultyLevel): string {
     const isYoung = difficulty === 'easy' || difficulty === 'medium';
     const agePrefix = isYoung ? 'young ' : '';
-    const gender = userInfo.avatar?.type === 'boy' ? 'boy' : 'girl';
-    
-    const skinTones = {
-      pale: 'very light skin',
-      light: 'light skin',
-      medium: 'medium skin', 
-      olive: 'olive skin',
-      dark: 'dark skin'
-    } as const;
-    
-    const skinTone = skinTones[userInfo.avatar?.skinTone || 'medium'] || 'medium skin';
+    const skinTone = userInfo.avatar?.skinTone || 'medium';
     const name = userInfo.name?.trim() || 'child';
     
+    const skinTones = {
+      pale: 'very light skin tone, pale complexion',
+      light: 'light skin tone, fair complexion',
+      medium: 'medium skin tone, warm brown complexion',
+      olive: 'olive skin tone, Mediterranean complexion',
+      dark: 'dark skin tone, beautiful deep brown African/African American complexion'
+    } as const;
+    
+    const consistentSkinTone = skinTones[skinTone] || 'medium skin tone';
+    
+    // Enhanced gender and ethnicity descriptions for accurate representation
+    let genderDesc;
+    if (skinTone === 'dark') {
+      genderDesc = userInfo.avatar?.type === 'boy' ? 'young Black boy' : userInfo.avatar?.type === 'girl' ? 'young Black girl' : 'young Black child';
+    } else {
+      genderDesc = userInfo.avatar?.type === 'boy' ? 'young boy' : userInfo.avatar?.type === 'girl' ? 'young girl' : 'child';
+    }
+    
     // Add clothing color if provided
-    let characterDesc = `${agePrefix}${gender} named ${name} with ${skinTone}`;
+    let characterDesc = `${agePrefix}${genderDesc} named ${name} with ${consistentSkinTone}`;
     
     if (userInfo.favoriteColor) {
       characterDesc += `, wearing ${userInfo.favoriteColor.toLowerCase()} clothing`;

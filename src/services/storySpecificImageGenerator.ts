@@ -133,23 +133,31 @@ export class StorySpecificImageGenerator {
   private static createMainCharacterDescription(userInfo: UserInfo, difficulty: DifficultyLevel): string {
     // Use the passed difficulty parameter instead of userInfo.difficultyLevel
     const difficultyLevel = difficulty;
-    let genderDesc = userInfo.avatar?.type === "boy" ? "young boy" : "young girl";
-    
-    // Make characters slightly older-looking for higher difficulty levels
-    if (difficultyLevel === 'hard' || difficultyLevel === 'expert') {
-      genderDesc = userInfo.avatar?.type === "boy" ? "boy" : "girl";
-    }
+    const skinTone = userInfo.avatar?.skinTone || 'medium';
     
     const skinToneDesc = {
-      pale: "very light skin",
-      light: "light skin", 
-      medium: "medium skin",
-      olive: "olive skin",
-      dark: "dark skin"
-    }[userInfo.avatar?.skinTone] || "medium skin";
+      pale: "very light skin tone, pale complexion",
+      light: "light skin tone, fair complexion", 
+      medium: "medium skin tone, warm brown complexion",
+      olive: "olive skin tone, Mediterranean complexion",
+      dark: "dark skin tone, beautiful deep brown African/African American complexion"
+    }[skinTone] || "medium skin tone";
     
     // Ensure consistent character name spelling throughout the story
     const characterName = userInfo.name?.trim() || 'child';
+    
+    // Enhanced gender and ethnicity descriptions for accurate representation
+    let genderDesc;
+    if (skinTone === 'dark') {
+      genderDesc = userInfo.avatar?.type === 'boy' ? 'young Black boy' : userInfo.avatar?.type === 'girl' ? 'young Black girl' : 'young Black child';
+    } else {
+      // Make characters slightly older-looking for higher difficulty levels
+      if (difficultyLevel === 'hard' || difficultyLevel === 'expert') {
+        genderDesc = userInfo.avatar?.type === "boy" ? "boy" : "girl";
+      } else {
+        genderDesc = userInfo.avatar?.type === "boy" ? "young boy" : "young girl";
+      }
+    }
     
     // Add consistent character details for better visual continuity
     const characterDetails = [];

@@ -288,15 +288,24 @@ export const createChildFriendlyPrompt = (storyText: string, userInfo?: any, pag
   if (imageFocus === 'character' || imageFocus === 'action' || pageIndex === 0) {
     if (userInfo) {
       const genderDesc = userInfo.avatar?.type === "boy" ? "young boy" : "young girl";
+      const skinTone = userInfo.avatar?.skinTone || 'medium';
       const skinToneDesc = {
-        pale: "very light skin",
-        light: "light skin", 
-        medium: "medium skin",
-        olive: "olive skin",
-        dark: "dark skin"
-      }[userInfo.avatar?.skinTone] || "medium skin";
+        pale: "very light skin tone, pale complexion",
+        light: "light skin tone, fair complexion", 
+        medium: "medium skin tone, warm brown complexion",
+        olive: "olive skin tone, Mediterranean complexion",
+        dark: "dark skin tone, beautiful deep brown African/African American complexion"
+      }[skinTone] || "medium skin tone";
       
-      const mainCharacter = `${genderDesc} named ${userInfo.name || 'the main character'} with ${skinToneDesc}`;
+      // Enhanced gender and ethnicity descriptions for accurate representation
+      let enhancedGenderDesc;
+      if (skinTone === 'dark') {
+        enhancedGenderDesc = userInfo.avatar?.type === 'boy' ? 'young Black boy' : userInfo.avatar?.type === 'girl' ? 'young Black girl' : 'young Black child';
+      } else {
+        enhancedGenderDesc = genderDesc;
+      }
+      
+      const mainCharacter = `${enhancedGenderDesc} named ${userInfo.name || 'the main character'} with ${skinToneDesc}`;
       characters.push(mainCharacter);
       
       // Intelligently add favorite animal based on story context

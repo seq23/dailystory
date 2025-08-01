@@ -81,15 +81,24 @@ export class CulturalImageGenerator {
     
     // Use the user's selected avatar skin tone for consistent representation in images only
     // Never mention skin tone in story text, only in image generation prompts
+    const skinTone = userInfo.avatar?.skinTone || 'medium';
     const skinToneDescriptions = {
-      pale: 'very light skin tone',
-      light: 'light skin tone',
-      medium: 'medium brown skin tone',
-      olive: 'warm olive skin tone', 
-      dark: 'beautiful dark skin tone'
+      pale: 'very light skin tone, pale complexion',
+      light: 'light skin tone, fair complexion',
+      medium: 'medium skin tone, warm brown complexion',
+      olive: 'olive skin tone, Mediterranean complexion', 
+      dark: 'dark skin tone, beautiful deep brown African/African American complexion'
     };
     
-    const skinTone = skinToneDescriptions[userInfo.avatar?.skinTone || 'medium'];
+    const consistentSkinTone = skinToneDescriptions[skinTone];
+    
+    // Enhanced gender and ethnicity descriptions for accurate representation
+    let genderDesc;
+    if (skinTone === 'dark') {
+      genderDesc = userInfo.avatar?.type === 'boy' ? 'young Black boy' : userInfo.avatar?.type === 'girl' ? 'young Black girl' : 'young Black child';
+    } else {
+      genderDesc = userInfo.avatar?.type === 'boy' ? 'young boy' : userInfo.avatar?.type === 'girl' ? 'young girl' : 'child';
+    }
     
     // Cultural clothing and appearance elements
     const culturalAppearance = this.getCulturalAppearanceElements(culturalContext, userInfo);
