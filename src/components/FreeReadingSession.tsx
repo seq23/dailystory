@@ -957,7 +957,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                     {/* Fixed Header Section */}
                     <div className="flex-shrink-0 p-3 sm:p-4 lg:p-6 border-b border-gray-100">
                       {/* Difficulty Level Selector */}
-                      <div className="mb-4 reading-level-controls">
+                      <div id="reading-level-controls" className="mb-4 reading-level-controls">
                         <div className="flex gap-3 justify-center items-center">
                           <div className="relative group">
                             <Button
@@ -1125,6 +1125,10 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
             isVisible={tutorialActive} 
             onComplete={() => setTutorialActive(false)}
             onSkip={() => setTutorialActive(false)}
+            onStartTimer={() => {
+              // Timer already manages its own state 
+              console.log('Tutorial completed - timer continues');
+            }}
           />
         </>
       )}

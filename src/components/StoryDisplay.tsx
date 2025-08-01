@@ -805,7 +805,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                 {/* Fixed Header Section */}
                 <div className="flex-shrink-0 p-6 border-b border-gray-100">
                   {/* Difficulty Level Selector */}
-                  <div className="mb-4">
+                  <div id="reading-level-controls" className="mb-4 reading-level-controls">
                     <div className="flex gap-3 justify-center items-center">
                       <div className="relative group">
                         <Button
@@ -994,6 +994,10 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
         isVisible={tutorialActive} 
         onComplete={() => setTutorialActive(false)}
         onSkip={() => setTutorialActive(false)}
+        onStartTimer={() => {
+          // Timer already manages its own state
+          console.log('Tutorial completed - timer continues');
+        }}
       />
     </div>
   );

@@ -315,5 +315,23 @@
     "tooltips": {
       "nameRequired": "Veuillez d'abord entrer le prénom de votre enfant"
     }
+  },
+  "tutorial": {
+    "timer": {
+      "title": "⏰ Minuteur de Lecture",
+      "description": "Ceci affiche votre temps de lecture ! Cliquez sur le bouton lecture pour démarrer/mettre en pause votre minuteur. Utilisez le bouton moins pour réduire le temps si nécessaire."
+    },
+    "navigation": {
+      "title": "📖 Navigation des Pages", 
+      "description": "Utilisez les boutons Précédent et Suivant pour vous déplacer entre les pages de l'histoire. Le compteur de pages affiche votre position actuelle."
+    },
+    "audio": {
+      "title": "🎵 Lecture Audio",
+      "description": "Cliquez pour entendre l'histoire lue à haute voix ! Parfait pour suivre et apprendre la prononciation."
+    },
+    "difficulty": {
+      "title": "🎯 Niveau de Lecture",
+      "description": "Rendez l'histoire plus facile ou plus difficile instantanément ! La flèche vers le haut la rend plus difficile, la flèche vers le bas la rend plus facile pour correspondre à votre niveau de lectur."
+    }
   }
 }

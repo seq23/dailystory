@@ -315,5 +315,23 @@
     "tooltips": {
       "nameRequired": "Por favor ingresa el nombre de tu hijo primero"
     }
+  },
+  "tutorial": {
+    "timer": {
+      "title": "⏰ Temporizador de Lectura",
+      "description": "¡Esto muestra tu tiempo de lectura! Haz clic en el botón de reproducir para iniciar/pausar tu temporizador. Usa el botón menos para reducir tiempo si es necesario."
+    },
+    "navigation": {
+      "title": "📖 Navegación de Páginas", 
+      "description": "Usa los botones Anterior y Siguiente para moverte entre las páginas del cuento. El contador de páginas muestra tu posición actual."
+    },
+    "audio": {
+      "title": "🎵 Lectura de Audio",
+      "description": "¡Haz clic para escuchar el cuento leído en voz alta! Perfecto para seguir y aprender la pronunciación."
+    },
+    "difficulty": {
+      "title": "🎯 Nivel de Lectura",
+      "description": "¡Haz el cuento más fácil o más difícil al instante! La flecha hacia arriba lo hace más difícil, la flecha hacia abajo lo hace más fácil para que coincida con tu nivel de lectura."
+    }
   }
 }
