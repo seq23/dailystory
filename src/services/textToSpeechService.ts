@@ -35,6 +35,7 @@ export class OpenAITTSService {
       // Use Supabase functions.invoke for proper authentication
       const speedToUse = options?.speed || this.speed;
       console.log(`TTS Request: voice=${this.voice}, speed=${speedToUse}, text="${cleanText.substring(0, 50)}..."`);
+      console.log('About to call openai-tts function...');
       
       const { data, error } = await supabase.functions.invoke('openai-tts', {
         body: {
@@ -43,6 +44,10 @@ export class OpenAITTSService {
           speed: speedToUse
         }
       });
+
+      console.log('Supabase function invoke completed');
+      console.log('Response data:', data);
+      console.log('Response error:', error);
 
       if (error) {
         console.error('TTS Supabase Error Details:', error);
