@@ -91,6 +91,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
   const [isPaused, setIsPaused] = useState(false);
   const [showFinishCountdown, setShowFinishCountdown] = useState(false);
   const [tutorialActive, setTutorialActive] = useState(true);
+  const [currentTutorialStep, setCurrentTutorialStep] = useState(0);
   const [showAddPagesAlert, setShowAddPagesAlert] = useState(false);
   const [hasShownAddPagesAlert, setHasShownAddPagesAlert] = useState(false);
   const [canAddMorePages, setCanAddMorePages] = useState(true);
@@ -988,6 +989,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
           }}
           sessionStats={calculateStats()}
           showTutorial={tutorialActive}
+          tutorialStep={currentTutorialStep}
         />
       )}
       
@@ -1000,6 +1002,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
           // Timer already manages its own state
           console.log('Tutorial completed - timer continues');
         }}
+        onStepChange={setCurrentTutorialStep}
       />
     </div>
   );

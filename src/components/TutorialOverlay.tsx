@@ -17,12 +17,18 @@ interface TutorialOverlayProps {
   onComplete: () => void;
   onSkip: () => void;
   onStartTimer?: () => void;
+  onStepChange?: (step: number) => void;
 }
 
-export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer }: TutorialOverlayProps) => {
+export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, onStepChange }: TutorialOverlayProps) => {
   const { t, i18n } = useTranslation();
   const [currentStep, setCurrentStep] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+
+  // Notify parent about step changes
+  useEffect(() => {
+    onStepChange?.(currentStep);
+  }, [currentStep, onStepChange]);
 
 
   const tutorialSteps: TutorialStep[] = [
@@ -163,7 +169,9 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer }:
     if (currentStep < tutorialSteps.length - 1) {
       setIsAnimating(false);
       setTimeout(() => {
-        setCurrentStep(prev => prev + 1);
+        const nextStep = currentStep + 1;
+        setCurrentStep(nextStep);
+        onStepChange?.(nextStep);
       }, 200);
     } else {
       onComplete();
@@ -177,7 +185,9 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer }:
     if (currentStep > 0) {
       setIsAnimating(false);
       setTimeout(() => {
-        setCurrentStep(prev => prev - 1);
+        const prevStep = currentStep - 1;
+        setCurrentStep(prevStep);
+        onStepChange?.(prevStep);
       }, 200);
     }
   };

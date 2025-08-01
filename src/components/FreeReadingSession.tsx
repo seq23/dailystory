@@ -76,6 +76,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   const [sessionEnded, setSessionEnded] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [tutorialActive, setTutorialActive] = useState(true);
+  const [currentTutorialStep, setCurrentTutorialStep] = useState(0);
   const [showAddPagesAlert, setShowAddPagesAlert] = useState(false);
   const [hasShownAddPagesAlert, setHasShownAddPagesAlert] = useState(false);
 
@@ -754,6 +755,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
             onSessionEnded={navigateToSessionEnd}
             sessionStats={calculateStats()}
             showTutorial={tutorialActive}
+            tutorialStep={currentTutorialStep}
           />
         )}
 
@@ -1130,6 +1132,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
               // Timer already manages its own state 
               console.log('Tutorial completed - timer continues');
             }}
+            onStepChange={setCurrentTutorialStep}
           />
         </>
       )}
