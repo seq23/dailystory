@@ -311,8 +311,8 @@ export function processStoryTemplate(
   }
   
   // Process each page with variable substitution
-  return template.pages.map(page => 
-    page
+  return template.pages.map((page, index) => {
+    const processedPage = page
       .replace(/{name}/g, name)
       .replace(/{animal}/g, animal)
       .replace(/{color}/g, color)
@@ -320,7 +320,20 @@ export function processStoryTemplate(
       .replace(/{subject_cap}/g, pronouns.subject.charAt(0).toUpperCase() + pronouns.subject.slice(1))
       .replace(/{object}/g, pronouns.object)
       .replace(/{possessive}/g, pronouns.possessive)
-  );
+      // Clean up any remaining malformed characters or brackets
+      .replace(/\[/g, '')
+      .replace(/\]/g, '')
+      .replace(/\{[^}]*\}/g, '') // Remove any unmatched template variables
+      .replace(/\s+/g, ' ') // Clean up extra whitespace
+      .trim();
+    
+    // Log for debugging if there are suspicious characters
+    if (processedPage.includes(']') || processedPage.includes('[') || processedPage.includes('{')) {
+      console.warn(`Malformed text detected on page ${index + 1}:`, processedPage);
+    }
+    
+    return processedPage;
+  });
 }
 
 // Helper function to get random story template for a language/difficulty

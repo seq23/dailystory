@@ -182,20 +182,54 @@ export class EarlyReaderStoryGenerator {
     let currentWordCount = 0;
 
     for (const sentence of sentences) {
-      const sentenceWords = sentence.trim().split(/\s+/).length;
+      // Clean sentence of any malformed characters
+      const cleanSentence = sentence.trim()
+        .replace(/\[/g, '')
+        .replace(/\]/g, '')
+        .replace(/\{[^}]*\}/g, '') // Remove unmatched template variables
+        .replace(/\s+/g, ' ') // Clean up extra whitespace
+        .trim();
+      
+      if (!cleanSentence) continue; // Skip empty sentences
+      
+      const sentenceWords = cleanSentence.split(/\s+/).length;
       
       if (currentWordCount + sentenceWords > maxWordsPerPage && currentPage.length > 0) {
-        pages.push(currentPage.trim() + '.');
-        currentPage = sentence.trim();
+        const finalPage = currentPage.trim() + '.';
+        // Final check for malformed characters
+        const cleanPage = finalPage
+          .replace(/\[/g, '')
+          .replace(/\]/g, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+        
+        if (cleanPage.includes(']') || cleanPage.includes('[')) {
+          console.warn('Malformed page detected:', cleanPage);
+        }
+        
+        pages.push(cleanPage);
+        currentPage = cleanSentence;
         currentWordCount = sentenceWords;
       } else {
-        currentPage += (currentPage.length > 0 ? '. ' : '') + sentence.trim();
+        currentPage += (currentPage.length > 0 ? '. ' : '') + cleanSentence;
         currentWordCount += sentenceWords;
       }
     }
     
     if (currentPage.trim().length > 0) {
-      pages.push(currentPage.trim() + '.');
+      const finalPage = currentPage.trim() + '.';
+      // Final check for malformed characters
+      const cleanPage = finalPage
+        .replace(/\[/g, '')
+        .replace(/\]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      
+      if (cleanPage.includes(']') || cleanPage.includes('[')) {
+        console.warn('Malformed final page detected:', cleanPage);
+      }
+      
+      pages.push(cleanPage);
     }
 
     // Ensure we have the target number of pages with organic user element integration
@@ -249,7 +283,22 @@ export class EarlyReaderStoryGenerator {
     };
     
     const options = continuations[difficulty];
-    return options[pageNumber % options.length];
+    const selectedContinuation = options[pageNumber % options.length];
+    
+    // Clean the continuation text of any malformed characters
+    const cleanContinuation = selectedContinuation
+      .replace(/\[/g, '')
+      .replace(/\]/g, '')
+      .replace(/\{[^}]*\}/g, '') // Remove unmatched template variables
+      .replace(/\s+/g, ' ')
+      .trim();
+    
+    // Log warning if malformed characters detected
+    if (cleanContinuation.includes(']') || cleanContinuation.includes('[')) {
+      console.warn('Malformed continuation detected:', cleanContinuation);
+    }
+    
+    return cleanContinuation;
   }
 
   static getReadingConfigForDifficulty(difficulty: DifficultyLevel): ReadingConfig {
