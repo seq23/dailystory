@@ -354,6 +354,10 @@
       "title": "🎵 Leitura de Áudio",
       "description": "Clique para ouvir a história lida em voz alta! Perfeito para acompanhar e aprender pronúncia."
     },
+    "addPages": {
+      "title": "➕ Adicionar Mais Páginas",
+      "description": "Quer continuar a aventura? Clique neste botão para adicionar 5 páginas a mais na sua história!"
+    },
     "difficulty": {
       "title": "🎯 Nível de Leitura",
       "description": "Torne a história mais fácil ou mais difícil instantaneamente! Seta para cima torna mais difícil, seta para baixo torna mais fácil para combinar com seu nível de leitura."

@@ -327,6 +327,10 @@
       "title": "🎵 Lectura de Audio",
       "description": "¡Haz clic para escuchar el cuento leído en voz alta! Perfecto para seguir y aprender la pronunciación."
     },
+    "addPages": {
+      "title": "➕ Agregar Más Páginas",
+      "description": "¿Quieres continuar la aventura? ¡Haz clic en este botón para agregar 5 páginas más a tu historia!"
+    },
     "difficulty": {
       "title": "🎯 Nivel de Lectura",
       "description": "¡Haz el cuento más fácil o más difícil al instante! La flecha hacia arriba lo hace más difícil, la flecha hacia abajo lo hace más fácil para que coincida con tu nivel de lectura."

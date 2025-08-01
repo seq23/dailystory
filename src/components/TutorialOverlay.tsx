@@ -48,6 +48,13 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer }:
       position: "top"
     },
     {
+      target: "add-pages-button",
+      title: t("tutorial.addPages.title", "➕ Add More Pages"),
+      description: t("tutorial.addPages.description", "Want to continue the adventure? Click this button to add 5 more pages to your story!"),
+      icon: Play,
+      position: "top"
+    },
+    {
       target: "reading-level-controls",
       title: t("tutorial.difficulty.title", "🎯 Reading Level"),
       description: t("tutorial.difficulty.description", "Make the story easier or harder instantly! Up arrow makes it harder, down arrow makes it easier to match your reading level."),
@@ -374,8 +381,8 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer }:
                 </div>
               </div>
 
-              {/* Navigation Buttons */}
-              <div className="flex justify-between items-center">
+              {/* Navigation Buttons - Centered */}
+              <div className="flex justify-center items-center gap-4">
                 <Button
                   variant="outline"
                   size="default"
@@ -387,30 +394,29 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer }:
                   Previous
                 </Button>
 
-                <div className="flex items-center gap-3">
-                  <Button
-                    variant="ghost"
-                    size="default"
-                    onClick={() => {
-                      onSkip();
-                      if (onStartTimer) {
-                        onStartTimer();
-                      }
-                    }}
-                    className="text-muted-foreground"
-                  >
-                    Skip Tutorial
-                  </Button>
-                  <Button
-                    variant="default"
-                    size="default"
-                    onClick={handleNext}
-                    className="bg-gradient-primary hover:opacity-90 flex items-center gap-2"
-                  >
-                    {currentStep === tutorialSteps.length - 1 ? 'Start Reading!' : 'Next'}
-                    <ChevronRight className="w-4 h-4" />
-                  </Button>
-                </div>
+                <Button
+                  variant="ghost"
+                  size="default"
+                  onClick={() => {
+                    onSkip();
+                    if (onStartTimer) {
+                      onStartTimer();
+                    }
+                  }}
+                  className="text-muted-foreground"
+                >
+                  Skip Tutorial
+                </Button>
+
+                <Button
+                  variant="default"
+                  size="default"
+                  onClick={handleNext}
+                  className="bg-gradient-primary hover:opacity-90 flex items-center gap-2"
+                >
+                  {currentStep === tutorialSteps.length - 1 ? 'Start Reading!' : 'Next'}
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
               </div>
             </div>
           </CardContent>

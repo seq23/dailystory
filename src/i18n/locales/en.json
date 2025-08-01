@@ -316,6 +316,10 @@
       "title": "🎵 Audio Reading",
       "description": "Click to hear the story read aloud! Perfect for following along and learning pronunciation."
     },
+    "addPages": {
+      "title": "➕ Add More Pages",
+      "description": "Want to continue the adventure? Click this button to add 5 more pages to your story!"
+    },
     "difficulty": {
       "title": "🎯 Reading Level",
       "description": "Make the story easier or harder instantly! Up arrow makes it harder, down arrow makes it easier to match your reading level."
