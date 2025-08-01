@@ -949,27 +949,35 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
             </div>
           </header>
 
-          {/* Main Content - Overhauled Layout with Proper Scrolling */}
+          {/* Main Content - Fixed Layout for Free Trial */}
           <main className="flex-1 flex flex-col overflow-hidden">
-            <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 flex-1 flex flex-col">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 max-w-6xl mx-auto flex-1 overflow-hidden">
+            <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 flex-1 flex flex-col max-w-7xl">
+              <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8 flex-1 overflow-hidden"
+                   style={{ transform: 'none' }} // Ensure no transforms are applied
+              >
                 
-                {/* Story Illustration - Mobile Optimized */}
-                <div className="order-2 lg:order-1 flex flex-col">
-                  <Card className="flex-1 min-h-[300px] sm:min-h-[400px] lg:min-h-[500px]">
-                    <CardContent className="p-3 sm:p-4 lg:p-6 h-full">
-                      <img 
-                        src={storyImages[currentPage]?.url || illustrations[currentPage % illustrations.length]}
-                        alt={`Story illustration for page ${currentPage + 1}`}
-                        className="w-full h-full object-cover rounded-lg"
-                      />
+                {/* Story Illustration - Fixed for Free Trial */}
+                <div className="flex flex-col lg:flex-1 lg:max-w-md">
+                  <Card className="h-[300px] sm:h-[400px] lg:h-[500px]">
+                    <CardContent className="p-3 sm:p-4 lg:p-6 h-full flex items-center justify-center">
+                      <div className="relative w-full aspect-square bg-gray-50 rounded-lg overflow-hidden shadow-sm">
+                        <img 
+                          src={storyImages[currentPage]?.url || illustrations[currentPage % illustrations.length]}
+                          alt={`Story illustration for page ${currentPage + 1}`}
+                          className="w-full h-full object-cover rounded-lg"
+                          onError={(e) => {
+                            console.warn(`Failed to load image for page ${currentPage + 1}, using fallback`);
+                            (e.target as HTMLImageElement).src = illustrations[currentPage % illustrations.length];
+                          }}
+                        />
+                      </div>
                     </CardContent>
                   </Card>
                 </div>
 
-                {/* Story Text Panel - Overhauled with Proper Layout */}
-                <div className="order-1 lg:order-2 flex flex-col">
-                  <Card className="flex-1 flex flex-col overflow-hidden transition-all duration-300 hover:shadow-lg">
+                {/* Story Text Panel - Fixed Layout for Free Trial */}
+                <div className="flex flex-col lg:flex-1">
+                  <Card className="flex-1 flex flex-col overflow-hidden min-h-[500px] transition-all duration-300 hover:shadow-lg">
                     
                     {/* Fixed Header Section */}
                     <div className="flex-shrink-0 p-3 sm:p-4 lg:p-6 border-b border-gray-100">
