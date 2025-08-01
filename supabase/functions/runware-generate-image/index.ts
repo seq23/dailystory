@@ -86,11 +86,11 @@ serve(async (req) => {
       console.log(`Generating enhanced image ${pageIndex + 1} for ${characterName} (${genderDesc} with ${consistentSkinTone})`);
     }
 
-    // Enhanced quality and style enhancers with better representation
-    enhancedPrompt += `, vibrant children's book illustration style, realistic skin tones, accurate representation, warm colors, friendly atmosphere, high quality detailed artwork, child-appropriate, consistent art style, diverse and inclusive, NO TEXT, NO WORDS, NO LETTERS`;
+    // PROFESSIONAL QUALITY: Enhanced style and representation enhancers
+    enhancedPrompt += `, award-winning children's book illustration style, ultra-realistic skin tones, accurate diverse representation, beautiful vibrant colors, perfect lighting, professional artwork composition, high-quality detailed artwork, child-appropriate content, consistent character design, inclusive and diverse, completely text-free, museum-quality illustration, masterpiece children's art`;
 
-    // CRITICAL: Enhanced negative prompt for better skin tone accuracy and ZERO TEXT
-    const negativePrompt = "text, words, letters, typography, writing, captions, subtitles, speech bubbles, signs, labels, books with visible text, newspapers, magazines, any readable content, blurry, low quality, distorted, scary, inappropriate, adult content, violence, weapons, dark themes, inconsistent character, different character, wrong skin tone, inaccurate skin color, whitewashed, wrong gender, pale when should be dark, light when should be dark, copyrighted characters, trademarked content, Godzilla, Pokemon, Disney characters, brand logos, commercial characters";
+    // ULTRA-STRICT: Enhanced negative prompt for absolute text elimination and quality
+    const negativePrompt = "text, words, letters, typography, writing, captions, subtitles, speech bubbles, signs, labels, books with visible text, newspapers, magazines, any readable content, written language, alphabet, numbers, symbols, watermarks, signatures, copyright text, book pages with text, character dialogue, narration text, title text, blurry, low quality, distorted, scary, inappropriate, adult content, violence, weapons, dark themes, inconsistent character, different character, wrong skin tone, inaccurate skin color, whitewashed, wrong gender, pale when should be dark, light when should be dark, ugly, malformed, deformed, bad anatomy, poor composition, amateur art, copyrighted characters, trademarked content, Godzilla, Pokemon, Disney characters, brand logos, commercial characters";
 
     // Create WebSocket connection to Runware
     const ws = new WebSocket("wss://ws-api.runware.ai/v1");
@@ -142,7 +142,7 @@ serve(async (req) => {
                 numberResults,
                 outputFormat,
                 steps: 6, // Increased steps for better quality and accuracy
-                CFGScale: Math.max(2, CFGScale), // Higher guidance for better prompt adherence
+                CFGScale: Math.max(3, CFGScale), // Higher guidance for better prompt adherence and quality
                 scheduler,
                 strength,
                 ...(seed && { seed })

@@ -117,7 +117,7 @@ export class UnifiedImageService {
   ): string {
     const { storyText, pageIndex, totalPages, difficulty } = options;
 
-    // Analyze story content for intelligent elements
+    // Deep analysis of story content for intelligent scene building
     const storyContext = this.analyzeStoryContent(storyText, character);
     
     // Get scene type based on page position
@@ -126,39 +126,89 @@ export class UnifiedImageService {
     // Build character description with proper representation
     const characterDesc = this.buildCharacterDescription(character);
     
-    // Get art style for difficulty level
+    // Get professional art style for difficulty level
     const artStyle = this.getArtStyleForDifficulty(difficulty);
     
-    // Combine all elements into intelligent prompt
-    let prompt = `${artStyle} children's book illustration. `;
+    // INTELLIGENT SCENE CONSTRUCTION: Build the scene naturally
+    let prompt = `${artStyle} professionally illustrated children's book art. `;
+    
+    // Main subject: Always start with the character
     prompt += `${characterDesc} `;
     
-    // Add story context intelligently
-    if (storyContext.mainAction) {
-      prompt += `${storyContext.mainAction} `;
-    }
+    // Intelligent action + interaction analysis
+    const sceneDescription = this.buildIntelligentScene(storyText, storyContext, character);
+    prompt += `${sceneDescription} `;
     
+    // Setting context
     if (storyContext.setting) {
       prompt += `in ${storyContext.setting} `;
     }
     
-    if (storyContext.objects.length > 0) {
-      prompt += `with ${storyContext.objects[0]} `;
-    }
-    
-    // Add scene type context
+    // Scene type and mood
     prompt += `${sceneType}. `;
     
-    // Add organic user elements
+    // Add organic user elements that enhance the scene
     const organicElements = this.getOrganicUserElements(character, storyContext);
     if (organicElements) {
       prompt += `${organicElements}. `;
     }
     
-    // Add quality and safety modifiers with NO TEXT rule
+    // Professional quality and STRICT no-text enforcement
     prompt += this.getQualityModifiers(difficulty);
     
     return prompt.trim();
+  }
+
+  /**
+   * Build intelligent scene based on story analysis
+   */
+  private static buildIntelligentScene(storyText: string, storyContext: any, character: EstablishedCharacter): string {
+    const text = storyText.toLowerCase();
+    
+    // INTELLIGENT INTERACTION DETECTION
+    // Look for character interactions with objects/animals/people
+    const interactions = [
+      { pattern: /meet.*cat/i, description: `meeting a friendly cat` },
+      { pattern: /meet.*dog/i, description: `meeting a playful dog` },
+      { pattern: /meet.*bird/i, description: `meeting a colorful bird` },
+      { pattern: /find.*book/i, description: `discovering a magical book` },
+      { pattern: /find.*treasure/i, description: `finding a treasure` },
+      { pattern: /play.*ball/i, description: `playing with a ball` },
+      { pattern: /chase.*butterfly/i, description: `chasing colorful butterflies` },
+      { pattern: /read.*story/i, description: `reading a story` },
+      { pattern: /dance/i, description: `dancing joyfully` },
+      { pattern: /sing/i, description: `singing happily` },
+      { pattern: /explore/i, description: `exploring with curiosity` },
+      { pattern: /adventure/i, description: `on an exciting adventure` }
+    ];
+    
+    // Find the most specific interaction
+    for (const interaction of interactions) {
+      if (interaction.pattern.test(storyText)) {
+        return interaction.description;
+      }
+    }
+    
+    // COLOR-SPECIFIC INTERACTIONS (for your blue cat example)
+    const colorAnimals = [
+      { pattern: /blue.*cat/i, description: `meeting a magical blue cat` },
+      { pattern: /red.*bird/i, description: `meeting a beautiful red bird` },
+      { pattern: /green.*frog/i, description: `meeting a friendly green frog` },
+      { pattern: /purple.*butterfly/i, description: `meeting a purple butterfly` }
+    ];
+    
+    for (const colorAnimal of colorAnimals) {
+      if (colorAnimal.pattern.test(storyText)) {
+        return colorAnimal.description;
+      }
+    }
+    
+    // Fallback to detected action or default
+    if (storyContext.mainAction) {
+      return storyContext.mainAction;
+    }
+    
+    return 'in a magical moment';
   }
 
   /**
@@ -262,40 +312,41 @@ export class UnifiedImageService {
   }
 
   /**
-   * Get art style based on difficulty level
+   * Get professional art style based on difficulty level
    */
   private static getArtStyleForDifficulty(difficulty: DifficultyLevel): string {
     switch (difficulty) {
       case 'easy':
-        return 'Colorful cartoon-style';
+        return 'Bright colorful cartoon-style, Disney-quality animation style';
       case 'medium':
-        return 'Gentle illustrated';
+        return 'Beautiful hand-painted illustration style, Pixar-quality art';
       case 'hard':
-        return 'Detailed realistic';
+        return 'Detailed realistic illustration, Studio Ghibli quality art style';
       case 'expert':
-        return 'Photorealistic';
+        return 'Photorealistic masterpiece, award-winning children\'s book illustration';
       default:
-        return 'Beautiful illustrated';
+        return 'Professional children\'s book illustration style';
     }
   }
 
   /**
-   * Get quality modifiers with hard NO TEXT rule
+   * Get quality modifiers with ABSOLUTE NO TEXT rule and professional quality
    */
   private static getQualityModifiers(difficulty: DifficultyLevel): string {
-    const baseModifiers = 'Safe for children, clear composition, warm lighting, NO TEXT, NO WORDS, NO LETTERS in the image';
+    const strictNoText = 'ABSOLUTELY NO TEXT, NO WORDS, NO LETTERS, NO WRITING, NO SIGNS, NO BOOKS WITH VISIBLE TEXT, NO SPEECH BUBBLES, completely text-free image';
+    const professionalQuality = 'professionally illustrated, beautiful composition, perfect lighting, high-quality children\'s book art, award-winning illustration style';
     
     switch (difficulty) {
       case 'easy':
-        return `${baseModifiers}, simple and cheerful, bright colors`;
+        return `${strictNoText}, ${professionalQuality}, simple and cheerful, bright vibrant colors, clean cartoon style`;
       case 'medium':
-        return `${baseModifiers}, detailed and engaging, soft colors`;
+        return `${strictNoText}, ${professionalQuality}, detailed and engaging, soft harmonious colors, polished illustration`;
       case 'hard':
-        return `${baseModifiers}, rich detail, natural lighting`;
+        return `${strictNoText}, ${professionalQuality}, rich artistic detail, natural beautiful lighting, sophisticated art style`;
       case 'expert':
-        return `${baseModifiers}, sophisticated detail, cinematic quality`;
+        return `${strictNoText}, ${professionalQuality}, masterpiece quality, cinematic lighting, photorealistic detail, museum-quality illustration`;
       default:
-        return baseModifiers;
+        return `${strictNoText}, ${professionalQuality}, safe for children, warm and welcoming`;
     }
   }
 
