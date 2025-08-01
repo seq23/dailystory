@@ -908,7 +908,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                   </div>
                 </div>
                 
-                <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-2">
+                <div id="navigation-controls" className="flex flex-wrap items-center justify-center gap-1 sm:gap-2">
                   {/* Navigation buttons - Mobile responsive */}
                   <Button onClick={onNewStory} variant="outline" size="sm" className="text-xs sm:text-sm px-2 sm:px-3">
                     <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
@@ -1005,7 +1005,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                     </div>
 
                     {/* Scrollable Story Content */}
-                    <div className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6">
+                    <div id="story-content" className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6">
                       <div className="flex items-center justify-center min-h-full">
                         <div className="text-center w-full">
                           {/* Apply reading level configuration with proper responsive design */}

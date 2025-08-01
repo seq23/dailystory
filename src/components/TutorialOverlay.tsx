@@ -26,38 +26,24 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer }:
 
   const tutorialSteps: TutorialStep[] = [
     {
-      target: "welcome-title",
-      title: t("tutorial.step1.title", "🌟 Welcome to Time2Read!"),
-      description: t("tutorial.step1.description", "Hi there! Let's take a quick tour to help you create amazing personalized stories. I'll point to each important button and explain what it does. This will only take a minute!"),
-      icon: Sparkles,
+      target: "story-content",
+      title: t("tutorial.step1.title", "📖 Your Story"),
+      description: t("tutorial.step1.description", "This is your personalized story! Click on any highlighted word to hear it pronounced or learn what it means."),
+      icon: BookOpen,
       position: "bottom"
     },
     {
-      target: "basic-info-section",
-      title: t("tutorial.step2.title", "👤 Step 1: Tell Us About Your Child"),
-      description: t("tutorial.step2.description", "👈 Look here! Fill in your child's name, age, and reading level. This section helps us create stories that are just right for your child's abilities."),
-      icon: User,
-      position: "right"
-    },
-    {
-      target: "favorites-section", 
-      title: t("tutorial.step3.title", "❤️ Step 2: Share Their Favorites"),
-      description: t("tutorial.step3.description", "👉 Look over here! Add favorite animals, colors, and foods to make the story extra special. Kids love seeing their favorites in their stories!"),
-      icon: Heart,
+      target: "timer-display",
+      title: t("tutorial.step2.title", "⏰ Reading Timer"),
+      description: t("tutorial.step2.description", "Keep track of your reading time here. The timer shows how much time you have left in your session."),
+      icon: Sparkles,
       position: "left"
     },
     {
-      target: "special-request-section",
-      title: t("tutorial.step4.title", "⭐ Step 3: Special Story Ideas"),
-      description: t("tutorial.step4.description", "👆 Look up here! Want a story about space, dinosaurs, or princesses? This is where you can request special themes and topics for the story!"),
+      target: "navigation-controls",
+      title: t("tutorial.step3.title", "🎮 Story Controls"), 
+      description: t("tutorial.step3.description", "Use these buttons to move between pages, go home, or start a new story. Ready to start reading?"),
       icon: Star,
-      position: "top"
-    },
-    {
-      target: "create-story-button",
-      title: t("tutorial.step5.title", "📚 Step 4: Create Your Story!"),
-      description: t("tutorial.step5.description", "👆 This is the magic button! Once you've filled everything out, click this big button to create your personalized reading adventure. The timer will start automatically!"),
-      icon: BookOpen,
       position: "top"
     }
   ];
@@ -75,8 +61,8 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer }:
     let autoAdvanceTimer: NodeJS.Timeout;
     
     if (isVisible && currentStep < tutorialSteps.length) {
-      // Auto-advance after 5 seconds for first step, 6 seconds for others (longer for kids)
-      const delay = currentStep === 0 ? 5000 : 6000;
+      // Shorter auto-advance for concise tutorial - 4 seconds
+      const delay = 4000;
       autoAdvanceTimer = setTimeout(() => {
         handleNext();
       }, delay);
@@ -114,34 +100,34 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer }:
   };
 
   const getTooltipPosition = (target: string, position: string) => {
+    // Calculate better positioning to avoid covering content
     const element = document.getElementById(target);
     if (!element) {
-      // Fallback positions when element not found
-      return { top: "20%", left: "20px", transform: "none" };
+      return { top: "10%", left: "20px", transform: "none" };
     }
 
     const rect = element.getBoundingClientRect();
     const viewportHeight = window.innerHeight;
     const viewportWidth = window.innerWidth;
     
-    // Calculate safe positions that don't cover important content
-    const tooltipWidth = 500; // Max tooltip width
-    const tooltipHeight = 400; // Approximate tooltip height
-    const margin = 20;
+    const tooltipWidth = 400;
+    const tooltipHeight = 280; // Shorter for concise tutorial
+    const margin = 30; // More margin to avoid covering content
 
     let style: any = {};
 
+    // Always position away from the target element to avoid covering it
     switch (position) {
       case "bottom":
         style = {
-          top: `${Math.min(rect.bottom + 60, viewportHeight - tooltipHeight - margin)}px`,
+          top: `${Math.max(rect.bottom + 40, margin)}px`,
           left: `${Math.max(margin, Math.min(rect.left + rect.width/2 - tooltipWidth/2, viewportWidth - tooltipWidth - margin))}px`,
           transform: "none"
         };
         break;
       case "top":
         style = {
-          bottom: `${Math.min(viewportHeight - rect.top + 60, viewportHeight - margin)}px`,
+          top: `${Math.max(margin, rect.top - tooltipHeight - 40)}px`,
           left: `${Math.max(margin, Math.min(rect.left + rect.width/2 - tooltipWidth/2, viewportWidth - tooltipWidth - margin))}px`,
           transform: "none"
         };
@@ -149,20 +135,20 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer }:
       case "right":
         style = {
           top: `${Math.max(margin, Math.min(rect.top + rect.height/2 - tooltipHeight/2, viewportHeight - tooltipHeight - margin))}px`,
-          left: `${Math.min(rect.right + 40, viewportWidth - tooltipWidth - margin)}px`,
+          left: `${Math.max(margin, Math.min(rect.right + 40, viewportWidth - tooltipWidth - margin))}px`,
           transform: "none"
         };
         break;
       case "left":
         style = {
           top: `${Math.max(margin, Math.min(rect.top + rect.height/2 - tooltipHeight/2, viewportHeight - tooltipHeight - margin))}px`,
-          right: `${Math.min(viewportWidth - rect.left + 40, viewportWidth - margin)}px`,
+          left: `${Math.max(margin, rect.left - tooltipWidth - 40)}px`,
           transform: "none"
         };
         break;
       default:
         style = {
-          top: "20%",
+          top: "10%",
           left: "20px",
           transform: "none"
         };
@@ -208,15 +194,15 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer }:
           className={`fixed z-60 transition-all duration-300 ${isAnimating ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
           style={tooltipStyle}
         >
-          <Card className="w-80 sm:w-96 bg-white dark:bg-gray-900 shadow-2xl border-2 border-primary/30 rounded-2xl overflow-hidden">
-            {/* Big Fun Arrow */}
+          <Card className="w-80 bg-white dark:bg-gray-900 shadow-2xl border-2 border-primary/30 rounded-2xl overflow-hidden">
+            {/* Big Fun Arrow pointing to target */}
             <div className="absolute -z-10">
               <div 
                 className="w-0 h-0 animate-bounce"
                 style={{
-                  borderLeft: '20px solid transparent',
-                  borderRight: '20px solid transparent', 
-                  borderBottom: '30px solid #FFD700',
+                  borderLeft: '16px solid transparent',
+                  borderRight: '16px solid transparent', 
+                  borderBottom: '24px solid #FFD700',
                   position: 'absolute',
                   top: step.position === 'bottom' ? '-45px' : 
                        step.position === 'top' ? 'calc(100% + 15px)' : '50%',

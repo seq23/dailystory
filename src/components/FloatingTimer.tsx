@@ -212,7 +212,7 @@ export const FloatingTimer = ({
             </svg>
             
             {/* Time Display */}
-            <div className="relative z-10 text-center">
+            <div id="timer-display" className="relative z-10 text-center">
               <div 
                 className="text-lg sm:text-2xl font-bold tracking-tight" 
                 style={{ color: getTimerColor() }}
