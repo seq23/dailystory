@@ -1,5 +1,6 @@
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { cleanChildrensTextForSpeech } from "@/utils/contextualPronunciation";
 
 export interface TextToSpeechConfig {
   voice?: string;
@@ -18,8 +19,8 @@ export class OpenAITTSService {
   }
 
   async speakText(text: string, options?: { speed?: number }): Promise<void> {
-    // Clean the text for speech
-    const cleanText = text.replace(/[.,!?;:'"()]/g, '').trim();
+    // Clean the text for speech with context-aware pronunciation
+    const cleanText = cleanChildrensTextForSpeech(text);
     
     if (!cleanText) return;
 
@@ -247,14 +248,20 @@ export class OpenAITTSService {
     }
   }
 
-  // Method to pronounce just the word
-  async pronounceWord(word: string): Promise<void> {
-    const cleanWord = word.replace(/[.,!?;:'"()]/g, '').trim();
+  // Method to pronounce just the word with context awareness
+  async pronounceWord(word: string, context?: string): Promise<void> {
+    // If we have context, use it for better pronunciation
+    const textToProcess = context ? `${context} ${word}` : word;
+    const cleanText = cleanChildrensTextForSpeech(textToProcess);
     
-    if (!cleanWord) return;
+    // Extract just the word part after contextual processing
+    const words = cleanText.split(' ');
+    const processedWord = words[words.length - 1] || word;
+    
+    if (!processedWord) return;
 
     try {
-      await this.speakText(cleanWord);
+      await this.speakText(processedWord);
     } catch (error) {
       console.error('Error pronouncing word:', error);
     }

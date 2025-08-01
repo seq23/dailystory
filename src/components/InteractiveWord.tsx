@@ -8,6 +8,7 @@ import type { UserInfo } from "@/types";
 
 interface InteractiveWordProps {
   word: string;
+  context?: string; // Add context for better pronunciation
   className?: string;
   difficulty?: "easy" | "medium" | "hard" | "expert";
   userInfo?: UserInfo; // New prop to adapt behavior
@@ -16,6 +17,7 @@ interface InteractiveWordProps {
 
 export const InteractiveWord = ({ 
   word, 
+  context,
   className = "", 
   difficulty = "easy",
   userInfo,
@@ -146,9 +148,14 @@ export const InteractiveWord = ({
     setIsPlaying(true);
     try {
       if (ttsService) {
-        // ElevenLabs TTS service only accepts speed parameter
-        const speed = isESLLearner ? 0.6 : 0.7;
-        await ttsService.speakText(word, { speed });
+        // Use context-aware pronunciation if available
+        if (context && ttsService.pronounceWord) {
+          await ttsService.pronounceWord(word, context);
+        } else {
+          // Fallback to regular speakText with speed parameter
+          const speed = isESLLearner ? 0.6 : 0.7;
+          await ttsService.speakText(word, { speed });
+        }
       } else {
         // Fallback to browser speech synthesis
         if ('speechSynthesis' in window) {
