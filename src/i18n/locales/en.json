@@ -320,6 +320,10 @@
       "title": "🎯 Reading Level",
       "description": "Make the story easier or harder instantly! Up arrow makes it harder, down arrow makes it easier to match your reading level."
     },
+    "step": "Tutorial",
+    "of": "of 5"
+  },
+  "readingTutorial": {
     "step1": {
       "title": "Welcome to Time2Read!",
       "description": "Let's take a quick tour to help you create amazing personalized stories for your child."
