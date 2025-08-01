@@ -76,9 +76,13 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
   
   // Avatar mapping for consistent display across all users
   const getAvatarImage = (avatar: any) => {
-    if (!avatar) return avatarBoyMedium; // Default fallback
+    if (!avatar || !avatar.type || !avatar.skinTone) {
+      return avatarBoyMedium; // Default fallback
+    }
     
     const { type, skinTone } = avatar;
+    
+    // Handle all avatar types including "prefer-not-to-answer"
     const avatarMap = {
       boy: {
         pale: avatarBoyPale,
@@ -93,13 +97,20 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
         medium: avatarGirlMedium,
         olive: avatarGirlOlive,
         dark: avatarGirlDark
+      },
+      "prefer-not-to-answer": {
+        pale: avatarBoyMedium,
+        light: avatarBoyMedium,
+        medium: avatarBoyMedium,
+        olive: avatarBoyMedium,
+        dark: avatarBoyMedium
       }
     };
     
     return avatarMap[type as keyof typeof avatarMap]?.[skinTone as keyof typeof avatarMap.boy] || avatarBoyMedium;
   };
   
-  const userAvatarImage = getAvatarImage(userInfo.avatar);
+  const userAvatarImage = getAvatarImage(userInfo?.avatar);
   
   // Difficulty level mappings - 4 levels but only 2 buttons
   const difficultyLevels = ['easy', 'medium', 'hard', 'expert'] as const;
