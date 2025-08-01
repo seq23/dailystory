@@ -222,6 +222,18 @@ export class UnifiedImageService {
       }
     }
     
+    // COLOR + OBJECT DETECTION (for objects like "blue basketball", "red ball", etc.)
+    const objectWords = ['ball', 'basketball', 'book', 'flower', 'tree', 'toy', 'gift', 'hat', 'car', 'bike', 'balloon', 'apple', 'cookie', 'cup', 'box', 'bag'];
+    
+    for (const color of colorWords) {
+      for (const object of objectWords) {
+        const pattern = new RegExp(`${color}.*${object}|${object}.*${color}`, 'i');
+        if (pattern.test(storyText)) {
+          return `playing with a ${color} ${object}`;
+        }
+      }
+    }
+    
     // Fallback to detected action or default
     if (storyContext.mainAction) {
       return storyContext.mainAction;
@@ -251,13 +263,24 @@ export class UnifiedImageService {
     };
     const setting = Object.entries(settings).find(([key]) => text.includes(key))?.[1] || null;
     
-    // Detect objects mentioned in story
-    const objects = ['book', 'ball', 'flower', 'tree', 'toy', 'gift'];
+    // Detect objects mentioned in story - Enhanced list
+    const objects = ['book', 'ball', 'basketball', 'flower', 'tree', 'toy', 'gift', 'hat', 'car', 'bike', 'balloon', 'apple', 'cookie', 'cup', 'box', 'bag'];
     const detectedObjects = objects.filter(obj => text.includes(obj));
+    
+    // ENHANCED: Detect color+object combinations in story
+    const colorObjectCombinations = [];
+    const colorWords = ['red', 'blue', 'green', 'yellow', 'purple', 'pink', 'orange', 'black', 'white', 'brown', 'gray', 'silver', 'golden'];
+    for (const color of colorWords) {
+      for (const object of objects) {
+        const pattern = new RegExp(`${color}.*${object}|${object}.*${color}`, 'i');
+        if (pattern.test(text)) {
+          colorObjectCombinations.push({ color, object });
+        }
+      }
+    }
     
     // ENHANCED: Detect specific colors mentioned in the story text
     const mentionedColors = [];
-    const colorWords = ['red', 'blue', 'green', 'yellow', 'purple', 'pink', 'orange', 'black', 'white', 'brown', 'gray', 'silver', 'golden'];
     for (const color of colorWords) {
       if (text.includes(color)) {
         mentionedColors.push(color);
@@ -285,6 +308,7 @@ export class UnifiedImageService {
       mentionsFavoriteColor,
       mentionedColors, // NEW: Colors specifically mentioned in story
       mentionedAnimals, // NEW: Animals specifically mentioned in story
+      colorObjectCombinations, // NEW: Color+object combinations like "blue basketball"
       storyText: text // NEW: Keep original text for reference
     };
   }
@@ -323,8 +347,14 @@ export class UnifiedImageService {
   private static getOrganicUserElements(character: EstablishedCharacter, storyContext: any): string {
     const elements = [];
     
-    // PRIORITY 1: Use colors and animals specifically mentioned in the story text
-    if (storyContext.mentionedColors && storyContext.mentionedColors.length > 0) {
+    // PRIORITY 1: Use specific color+object combinations mentioned in the story
+    if (storyContext.colorObjectCombinations && storyContext.colorObjectCombinations.length > 0) {
+      const combo = storyContext.colorObjectCombinations[0];
+      elements.push(`${combo.color} ${combo.object} prominently featured in the scene`);
+    }
+    
+    // PRIORITY 2: Use colors and animals specifically mentioned in the story text
+    if (storyContext.mentionedColors && storyContext.mentionedColors.length > 0 && !elements.length) {
       elements.push(`${storyContext.mentionedColors[0]} colors prominently featured`);
     } else if (storyContext.mentionsFavoriteColor || Math.random() > 0.7) {
       // Fallback to user's favorite color
