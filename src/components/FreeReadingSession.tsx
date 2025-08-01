@@ -256,7 +256,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
               const characterConsistency = UnifiedImageService.establishCharacterConsistency(userInfo);
               console.log(`Starting progressive image generation with character consistency for ${characterConsistency.userName}`);
               
-              for (let i = 0; i < Math.min(pages.length, 10); i++) {
+              for (let i = 0; i < pages.length; i++) {
                 try {
                   console.log(`Generating image ${i + 1}/${pages.length} for ${characterConsistency.userName}...`);
                   
@@ -418,7 +418,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
 
         // IMMEDIATELY start progressive image generation for new content (NON-BLOCKING)
         const startProgressiveImageGeneration = async () => {
-          for (let i = 0; i < Math.min(pages.length, 10); i++) {
+          for (let i = 0; i < pages.length; i++) {
             try {
               console.log(`Generating image ${i + 1}/${pages.length} for ${establishedCharacter.userName} at ${getCurrentDifficulty()} difficulty...`);
               
