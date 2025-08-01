@@ -94,13 +94,20 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
       setValidationErrors(errors);
       setShowValidationErrors(true);
       
-      // Scroll to the first error or show toast
+      // Show clear toast notification
       toast({
-        title: "Please complete required fields",
-        description: "Some required information is missing. Please fill out all highlighted fields.",
+        title: "❗ Please fill in required information",
+        description: "Your child's first name is required to create a personalized story.",
         variant: "destructive",
-        duration: 5000,
+        duration: 6000,
       });
+      
+      // Scroll to the name field
+      const nameField = document.getElementById('name');
+      if (nameField) {
+        nameField.focus();
+        nameField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
       return;
     }
 
@@ -170,14 +177,13 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
   };
 
   const isFormComplete = () => {
-    return formData.name && 
+    return formData.name.trim() && 
            formData.age && 
            formData.grade && 
            formData.nativeLanguage &&
            formData.learningGoal &&
            formData.avatar.type &&
            formData.avatar.skinTone;
-    // favoriteColor, favoriteAnimal, hobbies, favoriteFood, and specialRequest are now optional
   };
 
   // Handle language change and update UI language
@@ -488,7 +494,11 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
               size="lg"
               onClick={handleSubmit}
               disabled={!isFormComplete()}
-              className="flex-1 sm:max-w-xs order-1 sm:order-2 bg-gradient-primary hover:scale-105 transition-all duration-200 text-lg py-6 rounded-xl shadow-glow disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+              className={`flex-1 sm:max-w-xs order-1 sm:order-2 transition-all duration-200 text-lg py-6 rounded-xl shadow-glow ${
+                isFormComplete() 
+                  ? 'bg-gradient-primary hover:scale-105' 
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60'
+              }`}
             >
               <Sparkles className="w-5 h-5 mr-2 animate-pulse" />
               {t("userInfoForm.buttons.createStory")}
