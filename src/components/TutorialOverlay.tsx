@@ -111,23 +111,7 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer }:
     }
   }, [currentStep, isVisible, tutorialSteps.length]);
 
-  useEffect(() => {
-    let autoAdvanceTimer: NodeJS.Timeout;
-    
-    if (isVisible && currentStep < tutorialSteps.length) {
-      // Auto-advance after 5 seconds for better comprehension
-      const delay = 5000;
-      autoAdvanceTimer = setTimeout(() => {
-        handleNext();
-      }, delay);
-    }
-
-    return () => {
-      if (autoAdvanceTimer) {
-        clearTimeout(autoAdvanceTimer);
-      }
-    };
-  }, [currentStep, isVisible]);
+  // REMOVED AUTO-ADVANCE - Users control progression manually
 
   const handleNext = () => {
     if (currentStep < tutorialSteps.length - 1) {
@@ -162,46 +146,52 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer }:
     const viewportHeight = window.innerHeight;
     const viewportWidth = window.innerWidth;
     
-    const tooltipWidth = 480; // Larger tooltips as requested
-    const tooltipHeight = 320;
-    const margin = 40;
+    const tooltipWidth = 400; // Smaller to avoid covering elements
+    const tooltipHeight = 280;
+    const margin = 50; // More margin to ensure clear separation
 
     let style: any = {};
 
+    // IMPROVED POSITIONING: Ensure tutorial never covers the target element
     switch (position) {
       case "bottom":
+        // Place well below the element
         style = {
-          top: `${Math.min(rect.bottom + 50, viewportHeight - tooltipHeight - margin)}px`,
+          top: `${Math.min(rect.bottom + 80, viewportHeight - tooltipHeight - margin)}px`,
           left: `${Math.max(margin, Math.min(rect.left + rect.width/2 - tooltipWidth/2, viewportWidth - tooltipWidth - margin))}px`,
           transform: "none"
         };
         break;
       case "top":
+        // Place well above the element
         style = {
-          top: `${Math.max(margin, rect.top - tooltipHeight - 50)}px`,
+          top: `${Math.max(margin, rect.top - tooltipHeight - 80)}px`,
           left: `${Math.max(margin, Math.min(rect.left + rect.width/2 - tooltipWidth/2, viewportWidth - tooltipWidth - margin))}px`,
           transform: "none"
         };
         break;
       case "right":
+        // Place well to the right
         style = {
           top: `${Math.max(margin, Math.min(rect.top + rect.height/2 - tooltipHeight/2, viewportHeight - tooltipHeight - margin))}px`,
-          left: `${Math.min(rect.right + 50, viewportWidth - tooltipWidth - margin)}px`,
+          left: `${Math.min(rect.right + 80, viewportWidth - tooltipWidth - margin)}px`,
           transform: "none"
         };
         break;
       case "left":
+        // Place well to the left  
         style = {
           top: `${Math.max(margin, Math.min(rect.top + rect.height/2 - tooltipHeight/2, viewportHeight - tooltipHeight - margin))}px`,
-          left: `${Math.max(margin, rect.left - tooltipWidth - 50)}px`,
+          left: `${Math.max(margin, rect.left - tooltipWidth - 80)}px`,
           transform: "none"
         };
         break;
       default:
+        // Safe fallback position
         style = {
-          top: "20%",
-          left: "50%",
-          transform: "translateX(-50%)"
+          top: "10%",
+          left: "10%",
+          transform: "none"
         };
     }
     
@@ -231,69 +221,65 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer }:
         }
       `}</style>
 
-      {/* Semi-transparent overlay */}
-      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 transition-opacity duration-500">
-        {/* Animated background elements */}
+      {/* Lighter overlay background */}
+      <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 transition-opacity duration-500">
+        {/* Subtle background elements */}
         <div className="absolute inset-0 overflow-hidden">
-          {[...Array(20)].map((_, i) => (
+          {[...Array(8)].map((_, i) => (
             <div
               key={i}
-              className="absolute w-3 h-3 bg-yellow-300/60 rounded-full animate-float opacity-80"
+              className="absolute w-2 h-2 bg-primary/30 rounded-full animate-float opacity-50"
               style={{
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
                 animationDelay: `${Math.random() * 4}s`,
-                animationDuration: `${4 + Math.random() * 3}s`
+                animationDuration: `${6 + Math.random() * 3}s`
               }}
             />
           ))}
         </div>
       </div>
 
-      {/* Large Tutorial Tooltip */}
+      {/* Clean Tutorial Tooltip */}
       <div 
-        className={`fixed z-50 transition-all duration-500 ${isAnimating ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}
+        className={`fixed z-50 transition-all duration-300 ${isAnimating ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
         style={tooltipStyle}
       >
-        <Card className="w-[480px] bg-white dark:bg-gray-900 shadow-2xl border-4 border-yellow-400/50 rounded-3xl overflow-hidden animate-bounce">
-          {/* Dramatic arrow pointing to target */}
+        <Card className="w-[400px] bg-white dark:bg-gray-900 shadow-xl border-2 border-primary/30 rounded-2xl overflow-hidden">
+          {/* Clean arrow pointing to target */}
           <div className="absolute -z-10">
             <div 
-              className="w-0 h-0 animate-pulse"
+              className="w-0 h-0"
               style={{
-                borderLeft: '24px solid transparent',
-                borderRight: '24px solid transparent', 
-                borderBottom: '36px solid #FFD700',
+                borderLeft: '16px solid transparent',
+                borderRight: '16px solid transparent', 
+                borderBottom: '24px solid hsl(var(--primary))',
                 position: 'absolute',
-                top: step.position === 'bottom' ? '-60px' : 
-                     step.position === 'top' ? 'calc(100% + 20px)' : '50%',
-                left: step.position === 'left' ? 'calc(100% + 20px)' : 
-                      step.position === 'right' ? '-60px' : '50%',
+                top: step.position === 'bottom' ? '-45px' : 
+                     step.position === 'top' ? 'calc(100% + 15px)' : '50%',
+                left: step.position === 'left' ? 'calc(100% + 15px)' : 
+                      step.position === 'right' ? '-45px' : '50%',
                 transform: step.position === 'top' ? 'rotate(180deg)' :
                           step.position === 'left' ? 'rotate(-90deg)' :
                           step.position === 'right' ? 'rotate(90deg)' : 'none',
                 transformOrigin: 'center',
-                filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.4))',
-                zIndex: -1
+                filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))'
               }}
             />
           </div>
 
           <CardContent className="p-0">
-            {/* Vibrant Header */}
-            <div className="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 text-white p-8 relative overflow-hidden">
-              <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer"></div>
-              
+            {/* Clean Header */}
+            <div className="bg-gradient-primary text-white p-6 relative overflow-hidden">
               <div className="relative z-10 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-white/30 rounded-full animate-bounce">
-                    <step.icon className="w-8 h-8" />
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-white/20 rounded-full">
+                    <step.icon className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-2xl mb-1">{step.title}</h3>
-                    <div className="text-sm opacity-90 font-medium">
-                      Tutorial Step {currentStep + 1} of {tutorialSteps.length}
+                    <h3 className="font-bold text-lg">{step.title}</h3>
+                    <div className="text-sm opacity-90">
+                      Step {currentStep + 1} of {tutorialSteps.length}
                     </div>
                   </div>
                 </div>
@@ -308,66 +294,66 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer }:
                   }}
                   className="text-white hover:bg-white/20 p-2 rounded-full"
                 >
-                  <X className="w-6 h-6" />
+                  <X className="w-5 h-5" />
                 </Button>
               </div>
             </div>
 
-            {/* Large Content Area */}
-            <div className="p-8">
-              <p className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed mb-8 font-medium">
+            {/* Content */}
+            <div className="p-6">
+              <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed mb-6">
                 {step.description}
               </p>
 
-              {/* Prominent Progress Bar */}
-              <div className="mb-8">
-                <div className="flex justify-between text-sm text-muted-foreground mb-3">
-                  <span className="font-semibold">Tutorial Progress</span>
-                  <span className="font-bold text-lg">{Math.round(((currentStep + 1) / tutorialSteps.length) * 100)}%</span>
+              {/* Progress Bar */}
+              <div className="mb-6">
+                <div className="flex justify-between text-sm text-muted-foreground mb-2">
+                  <span>Tutorial Progress</span>
+                  <span>{Math.round(((currentStep + 1) / tutorialSteps.length) * 100)}%</span>
                 </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4 shadow-inner">
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                   <div 
-                    className="bg-gradient-to-r from-yellow-400 to-orange-500 h-4 rounded-full transition-all duration-700 ease-out shadow-lg"
+                    className="bg-gradient-primary h-2 rounded-full transition-all duration-500 ease-out"
                     style={{ width: `${((currentStep + 1) / tutorialSteps.length) * 100}%` }}
                   />
                 </div>
               </div>
 
-              {/* Large Navigation Buttons */}
+              {/* Navigation Buttons */}
               <div className="flex justify-between items-center">
                 <Button
                   variant="outline"
-                  size="lg"
+                  size="default"
                   onClick={handlePrevious}
                   disabled={currentStep === 0}
-                  className="flex items-center gap-2 px-6 py-3 text-lg font-semibold border-2 hover:scale-105 transition-transform"
+                  className="flex items-center gap-2"
                 >
-                  <ChevronLeft className="w-5 h-5" />
+                  <ChevronLeft className="w-4 h-4" />
                   Previous
                 </Button>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                   <Button
                     variant="ghost"
-                    size="lg"
+                    size="default"
                     onClick={() => {
                       onSkip();
                       if (onStartTimer) {
                         onStartTimer();
                       }
                     }}
-                    className="text-muted-foreground hover:text-red-600 px-6 py-3 text-lg"
+                    className="text-muted-foreground"
                   >
                     Skip Tutorial
                   </Button>
                   <Button
                     variant="default"
-                    size="lg"
+                    size="default"
                     onClick={handleNext}
-                    className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white shadow-lg hover:scale-105 transition-all flex items-center gap-2 px-8 py-3 text-lg font-bold"
+                    className="bg-gradient-primary hover:opacity-90 flex items-center gap-2"
                   >
-                    {currentStep === tutorialSteps.length - 1 ? '🚀 Start Reading!' : 'Next Step'}
-                    <ChevronRight className="w-5 h-5" />
+                    {currentStep === tutorialSteps.length - 1 ? 'Start Reading!' : 'Next'}
+                    <ChevronRight className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
