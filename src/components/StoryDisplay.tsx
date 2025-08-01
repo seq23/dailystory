@@ -783,16 +783,19 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
         <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 flex-1 flex flex-col">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 max-w-6xl mx-auto flex-1 overflow-hidden">
             
-            {/* Story Illustration - Optimized for Perfect Fitting */}
+            {/* Story Illustration - Optimized for No Cutoff, Perfect Aspect Ratio */}
             <div className="order-2 lg:order-1 flex flex-col">
               <Card className="flex-1 min-h-[400px] lg:min-h-[500px]">
                 <CardContent className="p-4 h-full flex items-center justify-center">
-                  <div className="w-full h-full flex items-center justify-center bg-gray-50 rounded-lg overflow-hidden">
+                  <div className="relative w-full max-w-md mx-auto aspect-square bg-gray-50 rounded-lg overflow-hidden shadow-sm">
                     <img 
                       src={currentIllustration}
                       alt={`Story illustration for page ${currentPage + 1}`}
-                      className="max-w-full max-h-full object-contain rounded-lg shadow-sm"
-                      style={{ aspectRatio: '4/3' }}
+                      className="absolute inset-0 w-full h-full object-cover rounded-lg"
+                      onError={(e) => {
+                        console.warn(`Failed to load image for page ${currentPage + 1}, using fallback`);
+                        (e.target as HTMLImageElement).src = illustrations[currentPage % illustrations.length];
+                      }}
                     />
                   </div>
                 </CardContent>
@@ -853,17 +856,21 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                   </div>
                 </div>
 
-                {/* Scrollable Story Content */}
+                {/* Scrollable Story Content with Educational Standards */}
                 <div className="flex-1 overflow-y-auto p-6">
                   <div className="flex items-center justify-center min-h-full">
                     <div className="text-center w-full">
-                      {/* Story Text with Reading Level Configuration and Overflow Protection */}
+                      {/* Story Text with Educational Reading Standards */}
                       {(() => {
                         const config = EarlyReaderStoryGenerator.getReadingConfigForDifficulty(currentDifficulty);
                         return (
                           <div className={`${config.fontSize} ${config.lineHeight} ${config.spacing} font-medium text-gray-800 max-w-full break-words hyphens-auto leading-relaxed overflow-hidden`}>
                             <div className="max-h-[400px] overflow-y-auto px-2">
-                              {currentStory}
+                              <InteractiveAudioReading 
+                                text={story[currentPage] || ""} 
+                                userInfo={userInfo}
+                                isEnabled={true}
+                              />
                             </div>
                           </div>
                         );
@@ -874,11 +881,14 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
 
                 {/* Audio Controls Section */}
                 <div className="flex-shrink-0 p-6 border-t border-gray-100 audio-controls">
-                  <InteractiveAudioReading 
-                    text={currentStory}
-                    userInfo={userInfo}
-                    isEnabled={true}
-                  />
+                  <div className="text-center">
+                    <div className="text-sm text-gray-600 mb-2">
+                      📖 Level: {EarlyReaderStoryGenerator.getReadingConfigForDifficulty(currentDifficulty).name}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      Max {EarlyReaderStoryGenerator.getReadingConfigForDifficulty(currentDifficulty).maxWordsPerPage} words per page
+                    </div>
+                  </div>
                 </div>
 
                 {/* Fixed Navigation Footer */}
