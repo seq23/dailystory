@@ -393,6 +393,16 @@
       "description": "Use 'New Story' to create a different adventure, or 'Home' to return to the main page. Previous/Next buttons move between story pages!"
     }
   },
+  "storyDisplay": {
+    "tooltips": {
+      "audioButton": "Listen to this page read aloud (once per page)",
+      "microphoneButton": "Record yourself reading (Premium Feature)",
+      "makeEasier": "🌟 Make reading easier & more enjoyable!",
+      "makeHarder": "🚀 Level up your reading challenge!", 
+      "addPages": "Add 5 pages",
+      "removePages": "Remove page"
+    }
+  },
   "sessionEnded": {
     "completed": "Reading Session Completed!",
     "premiumCompleted": "Premium Session Completed!",
