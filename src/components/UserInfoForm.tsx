@@ -259,7 +259,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
 
               <div className="space-y-2">
                 <Label htmlFor="age" className="text-base md:text-lg font-semibold text-foreground">
-                  {t("userInfoForm.fields.age.label")} <span className="text-red-500">*</span>
+                  {t("userInfoForm.fields.age.label")}
                 </Label>
                 <Select value={formData.age.toString()} onValueChange={(value) => handleInputChange("age", parseInt(value))}>
                   <SelectTrigger className={`text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 touch-target ${
