@@ -441,5 +441,33 @@
     "comprehensionDescription": "阅读故事并回答问题以测试理解能力。",
     "phonicsChallenge": "语音练习",
     "phonicsDescription": "练习发音和语音模式。"
+  },
+  "tutorial": {
+    "timer": {
+      "title": "⏰ 阅读计时器",
+      "description": "这显示您的阅读时间！点击播放按钮开始/暂停计时器。如需要可使用减号按钮减少时间。"
+    },
+    "navigation": {
+      "title": "📖 页面导航",
+      "description": "使用上一页和下一页按钮在故事页面之间移动。页面计数器显示您当前位置。"
+    },
+    "audio": {
+      "title": "🎵 音频阅读",
+      "description": "点击听故事朗读！非常适合跟读和学习发音。"
+    },
+    "addPages": {
+      "title": "➕ 添加更多页面",
+      "description": "想要继续冒险吗？点击此按钮为您的故事添加5页！"
+    },
+    "difficulty": {
+      "title": "🎯 阅读水平",
+      "description": "即时调整故事难易程度！向上箭头使其更难，向下箭头使其更容易匹配您的阅读水平。"
+    },
+    "step": "教程",
+    "of": "的",
+    "previous": "上一步",
+    "next": "下一步",
+    "skip": "跳过教程",
+    "startReading": "开始阅读！"
   }
 }

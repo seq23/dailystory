@@ -259,9 +259,13 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
     const viewportHeight = window.innerHeight;
     const viewportWidth = window.innerWidth;
     
-    const tooltipWidth = 400;
-    const tooltipHeight = 280;
-    const margin = 50;
+    // Responsive tooltip sizing
+    const isMobile = viewportWidth < 768;
+    const isTablet = viewportWidth >= 768 && viewportWidth < 1024;
+    
+    const tooltipWidth = isMobile ? Math.min(350, viewportWidth - 40) : isTablet ? 380 : 400;
+    const tooltipHeight = isMobile ? 320 : 280;
+    const margin = isMobile ? 20 : isTablet ? 30 : 50;
 
     // SPECIAL HANDLING FOR TIMER STEP - Avoid floating timer area
     if (target === "timer-display") {
@@ -374,7 +378,7 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
         className={`fixed z-50 transition-all duration-300 ${isAnimating ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
         style={tooltipStyle}
       >
-        <Card className="w-[400px] bg-white dark:bg-gray-900 shadow-xl border-2 border-primary/30 rounded-2xl overflow-hidden">
+        <Card className="w-full max-w-[400px] md:w-[400px] bg-white dark:bg-gray-900 shadow-xl border-2 border-primary/30 rounded-2xl overflow-hidden">
           {/* Clean arrow pointing to target */}
           <div className="absolute -z-10">
             <div 
