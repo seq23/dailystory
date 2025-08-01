@@ -10,15 +10,15 @@ interface ReadingConfig {
 
 export class EarlyReaderStoryGenerator {
   
-  // Configure reading experience by difficulty level (1 minute reading per page)
+  // Configure reading experience by difficulty level (targeting ~1 minute reading per page)
   // Average reading speeds: PreK-1st: 15-25 WPM, 2nd-3rd: 80-100 WPM, 4th-5th: 120-160 WPM, 6th-12th: 200-250 WPM
-  // Word counts designed for exactly 1 minute of reading per page
+  // HARD RULE: Easy level capped at 6 words maximum per page for early readers
   // Text sizes: BIGGEST for easiest levels, SMALLER as difficulty increases
   private static getReadingConfig(difficulty: DifficultyLevel): ReadingConfig {
     switch (difficulty) {
       case 'easy': // PreK-1st grade (Julia Donaldson, Mo Willems, Dr. Seuss, Kevin Henkes style)
         return {
-          maxWordsPerPage: 20, // ~1 min at 20 WPM for early readers
+          maxWordsPerPage: 6, // HARD RULE: Maximum 6 words per page for early readers
           fontSize: 'text-6xl md:text-7xl lg:text-8xl', // BIGGEST text for early readers
           lineHeight: 'leading-loose', // Extra spacing for readability
           spacing: 'space-y-10' // Maximum spacing between elements
