@@ -215,13 +215,31 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
         console.log('Story config:', storyConfig);
 
         if (!isCancelled) {
-          // Generate story content using the new generator
+          // Generate story content using educational reading standards
           const { pages, config } = EarlyReaderStoryGenerator.generateStory(
             userInfo, 
             currentDifficulty as 'easy' | 'medium' | 'hard' | 'expert', 
             10
           );
-          const generatedStory = { pages, config, images: [], wordCount: pages.join(' ').split(' ').length, title: `${userInfo.name}'s Adventure`, theme: 'adventure', readingLevel: currentDifficulty };
+          
+          // Ensure all pages meet educational word count standards
+          const validatedPages = pages.map(page => {
+            const words = page.split(/\s+/).filter(word => word.length > 0);
+            if (words.length > config.maxWordsPerPage) {
+              return words.slice(0, config.maxWordsPerPage).join(' ') + '.';
+            }
+            return page;
+          });
+          
+          const generatedStory = { 
+            pages: validatedPages, 
+            config, 
+            images: [], 
+            wordCount: validatedPages.join(' ').split(' ').length, 
+            title: `${userInfo.name}'s Adventure`, 
+            theme: 'adventure', 
+            readingLevel: currentDifficulty 
+          };
           setStoryImages(generatedStory.images || []);
           
           if (!isCancelled) {
@@ -1003,25 +1021,34 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                       </div>
                     </div>
 
-                    {/* Scrollable Story Content */}
+                    {/* Scrollable Story Content with Educational Standards */}
                     <div id="story-content" className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6">
                       <div className="flex items-center justify-center min-h-full">
                         <div className="text-center w-full">
-                          {/* Apply reading level configuration with proper responsive design */}
-                          {(() => {
-                            const config = EarlyReaderStoryGenerator.getReadingConfigForDifficulty(currentDifficulty);
-                            return (
-                              <div className={`${config.fontSize} ${config.lineHeight} ${config.spacing} font-medium text-gray-800 max-w-full break-words hyphens-auto leading-relaxed`}>
-                                {processTextForPhonetics(
-                                  currentStory, 
-                                  "", 
-                                  currentDifficulty as "easy" | "medium" | "hard" | "expert",
-                                  userInfo,
-                                  false // Free users are not premium
-                                )}
-                              </div>
-                            );
-                          })()}
+                          {/* Story Text with Educational Reading Standards */}
+                          <div className={`
+                            story-text max-h-[400px] overflow-y-auto p-4 text-left
+                            ${(() => {
+                              const config = EarlyReaderStoryGenerator.getReadingConfigForDifficulty(currentDifficulty);
+                              return `${config.fontSize} ${config.lineHeight} ${config.spacing}`;
+                            })()}
+                          `}>
+                            <InteractiveAudioReading 
+                              text={currentStory}
+                              userInfo={userInfo}
+                              isEnabled={true}
+                            />
+                          </div>
+                          
+                          {/* Educational Info Display */}
+                          <div className="mt-4 text-center">
+                            <div className="text-sm text-gray-600">
+                              📖 {EarlyReaderStoryGenerator.getReadingConfigForDifficulty(currentDifficulty).name}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              Max {EarlyReaderStoryGenerator.getReadingConfigForDifficulty(currentDifficulty).maxWordsPerPage} words per page
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>

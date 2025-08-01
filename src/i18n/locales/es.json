@@ -341,5 +341,11 @@
     "skip": "Saltar Tutorial",
     "next": "Siguiente",
     "startReading": "¡Comenzar a Leer!"
+  },
+  "floatingTimer": {
+    "startTimer": "Iniciar Temporizador de Lectura",
+    "pauseTimer": "Pausar Temporizador de Lectura", 
+    "reduceTime": "Reducir Tiempo por 5 Minutos",
+    "endSession": "Finalizar Sesión de Lectura",
+    "maxLimit": "Tiempo Máximo"
   }
-}
