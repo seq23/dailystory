@@ -139,6 +139,12 @@ export class UnifiedImageService {
     const sceneDescription = this.buildIntelligentScene(storyText, storyContext, character);
     prompt += `${sceneDescription} `;
     
+    // CRITICAL: Emphasize any specific colors mentioned in the story text for accuracy
+    const criticalColors = this.extractCriticalColorDetails(storyText);
+    if (criticalColors) {
+      prompt += `IMPORTANT: ${criticalColors}. `;
+    }
+    
     // Setting context
     if (storyContext.setting) {
       prompt += `in ${storyContext.setting} `;
@@ -613,5 +619,46 @@ export class UnifiedImageService {
       prompt: `Smart fallback: ${intelligentScene} - ${storyText.slice(0, 50)}...`,
       pageIndex: pageIndex
     };
+  }
+  /**
+   * Extract critical color details from story text for emphasis in image generation
+   */
+  private static extractCriticalColorDetails(storyText: string): string | null {
+    const text = storyText.toLowerCase();
+    
+    // Define important color+animal combinations that need emphasis
+    const criticalCombinations = [
+      { pattern: /blue\s+cat|cat.*blue/i, emphasis: "The cat must be clearly blue in color, not orange or brown" },
+      { pattern: /red\s+bird|bird.*red/i, emphasis: "The bird must be clearly red in color" },
+      { pattern: /green\s+frog|frog.*green/i, emphasis: "The frog must be clearly green in color" },
+      { pattern: /purple\s+lion|lion.*purple/i, emphasis: "The lion must be clearly purple in color" },
+      { pattern: /pink\s+elephant|elephant.*pink/i, emphasis: "The elephant must be clearly pink in color" },
+      { pattern: /yellow\s+dog|dog.*yellow/i, emphasis: "The dog must be clearly yellow in color" },
+      { pattern: /orange\s+tiger|tiger.*orange/i, emphasis: "The tiger must be clearly orange in color" },
+      { pattern: /white\s+rabbit|rabbit.*white/i, emphasis: "The rabbit must be clearly white in color" },
+      { pattern: /black\s+horse|horse.*black/i, emphasis: "The horse must be clearly black in color" }
+    ];
+    
+    // Check for critical color combinations
+    for (const combo of criticalCombinations) {
+      if (combo.pattern.test(text)) {
+        return combo.emphasis;
+      }
+    }
+    
+    // Check for any color + animal combination that needs emphasis
+    const colorWords = ['red', 'blue', 'green', 'yellow', 'purple', 'pink', 'orange', 'black', 'white', 'brown', 'gray', 'silver', 'golden'];
+    const animalWords = ['cat', 'dog', 'lion', 'tiger', 'elephant', 'bird', 'frog', 'butterfly', 'wolf', 'bear', 'rabbit', 'horse', 'fish', 'turtle'];
+    
+    for (const color of colorWords) {
+      for (const animal of animalWords) {
+        const pattern = new RegExp(`${color}\\s+${animal}|${animal}.*${color}`, 'i');
+        if (pattern.test(text)) {
+          return `The ${animal} must be clearly ${color} in color, this is critical for story accuracy`;
+        }
+      }
+    }
+    
+    return null;
   }
 }
