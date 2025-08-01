@@ -385,9 +385,6 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="avatar" className="text-base md:text-lg font-semibold text-foreground">
-                  {t("userInfoForm.fields.avatar.label")}
-                </Label>
                 <AvatarPicker
                   value={formData.avatar}
                   onChange={(avatar) => setFormData(prev => ({ ...prev, avatar }))}
