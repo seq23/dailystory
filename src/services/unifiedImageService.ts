@@ -167,6 +167,20 @@ export class UnifiedImageService {
     
     // INTELLIGENT INTERACTION DETECTION - Enhanced for better story matching
     const interactions = [
+      // Social interactions with friends/people
+      { pattern: /shares?.*pizza.*with.*friends?/i, description: `sharing pizza with friends in a group setting` },
+      { pattern: /shares?.*with.*friends?/i, description: `sharing something with friends` },
+      { pattern: /play.*with.*friends?/i, description: `playing with friends` },
+      { pattern: /eat.*with.*friends?/i, description: `eating together with friends` },
+      { pattern: /friends?/i, description: `with friends in a social setting` },
+      
+      // Food-related interactions
+      { pattern: /eat.*pizza/i, description: `enjoying pizza` },
+      { pattern: /shares?.*pizza/i, description: `sharing pizza` },
+      { pattern: /eat.*cookie/i, description: `eating a cookie` },
+      { pattern: /eat.*apple/i, description: `eating an apple` },
+      { pattern: /drink/i, description: `drinking something refreshing` },
+      
       // Movement and action-focused interactions
       { pattern: /run.*to.*house/i, description: `running toward a house` },
       { pattern: /run.*to/i, description: `running toward something` },
@@ -281,8 +295,8 @@ export class UnifiedImageService {
     };
     const setting = Object.entries(settings).find(([key]) => text.includes(key))?.[1] || null;
     
-    // Detect objects mentioned in story - Enhanced list
-    const objects = ['book', 'ball', 'basketball', 'flower', 'tree', 'toy', 'gift', 'hat', 'car', 'bike', 'balloon', 'apple', 'cookie', 'cup', 'box', 'bag', 'house', 'door', 'window', 'building'];
+    // Detect objects mentioned in story - Enhanced list including food items
+    const objects = ['book', 'ball', 'basketball', 'flower', 'tree', 'toy', 'gift', 'hat', 'car', 'bike', 'balloon', 'apple', 'cookie', 'cup', 'box', 'bag', 'house', 'door', 'window', 'building', 'pizza', 'cake', 'sandwich', 'juice'];
     const detectedObjects = objects.filter(obj => text.includes(obj));
     
     // ENHANCED: Detect color+object combinations in story (including houses, buildings)
