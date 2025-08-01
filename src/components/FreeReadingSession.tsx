@@ -707,9 +707,9 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
           />
         )}
 
-      {/* Free Trial Badge - Repositioned to bottom left */}
+      {/* Free Trial Badge - Moved to bottom right to avoid timer overlap */}
       {!sessionEnded && (
-        <div className="fixed bottom-6 left-6 z-40">
+        <div className="fixed bottom-6 right-6 z-40">
           <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-4 py-2 rounded-full shadow-xl border-2 border-white">
             <div className="flex items-center gap-2 animate-bounce">
               <Sparkles className="w-4 h-4" />
