@@ -36,10 +36,10 @@ serve(async (req) => {
         text: text.slice(0, 1000), // Limit text length
         model_id: model || 'eleven_multilingual_v2',
         voice_settings: {
-          stability: 0.8, // Higher stability for more deliberate speech
-          similarity_boost: 0.9, // Keep voice consistent
-          style: 0.1, // Lower style for more controlled, slower delivery
-          use_speaker_boost: false // Disable for clearer, slower speech
+          stability: 0.95, // Very high stability for slowest, most deliberate speech
+          similarity_boost: 0.95, // Keep voice very consistent
+          style: 0.05, // Minimal style for most controlled delivery
+          use_speaker_boost: false // Disable for clearest, slowest speech
         }
       }),
     });
