@@ -494,7 +494,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
               {t("userInfoForm.buttons.backToHome")}
             </Button>
             <TooltipProvider>
-              <Tooltip open={!isFormComplete() ? undefined : false}>
+              <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
                     id="create-story-button"
@@ -507,6 +507,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                         ? 'bg-gradient-primary hover:scale-105' 
                         : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60'
                     }`}
+                    onMouseEnter={() => console.log("Button hovered, form complete:", isFormComplete())}
                   >
                     <Sparkles className="w-5 h-5 mr-2 animate-pulse" />
                     {t("userInfoForm.buttons.createStory")}
@@ -514,7 +515,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                   </Button>
                 </TooltipTrigger>
                 {!isFormComplete() && (
-                  <TooltipContent side="top" className="bg-gray-800 text-white px-3 py-2 rounded-lg text-sm">
+                  <TooltipContent side="top" className="bg-gray-800 text-white px-3 py-2 rounded-lg text-sm z-50">
                     {t("userInfoForm.tooltips.nameRequired", "Please enter your child's name first")}
                   </TooltipContent>
                 )}
