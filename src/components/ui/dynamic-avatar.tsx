@@ -40,12 +40,12 @@ const avatarImages = {
   },
 }
 
-const hairColorFilters = {
-  blonde: "sepia(1) saturate(2) hue-rotate(35deg) brightness(1.3)",
-  brown: "sepia(1) saturate(0.8) hue-rotate(15deg) brightness(0.9)",
-  black: "sepia(1) saturate(0) brightness(0.3)",
-  red: "sepia(1) saturate(2) hue-rotate(320deg) brightness(1.1)",
-  gray: "sepia(1) saturate(0) brightness(0.7)"
+const hairColors = {
+  blonde: "#f4e1a6",
+  brown: "#8b4513", 
+  black: "#2c2c2c",
+  red: "#cc6600",
+  gray: "#999999"
 }
 
 export const DynamicAvatar: React.FC<DynamicAvatarProps> = ({
@@ -63,6 +63,47 @@ export const DynamicAvatar: React.FC<DynamicAvatarProps> = ({
   
   if (!baseAvatar) return null
 
+  const hairHex = hairColors[hairColor]
+  
+  // Create hair mask based on avatar type
+  const getHairMask = () => {
+    if (displayType === 'girl') {
+      switch (hairStyle) {
+        case 'short':
+          return "polygon(15% 20%, 85% 20%, 80% 45%, 20% 45%)"
+        case 'long':
+          return "polygon(10% 15%, 90% 15%, 95% 80%, 5% 80%)"
+        case 'braids':
+          return "polygon(15% 20%, 85% 20%, 80% 45%, 20% 45%), polygon(5% 40%, 15% 40%, 12% 70%, 8% 70%), polygon(85% 40%, 95% 40%, 92% 70%, 88% 70%)"
+        case 'dreadlocks':
+          return "polygon(15% 20%, 85% 20%, 80% 45%, 20% 45%)"
+        case 'curly':
+          return "polygon(10% 18%, 90% 18%, 88% 50%, 12% 50%)"
+        case 'straight':
+          return "polygon(12% 15%, 88% 15%, 90% 60%, 10% 60%)"
+        default:
+          return "polygon(15% 20%, 85% 20%, 80% 45%, 20% 45%)"
+      }
+    } else {
+      switch (hairStyle) {
+        case 'short':
+          return "polygon(20% 25%, 80% 25%, 75% 40%, 25% 40%)"
+        case 'long':
+          return "polygon(15% 20%, 85% 20%, 90% 65%, 10% 65%)"
+        case 'braids':
+          return "polygon(20% 25%, 80% 25%, 75% 40%, 25% 40%), polygon(8% 35%, 18% 35%, 15% 65%, 11% 65%), polygon(82% 35%, 92% 35%, 89% 65%, 85% 65%)"
+        case 'dreadlocks':
+          return "polygon(20% 25%, 80% 25%, 75% 40%, 25% 40%)"
+        case 'curly':
+          return "polygon(18% 22%, 82% 22%, 80% 45%, 20% 45%)"
+        case 'straight':
+          return "polygon(18% 20%, 82% 20%, 85% 55%, 15% 55%)"
+        default:
+          return "polygon(20% 25%, 80% 25%, 75% 40%, 25% 40%)"
+      }
+    }
+  }
+
   return (
     <div className={`relative inline-block ${className}`} style={{ width: size, height: size }}>
       {/* Base avatar image */}
@@ -73,71 +114,120 @@ export const DynamicAvatar: React.FC<DynamicAvatarProps> = ({
         style={{ width: size, height: size }}
       />
       
-      {/* Hair color overlay */}
+      {/* Hair color replacement layer */}
       <div 
-        className="absolute inset-0 rounded-full mix-blend-multiply pointer-events-none"
+        className="absolute inset-0 rounded-full"
         style={{
-          background: `linear-gradient(to bottom, transparent 20%, ${hairColorFilters[hairColor] ? 'rgba(139, 69, 19, 0.3)' : 'transparent'} 60%, transparent 80%)`,
-          filter: hairColorFilters[hairColor],
-          opacity: 0.6
+          background: `linear-gradient(135deg, ${hairHex}, ${hairHex}dd)`,
+          clipPath: getHairMask(),
+          mixBlendMode: 'multiply',
         }}
       />
       
-      {/* Hair style overlay */}
+      {/* Hair highlights layer */}
+      <div 
+        className="absolute inset-0 rounded-full"
+        style={{
+          background: `linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%)`,
+          clipPath: getHairMask(),
+        }}
+      />
+      
+      {/* Hair texture based on style */}
       <svg 
         className="absolute inset-0 w-full h-full pointer-events-none" 
         viewBox="0 0 100 100"
         style={{ width: size, height: size }}
       >
-        {/* Hair style modifications */}
+        <defs>
+          <mask id="hairMask">
+            <rect width="100" height="100" fill="white" />
+            <g fill="black">
+              {getHairMask().includes('polygon') && (
+                <polygon points="15,20 85,20 80,45 20,45" />
+              )}
+            </g>
+          </mask>
+        </defs>
+        
+        {/* Hair style specific textures */}
         {hairStyle === 'braids' && (
-          <g fill="none" stroke="rgba(139, 69, 19, 0.4)" strokeWidth="2" strokeLinecap="round">
-            <path d="M15 40 Q20 45 15 50 Q20 55 15 60" />
-            <path d="M85 40 Q80 45 85 50 Q80 55 85 60" />
+          <g mask="url(#hairMask)" stroke={hairHex} strokeWidth="1.5" fill="none">
+            {/* Left braid */}
+            <path d="M12 40 Q15 45 12 50 Q15 55 12 60 Q15 65 12 70" strokeWidth="3" />
+            <path d="M10 42 L14 42 M10 52 L14 52 M10 62 L14 62" stroke="rgba(255,255,255,0.5)" />
+            {/* Right braid */}
+            <path d="M88 40 Q85 45 88 50 Q85 55 88 60 Q85 65 88 70" strokeWidth="3" />
+            <path d="M86 42 L90 42 M86 52 L90 52 M86 62 L90 62" stroke="rgba(255,255,255,0.5)" />
           </g>
         )}
         
         {hairStyle === 'dreadlocks' && (
-          <g fill="rgba(139, 69, 19, 0.3)">
-            <rect x="20" y="45" width="2" height="25" rx="1" />
-            <rect x="25" y="42" width="2" height="30" rx="1" />
-            <rect x="30" y="45" width="2" height="28" rx="1" />
-            <rect x="68" y="45" width="2" height="28" rx="1" />
-            <rect x="73" y="42" width="2" height="30" rx="1" />
-            <rect x="78" y="45" width="2" height="25" rx="1" />
+          <g mask="url(#hairMask)" fill={hairHex}>
+            {/* Individual dreads */}
+            <rect x="22" y="40" width="3" height="30" rx="1.5" opacity="0.9" />
+            <rect x="28" y="38" width="3" height="35" rx="1.5" opacity="0.8" />
+            <rect x="34" y="40" width="3" height="32" rx="1.5" opacity="0.9" />
+            <rect x="40" y="36" width="3" height="38" rx="1.5" opacity="0.7" />
+            <rect x="46" y="40" width="3" height="32" rx="1.5" opacity="0.9" />
+            <rect x="52" y="38" width="3" height="35" rx="1.5" opacity="0.8" />
+            <rect x="58" y="40" width="3" height="30" rx="1.5" opacity="0.9" />
+            <rect x="64" y="42" width="3" height="28" rx="1.5" opacity="0.8" />
+            <rect x="70" y="40" width="3" height="30" rx="1.5" opacity="0.9" />
+            
+            {/* Dread texture lines */}
+            <g stroke="rgba(0,0,0,0.2)" strokeWidth="0.5">
+              <line x1="22" y1="45" x2="25" y2="45" />
+              <line x1="22" y1="55" x2="25" y2="55" />
+              <line x1="28" y1="48" x2="31" y2="48" />
+              <line x1="28" y1="58" x2="31" y2="58" />
+              <line x1="34" y1="45" x2="37" y2="45" />
+              <line x1="34" y1="55" x2="37" y2="55" />
+              <line x1="46" y1="45" x2="49" y2="45" />
+              <line x1="46" y1="55" x2="49" y2="55" />
+              <line x1="58" y1="45" x2="61" y2="45" />
+              <line x1="58" y1="55" x2="61" y2="55" />
+              <line x1="70" y1="45" x2="73" y2="45" />
+              <line x1="70" y1="55" x2="73" y2="55" />
+            </g>
           </g>
         )}
         
         {hairStyle === 'curly' && (
-          <g fill="none" stroke="rgba(139, 69, 19, 0.3)" strokeWidth="1.5">
-            <circle cx="25" cy="35" r="3" opacity="0.5" />
-            <circle cx="35" cy="30" r="2.5" opacity="0.5" />
-            <circle cx="45" cy="28" r="3" opacity="0.5" />
-            <circle cx="55" cy="30" r="2.5" opacity="0.5" />
-            <circle cx="65" cy="35" r="3" opacity="0.5" />
-            <circle cx="75" cy="40" r="2" opacity="0.5" />
+          <g mask="url(#hairMask)" fill="none" stroke={hairHex} strokeWidth="2" opacity="0.6">
+            <circle cx="25" cy="30" r="3" />
+            <circle cx="35" cy="25" r="2.5" />
+            <circle cx="45" cy="27" r="3.5" />
+            <circle cx="55" cy="25" r="2.5" />
+            <circle cx="65" cy="30" r="3" />
+            <circle cx="75" cy="35" r="2" />
+            <circle cx="30" cy="38" r="2" />
+            <circle cx="50" cy="35" r="3" />
+            <circle cx="70" cy="40" r="2.5" />
           </g>
         )}
         
-        {hairStyle === 'long' && (
-          <g fill="none" stroke="rgba(139, 69, 19, 0.2)" strokeWidth="1">
-            <path d="M20 60 Q25 80 30 85" strokeLinecap="round" />
-            <path d="M30 65 Q35 85 40 90" strokeLinecap="round" />
-            <path d="M60 65 Q65 85 70 90" strokeLinecap="round" />
-            <path d="M70 60 Q75 80 80 85" strokeLinecap="round" />
-          </g>
-        )}
-        
-        {/* Freckles overlay */}
+        {/* Realistic freckles */}
         {hasFreckles && (
-          <g fill="#D2691E" opacity="0.6">
-            <circle cx="35" cy="55" r="0.8" />
-            <circle cx="42" cy="58" r="0.6" />
-            <circle cx="48" cy="54" r="0.7" />
-            <circle cx="52" cy="60" r="0.5" />
-            <circle cx="58" cy="56" r="0.8" />
-            <circle cx="45" cy="52" r="0.4" />
-            <circle cx="40" cy="62" r="0.6" />
+          <g>
+            {/* Varied freckle sizes and colors for realism */}
+            <circle cx="32" cy="55" r="1.2" fill="#D2691E" opacity="0.7" />
+            <circle cx="38" cy="58" r="0.8" fill="#CD853F" opacity="0.6" />
+            <circle cx="45" cy="54" r="1.0" fill="#DEB887" opacity="0.5" />
+            <circle cx="52" cy="60" r="0.9" fill="#D2691E" opacity="0.7" />
+            <circle cx="58" cy="56" r="1.1" fill="#CD853F" opacity="0.6" />
+            <circle cx="42" cy="52" r="0.7" fill="#DEB887" opacity="0.5" />
+            <circle cx="48" cy="62" r="0.8" fill="#D2691E" opacity="0.6" />
+            <circle cx="35" cy="52" r="0.6" fill="#CD853F" opacity="0.5" />
+            <circle cx="55" cy="58" r="0.9" fill="#DEB887" opacity="0.6" />
+            <circle cx="40" cy="65" r="1.0" fill="#D2691E" opacity="0.7" />
+            <circle cx="50" cy="67" r="0.7" fill="#CD853F" opacity="0.5" />
+            
+            {/* Additional scattered freckles */}
+            <circle cx="29" cy="60" r="0.5" fill="#DEB887" opacity="0.4" />
+            <circle cx="61" cy="62" r="0.6" fill="#D2691E" opacity="0.5" />
+            <circle cx="44" cy="69" r="0.5" fill="#CD853F" opacity="0.4" />
+            <circle cx="37" cy="49" r="0.4" fill="#DEB887" opacity="0.4" />
           </g>
         )}
       </svg>
