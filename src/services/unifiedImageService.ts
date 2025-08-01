@@ -189,17 +189,36 @@ export class UnifiedImageService {
       }
     }
     
-    // COLOR-SPECIFIC INTERACTIONS (for your blue cat example)
+    // COLOR-SPECIFIC INTERACTIONS - Enhanced to detect any color + animal combination
     const colorAnimals = [
+      { pattern: /purple.*lion/i, description: `meeting a magical purple lion` },
       { pattern: /blue.*cat/i, description: `meeting a magical blue cat` },
       { pattern: /red.*bird/i, description: `meeting a beautiful red bird` },
       { pattern: /green.*frog/i, description: `meeting a friendly green frog` },
-      { pattern: /purple.*butterfly/i, description: `meeting a purple butterfly` }
+      { pattern: /purple.*butterfly/i, description: `meeting a purple butterfly` },
+      { pattern: /pink.*elephant/i, description: `meeting a gentle pink elephant` },
+      { pattern: /orange.*tiger/i, description: `meeting a friendly orange tiger` },
+      { pattern: /yellow.*lion/i, description: `meeting a bright yellow lion` },
+      { pattern: /silver.*wolf/i, description: `meeting a majestic silver wolf` },
+      { pattern: /golden.*eagle/i, description: `meeting a magnificent golden eagle` }
     ];
     
     for (const colorAnimal of colorAnimals) {
       if (colorAnimal.pattern.test(storyText)) {
         return colorAnimal.description;
+      }
+    }
+    
+    // GENERAL COLOR + ANIMAL DETECTION (fallback for any color + animal combination)
+    const colorWords = ['red', 'blue', 'green', 'yellow', 'purple', 'pink', 'orange', 'black', 'white', 'brown', 'gray', 'silver', 'golden'];
+    const animalWords = ['cat', 'dog', 'lion', 'tiger', 'elephant', 'bird', 'frog', 'butterfly', 'wolf', 'bear', 'rabbit', 'horse', 'fish', 'turtle'];
+    
+    for (const color of colorWords) {
+      for (const animal of animalWords) {
+        const pattern = new RegExp(`${color}.*${animal}|${animal}.*${color}`, 'i');
+        if (pattern.test(storyText)) {
+          return `meeting a magical ${color} ${animal}`;
+        }
       }
     }
     
@@ -214,7 +233,7 @@ export class UnifiedImageService {
   /**
    * Analyze story content for intelligent context
    */
-  private static analyzeStoryContent(storyText: string, character: EstablishedCharacter) {
+   private static analyzeStoryContent(storyText: string, character: EstablishedCharacter) {
     const text = storyText.toLowerCase();
     
     // Detect main actions
@@ -236,6 +255,24 @@ export class UnifiedImageService {
     const objects = ['book', 'ball', 'flower', 'tree', 'toy', 'gift'];
     const detectedObjects = objects.filter(obj => text.includes(obj));
     
+    // ENHANCED: Detect specific colors mentioned in the story text
+    const mentionedColors = [];
+    const colorWords = ['red', 'blue', 'green', 'yellow', 'purple', 'pink', 'orange', 'black', 'white', 'brown', 'gray', 'silver', 'golden'];
+    for (const color of colorWords) {
+      if (text.includes(color)) {
+        mentionedColors.push(color);
+      }
+    }
+    
+    // ENHANCED: Detect specific animals mentioned in the story text  
+    const mentionedAnimals = [];
+    const animalWords = ['cat', 'dog', 'lion', 'tiger', 'elephant', 'bird', 'frog', 'butterfly', 'wolf', 'bear', 'rabbit', 'horse', 'fish', 'turtle'];
+    for (const animal of animalWords) {
+      if (text.includes(animal)) {
+        mentionedAnimals.push(animal);
+      }
+    }
+    
     // Check if story mentions user's favorite elements
     const mentionsFavoriteAnimal = text.includes(character.favoriteAnimal);
     const mentionsFavoriteColor = text.includes(character.favoriteColor);
@@ -245,7 +282,10 @@ export class UnifiedImageService {
       setting,
       objects: detectedObjects,
       mentionsFavoriteAnimal,
-      mentionsFavoriteColor
+      mentionsFavoriteColor,
+      mentionedColors, // NEW: Colors specifically mentioned in story
+      mentionedAnimals, // NEW: Animals specifically mentioned in story
+      storyText: text // NEW: Keep original text for reference
     };
   }
 
@@ -278,18 +318,26 @@ export class UnifiedImageService {
   }
 
   /**
-   * Get organic user elements to weave into the scene
+   * Get organic user elements to weave into the scene - Enhanced to prioritize story-mentioned elements
    */
   private static getOrganicUserElements(character: EstablishedCharacter, storyContext: any): string {
     const elements = [];
     
-    // Add favorite color organically if mentioned in story or randomly
-    if (storyContext.mentionsFavoriteColor || Math.random() > 0.7) {
+    // PRIORITY 1: Use colors and animals specifically mentioned in the story text
+    if (storyContext.mentionedColors && storyContext.mentionedColors.length > 0) {
+      elements.push(`${storyContext.mentionedColors[0]} colors prominently featured`);
+    } else if (storyContext.mentionsFavoriteColor || Math.random() > 0.7) {
+      // Fallback to user's favorite color
       elements.push(`${character.favoriteColor} accents in the scene`);
     }
     
-    // Add favorite animal if mentioned or contextually appropriate
-    if (storyContext.mentionsFavoriteAnimal || (storyContext.setting && Math.random() > 0.6)) {
+    if (storyContext.mentionedAnimals && storyContext.mentionedAnimals.length > 0) {
+      // Don't add "friendly X nearby" if the animal is already part of the main scene
+      const mainAnimal = storyContext.mentionedAnimals[0];
+      if (!storyContext.storyText.includes(`${character.userName}`) || !storyContext.storyText.includes('meeting')) {
+        elements.push(`${mainAnimal} as described in the story`);
+      }
+    } else if (storyContext.mentionsFavoriteAnimal || (storyContext.setting && Math.random() > 0.6)) {
       elements.push(`friendly ${character.favoriteAnimal} nearby`);
     }
     
