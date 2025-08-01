@@ -496,23 +496,24 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button
-                    id="create-story-button"
-                    variant="default"
-                    size="lg"
-                    onClick={handleSubmit}
-                    disabled={!isFormComplete()}
-                    className={`flex-1 sm:max-w-xs order-1 sm:order-2 transition-all duration-200 text-lg py-6 rounded-xl shadow-glow ${
-                      isFormComplete() 
-                        ? 'bg-gradient-primary hover:scale-105' 
-                        : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60'
-                    }`}
-                    onMouseEnter={() => console.log("Button hovered, form complete:", isFormComplete())}
-                  >
-                    <Sparkles className="w-5 h-5 mr-2 animate-pulse" />
-                    {t("userInfoForm.buttons.createStory")}
-                    <ChevronRight className="w-5 h-5 ml-2" />
-                  </Button>
+                  <div className="flex-1 sm:max-w-xs order-1 sm:order-2">
+                    <Button
+                      id="create-story-button"
+                      variant="default"
+                      size="lg"
+                      onClick={handleSubmit}
+                      disabled={!isFormComplete()}
+                      className={`w-full transition-all duration-200 text-lg py-6 rounded-xl shadow-glow ${
+                        isFormComplete() 
+                          ? 'bg-gradient-primary hover:scale-105' 
+                          : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60'
+                      }`}
+                    >
+                      <Sparkles className="w-5 h-5 mr-2 animate-pulse" />
+                      {t("userInfoForm.buttons.createStory")}
+                      <ChevronRight className="w-5 h-5 ml-2" />
+                    </Button>
+                  </div>
                 </TooltipTrigger>
                 {!isFormComplete() && (
                   <TooltipContent side="top" className="bg-gray-800 text-white px-3 py-2 rounded-lg text-sm z-50">
