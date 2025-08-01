@@ -5,7 +5,8 @@ export const processTextForPhonetics = (
   text: string, 
   className: string = "", 
   difficulty: "easy" | "medium" | "hard" | "expert" = "easy",
-  userInfo?: any // Add userInfo parameter
+  userInfo?: any, // Add userInfo parameter
+  isPremium?: boolean // Add isPremium parameter
 ): React.ReactNode[] => {
   // Split text by spaces but preserve punctuation attached to words
   const words = text.split(/(\s+)/);
@@ -32,6 +33,7 @@ export const processTextForPhonetics = (
         }`}
         difficulty={difficulty}
         userInfo={userInfo}
+        isPremium={isPremium}
       />
     );
   }).filter(Boolean);

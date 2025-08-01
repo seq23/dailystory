@@ -1018,7 +1018,8 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                                   currentStory, 
                                   "", 
                                   currentDifficulty as "easy" | "medium" | "hard" | "expert",
-                                  userInfo
+                                  userInfo,
+                                  false // Free users are not premium
                                 )}
                               </div>
                             );

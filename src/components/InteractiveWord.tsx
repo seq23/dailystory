@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { getPhoneticSpelling } from "@/utils/phoneticDictionary";
-import { Volume2, HelpCircle, Languages, BookOpen, Lightbulb, Plus } from "lucide-react";
+import { Volume2, HelpCircle, Languages, BookOpen, Lightbulb, Plus, Crown } from "lucide-react";
 import { createOpenAITTSService } from "@/services/textToSpeechService";
 import type { UserInfo } from "@/types";
 
@@ -10,13 +10,15 @@ interface InteractiveWordProps {
   className?: string;
   difficulty?: "easy" | "medium" | "hard" | "expert";
   userInfo?: UserInfo; // New prop to adapt behavior
+  isPremium?: boolean; // Add premium status
 }
 
 export const InteractiveWord = ({ 
   word, 
   className = "", 
   difficulty = "easy",
-  userInfo 
+  userInfo,
+  isPremium = false
 }: InteractiveWordProps) => {
   const { t, i18n } = useTranslation();
   const [showTooltip, setShowTooltip] = useState(false);
@@ -392,14 +394,32 @@ export const InteractiveWord = ({
                 </button>
               )}
 
-              {/* Add to vocabulary button */}
-              <button
-                onClick={handleAddToVocabulary}
-                className="flex items-center gap-1 text-xs bg-purple-100 hover:bg-purple-200 px-2 py-1.5 sm:py-1 rounded transition-colors touch-manipulation min-h-[32px] sm:min-h-auto text-purple-700"
-              >
-                <Plus className="w-3 h-3" />
-                {t("interactiveWord.addToVocabulary", "Save Word")}
-              </button>
+              {/* Add to vocabulary button - Premium feature */}
+              <div className="relative group">
+                <button
+                  onClick={isPremium ? handleAddToVocabulary : undefined}
+                  className={`flex items-center gap-1 text-xs px-2 py-1.5 sm:py-1 rounded transition-colors touch-manipulation min-h-[32px] sm:min-h-auto ${
+                    isPremium 
+                      ? 'bg-purple-100 hover:bg-purple-200 text-purple-700 cursor-pointer' 
+                      : 'bg-gray-100 text-gray-500 cursor-not-allowed opacity-60'
+                  }`}
+                  disabled={!isPremium}
+                >
+                  {isPremium ? <Plus className="w-3 h-3" /> : <Crown className="w-3 h-3" />}
+                  {t("interactiveWord.addToVocabulary", "Save Word")}
+                </button>
+                
+                {/* Premium tooltip for free users */}
+                {!isPremium && (
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 shadow-lg">
+                    <div className="flex items-center gap-1">
+                      <Crown className="w-3 h-3" />
+                      <span>Premium Feature - Upgrade to save words!</span>
+                    </div>
+                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-l-4 border-r-4 border-t-4 border-transparent border-t-purple-600"></div>
+                  </div>
+                )}
+              </div>
 
               {/* Etymology button for advanced native speakers */}
               {isNativeEnglishSpeaker && userInfo?.age && userInfo.age > 12 && (
