@@ -240,13 +240,8 @@ export const FloatingTimer = ({
               >
                 {formatTime(timeRemaining)}
               </div>
-              {timeRemaining >= 20 * 60 && (
-                <div className="text-xs sm:text-sm text-muted-foreground font-medium mt-1">
-                  {t("floatingTimer.maxLimit")}
-                </div>
-              )}
               <div className="text-xs sm:text-sm text-muted-foreground font-medium">
-                Reading Time
+                {timeRemaining >= 20 * 60 ? t("floatingTimer.maxLimit") : "Reading Time"}
               </div>
             </div>
           </div>
