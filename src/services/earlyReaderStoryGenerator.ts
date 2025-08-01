@@ -10,39 +10,39 @@ interface ReadingConfig {
 
 export class EarlyReaderStoryGenerator {
   
-  // Configure reading experience by difficulty level (targeting ~1 minute reading per page)
-  // Average reading speeds: PreK-1st: 15-25 WPM, 2nd-3rd: 80-100 WPM, 4th-5th: 120-160 WPM, 6th-12th: 200-250 WPM
+  // Configure reading experience by difficulty level (optimized for UI aesthetics)
+  // Word counts and text sizes balanced for container space (max-h-[400px])
   // HARD RULE: Easy level capped at 6 words maximum per page for early readers
   // Text sizes: BIGGEST for easiest levels, SMALLER as difficulty increases
   private static getReadingConfig(difficulty: DifficultyLevel): ReadingConfig {
     switch (difficulty) {
-      case 'easy': // PreK-1st grade (Julia Donaldson, Mo Willems, Dr. Seuss, Kevin Henkes style)
+      case 'easy': // PreK-1st grade (Julia Donaldson, Mo Willems, Dr. Seeus, Kevin Henkes style)
         return {
           maxWordsPerPage: 6, // HARD RULE: Maximum 6 words per page for early readers
-          fontSize: 'text-6xl md:text-7xl lg:text-8xl', // BIGGEST text for early readers
+          fontSize: 'text-4xl md:text-5xl lg:text-6xl', // Large but not overwhelming in UI
           lineHeight: 'leading-loose', // Extra spacing for readability
-          spacing: 'space-y-10' // Maximum spacing between elements
+          spacing: 'space-y-8' // Generous spacing without overflow
         };
       case 'medium': // 2nd-3rd grade (Jeff Kinney, Roald Dahl, Dav Pilkey, Andrea Beaty style)
         return {
-          maxWordsPerPage: 90, // ~1 min at 90 WPM average
-          fontSize: 'text-4xl md:text-5xl lg:text-6xl', // Large text
+          maxWordsPerPage: 60, // Reduced to fit nicely in container with large text
+          fontSize: 'text-2xl md:text-3xl lg:text-4xl', // Large text that fits well
           lineHeight: 'leading-relaxed',
-          spacing: 'space-y-8'
+          spacing: 'space-y-6'
         };
       case 'hard': // 4th-5th grade (Katherine Applegate, C.S. Lewis, J.K. Rowling style)
         return {
-          maxWordsPerPage: 140, // ~1 min at 140 WPM average
-          fontSize: 'text-2xl md:text-3xl lg:text-4xl', // Medium text
+          maxWordsPerPage: 100, // Optimized for medium text size and container space
+          fontSize: 'text-lg md:text-xl lg:text-2xl', // Medium text for comfortable reading
           lineHeight: 'leading-normal',
-          spacing: 'space-y-6'
+          spacing: 'space-y-4'
         };
       case 'expert': // 6th-12th grade (Sharon Creech, Louis Sachar, Suzanne Collins, John Green style)
         return {
-          maxWordsPerPage: 225, // ~1 min at 225 WPM average
-          fontSize: 'text-lg md:text-xl lg:text-2xl', // SMALLEST text
+          maxWordsPerPage: 150, // More content with smaller text, fits in 400px container
+          fontSize: 'text-base md:text-lg lg:text-xl', // Smaller text for more content
           lineHeight: 'leading-normal',
-          spacing: 'space-y-4'
+          spacing: 'space-y-3'
         };
     }
   }
