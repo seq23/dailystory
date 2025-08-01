@@ -986,6 +986,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
             onSessionEnded(stats);
           }}
           sessionStats={calculateStats()}
+          showTutorial={tutorialActive}
         />
       )}
       

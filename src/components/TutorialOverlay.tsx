@@ -147,9 +147,20 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer }:
     const viewportHeight = window.innerHeight;
     const viewportWidth = window.innerWidth;
     
-    const tooltipWidth = 400; // Smaller to avoid covering elements
+    const tooltipWidth = 400;
     const tooltipHeight = 280;
-    const margin = 50; // More margin to ensure clear separation
+    const margin = 50;
+
+    // SPECIAL HANDLING FOR TIMER STEP - Avoid floating timer area
+    if (target === "timer-display") {
+      // Floating timer is at bottom-left, so place tutorial at top-right
+      return {
+        top: `${margin}px`,
+        right: `${margin}px`,
+        left: "auto",
+        transform: "none"
+      };
+    }
 
     let style: any = {};
 
@@ -180,18 +191,19 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer }:
         };
         break;
       case "left":
-        // Place well to the left  
+        // Place well to the right instead of left to avoid floating timer
         style = {
           top: `${Math.max(margin, Math.min(rect.top + rect.height/2 - tooltipHeight/2, viewportHeight - tooltipHeight - margin))}px`,
-          left: `${Math.max(margin, rect.left - tooltipWidth - 80)}px`,
+          left: `${Math.min(rect.right + 80, viewportWidth - tooltipWidth - margin)}px`,
           transform: "none"
         };
         break;
       default:
-        // Safe fallback position
+        // Safe fallback position - top right to avoid timer
         style = {
-          top: "10%",
-          left: "10%",
+          top: `${margin}px`,
+          right: `${margin}px`,
+          left: "auto",
           transform: "none"
         };
     }

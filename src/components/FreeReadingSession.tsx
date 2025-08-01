@@ -753,6 +753,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
             currentParagraph={currentPage}
             onSessionEnded={navigateToSessionEnd}
             sessionStats={calculateStats()}
+            showTutorial={tutorialActive}
           />
         )}
 

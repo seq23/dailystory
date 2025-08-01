@@ -17,6 +17,7 @@ interface FloatingTimerProps {
   onSessionEnded: (sessionStats?: any) => void;
   tutorialStep?: number;
   sessionStats?: any; // Session data to pass to end page
+  showTutorial?: boolean;
 }
 
 export const FloatingTimer = ({ 
@@ -29,28 +30,42 @@ export const FloatingTimer = ({
   currentParagraph = 0,
   onSessionEnded,
   tutorialStep = 0,
-  sessionStats
+  sessionStats,
+  showTutorial = false
 }: FloatingTimerProps) => {
   const { t } = useTranslation();
   const [showCelebration, setShowCelebration] = useState(false);
+  const [sequentialTutorialStep, setSequentialTutorialStep] = useState(0);
   const { toast } = useToast();
   
-  
-  // Tutorial auto-advance - 10 seconds max
+  // Sequential tutorial showcasing each button when timer tutorial is active
   useEffect(() => {
-    if (tutorialStep > 0 && tutorialStep <= 2) {
-      const timer = setTimeout(() => {
-        // Auto-advance tutorial (parent component handles this)
-      }, 5000); // 5 seconds per step = 10 seconds total
-      return () => clearTimeout(timer);
+    if (showTutorial && tutorialStep === 0) { // Only when timer tutorial is active
+      const sequence = [
+        { delay: 1000, step: 1 }, // Play/Pause button first
+        { delay: 3000, step: 2 }, // Reduce Time button 
+        { delay: 5000, step: 3 }, // End Session button
+        { delay: 7000, step: 0 }  // Reset
+      ];
+      
+      const timeouts = sequence.map(({ delay, step }) => 
+        setTimeout(() => setSequentialTutorialStep(step), delay)
+      );
+      
+      return () => timeouts.forEach(clearTimeout);
+    } else {
+      setSequentialTutorialStep(0);
     }
-  }, [tutorialStep]);
+  }, [showTutorial, tutorialStep]);
 
-  // Get tutorial classes for buttons
+  // Get tutorial classes for buttons with enhanced animations
   const getTutorialClasses = (step: number) => {
-    return tutorialStep === step 
-      ? 'animate-pulse ring-4 ring-yellow-400 ring-opacity-75 border-yellow-400' 
-      : '';
+    const isActive = sequentialTutorialStep === step || tutorialStep === step;
+    return isActive 
+      ? 'animate-bounce ring-4 ring-yellow-400 ring-opacity-75 border-yellow-400 scale-110 shadow-2xl shadow-yellow-400/50' 
+      : showTutorial && tutorialStep === 0 
+        ? 'transition-all duration-500 hover:scale-105'
+        : '';
   };
 
   // Calculate progress for circular progress (based on current session time)
@@ -235,7 +250,7 @@ export const FloatingTimer = ({
         <div className="relative w-36 sm:w-44 h-20 sm:h-24">
           {/* Play/Pause Button - Center Bottom */}
           <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2">
-            <Tooltip open={tutorialStep === 1}>
+            <Tooltip open={sequentialTutorialStep === 1 || tutorialStep === 1}>
               <TooltipTrigger asChild>
                 <Button
                   variant="outline"
@@ -246,17 +261,21 @@ export const FloatingTimer = ({
                   {isReading ? <Pause className="w-6 h-6 sm:w-8 sm:h-8" /> : <Play className="w-6 h-6 sm:w-8 sm:h-8 ml-1" />}
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="top" className="bg-primary text-primary-foreground border-primary/30 font-medium">
-                {tutorialStep === 1 ? "🎯 Click to start/pause your reading timer!" : (isReading ? t("floatingTimer.pauseTimer") : t("floatingTimer.resumeTimer"))}
+              <TooltipContent 
+                side="top" 
+                className={`font-medium text-lg ${sequentialTutorialStep === 1 ? 'bg-yellow-500 text-yellow-900 border-yellow-400 shadow-lg' : 'bg-primary text-primary-foreground border-primary/30'}`}
+              >
+                {sequentialTutorialStep === 1 ? "🎯 Click to start/pause your reading timer!" : 
+                 tutorialStep === 1 ? "🎯 Click to start/pause your reading timer!" : 
+                 (isReading ? "Pause Timer" : "Start Timer")}
               </TooltipContent>
             </Tooltip>
           </div>
           
 
-
           {/* Reduce Time Button - Left Curve */}
           <div className="absolute bottom-4 sm:bottom-6 left-2 sm:left-4">
-            <Tooltip open={tutorialStep === 2}>
+            <Tooltip open={sequentialTutorialStep === 2 || tutorialStep === 2}>
               <TooltipTrigger asChild>
                 <Button
                   variant="outline"
@@ -268,27 +287,36 @@ export const FloatingTimer = ({
                   <Minus className="w-5 h-5 sm:w-6 sm:h-6" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="top" className="bg-orange-600 text-white border-orange-500 font-medium">
-                {tutorialStep === 2 ? "⏰ Reduce time by 5 minutes!" : "Reduce 5 Minutes"}
+              <TooltipContent 
+                side="top" 
+                className={`font-medium text-lg ${sequentialTutorialStep === 2 ? 'bg-yellow-500 text-yellow-900 border-yellow-400 shadow-lg' : 'bg-orange-600 text-white border-orange-500'}`}
+              >
+                {sequentialTutorialStep === 2 ? "⏰ Reduce time by 5 minutes!" : 
+                 tutorialStep === 2 ? "⏰ Reduce time by 5 minutes!" : 
+                 "Reduce 5 Minutes"}
               </TooltipContent>
             </Tooltip>
           </div>
 
           {/* End Session Button - Right Curve */}
           <div className="absolute bottom-4 sm:bottom-6 right-2 sm:right-4">
-            <Tooltip>
+            <Tooltip open={sequentialTutorialStep === 3}>
               <TooltipTrigger asChild>
                 <Button
                   variant="outline"
                   size="lg"
                   onClick={handleEndSession}
-                  className="bg-gradient-to-b from-white to-red-50 backdrop-blur-sm border-2 border-red-400/50 text-red-600 hover:bg-red-500 hover:text-white shadow-lg w-12 h-12 sm:w-16 sm:h-16 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-xl"
+                  className={`bg-gradient-to-b from-white to-red-50 backdrop-blur-sm border-2 border-red-400/50 text-red-600 hover:bg-red-500 hover:text-white shadow-lg w-12 h-12 sm:w-16 sm:h-16 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-xl ${getTutorialClasses(3)}`}
                 >
                   <X className="w-5 h-5 sm:w-6 sm:h-6" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="top" className="bg-red-600 text-white border-red-500 font-medium">
-                End Reading Session
+              <TooltipContent 
+                side="top" 
+                className={`font-medium text-lg ${sequentialTutorialStep === 3 ? 'bg-yellow-500 text-yellow-900 border-yellow-400 shadow-lg' : 'bg-red-600 text-white border-red-500'}`}
+              >
+                {sequentialTutorialStep === 3 ? "🔚 Click to end your reading session!" : 
+                 "End Reading Session"}
               </TooltipContent>
             </Tooltip>
           </div>
