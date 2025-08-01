@@ -67,6 +67,8 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
   const [tutorialActive, setTutorialActive] = useState(true);
   const [showAddPagesAlert, setShowAddPagesAlert] = useState(false);
   const [hasShownAddPagesAlert, setHasShownAddPagesAlert] = useState(false);
+  const [canAddMorePages, setCanAddMorePages] = useState(true);
+  const [pagesAdded, setPagesAdded] = useState(0);
 
   // Character consistency - store original character details  
   const [establishedCharacter, setEstablishedCharacter] = useState<EstablishedCharacter | null>(null);
@@ -501,51 +503,71 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
     }
   };
 
-  // Flash "add more pages" alert when on next-to-last page with >1 minute remaining
+  // Flash "add more pages" alert when user reaches the LAST page (not next-to-last)
   useEffect(() => {
-    const pagesLeft = story.length - currentPage;
-    if (timeRemaining > 1 * 60 && pagesLeft === 1 && !hasShownAddPagesAlert && !showAddPagesAlert) {
-      setHasShownAddPagesAlert(true);
+    const isOnLastPage = currentPage === story.length - 1;
+    if (isOnLastPage && canAddMorePages && !showAddPagesAlert) {
       setShowAddPagesAlert(true);
-      
-      const timer = setTimeout(() => {
-        setShowAddPagesAlert(false);
-      }, 2500); // Show for 2.5 seconds
-      
-      return () => clearTimeout(timer);
     }
-  }, [timeRemaining, currentPage, story.length, hasShownAddPagesAlert, showAddPagesAlert]);
+  }, [currentPage, story.length, canAddMorePages, showAddPagesAlert]);
   
-  // Reset the flag when more pages are added or we move away from the last page
+  // Reset alert when user moves away from last page
   useEffect(() => {
-    const pagesLeft = story.length - currentPage;
-    if (pagesLeft > 1) {
-      setHasShownAddPagesAlert(false);
+    const isOnLastPage = currentPage === story.length - 1;
+    if (!isOnLastPage) {
+      setShowAddPagesAlert(false);
     }
   }, [currentPage, story.length]);
   
-  // Function to add more pages to the story
+  // Function to add more pages to the story - only when on last page
   const addMorePages = async () => {
-    if (isLoading) return;
+    if (isLoading || !canAddMorePages) return;
     
-    // Don't affect timer or session - just extend the story
+    const isOnLastPage = currentPage === story.length - 1;
+    if (!isOnLastPage) return; // Only allow adding pages when on the last page
+    
     try {
       // Generate extended story using the new generator
       const { pages: newPages, config } = EarlyReaderStoryGenerator.generateStory(
         userInfo, 
         currentDifficulty, 
-        5
+        5 // Always add exactly 5 pages
       );
       
       // Add new pages and update word count
       setStory(prev => [...prev, ...newPages]);
       setStoryImages(prev => [...prev, ...newPages.map(() => ({ url: '', prompt: '' }))]);
       setWordsRead(prev => prev + newPages.join(' ').split(' ').length);
+      
+      // Track pages added and disable button until user reaches new last page
+      setPagesAdded(prev => prev + 5);
+      setCanAddMorePages(false);
+      setShowAddPagesAlert(false);
+      
+      // Show success message
+      toast({
+        title: "5 More Pages Added! 📚",
+        description: "Your story has been extended! Reach the last page to add more.",
+        duration: 3000,
+      });
+      
     } catch (error) {
       console.error('Failed to add more pages:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add more pages. Please try again.",
+        variant: "destructive",
+      });
     }
-    // No loading state changes to avoid UI disruption
   };
+
+  // Re-enable adding pages when user reaches the new last page
+  useEffect(() => {
+    const isOnLastPage = currentPage === story.length - 1;
+    if (isOnLastPage && !canAddMorePages) {
+      setCanAddMorePages(true);
+    }
+  }, [currentPage, story.length, canAddMorePages]);
 
   if (isLoading) {
     return (
@@ -831,13 +853,15 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                       <div className="relative group">
                         <Button
                           onClick={addMorePages}
-                          disabled={isLoading}
+                          disabled={isLoading || !canAddMorePages}
                           variant="outline"
                           size="sm"
                           className={`p-1.5 sm:p-2 transition-all duration-300 ${
-                            showAddPagesAlert 
+                            showAddPagesAlert && canAddMorePages
                               ? 'animate-bounce bg-amber-100 border-amber-400 text-amber-700 shadow-lg ring-2 ring-amber-300' 
-                              : 'bg-blue-50 hover:bg-blue-100 border-blue-200'
+                              : canAddMorePages
+                              ? 'bg-blue-50 hover:bg-blue-100 border-blue-200'
+                              : 'bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed'
                           }`}
                         >
                           <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -864,9 +888,16 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                         )}
                         
                         {/* Regular Tooltip */}
-                        {!showAddPagesAlert && (
+                        {!showAddPagesAlert && canAddMorePages && (
                           <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 rounded text-xs transition-all duration-300 pointer-events-none whitespace-nowrap z-50 bg-gray-800 text-white opacity-0 group-hover:opacity-100">
-                            Add 5 more pages
+                            Add 5 more pages (only on last page)
+                          </div>
+                        )}
+                        
+                        {/* Disabled state tooltip */}
+                        {!canAddMorePages && (
+                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 rounded text-xs transition-all duration-300 pointer-events-none whitespace-nowrap z-50 bg-gray-800 text-white opacity-0 group-hover:opacity-100">
+                            Reach the last page to add more
                           </div>
                         )}
                       </div>

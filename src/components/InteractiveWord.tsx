@@ -323,29 +323,29 @@ export const InteractiveWord = ({
       
       {showTooltip && (
         <div 
-          className="fixed z-[99999] bg-white border border-gray-200 text-gray-900 px-3 py-3 sm:px-4 rounded-lg shadow-2xl text-xs sm:text-sm font-medium backdrop-blur-sm"
+          className="fixed z-[99999] bg-white border border-gray-200 text-gray-900 px-4 py-4 sm:px-6 sm:py-5 rounded-xl shadow-2xl text-sm sm:text-base font-medium backdrop-blur-sm"
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
           onTouchStart={(e) => e.stopPropagation()}
           style={{
-            // Fixed positioning based on word location
+            // Fixed positioning based on word location - made larger for kids
             ...(tooltipPosition.horizontal === 'left' ? {
               left: `${Math.max(20, wordRef.current?.getBoundingClientRect().left || 0)}px`,
             } : tooltipPosition.horizontal === 'right' ? {
               right: `${Math.max(20, window.innerWidth - (wordRef.current?.getBoundingClientRect().right || window.innerWidth))}px`,
             } : {
-              left: `${Math.max(20, Math.min(window.innerWidth - 340, (wordRef.current?.getBoundingClientRect().left || 0) + (wordRef.current?.getBoundingClientRect().width || 0) / 2 - 170))}px`,
+              left: `${Math.max(20, Math.min(window.innerWidth - 400, (wordRef.current?.getBoundingClientRect().left || 0) + (wordRef.current?.getBoundingClientRect().width || 0) / 2 - 200))}px`,
             }),
             ...(tooltipPosition.vertical === 'top' ? {
-              bottom: `${window.innerHeight - (wordRef.current?.getBoundingClientRect().top || 0) + 8}px`,
+              bottom: `${window.innerHeight - (wordRef.current?.getBoundingClientRect().top || 0) + 12}px`,
             } : {
-              top: `${(wordRef.current?.getBoundingClientRect().bottom || 0) + 8}px`,
+              top: `${(wordRef.current?.getBoundingClientRect().bottom || 0) + 12}px`,
             }),
-            maxWidth: 'min(340px, 90vw)',
-            minWidth: 'min(280px, 85vw)',
+            maxWidth: 'min(400px, 92vw)',
+            minWidth: 'min(320px, 88vw)',
             width: 'max-content',
-            boxShadow: '0 10px 40px -10px rgba(0, 0, 0, 0.3)',
-            border: '1px solid rgba(0, 0, 0, 0.1)'
+            boxShadow: '0 15px 50px -15px rgba(0, 0, 0, 0.4)',
+            border: '2px solid rgba(0, 0, 0, 0.1)'
           }}
         >
           {/* Phonetic spelling */}
@@ -372,31 +372,35 @@ export const InteractiveWord = ({
             </div>
           )}
           
-          {/* Action buttons */}
-          <div className="flex items-center gap-1 flex-wrap">
+          {/* Action buttons - larger and more spaced for kids */}
+          <div className="grid grid-cols-2 gap-3 mb-2">
             <button
               onClick={handlePronounce}
-              className="flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1.5 sm:py-1 rounded transition-colors touch-manipulation min-h-[32px] sm:min-h-auto"
+              className="flex items-center justify-center gap-2 text-sm bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 px-4 py-3 rounded-lg transition-colors touch-manipulation min-h-[48px] font-semibold text-blue-700 shadow-sm"
               disabled={isPlaying}
             >
-              <Volume2 className="w-3 h-3" />
+              <Volume2 className="w-4 h-4" />
               {t("interactiveWord.hearIt")}
             </button>
             
             <button
               onClick={handleExplain}
-              className="flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1.5 sm:py-1 rounded transition-colors touch-manipulation min-h-[32px] sm:min-h-auto"
+              className="flex items-center justify-center gap-2 text-sm bg-green-50 hover:bg-green-100 border-2 border-green-200 px-4 py-3 rounded-lg transition-colors touch-manipulation min-h-[48px] font-semibold text-green-700 shadow-sm"
               disabled={isPlaying || isLoadingExplanation}
             >
-              <HelpCircle className="w-3 h-3" />
+              <HelpCircle className="w-4 h-4" />
               {isLoadingExplanation ? t("interactiveWord.loading") : t("interactiveWord.explain")}
             </button>
+          </div>
+
+          {/* Secondary buttons row */}
+          <div className="flex items-center gap-2 flex-wrap">{/* ESL Translation and other buttons continue here */}
 
             {/* Translation button for ESL learners only */}
             {isESLLearner && (
               <button
                 onClick={handleTranslate}
-                className="flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1.5 sm:py-1 rounded transition-colors touch-manipulation min-h-[32px] sm:min-h-auto"
+                className="flex items-center gap-1 text-xs bg-purple-50 hover:bg-purple-100 border border-purple-200 px-3 py-2 rounded-md transition-colors touch-manipulation min-h-[36px] font-medium text-purple-700"
                 disabled={isLoadingTranslation}
               >
                 <Languages className="w-3 h-3" />
@@ -408,10 +412,10 @@ export const InteractiveWord = ({
             <div className="relative group">
               <button
                 onClick={isPremium ? handleAddToVocabulary : undefined}
-                className={`flex items-center gap-1 text-xs px-2 py-1.5 sm:py-1 rounded transition-colors touch-manipulation min-h-[32px] sm:min-h-auto ${
+                className={`flex items-center gap-1 text-xs px-3 py-2 rounded-md transition-colors touch-manipulation min-h-[36px] font-medium ${
                   isPremium 
-                    ? 'bg-purple-100 hover:bg-purple-200 text-purple-700 cursor-pointer' 
-                    : 'bg-gray-100 text-gray-500 cursor-not-allowed opacity-60'
+                    ? 'bg-yellow-50 hover:bg-yellow-100 border border-yellow-200 text-yellow-700 cursor-pointer' 
+                    : 'bg-gray-100 text-gray-500 cursor-not-allowed opacity-60 border border-gray-200'
                 }`}
                 disabled={!isPremium}
               >
@@ -435,7 +439,7 @@ export const InteractiveWord = ({
             {isNativeEnglishSpeaker && userInfo?.age && userInfo.age > 12 && (
               <button
                 onClick={() => {/* TODO: Implement etymology lookup */}}
-                className="flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1.5 sm:py-1 rounded transition-colors touch-manipulation min-h-[32px] sm:min-h-auto"
+                className="flex items-center gap-1 text-xs bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-3 py-2 rounded-md transition-colors touch-manipulation min-h-[36px] font-medium text-indigo-700"
               >
                 <Lightbulb className="w-3 h-3" />
                 {t("interactiveWord.etymology")}

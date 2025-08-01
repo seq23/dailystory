@@ -9,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { TagInput } from "@/components/ui/tag-input";
 import { ColorPicker } from "@/components/ui/color-picker";
 import { AvatarPicker } from "@/components/ui/avatar-picker";
-import { ChevronRight, User, GraduationCap, Heart, Star, Globe, Sparkles } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ChevronRight, User, GraduationCap, Heart, Star, Globe, Sparkles, AlertCircle } from "lucide-react";
 import { ContentSecurity, SecurityLogger } from "@/utils/security";
 import { useToast } from "@/hooks/use-toast";
 import type { UserInfo, Grade, LanguageCode, LearningGoal } from "@/types";
@@ -42,6 +43,9 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
     difficultyLevel: "easy",
     readingAbility: "easy"
   });
+
+  const [showValidationErrors, setShowValidationErrors] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   // Enhanced content filtering with grade-aware security and multilingual support
   const contentFilter = (text: string): { hasInappropriateContent: boolean; reason?: string } => {
@@ -83,6 +87,27 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
   };
 
   const handleSubmit = () => {
+    // Check form validation first
+    const errors = validateForm();
+    
+    if (errors.length > 0) {
+      setValidationErrors(errors);
+      setShowValidationErrors(true);
+      
+      // Scroll to the first error or show toast
+      toast({
+        title: "Please complete required fields",
+        description: "Some required information is missing. Please fill out all highlighted fields.",
+        variant: "destructive",
+        duration: 5000,
+      });
+      return;
+    }
+
+    // Reset validation state if form is complete
+    setShowValidationErrors(false);
+    setValidationErrors([]);
+
     // Rate limiting check
     const userIdentifier = formData.name + Date.now(); // Simple identifier
     if (!ContentSecurity.checkRateLimit(userIdentifier)) {
@@ -114,6 +139,34 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
     });
     
     onSubmit({ ...formData, difficultyLevel: difficulty } as UserInfo);
+  };
+
+  const validateForm = () => {
+    const errors: string[] = [];
+    
+    if (!formData.name.trim()) {
+      errors.push("Please enter your child's first name");
+    }
+    if (!formData.age) {
+      errors.push("Please select your child's age");
+    }
+    if (!formData.grade) {
+      errors.push("Please select your child's grade level");
+    }
+    if (!formData.nativeLanguage) {
+      errors.push("Please select your child's native language");
+    }
+    if (!formData.learningGoal) {
+      errors.push("Please select a learning goal");
+    }
+    if (!formData.avatar.type) {
+      errors.push("Please choose an avatar type");
+    }
+    if (!formData.avatar.skinTone) {
+      errors.push("Please choose an avatar skin tone");
+    }
+    
+    return errors;
   };
 
   const isFormComplete = () => {
@@ -173,26 +226,45 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                 </h3>
               </div>
             
+            {/* Validation Error Alert */}
+            {showValidationErrors && validationErrors.length > 0 && (
+              <Alert className="border-red-200 bg-red-50 mb-6">
+                <AlertCircle className="h-4 w-4 text-red-600" />
+                <AlertDescription className="text-red-700">
+                  <div className="font-semibold mb-2">Please complete the following required fields:</div>
+                  <ul className="list-disc list-inside space-y-1">
+                    {validationErrors.map((error, index) => (
+                      <li key={index} className="text-sm">{error}</li>
+                    ))}
+                  </ul>
+                </AlertDescription>
+              </Alert>
+            )}
+
             <div className="space-y-3 md:space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-base md:text-lg font-semibold text-foreground">
-                  {t("userInfoForm.fields.name.label")}
+                  What is your first name? <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => handleInputChange("name", e.target.value)}
                   placeholder={t("userInfoForm.fields.name.placeholder")}
-                  className="text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-primary/20 focus:border-primary/50 touch-target"
+                  className={`text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 focus:border-primary/50 touch-target ${
+                    showValidationErrors && !formData.name ? 'border-red-300 bg-red-50' : 'border-primary/20'
+                  }`}
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="age" className="text-base md:text-lg font-semibold text-foreground">
-                  {t("userInfoForm.fields.age.label")}
+                  {t("userInfoForm.fields.age.label")} <span className="text-red-500">*</span>
                 </Label>
                 <Select value={formData.age.toString()} onValueChange={(value) => handleInputChange("age", parseInt(value))}>
-                  <SelectTrigger className="text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-primary/20 touch-target">
+                  <SelectTrigger className={`text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 touch-target ${
+                    showValidationErrors && !formData.age ? 'border-red-300 bg-red-50' : 'border-primary/20'
+                  }`}>
                     <SelectValue placeholder={t("userInfoForm.fields.age.placeholder")} />
                   </SelectTrigger>
                   <SelectContent>

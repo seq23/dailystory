@@ -16,9 +16,10 @@ interface TutorialOverlayProps {
   isVisible: boolean;
   onComplete: () => void;
   onSkip: () => void;
+  onStartTimer?: () => void; // Add callback to start timer
 }
 
-export const TutorialOverlay = ({ isVisible, onComplete, onSkip }: TutorialOverlayProps) => {
+export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer }: TutorialOverlayProps) => {
   const { t } = useTranslation();
   const [currentStep, setCurrentStep] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -26,36 +27,36 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip }: TutorialOverl
   const tutorialSteps: TutorialStep[] = [
     {
       target: "welcome-title",
-      title: t("tutorial.step1.title", "Welcome to Time2Read!"),
-      description: t("tutorial.step1.description", "Let's take a quick tour to help you create amazing personalized stories for your child."),
+      title: t("tutorial.step1.title", "🌟 Welcome to Time2Read!"),
+      description: t("tutorial.step1.description", "Hi there! Let's take a quick tour to help you create amazing personalized stories. I'll point to each important button and explain what it does. This will only take a minute!"),
       icon: Sparkles,
       position: "bottom"
     },
     {
       target: "basic-info-section",
-      title: t("tutorial.step2.title", "Tell Us About Your Child"),
-      description: t("tutorial.step2.description", "Fill in your child's basic information like name, age, and reading level. This helps us create the perfect story difficulty."),
+      title: t("tutorial.step2.title", "👤 Step 1: Tell Us About Your Child"),
+      description: t("tutorial.step2.description", "👈 Look here! Fill in your child's name, age, and reading level. This section helps us create stories that are just right for your child's abilities."),
       icon: User,
       position: "right"
     },
     {
       target: "favorites-section", 
-      title: t("tutorial.step3.title", "Share Their Favorites"),
-      description: t("tutorial.step3.description", "Add their favorite animals, colors, and foods to personalize the story content. These details make the story more engaging!"),
+      title: t("tutorial.step3.title", "❤️ Step 2: Share Their Favorites"),
+      description: t("tutorial.step3.description", "👉 Look over here! Add favorite animals, colors, and foods to make the story extra special. Kids love seeing their favorites in their stories!"),
       icon: Heart,
       position: "left"
     },
     {
       target: "special-request-section",
-      title: t("tutorial.step4.title", "Special Requests"),
-      description: t("tutorial.step4.description", "Want a story about space adventures or magical kingdoms? Add any special themes or topics here!"),
+      title: t("tutorial.step4.title", "⭐ Step 3: Special Story Ideas"),
+      description: t("tutorial.step4.description", "👆 Look up here! Want a story about space, dinosaurs, or princesses? This is where you can request special themes and topics for the story!"),
       icon: Star,
       position: "top"
     },
     {
       target: "create-story-button",
-      title: t("tutorial.step5.title", "Create Your Story"),
-      description: t("tutorial.step5.description", "Once you've filled in the details, click here to generate a personalized reading adventure that's perfect for your child!"),
+      title: t("tutorial.step5.title", "📚 Step 4: Create Your Story!"),
+      description: t("tutorial.step5.description", "👆 This is the magic button! Once you've filled everything out, click this big button to create your personalized reading adventure. The timer will start automatically!"),
       icon: BookOpen,
       position: "top"
     }
@@ -74,8 +75,8 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip }: TutorialOverl
     let autoAdvanceTimer: NodeJS.Timeout;
     
     if (isVisible && currentStep < tutorialSteps.length) {
-      // Auto-advance after 3 seconds for first step, 4 seconds for others
-      const delay = currentStep === 0 ? 3000 : 4000;
+      // Auto-advance after 5 seconds for first step, 6 seconds for others (longer for kids)
+      const delay = currentStep === 0 ? 5000 : 6000;
       autoAdvanceTimer = setTimeout(() => {
         handleNext();
       }, delay);
@@ -96,6 +97,10 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip }: TutorialOverl
       }, 200);
     } else {
       onComplete();
+      // Start timer when tutorial completes
+      if (onStartTimer) {
+        onStartTimer();
+      }
     }
   };
 
@@ -158,7 +163,7 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip }: TutorialOverl
           className={`absolute z-60 transition-all duration-300 ${isAnimating ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
           style={tooltipStyle}
         >
-          <Card className="w-80 sm:w-96 bg-white dark:bg-gray-900 shadow-2xl border-2 border-primary/30 rounded-2xl overflow-hidden">
+          <Card className="w-96 sm:w-[440px] md:w-[500px] bg-white dark:bg-gray-900 shadow-2xl border-2 border-primary/30 rounded-2xl overflow-hidden">
             <CardContent className="p-0">
               {/* Header */}
               <div className="bg-gradient-primary text-white p-4 relative overflow-hidden">
@@ -178,7 +183,13 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip }: TutorialOverl
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={onSkip}
+                    onClick={() => {
+                      onSkip();
+                      // Start timer when user exits tutorial early
+                      if (onStartTimer) {
+                        onStartTimer();
+                      }
+                    }}
                     className="text-white hover:bg-white/20 p-1"
                   >
                     <X className="w-4 h-4" />
@@ -223,7 +234,13 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip }: TutorialOverl
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={onSkip}
+                      onClick={() => {
+                        onSkip();
+                        // Start timer when user skips tutorial
+                        if (onStartTimer) {
+                          onStartTimer();
+                        }
+                      }}
                       className="text-muted-foreground"
                     >
                       Skip Tutorial

@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BookOpen, Sparkles, Heart, Globe } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { BookOpen, Sparkles, Heart, Globe, Crown, Users } from "lucide-react";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from "@/components/ui/carousel";
 import { APP_CONFIG } from "@/constants/app";
 import heroImage from "@/assets/hero-image-diverse-clear.jpg";
@@ -94,17 +95,33 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
               </div>
             </div>
 
-            {/* Sign In Button */}
+            {/* Sign In Button - Premium Users */}
             <div className="flex items-center">
               {onSignIn && (
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={onSignIn}
-                  className="bg-white/10 border-white/30 text-white hover:bg-white/20 text-xs sm:text-sm"
-                >
-                  {t("welcomeHero.signIn")}
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={onSignIn}
+                        className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-purple-300/50 text-white hover:bg-purple-400/30 text-xs sm:text-sm font-semibold shadow-lg"
+                      >
+                        <Crown className="w-3 h-3 mr-1" />
+                        {t("welcomeHero.signIn")} - Premium
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent className="bg-white text-gray-900 border border-gray-200 shadow-lg">
+                      <div className="flex items-center gap-2 p-2">
+                        <Crown className="w-4 h-4 text-purple-600" />
+                        <span className="font-medium">Premium Users Only</span>
+                      </div>
+                      <p className="text-xs text-gray-600 mt-1">
+                        Access unlimited stories, AI images, advanced features & more!
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               )}
             </div>
           </div>
@@ -232,20 +249,35 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
               </div>
             </div>
 
-            {/* CTA Button */}
-            <Button 
-              variant="hero" 
-              size="xl" 
-              onClick={onGetStarted}
-              className={`relative hover:scale-105 shadow-glow transition-all duration-300 hover:shadow-2xl hover:shadow-primary/50 group overflow-hidden ${
-                isShaking ? 'animate-shake-hard' : 'animate-bounce-gentle'
-              } hover:animate-none`}
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 via-pink-400/20 to-blue-400/20 animate-pulse group-hover:animate-none"></div>
-              <BookOpen className="w-6 h-6 relative z-10 animate-pulse group-hover:animate-none" />
-              <span className="relative z-10">{t("welcomeHero.ctaButton")}</span>
-              <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            </Button>
+            {/* CTA Button - Free Trial/Guest Users */}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="hero" 
+                    size="xl" 
+                    onClick={onGetStarted}
+                    className={`relative hover:scale-105 shadow-glow transition-all duration-300 hover:shadow-2xl hover:shadow-primary/50 group overflow-hidden ${
+                      isShaking ? 'animate-shake-hard' : 'animate-bounce-gentle'
+                    } hover:animate-none`}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 via-pink-400/20 to-blue-400/20 animate-pulse group-hover:animate-none"></div>
+                    <Users className="w-6 h-6 relative z-10 animate-pulse group-hover:animate-none" />
+                    <span className="relative z-10">{t("welcomeHero.ctaButton")} - Free Trial</span>
+                    <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent className="bg-white text-gray-900 border border-gray-200 shadow-lg">
+                  <div className="flex items-center gap-2 p-2">
+                    <Users className="w-4 h-4 text-green-600" />
+                    <span className="font-medium">Free Trial & Guest Users</span>
+                  </div>
+                  <p className="text-xs text-gray-600 mt-1">
+                    Try our platform with basic stories and limited time. No signup required!
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
 
             <p className="text-white/70 mt-4 text-sm">
               {t("welcomeHero.safetyNote")}
