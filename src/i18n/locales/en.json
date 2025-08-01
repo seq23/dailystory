@@ -304,6 +304,22 @@
     }
   },
   "tutorial": {
+    "timer": {
+      "title": "⏰ Reading Timer",
+      "description": "This shows your reading time! Click the play button to start/pause your timer. Use the minus button to reduce time if needed."
+    },
+    "navigation": {
+      "title": "📖 Page Navigation", 
+      "description": "Use Previous and Next buttons to move between story pages. The page counter shows your current position."
+    },
+    "audio": {
+      "title": "🎵 Audio Reading",
+      "description": "Click to hear the story read aloud! Perfect for following along and learning pronunciation."
+    },
+    "difficulty": {
+      "title": "🎯 Reading Level",
+      "description": "Make the story easier or harder instantly! Up arrow makes it harder, down arrow makes it easier to match your reading level."
+    },
     "step1": {
       "title": "Welcome to Time2Read!",
       "description": "Let's take a quick tour to help you create amazing personalized stories for your child."
