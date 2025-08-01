@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { BookOpen, Timer, Star, Crown, Sparkles, TrendingUp, Award, Clock, Play, Pause, Minus, X, ChevronUp, ChevronDown, Plus, Home, RotateCcw } from "lucide-react";
 import type { UserInfo, SessionStats } from "@/types";
 import { InteractiveAudioReading } from "@/components/InteractiveAudioReading";
@@ -982,53 +983,61 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                     {/* Fixed Header Section */}
                     <div className="flex-shrink-0 p-3 sm:p-4 lg:p-6 border-b border-gray-100">
                       {/* Difficulty Level Selector */}
-                      <div id="reading-level-controls" className="mb-4 reading-level-controls">
-                        <div className="flex gap-3 justify-center items-center">
-                          <div className="relative group">
-                            <Button
-                              onClick={() => changeDifficulty('easier')}
-                              disabled={!canDecreaseDifficulty() || isLoading}
-                              variant="outline"
-                              size="sm"
-                              className="p-2 transition-all duration-200 hover:scale-105 hover:shadow-md"
-                            >
-                              <ChevronDown className="w-4 h-4" />
-                            </Button>
-                            <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-gradient-to-r from-green-500 to-blue-600 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-50 shadow-lg animate-bounce">
-                              <div className="flex items-center gap-2">
-                                <span>🌟</span>
-                                <span>Make reading easier & more enjoyable!</span>
-                              </div>
-                              {/* Arrow pointing up */}
-                              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 border-l-4 border-r-4 border-b-4 border-transparent border-b-green-500"></div>
-                            </div>
-                          </div>
-                          
-                          <span className="text-sm font-medium text-gray-600">
-                            {t('freeReadingSession.readingLevel.label')}
-                          </span>
-                          
-                          <div className="relative group">
-                            <Button
-                              onClick={() => changeDifficulty('harder')}
-                              disabled={!canIncreaseDifficulty() || isLoading}
-                              variant="outline"
-                              size="sm"
-                              className="p-2 transition-all duration-200 hover:scale-105 hover:shadow-md"
-                            >
-                              <ChevronUp className="w-4 h-4" />
-                            </Button>
-                            <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-gradient-to-r from-purple-500 to-pink-600 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-50 shadow-lg animate-bounce">
-                              <div className="flex items-center gap-2">
-                                <span>🚀</span>
-                                <span>Level up your reading challenge!</span>
-                              </div>
-                              {/* Arrow pointing up */}
-                              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 border-l-4 border-r-4 border-b-4 border-transparent border-b-purple-500"></div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                       <div id="reading-level-controls" className="mb-4 reading-level-controls">
+                         <TooltipProvider>
+                           <div className="flex gap-3 justify-center items-center">
+                             <Tooltip>
+                               <TooltipTrigger asChild>
+                                 <Button
+                                   onClick={() => changeDifficulty('easier')}
+                                   disabled={!canDecreaseDifficulty() || isLoading}
+                                   variant="outline"
+                                   size="sm"
+                                   className="p-2 transition-all duration-200 hover:scale-105 hover:shadow-md"
+                                 >
+                                   <ChevronDown className="w-4 h-4" />
+                                 </Button>
+                               </TooltipTrigger>
+                               <TooltipContent 
+                                 side="bottom" 
+                                 className="bg-gradient-to-r from-green-500 to-blue-600 text-white border-none shadow-xl animate-in fade-in-0 zoom-in-95 max-w-xs"
+                               >
+                                 <div className="flex items-center gap-2">
+                                   <span>🌟</span>
+                                   <span>{t('storyDisplay.tooltips.makeEasier')}</span>
+                                 </div>
+                               </TooltipContent>
+                             </Tooltip>
+                             
+                             <span className="text-sm font-medium text-gray-600">
+                               {t('freeReadingSession.readingLevel.label')}
+                             </span>
+                             
+                             <Tooltip>
+                               <TooltipTrigger asChild>
+                                 <Button
+                                   onClick={() => changeDifficulty('harder')}
+                                   disabled={!canIncreaseDifficulty() || isLoading}
+                                   variant="outline"
+                                   size="sm"
+                                   className="p-2 transition-all duration-200 hover:scale-105 hover:shadow-md"
+                                 >
+                                   <ChevronUp className="w-4 h-4" />
+                                 </Button>
+                               </TooltipTrigger>
+                               <TooltipContent 
+                                 side="bottom" 
+                                 className="bg-gradient-to-r from-purple-500 to-pink-600 text-white border-none shadow-xl animate-in fade-in-0 zoom-in-95 max-w-xs"
+                               >
+                                 <div className="flex items-center gap-2">
+                                   <span>🚀</span>
+                                   <span>{t('storyDisplay.tooltips.makeHarder')}</span>
+                                 </div>
+                               </TooltipContent>
+                             </Tooltip>
+                           </div>
+                         </TooltipProvider>
+                       </div>
 
                       {/* Progress Bar */}
                       <div className="mb-4">
