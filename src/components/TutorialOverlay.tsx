@@ -81,6 +81,25 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer }:
 
       // Add shake animation
       (targetElement as HTMLElement).style.animation = 'shake 1s ease-in-out infinite, pulse 2s ease-in-out infinite';
+      
+      // SPECIAL HANDLING FOR TIMER - Make it pop out with enhanced focus
+      if (step.target === "timer-display") {
+        const floatingTimer = document.querySelector('#floating-timer');
+        if (floatingTimer) {
+          floatingTimer.classList.add(
+            'z-50', 
+            'relative',
+            'scale-110',
+            'ring-8',
+            'ring-yellow-400/70',
+            'rounded-3xl',
+            'shadow-2xl',
+            'shadow-yellow-400/50'
+          );
+          (floatingTimer as HTMLElement).style.transform = 'scale(1.1)';
+          (floatingTimer as HTMLElement).style.transition = 'all 0.3s ease-out';
+        }
+      }
     }
 
     return () => {
@@ -99,6 +118,25 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer }:
           'relative'
         );
         (targetElement as HTMLElement).style.animation = '';
+        
+        // Clean up timer special styling
+        if (step.target === "timer-display") {
+          const floatingTimer = document.querySelector('#floating-timer');
+          if (floatingTimer) {
+            floatingTimer.classList.remove(
+              'z-50', 
+              'relative',
+              'scale-110',
+              'ring-8',
+              'ring-yellow-400/70',
+              'rounded-3xl',
+              'shadow-2xl',
+              'shadow-yellow-400/50'
+            );
+            (floatingTimer as HTMLElement).style.transform = '';
+            (floatingTimer as HTMLElement).style.transition = '';
+          }
+        }
       }
     };
   }, [currentStep, isVisible, tutorialSteps]);
@@ -234,8 +272,12 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer }:
         }
       `}</style>
 
-      {/* Lighter overlay background */}
-      <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 transition-opacity duration-500">
+      {/* Enhanced overlay background - darker when focusing on timer */}
+      <div className={`fixed inset-0 transition-opacity duration-500 z-40 ${
+        step.target === "timer-display" 
+          ? 'bg-black/50 backdrop-blur-md' // Stronger dimming for timer focus
+          : 'bg-black/20 backdrop-blur-sm'  // Normal dimming for other steps
+      }`}>
         {/* Subtle background elements */}
         <div className="absolute inset-0 overflow-hidden">
           {[...Array(8)].map((_, i) => (
@@ -292,7 +334,7 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer }:
                   <div>
                     <h3 className="font-bold text-lg">{step.title}</h3>
                     <div className="text-sm opacity-90">
-                      Step {currentStep + 1} of {tutorialSteps.length}
+                      {t("tutorial.step", "Tutorial")} {currentStep + 1} {t("tutorial.of", "of")} {tutorialSteps.length}
                     </div>
                   </div>
                 </div>

@@ -39,13 +39,17 @@ export const FloatingTimer = ({
   const { toast } = useToast();
   
   // Sequential tutorial showcasing each button when timer tutorial is active
+  // This effect runs every time showTutorial or tutorialStep changes
   useEffect(() => {
     if (showTutorial && tutorialStep === 0) { // Only when timer tutorial is active
+      // Reset to step 0 first
+      setSequentialTutorialStep(0);
+      
       const sequence = [
         { delay: 1000, step: 1 }, // Play/Pause button first
         { delay: 3000, step: 2 }, // Reduce Time button 
         { delay: 5000, step: 3 }, // End Session button
-        { delay: 7000, step: 0 }  // Reset
+        { delay: 7000, step: 0 }  // Reset and loop
       ];
       
       const timeouts = sequence.map(({ delay, step }) => 
@@ -56,13 +60,13 @@ export const FloatingTimer = ({
     } else {
       setSequentialTutorialStep(0);
     }
-  }, [showTutorial, tutorialStep]);
+  }, [showTutorial, tutorialStep]); // Re-run when either prop changes
 
   // Get tutorial classes for buttons with enhanced animations
   const getTutorialClasses = (step: number) => {
     const isActive = sequentialTutorialStep === step || tutorialStep === step;
     return isActive 
-      ? 'animate-bounce ring-4 ring-yellow-400 ring-opacity-75 border-yellow-400 scale-110 shadow-2xl shadow-yellow-400/50' 
+      ? 'animate-bounce ring-4 ring-yellow-400 ring-opacity-75 border-yellow-400 scale-110 shadow-2xl shadow-yellow-400/50 z-60' 
       : showTutorial && tutorialStep === 0 
         ? 'transition-all duration-500 hover:scale-105'
         : '';
