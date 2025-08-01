@@ -20,9 +20,13 @@ interface TutorialOverlayProps {
 }
 
 export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer }: TutorialOverlayProps) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [currentStep, setCurrentStep] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+
+  // Debug logging for language support
+  console.log('Tutorial - Current language:', i18n.language);
+  console.log('Tutorial - Timer title translation:', t("tutorial.timer.title", "FALLBACK"));
 
   const tutorialSteps: TutorialStep[] = [
     {
