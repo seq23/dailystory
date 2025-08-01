@@ -64,12 +64,14 @@ export const FloatingTimer = ({
 
   // Get tutorial classes for buttons with enhanced animations
   const getTutorialClasses = (step: number) => {
-    const isActive = sequentialTutorialStep === step || tutorialStep === step;
-    return isActive 
-      ? 'animate-bounce ring-4 ring-yellow-400 ring-opacity-75 border-yellow-400 scale-110 shadow-2xl shadow-yellow-400/50 z-60' 
-      : showTutorial && tutorialStep === 0 
-        ? 'transition-all duration-500 hover:scale-105'
-        : '';
+    // Only show animations when we're specifically on timer tutorial step (tutorialStep === 0)
+    if (showTutorial && tutorialStep === 0) {
+      const isActive = sequentialTutorialStep === step;
+      return isActive 
+        ? 'animate-bounce ring-4 ring-yellow-400 ring-opacity-75 border-yellow-400 scale-110 shadow-2xl shadow-yellow-400/50 z-60' 
+        : 'transition-all duration-500 hover:scale-105';
+    }
+    return '';
   };
 
   // Calculate progress for circular progress (based on current session time)
