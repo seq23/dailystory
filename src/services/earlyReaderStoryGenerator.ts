@@ -12,35 +12,36 @@ export class EarlyReaderStoryGenerator {
   
   // Configure reading experience by difficulty level (2 minutes reading per page)
   // Average reading speeds: PreK-1st: 20-50 WPM, 2nd-3rd: 80-120 WPM, 4th-5th: 140-160 WPM, 6th-12th: 200-300 WPM
+  // Word counts designed for exactly 2 minutes of reading per page
   private static getReadingConfig(difficulty: DifficultyLevel): ReadingConfig {
     switch (difficulty) {
       case 'easy': // PreK-1st grade (Julia Donaldson, Mo Willems, Dr. Seuss, Kevin Henkes style)
         return {
-          maxWordsPerPage: 6, // Very simple for early readers
-          fontSize: 'text-5xl md:text-6xl lg:text-7xl', // Bigger text for early readers
-          lineHeight: 'leading-relaxed',
-          spacing: 'space-y-6'
+          maxWordsPerPage: 8, // ~2 min at 20-30 WPM for early readers (increased from 6)
+          fontSize: 'text-4xl md:text-5xl lg:text-6xl', // Large text for early readers
+          lineHeight: 'leading-loose', // Extra spacing for readability
+          spacing: 'space-y-8' // More spacing between elements
         };
       case 'medium': // 2nd-3rd grade (Jeff Kinney, Roald Dahl, Dav Pilkey, Andrea Beaty style)
         return {
-          maxWordsPerPage: 200, // ~2 min at 100 WPM average
+          maxWordsPerPage: 180, // ~2 min at 90 WPM average (optimized for comprehension)
           fontSize: 'text-2xl md:text-3xl lg:text-4xl',
-          lineHeight: 'leading-normal',
-          spacing: 'space-y-4'
+          lineHeight: 'leading-relaxed',
+          spacing: 'space-y-6'
         };
       case 'hard': // 4th-5th grade (Katherine Applegate, C.S. Lewis, J.K. Rowling style)
         return {
-          maxWordsPerPage: 300, // ~2 min at 150 WPM average
+          maxWordsPerPage: 280, // ~2 min at 140 WPM average (optimized for engagement)
           fontSize: 'text-xl md:text-2xl lg:text-3xl',
           lineHeight: 'leading-normal',
-          spacing: 'space-y-3'
+          spacing: 'space-y-4'
         };
       case 'expert': // 6th-12th grade (Sharon Creech, Louis Sachar, Suzanne Collins, John Green style)
         return {
-          maxWordsPerPage: 500, // ~2 min at 250 WPM average
+          maxWordsPerPage: 450, // ~2 min at 225 WPM average (allows for complex content)
           fontSize: 'text-lg md:text-xl lg:text-2xl',
-          lineHeight: 'leading-snug',
-          spacing: 'space-y-2'
+          lineHeight: 'leading-normal',
+          spacing: 'space-y-3'
         };
     }
   }

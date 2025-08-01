@@ -689,12 +689,14 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                 <div className="flex-1 overflow-y-auto p-6">
                   <div className="flex items-center justify-center min-h-full">
                     <div className="text-center w-full">
-                      {/* Story Text with Reading Level Configuration */}
+                      {/* Story Text with Reading Level Configuration and Overflow Protection */}
                       {(() => {
                         const config = EarlyReaderStoryGenerator.getReadingConfigForDifficulty(currentDifficulty);
                         return (
-                          <div className={`${config.fontSize} ${config.lineHeight} ${config.spacing} font-medium text-gray-800 max-w-full break-words hyphens-auto leading-relaxed`}>
-                            {currentStory}
+                          <div className={`${config.fontSize} ${config.lineHeight} ${config.spacing} font-medium text-gray-800 max-w-full break-words hyphens-auto leading-relaxed overflow-hidden`}>
+                            <div className="max-h-[400px] overflow-y-auto px-2">
+                              {currentStory}
+                            </div>
                           </div>
                         );
                       })()}
