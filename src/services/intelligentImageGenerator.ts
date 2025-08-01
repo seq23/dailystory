@@ -101,7 +101,7 @@ export class IntelligentImageGenerator {
     const sceneDescription = this.buildSceneDescription(storyElements, pageNumber);
     
     // Add style and quality modifiers
-    const styleModifiers = "beautiful children's book illustration, soft lighting, warm colors, high quality, detailed, professional artwork";
+    const styleModifiers = "beautiful children's book illustration, soft lighting, warm colors, high quality, detailed, professional artwork, NO TEXT, NO WORDS, NO LETTERS in the image";
     
     // Combine all elements
     let prompt = `${sceneDescription}`;

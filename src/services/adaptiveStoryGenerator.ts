@@ -413,7 +413,7 @@ export class AdaptiveStoryGenerator {
         const pageContent = pages[i];
         
         // Create story-specific prompt following the user's example format
-        const prompt = `A beautiful children's book illustration depicting the scene where young ${gender} named ${characterName} with ${skinTone} in the setting described in this story page: "${pageContent.substring(0, 200)}..." based on the story "${storyTitle}" about ${theme}, with a happy and cheerful atmosphere, warm earth tones and natural colors, contemporary children's book art style, ${artStyle}, appealing to all children regardless of gender, diverse and inclusive, high quality, safe for children`;
+        const prompt = `A beautiful children's book illustration depicting the scene where young ${gender} named ${characterName} with ${skinTone} in the setting described in this story page: "${pageContent.substring(0, 200)}..." based on the story "${storyTitle}" about ${theme}, with a happy and cheerful atmosphere, warm earth tones and natural colors, contemporary children's book art style, ${artStyle}, appealing to all children regardless of gender, diverse and inclusive, high quality, safe for children, NO TEXT, NO WORDS, NO LETTERS in the image`;
         
         try {
           const { data: imageData, error } = await supabase.functions.invoke('runware-generate-image', {
@@ -497,9 +497,9 @@ export class AdaptiveStoryGenerator {
     // Create enhanced prompt with accurate representation
     let prompt;
     if (skinTone === 'dark') {
-      prompt = `A vibrant, realistic children's book illustration showing ${genderDesc} named ${characterName} with ${consistentSkinTone} and beautiful African/African American features in the scene: "${pageContent.substring(0, 200)}..." This is from the story "${storyTitle}" about ${theme}. The illustration should have vibrant colors, realistic skin tone representation, ${artStyle}, diverse and inclusive, high quality, safe for children, accurate and respectful representation`;
+      prompt = `A vibrant, realistic children's book illustration showing ${genderDesc} named ${characterName} with ${consistentSkinTone} and beautiful African/African American features in the scene: "${pageContent.substring(0, 200)}..." This is from the story "${storyTitle}" about ${theme}. The illustration should have vibrant colors, realistic skin tone representation, ${artStyle}, diverse and inclusive, high quality, safe for children, accurate and respectful representation, NO TEXT, NO WORDS, NO LETTERS in the image`;
     } else {
-      prompt = `A beautiful children's book illustration depicting ${genderDesc} named ${characterName} with ${consistentSkinTone} in the scene: "${pageContent.substring(0, 200)}..." from the story "${storyTitle}" about ${theme}, with a happy and cheerful atmosphere, ${artStyle}, appealing to all children, diverse and inclusive, high quality, safe for children`;
+      prompt = `A beautiful children's book illustration depicting ${genderDesc} named ${characterName} with ${consistentSkinTone} in the scene: "${pageContent.substring(0, 200)}..." from the story "${storyTitle}" about ${theme}, with a happy and cheerful atmosphere, ${artStyle}, appealing to all children, diverse and inclusive, high quality, safe for children, NO TEXT, NO WORDS, NO LETTERS in the image`;
     }
     
     try {

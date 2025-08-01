@@ -55,7 +55,8 @@ export class EarlyReaderStoryGenerator {
     // Collect and organize user inputs for organic integration
     const userElements = this.extractUserElements(userInfo);
     
-    // Generate story content with organic user element integration
+    // Generate story content with organic user element integration 
+    // CRITICAL: Stories are ALWAYS generated in English regardless of user's native language
     const storyContent = this.createStoryContent(characterName, userElements, difficulty);
     
     // Split into pages respecting word limits with continuing user elements
