@@ -401,9 +401,8 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
           }
         }
         
-        // Update story and reset images for progressive generation
+        // Update story and keep existing images during progressive generation
         setStory(pages);
-        setStoryImages([]);
         setWordsRead(updatedStory.wordCount);
         
         // Keep user on same relative page position
