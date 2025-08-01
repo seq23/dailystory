@@ -87,10 +87,12 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
   };
 
   const handleSubmit = () => {
+    console.log("Form submitted! Name:", formData.name.trim(), "Complete:", isFormComplete());
     // Check form validation first
     const errors = validateForm();
     
     if (errors.length > 0) {
+      console.log("Validation errors:", errors);
       setValidationErrors(errors);
       setShowValidationErrors(true);
       
@@ -177,13 +179,15 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
   };
 
   const isFormComplete = () => {
-    return formData.name.trim() && 
+    const complete = formData.name.trim() && 
            formData.age && 
            formData.grade && 
            formData.nativeLanguage &&
            formData.learningGoal &&
            formData.avatar.type &&
            formData.avatar.skinTone;
+    console.log("Form complete check:", complete, "Name:", formData.name.trim());
+    return complete;
   };
 
   // Handle language change and update UI language
