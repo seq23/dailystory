@@ -23,6 +23,19 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
   const [loading, setLoading] = useState(true);
   const [isPremium, setIsPremium] = useState(false);
 
+  // Check for query parameters on component mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const action = urlParams.get('action');
+    
+    if (action === 'new-story') {
+      // User came from session ended page wanting to start new story
+      setCurrentView("profile");
+      // Clean up the URL
+      window.history.replaceState({}, '', '/');
+    }
+  }, []);
+
   useEffect(() => {
     loadUserProfile();
     checkSubscription();

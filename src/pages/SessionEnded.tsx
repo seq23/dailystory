@@ -48,8 +48,8 @@ const SessionEnded = ({ onHome, onNewStory, isPremium = false, onUpgrade }: Sess
 
   const handleNewStory = () => {
     if (userIsPremium) {
-      // Premium users: stay on same page, reload to restart
-      window.history.pushState(null, '', '/');
+      // Premium users: go back to home with parameter to start new story
+      window.history.pushState(null, '', '/?action=new-story');
       window.location.reload();
     } else {
       // Free users: go back to home and navigate to form
