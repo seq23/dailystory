@@ -540,7 +540,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
     }
   };
 
-  // Flash "add more pages" alert when user reaches the LAST page (not next-to-last)
+  // Flash "add more pages" alert when user reaches the LAST page with >1 minute remaining for premium
   useEffect(() => {
     const isOnLastPage = currentPage === story.length - 1;
     if (isOnLastPage && canAddMorePages && !showAddPagesAlert) {

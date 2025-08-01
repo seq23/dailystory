@@ -32,37 +32,35 @@ export class OpenAITTSService {
     }
 
     try {
-      // Use direct fetch instead of supabase.functions.invoke to get raw binary data
+      // Use Supabase functions.invoke for proper authentication
       const speedToUse = options?.speed || this.speed;
       console.log(`TTS Request: voice=${this.voice}, speed=${speedToUse}, text="${cleanText.substring(0, 50)}..."`);
       
-      const response = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/openai-tts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-        },
+      const { data, error } = await supabase.functions.invoke('openai-tts', {
         body: JSON.stringify({
           text: cleanText,
           voice: this.voice,
           speed: speedToUse
-        })
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
 
-      console.log('TTS Response status:', response.status, response.statusText);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('TTS Error response:', errorText);
-        throw new Error(`TTS Error: ${response.status} ${response.statusText} - ${errorText}`);
+      if (error) {
+        console.error('TTS Supabase Error:', error);
+        throw new Error(`TTS Error: ${error.message}`);
       }
 
-      // Get the raw binary audio data
-      const audioBuffer = await response.arrayBuffer();
-      console.log('Received audio ArrayBuffer:', audioBuffer.byteLength, 'bytes');
-
       
-      // Create audio blob directly from the ArrayBuffer
+      if (!data || !data.audioContent) {
+        throw new Error('No audio data received from TTS service');
+      }
+
+      console.log('Received audio data successfully');
+
+      // Convert base64 audio data to blob
+      const audioBuffer = Uint8Array.from(atob(data.audioContent), c => c.charCodeAt(0));
       const audioBlob = new Blob([audioBuffer], { type: 'audio/mpeg' });
       console.log('Created audio blob:', audioBlob.size, 'bytes, type:', audioBlob.type);
       

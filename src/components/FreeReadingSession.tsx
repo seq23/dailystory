@@ -327,26 +327,21 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     };
   }, [userInfo.name]);
 
-  // Flash "add more pages" alert when on next-to-last page with >1 minute remaining
+  // Flash "add more pages" alert when on LAST page with >1 minute remaining
   useEffect(() => {
-    const pagesLeft = story.length - currentPage;
-    if (timeRemaining > 1 * 60 && pagesLeft === 1 && !hasShownAddPagesAlert && !showAddPagesAlert && sessionStarted) {
+    const isOnLastPage = currentPage === story.length - 1;
+    if (timeRemaining > 1 * 60 && isOnLastPage && !hasShownAddPagesAlert && !showAddPagesAlert && sessionStarted) {
       setHasShownAddPagesAlert(true);
       setShowAddPagesAlert(true);
-      
-      const timer = setTimeout(() => {
-        setShowAddPagesAlert(false);
-      }, 2500);
-      
-      return () => clearTimeout(timer);
     }
   }, [timeRemaining, currentPage, story.length, hasShownAddPagesAlert, showAddPagesAlert, sessionStarted]);
   
-  // Reset the flag when more pages are added or we move away from the last page
+  // Reset the flag when user moves away from the last page
   useEffect(() => {
-    const pagesLeft = story.length - currentPage;
-    if (pagesLeft > 1) {
+    const isOnLastPage = currentPage === story.length - 1;
+    if (!isOnLastPage) {
       setHasShownAddPagesAlert(false);
+      setShowAddPagesAlert(false);
     }
   }, [currentPage, story.length]);
 
@@ -485,7 +480,8 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   
   // Function to add more pages to the story
   const addMorePages = async () => {
-    if (isLoading || !establishedCharacter) return;
+    const isOnLastPage = currentPage === story.length - 1;
+    if (isLoading || !establishedCharacter || !isOnLastPage) return;
     
     try {
       console.log('Maintaining character consistency for page extension:', establishedCharacter.userName);
@@ -1064,13 +1060,15 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                             <Button
                               id="add-pages-button"
                               onClick={addMorePages}
-                              disabled={isLoading}
+                              disabled={isLoading || currentPage !== story.length - 1}
                               variant="outline"
                               size="sm"
                               className={`p-1.5 sm:p-2 transition-all duration-300 ${
-                                showAddPagesAlert 
+                                showAddPagesAlert && currentPage === story.length - 1
                                   ? 'animate-bounce bg-amber-100 border-amber-400 text-amber-700 shadow-lg ring-2 ring-amber-300' 
-                                  : 'bg-blue-50 hover:bg-blue-100 border-blue-200'
+                                  : currentPage === story.length - 1
+                                    ? 'bg-blue-50 hover:bg-blue-100 border-blue-200'
+                                    : 'bg-gray-100 border-gray-300 cursor-not-allowed opacity-50'
                               }`}
                             >
                               <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -1099,7 +1097,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                             {/* Regular Tooltip */}
                             {!showAddPagesAlert && (
                               <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 rounded text-xs transition-all duration-300 pointer-events-none whitespace-nowrap z-50 bg-gray-800 text-white opacity-0 group-hover:opacity-100">
-                                Add 5 more pages
+                                {currentPage === story.length - 1 ? 'Add 5 more pages' : 'Only available on last page'}
                               </div>
                             )}
                           </div>
