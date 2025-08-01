@@ -26,7 +26,11 @@ export const InteractiveWord = ({
   const [isLoadingExplanation, setIsLoadingExplanation] = useState(false);
   const [isLoadingTranslation, setIsLoadingTranslation] = useState(false);
   const [ttsService, setTtsService] = useState<any>(null);
-  const [tooltipPosition, setTooltipPosition] = useState<'top' | 'bottom'>('top');
+  const [tooltipPosition, setTooltipPosition] = useState<{
+    vertical: 'top' | 'bottom';
+    horizontal: 'left' | 'center' | 'right';
+    offset: number;
+  }>({ vertical: 'top', horizontal: 'center', offset: 0 });
   const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const wordRef = useRef<HTMLSpanElement>(null);
   const phoneticSpelling = getPhoneticSpelling(word);
@@ -65,23 +69,50 @@ export const InteractiveWord = ({
       const viewportWidth = window.innerWidth;
       const estimatedTooltipHeight = 160; // Estimated height including content and padding
       const estimatedTooltipWidth = 320; // Estimated width
+      const margin = 16; // Safety margin from viewport edges
       
       // Check available space in all directions
       const spaceAbove = rect.top;
       const spaceBelow = viewportHeight - rect.bottom;
       const spaceLeft = rect.left;
       const spaceRight = viewportWidth - rect.right;
+      const wordCenter = rect.left + rect.width / 2;
       
       // Determine optimal vertical position
-      // Prefer showing below unless there's insufficient space
+      let vertical: 'top' | 'bottom' = 'bottom';
       if (spaceBelow >= estimatedTooltipHeight || spaceBelow > spaceAbove) {
-        setTooltipPosition('bottom');
+        vertical = 'bottom';
       } else if (spaceAbove >= estimatedTooltipHeight) {
-        setTooltipPosition('top');
+        vertical = 'top';
       } else {
         // If neither direction has enough space, choose the one with more space
-        setTooltipPosition(spaceBelow > spaceAbove ? 'bottom' : 'top');
+        vertical = spaceBelow > spaceAbove ? 'bottom' : 'top';
       }
+      
+      // Determine optimal horizontal position and offset
+      let horizontal: 'left' | 'center' | 'right' = 'center';
+      let offset = 0;
+      
+      // Check if centered tooltip would be cut off
+      const tooltipHalfWidth = estimatedTooltipWidth / 2;
+      const leftEdgeIfCentered = wordCenter - tooltipHalfWidth;
+      const rightEdgeIfCentered = wordCenter + tooltipHalfWidth;
+      
+      if (leftEdgeIfCentered < margin) {
+        // Tooltip would be cut off on the left, align to left edge of word
+        horizontal = 'left';
+        offset = Math.max(margin - rect.left, 0);
+      } else if (rightEdgeIfCentered > viewportWidth - margin) {
+        // Tooltip would be cut off on the right, align to right edge of word
+        horizontal = 'right';
+        offset = Math.min(rect.right - (viewportWidth - margin), 0);
+      } else {
+        // Centered position works fine
+        horizontal = 'center';
+        offset = 0;
+      }
+      
+      setTooltipPosition({ vertical, horizontal, offset });
     }
     
     setShowTooltip(true);
@@ -282,13 +313,22 @@ export const InteractiveWord = ({
           onMouseLeave={handleMouseLeave}
           onTouchStart={(e) => e.stopPropagation()}
           style={{
-            left: '50%',
-            transform: 'translateX(-50%)',
+            // Smart horizontal positioning to prevent cutoffs
+            ...(tooltipPosition.horizontal === 'left' ? {
+              left: `${tooltipPosition.offset}px`,
+              transform: 'translateX(0)'
+            } : tooltipPosition.horizontal === 'right' ? {
+              right: `${-tooltipPosition.offset}px`,
+              transform: 'translateX(0)'
+            } : {
+              left: '50%',
+              transform: 'translateX(-50%)'
+            }),
             maxWidth: 'min(340px, 90vw)',
             minWidth: 'min(280px, 85vw)',
             width: 'max-content',
-            [tooltipPosition === 'top' ? 'bottom' : 'top']: '100%',
-            [tooltipPosition === 'top' ? 'marginBottom' : 'marginTop']: '8px'
+            [tooltipPosition.vertical === 'top' ? 'bottom' : 'top']: '100%',
+            [tooltipPosition.vertical === 'top' ? 'marginBottom' : 'marginTop']: '8px'
           }}
         >
           <div className="bg-white border border-gray-200 text-gray-900 px-3 py-3 sm:px-4 rounded-lg shadow-2xl text-xs sm:text-sm font-medium backdrop-blur-sm w-full"
@@ -375,11 +415,22 @@ export const InteractiveWord = ({
           </div>
           {/* Dynamic arrow positioning */}
           <div 
-            className={`absolute left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-transparent ${
-              tooltipPosition === 'top'
+            className={`absolute w-0 h-0 border-l-4 border-r-4 border-transparent ${
+              tooltipPosition.vertical === 'top'
                 ? 'top-full border-t-4 border-t-gray-200'
                 : 'bottom-full border-b-4 border-b-gray-200'
             }`}
+            style={{
+              // Position arrow based on horizontal alignment
+              ...(tooltipPosition.horizontal === 'left' ? {
+                left: '20px'
+              } : tooltipPosition.horizontal === 'right' ? {
+                right: '20px'
+              } : {
+                left: '50%',
+                transform: 'translateX(-50%)'
+              })
+            }}
           ></div>
         </div>
       )}
