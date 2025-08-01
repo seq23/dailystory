@@ -34,7 +34,10 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
     learningGoal: "improve-english-reading",
     avatar: {
       type: "boy",
-      skinTone: "light"
+      skinTone: "light",
+      hairStyle: "short",
+      hairColor: "brown",
+      hasFreckles: false
     },
     favoriteColor: "",
     favoriteAnimal: "",

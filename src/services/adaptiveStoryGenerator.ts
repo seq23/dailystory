@@ -12,6 +12,9 @@ export interface StoryGenerationConfig {
   avatar?: {
     type: 'boy' | 'girl' | 'prefer-not-to-answer';
     skinTone: 'pale' | 'light' | 'medium' | 'olive' | 'dark';
+    hairStyle: 'short' | 'long' | 'braids' | 'dreadlocks' | 'curly' | 'straight';
+    hairColor: 'blonde' | 'brown' | 'black' | 'red' | 'gray' | 'white';
+    hasFreckles: boolean;
   };
   favoriteColor?: string;
   favoriteAnimal?: string;
@@ -385,7 +388,13 @@ export class AdaptiveStoryGenerator {
       grade: config.gradeLevel as any,
       nativeLanguage: (config.nativeLanguage as any) || 'en',
       learningGoal: 'improve-english-reading' as any,
-      avatar: config.avatar || { type: 'boy' as any, skinTone: 'medium' as any },
+      avatar: config.avatar || { 
+        type: 'boy' as any, 
+        skinTone: 'medium' as any,
+        hairStyle: 'short' as any,
+        hairColor: 'brown' as any,
+        hasFreckles: false
+      },
       favoriteColor: config.favoriteColor || 'blue',
       favoriteAnimal: config.favoriteAnimal || 'cat',
       hobbies: config.hobbies || 'reading',

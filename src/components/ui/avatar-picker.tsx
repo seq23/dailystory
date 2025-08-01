@@ -19,11 +19,14 @@ import avatarGirlMedium from "@/assets/avatar-girl-medium.jpg"
 import avatarGirlOlive from "@/assets/avatar-girl-olive.jpg"
 import avatarGirlDark from "@/assets/avatar-girl-dark.jpg"
 
-import type { AvatarType, SkinTone } from "@/types"
+import type { AvatarType, SkinTone, HairStyle, HairColor } from "@/types"
 
 interface AvatarSelection {
   type: AvatarType
   skinTone: SkinTone
+  hairStyle: HairStyle
+  hairColor: HairColor
+  hasFreckles: boolean
 }
 
 interface AvatarPickerProps {
@@ -57,6 +60,24 @@ const skinToneInfo = {
   dark: { color: "#8b5a3c", name: "Deep", emoji: "🌰" }
 }
 
+const hairStyleInfo = {
+  short: { name: "Short Hair", emoji: "✂️", description: "Classic short cut" },
+  long: { name: "Long Hair", emoji: "🌊", description: "Beautiful flowing hair" },
+  braids: { name: "Braids", emoji: "🎀", description: "Stylish braided hair" },
+  dreadlocks: { name: "Dreadlocks", emoji: "🌿", description: "Natural dreadlocks" },
+  curly: { name: "Curly Hair", emoji: "🌀", description: "Natural curly texture" },
+  straight: { name: "Straight Hair", emoji: "📏", description: "Sleek straight hair" }
+}
+
+const hairColorInfo = {
+  blonde: { name: "Blonde", color: "#f4e1a6", emoji: "☀️" },
+  brown: { name: "Brown", color: "#8b4513", emoji: "🌰" },
+  black: { name: "Black", color: "#2c2c2c", emoji: "🖤" },
+  red: { name: "Red", color: "#cc6600", emoji: "🔥" },
+  gray: { name: "Gray", color: "#999999", emoji: "🌫️" },
+  white: { name: "White", color: "#f0f0f0", emoji: "🤍" }
+}
+
 const avatarTypeInfo = {
   boy: { icon: User, label: "Boy", emoji: "👦", description: "He/Him pronouns" },
   girl: { icon: User, label: "Girl", emoji: "👧", description: "She/Her pronouns" },
@@ -77,6 +98,24 @@ export const AvatarPicker = React.forwardRef<
 
   const handleSkinToneChange = (skinTone: SkinTone) => {
     const newSelection = { ...value, skinTone }
+    onChange(newSelection)
+    setSelectedPreview(newSelection)
+  }
+
+  const handleHairStyleChange = (hairStyle: HairStyle) => {
+    const newSelection = { ...value, hairStyle }
+    onChange(newSelection)
+    setSelectedPreview(newSelection)
+  }
+
+  const handleHairColorChange = (hairColor: HairColor) => {
+    const newSelection = { ...value, hairColor }
+    onChange(newSelection)
+    setSelectedPreview(newSelection)
+  }
+
+  const handleFrecklesChange = (hasFreckles: boolean) => {
+    const newSelection = { ...value, hasFreckles }
     onChange(newSelection)
     setSelectedPreview(newSelection)
   }
@@ -198,12 +237,145 @@ export const AvatarPicker = React.forwardRef<
         </div>
       </div>
 
-      {/* Avatar Preview - Enhanced */}
+      {/* Hair Style Selection */}
+      <div className="space-y-4">
+        <Label className="text-lg font-semibold text-foreground flex items-center gap-2">
+          ✂️ Hair Style
+        </Label>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          {(Object.keys(hairStyleInfo) as Array<keyof typeof hairStyleInfo>).map((style) => {
+            const info = hairStyleInfo[style]
+            const isSelected = value.hairStyle === style
+            
+            return (
+              <Card 
+                key={style} 
+                className={cn(
+                  "cursor-pointer transition-all duration-200 hover:shadow-md border-2",
+                  isSelected 
+                    ? "border-primary bg-primary/5 shadow-lg" 
+                    : "border-gray-200 hover:border-primary/50"
+                )}
+                onClick={() => handleHairStyleChange(style)}
+              >
+                <CardContent className="p-3 text-center space-y-2">
+                  <div className="text-2xl">{info.emoji}</div>
+                  <div className="space-y-1">
+                    <h4 className="font-medium text-sm">{info.name}</h4>
+                    <p className="text-xs text-muted-foreground">{info.description}</p>
+                  </div>
+                  {isSelected && (
+                    <Badge variant="default" className="text-xs">✓</Badge>
+                  )}
+                </CardContent>
+              </Card>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Hair Color Selection */}
+      <div className="space-y-4">
+        <Label className="text-lg font-semibold text-foreground flex items-center gap-2">
+          🎨 Hair Color
+        </Label>
+        <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+          {(Object.keys(hairColorInfo) as Array<keyof typeof hairColorInfo>).map((color) => {
+            const info = hairColorInfo[color]
+            const isSelected = value.hairColor === color
+            
+            return (
+              <div key={color} className="text-center space-y-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => handleHairColorChange(color)}
+                  className={cn(
+                    "w-16 h-16 rounded-full border-4 hover:scale-110 transition-all duration-200 relative overflow-hidden",
+                    isSelected 
+                      ? "border-primary shadow-xl scale-110 ring-4 ring-primary/20" 
+                      : "border-gray-300 hover:border-primary/50 shadow-md"
+                  )}
+                  style={{ backgroundColor: info.color }}
+                  aria-label={`Select ${info.name} hair color`}
+                >
+                  <span className="text-lg">{info.emoji}</span>
+                  {isSelected && (
+                    <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
+                      <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                        <div className="w-2 h-2 bg-white rounded-full"></div>
+                      </div>
+                    </div>
+                  )}
+                </Button>
+                <div className="space-y-1">
+                  <p className="text-xs font-medium">{info.name}</p>
+                  {isSelected && (
+                    <Badge variant="outline" className="text-xs px-1">✓</Badge>
+                  )}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Freckles Selection */}
+      <div className="space-y-4">
+        <Label className="text-lg font-semibold text-foreground flex items-center gap-2">
+          ✨ Freckles
+        </Label>
+        <div className="grid grid-cols-2 gap-4">
+          <Card 
+            className={cn(
+              "cursor-pointer transition-all duration-200 hover:shadow-md border-2",
+              !value.hasFreckles 
+                ? "border-primary bg-primary/5 shadow-lg" 
+                : "border-gray-200 hover:border-primary/50"
+            )}
+            onClick={() => handleFrecklesChange(false)}
+          >
+            <CardContent className="p-4 text-center space-y-2">
+              <div className="text-3xl">😊</div>
+              <div className="space-y-1">
+                <h4 className="font-medium">No Freckles</h4>
+                <p className="text-xs text-muted-foreground">Smooth skin</p>
+              </div>
+              {!value.hasFreckles && (
+                <Badge variant="default" className="text-xs">✓ Selected</Badge>
+              )}
+            </CardContent>
+          </Card>
+          
+          <Card 
+            className={cn(
+              "cursor-pointer transition-all duration-200 hover:shadow-md border-2",
+              value.hasFreckles 
+                ? "border-primary bg-primary/5 shadow-lg" 
+                : "border-gray-200 hover:border-primary/50"
+            )}
+            onClick={() => handleFrecklesChange(true)}
+          >
+            <CardContent className="p-4 text-center space-y-2">
+              <div className="text-3xl">😋</div>
+              <div className="space-y-1">
+                <h4 className="font-medium">With Freckles</h4>
+                <p className="text-xs text-muted-foreground">Cute freckles</p>
+              </div>
+              {value.hasFreckles && (
+                <Badge variant="default" className="text-xs">✓ Selected</Badge>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Enhanced Avatar Preview */}
       {currentAvatar && (
         <div className="space-y-4">
           <Label className="text-lg font-semibold text-foreground flex items-center gap-2">
             <Users className="w-5 h-5" />
-            Your Avatar Preview
+            Your Custom Avatar Preview
           </Label>
           <Card className="bg-gradient-to-br from-primary/5 to-secondary/5 border-2 border-primary/20">
             <CardContent className="p-6">
@@ -223,20 +395,34 @@ export const AvatarPicker = React.forwardRef<
                   </div>
                 </div>
                 
-                <div className="text-center space-y-2">
+                <div className="text-center space-y-3">
                   <h3 className="text-lg font-bold text-foreground">
-                    Perfect! This is your character! 🎉
+                    Amazing! Your unique character! 🎉
                   </h3>
-                  <div className="flex items-center justify-center gap-2 flex-wrap">
-                    <Badge variant="secondary" className="text-sm">
+                  
+                  {/* Avatar Details Grid */}
+                  <div className="grid grid-cols-2 gap-2 max-w-sm mx-auto">
+                    <Badge variant="secondary" className="text-xs">
                       {avatarTypeInfo[value.type]?.label}
                     </Badge>
-                    <Badge variant="outline" className="text-sm">
+                    <Badge variant="outline" className="text-xs">
                       {skinToneInfo[value.skinTone]?.name} skin
                     </Badge>
+                    <Badge variant="outline" className="text-xs">
+                      {hairStyleInfo[value.hairStyle]?.name}
+                    </Badge>
+                    <Badge variant="outline" className="text-xs">
+                      {hairColorInfo[value.hairColor]?.name} hair
+                    </Badge>
+                    {value.hasFreckles && (
+                      <Badge variant="outline" className="text-xs col-span-2">
+                        ✨ With freckles
+                      </Badge>
+                    )}
                   </div>
+                  
                   <p className="text-sm text-muted-foreground">
-                    This avatar will appear in your personalized stories!
+                    This personalized avatar will star in all your stories!
                   </p>
                 </div>
               </div>

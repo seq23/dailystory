@@ -1,4 +1,4 @@
-import type { UserInfo, DifficultyLevel } from "@/types";
+import type { UserInfo, DifficultyLevel, Avatar } from "@/types";
 
 // Unified interface for all image generation needs
 export interface ImageGenerationOptions {
@@ -14,13 +14,16 @@ export interface ImageGenerationOptions {
 export interface EstablishedCharacter {
   userName: string;
   characterDescription: string;
-  avatar: any;
+  avatar: Avatar;
   favoriteColor: string;
   favoriteAnimal: string;
   hobbies: string;
   favoriteFood: string;
   skinTone: string;
   avatarType: string;
+  hairStyle: string;
+  hairColor: string;
+  hasFreckles: boolean;
 }
 
 export interface GeneratedImage {
@@ -101,7 +104,10 @@ export class UnifiedImageService {
       hobbies: userInfo.hobbies || 'reading',
       favoriteFood: userInfo.favoriteFood?.toLowerCase()?.trim() || 'pizza',
       skinTone: userInfo.avatar?.skinTone || 'medium',
-      avatarType: userInfo.avatar?.type || 'boy'
+      avatarType: userInfo.avatar?.type || 'boy',
+      hairStyle: userInfo.avatar?.hairStyle || 'short',
+      hairColor: userInfo.avatar?.hairColor || 'brown',
+      hasFreckles: userInfo.avatar?.hasFreckles || false
     };
 
     this.currentCharacter = character;
