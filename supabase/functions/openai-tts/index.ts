@@ -45,13 +45,20 @@ serve(async (req) => {
     const audioBuffer = await response.arrayBuffer()
     console.log(`TTS Success: Generated ${audioBuffer.byteLength} bytes of audio`)
     
-    return new Response(audioBuffer, {
-      headers: {
-        ...corsHeaders,
-        'Content-Type': 'audio/mpeg',
-        'Content-Length': audioBuffer.byteLength.toString(),
-      },
-    })
+    // Convert audio buffer to base64
+    const base64Audio = btoa(
+      String.fromCharCode(...new Uint8Array(audioBuffer))
+    )
+    
+    return new Response(
+      JSON.stringify({ audioContent: base64Audio }),
+      {
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json',
+        },
+      }
+    )
 
   } catch (error) {
     console.error('TTS Error:', error)
