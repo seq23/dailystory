@@ -1041,11 +1041,10 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                               return `${config.fontSize} ${config.lineHeight} ${config.spacing}`;
                             })()}
                           `}>
-                            <InteractiveAudioReading 
-                              text={currentStory}
-                              userInfo={userInfo}
-                              isEnabled={true}
-                            />
+                            {/* Display the actual story text directly */}
+                            <div className="font-medium text-gray-800 leading-relaxed">
+                              {currentStory}
+                            </div>
                           </div>
                           
                           {/* Educational Info Display */}
@@ -1061,16 +1060,14 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                       </div>
                     </div>
 
-                    {/* Audio Controls Section */}
-                    {sessionStarted && (
-                      <div className="flex-shrink-0 p-3 sm:p-4 lg:p-6 border-t border-gray-100 audio-controls">
-                        <InteractiveAudioReading 
-                          text={currentStory}
-                          userInfo={userInfo}
-                          isEnabled={true}
-                        />
-                      </div>
-                    )}
+                    {/* Audio Controls Section - Single Instance */}
+                    <div className="flex-shrink-0 p-3 sm:p-4 lg:p-6 border-t border-gray-100 audio-controls">
+                      <InteractiveAudioReading 
+                        text={currentStory}
+                        userInfo={userInfo}
+                        isEnabled={true}
+                      />
+                    </div>
 
                     {/* Fixed Navigation Footer */}
                     <div className="flex-shrink-0 p-3 sm:p-4 lg:p-6 border-t border-gray-100 bg-gray-50/50">
