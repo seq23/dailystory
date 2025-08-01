@@ -174,9 +174,14 @@ export class UnifiedImageService {
       { pattern: /eat.*with.*friends?/i, description: `eating together with friends` },
       { pattern: /friends?/i, description: `with friends in a social setting` },
       
-      // Food-related interactions
+      // Food-related interactions - Enhanced detection
+      { pattern: /cat.*likes.*pizza/i, description: `sharing pizza with a friendly cat` },
+      { pattern: /cat.*pizza/i, description: `cat enjoying pizza together` },
+      { pattern: /pizza.*cat/i, description: `pizza time with a cat` },
+      { pattern: /likes.*pizza.*too/i, description: `sharing delicious pizza together` },
       { pattern: /eat.*pizza/i, description: `enjoying pizza` },
       { pattern: /shares?.*pizza/i, description: `sharing pizza` },
+      { pattern: /pizza/i, description: `with pizza prominently featured` },
       { pattern: /eat.*cookie/i, description: `eating a cookie` },
       { pattern: /eat.*apple/i, description: `eating an apple` },
       { pattern: /drink/i, description: `drinking something refreshing` },
