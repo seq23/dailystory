@@ -336,6 +336,10 @@
       "description": "¡Haz el cuento más fácil o más difícil al instante! La flecha hacia arriba lo hace más difícil, la flecha hacia abajo lo hace más fácil para que coincida con tu nivel de lectura."
     },
     "step": "Tutorial",
-    "of": "de"
+    "of": "de",
+    "previous": "Anterior",
+    "skip": "Saltar Tutorial",
+    "next": "Siguiente",
+    "startReading": "¡Comenzar a Leer!"
   }
 }

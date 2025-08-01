@@ -363,7 +363,11 @@
       "description": "Torne a história mais fácil ou mais difícil instantaneamente! Seta para cima torna mais difícil, seta para baixo torna mais fácil para combinar com seu nível de leitura."
     },
     "step": "Tutorial",
-    "of": "de"
+    "of": "de",
+    "previous": "Anterior",
+    "skip": "Pular Tutorial",
+    "next": "Próximo",
+    "startReading": "Começar a Ler!"
   },
   "adaptiveUI": {
     "eslMode": "Modo de Aprendizado de Inglês",

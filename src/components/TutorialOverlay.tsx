@@ -458,7 +458,7 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
                   className="flex items-center gap-2"
                 >
                   <ChevronLeft className="w-4 h-4" />
-                  Previous
+                  {t("tutorial.previous", "Previous")}
                 </Button>
 
                 <Button
@@ -472,7 +472,7 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
                   }}
                   className="text-muted-foreground"
                 >
-                  Skip Tutorial
+                  {t("tutorial.skip", "Skip Tutorial")}
                 </Button>
 
                 <Button
@@ -481,7 +481,7 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
                   onClick={handleNext}
                   className="bg-gradient-primary hover:opacity-90 flex items-center gap-2"
                 >
-                  {currentStep === tutorialSteps.length - 1 ? 'Start Reading!' : 'Next'}
+                  {currentStep === tutorialSteps.length - 1 ? t("tutorial.startReading", "Start Reading!") : t("tutorial.next", "Next")}
                   <ChevronRight className="w-4 h-4" />
                 </Button>
               </div>

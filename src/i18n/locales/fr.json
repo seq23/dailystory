@@ -336,6 +336,10 @@
       "description": "Rendez l'histoire plus facile ou plus difficile instantanément ! La flèche vers le haut la rend plus difficile, la flèche vers le bas la rend plus facile pour correspondre à votre niveau de lectur."
     },
     "step": "Tutoriel",
-    "of": "sur"
+    "of": "sur",
+    "previous": "Précédent",
+    "skip": "Ignorer le Tutoriel", 
+    "next": "Suivant",
+    "startReading": "Commencer à Lire!"
   }
 }

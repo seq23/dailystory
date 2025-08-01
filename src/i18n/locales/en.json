@@ -325,7 +325,11 @@
       "description": "Make the story easier or harder instantly! Up arrow makes it harder, down arrow makes it easier to match your reading level."
     },
     "step": "Tutorial",
-    "of": "of"
+    "of": "of",
+    "previous": "Previous",
+    "skip": "Skip Tutorial",
+    "next": "Next",
+    "startReading": "Start Reading!"
   },
   "readingTutorial": {
     "step1": {
