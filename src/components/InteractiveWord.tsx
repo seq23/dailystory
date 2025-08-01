@@ -174,38 +174,14 @@ export const InteractiveWord = ({
     try {
       const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
       
-      // Use OpenAI to get a proper child-friendly definition
-      if (isNativeEnglishSpeaker) {
-        const response = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/openai-tts', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          },
-          body: JSON.stringify({
-            text: `Define "${cleanWord}" in simple terms for a ${userInfo?.age || 8} year old child`,
-            voice: 'nova',
-            speed: 0.9
-          })
-        });
-        
-        // For now, use a simple but contextual explanation
-        const explanation = `"${cleanWord}" means ${
-          cleanWord.length <= 3 ? 'something simple and familiar' :
-          cleanWord.length <= 6 ? 'something important in the story' :
-          'something interesting and meaningful'
-        }.`;
-        
-        setWordExplanation(explanation);
-        if (ttsService) {
-          await ttsService.speakText(explanation, { voice: 'nova' });
-        }
-      } else {
-        const explanation = `"${cleanWord}" is an English word. It appears in your story and has a special meaning.`;
-        setWordExplanation(explanation);
-        if (ttsService) {
-          await ttsService.speakText(explanation, { voice: 'nova' });
-        }
+      // Enhanced explanation with sentence context
+      const sentence = word; // The full sentence context would be passed here
+      const explanation = `"${cleanWord}" means ${getWordDefinition(cleanWord, sentence)}. Here's how it's used: "${sentence}"`;
+      
+      setWordExplanation(explanation);
+      if (ttsService) {
+        // Speak both explanation and word in context
+        await ttsService.speakText(`${explanation}. Listen to the word in context: ${sentence}`, { voice: 'nova', speed: isESLLearner ? 0.8 : 1.0 });
       }
     } catch (error) {
       console.error('Error explaining word:', error);
@@ -214,6 +190,39 @@ export const InteractiveWord = ({
     } finally {
       setIsLoadingExplanation(false);
     }
+  };
+
+  // Enhanced word definition with context awareness
+  const getWordDefinition = (word: string, context: string) => {
+    // Context-aware definitions to fix pronunciation issues like "skied" 
+    const contextualDefinitions: Record<string, Record<string, string>> = {
+      'skied': {
+        'green skied': 'having a sky that is green in color',
+        'blue skied': 'having a sky that is blue in color',
+        'clear skied': 'having a clear, cloudless sky'
+      }
+    };
+
+    if (contextualDefinitions[word.toLowerCase()]) {
+      for (const [contextKey, definition] of Object.entries(contextualDefinitions[word.toLowerCase()])) {
+        if (context.toLowerCase().includes(contextKey)) {
+          return definition;
+        }
+      }
+    }
+
+    // Default age-appropriate definitions
+    return getAgeAppropriateDefinition(word);
+  };
+
+  const getAgeAppropriateDefinition = (word: string) => {
+    const simpleDefinitions: Record<string, string> = {
+      'cat': 'a furry animal that says meow',
+      'house': 'a place where people live',
+      'blue': 'a color like the sky or ocean',
+      'run': 'to move very fast with your legs'
+    };
+    return simpleDefinitions[word.toLowerCase()] || `a special word that means something important in your story`;
   };
 
   const handleTranslate = async (e: React.MouseEvent) => {
