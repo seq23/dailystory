@@ -431,9 +431,9 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
       };
       
       setStory(newStory.pages);
-      setStoryImages(newStory.images || []);
       setWordsRead(newStory.wordCount);
       
+      // Keep existing images initially to avoid blank pages, then update them
       // Generate intelligent images for new difficulty level for ALL users (premium + free)
       if (establishedCharacter) {
         const generateImagesForNewDifficulty = async () => {
