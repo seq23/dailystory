@@ -339,7 +339,7 @@
     "alerts": {
       "almostDone": "Quase terminando!",
       "clickToAdd": "Clique em + para adicionar mais páginas!"
-    },
+    }
   },
   "tutorial": {
     "timer": {
