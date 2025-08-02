@@ -569,26 +569,4 @@
     "readingLevelHeader": "पठन स्तर",
     "readingLevelDescription": "यह कहानी {level} स्तर पर लिखी गई है"
   },
-  "sessionEnded": {
-    "completed": "पठन सत्र पूर्ण!",
-    "premiumCompleted": "प्रीमियम सत्र पूर्ण!",
-    "readingProgress": "पठन प्रगति",
-    "of": "में से",
-    "pages": "पृष्ठ",
-    "wordsRead": "शब्द पढ़े गए",
-    "timeSpent": "समय व्यतीत",
-    "accuracy": "सटीकता",
-    "readingLevel": "पठन स्तर",
-    "level": "स्तर",
-    "unlockPremium": "प्रीमियम लाभ अनलॉक करें!",
-    "premiumBenefits": {
-      "unlimitedSessions": "असीमित पठन सत्र",
-      "customDifficulty": "कस्टम कहानी कठिनाई समायोजन",
-      "extendedLibrary": "अधिक विषयों के साथ विस्तृत कहानी पुस्तकालय",
-      "advancedTracking": "उन्नत प्रगति ट्रैकिंग और विश्लेषण",
-      "upgradeToPremium": "प्रीमियम में अपग्रेड करें"
-    },
-    "goToHome": "होम पर जाएं",
-    "startNewStory": "नई कहानी शुरू करें"
-  }
 }

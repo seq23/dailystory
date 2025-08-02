@@ -569,26 +569,4 @@
     "readingLevelHeader": "Nível de Leitura",
     "readingLevelDescription": "Esta história está escrita no nível {level}"
   },
-  "sessionEnded": {
-    "completed": "Sessão de Leitura Concluída!",
-    "premiumCompleted": "Sessão Premium Concluída!",
-    "readingProgress": "Progresso de Leitura",
-    "of": "de",
-    "pages": "páginas",
-    "wordsRead": "Palavras Lidas",
-    "timeSpent": "Tempo Gasto",
-    "accuracy": "Precisão",
-    "readingLevel": "Nível de Leitura",
-    "level": "Nível",
-    "unlockPremium": "Desbloqueie Benefícios Premium!",
-    "premiumBenefits": {
-      "unlimitedSessions": "Sessões de leitura ilimitadas",
-      "customDifficulty": "Ajuste personalizado de dificuldade da história",
-      "extendedLibrary": "Biblioteca de histórias estendida com mais tópicos",
-      "advancedTracking": "Rastreamento avançado de progresso e análises",
-      "upgradeToPremium": "Atualizar para Premium"
-    },
-    "goToHome": "Ir para Casa",
-    "startNewStory": "Iniciar Nova História"
-  }
 }

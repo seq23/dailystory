@@ -517,21 +517,6 @@
       "endSession": "🔚 انقر لإنهاء جلسة القراءة!"
     }
   },
-  "sessionEnded": {
-    "completed": "تمت جلسة القراءة!",
-    "premiumCompleted": "تمت الجلسة المميزة!",
-    "readingProgress": "تقدم القراءة",
-    "of": "من",
-    "pages": "صفحات",
-    "wordsRead": "كلمات مقروءة",
-    "timeSpent": "الوقت المستغرق",
-    "accuracy": "الدقة",
-    "readingLevel": "مستوى القراءة",
-    "level": "المستوى",
-    "unlockPremium": "فتح المزايا المميزة!",
-    "goToHome": "العودة للرئيسية",
-    "startNewStory": "بدء قصة جديدة"
-  },
   "audioReading": {
     "playAudio": "تشغيل الصوت",
     "audioPlaying": "يتم تشغيل الصوت...",
