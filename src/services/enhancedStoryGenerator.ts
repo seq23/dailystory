@@ -1,5 +1,6 @@
 import type { UserInfo, DifficultyLevel } from "@/types";
 import CulturalAdaptationService from "./culturalAdaptationService";
+import { EnhancedLevel4StoryGenerator } from "./enhancedLevel4Generator";
 
 interface StoryArcPoint {
   phase: 'introduction' | 'rising_action' | 'climax' | 'falling_action' | 'resolution';
@@ -14,6 +15,11 @@ export class EnhancedStoryGenerator {
     difficulty: DifficultyLevel,
     pageCount: number = 10
   ): string[] {
+    
+    // Use enhanced Level 4 generator for expert difficulty with grade-level mixing
+    if (difficulty === 'expert') {
+      return EnhancedLevel4StoryGenerator.generateExpertStory(userInfo, pageCount);
+    }
     
     const characterName = userInfo.name?.trim() || 'child';
     

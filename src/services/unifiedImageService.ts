@@ -448,20 +448,26 @@ export class UnifiedImageService {
    * Get quality modifiers with STRICT no-text enforcement
    */
   private static getQualityModifiers(difficulty: DifficultyLevel): string {
-    const strictNoTextRule = 'ABSOLUTELY NO TEXT ANYWHERE IN THE IMAGE, NO CHARACTER NAMES, NO TITLES, NO WORDS, NO LETTERS, NO WRITING, NO SIGNS WITH TEXT, NO SPEECH BUBBLES, NO DIALOGUE, NO STORY TEXT, NO NARRATION, NO CAPTIONS, text-free illustration only';
+    const baseQuality = [
+      'A beautiful children\'s book illustration depicting the scene',
+      'high quality professional artwork',
+      'masterpiece children\'s book illustration', 
+      'professional digital art with perfect composition',
+      'beautiful detailed illustration with vibrant colors',
+      'award-winning children\'s book art style'
+    ];
     
-    switch (difficulty) {
-      case 'easy':
-        return `${strictNoTextRule}, warm vibrant cartoon-style illustration, bright cheerful colors, rounded friendly cartoon features, cozy comfortable settings, child-friendly cartoon aesthetic, simple clear composition, Disney Junior animation quality, welcoming and safe atmosphere`;
-      case 'medium':
-        return `${strictNoTextRule}, colorful cartoon children's book art, warm animated illustration style, bright harmonious colors, friendly cartoon characters, beautiful simplified backgrounds, child-appropriate cartoon quality, engaging cartoon composition`;
-      case 'hard':
-        return `${strictNoTextRule}, realistic children's book illustration, natural realistic lighting, detailed realistic textures, sophisticated realistic art style, painterly realistic technique, realistic proportions and anatomy, professional realistic illustration quality for ages 8-12`;
-      case 'expert':
-        return `${strictNoTextRule}, photorealistic detailed children's book art, highly realistic illustration technique, natural realistic lighting and shadows, sophisticated realistic detail, museum-quality realistic illustration, advanced realistic art style for young readers 10+`;
-      default:
-        return `${strictNoTextRule}, warm colorful cartoon children's book illustration, safe for children, bright cheerful atmosphere`;
-    }
+    const noTextEnforcement = [
+      'ABSOLUTELY NO TEXT OR LETTERS ANYWHERE IN THE IMAGE',
+      'NO WORDS, NO LABELS, NO SIGNS, NO NAMES',
+      'STRICTLY NO WRITTEN TEXT OF ANY KIND INCLUDING CHARACTER NAMES',
+      'PURE VISUAL ILLUSTRATION WITHOUT ANY TEXT OVERLAYS',
+      'CLEAN ARTWORK WITH ZERO TEXT ELEMENTS',
+      'NO TYPOGRAPHY OR LETTERING OF ANY FORM',
+      'TEXT-FREE ARTWORK ONLY'
+    ];
+    
+    return `${baseQuality.join(', ')}, ${noTextEnforcement.join(', ')}, realistic children's photography style with natural lighting, appealing to all children regardless of gender, diverse and inclusive, safe and wholesome content.`;
   }
 
   /**

@@ -122,7 +122,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
       toast({
         title: "🎉 Story Completed!",
         description: `Amazing! You read ${wordsRead} words and completed the story!`,
-        duration: 5000,
+        duration: 3000,
       });
     }
   }, [storyCompleted, sessionEnded, wordsRead, toast]);
