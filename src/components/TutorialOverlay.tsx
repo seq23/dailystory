@@ -268,31 +268,32 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
     const margin = isMobile ? 20 : isTablet ? 25 : 40;
     const clearance = isMobile ? 120 : isTablet ? 140 : 160; // Extra space to avoid covering targets
 
-    // SPECIAL HANDLING FOR TIMER STEP - Always place away from floating timer
+    // SPECIAL HANDLING FOR TIMER STEP - Avoid tutorial timer in top middle
     if (target === "timer-display") {
-      // Floating timer is at bottom-left, place tutorial at top-right with safe margin
+      // Tutorial timer is in top middle, place tutorial card at bottom or side
       if (isMobile) {
         return {
-          top: `${margin}px`,
-          right: `${margin}px`,
-          left: "auto",
+          bottom: `${margin + 80}px`, // Bottom positioning to avoid top middle timer
+          left: `${margin}px`,
+          right: "auto",
+          top: "auto",
           transform: "none",
           maxWidth: `${tooltipWidth}px`
         };
       } else if (isTablet) {
         return {
-          top: `${margin + 20}px`,
-          right: `${margin + 20}px`,
-          left: "auto",
-          transform: "none",
+          top: "50%",
+          left: `${margin}px`, // Left side to avoid top middle timer
+          right: "auto",
+          transform: "translateY(-50%)",
           maxWidth: `${tooltipWidth}px`
         };
       } else {
         return {
-          top: `${margin + 40}px`,
-          right: `${margin + 40}px`,
-          left: "auto",
-          transform: "none",
+          top: "50%",
+          left: `${margin + 40}px`, // Left side to avoid top middle timer
+          right: "auto",
+          transform: "translateY(-50%)",
           maxWidth: `${tooltipWidth}px`
         };
       }
@@ -543,7 +544,7 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
 
       {/* Mobile Tutorial Card */}
       <div className={`fixed z-50 transition-all duration-300 ${isAnimating ? 'opacity-100 scale-100' : 'opacity-0 scale-95'} sm:hidden ${
-        step.target === 'timer-display' ? 'top-4 right-4 left-auto w-72' : 'top-4 left-4 right-4'
+        step.target === 'timer-display' ? 'bottom-20 left-4 right-4' : 'top-4 left-4 right-4'
       }`}>
         <Card className="bg-white dark:bg-gray-900 shadow-xl border-2 border-primary/30 rounded-2xl overflow-hidden">
           <CardContent className="p-0">
