@@ -270,18 +270,27 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
 
     // SPECIAL HANDLING FOR TIMER STEP - Always place away from floating timer
     if (target === "timer-display") {
-      // Floating timer is at bottom-left, place tutorial at top-center or top-right
+      // Floating timer is at bottom-left, place tutorial at top-right with safe margin
       if (isMobile) {
         return {
           top: `${margin}px`,
-          left: "50%",
-          transform: "translateX(-50%)",
+          right: `${margin}px`,
+          left: "auto",
+          transform: "none",
+          maxWidth: `${tooltipWidth}px`
+        };
+      } else if (isTablet) {
+        return {
+          top: `${margin + 20}px`,
+          right: `${margin + 20}px`,
+          left: "auto",
+          transform: "none",
           maxWidth: `${tooltipWidth}px`
         };
       } else {
         return {
-          top: `${margin}px`,
-          right: `${margin}px`,
+          top: `${margin + 40}px`,
+          right: `${margin + 40}px`,
           left: "auto",
           transform: "none",
           maxWidth: `${tooltipWidth}px`
@@ -382,6 +391,10 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
           transform-style: preserve-3d;
           backface-visibility: hidden;
         }
+        
+        .safe-area-bottom {
+          padding-bottom: env(safe-area-inset-bottom);
+        }
       `}</style>
 
       {/* Enhanced overlay background - darker when focusing on timer */}
@@ -407,9 +420,9 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
         </div>
       </div>
 
-      {/* Clean Tutorial Tooltip */}
+      {/* Tutorial Tooltip - Desktop & Tablet */}
       <div 
-        className={`fixed z-50 transition-all duration-300 ${isAnimating ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
+        className={`fixed z-50 transition-all duration-300 ${isAnimating ? 'opacity-100 scale-100' : 'opacity-0 scale-95'} hidden sm:block`}
         style={tooltipStyle}
       >
         <Card className="w-full max-w-[320px] sm:max-w-[400px] md:w-[400px] bg-white dark:bg-gray-900 shadow-xl border-2 border-primary/30 rounded-2xl overflow-hidden">
@@ -519,13 +532,113 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
                   onClick={handleNext}
                   className="bg-gradient-primary hover:opacity-90 flex items-center gap-2"
                 >
-                  {currentStep === tutorialSteps.length - 1 ? t("tutorial.startReading", "Start Reading!") : t("tutorial.next", "Next")}
+                  {currentStep === tutorialSteps.length - 1 ? t("tutorial.finish", "Finish") : t("tutorial.next", "Next")}
                   <ChevronRight className="w-4 h-4" />
                 </Button>
               </div>
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Mobile Tutorial Card */}
+      <div className={`fixed top-4 left-4 right-4 z-50 transition-all duration-300 ${isAnimating ? 'opacity-100 scale-100' : 'opacity-0 scale-95'} sm:hidden`}>
+        <Card className="bg-white dark:bg-gray-900 shadow-xl border-2 border-primary/30 rounded-2xl overflow-hidden">
+          <CardContent className="p-0">
+            {/* Mobile Header */}
+            <div className="bg-gradient-primary text-white p-3 relative overflow-hidden">
+              <div className="relative z-10 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 bg-white/20 rounded-full">
+                    <step.icon className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-sm">{step.title}</h3>
+                    <div className="text-xs opacity-90">
+                      Step {currentStep + 1} of {tutorialSteps.length}
+                    </div>
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    onSkip();
+                    if (onStartTimer) {
+                      onStartTimer();
+                    }
+                  }}
+                  className="text-white hover:bg-white/20 p-1.5 rounded-full"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Mobile Content */}
+            <div className="p-3">
+              <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed mb-3">
+                {step.description}
+              </p>
+
+              {/* Mobile Progress Bar */}
+              <div className="mb-3">
+                <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                  <span>Progress</span>
+                  <span>{Math.round(((currentStep + 1) / tutorialSteps.length) * 100)}%</span>
+                </div>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                  <div 
+                    className="bg-gradient-primary h-1.5 rounded-full transition-all duration-500 ease-out"
+                    style={{ width: `${((currentStep + 1) / tutorialSteps.length) * 100}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Mobile Navigation - Bottom Bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 sm:hidden">
+        <div className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-4 py-3 safe-area-bottom">
+          <div className="flex justify-between items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePrevious}
+              disabled={currentStep === 0}
+              className="flex items-center gap-1 text-xs px-2 py-1 h-8"
+            >
+              <ChevronLeft className="w-3 h-3" />
+              Prev
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                onSkip();
+                if (onStartTimer) {
+                  onStartTimer();
+                }
+              }}
+              className="text-muted-foreground text-xs px-2 py-1 h-8"
+            >
+              Skip
+            </Button>
+
+            <Button
+              variant="default"
+              size="sm"
+              onClick={handleNext}
+              className="bg-gradient-primary hover:opacity-90 flex items-center gap-1 text-xs px-2 py-1 h-8"
+            >
+              {currentStep === tutorialSteps.length - 1 ? "Finish" : "Next"}
+              <ChevronRight className="w-3 h-3" />
+            </Button>
+          </div>
+        </div>
       </div>
     </>
   );
