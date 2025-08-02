@@ -98,6 +98,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   const [wordsRead, setWordsRead] = useState(0);
   const [showCelebration, setShowCelebration] = useState(false);
   const [showProgressReport, setShowProgressReport] = useState(false);
+  const [storyCompleted, setStoryCompleted] = useState(false);
   const [sessionEnded, setSessionEnded] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [tutorialActive, setTutorialActive] = useState(true);
@@ -1143,14 +1144,41 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                         
                         <Button 
                           onClick={() => {
-                            setCurrentPage(Math.min(story.length - 1, currentPage + 1));
+                            if (currentPage === story.length - 2) {
+                              // User is about to complete the story
+                              const nextPage = currentPage + 1;
+                              setCurrentPage(nextPage);
+                              setStoryCompleted(true);
+                              
+                              // Trigger story completion gamification
+                              const timeSpent = sessionStartTime ? 
+                                Math.floor((Date.now() - sessionStartTime.getTime()) / 1000) : 
+                                APP_CONFIG.FREE_SESSION_DURATION - timeRemaining;
+                              
+                              recordReadingSession({
+                                wordsRead,
+                                timeSpent,
+                                pagesRead: nextPage + 1,
+                                storyCompleted: true,
+                                readingSpeed: Math.round((wordsRead / (timeSpent / 60)) || 0)
+                              });
+                              
+                              // Show completion feedback
+                              toast({
+                                title: "🎉 Story Completed!",
+                                description: `Amazing! You read ${wordsRead} words and completed the story!`,
+                                duration: 5000,
+                              });
+                            } else {
+                              setCurrentPage(Math.min(story.length - 1, currentPage + 1));
+                            }
                           }}
                           disabled={currentPage >= story.length - 1}
                           variant="outline"
                           size="sm"
                           className="flex-shrink-0 min-w-[80px]"
                         >
-                          {t("storyDisplay.next")}
+                          {currentPage === story.length - 2 ? t("storyDisplay.finish") : t("storyDisplay.next")}
                         </Button>
                       </div>
                     </div>

@@ -93,6 +93,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
   const [wordsRead, setWordsRead] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [showFinishCountdown, setShowFinishCountdown] = useState(false);
+  const [storyCompleted, setStoryCompleted] = useState(false);
   const [tutorialActive, setTutorialActive] = useState(true);
   const [currentTutorialStep, setCurrentTutorialStep] = useState(0);
   const [showAddPagesAlert, setShowAddPagesAlert] = useState(false);
@@ -325,14 +326,16 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
       accuracy: 100 // Placeholder
     };
 
-    // Record reading session for gamification
-    recordReadingSession({
-      wordsRead,
-      timeSpent,
-      pagesRead: currentPage + 1,
-      storyCompleted: currentPage >= story.length - 1,
-      readingSpeed: Math.round((wordsRead / (timeSpent / 60)) || 0)
-    });
+    // Only record reading session for gamification if story wasn't already completed
+    if (!storyCompleted) {
+      recordReadingSession({
+        wordsRead,
+        timeSpent,
+        pagesRead: currentPage + 1,
+        storyCompleted: currentPage >= story.length - 1,
+        readingSpeed: Math.round((wordsRead / (timeSpent / 60)) || 0)
+      });
+    }
     
     onSessionEnded(sessionStats);
   };
@@ -359,6 +362,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
       // Premium users: Generate new story directly
       setCurrentPage(0);
       setTimeRemaining(APP_CONFIG.FREE_SESSION_DURATION);
+      setStoryCompleted(false);
       setIsLoading(true);
       
       try {
@@ -455,6 +459,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
     setCurrentDifficulty(newDifficulty);
     setIsLoading(true);
     setCurrentPage(0);
+    setStoryCompleted(false);
     
     try {
       // Generate new story at the new difficulty level
@@ -959,12 +964,38 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                     </div>
                     
                     <Button 
-                      onClick={() => setCurrentPage(Math.min(story.length - 1, currentPage + 1))}
+                      onClick={() => {
+                        if (currentPage === story.length - 2) {
+                          // User is about to complete the story
+                          const nextPage = currentPage + 1;
+                          setCurrentPage(nextPage);
+                          setStoryCompleted(true);
+                          
+                          // Trigger story completion gamification
+                          const timeSpent = Math.floor((Date.now() - sessionStartTime.getTime()) / 1000);
+                          recordReadingSession({
+                            wordsRead,
+                            timeSpent,
+                            pagesRead: nextPage + 1,
+                            storyCompleted: true,
+                            readingSpeed: Math.round((wordsRead / (timeSpent / 60)) || 0)
+                          });
+                          
+                          // Show completion feedback
+                          toast({
+                            title: "🎉 Story Completed!",
+                            description: `Great job! You read ${wordsRead} words in ${Math.round(timeSpent / 60)} minutes.`,
+                            duration: 5000,
+                          });
+                        } else {
+                          setCurrentPage(Math.min(story.length - 1, currentPage + 1));
+                        }
+                      }}
                       disabled={currentPage >= story.length - 1}
                       variant="outline"
                       className="min-w-[100px]"
                     >
-                      {t("storyDisplay.next")}
+                      {currentPage === story.length - 2 ? t("storyDisplay.finish") : t("storyDisplay.next")}
                     </Button>
                   </div>
                 </div>
