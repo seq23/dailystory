@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { getPhoneticSpelling } from "@/utils/phoneticDictionary";
 import { Volume2, HelpCircle, Languages, BookOpen, Lightbulb, Plus, Crown } from "lucide-react";
@@ -32,78 +32,48 @@ export const InteractiveWord = ({
   const { isMobileDevice, isCapacitor } = useIsMobile();
   
   // ENHANCED: Debug and fix translation issues for Arabic, Chinese, Hindi
-  const userLanguageT = (key: string, fallback: string) => {
+  const userLanguageT = useCallback((key: string, fallback: string) => {
     if (userInfo?.nativeLanguage && userInfo.nativeLanguage !== 'en') {
       try {
-        // Force reload of i18n language resources
-        i18n.changeLanguage(userInfo.nativeLanguage);
+        // Approach 1: Try direct i18n translation
+        const translation = i18n.t(key, { lng: userInfo.nativeLanguage });
+        if (translation && translation !== key && translation !== fallback) {
+          return translation;
+        }
         
-        // Wait a bit for resources to load then try direct lookup
-        setTimeout(() => {
-          const resources = i18n.getResourceBundle(userInfo.nativeLanguage, 'translation');
-          console.log('🗂️ Resource Bundle Check:', {
-            language: userInfo.nativeLanguage,
-            hasBundle: !!resources,
-            allData: i18n.store.data,
-            resourceKeys: resources ? Object.keys(resources) : 'none'
-          });
-        }, 100);
-        
-        // Try multiple approaches to get the translation
-        const approaches = [
-          // Approach 1: Direct i18n.t with language
-          () => i18n.t(key, { lng: userInfo.nativeLanguage }),
-          // Approach 2: Change language then translate
-          () => {
-            i18n.changeLanguage(userInfo.nativeLanguage);
-            return i18n.t(key);
+        // Approach 2: Manual fallback with known translations
+        const manualTranslations = {
+          'zh': {
+            'interactiveWord.hearIt': '听一听',
+            'interactiveWord.explain': '解释', 
+            'interactiveWord.translate': '翻译',
+            'interactiveWord.addToVocabulary': '保存单词'
           },
-          // Approach 3: Manual fallback based on known translations
-          () => {
-            const translations = {
-              'zh': {
-                'interactiveWord.hearIt': '听一听',
-                'interactiveWord.explain': '解释', 
-                'interactiveWord.translate': '翻译',
-                'interactiveWord.addToVocabulary': '保存单词'
-              },
-              'ar': {
-                'interactiveWord.hearIt': 'استمع إليها',
-                'interactiveWord.explain': 'اشرح',
-                'interactiveWord.translate': 'ترجم', 
-                'interactiveWord.addToVocabulary': 'احفظ الكلمة'
-              },
-              'hi': {
-                'interactiveWord.hearIt': 'सुनें',
-                'interactiveWord.explain': 'समझाएं',
-                'interactiveWord.translate': 'अनुवाद करें',
-                'interactiveWord.addToVocabulary': 'शब्द सहेजें'
-              }
-            };
-            return translations[userInfo.nativeLanguage]?.[key];
+          'ar': {
+            'interactiveWord.hearIt': 'استمع إليها',
+            'interactiveWord.explain': 'اشرح',
+            'interactiveWord.translate': 'ترجم', 
+            'interactiveWord.addToVocabulary': 'احفظ الكلمة'
+          },
+          'hi': {
+            'interactiveWord.hearIt': 'सुनें',
+            'interactiveWord.explain': 'समझाएं',
+            'interactiveWord.translate': 'अनुवाद करें',
+            'interactiveWord.addToVocabulary': 'शब्द सहेजें'
           }
-        ];
+        };
         
-        for (let i = 0; i < approaches.length; i++) {
-          const translation = approaches[i]();
-          console.log(`🔄 Approach ${i + 1} result:`, {
-            key,
-            translation,
-            isValid: translation && translation !== key && translation !== fallback
-          });
-          
-          if (translation && translation !== key && translation !== fallback) {
-            return translation;
-          }
+        const manualTranslation = manualTranslations[userInfo.nativeLanguage]?.[key];
+        if (manualTranslation) {
+          return manualTranslation;
         }
       } catch (error) {
         console.error('❌ Translation error:', error);
       }
     }
     
-    console.log('🔄 Using fallback:', fallback);
     return fallback;
-  };
+  }, [userInfo?.nativeLanguage]);
   const [showTooltip, setShowTooltip] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [wordData, setWordData] = useState<any>(null);
