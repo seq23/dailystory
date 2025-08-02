@@ -542,7 +542,9 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
       </div>
 
       {/* Mobile Tutorial Card */}
-      <div className={`fixed top-4 left-4 right-4 z-50 transition-all duration-300 ${isAnimating ? 'opacity-100 scale-100' : 'opacity-0 scale-95'} sm:hidden`}>
+      <div className={`fixed z-50 transition-all duration-300 ${isAnimating ? 'opacity-100 scale-100' : 'opacity-0 scale-95'} sm:hidden ${
+        step.target === 'timer-display' ? 'top-4 right-4 left-auto w-72' : 'top-4 left-4 right-4'
+      }`}>
         <Card className="bg-white dark:bg-gray-900 shadow-xl border-2 border-primary/30 rounded-2xl overflow-hidden">
           <CardContent className="p-0">
             {/* Mobile Header */}
