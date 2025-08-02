@@ -281,6 +281,26 @@
       "avatar": {
         "label": "आप कौन सा अवतार चाहते हैं?"
       },
+      "avatarTypes": {
+        "label": "अवतार प्रकार:",
+        "boy": "लड़का",
+        "girl": "लड़की",
+        "preferNotToAnswer": "जवाब न देना पसंद करूंगा"
+      },
+      "skinTone": {
+        "label": "त्वचा का रंग:",
+        "select": "चुनें",
+        "options": {
+          "pale": "हल्का",
+          "light": "गोरा",
+          "medium": "मध्यम",
+          "olive": "जैतूनी",
+          "dark": "काला"
+        }
+      },
+      "avatarPreview": {
+        "label": "आपका अवतार:"
+      },
       "favoriteColor": {
         "label": "आपका पसंदीदा रंग कौन सा है?",
         "optional": "(वैकल्पिक)"

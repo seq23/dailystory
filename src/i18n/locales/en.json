@@ -241,6 +241,26 @@
       "avatar": {
         "label": "Which avatar do you want?"
       },
+      "avatarTypes": {
+        "label": "Avatar Type:",
+        "boy": "Boy",
+        "girl": "Girl",
+        "preferNotToAnswer": "Prefer not to answer"
+      },
+      "skinTone": {
+        "label": "Skin Tone:",
+        "select": "Select",
+        "options": {
+          "pale": "Pale",
+          "light": "Light",
+          "medium": "Medium", 
+          "olive": "Olive",
+          "dark": "Dark"
+        }
+      },
+      "avatarPreview": {
+        "label": "Your avatar:"
+      },
       "favoriteColor": {
         "label": "What is your favorite color or shade?",
         "optional": "(Optional)"

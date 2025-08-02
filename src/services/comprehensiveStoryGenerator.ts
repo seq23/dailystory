@@ -528,8 +528,8 @@ export class ComprehensiveStoryGenerator {
       return "A child goes on a wonderful adventure. They meet a friendly animal. Together they explore and play. They have lots of fun. The child learns something new. They become best friends. It's a perfect day for adventure. Everyone is happy and safe.";
     }
     
-    // Additional content sanitization
-    return ContentSecurity.sanitizeInput(story);
+    // Return story without HTML encoding to prevent &quot; issues
+    return story.trim();
   }
   
   private static splitIntoPages(text: string, maxWordsPerPage: number, targetPageCount: number): string[] {

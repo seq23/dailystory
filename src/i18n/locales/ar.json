@@ -272,6 +272,26 @@
       "avatar": {
         "label": "أي صورة رمزية تريد؟"
       },
+      "avatarTypes": {
+        "label": "نوع الصورة الرمزية:",
+        "boy": "صبي",
+        "girl": "فتاة",
+        "preferNotToAnswer": "أفضل عدم الإجابة"
+      },
+      "skinTone": {
+        "label": "لون البشرة:",
+        "select": "اختر",
+        "options": {
+          "pale": "شاحب",
+          "light": "فاتح",
+          "medium": "متوسط",
+          "olive": "زيتوني",
+          "dark": "داكن"
+        }
+      },
+      "avatarPreview": {
+        "label": "صورتك الرمزية:"
+      },
       "favoriteColor": {
         "label": "ما هو لونك المفضل؟",
         "optional": "(اختياري)"

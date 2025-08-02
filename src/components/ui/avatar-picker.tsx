@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
+import { useTranslation } from "react-i18next"
 
 // Import avatar images
 import avatarBoyPale from "@/assets/avatar-boy-pale.jpg"
@@ -58,6 +59,8 @@ export const AvatarPicker = React.forwardRef<
   HTMLDivElement,
   AvatarPickerProps
 >(({ value, onChange, className }, ref) => {
+  const { t } = useTranslation()
+  
   const handleTypeChange = (type: AvatarType) => {
     onChange({ ...value, type })
   }
@@ -75,7 +78,7 @@ export const AvatarPicker = React.forwardRef<
       {/* Avatar Type Selection */}
       <div className="space-y-3">
         <Label className="text-lg font-semibold text-foreground">
-          Avatar Type:
+          {t("userInfoForm.avatarTypes.label", "Avatar Type:")}
         </Label>
         <RadioGroup
           value={value.type}
@@ -84,15 +87,15 @@ export const AvatarPicker = React.forwardRef<
         >
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="boy" id="boy" />
-            <Label htmlFor="boy" className="text-base cursor-pointer">Boy</Label>
+            <Label htmlFor="boy" className="text-base cursor-pointer">{t("userInfoForm.avatarTypes.boy", "Boy")}</Label>
           </div>
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="girl" id="girl" />
-            <Label htmlFor="girl" className="text-base cursor-pointer">Girl</Label>
+            <Label htmlFor="girl" className="text-base cursor-pointer">{t("userInfoForm.avatarTypes.girl", "Girl")}</Label>
           </div>
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="prefer-not-to-answer" id="prefer-not-to-answer" />
-            <Label htmlFor="prefer-not-to-answer" className="text-base cursor-pointer">Prefer not to answer</Label>
+            <Label htmlFor="prefer-not-to-answer" className="text-base cursor-pointer">{t("userInfoForm.avatarTypes.preferNotToAnswer", "Prefer not to answer")}</Label>
           </div>
         </RadioGroup>
       </div>
@@ -100,7 +103,7 @@ export const AvatarPicker = React.forwardRef<
       {/* Skin Tone Selection */}
       <div className="space-y-3">
         <Label className="text-lg font-semibold text-foreground">
-          Skin Tone:
+          {t("userInfoForm.skinTone.label", "Skin Tone:")}
         </Label>
         <div className="flex gap-3 flex-wrap">
           {(Object.keys(skinToneColors) as Array<keyof typeof skinToneColors>).map((tone) => (
@@ -116,7 +119,7 @@ export const AvatarPicker = React.forwardRef<
                   : "border-gray-300 hover:border-primary/50"
               )}
               style={{ backgroundColor: skinToneColors[tone] }}
-              aria-label={`Select ${tone} skin tone`}
+              aria-label={`${t("userInfoForm.skinTone.select", "Select")} ${t(`userInfoForm.skinTone.options.${tone}`, tone)} ${t("userInfoForm.skinTone.label", "skin tone")}`}
             />
           ))}
         </div>
@@ -126,7 +129,7 @@ export const AvatarPicker = React.forwardRef<
       {currentAvatar && (
         <div className="space-y-3">
           <Label className="text-lg font-semibold text-foreground">
-            Your avatar:
+            {t("userInfoForm.avatarPreview.label", "Your avatar:")}
           </Label>
           <div className="flex justify-center">
             <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-primary/20 shadow-lg">
