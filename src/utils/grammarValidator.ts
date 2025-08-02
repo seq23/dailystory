@@ -214,4 +214,23 @@ export const validateAndFixGrammar = (text: string): string => {
   return text;
 };
 
+// Quick test to verify grammar validation works
+if (typeof window !== 'undefined') {
+  // Test the specific error we fixed
+  const testCases = [
+    'He eat pizza.',      // Should detect error
+    'He eats pizza.',     // Should pass
+    'She run fast.',      // Should detect error  
+    'She runs fast.',     // Should pass
+    'They eat pizza.',    // Should pass
+    'Alex eats pizza.'    // Should pass
+  ];
+  
+  console.log('🧪 Grammar Validator Test Results:');
+  testCases.forEach(test => {
+    const result = GrammarValidator.validateStoryText(test);
+    console.log(`"${test}" - ${result.isValid ? '✅ PASS' : '❌ FAIL'}: ${result.errors.join(', ')}`);
+  });
+}
+
 export default GrammarValidator;
