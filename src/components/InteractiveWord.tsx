@@ -790,19 +790,15 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
      navigator.maxTouchPoints > 0 || 
      window.innerWidth <= 768);
 
-  // Enhanced mobile debugging for multilingual explain button with correct i18n context
-  console.log('Mobile Translation Debug:', {
+  // SIMPLIFIED: Just pass through to main component which has all enhanced functionality
+  console.log('📱 Mobile Wrapper Active:', {
     word: props.word,
     userNativeLanguage: props.userInfo?.nativeLanguage,
-    currentLanguage: i18n.language,
-    explainButtonText: t("interactiveWord.explain"),
-    hearItButtonText: t("interactiveWord.hearIt"),
-    isESL: props.userInfo?.nativeLanguage !== 'en',
     isMobileDevice,
-    isNativeApp
+    isNativeApp,
+    passThrough: 'Enhanced InteractiveWord'
   });
 
-  // Apply mobile-specific optimizations
   const optimizedProps = {
     ...props,
     className: `${props.className || ''} ${
