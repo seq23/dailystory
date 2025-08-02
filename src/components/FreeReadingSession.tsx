@@ -405,12 +405,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
         const maxPage = Math.max(0, pages.length - 1);
         setCurrentPage(Math.min(currentPage, maxPage));
         
-        // Success feedback
-        toast({
-          title: "Story Updated!",
-          description: `Now reading at ${newDifficulty} level`,
-          duration: 2000,
-        });
+        // Silent update - no toast notification needed
 
         // IMMEDIATELY start progressive image generation for new content (NON-BLOCKING)
         const startProgressiveImageGeneration = async () => {
