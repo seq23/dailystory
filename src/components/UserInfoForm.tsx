@@ -96,19 +96,25 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
     }
   };
 
-  // Enhanced input processing for all users (spelling/grammar for English, translation for others)
+  // Enhanced input processing with better error handling and performance
   const handleIntelligentProcessing = async (field: string, value: string) => {
-    if (!value.trim()) return;
+    if (!value || typeof value !== 'string') return;
+    
+    const trimmedValue = value.trim();
+    if (trimmedValue.length === 0 || trimmedValue.length > 200) return;
     
     // Only process certain fields that benefit from correction/translation
     const processableFields = ['favoriteAnimal', 'favoriteFood', 'hobbies', 'specialRequest'];
     if (!processableFields.includes(field)) return;
 
+    // Debounce processing to avoid excessive API calls
+    if (isProcessingInputs) return;
+
     try {
       setIsProcessingInputs(true);
       
       const processed = await IntelligentInputProcessor.processUserInput(
-        value,
+        trimmedValue,
         field,
         formData
       );

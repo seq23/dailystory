@@ -907,16 +907,23 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                       {/* Story Text with Interactive Words and Reading Level Configuration */}
                       {(() => {
                         const config = { fontSize: 'text-lg sm:text-xl', lineHeight: 'leading-relaxed', spacing: 'space-y-2' };
+                        
+                        // Performance optimization: Only process text for phonetics if it's not too long
+                        const shouldUseInteractiveWords = currentStory.length < 1000;
+                        
                         return (
                           <div className={`${config.fontSize} ${config.lineHeight} ${config.spacing} font-medium text-gray-800 max-w-full break-words hyphens-auto leading-relaxed overflow-hidden`}>
                             <div className="max-h-[400px] overflow-y-auto px-2">
-                              {processTextForPhonetics(
-                                currentStory,
-                                "",
-                                userInfo.difficultyLevel || "easy",
-                                userInfo,
-                                isPremium
-                              )}
+                              {shouldUseInteractiveWords ? 
+                                processTextForPhonetics(
+                                  currentStory,
+                                  "",
+                                  userInfo.difficultyLevel || "easy",
+                                  userInfo,
+                                  isPremium
+                                ) : 
+                                <span className="select-text">{currentStory}</span>
+                              }
                             </div>
                           </div>
                         );

@@ -18,9 +18,20 @@ export interface TranslationResult {
   confidence: number;
 }
 
-// Simple in-memory caches until database tables are available
+// Enhanced caches with size limits to prevent memory issues
+const MAX_CACHE_SIZE = 1000;
 const translationCache = new Map<string, TranslationResult>();
 const spellingCache = new Map<string, string>();
+
+// Cache cleanup function
+const cleanupCache = (cache: Map<string, any>) => {
+  if (cache.size > MAX_CACHE_SIZE) {
+    const entries = Array.from(cache.entries());
+    cache.clear();
+    // Keep the most recent 50% of entries
+    entries.slice(-Math.floor(MAX_CACHE_SIZE / 2)).forEach(([k, v]) => cache.set(k, v));
+  }
+};
 
 export class IntelligentInputProcessor {
   
@@ -30,9 +41,24 @@ export class IntelligentInputProcessor {
     fieldName: string,
     userInfo: UserInfo
   ): Promise<ProcessedUserInput> {
+    // Input validation and sanitization
+    if (!input || typeof input !== 'string') {
+      return this.createEmptyResult(input || '');
+    }
+
+    const trimmedInput = input.trim();
+    if (trimmedInput.length === 0) {
+      return this.createEmptyResult(input);
+    }
+
+    // Prevent extremely long inputs that could cause performance issues
+    if (trimmedInput.length > 500) {
+      return this.createEmptyResult(trimmedInput.slice(0, 500));
+    }
+
     try {
       // Step 1: Translation Layer - Only translate if truly non-English
-      const translationResult = await this.translateIfNeeded(input, userInfo.nativeLanguage);
+      const translationResult = await this.translateIfNeeded(trimmedInput, userInfo.nativeLanguage);
       
       // Step 2: Spelling Correction Layer - Enhanced for common animal/food misspellings
       const correctedInput = await this.correctSpelling(
@@ -44,9 +70,10 @@ export class IntelligentInputProcessor {
       // Return processed input without grammar processing or article addition
       const finalInput = correctedInput.trim();
 
-      // Cache the translation if it was needed
-      if (translationResult.translatedText !== input) {
-        translationCache.set(input, translationResult);
+      // Cache the translation if it was needed with cleanup
+      if (translationResult.translatedText !== trimmedInput) {
+        cleanupCache(translationCache);
+        translationCache.set(trimmedInput, translationResult);
       }
 
       return {
@@ -62,29 +89,43 @@ export class IntelligentInputProcessor {
     } catch (error) {
       console.error('Error processing user input:', error);
       // Graceful fallback - return cleaned original input
-      return {
-        originalInput: input,
-        translatedInput: input,
-        correctedInput: input,
-        processedInput: this.cleanBasicInput(input),
-        detectedLanguage: 'en',
-        needsTranslation: false,
-        confidence: 0
-      };
+      return this.createEmptyResult(trimmedInput);
     }
   }
 
-  // Translation Layer Implementation
+  // Helper to create consistent empty/fallback results
+  private static createEmptyResult(input: string): ProcessedUserInput {
+    return {
+      originalInput: input,
+      translatedInput: input,
+      correctedInput: input,
+      processedInput: this.cleanBasicInput(input),
+      detectedLanguage: 'en',
+      needsTranslation: false,
+      confidence: 0
+    };
+  }
+
+  // Translation Layer Implementation with improved language detection
   private static async translateIfNeeded(
     input: string,
     userNativeLanguage: LanguageCode
   ): Promise<TranslationResult> {
-    // Quick check if input is likely English
+    // If user's native language is English, skip translation
+    if (userNativeLanguage === 'en') {
+      return {
+        translatedText: input,
+        detectedLanguage: 'en',
+        confidence: 1.0
+      };
+    }
+
+    // Enhanced English detection for better accuracy
     if (await this.isLikelyEnglish(input)) {
       return {
         translatedText: input,
         detectedLanguage: 'en',
-        confidence: 0.9
+        confidence: 0.95
       };
     }
 
@@ -136,6 +177,7 @@ export class IntelligentInputProcessor {
       // Enhanced contextual correction with lower thresholds for animals and foods
       const contextualMatch = this.tryContextualCorrection(input, fieldName);
       if (contextualMatch) {
+        cleanupCache(spellingCache);
         spellingCache.set(input, contextualMatch);
         return contextualMatch;
       }
@@ -151,6 +193,7 @@ export class IntelligentInputProcessor {
         });
 
         if (!error && data.correctedText !== input) {
+          cleanupCache(spellingCache);
           spellingCache.set(input, data.correctedText);
           return data.correctedText;
         }
@@ -218,15 +261,29 @@ export class IntelligentInputProcessor {
     return ageAppropriate.slice(0, 200); // Reasonable length limit
   }
 
-  // Language detection helpers
+  // Enhanced language detection with better accuracy
   private static async isLikelyEnglish(text: string): Promise<boolean> {
-    // Simple heuristic for English detection
-    const englishWords = ['the', 'and', 'or', 'is', 'are', 'a', 'an', 'to', 'of', 'in', 'on', 'at'];
+    if (!text || text.length < 2) return true; // Assume short text is English
+    
+    // Enhanced English detection patterns
+    const englishWords = ['the', 'and', 'or', 'is', 'are', 'a', 'an', 'to', 'of', 'in', 'on', 'at', 'for', 'with', 'by'];
+    const englishPatterns = [
+      /^[a-zA-Z\s.,!?'-]+$/, // Only contains English characters and punctuation
+      /\b(this|that|these|those|when|where|what|how|why)\b/i, // Common English question words
+      /\b(cat|dog|house|tree|book|water|food|play|run|jump)\b/i // Common English nouns/verbs
+    ];
+    
     const words = text.toLowerCase().split(/\s+/);
     const englishWordCount = words.filter(word => englishWords.includes(word)).length;
+    const englishWordRatio = englishWordCount / words.length;
     
-    // If more than 20% of words are common English words, consider it English
-    return englishWordCount / words.length > 0.2;
+    // Check if text matches English patterns
+    const matchesPatterns = englishPatterns.some(pattern => pattern.test(text));
+    
+    // Consider it English if:
+    // - More than 30% are common English words, OR
+    // - Text matches English patterns and has some English words
+    return englishWordRatio > 0.3 || (matchesPatterns && englishWordRatio > 0.1);
   }
 
   // Content filtering

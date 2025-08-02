@@ -262,23 +262,31 @@ export class ComprehensiveStoryGenerator {
     return filtered.length > 0 ? this.selectRandomElement(filtered) : exclude;
   }
 
-  // Parse and clean user input intelligently - handle "and", commas, etc.
+  // Parse and clean user input intelligently - handle "and", commas, etc. with robust validation
   private static parseAndCleanUserInput(input: string | undefined): string[] {
-    if (!input) return [];
+    if (!input || typeof input !== 'string') return [];
     
-    return input.toLowerCase().trim()
-      .split(/[,;]|\s+and\s+|\s*&\s*/)  // Split on comma, semicolon, "and", "&"
+    const cleaned = input.toLowerCase().trim();
+    if (cleaned.length === 0) return [];
+    
+    return cleaned
+      .split(/[,;]|\s+and\s+|\s*&\s*|\s*\+\s*/)  // Split on various separators
       .map(item => item.trim())
-      .filter(item => item.length > 0)
+      .filter(item => item.length > 0 && item.length < 50) // Reasonable length limits
+      .slice(0, 10) // Limit to prevent performance issues
       .map(item => {
         // Remove articles if they were accidentally added by previous processing
         return item.replace(/^(a|an|the)\s+/i, '').trim();
-      });
+      })
+      .filter(item => item.length > 0); // Remove empty strings after cleaning
   }
 
-  // Enhanced method to intelligently use animals in stories with proper grammar
+  // Enhanced method to intelligently use animals in stories with proper grammar and validation
   private static getAnimalForStory(animal: string, context: 'singular' | 'plural' | 'with-article' = 'with-article'): string {
+    if (!animal || typeof animal !== 'string') return 'friend';
+    
     const cleanAnimal = animal.replace(/^(a|an|the)\s+/i, '').trim();
+    if (!cleanAnimal) return 'friend';
     
     switch (context) {
       case 'singular':
@@ -293,22 +301,28 @@ export class ComprehensiveStoryGenerator {
         if (isPlural) {
           return cleanAnimal; // No article for plurals like "cats"
         } else {
-          // Add "a" or "an" for singular animals
-          const startsWithVowel = /^[aeiou]/i.test(cleanAnimal);
-          return startsWithVowel ? `an ${cleanAnimal}` : `a ${cleanAnimal}`;
+          // Add "a" or "an" for singular animals with better vowel detection
+          const startsWithVowelSound = /^[aeiou]/i.test(cleanAnimal) || 
+                                      /^(hour|honest|honor|heir)/i.test(cleanAnimal);
+          return startsWithVowelSound ? `an ${cleanAnimal}` : `a ${cleanAnimal}`;
         }
       default:
         return cleanAnimal;
     }
   }
 
-  // Helper to determine if a word is plural
+  // Helper to determine if a word is plural with enhanced patterns
   private static isPlural(word: string): boolean {
-    const pluralPatterns = [/s$/, /ies$/, /ves$/, /es$/];
-    const singularOnlyWords = ['fish', 'sheep', 'deer'];
+    if (!word || typeof word !== 'string') return false;
     
-    if (singularOnlyWords.includes(word.toLowerCase())) return false;
-    return pluralPatterns.some(pattern => pattern.test(word));
+    const cleanWord = word.toLowerCase().trim();
+    const pluralPatterns = [/s$/, /ies$/, /ves$/, /es$/, /children$/, /feet$/, /teeth$/, /men$/, /mice$/, /geese$/];
+    const singularOnlyWords = ['fish', 'sheep', 'deer', 'moose', 'species', 'series'];
+    const alwaysPlural = ['pants', 'glasses', 'scissors', 'clothes'];
+    
+    if (singularOnlyWords.includes(cleanWord)) return false;
+    if (alwaysPlural.includes(cleanWord)) return true;
+    return pluralPatterns.some(pattern => pattern.test(cleanWord));
   }
 
   // Helper to get singular form
