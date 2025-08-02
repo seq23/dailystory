@@ -258,57 +258,32 @@ export const InteractiveWord = ({
           });
           
           if ('speechSynthesis' in window) {
-            // Mobile-specific speech synthesis approach
+            // MOBILE FIX: Keep speech synthesis in direct user interaction context
             try {
-              // Cancel any existing speech and wait
-              speechSynthesis.cancel();
-              await new Promise(resolve => setTimeout(resolve, 200));
-              
-              // Force voice loading by speaking a silent test
-              const testUtterance = new SpeechSynthesisUtterance('');
-              testUtterance.volume = 0;
-              speechSynthesis.speak(testUtterance);
-              await new Promise(resolve => setTimeout(resolve, 100));
+              // Cancel any existing speech immediately
               speechSynthesis.cancel();
               
-              toast({
-                title: "🔊 Audio Ready",
-                description: `Speaking: "${explanation.substring(0, 30)}..."`,
-                duration: 2000,
-              });
-              
-              // Create the actual utterance
+              // Create utterance immediately in user gesture context
               const utterance = new SpeechSynthesisUtterance(explanation);
               utterance.rate = isESLLearner ? 0.6 : 0.7;
               utterance.pitch = 1.0;
               utterance.volume = 1.0;
               
-              // Get voices (they should be loaded now)
-              const voices = speechSynthesis.getVoices();
-              
-              // Simple voice selection for mobile
+              // Simple voice selection for user's language
               if (userNativeLanguage !== 'en') {
+                const voices = speechSynthesis.getVoices();
                 const nativeVoice = voices.find(voice => 
                   voice.lang.startsWith(userNativeLanguage.substring(0, 2))
                 );
                 if (nativeVoice) {
                   utterance.voice = nativeVoice;
                   utterance.lang = nativeVoice.lang;
-                  toast({
-                    title: "🎤 Voice Set",
-                    description: `Using: ${nativeVoice.name}`,
-                    duration: 1500,
-                  });
                 }
               }
               
-              // Set up event handlers
-              let hasStarted = false;
-              
               utterance.onstart = () => {
-                hasStarted = true;
                 toast({
-                  title: "✅ Speaking Now",
+                  title: "🔊 Speaking",
                   description: "Audio explanation started",
                   duration: 2000,
                 });
@@ -317,7 +292,7 @@ export const InteractiveWord = ({
               utterance.onend = () => {
                 setIsPlaying(false);
                 toast({
-                  title: "🎯 Complete",
+                  title: "✅ Complete",
                   description: "Audio explanation finished",
                   duration: 1500,
                 });
@@ -325,42 +300,31 @@ export const InteractiveWord = ({
               
               utterance.onerror = (error) => {
                 setIsPlaying(false);
+                console.error('Speech synthesis error:', error);
                 toast({
-                  title: "❌ Audio Failed", 
-                  description: `Error: ${error.error}. Try tapping again.`,
+                  title: "❌ Audio Error", 
+                  description: `Could not play audio. Error: ${error.error}`,
                   duration: 4000,
                 });
               };
               
-              // Speak and set timeout for mobile issues
+              // Speak immediately - no delays or async operations
               speechSynthesis.speak(utterance);
               
-              // Mobile fallback: if speech doesn't start, try word-only
-              setTimeout(() => {
-                if (!hasStarted && !speechSynthesis.speaking) {
-                  speechSynthesis.cancel();
-                  toast({
-                    title: "🔄 Trying Simpler Audio",
-                    description: `Speaking just the word: ${cleanWord}`,
-                    duration: 2000,
-                  });
-                  
-                  const simpleUtterance = new SpeechSynthesisUtterance(cleanWord);
-                  simpleUtterance.rate = 0.8;
-                  simpleUtterance.volume = 1.0;
-                  simpleUtterance.onend = () => setIsPlaying(false);
-                  speechSynthesis.speak(simpleUtterance);
-                }
-              }, 2000);
+              toast({
+                title: "🎯 Audio Starting",
+                description: `Speaking: "${explanation.substring(0, 30)}..."`,
+                duration: 2000,
+              });
               
             } catch (error) {
               console.error('Speech synthesis setup error:', error);
+              setIsPlaying(false);
               toast({
-                title: "❌ Audio Setup Failed",
-                description: "Speech synthesis not working on this device",
+                title: "❌ Audio Failed",
+                description: "Speech synthesis not available on this device",
                 duration: 3000,
               });
-              setIsPlaying(false);
             }
           } else {
             console.log('Speech synthesis not available');
@@ -738,7 +702,7 @@ export const InteractiveWord = ({
               disabled={isPlaying}
             >
               <Volume2 className="w-3 h-3 sm:w-4 sm:h-4" />
-              {t("interactiveWord.hearIt")}
+              {t("interactiveWord.hearIt", "Hear It")}
             </button>
             
             <button
@@ -747,7 +711,7 @@ export const InteractiveWord = ({
               disabled={isPlaying || isLoadingWordData}
             >
               <HelpCircle className="w-3 h-3 sm:w-4 sm:h-4" />
-              {isLoadingWordData ? t("interactiveWord.loading") : t("interactiveWord.explain")}
+              {isLoadingWordData ? t("interactiveWord.loading", "Loading...") : t("interactiveWord.explain", "Explain")}
             </button>
           </div>
 
