@@ -415,5 +415,54 @@
       "intermediate": "Medio",
       "advanced": "Difícil"
     }
+  },
+  "gamification": {
+    "achievements": {
+      "unlocked": "¡Logro Desbloqueado!",
+      "levelUp": "¡Subiste de Nivel!",
+      "levelUpDescription": "¡Felicidades! ¡Has alcanzado el nivel {level}!",
+      "pointsEarned": "¡+{points} Puntos Ganados!",
+      "awesome": "¡Increíble!",
+      "streak": "¡{streak} Días Seguidos!",
+      "streakDescription": "¡Increíble! ¡Has estado leyendo durante {streak} días seguidos!",
+      "rarityCommon": "LOGRO COMÚN",
+      "rarityRare": "LOGRO RARO", 
+      "rarityEpic": "LOGRO ÉPICO",
+      "rarityLegendary": "LOGRO LEGENDARIO"
+    },
+    "titles": {
+      "firstAdventure": "Primera Aventura",
+      "storyExplorer": "Explorador de Historias",
+      "bookworm": "Ratón de Biblioteca",
+      "readingChampion": "Campeón de Lectura",
+      "wordStarter": "Iniciador de Palabras",
+      "wordExplorer": "Explorador de Palabras",
+      "wordMaster": "Maestro de Palabras",
+      "readingStreak3": "Hábito de Lectura",
+      "readingStreak7": "Lector Semanal",
+      "readingStreak30": "Maestro de Racha de Lectura",
+      "vocabularyBuilder": "Constructor de Vocabulario",
+      "wordCollector": "Coleccionista de Palabras",
+      "speedReader": "Lector Rápido",
+      "earlyBird": "Madrugador",
+      "nightOwl": "Búho Nocturno"
+    },
+    "descriptions": {
+      "firstAdventure": "Completa tu primera historia",
+      "storyExplorer": "Completa 5 historias diferentes",
+      "bookworm": "Completa 25 historias",
+      "readingChampion": "Completa 100 historias",
+      "wordStarter": "Lee 1,000 palabras",
+      "wordExplorer": "Lee 10,000 palabras",
+      "wordMaster": "Lee 100,000 palabras",
+      "readingStreak3": "Lee durante 3 días seguidos",
+      "readingStreak7": "Lee durante 7 días seguidos",
+      "readingStreak30": "Lee durante 30 días seguidos",
+      "vocabularyBuilder": "Aprende 50 palabras nuevas de vocabulario",
+      "wordCollector": "Aprende 200 palabras nuevas de vocabulario",
+      "speedReader": "Lee más rápido que 150 palabras por minuto",
+      "earlyBird": "Lee una historia antes de las 9 AM",
+      "nightOwl": "Lee una historia después de las 8 PM"
+    }
   }
 }

@@ -554,5 +554,20 @@
     "currentReading": "مستوى القراءة الحالي:",
     "readingLevelHeader": "مستوى القراءة",
     "readingLevelDescription": "هذه القصة مكتوبة على مستوى {level}"
+  },
+  "gamification": {
+    "achievements": {
+      "unlocked": "تم إلغاء قفل الإنجاز!",
+      "levelUp": "ارتقاء المستوى!",
+      "levelUpDescription": "تهانينا! لقد وصلت إلى المستوى {level}!",
+      "pointsEarned": "+{points} نقطة مكتسبة!",
+      "awesome": "رائع!",
+      "streak": "{streak} يوم متتالي!",
+      "streakDescription": "مذهل! لقد كنت تقرأ لمدة {streak} أيام متتالية!",
+      "rarityCommon": "إنجاز شائع",
+      "rarityRare": "إنجاز نادر", 
+      "rarityEpic": "إنجاز ملحمي",
+      "rarityLegendary": "إنجاز أسطوري"
+    }
   }
 }

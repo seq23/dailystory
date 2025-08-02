@@ -569,5 +569,20 @@
     "currentReading": "वर्तमान पठन स्तर:",
     "readingLevelHeader": "पठन स्तर",
     "readingLevelDescription": "यह कहानी {level} स्तर पर लिखी गई है"
+  },
+  "gamification": {
+    "achievements": {
+      "unlocked": "उपलब्धि अनलॉक!",
+      "levelUp": "लेवल अप!",
+      "levelUpDescription": "बधाई हो! आपने स्तर {level} तक पहुंच गया है!",
+      "pointsEarned": "+{points} अंक प्राप्त!",
+      "awesome": "बहुत बढ़िया!",
+      "streak": "{streak} दिन की लकीर!",
+      "streakDescription": "अद्भुत! आप {streak} दिनों से लगातार पढ़ रहे हैं!",
+      "rarityCommon": "सामान्य उपलब्धि",
+      "rarityRare": "दुर्लभ उपलब्धि", 
+      "rarityEpic": "महाकाव्य उपलब्धि",
+      "rarityLegendary": "पौराणिक उपलब्धि"
+    }
   }
 }

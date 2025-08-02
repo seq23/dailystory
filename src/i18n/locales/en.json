@@ -467,5 +467,54 @@
       "hard": "4th - 5th Grade",
       "expert": "6th Grade+"
     }
+  },
+  "gamification": {
+    "achievements": {
+      "unlocked": "Achievement Unlocked!",
+      "levelUp": "Level Up!",
+      "levelUpDescription": "Congratulations! You've reached level {level}!",
+      "pointsEarned": "+{points} Points Earned!",
+      "awesome": "Awesome!",
+      "streak": "{streak} Day Streak!",
+      "streakDescription": "Amazing! You've been reading for {streak} days in a row!",
+      "rarityCommon": "COMMON ACHIEVEMENT",
+      "rarityRare": "RARE ACHIEVEMENT", 
+      "rarityEpic": "EPIC ACHIEVEMENT",
+      "rarityLegendary": "LEGENDARY ACHIEVEMENT"
+    },
+    "titles": {
+      "firstAdventure": "First Adventure",
+      "storyExplorer": "Story Explorer",
+      "bookworm": "Bookworm",
+      "readingChampion": "Reading Champion",
+      "wordStarter": "Word Starter",
+      "wordExplorer": "Word Explorer",
+      "wordMaster": "Word Master",
+      "readingStreak3": "Reading Habit",
+      "readingStreak7": "Weekly Reader",
+      "readingStreak30": "Reading Streak Master",
+      "vocabularyBuilder": "Vocabulary Builder",
+      "wordCollector": "Word Collector",
+      "speedReader": "Speed Reader",
+      "earlyBird": "Early Bird",
+      "nightOwl": "Night Owl"
+    },
+    "descriptions": {
+      "firstAdventure": "Complete your very first story",
+      "storyExplorer": "Complete 5 different stories",
+      "bookworm": "Complete 25 stories",
+      "readingChampion": "Complete 100 stories",
+      "wordStarter": "Read 1,000 words",
+      "wordExplorer": "Read 10,000 words",
+      "wordMaster": "Read 100,000 words",
+      "readingStreak3": "Read for 3 days in a row",
+      "readingStreak7": "Read for 7 days in a row",
+      "readingStreak30": "Read for 30 days in a row",
+      "vocabularyBuilder": "Learn 50 new vocabulary words",
+      "wordCollector": "Learn 200 new vocabulary words",
+      "speedReader": "Read faster than 150 words per minute",
+      "earlyBird": "Read a story before 9 AM",
+      "nightOwl": "Read a story after 8 PM"
+    }
   }
 }

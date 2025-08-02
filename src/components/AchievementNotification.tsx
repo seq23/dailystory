@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Trophy, Star, X, Gift } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { Achievement } from "@/services/gamificationService";
 
 interface AchievementNotificationProps {
@@ -16,6 +17,7 @@ export const AchievementNotification = ({
   onClose, 
   isVisible 
 }: AchievementNotificationProps) => {
+  const { t } = useTranslation();
   const [shouldShow, setShouldShow] = useState(false);
 
   useEffect(() => {
@@ -35,41 +37,48 @@ export const AchievementNotification = ({
   };
 
   const getRarityConfig = (rarity: Achievement['rarity']) => {
+    const rarityText = t(`gamification.achievements.rarity${rarity.charAt(0).toUpperCase() + rarity.slice(1)}`);
+    
     switch (rarity) {
       case 'common':
         return {
           bgClass: 'from-green-400 via-green-500 to-green-600',
           textClass: 'text-green-50',
           borderClass: 'border-green-300',
-          badgeClass: 'bg-green-200 text-green-800'
+          badgeClass: 'bg-green-200 text-green-800',
+          rarityText
         };
       case 'rare':
         return {
           bgClass: 'from-blue-400 via-blue-500 to-blue-600',
           textClass: 'text-blue-50',
           borderClass: 'border-blue-300',
-          badgeClass: 'bg-blue-200 text-blue-800'
+          badgeClass: 'bg-blue-200 text-blue-800',
+          rarityText
         };
       case 'epic':
         return {
           bgClass: 'from-purple-400 via-purple-500 to-purple-600',
           textClass: 'text-purple-50',
           borderClass: 'border-purple-300',
-          badgeClass: 'bg-purple-200 text-purple-800'
+          badgeClass: 'bg-purple-200 text-purple-800',
+          rarityText
         };
       case 'legendary':
         return {
           bgClass: 'from-yellow-400 via-amber-500 to-orange-600',
           textClass: 'text-yellow-50',
           borderClass: 'border-yellow-300',
-          badgeClass: 'bg-yellow-200 text-yellow-800'
+          badgeClass: 'bg-yellow-200 text-yellow-800',
+          rarityText
         };
       default:
         return {
           bgClass: 'from-gray-400 via-gray-500 to-gray-600',
           textClass: 'text-gray-50',
           borderClass: 'border-gray-300',
-          badgeClass: 'bg-gray-200 text-gray-800'
+          badgeClass: 'bg-gray-200 text-gray-800',
+          rarityText: 'ACHIEVEMENT'
         };
     }
   };
@@ -132,12 +141,12 @@ export const AchievementNotification = ({
               
               <div className="mb-3">
                 <Badge className={`${config.badgeClass} text-xs font-semibold px-3 py-1 mb-2`}>
-                  {achievement.rarity.toUpperCase()} ACHIEVEMENT
+                  {config.rarityText}
                 </Badge>
               </div>
               
               <h2 className={`text-2xl font-bold ${config.textClass} mb-2`}>
-                🎉 Achievement Unlocked!
+                🎉 {t('gamification.achievements.unlocked')}
               </h2>
               
               <h3 className={`text-xl font-semibold ${config.textClass} mb-3`}>
@@ -155,7 +164,7 @@ export const AchievementNotification = ({
                 <div className="flex items-center gap-2">
                   <Gift className={`w-5 h-5 ${config.textClass}`} />
                   <span className={`font-semibold ${config.textClass}`}>
-                    +{achievement.points} Points Earned!
+                    {t('gamification.achievements.pointsEarned', { points: achievement.points })}
                   </span>
                 </div>
                 <Button
@@ -163,7 +172,7 @@ export const AchievementNotification = ({
                   size="sm"
                   className="bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur-sm"
                 >
-                  Awesome! 
+                  {t('gamification.achievements.awesome')}
                 </Button>
               </div>
             </div>

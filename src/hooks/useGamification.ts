@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { GamificationService, type UserStats, type Achievement, type ReadingStreak } from "@/services/gamificationService";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 interface UseGamificationOptions {
   userId?: string;
@@ -11,6 +12,7 @@ interface UseGamificationOptions {
 export const useGamification = (options: UseGamificationOptions = {}) => {
   const { userId, onAchievementUnlocked, onLevelUp } = options;
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const [userStats, setUserStats] = useState<UserStats>({
     totalWordsRead: 0,
@@ -95,8 +97,8 @@ export const useGamification = (options: UseGamificationOptions = {}) => {
       if (updatedStats.currentLevel > prevStats.currentLevel) {
         onLevelUp?.(updatedStats.currentLevel);
         toast({
-          title: `🎉 Level Up!`,
-          description: `Congratulations! You've reached level ${updatedStats.currentLevel}!`,
+          title: `🎉 ${t('gamification.achievements.levelUp')}`,
+          description: t('gamification.achievements.levelUpDescription', { level: updatedStats.currentLevel }),
           duration: 5000,
         });
       }
@@ -107,7 +109,7 @@ export const useGamification = (options: UseGamificationOptions = {}) => {
         unlockedAchievements.forEach(achievement => {
           onAchievementUnlocked?.(achievement);
           toast({
-            title: `🏆 Achievement Unlocked!`,
+            title: `🏆 ${t('gamification.achievements.unlocked')}`,
             description: `${achievement.title} - ${achievement.description}`,
             duration: 4000,
           });
@@ -119,8 +121,8 @@ export const useGamification = (options: UseGamificationOptions = {}) => {
         const streak = updatedStreak.currentStreak;
         if (streak % 7 === 0 && streak > 0) {
           toast({
-            title: `🔥 ${streak} Day Streak!`,
-            description: `Amazing! You've been reading for ${streak} days in a row!`,
+            title: `🔥 ${t('gamification.achievements.streak', { streak })}`,
+            description: t('gamification.achievements.streakDescription', { streak }),
             duration: 4000,
           });
         }

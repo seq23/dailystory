@@ -415,5 +415,54 @@
       "intermediate": "Moyen",
       "advanced": "Difficile"
     }
+  },
+  "gamification": {
+    "achievements": {
+      "unlocked": "Succès Débloqué !",
+      "levelUp": "Niveau Supérieur !",
+      "levelUpDescription": "Félicitations ! Vous avez atteint le niveau {level} !",
+      "pointsEarned": "+{points} Points Gagnés !",
+      "awesome": "Génial !",
+      "streak": "{streak} Jours Consécutifs !",
+      "streakDescription": "Incroyable ! Vous lisez depuis {streak} jours d'affilée !",
+      "rarityCommon": "SUCCÈS COMMUN",
+      "rarityRare": "SUCCÈS RARE", 
+      "rarityEpic": "SUCCÈS ÉPIQUE",
+      "rarityLegendary": "SUCCÈS LÉGENDAIRE"
+    },
+    "titles": {
+      "firstAdventure": "Première Aventure",
+      "storyExplorer": "Explorateur d'Histoires",
+      "bookworm": "Rat de Bibliothèque",
+      "readingChampion": "Champion de Lecture",
+      "wordStarter": "Débutant en Mots",
+      "wordExplorer": "Explorateur de Mots",
+      "wordMaster": "Maître des Mots",
+      "readingStreak3": "Habitude de Lecture",
+      "readingStreak7": "Lecteur Hebdomadaire",
+      "readingStreak30": "Maître de la Série de Lecture",
+      "vocabularyBuilder": "Constructeur de Vocabulaire",
+      "wordCollector": "Collectionneur de Mots",
+      "speedReader": "Lecteur Rapide",
+      "earlyBird": "Lève-tôt",
+      "nightOwl": "Oiseau de Nuit"
+    },
+    "descriptions": {
+      "firstAdventure": "Terminez votre toute première histoire",
+      "storyExplorer": "Terminez 5 histoires différentes",
+      "bookworm": "Terminez 25 histoires",
+      "readingChampion": "Terminez 100 histoires",
+      "wordStarter": "Lisez 1 000 mots",
+      "wordExplorer": "Lisez 10 000 mots",
+      "wordMaster": "Lisez 100 000 mots",
+      "readingStreak3": "Lisez pendant 3 jours consécutifs",
+      "readingStreak7": "Lisez pendant 7 jours consécutifs",
+      "readingStreak30": "Lisez pendant 30 jours consécutifs",
+      "vocabularyBuilder": "Apprenez 50 nouveaux mots de vocabulaire",
+      "wordCollector": "Apprenez 200 nouveaux mots de vocabulaire",
+      "speedReader": "Lisez plus vite que 150 mots par minute",
+      "earlyBird": "Lisez une histoire avant 9h00",
+      "nightOwl": "Lisez une histoire après 20h00"
+    }
   }
 }
