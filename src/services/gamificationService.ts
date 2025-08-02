@@ -86,7 +86,47 @@ export class GamificationService {
       points: 500
     },
     
-    // Word Count Achievements
+    // Word Count Achievements - Enhanced Progression
+    {
+      id: 'first_words',
+      title: 'First Words',
+      description: 'Read 25 words',
+      icon: '📝',
+      category: 'reading',
+      requirement: 25,
+      rarity: 'common',
+      points: 3
+    },
+    {
+      id: 'getting_started',
+      title: 'Getting Started',
+      description: 'Read 100 words',
+      icon: '🌱',
+      category: 'reading',
+      requirement: 100,
+      rarity: 'common',
+      points: 5
+    },
+    {
+      id: 'word_explorer',
+      title: 'Word Explorer',
+      description: 'Read 250 words',
+      icon: '🔍',
+      category: 'reading',
+      requirement: 250,
+      rarity: 'common',
+      points: 8
+    },
+    {
+      id: 'reading_beginner',
+      title: 'Reading Beginner',
+      description: 'Read 500 words',
+      icon: '📖',
+      category: 'reading',
+      requirement: 500,
+      rarity: 'common',
+      points: 12
+    },
     {
       id: 'word_starter',
       title: 'Word Starter',
@@ -98,6 +138,26 @@ export class GamificationService {
       points: 15
     },
     {
+      id: 'word_enthusiast',
+      title: 'Word Enthusiast',
+      description: 'Read 2,500 words',
+      icon: '📚',
+      category: 'reading',
+      requirement: 2500,
+      rarity: 'common',
+      points: 25
+    },
+    {
+      id: 'dedicated_reader',
+      title: 'Dedicated Reader',
+      description: 'Read 5,000 words',
+      icon: '📘',
+      category: 'reading',
+      requirement: 5000,
+      rarity: 'rare',
+      points: 40
+    },
+    {
       id: 'word_master',
       title: 'Word Master',
       description: 'Read 10,000 words',
@@ -106,6 +166,26 @@ export class GamificationService {
       requirement: 10000,
       rarity: 'rare',
       points: 75
+    },
+    {
+      id: 'word_champion',
+      title: 'Word Champion',
+      description: 'Read 25,000 words',
+      icon: '🏆',
+      category: 'reading',
+      requirement: 25000,
+      rarity: 'rare',
+      points: 150
+    },
+    {
+      id: 'reading_pro',
+      title: 'Reading Pro',
+      description: 'Read 50,000 words',
+      icon: '🌟',
+      category: 'reading',
+      requirement: 50000,
+      rarity: 'epic',
+      points: 300
     },
     {
       id: 'vocabulary_genius',
@@ -150,7 +230,37 @@ export class GamificationService {
       points: 200
     },
     
-    // Vocabulary Achievements
+    // Vocabulary Achievements - Enhanced Progression
+    {
+      id: 'first_words_learned',
+      title: 'First Words Learned',
+      description: 'Learn 5 new vocabulary words',
+      icon: '🎯',
+      category: 'vocabulary',
+      requirement: 5,
+      rarity: 'common',
+      points: 10
+    },
+    {
+      id: 'word_learner',
+      title: 'Word Learner',
+      description: 'Learn 10 vocabulary words',
+      icon: '📝',
+      category: 'vocabulary',
+      requirement: 10,
+      rarity: 'common',
+      points: 15
+    },
+    {
+      id: 'vocabulary_starter',
+      title: 'Vocabulary Starter',
+      description: 'Learn 25 vocabulary words',
+      icon: '📖',
+      category: 'vocabulary',
+      requirement: 25,
+      rarity: 'common',
+      points: 20
+    },
     {
       id: 'word_collector',
       title: 'Word Collector',
@@ -162,6 +272,36 @@ export class GamificationService {
       points: 30
     },
     {
+      id: 'word_builder',
+      title: 'Word Builder',
+      description: 'Learn 75 vocabulary words',
+      icon: '🔨',
+      category: 'vocabulary',
+      requirement: 75,
+      rarity: 'common',
+      points: 40
+    },
+    {
+      id: 'vocabulary_scholar',
+      title: 'Vocabulary Scholar',
+      description: 'Learn 100 vocabulary words',
+      icon: '🎓',
+      category: 'vocabulary',
+      requirement: 100,
+      rarity: 'rare',
+      points: 60
+    },
+    {
+      id: 'word_master_vocab',
+      title: 'Word Master',
+      description: 'Learn 150 vocabulary words',
+      icon: '📚',
+      category: 'vocabulary',
+      requirement: 150,
+      rarity: 'rare',
+      points: 80
+    },
+    {
       id: 'vocabulary_expert',
       title: 'Vocabulary Expert',
       description: 'Learn 200 vocabulary words',
@@ -170,6 +310,26 @@ export class GamificationService {
       requirement: 200,
       rarity: 'rare',
       points: 100
+    },
+    {
+      id: 'language_expert',
+      title: 'Language Expert',
+      description: 'Learn 300 vocabulary words',
+      icon: '🧠',
+      category: 'vocabulary',
+      requirement: 300,
+      rarity: 'epic',
+      points: 150
+    },
+    {
+      id: 'vocabulary_genius_vocab',
+      title: 'Vocabulary Genius',
+      description: 'Learn 500 vocabulary words',
+      icon: '🌟',
+      category: 'vocabulary',
+      requirement: 500,
+      rarity: 'epic',
+      points: 250
     },
     
     // Special Achievements
