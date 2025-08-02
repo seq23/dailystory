@@ -266,28 +266,16 @@ export const FloatingTimer = ({
                     style={{ touchAction: 'manipulation' }}
                   >
                     <div className="flex items-center justify-center w-full h-full relative">
-                      {/* iOS Safari specific icon rendering with direct SVG fallback */}
+                      {/* Use direct SVG instead of Lucide for iOS reliability */}
                       {isReading ? (
-                        <>
-                          <Pause className="w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 text-current" />
-                          {/* Direct SVG fallback for iOS */}
-                          <svg className="w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 absolute text-current lucide-fallback" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'none' }}>
-                            <rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>
-                          </svg>
-                        </>
+                        <svg className="w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 text-current" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>
+                        </svg>
                       ) : (
-                        <>
-                          <Play className="w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 ml-1 text-current" />
-                          {/* Direct SVG fallback for iOS */}
-                          <svg className="w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 ml-1 absolute text-current lucide-fallback" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'none' }}>
-                            <polygon points="5,3 19,12 5,21"/>
-                          </svg>
-                        </>
+                        <svg className="w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 ml-1 text-current" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polygon points="5,3 19,12 5,21"/>
+                        </svg>
                       )}
-                      {/* Unicode fallback text for extreme cases */}
-                      <span className="text-lg font-bold absolute inset-0 flex items-center justify-center text-current unicode-fallback" style={{ display: 'none' }}>
-                        {isReading ? "⏸️" : "▶️"}
-                      </span>
                     </div>
                 </Button>
               </TooltipTrigger>
@@ -313,7 +301,9 @@ export const FloatingTimer = ({
                     disabled={timeRemaining <= 5 * 60}
                     className={`bg-gradient-to-b from-white to-orange-50 backdrop-blur-sm border-2 border-orange-400/50 text-orange-600 hover:bg-orange-500 hover:text-white shadow-lg w-8 h-8 sm:w-12 sm:h-12 md:w-16 md:h-16 rounded-full p-0 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-110 hover:shadow-xl ${getTutorialClasses(2)}`}
                   >
-                    <Minus className="w-3 h-3 sm:w-5 sm:h-5 md:w-6 md:h-6" />
+                    <svg className="w-3 h-3 sm:w-5 sm:h-5 md:w-6 md:h-6 text-current" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M5 12h14"/>
+                    </svg>
                 </Button>
               </TooltipTrigger>
               <TooltipContent 
@@ -336,7 +326,9 @@ export const FloatingTimer = ({
                     onClick={handleEndSession}
                     className={`bg-gradient-to-b from-white to-red-50 backdrop-blur-sm border-2 border-red-400/50 text-red-600 hover:bg-red-500 hover:text-white shadow-lg w-8 h-8 sm:w-12 sm:h-12 md:w-16 md:h-16 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-xl ${getTutorialClasses(3)}`}
                   >
-                    <X className="w-3 h-3 sm:w-5 sm:h-5 md:w-6 md:h-6" />
+                    <svg className="w-3 h-3 sm:w-5 sm:h-5 md:w-6 md:h-6 text-current" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="m18 6-12 12"/><path d="m6 6 12 12"/>
+                    </svg>
                 </Button>
               </TooltipTrigger>
               <TooltipContent 
