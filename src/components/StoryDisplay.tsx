@@ -342,20 +342,36 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
     onSessionEnded(sessionStats);
   };
 
+  // Utility function to calculate real-time word count from current story
+  const calculateActualWordsRead = () => {
+    const storyText = story.join(' ');
+    const actualCount = storyText.split(/\s+/).filter(word => word.trim().length > 0).length;
+    console.log('StoryDisplay word count debug:', {
+      staleWordsRead: wordsRead,
+      actualWordsRead: actualCount,
+      storyPages: story.length,
+      currentPage: currentPage + 1
+    });
+    return actualCount;
+  };
+
   // Calculate session stats for premium users
   const calculateStats = () => {
     const timeSpent = sessionStartTime ? 
       Math.floor((Date.now() - sessionStartTime.getTime()) / 1000) : 
       APP_CONFIG.FREE_SESSION_DURATION - timeRemaining;
     
+    // Use real-time word count calculation instead of stale state
+    const actualWordsRead = calculateActualWordsRead();
+    
     return {
-      wordsRead,
+      wordsRead: actualWordsRead,
       timeSpent,
       pagesRead: currentPage + 1,
       totalPages: story.length,
       accuracy: 100, // Placeholder - would be calculated based on comprehension questions
       currentDifficulty: userInfo.readingLevel || currentDifficulty,
-      readingSpeed: Math.round((wordsRead / (timeSpent / 60)) || 0)
+      readingSpeed: Math.round((actualWordsRead / (timeSpent / 60)) || 0)
     };
   };
 

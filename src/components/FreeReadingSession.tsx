@@ -121,14 +121,17 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   
   useEffect(() => {
     if (storyCompleted && !sessionEnded && !hasShownCompletionToast) {
+      // Calculate actual words read for the completion toast
+      const actualWordsRead = calculateActualWordsRead();
+      
       toast({
         title: t("storyDisplay.storyCompletedToast.title"),
-        description: t("storyDisplay.storyCompletedToast.descriptionWords", { wordsRead }),
+        description: t("storyDisplay.storyCompletedToast.descriptionWords", { wordsRead: actualWordsRead }),
         duration: 2000,
       });
       setHasShownCompletionToast(true);
     }
-  }, [storyCompleted, sessionEnded, hasShownCompletionToast, wordsRead, toast, t]);
+  }, [storyCompleted, sessionEnded, hasShownCompletionToast, toast, t]);
 
   // Fallback illustrations
   const illustrations = [illustration1, illustration2, illustration3, illustration4, illustration5];
@@ -721,28 +724,47 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     
     setSessionEnded(true);
     
+    // Calculate actual words read for accurate session recording
+    const actualWordsRead = calculateActualWordsRead();
+    
     // Record reading session for gamification
     const timeSpent = APP_CONFIG.FREE_SESSION_DURATION - timeRemaining;
     recordReadingSession({
-      wordsRead,
+      wordsRead: actualWordsRead,
       timeSpent,
       pagesRead: currentPage + 1,
       storyCompleted: currentPage >= story.length - 1,
-      readingSpeed: Math.round((wordsRead / (timeSpent / 60)) || 0)
+      readingSpeed: Math.round((actualWordsRead / (timeSpent / 60)) || 0)
     });
     
     startCelebration();
   };
 
+  // Utility function to calculate real-time word count from current story
+  const calculateActualWordsRead = () => {
+    const storyText = story.join(' ');
+    const actualCount = storyText.split(/\s+/).filter(word => word.trim().length > 0).length;
+    console.log('FreeReadingSession word count debug:', {
+      staleWordsRead: wordsRead,
+      actualWordsRead: actualCount,
+      storyPages: story.length,
+      currentPage: currentPage + 1
+    });
+    return actualCount;
+  };
+
   // Calculate session stats
   const calculateStats = () => {
     const timeSpent = APP_CONFIG.FREE_SESSION_DURATION - timeRemaining;
-    const readingSpeed = Math.round((wordsRead / (timeSpent / 60)) || 0);
+    
+    // Use real-time word count calculation instead of stale state
+    const actualWordsRead = calculateActualWordsRead();
+    const readingSpeed = Math.round((actualWordsRead / (timeSpent / 60)) || 0);
     const pagesRead = currentPage + 1;
     const completionRate = Math.round((pagesRead / story.length) * 100);
     
     return {
-      wordsRead,
+      wordsRead: actualWordsRead,
       timeSpent,
       pagesRead,
       totalPages: story.length,
@@ -1173,17 +1195,20 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                               setCurrentPage(nextPage);
                               setStoryCompleted(true);
                               
+                              // Calculate actual words read for accurate session recording
+                              const actualWordsRead = calculateActualWordsRead();
+                              
                               // Trigger story completion gamification
                               const timeSpent = sessionStartTime ? 
                                 Math.floor((Date.now() - sessionStartTime.getTime()) / 1000) : 
                                 APP_CONFIG.FREE_SESSION_DURATION - timeRemaining;
                               
                               recordReadingSession({
-                                wordsRead,
+                                wordsRead: actualWordsRead,
                                 timeSpent,
                                 pagesRead: nextPage + 1,
                                 storyCompleted: true,
-                                readingSpeed: Math.round((wordsRead / (timeSpent / 60)) || 0)
+                                readingSpeed: Math.round((actualWordsRead / (timeSpent / 60)) || 0)
                               });
                               
                               // Story completed - toast will be shown by useEffect
