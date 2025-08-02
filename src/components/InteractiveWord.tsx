@@ -33,38 +33,35 @@ export const InteractiveWord = ({
   
   // ENHANCED: Debug and fix translation issues for Arabic, Chinese, Hindi
   const userLanguageT = (key: string, fallback: string) => {
-    console.log('🌐 Translation Debug - Enhanced:', {
-      key,
-      userNativeLanguage: userInfo?.nativeLanguage,
-      fallback,
-      currentLang: i18n.language,
-      resourcesLoaded: i18n.getResourceBundle(userInfo?.nativeLanguage || 'en', 'translation'),
-      hasResourceBundle: i18n.hasResourceBundle(userInfo?.nativeLanguage || 'en', 'translation')
-    });
-    
     if (userInfo?.nativeLanguage && userInfo.nativeLanguage !== 'en') {
       try {
-        // Direct resource lookup for debugging
+        // Direct resource lookup first
         const resources = i18n.getResourceBundle(userInfo.nativeLanguage, 'translation');
-        console.log('🗂️ Resource check:', {
+        const keyParts = key.split('.');
+        let directTranslation = resources;
+        
+        // Navigate through the nested object structure
+        for (const part of keyParts) {
+          directTranslation = directTranslation?.[part];
+        }
+        
+        console.log('🔍 Direct Translation Lookup:', {
+          key,
           language: userInfo.nativeLanguage,
-          hasResources: !!resources,
-          interactiveWordSection: resources?.interactiveWord,
-          specificKey: resources?.interactiveWord?.[key.split('.')[1]]
+          directTranslation,
+          foundInResources: !!directTranslation
         });
         
-        // Force language context and get translation
-        const translation = i18n.t(key, { lng: userInfo.nativeLanguage });
-        console.log('🗣️ Translation result - Enhanced:', { 
-          key, 
-          translation, 
-          language: userInfo.nativeLanguage,
-          isTranslated: translation !== key,
-          translationLength: translation.length
-        });
+        // Use direct translation if found
+        if (directTranslation && typeof directTranslation === 'string') {
+          console.log('✅ Using direct translation:', directTranslation);
+          return directTranslation;
+        }
         
-        // Return translation if it's different from the key (meaning it was found)
-        if (translation && translation !== key) {
+        // Fallback to i18n.t with explicit language
+        const translation = i18n.t(key, { lng: userInfo.nativeLanguage, fallbackLng: 'en' });
+        if (translation && translation !== key && translation !== fallback) {
+          console.log('✅ Using i18n translation:', translation);
           return translation;
         }
       } catch (error) {
