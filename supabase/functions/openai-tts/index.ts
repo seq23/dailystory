@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import "https://deno.land/x/xhr@0.1.0/mod.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -6,38 +7,26 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  console.log('=== OpenAI TTS function START ===')
-  
   if (req.method === 'OPTIONS') {
-    console.log('OPTIONS request received')
     return new Response('ok', { headers: corsHeaders })
   }
 
-  console.log('Processing POST request...')
-
   try {
-    console.log('Step 1: Reading request body')
-    const body = await req.json()
-    console.log('Step 2: Body parsed successfully:', JSON.stringify(body))
+    console.log('OpenAI TTS function called');
+    const { text, voice = "nova", speed = 1.0 } = await req.json()
     
-    const { text, voice = "nova", speed = 1.0 } = body
-    console.log(`Step 3: Extracted params - voice: ${voice}, speed: ${speed}, text length: ${text?.length}`)
+    console.log(`TTS Function called: voice=${voice}, speed=${speed}, textLength=${text?.length}`)
+    console.log(`Request text preview: "${text?.substring(0, 100)}..."`)
     
-    if (!text) {
-      console.log('Step 4: No text provided')
-      throw new Error('Text is required')
-    }
-    
-    console.log('Step 5: Checking OpenAI API key')
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY')
-    console.log(`Step 6: API key status - ${openaiApiKey ? 'PRESENT' : 'MISSING'}`)
+    console.log(`OpenAI API key configured: ${openaiApiKey ? 'YES' : 'NO'}`)
     
     if (!openaiApiKey) {
-      console.log('Step 7: API key missing, throwing error')
+      console.error('OpenAI API key not configured')
       throw new Error('OpenAI API key not configured')
     }
 
-    console.log('Step 8: Making OpenAI API request')
+    console.log('Making request to OpenAI API...')
     const response = await fetch('https://api.openai.com/v1/audio/speech', {
       method: 'POST',
       headers: {
@@ -45,27 +34,29 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'tts-1',
+        model: 'tts-1-hd', // Use high-definition model for better quality
         input: text,
-        voice: voice,
-        speed: speed,
+        voice: voice, // alloy, echo, fable, onyx, nova, shimmer
+        speed: speed, // This is the key parameter for speed control
         response_format: 'mp3'
       }),
     })
 
-    console.log(`Step 9: OpenAI response status: ${response.status}`)
+    console.log(`OpenAI API response status: ${response.status} ${response.statusText}`)
 
     if (!response.ok) {
       const errorText = await response.text()
-      console.log(`Step 10: OpenAI error - ${response.status}: ${errorText}`)
+      console.error(`OpenAI API error: ${response.status} ${response.statusText}`, errorText)
       throw new Error(`OpenAI API error: ${response.status} - ${errorText}`)
     }
 
-    console.log('Step 11: Converting audio to base64')
     const audioBuffer = await response.arrayBuffer()
-    const base64Audio = btoa(String.fromCharCode(...new Uint8Array(audioBuffer)))
+    console.log(`TTS Success: Generated ${audioBuffer.byteLength} bytes of audio`)
     
-    console.log(`Step 12: Success! Audio size: ${audioBuffer.byteLength} bytes, base64 length: ${base64Audio.length}`)
+    // Convert audio buffer to base64
+    const base64Audio = btoa(
+      String.fromCharCode(...new Uint8Array(audioBuffer))
+    )
     
     return new Response(
       JSON.stringify({ audioContent: base64Audio }),
@@ -78,15 +69,14 @@ serve(async (req) => {
     )
 
   } catch (error) {
-    console.log('=== ERROR OCCURRED ===')
-    console.log('Error details:', error)
-    console.log('Error message:', error?.message)
-    console.log('Error stack:', error?.stack)
+    console.error('TTS Error Details:', error)
+    console.error('Error message:', error?.message)
+    console.error('Error stack:', error?.stack)
     
     return new Response(
       JSON.stringify({ 
-        error: error?.message || 'Unknown error',
-        step: 'Function execution failed'
+        error: error.message,
+        details: 'Check function logs for more information'
       }),
       { 
         status: 500, 

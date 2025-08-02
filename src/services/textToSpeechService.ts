@@ -1,6 +1,5 @@
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { cleanChildrensTextForSpeech } from "@/utils/contextualPronunciation";
 
 export interface TextToSpeechConfig {
   voice?: string;
@@ -13,14 +12,14 @@ export class OpenAITTSService {
   private audioCache: Map<string, string> = new Map();
 
   constructor(config: TextToSpeechConfig) {
-    // Use child-friendly ElevenLabs voice - Sarah is warm and clear for children
-    this.voice = config.voice || "EXAVITQu4vr4xnSDxMaL"; // Sarah voice ID from ElevenLabs
+    // Use child-friendly voices - nova is clear and natural for children
+    this.voice = config.voice || "nova"; // Nova is more natural than shimmer
     this.speed = config.speed || 0.7; // Slower speed for children
   }
 
   async speakText(text: string, options?: { speed?: number }): Promise<void> {
-    // Clean the text for speech with context-aware pronunciation
-    const cleanText = cleanChildrensTextForSpeech(text);
+    // Clean the text for speech
+    const cleanText = text.replace(/[.,!?;:'"()]/g, '').trim();
     
     if (!cleanText) return;
 
@@ -36,9 +35,9 @@ export class OpenAITTSService {
       // Use Supabase functions.invoke for proper authentication
       const speedToUse = options?.speed || this.speed;
       console.log(`TTS Request: voice=${this.voice}, speed=${speedToUse}, text="${cleanText.substring(0, 50)}..."`);
-      console.log('About to call elevenlabs-tts function...');
+      console.log('About to call openai-tts function...');
       
-      const { data, error } = await supabase.functions.invoke('elevenlabs-tts', {
+      const { data, error } = await supabase.functions.invoke('openai-tts', {
         body: {
           text: cleanText,
           voice: this.voice,
@@ -146,9 +145,7 @@ export class OpenAITTSService {
   private fallbackToWebSpeech(text: string): void {
     console.log('Using fallback web speech synthesis');
     if ('speechSynthesis' in window) {
-      // Use contextual preprocessing for consistent pronunciation
-      const processedText = cleanChildrensTextForSpeech(text);
-      const utterance = new SpeechSynthesisUtterance(processedText);
+      const utterance = new SpeechSynthesisUtterance(text);
       
       // Child-friendly settings
       utterance.rate = 0.6; // Much slower for children
@@ -185,7 +182,6 @@ export class OpenAITTSService {
 
   // Method to explain a word using the word dictionary service
   async explainWord(word: string, userLevel: 'easy' | 'medium' | 'hard' = 'easy'): Promise<void> {
-    // Use basic cleaning for API call but contextual processing for speech
     const cleanWord = word.replace(/[.,!?;:'"()]/g, '').trim();
     
     if (!cleanWord) return;
@@ -251,20 +247,14 @@ export class OpenAITTSService {
     }
   }
 
-  // Method to pronounce just the word with context awareness
-  async pronounceWord(word: string, context?: string): Promise<void> {
-    // If we have context, use it for better pronunciation
-    const textToProcess = context ? `${context} ${word}` : word;
-    const cleanText = cleanChildrensTextForSpeech(textToProcess);
+  // Method to pronounce just the word
+  async pronounceWord(word: string): Promise<void> {
+    const cleanWord = word.replace(/[.,!?;:'"()]/g, '').trim();
     
-    // Extract just the word part after contextual processing
-    const words = cleanText.split(' ');
-    const processedWord = words[words.length - 1] || word;
-    
-    if (!processedWord) return;
+    if (!cleanWord) return;
 
     try {
-      await this.speakText(processedWord);
+      await this.speakText(cleanWord);
     } catch (error) {
       console.error('Error pronouncing word:', error);
     }
@@ -280,16 +270,10 @@ export class OpenAITTSService {
   }
 }
 
-// Create ElevenLabs TTS service instance
-export const createOpenAITTSService = (userInfo?: any) => {
-  // Use Sarah voice for all users - it's child-friendly and works well for all languages
-  const voice = 'EXAVITQu4vr4xnSDxMaL'; // Sarah - clear and natural voice for kids
-  
-  // Adjust speed based on native language - slower for non-English speakers
-  const speed = userInfo?.nativeLanguage === 'en' ? 0.7 : 0.6;
-  
+// Create OpenAI TTS service instance
+export const createOpenAITTSService = () => {
   return new OpenAITTSService({
-    voice,
-    speed
+    voice: 'nova', // Clear and natural voice for kids
+    speed: 0.7 // Slower, child-friendly speed
   });
 };

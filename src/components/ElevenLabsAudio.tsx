@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Play, Square, Crown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { cleanChildrensTextForSpeech } from "@/utils/contextualPronunciation";
 import type { UserInfo } from "@/types";
 
 interface ElevenLabsAudioProps {
@@ -36,16 +35,12 @@ export const ElevenLabsAudio = ({ text, userInfo, isPremium = false, onUpgrade }
     setIsLoading(true);
     
     try {
-      // Apply contextual preprocessing for better pronunciation
-      const processedText = cleanChildrensTextForSpeech(text);
-      const textToSend = isPremium ? processedText : processedText.slice(0, 500); // Limit for free users
-      
       // Call our Supabase edge function
       const response = await fetch('https://cpzeuogomaixamrtnnmj.functions.supabase.co/elevenlabs-tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          text: textToSend,
+          text: text.slice(0, 500), // Limit text for free users
           voice: getVoiceForUser(userInfo),
           model: "eleven_multilingual_v2"
         })

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BookOpen, Star, TrendingUp, Volume2, Trash2, Plus } from 'lucide-react';
-import { createOpenAITTSService } from '@/services/textToSpeechService';
+import { OpenAITTSService } from '@/services/openaiTTSService';
 import type { UserInfo } from '@/types';
 
 interface VocabularyWord {
@@ -28,7 +28,7 @@ interface VocabularyCollectorProps {
 export const VocabularyCollector = ({ userInfo, isVisible, onClose }: VocabularyCollectorProps) => {
   const { t } = useTranslation();
   const [vocabulary, setVocabulary] = useState<VocabularyWord[]>([]);
-  const [ttsService] = useState(() => createOpenAITTSService(userInfo));
+  const [ttsService] = useState(() => new OpenAITTSService());
   const [playingWord, setPlayingWord] = useState<string | null>(null);
 
   // Load vocabulary from localStorage
@@ -79,9 +79,10 @@ export const VocabularyCollector = ({ userInfo, isVisible, onClose }: Vocabulary
     
     setPlayingWord(word);
     try {
-      // Use the slow speed setting for pronunciation - slower for non-native speakers
-      const speed = userInfo.nativeLanguage === 'en' ? 0.7 : 0.6;
-      await ttsService.speakText(word, { speed });
+      await ttsService.speakText(word, { 
+        voice: userInfo.nativeLanguage === 'en' ? 'alloy' : 'nova',
+        speed: userInfo.nativeLanguage === 'en' ? 1.0 : 0.8
+      });
     } catch (error) {
       console.error('Pronunciation error:', error);
     } finally {

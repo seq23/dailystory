@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { BookOpen, Timer, Star, Crown, Sparkles, TrendingUp, Award, Clock, Play, Pause, Minus, X, ChevronUp, ChevronDown, Plus, Home, RotateCcw } from "lucide-react";
 import type { UserInfo, SessionStats } from "@/types";
 import { InteractiveAudioReading } from "@/components/InteractiveAudioReading";
@@ -216,31 +215,13 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
         console.log('Story config:', storyConfig);
 
         if (!isCancelled) {
-          // Generate story content using educational reading standards
+          // Generate story content using the new generator
           const { pages, config } = EarlyReaderStoryGenerator.generateStory(
             userInfo, 
             currentDifficulty as 'easy' | 'medium' | 'hard' | 'expert', 
             10
           );
-          
-          // Ensure all pages meet educational word count standards
-          const validatedPages = pages.map(page => {
-            const words = page.split(/\s+/).filter(word => word.length > 0);
-            if (words.length > config.maxWordsPerPage) {
-              return words.slice(0, config.maxWordsPerPage).join(' ') + '.';
-            }
-            return page;
-          });
-          
-          const generatedStory = { 
-            pages: validatedPages, 
-            config, 
-            images: [], 
-            wordCount: validatedPages.join(' ').split(' ').length, 
-            title: `${userInfo.name}'s Adventure`, 
-            theme: 'adventure', 
-            readingLevel: currentDifficulty 
-          };
+          const generatedStory = { pages, config, images: [], wordCount: pages.join(' ').split(' ').length, title: `${userInfo.name}'s Adventure`, theme: 'adventure', readingLevel: currentDifficulty };
           setStoryImages(generatedStory.images || []);
           
           if (!isCancelled) {
@@ -950,94 +931,68 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
             </div>
           </header>
 
-          {/* Main Content - Fixed Layout for Free Trial */}
+          {/* Main Content - Overhauled Layout with Proper Scrolling */}
           <main className="flex-1 flex flex-col overflow-hidden">
-            <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 flex-1 flex flex-col max-w-7xl">
-              <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8 flex-1 overflow-hidden"
-                   style={{ transform: 'none' }} // Ensure no transforms are applied
-              >
+            <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 flex-1 flex flex-col">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 max-w-6xl mx-auto flex-1 overflow-hidden">
                 
-                {/* Story Illustration - Fixed for Free Trial */}
-                <div className="flex flex-col lg:flex-1 lg:max-w-md">
-                  <Card className="h-[300px] sm:h-[400px] lg:h-[500px]">
-                    <CardContent className="p-3 sm:p-4 lg:p-6 h-full flex items-center justify-center">
-                      <div className="relative w-full aspect-square bg-gray-50 rounded-lg overflow-hidden shadow-sm">
-                        <img 
-                          src={storyImages[currentPage]?.url || illustrations[currentPage % illustrations.length]}
-                          alt={`Story illustration for page ${currentPage + 1}`}
-                          className="w-full h-full object-cover rounded-lg"
-                          onError={(e) => {
-                            console.warn(`Failed to load image for page ${currentPage + 1}, using fallback`);
-                            (e.target as HTMLImageElement).src = illustrations[currentPage % illustrations.length];
-                          }}
-                        />
-                      </div>
+                {/* Story Illustration - Mobile Optimized */}
+                <div className="order-2 lg:order-1 flex flex-col">
+                  <Card className="flex-1 min-h-[300px] sm:min-h-[400px] lg:min-h-[500px]">
+                    <CardContent className="p-3 sm:p-4 lg:p-6 h-full">
+                      <img 
+                        src={storyImages[currentPage]?.url || illustrations[currentPage % illustrations.length]}
+                        alt={`Story illustration for page ${currentPage + 1}`}
+                        className="w-full h-full object-cover rounded-lg"
+                      />
                     </CardContent>
                   </Card>
                 </div>
 
-                {/* Story Text Panel - Fixed Layout for Free Trial */}
-                <div className="flex flex-col lg:flex-1">
-                  <Card className="flex-1 flex flex-col overflow-hidden min-h-[500px] transition-all duration-300 hover:shadow-lg">
+                {/* Story Text Panel - Overhauled with Proper Layout */}
+                <div className="order-1 lg:order-2 flex flex-col">
+                  <Card className="flex-1 flex flex-col overflow-hidden transition-all duration-300 hover:shadow-lg">
                     
                     {/* Fixed Header Section */}
                     <div className="flex-shrink-0 p-3 sm:p-4 lg:p-6 border-b border-gray-100">
                       {/* Difficulty Level Selector */}
-                       <div id="reading-level-controls" className="mb-4 reading-level-controls">
-                         <TooltipProvider>
-                           <div className="flex gap-3 justify-center items-center">
-                             <Tooltip>
-                               <TooltipTrigger asChild>
-                                 <Button
-                                   onClick={() => changeDifficulty('easier')}
-                                   disabled={!canDecreaseDifficulty() || isLoading}
-                                   variant="outline"
-                                   size="sm"
-                                   className="p-2 transition-all duration-200 hover:scale-105 hover:shadow-md"
-                                 >
-                                   <ChevronDown className="w-4 h-4" />
-                                 </Button>
-                               </TooltipTrigger>
-                               <TooltipContent 
-                                 side="bottom" 
-                                 className="bg-gradient-to-r from-green-500 to-blue-600 text-white border-none shadow-xl animate-in fade-in-0 zoom-in-95 max-w-xs"
-                               >
-                                 <div className="flex items-center gap-2">
-                                   <span>🌟</span>
-                                   <span>{t('storyDisplay.tooltips.makeEasier')}</span>
-                                 </div>
-                               </TooltipContent>
-                             </Tooltip>
-                             
-                             <span className="text-sm font-medium text-gray-600">
-                               {t('freeReadingSession.readingLevel.label')}
-                             </span>
-                             
-                             <Tooltip>
-                               <TooltipTrigger asChild>
-                                 <Button
-                                   onClick={() => changeDifficulty('harder')}
-                                   disabled={!canIncreaseDifficulty() || isLoading}
-                                   variant="outline"
-                                   size="sm"
-                                   className="p-2 transition-all duration-200 hover:scale-105 hover:shadow-md"
-                                 >
-                                   <ChevronUp className="w-4 h-4" />
-                                 </Button>
-                               </TooltipTrigger>
-                               <TooltipContent 
-                                 side="bottom" 
-                                 className="bg-gradient-to-r from-purple-500 to-pink-600 text-white border-none shadow-xl animate-in fade-in-0 zoom-in-95 max-w-xs"
-                               >
-                                 <div className="flex items-center gap-2">
-                                   <span>🚀</span>
-                                   <span>{t('storyDisplay.tooltips.makeHarder')}</span>
-                                 </div>
-                               </TooltipContent>
-                             </Tooltip>
-                           </div>
-                         </TooltipProvider>
-                       </div>
+                      <div id="reading-level-controls" className="mb-4 reading-level-controls">
+                        <div className="flex gap-3 justify-center items-center">
+                          <div className="relative group">
+                            <Button
+                              onClick={() => changeDifficulty('easier')}
+                              disabled={!canDecreaseDifficulty() || isLoading}
+                              variant="outline"
+                              size="sm"
+                              className="p-2 transition-all duration-200 hover:scale-105 hover:shadow-md"
+                            >
+                              <ChevronDown className="w-4 h-4" />
+                            </Button>
+                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                              {t('freeReadingSession.readingLevel.easier')}
+                            </div>
+                          </div>
+                          
+                          <span className="text-sm font-medium text-gray-600">
+                            {t('freeReadingSession.readingLevel.label')}
+                          </span>
+                          
+                          <div className="relative group">
+                            <Button
+                              onClick={() => changeDifficulty('harder')}
+                              disabled={!canIncreaseDifficulty() || isLoading}
+                              variant="outline"
+                              size="sm"
+                              className="p-2 transition-all duration-200 hover:scale-105 hover:shadow-md"
+                            >
+                              <ChevronUp className="w-4 h-4" />
+                            </Button>
+                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                              {t('freeReadingSession.readingLevel.harder')}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
 
                       {/* Progress Bar */}
                       <div className="mb-4">
@@ -1048,45 +1003,39 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                       </div>
                     </div>
 
-                    {/* Scrollable Story Content with Educational Standards */}
+                    {/* Scrollable Story Content */}
                     <div id="story-content" className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6">
                       <div className="flex items-center justify-center min-h-full">
                         <div className="text-center w-full">
-                          {/* Story Text with Educational Reading Standards */}
-                          <div className={`
-                            story-text max-h-[400px] overflow-y-auto p-4 text-left
-                            ${(() => {
-                              const config = EarlyReaderStoryGenerator.getReadingConfigForDifficulty(currentDifficulty);
-                              return `${config.fontSize} ${config.lineHeight} ${config.spacing}`;
-                            })()}
-                          `}>
-                            {/* Display the actual story text directly */}
-                            <div className="font-medium text-gray-800 leading-relaxed">
-                              {currentStory}
-                            </div>
-                          </div>
-                          
-                          {/* Educational Info Display */}
-                          <div className="mt-4 text-center">
-                            <div className="text-sm text-gray-600">
-                              📖 {EarlyReaderStoryGenerator.getReadingConfigForDifficulty(currentDifficulty).name}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              Max {EarlyReaderStoryGenerator.getReadingConfigForDifficulty(currentDifficulty).maxWordsPerPage} words per page
-                            </div>
-                          </div>
+                          {/* Apply reading level configuration with proper responsive design */}
+                          {(() => {
+                            const config = EarlyReaderStoryGenerator.getReadingConfigForDifficulty(currentDifficulty);
+                            return (
+                              <div className={`${config.fontSize} ${config.lineHeight} ${config.spacing} font-medium text-gray-800 max-w-full break-words hyphens-auto leading-relaxed`}>
+                                {processTextForPhonetics(
+                                  currentStory, 
+                                  "", 
+                                  currentDifficulty as "easy" | "medium" | "hard" | "expert",
+                                  userInfo,
+                                  false // Free users are not premium
+                                )}
+                              </div>
+                            );
+                          })()}
                         </div>
                       </div>
                     </div>
 
-                    {/* Audio Controls Section - Single Instance */}
-                    <div className="flex-shrink-0 p-3 sm:p-4 lg:p-6 border-t border-gray-100 audio-controls">
-                      <InteractiveAudioReading 
-                        text={currentStory}
-                        userInfo={userInfo}
-                        isEnabled={true}
-                      />
-                    </div>
+                    {/* Audio Controls Section */}
+                    {sessionStarted && (
+                      <div className="flex-shrink-0 p-3 sm:p-4 lg:p-6 border-t border-gray-100 audio-controls">
+                        <InteractiveAudioReading 
+                          text={currentStory}
+                          userInfo={userInfo}
+                          isEnabled={true}
+                        />
+                      </div>
+                    )}
 
                     {/* Fixed Navigation Footer */}
                     <div className="flex-shrink-0 p-3 sm:p-4 lg:p-6 border-t border-gray-100 bg-gray-50/50">
