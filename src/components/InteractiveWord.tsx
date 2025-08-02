@@ -31,26 +31,37 @@ export const InteractiveWord = ({
   const { toast } = useToast();
   const { isMobileDevice, isCapacitor } = useIsMobile();
   
-  // SIMPLIFIED: Safe translation helper with error protection
+  // ENHANCED: Simple and working translation helper
   const userLanguageT = (key: string, fallback: string) => {
-    try {
-      console.log('🌐 Translation Debug:', {
-        key,
-        userNativeLanguage: userInfo?.nativeLanguage,
-        fallback
-      });
-      
-      if (userInfo?.nativeLanguage && userInfo.nativeLanguage !== 'en') {
-        // Simple fallback approach to prevent crashes
-        const translation = t(key, { lng: userInfo.nativeLanguage });
-        console.log('🗣️ Translation result:', { key, translation, language: userInfo.nativeLanguage });
-        return translation || fallback;
+    console.log('🌐 Translation Debug:', {
+      key,
+      userNativeLanguage: userInfo?.nativeLanguage,
+      fallback,
+      currentLang: i18n.language
+    });
+    
+    if (userInfo?.nativeLanguage && userInfo.nativeLanguage !== 'en') {
+      try {
+        // Force language context and get translation
+        const translation = i18n.t(key, { lng: userInfo.nativeLanguage });
+        console.log('🗣️ Translation result:', { 
+          key, 
+          translation, 
+          language: userInfo.nativeLanguage,
+          isTranslated: translation !== key
+        });
+        
+        // Return translation if it's different from the key (meaning it was found)
+        if (translation && translation !== key) {
+          return translation;
+        }
+      } catch (error) {
+        console.error('❌ Translation error:', error);
       }
-      return t(key) || fallback;
-    } catch (error) {
-      console.error('❌ Translation error (safe fallback):', error);
-      return fallback; // Always return fallback on error
     }
+    
+    console.log('🔄 Using fallback:', fallback);
+    return fallback;
   };
   const [showTooltip, setShowTooltip] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
