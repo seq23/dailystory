@@ -31,42 +31,40 @@ export const InteractiveWord = ({
   const { toast } = useToast();
   const { isMobileDevice, isCapacitor } = useIsMobile();
   
-  // FIXED: Use proper translation helper for user's native language
+  // FIXED: Simple and reliable translation helper for user's native language
   const userLanguageT = (key: string, fallback: string) => {
-    try {
-      console.log('🌐 Translation Debug:', {
-        key,
-        userNativeLanguage: userInfo?.nativeLanguage,
-        currentI18nLanguage: i18n.language,
-        fallback
-      });
-      
-      if (userInfo?.nativeLanguage && userInfo.nativeLanguage !== 'en') {
-        // Get the translation resource directly for the user's language
-        const resources = i18n.getResourceBundle(userInfo.nativeLanguage, 'translation');
-        if (resources) {
-          // Navigate to the translation key (e.g., "interactiveWord.explain")
-          const keys = key.split('.');
-          let translation = resources;
-          for (const k of keys) {
-            translation = translation?.[k];
-          }
-          
-          console.log('🗣️ Got translation:', { 
+    console.log('🌐 Translation Debug:', {
+      key,
+      userNativeLanguage: userInfo?.nativeLanguage,
+      currentI18nLanguage: i18n.language,
+      fallback,
+      resourcesAvailable: i18n.hasResourceBundle(userInfo?.nativeLanguage || 'en', 'translation')
+    });
+    
+    if (userInfo?.nativeLanguage && userInfo.nativeLanguage !== 'en') {
+      try {
+        // Use direct resource access - more reliable
+        const targetLanguage = userInfo.nativeLanguage;
+        if (i18n.hasResourceBundle(targetLanguage, 'translation')) {
+          const translation = i18n.t(key, { lng: targetLanguage });
+          console.log('🗣️ Got translation result:', { 
             key, 
-            translation: typeof translation === 'string' ? translation : null, 
-            language: userInfo.nativeLanguage,
-            resourcesFound: !!resources
+            translation, 
+            language: targetLanguage,
+            fallbackUsed: translation === key
           });
-          
-          return typeof translation === 'string' ? translation : fallback;
+          // If translation equals key, that means no translation was found
+          return translation !== key ? translation : fallback;
+        } else {
+          console.warn('⚠️ No resource bundle for language:', targetLanguage);
+          return fallback;
         }
+      } catch (error) {
+        console.error('❌ Translation error:', error);
+        return fallback;
       }
-      return t(key) || fallback;
-    } catch (error) {
-      console.error('Translation error:', error);
-      return fallback;
     }
+    return t(key) || fallback;
   };
   const [showTooltip, setShowTooltip] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -255,16 +253,18 @@ export const InteractiveWord = ({
         
         console.log('🚨 BEFORE AUDIO: About to start speech synthesis');
         
-        // FIXED: Ensure speech synthesis works on all browsers and mobile
+        // ENHANCED: Ensure speech synthesis works on all browsers and mobile
         console.log('🔊 AUDIO DEBUG - Starting speech synthesis:', { 
           definition, 
           userNativeLanguage,
           isMobileDevice,
           speechSynthesisSupported: 'speechSynthesis' in window,
-          voicesLoaded: speechSynthesis.getVoices().length > 0
+          voicesLoaded: speechSynthesis.getVoices().length > 0,
+          isESLLearner,
+          wordData: !!wordData
         });
         
-        // Wait for voices to load (critical for mobile/Safari)
+        // Enhanced speech function with mobile Safari compatibility
         const speakDefinition = () => {
           try {
             speechSynthesis.cancel(); // Clear any existing speech
