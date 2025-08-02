@@ -215,6 +215,13 @@ export const InteractiveWord = ({
           duration: 5000,
         });
         
+        // Debug toast to show what we're about to speak
+        toast({
+          title: "🔧 Debug Info",
+          description: `Language: ${userNativeLanguage}, Voice will try to speak definition`,
+          duration: 3000,
+        });
+        
         // Create multilingual explanation for mobile TTS
         // Build explanation using available localized fields since wordData.explanation is undefined
         const explanationParts = [];
@@ -252,6 +259,13 @@ export const InteractiveWord = ({
           
           if ('speechSynthesis' in window) {
             console.log('Speech synthesis available, starting TTS process...');
+            
+            // Debug toast
+            toast({
+              title: "🔊 Starting Audio",
+              description: `About to speak: "${explanation.substring(0, 30)}..."`,
+              duration: 2000,
+            });
             
             // Cancel any existing speech
             speechSynthesis.cancel();
@@ -319,20 +333,30 @@ export const InteractiveWord = ({
                 currentTarget: error.currentTarget
               });
               toast({
-                title: t("interactiveWord.audioUnavailable", "Audio unavailable"), 
-                description: t("interactiveWord.definitionShown", "Definition shown below. Try with headphones if needed."),
-                duration: 3000,
+                title: "❌ Audio Error", 
+                description: `Speech failed: ${error.error || 'Unknown error'}`,
+                duration: 4000,
               });
               setIsPlaying(false);
             };
             
             utterance.onend = () => {
               console.log('Speech synthesis completed successfully');
+              toast({
+                title: "✅ Audio Complete",
+                description: "Explanation finished speaking",
+                duration: 2000,
+              });
               setIsPlaying(false);
             };
             
             utterance.onstart = () => {
               console.log('Speech synthesis started');
+              toast({
+                title: "🔊 Audio Started",
+                description: "Now speaking explanation...",
+                duration: 2000,
+              });
             };
             
             console.log('Calling speechSynthesis.speak()...');
