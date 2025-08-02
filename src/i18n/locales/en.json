@@ -414,6 +414,8 @@
     "audioUsed": "Audio used",
     "audioUsedTooltip": "Audio used (1x per page for free users)",
     "speed": "Speed",
+    "stop": "Stop",
+    "generating": "Generating...",
     "freeAudioUsed": "free audio used",
     "extendedPagesNeedPremium": "🔒 Extended pages need Premium"
   },

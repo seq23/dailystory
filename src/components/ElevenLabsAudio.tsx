@@ -149,7 +149,7 @@ export const ElevenLabsAudio = ({
         ) : (
           <Play className="w-4 h-4" />
         )}
-        {isLoading ? "Generating..." : isPlaying ? "Stop" : "Play Audio"}
+        {isLoading ? t("audioReading.generating", "Generating...") : isPlaying ? t("audioReading.stop", "Stop") : t("audioReading.playAudio", "Play Audio")}
       </Button>
 
       {!isPremium && (

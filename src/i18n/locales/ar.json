@@ -440,7 +440,14 @@
     "level": "المستوى",
     "unlockPremium": "افتح مزايا البريميوم!",
     "goToHome": "العودة للرئيسية",
-    "startNewStory": "ابدأ قصة جديدة"
+    "startNewStory": "ابدأ قصة جديدة",
+    "premiumBenefits": {
+      "unlimitedSessions": "جلسات قراءة غير محدودة",
+      "customDifficulty": "تخصيص صعوبة القصة",
+      "extendedLibrary": "مكتبة قصص موسعة",
+      "advancedTracking": "تتبع متقدم للتقدم",
+      "upgradeToPremium": "الترقية للمميز"
+    }
   },
   "tutorial": {
     "timer": {
@@ -477,6 +484,8 @@
     "pauseTimer": "إيقاف المؤقت",
     "reduceTime": "تقليل 5 دقائق",
     "endSession": "إنهاء جلسة القراءة",
+    "congratulations": "تهانينا!",
+    "sessionComplete": "لقد أكملت جلسة القراءة!",
     "sequentialTooltips": {
       "startPause": "🎯 انقر لبدء/إيقاف مؤقت القراءة!",
       "reduceTime": "⏰ قلل الوقت بـ 5 دقائق!",
@@ -497,5 +506,35 @@
     "unlockPremium": "فتح المزايا المميزة!",
     "goToHome": "العودة للرئيسية",
     "startNewStory": "بدء قصة جديدة"
+  },
+  "audioReading": {
+    "playAudio": "تشغيل الصوت",
+    "audioPlaying": "يتم تشغيل الصوت...",
+    "audioUsed": "تم استخدام الصوت",
+    "audioUsedTooltip": "تم استخدام الصوت (مرة واحدة لكل صفحة للمستخدمين المجانيين)",
+    "speed": "السرعة",
+    "stop": "إيقاف",
+    "generating": "جاري التحضير...",
+    "freeAudioUsed": "تم استخدام الصوت المجاني",
+    "extendedPagesNeedPremium": "🔒 الصفحات الإضافية تحتاج للعضوية المميزة"
+  },
+  "storyDisplay": {
+    "readingLevel": "مستوى القراءة",
+    "readingProgress": "تقدم القراءة",
+    "previous": "← السابق",
+    "next": "التالي →",
+    "addMorePages": "إضافة المزيد من الصفحات",
+    "encouragementMessages": {
+      "outstanding": "إنجاز قراءة رائع! أنت تصبح بطل قراءة!",
+      "excellent": "عمل ممتاز! أنت تحرز تقدماً رائعاً!",
+      "great": "بداية رائعة! استمر في عادة القراءة!",
+      "everyPage": "كل صفحة مهمة! أنت في طريقك لتصبح قارئاً عظيماً!"
+    },
+    "difficultyLabels": {
+      "easy": "ما قبل الروضة - الصف الأول",
+      "medium": "الصف الثاني - الثالث",
+      "hard": "الصف الرابع - الخامس",
+      "expert": "الصف السادس+"
+    }
   }
 }
