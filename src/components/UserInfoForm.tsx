@@ -11,9 +11,10 @@ import { ColorPicker } from "@/components/ui/color-picker";
 import { AvatarPicker } from "@/components/ui/avatar-picker";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { ChevronRight, User, GraduationCap, Heart, Star, Globe, Sparkles, AlertCircle } from "lucide-react";
+import { ChevronRight, User, GraduationCap, Heart, Star, Globe, Sparkles, AlertCircle, ArrowRightLeft, CheckCircle } from "lucide-react";
 import { ContentSecurity, SecurityLogger } from "@/utils/security";
 import { useToast } from "@/hooks/use-toast";
+import { IntelligentInputProcessor } from "@/services/intelligentInputProcessor";
 import type { UserInfo, Grade, LanguageCode, LearningGoal } from "@/types";
 
 export type { UserInfo } from "@/types";
@@ -47,6 +48,13 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
 
   const [showValidationErrors, setShowValidationErrors] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [translationPreviews, setTranslationPreviews] = useState<Record<string, { 
+    originalInput: string; 
+    processedInput: string; 
+    isTranslated: boolean; 
+    confidence: number; 
+  }>>({});
+  const [isProcessingInputs, setIsProcessingInputs] = useState(false);
 
   // Enhanced content filtering with grade-aware security and multilingual support
   const contentFilter = (text: string): { hasInappropriateContent: boolean; reason?: string } => {
@@ -57,7 +65,8 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
     };
   };
 
-  const handleInputChange = (field: keyof UserInfo, value: string | number) => {
+  // Enhanced input handler with intelligent processing
+  const handleInputChange = async (field: keyof UserInfo, value: string | number) => {
     if (typeof value === 'string') {
       // Check if this is a deletion (shorter text) - skip security validation for deletions
       const currentValue = formData[field] as string;
@@ -84,6 +93,52 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
       setFormData(prev => ({ ...prev, [field]: sanitizedValue }));
     } else {
       setFormData(prev => ({ ...prev, [field]: value }));
+    }
+  };
+
+  // Enhanced input processing for text fields (on blur)
+  const handleIntelligentProcessing = async (field: string, value: string) => {
+    if (!value.trim() || formData.nativeLanguage === 'en') return;
+    
+    // Only process certain fields that benefit from translation
+    const processableFields = ['favoriteAnimal', 'favoriteFood', 'hobbies', 'specialRequest'];
+    if (!processableFields.includes(field)) return;
+
+    try {
+      setIsProcessingInputs(true);
+      
+      const processed = await IntelligentInputProcessor.processUserInput(
+        value,
+        field,
+        formData
+      );
+
+      // Store translation preview
+      setTranslationPreviews(prev => ({
+        ...prev,
+        [field]: {
+          originalInput: processed.originalInput,
+          processedInput: processed.processedInput,
+          isTranslated: processed.needsTranslation,
+          confidence: processed.confidence
+        }
+      }));
+
+      // Auto-apply if high confidence translation
+      if (processed.needsTranslation && processed.confidence > 0.7) {
+        setFormData(prev => ({ ...prev, [field]: processed.processedInput }));
+        
+        toast({
+          title: "✨ Translation Applied",
+          description: `Converted "${processed.originalInput}" to English for your story.`,
+          duration: 4000,
+        });
+      }
+      
+    } catch (error) {
+      console.error('Intelligent processing failed:', error);
+    } finally {
+      setIsProcessingInputs(false);
     }
   };
 
@@ -461,12 +516,30 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                   {t("userInfoForm.fields.favoriteAnimal.label")}
                   <span className="text-xs md:text-sm text-muted-foreground ml-2">{t("userInfoForm.fields.favoriteAnimal.optional")}</span>
                 </Label>
-                <TagInput
-                  value={formData.favoriteAnimal}
-                  onChange={(value) => handleInputChange("favoriteAnimal", value)}
-                  placeholder={t("userInfoForm.fields.favoriteAnimal.placeholder")}
-                  className="text-base md:text-lg min-h-[50px] md:min-h-[60px]"
-                />
+                <div className="relative">
+                  <Input
+                    value={formData.favoriteAnimal}
+                    onChange={(e) => handleInputChange("favoriteAnimal", e.target.value)}
+                    onBlur={(e) => handleIntelligentProcessing("favoriteAnimal", e.target.value)}
+                    placeholder={t("userInfoForm.fields.favoriteAnimal.placeholder")}
+                    className="text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-primary/20"
+                  />
+                  {isProcessingInputs && (
+                    <div className="absolute right-3 top-3">
+                      <ArrowRightLeft className="w-4 h-4 text-blue-500 animate-spin" />
+                    </div>
+                  )}
+                  {translationPreviews.favoriteAnimal?.isTranslated && (
+                    <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
+                        <span className="text-sm text-green-700 dark:text-green-300">
+                          Translated: "{translationPreviews.favoriteAnimal.originalInput}" → "{translationPreviews.favoriteAnimal.processedInput}"
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -474,12 +547,30 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                   {t("userInfoForm.fields.favoriteFood.label")}
                   <span className="text-xs md:text-sm text-muted-foreground ml-2">{t("userInfoForm.fields.favoriteFood.optional")}</span>
                 </Label>
-                <TagInput
-                  value={formData.favoriteFood}
-                  onChange={(value) => handleInputChange("favoriteFood", value)}
-                  placeholder={t("userInfoForm.fields.favoriteFood.placeholder")}
-                  className="text-base md:text-lg min-h-[50px] md:min-h-[60px]"
-                />
+                <div className="relative">
+                  <Input
+                    value={formData.favoriteFood}
+                    onChange={(e) => handleInputChange("favoriteFood", e.target.value)}
+                    onBlur={(e) => handleIntelligentProcessing("favoriteFood", e.target.value)}
+                    placeholder={t("userInfoForm.fields.favoriteFood.placeholder")}
+                    className="text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-primary/20"
+                  />
+                  {isProcessingInputs && (
+                    <div className="absolute right-3 top-3">
+                      <ArrowRightLeft className="w-4 h-4 text-blue-500 animate-spin" />
+                    </div>
+                  )}
+                  {translationPreviews.favoriteFood?.isTranslated && (
+                    <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
+                        <span className="text-sm text-green-700 dark:text-green-300">
+                          Translated: "{translationPreviews.favoriteFood.originalInput}" → "{translationPreviews.favoriteFood.processedInput}"
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -487,12 +578,30 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                   {t("userInfoForm.fields.hobbies.label")}
                   <span className="text-xs md:text-sm text-muted-foreground ml-2">{t("userInfoForm.fields.hobbies.optional")}</span>
                 </Label>
-                <TagInput
-                  value={formData.hobbies}
-                  onChange={(value) => handleInputChange("hobbies", value)}
-                  placeholder={t("userInfoForm.fields.hobbies.placeholder")}
-                  className="text-base md:text-lg min-h-[50px] md:min-h-[60px]"
-                />
+                <div className="relative">
+                  <Input
+                    value={formData.hobbies}
+                    onChange={(e) => handleInputChange("hobbies", e.target.value)}
+                    onBlur={(e) => handleIntelligentProcessing("hobbies", e.target.value)}
+                    placeholder={t("userInfoForm.fields.hobbies.placeholder")}
+                    className="text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-primary/20"
+                  />
+                  {isProcessingInputs && (
+                    <div className="absolute right-3 top-3">
+                      <ArrowRightLeft className="w-4 h-4 text-blue-500 animate-spin" />
+                    </div>
+                  )}
+                  {translationPreviews.hobbies?.isTranslated && (
+                    <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
+                        <span className="text-sm text-green-700 dark:text-green-300">
+                          Translated: "{translationPreviews.hobbies.originalInput}" → "{translationPreviews.hobbies.processedInput}"
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>

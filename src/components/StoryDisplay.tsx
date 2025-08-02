@@ -9,7 +9,7 @@ import type { UserInfo, SessionStats } from "@/types";
 import type { Achievement } from "@/services/gamificationService";
 import { ElevenLabsAudio } from "@/components/ElevenLabsAudio";
 import { InteractiveAudioReading } from "@/components/InteractiveAudioReading";
-import { EarlyReaderStoryGenerator } from "@/services/earlyReaderStoryGenerator";
+import { UniversalContentManager } from "@/services/universalContentManager";
 import { UnifiedImageService, type EstablishedCharacter } from "@/services/unifiedImageService";
 import { APP_CONFIG } from "@/constants/app";
 import { useToast } from "@/hooks/use-toast";
@@ -163,7 +163,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
     return () => cleanupGamificationGlobals();
   }, [addVocabularyWord, isPremium]);
 
-  // Generate story on component mount
+  // Generate story on component mount using Universal Content Manager
   useEffect(() => {
     const generateStory = async () => {
       try {
@@ -176,22 +176,32 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                                    readingLevel === 'advanced' ? 'expert' : 'easy') as 'easy' | 'medium' | 'hard' | 'expert';
         setCurrentDifficulty(initialDifficulty);
         
-        // Generate story using the new generator
-        const { pages, config } = EarlyReaderStoryGenerator.generateStory(
+        // 🌟 Use Universal Content Manager for enhanced story generation with translation
+        console.log('🚀 Starting Enhanced Story Generation with Translation Processing...');
+        
+        const storyResult = await UniversalContentManager.generateStory(
           userInfo, 
-          initialDifficulty, 
-          10
+          initialDifficulty,
+          {
+            isPremium,
+            userId: userInfo?.name || 'guest',
+            maxSessions: 100
+          }
         );
-        const generatedStory = { 
-          pages, 
-          config, 
-          images: [], 
-          wordCount: pages.join(' ').split(' ').length, 
-          readingLevel: initialDifficulty 
-        };
-        setStory(generatedStory.pages);
-        setStoryImages(generatedStory.images || []);
-        setWordsRead(generatedStory.wordCount);
+        
+        console.log('✨ Enhanced Story Generated:', {
+          isNewStory: storyResult.isNewStory,
+          isContinuation: storyResult.isContinuation,
+          sessionInfo: storyResult.sessionInfo
+        });
+        
+        // Update story state
+        setStory(storyResult.story.segments.map(segment => segment.text));
+        setStoryImages(storyResult.story.segments.map((segment, index) => ({
+          url: segment.illustration || '',
+          prompt: `Illustration for page ${index + 1}`
+        })));
+        setWordsRead(storyResult.story.wordCount);
         
         // Establish character consistency for intelligent image generation
         const characterDetails = UnifiedImageService.establishCharacterConsistency(userInfo);
@@ -201,14 +211,14 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
         const generateImagesProgressively = async () => {
           console.log(`Starting intelligent image generation for ${isPremium ? 'premium' : 'free'} user ${characterDetails.userName}`);
           
-          for (let i = 0; i < generatedStory.pages.length; i++) {
+          for (let i = 0; i < storyResult.story.segments.length; i++) {
             try {
               if (isPremium) {
                 // Premium users: Generate AI images with enhanced food detection
                 const imageOptions = {
                   pageIndex: i,
-                  totalPages: generatedStory.pages.length,
-                  storyText: generatedStory.pages[i],
+                  totalPages: storyResult.story.segments.length,
+                  storyText: storyResult.story.segments[i].text,
                   userInfo: userInfo,
                   difficulty: initialDifficulty,
                   establishedCharacter: characterDetails,
@@ -223,11 +233,11 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                   return newImages;
                 });
                 
-                console.log(`Generated intelligent AI image ${i + 1}/${generatedStory.pages.length} for premium user`);
+                console.log(`Generated intelligent AI image ${i + 1}/${storyResult.story.segments.length} for premium user`);
               } else {
                 // Free users: Smart fallback selection using same enhanced content analysis
                 const smartFallback = UnifiedImageService.selectSmartFallback(
-                  generatedStory.pages[i], 
+                  storyResult.story.segments[i].text, 
                   characterDetails, 
                   i, 
                   illustrations
@@ -239,7 +249,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                   return newImages;
                 });
                 
-                console.log(`Selected smart fallback image ${i + 1}/${generatedStory.pages.length} for free user`);
+                console.log(`Selected smart fallback image ${i + 1}/${storyResult.story.segments.length} for free user`);
               }
             } catch (error) {
               console.error(`Failed to generate image for page ${i + 1}:`, error);
@@ -381,42 +391,42 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
 
   const handleNewStory = async () => {
     if (isPremium) {
-      // Premium users: Generate new story directly
+      // Premium users: Use Universal Content Manager for new story
       setCurrentPage(0);
       setTimeRemaining(APP_CONFIG.FREE_SESSION_DURATION);
       setStoryCompleted(false);
       setIsLoading(true);
       
       try {
-        // Generate new story using the new generator
-        const { pages, config } = EarlyReaderStoryGenerator.generateStory(
+        // 🌟 Use Universal Content Manager for enhanced story generation
+        const storyResult = await UniversalContentManager.generateStory(
           userInfo, 
-          currentDifficulty, 
-          10
+          currentDifficulty,
+          {
+            isPremium,
+            userId: userInfo?.name || 'guest',
+            maxSessions: 100
+          }
         );
-        const generatedStory = { 
-          pages, 
-          config, 
-          images: [], 
-          wordCount: pages.join(' ').split(' ').length, 
-          readingLevel: currentDifficulty 
-        };
         
-        setStory(generatedStory.pages);
-        setStoryImages(generatedStory.images || []);
-        setWordsRead(generatedStory.wordCount);
+        setStory(storyResult.story.segments.map(segment => segment.text));
+        setStoryImages(storyResult.story.segments.map((segment, index) => ({
+          url: segment.illustration || '',
+          prompt: `Illustration for page ${index + 1}`
+        })));
+        setWordsRead(storyResult.story.wordCount);
         
         // Generate intelligent images for new story using established character
         if (establishedCharacter) {
           const generateImagesForNewStory = async () => {
             console.log(`Generating images for new story for premium user ${establishedCharacter.userName}`);
             
-            for (let i = 0; i < generatedStory.pages.length; i++) {
+            for (let i = 0; i < storyResult.story.segments.length; i++) {
               try {
                 const imageOptions = {
                   pageIndex: i,
-                  totalPages: generatedStory.pages.length,
-                  storyText: generatedStory.pages[i],
+                  totalPages: storyResult.story.segments.length,
+                  storyText: storyResult.story.segments[i].text,
                   userInfo: userInfo,
                   difficulty: currentDifficulty,
                   establishedCharacter: establishedCharacter,
@@ -431,7 +441,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                   return newImages;
                 });
                 
-                console.log(`Generated intelligent image ${i + 1}/${generatedStory.pages.length} for new story`);
+                console.log(`Generated intelligent image ${i + 1}/${storyResult.story.segments.length} for new story`);
               } catch (error) {
                 console.error(`Failed to generate image for page ${i + 1}:`, error);
                 // Use fallback illustration
@@ -484,21 +494,19 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
     setStoryCompleted(false);
     
     try {
-      // Generate new story at the new difficulty level
-      const { pages, config } = EarlyReaderStoryGenerator.generateStory(
+      // Generate new story at the new difficulty level using Universal Content Manager
+      const storyResult = await UniversalContentManager.generateStory(
         userInfo, 
-        newDifficulty, 
-        10
+        newDifficulty,
+        {
+          isPremium,
+          userId: userInfo?.name || 'guest',
+          maxSessions: 100
+        }
       );
-      const newStory = { 
-        pages, 
-        config, 
-        images: [], 
-        wordCount: pages.join(' ').split(' ').length 
-      };
       
-      setStory(newStory.pages);
-      setWordsRead(newStory.wordCount);
+      setStory(storyResult.story.segments.map(segment => segment.text));
+      setWordsRead(storyResult.story.wordCount);
       
       // Keep existing images initially to avoid blank pages, then update them
       // Generate intelligent images for new difficulty level for ALL users (premium + free)
@@ -506,14 +514,14 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
         const generateImagesForNewDifficulty = async () => {
           console.log(`Regenerating images for difficulty change to ${newDifficulty} for ${isPremium ? 'premium' : 'free'} user ${establishedCharacter.userName}`);
           
-          for (let i = 0; i < newStory.pages.length; i++) {
+          for (let i = 0; i < storyResult.story.segments.length; i++) {
             try {
               if (isPremium) {
                 // Premium users: Generate AI images with enhanced food detection
                 const imageOptions = {
                   pageIndex: i,
-                  totalPages: newStory.pages.length,
-                  storyText: newStory.pages[i],
+                  totalPages: storyResult.story.segments.length,
+                  storyText: storyResult.story.segments[i].text,
                   userInfo: userInfo,
                   difficulty: newDifficulty,
                   establishedCharacter: establishedCharacter,
@@ -528,11 +536,11 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                   return newImages;
                 });
                 
-                console.log(`Generated intelligent AI image ${i + 1}/${newStory.pages.length} for difficulty ${newDifficulty}`);
+                console.log(`Generated intelligent AI image ${i + 1}/${storyResult.story.segments.length} for difficulty ${newDifficulty}`);
               } else {
                 // Free users: Smart fallback selection using enhanced content analysis
                 const smartFallback = UnifiedImageService.selectSmartFallback(
-                  newStory.pages[i], 
+                  storyResult.story.segments[i].text, 
                   establishedCharacter, 
                   i, 
                   illustrations
@@ -544,7 +552,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                   return newImages;
                 });
                 
-                console.log(`Selected smart fallback image ${i + 1}/${newStory.pages.length} for difficulty ${newDifficulty}`);
+                console.log(`Selected smart fallback image ${i + 1}/${storyResult.story.segments.length} for difficulty ${newDifficulty}`);
               }
             } catch (error) {
               console.error(`Failed to generate image for page ${i + 1} at new difficulty:`, error);
@@ -592,12 +600,13 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
     if (!isOnLastPage) return; // Only allow adding pages when on the last page
     
     try {
-      // Generate extended story using the new generator
-      const { pages: newPages, config } = EarlyReaderStoryGenerator.generateStory(
+      // Generate extended story using Universal Content Manager
+      const storyResult = await UniversalContentManager.generateStory(
         userInfo, 
-        currentDifficulty, 
-        5 // Always add exactly 5 pages
+        currentDifficulty,
+        { isPremium, userId: userInfo?.name || 'guest', maxSessions: 100 }
       );
+      const newPages = storyResult.story.segments.map(segment => segment.text).slice(0, 5);
       
       // Add new pages and update word count
       setStory(prev => [...prev, ...newPages]);
@@ -896,7 +905,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                     <div className="text-center w-full">
                       {/* Story Text with Reading Level Configuration and Overflow Protection */}
                       {(() => {
-                        const config = EarlyReaderStoryGenerator.getReadingConfigForDifficulty(currentDifficulty);
+                        const config = { fontSize: 'text-lg sm:text-xl', lineHeight: 'leading-relaxed', spacing: 'space-y-2' };
                         return (
                           <div className={`${config.fontSize} ${config.lineHeight} ${config.spacing} font-medium text-gray-800 max-w-full break-words hyphens-auto leading-relaxed overflow-hidden`}>
                             <div className="max-h-[400px] overflow-y-auto px-2">
