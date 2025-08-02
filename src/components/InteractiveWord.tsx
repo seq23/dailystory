@@ -104,19 +104,20 @@ export const InteractiveWord = ({
   const shouldHighlight = wordDifficulty.shouldHighlight;
   const wordComplexity = wordDifficulty.complexity;
 
-  // Enhanced voice selection based on user profile
+  // Enhanced voice selection for natural pronunciation
   const getVoiceForUser = (userInfo?: UserInfo) => {
-    if (!userInfo) return "9BWtsMINqrJLrRacOk9x"; // Default Aria voice
+    if (!userInfo) return "cgSgspJ2msm6clMCkdW9"; // Default Jessica voice (natural)
     
     const age = userInfo.age;
     const isGirl = userInfo.avatar?.type === 'girl';
     
+    // Use most natural voices for pronunciation
     if (age <= 8) {
-      return isGirl ? "EXAVITQu4vr4xnSDxMaL" : "TX3LPaxmHKxFdv7VOQHJ"; // Sarah or Liam (young voices)
+      return isGirl ? "EXAVITQu4vr4xnSDxMaL" : "TX3LPaxmHKxFdv7VOQHJ"; // Sarah or Liam
     } else if (age <= 12) {
-      return isGirl ? "XB0fDUnXU5powFXDhCwa" : "N2lVS1w4EtoT3dr4eOWO"; // Charlotte or Callum
+      return isGirl ? "cgSgspJ2msm6clMCkdW9" : "nPczCjzI2devNBz1zQrb"; // Jessica or Brian (very natural)
     } else {
-      return isGirl ? "9BWtsMINqrJLrRacOk9x" : "CwhRBWXzGAHq8TQ4Fs17"; // Aria or Roger
+      return isGirl ? "cgSgspJ2msm6clMCkdW9" : "onwK4e9ZLuTAKqWW03F9"; // Jessica or Daniel (most natural)
     }
   };
 
@@ -211,13 +212,14 @@ export const InteractiveWord = ({
       
       // Use ElevenLabs for high-quality pronunciation
       const voice = getVoiceForUser(userInfo);
+      const model = isNativeEnglishSpeaker ? "eleven_turbo_v2" : "eleven_multilingual_v2";
       const response = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/elevenlabs-tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           text: cleanWord,
           voice: voice,
-          model: "eleven_multilingual_v2"
+          model: model
         })
       });
 
