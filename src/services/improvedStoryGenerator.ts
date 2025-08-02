@@ -13,57 +13,73 @@ export class ImprovedStoryGenerator {
     const characterName = userInfo.name?.trim() || 'Alex';
     const favoriteAnimal = userInfo.favoriteAnimal?.toLowerCase()?.trim() || 'cat';
     
+    // Determine correct pronouns based on avatar selection
+    const pronouns = this.getPronounsFromAvatar(userInfo.avatar?.type);
+    
     // Get cultural context for appropriate content
     const culturalContext = CulturalAdaptationService.getCulturalContext(userInfo.nativeLanguage || 'en');
     
     // Create story template based on difficulty
-    const template = this.createStoryTemplate(characterName, favoriteAnimal, difficulty, culturalContext);
+    const template = this.createStoryTemplate(characterName, favoriteAnimal, difficulty, culturalContext, pronouns);
     
     // Generate pages ensuring no repetition
-    const pages = this.generateUniquePages(template, pageCount, difficulty);
+    const pages = this.generateUniquePages(template, pageCount, difficulty, pronouns);
     
     return pages;
+  }
+
+  // Get correct pronouns based on avatar type
+  private static getPronounsFromAvatar(avatarType?: string): { subject: string, object: string, possessive: string } {
+    switch (avatarType) {
+      case 'boy':
+        return { subject: 'he', object: 'him', possessive: 'his' };
+      case 'girl':
+        return { subject: 'she', object: 'her', possessive: 'her' };
+      default:
+        return { subject: 'they', object: 'them', possessive: 'their' };
+    }
   }
   
   private static createStoryTemplate(
     characterName: string, 
     favoriteAnimal: string, 
     difficulty: DifficultyLevel,
-    culturalContext: any
+    culturalContext: any,
+    pronouns: { subject: string, object: string, possessive: string }
   ): StoryTemplate {
     
     // Simple, clear story structures by difficulty
     switch (difficulty) {
       case 'easy':
         return {
-          introduction: `${characterName} was playing in the garden when they heard a sound.`,
+          introduction: `${characterName} was playing in the garden when ${pronouns.subject} heard a sound.`,
           adventure: [
             `${characterName} looked around and saw a ${favoriteAnimal}.`,
             `The ${favoriteAnimal} looked friendly and came closer.`,
             `${characterName} and the ${favoriteAnimal} became friends.`,
-            `They played together in the sunshine.`,
+            `${pronouns.subject} played together in the sunshine.`,
             `The ${favoriteAnimal} showed ${characterName} a special place.`,
-            `They found beautiful flowers there.`,
+            `${pronouns.subject} found beautiful flowers there.`,
             `${characterName} picked some flowers to take home.`,
             `The ${favoriteAnimal} helped carry them.`
           ],
-          resolution: `${characterName} thanked their new friend and went home happy.`
+          resolution: `${characterName} thanked ${pronouns.possessive} new friend and went home happy.`
         };
         
       case 'medium':
         return {
-          introduction: `${characterName} was exploring the forest when they discovered something amazing.`,
+          introduction: `${characterName} was exploring the forest when ${pronouns.subject} discovered something amazing.`,
           adventure: [
             `A wise ${favoriteAnimal} appeared from behind a tree.`,
             `The ${favoriteAnimal} had a special message for ${characterName}.`,
             `"Follow me," said the ${favoriteAnimal} with a gentle voice.`,
-            `They walked through a path covered with golden leaves.`,
-            `Soon they reached a crystal-clear stream.`,
+            `${pronouns.subject} walked through a path covered with golden leaves.`,
+            `Soon ${pronouns.subject} reached a crystal-clear stream.`,
             `The ${favoriteAnimal} showed ${characterName} how the water sparkled.`,
             `${characterName} learned about the magic of nature.`,
-            `Together they watched the sunset paint the sky.`
+            `Together ${pronouns.subject} watched the sunset paint the sky.`
           ],
-          resolution: `${characterName} promised to visit their wise friend again soon.`
+          resolution: `${characterName} promised to visit ${pronouns.possessive} wise friend again soon.`
         };
         
       case 'hard':
@@ -71,20 +87,20 @@ export class ImprovedStoryGenerator {
           introduction: `${characterName} had always wondered about the mysterious sounds coming from the old forest.`,
           adventure: [
             `One morning, ${characterName} decided to investigate the strange noises.`,
-            `Deep in the forest, they encountered a magnificent ${favoriteAnimal}.`,
+            `Deep in the forest, ${pronouns.subject} encountered a magnificent ${favoriteAnimal}.`,
             `The ${favoriteAnimal} explained that the forest was in danger.`,
             `"The ancient crystal that protects our home is missing," it said sadly.`,
             `${characterName} volunteered to help search for the crystal.`,
-            `They followed clues through winding forest paths.`,
-            `Together they solved riddles left by forest spirits.`,
-            `Finally, they discovered the crystal hidden in a secret cave.`
+            `${pronouns.subject} followed clues through winding forest paths.`,
+            `Together ${pronouns.subject} solved riddles left by forest spirits.`,
+            `Finally, ${pronouns.subject} discovered the crystal hidden in a secret cave.`
           ],
           resolution: `${characterName} and the ${favoriteAnimal} restored the crystal, saving the forest forever.`
         };
         
       case 'expert':
         return {
-          introduction: `${characterName} had spent months studying the ancient legends of their homeland.`,
+          introduction: `${characterName} had spent months studying the ancient legends of ${pronouns.possessive} homeland.`,
           adventure: [
             `According to the stories, a legendary ${favoriteAnimal} guardian protected the realm.`,
             `${characterName} embarked on a quest to find this mythical creature.`,
@@ -93,17 +109,17 @@ export class ImprovedStoryGenerator {
             `The creature tested ${characterName}'s courage and wisdom.`,
             `${characterName} proved worthy by showing kindness and respect.`,
             `The guardian revealed ancient secrets about the balance of nature.`,
-            `Together they worked to restore harmony to the troubled land.`
+            `Together ${pronouns.subject} worked to restore harmony to the troubled land.`
           ],
           resolution: `${characterName} returned home as a true guardian, carrying the wisdom of ages.`
         };
         
       default:
-        return this.createStoryTemplate(characterName, favoriteAnimal, 'easy', culturalContext);
+        return this.createStoryTemplate(characterName, favoriteAnimal, 'easy', culturalContext, pronouns);
     }
   }
   
-  private static generateUniquePages(template: StoryTemplate, pageCount: number, difficulty: DifficultyLevel): string[] {
+  private static generateUniquePages(template: StoryTemplate, pageCount: number, difficulty: DifficultyLevel, pronouns: { subject: string, object: string, possessive: string }): string[] {
     const pages: string[] = [];
     
     // Always start with introduction
@@ -120,7 +136,7 @@ export class ImprovedStoryGenerator {
         adventureIndex++;
       } else {
         // If we run out of adventure content, create a transition
-        pages.push(this.createTransitionPage(pages[pages.length - 1], difficulty));
+        pages.push(this.createTransitionPage(pages[pages.length - 1], difficulty, pronouns));
       }
     }
     
@@ -132,7 +148,7 @@ export class ImprovedStoryGenerator {
     return pages;
   }
   
-  private static createTransitionPage(previousPage: string, difficulty: DifficultyLevel): string {
+  private static createTransitionPage(previousPage: string, difficulty: DifficultyLevel, pronouns: { subject: string, object: string, possessive: string }): string {
     // Extract character name from previous page
     const words = previousPage.split(' ');
     const characterName = words.find(word => word.charAt(0) === word.charAt(0).toUpperCase() && word.length > 2) || 'they';
@@ -152,12 +168,12 @@ export class ImprovedStoryGenerator {
       ],
       hard: [
         `${characterName} considered the significance of what had happened.`,
-        `The experience had taught them something valuable.`,
+        `The experience had taught ${pronouns.object} something valuable.`,
         `With newfound confidence, ${characterName} prepared for what came next.`,
         `The journey was revealing its deeper purpose.`
       ],
       expert: [
-        `${characterName} reflected on the profound nature of their discovery.`,
+        `${characterName} reflected on the profound nature of ${pronouns.possessive} discovery.`,
         `This moment would be remembered for years to come.`,
         `The wisdom gained would guide ${characterName} in future challenges.`,
         `Understanding began to illuminate the path forward.`

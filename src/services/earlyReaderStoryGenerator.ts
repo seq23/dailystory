@@ -277,31 +277,31 @@ export class EarlyReaderStoryGenerator {
       easy: [
         `${characterName} plays.`,
         `${favoriteAnimal} runs.`,
-        `They eat ${favoriteFood}.`,
+        `${pronouns.subject} eat ${favoriteFood}.`,
         `${characterName} smiles.`,
         `Fun ${favoriteColor} day.`,
         `Friends play together.`
       ],
       medium: [
-        `${characterName} found a ${favoriteColor} treasure with their ${favoriteAnimal} friend today.`,
-        `They went on an adventure to find more ${favoriteFood} for everyone.`,
+        `${characterName} found a ${favoriteColor} treasure with ${pronouns.possessive} ${favoriteAnimal} friend today.`,
+        `${pronouns.subject} went on an adventure to find more ${favoriteFood} for everyone.`,
         `The ${favoriteAnimal} taught ${characterName} something new about ${mainHobby} skills.`,
-        `Together they helped other animals solve a tricky ${favoriteColor} puzzle.`,
+        `Together ${pronouns.subject} helped other animals solve a tricky ${favoriteColor} puzzle.`,
         `${characterName} and the ${favoriteAnimal} discovered a secret place to play.`,
-        `Their friendship grew stronger through teamwork and sharing ${favoriteFood} together.`
+        `${pronouns.possessive} friendship grew stronger through teamwork and sharing ${favoriteFood} together.`
       ],
       hard: [
-        `${characterName} realized their adventure was teaching important lessons about friendship and ${mainHobby}.`,
-        `The wise ${favoriteAnimal} shared ancient secrets while they enjoyed ${favoriteFood} together.`,
-        `Together they encountered mysterious creatures who appreciated their knowledge of ${mainHobby}.`,
-        `${characterName} discovered special abilities that appeared when combining ${favoriteColor} magic with their companion.`,
-        `Their bond created powerful magic that transformed everything ${favoriteColor} around them.`
+        `${characterName} realized ${pronouns.possessive} adventure was teaching important lessons about friendship and ${mainHobby}.`,
+        `The wise ${favoriteAnimal} shared ancient secrets while ${pronouns.subject} enjoyed ${favoriteFood} together.`,
+        `Together ${pronouns.subject} encountered mysterious creatures who appreciated ${pronouns.possessive} knowledge of ${mainHobby}.`,
+        `${characterName} discovered special abilities that appeared when combining ${favoriteColor} magic with ${pronouns.possessive} companion.`,
+        `${pronouns.possessive} bond created powerful magic that transformed everything ${favoriteColor} around ${pronouns.object}.`
       ],
       expert: [
-        `${characterName} contemplated the profound connection they shared with the ${favoriteAnimal}, understanding that their relationship transcended ordinary friendship and had become something extraordinary, much like their appreciation for both ${favoriteColor} beauty and ${favoriteFood}.`,
-        `The ancient ${favoriteAnimal} revealed that ${characterName} possessed a rare gift - the ability to bridge two worlds through their understanding of ${mainHobby} and bring harmony between seemingly opposing forces.`,
-        `Through trials that tested both their intellect and emotional resilience, ${characterName} and the ${favoriteAnimal} discovered that their greatest strength lay not in their individual abilities, but in their unwavering trust in each other and their shared values.`,
-        `${characterName} realized that their journey with the ${favoriteAnimal} was part of a larger destiny, one that would require them to make difficult choices about ${mainHobby} and ${favoriteColor} that would affect not just themselves, but their entire community.`
+        `${characterName} contemplated the profound connection ${pronouns.subject} shared with the ${favoriteAnimal}, understanding that ${pronouns.possessive} relationship transcended ordinary friendship and had become something extraordinary, much like ${pronouns.possessive} appreciation for both ${favoriteColor} beauty and ${favoriteFood}.`,
+        `The ancient ${favoriteAnimal} revealed that ${characterName} possessed a rare gift - the ability to bridge two worlds through ${pronouns.possessive} understanding of ${mainHobby} and bring harmony between seemingly opposing forces.`,
+        `Through trials that tested both ${pronouns.possessive} intellect and emotional resilience, ${characterName} and the ${favoriteAnimal} discovered that ${pronouns.possessive} greatest strength lay not in ${pronouns.possessive} individual abilities, but in ${pronouns.possessive} unwavering trust in each other and ${pronouns.possessive} shared values.`,
+        `${characterName} realized that ${pronouns.possessive} journey with the ${favoriteAnimal} was part of a larger destiny, one that would require ${pronouns.object} to make difficult choices about ${mainHobby} and ${favoriteColor} that would affect not just ${pronouns.object}self, but ${pronouns.possessive} entire community.`
       ]
     };
     
