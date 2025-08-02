@@ -5,6 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { BookOpen, Home, RotateCcw, Volume2, Timer, Play, Pause, Minus, X, ChevronUp, ChevronDown, Plus } from "lucide-react";
 
 import type { UserInfo, SessionStats } from "@/types";
+import { ElevenLabsAudio } from "@/components/ElevenLabsAudio";
 import { InteractiveAudioReading } from "@/components/InteractiveAudioReading";
 import { EarlyReaderStoryGenerator } from "@/services/earlyReaderStoryGenerator";
 import { UnifiedImageService, type EstablishedCharacter } from "@/services/unifiedImageService";
@@ -872,12 +873,13 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                   </div>
                 </div>
 
-                {/* Audio Controls Section */}
+                {/* Audio Controls Section - Using ElevenLabs TTS */}
                 <div className="flex-shrink-0 p-6 border-t border-gray-100 audio-controls">
-                  <InteractiveAudioReading 
+                  <ElevenLabsAudio 
                     text={currentStory}
                     userInfo={userInfo}
-                    isEnabled={true}
+                    isPremium={true} // Authenticated users get premium features
+                    onUpgrade={onUpgrade}
                   />
                 </div>
 

@@ -64,6 +64,9 @@ export class EarlyReaderStoryGenerator {
     // Split into pages respecting word limits with continuing user elements
     const pages = this.splitIntoPages(storyContent, config.maxWordsPerPage, pageCount, characterName, userElements, difficulty);
     
+    // Verify word limits are being enforced
+    this.verifyWordLimits(pages, config.maxWordsPerPage, difficulty);
+    
     return { pages, config };
   }
 
@@ -301,6 +304,30 @@ export class EarlyReaderStoryGenerator {
     }
     
     return cleanContinuation;
+  }
+
+  // Verification method to ensure word limits are being enforced
+  private static verifyWordLimits(pages: string[], maxWordsPerPage: number, difficulty: DifficultyLevel): void {
+    const expectedLimits = {
+      easy: 6,
+      medium: 15, 
+      hard: 25,
+      expert: 40
+    };
+    
+    const expectedLimit = expectedLimits[difficulty];
+    if (maxWordsPerPage !== expectedLimit) {
+      console.warn(`Word limit mismatch for ${difficulty}: expected ${expectedLimit}, got ${maxWordsPerPage}`);
+    }
+    
+    pages.forEach((page, index) => {
+      const wordCount = page.split(/\s+/).filter(word => word.trim().length > 0).length;
+      if (wordCount > maxWordsPerPage) {
+        console.warn(`Page ${index + 1} exceeds word limit: ${wordCount} words (max: ${maxWordsPerPage}) - "${page.substring(0, 50)}..."`);
+      } else {
+        console.log(`✓ Page ${index + 1}: ${wordCount}/${maxWordsPerPage} words (${difficulty} level)`);
+      }
+    });
   }
 
   static getReadingConfigForDifficulty(difficulty: DifficultyLevel): ReadingConfig {

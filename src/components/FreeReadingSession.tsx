@@ -1026,13 +1026,14 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                       </div>
                     </div>
 
-                    {/* Audio Controls Section */}
+                    {/* Audio Controls Section - Using ElevenLabs TTS */}
                     {sessionStarted && (
                       <div className="flex-shrink-0 p-3 sm:p-4 lg:p-6 border-t border-gray-100 audio-controls">
-                        <InteractiveAudioReading 
+                        <ElevenLabsAudio 
                           text={currentStory}
                           userInfo={userInfo}
-                          isEnabled={true}
+                          isPremium={false} // Free users are not premium
+                          onUpgrade={onUpgrade}
                         />
                       </div>
                     )}
