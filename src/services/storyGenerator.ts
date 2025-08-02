@@ -56,10 +56,11 @@ export class StoryGeneratorService {
       
       // Fallback: Generate new pages using template system
       const result = await this.generateStory(userInfo, difficulty, pageCount);
-      const language = userInfo.nativeLanguage || 'en';
+      // Always use English for stories - this is an English reading education app
+      const language = 'en';
       const name = userInfo.name || 'Alex';
       
-      // Use the template system for continuation text
+      // Use the template system for continuation text (in English)
       const continuationText = getContinuationText(name, userInfo, language);
       
       // Add continuation context to first page

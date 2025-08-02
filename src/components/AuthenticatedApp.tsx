@@ -222,6 +222,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                 userInfo={userInfo}
                 isVisible={true}
                 onClose={() => {}}
+                isPremium={isPremium}
               />
             )}
           </TabsContent>

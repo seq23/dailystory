@@ -14,6 +14,7 @@ interface ProgressDashboardProps {
   userInfo: UserInfo;
   isVisible: boolean;
   onClose: () => void;
+  isPremium?: boolean;
 }
 
 interface UserProgress {
@@ -53,10 +54,11 @@ interface SkillArea {
   description: string;
 }
 
-export const ProgressDashboard = ({ userInfo, isVisible, onClose }: ProgressDashboardProps) => {
+export const ProgressDashboard = ({ userInfo, isVisible, onClose, isPremium = false }: ProgressDashboardProps) => {
   // Initialize gamification for this user
   const { userStats } = useGamification({
-    userId: userInfo?.name || 'guest'
+    userId: userInfo?.name || 'guest',
+    enablePersistence: isPremium
   });
   const [showVocabulary, setShowVocabulary] = useState(false);
   const [progress, setProgress] = useState<UserProgress>({
@@ -323,6 +325,7 @@ export const ProgressDashboard = ({ userInfo, isVisible, onClose }: ProgressDash
         userInfo={userInfo}
         isVisible={showVocabulary}
         onClose={() => setShowVocabulary(false)}
+        enablePersistence={isPremium}
       />
     </Card>
   );
