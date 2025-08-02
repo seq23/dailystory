@@ -218,7 +218,7 @@ export const InteractiveWord = ({
         }
       });
       
-      console.log('Word Dictionary Response:', { wordData, wordError });
+      console.log('🚨 CRITICAL DEBUG - Word Dictionary Response:', { wordData, wordError });
       
       if (!wordError && wordData) {
         setWordData(wordData);
@@ -232,6 +232,8 @@ export const InteractiveWord = ({
           description: `"${cleanWord}" = ${definition}`,
           duration: 5000,
         });
+        
+        console.log('🚨 BEFORE AUDIO: About to start speech synthesis');
         
         // FIXED: Ensure speech synthesis works on all browsers and mobile
         console.log('🔊 AUDIO DEBUG - Starting speech synthesis:', { 
