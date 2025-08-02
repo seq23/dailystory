@@ -244,12 +244,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
             setStory(pages);
             setWordsRead(generatedStory.wordCount);
             
-            // Show success message
-            toast({
-              title: "Story Ready!",
-              description: "Custom images are generating in the background",
-              duration: 3000,
-            });
+            // Show success message removed - no longer showing notification
 
             // Now generate images progressively in the background using UnifiedImageService
             const startProgressiveImageGeneration = async () => {
