@@ -69,6 +69,12 @@ export class GrammarValidator {
    * Conjugates a verb based on the subject pronoun
    */
   static conjugateVerb(verb: string, subject: string): string {
+    // Add null/undefined checks
+    if (!verb || !subject) {
+      console.warn(`Invalid parameters for conjugation: verb="${verb}", subject="${subject}"`);
+      return verb || '';
+    }
+    
     const normalizedVerb = verb.toLowerCase();
     const normalizedSubject = subject.toLowerCase();
     
@@ -115,10 +121,16 @@ export class GrammarValidator {
     const matches = text.match(pronounVerbPattern);
     if (matches) {
       matches.forEach(match => {
-        const [, pronoun, verb] = match.toLowerCase().split(' ');
-        const correctVerb = this.conjugateVerb(verb, pronoun);
-        if (verb !== correctVerb) {
-          errors.push(`Grammar error: "${match}" should be "${pronoun} ${correctVerb}"`);
+        const parts = match.toLowerCase().split(' ');
+        if (parts.length >= 2) {
+          const [, pronoun, verb] = parts;
+          // Only proceed if both pronoun and verb are defined
+          if (pronoun && verb) {
+            const correctVerb = this.conjugateVerb(verb, pronoun);
+            if (verb !== correctVerb) {
+              errors.push(`Grammar error: "${match}" should be "${pronoun} ${correctVerb}"`);
+            }
+          }
         }
       });
     }
