@@ -117,6 +117,40 @@
       "back": "वापस"
     }
   },
+  "freeReadingSession": {
+    "loading": {
+      "title": "आपकी मुफ्त कहानी बनाई जा रही है...",
+      "description": "{name} के लिए व्यक्तिगत सामग्री तैयार की जा रही है"
+    },
+    "timer": {
+      "freeTime": "मुफ्त समय"
+    },
+    "freeTrial": "मुफ्त परीक्षण",
+    "session": {
+      "title": "{name} का पठन साहसिक कार्य",
+      "titleNotStarted": "मुफ्त पठन परीक्षण",
+      "subtitle": "पृष्ठ {currentPage} का {totalPages}",
+      "subtitleNotStarted": "अपना 20 मिनट का परीक्षण शुरू करने के लिए \"पढ़ना शुरू करें\" पर क्लिक करें",
+      "startReading": "पढ़ना शुरू करें"
+    },
+    "progress": {
+      "readingProgress": "पठन प्रगति: {percent}%"
+    },
+    "navigation": {
+      "previous": "← पिछला",
+      "next": "अगला →",
+      "pageInfo": "{current} / {total}"
+    },
+    "celebration": {
+      "congratulations": "बधाई हो!",
+      "sessionComplete": "आपने अपना मुफ्त पठन समय पूरा किया!"
+    },
+    "readingLevel": {
+      "label": "पठन स्तर",
+      "easier": "🌟 इस कहानी को आसान बनाएं",
+      "harder": "🚀 इस कहानी को कठिन बनाएं"
+    }
+  },
   "userInfoForm": {
     "title": "हमें अपने बारे में बताएं!",
     "subtitle": "हमें आपके लिए परफेक्ट स्टोरी बनाने में मदद करें",

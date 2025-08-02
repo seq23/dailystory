@@ -117,6 +117,40 @@
       "back": "Voltar"
     }
   },
+  "freeReadingSession": {
+    "loading": {
+      "title": "Criando Sua História Gratuita...",
+      "description": "Gerando conteúdo personalizado para {name}"
+    },
+    "timer": {
+      "freeTime": "tempo gratuito"
+    },
+    "freeTrial": "TESTE GRATUITO",
+    "session": {
+      "title": "Aventura de Leitura de {name}",
+      "titleNotStarted": "Teste de Leitura Gratuito",
+      "subtitle": "Página {currentPage} de {totalPages}",
+      "subtitleNotStarted": "Clique em \"Começar a Ler\" para iniciar seu teste de 20 minutos",
+      "startReading": "Começar a Ler"
+    },
+    "progress": {
+      "readingProgress": "Progresso da Leitura: {percent}%"
+    },
+    "navigation": {
+      "previous": "← Anterior",
+      "next": "Próximo →",
+      "pageInfo": "{current} / {total}"
+    },
+    "celebration": {
+      "congratulations": "Parabéns!",
+      "sessionComplete": "Você completou sua sessão de leitura gratuita!"
+    },
+    "readingLevel": {
+      "label": "Nível de Leitura",
+      "easier": "🌟 Tornar esta história mais fácil",
+      "harder": "🚀 Tornar esta história mais difícil"
+    }
+  },
   "userInfoForm": {
     "title": "Nos conte sobre você!",
     "subtitle": "Nos ajude a criar a história perfeita para você",
