@@ -58,13 +58,17 @@ export const ElevenLabsAudio = ({
     
     try {
       // Call our Supabase edge function with correct URL
+      const voice = getVoiceForUser(userInfo);
+      const isNativeEnglishSpeaker = userInfo.nativeLanguage === 'en';
+      const model = isNativeEnglishSpeaker ? "eleven_turbo_v2" : "eleven_multilingual_v2";
+      
       const response = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/elevenlabs-tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           text: isPremium ? text.slice(0, 1000) : text.slice(0, 500), // Premium users get longer text
-          voice: getVoiceForUser(userInfo),
-          model: "eleven_multilingual_v2"
+          voice: voice,
+          model: model
         })
       });
 
@@ -112,16 +116,30 @@ export const ElevenLabsAudio = ({
   };
 
   const getVoiceForUser = (userInfo: UserInfo) => {
-    // Select voice based on user preferences
+    // Select voice based on user preferences and language
     const age = userInfo.age;
     const isGirl = userInfo.avatar?.type === 'girl';
+    const isNativeEnglishSpeaker = userInfo.nativeLanguage === 'en';
     
-    if (age <= 8) {
-      return isGirl ? "EXAVITQu4vr4xnSDxMaL" : "TX3LPaxmHKxFdv7VOQHJ"; // Sarah or Liam (young voices)
-    } else if (age <= 12) {
-      return isGirl ? "XB0fDUnXU5powFXDhCwa" : "N2lVS1w4EtoT3dr4eOWO"; // Charlotte or Callum
+    // Use natural voices for native English speakers, multilingual voices for others
+    if (isNativeEnglishSpeaker) {
+      // Most natural English voices for native speakers
+      if (age <= 8) {
+        return isGirl ? "EXAVITQu4vr4xnSDxMaL" : "TX3LPaxmHKxFdv7VOQHJ"; // Sarah or Liam
+      } else if (age <= 12) {
+        return isGirl ? "cgSgspJ2msm6clMCkdW9" : "nPczCjzI2devNBz1zQrb"; // Jessica or Brian (very natural)
+      } else {
+        return isGirl ? "cgSgspJ2msm6clMCkdW9" : "onwK4e9ZLuTAKqWW03F9"; // Jessica or Daniel (most natural)
+      }
     } else {
-      return isGirl ? "9BWtsMINqrJLrRacOk9x" : "CwhRBWXzGAHq8TQ4Fs17"; // Aria or Roger
+      // Multilingual voices for non-native speakers
+      if (age <= 8) {
+        return isGirl ? "EXAVITQu4vr4xnSDxMaL" : "TX3LPaxmHKxFdv7VOQHJ"; // Sarah or Liam
+      } else if (age <= 12) {
+        return isGirl ? "XB0fDUnXU5powFXDhCwa" : "N2lVS1w4EtoT3dr4eOWO"; // Charlotte or Callum
+      } else {
+        return isGirl ? "9BWtsMINqrJLrRacOk9x" : "CwhRBWXzGAHq8TQ4Fs17"; // Aria or Roger
+      }
     }
   };
 

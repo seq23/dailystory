@@ -117,6 +117,33 @@ export const InteractiveAudioReading = ({
     } catch (error) {
       console.error('Error starting audio reading:', error);
       setIsPlaying(false);
+      
+      // Fallback to browser speech synthesis if ElevenLabs fails
+      try {
+        if ('speechSynthesis' in window) {
+          speechSynthesis.cancel();
+          const utterance = new SpeechSynthesisUtterance(text.slice(0, 200));
+          utterance.rate = audioSpeed;
+          utterance.pitch = 1.0;
+          utterance.onend = () => {
+            setIsPlaying(false);
+            setCurrentWordIndex(-1);
+          };
+          utterance.onerror = () => setIsPlaying(false);
+          
+          // Calculate word interval for fallback highlighting
+          const totalWords = words.length;
+          const estimatedDuration = text.length * 100;
+          const wordsPerSecond = totalWords / (estimatedDuration / 1000);
+          const fallbackWordInterval = 1000 / wordsPerSecond / audioSpeed;
+          
+          speechSynthesis.speak(utterance);
+          setHasPlayedAudio(true);
+          highlightWords(fallbackWordInterval);
+        }
+      } catch (fallbackError) {
+        console.error('Fallback TTS also failed:', fallbackError);
+      }
     }
   };
 

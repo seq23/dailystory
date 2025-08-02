@@ -914,11 +914,11 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                   <ElevenLabsAudio 
                     text={currentStory}
                     userInfo={userInfo}
-                    isPremium={true} // Authenticated users get premium features
+                    isPremium={isPremium} // Use actual premium status from props
                     onUpgrade={onUpgrade}
                     currentPage={currentPage}
                     totalPages={story.length}
-                    isExtendedPage={false} // Premium users can use all pages
+                    isExtendedPage={!isPremium && story.length > 10 && currentPage >= 10} // Extended pages for non-premium users
                   />
                 </div>
 
