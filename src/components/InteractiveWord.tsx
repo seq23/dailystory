@@ -210,9 +210,21 @@ export const InteractiveWord = ({
         });
         
         // Create multilingual explanation for mobile TTS
-        const explanation = userNativeLanguage !== 'en' && wordData.explanation 
-          ? wordData.explanation // Use localized explanation from dictionary service
-          : `The word ${cleanWord} is pronounced ${wordData.phonetic}. ${wordData.definition}. Here's an example: ${wordData.sampleSentence}`;
+        // Build explanation using available localized fields since wordData.explanation is undefined
+        const explanationParts = [];
+        if (wordData.phonetic) {
+          explanationParts.push(`${cleanWord} ${t('interactiveWord.pronouncedAs', 'is pronounced')} ${wordData.phonetic}.`);
+        }
+        if (wordData.definition) {
+          explanationParts.push(wordData.definition);
+        }
+        if (wordData.sampleSentence) {
+          explanationParts.push(`${t('interactiveWord.example', 'Example')}: ${wordData.sampleSentence}`);
+        }
+        
+        const explanation = explanationParts.length > 0 
+          ? explanationParts.join(' ') 
+          : `${cleanWord} ${t('interactiveWord.isAWord', 'is a word')}.`;
         
         // Mobile optimized: Always prefer Web Speech API for better mobile compatibility
         const isMobile = /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -230,15 +242,44 @@ export const InteractiveWord = ({
             utterance.pitch = 1.0;
             utterance.volume = 1.0;
             
-            // Try to set voice for user's language
+            // Enhanced voice selection for user's native language
             const voices = speechSynthesis.getVoices();
-            const languageVoice = voices.find(voice => 
-              voice.lang.startsWith(userNativeLanguage) || 
-              voice.lang.includes(userNativeLanguage)
-            );
-            if (languageVoice) {
-              utterance.voice = languageVoice;
-              console.log('Set mobile voice for language:', userNativeLanguage, languageVoice.name);
+            console.log('Available voices:', voices.map(v => `${v.name} (${v.lang})`));
+            
+            // Language mapping for better voice matching
+            const languageMap: Record<string, string[]> = {
+              'ar': ['ar-SA', 'ar-EG', 'ar'],
+              'es': ['es-ES', 'es-MX', 'es-US', 'es'],
+              'zh': ['zh-CN', 'zh-TW', 'zh-HK', 'zh'],
+              'hi': ['hi-IN', 'hi'],
+              'pt': ['pt-BR', 'pt-PT', 'pt'],
+              'fr': ['fr-FR', 'fr-CA', 'fr']
+            };
+            
+            const languageCodes = languageMap[userNativeLanguage] || [userNativeLanguage];
+            
+            let selectedVoice = null;
+            for (const langCode of languageCodes) {
+              selectedVoice = voices.find(voice => voice.lang.startsWith(langCode));
+              if (selectedVoice) break;
+            }
+            
+            // Fallback to any voice containing the language code
+            if (!selectedVoice) {
+              selectedVoice = voices.find(voice => 
+                voice.lang.includes(userNativeLanguage) || 
+                voice.name.toLowerCase().includes(userNativeLanguage)
+              );
+            }
+            
+            if (selectedVoice) {
+              utterance.voice = selectedVoice;
+              utterance.lang = selectedVoice.lang;
+              console.log('Selected voice for', userNativeLanguage, ':', selectedVoice.name, selectedVoice.lang);
+            } else {
+              console.warn('No voice found for language:', userNativeLanguage);
+              // Set language attribute even without specific voice
+              utterance.lang = userNativeLanguage;
             }
             
             utterance.onerror = (error) => {
