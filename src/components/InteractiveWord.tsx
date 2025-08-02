@@ -17,6 +17,7 @@ interface InteractiveWordProps {
   userInfo?: UserInfo;
   isPremium?: boolean;
   sentenceContext?: string;
+  onClick?: () => void; // Add explicit onClick for better touch handling
 }
 
 export const InteractiveWord = ({ 
@@ -25,7 +26,8 @@ export const InteractiveWord = ({
   difficulty = "easy",
   userInfo,
   isPremium = false,
-  sentenceContext = ""
+  sentenceContext = "",
+  onClick
 }: InteractiveWordProps) => {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
@@ -821,9 +823,19 @@ export const InteractiveWord = ({
   return (
     <span
       ref={wordRef}
-      className={`relative inline-block cursor-pointer ${className} ${isPlaying ? 'opacity-70' : ''}`}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+      className={`relative inline-block cursor-pointer touch-manipulation ${className} ${isPlaying ? 'opacity-70' : ''}`}
+      onMouseEnter={!isMobileDevice ? handleMouseEnter : undefined}
+      onMouseLeave={!isMobileDevice ? handleMouseLeave : undefined}
+      onTouchStart={isMobileDevice ? handleMouseEnter : undefined}
+      onTouchEnd={isMobileDevice ? () => {
+        // Brief delay to allow touch interaction before hiding
+        setTimeout(handleMouseLeave, 3000);
+      } : undefined}
+      onClick={onClick}
+      style={{
+        WebkitTapHighlightColor: 'transparent', // Remove mobile tap highlight
+        userSelect: 'none'
+      }}
     >
       <span className={`underline decoration-dotted hover:decoration-solid transition-all ${getWordIndicatorColor()}`}>
         {word}

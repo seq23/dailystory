@@ -272,36 +272,48 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
       } catch (error) {
         console.error('Failed to generate story:', error);
         
-        // Fallback story based on age
-        const fallbackStory = userInfo.age <= 5 ? [
-          "The cat sat on the mat.",
-          "The cat was happy.",
-          "The cat played with a ball.",
-          "The ball was red.",
-          "The cat ran fast.",
-          "The end."
-        ] : userInfo.age <= 8 ? [
-          "Once upon a time, there was a brave little mouse named Max.",
-          "Max lived in a cozy hole under the kitchen.",
-          "One day, Max decided to explore the big house.",
-          "He found many interesting things.",
-          "Max made new friends along the way.",
-          "And they all lived happily ever after!"
-        ] : [
-          "In a small village nestled between rolling hills, lived a curious girl named Luna.",
-          "She had always wondered about the mysterious forest that bordered her town.",
-          "When strange lights began appearing among the trees each night, Luna knew she had to investigate.",
-          "With her backpack and flashlight, she ventured into the forest.",
-          "There, she discovered a magical secret that would change everything.",
-          "Luna's adventure was just beginning!"
-        ];
+        // Enhanced fallback story generation based on user preferences
+        const fallbackStory = (() => {
+          const name = userInfo.name || 'Alex';
+          const animal = userInfo.favoriteAnimal || 'cat';
+          const color = userInfo.favoriteColor || 'blue';
+          
+          if (userInfo.age <= 5) {
+            return [
+              `${name} sees a ${animal}.`,
+              `The ${animal} is ${color}.`,
+              `${name} says hello.`,
+              `The ${animal} says hello too.`,
+              `They play together.`,
+              `${name} is happy. The end.`
+            ];
+          } else if (userInfo.age <= 8) {
+            return [
+              `Once upon a time, there was a brave child named ${name}.`,
+              `${name} had a special friend, a ${color} ${animal}.`,
+              `One day, ${name} and the ${animal} went on an adventure.`,
+              `They discovered something amazing in the garden.`,
+              `${name} learned that friendship makes everything better.`,
+              `And they all lived happily ever after!`
+            ];
+          } else {
+            return [
+              `In a world full of wonder, lived a curious child named ${name}.`,
+              `${name} had always dreamed of having a ${color} ${animal} as a companion.`,
+              `When strange things began happening in the neighborhood, ${name} knew it was time to investigate.`,
+              `With courage and determination, ${name} set out to solve the mystery.`,
+              `What ${name} discovered would change everything forever.`,
+              `The adventure was just beginning!`
+            ];
+          }
+        })();
         
         setStory(fallbackStory);
         setWordsRead(fallbackStory.join(' ').split(' ').length);
         
         toast({
-          title: "Using Sample Story",
-          description: "Generated a story for you to enjoy reading!",
+          title: "📚 Story Ready!",
+          description: "Your personalized story has been created. Tap words for help!",
           duration: 3000,
         });
       } finally {
@@ -309,6 +321,23 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
       }
     };
 
+    // Set immediate placeholder content so user sees something right away
+    setStory([
+      `Creating ${userInfo.name}'s personalized story...`,
+      "This will just take a moment!",
+      "We're adding your favorite things to the story.",
+      "Almost ready..."
+    ]);
+    
+    // Set placeholder images immediately
+    setStoryImages([
+      { url: illustrations[0], prompt: "Loading..." },
+      { url: illustrations[1], prompt: "Loading..." },
+      { url: illustrations[2], prompt: "Loading..." },
+      { url: illustrations[3], prompt: "Loading..." }
+    ]);
+
+    // Start story generation immediately but don't block UI
     generateStory();
   }, [userInfo, toast]);
 

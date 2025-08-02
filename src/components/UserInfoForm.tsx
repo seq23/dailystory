@@ -142,13 +142,13 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
           toast({
             title: "✨ Translation Applied",
             description: `Converted "${processed.originalInput}" to English for your story.`,
-            duration: 4000,
+            duration: 3000,
           });
         } else if (processed.correctedInput !== processed.originalInput) {
           toast({
-            title: "📝 Spelling Corrected",
-            description: `Fixed "${processed.originalInput}" for better story quality.`,
-            duration: 3000,
+            title: "📝 Spelling Fixed",
+            description: `Improved "${processed.originalInput}" for better story quality.`,
+            duration: 2500,
           });
         }
       }
@@ -170,19 +170,21 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
       setValidationErrors(errors);
       setShowValidationErrors(true);
       
-      // Show clear toast notification
+      // Show helpful, encouraging toast notification
       toast({
-        title: "❗ Please fill in required information",
-        description: "Your child's first name is required to create a personalized story.",
-        variant: "destructive",
-        duration: 6000,
+        title: "🌟 Almost Ready!",
+        description: "Just need a few more details to create your perfect story.",
+        duration: 4000,
       });
       
-      // Scroll to the name field
-      const nameField = document.getElementById('name');
-      if (nameField) {
-        nameField.focus();
-        nameField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Scroll to first error field and focus it
+      const firstErrorField = errors[0];
+      if (firstErrorField.includes("name")) {
+        const nameField = document.getElementById('name');
+        if (nameField) {
+          nameField.focus();
+          nameField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
       }
       return;
     }
@@ -227,40 +229,46 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
   const validateForm = () => {
     const errors: string[] = [];
     
+    // Only validate truly essential fields to improve form completion rates
     if (!formData.name.trim()) {
       errors.push("Please enter your child's first name");
     }
-    if (!formData.age) {
-      errors.push("Please select your child's age");
+    
+    // Age defaults to 6, so only validate if it's somehow null/undefined
+    if (!formData.age || formData.age < 3 || formData.age > 12) {
+      errors.push("Please select a valid age (3-12 years)");
     }
+    
+    // Grade and language should have defaults, only validate if missing
     if (!formData.grade) {
-      errors.push("Please select your child's grade level");
+      errors.push("Please select a grade level");
     }
+    
     if (!formData.nativeLanguage) {
-      errors.push("Please select your child's native language");
+      errors.push("Please select a language");
     }
-    if (!formData.learningGoal) {
-      errors.push("Please select a learning goal");
+    
+    // Avatar validation is less critical - provide defaults if missing
+    if (!formData.avatar?.type) {
+      formData.avatar = { ...formData.avatar, type: 'boy' };
     }
-    if (!formData.avatar.type) {
-      errors.push("Please choose an avatar type");
-    }
-    if (!formData.avatar.skinTone) {
-      errors.push("Please choose an avatar skin tone");
+    
+    if (!formData.avatar?.skinTone) {
+      formData.avatar = { ...formData.avatar, skinTone: 'light' };
     }
     
     return errors;
   };
 
   const isFormComplete = () => {
-    const complete = formData.name.trim() && 
-           formData.age && 
-           formData.grade && 
-           formData.nativeLanguage &&
-           formData.learningGoal &&
-           formData.avatar.type &&
-           formData.avatar.skinTone;
-    console.log("Form complete check:", complete, "Name:", formData.name.trim());
+    // Only require the most essential fields for completion
+    const hasName = formData.name.trim().length > 0;
+    const hasAge = formData.age && formData.age >= 3 && formData.age <= 12;
+    const hasGrade = formData.grade && formData.grade.length > 0;
+    const hasLanguage = formData.nativeLanguage && formData.nativeLanguage.length > 0;
+    
+    const complete = hasName && hasAge && hasGrade && hasLanguage;
+    console.log("Form complete check:", { hasName, hasAge, hasGrade, hasLanguage, complete });
     return complete;
   };
 
@@ -310,17 +318,18 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                 </h3>
               </div>
             
-            {/* Validation Error Alert */}
+            {/* Friendly Validation Error Alert */}
             {showValidationErrors && validationErrors.length > 0 && (
-              <Alert className="border-red-200 bg-red-50 mb-6">
-                <AlertCircle className="h-4 w-4 text-red-600" />
-                <AlertDescription className="text-red-700">
-                  <div className="font-semibold mb-2">Please complete the following required fields:</div>
+              <Alert className="border-blue-200 bg-blue-50 mb-6">
+                <AlertCircle className="h-4 w-4 text-blue-600" />
+                <AlertDescription className="text-blue-700">
+                  <div className="font-semibold mb-2">Let's finish setting up your story! 🌟</div>
                   <ul className="list-disc list-inside space-y-1">
                     {validationErrors.map((error, index) => (
                       <li key={index} className="text-sm">{error}</li>
                     ))}
                   </ul>
+                  <div className="text-xs mt-2 opacity-75">All other fields are optional and help make your story even better!</div>
                 </AlertDescription>
               </Alert>
             )}
@@ -704,10 +713,10 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                       size="lg"
                       onClick={handleSubmit}
                       disabled={!isFormComplete()}
-                      className={`w-full transition-all duration-200 text-lg py-6 rounded-xl shadow-glow ${
+                      className={`w-full transition-all duration-300 text-lg py-6 rounded-xl shadow-glow touch-target ${
                         isFormComplete() 
-                          ? 'bg-gradient-primary hover:scale-105' 
-                          : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60'
+                          ? 'bg-gradient-primary hover:scale-105 text-white font-semibold' 
+                          : 'bg-gray-200 text-gray-400 cursor-not-allowed opacity-50'
                       }`}
                     >
                       <Sparkles className="w-5 h-5 mr-2 animate-pulse" />
