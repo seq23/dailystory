@@ -7,9 +7,10 @@ interface TagInputProps {
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
+  onBlur?: (value: string) => void;
 }
 
-export const TagInput = ({ value, onChange, placeholder, className }: TagInputProps) => {
+export const TagInput = ({ value, onChange, placeholder, className, onBlur }: TagInputProps) => {
   const [currentInput, setCurrentInput] = useState("");
   
   // Parse existing items from comma-separated string
@@ -19,7 +20,12 @@ export const TagInput = ({ value, onChange, placeholder, className }: TagInputPr
     const trimmedItem = item.trim();
     if (trimmedItem && !items.includes(trimmedItem)) {
       const newItems = [...items, trimmedItem];
-      onChange(newItems.join(', '));
+      const newValue = newItems.join(', ');
+      onChange(newValue);
+      // Trigger blur processing for the new item
+      if (onBlur) {
+        onBlur(newValue);
+      }
     }
     setCurrentInput("");
   };
@@ -75,6 +81,10 @@ export const TagInput = ({ value, onChange, placeholder, className }: TagInputPr
         onBlur={() => {
           if (currentInput.trim()) {
             addItem(currentInput);
+          }
+          // Trigger blur processing for complete value
+          if (onBlur) {
+            onBlur(value);
           }
         }}
       />

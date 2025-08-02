@@ -164,6 +164,9 @@ export class AdvancedGrammarProcessor {
     // Skip if already has article
     if (/^(a|an|the)\s+/i.test(word)) return word;
     
+    // Skip articles for plurals
+    if (this.isPlural(word)) return word;
+    
     // Add "a" or "an" based on first letter sound
     const vowelSounds = /^[aeiou]/i;
     const consonantSounds = /^[bcdfghjklmnpqrstvwxyz]/i;
@@ -177,22 +180,42 @@ export class AdvancedGrammarProcessor {
     return word;
   }
   
-  private static handlePluralForms(word: string): string {
-    // Basic plural handling - could be expanded
+  private static isPlural(word: string): boolean {
+    // Enhanced plural detection
     const pluralPatterns = [
-      { pattern: /ies$/, singular: 'y' },
-      { pattern: /ves$/, singular: 'f' },
-      { pattern: /ses$/, singular: 's' },
-      { pattern: /s$/, singular: '' }
+      /ies$/i,           // stories, cities
+      /ves$/i,           // wolves, knives
+      /ses$/i,           // buses, glasses
+      /ches$/i,          // beaches, churches
+      /shes$/i,          // dishes, wishes
+      /xes$/i,           // boxes, foxes
+      /s$/i,             // cats, dogs, books
+      /children$/i,      // children
+      /feet$/i,          // feet
+      /teeth$/i,         // teeth
+      /men$/i,           // men, women
+      /mice$/i,          // mice
+      /geese$/i          // geese
     ];
     
-    for (const {pattern, singular} of pluralPatterns) {
-      if (pattern.test(word)) {
-        // This is already plural, leave as is
-        return word;
-      }
+    // Common irregular plurals
+    const irregularPlurals = [
+      'children', 'feet', 'teeth', 'men', 'women', 'mice', 'geese',
+      'people', 'sheep', 'deer', 'fish', 'series', 'species'
+    ];
+    
+    if (irregularPlurals.includes(word.toLowerCase())) return true;
+    
+    return pluralPatterns.some(pattern => pattern.test(word));
+  }
+
+  private static handlePluralForms(word: string): string {
+    // If it's already plural, leave it as is
+    if (this.isPlural(word)) {
+      return word;
     }
     
+    // Otherwise, keep as singular
     return word;
   }
   
@@ -205,8 +228,10 @@ export class AdvancedGrammarProcessor {
     if (items.length === 1) return items[0];
     if (items.length === 2) return `${items[0]} and ${items[1]}`;
     
-    const lastItem = items.pop();
-    return `${items.join(', ')}, and ${lastItem}`;
+    // For 3+ items, use Oxford comma
+    const lastItem = items[items.length - 1];
+    const firstItems = items.slice(0, -1);
+    return `${firstItems.join(', ')}, and ${lastItem}`;
   }
 }
 
