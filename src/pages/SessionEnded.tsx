@@ -63,24 +63,25 @@ const SessionEnded = ({ onHome, onNewStory, isPremium = false, onUpgrade }: Sess
 
   const getDifficultyLabel = (difficulty: string) => {
     switch (difficulty) {
-      case "easy": return "Pre-K - 1st Grade";
-      case "medium": return "2nd - 3rd Grade";
-      case "hard": return "4th - 5th Grade";
+      case "easy": return t("storyDisplay.difficultyLabels.easy", "Pre-K - 1st Grade");
+      case "medium": return t("storyDisplay.difficultyLabels.medium", "2nd - 3rd Grade");
+      case "hard": return t("storyDisplay.difficultyLabels.hard", "4th - 5th Grade");
+      case "expert": return t("storyDisplay.difficultyLabels.expert", "6th Grade+");
       default: return difficulty;
     }
   };
 
   const getEncouragementMessage = () => {
-    if (!sessionStats) return "Great job on completing your reading session!";
+    if (!sessionStats) return t("storyDisplay.encouragementMessages.great", "Great job on completing your reading session!");
     
     if (sessionStats.pagesRead >= 8) {
-      return "Outstanding reading achievement! You're becoming a reading champion!";
+      return t("storyDisplay.encouragementMessages.outstanding", "Outstanding reading achievement! You're becoming a reading champion!");
     } else if (sessionStats.pagesRead >= 5) {
-      return "Excellent work! You're making great progress!";
+      return t("storyDisplay.encouragementMessages.excellent", "Excellent work! You're making great progress!");
     } else if (sessionStats.pagesRead >= 3) {
-      return "Great start! Keep up the wonderful reading habit!";
+      return t("storyDisplay.encouragementMessages.great", "Great start! Keep up the wonderful reading habit!");
     } else {
-      return "Every page counts! You're on your way to becoming a great reader!";
+      return t("storyDisplay.encouragementMessages.everyPage", "Every page counts! You're on your way to becoming a great reader!");
     }
   };
 
@@ -174,22 +175,22 @@ const SessionEnded = ({ onHome, onNewStory, isPremium = false, onUpgrade }: Sess
                 <h3 className="text-lg font-bold text-amber-700">{t("sessionEnded.unlockPremium", "Unlock Premium Benefits!")}</h3>
               </div>
               <div className="space-y-2 text-sm text-amber-600">
-                <div className="flex items-center gap-2">
-                  <Star className="w-4 h-4" />
-                  <span>Unlimited reading sessions</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4" />
-                  <span>Custom story difficulty adjustment</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <BookOpen className="w-4 h-4" />
-                  <span>Extended story library with more topics</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4" />
-                  <span>Advanced progress tracking & analytics</span>
-                </div>
+                 <div className="flex items-center gap-2">
+                   <Star className="w-4 h-4" />
+                   <span>{t("sessionEnded.premiumBenefits.unlimitedSessions", "Unlimited reading sessions")}</span>
+                 </div>
+                 <div className="flex items-center gap-2">
+                   <Sparkles className="w-4 h-4" />
+                   <span>{t("sessionEnded.premiumBenefits.customDifficulty", "Custom story difficulty adjustment")}</span>
+                 </div>
+                 <div className="flex items-center gap-2">
+                   <BookOpen className="w-4 h-4" />
+                   <span>{t("sessionEnded.premiumBenefits.extendedLibrary", "Extended story library with more topics")}</span>
+                 </div>
+                 <div className="flex items-center gap-2">
+                   <TrendingUp className="w-4 h-4" />
+                   <span>{t("sessionEnded.premiumBenefits.advancedTracking", "Advanced progress tracking & analytics")}</span>
+                 </div>
               </div>
               {onUpgrade && (
                 <Button
@@ -197,8 +198,8 @@ const SessionEnded = ({ onHome, onNewStory, isPremium = false, onUpgrade }: Sess
                   className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-medium py-3"
                   size="lg"
                 >
-                  <Crown className="w-5 h-5 mr-2" />
-                  Upgrade to Premium
+                   <Crown className="w-5 h-5 mr-2" />
+                   {t("sessionEnded.premiumBenefits.upgradeToPremium", "Upgrade to Premium")}
                 </Button>
               )}
             </div>

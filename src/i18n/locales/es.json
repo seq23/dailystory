@@ -349,6 +349,8 @@
     "pauseTimer": "Pausar Cronómetro",
     "reduceTime": "Reducir 5 Minutos",
     "endSession": "Terminar Sesión de Lectura",
+    "congratulations": "¡Felicitaciones!",
+    "sessionComplete": "¡Completaste tu sesión de lectura!",
     "sequentialTooltips": {
       "startPause": "🎯 ¡Haz clic para iniciar/pausar tu cronómetro de lectura!",
       "reduceTime": "⏰ ¡Reduce el tiempo en 5 minutos!",
@@ -363,5 +365,24 @@
     "speed": "Velocidad",
     "freeAudioUsed": "audio gratuito usado",
     "extendedPagesNeedPremium": "🔒 Las páginas extendidas necesitan Premium"
+  },
+  "storyDisplay": {
+    "readingLevel": "Nivel de Lectura",
+    "readingProgress": "Progreso de Lectura",
+    "previous": "← Anterior",
+    "next": "Siguiente →",
+    "addMorePages": "Agregar Más Páginas",
+    "encouragementMessages": {
+      "outstanding": "¡Logro de lectura sobresaliente! ¡Te estás convirtiendo en un campeón de la lectura!",
+      "excellent": "¡Excelente trabajo! ¡Estás haciendo un gran progreso!",
+      "great": "¡Gran comienzo! ¡Mantén el maravilloso hábito de lectura!",
+      "everyPage": "¡Cada página cuenta! ¡Estás en camino de convertirte en un gran lector!"
+    },
+    "difficultyLabels": {
+      "easy": "Pre-K - 1er Grado",
+      "medium": "2do - 3er Grado",
+      "hard": "4to - 5to Grado",
+      "expert": "6to Grado+"
+    }
   }
 }

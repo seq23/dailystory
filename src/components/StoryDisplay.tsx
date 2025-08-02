@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { BookOpen, Home, RotateCcw, Volume2, Timer, Play, Pause, Minus, X, ChevronUp, ChevronDown, Plus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import type { UserInfo, SessionStats } from "@/types";
 import { ElevenLabsAudio } from "@/components/ElevenLabsAudio";
@@ -54,6 +55,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
   onUpgrade,
 }) => {
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   // Initialize gamification
   const {
@@ -823,7 +825,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                       
                       <div className="text-center">
                         <span className="text-sm font-bold text-gray-700 bg-gradient-to-r from-purple-100 to-pink-100 px-3 py-1 rounded-full border border-purple-200">
-                          📚 Reading Level {getDifficultyIndex() + 1}
+                          📚 {t("storyDisplay.readingLevel")} {getDifficultyIndex() + 1}
                         </span>
                       </div>
                       
@@ -848,7 +850,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                   <div className="mb-4">
                     <Progress value={progress} className="h-2" />
                     <p className="text-sm text-gray-600 mt-2 text-center">
-                      Reading Progress: {Math.round(progress)}%
+                      {t("storyDisplay.readingProgress")}: {Math.round(progress)}%
                     </p>
                   </div>
                 </div>
@@ -894,7 +896,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                       variant="outline"
                       className="min-w-[100px]"
                     >
-                      ← Previous
+                      {t("storyDisplay.previous")}
                     </Button>
                     
                     <div className="flex flex-col items-center gap-2">
@@ -961,7 +963,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                       variant="outline"
                       className="min-w-[100px]"
                     >
-                      Next →
+                      {t("storyDisplay.next")}
                     </Button>
                   </div>
                 </div>

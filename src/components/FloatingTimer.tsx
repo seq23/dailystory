@@ -334,8 +334,8 @@ export const FloatingTimer = ({
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="bg-white rounded-2xl shadow-2xl p-8 text-center animate-scale-in border-4 border-amber-200">
               <div className="text-6xl mb-4">🎉</div>
-              <h2 className="text-3xl font-bold text-amber-600 mb-2">Congratulations!</h2>
-              <p className="text-lg text-gray-600">Great reading session!</p>
+               <h2 className="text-3xl font-bold text-amber-600 mb-2">{t("floatingTimer.congratulations")}</h2>
+               <p className="text-lg text-gray-600">{t("floatingTimer.sessionComplete")}</p>
             </div>
           </div>
           

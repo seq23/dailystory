@@ -400,6 +400,8 @@
     "pauseTimer": "Pause Timer",
     "reduceTime": "Reduce 5 Minutes",
     "endSession": "End Reading Session",
+    "congratulations": "Congratulations!",
+    "sessionComplete": "You completed your reading session!",
     "sequentialTooltips": {
       "startPause": "🎯 Click to start/pause your reading timer!",
       "reduceTime": "⏰ Reduce time by 5 minutes!",
@@ -428,6 +430,32 @@
     "level": "Level",
     "unlockPremium": "Unlock Premium Benefits!",
     "goToHome": "Go to Home",
-    "startNewStory": "Start New Story"
+    "startNewStory": "Start New Story",
+    "premiumBenefits": {
+      "unlimitedSessions": "Unlimited reading sessions",
+      "customDifficulty": "Custom story difficulty adjustment",
+      "extendedLibrary": "Extended story library with more topics",
+      "advancedTracking": "Advanced progress tracking & analytics",
+      "upgradeToPremium": "Upgrade to Premium"
+    }
+  },
+  "storyDisplay": {
+    "readingLevel": "Reading Level",
+    "readingProgress": "Reading Progress",
+    "previous": "← Previous",
+    "next": "Next →",
+    "addMorePages": "Add More Pages",
+    "encouragementMessages": {
+      "outstanding": "Outstanding reading achievement! You're becoming a reading champion!",
+      "excellent": "Excellent work! You're making great progress!",
+      "great": "Great start! Keep up the wonderful reading habit!",
+      "everyPage": "Every page counts! You're on your way to becoming a great reader!"
+    },
+    "difficultyLabels": {
+      "easy": "Pre-K - 1st Grade",
+      "medium": "2nd - 3rd Grade",
+      "hard": "4th - 5th Grade",
+      "expert": "6th Grade+"
+    }
   }
 }
