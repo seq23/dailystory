@@ -271,13 +271,37 @@ export const InteractiveWord = ({
             speechSynthesis.cancel();
             await new Promise(resolve => setTimeout(resolve, 100));
             
+            // Ensure voices are loaded on mobile
+            const loadVoices = (): Promise<SpeechSynthesisVoice[]> => {
+              return new Promise((resolve) => {
+                let voices = speechSynthesis.getVoices();
+                if (voices.length > 0) {
+                  resolve(voices);
+                } else {
+                  // Wait for voices to load
+                  speechSynthesis.onvoiceschanged = () => {
+                    voices = speechSynthesis.getVoices();
+                    resolve(voices);
+                  };
+                  // Fallback timeout
+                  setTimeout(() => resolve(speechSynthesis.getVoices()), 1000);
+                }
+              });
+            };
+            
+            const voices = await loadVoices();
+            
             const utterance = new SpeechSynthesisUtterance(explanation);
             utterance.rate = isESLLearner ? 0.6 : 0.7;
             utterance.pitch = 1.0;
             utterance.volume = 1.0;
             
             // Enhanced voice selection for user's native language
-            const voices = speechSynthesis.getVoices();
+            toast({
+              title: "🔧 Voice Loading",
+              description: `Found ${voices.length} voices, selecting for ${userNativeLanguage}`,
+              duration: 2000,
+            });
             console.log('Available voices:', voices.map(v => `${v.name} (${v.lang})`));
             
             // Language mapping for better voice matching
@@ -310,10 +334,20 @@ export const InteractiveWord = ({
               utterance.voice = selectedVoice;
               utterance.lang = selectedVoice.lang;
               console.log('Selected voice for', userNativeLanguage, ':', selectedVoice.name, selectedVoice.lang);
+              toast({
+                title: "🎤 Voice Selected",
+                description: `Using: ${selectedVoice.name} (${selectedVoice.lang})`,
+                duration: 2000,
+              });
             } else {
               console.warn('No voice found for language:', userNativeLanguage);
               // Set language attribute even without specific voice
               utterance.lang = userNativeLanguage;
+              toast({
+                title: "⚠️ Default Voice",
+                description: `No specific voice for ${userNativeLanguage}, using default`,
+                duration: 2000,
+              });
             }
             
             console.log('About to speak explanation with utterance settings:', {
@@ -360,6 +394,56 @@ export const InteractiveWord = ({
             };
             
             console.log('Calling speechSynthesis.speak()...');
+            
+            // Add timeout to detect if speech never starts
+            const speechTimeout = setTimeout(() => {
+              if (speechSynthesis.speaking === false) {
+                toast({
+                  title: "❌ Speech Timeout",
+                  description: "Speech didn't start within 3 seconds. Trying fallback...",
+                  duration: 3000,
+                });
+                setIsPlaying(false);
+                
+                // Try simple fallback
+                const fallbackUtterance = new SpeechSynthesisUtterance(cleanWord);
+                fallbackUtterance.rate = 0.8;
+                speechSynthesis.speak(fallbackUtterance);
+              }
+            }, 3000);
+            
+            utterance.onstart = () => {
+              clearTimeout(speechTimeout);
+              console.log('Speech synthesis started');
+              toast({
+                title: "🔊 Audio Started",
+                description: "Now speaking explanation...",
+                duration: 2000,
+              });
+            };
+            
+            utterance.onend = () => {
+              clearTimeout(speechTimeout);
+              console.log('Speech synthesis completed successfully');
+              toast({
+                title: "✅ Audio Complete",
+                description: "Explanation finished speaking",
+                duration: 2000,
+              });
+              setIsPlaying(false);
+            };
+            
+            utterance.onerror = (error) => {
+              clearTimeout(speechTimeout);
+              console.error('Speech synthesis error:', error);
+              toast({
+                title: "❌ Audio Error", 
+                description: `Speech failed: ${error.error || 'Unknown error'}`,
+                duration: 4000,
+              });
+              setIsPlaying(false);
+            };
+            
             speechSynthesis.speak(utterance);
             return;
           } else {
