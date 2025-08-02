@@ -1,5 +1,4 @@
 import { UserInfo, Story, DifficultyLevel } from "@/types";
-import { supabase } from "@/integrations/supabase/client";
 import { ContentSignatureGenerator, SessionManager } from "./enhancedLinguisticProcessor";
 import { ComprehensiveStoryGenerator } from "./comprehensiveStoryGenerator";
 
@@ -17,6 +16,10 @@ export interface FreeUserSession {
   createdAt: Date;
   sessionNumber: number;
 }
+
+// In-memory storage for free user sessions (will be replaced with database when tables are available)
+const freeUserSessionsCache = new Map<string, FreeUserSession[]>();
+const sessionAnalyticsCache = new Map<string, any>();
 
 export class FreeUserStoryService {
   
@@ -81,30 +84,15 @@ export class FreeUserStoryService {
     const newSignature = SessionManager.generateSessionSignature(userInfo, difficulty, translationContext);
     
     try {
-      // Fetch existing sessions for this user
-      const { data: existingSessions } = await supabase
-        .from('free_user_sessions')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
-      
-      const sessions: FreeUserSession[] = existingSessions?.map(session => ({
-        id: session.id,
-        userId: session.user_id,
-        signature: session.content_signature || '',
-        difficulty: session.difficulty as DifficultyLevel,
-        storyContent: session.story_content ? JSON.parse(session.story_content) : null,
-        translationContext: session.translation_context ? JSON.parse(session.translation_context) : {},
-        createdAt: new Date(session.created_at),
-        sessionNumber: session.session_number || 1
-      })) || [];
+      // Get existing sessions from cache
+      const existingSessions = freeUserSessionsCache.get(userId) || [];
       
       // Check uniqueness with translation awareness
-      const existingSignatures = sessions.map(s => s.signature);
+      const existingSignatures = existingSessions.map(s => s.signature);
       const isUnique = SessionManager.isUniqueSession(newSignature, existingSignatures, 100);
       
-      const sessionNumber = sessions.length + 1;
-      const remainingSessions = Math.max(0, 100 - sessions.length);
+      const sessionNumber = existingSessions.length + 1;
+      const remainingSessions = Math.max(0, 100 - existingSessions.length);
       const canGenerate = isUnique && remainingSessions > 0;
       
       console.log('📊 Free user session check:', {
@@ -112,13 +100,13 @@ export class FreeUserStoryService {
         remainingSessions,
         isUnique,
         canGenerate,
-        totalExistingSessions: sessions.length
+        totalExistingSessions: existingSessions.length
       });
       
       return {
         canGenerate,
         sessionInfo: { sessionNumber, remainingSessions, isUnique },
-        existingSessions: sessions
+        existingSessions
       };
       
     } catch (error) {
@@ -209,34 +197,21 @@ export class FreeUserStoryService {
       // Generate similarity signatures for fuzzy matching
       const currentSignature = ContentSignatureGenerator.generateSignature(userInfo, translationContext);
       
-      // Fetch recent sessions with similar signatures
-      const { data: recentSessions } = await supabase
-        .from('free_user_sessions')
-        .select('*')
-        .eq('difficulty', difficulty)
-        .order('created_at', { ascending: false })
-        .limit(20);
+      // Get all cached sessions
+      const allSessions: FreeUserSession[] = [];
+      for (const sessions of freeUserSessionsCache.values()) {
+        allSessions.push(...sessions.filter(s => s.difficulty === difficulty));
+      }
       
-      if (!recentSessions?.length) return null;
+      if (!allSessions.length) return null;
       
       // Find sessions with high signature similarity
-      for (const session of recentSessions) {
-        const sessionSignature = session.content_signature || '';
-        const similarity = this.calculateSignatureSimilarity(currentSignature, sessionSignature);
+      for (const session of allSessions.slice(-20)) { // Check last 20 sessions
+        const similarity = this.calculateSignatureSimilarity(currentSignature, session.signature);
         
         if (similarity > 0.85) { // 85% similarity threshold
           console.log('🎯 Found similar cached story with', Math.round(similarity * 100) + '% similarity');
-          
-          return {
-            id: session.id,
-            userId: session.user_id,
-            signature: sessionSignature,
-            difficulty: session.difficulty as DifficultyLevel,
-            storyContent: JSON.parse(session.story_content || '{}'),
-            translationContext: JSON.parse(session.translation_context || '{}'),
-            createdAt: new Date(session.created_at),
-            sessionNumber: session.session_number || 1
-          };
+          return session;
         }
       }
       
@@ -258,19 +233,24 @@ export class FreeUserStoryService {
   ): Promise<void> {
     
     try {
+      const userId = userInfo.name || 'guest';
       const signature = SessionManager.generateSessionSignature(userInfo, difficulty, translationContext);
       
-      await supabase
-        .from('free_user_sessions')
-        .insert({
-          user_id: userInfo.name || 'guest',
-          content_signature: signature,
-          story_content: JSON.stringify(story),
-          difficulty,
-          translation_context: JSON.stringify(translationContext),
-          session_number: sessionInfo.sessionNumber,
-          created_at: new Date().toISOString()
-        });
+      const session: FreeUserSession = {
+        id: crypto.randomUUID(),
+        userId,
+        signature,
+        difficulty,
+        storyContent: story,
+        translationContext,
+        createdAt: new Date(),
+        sessionNumber: sessionInfo.sessionNumber
+      };
+      
+      // Add to cache
+      const existingSessions = freeUserSessionsCache.get(userId) || [];
+      existingSessions.push(session);
+      freeUserSessionsCache.set(userId, existingSessions);
       
       console.log('💾 Session cached successfully');
       
@@ -334,16 +314,21 @@ export class FreeUserStoryService {
   ): Promise<void> {
     
     try {
-      await supabase
-        .from('free_user_analytics')
-        .upsert({
-          user_id: userId,
-          total_sessions: performance.completionRate > 0.8 ? 1 : 0,
-          total_time: performance.timeSpent,
-          total_words: performance.wordsRead,
-          average_completion: performance.completionRate,
-          updated_at: new Date().toISOString()
-        }, { onConflict: 'user_id' });
+      // Update analytics cache
+      const existing = sessionAnalyticsCache.get(userId) || {
+        total_sessions: 0,
+        total_time: 0,
+        total_words: 0,
+        average_completion: 0
+      };
+      
+      existing.total_sessions += performance.completionRate > 0.8 ? 1 : 0;
+      existing.total_time += performance.timeSpent;
+      existing.total_words += performance.wordsRead;
+      existing.average_completion = (existing.average_completion + performance.completionRate) / 2;
+      existing.updated_at = new Date().toISOString();
+      
+      sessionAnalyticsCache.set(userId, existing);
       
     } catch (error) {
       console.error('Error updating session analytics:', error);

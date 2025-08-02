@@ -73,6 +73,54 @@ export class UniversalContentManager {
     }
   }
   
+  // Handle premium user story generation
+  private static async handlePremiumUser(
+    processedData: ProcessedUserData,
+    difficulty: DifficultyLevel,
+    config: ContentManagerConfig
+  ): Promise<StoryGenerationResult> {
+    
+    console.log('👑 Processing premium user with enhanced features...');
+    
+    // Generate story using processed inputs
+    const story = await this.generateNewStory(processedData.processedUserInfo, difficulty, config);
+    
+    return {
+      story,
+      isNewStory: true,
+      isContinuation: false,
+      sessionInfo: {
+        sessionNumber: 1,
+        remainingSessions: -1, // Unlimited
+        isUnlimited: true
+      }
+    };
+  }
+  
+  // Handle free user story generation
+  private static async handleFreeUser(
+    processedData: ProcessedUserData,
+    difficulty: DifficultyLevel,
+    config: ContentManagerConfig
+  ): Promise<StoryGenerationResult> {
+    
+    console.log('🆓 Processing free user with translation support...');
+    
+    // Generate story using processed inputs
+    const story = await this.generateNewStory(processedData.processedUserInfo, difficulty, config);
+    
+    return {
+      story,
+      isNewStory: true,
+      isContinuation: false,
+      sessionInfo: {
+        sessionNumber: 1,
+        remainingSessions: 99,
+        isUnlimited: false
+      }
+    };
+  }
+  
   // Process all user input fields through the intelligent processor
   private static async processAllUserInputs(userInfo: UserInfo): Promise<ProcessedUserData> {
     const fieldsToProcess = [

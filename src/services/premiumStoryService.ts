@@ -1,5 +1,4 @@
 import { UserInfo, Story, DifficultyLevel } from "@/types";
-import { supabase } from "@/integrations/supabase/client";
 import { ContentSignatureGenerator, SessionManager } from "./enhancedLinguisticProcessor";
 import { ComprehensiveStoryGenerator } from "./comprehensiveStoryGenerator";
 
@@ -31,6 +30,11 @@ export interface ContinuationContext {
   };
 }
 
+// In-memory storage for premium features (will be replaced with database when tables are available)
+const storyLibraryCache = new Map<string, StoryLibraryEntry[]>();
+const continuationCache = new Map<string, any>();
+const learningProfilesCache = new Map<string, any>();
+
 export class PremiumStoryService {
   
   // Translation-aware story library management
@@ -42,33 +46,16 @@ export class PremiumStoryService {
     }
   ): Promise<StoryLibraryEntry[]> {
     
+    const userId = userInfo.name || 'guest';
     const signature = ContentSignatureGenerator.generateSignature(userInfo, translationContext);
     
     try {
-      // Fetch existing stories for this user with translation awareness
-      const { data: existingStories } = await supabase
-        .from('user_story_history')
-        .select('*')
-        .eq('user_id', userInfo.name || 'guest')
-        .order('created_at', { ascending: false })
-        .limit(50);
+      // Get existing stories from cache
+      const existingStories = storyLibraryCache.get(userId) || [];
       
-      // Transform to library entries
-      const libraryEntries: StoryLibraryEntry[] = existingStories?.map(story => ({
-        id: story.story_id,
-        title: JSON.parse(story.story_content).title,
-        content: JSON.parse(story.story_content),
-        signature: story.content_signature || signature,
-        difficulty: story.difficulty,
-        originalInputs: translationContext.originalInputs,
-        translatedInputs: translationContext.translatedInputs,
-        culturalContext: userInfo.nativeLanguage,
-        createdAt: new Date(story.created_at),
-        lastContinuedAt: story.last_continued_at ? new Date(story.last_continued_at) : undefined,
-        continuationCount: story.continuation_count || 0
-      })) || [];
+      console.log(`📚 Retrieved ${existingStories.length} stories from premium library for ${userId}`);
       
-      return libraryEntries;
+      return existingStories;
       
     } catch (error) {
       console.error('Error fetching story library:', error);
@@ -98,8 +85,7 @@ export class PremiumStoryService {
       const storyData = ComprehensiveStoryGenerator.generateStory(
         userInfo,
         difficulty,
-        5, // Continuation pages
-        continuationPrompt
+        5 // Continuation pages
       );
       
       // Create continuation story
@@ -163,20 +149,31 @@ Create a seamless continuation that:
     difficulty: DifficultyLevel
   ): Promise<boolean> {
     
+    const userId = userInfo.name || 'guest';
     const newSignature = ContentSignatureGenerator.generateSignature(userInfo, translationContext);
     
     try {
       // For premium users, always allow new stories (infinite uniqueness)
-      // But track for analytics and personalization
-      await supabase
-        .from('user_story_history')
-        .insert({
-          user_id: userInfo.name || 'guest',
-          content_signature: newSignature,
-          difficulty,
-          is_premium: true,
-          created_at: new Date().toISOString()
-        });
+      // Track for analytics and personalization
+      const existingStories = storyLibraryCache.get(userId) || [];
+      
+      const newEntry: StoryLibraryEntry = {
+        id: crypto.randomUUID(),
+        title: 'New Premium Story',
+        content: this.generateFallbackStory(userInfo, difficulty),
+        signature: newSignature,
+        difficulty,
+        originalInputs: translationContext.originalInputs || {},
+        translatedInputs: translationContext.translatedInputs || {},
+        culturalContext: userInfo.nativeLanguage,
+        createdAt: new Date(),
+        continuationCount: 0
+      };
+      
+      existingStories.push(newEntry);
+      storyLibraryCache.set(userId, existingStories);
+      
+      console.log('♾️ Premium story uniqueness ensured - infinite stories available');
       
       return true; // Premium users always get infinite uniqueness
       
@@ -201,11 +198,13 @@ Create a seamless continuation that:
     console.log('📊 Updating personalization learning with translation awareness...');
     
     try {
+      const userId = userInfo.name || 'guest';
+      
       // Store learning data with cultural context
       const learningData = {
-        user_id: userInfo.name || 'guest',
+        user_id: userId,
         native_language: userInfo.nativeLanguage,
-        cultural_context: JSON.stringify(translationContext.originalInputs),
+        cultural_context: JSON.stringify(translationContext.originalInputs || {}),
         performance_metrics: JSON.stringify(storyPerformance),
         learning_preferences: JSON.stringify({
           vocabularyComplexity: storyPerformance.vocabularyMastery,
@@ -215,10 +214,8 @@ Create a seamless continuation that:
         updated_at: new Date().toISOString()
       };
       
-      // Upsert learning data
-      await supabase
-        .from('user_learning_profiles')
-        .upsert(learningData, { onConflict: 'user_id' });
+      // Store in cache for now
+      learningProfilesCache.set(userId, learningData);
       
       console.log('✅ Personalization learning updated');
       
@@ -275,10 +272,12 @@ Create a seamless continuation that:
     // Extract themes from original vs translated differences
     const themes = [];
     
-    for (const [key, original] of Object.entries(translationContext.originalInputs)) {
-      const translated = translationContext.translatedInputs[key];
-      if (original !== translated) {
-        themes.push(`${key}:${original}->${translated}`);
+    if (translationContext?.originalInputs && translationContext?.translatedInputs) {
+      for (const [key, original] of Object.entries(translationContext.originalInputs)) {
+        const translated = translationContext.translatedInputs[key];
+        if (original !== translated) {
+          themes.push(`${key}:${original}->${translated}`);
+        }
       }
     }
     
@@ -287,14 +286,15 @@ Create a seamless continuation that:
   
   private static async trackContinuation(baseStoryId: string, continuation: Story): Promise<void> {
     try {
-      await supabase
-        .from('story_continuations')
-        .insert({
-          base_story_id: baseStoryId,
-          continuation_id: continuation.id,
-          continuation_content: JSON.stringify(continuation),
-          created_at: new Date().toISOString()
-        });
+      // Store in continuation cache
+      continuationCache.set(`${baseStoryId}_${continuation.id}`, {
+        base_story_id: baseStoryId,
+        continuation_id: continuation.id,
+        continuation_content: JSON.stringify(continuation),
+        created_at: new Date().toISOString()
+      });
+      
+      console.log('📝 Continuation tracked successfully');
     } catch (error) {
       console.error('Error tracking continuation:', error);
     }
