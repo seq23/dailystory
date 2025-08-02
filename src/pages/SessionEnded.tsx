@@ -1,3 +1,4 @@
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Home, BookOpen, Clock, TrendingUp, Target, BookText, Crown, Sparkles, Star } from "lucide-react";
@@ -22,8 +23,16 @@ interface SessionEndedProps {
 }
 
 const SessionEnded = ({ onHome, onNewStory, isPremium = false, onUpgrade }: SessionEndedProps) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const location = useLocation();
+
+  // Ensure language is properly loaded from localStorage on component mount
+  React.useEffect(() => {
+    const savedLanguage = localStorage.getItem('i18nextLng');
+    if (savedLanguage && savedLanguage !== i18n.language) {
+      i18n.changeLanguage(savedLanguage);
+    }
+  }, [i18n]);
   
   // Get stats from URL parameters or location state
   let sessionStats = location.state?.sessionStats;
