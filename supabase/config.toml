@@ -1,6 +1,9 @@
 project_id = "cpzeuogomaixamrtnnmj"
 
 # Add function configurations
+[functions.elevenlabs-tts]
+verify_jwt = false
+
 [functions.generate-adaptive-story]
 verify_jwt = false
 
