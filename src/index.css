@@ -284,11 +284,22 @@ All colors MUST be HSL.
     display: none;
   }
   
-  /* Force icon visibility on mobile */
-  .force-visible {
+  /* iOS Safari icon fallback system */
+  .lucide-react {
     display: block !important;
-    opacity: 1 !important;
     visibility: visible !important;
+  }
+
+  /* Show SVG fallback if Lucide icon fails */
+  .lucide-react[style*="display: none"] + .lucide-fallback,
+  .lucide-react:not([style]):not(:visible) + .lucide-fallback {
+    display: block !important;
+  }
+
+  /* Show unicode fallback if both fail */
+  .lucide-react[style*="display: none"] + .lucide-fallback[style*="display: none"] + .unicode-fallback,
+  .lucide-react:not([style]):not(:visible) + .lucide-fallback:not(:visible) + .unicode-fallback {
+    display: flex !important;
   }
   
   /* Extra small breakpoint for mobile */

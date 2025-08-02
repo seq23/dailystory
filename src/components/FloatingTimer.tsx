@@ -266,14 +266,27 @@ export const FloatingTimer = ({
                     style={{ touchAction: 'manipulation' }}
                   >
                     <div className="flex items-center justify-center w-full h-full relative">
+                      {/* iOS Safari specific icon rendering with direct SVG fallback */}
                       {isReading ? (
-                        <Pause className="w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 !block !opacity-100 force-visible" style={{ display: 'block !important', opacity: '1 !important' }} />
+                        <>
+                          <Pause className="w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 text-current" />
+                          {/* Direct SVG fallback for iOS */}
+                          <svg className="w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 absolute text-current lucide-fallback" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'none' }}>
+                            <rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>
+                          </svg>
+                        </>
                       ) : (
-                        <Play className="w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 ml-1 !block !opacity-100 force-visible" style={{ display: 'block !important', opacity: '1 !important' }} />
+                        <>
+                          <Play className="w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 ml-1 text-current" />
+                          {/* Direct SVG fallback for iOS */}
+                          <svg className="w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 ml-1 absolute text-current lucide-fallback" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'none' }}>
+                            <polygon points="5,3 19,12 5,21"/>
+                          </svg>
+                        </>
                       )}
-                      {/* Fallback text for when icons don't render on mobile */}
-                      <span className="sr-only text-xs font-bold absolute inset-0 flex items-center justify-center text-primary">
-                        {isReading ? "⏸" : "▶"}
+                      {/* Unicode fallback text for extreme cases */}
+                      <span className="text-lg font-bold absolute inset-0 flex items-center justify-center text-current unicode-fallback" style={{ display: 'none' }}>
+                        {isReading ? "⏸️" : "▶️"}
                       </span>
                     </div>
                 </Button>
