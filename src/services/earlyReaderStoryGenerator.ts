@@ -23,16 +23,16 @@ export class EarlyReaderStoryGenerator {
           lineHeight: 'leading-loose', // Extra spacing for readability
           spacing: 'space-y-8' // Generous spacing for easy visual tracking
         };
-      case 'medium': // Early readers (ages 5-7): 12-15 words per page for developing skills
+      case 'medium': // Early readers (ages 5-7): 10-12 words per page for developing skills
         return {
-          maxWordsPerPage: 15, // PEDAGOGICAL STANDARD: 12-15 words for early readers
+          maxWordsPerPage: 12, // PEDAGOGICAL STANDARD: 10-12 words for early readers
           fontSize: 'text-3xl md:text-4xl lg:text-5xl', // Large text for growing confidence
           lineHeight: 'leading-relaxed',
           spacing: 'space-y-6'
         };
-      case 'hard': // Developing readers (ages 6-8): 20-25 words per page for fluency building
+      case 'hard': // Developing readers (ages 6-8): 20-22 words per page for fluency building
         return {
-          maxWordsPerPage: 25, // PEDAGOGICAL STANDARD: 20-25 words for developing readers
+          maxWordsPerPage: 20, // PEDAGOGICAL STANDARD: 20-22 words for developing readers
           fontSize: 'text-2xl md:text-3xl lg:text-4xl', // Medium-large text for sustained reading
           lineHeight: 'leading-normal',
           spacing: 'space-y-4'
@@ -257,12 +257,12 @@ export class EarlyReaderStoryGenerator {
     
     const continuations = {
       easy: [
-        `${characterName} and ${favoriteAnimal} play with ${favoriteColor} toys.`,
-        `They run and jump in the ${favoriteColor} park.`,
-        `${characterName} shares ${favoriteFood} with friends.`,
-        `The ${favoriteAnimal} smiles and is happy.`,
-        `They find new ${favoriteColor} things together.`,
-        `Everyone enjoys ${favoriteFood} and laughs.`
+        `${characterName} plays.`,
+        `${favoriteAnimal} runs.`,
+        `They eat ${favoriteFood}.`,
+        `${characterName} smiles.`,
+        `Fun ${favoriteColor} day.`,
+        `Friends play together.`
       ],
       medium: [
         `${characterName} discovered something amazing about ${favoriteColor} magic with their ${favoriteAnimal} friend.`,
@@ -310,8 +310,8 @@ export class EarlyReaderStoryGenerator {
   private static verifyWordLimits(pages: string[], maxWordsPerPage: number, difficulty: DifficultyLevel): void {
     const expectedLimits = {
       easy: 6,
-      medium: 15, 
-      hard: 25,
+      medium: 12, 
+      hard: 20,
       expert: 40
     };
     
