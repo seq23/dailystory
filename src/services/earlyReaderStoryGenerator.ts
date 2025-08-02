@@ -277,7 +277,7 @@ export class EarlyReaderStoryGenerator {
       easy: [
         `${characterName} plays.`,
         `${favoriteAnimal} runs.`,
-        `${pronouns.subject} eat ${favoriteFood}.`,
+        `${characterName} eats ${favoriteFood}.`,
         `${characterName} smiles.`,
         `Fun ${favoriteColor} day.`,
         `Friends play together.`
