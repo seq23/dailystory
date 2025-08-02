@@ -1,5 +1,6 @@
 import { UserInfo, LanguageCode } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
+import { EnhancedSpellingCorrector, AdvancedGrammarProcessor } from "./enhancedLinguisticProcessor";
 
 export interface ProcessedUserInput {
   originalInput: string;
@@ -129,7 +130,7 @@ export class IntelligentInputProcessor {
     }
   }
 
-  // Spelling Correction Layer
+  // Enhanced Spelling Correction Layer with multilingual fuzzy matching
   private static async correctSpelling(input: string, grade: string): Promise<string> {
     // Check if we have cached spelling corrections
     const cachedCorrection = spellingCache.get(input);
@@ -138,6 +139,14 @@ export class IntelligentInputProcessor {
     }
 
     try {
+      // First try enhanced fuzzy matching for known contexts
+      const contextualMatch = this.tryContextualCorrection(input);
+      if (contextualMatch) {
+        spellingCache.set(input, contextualMatch);
+        return contextualMatch;
+      }
+
+      // Fallback to OpenAI-based correction
       const { data, error } = await supabase.functions.invoke('correct-spelling', {
         body: {
           text: input,
@@ -160,22 +169,42 @@ export class IntelligentInputProcessor {
     }
   }
 
-  // Grammar Processing Layer
+  // Try contextual correction using enhanced linguistic processor
+  private static tryContextualCorrection(input: string): string | null {
+    // This is a simplified approach - in practice, we'd need userInfo context
+    const words = input.split(/[,\s]+/);
+    const correctedWords: string[] = [];
+    let hasCorrections = false;
+
+    for (const word of words) {
+      if (!word.trim()) continue;
+      
+      // Try fuzzy matching for animals, foods, hobbies
+      const contexts: Array<'animals' | 'foods' | 'hobbies'> = ['animals', 'foods', 'hobbies'];
+      let corrected = false;
+      
+      for (const context of contexts) {
+        const match = EnhancedSpellingCorrector.fuzzyMatch(word, 'en', context);
+        if (match && match.confidence > 0.8) {
+          correctedWords.push(match.suggestion);
+          hasCorrections = true;
+          corrected = true;
+          break;
+        }
+      }
+      
+      if (!corrected) {
+        correctedWords.push(word);
+      }
+    }
+
+    return hasCorrections ? correctedWords.join(' ') : null;
+  }
+
+  // Enhanced Grammar Processing Layer with advanced linguistic rules
   private static async processGrammar(input: string): Promise<string> {
-    // Handle comma-separated values and basic grammar
-    let processed = input.trim();
-    
-    // Fix common grammar issues in lists
-    if (processed.includes(',')) {
-      const items = processed.split(',').map(item => item.trim());
-      processed = items.filter(item => item.length > 0).join(', ');
-    }
-
-    // Capitalize first letter
-    if (processed.length > 0) {
-      processed = processed.charAt(0).toUpperCase() + processed.slice(1);
-    }
-
+    // Use the advanced grammar processor
+    const processed = AdvancedGrammarProcessor.processTranslatedText(input, 'en');
     return processed;
   }
 

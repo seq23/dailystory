@@ -1,6 +1,8 @@
 import { UserInfo, Story, DifficultyLevel } from "@/types";
 import { IntelligentInputProcessor } from "./intelligentInputProcessor";
 import { ComprehensiveStoryGenerator } from "./comprehensiveStoryGenerator";
+import { PremiumStoryService } from "./premiumStoryService";
+import { FreeUserStoryService } from "./freeUserStoryService";
 
 export interface ContentManagerConfig {
   isPremium: boolean;
@@ -37,32 +39,20 @@ export class UniversalContentManager {
     difficulty: DifficultyLevel,
     config: ContentManagerConfig
   ): Promise<StoryGenerationResult> {
-    console.log('Universal Content Manager: Starting enhanced story generation pipeline');
+    console.log('🚀 Universal Content Manager: Starting ENHANCED story generation pipeline');
     
     try {
       // Step 1: Process all user inputs through intelligent processing (Translation + Spelling + Grammar)
       const processedData = await this.processAllUserInputs(userInfo);
       
-      console.log('Translation Report:', processedData.translationReport);
+      console.log('✨ Translation Report:', processedData.translationReport);
       
-      // Step 2: Generate story using processed, clean English inputs
-      const story = await this.generateNewStory(processedData.processedUserInfo, difficulty, config);
-      
-      // Step 3: Get session info
-      const sessionInfo = {
-        sessionNumber: 1,
-        remainingSessions: config.isPremium ? -1 : 99,
-        isUnlimited: config.isPremium
-      };
-      
-      console.log('Universal Content Manager: Story generation completed successfully');
-      
-      return {
-        story,
-        isNewStory: true,
-        isContinuation: false,
-        sessionInfo
-      };
+      // Step 2: Route to appropriate service based on premium status
+      if (config.isPremium) {
+        return await this.handlePremiumUser(processedData, difficulty, config);
+      } else {
+        return await this.handleFreeUser(processedData, difficulty, config);
+      }
       
     } catch (error) {
       console.error('Universal Content Manager error:', error);
