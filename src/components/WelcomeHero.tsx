@@ -325,7 +325,10 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 via-pink-400/20 to-blue-400/20 animate-pulse group-hover:animate-none"></div>
                     <Users className="w-6 h-6 relative z-10 animate-pulse group-hover:animate-none" />
-                    <span className="relative z-10">{t("welcomeHero.ctaButton")} - Free Trial</span>
+                    <span className="relative z-10 text-center break-words leading-tight">
+                      <span className="block sm:inline">{t("welcomeHero.ctaButtonNew") || "Create Your First Story"}</span>
+                      <span className="block sm:inline sm:ml-1 text-xs sm:text-sm opacity-90">- {t("welcomeHero.freeTrial") || "Free Trial"}</span>
+                    </span>
                     <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   </Button>
                 </TooltipTrigger>
