@@ -263,18 +263,39 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
     const isMobile = viewportWidth < 768;
     const isTablet = viewportWidth >= 768 && viewportWidth < 1024;
     
-    const tooltipWidth = isMobile ? Math.min(350, viewportWidth - 40) : isTablet ? 380 : 400;
-    const tooltipHeight = isMobile ? 320 : 280;
-    const margin = isMobile ? 20 : isTablet ? 30 : 50;
+    const tooltipWidth = isMobile ? Math.min(280, viewportWidth - 40) : isTablet ? 320 : 400;
+    const tooltipHeight = isMobile ? 280 : 260;
+    const margin = isMobile ? 20 : isTablet ? 25 : 40;
+    const clearance = isMobile ? 120 : isTablet ? 140 : 160; // Extra space to avoid covering targets
 
-    // SPECIAL HANDLING FOR TIMER STEP - Avoid floating timer area
+    // SPECIAL HANDLING FOR TIMER STEP - Always place away from floating timer
     if (target === "timer-display") {
-      // Floating timer is at bottom-left, so place tutorial at top-right
+      // Floating timer is at bottom-left, place tutorial at top-center or top-right
+      if (isMobile) {
+        return {
+          top: `${margin}px`,
+          left: "50%",
+          transform: "translateX(-50%)",
+          maxWidth: `${tooltipWidth}px`
+        };
+      } else {
+        return {
+          top: `${margin}px`,
+          right: `${margin}px`,
+          left: "auto",
+          transform: "none",
+          maxWidth: `${tooltipWidth}px`
+        };
+      }
+    }
+
+    // SPECIAL HANDLING FOR ADD PAGES BUTTON - Place well above to avoid covering
+    if (target === "add-pages-button") {
       return {
-        top: `${margin}px`,
-        right: `${margin}px`,
-        left: "auto",
-        transform: "none"
+        top: `${Math.max(margin, rect.top - tooltipHeight - clearance)}px`,
+        left: `${Math.max(margin, Math.min(rect.left + rect.width/2 - tooltipWidth/2, viewportWidth - tooltipWidth - margin))}px`,
+        transform: "none",
+        maxWidth: `${tooltipWidth}px`
       };
     }
 
@@ -283,44 +304,57 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
     // IMPROVED POSITIONING: Ensure tutorial never covers the target element
     switch (position) {
       case "bottom":
-        // Place well below the element
+        // Place well below the element with extra clearance
         style = {
-          top: `${Math.min(rect.bottom + 80, viewportHeight - tooltipHeight - margin)}px`,
+          top: `${Math.min(rect.bottom + clearance, viewportHeight - tooltipHeight - margin)}px`,
           left: `${Math.max(margin, Math.min(rect.left + rect.width/2 - tooltipWidth/2, viewportWidth - tooltipWidth - margin))}px`,
-          transform: "none"
+          transform: "none",
+          maxWidth: `${tooltipWidth}px`
         };
         break;
       case "top":
-        // Place well above the element
+        // Place well above the element with extra clearance
         style = {
-          top: `${Math.max(margin, rect.top - tooltipHeight - 80)}px`,
+          top: `${Math.max(margin, rect.top - tooltipHeight - clearance)}px`,
           left: `${Math.max(margin, Math.min(rect.left + rect.width/2 - tooltipWidth/2, viewportWidth - tooltipWidth - margin))}px`,
-          transform: "none"
+          transform: "none",
+          maxWidth: `${tooltipWidth}px`
         };
         break;
       case "right":
-        // Place well to the right
+        // Place well to the right with extra clearance
         style = {
           top: `${Math.max(margin, Math.min(rect.top + rect.height/2 - tooltipHeight/2, viewportHeight - tooltipHeight - margin))}px`,
-          left: `${Math.min(rect.right + 80, viewportWidth - tooltipWidth - margin)}px`,
-          transform: "none"
+          left: `${Math.min(rect.right + clearance, viewportWidth - tooltipWidth - margin)}px`,
+          transform: "none",
+          maxWidth: `${tooltipWidth}px`
         };
         break;
       case "left":
-        // Place well to the right instead of left to avoid floating timer
-        style = {
-          top: `${Math.max(margin, Math.min(rect.top + rect.height/2 - tooltipHeight/2, viewportHeight - tooltipHeight - margin))}px`,
-          left: `${Math.min(rect.right + 80, viewportWidth - tooltipWidth - margin)}px`,
-          transform: "none"
-        };
+        // On mobile/tablet, place to the right instead of left to avoid timer overlap
+        if (isMobile || isTablet) {
+          style = {
+            top: `${Math.max(margin, Math.min(rect.top + rect.height/2 - tooltipHeight/2, viewportHeight - tooltipHeight - margin))}px`,
+            left: `${Math.min(rect.right + clearance, viewportWidth - tooltipWidth - margin)}px`,
+            transform: "none",
+            maxWidth: `${tooltipWidth}px`
+          };
+        } else {
+          style = {
+            top: `${Math.max(margin, Math.min(rect.top + rect.height/2 - tooltipHeight/2, viewportHeight - tooltipHeight - margin))}px`,
+            left: `${Math.max(margin, rect.left - tooltipWidth - clearance)}px`,
+            transform: "none",
+            maxWidth: `${tooltipWidth}px`
+          };
+        }
         break;
       default:
-        // Safe fallback position - top right to avoid timer
+        // Safe fallback position - top center to avoid timer and other elements
         style = {
           top: `${margin}px`,
-          right: `${margin}px`,
-          left: "auto",
-          transform: "none"
+          left: "50%",
+          transform: "translateX(-50%)",
+          maxWidth: `${tooltipWidth}px`
         };
     }
     
