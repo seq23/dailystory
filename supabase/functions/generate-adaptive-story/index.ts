@@ -70,6 +70,19 @@ QUALITY REQUIREMENTS (MANDATORY):
 - Use correct subject-verb agreement and pronoun usage
 - Before completing the story, mentally proofread every sentence
 
+PRONOUN USAGE (CRITICAL):
+${avatarType === 'boy' ? 
+  `- Use HE/HIM/HIS pronouns for ${userName} throughout the story
+  - When referring to ${userName}: "he did this", "his favorite", "him and his friends"
+  - NEVER use they/them/their when referring specifically to ${userName}` :
+avatarType === 'girl' ? 
+  `- Use SHE/HER/HERS pronouns for ${userName} throughout the story
+  - When referring to ${userName}: "she did this", "her favorite", "her and her friends"  
+  - NEVER use they/them/their when referring specifically to ${userName}` :
+  `- Use THEY/THEM/THEIR pronouns for ${userName} throughout the story
+  - When referring to ${userName}: "they did this", "their favorite", "them and their friends"`
+}
+
 CRITICAL PERSONALIZATION RULES:
 1. ${userName} MUST be the main character and hero
 2. Naturally incorporate their favorite color, animal, and interests
@@ -77,6 +90,7 @@ CRITICAL PERSONALIZATION RULES:
 4. Make the character description consistent: ${characterDesc}
 5. Use age-appropriate language and concepts for ${userAge}-year-olds
 6. Create situations where ${userName} demonstrates bravery, kindness, and problem-solving
+7. CRITICAL: Use correct pronouns - ${avatarType === 'boy' ? 'he/him/his' : avatarType === 'girl' ? 'she/her/hers' : 'they/them/their'} for ${userName}
 
 WRITING STYLE FOR ${readingLevel.toUpperCase()}:
 ${readingLevel === 'beginner' ? 
@@ -165,6 +179,9 @@ Make this feel like a real book that ${userName} would love to read about themse
 
 FINAL QUALITY CHECK:
 Before finishing, review the entire story for grammatical errors and fix any issues with spelling, punctuation, or sentence structure.
+
+PRONOUN CHECK (MANDATORY):
+Verify that you use the correct pronouns for ${userName}: ${avatarType === 'boy' ? 'he/him/his' : avatarType === 'girl' ? 'she/her/hers' : 'they/them/their'}. Replace any incorrect pronoun usage.
 
 Write as a complete, flowing narrative without page breaks or section markers.`
 
