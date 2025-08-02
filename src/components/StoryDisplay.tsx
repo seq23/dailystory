@@ -990,7 +990,15 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                           // Show completion feedback only once
                           if (!hasShownCompletionToast) {
                             // Calculate actual word count from current story to ensure accuracy
-                            const actualWordsRead = story.join(' ').split(' ').filter(word => word.trim()).length;
+                            const storyText = story.join(' ');
+                            const actualWordsRead = storyText.split(/\s+/).filter(word => word.trim().length > 0).length;
+                            
+                            console.log('Story completion debug:', {
+                              storyLength: story.length,
+                              storyText: storyText.substring(0, 100) + '...',
+                              actualWordsRead,
+                              timeSpent: Math.round(timeSpent / 60)
+                            });
                             
                             toast({
                               title: t("storyDisplay.storyCompletedToast.title"),
