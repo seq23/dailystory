@@ -984,9 +984,12 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                           
                           // Show completion feedback
           toast({
-            title: "🎉 Story Completed!",
-            description: `Great job! You read ${wordsRead} words in ${Math.round(timeSpent / 60)} minutes.`,
-            duration: 3000,
+            title: t("storyDisplay.storyCompletedToast.title"),
+            description: t("storyDisplay.storyCompletedToast.descriptionWordsTime", { 
+              wordsRead, 
+              minutes: Math.round(timeSpent / 60) 
+            }),
+            duration: 2000,
           });
                         } else {
                           setCurrentPage(Math.min(story.length - 1, currentPage + 1));

@@ -448,6 +448,11 @@
     "previous": "← Previous",
     "next": "Next →",
     "finish": "🎉 Finish Story",
+    "storyCompletedToast": {
+      "title": "🎉 Story Completed!",
+      "descriptionWords": "Amazing! You read {wordsRead} words and completed the story!",
+      "descriptionWordsTime": "Great job! You read {wordsRead} words in {minutes} minutes."
+    },
     "addMorePages": "Add More Pages",
     "header": "Reading Adventure",
     "endSession": "End Session",

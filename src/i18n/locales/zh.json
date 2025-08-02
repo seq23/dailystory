@@ -338,7 +338,12 @@
       "readingTime": "阅读时间",
       "progress": "进度",
       "done": "✨ 完成了！",
-      "newStory": "新故事",
+    "newStory": "新故事",
+    "storyCompletedToast": {
+      "title": "🎉 故事完成了！",
+      "descriptionWords": "太棒了！您阅读了 {wordsRead} 个单词并完成了这个故事！",
+      "descriptionWordsTime": "做得很好！您在 {minutes} 分钟内阅读了 {wordsRead} 个单词。"
+    },
       "home": "首页"
     },
     "controls": {
@@ -522,6 +527,11 @@
     "previous": "← 上一页",
     "next": "下一页 →",
     "addMorePages": "添加更多页面",
+    "storyCompletedToast": {
+      "title": "🎉 故事完成了！",
+      "descriptionWords": "太棒了！您阅读了 {wordsRead} 个单词并完成了这个故事！",
+      "descriptionWordsTime": "做得很好！您在 {minutes} 分钟内阅读了 {wordsRead} 个单词。"
+    },
     "encouragementMessages": {
       "outstanding": "出色的阅读成就！您正在成为阅读冠军！",
       "excellent": "做得很好！您取得了很大的进步！",

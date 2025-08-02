@@ -120,12 +120,12 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   useEffect(() => {
     if (storyCompleted && !sessionEnded) {
       toast({
-        title: "🎉 Story Completed!",
-        description: `Amazing! You read ${wordsRead} words and completed the story!`,
-        duration: 3000,
+        title: t("storyDisplay.storyCompletedToast.title"),
+        description: t("storyDisplay.storyCompletedToast.descriptionWords", { wordsRead }),
+        duration: 2000,
       });
     }
-  }, [storyCompleted, sessionEnded, wordsRead, toast]);
+  }, [storyCompleted, sessionEnded, wordsRead, toast, t]);
 
   // Fallback illustrations
   const illustrations = [illustration1, illustration2, illustration3, illustration4, illustration5];

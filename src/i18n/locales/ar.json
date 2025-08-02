@@ -329,7 +329,12 @@
       "readingTime": "وقت القراءة",
       "progress": "التقدم",
       "done": "✨ انتهيت!",
-      "newStory": "قصة جديدة",
+    "newStory": "قصة جديدة",
+    "storyCompletedToast": {
+      "title": "🎉 اكتملت القصة!",
+      "descriptionWords": "رائع! لقد قرأت {wordsRead} كلمة وأكملت القصة!",
+      "descriptionWordsTime": "عمل جيد! قرأت {wordsRead} كلمة في {minutes} دقيقة."
+    },
       "home": "الرئيسية"
     },
     "controls": {
@@ -535,6 +540,11 @@
     "previous": "← السابق",
     "next": "التالي →",
     "addMorePages": "إضافة المزيد من الصفحات",
+    "storyCompletedToast": {
+      "title": "🎉 اكتملت القصة!",
+      "descriptionWords": "رائع! لقد قرأت {wordsRead} كلمة وأكملت القصة!",
+      "descriptionWordsTime": "عمل جيد! قرأت {wordsRead} كلمة في {minutes} دقيقة."
+    },
     "encouragementMessages": {
       "outstanding": "إنجاز قراءة رائع! أنت تصبح بطل قراءة!",
       "excellent": "عمل ممتاز! أنت تحرز تقدماً رائعاً!",

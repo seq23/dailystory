@@ -338,7 +338,12 @@
       "readingTime": "पढ़ने का समय",
       "progress": "प्रगति",
       "done": "✨ हो गया!",
-      "newStory": "नई कहानी",
+    "newStory": "नई कहानी",
+    "storyCompletedToast": {
+      "title": "🎉 कहानी पूरी हुई!",
+      "descriptionWords": "शानदार! आपने {wordsRead} शब्द पढ़े और कहानी पूरी की!",
+      "descriptionWordsTime": "बहुत अच्छा! आपने {minutes} मिनट में {wordsRead} शब्द पढ़े।"
+    },
       "home": "होम"
     },
     "controls": {
@@ -550,6 +555,11 @@
     "previous": "← पिछला",
     "next": "अगला →",
     "addMorePages": "और पृष्ठ जोड़ें",
+    "storyCompletedToast": {
+      "title": "🎉 कहानी पूरी हुई!",
+      "descriptionWords": "शानदार! आपने {wordsRead} शब्द पढ़े और कहानी पूरी की!",
+      "descriptionWordsTime": "बहुत अच्छा! आपने {minutes} मिनट में {wordsRead} शब्द पढ़े।"
+    },
     "encouragementMessages": {
       "outstanding": "उत्कृष्ट पठन उपलब्धि! आप पठन चैंपियन बन रहे हैं!",
       "excellent": "उत्कृष्ट कार्य! आप महान प्रगति कर रहे हैं!",

@@ -360,6 +360,11 @@
     "previous": "← Précédent",
     "next": "Suivant →",
     "addMorePages": "Ajouter Plus de Pages",
+    "storyCompletedToast": {
+      "title": "🎉 Histoire Terminée !",
+      "descriptionWords": "Fantastique ! Vous avez lu {wordsRead} mots et terminé l'histoire !",
+      "descriptionWordsTime": "Excellent travail ! Vous avez lu {wordsRead} mots en {minutes} minutes."
+    },
     "encouragementMessages": {
       "outstanding": "Réussite de lecture exceptionnelle ! Vous devenez un champion de lecture !",
       "excellent": "Excellent travail ! Vous faites de grands progrès !",
