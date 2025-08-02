@@ -366,6 +366,21 @@ if (typeof window !== 'undefined') {
     const result = GrammarValidator.validateStoryText(test);
     console.log(`"${test}" - ${result.isValid ? '✅ PASS' : '❌ FAIL'}: ${result.errors.join(', ')}`);
   });
+  
+  // Test the plural article fixes
+  const pluralTests = [
+    { input: 'dogs', expected: 'dogs' },
+    { input: 'cats', expected: 'cats' },
+    { input: 'dog', expected: 'a dog' },
+    { input: 'elephant', expected: 'an elephant' }
+  ];
+  
+  console.log('🧪 Article/Plural Test Results:');
+  pluralTests.forEach(test => {
+    const result = GrammarValidator.createNounPhrase('', test.input);
+    const passed = result === test.expected;
+    console.log(`"${test.input}" -> "${result}" (expected: "${test.expected}") - ${passed ? '✅ PASS' : '❌ FAIL'}`);
+  });
 }
 
 export default GrammarValidator;
