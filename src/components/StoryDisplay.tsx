@@ -935,19 +935,34 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                     <div className="text-center w-full">
                       {/* Story Text with Interactive Words and Reading Level Configuration */}
                       {(() => {
-                        const config = { fontSize: 'text-lg sm:text-xl', lineHeight: 'leading-relaxed', spacing: 'space-y-2' };
+                        // Use difficulty-based font sizing for better readability
+                        const getFontSizeForDifficulty = (difficulty: string) => {
+                          switch (difficulty) {
+                            case 'easy': return 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl'; // Much bigger for easiest level
+                            case 'medium': return 'text-2xl sm:text-3xl md:text-4xl lg:text-5xl';
+                            case 'hard': return 'text-xl sm:text-2xl md:text-3xl lg:text-4xl';
+                            case 'expert': return 'text-lg sm:text-xl md:text-2xl lg:text-3xl';
+                            default: return 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl';
+                          }
+                        };
+                        
+                        const config = { 
+                          fontSize: getFontSizeForDifficulty(currentDifficulty), 
+                          lineHeight: 'leading-relaxed', 
+                          spacing: 'space-y-4' 
+                        };
                         
                         // Performance optimization: Only process text for phonetics if it's not too long
                         const shouldUseInteractiveWords = currentStory.length < 1000;
                         
                         return (
-                          <div className={`${config.fontSize} ${config.lineHeight} ${config.spacing} font-medium text-gray-800 max-w-full break-words hyphens-auto leading-relaxed overflow-hidden`}>
+                          <div className={`${config.fontSize} ${config.lineHeight} ${config.spacing} font-bold text-gray-800 max-w-full break-words hyphens-auto leading-relaxed overflow-hidden`}>
                             <div className="max-h-[400px] overflow-y-auto px-2">
                               {shouldUseInteractiveWords ? 
                                 processTextForPhonetics(
                                   currentStory,
                                   "",
-                                  userInfo.difficultyLevel || "easy",
+                                  currentDifficulty,
                                   userInfo,
                                   isPremium
                                 ) : 

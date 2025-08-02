@@ -14,7 +14,7 @@ const AUTHOR_STYLES = {
       "Playful word sounds",
       "Clear emotional expressions"
     ],
-    maxWordsPerPage: 6,
+    maxWordsPerPage: 6, // Strict 6-word limit for easiest level
     voiceStyle: "playful and encouraging"
   },
   medium: {
