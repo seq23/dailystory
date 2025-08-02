@@ -584,6 +584,48 @@
       "rarityRare": "दुर्लभ उपलब्धि", 
       "rarityEpic": "महाकाव्य उपलब्धि",
       "rarityLegendary": "पौराणिक उपलब्धि"
+    },
+    "titles": {
+      "firstAdventure": "पहला साहसिक कार्य",
+      "storyExplorer": "कहानी खोजकर्ता",
+      "bookworm": "पुस्तक कीड़ा",
+      "readingChampion": "पठन चैंपियन",
+      "wordStarter": "शब्द प्रारंभकर्ता",
+      "wordExplorer": "शब्द खोजकर्ता",
+      "wordMaster": "शब्द मास्टर",
+      "readingStreak3": "पठन की आदत",
+      "readingStreak7": "साप्ताहिक पाठक",
+      "readingStreak30": "पठन स्ट्रीक मास्टर",
+      "vocabularyBuilder": "शब्दावली निर्माता",
+      "wordCollector": "शब्द संग्राहक",
+      "speedReader": "तेज़ पाठक",
+      "earlyBird": "सुबह का चिड़िया",
+      "nightOwl": "रात का उल्लू",
+      "focusedReader": "एकाग्र पाठक",
+      "pageTurner": "पन्ने पलटने वाला",
+      "chapterMaster": "अध्याय मास्टर",
+      "bookExplorer": "पुस्तक खोजकर्ता"
+    },
+    "descriptions": {
+      "firstAdventure": "अपनी पहली कहानी पूरी करें",
+      "storyExplorer": "5 अलग-अलग कहानियां पूरी करें",
+      "bookworm": "25 कहानियां पूरी करें",
+      "readingChampion": "100 कहानियां पूरी करें",
+      "wordStarter": "1,000 शब्द पढ़ें",
+      "wordExplorer": "10,000 शब्द पढ़ें",
+      "wordMaster": "100,000 शब्द पढ़ें",
+      "readingStreak3": "3 दिन लगातार पढ़ें",
+      "readingStreak7": "7 दिन लगातार पढ़ें",
+      "readingStreak30": "30 दिन लगातार पढ़ें",
+      "vocabularyBuilder": "50 नए शब्दावली शब्द सीखें",
+      "wordCollector": "200 नए शब्दावली शब्द सीखें",
+      "speedReader": "150 शब्द प्रति मिनट से तेज़ पढ़ें",
+      "earlyBird": "सुबह 9 बजे से पहले एक कहानी पढ़ें",
+      "nightOwl": "रात 8 बजे के बाद एक कहानी पढ़ें",
+      "focusedReader": "एक सत्र में 20 मिनट तक पढ़ें",
+      "pageTurner": "एक सत्र में 10 पृष्ठ पढ़ें",
+      "chapterMaster": "एक सत्र में 25 पृष्ठ पढ़ें",
+      "bookExplorer": "एक सत्र में 50 पृष्ठ पढ़ें"
     }
   }
 }

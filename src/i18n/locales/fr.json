@@ -446,7 +446,11 @@
       "wordCollector": "Collectionneur de Mots",
       "speedReader": "Lecteur Rapide",
       "earlyBird": "Lève-tôt",
-      "nightOwl": "Oiseau de Nuit"
+      "nightOwl": "Oiseau de Nuit",
+      "focusedReader": "Lecteur Concentré",
+      "pageTurner": "Tournant de Pages",
+      "chapterMaster": "Maître des Chapitres",
+      "bookExplorer": "Explorateur de Livres"
     },
     "descriptions": {
       "firstAdventure": "Terminez votre toute première histoire",
@@ -463,7 +467,11 @@
       "wordCollector": "Apprenez 200 nouveaux mots de vocabulaire",
       "speedReader": "Lisez plus vite que 150 mots par minute",
       "earlyBird": "Lisez une histoire avant 9h00",
-      "nightOwl": "Lisez une histoire après 20h00"
+      "nightOwl": "Lisez une histoire après 20h00",
+      "focusedReader": "Lisez pendant 20 minutes en une seule session",
+      "pageTurner": "Lisez 10 pages en une seule session",
+      "chapterMaster": "Lisez 25 pages en une seule session",
+      "bookExplorer": "Lisez 50 pages en une seule session"
     }
   }
 }

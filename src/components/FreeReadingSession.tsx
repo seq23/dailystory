@@ -69,6 +69,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   } = useGamification({
     userId: userInfo?.name || 'guest',
     enablePersistence: false, // Free trial users don't get persistence
+    userType: 'free', // Free trial users don't get streak achievements
     onAchievementUnlocked: (achievement) => {
       setCurrentAchievement(achievement);
     },

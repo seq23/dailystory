@@ -69,6 +69,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
   } = useGamification({
     userId: userInfo?.name || 'guest',
     enablePersistence: isPremium,
+    userType: isPremium ? 'premium' : 'free',
     onAchievementUnlocked: (achievement) => {
       setCurrentAchievement(achievement);
     },

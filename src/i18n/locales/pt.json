@@ -584,6 +584,48 @@
       "rarityRare": "CONQUISTA RARA", 
       "rarityEpic": "CONQUISTA ÉPICA",
       "rarityLegendary": "CONQUISTA LENDÁRIA"
+    },
+    "titles": {
+      "firstAdventure": "Primeira Aventura",
+      "storyExplorer": "Explorador de Histórias",
+      "bookworm": "Ratão de Biblioteca",
+      "readingChampion": "Campeão de Leitura",
+      "wordStarter": "Iniciante de Palavras",
+      "wordExplorer": "Explorador de Palavras",
+      "wordMaster": "Mestre das Palavras",
+      "readingStreak3": "Hábito de Leitura",
+      "readingStreak7": "Leitor Semanal",
+      "readingStreak30": "Mestre da Sequência de Leitura",
+      "vocabularyBuilder": "Construtor de Vocabulário",
+      "wordCollector": "Colecionador de Palavras",
+      "speedReader": "Leitor Veloz",
+      "earlyBird": "Madrugador",
+      "nightOwl": "Coruja Noturna",
+      "focusedReader": "Leitor Concentrado",
+      "pageTurner": "Virador de Páginas",
+      "chapterMaster": "Mestre dos Capítulos",
+      "bookExplorer": "Explorador de Livros"
+    },
+    "descriptions": {
+      "firstAdventure": "Complete sua primeira história",
+      "storyExplorer": "Complete 5 histórias diferentes",
+      "bookworm": "Complete 25 histórias",
+      "readingChampion": "Complete 100 histórias",
+      "wordStarter": "Leia 1.000 palavras",
+      "wordExplorer": "Leia 10.000 palavras",
+      "wordMaster": "Leia 100.000 palavras",
+      "readingStreak3": "Leia por 3 dias consecutivos",
+      "readingStreak7": "Leia por 7 dias consecutivos",
+      "readingStreak30": "Leia por 30 dias consecutivos",
+      "vocabularyBuilder": "Aprenda 50 novas palavras de vocabulário",
+      "wordCollector": "Aprenda 200 novas palavras de vocabulário",
+      "speedReader": "Leia mais rápido que 150 palavras por minuto",
+      "earlyBird": "Leia uma história antes das 9h",
+      "nightOwl": "Leia uma história depois das 20h",
+      "focusedReader": "Leia por 20 minutos em uma única sessão",
+      "pageTurner": "Leia 10 páginas em uma única sessão",
+      "chapterMaster": "Leia 25 páginas em uma única sessão",
+      "bookExplorer": "Leia 50 páginas em uma única sessão"
     }
   }
 }

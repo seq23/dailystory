@@ -8,10 +8,11 @@ interface UseGamificationOptions {
   onAchievementUnlocked?: (achievement: Achievement) => void;
   onLevelUp?: (newLevel: number) => void;
   enablePersistence?: boolean;
+  userType?: 'free' | 'premium';
 }
 
 export const useGamification = (options: UseGamificationOptions = {}) => {
-  const { userId, onAchievementUnlocked, onLevelUp, enablePersistence = true } = options;
+  const { userId, onAchievementUnlocked, onLevelUp, enablePersistence = true, userType = 'premium' } = options;
   const { toast } = useToast();
   const { t } = useTranslation();
 
@@ -73,6 +74,8 @@ export const useGamification = (options: UseGamificationOptions = {}) => {
     timeSpent?: number; // in seconds
     vocabularyLearned?: number;
     readingSpeed?: number;
+    sessionTimeMinutes?: number;
+    sessionPagesRead?: number;
   }) => {
     setUserStats(prevStats => {
       // Update streak
@@ -95,7 +98,8 @@ export const useGamification = (options: UseGamificationOptions = {}) => {
         {
           ...activity,
           currentTime: new Date()
-        }
+        },
+        userType
       );
 
       // Handle level up
@@ -144,11 +148,16 @@ export const useGamification = (options: UseGamificationOptions = {}) => {
     storyCompleted: boolean;
     readingSpeed?: number;
   }) => {
+    // Convert timeSpent from seconds to minutes for session achievements
+    const sessionTimeMinutes = Math.floor(sessionData.timeSpent / 60);
+    
     updateActivity({
       wordsRead: sessionData.wordsRead,
       timeSpent: sessionData.timeSpent,
       storiesCompleted: sessionData.storyCompleted ? 1 : 0,
-      readingSpeed: sessionData.readingSpeed
+      readingSpeed: sessionData.readingSpeed,
+      sessionTimeMinutes: sessionTimeMinutes,
+      sessionPagesRead: sessionData.pagesRead
     });
   }, [updateActivity]);
 

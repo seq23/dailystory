@@ -446,7 +446,11 @@
       "wordCollector": "Coleccionista de Palabras",
       "speedReader": "Lector Rápido",
       "earlyBird": "Madrugador",
-      "nightOwl": "Búho Nocturno"
+      "nightOwl": "Búho Nocturno",
+      "focusedReader": "Lector Concentrado",
+      "pageTurner": "Pasador de Páginas",
+      "chapterMaster": "Maestro de Capítulos",
+      "bookExplorer": "Explorador de Libros"
     },
     "descriptions": {
       "firstAdventure": "Completa tu primera historia",
@@ -463,7 +467,11 @@
       "wordCollector": "Aprende 200 palabras nuevas de vocabulario",
       "speedReader": "Lee más rápido que 150 palabras por minuto",
       "earlyBird": "Lee una historia antes de las 9 AM",
-      "nightOwl": "Lee una historia después de las 8 PM"
+      "nightOwl": "Lee una historia después de las 8 PM",
+      "focusedReader": "Lee durante 20 minutos en una sola sesión",
+      "pageTurner": "Lee 10 páginas en una sola sesión",
+      "chapterMaster": "Lee 25 páginas en una sola sesión",
+      "bookExplorer": "Lee 50 páginas en una sola sesión"
     }
   }
 }

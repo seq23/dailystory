@@ -569,6 +569,48 @@
       "rarityRare": "إنجاز نادر", 
       "rarityEpic": "إنجاز ملحمي",
       "rarityLegendary": "إنجاز أسطوري"
+    },
+    "titles": {
+      "firstAdventure": "المغامرة الأولى",
+      "storyExplorer": "مستكشف القصص",
+      "bookworm": "دودة الكتب",
+      "readingChampion": "بطل القراءة",
+      "wordStarter": "بادئ الكلمات",
+      "wordExplorer": "مستكشف الكلمات",
+      "wordMaster": "سيد الكلمات",
+      "readingStreak3": "عادة القراءة",
+      "readingStreak7": "قارئ أسبوعي",
+      "readingStreak30": "سيد سلسلة القراءة",
+      "vocabularyBuilder": "بناء المفردات",
+      "wordCollector": "جامع الكلمات",
+      "speedReader": "القارئ السريع",
+      "earlyBird": "الطائر المبكر",
+      "nightOwl": "بومة الليل",
+      "focusedReader": "القارئ المركز",
+      "pageTurner": "قالب الصفحات",
+      "chapterMaster": "سيد الفصول",
+      "bookExplorer": "مستكشف الكتب"
+    },
+    "descriptions": {
+      "firstAdventure": "أكمل قصتك الأولى",
+      "storyExplorer": "أكمل 5 قصص مختلفة",
+      "bookworm": "أكمل 25 قصة",
+      "readingChampion": "أكمل 100 قصة",
+      "wordStarter": "اقرأ 1,000 كلمة",
+      "wordExplorer": "اقرأ 10,000 كلمة",
+      "wordMaster": "اقرأ 100,000 كلمة",
+      "readingStreak3": "اقرأ لمدة 3 أيام متتالية",
+      "readingStreak7": "اقرأ لمدة 7 أيام متتالية",
+      "readingStreak30": "اقرأ لمدة 30 يومًا متتاليًا",
+      "vocabularyBuilder": "تعلم 50 كلمة مفردات جديدة",
+      "wordCollector": "تعلم 200 كلمة مفردات جديدة",
+      "speedReader": "اقرأ بسرعة أكثر من 150 كلمة في الدقيقة",
+      "earlyBird": "اقرأ قصة قبل الساعة 9 صباحًا",
+      "nightOwl": "اقرأ قصة بعد الساعة 8 مساءً",
+      "focusedReader": "اقرأ لمدة 20 دقيقة في جلسة واحدة",
+      "pageTurner": "اقرأ 10 صفحات في جلسة واحدة",
+      "chapterMaster": "اقرأ 25 صفحة في جلسة واحدة",
+      "bookExplorer": "اقرأ 50 صفحة في جلسة واحدة"
     }
   }
 }

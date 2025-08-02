@@ -499,7 +499,11 @@
       "wordCollector": "Word Collector",
       "speedReader": "Speed Reader",
       "earlyBird": "Early Bird",
-      "nightOwl": "Night Owl"
+      "nightOwl": "Night Owl",
+      "focusedReader": "Focused Reader",
+      "pageTurner": "Page Turner",
+      "chapterMaster": "Chapter Master",
+      "bookExplorer": "Book Explorer"
     },
     "descriptions": {
       "firstAdventure": "Complete your very first story",
@@ -516,7 +520,11 @@
       "wordCollector": "Learn 200 new vocabulary words",
       "speedReader": "Read faster than 150 words per minute",
       "earlyBird": "Read a story before 9 AM",
-      "nightOwl": "Read a story after 8 PM"
+      "nightOwl": "Read a story after 8 PM",
+      "focusedReader": "Read for 20 minutes in a single session",
+      "pageTurner": "Read 10 pages in a single session",
+      "chapterMaster": "Read 25 pages in a single session",
+      "bookExplorer": "Read 50 pages in a single session"
     }
   }
 }

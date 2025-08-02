@@ -3,7 +3,7 @@ export interface Achievement {
   title: string;
   description: string;
   icon: string;
-  category: 'reading' | 'vocabulary' | 'streak' | 'special';
+  category: 'reading' | 'vocabulary' | 'streak' | 'special' | 'session';
   requirement: number;
   currentProgress: number;
   unlocked: boolean;
@@ -202,6 +202,48 @@ export class GamificationService {
       requirement: 1,
       rarity: 'rare',
       points: 40
+    },
+    
+    // Session Achievements (for all users)
+    {
+      id: 'focused_reader',
+      title: 'Focused Reader',
+      description: 'Read for 20 minutes in a single session',
+      icon: '🎯',
+      category: 'session',
+      requirement: 20,
+      rarity: 'rare',
+      points: 400
+    },
+    {
+      id: 'page_turner',
+      title: 'Page Turner',
+      description: 'Read 10 pages in a single session',
+      icon: '📄',
+      category: 'session',
+      requirement: 10,
+      rarity: 'common',
+      points: 25
+    },
+    {
+      id: 'chapter_master',
+      title: 'Chapter Master',
+      description: 'Read 25 pages in a single session',
+      icon: '📚',
+      category: 'session',
+      requirement: 25,
+      rarity: 'rare',
+      points: 75
+    },
+    {
+      id: 'book_explorer',
+      title: 'Book Explorer',
+      description: 'Read 50 pages in a single session',
+      icon: '🗺️',
+      category: 'session',
+      requirement: 50,
+      rarity: 'epic',
+      points: 150
     }
   ];
 
@@ -261,12 +303,23 @@ export class GamificationService {
     vocabularyLearned?: number;
     readingSpeed?: number;
     currentTime?: Date;
-  }): { newAchievements: Achievement[], updatedStats: UserStats } {
+    sessionTimeMinutes?: number;
+    sessionPagesRead?: number;
+  }, userType: 'free' | 'premium' = 'premium'): { newAchievements: Achievement[], updatedStats: UserStats } {
     const newAchievements: Achievement[] = [];
     const updatedAchievements = stats.achievements.map(achievement => ({ ...achievement }));
 
+    // Filter achievements based on user type
+    const availableAchievements = this.achievements.filter(template => {
+      // Free users don't get streak achievements
+      if (userType === 'free' && template.category === 'streak') {
+        return false;
+      }
+      return true;
+    });
+
     // Update progress and check for unlocks
-    this.achievements.forEach(template => {
+    availableAchievements.forEach(template => {
       const existing = updatedAchievements.find(a => a.id === template.id);
       if (existing && existing.unlocked) return;
 
@@ -294,6 +347,13 @@ export class GamificationService {
             const hour = currentTime.getHours();
             if (template.id === 'early_bird' && hour < 8) currentProgress = 1;
             if (template.id === 'night_owl' && hour >= 20) currentProgress = 1;
+          }
+          break;
+        case 'session':
+          if (template.id === 'focused_reader') {
+            currentProgress = newActivity.sessionTimeMinutes || 0;
+          } else if (template.id.includes('page') || template.id.includes('chapter') || template.id.includes('book')) {
+            currentProgress = newActivity.sessionPagesRead || 0;
           }
           break;
       }

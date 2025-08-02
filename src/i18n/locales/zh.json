@@ -578,6 +578,48 @@
       "rarityRare": "稀有成就", 
       "rarityEpic": "史诗成就",
       "rarityLegendary": "传奇成就"
+    },
+    "titles": {
+      "firstAdventure": "第一次冒险",
+      "storyExplorer": "故事探索者",
+      "bookworm": "书虫",
+      "readingChampion": "阅读冠军",
+      "wordStarter": "单词入门者",
+      "wordExplorer": "单词探索者",
+      "wordMaster": "单词大师",
+      "readingStreak3": "阅读习惯",
+      "readingStreak7": "每周阅读者",
+      "readingStreak30": "阅读连击大师",
+      "vocabularyBuilder": "词汇建设者",
+      "wordCollector": "单词收集者",
+      "speedReader": "快速阅读者",
+      "earlyBird": "早起鸟",
+      "nightOwl": "夜猫子",
+      "focusedReader": "专注阅读者",
+      "pageTurner": "翻页达人",
+      "chapterMaster": "章节大师",
+      "bookExplorer": "书籍探索者"
+    },
+    "descriptions": {
+      "firstAdventure": "完成您的第一个故事",
+      "storyExplorer": "完成5个不同的故事",
+      "bookworm": "完成25个故事",
+      "readingChampion": "完成100个故事",
+      "wordStarter": "阅读1,000个单词",
+      "wordExplorer": "阅读10,000个单词",
+      "wordMaster": "阅读100,000个单词",
+      "readingStreak3": "连续阅读3天",
+      "readingStreak7": "连续阅读7天",
+      "readingStreak30": "连续阅读30天",
+      "vocabularyBuilder": "学习50个新词汇单词",
+      "wordCollector": "学习200个新词汇单词",
+      "speedReader": "以每分钟150个单词以上的速度阅读",
+      "earlyBird": "在上午9点前阅读一个故事",
+      "nightOwl": "在晚上8点后阅读一个故事",
+      "focusedReader": "在单次阅读中持续阅读20分钟",
+      "pageTurner": "在单次阅读中阅读10页",
+      "chapterMaster": "在单次阅读中阅读25页",
+      "bookExplorer": "在单次阅读中阅读50页"
     }
   }
 }
