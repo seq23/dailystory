@@ -175,13 +175,22 @@ export const InteractiveWord = ({
     }
   };
 
-  const handleExplain = async (e: React.MouseEvent) => {
+  const handleExplain = async (e: React.MouseEvent | React.TouchEvent) => {
     e.stopPropagation();
     if (isPlaying || isLoadingWordData) return;
     
     setIsLoadingWordData(true);
     try {
       if (ttsService) {
+        // For mobile, ensure audio context is properly initialized within user gesture
+        if (/Mobi|Android/i.test(navigator.userAgent)) {
+          // Create and resume audio context within user gesture for mobile
+          const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+          if (AudioContext && (ttsService as any).audioContext?.state === 'suspended') {
+            await (ttsService as any).audioContext.resume();
+          }
+        }
+        
         // Get comprehensive word data and speak it
         const userLevel = difficulty === 'easy' ? 'easy' : difficulty === 'medium' ? 'medium' : 'hard';
         await ttsService.explainWord(word, userLevel);
@@ -192,6 +201,14 @@ export const InteractiveWord = ({
       }
     } catch (error) {
       console.error('Error explaining word:', error);
+      // Better mobile fallback with toast notification
+      if (error.message?.includes('not allowed') || error.message?.includes('permission')) {
+        toast({
+          title: "Audio Permission Required",
+          description: "Please enable audio permissions or try again after interacting with the page.",
+          duration: 4000,
+        });
+      }
     } finally {
       setIsLoadingWordData(false);
     }

@@ -159,7 +159,19 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
       <Button
         variant="ghost"
         size="sm"
-        onClick={onBack || (() => window.history.back())}
+        onClick={() => {
+          try {
+            if (onBack) {
+              onBack();
+            } else if (window.history.length > 1) {
+              window.history.back();
+            } else {
+              window.location.href = '/';
+            }
+          } catch (error) {
+            window.location.href = '/';
+          }
+        }}
         className="absolute top-4 left-4 text-white hover:bg-white/10"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -170,7 +182,19 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
       <Button
         variant="ghost"
         size="sm"
-        onClick={onBack || (() => window.history.back())}
+        onClick={() => {
+          try {
+            if (onBack) {
+              onBack();
+            } else if (window.history.length > 1) {
+              window.history.back();
+            } else {
+              window.location.href = '/';
+            }
+          } catch (error) {
+            window.location.href = '/';
+          }
+        }}
         className="absolute top-4 right-4 text-white hover:bg-white/10 hover:bg-red-500/20 transition-colors p-2"
       >
         <X className="w-5 h-5" />

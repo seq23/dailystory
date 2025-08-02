@@ -99,15 +99,15 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
             {/* Sign In Button - Top Right */}
             <div className="absolute right-0 top-0">
               {onSignIn && (
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={onSignIn}
-                  className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-purple-300/50 text-white hover:bg-purple-400/30 text-xs font-semibold shadow-lg px-2 py-1 h-8"
-                >
-                  <Crown className="w-3 h-3 mr-1 flex-shrink-0" />
-                  Sign In
-                </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={onSignIn}
+                    className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-purple-300/50 text-white hover:bg-purple-400/30 text-xs font-semibold shadow-lg px-2 py-1 h-8"
+                  >
+                    <Crown className="w-3 h-3 mr-1 flex-shrink-0" />
+                    {t("welcomeHero.signIn")}
+                  </Button>
               )}
             </div>
           </div>

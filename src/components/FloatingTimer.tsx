@@ -262,7 +262,8 @@ export const FloatingTimer = ({
                     variant="outline"
                     size="lg"
                     onClick={onToggleReading}
-                    className={`bg-gradient-to-b from-white to-gray-50 backdrop-blur-sm border-2 border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground shadow-xl w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-2xl hover:border-primary/50 ${getTutorialClasses(1)}`}
+                    className={`bg-gradient-to-b from-white to-gray-50 backdrop-blur-sm border-2 border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground shadow-xl w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-2xl hover:border-primary/50 touch-manipulation ${getTutorialClasses(1)}`}
+                    style={{ touchAction: 'manipulation' }}
                   >
                     {isReading ? <Pause className="w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8" /> : <Play className="w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 ml-1" />}
                 </Button>
