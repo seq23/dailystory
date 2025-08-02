@@ -964,7 +964,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                               <ChevronDown className="w-5 h-5" />
                             </Button>
                             <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-blue-600 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-[100] shadow-lg before:content-[''] before:absolute before:bottom-full before:left-1/2 before:-translate-x-1/2 before:border-4 before:border-transparent before:border-b-blue-600">
-                              🌟 Make this story easier
+                              {t("freeReadingSession.readingLevel.easier", "🌟 Make this story easier")}
                             </div>
                           </div>
                           
@@ -985,7 +985,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                               <ChevronUp className="w-5 h-5" />
                             </Button>
                             <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-green-600 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-[100] shadow-lg before:content-[''] before:absolute before:bottom-full before:left-1/2 before:-translate-x-1/2 before:border-4 before:border-transparent before:border-b-green-600">
-                              🚀 Make this story harder
+                              {t("freeReadingSession.readingLevel.harder", "🚀 Make this story harder")}
                             </div>
                           </div>
                         </div>
