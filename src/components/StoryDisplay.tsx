@@ -68,11 +68,8 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
       console.log('New achievement unlocked:', achievement.title);
     },
     onLevelUp: (newLevel) => {
-      toast({
-        title: `🎉 Level Up!`,
-        description: `Congratulations! You've reached reading level ${newLevel}!`,
-        duration: 6000,
-      });
+      // Level up happens silently, no toast notification
+      console.log('Level up to:', newLevel);
     }
   });
 
@@ -826,7 +823,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                       
                       <div className="text-center">
                         <span className="text-sm font-bold text-gray-700 bg-gradient-to-r from-purple-100 to-pink-100 px-3 py-1 rounded-full border border-purple-200">
-                          📚 Reading Level
+                          📚 Reading Level {getDifficultyIndex() + 1}
                         </span>
                       </div>
                       
