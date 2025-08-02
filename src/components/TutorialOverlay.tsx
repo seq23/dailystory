@@ -309,6 +309,16 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
       };
     }
 
+    // SPECIAL HANDLING FOR READING LEVEL CONTROLS - Place well above to avoid covering
+    if (target === "reading-level-controls") {
+      return {
+        top: `${Math.max(margin, rect.top - tooltipHeight - clearance - 20)}px`, // Extra margin above
+        left: `${Math.max(margin, Math.min(rect.left + rect.width/2 - tooltipWidth/2, viewportWidth - tooltipWidth - margin))}px`,
+        transform: "none",
+        maxWidth: `${tooltipWidth}px`
+      };
+    }
+
     let style: any = {};
 
     // IMPROVED POSITIONING: Ensure tutorial never covers the target element
@@ -544,7 +554,9 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
 
       {/* Mobile Tutorial Card */}
       <div className={`fixed z-50 transition-all duration-300 ${isAnimating ? 'opacity-100 scale-100' : 'opacity-0 scale-95'} sm:hidden ${
-        step.target === 'timer-display' ? 'bottom-20 left-4 right-4' : 'top-4 left-4 right-4'
+        step.target === 'timer-display' ? 'bottom-20 left-4 right-4' : 
+        step.target === 'reading-level-controls' ? 'top-4 left-4 right-4' :
+        'top-4 left-4 right-4'
       }`}>
         <Card className="bg-white dark:bg-gray-900 shadow-xl border-2 border-primary/30 rounded-2xl overflow-hidden">
           <CardContent className="p-0">
