@@ -23,16 +23,19 @@ interface VocabularyCollectorProps {
   userInfo: UserInfo;
   isVisible: boolean;
   onClose: () => void;
+  enablePersistence?: boolean;
 }
 
-export const VocabularyCollector = ({ userInfo, isVisible, onClose }: VocabularyCollectorProps) => {
+export const VocabularyCollector = ({ userInfo, isVisible, onClose, enablePersistence = true }: VocabularyCollectorProps) => {
   const { t } = useTranslation();
   const [vocabulary, setVocabulary] = useState<VocabularyWord[]>([]);
   const [ttsService] = useState(() => new OpenAITTSService());
   const [playingWord, setPlayingWord] = useState<string | null>(null);
 
-  // Load vocabulary from localStorage
+  // Load vocabulary from localStorage (only for premium users)
   useEffect(() => {
+    if (!enablePersistence) return;
+    
     const saved = localStorage.getItem(`vocabulary_${userInfo.name}`);
     if (saved) {
       try {
@@ -45,16 +48,20 @@ export const VocabularyCollector = ({ userInfo, isVisible, onClose }: Vocabulary
         console.error('Error loading vocabulary:', error);
       }
     }
-  }, [userInfo.name]);
+  }, [userInfo.name, enablePersistence]);
 
-  // Save vocabulary to localStorage
+  // Save vocabulary to localStorage (only for premium users)
   useEffect(() => {
+    if (!enablePersistence) return;
     if (vocabulary.length > 0) {
       localStorage.setItem(`vocabulary_${userInfo.name}`, JSON.stringify(vocabulary));
     }
-  }, [vocabulary, userInfo.name]);
+  }, [vocabulary, userInfo.name, enablePersistence]);
 
   const addWordToVocabulary = (word: VocabularyWord) => {
+    // Only add to collection for premium users
+    if (!enablePersistence) return;
+    
     setVocabulary(prev => {
       const exists = prev.find(w => w.word.toLowerCase() === word.word.toLowerCase());
       if (exists) return prev;

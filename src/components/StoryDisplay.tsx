@@ -68,6 +68,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
     hasNewAchievements
   } = useGamification({
     userId: userInfo?.name || 'guest',
+    enablePersistence: isPremium,
     onAchievementUnlocked: (achievement) => {
       setCurrentAchievement(achievement);
     },
@@ -155,9 +156,9 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
 
   // Setup gamification globals on mount
   useEffect(() => {
-    setupGamificationGlobals(addVocabularyWord);
+    setupGamificationGlobals(addVocabularyWord, isPremium);
     return () => cleanupGamificationGlobals();
-  }, [addVocabularyWord]);
+  }, [addVocabularyWord, isPremium]);
 
   // Generate story on component mount
   useEffect(() => {

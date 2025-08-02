@@ -59,7 +59,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   const { toast } = useToast();
   const { t } = useTranslation();
 
-  // Initialize gamification
+  // Initialize gamification (no persistence for free trial)
   const {
     userStats,
     recordReadingSession,
@@ -68,6 +68,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     hasNewAchievements
   } = useGamification({
     userId: userInfo?.name || 'guest',
+    enablePersistence: false, // Free trial users don't get persistence
     onAchievementUnlocked: (achievement) => {
       setCurrentAchievement(achievement);
     },
@@ -166,9 +167,9 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   const canDecreaseDifficulty = () => getDifficultyIndex() > 0;
   const canIncreaseDifficulty = () => getDifficultyIndex() < difficultyLevels.length - 1;
 
-  // Setup gamification globals on mount
+  // Setup gamification globals on mount (no persistence for free trial)
   useEffect(() => {
-    setupGamificationGlobals(addVocabularyWord);
+    setupGamificationGlobals(addVocabularyWord, false);
     return () => cleanupGamificationGlobals();
   }, [addVocabularyWord]);
 

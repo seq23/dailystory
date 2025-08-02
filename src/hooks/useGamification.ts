@@ -7,10 +7,11 @@ interface UseGamificationOptions {
   userId?: string;
   onAchievementUnlocked?: (achievement: Achievement) => void;
   onLevelUp?: (newLevel: number) => void;
+  enablePersistence?: boolean;
 }
 
 export const useGamification = (options: UseGamificationOptions = {}) => {
-  const { userId, onAchievementUnlocked, onLevelUp } = options;
+  const { userId, onAchievementUnlocked, onLevelUp, enablePersistence = true } = options;
   const { toast } = useToast();
   const { t } = useTranslation();
 
@@ -34,8 +35,10 @@ export const useGamification = (options: UseGamificationOptions = {}) => {
 
   const [newAchievements, setNewAchievements] = useState<Achievement[]>([]);
 
-  // Load user stats from localStorage on mount
+  // Load user stats from localStorage on mount (only for premium users)
   useEffect(() => {
+    if (!enablePersistence) return;
+    
     const storageKey = userId ? `gamification_${userId}` : 'gamification_guest';
     const stored = localStorage.getItem(storageKey);
     
@@ -54,13 +57,15 @@ export const useGamification = (options: UseGamificationOptions = {}) => {
         console.error('Failed to parse stored gamification data:', error);
       }
     }
-  }, [userId]);
+  }, [userId, enablePersistence]);
 
-  // Save user stats to localStorage whenever they change
+  // Save user stats to localStorage whenever they change (only for premium users)
   useEffect(() => {
+    if (!enablePersistence) return;
+    
     const storageKey = userId ? `gamification_${userId}` : 'gamification_guest';
     localStorage.setItem(storageKey, JSON.stringify(userStats));
-  }, [userStats, userId]);
+  }, [userStats, userId, enablePersistence]);
 
   const updateActivity = useCallback((activity: {
     wordsRead?: number;
