@@ -256,7 +256,7 @@ export const FloatingTimer = ({
         <div className="relative w-36 sm:w-44 h-20 sm:h-24">
           {/* Play/Pause Button - Center Bottom */}
           <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2">
-            <Tooltip open={showTutorial && tutorialStep === 0 && sequentialTutorialStep === 1}>
+            <Tooltip>
               <TooltipTrigger asChild>
                 <Button
                   variant="outline"
@@ -281,7 +281,7 @@ export const FloatingTimer = ({
 
           {/* Reduce Time Button - Left Curve */}
           <div className="absolute bottom-4 sm:bottom-6 left-2 sm:left-4">
-            <Tooltip open={showTutorial && tutorialStep === 0 && sequentialTutorialStep === 2}>
+            <Tooltip>
               <TooltipTrigger asChild>
                 <Button
                   variant="outline"
@@ -306,7 +306,7 @@ export const FloatingTimer = ({
 
           {/* End Session Button - Right Curve */}
           <div className="absolute bottom-4 sm:bottom-6 right-2 sm:right-4">
-            <Tooltip open={showTutorial && tutorialStep === 0 && sequentialTutorialStep === 3}>
+            <Tooltip>
               <TooltipTrigger asChild>
                 <Button
                   variant="outline"
