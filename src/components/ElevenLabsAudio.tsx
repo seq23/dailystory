@@ -38,29 +38,16 @@ export const ElevenLabsAudio = ({
 
   const playAudio = async () => {
     if (!canUseAudio) {
-      if (isExtendedPage) {
-        toast({
-          title: "🎵 Premium Feature",
-          description: "Audio for extended pages is a Premium feature! Upgrade for unlimited high-quality voice audio.",
-          variant: "default",
-          duration: 4000,
-        });
-      } else if (!isWithinFreeLimit) {
+      // Only show notification when free limit is reached
+      if (!isWithinFreeLimit && !isPremium) {
         toast({
           title: "🎵 Free Limit Reached",
           description: "You've used all 10 free audio plays! Upgrade to Premium for unlimited audio on all pages.",
           variant: "default",
           duration: 4000,
         });
-      } else if (hasPlayedCurrentPage) {
-        toast({
-          title: "🎵 Page Audio Used",
-          description: "You've already played audio for this page! Upgrade to Premium for unlimited replays.",
-          variant: "default",
-          duration: 4000,
-        });
+        onUpgrade?.();
       }
-      onUpgrade?.();
       return;
     }
 
@@ -96,16 +83,9 @@ export const ElevenLabsAudio = ({
       await audioRef.current.play();
       setIsPlaying(true);
       
-      // Mark page as played and show notification
+      // Mark page as played (no notification)
       if (!isPremium) {
         setPlayedPages(prev => new Set([...prev, currentPage]));
-        const remainingPages = Math.max(0, maxFreePages - playedPages.size - 1);
-        toast({
-          title: "🎧 Free Audio Played!",
-          description: `Page ${currentPage + 1} audio played! You have ${remainingPages} free audio plays remaining.`,
-          variant: "default",
-          duration: 5000,
-        });
       }
       
     } catch (error) {
