@@ -119,6 +119,19 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   // Handle story completion toast to avoid React warning - only trigger once per completion
   const [hasShownCompletionToast, setHasShownCompletionToast] = useState(false);
   
+  // Utility function to calculate real-time word count from current story
+  const calculateActualWordsRead = () => {
+    const storyText = story.join(' ');
+    const actualCount = storyText.split(/\s+/).filter(word => word.trim().length > 0).length;
+    console.log('FreeReadingSession word count debug:', {
+      staleWordsRead: wordsRead,
+      actualWordsRead: actualCount,
+      storyPages: story.length,
+      currentPage: currentPage + 1
+    });
+    return actualCount;
+  };
+  
   useEffect(() => {
     if (storyCompleted && !sessionEnded && !hasShownCompletionToast) {
       // Calculate actual words read for the completion toast
@@ -738,19 +751,6 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     });
     
     startCelebration();
-  };
-
-  // Utility function to calculate real-time word count from current story
-  const calculateActualWordsRead = () => {
-    const storyText = story.join(' ');
-    const actualCount = storyText.split(/\s+/).filter(word => word.trim().length > 0).length;
-    console.log('FreeReadingSession word count debug:', {
-      staleWordsRead: wordsRead,
-      actualWordsRead: actualCount,
-      storyPages: story.length,
-      currentPage: currentPage + 1
-    });
-    return actualCount;
   };
 
   // Calculate session stats

@@ -994,8 +994,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                           setStoryCompleted(true);
                           
                           // Calculate actual word count from current story to ensure accuracy
-                          const storyText = story.join(' ');
-                          const actualWordsRead = storyText.split(/\s+/).filter(word => word.trim().length > 0).length;
+                          const actualWordsRead = calculateActualWordsRead();
                           
                           // Trigger story completion gamification with correct word count
                           const timeSpent = Math.floor((Date.now() - sessionStartTime.getTime()) / 1000);
@@ -1012,7 +1011,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                             
                             console.log('Story completion debug:', {
                               storyLength: story.length,
-                              storyText: storyText.substring(0, 100) + '...',
+                              storyText: story.join(' ').substring(0, 100) + '...',
                               actualWordsRead,
                               timeSpent: Math.round(timeSpent / 60)
                             });
