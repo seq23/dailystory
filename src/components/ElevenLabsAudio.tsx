@@ -25,10 +25,12 @@ export const ElevenLabsAudio = ({ text, userInfo, isPremium = false, onUpgrade }
   const playAudio = async () => {
     if (!canUseAudio) {
       toast({
-        title: "Premium Feature",
-        description: "Upgrade to Premium for unlimited high-quality voice audio!",
+        title: "🎵 Free Trial Audio Used",
+        description: "You've already used your free audio play! Upgrade to Premium for unlimited high-quality voice audio.",
         variant: "default",
+        duration: 4000,
       });
+      onUpgrade?.();
       return;
     }
 
@@ -64,9 +66,15 @@ export const ElevenLabsAudio = ({ text, userInfo, isPremium = false, onUpgrade }
       await audioRef.current.play();
       setIsPlaying(true);
       
-      // Mark free usage
+      // Mark free usage and show notification
       if (!isPremium) {
         setHasUsedFree(true);
+        toast({
+          title: "🎧 Free Audio Played!",
+          description: "This was your free trial audio. Upgrade to Premium for unlimited plays!",
+          variant: "default",
+          duration: 5000,
+        });
       }
       
     } catch (error) {
@@ -146,8 +154,8 @@ export const ElevenLabsAudio = ({ text, userInfo, isPremium = false, onUpgrade }
       )}
       
       {!isPremium && hasUsedFree && (
-        <p className="text-xs text-gray-500">
-          Premium: Unlimited high-quality voices
+        <p className="text-xs text-amber-600 font-medium">
+          🔒 Free audio used - Upgrade for unlimited plays!
         </p>
       )}
     </div>
