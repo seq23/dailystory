@@ -555,6 +555,9 @@
     "previous": "← Anterior",
     "next": "Próximo →",
     "addMorePages": "Adicionar Mais Páginas",
+    "addPagesTooltip": "+ 5 páginas - disponível apenas na última página",
+    "addPagesAlert": "⏰ Adicione mais páginas agora!",
+    "addPagesDisabled": "Chegue à última página para adicionar mais",
     "storyCompletedToast": {
       "title": "🎉 História Concluída!",
       "descriptionWords": "Incrível! Você leu {{wordsRead}} palavras e completou a história!",

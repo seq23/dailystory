@@ -540,6 +540,9 @@
     "previous": "← السابق",
     "next": "التالي →",
     "addMorePages": "إضافة المزيد من الصفحات",
+    "addPagesTooltip": "+ 5 صفحات - متاح فقط في الصفحة الأخيرة",
+    "addPagesAlert": "⏰ أضف المزيد من الصفحات الآن!",
+    "addPagesDisabled": "اصل إلى الصفحة الأخيرة لإضافة المزيد",
     "storyCompletedToast": {
       "title": "🎉 اكتملت القصة!",
       "descriptionWords": "رائع! لقد قرأت {{wordsRead}} كلمة وأكملت القصة!",

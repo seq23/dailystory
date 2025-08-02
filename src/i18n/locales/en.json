@@ -458,6 +458,9 @@
       "description": "Your story has been extended!"
     },
     "addMorePages": "Add More Pages",
+    "addPagesTooltip": "+ 5 pages - only available on last page",
+    "addPagesAlert": "⏰ Add more pages now!",
+    "addPagesDisabled": "Reach the last page to add more",
     "header": "Reading Adventure",
     "endSession": "End Session",
     "nextPage": "Next Page",

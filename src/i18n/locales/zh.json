@@ -527,6 +527,9 @@
     "previous": "← 上一页",
     "next": "下一页 →",
     "addMorePages": "添加更多页面",
+    "addPagesTooltip": "+ 5 页 - 仅在最后一页可用",
+    "addPagesAlert": "⏰ 现在添加更多页面！",
+    "addPagesDisabled": "到达最后一页后可添加更多内容",
     "storyCompletedToast": {
       "title": "🎉 故事完成了！",
       "descriptionWords": "太棒了！您阅读了 {{wordsRead}} 个单词并完成了这个故事！",

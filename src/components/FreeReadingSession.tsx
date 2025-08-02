@@ -1136,11 +1136,11 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                               <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
                             </Button>
                             
-                            {/* Alert Tooltip with X button */}
-                            {showAddPagesAlert && (
-                              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-amber-600 text-white px-2 py-1 rounded text-xs whitespace-nowrap z-50 animate-pulse">
-                                <div className="flex items-center gap-2">
-                                  <span>⏰ Add more pages now!</span>
+                             {/* Alert Tooltip with X button */}
+                             {showAddPagesAlert && (
+                               <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-amber-600 text-white px-2 py-1 rounded text-xs whitespace-nowrap z-50 animate-pulse">
+                                 <div className="flex items-center gap-2">
+                                   <span>{t("storyDisplay.addPagesAlert")}</span>
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
@@ -1156,12 +1156,12 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                               </div>
                             )}
                             
-                            {/* Regular Tooltip */}
-                            {!showAddPagesAlert && (
-                              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 rounded text-xs transition-all duration-300 pointer-events-none whitespace-nowrap z-50 bg-gray-800 text-white opacity-0 group-hover:opacity-100">
-                                {currentPage === story.length - 1 ? 'Add 5 more pages' : 'Only available on last page'}
-                              </div>
-                            )}
+                             {/* Regular Tooltip */}
+                             {!showAddPagesAlert && (
+                               <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 rounded text-xs transition-all duration-300 pointer-events-none whitespace-nowrap z-50 bg-gray-800 text-white opacity-0 group-hover:opacity-100">
+                                 {currentPage === story.length - 1 ? t("storyDisplay.addPagesTooltip") : t("storyDisplay.addPagesDisabled")}
+                               </div>
+                             )}
                           </div>
                         </div>
                         

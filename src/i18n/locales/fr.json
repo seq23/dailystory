@@ -360,6 +360,9 @@
     "previous": "← Précédent",
     "next": "Suivant →",
     "addMorePages": "Ajouter Plus de Pages",
+    "addPagesTooltip": "+ 5 pages - uniquement disponible sur la dernière page",
+    "addPagesAlert": "⏰ Ajoutez plus de pages maintenant !",
+    "addPagesDisabled": "Atteignez la dernière page pour ajouter plus",
     "storyCompletedToast": {
       "title": "🎉 Histoire Terminée !",
       "descriptionWords": "Fantastique ! Vous avez lu {{wordsRead}} mots et terminé l'histoire !",

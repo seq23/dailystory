@@ -555,6 +555,9 @@
     "previous": "← पिछला",
     "next": "अगला →",
     "addMorePages": "और पृष्ठ जोड़ें",
+    "addPagesTooltip": "+ 5 पृष्ठ - केवल अंतिम पृष्ठ पर उपलब्ध",
+    "addPagesAlert": "⏰ अभी और पृष्ठ जोड़ें!",
+    "addPagesDisabled": "अधिक जोड़ने के लिए अंतिम पृष्ठ तक पहुंचें",
     "storyCompletedToast": {
       "title": "🎉 कहानी पूरी हुई!",
       "descriptionWords": "शानदार! आपने {{wordsRead}} शब्द पढ़े और कहानी पूरी की!",
