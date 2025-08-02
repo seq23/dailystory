@@ -6,6 +6,8 @@ import {
   processStoryTemplate, 
   getContinuationText 
 } from './storyTemplates';
+import { validateAndFixGrammar } from '@/utils/grammarValidator';
+import StoryQualityChecker from '@/utils/storyQualityChecker';
 
 export class StoryGeneratorService {
   /**
@@ -22,6 +24,16 @@ export class StoryGeneratorService {
       // Use our template-based story system
       const pages = this.getHighQualityStory(userInfo, difficulty, pageCount);
       const config = this.getReadingConfigForDifficulty(difficulty);
+      
+      // Quality check all generated pages
+      const qualityCheck = StoryQualityChecker.checkStoryQuality(pages, difficulty);
+      if (!qualityCheck.isValid) {
+        console.warn('Story quality issues detected:', qualityCheck.issues);
+        // Apply grammar fixes to pages
+        const fixedPages = pages.map(validateAndFixGrammar);
+        console.log(`Successfully generated ${fixedPages.length} pages with quality validation`);
+        return { pages: fixedPages, config };
+      }
       
       console.log(`Successfully generated ${pages.length} pages`);
       return { pages, config };

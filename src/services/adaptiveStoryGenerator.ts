@@ -1,4 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
+import { validateAndFixGrammar } from '@/utils/grammarValidator';
+import StoryQualityChecker from '@/utils/storyQualityChecker';
 
 export interface StoryGenerationConfig {
   age: number;
@@ -172,6 +174,21 @@ export class AdaptiveStoryGenerator {
       pages = [...pages, ...additionalContent];
     } else if (pages.length > targetPageCount) {
       pages = pages.slice(0, targetPageCount);
+    }
+    
+    // Quality check and grammar validation
+    const difficultyMap = {
+      'beginner': 'easy' as const,
+      'elementary': 'medium' as const, 
+      'intermediate': 'hard' as const,
+      'advanced': 'expert' as const
+    };
+    const mappedDifficulty = difficultyMap[readingLevel] || 'easy';
+    const qualityCheck = StoryQualityChecker.checkStoryQuality(pages, mappedDifficulty);
+    if (!qualityCheck.isValid) {
+      console.warn('Story quality issues detected:', qualityCheck.issues);
+      // Apply grammar fixes to pages
+      pages = pages.map(validateAndFixGrammar);
     }
     
     const vocabularyWords = this.extractVocabularyWords(storyData.content, readingLevel);
