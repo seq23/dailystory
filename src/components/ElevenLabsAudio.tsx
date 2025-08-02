@@ -10,26 +10,56 @@ interface ElevenLabsAudioProps {
   userInfo: UserInfo;
   isPremium?: boolean;
   onUpgrade?: () => void;
+  currentPage?: number;
+  totalPages?: number;
+  isExtendedPage?: boolean; // True if this page was added beyond the original 10
 }
 
-export const ElevenLabsAudio = ({ text, userInfo, isPremium = false, onUpgrade }: ElevenLabsAudioProps) => {
+export const ElevenLabsAudio = ({ 
+  text, 
+  userInfo, 
+  isPremium = false, 
+  onUpgrade, 
+  currentPage = 0, 
+  totalPages = 1,
+  isExtendedPage = false 
+}: ElevenLabsAudioProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [hasUsedFree, setHasUsedFree] = useState(false);
+  const [playedPages, setPlayedPages] = useState<Set<number>>(new Set()); // Track which pages have been played
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const { toast } = useToast();
 
-  // Free users get 1 ElevenLabs audio per session
-  const canUseAudio = isPremium || !hasUsedFree;
+  // Free users get 1 audio play per page up to 10 pages, no audio for extended pages
+  const maxFreePages = 10;
+  const hasPlayedCurrentPage = playedPages.has(currentPage);
+  const isWithinFreeLimit = currentPage < maxFreePages;
+  const canUseAudio = isPremium || (!hasPlayedCurrentPage && isWithinFreeLimit && !isExtendedPage);
 
   const playAudio = async () => {
     if (!canUseAudio) {
-      toast({
-        title: "🎵 Free Trial Audio Used",
-        description: "You've already used your free audio play! Upgrade to Premium for unlimited high-quality voice audio.",
-        variant: "default",
-        duration: 4000,
-      });
+      if (isExtendedPage) {
+        toast({
+          title: "🎵 Premium Feature",
+          description: "Audio for extended pages is a Premium feature! Upgrade for unlimited high-quality voice audio.",
+          variant: "default",
+          duration: 4000,
+        });
+      } else if (!isWithinFreeLimit) {
+        toast({
+          title: "🎵 Free Limit Reached",
+          description: "You've used all 10 free audio plays! Upgrade to Premium for unlimited audio on all pages.",
+          variant: "default",
+          duration: 4000,
+        });
+      } else if (hasPlayedCurrentPage) {
+        toast({
+          title: "🎵 Page Audio Used",
+          description: "You've already played audio for this page! Upgrade to Premium for unlimited replays.",
+          variant: "default",
+          duration: 4000,
+        });
+      }
       onUpgrade?.();
       return;
     }
@@ -66,12 +96,13 @@ export const ElevenLabsAudio = ({ text, userInfo, isPremium = false, onUpgrade }
       await audioRef.current.play();
       setIsPlaying(true);
       
-      // Mark free usage and show notification
+      // Mark page as played and show notification
       if (!isPremium) {
-        setHasUsedFree(true);
+        setPlayedPages(prev => new Set([...prev, currentPage]));
+        const remainingPages = Math.max(0, maxFreePages - playedPages.size - 1);
         toast({
           title: "🎧 Free Audio Played!",
-          description: "This was your free trial audio. Upgrade to Premium for unlimited plays!",
+          description: `Page ${currentPage + 1} audio played! You have ${remainingPages} free audio plays remaining.`,
           variant: "default",
           duration: 5000,
         });
@@ -143,7 +174,7 @@ export const ElevenLabsAudio = ({ text, userInfo, isPremium = false, onUpgrade }
         <div className="flex items-center gap-2">
           <Badge variant={canUseAudio ? "secondary" : "destructive"} className="text-xs">
             <Crown className="w-3 h-3 mr-1" />
-            Premium Voice
+            {isExtendedPage ? "Premium Only" : `${Math.max(0, maxFreePages - playedPages.size)} Free Left`}
           </Badge>
           {!canUseAudio && (
             <Button onClick={onUpgrade} variant="outline" size="sm">
@@ -153,9 +184,12 @@ export const ElevenLabsAudio = ({ text, userInfo, isPremium = false, onUpgrade }
         </div>
       )}
       
-      {!isPremium && hasUsedFree && (
+      {!isPremium && playedPages.size > 0 && (
         <p className="text-xs text-amber-600 font-medium">
-          🔒 Free audio used - Upgrade for unlimited plays!
+          {isExtendedPage 
+            ? "🔒 Extended pages need Premium" 
+            : `🎵 ${playedPages.size}/${maxFreePages} free audio used`
+          }
         </p>
       )}
     </div>

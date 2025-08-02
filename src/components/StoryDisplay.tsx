@@ -879,6 +879,9 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                     userInfo={userInfo}
                     isPremium={true} // Authenticated users get premium features
                     onUpgrade={onUpgrade}
+                    currentPage={currentPage}
+                    totalPages={story.length}
+                    isExtendedPage={false} // Premium users can use all pages
                   />
                 </div>
 

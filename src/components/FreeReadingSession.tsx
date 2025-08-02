@@ -1031,6 +1031,9 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                           userInfo={userInfo}
                           isPremium={false} // Free users are not premium
                           onUpgrade={onUpgrade}
+                          currentPage={currentPage}
+                          totalPages={story.length}
+                          isExtendedPage={story.length > 10 && currentPage >= 10} // Extended pages beyond original 10
                         />
                       </div>
                     )}
