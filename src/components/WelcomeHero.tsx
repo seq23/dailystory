@@ -96,7 +96,7 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
             </div>
 
             {/* Sign In Button - Premium Users */}
-            <div className="flex items-center">
+            <div className="flex items-center flex-shrink-0">
               {onSignIn && (
                 <TooltipProvider>
                   <Tooltip>
@@ -105,10 +105,11 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                         variant="outline" 
                         size="sm"
                         onClick={onSignIn}
-                        className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-purple-300/50 text-white hover:bg-purple-400/30 text-xs sm:text-sm font-semibold shadow-lg"
+                        className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-purple-300/50 text-white hover:bg-purple-400/30 text-xs sm:text-sm font-semibold shadow-lg px-2 sm:px-3 py-1 sm:py-2"
                       >
-                        <Crown className="w-3 h-3 mr-1" />
-                        {t("welcomeHero.signIn")} - Premium
+                        <Crown className="w-3 h-3 mr-1 flex-shrink-0" />
+                        <span className="hidden sm:inline">{t("welcomeHero.signIn")} - Premium</span>
+                        <span className="sm:hidden">Sign In</span>
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent className="bg-white text-gray-900 border border-gray-200 shadow-lg">

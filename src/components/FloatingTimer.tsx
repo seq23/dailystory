@@ -160,8 +160,8 @@ export const FloatingTimer = ({
 
   return (
       <TooltipProvider>
-      {/* Floating Timer Container - Fixed positioning to avoid overlap */}
-      <div className="fixed bottom-6 left-6 sm:left-8 z-30 flex flex-col items-center gap-6" id="floating-timer" style={{ marginLeft: 'max(1rem, env(safe-area-inset-left))', marginBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+      {/* Floating Timer Container - Mobile optimized */}
+      <div className="fixed bottom-6 left-6 sm:left-8 z-30 flex flex-col items-center gap-6 md:gap-6 gap-3" id="floating-timer" style={{ marginLeft: 'max(1rem, env(safe-area-inset-left))', marginBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
         
         {/* Main Timer Circle - Professional & Larger */}
         <div className="relative">
@@ -200,8 +200,8 @@ export const FloatingTimer = ({
             </div>
           )}
           
-          {/* Main Timer Circle - Much Larger & Professional */}
-          <div className="relative w-32 h-32 sm:w-40 sm:h-40 bg-gradient-to-br from-white to-gray-50 backdrop-blur-sm rounded-full shadow-2xl border-4 border-white/80 flex items-center justify-center ring-4 ring-primary/20">
+          {/* Main Timer Circle - Mobile responsive */}
+          <div className="relative w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 bg-gradient-to-br from-white to-gray-50 backdrop-blur-sm rounded-full shadow-2xl border-2 sm:border-4 border-white/80 flex items-center justify-center ring-2 sm:ring-4 ring-primary/20">
             {/* Outer glow ring */}
             <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/10 to-transparent animate-pulse"></div>
             
@@ -235,17 +235,17 @@ export const FloatingTimer = ({
             {/* Time Display */}
             <div id="timer-display" className="relative z-10 text-center">
               <div 
-                className="text-lg sm:text-2xl font-bold tracking-tight" 
+                className="text-sm sm:text-lg md:text-2xl font-bold tracking-tight" 
                 style={{ color: getTimerColor() }}
               >
                 {formatTime(timeRemaining)}
               </div>
               {timeRemaining >= 20 * 60 && (
-                <div className="text-xs sm:text-sm text-muted-foreground font-medium mt-1">
+                <div className="text-xs sm:text-sm text-muted-foreground font-medium mt-1 hidden sm:block">
                   {t("floatingTimer.maxLimit", "Max Limit")}
                 </div>
               )}
-              <div className="text-xs sm:text-sm text-muted-foreground font-medium">
+              <div className="text-xs sm:text-sm text-muted-foreground font-medium hidden sm:block">
                 {t("floatingTimer.readingTime", "Reading Time")}
               </div>
             </div>
@@ -253,18 +253,18 @@ export const FloatingTimer = ({
         </div>
         
         {/* Control Buttons in Curved U-Shape */}
-        <div className="relative w-36 sm:w-44 h-20 sm:h-24">
+        <div className="relative w-28 sm:w-36 md:w-44 h-16 sm:h-20 md:h-24">
           {/* Play/Pause Button - Center Bottom */}
           <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2">
             <Tooltip open={sequentialTutorialStep === 1 ? true : undefined}>
               <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={onToggleReading}
-                  className={`bg-gradient-to-b from-white to-gray-50 backdrop-blur-sm border-2 border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground shadow-xl w-16 h-16 sm:w-20 sm:h-20 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-2xl hover:border-primary/50 ${getTutorialClasses(1)}`}
-                >
-                  {isReading ? <Pause className="w-6 h-6 sm:w-8 sm:h-8" /> : <Play className="w-6 h-6 sm:w-8 sm:h-8 ml-1" />}
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={onToggleReading}
+                    className={`bg-gradient-to-b from-white to-gray-50 backdrop-blur-sm border-2 border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground shadow-xl w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-2xl hover:border-primary/50 ${getTutorialClasses(1)}`}
+                  >
+                    {isReading ? <Pause className="w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8" /> : <Play className="w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 ml-1" />}
                 </Button>
               </TooltipTrigger>
               <TooltipContent 
@@ -279,17 +279,17 @@ export const FloatingTimer = ({
           
 
           {/* Reduce Time Button - Left Curve */}
-          <div className="absolute bottom-4 sm:bottom-6 left-2 sm:left-4">
+          <div className="absolute bottom-2 sm:bottom-4 md:bottom-6 left-1 sm:left-2 md:left-4">
             <Tooltip open={sequentialTutorialStep === 2 ? true : undefined}>
               <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={onReduceTime}
-                  disabled={timeRemaining <= 5 * 60}
-                  className={`bg-gradient-to-b from-white to-orange-50 backdrop-blur-sm border-2 border-orange-400/50 text-orange-600 hover:bg-orange-500 hover:text-white shadow-lg w-12 h-12 sm:w-16 sm:h-16 rounded-full p-0 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-110 hover:shadow-xl ${getTutorialClasses(2)}`}
-                >
-                  <Minus className="w-5 h-5 sm:w-6 sm:h-6" />
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={onReduceTime}
+                    disabled={timeRemaining <= 5 * 60}
+                    className={`bg-gradient-to-b from-white to-orange-50 backdrop-blur-sm border-2 border-orange-400/50 text-orange-600 hover:bg-orange-500 hover:text-white shadow-lg w-8 h-8 sm:w-12 sm:h-12 md:w-16 md:h-16 rounded-full p-0 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-110 hover:shadow-xl ${getTutorialClasses(2)}`}
+                  >
+                    <Minus className="w-3 h-3 sm:w-5 sm:h-5 md:w-6 md:h-6" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent 
@@ -303,16 +303,16 @@ export const FloatingTimer = ({
           </div>
 
           {/* End Session Button - Right Curve */}
-          <div className="absolute bottom-4 sm:bottom-6 right-2 sm:right-4">
+          <div className="absolute bottom-2 sm:bottom-4 md:bottom-6 right-1 sm:right-2 md:right-4">
             <Tooltip open={sequentialTutorialStep === 3 ? true : undefined}>
               <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={handleEndSession}
-                  className={`bg-gradient-to-b from-white to-red-50 backdrop-blur-sm border-2 border-red-400/50 text-red-600 hover:bg-red-500 hover:text-white shadow-lg w-12 h-12 sm:w-16 sm:h-16 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-xl ${getTutorialClasses(3)}`}
-                >
-                  <X className="w-5 h-5 sm:w-6 sm:h-6" />
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={handleEndSession}
+                    className={`bg-gradient-to-b from-white to-red-50 backdrop-blur-sm border-2 border-red-400/50 text-red-600 hover:bg-red-500 hover:text-white shadow-lg w-8 h-8 sm:w-12 sm:h-12 md:w-16 md:h-16 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-xl ${getTutorialClasses(3)}`}
+                  >
+                    <X className="w-3 h-3 sm:w-5 sm:h-5 md:w-6 md:h-6" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent 

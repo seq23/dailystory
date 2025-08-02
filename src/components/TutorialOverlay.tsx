@@ -378,7 +378,7 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
         className={`fixed z-50 transition-all duration-300 ${isAnimating ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
         style={tooltipStyle}
       >
-        <Card className="w-full max-w-[400px] md:w-[400px] bg-white dark:bg-gray-900 shadow-xl border-2 border-primary/30 rounded-2xl overflow-hidden">
+        <Card className="w-full max-w-[320px] sm:max-w-[400px] md:w-[400px] bg-white dark:bg-gray-900 shadow-xl border-2 border-primary/30 rounded-2xl overflow-hidden">
           {/* Clean arrow pointing to target */}
           <div className="absolute -z-10">
             <div 
@@ -403,15 +403,15 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
 
           <CardContent className="p-0">
             {/* Clean Header */}
-            <div className="bg-gradient-primary text-white p-6 relative overflow-hidden">
+            <div className="bg-gradient-primary text-white p-4 sm:p-6 relative overflow-hidden">
               <div className="relative z-10 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-white/20 rounded-full">
                     <step.icon className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-lg">{step.title}</h3>
-                    <div className="text-sm opacity-90">
+                    <h3 className="font-bold text-base sm:text-lg">{step.title}</h3>
+                    <div className="text-xs sm:text-sm opacity-90">
                       {t("tutorial.step", "Tutorial")} {currentStep + 1} {t("tutorial.of", "of")} {tutorialSteps.length}
                     </div>
                   </div>
@@ -433,8 +433,8 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
             </div>
 
             {/* Content */}
-            <div className="p-6">
-              <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed mb-6">
+            <div className="p-4 sm:p-6">
+              <p className="text-gray-700 dark:text-gray-300 text-sm sm:text-base leading-relaxed mb-4 sm:mb-6">
                 {step.description}
               </p>
 
