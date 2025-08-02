@@ -157,14 +157,27 @@ export class ComprehensiveStoryGenerator {
     tracker: StoryElementTracker
   ): string {
     const setting = culturalElements.setting || 'garden';
-    const animal = this.selectRandomElement(userElements.favoriteAnimals);
+    const animals = userElements.favoriteAnimals;
     const color = this.selectRandomElement(userElements.favoriteColors);
     
-    // Use intelligent animal processing for proper grammar
-    const animalWithArticle = this.getAnimalForStory(animal, 'with-article');
-    const singularAnimal = this.getAnimalForStory(animal, 'singular');
-    
-    return `${name} sees ${animalWithArticle}. The ${singularAnimal} is ${color}. ${name} says hello. The ${singularAnimal} says hello too. ${name} smiles big. The ${singularAnimal} smiles big too. They dance together. They laugh together. ${name} is happy. The ${singularAnimal} is happy. What a wonderful day!`;
+    // Handle single vs multiple animals properly
+    if (animals.length === 1) {
+      const animal = animals[0];
+      const animalWithArticle = this.getAnimalForStory(animal, 'with-article');
+      const singularAnimal = this.getAnimalForStory(animal, 'singular');
+      
+      return `${name} sees ${animalWithArticle}. The ${singularAnimal} is ${color}. ${name} says hello. The ${singularAnimal} says hello too. ${name} smiles big. The ${singularAnimal} smiles big too. They dance together. They laugh together. ${name} is happy. The ${singularAnimal} is happy. What a wonderful day!`;
+    } else {
+      // Handle multiple animals
+      const animal1 = animals[0];
+      const animal2 = animals[1] || animals[0];
+      const animalWithArticle1 = this.getAnimalForStory(animal1, 'with-article');
+      const animalWithArticle2 = this.getAnimalForStory(animal2, 'with-article');
+      const singularAnimal1 = this.getAnimalForStory(animal1, 'singular');
+      const singularAnimal2 = this.getAnimalForStory(animal2, 'singular');
+      
+      return `${name} sees ${animalWithArticle1} and ${animalWithArticle2}. The ${singularAnimal1} is ${color}. The ${singularAnimal2} is happy too. ${name} says hello to both friends. They all say hello back. ${name} smiles big. The animals smile big too. They all dance together. They all laugh together. ${name} is so happy. What a wonderful day with friends!`;
+    }
   }
   
   // Kevin Henkes inspired - Gentle character-driven stories
@@ -191,7 +204,7 @@ export class ComprehensiveStoryGenerator {
     const animal1Singular = this.getAnimalForStory(animal1, 'singular');
     const animal2WithArticle = this.getAnimalForStory(animal2, 'with-article');
     
-    return `${name} loved ${hobby} more than anything else. One sunny morning, ${name} went to the ${setting} with some ${food1} for lunch. There, hiding behind an old oak tree, was ${animal1WithArticle.includes('lonely') ? animal1WithArticle : `a lonely ${this.getSingularForm(animal1)}`}. The ${animal1Singular} looked sad and hungry. ${name} shared the ${food1} with their new friend. They spent the whole day enjoying ${hobby} together. The next day, they met ${animal2WithArticle.includes('friendly') ? animal2WithArticle : `a friendly ${this.getSingularForm(animal2)}`} who loved ${food2} just as much as they did. From that day on, ${name} and the animals were inseparable. Every morning, they would meet at the ${setting} for new adventures. ${name} learned that the best part of ${hobby} was sharing it with friends.`;
+    return `${name} loved ${hobby} more than anything else. One sunny morning, ${name} went to the ${setting} with some ${food1} for lunch. There, hiding behind an old oak tree, was a lonely ${this.getSingularForm(animal1)}. The ${animal1Singular} looked sad and hungry. ${name} shared the ${food1} with their new friend. They spent the whole day enjoying ${hobby} together. The next day, they met a friendly ${this.getSingularForm(animal2)} who loved ${food2} just as much as they did. From that day on, ${name} and the animals were inseparable. Every morning, they would meet at the ${setting} for new adventures. ${name} learned that the best part of ${hobby} was sharing it with friends.`;
   }
   
   // Roald Dahl inspired - Whimsical with character growth
@@ -249,12 +262,12 @@ export class ComprehensiveStoryGenerator {
     return filtered.length > 0 ? this.selectRandomElement(filtered) : exclude;
   }
 
-  // Parse and clean user input intelligently
+  // Parse and clean user input intelligently - handle "and", commas, etc.
   private static parseAndCleanUserInput(input: string | undefined): string[] {
     if (!input) return [];
     
     return input.toLowerCase().trim()
-      .split(/[,;]/)
+      .split(/[,;]|\s+and\s+|\s*&\s*/)  // Split on comma, semicolon, "and", "&"
       .map(item => item.trim())
       .filter(item => item.length > 0)
       .map(item => {
@@ -278,9 +291,11 @@ export class ComprehensiveStoryGenerator {
         // Add appropriate article based on whether it's already plural
         const isPlural = this.isPlural(cleanAnimal);
         if (isPlural) {
-          return cleanAnimal; // No article for plurals
+          return cleanAnimal; // No article for plurals like "cats"
         } else {
-          return GrammarValidator.createNounPhrase('', cleanAnimal);
+          // Add "a" or "an" for singular animals
+          const startsWithVowel = /^[aeiou]/i.test(cleanAnimal);
+          return startsWithVowel ? `an ${cleanAnimal}` : `a ${cleanAnimal}`;
         }
       default:
         return cleanAnimal;
