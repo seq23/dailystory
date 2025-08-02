@@ -148,25 +148,23 @@ export const InteractiveWord = ({
       const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
       
       if (ttsService) {
-        // Get context-aware pronunciation but just speak the word normally
-        const fullContext = sentenceContext || `The word ${cleanWord} in context`;
-        const pronunciationInfo = contextualPronunciation.getWordPronunciation(cleanWord, fullContext);
-        
-        // Just speak the word - the contextual service will handle pronunciation internally
+        // Use TTS service with proper error handling
         const speed = isESLLearner ? 0.6 : 0.7;
         await ttsService.speakText(cleanWord, { speed, userInfo });
       } else {
-        // Fallback to browser speech synthesis
+        // Simplified fallback - no complex mobile handling
         if ('speechSynthesis' in window) {
+          speechSynthesis.cancel(); // Clear any existing speech
           const utterance = new SpeechSynthesisUtterance(cleanWord);
           utterance.rate = isESLLearner ? 0.6 : 0.7;
           utterance.pitch = 1.2;
+          utterance.onend = () => setIsPlaying(false);
+          utterance.onerror = () => setIsPlaying(false);
           speechSynthesis.speak(utterance);
         }
       }
     } catch (error) {
       console.error('Error pronouncing word:', error);
-    } finally {
       setIsPlaying(false);
     }
   };
@@ -180,13 +178,6 @@ export const InteractiveWord = ({
     
     try {
       const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
-      console.log('Mobile Explain Debug:', {
-        cleanWord, 
-        userNativeLanguage, 
-        isESLLearner, 
-        difficulty,
-        isMobile: /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-      });
       
       // Get word data from dictionary in user's native language
       const { data: wordData, error: wordError } = await supabase.functions.invoke('word-dictionary', {
@@ -197,33 +188,18 @@ export const InteractiveWord = ({
         }
       });
       
-      console.log('Mobile Dictionary Response:', { data: wordData, error: wordError });
-      console.log('Raw wordData fields:', {
-        definition: wordData?.definition,
-        phonetic: wordData?.phonetic, 
-        sampleSentence: wordData?.sampleSentence,
-        explanation: wordData?.explanation
-      });
-      
       if (!wordError && wordData) {
         setWordData(wordData);
         
-        // Mobile-specific: Show translated explanation for all users
+        // Show definition with translation fallback
+        const definition = wordData.definition || t('interactiveWord.definition', 'Definition');
         toast({
-          title: t('interactiveWord.definition'),
-          description: `"${cleanWord}" = ${wordData.definition}`,
+          title: t('interactiveWord.definition', 'Definition'),
+          description: `"${cleanWord}" = ${definition}`,
           duration: 5000,
         });
         
-        // Debug toast to show what we're about to speak
-        toast({
-          title: "🔧 Debug Info",
-          description: `Language: ${userNativeLanguage}, Voice will try to speak definition`,
-          duration: 3000,
-        });
-        
-        // Create multilingual explanation for mobile TTS
-        // Build explanation using available localized fields since wordData.explanation is undefined
+        // Build explanation with fallbacks
         const explanationParts = [];
         if (wordData.phonetic) {
           explanationParts.push(`${cleanWord} ${t('interactiveWord.pronouncedAs', 'is pronounced')} ${wordData.phonetic}.`);
@@ -239,206 +215,83 @@ export const InteractiveWord = ({
           ? explanationParts.join(' ') 
           : `${cleanWord} ${t('interactiveWord.isAWord', 'is a word')}.`;
         
-        console.log('Built explanation for mobile TTS:', {
-          userNativeLanguage,
-          explanationLength: explanation.length,
-          explanationPreview: explanation.substring(0, 100) + '...',
-          explanationParts: explanationParts.length
-        });
-        
-        // Mobile optimized: Always prefer Web Speech API for better mobile compatibility
-        const isMobile = /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        
-        if (isMobile || !ttsService) {
-          console.log('Using Web Speech API for mobile explain button:', { 
-            userNativeLanguage, 
-            isMobile,
-            hasTtsService: !!ttsService,
-            explanationPreview: explanation.substring(0, 50) + '...' 
-          });
-          
-          if ('speechSynthesis' in window) {
-            // iPhone Safari specific handling
-            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-            const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        // Simplified speech synthesis - no complex mobile handling
+        if ('speechSynthesis' in window) {
+          try {
+            speechSynthesis.cancel(); // Clear any existing speech
             
-            try {
-              // For iPhone Safari: Must unlock audio with immediate user gesture
-              if (isIOS && isSafari) {
-                // Create a silent utterance to unlock speech synthesis on iOS Safari
-                const unlockUtterance = new SpeechSynthesisUtterance(' ');
-                unlockUtterance.volume = 0.01; // Nearly silent but not 0
-                unlockUtterance.rate = 10; // Very fast
-                speechSynthesis.speak(unlockUtterance);
-                
-                // Wait briefly for unlock
-                setTimeout(() => {
-                  speechSynthesis.cancel(); // Cancel the unlock utterance
-                  
-                  // Now create the real utterance
-                  const utterance = new SpeechSynthesisUtterance(explanation);
-                  utterance.rate = isESLLearner ? 0.6 : 0.7;
-                  utterance.pitch = 1.0;
-                  utterance.volume = 1.0;
-                  
-                  // iOS Safari voice selection
-                  if (userNativeLanguage !== 'en') {
-                    const voices = speechSynthesis.getVoices();
-                    const nativeVoice = voices.find(voice => 
-                      voice.lang.toLowerCase().startsWith(userNativeLanguage.toLowerCase())
-                    );
-                    if (nativeVoice) {
-                      utterance.voice = nativeVoice;
-                      utterance.lang = nativeVoice.lang;
-                    }
-                  }
-                  
-                  utterance.onstart = () => {
-                    toast({
-                      title: "🔊 Speaking",
-                      description: "Audio explanation started",
-                      duration: 2000,
-                    });
-                  };
-                  
-                  utterance.onend = () => {
-                    setIsPlaying(false);
-                    toast({
-                      title: "✅ Complete",
-                      description: "Audio finished",
-                      duration: 1500,
-                    });
-                  };
-                  
-                  utterance.onerror = (error) => {
-                    setIsPlaying(false);
-                    console.error('iOS Safari speech error:', error);
-                    toast({
-                      title: "ℹ️ Audio Info", 
-                      description: "iOS requires audio permissions. Try enabling in Settings > Safari > Request Desktop Website OFF, and ensure sound is on.",
-                      duration: 6000,
-                    });
-                  };
-                  
-                  speechSynthesis.speak(utterance);
-                  
-                }, 50); // Very short delay for iOS
-                
-              } else {
-                // Standard browser handling
-                speechSynthesis.cancel();
-                
-                const utterance = new SpeechSynthesisUtterance(explanation);
-                utterance.rate = isESLLearner ? 0.6 : 0.7;
-                utterance.pitch = 1.0;
-                utterance.volume = 1.0;
-                
-                if (userNativeLanguage !== 'en') {
-                  const voices = speechSynthesis.getVoices();
-                  const nativeVoice = voices.find(voice => 
-                    voice.lang.startsWith(userNativeLanguage.substring(0, 2))
-                  );
-                  if (nativeVoice) {
-                    utterance.voice = nativeVoice;
-                    utterance.lang = nativeVoice.lang;
-                  }
-                }
-                
-                utterance.onstart = () => {
-                  toast({
-                    title: "🔊 Speaking",
-                    description: "Audio explanation started",
-                    duration: 2000,
-                  });
-                };
-                
-                utterance.onend = () => {
-                  setIsPlaying(false);
-                  toast({
-                    title: "✅ Complete",
-                    description: "Audio explanation finished",
-                    duration: 1500,
-                  });
-                };
-                
-                utterance.onerror = (error) => {
-                  setIsPlaying(false);
-                  console.error('Speech synthesis error:', error);
-                  toast({
-                    title: "❌ Audio Error", 
-                    description: `Could not play audio. Error: ${error.error}`,
-                    duration: 4000,
-                  });
-                };
-                
-                speechSynthesis.speak(utterance);
+            const utterance = new SpeechSynthesisUtterance(explanation);
+            utterance.rate = isESLLearner ? 0.6 : 0.7;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+            
+            // Set voice for non-English users
+            if (userNativeLanguage !== 'en') {
+              const voices = speechSynthesis.getVoices();
+              const nativeVoice = voices.find(voice => 
+                voice.lang.startsWith(userNativeLanguage.substring(0, 2))
+              );
+              if (nativeVoice) {
+                utterance.voice = nativeVoice;
+                utterance.lang = nativeVoice.lang;
               }
-              
-              toast({
-                title: "🎯 Audio Starting",
-                description: `Speaking: "${explanation.substring(0, 30)}..."`,
-                duration: 2000,
-              });
-              
-            } catch (error) {
-              console.error('Speech synthesis setup error:', error);
-              setIsPlaying(false);
-              toast({
-                title: "❌ Audio Failed",
-                description: "Speech synthesis not available on this device",
-                duration: 3000,
-              });
             }
-          } else {
-            console.log('Speech synthesis not available');
-            toast({
-              title: t("interactiveWord.audioUnavailable", "Audio unavailable"), 
-              description: t("interactiveWord.audioNotSupported", "Audio not supported on this device. Definition shown below."),
-              duration: 3000,
-            });
+            
+            utterance.onend = () => setIsPlaying(false);
+            utterance.onerror = () => setIsPlaying(false);
+            
+            speechSynthesis.speak(utterance);
+            
+          } catch (error) {
+            console.error('Speech synthesis error:', error);
             setIsPlaying(false);
-            return;
+          }
+        } else if (ttsService) {
+          // Use TTS service as fallback
+          try {
+            await ttsService.speakText(explanation, {
+              speed: 0.6,
+              userInfo
+            });
+          } catch (error) {
+            console.error('TTS service error:', error);
           }
         }
         
-        if (ttsService) {
-          console.log('TTS Request: voice=nova, speed=0.6, text="' + explanation.substring(0, 50) + '..."');
-          
-          // Use TTS to speak the explanation
-          await ttsService.speakText(explanation, {
-            speed: 0.6,
-            userInfo
-          });
-        }
       } else {
         console.error('Failed to get word data:', wordError);
-        setIsPlaying(false);
+        
+        // Show fallback definition even if API fails
+        const fallbackDefinition = getWordDefinition(cleanWord, sentenceContext);
+        setWordData({
+          definition: fallbackDefinition,
+          phonetic: getPhoneticSpelling(cleanWord),
+          sampleSentence: `${t('interactiveWord.example', 'Example')}: "${cleanWord}" in context.`
+        });
+        
+        toast({
+          title: t('interactiveWord.definition', 'Definition'),
+          description: `"${cleanWord}" = ${fallbackDefinition}`,
+          duration: 5000,
+        });
       }
     } catch (error) {
       console.error('Error explaining word:', error);
       
-      // Enhanced mobile error handling with translations
-      if (error.message?.includes('not allowed') || error.message?.includes('permission') || error.message?.includes('gesture')) {
-        toast({
-          title: t("interactiveWord.touchToEnable", "Touch to Enable Audio"),
-          description: t("interactiveWord.tapAgain", "Tap this button again to enable audio explanations."),
-          duration: 4000,
-        });
-      } else {
-        toast({
-          title: t("interactiveWord.audioNotAvailable", "Audio Not Available"),
-          description: t("interactiveWord.tryHeadphones", "Try using headphones or enabling audio permissions."),
-          duration: 3000,
-        });
-      }
+      // Simple error handling with translation fallbacks
+      toast({
+        title: t("interactiveWord.audioNotAvailable", "Audio Not Available"),
+        description: t("interactiveWord.definitionShown", "Definition shown below. Try with headphones if needed."),
+        duration: 3000,
+      });
       
-      // Show word data even if audio fails
+      // Always show word data even if audio fails
       const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
       const definition = getWordDefinition(cleanWord, sentenceContext);
       setWordData({
         definition,
         phonetic: getPhoneticSpelling(cleanWord),
-        sampleSentence: `Example: "${cleanWord}" in context.`
+        sampleSentence: `${t('interactiveWord.example', 'Example')}: "${cleanWord}" in context.`
       });
     } finally {
       setIsLoadingWordData(false);
@@ -788,7 +641,7 @@ export const InteractiveWord = ({
                 disabled={isLoadingWordData}
               >
                 <Languages className="w-3 h-3" />
-                <span className="hidden xs:inline">{isLoadingWordData ? t("interactiveWord.loading") : t("interactiveWord.translate")}</span>
+                <span className="hidden xs:inline">{isLoadingWordData ? (t("interactiveWord.loading") || "Loading...") : (t("interactiveWord.translate") || "Translate")}</span>
                 <span className="xs:hidden">Trans</span>
               </button>
             )}
@@ -828,7 +681,7 @@ export const InteractiveWord = ({
                 className="flex items-center gap-1 text-xs bg-indigo-50 hover:bg-indigo-100 active:bg-indigo-200 border border-indigo-200 px-2.5 py-2 rounded-md transition-colors touch-manipulation min-h-[36px] font-medium text-indigo-700 shadow-sm"
               >
                 <Lightbulb className="w-3 h-3" />
-                <span className="hidden xs:inline">{t("interactiveWord.etymology")}</span>
+                <span className="hidden xs:inline">{t("interactiveWord.etymology") || "Etymology"}</span>
                 <span className="xs:hidden">Info</span>
               </button>
             )}
