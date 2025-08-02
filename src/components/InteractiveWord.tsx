@@ -217,99 +217,71 @@ export const InteractiveWord = ({
         // Show definition with translation fallback
         const definition = wordData.definition || userLanguageT('interactiveWord.definition', 'Definition');
         
-        // Use native TTS to speak the explanation in user's language
-        if (ttsService && definition) {
-          console.log('Speaking definition in user language:', { 
-            definition, 
-            userNativeLanguage,
-            isMobileDevice 
-          });
-          
-          try {
-            await ttsService.speak(definition, {
-              voice: userNativeLanguage === 'es' ? 'alloy' : 
-                     userNativeLanguage === 'fr' ? 'alloy' :
-                     userNativeLanguage === 'zh' ? 'nova' :
-                     userNativeLanguage === 'hi' ? 'shimmer' :
-                     userNativeLanguage === 'ar' ? 'fable' :
-                     userNativeLanguage === 'pt' ? 'echo' : 'alloy',
-              rate: 0.9
-            });
-          } catch (ttsError) {
-            console.error('TTS Error:', ttsError);
-            // Fallback to toast if TTS fails
-            toast({
-              title: userLanguageT('interactiveWord.definition', 'Definition'),
-              description: definition,
-              duration: 4000,
-            });
-          }
-        } else {
-          // Fallback to toast if no TTS service
-          toast({
-            title: userLanguageT('interactiveWord.definition', 'Definition'),
-            description: `"${cleanWord}" = ${definition}`,
-            duration: 5000,
-          });
-        }
+        // Always show toast notification
+        toast({
+          title: userLanguageT('interactiveWord.definition', 'Definition'),
+          description: `"${cleanWord}" = ${definition}`,
+          duration: 5000,
+        });
         
-        // Build explanation with fallbacks
-        const explanationParts = [];
-         if (wordData.phonetic) {
-           explanationParts.push(`${cleanWord} ${userLanguageT('interactiveWord.pronouncedAs', 'is pronounced')} ${wordData.phonetic}.`);
-         }
-         if (wordData.definition) {
-           explanationParts.push(wordData.definition);
-         }
-         if (wordData.sampleSentence) {
-           explanationParts.push(`${userLanguageT('interactiveWord.example', 'Example')}: ${wordData.sampleSentence}`);
-         }
-         
-         const explanation = explanationParts.length > 0 
-           ? explanationParts.join(' ') 
-           : `${cleanWord} ${userLanguageT('interactiveWord.isAWord', 'is a word')}.`;
+        // IMMEDIATELY speak the definition using browser's speech synthesis
+        console.log('🔊 Starting audio explanation:', { 
+          definition, 
+          userNativeLanguage,
+          isMobileDevice,
+          speechSynthesisAvailable: 'speechSynthesis' in window
+        });
         
-        // Simplified speech synthesis - no complex mobile handling
-        if ('speechSynthesis' in window) {
+        if ('speechSynthesis' in window && definition) {
           try {
             speechSynthesis.cancel(); // Clear any existing speech
             
-            const utterance = new SpeechSynthesisUtterance(explanation);
+            const utterance = new SpeechSynthesisUtterance(definition);
             utterance.rate = isESLLearner ? 0.6 : 0.7;
             utterance.pitch = 1.0;
             utterance.volume = 1.0;
             
-            // Set voice for non-English users
+            // Set voice for non-English users with enhanced debugging
             if (userNativeLanguage !== 'en') {
               const voices = speechSynthesis.getVoices();
+              console.log('🗣️ Available voices:', voices.map(v => ({ name: v.name, lang: v.lang })));
+              
               const nativeVoice = voices.find(voice => 
                 voice.lang.startsWith(userNativeLanguage.substring(0, 2))
               );
+              
               if (nativeVoice) {
                 utterance.voice = nativeVoice;
                 utterance.lang = nativeVoice.lang;
+                console.log('✅ Found native voice:', { name: nativeVoice.name, lang: nativeVoice.lang });
+      } else {
+                console.log('⚠️ No native voice found, using default');
               }
             }
             
-            utterance.onend = () => setIsPlaying(false);
-            utterance.onerror = () => setIsPlaying(false);
+            utterance.onstart = () => {
+              console.log('🎵 Speech started');
+              setIsPlaying(true);
+            };
+            utterance.onend = () => {
+              console.log('🔇 Speech ended');
+              setIsPlaying(false);
+            };
+            utterance.onerror = (event) => {
+              console.error('❌ Speech error:', event);
+              setIsPlaying(false);
+            };
             
             speechSynthesis.speak(utterance);
+            console.log('🚀 Speech synthesis initiated');
             
           } catch (error) {
-            console.error('Speech synthesis error:', error);
+            console.error('❌ Speech synthesis error:', error);
             setIsPlaying(false);
           }
-        } else if (ttsService) {
-          // Use TTS service as fallback
-          try {
-            await ttsService.speakText(explanation, {
-              speed: 0.6,
-              userInfo
-            });
-          } catch (error) {
-            console.error('TTS service error:', error);
-          }
+        } else {
+          console.log('❌ Speech synthesis not available');
+          setIsPlaying(false);
         }
         
       } else {
