@@ -186,8 +186,18 @@ export const InteractiveWord = ({
       let definition = getWordDefinition(cleanWord, sentenceContext);
       let explanation = `${cleanWord} means: ${definition}`;
       
+      console.log('InteractiveWord Debug:', {
+        isNativeEnglishSpeaker,
+        userNativeLanguage,
+        userInfo: userInfo ? {
+          name: userInfo.name,
+          nativeLanguage: userInfo.nativeLanguage
+        } : 'No userInfo'
+      });
+      
       // If user is not a native English speaker, get explanation in their language
       if (!isNativeEnglishSpeaker && userNativeLanguage !== 'en') {
+        console.log('Attempting translation for non-English speaker...');
         try {
           const { data: translationData, error: translationError } = await supabase.functions.invoke('translate-word', {
             body: {
@@ -197,12 +207,19 @@ export const InteractiveWord = ({
             }
           });
           
+          console.log('Translation result:', { translationData, translationError });
+          
           if (!translationError && translationData?.translation) {
             explanation = `${cleanWord} means: ${translationData.translation}`;
+            console.log('Using translated explanation:', explanation);
+          } else {
+            console.log('Translation failed, using English definition');
           }
         } catch (error) {
-          console.log('Translation failed, using English definition');
+          console.log('Translation failed with error:', error);
         }
+      } else {
+        console.log('User is English speaker or using English, no translation needed');
       }
       
       // Always try Web Speech API first on mobile for better reliability
