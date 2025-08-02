@@ -1,24 +1,36 @@
 import { UserInfo, LanguageCode } from "@/types";
 
-// Enhanced multilingual dictionary with contextual awareness
+// Enhanced multilingual dictionary with expanded animal coverage for better fuzzy matching
 const MULTILINGUAL_DICTIONARY = {
   animals: {
-    en: ['dog', 'cat', 'bird', 'fish', 'rabbit', 'horse', 'cow', 'pig', 'sheep', 'chicken'],
-    es: ['perro', 'gato', 'pájaro', 'pez', 'conejo', 'caballo', 'vaca', 'cerdo', 'oveja', 'pollo'],
-    fr: ['chien', 'chat', 'oiseau', 'poisson', 'lapin', 'cheval', 'vache', 'cochon', 'mouton', 'poulet'],
+    en: ['dog', 'dogs', 'cat', 'cats', 'bird', 'birds', 'fish', 'rabbit', 'rabbits', 'horse', 'horses', 
+         'cow', 'cows', 'pig', 'pigs', 'sheep', 'chicken', 'chickens', 'lion', 'lions', 'tiger', 'tigers',
+         'bear', 'bears', 'wolf', 'wolves', 'fox', 'foxes', 'elephant', 'elephants', 'giraffe', 'giraffes',
+         'monkey', 'monkeys', 'duck', 'ducks', 'puppy', 'puppies', 'kitten', 'kittens', 'bunny', 'bunnies'],
+    es: ['perro', 'perros', 'gato', 'gatos', 'pájaro', 'pájaros', 'pez', 'peces', 'conejo', 'conejos', 
+         'caballo', 'caballos', 'vaca', 'vacas', 'cerdo', 'cerdos', 'oveja', 'ovejas', 'pollo', 'pollos'],
+    fr: ['chien', 'chiens', 'chat', 'chats', 'oiseau', 'oiseaux', 'poisson', 'poissons', 'lapin', 'lapins', 
+         'cheval', 'chevaux', 'vache', 'vaches', 'cochon', 'cochons', 'mouton', 'moutons', 'poulet', 'poulets'],
     zh: ['狗', '猫', '鸟', '鱼', '兔子', '马', '牛', '猪', '羊', '鸡'],
     ar: ['كلب', 'قطة', 'طائر', 'سمك', 'أرنب', 'حصان', 'بقرة', 'خنزير', 'خروف', 'دجاج'],
     hi: ['कुत्ता', 'बिल्ली', 'पक्षी', 'मछली', 'खरगोश', 'घोड़ा', 'गाय', 'सूअर', 'भेड़', 'मुर्गी'],
-    pt: ['cão', 'gato', 'pássaro', 'peixe', 'coelho', 'cavalo', 'vaca', 'porco', 'ovelha', 'frango']
+    pt: ['cão', 'cães', 'gato', 'gatos', 'pássaro', 'pássaros', 'peixe', 'peixes', 'coelho', 'coelhos', 
+         'cavalo', 'cavalos', 'vaca', 'vacas', 'porco', 'porcos', 'ovelha', 'ovelhas', 'frango', 'frangos']
   },
   foods: {
-    en: ['pizza', 'apple', 'banana', 'bread', 'rice', 'pasta', 'chicken', 'beef', 'fish', 'vegetables'],
-    es: ['pizza', 'manzana', 'plátano', 'pan', 'arroz', 'pasta', 'pollo', 'carne', 'pescado', 'verduras'],
-    fr: ['pizza', 'pomme', 'banane', 'pain', 'riz', 'pâtes', 'poulet', 'bœuf', 'poisson', 'légumes'],
+    en: ['pizza', 'apple', 'apples', 'banana', 'bananas', 'bread', 'rice', 'pasta', 'chicken', 'beef', 'fish', 
+         'vegetables', 'veggies', 'burger', 'burgers', 'cake', 'cookies', 'ice cream', 'sandwich', 'sandwiches',
+         'cheese', 'milk', 'eggs', 'bacon', 'ham', 'turkey', 'salad', 'soup', 'noodles', 'cereal',
+         'chocolate', 'candy', 'fruit', 'fruits', 'meat', 'potatoes', 'tomato', 'tomatoes'],
+    es: ['pizza', 'manzana', 'manzanas', 'plátano', 'plátanos', 'pan', 'arroz', 'pasta', 'pollo', 'carne', 
+         'pescado', 'verduras', 'hamburguesa', 'pastel', 'galletas', 'helado', 'sándwich', 'queso', 'leche'],
+    fr: ['pizza', 'pomme', 'pommes', 'banane', 'bananes', 'pain', 'riz', 'pâtes', 'poulet', 'bœuf', 
+         'poisson', 'légumes', 'hamburger', 'gâteau', 'biscuits', 'glace', 'sandwich', 'fromage', 'lait'],
     zh: ['比萨', '苹果', '香蕉', '面包', '米饭', '意大利面', '鸡肉', '牛肉', '鱼', '蔬菜'],
     ar: ['بيتزا', 'تفاح', 'موز', 'خبز', 'أرز', 'معكرونة', 'دجاج', 'لحم بقر', 'سمك', 'خضروات'],
     hi: ['पिज्जा', 'सेब', 'केला', 'रोटी', 'चावल', 'पास्ता', 'चिकन', 'बीफ', 'मछली', 'सब्जियां'],
-    pt: ['pizza', 'maçã', 'banana', 'pão', 'arroz', 'massa', 'frango', 'carne', 'peixe', 'vegetais']
+    pt: ['pizza', 'maçã', 'maçãs', 'banana', 'bananas', 'pão', 'arroz', 'massa', 'frango', 'carne', 
+         'peixe', 'vegetais', 'hambúrguer', 'bolo', 'biscoitos', 'sorvete', 'sanduíche', 'queijo', 'leite']
   },
   hobbies: {
     en: ['reading', 'swimming', 'dancing', 'singing', 'drawing', 'playing', 'running', 'jumping'],

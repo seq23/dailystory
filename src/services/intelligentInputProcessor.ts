@@ -24,31 +24,25 @@ const spellingCache = new Map<string, string>();
 
 export class IntelligentInputProcessor {
   
-  // Main processing pipeline: Translation → Spelling → Grammar → Selection
+  // Simplified processing pipeline: Translation (if needed) → Spelling Correction (only)
   static async processUserInput(
     input: string,
     fieldName: string,
     userInfo: UserInfo
   ): Promise<ProcessedUserInput> {
     try {
-      // Step 1: Translation Layer - Auto-detect and translate non-English inputs
+      // Step 1: Translation Layer - Only translate if truly non-English
       const translationResult = await this.translateIfNeeded(input, userInfo.nativeLanguage);
       
-      // Step 2: Spelling Correction Layer
+      // Step 2: Spelling Correction Layer - Enhanced for common animal/food misspellings
       const correctedInput = await this.correctSpelling(
         translationResult.translatedText, 
-        userInfo.grade
-      );
-      
-      // Step 3: Grammar Processing Layer - Handle translated comma-separated values
-      const grammarProcessedInput = await this.processGrammar(correctedInput);
-      
-      // Step 4: Selection Layer - Intelligent picking from processed inputs
-      const finalInput = await this.intelligentSelection(
-        grammarProcessedInput,
         fieldName,
         userInfo
       );
+      
+      // Return processed input without grammar processing or article addition
+      const finalInput = correctedInput.trim();
 
       // Cache the translation if it was needed
       if (translationResult.translatedText !== input) {
@@ -130,8 +124,8 @@ export class IntelligentInputProcessor {
     }
   }
 
-  // Enhanced Spelling Correction Layer with multilingual fuzzy matching
-  private static async correctSpelling(input: string, grade: string): Promise<string> {
+  // Enhanced Spelling Correction Layer with improved fuzzy matching for animals/foods
+  private static async correctSpelling(input: string, fieldName: string, userInfo: UserInfo): Promise<string> {
     // Check if we have cached spelling corrections
     const cachedCorrection = spellingCache.get(input);
     if (cachedCorrection) {
@@ -139,39 +133,38 @@ export class IntelligentInputProcessor {
     }
 
     try {
-      // First try enhanced fuzzy matching for known contexts
-      const contextualMatch = this.tryContextualCorrection(input);
+      // Enhanced contextual correction with lower thresholds for animals and foods
+      const contextualMatch = this.tryContextualCorrection(input, fieldName);
       if (contextualMatch) {
         spellingCache.set(input, contextualMatch);
         return contextualMatch;
       }
 
-      // Fallback to OpenAI-based correction
-      const { data, error } = await supabase.functions.invoke('correct-spelling', {
-        body: {
-          text: input,
-          gradeLevel: grade,
-          context: 'user_form_input'
+      // Only use OpenAI correction for non-animal/food fields or persistent misspellings
+      if (!['favoriteAnimal', 'favoriteFood'].includes(fieldName)) {
+        const { data, error } = await supabase.functions.invoke('correct-spelling', {
+          body: {
+            text: input,
+            gradeLevel: userInfo.grade,
+            context: 'user_form_input'
+          }
+        });
+
+        if (!error && data.correctedText !== input) {
+          spellingCache.set(input, data.correctedText);
+          return data.correctedText;
         }
-      });
-
-      if (error) throw error;
-
-      // Cache the correction
-      if (data.correctedText !== input) {
-        spellingCache.set(input, data.correctedText);
       }
 
-      return data.correctedText;
+      return input;
     } catch (error) {
       console.error('Spelling correction failed:', error);
       return input;
     }
   }
 
-  // Try contextual correction using enhanced linguistic processor
-  private static tryContextualCorrection(input: string): string | null {
-    // This is a simplified approach - in practice, we'd need userInfo context
+  // Enhanced contextual correction with field-specific logic and lower thresholds
+  private static tryContextualCorrection(input: string, fieldName: string): string | null {
     const words = input.split(/[,\s]+/);
     const correctedWords: string[] = [];
     let hasCorrections = false;
@@ -179,13 +172,30 @@ export class IntelligentInputProcessor {
     for (const word of words) {
       if (!word.trim()) continue;
       
-      // Try fuzzy matching for animals, foods, hobbies
-      const contexts: Array<'animals' | 'foods' | 'hobbies'> = ['animals', 'foods', 'hobbies'];
-      let corrected = false;
+      // Field-specific fuzzy matching with appropriate contexts
+      let contexts: Array<'animals' | 'foods' | 'hobbies'> = [];
+      let confidenceThreshold = 0.6; // Lower threshold for better correction
       
+      switch (fieldName) {
+        case 'favoriteAnimal':
+          contexts = ['animals'];
+          confidenceThreshold = 0.5; // Even lower for animals
+          break;
+        case 'favoriteFood':
+          contexts = ['foods'];
+          confidenceThreshold = 0.5; // Even lower for foods
+          break;
+        case 'hobbies':
+          contexts = ['hobbies'];
+          break;
+        default:
+          contexts = ['animals', 'foods', 'hobbies'];
+      }
+      
+      let corrected = false;
       for (const context of contexts) {
         const match = EnhancedSpellingCorrector.fuzzyMatch(word, 'en', context);
-        if (match && match.confidence > 0.8) {
+        if (match && match.confidence > confidenceThreshold) {
           correctedWords.push(match.suggestion);
           hasCorrections = true;
           corrected = true;
@@ -198,61 +208,10 @@ export class IntelligentInputProcessor {
       }
     }
 
-    return hasCorrections ? correctedWords.join(' ') : null;
+    return hasCorrections ? correctedWords.join(', ') : null;
   }
 
-  // Enhanced Grammar Processing Layer with advanced linguistic rules
-  private static async processGrammar(input: string): Promise<string> {
-    // Use the advanced grammar processor
-    const processed = AdvancedGrammarProcessor.processTranslatedText(input, 'en');
-    return processed;
-  }
-
-  // Selection Layer - Intelligent picking
-  private static async intelligentSelection(
-    input: string,
-    fieldName: string,
-    userInfo: UserInfo
-  ): Promise<string> {
-    // Apply field-specific intelligence
-    switch (fieldName) {
-      case 'hobbies':
-      case 'interests':
-        return this.processHobbiesAndInterests(input);
-      case 'favoriteAnimal':
-        return this.processFavoriteAnimal(input);
-      case 'favoriteFood':
-        return this.processFavoriteFood(input);
-      case 'specialRequest':
-        return this.processSpecialRequest(input, userInfo);
-      default:
-        return input;
-    }
-  }
-
-  // Helper methods for specific field processing
-  private static processHobbiesAndInterests(input: string): string {
-    // Handle multiple hobbies/interests
-    const items = input.split(/[,;]/).map(item => item.trim().toLowerCase());
-    const uniqueItems = [...new Set(items)].filter(item => item.length > 0);
-    
-    // Limit to reasonable number for story generation
-    const maxItems = 5;
-    return uniqueItems.slice(0, maxItems).join(', ');
-  }
-
-  private static processFavoriteAnimal(input: string): string {
-    // Extract the first animal mentioned
-    const animals = input.split(/[,;]/).map(item => item.trim());
-    return animals[0] || input;
-  }
-
-  private static processFavoriteFood(input: string): string {
-    // Extract the first food mentioned
-    const foods = input.split(/[,;]/).map(item => item.trim());
-    return foods[0] || input;
-  }
-
+  // Helper method for basic processing only
   private static processSpecialRequest(input: string, userInfo: UserInfo): string {
     // Ensure special requests are appropriate for age group
     const ageAppropriate = this.filterAgeAppropriateContent(input, userInfo.age);

@@ -528,29 +528,40 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                   {t("userInfoForm.fields.favoriteAnimal.label")}
                   <span className="text-xs md:text-sm text-muted-foreground ml-2">{t("userInfoForm.fields.favoriteAnimal.optional")}</span>
                 </Label>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="relative">
+                        <TagInput
+                          value={formData.favoriteAnimal}
+                          onChange={(value) => handleInputChange("favoriteAnimal", value)}
+                          onBlur={(value) => handleIntelligentProcessing("favoriteAnimal", value)}
+                          placeholder="dog, cats, rabbits..."
+                          className="text-base md:text-lg min-h-[80px] md:min-h-[100px] rounded-xl md:rounded-2xl border-2 border-primary/20"
+                        />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Enter animals as simple words - singular or plural doesn't matter!</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
                 <div className="relative">
-                  <TagInput
-                    value={formData.favoriteAnimal}
-                    onChange={(value) => handleInputChange("favoriteAnimal", value)}
-                    onBlur={(value) => handleIntelligentProcessing("favoriteAnimal", value)}
-                    placeholder={t("userInfoForm.fields.favoriteAnimal.placeholder")}
-                    className="text-base md:text-lg min-h-[80px] md:min-h-[100px] rounded-xl md:rounded-2xl border-2 border-primary/20"
-                  />
                   {isProcessingInputs && (
                     <div className="absolute right-3 top-3">
                       <ArrowRightLeft className="w-4 h-4 text-blue-500 animate-spin" />
                     </div>
                   )}
-                  {translationPreviews.favoriteAnimal?.isTranslated && (
-                    <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
-                        <span className="text-sm text-green-700 dark:text-green-300">
-                          Translated: "{translationPreviews.favoriteAnimal.originalInput}" → "{translationPreviews.favoriteAnimal.processedInput}"
-                        </span>
-                      </div>
-                    </div>
-                  )}
+                   {translationPreviews.favoriteAnimal?.isTranslated && (
+                     <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                       <div className="flex items-center gap-2">
+                         <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
+                         <span className="text-sm text-green-700 dark:text-green-300">
+                           Fixed: "{translationPreviews.favoriteAnimal.originalInput}" → "{translationPreviews.favoriteAnimal.processedInput}"
+                         </span>
+                       </div>
+                     </div>
+                   )}
                 </div>
               </div>
 
@@ -559,29 +570,40 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                   {t("userInfoForm.fields.favoriteFood.label")}
                   <span className="text-xs md:text-sm text-muted-foreground ml-2">{t("userInfoForm.fields.favoriteFood.optional")}</span>
                 </Label>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="relative">
+                        <TagInput
+                          value={formData.favoriteFood}
+                          onChange={(value) => handleInputChange("favoriteFood", value)}
+                          onBlur={(value) => handleIntelligentProcessing("favoriteFood", value)}
+                          placeholder="pizza, apples, cookies..."
+                          className="text-base md:text-lg min-h-[80px] md:min-h-[100px] rounded-xl md:rounded-2xl border-2 border-primary/20"
+                        />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Enter foods as simple words - plural or singular works!</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
                 <div className="relative">
-                  <TagInput
-                    value={formData.favoriteFood}
-                    onChange={(value) => handleInputChange("favoriteFood", value)}
-                    onBlur={(value) => handleIntelligentProcessing("favoriteFood", value)}
-                    placeholder={t("userInfoForm.fields.favoriteFood.placeholder")}
-                    className="text-base md:text-lg min-h-[80px] md:min-h-[100px] rounded-xl md:rounded-2xl border-2 border-primary/20"
-                  />
                   {isProcessingInputs && (
                     <div className="absolute right-3 top-3">
                       <ArrowRightLeft className="w-4 h-4 text-blue-500 animate-spin" />
                     </div>
                   )}
-                  {translationPreviews.favoriteFood?.isTranslated && (
-                    <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
-                        <span className="text-sm text-green-700 dark:text-green-300">
-                          Translated: "{translationPreviews.favoriteFood.originalInput}" → "{translationPreviews.favoriteFood.processedInput}"
-                        </span>
-                      </div>
-                    </div>
-                  )}
+                   {translationPreviews.favoriteFood?.isTranslated && (
+                     <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                       <div className="flex items-center gap-2">
+                         <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
+                         <span className="text-sm text-green-700 dark:text-green-300">
+                           Fixed: "{translationPreviews.favoriteFood.originalInput}" → "{translationPreviews.favoriteFood.processedInput}"
+                         </span>
+                       </div>
+                     </div>
+                   )}
                 </div>
               </div>
 
@@ -590,14 +612,25 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                   {t("userInfoForm.fields.hobbies.label")}
                   <span className="text-xs md:text-sm text-muted-foreground ml-2">{t("userInfoForm.fields.hobbies.optional")}</span>
                 </Label>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="relative">
+                        <TagInput
+                          value={formData.hobbies}
+                          onChange={(value) => handleInputChange("hobbies", value)}
+                          onBlur={(value) => handleIntelligentProcessing("hobbies", value)}
+                          placeholder="reading, swimming, drawing..."
+                          className="text-base md:text-lg min-h-[80px] md:min-h-[100px] rounded-xl md:rounded-2xl border-2 border-primary/20"
+                        />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Enter activities your child enjoys - any way you like!</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
                 <div className="relative">
-                  <TagInput
-                    value={formData.hobbies}
-                    onChange={(value) => handleInputChange("hobbies", value)}
-                    onBlur={(value) => handleIntelligentProcessing("hobbies", value)}
-                    placeholder={t("userInfoForm.fields.hobbies.placeholder")}
-                    className="text-base md:text-lg min-h-[80px] md:min-h-[100px] rounded-xl md:rounded-2xl border-2 border-primary/20"
-                  />
                   {isProcessingInputs && (
                     <div className="absolute right-3 top-3">
                       <ArrowRightLeft className="w-4 h-4 text-blue-500 animate-spin" />
