@@ -31,12 +31,14 @@ export const InteractiveWord = ({
   const { toast } = useToast();
   const { isMobileDevice, isCapacitor } = useIsMobile();
   
-  // Set i18n language to user's native language for this component
-  useEffect(() => {
-    if (userInfo?.nativeLanguage && userInfo.nativeLanguage !== i18n.language) {
-      i18n.changeLanguage(userInfo.nativeLanguage);
+  // Use user's native language for button text translation
+  const userLanguageT = (key: string, fallback: string) => {
+    if (userInfo?.nativeLanguage && userInfo.nativeLanguage !== 'en') {
+      // Get translations specifically for user's native language without changing global language
+      return t(key, { lng: userInfo.nativeLanguage }) || fallback;
     }
-  }, [userInfo?.nativeLanguage, i18n]);
+    return t(key) || fallback;
+  };
   const [showTooltip, setShowTooltip] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [wordData, setWordData] = useState<any>(null);
@@ -670,7 +672,7 @@ export const InteractiveWord = ({
               disabled={isPlaying}
             >
               <Volume2 className="w-3 h-3 sm:w-4 sm:h-4" />
-              {t("interactiveWord.hearIt") || "Hear It"}
+              {userLanguageT("interactiveWord.hearIt", "Hear It")}
             </button>
             
             <button
@@ -685,7 +687,7 @@ export const InteractiveWord = ({
               disabled={isPlaying || isLoadingWordData}
             >
               <HelpCircle className="w-3 h-3 sm:w-4 sm:h-4" />
-              {isLoadingWordData ? (t("interactiveWord.loading") || "Loading...") : (t("interactiveWord.explain") || "Explain")}
+              {isLoadingWordData ? userLanguageT("interactiveWord.loading", "Loading...") : userLanguageT("interactiveWord.explain", "Explain")}
             </button>
           </div>
 
