@@ -129,15 +129,39 @@ export class UnifiedImageService {
     // Get professional art style for difficulty level
     const artStyle = this.getArtStyleForDifficulty(difficulty);
     
-    // ENHANCED PROMPT ENGINEERING based on user reference images
-    let prompt = `A beautiful children's book illustration showing the scene described in the story text but WITHOUT ANY TEXT, TITLES, OR WORDS VISIBLE. `;
+    // ENHANCED PROMPT ENGINEERING - Direct story text matching
+    let prompt = `A beautiful children's book illustration depicting exactly what is described in this story text: "${storyText}". `;
     
-    // Main subject: Always start with the character
-    prompt += `${characterDesc} is featured in the story in the setting described in the story `;
+    // Analyze the specific story content first
+    const storyAnalysis = this.analyzeStoryContent(storyText, character);
+    
+    // Main subject: Build scene based on story analysis
+    if (storyAnalysis.mentionedAnimals && storyAnalysis.mentionedAnimals.length > 0) {
+      const animal = storyAnalysis.mentionedAnimals[0];
+      prompt += `Show ${animal} `;
+      
+      // Check for size descriptions in the story
+      if (/big|large|huge|giant/i.test(storyText)) {
+        prompt += `that is big `;
+      } else if (/small|tiny|little/i.test(storyText)) {
+        prompt += `that is small `;
+      }
+      
+      // Check for color descriptions
+      if (storyAnalysis.mentionedColors && storyAnalysis.mentionedColors.length > 0) {
+        prompt += `that is ${storyAnalysis.mentionedColors[0]} colored `;
+      }
+      prompt += `as the main focus. `;
+    }
+    
+    // Add character if there's room
+    if (storyText.includes(character.userName) || storyText.includes('name')) {
+      prompt += `Also show ${characterDesc} in the scene. `;
+    }
     
     // Intelligent action + interaction analysis
     const sceneDescription = this.buildIntelligentScene(storyText, storyContext, character);
-    prompt += `${sceneDescription} based on this story context: ${storyText.substring(0, 100)}... `;
+    prompt += `${sceneDescription}. `;
     
     // Add explicit negative prompt elements inline
     
@@ -246,15 +270,32 @@ export class UnifiedImageService {
       }
     }
     
-    // GENERAL COLOR + ANIMAL DETECTION (fallback for any color + animal combination)
+    // ENHANCED GENERAL ANIMAL DETECTION - Must exactly match story text
+    const animalWords = ['cat', 'dog', 'lion', 'tiger', 'elephant', 'bird', 'frog', 'butterfly', 'wolf', 'bear', 'rabbit', 'horse', 'fish', 'turtle', 'dinosaur', 'dragon'];
+    
+    // First check for simple animal mentions ("The cat was big")
+    for (const animal of animalWords) {
+      const simplePattern = new RegExp(`\\b${animal}\\b`, 'i');
+      if (simplePattern.test(storyText)) {
+        // Check if it has size descriptions
+        if (/big|large|huge|giant/i.test(storyText)) {
+          return `featuring a big ${animal} as the main focus of the scene`;
+        } else if (/small|tiny|little/i.test(storyText)) {
+          return `featuring a small ${animal} as the main focus of the scene`;
+        } else {
+          return `featuring a ${animal} as the main focus of the scene`;
+        }
+      }
+    }
+    
+    // Then check for color + animal combinations
     const colorWords = ['red', 'blue', 'green', 'yellow', 'purple', 'pink', 'orange', 'black', 'white', 'brown', 'gray', 'silver', 'golden'];
-    const animalWords = ['cat', 'dog', 'lion', 'tiger', 'elephant', 'bird', 'frog', 'butterfly', 'wolf', 'bear', 'rabbit', 'horse', 'fish', 'turtle'];
     
     for (const color of colorWords) {
       for (const animal of animalWords) {
         const pattern = new RegExp(`${color}.*${animal}|${animal}.*${color}`, 'i');
         if (pattern.test(storyText)) {
-          return `meeting a magical ${color} ${animal}`;
+          return `featuring a ${color} ${animal} as the main focus of the scene`;
         }
       }
     }
