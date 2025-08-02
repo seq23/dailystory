@@ -977,21 +977,22 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                           setCurrentPage(nextPage);
                           setStoryCompleted(true);
                           
-                          // Trigger story completion gamification
+                          // Calculate actual word count from current story to ensure accuracy
+                          const storyText = story.join(' ');
+                          const actualWordsRead = storyText.split(/\s+/).filter(word => word.trim().length > 0).length;
+                          
+                          // Trigger story completion gamification with correct word count
                           const timeSpent = Math.floor((Date.now() - sessionStartTime.getTime()) / 1000);
                           recordReadingSession({
-                            wordsRead,
+                            wordsRead: actualWordsRead,
                             timeSpent,
                             pagesRead: nextPage + 1,
                             storyCompleted: true,
-                            readingSpeed: Math.round((wordsRead / (timeSpent / 60)) || 0)
+                            readingSpeed: Math.round((actualWordsRead / (timeSpent / 60)) || 0)
                           });
                           
                           // Show completion feedback only once
                           if (!hasShownCompletionToast) {
-                            // Calculate actual word count from current story to ensure accuracy
-                            const storyText = story.join(' ');
-                            const actualWordsRead = storyText.split(/\s+/).filter(word => word.trim().length > 0).length;
                             
                             console.log('Story completion debug:', {
                               storyLength: story.length,
