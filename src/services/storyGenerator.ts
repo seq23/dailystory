@@ -8,10 +8,11 @@ import {
 } from './storyTemplates';
 import { validateAndFixGrammar } from '@/utils/grammarValidator';
 import StoryQualityChecker from '@/utils/storyQualityChecker';
+import { ProgressiveStoryGenerator } from './progressiveStoryGenerator';
 
 export class StoryGeneratorService {
   /**
-   * Main story generation method with high-quality templates
+   * Main story generation method with progressive difficulty scaling
    */
   static async generateStory(
     userInfo: UserInfo, 
@@ -19,28 +20,31 @@ export class StoryGeneratorService {
     pageCount: number = 10
   ): Promise<{ pages: string[]; config: any }> {
     try {
-      console.log(`Generating high-quality story for difficulty: ${difficulty}`);
+      console.log(`Generating progressive story for difficulty: ${difficulty}`);
       
-      // Use our template-based story system
-      const pages = this.getHighQualityStory(userInfo, difficulty, pageCount);
-      const config = this.getReadingConfigForDifficulty(difficulty);
+      // Use progressive story generation for smoother difficulty transitions
+      const result = ProgressiveStoryGenerator.generateProgressiveStory(userInfo, difficulty, pageCount);
       
       // Quality check all generated pages
-      const qualityCheck = StoryQualityChecker.checkStoryQuality(pages, difficulty);
+      const qualityCheck = StoryQualityChecker.checkStoryQuality(result.pages, difficulty);
       if (!qualityCheck.isValid) {
         console.warn('Story quality issues detected:', qualityCheck.issues);
         // Apply grammar fixes to pages
-        const fixedPages = pages.map(validateAndFixGrammar);
-        console.log(`Successfully generated ${fixedPages.length} pages with quality validation`);
-        return { pages: fixedPages, config };
+        const fixedPages = result.pages.map(validateAndFixGrammar);
+        console.log(`Successfully generated ${fixedPages.length} pages with progressive quality validation`);
+        return { pages: fixedPages, config: result.config };
       }
       
-      console.log(`Successfully generated ${pages.length} pages`);
-      return { pages, config };
+      console.log(`Successfully generated ${result.pages.length} progressive pages`);
+      return { pages: result.pages, config: result.config };
       
     } catch (error) {
-      console.error('Story generation failed:', error);
-      throw error;
+      console.error('Progressive story generation failed, falling back to template system:', error);
+      
+      // Fallback to template-based generation
+      const pages = this.getHighQualityStory(userInfo, difficulty, pageCount);
+      const config = this.getReadingConfigForDifficulty(difficulty);
+      return { pages, config };
     }
   }
   
@@ -197,36 +201,10 @@ export class StoryGeneratorService {
   }
   
   /**
-   * Get reading configuration for difficulty level
+   * Get reading configuration for difficulty level (updated for progressive scaling)
    */
   private static getReadingConfigForDifficulty(difficulty: DifficultyLevel) {
-    const configs = {
-      easy: {
-        maxWordsPerPage: 6,
-        fontSize: 'text-4xl md:text-5xl lg:text-6xl',
-        lineHeight: 'leading-relaxed',
-        spacing: 'space-y-4'
-      },
-      medium: {
-        maxWordsPerPage: 35,
-        fontSize: 'text-3xl md:text-4xl lg:text-5xl',
-        lineHeight: 'leading-relaxed',
-        spacing: 'space-y-4'
-      },
-      hard: {
-        maxWordsPerPage: 65,
-        fontSize: 'text-2xl md:text-3xl lg:text-4xl',
-        lineHeight: 'leading-relaxed',
-        spacing: 'space-y-4'
-      },
-      expert: {
-        maxWordsPerPage: 85,
-        fontSize: 'text-xl md:text-2xl lg:text-3xl',
-        lineHeight: 'leading-relaxed',
-        spacing: 'space-y-4'
-      }
-    };
-    
-    return configs[difficulty] || configs.easy;
+    // Use progressive story generator configuration for consistency
+    return ProgressiveStoryGenerator.getReadingConfigForDifficulty(difficulty);
   }
 }

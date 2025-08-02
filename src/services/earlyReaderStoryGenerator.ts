@@ -2,6 +2,8 @@
 import type { UserInfo, DifficultyLevel } from "@/types";
 import StoryQualityChecker from "@/utils/storyQualityChecker";
 import GrammarValidator from "@/utils/grammarValidator";
+import { ProgressiveStoryGenerator } from "./progressiveStoryGenerator";
+import { VocabularyLevelClassifier } from "@/utils/vocabularyLevelClassifier";
 
 interface ReadingConfig {
   maxWordsPerPage: number;
@@ -12,74 +14,75 @@ interface ReadingConfig {
 
 export class EarlyReaderStoryGenerator {
   
-  // Configure reading experience by difficulty level (optimized for UI aesthetics)
-  // Word counts and text sizes balanced for container space (max-h-[400px])
-  // HARD RULE: Easy level capped at 6 words maximum per page for early readers
+  // Configure reading experience by difficulty level (updated for progressive scaling)
+  // Word counts and text sizes balanced for smoother learning progression
+  // ENHANCED: Progressive difficulty with bridge levels for smoother transitions
   // Text sizes: BIGGEST for easiest levels, SMALLER as difficulty increases
   private static getReadingConfig(difficulty: DifficultyLevel): ReadingConfig {
-    switch (difficulty) {
-      case 'easy': // Emergent readers (ages 4-6): Maximum 6 words per page with biggest text
-        return {
-          maxWordsPerPage: 6, // PEDAGOGICAL STANDARD: 6 words max for emergent readers
-          fontSize: 'text-4xl md:text-5xl lg:text-6xl', // Largest text for beginning readers
-          lineHeight: 'leading-loose', // Extra spacing for readability
-          spacing: 'space-y-8' // Generous spacing for easy visual tracking
-        };
-      case 'medium': // Early readers (ages 5-7): 10-12 words per page for developing skills
-        return {
-          maxWordsPerPage: 12, // PEDAGOGICAL STANDARD: 10-12 words for early readers
-          fontSize: 'text-3xl md:text-4xl lg:text-5xl', // Large text for growing confidence
-          lineHeight: 'leading-relaxed',
-          spacing: 'space-y-6'
-        };
-      case 'hard': // Developing readers (ages 6-8): 20-22 words per page for fluency building
-        return {
-          maxWordsPerPage: 20, // PEDAGOGICAL STANDARD: 20-22 words for developing readers
-          fontSize: 'text-2xl md:text-3xl lg:text-4xl', // Medium-large text for sustained reading
-          lineHeight: 'leading-normal',
-          spacing: 'space-y-4'
-        };
-      case 'expert': // Fluent readers (ages 7-9): 35-40 words per page for advanced comprehension
-        return {
-          maxWordsPerPage: 40, // PEDAGOGICAL STANDARD: 35-40 words for fluent readers
-          fontSize: 'text-xl md:text-2xl lg:text-3xl', // Appropriate text size for longer passages
-          lineHeight: 'leading-normal',
-          spacing: 'space-y-3'
-        };
-    }
+    // Use progressive story generator for consistency and smooth transitions
+    const progressiveConfig = ProgressiveStoryGenerator.getReadingConfigForDifficulty(difficulty);
+    
+    return {
+      maxWordsPerPage: progressiveConfig.maxWordsPerPage,
+      fontSize: progressiveConfig.fontSize,
+      lineHeight: progressiveConfig.lineHeight,
+      spacing: progressiveConfig.spacing
+    };
   }
 
   static generateStory(userInfo: UserInfo, difficulty: DifficultyLevel, pageCount: number = 10): {
     pages: string[];
     config: ReadingConfig;
   } {
-    const config = this.getReadingConfig(difficulty);
-    const characterName = userInfo.name?.trim() || 'Alex';
-    
-    // Collect and organize user inputs for organic integration
-    const userElements = this.extractUserElements(userInfo);
-    
-    // Determine correct pronouns based on avatar selection
-    const pronouns = this.getPronounsFromAvatar(userInfo.avatar?.type);
-    
-    // Generate story content with organic user element integration 
-    // CRITICAL: Stories are ALWAYS generated in English regardless of user's native language
-    const storyContent = this.createStoryContent(characterName, userElements, difficulty, pronouns);
-    
-    // Split into pages respecting word limits with continuing user elements
-    const pages = this.splitIntoPages(storyContent, config.maxWordsPerPage, pageCount, characterName, userElements, difficulty, pronouns);
-    
-    // Verify word limits are being enforced
-    this.verifyWordLimits(pages, config.maxWordsPerPage, difficulty);
-    
-    // Quality check the generated story
-    const qualityCheck = StoryQualityChecker.checkStoryQuality(pages, difficulty);
-    if (!qualityCheck.isValid) {
-      console.warn('Story quality issues detected:', qualityCheck.issues);
-      // Log quality issues but don't block generation in production
+    try {
+      console.log(`Early Reader Generator: Using progressive approach for ${difficulty} level`);
+      
+      // Use progressive story generation for smoother transitions
+      const result = ProgressiveStoryGenerator.generateProgressiveStory(userInfo, difficulty, pageCount);
+      
+      // Convert to ReadingConfig format for compatibility
+      const config: ReadingConfig = {
+        maxWordsPerPage: result.config.maxWordsPerPage,
+        fontSize: result.config.fontSize,
+        lineHeight: result.config.lineHeight,
+        spacing: result.config.spacing
+      };
+      
+      // Additional vocabulary validation for early readers
+      this.validateEarlyReaderVocabulary(result.pages, difficulty);
+      
+      // Quality check the generated story
+      const qualityCheck = StoryQualityChecker.checkStoryQuality(result.pages, difficulty);
+      if (!qualityCheck.isValid) {
+        console.warn('Early reader story quality issues detected:', qualityCheck.issues);
+      }
+      
+      return { pages: result.pages, config };
+      
+    } catch (error) {
+      console.warn('Progressive generation failed, falling back to traditional approach:', error);
+      
+      // Fallback to original approach
+      const config = this.getReadingConfig(difficulty);
+      const characterName = userInfo.name?.trim() || 'Alex';
+      
+      // Collect and organize user inputs for organic integration
+      const userElements = this.extractUserElements(userInfo);
+      
+      // Determine correct pronouns based on avatar selection
+      const pronouns = this.getPronounsFromAvatar(userInfo.avatar?.type);
+      
+      // Generate story content with organic user element integration 
+      const storyContent = this.createStoryContent(characterName, userElements, difficulty, pronouns);
+      
+      // Split into pages respecting word limits with continuing user elements
+      const pages = this.splitIntoPages(storyContent, config.maxWordsPerPage, pageCount, characterName, userElements, difficulty, pronouns);
+      
+      // Verify word limits are being enforced
+      this.verifyWordLimits(pages, config.maxWordsPerPage, difficulty);
+      
+      return { pages, config };
     }
-    
-    return { pages, config };
   }
 
   // Get correct pronouns based on avatar type
@@ -355,6 +358,22 @@ export class EarlyReaderStoryGenerator {
         console.log(`✅ Page ${index + 1}: ${wordCount}/${maxWordsPerPage} words (${difficulty} level)`);
       }
     });
+  }
+
+  /**
+   * Validate vocabulary for early readers
+   */
+  private static validateEarlyReaderVocabulary(pages: string[], difficulty: DifficultyLevel): void {
+    for (let i = 0; i < pages.length; i++) {
+      const words = pages[i].split(/\s+/).filter(word => word.trim().length > 0);
+      const validation = VocabularyLevelClassifier.validateVocabularyDistribution(words, difficulty);
+      
+      if (!validation.isValid) {
+        console.warn(`Early Reader Page ${i + 1} vocabulary issues:`, validation.issues);
+        // Log distribution for analysis
+        console.log(`Page ${i + 1} vocabulary distribution:`, validation.distribution);
+      }
+    }
   }
 
   static getReadingConfigForDifficulty(difficulty: DifficultyLevel): ReadingConfig {

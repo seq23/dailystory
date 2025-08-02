@@ -109,6 +109,7 @@ export class VocabularyLevelClassifier {
   
   /**
    * Determine if word should be highlighted based on user's reading level
+   * Enhanced for smoother progression between levels
    */
   private static shouldHighlightWord(wordLevel: number, userLevel: 'easy' | 'medium' | 'hard' | 'expert'): boolean {
     switch (userLevel) {
@@ -117,7 +118,8 @@ export class VocabularyLevelClassifier {
         return wordLevel >= 2;
         
       case 'medium':
-        // Highlight level 3+ words (appropriate challenge)
+        // More selective highlighting for smoother transition
+        // Only highlight level 3+ words to avoid overwhelming early readers
         return wordLevel >= 3;
         
       case 'hard':
@@ -153,6 +155,7 @@ export class VocabularyLevelClassifier {
   
   /**
    * Get recommended vocabulary complexity for reading level
+   * Enhanced for progressive difficulty stepping
    */
   static getRecommendedComplexity(userLevel: 'easy' | 'medium' | 'hard' | 'expert'): {
     primary: number[];
@@ -162,38 +165,94 @@ export class VocabularyLevelClassifier {
     switch (userLevel) {
       case 'easy':
         return {
-          primary: [1], // Mostly sight words
-          secondary: [2], // Some 2nd grade words
-          avoid: [4, 5] // Avoid advanced words
+          primary: [1], // Mostly sight words (85-90%)
+          secondary: [], // No secondary words for pure beginners
+          avoid: [3, 4, 5] // Avoid anything above level 2
         };
         
       case 'medium':
         return {
-          primary: [1, 2], // Sight words + 2nd grade
-          secondary: [3], // Some 3rd grade words
-          avoid: [5] // Avoid expert level
+          primary: [1], // Foundation sight words (70-75%)
+          secondary: [2], // Gradual introduction of 2nd grade words (20-25%)
+          avoid: [4, 5] // Avoid advanced words completely
         };
         
       case 'hard':
         return {
-          primary: [1, 2, 3], // Up to 3rd grade
-          secondary: [4], // Some 4th-5th grade
-          avoid: [] // Can handle most words
+          primary: [1, 2], // Strong foundation (60-70%)
+          secondary: [3], // Building 3rd grade vocabulary (25-30%)
+          avoid: [5] // Avoid expert level only
         };
         
       case 'expert':
         return {
-          primary: [1, 2, 3, 4], // Up to 4th-5th grade
-          secondary: [5], // Advanced vocabulary
-          avoid: [] // No restrictions
+          primary: [1, 2, 3], // Comprehensive foundation (50-60%)
+          secondary: [4], // Advanced vocabulary (30-40%)
+          avoid: [] // No restrictions, can handle level 5
         };
         
       default:
         return {
-          primary: [1, 2],
-          secondary: [3],
+          primary: [1],
+          secondary: [2],
           avoid: [4, 5]
         };
     }
+  }
+
+  /**
+   * Check if vocabulary distribution is appropriate for reading level
+   */
+  static validateVocabularyDistribution(
+    words: string[], 
+    userLevel: 'easy' | 'medium' | 'hard' | 'expert'
+  ): {
+    isValid: boolean;
+    issues: string[];
+    distribution: Record<number, number>;
+  } {
+    const distribution: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    const issues: string[] = [];
+    
+    // Analyze each word
+    words.forEach(word => {
+      const difficulty = this.getWordDifficulty(word, userLevel);
+      distribution[difficulty.level]++;
+    });
+    
+    const totalWords = words.length;
+    const recommendations = this.getRecommendedComplexity(userLevel);
+    
+    // Calculate percentages
+    const level2Plus = (distribution[2] + distribution[3] + distribution[4] + distribution[5]) / totalWords;
+    const level3Plus = (distribution[3] + distribution[4] + distribution[5]) / totalWords;
+    const level4Plus = (distribution[4] + distribution[5]) / totalWords;
+    
+    // Validate based on reading level
+    switch (userLevel) {
+      case 'easy':
+        if (level2Plus > 0.15) {
+          issues.push(`Too many level 2+ words (${(level2Plus * 100).toFixed(1)}%) for easy reading`);
+        }
+        break;
+        
+      case 'medium':
+        if (level3Plus > 0.15) {
+          issues.push(`Too many level 3+ words (${(level3Plus * 100).toFixed(1)}%) for medium reading transition`);
+        }
+        break;
+        
+      case 'hard':
+        if (level4Plus > 0.25) {
+          issues.push(`Too many level 4+ words (${(level4Plus * 100).toFixed(1)}%) for hard reading`);
+        }
+        break;
+    }
+    
+    return {
+      isValid: issues.length === 0,
+      issues,
+      distribution
+    };
   }
 }
