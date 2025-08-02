@@ -31,24 +31,36 @@ export const InteractiveWord = ({
   const { toast } = useToast();
   const { isMobileDevice, isCapacitor } = useIsMobile();
   
-  // ENHANCED: Simple and working translation helper
+  // ENHANCED: Debug and fix translation issues for Arabic, Chinese, Hindi
   const userLanguageT = (key: string, fallback: string) => {
-    console.log('🌐 Translation Debug:', {
+    console.log('🌐 Translation Debug - Enhanced:', {
       key,
       userNativeLanguage: userInfo?.nativeLanguage,
       fallback,
-      currentLang: i18n.language
+      currentLang: i18n.language,
+      resourcesLoaded: i18n.getResourceBundle(userInfo?.nativeLanguage || 'en', 'translation'),
+      hasResourceBundle: i18n.hasResourceBundle(userInfo?.nativeLanguage || 'en', 'translation')
     });
     
     if (userInfo?.nativeLanguage && userInfo.nativeLanguage !== 'en') {
       try {
+        // Direct resource lookup for debugging
+        const resources = i18n.getResourceBundle(userInfo.nativeLanguage, 'translation');
+        console.log('🗂️ Resource check:', {
+          language: userInfo.nativeLanguage,
+          hasResources: !!resources,
+          interactiveWordSection: resources?.interactiveWord,
+          specificKey: resources?.interactiveWord?.[key.split('.')[1]]
+        });
+        
         // Force language context and get translation
         const translation = i18n.t(key, { lng: userInfo.nativeLanguage });
-        console.log('🗣️ Translation result:', { 
+        console.log('🗣️ Translation result - Enhanced:', { 
           key, 
           translation, 
           language: userInfo.nativeLanguage,
-          isTranslated: translation !== key
+          isTranslated: translation !== key,
+          translationLength: translation.length
         });
         
         // Return translation if it's different from the key (meaning it was found)
@@ -222,26 +234,78 @@ export const InteractiveWord = ({
     try {
       const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
       
-      // Simple fallback definition first
-      const fallbackDefinition = getWordDefinition(cleanWord, sentenceContext);
+      // Get definition in user's native language if possible
+      let definition = getWordDefinition(cleanWord, sentenceContext);
+      let definitionToSpeak = definition;
       
-      console.log('📝 Using fallback definition:', fallbackDefinition);
+      // Try to get translated definition via dictionary API
+      if (userNativeLanguage !== 'en') {
+        try {
+          console.log('📞 Calling word-dictionary for native language');
+          const { data: wordData, error: wordError } = await supabase.functions.invoke('word-dictionary', {
+            body: { 
+              word: cleanWord, 
+              userLevel: difficulty,
+              userLanguage: userNativeLanguage
+            }
+          });
+          
+          if (!wordError && wordData?.definition) {
+            definition = wordData.definition;
+            definitionToSpeak = wordData.definition;
+            console.log('✅ Got native language definition:', definition);
+          }
+        } catch (apiError) {
+          console.warn('⚠️ API call failed, using fallback');
+        }
+      }
+      
+      console.log('📝 Using definition:', definition);
       
       // Show definition immediately
       toast({
         title: userLanguageT('interactiveWord.definition', 'Definition'),
-        description: `"${cleanWord}" = ${fallbackDefinition}`,
+        description: `"${cleanWord}" = ${definition}`,
         duration: 5000,
       });
       
-      // Try audio with safety checks
+      // Enhanced audio with native language support
       if ('speechSynthesis' in window) {
         try {
-          console.log('🎵 Starting simple speech synthesis');
-          const utterance = new SpeechSynthesisUtterance(fallbackDefinition);
+          console.log('🎵 Starting enhanced speech synthesis:', {
+            text: definitionToSpeak,
+            language: userNativeLanguage,
+            availableVoices: speechSynthesis.getVoices().length
+          });
+          
+          const utterance = new SpeechSynthesisUtterance(definitionToSpeak);
           utterance.rate = 0.7;
           utterance.pitch = 1.0;
           utterance.volume = 1.0;
+          
+          // Enhanced voice selection for native language
+          const voices = speechSynthesis.getVoices();
+          console.log('🗣️ Available voices for language selection:', 
+            voices.filter(v => v.lang.includes(userNativeLanguage.substring(0, 2))).map(v => ({ name: v.name, lang: v.lang }))
+          );
+          
+          if (userNativeLanguage !== 'en') {
+            // Set language for speech synthesis
+            utterance.lang = userNativeLanguage;
+            
+            // Find best voice for user's language
+            const languageCode = userNativeLanguage.substring(0, 2);
+            const nativeVoice = voices.find(voice => 
+              voice.lang.toLowerCase().startsWith(languageCode.toLowerCase())
+            );
+            
+            if (nativeVoice) {
+              utterance.voice = nativeVoice;
+              console.log('✅ Selected native voice:', { name: nativeVoice.name, lang: nativeVoice.lang });
+            } else {
+              console.log('⚠️ No native voice found, using language setting');
+            }
+          }
           
           utterance.onstart = () => {
             console.log('✅ Speech started');
