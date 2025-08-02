@@ -28,7 +28,7 @@ i18n
     resources,
     // Don't force English - let detection work
     fallbackLng: 'en',
-    debug: true, // Enable debug to see what's happening
+    debug: false,
     interpolation: {
       escapeValue: false,
     },
