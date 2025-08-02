@@ -244,11 +244,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
         // Start progressive image generation
         generateImagesProgressively();
         
-        toast({
-          title: "Story Ready! 📚",
-          description: `A new ${generatedStory.readingLevel} level story with intelligent images has been created just for you!`,
-          duration: 3000,
-        });
+        // Success notification removed - no longer showing story ready message
         
       } catch (error) {
         console.error('Failed to generate story:', error);
@@ -416,11 +412,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
           generateImagesForNewStory();
         }
         
-        toast({
-          title: "New Story Ready! 📚",
-          description: `A fresh ${generatedStory.readingLevel} level story with intelligent images has been created!`,
-          duration: 3000,
-        });
+        // Success notification removed - no longer showing new story ready message
       } catch (error) {
         console.error('Failed to generate new story:', error);
         toast({
