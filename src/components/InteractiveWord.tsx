@@ -183,74 +183,80 @@ export const InteractiveWord = ({
     setIsPlaying(true);
     
     try {
-      // Mobile-specific audio initialization
+      // Mobile-specific audio initialization - simplified approach
+      const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
+      console.log('Explaining word:', cleanWord, 'TTS service available:', !!ttsService);
+      
+      // Always try Web Speech API first on mobile for better reliability
       const isMobile = /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
       
-      if (isMobile) {
-        // Create a new audio context within the user gesture for mobile
-        const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-        let newAudioContext: AudioContext | null = null;
+      if (isMobile || !ttsService) {
+        console.log('Using Web Speech API fallback');
         
-        try {
-          newAudioContext = new AudioContext();
-          console.log('Created new AudioContext for mobile:', newAudioContext.state);
+        const definition = getWordDefinition(cleanWord, sentenceContext);
+        const explanation = `${cleanWord} means: ${definition}`;
+        
+        if ('speechSynthesis' in window) {
+          // Cancel any existing speech
+          speechSynthesis.cancel();
+          await new Promise(resolve => setTimeout(resolve, 100));
           
-          // Ensure context is running
-          if (newAudioContext.state === 'suspended') {
-            await newAudioContext.resume();
-            console.log('Resumed AudioContext:', newAudioContext.state);
-          }
+          const utterance = new SpeechSynthesisUtterance(explanation);
+          utterance.rate = 0.8;
+          utterance.pitch = 1.0;
+          utterance.volume = 1.0;
           
-          // Initialize TTS service with new context if needed
-          if (ttsService && (ttsService as any).audioContext?.state !== 'running') {
-            (ttsService as any).audioContext = newAudioContext;
-          }
-        } catch (audioError) {
-          console.log('AudioContext creation failed, using fallback:', audioError);
+          utterance.onerror = (error) => {
+            console.error('Speech synthesis error:', error);
+            toast({
+              title: "Audio unavailable", 
+              description: "Definition shown below. Try with headphones if needed.",
+              duration: 3000,
+            });
+            setIsPlaying(false);
+          };
           
-          // Mobile fallback: use Web Speech API with better error handling
-          const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
-          const definition = getWordDefinition(cleanWord, sentenceContext);
-          const explanation = `The word ${cleanWord} means: ${definition}`;
+          utterance.onend = () => {
+            setIsPlaying(false);
+          };
           
-          if ('speechSynthesis' in window) {
-            // Cancel any existing speech
-            speechSynthesis.cancel();
-            
-            // Wait a moment to ensure cancellation
-            await new Promise(resolve => setTimeout(resolve, 100));
-            
-            const utterance = new SpeechSynthesisUtterance(explanation);
-            utterance.rate = 0.8;
-            utterance.pitch = 1.0;
-            utterance.volume = 1.0;
-            
-            // Add error handling for utterance
-            utterance.onerror = (error) => {
-              console.error('Speech synthesis error:', error);
-              toast({
-                title: "Audio Error", 
-                description: "Please enable audio or try with headphones connected.",
-                duration: 3000,
-              });
-            };
-            
-            utterance.onend = () => {
-              setIsPlaying(false);
-            };
-            
-            speechSynthesis.speak(utterance);
-            
-            // Set word data for display
+          speechSynthesis.speak(utterance);
+          
+          // Set word data for display
+          try {
             const data = await ttsService?.getWordData?.(cleanWord, difficulty as 'easy' | 'medium' | 'hard') || {
               definition,
               phonetic: getPhoneticSpelling(cleanWord),
-              sampleSentence: `Here's an example: ${cleanWord} in a sentence.`
+              sampleSentence: `Here's an example: "${cleanWord}" in a sentence.`
             };
             setWordData(data);
-            
-            return; // Exit early for fallback
+          } catch (error) {
+            console.error('Error getting word data:', error);
+            setWordData({
+              definition,
+              phonetic: getPhoneticSpelling(cleanWord),
+              sampleSentence: `Here's an example: "${cleanWord}" in a sentence.`
+            });
           }
+          
+          return;
+        } else {
+          console.log('Speech synthesis not available');
+          toast({
+            title: "Audio unavailable", 
+            description: "Audio not supported on this device. Definition shown below.",
+            duration: 3000,
+          });
+          
+          // Still show the definition even without audio
+          const definition = getWordDefinition(cleanWord, sentenceContext);
+          setWordData({
+            definition,
+            phonetic: getPhoneticSpelling(cleanWord),
+            sampleSentence: `Here's an example: "${cleanWord}" in a sentence.`
+          });
+          setIsPlaying(false);
+          return;
         }
       }
       
