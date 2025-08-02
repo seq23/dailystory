@@ -36,10 +36,10 @@ serve(async (req) => {
         text: text.slice(0, 1000), // Limit text length
         model_id: model || 'eleven_multilingual_v2',
         voice_settings: {
-          stability: 0.5,
-          similarity_boost: 0.8,
-          style: 0.2,
-          use_speaker_boost: true
+          stability: 0.95, // Very high stability for slowest, most deliberate speech
+          similarity_boost: 0.95, // Keep voice very consistent
+          style: 0.05, // Minimal style for most controlled delivery
+          use_speaker_boost: false // Disable for clearest, slowest speech
         }
       }),
     });
@@ -50,21 +50,34 @@ serve(async (req) => {
       throw new Error(`ElevenLabs API error: ${response.status}`);
     }
 
-    // Return audio data
+    // Convert audio data to base64 for consistency with our TTS service
     const audioData = await response.arrayBuffer();
+    const uint8Array = new Uint8Array(audioData);
     
-    return new Response(audioData, {
-      headers: {
-        ...corsHeaders,
-        'Content-Type': 'audio/mpeg',
-        'Content-Length': audioData.byteLength.toString(),
-      },
-    });
+    // Convert to base64 in chunks to avoid stack overflow
+    let binary = '';
+    const chunkSize = 1024;
+    for (let i = 0; i < uint8Array.length; i += chunkSize) {
+      const chunk = uint8Array.slice(i, i + chunkSize);
+      binary += String.fromCharCode(...chunk);
+    }
+    const base64Audio = btoa(binary);
+    
+    return new Response(
+      JSON.stringify({ audioContent: base64Audio }),
+      {
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
 
   } catch (error) {
-    console.error('Error in elevenlabs-tts function:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error in elevenlabs-tts function:', errorMessage);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: errorMessage }),
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -469,5 +469,16 @@
     "next": "下一步",
     "skip": "跳过教程",
     "startReading": "开始阅读！"
+  },
+  "floatingTimer": {
+    "startTimer": "开始阅读计时器",
+    "pauseTimer": "暂停阅读计时器", 
+    "reduceTime": "减少5分钟时间",
+    "endSession": "结束阅读会话",
+    "maxLimit": "最大时间"
+  },
+  "readingLevels": {
+    "easier": "🌟 让阅读更简单有趣！",
+    "harder": "🚀 提升阅读挑战！"
   }
 }

@@ -393,6 +393,16 @@
       "description": "Use 'New Story' to create a different adventure, or 'Home' to return to the main page. Previous/Next buttons move between story pages!"
     }
   },
+  "storyDisplay": {
+    "tooltips": {
+      "audioButton": "Listen to this page read aloud (once per page)",
+      "microphoneButton": "Record yourself reading (Premium Feature)",
+      "makeEasier": "🌟 Make reading easier & more enjoyable!",
+      "makeHarder": "🚀 Level up your reading challenge!", 
+      "addPages": "Add 5 pages",
+      "removePages": "Remove page"
+    }
+  },
   "sessionEnded": {
     "completed": "Reading Session Completed!",
     "premiumCompleted": "Premium Session Completed!",
@@ -407,5 +417,16 @@
     "unlockPremium": "Unlock Premium Benefits!",
     "goToHome": "Go to Home",
     "startNewStory": "Start New Story"
+  },
+  "floatingTimer": {
+    "startTimer": "Start Reading Timer",
+    "pauseTimer": "Pause Reading Timer", 
+    "reduceTime": "Reduce Time by 5 Minutes",
+    "endSession": "End Reading Session",
+    "maxLimit": "Max Time"
+  },
+  "readingLevels": {
+    "easier": "🌟 Make reading easier & more fun!",
+    "harder": "🚀 Challenge yourself with harder words!"
   }
 }

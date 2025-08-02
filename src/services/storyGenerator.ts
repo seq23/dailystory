@@ -216,32 +216,33 @@ export class StoryGeneratorService {
   }
   
   /**
-   * Get reading configuration for difficulty level
+   * Get educational reading configuration for difficulty level
+   * Now uses standardized educational word count limits
    */
   private static getReadingConfigForDifficulty(difficulty: DifficultyLevel) {
     const configs = {
       easy: {
-        maxWordsPerPage: 6,
+        maxWordsPerPage: 6,  // Educational standard for emergent readers
         fontSize: 'text-4xl md:text-5xl lg:text-6xl',
-        lineHeight: 'leading-relaxed',
-        spacing: 'space-y-4'
+        lineHeight: 'leading-loose',
+        spacing: 'space-y-8'
       },
       medium: {
-        maxWordsPerPage: 35,
+        maxWordsPerPage: 8,  // Educational standard for early readers
         fontSize: 'text-3xl md:text-4xl lg:text-5xl',
         lineHeight: 'leading-relaxed',
-        spacing: 'space-y-4'
+        spacing: 'space-y-6'
       },
       hard: {
-        maxWordsPerPage: 65,
+        maxWordsPerPage: 12, // Educational standard for developing readers
         fontSize: 'text-2xl md:text-3xl lg:text-4xl',
         lineHeight: 'leading-relaxed',
         spacing: 'space-y-4'
       },
       expert: {
-        maxWordsPerPage: 85,
+        maxWordsPerPage: 15, // Educational standard for fluent readers
         fontSize: 'text-xl md:text-2xl lg:text-3xl',
-        lineHeight: 'leading-relaxed',
+        lineHeight: 'leading-normal',
         spacing: 'space-y-4'
       }
     };
