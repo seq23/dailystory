@@ -256,7 +256,7 @@ export const FloatingTimer = ({
         <div className="relative w-36 sm:w-44 h-20 sm:h-24">
           {/* Play/Pause Button - Center Bottom */}
           <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2">
-            <Tooltip open={tutorialStep === 1 || sequentialTutorialStep === 1 ? true : undefined}>
+            <Tooltip open={sequentialTutorialStep === 1 ? true : undefined}>
               <TooltipTrigger asChild>
                 <Button
                   variant="outline"
@@ -272,7 +272,6 @@ export const FloatingTimer = ({
                 className={`font-medium text-lg ${sequentialTutorialStep === 1 ? 'bg-yellow-500 text-yellow-900 border-yellow-400 shadow-lg' : 'bg-primary text-primary-foreground border-primary/30'}`}
               >
                 {sequentialTutorialStep === 1 ? "🎯 Click to start/pause your reading timer!" : 
-                 tutorialStep === 1 ? "🎯 Click to start/pause your reading timer!" : 
                  (isReading ? "Pause Timer" : "Start Timer")}
               </TooltipContent>
             </Tooltip>
@@ -281,7 +280,7 @@ export const FloatingTimer = ({
 
           {/* Reduce Time Button - Left Curve */}
           <div className="absolute bottom-4 sm:bottom-6 left-2 sm:left-4">
-            <Tooltip open={tutorialStep === 1 || sequentialTutorialStep === 2 ? true : undefined}>
+            <Tooltip open={sequentialTutorialStep === 2 ? true : undefined}>
               <TooltipTrigger asChild>
                 <Button
                   variant="outline"
@@ -298,7 +297,6 @@ export const FloatingTimer = ({
                 className={`font-medium text-lg ${sequentialTutorialStep === 2 ? 'bg-yellow-500 text-yellow-900 border-yellow-400 shadow-lg' : 'bg-orange-600 text-white border-orange-500'}`}
               >
                 {sequentialTutorialStep === 2 ? "⏰ Reduce time by 5 minutes!" : 
-                 tutorialStep === 1 ? "⏰ Reduce time by 5 minutes!" : 
                  "Reduce 5 Minutes"}
               </TooltipContent>
             </Tooltip>
@@ -306,7 +304,7 @@ export const FloatingTimer = ({
 
           {/* End Session Button - Right Curve */}
           <div className="absolute bottom-4 sm:bottom-6 right-2 sm:right-4">
-            <Tooltip open={tutorialStep === 1 || sequentialTutorialStep === 3 ? true : undefined}>
+            <Tooltip open={sequentialTutorialStep === 3 ? true : undefined}>
               <TooltipTrigger asChild>
                 <Button
                   variant="outline"
@@ -322,7 +320,6 @@ export const FloatingTimer = ({
                 className={`font-medium text-lg ${sequentialTutorialStep === 3 ? 'bg-yellow-500 text-yellow-900 border-yellow-400 shadow-lg' : 'bg-red-600 text-white border-red-500'}`}
               >
                 {sequentialTutorialStep === 3 ? "🔚 Click to end your reading session!" : 
-                 tutorialStep === 1 ? "🔚 Click to end your reading session!" : 
                  "End Reading Session"}
               </TooltipContent>
             </Tooltip>
