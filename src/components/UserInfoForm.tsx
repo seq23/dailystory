@@ -34,10 +34,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
     learningGoal: "improve-english-reading",
     avatar: {
       type: "boy",
-      skinTone: "light",
-      hairStyle: "short",
-      hairColor: "brown",
-      hasFreckles: false
+      skinTone: "light"
     },
     favoriteColor: "",
     favoriteAnimal: "",
@@ -385,6 +382,9 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="avatar" className="text-base md:text-lg font-semibold text-foreground">
+                  {t("userInfoForm.fields.avatar.label")}
+                </Label>
                 <AvatarPicker
                   value={formData.avatar}
                   onChange={(avatar) => setFormData(prev => ({ ...prev, avatar }))}
