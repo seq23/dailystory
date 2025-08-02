@@ -400,5 +400,19 @@
     },
     "goToHome": "Ir al Inicio",
     "startNewStory": "Comenzar Nueva Historia"
+  },
+  "interactiveWord": {
+    "hearIt": "Escuchar",
+    "explain": "Explicar", 
+    "translate": "Traducir",
+    "loading": "Cargando...",
+    "addToVocabulary": "Guardar Palabra",
+    "etymology": "Origen de la Palabra",
+    "translationError": "Traducción no disponible",
+    "difficulty": {
+      "beginner": "Fácil",
+      "intermediate": "Medio",
+      "advanced": "Difícil"
+    }
   }
 }

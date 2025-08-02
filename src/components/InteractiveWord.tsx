@@ -5,6 +5,7 @@ import { Volume2, HelpCircle, Languages, BookOpen, Lightbulb, Plus, Crown } from
 import { createOpenAITTSService } from "@/services/textToSpeechService";
 import { useToast } from "@/hooks/use-toast";
 import { contextualPronunciation } from "@/services/contextualPronunciation";
+import { supabase } from "@/integrations/supabase/client";
 import type { UserInfo } from "@/types";
 
 interface InteractiveWordProps {
@@ -303,7 +304,6 @@ export const InteractiveWord = ({
     setIsLoadingWordData(true);
     try {
       const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
-      // Simple translation placeholder - can be enhanced with translation API
       const languageNames: Record<string, string> = {
         'ar': 'Arabic',
         'es': 'Spanish',
@@ -313,13 +313,46 @@ export const InteractiveWord = ({
         'fr': 'French'
       };
       const langName = languageNames[userNativeLanguage] || userNativeLanguage;
-      // For now, just get word data since translation will be added later
-      if (ttsService) {
-        const data = await ttsService.getWordData(cleanWord, difficulty as 'easy' | 'medium' | 'hard');
-        setWordData(data);
+      
+      // Create a translation request to Supabase function
+      const { data, error } = await supabase.functions.invoke('translate-word', {
+        body: {
+          word: cleanWord,
+          targetLanguage: userNativeLanguage,
+          context: sentenceContext
+        }
+      });
+
+      if (!error && data) {
+        // Show translation in a toast
+        toast({
+          title: `${cleanWord} in ${langName}`,
+          description: data.translation || `Translation: ${data.translated_word}`,
+          duration: 5000,
+        });
+
+        // Also get word data for additional context
+        if (ttsService) {
+          const wordData = await ttsService.getWordData(cleanWord, difficulty as 'easy' | 'medium' | 'hard');
+          setWordData(wordData);
+        }
+      } else {
+        // Fallback: show simple translation message
+        console.error('Translation error:', error);
+        toast({
+          title: `${cleanWord} in ${langName}`,
+          description: t("interactiveWord.translationError", "Translation service temporarily unavailable"),
+          duration: 3000,
+        });
       }
     } catch (error) {
       console.error('Error translating word:', error);
+      // Fallback message
+      toast({
+        title: t("interactiveWord.translate"),
+        description: t("interactiveWord.translationError", "Translation not available"),
+        duration: 3000,
+      });
     } finally {
       setIsLoadingWordData(false);
     }

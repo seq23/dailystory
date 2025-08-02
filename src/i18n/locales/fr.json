@@ -400,5 +400,19 @@
     },
     "goToHome": "Aller à l'Accueil",
     "startNewStory": "Commencer une Nouvelle Histoire"
+  },
+  "interactiveWord": {
+    "hearIt": "Écouter",
+    "explain": "Expliquer",
+    "translate": "Traduire", 
+    "loading": "Chargement...",
+    "addToVocabulary": "Sauvegarder le Mot",
+    "etymology": "Origine du Mot",
+    "translationError": "Traduction non disponible",
+    "difficulty": {
+      "beginner": "Facile",
+      "intermediate": "Moyen",
+      "advanced": "Difficile"
+    }
   }
 }
