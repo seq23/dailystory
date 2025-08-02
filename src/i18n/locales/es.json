@@ -416,7 +416,8 @@
   },
   "interactiveWord": {
     "hearIt": "Escuchar",
-    "explain": "Explicar", 
+    "explain": "Explicar",
+    "definition": "Definición", 
     "translate": "Traducir",
     "loading": "Cargando...",
     "addToVocabulary": "Guardar Palabra",
