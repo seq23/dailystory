@@ -365,6 +365,10 @@
       "descriptionWords": "¡Increíble! ¡Leíste {wordsRead} palabras y completaste la historia!",
       "descriptionWordsTime": "¡Buen trabajo! Leíste {wordsRead} palabras en {minutes} minutos."
     },
+    "addPagesSuccess": {
+      "title": "¡5 Páginas más añadidas! 📚",
+      "description": "¡Tu historia ha sido extendida!"
+    },
     "encouragementMessages": {
       "outstanding": "¡Logro de lectura sobresaliente! ¡Te estás convirtiendo en un campeón de la lectura!",
       "excellent": "¡Excelente trabajo! ¡Estás haciendo un gran progreso!",

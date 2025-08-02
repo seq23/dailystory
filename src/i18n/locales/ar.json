@@ -545,6 +545,10 @@
       "descriptionWords": "رائع! لقد قرأت {wordsRead} كلمة وأكملت القصة!",
       "descriptionWordsTime": "عمل جيد! قرأت {wordsRead} كلمة في {minutes} دقيقة."
     },
+    "addPagesSuccess": {
+      "title": "تم إضافة 5 صفحات أخرى! 📚",
+      "description": "تم تمديد قصتك!"
+    },
     "encouragementMessages": {
       "outstanding": "إنجاز قراءة رائع! أنت تصبح بطل قراءة!",
       "excellent": "عمل ممتاز! أنت تحرز تقدماً رائعاً!",

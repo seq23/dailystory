@@ -116,16 +116,19 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   const audioContextRef = useRef<AudioContext | null>(null);
   const celebrationTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Handle story completion toast to avoid React warning
+  // Handle story completion toast to avoid React warning - only trigger once per completion
+  const [hasShownCompletionToast, setHasShownCompletionToast] = useState(false);
+  
   useEffect(() => {
-    if (storyCompleted && !sessionEnded) {
+    if (storyCompleted && !sessionEnded && !hasShownCompletionToast) {
       toast({
         title: t("storyDisplay.storyCompletedToast.title"),
         description: t("storyDisplay.storyCompletedToast.descriptionWords", { wordsRead }),
         duration: 2000,
       });
+      setHasShownCompletionToast(true);
     }
-  }, [storyCompleted, sessionEnded, wordsRead, toast, t]);
+  }, [storyCompleted, sessionEnded, hasShownCompletionToast, wordsRead, toast, t]);
 
   // Fallback illustrations
   const illustrations = [illustration1, illustration2, illustration3, illustration4, illustration5];
@@ -590,8 +593,16 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
       // Start progressive image generation (non-blocking)
       generateNewPageImages();
       
-      // Update word count for session stats but don't reset timer
-      setWordsRead(prev => prev + newPages.join(' ').split(' ').length);
+      // Reset story completion state when adding pages
+      setStoryCompleted(false);
+      setHasShownCompletionToast(false);
+      
+      // Show success toast for adding pages
+      toast({
+        title: t("storyDisplay.addPagesSuccess.title"),
+        description: t("storyDisplay.addPagesSuccess.description"),
+        duration: 2000,
+      });
     } catch (error) {
       console.error('Failed to add more pages:', error);
     }

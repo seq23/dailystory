@@ -101,6 +101,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
   const [hasShownAddPagesAlert, setHasShownAddPagesAlert] = useState(false);
   const [canAddMorePages, setCanAddMorePages] = useState(true);
   const [pagesAdded, setPagesAdded] = useState(0);
+  const [hasShownCompletionToast, setHasShownCompletionToast] = useState(false);
 
   // Character consistency - store original character details  
   const [establishedCharacter, setEstablishedCharacter] = useState<EstablishedCharacter | null>(null);
@@ -588,11 +589,15 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
       setCanAddMorePages(false);
       setShowAddPagesAlert(false);
       
+      // Reset story completion state when adding pages
+      setStoryCompleted(false);
+      setHasShownCompletionToast(false);
+      
       // Show success message
       toast({
-        title: "5 More Pages Added! 📚",
-        description: "Your story has been extended! Reach the last page to add more.",
-        duration: 3000,
+        title: t("storyDisplay.addPagesSuccess.title"),
+        description: t("storyDisplay.addPagesSuccess.description"),
+        duration: 2000,
       });
       
     } catch (error) {
@@ -982,15 +987,18 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                             readingSpeed: Math.round((wordsRead / (timeSpent / 60)) || 0)
                           });
                           
-                          // Show completion feedback
-          toast({
-            title: t("storyDisplay.storyCompletedToast.title"),
-            description: t("storyDisplay.storyCompletedToast.descriptionWordsTime", { 
-              wordsRead, 
-              minutes: Math.round(timeSpent / 60) 
-            }),
-            duration: 2000,
-          });
+                          // Show completion feedback only once
+                          if (!hasShownCompletionToast) {
+                            toast({
+                              title: t("storyDisplay.storyCompletedToast.title"),
+                              description: t("storyDisplay.storyCompletedToast.descriptionWordsTime", { 
+                                wordsRead, 
+                                minutes: Math.round(timeSpent / 60) 
+                              }),
+                              duration: 2000,
+                            });
+                            setHasShownCompletionToast(true);
+                          }
                         } else {
                           setCurrentPage(Math.min(story.length - 1, currentPage + 1));
                         }

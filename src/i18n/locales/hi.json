@@ -560,6 +560,10 @@
       "descriptionWords": "शानदार! आपने {wordsRead} शब्द पढ़े और कहानी पूरी की!",
       "descriptionWordsTime": "बहुत अच्छा! आपने {minutes} मिनट में {wordsRead} शब्द पढ़े।"
     },
+    "addPagesSuccess": {
+      "title": "5 और पेज जोड़े गए! 📚",
+      "description": "आपकी कहानी बढ़ा दी गई है!"
+    },
     "encouragementMessages": {
       "outstanding": "उत्कृष्ट पठन उपलब्धि! आप पठन चैंपियन बन रहे हैं!",
       "excellent": "उत्कृष्ट कार्य! आप महान प्रगति कर रहे हैं!",

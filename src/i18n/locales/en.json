@@ -453,6 +453,10 @@
       "descriptionWords": "Amazing! You read {wordsRead} words and completed the story!",
       "descriptionWordsTime": "Great job! You read {wordsRead} words in {minutes} minutes."
     },
+    "addPagesSuccess": {
+      "title": "5 More Pages Added! 📚",
+      "description": "Your story has been extended!"
+    },
     "addMorePages": "Add More Pages",
     "header": "Reading Adventure",
     "endSession": "End Session",

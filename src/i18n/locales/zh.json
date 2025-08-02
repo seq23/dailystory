@@ -532,6 +532,10 @@
       "descriptionWords": "太棒了！您阅读了 {wordsRead} 个单词并完成了这个故事！",
       "descriptionWordsTime": "做得很好！您在 {minutes} 分钟内阅读了 {wordsRead} 个单词。"
     },
+    "addPagesSuccess": {
+      "title": "增加了5页！📚",
+      "description": "你的故事已延长！"
+    },
     "encouragementMessages": {
       "outstanding": "出色的阅读成就！您正在成为阅读冠军！",
       "excellent": "做得很好！您取得了很大的进步！",
