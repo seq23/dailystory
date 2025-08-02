@@ -24,8 +24,8 @@ export class OpenAITTSService {
         const { data, error } = await supabase.functions.invoke('openai-tts', {
           body: {
             text: processedText,
-            voice: options.voice || 'nova',
-            speed: options.speed || 1.0
+        voice: options.voice || 'nova',
+        speed: options.speed || 0.7
           }
         });
 

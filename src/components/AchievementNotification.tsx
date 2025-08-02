@@ -24,10 +24,10 @@ export const AchievementNotification = ({
   useEffect(() => {
     if (isVisible) {
       setShouldShow(true);
-      // Auto-close after 8 seconds for kids
+      // Auto-close after 4 seconds
       const timer = setTimeout(() => {
         handleClose();
-      }, 8000);
+      }, 4000);
       return () => clearTimeout(timer);
     }
   }, [isVisible]);

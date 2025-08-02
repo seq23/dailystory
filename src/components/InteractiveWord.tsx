@@ -6,6 +6,7 @@ import { createOpenAITTSService } from "@/services/textToSpeechService";
 import { useToast } from "@/hooks/use-toast";
 import { contextualPronunciation } from "@/services/contextualPronunciation";
 import { supabase } from "@/integrations/supabase/client";
+import { VocabularyLevelClassifier } from "@/utils/vocabularyLevelClassifier";
 import type { UserInfo } from "@/types";
 
 interface InteractiveWordProps {
@@ -52,15 +53,10 @@ export const InteractiveWord = ({
   const isESLLearner = userInfo?.nativeLanguage !== "en";
   const userNativeLanguage = userInfo?.nativeLanguage || "en";
 
-  // Determine word difficulty level for visual indicators
-  const getWordComplexity = (word: string) => {
-    const cleanWord = word.toLowerCase().replace(/[.,!?;:'"()]/g, '');
-    if (cleanWord.length <= 4) return "beginner";
-    if (cleanWord.length <= 7) return "intermediate";
-    return "advanced";
-  };
-
-  const wordComplexity = getWordComplexity(word);
+  // Use enhanced vocabulary classifier for better difficulty assessment
+  const wordDifficulty = VocabularyLevelClassifier.getWordDifficulty(word, difficulty);
+  const shouldHighlight = wordDifficulty.shouldHighlight;
+  const wordComplexity = wordDifficulty.complexity;
 
   const handleMouseEnter = () => {
     if (hideTimeoutRef.current) {
@@ -157,8 +153,8 @@ export const InteractiveWord = ({
         const pronunciationInfo = contextualPronunciation.getWordPronunciation(cleanWord, fullContext);
         
         // Just speak the word - the contextual service will handle pronunciation internally
-        const speed = isESLLearner ? 0.7 : 1.0;
-        await ttsService.speakText(cleanWord, { speed });
+        const speed = isESLLearner ? 0.6 : 0.7;
+        await ttsService.speakText(cleanWord, { speed, userInfo });
       } else {
         // Fallback to browser speech synthesis
         if ('speechSynthesis' in window) {
@@ -183,9 +179,31 @@ export const InteractiveWord = ({
     setIsPlaying(true);
     
     try {
-      // Mobile-specific audio initialization - simplified approach
       const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
       console.log('Explaining word:', cleanWord, 'TTS service available:', !!ttsService);
+      
+      // Get word definition in user's native language if not English
+      let definition = getWordDefinition(cleanWord, sentenceContext);
+      let explanation = `${cleanWord} means: ${definition}`;
+      
+      // If user is not a native English speaker, get explanation in their language
+      if (!isNativeEnglishSpeaker && userNativeLanguage !== 'en') {
+        try {
+          const { data: translationData, error: translationError } = await supabase.functions.invoke('translate-word', {
+            body: {
+              word: definition,
+              targetLanguage: userNativeLanguage,
+              context: `Definition of the word "${cleanWord}"`
+            }
+          });
+          
+          if (!translationError && translationData?.translation) {
+            explanation = `${cleanWord} means: ${translationData.translation}`;
+          }
+        } catch (error) {
+          console.log('Translation failed, using English definition');
+        }
+      }
       
       // Always try Web Speech API first on mobile for better reliability
       const isMobile = /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -193,16 +211,13 @@ export const InteractiveWord = ({
       if (isMobile || !ttsService) {
         console.log('Using Web Speech API fallback');
         
-        const definition = getWordDefinition(cleanWord, sentenceContext);
-        const explanation = `${cleanWord} means: ${definition}`;
-        
         if ('speechSynthesis' in window) {
           // Cancel any existing speech
           speechSynthesis.cancel();
           await new Promise(resolve => setTimeout(resolve, 100));
           
           const utterance = new SpeechSynthesisUtterance(explanation);
-          utterance.rate = 0.8;
+          utterance.rate = isESLLearner ? 0.6 : 0.7;
           utterance.pitch = 1.0;
           utterance.volume = 1.0;
           
@@ -249,7 +264,6 @@ export const InteractiveWord = ({
           });
           
           // Still show the definition even without audio
-          const definition = getWordDefinition(cleanWord, sentenceContext);
           setWordData({
             definition,
             phonetic: getPhoneticSpelling(cleanWord),
@@ -261,7 +275,7 @@ export const InteractiveWord = ({
       }
       
       if (ttsService) {
-        // Get comprehensive word data and speak it
+        // Get comprehensive word data and speak it in English
         const userLevel = difficulty === 'easy' ? 'easy' : difficulty === 'medium' ? 'medium' : 'hard';
         await ttsService.explainWord(word, userLevel);
         
@@ -471,7 +485,7 @@ export const InteractiveWord = ({
       definition: wordData?.definition || `A word from your story`,
       phonetic: wordData?.phonetic || '',
       sampleSentence: wordData?.sampleSentence || word,
-      difficulty: getWordComplexity(cleanWord) as 'beginner' | 'intermediate' | 'advanced',
+      difficulty: wordComplexity,
       dateAdded: new Date(),
       timesReviewed: 0,
       mastered: false,

@@ -18,7 +18,7 @@ export class OpenAITTSService {
     this.speed = config.speed || 0.7; // Slower speed for children
   }
 
-  async speakText(text: string, options?: { speed?: number }): Promise<void> {
+  async speakText(text: string, options?: { speed?: number, userInfo?: any }): Promise<void> {
     // Process text for better pronunciation
     const processedText = contextualPronunciation.processTextForPronunciation(text, true);
     
@@ -34,7 +34,10 @@ export class OpenAITTSService {
 
     try {
       // Use Supabase functions.invoke for proper authentication
-      const speedToUse = options?.speed || this.speed;
+      // Dynamic speed based on user's native language
+      const isNativeEnglish = options?.userInfo?.nativeLanguage === 'en';
+      const baseSpeed = isNativeEnglish ? 0.7 : 0.6;
+      const speedToUse = options?.speed || baseSpeed;
       console.log(`TTS Request: voice=${this.voice}, speed=${speedToUse}, text="${processedText.substring(0, 50)}..."`);
       console.log('About to call openai-tts function...');
       
@@ -98,7 +101,7 @@ export class OpenAITTSService {
       }
       
       // Fallback to browser speech synthesis with child-friendly settings
-      this.fallbackToWebSpeech(processedText);
+      this.fallbackToWebSpeech(processedText, options?.userInfo);
     }
   }
 
@@ -143,13 +146,14 @@ export class OpenAITTSService {
     });
   }
 
-  private fallbackToWebSpeech(text: string): void {
+  private fallbackToWebSpeech(text: string, userInfo?: any): void {
     console.log('Using fallback web speech synthesis');
     if ('speechSynthesis' in window) {
       const utterance = new SpeechSynthesisUtterance(text);
       
-      // Child-friendly settings
-      utterance.rate = 0.6; // Much slower for children
+      // Child-friendly settings with language-based speed
+      const isNativeEnglish = userInfo?.nativeLanguage === 'en';
+      utterance.rate = isNativeEnglish ? 0.7 : 0.6;
       utterance.pitch = 1.2; // Slightly higher pitch for friendliness
       utterance.volume = 0.8;
       
@@ -275,6 +279,6 @@ export class OpenAITTSService {
 export const createOpenAITTSService = () => {
   return new OpenAITTSService({
     voice: 'nova', // Clear and natural voice for kids
-    speed: 0.7 // Slower, child-friendly speed
+    speed: 0.7 // Base speed, adjusted per user
   });
 };

@@ -129,35 +129,29 @@ export class UnifiedImageService {
     // Get professional art style for difficulty level
     const artStyle = this.getArtStyleForDifficulty(difficulty);
     
-    // INTELLIGENT SCENE CONSTRUCTION: Build the scene naturally
-    let prompt = `${artStyle} professionally illustrated children's book art. `;
+    // ENHANCED PROMPT ENGINEERING based on user reference images
+    let prompt = `A beautiful children's book illustration depicting the scene where `;
     
     // Main subject: Always start with the character
-    prompt += `${characterDesc} `;
+    prompt += `${characterDesc} is featured in the story in the setting described in the story `;
     
     // Intelligent action + interaction analysis
     const sceneDescription = this.buildIntelligentScene(storyText, storyContext, character);
-    prompt += `${sceneDescription} `;
+    prompt += `${sceneDescription} based on this story context: ${storyText.substring(0, 100)}... `;
     
     // CRITICAL: Emphasize any specific colors mentioned in the story text for accuracy
     const criticalColors = this.extractCriticalColorDetails(storyText);
     if (criticalColors) {
-      prompt += `IMPORTANT: ${criticalColors}. `;
+      prompt += `featuring ${criticalColors} `;
+    } else if (character.favoriteColor) {
+      prompt += `featuring beautiful ${character.favoriteColor} colors `;
     }
     
-    // Setting context
-    if (storyContext.setting) {
-      prompt += `in ${storyContext.setting} `;
-    }
+    // Enhanced mood and atmosphere
+    prompt += `with a happy and cheerful atmosphere, beautiful ${character.favoriteColor || 'blue'} tones with complementary colors, `;
     
-    // Scene type and mood
-    prompt += `${sceneType}. `;
-    
-    // Add organic user elements that enhance the scene
-    const organicElements = this.getOrganicUserElements(character, storyContext);
-    if (organicElements) {
-      prompt += `${organicElements}. `;
-    }
+    // Enhanced art style specification
+    prompt += `realistic children's photography style with natural lighting, appealing to all children regardless of gender, diverse and inclusive, safe and wholesome content, `;
     
     // Professional quality and STRICT no-text enforcement
     prompt += this.getQualityModifiers(difficulty);

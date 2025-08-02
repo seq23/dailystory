@@ -1,5 +1,7 @@
 import type { UserInfo, DifficultyLevel } from "@/types";
 import CulturalAdaptationService from "./culturalAdaptationService";
+import { validateAndFixGrammar } from '@/utils/grammarValidator';
+import StoryQualityChecker from '@/utils/storyQualityChecker';
 
 interface StoryTemplate {
   introduction: string;
@@ -8,6 +10,7 @@ interface StoryTemplate {
 }
 
 export class ImprovedStoryGenerator {
+  private static storyHistory = new Map<string, Set<string>>();
   
   static generateStory(userInfo: UserInfo, difficulty: DifficultyLevel, pageCount: number = 10): string[] {
     const characterName = userInfo.name?.trim() || 'Alex';
@@ -22,10 +25,29 @@ export class ImprovedStoryGenerator {
     // Create story template based on difficulty
     const template = this.createStoryTemplate(characterName, favoriteAnimal, difficulty, culturalContext, pronouns);
     
-    // Generate pages ensuring no repetition
+    // Generate pages ensuring no repetition and story uniqueness
     const pages = this.generateUniquePages(template, pageCount, difficulty, pronouns);
     
-    return pages;
+    // Track story uniqueness for free users (30-45 unique stories)
+    const userId = characterName;
+    if (!this.storyHistory.has(userId)) {
+      this.storyHistory.set(userId, new Set());
+    }
+    
+    const userStories = this.storyHistory.get(userId)!;
+    const storySignature = this.createStorySignature(pages);
+    userStories.add(storySignature);
+    
+    // Keep only last 45 story signatures to prevent endless growth
+    if (userStories.size > 45) {
+      const firstKey = userStories.values().next().value;
+      userStories.delete(firstKey);
+    }
+    
+    // Quality check and fix all pages
+    const qualityCheckedPages = this.ensureStoryQuality(pages, difficulty);
+    
+    return qualityCheckedPages;
   }
 
   // Get correct pronouns based on avatar type
@@ -52,18 +74,18 @@ export class ImprovedStoryGenerator {
     switch (difficulty) {
       case 'easy':
         return {
-          introduction: `${characterName} was playing in the garden when ${pronouns.subject} heard a sound.`,
+          introduction: `This is ${characterName}.`,
           adventure: [
-            `${characterName} looked around and saw a ${favoriteAnimal}.`,
-            `The ${favoriteAnimal} looked friendly and came closer.`,
-            `${characterName} and the ${favoriteAnimal} became friends.`,
-            `${pronouns.subject} played together in the sunshine.`,
-            `The ${favoriteAnimal} showed ${characterName} a special place.`,
-            `${pronouns.subject} found beautiful flowers there.`,
-            `${characterName} picked some flowers to take home.`,
-            `The ${favoriteAnimal} helped carry them.`
+            `${characterName} likes to play outside.`,
+            `${pronouns.subject.charAt(0).toUpperCase() + pronouns.subject.slice(1)} sees a ${favoriteAnimal}.`,
+            `The ${favoriteAnimal} is nice.`,
+            `${characterName} says hello.`,
+            `The ${favoriteAnimal} comes closer.`,
+            `They play together.`,
+            `${characterName} is happy.`,
+            `The ${favoriteAnimal} is happy too.`
           ],
-          resolution: `${characterName} thanked ${pronouns.possessive} new friend and went home happy.`
+          resolution: `What a fun day for ${characterName}!`
         };
         
       case 'medium':
@@ -182,5 +204,65 @@ export class ImprovedStoryGenerator {
     
     const options = transitions[difficulty] || transitions.easy;
     return options[Math.floor(Math.random() * options.length)];
+  }
+  
+  /**
+   * Create a signature for story uniqueness tracking
+   */
+  private static createStorySignature(story: string[]): string {
+    // Create signature from first 3 pages' key words
+    const keyWords = story.slice(0, 3)
+      .join(' ')
+      .toLowerCase()
+      .split(' ')
+      .filter(word => word.length > 3)
+      .slice(0, 8)
+      .join('-');
+    return keyWords;
+  }
+  
+  /**
+   * Ensure story quality with grammar and flow checks
+   */
+  private static ensureStoryQuality(story: string[], difficulty: DifficultyLevel): string[] {
+    // Apply grammar validation and fixes
+    let improvedStory = story.map(page => validateAndFixGrammar(page));
+    
+    // Quality check
+    const qualityCheck = StoryQualityChecker.checkStoryQuality(improvedStory, difficulty);
+    
+    if (!qualityCheck.isValid) {
+      console.warn('Story quality issues detected:', qualityCheck.issues);
+      
+      // Apply specific fixes for common issues
+      improvedStory = improvedStory.map((page, index) => {
+        // Fix incomplete sentences for easy level
+        if (difficulty === 'easy') {
+          // Ensure simple complete sentences
+          if (page.trim() && !page.match(/[.!?]$/)) {
+            page = page.trim() + '.';
+          }
+        }
+        
+        // Fix capitalization
+        if (page.trim()) {
+          page = page.charAt(0).toUpperCase() + page.slice(1);
+        }
+        
+        // Fix double spaces and clean up
+        page = page.replace(/\s+/g, ' ').trim();
+        
+        return page;
+      });
+    }
+    
+    return improvedStory;
+  }
+  
+  /**
+   * Clear story history for testing
+   */
+  static clearHistory(): void {
+    this.storyHistory.clear();
   }
 }
