@@ -19,9 +19,9 @@ export const InteractiveAudioReading = ({
 }: InteractiveAudioReadingProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentWordIndex, setCurrentWordIndex] = useState(-1);
-  const [ttsService] = useState(() => createOpenAITTSService());
+  const [ttsService] = useState(() => createOpenAITTSService(userInfo));
   const [words, setWords] = useState<string[]>([]);
-  const [audioSpeed, setAudioSpeed] = useState(userInfo.nativeLanguage === 'en' ? 1.0 : 0.8);
+  const [audioSpeed, setAudioSpeed] = useState(userInfo.nativeLanguage === 'en' ? 0.7 : 0.6);
   const [hasPlayedAudio, setHasPlayedAudio] = useState(false); // Track if audio has been played
   
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
