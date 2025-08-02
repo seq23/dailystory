@@ -31,11 +31,20 @@ export const InteractiveWord = ({
   const { toast } = useToast();
   const { isMobileDevice, isCapacitor } = useIsMobile();
   
-  // Use user's native language for button text translation
+  // FIXED: Use user's native language for button text translation
   const userLanguageT = (key: string, fallback: string) => {
+    console.log('🌐 Translation Debug:', {
+      key,
+      userNativeLanguage: userInfo?.nativeLanguage,
+      currentI18nLanguage: i18n.language,
+      fallback
+    });
+    
     if (userInfo?.nativeLanguage && userInfo.nativeLanguage !== 'en') {
-      // Get translations specifically for user's native language without changing global language
-      return t(key, { lng: userInfo.nativeLanguage }) || fallback;
+      // Try to get translation in user's native language
+      const translation = t(key, { lng: userInfo.nativeLanguage });
+      console.log('🗣️ Got translation:', { key, translation, language: userInfo.nativeLanguage });
+      return translation !== key ? translation : fallback; // Return fallback if translation key not found
     }
     return t(key) || fallback;
   };
@@ -224,15 +233,17 @@ export const InteractiveWord = ({
           duration: 5000,
         });
         
-        // IMMEDIATELY speak the definition using browser's speech synthesis
-        console.log('🔊 Starting audio explanation:', { 
+        // FIXED: Ensure speech synthesis works on all browsers and mobile
+        console.log('🔊 AUDIO DEBUG - Starting speech synthesis:', { 
           definition, 
           userNativeLanguage,
           isMobileDevice,
-          speechSynthesisAvailable: 'speechSynthesis' in window
+          speechSynthesisSupported: 'speechSynthesis' in window,
+          voicesLoaded: speechSynthesis.getVoices().length > 0
         });
         
-        if ('speechSynthesis' in window && definition) {
+        // Wait for voices to load (critical for mobile/Safari)
+        const speakDefinition = () => {
           try {
             speechSynthesis.cancel(); // Clear any existing speech
             
@@ -241,47 +252,66 @@ export const InteractiveWord = ({
             utterance.pitch = 1.0;
             utterance.volume = 1.0;
             
-            // Set voice for non-English users with enhanced debugging
+            // Enhanced voice selection with debugging
+            const voices = speechSynthesis.getVoices();
+            console.log('🗣️ Available voices:', voices.map(v => ({ name: v.name, lang: v.lang, localService: v.localService })));
+            
             if (userNativeLanguage !== 'en') {
-              const voices = speechSynthesis.getVoices();
-              console.log('🗣️ Available voices:', voices.map(v => ({ name: v.name, lang: v.lang })));
-              
+              const languagePrefix = userNativeLanguage.substring(0, 2);
               const nativeVoice = voices.find(voice => 
-                voice.lang.startsWith(userNativeLanguage.substring(0, 2))
+                voice.lang.toLowerCase().startsWith(languagePrefix.toLowerCase())
               );
               
               if (nativeVoice) {
                 utterance.voice = nativeVoice;
                 utterance.lang = nativeVoice.lang;
-                console.log('✅ Found native voice:', { name: nativeVoice.name, lang: nativeVoice.lang });
-      } else {
-                console.log('⚠️ No native voice found, using default');
+                console.log('✅ Selected native voice:', { name: nativeVoice.name, lang: nativeVoice.lang });
+              } else {
+                console.log('⚠️ No native voice found for:', languagePrefix);
+                // Fallback: try setting language without specific voice
+                utterance.lang = userNativeLanguage;
               }
             }
             
             utterance.onstart = () => {
-              console.log('🎵 Speech started');
+              console.log('🎵 Speech STARTED');
               setIsPlaying(true);
             };
             utterance.onend = () => {
-              console.log('🔇 Speech ended');
+              console.log('🔇 Speech ENDED');
               setIsPlaying(false);
             };
             utterance.onerror = (event) => {
-              console.error('❌ Speech error:', event);
+              console.error('❌ Speech ERROR:', event.error, event);
               setIsPlaying(false);
             };
             
+            console.log('🚀 Calling speechSynthesis.speak()');
             speechSynthesis.speak(utterance);
-            console.log('🚀 Speech synthesis initiated');
             
           } catch (error) {
-            console.error('❌ Speech synthesis error:', error);
+            console.error('❌ Speech synthesis exception:', error);
             setIsPlaying(false);
           }
+        };
+        
+        // Handle voice loading for different browsers
+        if (speechSynthesis.getVoices().length === 0) {
+          console.log('⏳ Waiting for voices to load...');
+          speechSynthesis.addEventListener('voiceschanged', () => {
+            console.log('🔄 Voices loaded, attempting speech');
+            speakDefinition();
+          }, { once: true });
+          
+          // Timeout fallback
+          setTimeout(() => {
+            if (speechSynthesis.getVoices().length === 0) {
+              console.log('⚠️ Voices still not loaded, attempting anyway');
+              speakDefinition();
+            }
+          }, 1000);
         } else {
-          console.log('❌ Speech synthesis not available');
-          setIsPlaying(false);
+          speakDefinition();
         }
         
       } else {
