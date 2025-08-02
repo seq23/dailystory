@@ -31,7 +31,7 @@ export const InteractiveWord = ({
   const { toast } = useToast();
   const { isMobileDevice, isCapacitor } = useIsMobile();
   
-  // FIXED: Use user's native language for button text translation
+  // FIXED: Use proper translation helper for user's native language
   const userLanguageT = (key: string, fallback: string) => {
     try {
       console.log('🌐 Translation Debug:', {
@@ -42,14 +42,25 @@ export const InteractiveWord = ({
       });
       
       if (userInfo?.nativeLanguage && userInfo.nativeLanguage !== 'en') {
-        // Change language temporarily to get the correct translation
-        const originalLang = i18n.language;
-        i18n.changeLanguage(userInfo.nativeLanguage);
-        const translation = t(key);
-        i18n.changeLanguage(originalLang); // Restore original language
-        
-        console.log('🗣️ Got translation:', { key, translation, language: userInfo.nativeLanguage });
-        return translation && translation !== key ? translation : fallback;
+        // Get the translation resource directly for the user's language
+        const resources = i18n.getResourceBundle(userInfo.nativeLanguage, 'translation');
+        if (resources) {
+          // Navigate to the translation key (e.g., "interactiveWord.explain")
+          const keys = key.split('.');
+          let translation = resources;
+          for (const k of keys) {
+            translation = translation?.[k];
+          }
+          
+          console.log('🗣️ Got translation:', { 
+            key, 
+            translation: typeof translation === 'string' ? translation : null, 
+            language: userInfo.nativeLanguage,
+            resourcesFound: !!resources
+          });
+          
+          return typeof translation === 'string' ? translation : fallback;
+        }
       }
       return t(key) || fallback;
     } catch (error) {
