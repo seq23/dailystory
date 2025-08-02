@@ -4,16 +4,37 @@ const MOBILE_BREAKPOINT = 768
 
 export function useIsMobile() {
   const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
+  const [isCapacitor, setIsCapacitor] = React.useState(false)
+  const [hasTouchCapability, setHasTouchCapability] = React.useState(false)
 
   React.useEffect(() => {
+    const checkCapacitor = () => {
+      return typeof window !== 'undefined' && 
+             (window as any).Capacitor !== undefined
+    }
+
+    const checkTouchCapability = () => {
+      return typeof window !== 'undefined' && 
+             ('ontouchstart' in window || navigator.maxTouchPoints > 0)
+    }
+
     const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
     const onChange = () => {
       setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
     }
+    
     mql.addEventListener("change", onChange)
     setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
+    setIsCapacitor(checkCapacitor())
+    setHasTouchCapability(checkTouchCapability())
+    
     return () => mql.removeEventListener("change", onChange)
   }, [])
 
-  return !!isMobile
+  return {
+    isMobile: !!isMobile,
+    isCapacitor,
+    hasTouchCapability,
+    isMobileDevice: !!isMobile || hasTouchCapability
+  }
 }

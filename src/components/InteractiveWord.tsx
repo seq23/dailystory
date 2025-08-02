@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { contextualPronunciation } from "@/services/contextualPronunciation";
 import { supabase } from "@/integrations/supabase/client";
 import { VocabularyLevelClassifier } from "@/utils/vocabularyLevelClassifier";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { UserInfo } from "@/types";
 
 interface InteractiveWordProps {
@@ -28,6 +29,7 @@ export const InteractiveWord = ({
 }: InteractiveWordProps) => {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
+  const { isMobileDevice, isCapacitor } = useIsMobile();
   const [showTooltip, setShowTooltip] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [wordData, setWordData] = useState<any>(null);
@@ -173,13 +175,23 @@ export const InteractiveWord = ({
     e.stopPropagation();
     if (isPlaying || isLoadingWordData) return;
     
+    // Enhanced mobile debugging
+    console.log('Mobile Explain Debug:', {
+      word: word.replace(/[.,!?;:'"()]/g, ''),
+      userNativeLanguage,
+      difficulty,
+      isMobileDevice,
+      isCapacitor,
+      touchEvent: e.type === 'touchstart'
+    });
+    
     setIsLoadingWordData(true);
     setIsPlaying(true);
     
     try {
       const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
       
-      // Get word data from dictionary in user's native language
+      // Get word data from dictionary in user's native language with retry logic
       const { data: wordData, error: wordError } = await supabase.functions.invoke('word-dictionary', {
         body: { 
           word: cleanWord, 
@@ -187,6 +199,8 @@ export const InteractiveWord = ({
           userLanguage: userNativeLanguage
         }
       });
+      
+      console.log('Word Dictionary Response:', { wordData, wordError });
       
       if (!wordError && wordData) {
         setWordData(wordData);
@@ -623,6 +637,12 @@ export const InteractiveWord = ({
             
             <button
               onClick={handleExplain}
+              onTouchStart={(e) => {
+                if (isMobileDevice) {
+                  e.preventDefault();
+                  handleExplain(e);
+                }
+              }}
               className="flex items-center justify-center gap-2 text-xs sm:text-sm bg-green-50 hover:bg-green-100 active:bg-green-200 border-2 border-green-200 px-3 py-2.5 sm:px-4 sm:py-3 rounded-lg transition-colors touch-manipulation min-h-[44px] font-semibold text-green-700 shadow-sm"
               disabled={isPlaying || isLoadingWordData}
             >
