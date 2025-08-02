@@ -743,19 +743,19 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
   // Enhanced mobile detection for tablets and phones
   const isMobileDevice = typeof window !== 'undefined' && 
     (/Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
-     window.matchMedia('(max-width: 768px)').matches ||
-     isNativeApp);
+     navigator.maxTouchPoints > 0 || 
+     window.innerWidth <= 768);
 
-  // Mobile translation debugging
-  if (isMobileDevice) {
-    console.log('Mobile Translation Debug:', {
-      word: props.word,
-      userNativeLanguage: props.userInfo?.nativeLanguage,
-      currentLanguage: i18n.language,
-      explainButtonText: t("interactiveWord.explain"),
-      isESL: props.userInfo?.nativeLanguage !== 'en'
-    });
-  }
+  // Enhanced mobile debugging for multilingual explain button
+  console.log('Mobile Translation Debug:', {
+    word: props.word,
+    userNativeLanguage: props.userInfo?.nativeLanguage,
+    currentLanguage: i18n.language,
+    explainButtonText: t("interactiveWord.explain"),
+    isESL: props.userInfo?.nativeLanguage !== 'en',
+    isMobileDevice,
+    isNativeApp
+  });
 
   // Apply mobile-specific optimizations
   const optimizedProps = {
