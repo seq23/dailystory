@@ -30,6 +30,13 @@ export const InteractiveWord = ({
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const { isMobileDevice, isCapacitor } = useIsMobile();
+  
+  // Set i18n language to user's native language for this component
+  useEffect(() => {
+    if (userInfo?.nativeLanguage && userInfo.nativeLanguage !== i18n.language) {
+      i18n.changeLanguage(userInfo.nativeLanguage);
+    }
+  }, [userInfo?.nativeLanguage, i18n]);
   const [showTooltip, setShowTooltip] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [wordData, setWordData] = useState<any>(null);
@@ -207,11 +214,42 @@ export const InteractiveWord = ({
         
         // Show definition with translation fallback
         const definition = wordData.definition || t('interactiveWord.definition', 'Definition');
-        toast({
-          title: t('interactiveWord.definition', 'Definition'),
-          description: `"${cleanWord}" = ${definition}`,
-          duration: 5000,
-        });
+        
+        // Use native TTS to speak the explanation in user's language
+        if (ttsService && definition) {
+          console.log('Speaking definition in user language:', { 
+            definition, 
+            userNativeLanguage,
+            isMobileDevice 
+          });
+          
+          try {
+            await ttsService.speak(definition, {
+              voice: userNativeLanguage === 'es' ? 'alloy' : 
+                     userNativeLanguage === 'fr' ? 'alloy' :
+                     userNativeLanguage === 'zh' ? 'nova' :
+                     userNativeLanguage === 'hi' ? 'shimmer' :
+                     userNativeLanguage === 'ar' ? 'fable' :
+                     userNativeLanguage === 'pt' ? 'echo' : 'alloy',
+              rate: 0.9
+            });
+          } catch (ttsError) {
+            console.error('TTS Error:', ttsError);
+            // Fallback to toast if TTS fails
+            toast({
+              title: t('interactiveWord.definition', 'Definition'),
+              description: definition,
+              duration: 4000,
+            });
+          }
+        } else {
+          // Fallback to toast if no TTS service
+          toast({
+            title: t('interactiveWord.definition', 'Definition'),
+            description: `"${cleanWord}" = ${definition}`,
+            duration: 5000,
+          });
+        }
         
         // Build explanation with fallbacks
         const explanationParts = [];
@@ -746,12 +784,13 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
      navigator.maxTouchPoints > 0 || 
      window.innerWidth <= 768);
 
-  // Enhanced mobile debugging for multilingual explain button
+  // Enhanced mobile debugging for multilingual explain button with correct i18n context
   console.log('Mobile Translation Debug:', {
     word: props.word,
     userNativeLanguage: props.userInfo?.nativeLanguage,
     currentLanguage: i18n.language,
     explainButtonText: t("interactiveWord.explain"),
+    hearItButtonText: t("interactiveWord.hearIt"),
     isESL: props.userInfo?.nativeLanguage !== 'en',
     isMobileDevice,
     isNativeApp
