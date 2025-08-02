@@ -20,35 +20,35 @@ const AUTHOR_STYLES = {
   medium: {
     authors: ["Kevin Henkes", "Jan Brett", "Ezra Jack Keats"],
     patterns: [
-      "Character-driven gentle adventures",
-      "Emotional growth and discovery",
-      "Rich sensory descriptions",
-      "Clear beginning-middle-end structure"
+      "Simple adventures with clear lessons",
+      "Friendship and problem-solving", 
+      "Basic emotional understanding",
+      "Sequential story structure"
     ],
-    maxWordsPerPage: 12,
-    voiceStyle: "warm and nurturing"
+    maxWordsPerPage: 12, // Ages 6-9 appropriate
+    voiceStyle: "encouraging and gentle"
   },
   hard: {
     authors: ["Roald Dahl", "Beverly Cleary", "Katherine Paterson"],
     patterns: [
-      "Complex character relationships",
-      "Multiple plot threads",
-      "Humor and heart combined", 
-      "Character development through challenges"
+      "Character growth and challenges",
+      "Multiple story elements",
+      "Developing independence", 
+      "Cause and effect relationships"
     ],
-    maxWordsPerPage: 20,
-    voiceStyle: "engaging and sophisticated"
+    maxWordsPerPage: 20, // Ages 9-13 appropriate
+    voiceStyle: "engaging and adventurous"
   },
   expert: {
     authors: ["Kate DiCamillo", "Kwame Alexander", "Jason Reynolds"],
     patterns: [
-      "Nuanced themes and moral complexity",
-      "Literary devices and symbolism",
-      "Cultural authenticity and representation",
-      "Advanced emotional intelligence"
+      "Complex themes and relationships",
+      "Advanced vocabulary and concepts",
+      "Identity and self-discovery",
+      "Sophisticated narrative structure"
     ],
-    maxWordsPerPage: 35,
-    voiceStyle: "literary and thought-provoking"
+    maxWordsPerPage: 35, // Ages 13-16+ appropriate
+    voiceStyle: "mature and thought-provoking"
   }
 };
 
@@ -194,115 +194,110 @@ export class ComprehensiveStoryGenerator {
     return selectedStory();
   }
   
-  // Kevin Henkes inspired - Gentle character-driven stories with intelligent element distribution
+  // Ages 6-9 appropriate - Simple adventures with clear lessons
   private static createMediumAuthorStyle(
     name: string,
     userElements: any,
     culturalElements: any,
     tracker: StoryElementTracker
   ): string {
-    const setting = culturalElements.setting || 'neighborhood park';
+    // Age-appropriate vocabulary for 6-9 year olds
     const animals = userElements.favoriteAnimals;
     const foods = userElements.favoriteFoods;
     const hobbies = userElements.hobbies;
     const colors = userElements.favoriteColors;
+    const setting = culturalElements.setting || 'park';
     
-    // Sophisticated story structures that weave elements naturally
-    const narrativeStructures = [
-      // Character journey with organic encounters
+    // Simple story structures for ages 6-9
+    const storyVariations = [
+      // Friendship and sharing story
       () => {
+        const animal = this.selectRandomElement(animals);
+        const food = this.selectRandomElement(foods);
         const hobby = this.selectRandomElement(hobbies);
-        const animal1 = this.selectRandomElement(animals);
-        const food1 = this.selectRandomElement(foods);
-        const animal2 = animals.length > 1 ? this.selectDifferentElement(animals, animal1) : null;
         const color = this.selectRandomElement(colors);
         
-        let story = `${name} had always loved ${hobby} more than anything else. Every morning, ${name} would visit the ${setting} to practice. One peaceful day, while ${hobby}, ${name} noticed something moving behind the ${color} flowers.`;
-        
-        story += ` It was ${this.getAnimalForStory(animal1, 'with-article')}, and it looked hungry! ${name} quickly shared some ${food1} from the lunch bag.`;
-        
-        if (animal2) {
-          const food2 = foods.length > 1 ? this.selectDifferentElement(foods, food1) : food1;
-          story += ` The next week, while ${hobby} again, ${name} found ${this.getAnimalForStory(animal2, 'with-article')} who loved ${food2} even more than ${food1}!`;
-        }
-        
-        story += ` From that day forward, ${name} learned that the best part of ${hobby} wasn't the activity itself, but the friends who joined along the way. Every adventure was better when shared with others.`;
-        
-        return story;
+        return `${name} loved ${hobby} at the ${setting}. One day, ${name} met ${this.getAnimalForStory(animal, 'with-article')} who looked sad. The ${this.getSingularForm(animal)} was hungry and had no ${food}. ${name} shared lunch with the ${this.getSingularForm(animal)}. They became good friends. Now they meet every day to ${hobby} together. The ${this.getSingularForm(animal)} taught ${name} that helping others feels good. ${name} learned that friendship is the best gift.`;
       },
       
-      // Problem-solving story with natural element integration
+      // Problem-solving story
       () => {
         const animal = this.selectRandomElement(animals);
         const hobby = this.selectRandomElement(hobbies);
-        const food = this.selectRandomElement(foods);
         const color = this.selectRandomElement(colors);
         
-        return `${name} was worried. The annual ${setting} festival was coming, but something was missing. While ${hobby} to clear their mind, ${name} spotted ${this.getAnimalForStory(animal, 'with-article')} sitting sadly by a ${color} bench. "What's wrong?" asked ${name}. The ${this.getSingularForm(animal)} explained that all the festival ${food} was gone! Together, ${name} and the ${this.getSingularForm(animal)} worked to solve the problem. They discovered that sharing and teamwork made everything possible. The festival was saved, and ${name} had made a lifelong friend.`;
+        return `${name} was excited to ${hobby} at the ${setting}. But there was a problem! ${name} could not find the way. A ${color} ${this.getSingularForm(animal)} appeared and offered to help. Together they looked for clues. They worked as a team. The ${this.getSingularForm(animal)} was very smart. They found the perfect spot for ${hobby}. ${name} thanked the helpful ${this.getSingularForm(animal)}. From that day on, ${name} always asked for help when needed.`;
+      },
+      
+      // Adventure and discovery story
+      () => {
+        const animal1 = this.selectRandomElement(animals);
+        const animal2 = animals.length > 1 ? this.selectDifferentElement(animals, animal1) : animal1;
+        const color = this.selectRandomElement(colors);
+        const hobby = this.selectRandomElement(hobbies);
+        
+        return `${name} went to the ${setting} to ${hobby}. Behind a ${color} tree, ${name} found ${this.getAnimalForStory(animal1, 'with-article')}. The ${this.getSingularForm(animal1)} was playing with ${this.getAnimalForStory(animal2, 'with-article')}! They invited ${name} to join their game. ${name} learned new ways to ${hobby} from the animals. They had so much fun together. ${name} realized that trying new things can be exciting. The animals became ${name}'s special friends.`;
       }
     ];
     
-    const randomIndex = Math.floor(Math.random() * narrativeStructures.length);
-    const selectedStructure = narrativeStructures[randomIndex];
-    return selectedStructure();
+    const randomIndex = Math.floor(Math.random() * storyVariations.length);
+    const selectedStory = storyVariations[randomIndex];
+    return selectedStory();
   }
   
-  // Roald Dahl inspired - Whimsical stories with sophisticated element weaving
+  // Ages 9-13 appropriate - Character growth and developing independence
   private static createHardAuthorStyle(
     name: string,
     userElements: any,
     culturalElements: any,
     tracker: StoryElementTracker
   ): string {
-    const setting = culturalElements.setting || 'mysterious forest';
-    const celebration = culturalElements.celebration || 'special festival';
     const animals = userElements.favoriteAnimals;
     const foods = userElements.favoriteFoods;
     const hobbies = userElements.hobbies;
     const colors = userElements.favoriteColors;
-    const specialElement = userElements.specialRequest || 'magical ability';
+    const setting = culturalElements.setting || 'town';
+    const specialElement = userElements.specialRequest || 'special talent';
     
-    // Complex narrative structures with multiple story arcs
-    const complexNarratives = [
-      // Mystery/adventure with layered reveals
+    // Age-appropriate story structures for 9-13 year olds
+    const storyVariations = [
+      // Personal challenge and growth story
       () => {
         const hobby = this.selectRandomElement(hobbies);
-        const color1 = this.selectRandomElement(colors);
-        const color2 = colors.length > 1 ? this.selectDifferentElement(colors, color1) : color1;
-        const animal1 = this.selectRandomElement(animals);
+        const animal = this.selectRandomElement(animals);
+        const color = this.selectRandomElement(colors);
         const food = this.selectRandomElement(foods);
         
-        let story = `${name} had always been different from other children. While others enjoyed ordinary activities, ${name} found magic in ${hobby}. During the annual ${celebration}, strange ${color1} lights began appearing in the ${setting}.`;
-        
-        story += ` As ${name} investigated, a mysterious ${color2} pathway revealed itself, leading to an ancient clearing where ${this.getAnimalForStory(animal1, 'with-article')} sat waiting. "I've been expecting you," said the ${this.getSingularForm(animal1)}. "You possess ${specialElement} that our world desperately needs."`;
-        
-        if (animals.length > 1) {
-          const animal2 = this.selectDifferentElement(animals, animal1);
-          story += ` Together, they journeyed deeper, where they met ${this.getAnimalForStory(animal2, 'with-article')} who had been guarding the secret of the ${food} that could heal the land.`;
-        }
-        
-        story += ` Through three challenging trials that tested not just ${name}'s ${specialElement}, but also kindness, courage, and wisdom, ${name} discovered that the greatest magic comes from believing in yourself and caring for others. The ${setting} was saved, and ${name} had unlocked a power that would change everything.`;
-        
-        return story;
+        return `${name} had been practicing ${hobby} for months, but something wasn't clicking. Everyone else seemed naturally good at it, while ${name} struggled with every attempt. One afternoon, feeling frustrated, ${name} decided to practice alone in the quiet ${setting}. That's when ${name} discovered ${this.getAnimalForStory(animal, 'with-article')} who seemed to understand exactly how ${name} felt. The ${this.getSingularForm(animal)} had a ${color} marking that reminded ${name} of something important - everyone learns differently. Together, they developed a new approach to ${hobby}. The ${this.getSingularForm(animal)} showed ${name} that patience and persistence matter more than natural talent. When ${name} shared ${food} with the ${this.getSingularForm(animal)}, they both realized that the best achievements come from never giving up. ${name} learned that ${specialElement} isn't about being perfect, but about growing through challenges.`;
       },
       
-      // Transformation story with organic character development
+      // Friendship and loyalty story
+      () => {
+        const animal1 = this.selectRandomElement(animals);
+        const animal2 = animals.length > 1 ? this.selectDifferentElement(animals, animal1) : animal1;
+        const hobby = this.selectRandomElement(hobbies);
+        const color = this.selectRandomElement(colors);
+        
+        return `${name} thought life in the ${setting} was pretty ordinary until meeting ${this.getAnimalForStory(animal1, 'with-article')} during a ${hobby} session. The ${this.getSingularForm(animal1)} was different from other animals - it had a ${color} patch and seemed to understand human emotions. When other kids didn't believe ${name} about the special friendship, ${name} felt torn between fitting in and staying loyal to a true friend. Things got complicated when ${this.getAnimalForStory(animal2, 'with-article')} appeared, creating a situation where ${name} had to choose between what was popular and what was right. Through this experience, ${name} discovered that real friendship means standing up for others, even when it's difficult. The animals taught ${name} that ${specialElement} means being true to yourself and the people who matter most. In the end, ${name} learned that authentic relationships are worth more than popularity.`;
+      },
+      
+      // Discovery and responsibility story
       () => {
         const hobby = this.selectRandomElement(hobbies);
         const animal = this.selectRandomElement(animals);
         const food = this.selectRandomElement(foods);
         const color = this.selectRandomElement(colors);
         
-        return `${name} lived in a world where ${hobby} was considered impossible for children. But ${name} dreamed of proving everyone wrong. One extraordinary night, while practicing secretly in the ${setting}, ${name} encountered ${this.getAnimalForStory(animal, 'with-article')} unlike any other. This ${this.getSingularForm(animal)} glowed ${color} and spoke in riddles about ${food} that could grant wishes. Through a series of whimsical challenges involving ${specialElement}, ${name} learned that the real magic wasn't in the ${food} or the wishes, but in the courage to pursue your dreams despite what others say. By the end, ${name} had not only mastered ${hobby} but had also inspired an entire community to believe in the impossible.`;
+        return `While exploring the old part of the ${setting}, ${name} stumbled upon something unexpected during a ${hobby} adventure. Hidden behind ${color} vines was ${this.getAnimalForStory(animal, 'with-article')} that clearly needed help. The ${this.getSingularForm(animal)} was injured and couldn't find ${food} on its own. ${name} faced a real dilemma - getting involved meant taking on responsibility that adults usually handled. But something about the ${this.getSingularForm(animal)}'s situation reminded ${name} of their own ${specialElement} and how it felt when no one understood. Making the choice to help meant learning about commitment, sacrifice, and what it really takes to make a difference. Through caring for the ${this.getSingularForm(animal)}, ${name} discovered that growing up isn't about age, but about choosing to do the right thing even when it's hard. The experience taught ${name} that real ${specialElement} comes from using your abilities to help others.`;
       }
     ];
     
-    const randomIndex = Math.floor(Math.random() * complexNarratives.length);
-    const selectedNarrative = complexNarratives[randomIndex];
-    return selectedNarrative();
+    const randomIndex = Math.floor(Math.random() * storyVariations.length);
+    const selectedStory = storyVariations[randomIndex];
+    return selectedStory();
   }
   
-  // Kate DiCamillo inspired - Literary depth with sophisticated element integration
+  // Ages 13-16+ appropriate - Identity, relationships, and sophisticated themes
   private static createExpertAuthorStyle(
     name: string,
     userElements: any,
@@ -310,51 +305,50 @@ export class ComprehensiveStoryGenerator {
     culturalContext: any,
     tracker: StoryElementTracker
   ): string {
-    const setting = culturalElements.setting || 'ancestral homeland';
-    const celebration = culturalElements.celebration || 'coming-of-age ceremony';
-    const value = culturalElements.value || 'wisdom and compassion';
     const animals = userElements.favoriteAnimals;
     const foods = userElements.favoriteFoods;
     const hobbies = userElements.hobbies;
     const colors = userElements.favoriteColors;
-    const specialElement = userElements.specialRequest || 'ancient gift';
+    const setting = culturalElements.setting || 'city';
+    const specialElement = userElements.specialRequest || 'unique perspective';
     
-    // Sophisticated literary structures with deep thematic integration
-    const literaryNarratives = [
-      // Coming-of-age with cultural depth
+    // Sophisticated story structures for teens
+    const storyVariations = [
+      // Identity and belonging story
+      () => {
+        const hobby = this.selectRandomElement(hobbies);
+        const animal = this.selectRandomElement(animals);
+        const color = this.selectRandomElement(colors);
+        const food = this.selectRandomElement(foods);
+        
+        return `${name} had always felt like an outsider in the bustling ${setting}. While classmates seemed to navigate social dynamics effortlessly, ${name} found solace in ${hobby} - an activity that others often dismissed as childish or irrelevant. The pressure to conform weighed heavily, especially when it meant abandoning the things that truly mattered. During a particularly challenging week, ${name} encountered ${this.getAnimalForStory(animal, 'with-article')} in an unexpected place - a ${color} alley behind the school where students rarely ventured. This creature, clearly displaced from its natural habitat, seemed to mirror ${name}'s own sense of not belonging. As ${name} began sharing ${food} with the ${this.getSingularForm(animal)}, an unlikely friendship developed. Through patient observation and genuine care, ${name} learned that the ${this.getSingularForm(animal)} had its own ${specialElement} - a unique way of surviving in an environment that wasn't meant for it. This realization sparked something profound in ${name}. Perhaps being different wasn't about finding ways to fit in, but about discovering how your unique qualities could contribute something valuable to the world. The experience with the ${this.getSingularForm(animal)} taught ${name} that authenticity takes courage, but it's the foundation of meaningful connections and personal fulfillment.`;
+      },
+      
+      // Social justice and empathy story
+      () => {
+        const hobby = this.selectRandomElement(hobbies);
+        const animal1 = this.selectRandomElement(animals);
+        const animal2 = animals.length > 1 ? this.selectDifferentElement(animals, animal1) : animal1;
+        const food = this.selectRandomElement(foods);
+        const color = this.selectRandomElement(colors);
+        
+        return `The inequality in ${name}'s ${setting} had always been obvious, but it wasn't until ${name} started volunteering that the true scope became clear. While pursuing ${hobby} at a community center, ${name} witnessed how resources were distributed unfairly - some neighborhoods had everything they needed, while others struggled with basic necessities. One evening, ${name} discovered ${this.getAnimalForStory(animal1, 'with-article')} and ${this.getAnimalForStory(animal2, 'with-article')} competing for scraps of ${food} behind a ${color} dumpster. The sight was jarring - these creatures, who in nature might coexist peacefully, were now forced into conflict by scarcity. This moment crystallized something ${name} had been feeling but couldn't articulate: systemic problems create unnecessary competition and suffering. Determined to make a difference, ${name} used ${hobby} as a platform to raise awareness about local inequities. The project started small, but ${name}'s ${specialElement} - the ability to see connections between seemingly unrelated issues - helped build a movement that brought together diverse community members. Through this experience, ${name} learned that social change doesn't require perfection or grand gestures; it requires persistence, empathy, and the willingness to use whatever talents you have in service of others. The two animals eventually became symbols of ${name}'s campaign, representing how cooperation and resource-sharing could replace competition and scarcity.`;
+      },
+      
+      // Coming-of-age and responsibility story
       () => {
         const hobby = this.selectRandomElement(hobbies);
         const animal = this.selectRandomElement(animals);
         const food = this.selectRandomElement(foods);
         const color = this.selectRandomElement(colors);
         
-        let story = `In the heart of ${culturalContext.region}, where stories were woven into the very fabric of daily life, ${name} carried within them an extraordinary ${specialElement} passed down through generations. Their grandmother had always said that ${hobby} was not merely an activity, but a bridge between worlds.`;
-        
-        story += ` On the eve of the ${celebration}, when the whole community gathered to honor their traditions, ${name} felt the weight of expectation. While walking through the sacred ${setting}, ${name} encountered ${this.getAnimalForStory(animal, 'with-article')} whose eyes held the wisdom of centuries.`;
-        
-        story += ` This guardian of ${value} had been waiting for someone who truly understood that every act of ${hobby} was actually a prayer, a celebration of life, and a promise to future generations. Together, they shared traditional ${food} prepared according to ancient customs, the ${color} garnish representing hope for the future.`;
-        
-        if (animals.length > 1 || foods.length > 1) {
-          const secondAnimal = animals.length > 1 ? this.selectDifferentElement(animals, animal) : null;
-          const secondFood = foods.length > 1 ? this.selectDifferentElement(foods, food) : null;
-          
-          if (secondAnimal) {
-            story += ` Along their spiritual journey, they met ${this.getAnimalForStory(secondAnimal, 'with-article')} who taught ${name} that strength comes not from individual achievement, but from understanding one's place within the continuous story of their people.`;
-          }
-          if (secondFood) {
-            story += ` During the ceremony, ${name} prepared ${secondFood} for the community, each ingredient representing a different aspect of ${value}.`;
-          }
-        }
-        
-        story += ` Through trials that tested not just skill but character, wisdom, and commitment to community values, ${name} discovered that the greatest adventures are those that connect us more deeply to who we are meant to become. The ${specialElement} was not just a gift, but a responsibility to preserve the stories, traditions, and hopes of all who came before and all who would come after.`;
-        
-        return story;
+        return `As ${name} approached graduation, the weight of impending adulthood felt overwhelming. College applications, career decisions, family expectations - everything seemed to demand immediate clarity about a future that felt impossibly uncertain. During this stressful period, ${name} found refuge in ${hobby}, an activity that had provided stability throughout the turbulent teenage years. One day, while practicing in a quiet corner of the ${setting}, ${name} noticed ${this.getAnimalForStory(animal, 'with-article')} that appeared to be injured or sick. The ${this.getSingularForm(animal)} had distinctive ${color} markings and seemed unable to find ${food} for itself. This situation presented ${name} with a choice that seemed to embody all the larger decisions looming ahead: ignore the problem and let someone else handle it, or step up and take responsibility despite feeling unprepared. Choosing to help meant research, learning about animal care, finding resources, and making a long-term commitment to the ${this.getSingularForm(animal)}'s recovery. Through this process, ${name} discovered that ${specialElement} wasn't about having all the answers, but about being willing to learn, adapt, and persist when faced with challenges. The months spent nursing the ${this.getSingularForm(animal)} back to health taught ${name} that adulthood isn't a destination you arrive at, but a series of choices to act with compassion, responsibility, and courage. When college acceptance letters arrived, ${name} felt ready - not because the future was clear, but because the confidence to handle uncertainty had been earned through real experience and meaningful action.`;
       }
     ];
     
-    const randomIndex = Math.floor(Math.random() * literaryNarratives.length);
-    const selectedNarrative = literaryNarratives[randomIndex];
-    return selectedNarrative();
+    const randomIndex = Math.floor(Math.random() * storyVariations.length);
+    const selectedStory = storyVariations[randomIndex];
+    return selectedStory();
   }
   
   // Age 3-6 vocabulary simplification methods
