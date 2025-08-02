@@ -20,19 +20,6 @@ export const AchievementNotification = ({
   const { t } = useTranslation();
   const [shouldShow, setShouldShow] = useState(false);
 
-  // Debug logging to identify the interpolation issue
-  useEffect(() => {
-    if (isVisible) {
-      console.log('=== ACHIEVEMENT DEBUG ===');
-      console.log('Points value:', achievement.points);
-      console.log('Points type:', typeof achievement.points);
-      console.log('Achievement title:', achievement.title);
-      console.log('Translation result:', t('gamification.achievements.pointsEarned', { points: achievement.points }));
-      console.log('Raw translation key:', t('gamification.achievements.pointsEarned'));
-      console.log('Points as string:', String(achievement.points));
-      console.log('=========================');
-    }
-  }, [isVisible, achievement, t]);
 
   useEffect(() => {
     if (isVisible) {
@@ -178,7 +165,7 @@ export const AchievementNotification = ({
                 <div className="flex items-center gap-2">
                   <Gift className={`w-5 h-5 ${config.textClass}`} />
                   <span className={`font-semibold ${config.textClass}`}>
-                    {t('gamification.achievements.pointsEarned', { points: achievement.points })}
+                    +{achievement.points} {t('gamification.achievements.pointsLabel', 'Points Earned!')}
                   </span>
                 </div>
                 <Button

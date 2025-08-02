@@ -115,6 +115,17 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   const audioContextRef = useRef<AudioContext | null>(null);
   const celebrationTimerRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Handle story completion toast to avoid React warning
+  useEffect(() => {
+    if (storyCompleted && !sessionEnded) {
+      toast({
+        title: "🎉 Story Completed!",
+        description: `Amazing! You read ${wordsRead} words and completed the story!`,
+        duration: 5000,
+      });
+    }
+  }, [storyCompleted, sessionEnded, wordsRead, toast]);
+
   // Fallback illustrations
   const illustrations = [illustration1, illustration2, illustration3, illustration4, illustration5];
   
@@ -1163,12 +1174,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                                 readingSpeed: Math.round((wordsRead / (timeSpent / 60)) || 0)
                               });
                               
-                              // Show completion feedback
-                              toast({
-                                title: "🎉 Story Completed!",
-                                description: `Amazing! You read ${wordsRead} words and completed the story!`,
-                                duration: 5000,
-                              });
+                              // Story completed - toast will be shown by useEffect
                             } else {
                               setCurrentPage(Math.min(story.length - 1, currentPage + 1));
                             }
