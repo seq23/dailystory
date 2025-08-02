@@ -304,65 +304,74 @@ export const InteractiveWord = ({
         duration: 5000,
       });
       
-      // Enhanced audio with native language support
-      if ('speechSynthesis' in window) {
-        try {
-          console.log('🎵 Starting enhanced speech synthesis:', {
+      // Use ElevenLabs for consistent high-quality TTS
+      try {
+        const voice = getVoiceForUser(userInfo);
+        const model = isNativeEnglishSpeaker ? "eleven_turbo_v2" : "eleven_multilingual_v2";
+        
+        const response = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/elevenlabs-tts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
             text: definitionToSpeak,
-            language: userNativeLanguage,
-            availableVoices: speechSynthesis.getVoices().length
-          });
+            voice: voice,
+            model: model
+          })
+        });
+
+        if (response.ok) {
+          const audioBlob = await response.blob();
+          const audioUrl = URL.createObjectURL(audioBlob);
+          const audio = new Audio(audioUrl);
           
-          const utterance = new SpeechSynthesisUtterance(definitionToSpeak);
-          utterance.rate = 0.7;
-          utterance.pitch = 1.0;
-          utterance.volume = 1.0;
+          audio.onended = () => {
+            setIsPlaying(false);
+            URL.revokeObjectURL(audioUrl);
+          };
           
-          // Enhanced voice selection for native language
-          const voices = speechSynthesis.getVoices();
-          console.log('🗣️ Available voices for language selection:', 
-            voices.filter(v => v.lang.includes(userNativeLanguage.substring(0, 2))).map(v => ({ name: v.name, lang: v.lang }))
-          );
+          audio.onerror = () => {
+            console.warn('ElevenLabs audio failed, falling back to browser speech');
+            fallbackToBrowserSpeech();
+          };
           
-          if (userNativeLanguage !== 'en') {
-            // Set language for speech synthesis
-            utterance.lang = userNativeLanguage;
+          await audio.play();
+        } else {
+          throw new Error('ElevenLabs TTS failed');
+        }
+      } catch (error) {
+        console.warn('ElevenLabs failed, using browser speech fallback:', error);
+        fallbackToBrowserSpeech();
+      }
+      
+      function fallbackToBrowserSpeech() {
+        if ('speechSynthesis' in window) {
+          try {
+            const utterance = new SpeechSynthesisUtterance(definitionToSpeak);
+            utterance.rate = 0.7;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
             
-            // Find best voice for user's language
-            const languageCode = userNativeLanguage.substring(0, 2);
-            const nativeVoice = voices.find(voice => 
-              voice.lang.toLowerCase().startsWith(languageCode.toLowerCase())
-            );
-            
-            if (nativeVoice) {
-              utterance.voice = nativeVoice;
-              console.log('✅ Selected native voice:', { name: nativeVoice.name, lang: nativeVoice.lang });
-            } else {
-              console.log('⚠️ No native voice found, using language setting');
+            if (userNativeLanguage !== 'en') {
+              utterance.lang = userNativeLanguage;
+              const voices = speechSynthesis.getVoices();
+              const languageCode = userNativeLanguage.substring(0, 2);
+              const nativeVoice = voices.find(voice => 
+                voice.lang.toLowerCase().startsWith(languageCode.toLowerCase())
+              );
+              if (nativeVoice) utterance.voice = nativeVoice;
             }
+            
+            utterance.onend = () => setIsPlaying(false);
+            utterance.onerror = () => setIsPlaying(false);
+            
+            speechSynthesis.speak(utterance);
+          } catch (audioError) {
+            console.error('Browser speech also failed:', audioError);
+            setIsPlaying(false);
           }
-          
-          utterance.onstart = () => {
-            console.log('✅ Speech started');
-            setIsPlaying(true);
-          };
-          utterance.onend = () => {
-            console.log('✅ Speech ended');
-            setIsPlaying(false);
-          };
-          utterance.onerror = (event) => {
-            console.error('❌ Speech error:', event);
-            setIsPlaying(false);
-          };
-          
-          speechSynthesis.speak(utterance);
-        } catch (audioError) {
-          console.error('❌ Audio error (safe fallback):', audioError);
+        } else {
           setIsPlaying(false);
         }
-      } else {
-        console.warn('⚠️ Speech synthesis not supported');
-        setIsPlaying(false);
       }
       
     } catch (error) {
