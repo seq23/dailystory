@@ -158,29 +158,50 @@ export class ComprehensiveStoryGenerator {
   ): string {
     const setting = culturalElements.setting || 'garden';
     const animals = userElements.favoriteAnimals;
-    const color = this.selectRandomElement(userElements.favoriteColors);
+    const colors = userElements.favoriteColors;
+    const foods = userElements.favoriteFoods;
+    const hobbies = userElements.hobbies;
     
-    // Handle single vs multiple animals properly
-    if (animals.length === 1) {
-      const animal = animals[0];
-      const animalWithArticle = this.getAnimalForStory(animal, 'with-article');
-      const singularAnimal = this.getAnimalForStory(animal, 'singular');
+    // Intelligent narrative weaving - create story variations based on content
+    const storyVariations = [
+      // Discovery story - animal appears during activity  
+      () => {
+        const hobby = this.selectRandomElement(hobbies);
+        const animal = this.selectRandomElement(animals);
+        const color = this.selectRandomElement(colors);
+        return `${name} was ${hobby} in the ${setting}. Something ${color} caught ${name}'s eye. It was ${this.getAnimalForStory(animal, 'with-article')}! The ${this.getSingularForm(animal)} looked friendly. ${name} and the ${this.getSingularForm(animal)} became best friends. They played together every day. What a wonderful friendship!`;
+      },
       
-      return `${name} sees ${animalWithArticle}. The ${singularAnimal} is ${color}. ${name} says hello. The ${singularAnimal} says hello too. ${name} smiles big. The ${singularAnimal} smiles big too. They dance together. They laugh together. ${name} is happy. The ${singularAnimal} is happy. What a wonderful day!`;
-    } else {
-      // Handle multiple animals
-      const animal1 = animals[0];
-      const animal2 = animals[1] || animals[0];
-      const animalWithArticle1 = this.getAnimalForStory(animal1, 'with-article');
-      const animalWithArticle2 = this.getAnimalForStory(animal2, 'with-article');
-      const singularAnimal1 = this.getAnimalForStory(animal1, 'singular');
-      const singularAnimal2 = this.getAnimalForStory(animal2, 'singular');
+      // Adventure story - multiple elements woven naturally
+      () => {
+        const animal1 = this.selectRandomElement(animals);
+        const animal2 = animals.length > 1 ? this.selectDifferentElement(animals, animal1) : null;
+        const food = this.selectRandomElement(foods);
+        const color = this.selectRandomElement(colors);
+        
+        if (animal2) {
+          return `${name} packed some ${food} for a picnic. While walking through the ${setting}, ${name} heard a sound. ${this.getAnimalForStory(animal1, 'with-article').charAt(0).toUpperCase() + this.getAnimalForStory(animal1, 'with-article').slice(1)} was playing with ${this.getAnimalForStory(animal2, 'with-article')}! They were both ${color} and beautiful. ${name} shared the ${food} with the new friends. They all had the best day ever!`;
+        } else {
+          return `${name} was looking for ${this.getAnimalForStory(animal1, 'with-article')} in the ${setting}. The ${this.getSingularForm(animal1)} was hiding behind a ${color} tree! ${name} brought some ${food} to share. They became great friends and had many adventures together.`;
+        }
+      },
       
-      return `${name} sees ${animalWithArticle1} and ${animalWithArticle2}. The ${singularAnimal1} is ${color}. The ${singularAnimal2} is happy too. ${name} says hello to both friends. They all say hello back. ${name} smiles big. The animals smile big too. They all dance together. They all laugh together. ${name} is so happy. What a wonderful day with friends!`;
-    }
+      // Magical/surprise story 
+      () => {
+        const animal = this.selectRandomElement(animals);
+        const color = this.selectRandomElement(colors);
+        const hobby = this.selectRandomElement(hobbies);
+        return `${name} loved ${hobby} every morning. One day, something magical happened in the ${setting}. ${this.getAnimalForStory(animal, 'with-article').charAt(0).toUpperCase() + this.getAnimalForStory(animal, 'with-article').slice(1)} appeared, shining ${color}! The ${this.getSingularForm(animal)} could talk! "${name}, let's be friends!" said the ${this.getSingularForm(animal)}. From that day on, they went ${hobby} together. Magic was everywhere!`;
+      }
+    ];
+    
+    // Select random story variation for natural variety
+    const randomIndex = Math.floor(Math.random() * storyVariations.length);
+    const selectedStory = storyVariations[randomIndex];
+    return selectedStory();
   }
   
-  // Kevin Henkes inspired - Gentle character-driven stories
+  // Kevin Henkes inspired - Gentle character-driven stories with intelligent element distribution
   private static createMediumAuthorStyle(
     name: string,
     userElements: any,
@@ -188,26 +209,52 @@ export class ComprehensiveStoryGenerator {
     tracker: StoryElementTracker
   ): string {
     const setting = culturalElements.setting || 'neighborhood park';
-    const defaultFood = culturalElements.food || 'sandwich';
+    const animals = userElements.favoriteAnimals;
+    const foods = userElements.favoriteFoods;
+    const hobbies = userElements.hobbies;
+    const colors = userElements.favoriteColors;
     
-    // Use multiple elements throughout the story for variety
-    const animal1 = this.selectRandomElement(userElements.favoriteAnimals);
-    const animal2 = userElements.favoriteAnimals.length > 1 ? 
-      this.selectDifferentElement(userElements.favoriteAnimals, animal1) : animal1;
-    const hobby = this.selectRandomElement(userElements.hobbies);
-    const food1 = userElements.favoriteFoods.length > 0 ? this.selectRandomElement(userElements.favoriteFoods) : defaultFood;
-    const food2 = userElements.favoriteFoods.length > 1 ? 
-      this.selectDifferentElement(userElements.favoriteFoods, food1) : food1;
+    // Sophisticated story structures that weave elements naturally
+    const narrativeStructures = [
+      // Character journey with organic encounters
+      () => {
+        const hobby = this.selectRandomElement(hobbies);
+        const animal1 = this.selectRandomElement(animals);
+        const food1 = this.selectRandomElement(foods);
+        const animal2 = animals.length > 1 ? this.selectDifferentElement(animals, animal1) : null;
+        const color = this.selectRandomElement(colors);
+        
+        let story = `${name} had always loved ${hobby} more than anything else. Every morning, ${name} would visit the ${setting} to practice. One peaceful day, while ${hobby}, ${name} noticed something moving behind the ${color} flowers.`;
+        
+        story += ` It was ${this.getAnimalForStory(animal1, 'with-article')}, and it looked hungry! ${name} quickly shared some ${food1} from the lunch bag.`;
+        
+        if (animal2) {
+          const food2 = foods.length > 1 ? this.selectDifferentElement(foods, food1) : food1;
+          story += ` The next week, while ${hobby} again, ${name} found ${this.getAnimalForStory(animal2, 'with-article')} who loved ${food2} even more than ${food1}!`;
+        }
+        
+        story += ` From that day forward, ${name} learned that the best part of ${hobby} wasn't the activity itself, but the friends who joined along the way. Every adventure was better when shared with others.`;
+        
+        return story;
+      },
+      
+      // Problem-solving story with natural element integration
+      () => {
+        const animal = this.selectRandomElement(animals);
+        const hobby = this.selectRandomElement(hobbies);
+        const food = this.selectRandomElement(foods);
+        const color = this.selectRandomElement(colors);
+        
+        return `${name} was worried. The annual ${setting} festival was coming, but something was missing. While ${hobby} to clear their mind, ${name} spotted ${this.getAnimalForStory(animal, 'with-article')} sitting sadly by a ${color} bench. "What's wrong?" asked ${name}. The ${this.getSingularForm(animal)} explained that all the festival ${food} was gone! Together, ${name} and the ${this.getSingularForm(animal)} worked to solve the problem. They discovered that sharing and teamwork made everything possible. The festival was saved, and ${name} had made a lifelong friend.`;
+      }
+    ];
     
-    // Intelligent animal processing for proper grammar
-    const animal1WithArticle = this.getAnimalForStory(animal1, 'with-article');
-    const animal1Singular = this.getAnimalForStory(animal1, 'singular');
-    const animal2WithArticle = this.getAnimalForStory(animal2, 'with-article');
-    
-    return `${name} loved ${hobby} more than anything else. One sunny morning, ${name} went to the ${setting} with some ${food1} for lunch. There, hiding behind an old oak tree, was a lonely ${this.getSingularForm(animal1)}. The ${animal1Singular} looked sad and hungry. ${name} shared the ${food1} with their new friend. They spent the whole day enjoying ${hobby} together. The next day, they met a friendly ${this.getSingularForm(animal2)} who loved ${food2} just as much as they did. From that day on, ${name} and the animals were inseparable. Every morning, they would meet at the ${setting} for new adventures. ${name} learned that the best part of ${hobby} was sharing it with friends.`;
+    const randomIndex = Math.floor(Math.random() * narrativeStructures.length);
+    const selectedStructure = narrativeStructures[randomIndex];
+    return selectedStructure();
   }
   
-  // Roald Dahl inspired - Whimsical with character growth
+  // Roald Dahl inspired - Whimsical stories with sophisticated element weaving
   private static createHardAuthorStyle(
     name: string,
     userElements: any,
@@ -216,21 +263,53 @@ export class ComprehensiveStoryGenerator {
   ): string {
     const setting = culturalElements.setting || 'mysterious forest';
     const celebration = culturalElements.celebration || 'special festival';
+    const animals = userElements.favoriteAnimals;
+    const foods = userElements.favoriteFoods;
+    const hobbies = userElements.hobbies;
+    const colors = userElements.favoriteColors;
     const specialElement = userElements.specialRequest || 'magical ability';
     
-    // Distribute multiple elements throughout the story
-    const animal1 = this.selectRandomElement(userElements.favoriteAnimals);
-    const animal2 = userElements.favoriteAnimals.length > 1 ? 
-      this.selectDifferentElement(userElements.favoriteAnimals, animal1) : animal1;
-    const hobby = this.selectRandomElement(userElements.hobbies);
-    const food1 = this.selectRandomElement(userElements.favoriteFoods);
-    const food2 = userElements.favoriteFoods.length > 1 ? 
-      this.selectDifferentElement(userElements.favoriteFoods, food1) : food1;
+    // Complex narrative structures with multiple story arcs
+    const complexNarratives = [
+      // Mystery/adventure with layered reveals
+      () => {
+        const hobby = this.selectRandomElement(hobbies);
+        const color1 = this.selectRandomElement(colors);
+        const color2 = colors.length > 1 ? this.selectDifferentElement(colors, color1) : color1;
+        const animal1 = this.selectRandomElement(animals);
+        const food = this.selectRandomElement(foods);
+        
+        let story = `${name} had always been different from other children. While others enjoyed ordinary activities, ${name} found magic in ${hobby}. During the annual ${celebration}, strange ${color1} lights began appearing in the ${setting}.`;
+        
+        story += ` As ${name} investigated, a mysterious ${color2} pathway revealed itself, leading to an ancient clearing where ${this.getAnimalForStory(animal1, 'with-article')} sat waiting. "I've been expecting you," said the ${this.getSingularForm(animal1)}. "You possess ${specialElement} that our world desperately needs."`;
+        
+        if (animals.length > 1) {
+          const animal2 = this.selectDifferentElement(animals, animal1);
+          story += ` Together, they journeyed deeper, where they met ${this.getAnimalForStory(animal2, 'with-article')} who had been guarding the secret of the ${food} that could heal the land.`;
+        }
+        
+        story += ` Through three challenging trials that tested not just ${name}'s ${specialElement}, but also kindness, courage, and wisdom, ${name} discovered that the greatest magic comes from believing in yourself and caring for others. The ${setting} was saved, and ${name} had unlocked a power that would change everything.`;
+        
+        return story;
+      },
+      
+      // Transformation story with organic character development
+      () => {
+        const hobby = this.selectRandomElement(hobbies);
+        const animal = this.selectRandomElement(animals);
+        const food = this.selectRandomElement(foods);
+        const color = this.selectRandomElement(colors);
+        
+        return `${name} lived in a world where ${hobby} was considered impossible for children. But ${name} dreamed of proving everyone wrong. One extraordinary night, while practicing secretly in the ${setting}, ${name} encountered ${this.getAnimalForStory(animal, 'with-article')} unlike any other. This ${this.getSingularForm(animal)} glowed ${color} and spoke in riddles about ${food} that could grant wishes. Through a series of whimsical challenges involving ${specialElement}, ${name} learned that the real magic wasn't in the ${food} or the wishes, but in the courage to pursue your dreams despite what others say. By the end, ${name} had not only mastered ${hobby} but had also inspired an entire community to believe in the impossible.`;
+      }
+    ];
     
-    return `${name} had always been different from other children. While others played ordinary games, ${name} found magic in ${hobby}. One extraordinary day, during the annual ${celebration}, ${name} discovered something remarkable in the ${setting}. A magnificent ${animal1} approached, speaking in whispers only ${name} could understand. The ${animal1} revealed that ${name} possessed a rare ${specialElement} that could help solve an ancient mystery. Together, they embarked on a thrilling adventure through hidden paths and secret chambers. During their journey, they shared ${food1} by a magical stream. Later, they met ${GrammarValidator.createNounPhrase('wise', animal2)} who offered them ${food2} from an enchanted garden. ${name} faced three challenging puzzles that tested not just intelligence, but also kindness and courage. With each challenge overcome, ${name} grew more confident and wise. Both animal friends proved to be the most loyal companions anyone could ask for. In the end, ${name} not only solved the mystery but also discovered the true power of believing in oneself.`;
+    const randomIndex = Math.floor(Math.random() * complexNarratives.length);
+    const selectedNarrative = complexNarratives[randomIndex];
+    return selectedNarrative();
   }
   
-  // Kate DiCamillo inspired - Literary depth with cultural authenticity
+  // Kate DiCamillo inspired - Literary depth with sophisticated element integration
   private static createExpertAuthorStyle(
     name: string,
     userElements: any,
@@ -241,12 +320,48 @@ export class ComprehensiveStoryGenerator {
     const setting = culturalElements.setting || 'ancestral homeland';
     const celebration = culturalElements.celebration || 'coming-of-age ceremony';
     const value = culturalElements.value || 'wisdom and compassion';
+    const animals = userElements.favoriteAnimals;
+    const foods = userElements.favoriteFoods;
+    const hobbies = userElements.hobbies;
+    const colors = userElements.favoriteColors;
     const specialElement = userElements.specialRequest || 'ancient gift';
-    const animal = this.selectRandomElement(userElements.favoriteAnimals);
-    const hobby = this.selectRandomElement(userElements.hobbies);
-    const food = this.selectRandomElement(userElements.favoriteFoods);
     
-    return `In the heart of ${culturalContext.region}, where stories were woven into the very fabric of daily life, ${name} carried within them an extraordinary ${specialElement} passed down through generations. Their grandmother had always said that ${hobby} was not merely an activity, but a bridge between worlds. On the eve of the ${celebration}, when the whole community gathered to honor their traditions, ${name} encountered a majestic ${animal} whose eyes held the wisdom of centuries. This creature, guardian of ${value}, had been waiting for someone who truly understood the sacred connection between ${hobby} and the preservation of their cultural heritage. Together, they journeyed through landscapes both physical and spiritual, visiting places where their ancestors had walked and dreamed. Along the way, they shared traditional ${food} prepared according to ancient customs. ${name} learned that true strength comes not from individual achievement, but from understanding one's place within the continuous story of their people. The ${animal} taught ${name} that every act of ${hobby} was actually a prayer, a celebration of life, and a promise to future generations. Through trials that tested their character, wisdom, and commitment to their community's values, ${name} discovered that the greatest adventures are those that connect us more deeply to who we are meant to become.`;
+    // Sophisticated literary structures with deep thematic integration
+    const literaryNarratives = [
+      // Coming-of-age with cultural depth
+      () => {
+        const hobby = this.selectRandomElement(hobbies);
+        const animal = this.selectRandomElement(animals);
+        const food = this.selectRandomElement(foods);
+        const color = this.selectRandomElement(colors);
+        
+        let story = `In the heart of ${culturalContext.region}, where stories were woven into the very fabric of daily life, ${name} carried within them an extraordinary ${specialElement} passed down through generations. Their grandmother had always said that ${hobby} was not merely an activity, but a bridge between worlds.`;
+        
+        story += ` On the eve of the ${celebration}, when the whole community gathered to honor their traditions, ${name} felt the weight of expectation. While walking through the sacred ${setting}, ${name} encountered ${this.getAnimalForStory(animal, 'with-article')} whose eyes held the wisdom of centuries.`;
+        
+        story += ` This guardian of ${value} had been waiting for someone who truly understood that every act of ${hobby} was actually a prayer, a celebration of life, and a promise to future generations. Together, they shared traditional ${food} prepared according to ancient customs, the ${color} garnish representing hope for the future.`;
+        
+        if (animals.length > 1 || foods.length > 1) {
+          const secondAnimal = animals.length > 1 ? this.selectDifferentElement(animals, animal) : null;
+          const secondFood = foods.length > 1 ? this.selectDifferentElement(foods, food) : null;
+          
+          if (secondAnimal) {
+            story += ` Along their spiritual journey, they met ${this.getAnimalForStory(secondAnimal, 'with-article')} who taught ${name} that strength comes not from individual achievement, but from understanding one's place within the continuous story of their people.`;
+          }
+          if (secondFood) {
+            story += ` During the ceremony, ${name} prepared ${secondFood} for the community, each ingredient representing a different aspect of ${value}.`;
+          }
+        }
+        
+        story += ` Through trials that tested not just skill but character, wisdom, and commitment to community values, ${name} discovered that the greatest adventures are those that connect us more deeply to who we are meant to become. The ${specialElement} was not just a gift, but a responsibility to preserve the stories, traditions, and hopes of all who came before and all who would come after.`;
+        
+        return story;
+      }
+    ];
+    
+    const randomIndex = Math.floor(Math.random() * literaryNarratives.length);
+    const selectedNarrative = literaryNarratives[randomIndex];
+    return selectedNarrative();
   }
   
   // Helper method to randomly select an element from an array
