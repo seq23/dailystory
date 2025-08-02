@@ -160,19 +160,24 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
         variant="ghost"
         size="sm"
         onClick={() => {
+          console.log('Back button clicked - onBack available:', !!onBack);
           try {
             if (onBack) {
+              console.log('Using onBack callback');
               onBack();
             } else if (window.history.length > 1) {
+              console.log('Using window.history.back()');
               window.history.back();
             } else {
+              console.log('Fallback to home redirect');
               window.location.href = '/';
             }
           } catch (error) {
+            console.error('Navigation error:', error);
             window.location.href = '/';
           }
         }}
-        className="absolute top-4 left-4 text-white hover:bg-white/10"
+        className="absolute top-4 left-4 z-50 text-white hover:bg-white/20 border border-white/30 backdrop-blur-sm bg-black/20 rounded-lg px-3 py-2 shadow-lg transition-all duration-200 hover:scale-105"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           {onBack ? t("loginScreen.navigation.backToTrial") : t("loginScreen.navigation.back")}
@@ -183,19 +188,24 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
         variant="ghost"
         size="sm"
         onClick={() => {
+          console.log('Close button clicked - onBack available:', !!onBack);
           try {
             if (onBack) {
+              console.log('Using onBack callback');
               onBack();
             } else if (window.history.length > 1) {
+              console.log('Using window.history.back()');
               window.history.back();
             } else {
+              console.log('Fallback to home redirect');
               window.location.href = '/';
             }
           } catch (error) {
+            console.error('Navigation error:', error);
             window.location.href = '/';
           }
         }}
-        className="absolute top-4 right-4 text-white hover:bg-white/10 hover:bg-red-500/20 transition-colors p-2"
+        className="absolute top-4 right-4 z-50 text-white hover:bg-red-500/30 border border-white/30 backdrop-blur-sm bg-black/20 rounded-lg p-2 shadow-lg transition-all duration-200 hover:scale-105"
       >
         <X className="w-5 h-5" />
       </Button>
