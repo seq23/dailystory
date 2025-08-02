@@ -119,33 +119,50 @@ export class ComprehensiveStoryGenerator {
     tracker: StoryElementTracker
   ): string {
     const characterName = userInfo.name?.trim() || 'Alex';
-    const favoriteAnimal = userInfo.favoriteAnimal?.toLowerCase()?.trim() || 'cat';
-    const favoriteColor = userInfo.favoriteColor?.toLowerCase()?.trim() || 'blue';
-    const hobbies = userInfo.hobbies?.toLowerCase()?.trim() || 'playing';
+    
+    // Parse comma-separated values intelligently
+    const favoriteAnimals = userInfo.favoriteAnimal?.toLowerCase()?.trim()
+      ?.split(',').map(a => a.trim()).filter(a => a.length > 0) || ['cat'];
+    const favoriteColors = userInfo.favoriteColor?.toLowerCase()?.trim()
+      ?.split(',').map(c => c.trim()).filter(c => c.length > 0) || ['blue'];
+    const favoriteFoods = userInfo.favoriteFood?.toLowerCase()?.trim()
+      ?.split(',').map(f => f.trim()).filter(f => f.length > 0) || ['pizza'];
+    const hobbies = userInfo.hobbies?.toLowerCase()?.trim()
+      ?.split(',').map(h => h.trim()).filter(h => h.length > 0) || ['playing'];
     const specialRequest = userInfo.specialRequest?.toLowerCase()?.trim();
+    
+    // Create user elements object for intelligent distribution
+    const userElements = {
+      favoriteAnimals,
+      favoriteColors, 
+      favoriteFoods,
+      hobbies,
+      specialRequest
+    };
     
     // Create story based on author style and cultural context
     switch (difficulty) {
       case 'easy':
-        return this.createEasyAuthorStyle(characterName, favoriteAnimal, favoriteColor, culturalElements, tracker);
+        return this.createEasyAuthorStyle(characterName, userElements, culturalElements, tracker);
       case 'medium':
-        return this.createMediumAuthorStyle(characterName, favoriteAnimal, hobbies, culturalElements, tracker);
+        return this.createMediumAuthorStyle(characterName, userElements, culturalElements, tracker);
       case 'hard':
-        return this.createHardAuthorStyle(characterName, favoriteAnimal, hobbies, specialRequest, culturalElements, tracker);
+        return this.createHardAuthorStyle(characterName, userElements, culturalElements, tracker);
       case 'expert':
-        return this.createExpertAuthorStyle(characterName, favoriteAnimal, hobbies, specialRequest, culturalElements, culturalContext, tracker);
+        return this.createExpertAuthorStyle(characterName, userElements, culturalElements, culturalContext, tracker);
     }
   }
   
   // Mo Willems/Eric Carle inspired - Simple, repetitive, joyful
   private static createEasyAuthorStyle(
     name: string, 
-    animal: string, 
-    color: string, 
+    userElements: any,
     culturalElements: any,
     tracker: StoryElementTracker
   ): string {
     const setting = culturalElements.setting || 'garden';
+    const animal = this.selectRandomElement(userElements.favoriteAnimals);
+    const color = this.selectRandomElement(userElements.favoriteColors);
     
     return `${name} sees ${GrammarValidator.createNounPhrase('', animal)}. The ${animal} is ${color}. ${name} says hello. The ${animal} says hello too. ${name} smiles big. The ${animal} smiles big too. They dance together. They laugh together. ${name} is happy. The ${animal} is happy. What a wonderful day!`;
   }
@@ -153,39 +170,52 @@ export class ComprehensiveStoryGenerator {
   // Kevin Henkes inspired - Gentle character-driven stories
   private static createMediumAuthorStyle(
     name: string,
-    animal: string, 
-    hobby: string,
+    userElements: any,
     culturalElements: any,
     tracker: StoryElementTracker
   ): string {
     const setting = culturalElements.setting || 'neighborhood park';
-    const food = culturalElements.food || 'sandwich';
+    const defaultFood = culturalElements.food || 'sandwich';
     
-    return `${name} loved ${hobby} more than anything else. One sunny morning, ${name} went to the ${setting} with ${GrammarValidator.createNounPhrase('', food)} for lunch. There, hiding behind an old oak tree, was ${GrammarValidator.createNounPhrase('lonely', animal)}. The ${animal} looked sad and hungry. ${name} shared the ${food} with their new friend. They spent the whole day playing ${hobby} together. From that day on, ${name} and the ${animal} were inseparable. Every morning, they would meet at the ${setting} for new adventures. ${name} learned that the best part of ${hobby} was sharing it with a friend.`;
+    // Use multiple elements throughout the story for variety
+    const animal1 = this.selectRandomElement(userElements.favoriteAnimals);
+    const animal2 = userElements.favoriteAnimals.length > 1 ? 
+      this.selectDifferentElement(userElements.favoriteAnimals, animal1) : animal1;
+    const hobby = this.selectRandomElement(userElements.hobbies);
+    const food1 = userElements.favoriteFoods.length > 0 ? this.selectRandomElement(userElements.favoriteFoods) : defaultFood;
+    const food2 = userElements.favoriteFoods.length > 1 ? 
+      this.selectDifferentElement(userElements.favoriteFoods, food1) : food1;
+    
+    return `${name} loved ${hobby} more than anything else. One sunny morning, ${name} went to the ${setting} with ${GrammarValidator.createNounPhrase('', food1)} for lunch. There, hiding behind an old oak tree, was ${GrammarValidator.createNounPhrase('lonely', animal1)}. The ${animal1} looked sad and hungry. ${name} shared the ${food1} with their new friend. They spent the whole day playing ${hobby} together. The next day, they met ${GrammarValidator.createNounPhrase('friendly', animal2)} who loved ${food2} just as much as they did. From that day on, ${name} and the animals were inseparable. Every morning, they would meet at the ${setting} for new adventures. ${name} learned that the best part of ${hobby} was sharing it with friends.`;
   }
   
   // Roald Dahl inspired - Whimsical with character growth
   private static createHardAuthorStyle(
     name: string,
-    animal: string,
-    hobby: string,
-    specialRequest: string,
+    userElements: any,
     culturalElements: any,
     tracker: StoryElementTracker
   ): string {
     const setting = culturalElements.setting || 'mysterious forest';
     const celebration = culturalElements.celebration || 'special festival';
-    const specialElement = specialRequest || 'magical ability';
+    const specialElement = userElements.specialRequest || 'magical ability';
     
-    return `${name} had always been different from other children. While others played ordinary games, ${name} found magic in ${hobby}. One extraordinary day, during the annual ${celebration}, ${name} discovered something remarkable in the ${setting}. A magnificent ${animal} approached, speaking in whispers only ${name} could understand. The ${animal} revealed that ${name} possessed a rare ${specialElement} that could help solve an ancient mystery. Together, they embarked on a thrilling adventure through hidden paths and secret chambers. ${name} faced three challenging puzzles that tested not just intelligence, but also kindness and courage. With each challenge overcome, ${name} grew more confident and wise. The ${animal} proved to be the most loyal companion anyone could ask for. In the end, ${name} not only solved the mystery but also discovered the true power of believing in oneself.`;
+    // Distribute multiple elements throughout the story
+    const animal1 = this.selectRandomElement(userElements.favoriteAnimals);
+    const animal2 = userElements.favoriteAnimals.length > 1 ? 
+      this.selectDifferentElement(userElements.favoriteAnimals, animal1) : animal1;
+    const hobby = this.selectRandomElement(userElements.hobbies);
+    const food1 = this.selectRandomElement(userElements.favoriteFoods);
+    const food2 = userElements.favoriteFoods.length > 1 ? 
+      this.selectDifferentElement(userElements.favoriteFoods, food1) : food1;
+    
+    return `${name} had always been different from other children. While others played ordinary games, ${name} found magic in ${hobby}. One extraordinary day, during the annual ${celebration}, ${name} discovered something remarkable in the ${setting}. A magnificent ${animal1} approached, speaking in whispers only ${name} could understand. The ${animal1} revealed that ${name} possessed a rare ${specialElement} that could help solve an ancient mystery. Together, they embarked on a thrilling adventure through hidden paths and secret chambers. During their journey, they shared ${food1} by a magical stream. Later, they met ${GrammarValidator.createNounPhrase('wise', animal2)} who offered them ${food2} from an enchanted garden. ${name} faced three challenging puzzles that tested not just intelligence, but also kindness and courage. With each challenge overcome, ${name} grew more confident and wise. Both animal friends proved to be the most loyal companions anyone could ask for. In the end, ${name} not only solved the mystery but also discovered the true power of believing in oneself.`;
   }
   
   // Kate DiCamillo inspired - Literary depth with cultural authenticity
   private static createExpertAuthorStyle(
     name: string,
-    animal: string,
-    hobby: string,
-    specialRequest: string,
+    userElements: any,
     culturalElements: any,
     culturalContext: any,
     tracker: StoryElementTracker
@@ -193,9 +223,25 @@ export class ComprehensiveStoryGenerator {
     const setting = culturalElements.setting || 'ancestral homeland';
     const celebration = culturalElements.celebration || 'coming-of-age ceremony';
     const value = culturalElements.value || 'wisdom and compassion';
-    const specialElement = specialRequest || 'ancient gift';
+    const specialElement = userElements.specialRequest || 'ancient gift';
+    const animal = this.selectRandomElement(userElements.favoriteAnimals);
+    const hobby = this.selectRandomElement(userElements.hobbies);
+    const food = this.selectRandomElement(userElements.favoriteFoods);
     
-    return `In the heart of ${culturalContext.region}, where stories were woven into the very fabric of daily life, ${name} carried within them an extraordinary ${specialElement} passed down through generations. Their grandmother had always said that ${hobby} was not merely an activity, but a bridge between worlds. On the eve of the ${celebration}, when the whole community gathered to honor their traditions, ${name} encountered a majestic ${animal} whose eyes held the wisdom of centuries. This creature, guardian of ${value}, had been waiting for someone who truly understood the sacred connection between ${hobby} and the preservation of their cultural heritage. Together, they journeyed through landscapes both physical and spiritual, visiting places where their ancestors had walked and dreamed. ${name} learned that true strength comes not from individual achievement, but from understanding one's place within the continuous story of their people. The ${animal} taught ${name} that every act of ${hobby} was actually a prayer, a celebration of life, and a promise to future generations. Through trials that tested their character, wisdom, and commitment to their community's values, ${name} discovered that the greatest adventures are those that connect us more deeply to who we are meant to become.`;
+    return `In the heart of ${culturalContext.region}, where stories were woven into the very fabric of daily life, ${name} carried within them an extraordinary ${specialElement} passed down through generations. Their grandmother had always said that ${hobby} was not merely an activity, but a bridge between worlds. On the eve of the ${celebration}, when the whole community gathered to honor their traditions, ${name} encountered a majestic ${animal} whose eyes held the wisdom of centuries. This creature, guardian of ${value}, had been waiting for someone who truly understood the sacred connection between ${hobby} and the preservation of their cultural heritage. Together, they journeyed through landscapes both physical and spiritual, visiting places where their ancestors had walked and dreamed. Along the way, they shared traditional ${food} prepared according to ancient customs. ${name} learned that true strength comes not from individual achievement, but from understanding one's place within the continuous story of their people. The ${animal} taught ${name} that every act of ${hobby} was actually a prayer, a celebration of life, and a promise to future generations. Through trials that tested their character, wisdom, and commitment to their community's values, ${name} discovered that the greatest adventures are those that connect us more deeply to who we are meant to become.`;
+  }
+  
+  // Helper method to randomly select an element from an array
+  private static selectRandomElement(array: string[]): string {
+    if (!array || array.length === 0) return 'something';
+    return array[Math.floor(Math.random() * array.length)];
+  }
+  
+  // Helper method to select a different element from the same array
+  private static selectDifferentElement(array: string[], exclude: string): string {
+    if (!array || array.length <= 1) return exclude;
+    const filtered = array.filter(item => item !== exclude);
+    return filtered.length > 0 ? this.selectRandomElement(filtered) : exclude;
   }
   
   private static validateAndSanitizeStory(story: string, grade?: string, language?: string): string {
