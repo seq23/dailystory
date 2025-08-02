@@ -15,3 +15,6 @@ verify_jwt = false
 
 [functions.word-dictionary]
 verify_jwt = false
+
+[functions.translate-word]
+verify_jwt = false
