@@ -211,15 +211,60 @@ export class AdaptiveStoryGenerator {
   }
 
   private parseStoryIntoPages(content: string, maxWordsPerPage: number): string[] {
+    // Use smart page breaking that prioritizes natural boundaries
+    return this.smartParseStoryIntoPages(content, maxWordsPerPage);
+  }
+
+  private smartParseStoryIntoPages(content: string, maxWordsPerPage: number): string[] {
+    // Split into paragraphs first (natural scene breaks)
+    const paragraphs = content.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+    const pages: string[] = [];
+    let currentPage = '';
+    let currentWordCount = 0;
+    
+    // Allow 15% flexibility in word counts for better flow
+    const minWords = Math.floor(maxWordsPerPage * 0.85);
+    const maxWords = Math.floor(maxWordsPerPage * 1.15);
+    
+    for (const paragraph of paragraphs) {
+      const paragraphWords = this.countWords(paragraph);
+      
+      // If adding this paragraph exceeds max but we're above min, start new page
+      if (currentWordCount + paragraphWords > maxWords && currentWordCount >= minWords) {
+        pages.push(currentPage.trim());
+        currentPage = paragraph;
+        currentWordCount = paragraphWords;
+      } else {
+        // Add paragraph to current page
+        currentPage += (currentPage ? '\n\n' : '') + paragraph;
+        currentWordCount += paragraphWords;
+      }
+    }
+    
+    // Add final page if exists
+    if (currentPage.trim()) {
+      pages.push(currentPage.trim());
+    }
+    
+    // Fallback: If no paragraphs found, use sentence-based smart breaking
+    if (pages.length === 0) {
+      return this.smartSentenceBasedPaging(content, maxWordsPerPage, minWords, maxWords);
+    }
+    
+    return pages;
+  }
+
+  private smartSentenceBasedPaging(content: string, maxWordsPerPage: number, minWords: number, maxWords: number): string[] {
     const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 0);
     const pages: string[] = [];
     let currentPage = '';
     let currentWordCount = 0;
 
     for (const sentence of sentences) {
-      const sentenceWords = sentence.trim().split(' ').length;
+      const sentenceWords = this.countWords(sentence.trim());
       
-      if (currentWordCount + sentenceWords > maxWordsPerPage && currentPage) {
+      // If adding this sentence exceeds max but we're above min, start new page
+      if (currentWordCount + sentenceWords > maxWords && currentWordCount >= minWords) {
         pages.push(currentPage.trim() + '.');
         currentPage = sentence.trim();
         currentWordCount = sentenceWords;

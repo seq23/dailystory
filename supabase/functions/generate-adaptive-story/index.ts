@@ -62,6 +62,14 @@ STORY REQUIREMENTS:
 - Sentence structure: ${specs.sentenceStructure}
 - Vocabulary level: ${specs.vocabulary}
 
+QUALITY REQUIREMENTS (MANDATORY):
+- Use PERFECT grammar and spelling throughout the story
+- Maintain consistent verb tenses (past tense for narrative)
+- Ensure proper punctuation, capitalization, and sentence structure
+- Write complete, well-formed sentences that flow naturally
+- Use correct subject-verb agreement and pronoun usage
+- Before completing the story, mentally proofread every sentence
+
 CRITICAL PERSONALIZATION RULES:
 1. ${userName} MUST be the main character and hero
 2. Naturally incorporate their favorite color, animal, and interests
@@ -75,6 +83,7 @@ ${readingLevel === 'beginner' ?
   `- Write like Julia Donaldson, Mo Willems, Dr. Seuss, and Kevin Henkes
   - Maximum 6 words per page only
   - Very simple sentences with repetitive patterns
+  - Use simple past tense consistently, basic punctuation
   - Focus on rhythm, rhyme, and emotional connection
   - Use basic sight words and simple concepts
   - Emphasize friendship, discovery, and gentle adventures` :
@@ -82,6 +91,7 @@ readingLevel === 'elementary' ?
   `- Write like Jeff Kinney, Roald Dahl, Dav Pilkey, and Andrea Beaty
   - Approximately 200 words per page for 2-minute reading time
   - Conversational tone with humor and relatability
+  - Maintain consistent narrative tense, proper dialogue punctuation
   - Include simple dialogue and character emotions
   - Focus on friendship, problem-solving, and everyday adventures
   - Use descriptive language that's accessible but engaging` :
@@ -89,12 +99,13 @@ readingLevel === 'intermediate' ?
   `- Write like Katherine Applegate, C.S. Lewis, and J.K. Rowling
   - Approximately 300 words per page for 2-minute reading time
   - Rich descriptions and character development
-  - Complex sentences with varied structure
+  - Complex sentence structures with correct grammar
   - Include mild conflict and emotional depth
   - Use figurative language and deeper themes about growing up` :
   `- Write like Sharon Creech, Anna Sewell, Louis Sachar, Jacqueline Woodson, Suzanne Collins, John Green, and Markus Zusak
   - Approximately 500 words per page for 2-minute reading time
   - Sophisticated storytelling with complex plots
+  - Sophisticated grammar with varied sentence types
   - Rich world-building and character arcs
   - Advanced vocabulary and literary devices
   - Explore themes of identity, relationships, and moral decisions
@@ -151,6 +162,9 @@ STORY STRUCTURE:
 - End with a satisfying conclusion that feels complete
 
 Make this feel like a real book that ${userName} would love to read about themselves. Age-appropriate for ${userAge} years old at ${readingLevel} level.
+
+FINAL QUALITY CHECK:
+Before finishing, review the entire story for grammatical errors and fix any issues with spelling, punctuation, or sentence structure.
 
 Write as a complete, flowing narrative without page breaks or section markers.`
 
