@@ -265,19 +265,19 @@ export class EarlyReaderStoryGenerator {
         `Friends play together.`
       ],
       medium: [
-        `${characterName} discovered something amazing about ${favoriteColor} magic with their ${favoriteAnimal} friend.`,
-        `They explored a new part of their world while enjoying ${favoriteFood} together.`,
-        `The ${favoriteAnimal} showed ${characterName} a hidden ${favoriteColor} treasure.`,
-        `Together they used their love of ${mainHobby} to solve a fun puzzle.`,
-        `${characterName} and the ${favoriteAnimal} helped other animals find ${favoriteFood}.`,
-        `Their friendship grew stronger through their shared adventures and ${favoriteColor} discoveries.`
+        `${characterName} found a ${favoriteColor} treasure with their ${favoriteAnimal} friend today.`,
+        `They went on an adventure to find more ${favoriteFood} for everyone.`,
+        `The ${favoriteAnimal} taught ${characterName} something new about ${mainHobby} skills.`,
+        `Together they helped other animals solve a tricky ${favoriteColor} puzzle.`,
+        `${characterName} and the ${favoriteAnimal} discovered a secret place to play.`,
+        `Their friendship grew stronger through teamwork and sharing ${favoriteFood} together.`
       ],
       hard: [
-        `${characterName} realized that their adventure with the ${favoriteAnimal} was teaching them important lessons about ${mainHobby} and friendship.`,
-        `The wise ${favoriteAnimal} shared ancient secrets about the ${favoriteColor} forest while they enjoyed ${favoriteFood} together.`,
-        `Together, ${characterName} and the ${favoriteAnimal} encountered mysterious creatures who appreciated their knowledge of ${mainHobby}.`,
-        `${characterName} discovered they had special abilities that only appeared when combining their love of ${favoriteColor} things with their ${favoriteAnimal} companion.`,
-        `The bond between ${characterName} and the ${favoriteAnimal} created a powerful magic that transformed everything ${favoriteColor} in their world.`
+        `${characterName} realized their adventure was teaching important lessons about friendship and ${mainHobby}.`,
+        `The wise ${favoriteAnimal} shared ancient secrets while they enjoyed ${favoriteFood} together.`,
+        `Together they encountered mysterious creatures who appreciated their knowledge of ${mainHobby}.`,
+        `${characterName} discovered special abilities that appeared when combining ${favoriteColor} magic with their companion.`,
+        `Their bond created powerful magic that transformed everything ${favoriteColor} around them.`
       ],
       expert: [
         `${characterName} contemplated the profound connection they shared with the ${favoriteAnimal}, understanding that their relationship transcended ordinary friendship and had become something extraordinary, much like their appreciation for both ${favoriteColor} beauty and ${favoriteFood}.`,
