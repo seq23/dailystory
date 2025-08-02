@@ -320,8 +320,12 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
 
   const handleSessionEnd = () => {
     const timeSpent = APP_CONFIG.FREE_SESSION_DURATION - timeRemaining;
+    
+    // Calculate actual words read for accurate session stats
+    const actualWordsRead = calculateActualWordsRead();
+    
     const sessionStats: SessionStats = {
-      wordsRead,
+      wordsRead: actualWordsRead,
       timeSpent,
       pagesRead: currentPage + 1,
       startTime: sessionStartTime.getTime(),
@@ -331,11 +335,11 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
     // Only record reading session for gamification if story wasn't already completed
     if (!storyCompleted) {
       recordReadingSession({
-        wordsRead,
+        wordsRead: actualWordsRead,
         timeSpent,
         pagesRead: currentPage + 1,
         storyCompleted: currentPage >= story.length - 1,
-        readingSpeed: Math.round((wordsRead / (timeSpent / 60)) || 0)
+        readingSpeed: Math.round((actualWordsRead / (timeSpent / 60)) || 0)
       });
     }
     
@@ -751,10 +755,13 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
               size="lg"
               className="bg-gradient-to-b from-white to-red-50 backdrop-blur-sm border-2 border-red-400/50 text-red-600 hover:bg-red-500 hover:text-white shadow-lg w-8 h-8 sm:w-10 sm:h-10 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-xl"
               onClick={() => {
+                // Calculate actual words read for accurate session end stats
+                const actualWordsRead = calculateActualWordsRead();
+                
                 setTimeRemaining(0);
                 onSessionEnded({
                   timeSpent: APP_CONFIG.FREE_SESSION_DURATION - timeRemaining,
-                  wordsRead,
+                  wordsRead: actualWordsRead,
                   pagesRead: currentPage + 1,
                   startTime: sessionStartTime.getTime(),
                   accuracy: 100
