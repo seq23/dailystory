@@ -105,7 +105,58 @@ All colors MUST be HSL.
     --sidebar-border: 220 13% 91%;
 
     --sidebar-ring: 217.2 91.2% 59.8%;
+}
+
+/* Mobile and tablet optimizations for InteractiveWord */
+@media (max-width: 768px) {
+  .mobile-optimized {
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    touch-action: manipulation;
   }
+  
+  /* Improve touch targets */
+  .mobile-optimized button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Optimize tooltips for mobile */
+  .mobile-optimized [role="tooltip"] {
+    max-width: calc(100vw - 20px);
+    font-size: 14px;
+    line-height: 1.4;
+  }
+  
+  /* Prevent viewport zoom on input focus */
+  .mobile-optimized input {
+    font-size: 16px;
+  }
+}
+
+/* Tablet-specific optimizations */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .mobile-optimized {
+    touch-action: manipulation;
+  }
+  
+  .mobile-optimized button {
+    min-height: 40px;
+    padding: 10px 16px;
+  }
+}
+
+/* Native app optimizations when running in Capacitor */
+@supports (-webkit-touch-callout: none) {
+  .mobile-optimized {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
 
   .dark {
     --background: 222.2 84% 4.9%;

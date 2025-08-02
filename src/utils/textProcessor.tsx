@@ -1,4 +1,4 @@
-import { InteractiveWord } from "@/components/InteractiveWord";
+import { MobileOptimizedInteractiveWord } from "@/components/InteractiveWord";
 
 // Function to process text and wrap words in InteractiveWord components
 export const processTextForPhonetics = (
@@ -23,7 +23,7 @@ export const processTextForPhonetics = (
     }
     
     return (
-      <InteractiveWord 
+      <MobileOptimizedInteractiveWord 
         key={index} 
         word={word} 
         className={`${className} ${

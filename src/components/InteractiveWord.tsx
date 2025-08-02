@@ -717,5 +717,30 @@ export const InteractiveWord = ({
         </div>
       )}
     </span>
-  );
+   );
 };
+
+// Add mobile-specific optimizations for native apps
+const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
+  // Detect if we're running in Capacitor (native mobile app)
+  const isNativeApp = typeof window !== 'undefined' && 
+    (window as any).Capacitor?.isNativePlatform?.();
+
+  // Enhanced mobile detection for tablets and phones
+  const isMobileDevice = typeof window !== 'undefined' && 
+    (/Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+     window.matchMedia('(max-width: 768px)').matches ||
+     isNativeApp);
+
+  // Apply mobile-specific optimizations
+  const optimizedProps = {
+    ...props,
+    className: `${props.className || ''} ${
+      isMobileDevice ? 'mobile-optimized touch-manipulation select-none' : ''
+    }`
+  };
+
+  return <InteractiveWord {...optimizedProps} />;
+};
+
+export { MobileOptimizedInteractiveWord };
