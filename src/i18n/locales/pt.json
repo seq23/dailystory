@@ -311,7 +311,14 @@
     "level": "Nível",
     "unlockPremium": "Desbloqueie Benefícios Premium!",
     "goToHome": "Ir para Casa",
-    "startNewStory": "Começar Nova História"
+    "startNewStory": "Começar Nova História",
+    "premiumBenefits": {
+      "unlimitedSessions": "Sessões de leitura ilimitadas",
+      "customDifficulty": "Dificuldade personalizada da história",
+      "extendedLibrary": "Biblioteca de histórias expandida",
+      "advancedTracking": "Acompanhamento avançado do progresso",
+      "upgradeToPremium": "Atualizar para Premium"
+    }
   },
   "storyDisplay": {
     "header": {
@@ -497,5 +504,50 @@
     "unlockPremium": "Desbloqueie Benefícios Premium!",
     "goToHome": "Ir para Casa",
     "startNewStory": "Iniciar Nova História"
+  },
+  "floatingTimer": {
+    "maxLimit": "Limite Máximo",
+    "readingTime": "Tempo de Leitura",
+    "startTimer": "Iniciar Temporizador",
+    "pauseTimer": "Pausar Temporizador",
+    "reduceTime": "Reduzir 5 Minutos",
+    "endSession": "Terminar Sessão de Leitura",
+    "congratulations": "Parabéns!",
+    "sessionComplete": "Você completou sua sessão de leitura!",
+    "sequentialTooltips": {
+      "startPause": "🎯 Clique para iniciar/pausar seu temporizador de leitura!",
+      "reduceTime": "⏰ Reduza o tempo em 5 minutos!",
+      "endSession": "🔚 Clique para terminar sua sessão de leitura!"
+    }
+  },
+  "audioReading": {
+    "playAudio": "Reproduzir áudio",
+    "audioPlaying": "Áudio tocando...",
+    "audioUsed": "Áudio usado",
+    "audioUsedTooltip": "Áudio usado (1x por página para usuários gratuitos)",
+    "speed": "Velocidade",
+    "stop": "Parar",
+    "generating": "Gerando...",
+    "freeAudioUsed": "áudio gratuito usado",
+    "extendedPagesNeedPremium": "🔒 Páginas estendidas precisam de Premium"
+  },
+  "storyDisplay": {
+    "readingLevel": "Nível de Leitura",
+    "readingProgress": "Progresso da Leitura",
+    "previous": "← Anterior",
+    "next": "Próximo →",
+    "addMorePages": "Adicionar Mais Páginas",
+    "encouragementMessages": {
+      "outstanding": "Conquista de leitura excepcional! Você está se tornando um campeão de leitura!",
+      "excellent": "Excelente trabalho! Você está fazendo grande progresso!",
+      "great": "Ótimo começo! Mantenha o maravilhoso hábito de leitura!",
+      "everyPage": "Cada página conta! Você está no caminho para se tornar um grande leitor!"
+    },
+    "difficultyLabels": {
+      "easy": "Pré-K - 1ª série",
+      "medium": "2ª - 3ª série",
+      "hard": "4ª - 5ª série",
+      "expert": "6ª série+"
+    }
   }
 }

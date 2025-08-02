@@ -311,7 +311,14 @@
     "level": "级别",
     "unlockPremium": "解锁高级功能！",
     "goToHome": "回到首页",
-    "startNewStory": "开始新故事"
+    "startNewStory": "开始新故事",
+    "premiumBenefits": {
+      "unlimitedSessions": "无限阅读时间",
+      "customDifficulty": "自定义故事难度",
+      "extendedLibrary": "扩展故事库",
+      "advancedTracking": "高级进度跟踪",
+      "upgradeToPremium": "升级到高级版"
+    }
   },
   "storyDisplay": {
     "header": {
@@ -470,19 +477,49 @@
     "skip": "跳过教程",
     "startReading": "开始阅读！"
   },
-  "sessionEnded": {
-    "completed": "阅读会话完成！",
-    "premiumCompleted": "高级会话完成！",
+  "floatingTimer": {
+    "maxLimit": "最大限制",
+    "readingTime": "阅读时间",
+    "startTimer": "开始计时",
+    "pauseTimer": "暂停计时",
+    "reduceTime": "减少5分钟",
+    "endSession": "结束阅读会话",
+    "congratulations": "恭喜！",
+    "sessionComplete": "您完成了阅读时间！",
+    "sequentialTooltips": {
+      "startPause": "🎯 点击开始/暂停您的阅读计时器！",
+      "reduceTime": "⏰ 减少5分钟！",
+      "endSession": "🔚 点击结束您的阅读会话！"
+    }
+  },
+  "audioReading": {
+    "playAudio": "播放音频",
+    "audioPlaying": "音频播放中...",
+    "audioUsed": "音频已使用",
+    "audioUsedTooltip": "音频已使用 (免费用户每页1次)",
+    "speed": "速度",
+    "stop": "停止",
+    "generating": "生成中...",
+    "freeAudioUsed": "免费音频已使用",
+    "extendedPagesNeedPremium": "🔒 扩展页面需要高级版"
+  },
+  "storyDisplay": {
+    "readingLevel": "阅读级别",
     "readingProgress": "阅读进度",
-    "of": "的",
-    "pages": "页面",
-    "wordsRead": "已读单词",
-    "timeSpent": "用时",
-    "accuracy": "准确率",
-    "readingLevel": "阅读水平",
-    "level": "等级",
-    "unlockPremium": "解锁高级功能！",
-    "goToHome": "回到主页",
-    "startNewStory": "开始新故事"
+    "previous": "← 上一页",
+    "next": "下一页 →",
+    "addMorePages": "添加更多页面",
+    "encouragementMessages": {
+      "outstanding": "出色的阅读成就！您正在成为阅读冠军！",
+      "excellent": "做得很好！您取得了很大的进步！",
+      "great": "很好的开始！保持良好的阅读习惯！",
+      "everyPage": "每一页都很重要！您正在成为优秀的阅读者！"
+    },
+    "difficultyLabels": {
+      "easy": "学前班 - 一年级",
+      "medium": "二年级 - 三年级",
+      "hard": "四年级 - 五年级",
+      "expert": "六年级+"
+    }
   }
 }

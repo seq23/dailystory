@@ -312,7 +312,14 @@
     "level": "Nivel",
     "unlockPremium": "¡Desbloquea Beneficios Premium!",
     "goToHome": "Ir al Inicio",
-    "startNewStory": "Comenzar Nueva Historia"
+    "startNewStory": "Comenzar Nueva Historia",
+    "premiumBenefits": {
+      "unlimitedSessions": "Sesiones de lectura ilimitadas",
+      "customDifficulty": "Ajuste personalizado de dificultad",
+      "extendedLibrary": "Biblioteca extendida con más temas",
+      "advancedTracking": "Seguimiento avanzado del progreso",
+      "upgradeToPremium": "Actualizar a Premium"
+    }
   },
   "tutorial": {
     "timer": {
@@ -363,6 +370,8 @@
     "audioUsed": "Audio usado",
     "audioUsedTooltip": "Audio usado (1x por página para usuarios gratuitos)",
     "speed": "Velocidad",
+    "stop": "Detener",
+    "generating": "Generando...",
     "freeAudioUsed": "audio gratuito usado",
     "extendedPagesNeedPremium": "🔒 Las páginas extendidas necesitan Premium"
   },

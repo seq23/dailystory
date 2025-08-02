@@ -311,7 +311,14 @@
     "level": "स्तर",
     "unlockPremium": "प्रीमियम लाभ अनलॉक करें!",
     "goToHome": "मुख्य पृष्ठ पर जाएं",
-    "startNewStory": "नई कहानी शुरू करें"
+    "startNewStory": "नई कहानी शुरू करें",
+    "premiumBenefits": {
+      "unlimitedSessions": "असीमित पढ़ने के सत्र",
+      "customDifficulty": "कस्टम कहानी कठिनाई",
+      "extendedLibrary": "विस्तृत कहानी लाइब्रेरी",
+      "advancedTracking": "उन्नत प्रगति ट्रैकिंग",
+      "upgradeToPremium": "प्रीमियम में अपग्रेड करें"
+    }
   },
   "storyDisplay": {
     "header": {
@@ -497,5 +504,50 @@
     "unlockPremium": "प्रीमियम लाभ अनलॉक करें!",
     "goToHome": "होम पर जाएं",
     "startNewStory": "नई कहानी शुरू करें"
+  },
+  "floatingTimer": {
+    "maxLimit": "अधिकतम सीमा",
+    "readingTime": "पठन समय",
+    "startTimer": "टाइमर शुरू करें",
+    "pauseTimer": "टाइमर रोकें",
+    "reduceTime": "5 मिनट कम करें",
+    "endSession": "पठन सत्र समाप्त करें",
+    "congratulations": "बधाई हो!",
+    "sessionComplete": "आपने अपना पठन सत्र पूरा किया!",
+    "sequentialTooltips": {
+      "startPause": "🎯 अपना पठन टाइमर शुरू/रोकने के लिए क्लिक करें!",
+      "reduceTime": "⏰ 5 मिनट कम करें!",
+      "endSession": "🔚 अपना पठन सत्र समाप्त करने के लिए क्लिक करें!"
+    }
+  },
+  "audioReading": {
+    "playAudio": "ऑडियो चलाएं",
+    "audioPlaying": "ऑडियो चल रहा है...",
+    "audioUsed": "ऑडियो का उपयोग किया गया",
+    "audioUsedTooltip": "ऑडियो का उपयोग किया गया (मुफ्त उपयोगकर्ताओं के लिए प्रति पृष्ठ 1x)",
+    "speed": "गति",
+    "stop": "रोकें",
+    "generating": "तैयार कर रहे हैं...",
+    "freeAudioUsed": "मुफ्त ऑडियो का उपयोग किया गया",
+    "extendedPagesNeedPremium": "🔒 विस्तारित पृष्ठों के लिए प्रीमियम चाहिए"
+  },
+  "storyDisplay": {
+    "readingLevel": "पठन स्तर",
+    "readingProgress": "पठन प्रगति",
+    "previous": "← पिछला",
+    "next": "अगला →",
+    "addMorePages": "और पृष्ठ जोड़ें",
+    "encouragementMessages": {
+      "outstanding": "उत्कृष्ट पठन उपलब्धि! आप पठन चैंपियन बन रहे हैं!",
+      "excellent": "उत्कृष्ट कार्य! आप महान प्रगति कर रहे हैं!",
+      "great": "बेहतरीन शुरुआत! पठन की अद्भुत आदत बनाए रखें!",
+      "everyPage": "हर पृष्ठ मायने रखता है! आप एक महान पाठक बनने के रास्ते पर हैं!"
+    },
+    "difficultyLabels": {
+      "easy": "प्री-के - पहली कक्षा",
+      "medium": "दूसरी - तीसरी कक्षा",
+      "hard": "चौथी - पांचवीं कक्षा",
+      "expert": "छठी कक्षा+"
+    }
   }
 }

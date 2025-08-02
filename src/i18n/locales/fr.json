@@ -312,7 +312,14 @@
     "level": "Niveau",
     "unlockPremium": "Débloquez les Avantages Premium!",
     "goToHome": "Retour à l'Accueil",
-    "startNewStory": "Commencer Nouvelle Histoire"
+    "startNewStory": "Commencer Nouvelle Histoire",
+    "premiumBenefits": {
+      "unlimitedSessions": "Sessions de lecture illimitées",
+      "customDifficulty": "Ajustement personnalisé de la difficulté",
+      "extendedLibrary": "Bibliothèque étendue avec plus de sujets",
+      "advancedTracking": "Suivi avancé des progrès",
+      "upgradeToPremium": "Passer à Premium"
+    }
   },
   "tutorial": {
     "timer": {
@@ -349,6 +356,8 @@
     "pauseTimer": "Mettre en Pause",
     "reduceTime": "Réduire de 5 Minutes",
     "endSession": "Terminer la Session",
+    "congratulations": "Félicitations !",
+    "sessionComplete": "Vous avez terminé votre session de lecture !",
     "sequentialTooltips": {
       "startPause": "🎯 Cliquez pour démarrer/mettre en pause votre minuteur de lecture!",
       "reduceTime": "⏰ Réduisez le temps de 5 minutes!",
@@ -356,12 +365,33 @@
     }
   },
   "audioReading": {
-    "playAudio": "Lire l'audio",
+    "playAudio": "Jouer l'audio",
     "audioPlaying": "Audio en cours...",
     "audioUsed": "Audio utilisé",
-    "audioUsedTooltip": "Audio utilisé (1x par page pour utilisateurs gratuits)",
+    "audioUsedTooltip": "Audio utilisé (1x par page pour les utilisateurs gratuits)",
     "speed": "Vitesse",
+    "stop": "Arrêter",
+    "generating": "Génération...",
     "freeAudioUsed": "audio gratuit utilisé",
     "extendedPagesNeedPremium": "🔒 Les pages étendues nécessitent Premium"
+  },
+  "storyDisplay": {
+    "readingLevel": "Niveau de Lecture",
+    "readingProgress": "Progrès de Lecture",
+    "previous": "← Précédent",
+    "next": "Suivant →",
+    "addMorePages": "Ajouter Plus de Pages",
+    "encouragementMessages": {
+      "outstanding": "Réussite de lecture exceptionnelle ! Vous devenez un champion de lecture !",
+      "excellent": "Excellent travail ! Vous faites de grands progrès !",
+      "great": "Excellent début ! Continuez cette merveilleuse habitude de lecture !",
+      "everyPage": "Chaque page compte ! Vous êtes en route pour devenir un grand lecteur !"
+    },
+    "difficultyLabels": {
+      "easy": "Pré-K - 1ère année",
+      "medium": "2ème - 3ème année",
+      "hard": "4ème - 5ème année",
+      "expert": "6ème année+"
+    }
   }
 }
