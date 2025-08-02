@@ -54,8 +54,8 @@ export const ElevenLabsAudio = ({
     setIsLoading(true);
     
     try {
-      // Call our Supabase edge function
-      const response = await fetch('https://cpzeuogomaixamrtnnmj.functions.supabase.co/elevenlabs-tts', {
+      // Call our Supabase edge function with correct URL
+      const response = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/elevenlabs-tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
