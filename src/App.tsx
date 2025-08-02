@@ -8,6 +8,7 @@ import NotFound from "./pages/NotFound";
 import SessionEnded from "./pages/SessionEnded";
 import { MobileTestPage } from "./components/MobileTestPage";
 import { AudioTestPage } from "./components/AudioTestPage";
+import { MobileAudioFix } from "./components/MobileAudioFix";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +23,7 @@ const App = () => {
             <Route path="/" element={<Index />} />
             <Route path="/mobile-test" element={<MobileTestPage />} />
             <Route path="/audio-test" element={<AudioTestPage />} />
+            <Route path="/audio-fix" element={<MobileAudioFix />} />
             <Route path="/session-ended" element={<SessionEnded onHome={() => { window.history.pushState(null, '', '/'); window.location.reload(); }} onNewStory={() => { window.history.pushState(null, '', '/'); window.location.reload(); }} />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
