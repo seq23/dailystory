@@ -6,6 +6,7 @@ import { BookOpen, Home, RotateCcw, Volume2, Timer, Play, Pause, Minus, X, Chevr
 import { useTranslation } from "react-i18next";
 
 import type { UserInfo, SessionStats } from "@/types";
+import type { Achievement } from "@/services/gamificationService";
 import { ElevenLabsAudio } from "@/components/ElevenLabsAudio";
 import { InteractiveAudioReading } from "@/components/InteractiveAudioReading";
 import { EarlyReaderStoryGenerator } from "@/services/earlyReaderStoryGenerator";
@@ -76,7 +77,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
     }
   });
 
-  const [currentAchievement, setCurrentAchievement] = useState(null);
+  const [currentAchievement, setCurrentAchievement] = useState<Achievement | null>(null);
   
   // Story state
   const [story, setStory] = useState<string[]>([]);

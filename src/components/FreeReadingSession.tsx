@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { BookOpen, Timer, Star, Crown, Sparkles, TrendingUp, Award, Clock, Play, Pause, Minus, X, ChevronUp, ChevronDown, Plus, Home, RotateCcw } from "lucide-react";
 import type { UserInfo, SessionStats } from "@/types";
+import type { Achievement } from "@/services/gamificationService";
 import { InteractiveAudioReading } from "@/components/InteractiveAudioReading";
 import { ElevenLabsAudio } from "@/components/ElevenLabsAudio";
 import { EarlyReaderStoryGenerator } from "@/services/earlyReaderStoryGenerator";
@@ -76,7 +77,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     }
   });
 
-  const [currentAchievement, setCurrentAchievement] = useState(null);
+  const [currentAchievement, setCurrentAchievement] = useState<Achievement | null>(null);
   
   // Story state
   const [story, setStory] = useState<string[]>([]);
