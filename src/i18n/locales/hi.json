@@ -332,28 +332,6 @@
       "nameRequired": "कृपया पहले अपने बच्चे का नाम दर्ज करें"
     }
   },
-  "sessionEnded": {
-    "completed": "पठन सत्र पूरा हुआ!",
-    "premiumCompleted": "प्रीमियम सत्र पूरा हुआ!",
-    "readingProgress": "पठन प्रगति",
-    "of": "का",
-    "pages": "पृष्ठ",
-    "wordsRead": "पढ़े गए शब्द",
-    "timeSpent": "खर्च किया गया समय",
-    "accuracy": "सटीकता",
-    "readingLevel": "पठन स्तर",
-    "level": "स्तर",
-    "unlockPremium": "प्रीमियम लाभ अनलॉक करें!",
-    "goToHome": "मुख्य पृष्ठ पर जाएं",
-    "startNewStory": "नई कहानी शुरू करें",
-    "premiumBenefits": {
-      "unlimitedSessions": "असीमित पढ़ने के सत्र",
-      "customDifficulty": "कस्टम कहानी कठिनाई",
-      "extendedLibrary": "विस्तृत कहानी लाइब्रेरी",
-      "advancedTracking": "उन्नत प्रगति ट्रैकिंग",
-      "upgradeToPremium": "प्रीमियम में अपग्रेड करें"
-    }
-  },
   "storyDisplay": {
     "header": {
       "readingTime": "पढ़ने का समय",

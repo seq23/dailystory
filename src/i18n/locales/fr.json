@@ -299,28 +299,6 @@
       "nameRequired": "Veuillez d'abord entrer le prénom de votre enfant"
     }
   },
-  "sessionEnded": {
-    "completed": "Session de Lecture Terminée!",
-    "premiumCompleted": "Session Premium Terminée!",
-    "readingProgress": "Progrès de Lecture",
-    "of": "de",
-    "pages": "pages",
-    "wordsRead": "Mots Lus",
-    "timeSpent": "Temps Passé",
-    "accuracy": "Précision",
-    "readingLevel": "Niveau de Lecture",
-    "level": "Niveau",
-    "unlockPremium": "Débloquez les Avantages Premium!",
-    "goToHome": "Retour à l'Accueil",
-    "startNewStory": "Commencer Nouvelle Histoire",
-    "premiumBenefits": {
-      "unlimitedSessions": "Sessions de lecture illimitées",
-      "customDifficulty": "Ajustement personnalisé de la difficulté",
-      "extendedLibrary": "Bibliothèque étendue avec plus de sujets",
-      "advancedTracking": "Suivi avancé des progrès",
-      "upgradeToPremium": "Passer à Premium"
-    }
-  },
   "tutorial": {
     "timer": {
       "title": "⏰ Minuteur de Lecture",

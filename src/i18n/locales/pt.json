@@ -332,28 +332,6 @@
       "nameRequired": "Por favor, digite o nome da sua criança primeiro"
     }
   },
-  "sessionEnded": {
-    "completed": "Sessão de Leitura Completa!",
-    "premiumCompleted": "Sessão Premium Completa!",
-    "readingProgress": "Progresso de Leitura",
-    "of": "de",
-    "pages": "páginas",
-    "wordsRead": "Palavras Lidas",
-    "timeSpent": "Tempo Gasto",
-    "accuracy": "Precisão",
-    "readingLevel": "Nível de Leitura",
-    "level": "Nível",
-    "unlockPremium": "Desbloqueie Benefícios Premium!",
-    "goToHome": "Ir para Casa",
-    "startNewStory": "Começar Nova História",
-    "premiumBenefits": {
-      "unlimitedSessions": "Sessões de leitura ilimitadas",
-      "customDifficulty": "Dificuldade personalizada da história",
-      "extendedLibrary": "Biblioteca de histórias expandida",
-      "advancedTracking": "Acompanhamento avançado do progresso",
-      "upgradeToPremium": "Atualizar para Premium"
-    }
-  },
   "storyDisplay": {
     "header": {
       "readingTime": "Tempo de Leitura",

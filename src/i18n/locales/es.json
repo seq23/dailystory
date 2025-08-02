@@ -299,28 +299,6 @@
       "nameRequired": "Por favor ingresa el nombre de tu hijo primero"
     }
   },
-  "sessionEnded": {
-    "completed": "¡Sesión de Lectura Completada!",
-    "premiumCompleted": "¡Sesión Premium Completada!",
-    "readingProgress": "Progreso de Lectura",
-    "of": "de",
-    "pages": "páginas",
-    "wordsRead": "Palabras Leídas",
-    "timeSpent": "Tiempo Empleado",
-    "accuracy": "Precisión",
-    "readingLevel": "Nivel de Lectura",
-    "level": "Nivel",
-    "unlockPremium": "¡Desbloquea Beneficios Premium!",
-    "goToHome": "Ir al Inicio",
-    "startNewStory": "Comenzar Nueva Historia",
-    "premiumBenefits": {
-      "unlimitedSessions": "Sesiones de lectura ilimitadas",
-      "customDifficulty": "Ajuste personalizado de dificultad",
-      "extendedLibrary": "Biblioteca extendida con más temas",
-      "advancedTracking": "Seguimiento avanzado del progreso",
-      "upgradeToPremium": "Actualizar a Premium"
-    }
-  },
   "tutorial": {
     "timer": {
       "title": "⏰ Temporizador de Lectura",
