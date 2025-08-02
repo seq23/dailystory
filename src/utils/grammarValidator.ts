@@ -132,6 +132,16 @@ export class GrammarValidator {
       });
     }
     
+    // Check for missing articles before singular countable nouns
+    const missingArticlePattern = /\b(with|play with|see|find|hold|catch|throw|pick up|grab|get)\s+(blue|red|green|yellow|pink|purple|orange|big|small|round|square)\s+(ball|toy|book|cat|dog|car|house|tree|flower|apple|cookie|cup|box|bag)\b/gi;
+    const articleMatches = Array.from(text.matchAll(missingArticlePattern));
+    if (articleMatches.length > 0) {
+      articleMatches.forEach(match => {
+        const [fullMatch] = match;
+        errors.push(`Grammar error: "${fullMatch}" needs an article (a/the) before the noun`);
+      });
+    }
+    
     // Check for malformed template variables
     if (text.includes('{') || text.includes('[')) {
       errors.push('Template variables not properly replaced');
@@ -209,6 +219,12 @@ export const validateAndFixGrammar = (text: string): string => {
     
     // Attempt basic fixes for common issues
     let fixedText = text;
+    
+    // Fix missing articles before singular countable nouns
+    fixedText = fixedText.replace(/\b(with|play with|see|find|hold|catch|throw|pick up|grab|get)\s+(blue|red|green|yellow|pink|purple|orange|big|small|round|square)\s+(ball|toy|book|cat|dog|car|house|tree|flower|apple|cookie|cup|box|bag)\b/gi, 
+      (match, verb, adjective, noun) => {
+        return `${verb} the ${adjective} ${noun}`;
+      });
     
     // Fix double spaces
     fixedText = fixedText.replace(/\s+/g, ' ');
