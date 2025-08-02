@@ -517,12 +517,11 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                   <span className="text-xs md:text-sm text-muted-foreground ml-2">{t("userInfoForm.fields.favoriteAnimal.optional")}</span>
                 </Label>
                 <div className="relative">
-                  <Input
+                  <TagInput
                     value={formData.favoriteAnimal}
-                    onChange={(e) => handleInputChange("favoriteAnimal", e.target.value)}
-                    onBlur={(e) => handleIntelligentProcessing("favoriteAnimal", e.target.value)}
+                    onChange={(value) => handleInputChange("favoriteAnimal", value)}
                     placeholder={t("userInfoForm.fields.favoriteAnimal.placeholder")}
-                    className="text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-primary/20"
+                    className="text-base md:text-lg min-h-[80px] md:min-h-[100px] rounded-xl md:rounded-2xl border-2 border-primary/20"
                   />
                   {isProcessingInputs && (
                     <div className="absolute right-3 top-3">
@@ -548,12 +547,11 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                   <span className="text-xs md:text-sm text-muted-foreground ml-2">{t("userInfoForm.fields.favoriteFood.optional")}</span>
                 </Label>
                 <div className="relative">
-                  <Input
+                  <TagInput
                     value={formData.favoriteFood}
-                    onChange={(e) => handleInputChange("favoriteFood", e.target.value)}
-                    onBlur={(e) => handleIntelligentProcessing("favoriteFood", e.target.value)}
+                    onChange={(value) => handleInputChange("favoriteFood", value)}
                     placeholder={t("userInfoForm.fields.favoriteFood.placeholder")}
-                    className="text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-primary/20"
+                    className="text-base md:text-lg min-h-[80px] md:min-h-[100px] rounded-xl md:rounded-2xl border-2 border-primary/20"
                   />
                   {isProcessingInputs && (
                     <div className="absolute right-3 top-3">
@@ -579,12 +577,11 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                   <span className="text-xs md:text-sm text-muted-foreground ml-2">{t("userInfoForm.fields.hobbies.optional")}</span>
                 </Label>
                 <div className="relative">
-                  <Input
+                  <TagInput
                     value={formData.hobbies}
-                    onChange={(e) => handleInputChange("hobbies", e.target.value)}
-                    onBlur={(e) => handleIntelligentProcessing("hobbies", e.target.value)}
+                    onChange={(value) => handleInputChange("hobbies", value)}
                     placeholder={t("userInfoForm.fields.hobbies.placeholder")}
-                    className="text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-primary/20"
+                    className="text-base md:text-lg min-h-[80px] md:min-h-[100px] rounded-xl md:rounded-2xl border-2 border-primary/20"
                   />
                   {isProcessingInputs && (
                     <div className="absolute right-3 top-3">

@@ -42,21 +42,21 @@ export const TagInput = ({ value, onChange, placeholder, className }: TagInputPr
 
   return (
     <div className={cn(
-      "min-h-[100px] p-4 rounded-2xl border-2 border-primary/20 focus-within:border-primary/50 bg-background",
+      "min-h-[80px] sm:min-h-[100px] p-3 sm:p-4 rounded-xl sm:rounded-2xl border-2 border-primary/20 focus-within:border-primary/50 bg-background touch-target",
       className
     )}>
       {/* Display existing items as tags */}
-      <div className="flex flex-wrap gap-2 mb-2">
+      <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-2">
         {items.map((item, index) => (
           <div
             key={index}
-            className="flex items-center gap-1 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium"
+            className="flex items-center gap-1 bg-primary/10 text-primary px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium"
           >
-            <span>{item}</span>
+            <span className="break-words">{item}</span>
             <button
               type="button"
               onClick={() => removeItem(index)}
-              className="hover:bg-primary/20 rounded-full p-0.5 transition-colors"
+              className="hover:bg-primary/20 rounded-full p-0.5 transition-colors touch-target-small"
             >
               <X className="w-3 h-3" />
             </button>
@@ -71,7 +71,7 @@ export const TagInput = ({ value, onChange, placeholder, className }: TagInputPr
         onChange={(e) => setCurrentInput(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder={items.length === 0 ? placeholder : "Type another item..."}
-        className="w-full bg-transparent border-none outline-none text-lg placeholder:text-muted-foreground"
+        className="w-full bg-transparent border-none outline-none text-base sm:text-lg placeholder:text-muted-foreground touch-target"
         onBlur={() => {
           if (currentInput.trim()) {
             addItem(currentInput);
@@ -80,7 +80,7 @@ export const TagInput = ({ value, onChange, placeholder, className }: TagInputPr
       />
       
       <div className="text-xs text-muted-foreground mt-2">
-        Press Enter to add each item
+        Press Enter to add each item, or tap/click after typing
       </div>
     </div>
   );
