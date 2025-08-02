@@ -989,10 +989,13 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                           
                           // Show completion feedback only once
                           if (!hasShownCompletionToast) {
+                            // Calculate actual word count from current story to ensure accuracy
+                            const actualWordsRead = story.join(' ').split(' ').filter(word => word.trim()).length;
+                            
                             toast({
                               title: t("storyDisplay.storyCompletedToast.title"),
                               description: t("storyDisplay.storyCompletedToast.descriptionWordsTime", { 
-                                wordsRead, 
+                                wordsRead: actualWordsRead, 
                                 minutes: Math.round(timeSpent / 60) 
                               }),
                               duration: 2000,
