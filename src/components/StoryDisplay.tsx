@@ -778,35 +778,30 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
         </div>
       </header>
 
-      {/* Main Content - Fixed Layout Issues */}
+      {/* Main Content - Overhauled Layout with Proper Scrolling */}
       <main className="flex-1 flex flex-col overflow-hidden">
-        <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 flex-1 flex flex-col max-w-7xl">
-          <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8 flex-1 overflow-hidden"
-               style={{ transform: 'none' }} // Ensure no transforms are applied
-          >
+        <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 flex-1 flex flex-col">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 max-w-6xl mx-auto flex-1 overflow-hidden">
             
-            {/* Story Illustration - Fixed Positioning */}
-            <div className="flex flex-col lg:flex-1 lg:max-w-md">
-              <Card className="h-[400px] lg:h-[500px]">
+            {/* Story Illustration - Optimized for Perfect Fitting */}
+            <div className="order-2 lg:order-1 flex flex-col">
+              <Card className="flex-1 min-h-[400px] lg:min-h-[500px]">
                 <CardContent className="p-4 h-full flex items-center justify-center">
-                  <div className="relative w-full aspect-square bg-gray-50 rounded-lg overflow-hidden shadow-sm">
+                  <div className="w-full h-full flex items-center justify-center bg-gray-50 rounded-lg overflow-hidden">
                     <img 
                       src={currentIllustration}
                       alt={`Story illustration for page ${currentPage + 1}`}
-                      className="w-full h-full object-cover rounded-lg"
-                      onError={(e) => {
-                        console.warn(`Failed to load image for page ${currentPage + 1}, using fallback`);
-                        (e.target as HTMLImageElement).src = illustrations[currentPage % illustrations.length];
-                      }}
+                      className="max-w-full max-h-full object-contain rounded-lg shadow-sm"
+                      style={{ aspectRatio: '4/3' }}
                     />
                   </div>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Story Text Panel - Fixed Layout */}
-            <div className="flex flex-col lg:flex-1">
-              <Card className="flex-1 flex flex-col overflow-hidden min-h-[500px]">
+            {/* Story Text Panel - Overhauled with Proper Layout */}
+            <div className="order-1 lg:order-2 flex flex-col">
+              <Card className="flex-1 flex flex-col overflow-hidden">
                 
                 {/* Fixed Header Section */}
                 <div className="flex-shrink-0 p-6 border-b border-gray-100">
@@ -823,13 +818,8 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                         >
                           <ChevronDown className="w-4 h-4" />
                         </Button>
-                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-50 shadow-lg animate-bounce">
-                          <div className="flex items-center gap-2">
-                            <span>📉</span>
-                            <span>Make story easier & more fun!</span>
-                          </div>
-                          {/* Arrow pointing up */}
-                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 border-l-4 border-r-4 border-b-4 border-transparent border-b-blue-500"></div>
+                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                          Make story easier
                         </div>
                       </div>
                       
@@ -847,13 +837,8 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                         >
                           <ChevronUp className="w-4 h-4" />
                         </Button>
-                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-50 shadow-lg animate-bounce">
-                          <div className="flex items-center gap-2">
-                            <span>📈</span>
-                            <span>Challenge yourself with harder words!</span>
-                          </div>
-                          {/* Arrow pointing up */}
-                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 border-l-4 border-r-4 border-b-4 border-transparent border-b-orange-500"></div>
+                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                          Make story harder
                         </div>
                       </div>
                     </div>
@@ -868,38 +853,29 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                   </div>
                 </div>
 
-                {/* Scrollable Story Content with Educational Standards for Premium Users */}
+                {/* Scrollable Story Content */}
                 <div className="flex-1 overflow-y-auto p-6">
                   <div className="flex items-center justify-center min-h-full">
                     <div className="text-center w-full">
-                      {/* Story Text Display for Premium Users */}
-                      <div className={`
-                        story-text max-h-[400px] overflow-y-auto p-4 text-left font-medium text-gray-800 leading-relaxed
-                        ${(() => {
-                          const config = EarlyReaderStoryGenerator.getReadingConfigForDifficulty(currentDifficulty);
-                          return `${config.fontSize} ${config.lineHeight} ${config.spacing}`;
-                        })()}
-                      `}>
-                        {story[currentPage] || "Loading story..."}
-                      </div>
-                      
-                      {/* Educational Info Display */}
-                      <div className="mt-4 text-center">
-                        <div className="text-sm text-gray-600">
-                          📖 {EarlyReaderStoryGenerator.getReadingConfigForDifficulty(currentDifficulty).name}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          Max {EarlyReaderStoryGenerator.getReadingConfigForDifficulty(currentDifficulty).maxWordsPerPage} words per page
-                        </div>
-                      </div>
+                      {/* Story Text with Reading Level Configuration and Overflow Protection */}
+                      {(() => {
+                        const config = EarlyReaderStoryGenerator.getReadingConfigForDifficulty(currentDifficulty);
+                        return (
+                          <div className={`${config.fontSize} ${config.lineHeight} ${config.spacing} font-medium text-gray-800 max-w-full break-words hyphens-auto leading-relaxed overflow-hidden`}>
+                            <div className="max-h-[400px] overflow-y-auto px-2">
+                              {currentStory}
+                            </div>
+                          </div>
+                        );
+                      })()}
                     </div>
                   </div>
                 </div>
 
-                {/* Audio Controls Section for Premium Users */}
+                {/* Audio Controls Section */}
                 <div className="flex-shrink-0 p-6 border-t border-gray-100 audio-controls">
                   <InteractiveAudioReading 
-                    text={story[currentPage] || ""}
+                    text={currentStory}
                     userInfo={userInfo}
                     isEnabled={true}
                   />

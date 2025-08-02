@@ -12,9 +12,3 @@ verify_jwt = false
 
 [functions.word-dictionary]
 verify_jwt = false
-
-[functions.test-function]
-verify_jwt = false
-
-[functions.elevenlabs-tts]
-verify_jwt = false

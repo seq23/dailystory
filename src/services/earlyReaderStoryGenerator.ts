@@ -1,17 +1,55 @@
-// Enhanced story generator with educational word limits for early readers
+// Enhanced story generator with word limits for early readers
 import type { UserInfo, DifficultyLevel } from "@/types";
-import { getReadingLevelConfig, validateWordCount, enforceWordLimit, type ReadingLevelConfig } from "@/constants/readingLevels";
+
+interface ReadingConfig {
+  maxWordsPerPage: number;
+  fontSize: string;
+  lineHeight: string;
+  spacing: string;
+}
 
 export class EarlyReaderStoryGenerator {
   
-  // Get educational reading configuration based on child development research
-  private static getReadingConfig(difficulty: DifficultyLevel): ReadingLevelConfig {
-    return getReadingLevelConfig(difficulty);
+  // Configure reading experience by difficulty level (optimized for UI aesthetics)
+  // Word counts and text sizes balanced for container space (max-h-[400px])
+  // HARD RULE: Easy level capped at 6 words maximum per page for early readers
+  // Text sizes: BIGGEST for easiest levels, SMALLER as difficulty increases
+  private static getReadingConfig(difficulty: DifficultyLevel): ReadingConfig {
+    switch (difficulty) {
+      case 'easy': // PreK-1st grade (Julia Donaldson, Mo Willems, Dr. Seeus, Kevin Henkes style)
+        return {
+          maxWordsPerPage: 6, // HARD RULE: Maximum 6 words per page for early readers
+          fontSize: 'text-4xl md:text-5xl lg:text-6xl', // Large but not overwhelming in UI
+          lineHeight: 'leading-loose', // Extra spacing for readability
+          spacing: 'space-y-8' // Generous spacing without overflow
+        };
+      case 'medium': // 2nd-3rd grade (Jeff Kinney, Roald Dahl, Dav Pilkey, Andrea Beaty style)
+        return {
+          maxWordsPerPage: 60, // Reduced to fit nicely in container with large text
+          fontSize: 'text-2xl md:text-3xl lg:text-4xl', // Large text that fits well
+          lineHeight: 'leading-relaxed',
+          spacing: 'space-y-6'
+        };
+      case 'hard': // 4th-5th grade (Katherine Applegate, C.S. Lewis, J.K. Rowling style)
+        return {
+          maxWordsPerPage: 100, // Optimized for medium text size and container space
+          fontSize: 'text-lg md:text-xl lg:text-2xl', // Medium text for comfortable reading
+          lineHeight: 'leading-normal',
+          spacing: 'space-y-4'
+        };
+      case 'expert': // 6th-12th grade (Sharon Creech, Louis Sachar, Suzanne Collins, John Green style)
+        return {
+          maxWordsPerPage: 150, // More content with smaller text, fits in 400px container
+          fontSize: 'text-base md:text-lg lg:text-xl', // Smaller text for more content
+          lineHeight: 'leading-normal',
+          spacing: 'space-y-3'
+        };
+    }
   }
 
   static generateStory(userInfo: UserInfo, difficulty: DifficultyLevel, pageCount: number = 10): {
     pages: string[];
-    config: ReadingLevelConfig;
+    config: ReadingConfig;
   } {
     const config = this.getReadingConfig(difficulty);
     const characterName = userInfo.name?.trim() || 'Alex';
@@ -23,13 +61,10 @@ export class EarlyReaderStoryGenerator {
     // CRITICAL: Stories are ALWAYS generated in English regardless of user's native language
     const storyContent = this.createStoryContent(characterName, userElements, difficulty);
     
-    // Split into pages respecting educational word limits with continuing user elements
+    // Split into pages respecting word limits with continuing user elements
     const pages = this.splitIntoPages(storyContent, config.maxWordsPerPage, pageCount, characterName, userElements, difficulty);
     
-    // Enforce word limits on all pages to meet educational standards
-    const validatedPages = pages.map(page => enforceWordLimit(page, difficulty));
-    
-    return { pages: validatedPages, config };
+    return { pages, config };
   }
 
   // Extract and organize user inputs for organic story integration
@@ -268,7 +303,7 @@ export class EarlyReaderStoryGenerator {
     return cleanContinuation;
   }
 
-  static getReadingConfigForDifficulty(difficulty: DifficultyLevel): ReadingLevelConfig {
+  static getReadingConfigForDifficulty(difficulty: DifficultyLevel): ReadingConfig {
     return this.getReadingConfig(difficulty);
   }
 }
