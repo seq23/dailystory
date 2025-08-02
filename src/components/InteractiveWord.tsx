@@ -104,6 +104,22 @@ export const InteractiveWord = ({
   const shouldHighlight = wordDifficulty.shouldHighlight;
   const wordComplexity = wordDifficulty.complexity;
 
+  // Enhanced voice selection based on user profile
+  const getVoiceForUser = (userInfo?: UserInfo) => {
+    if (!userInfo) return "9BWtsMINqrJLrRacOk9x"; // Default Aria voice
+    
+    const age = userInfo.age;
+    const isGirl = userInfo.avatar?.type === 'girl';
+    
+    if (age <= 8) {
+      return isGirl ? "EXAVITQu4vr4xnSDxMaL" : "TX3LPaxmHKxFdv7VOQHJ"; // Sarah or Liam (young voices)
+    } else if (age <= 12) {
+      return isGirl ? "XB0fDUnXU5powFXDhCwa" : "N2lVS1w4EtoT3dr4eOWO"; // Charlotte or Callum
+    } else {
+      return isGirl ? "9BWtsMINqrJLrRacOk9x" : "CwhRBWXzGAHq8TQ4Fs17"; // Aria or Roger
+    }
+  };
+
   const handleMouseEnter = () => {
     if (hideTimeoutRef.current) {
       clearTimeout(hideTimeoutRef.current);
@@ -193,21 +209,32 @@ export const InteractiveWord = ({
     try {
       const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
       
-      if (ttsService) {
-        // Use TTS service with proper error handling
-        const speed = isESLLearner ? 0.6 : 0.7;
-        await ttsService.speakText(cleanWord, { speed, userInfo });
+      // Use ElevenLabs for high-quality pronunciation
+      const voice = getVoiceForUser(userInfo);
+      const response = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/elevenlabs-tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: cleanWord,
+          voice: voice,
+          model: "eleven_multilingual_v2"
+        })
+      });
+
+      if (response.ok) {
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audio = new Audio(audioUrl);
+        
+        audio.onended = () => {
+          setIsPlaying(false);
+          URL.revokeObjectURL(audioUrl);
+        };
+        
+        audio.onerror = () => setIsPlaying(false);
+        await audio.play();
       } else {
-        // Simplified fallback - no complex mobile handling
-        if ('speechSynthesis' in window) {
-          speechSynthesis.cancel(); // Clear any existing speech
-          const utterance = new SpeechSynthesisUtterance(cleanWord);
-          utterance.rate = isESLLearner ? 0.6 : 0.7;
-          utterance.pitch = 1.2;
-          utterance.onend = () => setIsPlaying(false);
-          utterance.onerror = () => setIsPlaying(false);
-          speechSynthesis.speak(utterance);
-        }
+        throw new Error('ElevenLabs TTS failed');
       }
     } catch (error) {
       console.error('Error pronouncing word:', error);
