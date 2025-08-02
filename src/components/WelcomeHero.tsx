@@ -51,8 +51,69 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
     <div className="min-h-screen bg-gradient-hero flex flex-col relative overflow-hidden">
       {/* Header with Company Branding and Language Selector */}
       <header className="relative z-20 bg-black/15 backdrop-blur-sm border-b border-white/20">
-        <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-6">
-          <div className="flex items-center justify-between">
+        <div className="container mx-auto px-3 sm:px-6 py-3 sm:py-6">
+          
+          {/* Mobile Layout */}
+          <div className="flex sm:hidden relative items-center min-h-[50px]">
+            {/* Language Selector - Top Left */}
+            <div className="absolute left-0 top-0">
+              <div className="flex items-center gap-1 bg-white/10 backdrop-blur-sm rounded-full px-2 py-1 border border-white/20">
+                <Globe className="w-3 h-3 text-white" />
+                <Select value={i18n.language} onValueChange={handleLanguageChange}>
+                  <SelectTrigger className="w-[60px] border-none bg-transparent text-white text-xs h-auto p-0 focus:ring-0">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
+                    <SelectItem value="en">EN</SelectItem>
+                    <SelectItem value="ar">AR</SelectItem>
+                    <SelectItem value="es">ES</SelectItem>
+                    <SelectItem value="zh">ZH</SelectItem>
+                    <SelectItem value="hi">HI</SelectItem>
+                    <SelectItem value="pt">PT</SelectItem>
+                    <SelectItem value="fr">FR</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            {/* Company Logo - Centered */}
+            <div className="flex items-center gap-2 mx-auto">
+              <img 
+                src={logoImage} 
+                alt="Time 2 Read Logo" 
+                className="w-6 h-6 drop-shadow-lg"
+              />
+              <div className="flex items-center font-comic">
+                <h1 className="text-sm font-bold text-white drop-shadow-lg">
+                  Time
+                </h1>
+                <span className="text-lg font-schoolbell text-yellow-300 drop-shadow-lg mx-0.5 transform rotate-3">
+                  2
+                </span>
+                <h1 className="text-sm font-bold text-white drop-shadow-lg">
+                  Read!
+                </h1>
+              </div>
+            </div>
+
+            {/* Sign In Button - Top Right */}
+            <div className="absolute right-0 top-0">
+              {onSignIn && (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={onSignIn}
+                  className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-purple-300/50 text-white hover:bg-purple-400/30 text-xs font-semibold shadow-lg px-2 py-1 h-8"
+                >
+                  <Crown className="w-3 h-3 mr-1 flex-shrink-0" />
+                  Sign In
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* Desktop Layout - Unchanged */}
+          <div className="hidden sm:flex items-center justify-between">
             {/* Language Selector */}
             <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-2 sm:px-3 py-1 sm:py-2 border border-white/20">
               <Globe className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
