@@ -53,7 +53,16 @@ export const ElevenLabsAudio = ({ text, userInfo, isPremium = false, onUpgrade }
 
       if (!response.ok) throw new Error('Failed to generate audio');
       
-      const audioBlob = await response.blob();
+      const data = await response.json();
+      
+      // Create audio blob from base64 response
+      const base64Audio = data.audioContent;
+      const binaryString = atob(base64Audio);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      const audioBlob = new Blob([bytes], { type: 'audio/mpeg' });
       const audioUrl = URL.createObjectURL(audioBlob);
       
       if (audioRef.current) {
