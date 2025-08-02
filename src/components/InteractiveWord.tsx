@@ -258,58 +258,121 @@ export const InteractiveWord = ({
           });
           
           if ('speechSynthesis' in window) {
-            // MOBILE FIX: Keep speech synthesis in direct user interaction context
+            // iPhone Safari specific handling
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+            const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+            
             try {
-              // Cancel any existing speech immediately
-              speechSynthesis.cancel();
-              
-              // Create utterance immediately in user gesture context
-              const utterance = new SpeechSynthesisUtterance(explanation);
-              utterance.rate = isESLLearner ? 0.6 : 0.7;
-              utterance.pitch = 1.0;
-              utterance.volume = 1.0;
-              
-              // Simple voice selection for user's language
-              if (userNativeLanguage !== 'en') {
-                const voices = speechSynthesis.getVoices();
-                const nativeVoice = voices.find(voice => 
-                  voice.lang.startsWith(userNativeLanguage.substring(0, 2))
-                );
-                if (nativeVoice) {
-                  utterance.voice = nativeVoice;
-                  utterance.lang = nativeVoice.lang;
+              // For iPhone Safari: Must unlock audio with immediate user gesture
+              if (isIOS && isSafari) {
+                // Create a silent utterance to unlock speech synthesis on iOS Safari
+                const unlockUtterance = new SpeechSynthesisUtterance(' ');
+                unlockUtterance.volume = 0.01; // Nearly silent but not 0
+                unlockUtterance.rate = 10; // Very fast
+                speechSynthesis.speak(unlockUtterance);
+                
+                // Wait briefly for unlock
+                setTimeout(() => {
+                  speechSynthesis.cancel(); // Cancel the unlock utterance
+                  
+                  // Now create the real utterance
+                  const utterance = new SpeechSynthesisUtterance(explanation);
+                  utterance.rate = isESLLearner ? 0.6 : 0.7;
+                  utterance.pitch = 1.0;
+                  utterance.volume = 1.0;
+                  
+                  // iOS Safari voice selection
+                  if (userNativeLanguage !== 'en') {
+                    const voices = speechSynthesis.getVoices();
+                    const nativeVoice = voices.find(voice => 
+                      voice.lang.toLowerCase().startsWith(userNativeLanguage.toLowerCase())
+                    );
+                    if (nativeVoice) {
+                      utterance.voice = nativeVoice;
+                      utterance.lang = nativeVoice.lang;
+                    }
+                  }
+                  
+                  utterance.onstart = () => {
+                    toast({
+                      title: "🔊 Speaking",
+                      description: "Audio explanation started",
+                      duration: 2000,
+                    });
+                  };
+                  
+                  utterance.onend = () => {
+                    setIsPlaying(false);
+                    toast({
+                      title: "✅ Complete",
+                      description: "Audio finished",
+                      duration: 1500,
+                    });
+                  };
+                  
+                  utterance.onerror = (error) => {
+                    setIsPlaying(false);
+                    console.error('iOS Safari speech error:', error);
+                    toast({
+                      title: "ℹ️ Audio Info", 
+                      description: "iOS requires audio permissions. Try enabling in Settings > Safari > Request Desktop Website OFF, and ensure sound is on.",
+                      duration: 6000,
+                    });
+                  };
+                  
+                  speechSynthesis.speak(utterance);
+                  
+                }, 50); // Very short delay for iOS
+                
+              } else {
+                // Standard browser handling
+                speechSynthesis.cancel();
+                
+                const utterance = new SpeechSynthesisUtterance(explanation);
+                utterance.rate = isESLLearner ? 0.6 : 0.7;
+                utterance.pitch = 1.0;
+                utterance.volume = 1.0;
+                
+                if (userNativeLanguage !== 'en') {
+                  const voices = speechSynthesis.getVoices();
+                  const nativeVoice = voices.find(voice => 
+                    voice.lang.startsWith(userNativeLanguage.substring(0, 2))
+                  );
+                  if (nativeVoice) {
+                    utterance.voice = nativeVoice;
+                    utterance.lang = nativeVoice.lang;
+                  }
                 }
+                
+                utterance.onstart = () => {
+                  toast({
+                    title: "🔊 Speaking",
+                    description: "Audio explanation started",
+                    duration: 2000,
+                  });
+                };
+                
+                utterance.onend = () => {
+                  setIsPlaying(false);
+                  toast({
+                    title: "✅ Complete",
+                    description: "Audio explanation finished",
+                    duration: 1500,
+                  });
+                };
+                
+                utterance.onerror = (error) => {
+                  setIsPlaying(false);
+                  console.error('Speech synthesis error:', error);
+                  toast({
+                    title: "❌ Audio Error", 
+                    description: `Could not play audio. Error: ${error.error}`,
+                    duration: 4000,
+                  });
+                };
+                
+                speechSynthesis.speak(utterance);
               }
-              
-              utterance.onstart = () => {
-                toast({
-                  title: "🔊 Speaking",
-                  description: "Audio explanation started",
-                  duration: 2000,
-                });
-              };
-              
-              utterance.onend = () => {
-                setIsPlaying(false);
-                toast({
-                  title: "✅ Complete",
-                  description: "Audio explanation finished",
-                  duration: 1500,
-                });
-              };
-              
-              utterance.onerror = (error) => {
-                setIsPlaying(false);
-                console.error('Speech synthesis error:', error);
-                toast({
-                  title: "❌ Audio Error", 
-                  description: `Could not play audio. Error: ${error.error}`,
-                  duration: 4000,
-                });
-              };
-              
-              // Speak immediately - no delays or async operations
-              speechSynthesis.speak(utterance);
               
               toast({
                 title: "🎯 Audio Starting",
@@ -702,7 +765,7 @@ export const InteractiveWord = ({
               disabled={isPlaying}
             >
               <Volume2 className="w-3 h-3 sm:w-4 sm:h-4" />
-              {t("interactiveWord.hearIt", "Hear It")}
+              {t("interactiveWord.hearIt") || "Hear It"}
             </button>
             
             <button
@@ -711,7 +774,7 @@ export const InteractiveWord = ({
               disabled={isPlaying || isLoadingWordData}
             >
               <HelpCircle className="w-3 h-3 sm:w-4 sm:h-4" />
-              {isLoadingWordData ? t("interactiveWord.loading", "Loading...") : t("interactiveWord.explain", "Explain")}
+              {isLoadingWordData ? (t("interactiveWord.loading") || "Loading...") : (t("interactiveWord.explain") || "Explain")}
             </button>
           </div>
 
