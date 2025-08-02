@@ -439,12 +439,7 @@
     "addTime": "增加10分钟",
     "reduceTime": "减少10分钟",
     "addPages": "添加更多页面",
-    "addPagesAlert": {
-      "title": "快完成了！",
-      "description": "点击+添加更多页面！",
-      "shortTitle": "快完成了",
-      "shortDescription": "点击+添加更多页面！"
-    },
+    "addPagesAlert": "⏰ 现在添加更多页面！",
     "timeAdded": {
       "title": "时间已增加！",
       "description": "您有额外的10分钟阅读时间！"

@@ -202,22 +202,12 @@ export const InteractiveWord = ({
       if (!wordError && wordData) {
         setWordData(wordData);
         
-        // Mobile-specific: Show translated explanation for all non-English speakers
-        if (userNativeLanguage !== 'en') {
-          const mobileToastTitle = userNativeLanguage === 'es' ? 'Definición' :
-                                 userNativeLanguage === 'fr' ? 'Définition' :
-                                 userNativeLanguage === 'zh' ? '定义' :
-                                 userNativeLanguage === 'ar' ? 'تعريف' :
-                                 userNativeLanguage === 'hi' ? 'परिभाषा' :
-                                 userNativeLanguage === 'pt' ? 'Definição' :
-                                 'Definition';
-          
-          toast({
-            title: mobileToastTitle,
-            description: `"${cleanWord}" = ${wordData.definition}`,
-            duration: 5000,
-          });
-        }
+        // Mobile-specific: Show translated explanation for all users
+        toast({
+          title: t('interactiveWord.definition'),
+          description: `"${cleanWord}" = ${wordData.definition}`,
+          duration: 5000,
+        });
         
         // Create multilingual explanation for mobile TTS
         const explanation = userNativeLanguage !== 'en' && wordData.explanation 

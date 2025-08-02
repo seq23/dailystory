@@ -439,12 +439,7 @@
     "addTime": "10 मिनट जोड़ें",
     "reduceTime": "10 मिनट घटाएं",
     "addPages": "और पृष्ठ जोड़ें",
-    "addPagesAlert": {
-      "title": "लगभग हो गया!",
-      "description": "और पृष्ठ जोड़ने के लिए + पर क्लिक करें!",
-      "shortTitle": "लगभग हो गया",
-      "shortDescription": "और पृष्ठ जोड़ने के लिए + पर क्लिक करें!"
-    },
+    "addPagesAlert": "⏰ अभी और पृष्ठ जोड़ें!",
     "timeAdded": {
       "title": "और समय जोड़ा गया!",
       "description": "आपके पास पढ़ने के लिए 10 मिनट और हैं!"
