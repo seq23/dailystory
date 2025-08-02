@@ -309,14 +309,26 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
       };
     }
 
-    // SPECIAL HANDLING FOR READING LEVEL CONTROLS - Place well above to avoid covering
+    // SPECIAL HANDLING FOR READING LEVEL CONTROLS - Place at bottom to avoid covering
     if (target === "reading-level-controls") {
-      return {
-        top: `${Math.max(margin, rect.top - tooltipHeight - clearance - 20)}px`, // Extra margin above
-        left: `${Math.max(margin, Math.min(rect.left + rect.width/2 - tooltipWidth/2, viewportWidth - tooltipWidth - margin))}px`,
-        transform: "none",
-        maxWidth: `${tooltipWidth}px`
-      };
+      if (isMobile) {
+        return {
+          bottom: `${margin + 80}px`, // Bottom positioning for mobile
+          left: `${margin}px`,
+          right: `${margin}px`,
+          top: "auto",
+          transform: "none",
+          maxWidth: `${tooltipWidth}px`
+        };
+      } else {
+        return {
+          bottom: `${margin + 40}px`, // Bottom positioning for tablet/desktop too
+          left: `${Math.max(margin, Math.min(rect.left + rect.width/2 - tooltipWidth/2, viewportWidth - tooltipWidth - margin))}px`,
+          top: "auto",
+          transform: "none",
+          maxWidth: `${tooltipWidth}px`
+        };
+      }
     }
 
     let style: any = {};
