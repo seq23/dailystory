@@ -554,26 +554,5 @@
     "readingLevelHeader": "مستوى القراءة",
     "readingLevelDescription": "هذه القصة مكتوبة على مستوى {level}"
   },
-  "sessionEnded": {
-    "completed": "تمت جلسة القراءة!",
-    "premiumCompleted": "تمت الجلسة المميزة!",
-    "readingProgress": "تقدم القراءة",
-    "of": "من",
-    "pages": "صفحات",
-    "wordsRead": "الكلمات المقروءة",
-    "timeSpent": "الوقت المستغرق",
-    "accuracy": "الدقة",
-    "readingLevel": "مستوى القراءة",
-    "level": "المستوى",
-    "unlockPremium": "افتح المزايا المميزة!",
-    "premiumBenefits": {
-      "unlimitedSessions": "جلسات قراءة غير محدودة",
-      "customDifficulty": "تعديل صعوبة القصة المخصصة",
-      "extendedLibrary": "مكتبة قصص موسعة مع المزيد من المواضيع",
-      "advancedTracking": "تتبع متقدم للتقدم والتحليلات",
-      "upgradeToPremium": "الترقية إلى المميز"
-    },
-    "goToHome": "الذهاب للرئيسية",
-    "startNewStory": "بدء قصة جديدة"
   }
 }
