@@ -195,15 +195,13 @@ export class ProgressiveStoryGenerator {
     pageIndex: number
   ): string {
     const easyTemplates = [
-      `${name} saw a ${color} ${animal}.`,
-      `The ${animal} was big.`,
-      `${name} said hi.`,
-      `The ${animal} was fun.`,
-      `${name} played all day.`,
+      `${name} saw a ${animal}.`,
+      `The ${animal} was ${color}.`,
+      `${name} smiled.`,
+      `The ${animal} ran.`,
+      `${name} played.`,
       `Time for ${food}!`,
       `${name} was happy.`,
-      `The ${animal} ran fast.`,
-      `${name} had fun.`,
       `Good day!`
     ];
     
@@ -222,16 +220,16 @@ export class ProgressiveStoryGenerator {
     pageIndex: number
   ): string {
     const bridgeTemplates = [
-      `${name} woke up and saw something special.`,
-      `A friendly ${color} ${animal} was outside.`,
-      `${name} went out to say hello.`,
-      `The ${animal} seemed very nice and happy.`,
-      `${name} and the ${animal} started to play.`,
-      `They had fun running and jumping together.`,
-      `${name} shared some ${food} with the ${animal}.`,
-      `The ${animal} was very glad for the food.`,
-      `${name} felt happy to have a new friend.`,
-      `It was the best day ${name} ever had.`
+      `${name} woke up.`,
+      `A ${color} ${animal} was outside.`,
+      `${name} went out.`,
+      `The ${animal} seemed nice.`,
+      `${name} started to play.`,
+      `They had fun together.`,
+      `${name} shared ${food}.`,
+      `The ${animal} was happy.`,
+      `${name} felt good.`,
+      `Best day ever!`
     ];
     
     return bridgeTemplates[pageIndex % bridgeTemplates.length];
