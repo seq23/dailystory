@@ -14,9 +14,9 @@ serve(async (req) => {
   try {
     const { word, targetLanguage, context } = await req.json()
 
-    // Get Perplexity API key from environment
-    const perplexityApiKey = Deno.env.get('PERPLEXITY_API_KEY')
-    if (!perplexityApiKey) {
+    // Get OpenAI API key from environment
+    const openaiApiKey = Deno.env.get('OPENAI_API_KEY')
+    if (!openaiApiKey) {
       return new Response(
         JSON.stringify({ error: 'Translation service not configured' }),
         { 
@@ -34,15 +34,15 @@ serve(async (req) => {
     
     Format your response as just the translated word(s).`
 
-    // Call Perplexity API
-    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+    // Call OpenAI API
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${perplexityApiKey}`,
+        'Authorization': `Bearer ${openaiApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'llama-3.1-sonar-small-128k-online',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',
@@ -54,17 +54,12 @@ serve(async (req) => {
           }
         ],
         temperature: 0.2,
-        top_p: 0.9,
-        max_tokens: 50,
-        return_images: false,
-        return_related_questions: false,
-        frequency_penalty: 1,
-        presence_penalty: 0
+        max_tokens: 50
       }),
     })
 
     if (!response.ok) {
-      throw new Error(`Perplexity API error: ${response.status}`)
+      throw new Error(`OpenAI API error: ${response.status}`)
     }
 
     const result = await response.json()
