@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Play, Square, Crown } from "lucide-react";
@@ -24,6 +25,7 @@ export const ElevenLabsAudio = ({
   totalPages = 1,
   isExtendedPage = false 
 }: ElevenLabsAudioProps) => {
+  const { t } = useTranslation();
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [playedPages, setPlayedPages] = useState<Set<number>>(new Set()); // Track which pages have been played
@@ -167,8 +169,8 @@ export const ElevenLabsAudio = ({
       {!isPremium && playedPages.size > 0 && (
         <p className="text-xs text-amber-600 font-medium">
           {isExtendedPage 
-            ? "🔒 Extended pages need Premium" 
-            : `🎵 ${playedPages.size}/${maxFreePages} free audio used`
+            ? t("audioReading.extendedPagesNeedPremium", "🔒 Extended pages need Premium")
+            : `🎵 ${playedPages.size}/${maxFreePages} ${t("audioReading.freeAudioUsed", "free audio used")}`
           }
         </p>
       )}

@@ -242,11 +242,11 @@ export const FloatingTimer = ({
               </div>
               {timeRemaining >= 20 * 60 && (
                 <div className="text-xs sm:text-sm text-muted-foreground font-medium mt-1">
-                  Max Limit
+                  {t("floatingTimer.maxLimit", "Max Limit")}
                 </div>
               )}
               <div className="text-xs sm:text-sm text-muted-foreground font-medium">
-                Reading Time
+                {t("floatingTimer.readingTime", "Reading Time")}
               </div>
             </div>
           </div>
@@ -271,8 +271,8 @@ export const FloatingTimer = ({
                 side="top" 
                 className={`font-medium text-lg ${sequentialTutorialStep === 1 ? 'bg-yellow-500 text-yellow-900 border-yellow-400 shadow-lg' : 'bg-primary text-primary-foreground border-primary/30'}`}
               >
-                {sequentialTutorialStep === 1 ? "🎯 Click to start/pause your reading timer!" : 
-                 (isReading ? "Pause Timer" : "Start Timer")}
+                {sequentialTutorialStep === 1 ? t("floatingTimer.sequentialTooltips.startPause", "🎯 Click to start/pause your reading timer!") : 
+                 (isReading ? t("floatingTimer.pauseTimer", "Pause Timer") : t("floatingTimer.startTimer", "Start Timer"))}
               </TooltipContent>
             </Tooltip>
           </div>
@@ -296,8 +296,8 @@ export const FloatingTimer = ({
                 side="top" 
                 className={`font-medium text-lg ${sequentialTutorialStep === 2 ? 'bg-yellow-500 text-yellow-900 border-yellow-400 shadow-lg' : 'bg-orange-600 text-white border-orange-500'}`}
               >
-                {sequentialTutorialStep === 2 ? "⏰ Reduce time by 5 minutes!" : 
-                 "Reduce 5 Minutes"}
+                {sequentialTutorialStep === 2 ? t("floatingTimer.sequentialTooltips.reduceTime", "⏰ Reduce time by 5 minutes!") : 
+                 t("floatingTimer.reduceTime", "Reduce 5 Minutes")}
               </TooltipContent>
             </Tooltip>
           </div>
@@ -319,8 +319,8 @@ export const FloatingTimer = ({
                 side="top" 
                 className={`font-medium text-lg ${sequentialTutorialStep === 3 ? 'bg-yellow-500 text-yellow-900 border-yellow-400 shadow-lg' : 'bg-red-600 text-white border-red-500'}`}
               >
-                {sequentialTutorialStep === 3 ? "🔚 Click to end your reading session!" : 
-                 "End Reading Session"}
+                {sequentialTutorialStep === 3 ? t("floatingTimer.sequentialTooltips.endSession", "🔚 Click to end your reading session!") : 
+                 t("floatingTimer.endSession", "End Reading Session")}
               </TooltipContent>
             </Tooltip>
           </div>

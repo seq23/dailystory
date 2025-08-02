@@ -341,5 +341,27 @@
     "skip": "Saltar Tutorial",
     "next": "Siguiente",
     "startReading": "¡Comenzar a Leer!"
+  },
+  "floatingTimer": {
+    "maxLimit": "Límite Máximo",
+    "readingTime": "Tiempo de Lectura",
+    "startTimer": "Iniciar Cronómetro",
+    "pauseTimer": "Pausar Cronómetro",
+    "reduceTime": "Reducir 5 Minutos",
+    "endSession": "Terminar Sesión de Lectura",
+    "sequentialTooltips": {
+      "startPause": "🎯 ¡Haz clic para iniciar/pausar tu cronómetro de lectura!",
+      "reduceTime": "⏰ ¡Reduce el tiempo en 5 minutos!",
+      "endSession": "🔚 ¡Haz clic para terminar tu sesión de lectura!"
+    }
+  },
+  "audioReading": {
+    "playAudio": "Reproducir audio",
+    "audioPlaying": "Reproduciendo audio...",
+    "audioUsed": "Audio usado",
+    "audioUsedTooltip": "Audio usado (1x por página para usuarios gratuitos)",
+    "speed": "Velocidad",
+    "freeAudioUsed": "audio gratuito usado",
+    "extendedPagesNeedPremium": "🔒 Las páginas extendidas necesitan Premium"
   }
 }

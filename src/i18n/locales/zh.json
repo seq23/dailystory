@@ -469,5 +469,20 @@
     "next": "下一步",
     "skip": "跳过教程",
     "startReading": "开始阅读！"
+  },
+  "sessionEnded": {
+    "completed": "阅读会话完成！",
+    "premiumCompleted": "高级会话完成！",
+    "readingProgress": "阅读进度",
+    "of": "的",
+    "pages": "页面",
+    "wordsRead": "已读单词",
+    "timeSpent": "用时",
+    "accuracy": "准确率",
+    "readingLevel": "阅读水平",
+    "level": "等级",
+    "unlockPremium": "解锁高级功能！",
+    "goToHome": "回到主页",
+    "startNewStory": "开始新故事"
   }
 }

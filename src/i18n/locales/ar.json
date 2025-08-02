@@ -469,5 +469,33 @@
     "next": "التالي",
     "skip": "تخطي الدرس",
     "startReading": "ابدأ القراءة!"
+  },
+  "floatingTimer": {
+    "maxLimit": "الحد الأقصى",
+    "readingTime": "وقت القراءة",
+    "startTimer": "بدء المؤقت",
+    "pauseTimer": "إيقاف المؤقت",
+    "reduceTime": "تقليل 5 دقائق",
+    "endSession": "إنهاء جلسة القراءة",
+    "sequentialTooltips": {
+      "startPause": "🎯 انقر لبدء/إيقاف مؤقت القراءة!",
+      "reduceTime": "⏰ قلل الوقت بـ 5 دقائق!",
+      "endSession": "🔚 انقر لإنهاء جلسة القراءة!"
+    }
+  },
+  "sessionEnded": {
+    "completed": "تمت جلسة القراءة!",
+    "premiumCompleted": "تمت الجلسة المميزة!",
+    "readingProgress": "تقدم القراءة",
+    "of": "من",
+    "pages": "صفحات",
+    "wordsRead": "كلمات مقروءة",
+    "timeSpent": "الوقت المستغرق",
+    "accuracy": "الدقة",
+    "readingLevel": "مستوى القراءة",
+    "level": "المستوى",
+    "unlockPremium": "فتح المزايا المميزة!",
+    "goToHome": "العودة للرئيسية",
+    "startNewStory": "بدء قصة جديدة"
   }
 }

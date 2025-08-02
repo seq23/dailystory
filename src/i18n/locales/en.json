@@ -393,6 +393,28 @@
       "description": "Use 'New Story' to create a different adventure, or 'Home' to return to the main page. Previous/Next buttons move between story pages!"
     }
   },
+  "floatingTimer": {
+    "maxLimit": "Max Limit",
+    "readingTime": "Reading Time",
+    "startTimer": "Start Timer",
+    "pauseTimer": "Pause Timer",
+    "reduceTime": "Reduce 5 Minutes",
+    "endSession": "End Reading Session",
+    "sequentialTooltips": {
+      "startPause": "🎯 Click to start/pause your reading timer!",
+      "reduceTime": "⏰ Reduce time by 5 minutes!",
+      "endSession": "🔚 Click to end your reading session!"
+    }
+  },
+  "audioReading": {
+    "playAudio": "Play audio reading",
+    "audioPlaying": "Audio playing...",
+    "audioUsed": "Audio used",
+    "audioUsedTooltip": "Audio used (1x per page for free users)",
+    "speed": "Speed",
+    "freeAudioUsed": "free audio used",
+    "extendedPagesNeedPremium": "🔒 Extended pages need Premium"
+  },
   "sessionEnded": {
     "completed": "Reading Session Completed!",
     "premiumCompleted": "Premium Session Completed!",

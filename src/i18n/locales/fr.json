@@ -341,5 +341,27 @@
     "skip": "Ignorer le Tutoriel", 
     "next": "Suivant",
     "startReading": "Commencer à Lire!"
+  },
+  "floatingTimer": {
+    "maxLimit": "Limite Maximum",
+    "readingTime": "Temps de Lecture",
+    "startTimer": "Démarrer le Minuteur",
+    "pauseTimer": "Mettre en Pause",
+    "reduceTime": "Réduire de 5 Minutes",
+    "endSession": "Terminer la Session",
+    "sequentialTooltips": {
+      "startPause": "🎯 Cliquez pour démarrer/mettre en pause votre minuteur de lecture!",
+      "reduceTime": "⏰ Réduisez le temps de 5 minutes!",
+      "endSession": "🔚 Cliquez pour terminer votre session de lecture!"
+    }
+  },
+  "audioReading": {
+    "playAudio": "Lire l'audio",
+    "audioPlaying": "Audio en cours...",
+    "audioUsed": "Audio utilisé",
+    "audioUsedTooltip": "Audio utilisé (1x par page pour utilisateurs gratuits)",
+    "speed": "Vitesse",
+    "freeAudioUsed": "audio gratuit utilisé",
+    "extendedPagesNeedPremium": "🔒 Les pages étendues nécessitent Premium"
   }
 }

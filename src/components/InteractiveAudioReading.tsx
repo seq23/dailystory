@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Play } from 'lucide-react';
 import { createOpenAITTSService } from '@/services/textToSpeechService';
@@ -17,6 +18,7 @@ export const InteractiveAudioReading = ({
   onWordHighlight, 
   isEnabled 
 }: InteractiveAudioReadingProps) => {
+  const { t } = useTranslation();
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentWordIndex, setCurrentWordIndex] = useState(-1);
   const [ttsService] = useState(() => createOpenAITTSService());
@@ -134,22 +136,22 @@ export const InteractiveAudioReading = ({
           
           {/* Tooltip */}
           <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
-            {hasPlayedAudio ? 'Audio used (1x per page for free users)' : 
-             isPlaying ? 'Audio playing...' : 'Play audio reading'}
+            {hasPlayedAudio ? t("audioReading.audioUsedTooltip", "Audio used (1x per page for free users)") : 
+             isPlaying ? t("audioReading.audioPlaying", "Audio playing...") : t("audioReading.playAudio", "Play audio reading")}
           </div>
         </div>
         
         {/* Status indicator */}
         {hasPlayedAudio && (
           <span className="text-xs text-orange-600 font-medium">
-            ✓ Audio used
+            ✓ {t("audioReading.audioUsed", "Audio used")}
           </span>
         )}
       </div>
 
       {/* Speed controls */}
       <div className="flex items-center gap-1">
-        <span className="text-xs text-gray-600 mr-2">Speed:</span>
+        <span className="text-xs text-gray-600 mr-2">{t("audioReading.speed", "Speed")}:</span>
         <Button
           onClick={() => adjustSpeed(0.5)}
           variant="ghost"

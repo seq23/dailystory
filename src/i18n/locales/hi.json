@@ -469,5 +469,33 @@
     "next": "अगला",
     "skip": "शिक्षण छोड़ें",
     "startReading": "पढ़ना शुरू करें!"
+  },
+  "floatingTimer": {
+    "maxLimit": "अधिकतम सीमा",
+    "readingTime": "पढ़ने का समय",
+    "startTimer": "टाइमर शुरू करें",
+    "pauseTimer": "टाइमर रोकें",
+    "reduceTime": "5 मिनट कम करें",
+    "endSession": "पढ़ने का सत्र समाप्त करें",
+    "sequentialTooltips": {
+      "startPause": "🎯 अपना पढ़ने का टाइमर शुरू/रोकने के लिए क्लिक करें!",
+      "reduceTime": "⏰ समय को 5 मिनट कम करें!",
+      "endSession": "🔚 अपना पढ़ने का सत्र समाप्त करने के लिए क्लिक करें!"
+    }
+  },
+  "sessionEnded": {
+    "completed": "पढ़ने का सत्र पूरा हुआ!",
+    "premiumCompleted": "प्रीमियम सत्र पूरा हुआ!",
+    "readingProgress": "पढ़ने की प्रगति",
+    "of": "का",
+    "pages": "पृष्ठ",
+    "wordsRead": "पढ़े गए शब्द",
+    "timeSpent": "लगा समय",
+    "accuracy": "सटीकता",
+    "readingLevel": "पढ़ने का स्तर",
+    "level": "स्तर",
+    "unlockPremium": "प्रीमियम लाभ अनलॉक करें!",
+    "goToHome": "होम पर जाएं",
+    "startNewStory": "नई कहानी शुरू करें"
   }
 }
