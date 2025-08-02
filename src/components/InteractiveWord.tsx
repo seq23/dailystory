@@ -207,7 +207,7 @@ export const InteractiveWord = ({
         setWordData(wordData);
         
         // Show definition toast for non-English speakers
-        if (!isNativeEnglishSpeaker) {
+        if (!isNativeEnglishSpeaker && userNativeLanguage !== 'en') {
           toast({
             title: `Definition (${userNativeLanguage.toUpperCase()})`,
             description: `"${cleanWord}" = ${wordData.definition}`,

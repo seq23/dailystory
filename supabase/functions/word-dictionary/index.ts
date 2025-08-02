@@ -26,8 +26,10 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  let userLanguage = 'en'; // Default fallback
   try {
-    const { word, userLevel = 'easy', userLanguage = 'en' } = await req.json();
+    const { word, userLevel = 'easy', userLanguage: reqUserLanguage = 'en' } = await req.json();
+    userLanguage = reqUserLanguage; // Store for error handling
 
     if (!word) {
       throw new Error('Word is required');
@@ -124,12 +126,33 @@ IMPORTANT: The definition and sampleSentence must be in ${targetLanguage}, but t
       wordData = JSON.parse(content);
     } catch (parseError) {
       console.error('Failed to parse OpenAI response:', content);
-      // Fallback word data
+      // Fallback word data based on user language
+      const fallbackLanguage = userLanguage === 'en' ? 'English' : (languageMap[userLanguage] || 'English');
+      const fallbackDefinition = userLanguage === 'en' 
+        ? `${cleanWord} is an important word.`
+        : userLanguage === 'fr' ? `${cleanWord} est un mot important.`
+        : userLanguage === 'es' ? `${cleanWord} es una palabra importante.`
+        : userLanguage === 'zh' ? `${cleanWord} 是一个重要的词。`
+        : userLanguage === 'hi' ? `${cleanWord} एक महत्वपूर्ण शब्द है।`
+        : userLanguage === 'ar' ? `${cleanWord} كلمة مهمة.`
+        : userLanguage === 'pt' ? `${cleanWord} é uma palavra importante.`
+        : `${cleanWord} is an important word.`;
+      
+      const fallbackSentence = userLanguage === 'en' 
+        ? `The word "${cleanWord}" is used in sentences.`
+        : userLanguage === 'fr' ? `Le mot "${cleanWord}" est utilisé dans les phrases.`
+        : userLanguage === 'es' ? `La palabra "${cleanWord}" se usa en oraciones.`
+        : userLanguage === 'zh' ? `单词"${cleanWord}"在句子中使用。`
+        : userLanguage === 'hi' ? `शब्द "${cleanWord}" वाक्यों में उपयोग किया जाता है।`
+        : userLanguage === 'ar' ? `تُستخدم كلمة "${cleanWord}" في الجمل.`
+        : userLanguage === 'pt' ? `A palavra "${cleanWord}" é usada em frases.`
+        : `The word "${cleanWord}" is used in sentences.`;
+
       wordData = {
         word: cleanWord,
-        definition: `${cleanWord} is an important word.`,
+        definition: fallbackDefinition,
         phonetic: `/${cleanWord}/`,
-        sampleSentence: `The word "${cleanWord}" is used in sentences.`,
+        sampleSentence: fallbackSentence,
         difficulty: userLevel as 'easy' | 'medium' | 'hard',
         partOfSpeech: 'word'
       };
@@ -138,7 +161,7 @@ IMPORTANT: The definition and sampleSentence must be in ${targetLanguage}, but t
     // Cache the result
     wordCache.set(cacheKey, wordData);
 
-    console.log(`Generated dictionary entry for: ${cleanWord}`);
+    console.log(`Generated dictionary entry for: ${cleanWord} (${userLanguage})`);
 
     return new Response(JSON.stringify(wordData), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -146,11 +169,23 @@ IMPORTANT: The definition and sampleSentence must be in ${targetLanguage}, but t
 
   } catch (error) {
     console.error('Error in word-dictionary function:', error);
+    
+    // Enhanced fallback based on language (userLanguage is available from scope)
+    const fallbackDefinition = userLanguage === 'en' 
+      ? 'Unable to get definition'
+      : userLanguage === 'fr' ? 'Impossible d\'obtenir la définition'
+      : userLanguage === 'es' ? 'No se puede obtener la definición'
+      : userLanguage === 'zh' ? '无法获取定义'
+      : userLanguage === 'hi' ? 'परिभाषा प्राप्त करने में असमर्थ'
+      : userLanguage === 'ar' ? 'غير قادر على الحصول على التعريف'
+      : userLanguage === 'pt' ? 'Não é possível obter a definição'
+      : 'Unable to get definition';
+
     return new Response(
       JSON.stringify({ 
         error: error.message,
         word: '',
-        definition: 'Unable to get definition',
+        definition: fallbackDefinition,
         phonetic: '',
         sampleSentence: '',
         difficulty: 'easy',
