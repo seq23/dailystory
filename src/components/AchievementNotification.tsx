@@ -20,6 +20,20 @@ export const AchievementNotification = ({
   const { t } = useTranslation();
   const [shouldShow, setShouldShow] = useState(false);
 
+  // Debug logging to identify the interpolation issue
+  useEffect(() => {
+    if (isVisible) {
+      console.log('Achievement notification data:', {
+        achievement,
+        points: achievement.points,
+        pointsType: typeof achievement.points,
+        translationKey: 'gamification.achievements.pointsEarned',
+        interpolationData: { points: achievement.points },
+        directTranslation: t('gamification.achievements.pointsEarned', { points: achievement.points })
+      });
+    }
+  }, [isVisible, achievement, t]);
+
   useEffect(() => {
     if (isVisible) {
       setShouldShow(true);
