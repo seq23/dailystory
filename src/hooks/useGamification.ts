@@ -37,7 +37,6 @@ export const useGamification = (options: UseGamificationOptions = {}) => {
 
   // Load user stats from localStorage on mount (only for premium users)
   useEffect(() => {
-    console.log('🎮 Gamification hook initialized:', { enablePersistence, userId });
     if (!enablePersistence) return;
     
     const storageKey = userId ? `gamification_${userId}` : 'gamification_guest';
@@ -98,8 +97,6 @@ export const useGamification = (options: UseGamificationOptions = {}) => {
           currentTime: new Date()
         }
       );
-
-      console.log('🎯 Activity recorded:', { activity, newAchievements: unlockedAchievements.length, enablePersistence });
 
       // Handle level up
       if (updatedStats.currentLevel > prevStats.currentLevel) {

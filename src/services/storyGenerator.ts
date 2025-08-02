@@ -121,99 +121,67 @@ export class StoryGeneratorService {
    * Get continuation templates based on language and difficulty
    */
   private static getContinuationTemplateForLanguage(language: string, difficulty: DifficultyLevel, pageCount: number): string[] {
-    const templates = language === 'es' ? {
+    // ALWAYS use English templates for story generation - this is an English reading education app
+    const templates = {
       easy: [
-        `{name} y el {animal} fueron a explorar.`,
-        `{subject_cap} encontraron una hermosa flor.`,
-        `"¡Mira esto!" dijo {name}.`,
-        `El {animal} estaba muy emocionado.`,
-        `{subject_cap} recogieron flores para casa.`,
-        `¡Qué día tan maravilloso fue!`,
-        `{name} se sintió muy feliz.`,
-        `El {animal} también estaba feliz.`
-      ],
-      medium: [
-        `El día siguiente trajo una nueva aventura para {name}.`,
-        `El {animal} había descubierto algo interesante cerca.`,
-        `Juntos, se dispusieron a investigar este misterio.`,
-        `Lo que {subject} encontraron los sorprendió completamente.`,
-        `{name} se dio cuenta de que esto era solo el comienzo.`,
-        `Cada día traería nuevos descubrimientos y alegría.`,
-        `Su amistad continuó creciendo más fuerte.`,
-        `El mundo parecía lleno de posibilidades infinitas.`
-      ],
-      hard: [
-        `Las aventuras de {name} estaban lejos de terminar.`,
-        `Surgieron nuevos desafíos que pondrían a prueba su sabiduría creciente.`,
-        `El {animal} demostró ser una guía y amigo invaluable.`,
-        `Juntos, enfrentaron cada obstáculo con determinación.`,
-        `{name} descubrió una fuerza interior que nunca supo que existía.`,
-        `Las lecciones aprendidas le servirían bien en futuras pruebas.`,
-        `Su vínculo se profundizó a través de experiencias compartidas y confianza.`,
-        `Cada victoria los hizo más confiados y capaces.`
-      ],
-      expert: [
-        `El viaje de crecimiento y descubrimiento de {name} continuó desarrollándose.`,
-        `Las complejidades de su mundo revelaron nuevas capas de comprensión.`,
-        `Trabajando con el {animal}, {subject} enfrentó desafíos cada vez más difíciles.`,
-        `Cada experiencia enseñó lecciones valiosas sobre liderazgo y compasión.`,
-        `{name} comenzó a ver cómo sus acciones afectaban a la comunidad más amplia.`,
-        `La asociación evolucionó en una fuerza poderosa para el cambio positivo.`,
-        `Su historia se convirtió en una inspiración para otros que enfrentaban luchas similares.`,
-        `{name} entendió que el verdadero éxito significaba elevar a otros también.`
-      ]
-    } : {
-      easy: [
-        `{name} and the {animal} went exploring.`,
+        `{name} and the {animal} went to explore.`,
         `{subject_cap} found a beautiful flower.`,
         `"Look at this!" said {name}.`,
         `The {animal} was very excited.`,
         `{subject_cap} picked flowers for home.`,
         `What a wonderful day it was!`,
-        `{name} felt so happy.`,
-        `The {animal} was happy too.`
+        `{name} felt very happy.`,
+        `The {animal} was happy too.`,
+        `{subject_cap} played together all afternoon.`,
+        `It was the best day ever.`
       ],
       medium: [
         `The next day brought a new adventure for {name}.`,
         `The {animal} had discovered something interesting nearby.`,
-        `Together, they set off to investigate this mystery.`,
-        `What {subject} found surprised {object} both completely.`,
+        `Together, they set out to investigate this mystery.`,
+        `What {subject} found surprised them completely.`,
         `{name} realized this was just the beginning.`,
         `Each day would bring new discoveries and joy.`,
-        `{possessive} friendship continued to grow stronger.`,
-        `The world seemed full of endless possibilities.`
+        `Their friendship continued to grow stronger.`,
+        `The world seemed full of endless possibilities.`,
+        `{name} learned something new every single day.`,
+        `Adventure was waiting around every corner.`
       ],
       hard: [
         `{name}'s adventures were far from over.`,
-        `New challenges emerged that would test {possessive} growing wisdom.`,
+        `New challenges arose that would test {possessive} growing wisdom.`,
         `The {animal} proved to be an invaluable guide and friend.`,
-        `Together, {subject} faced each obstacle with determination.`,
-        `{name} discovered inner strength {subject} never knew existed.`,
+        `Together, they faced each obstacle with determination.`,
+        `{name} discovered an inner strength {subject} never knew existed.`,
         `The lessons learned would serve {object} well in future trials.`,
-        `{possessive} bond deepened through shared experiences and trust.`,
-        `Each victory made {object} more confident and capable.`
+        `Their bond deepened through shared experiences and trust.`,
+        `Each victory made them more confident and capable.`,
+        `{name} began to understand the true meaning of courage.`,
+        `The journey had changed {object} in wonderful ways.`
       ],
       expert: [
         `{name}'s journey of growth and discovery continued to unfold.`,
         `The complexities of {possessive} world revealed new layers of understanding.`,
-        `Working with the {animal}, {subject} tackled increasingly difficult challenges.`,
+        `Working alongside the {animal}, {subject} faced increasingly difficult challenges.`,
         `Each experience taught valuable lessons about leadership and compassion.`,
         `{name} began to see how {possessive} actions affected the broader community.`,
-        `The partnership evolved into a powerful force for positive change.`,
-        `{possessive} story became an inspiration for others facing similar struggles.`,
-        `{name} understood that true success meant lifting others up as well.`
+        `The wisdom gained would guide {object} through future decisions.`,
+        `{subject_cap} learned that true strength comes from helping others.`,
+        `The {animal} became not just a companion, but a teacher of life's deeper truths.`,
+        `{name} realized that every ending is actually a new beginning.`,
+        `The greatest adventures were the ones that changed who {subject} was inside.`
       ]
     };
     
-    const baseTemplates = templates[difficulty] || templates.easy;
-    const pages: string[] = [];
+    const selectedTemplates = templates[difficulty] || templates.easy;
     
+    // Return the requested number of pages, cycling through if necessary
+    const result = [];
     for (let i = 0; i < pageCount; i++) {
-      const templateIndex = i % baseTemplates.length;
-      pages.push(baseTemplates[templateIndex]);
+      result.push(selectedTemplates[i % selectedTemplates.length]);
     }
     
-    return pages;
+    return result;
   }
   
   /**
