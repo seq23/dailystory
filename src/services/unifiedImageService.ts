@@ -186,9 +186,11 @@ export class UnifiedImageService {
       { pattern: /eat.*apple/i, description: `eating an apple` },
       { pattern: /drink/i, description: `drinking something refreshing` },
       
-      // Movement and action-focused interactions
+      // Movement and action-focused interactions - Enhanced direction detection
+      { pattern: /run.*to.*blue.*house/i, description: `running toward a blue house` },
       { pattern: /run.*to.*house/i, description: `running toward a house` },
       { pattern: /run.*to/i, description: `running toward something` },
+      { pattern: /walk.*to.*blue.*house/i, description: `walking toward a blue house` },
       { pattern: /walk.*to.*house/i, description: `walking toward a house` },
       { pattern: /walk.*to/i, description: `walking toward something` },
       { pattern: /running/i, description: `running energetically` },
@@ -459,12 +461,15 @@ export class UnifiedImageService {
     
     const noTextEnforcement = [
       'ABSOLUTELY NO TEXT OR LETTERS ANYWHERE IN THE IMAGE',
-      'NO WORDS, NO LABELS, NO SIGNS, NO NAMES',
+      'NO WORDS, NO LABELS, NO SIGNS, NO NAMES, NO TITLES',
       'STRICTLY NO WRITTEN TEXT OF ANY KIND INCLUDING CHARACTER NAMES',
       'PURE VISUAL ILLUSTRATION WITHOUT ANY TEXT OVERLAYS',
       'CLEAN ARTWORK WITH ZERO TEXT ELEMENTS',
       'NO TYPOGRAPHY OR LETTERING OF ANY FORM',
-      'TEXT-FREE ARTWORK ONLY'
+      'TEXT-FREE ARTWORK ONLY',
+      'NO LARGE TITLE TEXT OR STORY TITLES',
+      'NO BOOK TITLES OR CHAPTER HEADINGS VISIBLE',
+      'REMOVE ALL TEXT ELEMENTS FROM THE SCENE'
     ];
     
     return `${baseQuality.join(', ')}, ${noTextEnforcement.join(', ')}, realistic children's photography style with natural lighting, appealing to all children regardless of gender, diverse and inclusive, safe and wholesome content.`;
