@@ -118,18 +118,15 @@ export class GrammarValidator {
     // Check for pronoun + base verb errors (he eat, she run, etc.)
     const pronounVerbPattern = /\b(he|she|it)\s+(eat|run|play|like|go|come|see|find|help|love|want|need|have|do|say|get|know|think|feel|look|try|make|take|give|work|call|move|turn|start|stop|walk|talk|ask|tell|show|hear|listen|watch|learn|teach|read|write|draw|sing|dance|swim|jump|fly|sleep|wake|open|close|carry|hold|pick|drop|push|pull|throw|catch)\b/gi;
     
-    const matches = text.match(pronounVerbPattern);
-    if (matches) {
+    // Use matchAll to get capture groups properly
+    const matches = Array.from(text.matchAll(pronounVerbPattern));
+    if (matches.length > 0) {
       matches.forEach(match => {
-        const parts = match.toLowerCase().split(' ');
-        if (parts.length >= 2) {
-          const [, pronoun, verb] = parts;
-          // Only proceed if both pronoun and verb are defined
-          if (pronoun && verb) {
-            const correctVerb = this.conjugateVerb(verb, pronoun);
-            if (verb !== correctVerb) {
-              errors.push(`Grammar error: "${match}" should be "${pronoun} ${correctVerb}"`);
-            }
+        const [fullMatch, pronoun, verb] = match;
+        if (pronoun && verb) {
+          const correctVerb = this.conjugateVerb(verb, pronoun);
+          if (verb !== correctVerb) {
+            errors.push(`Grammar error: "${fullMatch}" should be "${pronoun} ${correctVerb}"`);
           }
         }
       });
