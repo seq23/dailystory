@@ -35,34 +35,66 @@ export const InteractiveWord = ({
   const userLanguageT = (key: string, fallback: string) => {
     if (userInfo?.nativeLanguage && userInfo.nativeLanguage !== 'en') {
       try {
-        // Direct resource lookup first
-        const resources = i18n.getResourceBundle(userInfo.nativeLanguage, 'translation');
-        const keyParts = key.split('.');
-        let directTranslation = resources;
+        // Force reload of i18n language resources
+        i18n.changeLanguage(userInfo.nativeLanguage);
         
-        // Navigate through the nested object structure
-        for (const part of keyParts) {
-          directTranslation = directTranslation?.[part];
-        }
+        // Wait a bit for resources to load then try direct lookup
+        setTimeout(() => {
+          const resources = i18n.getResourceBundle(userInfo.nativeLanguage, 'translation');
+          console.log('🗂️ Resource Bundle Check:', {
+            language: userInfo.nativeLanguage,
+            hasBundle: !!resources,
+            allData: i18n.store.data,
+            resourceKeys: resources ? Object.keys(resources) : 'none'
+          });
+        }, 100);
         
-        console.log('🔍 Direct Translation Lookup:', {
-          key,
-          language: userInfo.nativeLanguage,
-          directTranslation,
-          foundInResources: !!directTranslation
-        });
+        // Try multiple approaches to get the translation
+        const approaches = [
+          // Approach 1: Direct i18n.t with language
+          () => i18n.t(key, { lng: userInfo.nativeLanguage }),
+          // Approach 2: Change language then translate
+          () => {
+            i18n.changeLanguage(userInfo.nativeLanguage);
+            return i18n.t(key);
+          },
+          // Approach 3: Manual fallback based on known translations
+          () => {
+            const translations = {
+              'zh': {
+                'interactiveWord.hearIt': '听一听',
+                'interactiveWord.explain': '解释', 
+                'interactiveWord.translate': '翻译',
+                'interactiveWord.addToVocabulary': '保存单词'
+              },
+              'ar': {
+                'interactiveWord.hearIt': 'استمع إليها',
+                'interactiveWord.explain': 'اشرح',
+                'interactiveWord.translate': 'ترجم', 
+                'interactiveWord.addToVocabulary': 'احفظ الكلمة'
+              },
+              'hi': {
+                'interactiveWord.hearIt': 'सुनें',
+                'interactiveWord.explain': 'समझाएं',
+                'interactiveWord.translate': 'अनुवाद करें',
+                'interactiveWord.addToVocabulary': 'शब्द सहेजें'
+              }
+            };
+            return translations[userInfo.nativeLanguage]?.[key];
+          }
+        ];
         
-        // Use direct translation if found
-        if (directTranslation && typeof directTranslation === 'string') {
-          console.log('✅ Using direct translation:', directTranslation);
-          return directTranslation;
-        }
-        
-        // Fallback to i18n.t with explicit language
-        const translation = i18n.t(key, { lng: userInfo.nativeLanguage, fallbackLng: 'en' });
-        if (translation && translation !== key && translation !== fallback) {
-          console.log('✅ Using i18n translation:', translation);
-          return translation;
+        for (let i = 0; i < approaches.length; i++) {
+          const translation = approaches[i]();
+          console.log(`🔄 Approach ${i + 1} result:`, {
+            key,
+            translation,
+            isValid: translation && translation !== key && translation !== fallback
+          });
+          
+          if (translation && translation !== key && translation !== fallback) {
+            return translation;
+          }
         }
       } catch (error) {
         console.error('❌ Translation error:', error);
