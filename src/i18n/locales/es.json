@@ -198,7 +198,8 @@
       },
       "nativeLanguage": {
         "label": "¿Qué idioma hablas en casa?",
-        "placeholder": "Selecciona tu idioma nativo"
+        "placeholder": "Selecciona tu idioma nativo",
+        "translationInfo": "🌟 ¡Excelente elección! Cuando leas historias, puedes pasar el cursor sobre cualquier palabra para escuchar su pronunciación y ver su traducción en tu idioma nativo."
       },
       "learningGoal": {
         "label": "¿Qué quieres mejorar?",

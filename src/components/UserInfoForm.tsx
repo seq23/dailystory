@@ -318,14 +318,54 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="en">{t("userInfoForm.languages.en")}</SelectItem>
-                    <SelectItem value="ar">{t("userInfoForm.languages.ar")}</SelectItem>
-                    <SelectItem value="es">{t("userInfoForm.languages.es")}</SelectItem>
-                    <SelectItem value="zh">{t("userInfoForm.languages.zh")}</SelectItem>
-                    <SelectItem value="hi">{t("userInfoForm.languages.hi")}</SelectItem>
-                    <SelectItem value="pt">{t("userInfoForm.languages.pt")}</SelectItem>
-                    <SelectItem value="fr">{t("userInfoForm.languages.fr")}</SelectItem>
+                    <SelectItem value="ar" className="relative">
+                      <div className="flex items-center justify-between w-full">
+                        <span>{t("userInfoForm.languages.ar")}</span>
+                        <Globe className="w-4 h-4 text-blue-500 ml-2" />
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="es" className="relative">
+                      <div className="flex items-center justify-between w-full">
+                        <span>{t("userInfoForm.languages.es")}</span>
+                        <Globe className="w-4 h-4 text-blue-500 ml-2" />
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="zh" className="relative">
+                      <div className="flex items-center justify-between w-full">
+                        <span>{t("userInfoForm.languages.zh")}</span>
+                        <Globe className="w-4 h-4 text-blue-500 ml-2" />
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="hi" className="relative">
+                      <div className="flex items-center justify-between w-full">
+                        <span>{t("userInfoForm.languages.hi")}</span>
+                        <Globe className="w-4 h-4 text-blue-500 ml-2" />
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="pt" className="relative">
+                      <div className="flex items-center justify-between w-full">
+                        <span>{t("userInfoForm.languages.pt")}</span>
+                        <Globe className="w-4 h-4 text-blue-500 ml-2" />
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="fr" className="relative">
+                      <div className="flex items-center justify-between w-full">
+                        <span>{t("userInfoForm.languages.fr")}</span>
+                        <Globe className="w-4 h-4 text-blue-500 ml-2" />
+                      </div>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
+                {formData.nativeLanguage && formData.nativeLanguage !== 'en' && (
+                  <div className="mt-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                    <div className="flex items-start gap-2">
+                      <Globe className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                      <p className="text-sm text-blue-700 dark:text-blue-300">
+                        {t("userInfoForm.fields.nativeLanguage.translationInfo")}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">

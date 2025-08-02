@@ -198,7 +198,8 @@
       },
       "nativeLanguage": {
         "label": "Quelle langue parlez-vous à la maison ?",
-        "placeholder": "Sélectionnez votre langue maternelle"
+        "placeholder": "Sélectionnez votre langue maternelle",
+        "translationInfo": "🌟 Excellent choix ! Lorsque vous lisez des histoires, vous pouvez survoler n'importe quel mot pour entendre sa prononciation et voir sa traduction dans votre langue maternelle."
       },
       "learningGoal": {
         "label": "Que voulez-vous améliorer ?",

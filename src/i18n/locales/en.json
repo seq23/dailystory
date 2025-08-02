@@ -202,7 +202,8 @@
       },
       "nativeLanguage": {
         "label": "What language do you speak at home?",
-        "placeholder": "Select your native language"
+        "placeholder": "Select your native language",
+        "translationInfo": "🌟 Great choice! When you read stories, you can hover over any word to hear it pronounced and see its translation in your native language."
       },
       "learningGoal": {
         "label": "What do you want to improve?",

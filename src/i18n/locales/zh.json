@@ -175,7 +175,8 @@
       },
       "nativeLanguage": {
         "label": "你的母语是什么？",
-        "placeholder": "选择你的第一语言"
+        "placeholder": "选择你的第一语言",
+        "translationInfo": "🌟 很好的选择！阅读故事时，您可以将鼠标悬停在任何单词上，听到其发音并查看您母语的翻译。"
       },
       "learningGoal": {
         "label": "你的学习目标是什么？",

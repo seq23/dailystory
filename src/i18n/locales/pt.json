@@ -175,7 +175,8 @@
       },
       "nativeLanguage": {
         "label": "Qual é sua língua nativa?",
-        "placeholder": "Selecione seu primeiro idioma"
+        "placeholder": "Selecione seu primeiro idioma",
+        "translationInfo": "🌟 Excelente escolha! Quando você ler histórias, pode passar o mouse sobre qualquer palavra para ouvir sua pronúncia e ver sua tradução em sua língua nativa."
       },
       "learningGoal": {
         "label": "Qual é seu objetivo de aprendizado?",
