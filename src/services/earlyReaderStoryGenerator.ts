@@ -16,31 +16,31 @@ export class EarlyReaderStoryGenerator {
   // Text sizes: BIGGEST for easiest levels, SMALLER as difficulty increases
   private static getReadingConfig(difficulty: DifficultyLevel): ReadingConfig {
     switch (difficulty) {
-      case 'easy': // PreK-1st grade (Julia Donaldson, Mo Willems, Dr. Seeus, Kevin Henkes style)
+      case 'easy': // Emergent readers (ages 4-6): Maximum 6 words per page with biggest text
         return {
-          maxWordsPerPage: 6, // HARD RULE: Maximum 6 words per page for early readers
-          fontSize: 'text-4xl md:text-5xl lg:text-6xl', // Large but not overwhelming in UI
+          maxWordsPerPage: 6, // PEDAGOGICAL STANDARD: 6 words max for emergent readers
+          fontSize: 'text-4xl md:text-5xl lg:text-6xl', // Largest text for beginning readers
           lineHeight: 'leading-loose', // Extra spacing for readability
-          spacing: 'space-y-8' // Generous spacing without overflow
+          spacing: 'space-y-8' // Generous spacing for easy visual tracking
         };
-      case 'medium': // 2nd-3rd grade (Jeff Kinney, Roald Dahl, Dav Pilkey, Andrea Beaty style)
+      case 'medium': // Early readers (ages 5-7): 12-15 words per page for developing skills
         return {
-          maxWordsPerPage: 60, // Reduced to fit nicely in container with large text
-          fontSize: 'text-2xl md:text-3xl lg:text-4xl', // Large text that fits well
+          maxWordsPerPage: 15, // PEDAGOGICAL STANDARD: 12-15 words for early readers
+          fontSize: 'text-3xl md:text-4xl lg:text-5xl', // Large text for growing confidence
           lineHeight: 'leading-relaxed',
           spacing: 'space-y-6'
         };
-      case 'hard': // 4th-5th grade (Katherine Applegate, C.S. Lewis, J.K. Rowling style)
+      case 'hard': // Developing readers (ages 6-8): 20-25 words per page for fluency building
         return {
-          maxWordsPerPage: 100, // Optimized for medium text size and container space
-          fontSize: 'text-lg md:text-xl lg:text-2xl', // Medium text for comfortable reading
+          maxWordsPerPage: 25, // PEDAGOGICAL STANDARD: 20-25 words for developing readers
+          fontSize: 'text-2xl md:text-3xl lg:text-4xl', // Medium-large text for sustained reading
           lineHeight: 'leading-normal',
           spacing: 'space-y-4'
         };
-      case 'expert': // 6th-12th grade (Sharon Creech, Louis Sachar, Suzanne Collins, John Green style)
+      case 'expert': // Fluent readers (ages 7-9): 35-40 words per page for advanced comprehension
         return {
-          maxWordsPerPage: 150, // More content with smaller text, fits in 400px container
-          fontSize: 'text-base md:text-lg lg:text-xl', // Smaller text for more content
+          maxWordsPerPage: 40, // PEDAGOGICAL STANDARD: 35-40 words for fluent readers
+          fontSize: 'text-xl md:text-2xl lg:text-3xl', // Appropriate text size for longer passages
           lineHeight: 'leading-normal',
           spacing: 'space-y-3'
         };
