@@ -57,17 +57,32 @@ export class EarlyReaderStoryGenerator {
     // Collect and organize user inputs for organic integration
     const userElements = this.extractUserElements(userInfo);
     
+    // Determine correct pronouns based on avatar selection
+    const pronouns = this.getPronounsFromAvatar(userInfo.avatar?.type);
+    
     // Generate story content with organic user element integration 
     // CRITICAL: Stories are ALWAYS generated in English regardless of user's native language
-    const storyContent = this.createStoryContent(characterName, userElements, difficulty);
+    const storyContent = this.createStoryContent(characterName, userElements, difficulty, pronouns);
     
     // Split into pages respecting word limits with continuing user elements
-    const pages = this.splitIntoPages(storyContent, config.maxWordsPerPage, pageCount, characterName, userElements, difficulty);
+    const pages = this.splitIntoPages(storyContent, config.maxWordsPerPage, pageCount, characterName, userElements, difficulty, pronouns);
     
     // Verify word limits are being enforced
     this.verifyWordLimits(pages, config.maxWordsPerPage, difficulty);
     
     return { pages, config };
+  }
+
+  // Get correct pronouns based on avatar type
+  private static getPronounsFromAvatar(avatarType?: string): { subject: string, object: string, possessive: string } {
+    switch (avatarType) {
+      case 'boy':
+        return { subject: 'he', object: 'him', possessive: 'his' };
+      case 'girl':
+        return { subject: 'she', object: 'her', possessive: 'her' };
+      default:
+        return { subject: 'they', object: 'them', possessive: 'their' };
+    }
   }
 
   // Extract and organize user inputs for organic story integration
@@ -101,48 +116,49 @@ export class EarlyReaderStoryGenerator {
   private static createStoryContent(
     characterName: string,
     userElements: any,
-    difficulty: DifficultyLevel
+    difficulty: DifficultyLevel,
+    pronouns: { subject: string, object: string, possessive: string }
   ): string {
     switch (difficulty) {
       case 'easy':
-        return this.createEasyStory(characterName, userElements);
+        return this.createEasyStory(characterName, userElements, pronouns);
       case 'medium':
-        return this.createMediumStory(characterName, userElements);
+        return this.createMediumStory(characterName, userElements, pronouns);
       case 'hard':
-        return this.createHardStory(characterName, userElements);
+        return this.createHardStory(characterName, userElements, pronouns);
       case 'expert':
-        return this.createExpertStory(characterName, userElements);
+        return this.createExpertStory(characterName, userElements, pronouns);
     }
   }
 
-  private static createEasyStory(characterName: string, userElements: any): string {
+  private static createEasyStory(characterName: string, userElements: any, pronouns: { subject: string, object: string, possessive: string }): string {
     // PreK-1st Grade Style: Julia Donaldson, Mo Willems, Dr. Seuss, Kevin Henkes
     // Simple, rhythmic, repetitive patterns with very basic vocabulary
     const { favoriteColor, favoriteAnimal, favoriteFood } = userElements;
     
     const simpleStories = [
-      `${characterName} saw a ${favoriteColor} ${favoriteAnimal}. Big ${favoriteAnimal}! Happy ${favoriteAnimal}! The ${favoriteAnimal} saw ${characterName}. Happy ${characterName}! They played with ${favoriteColor} toys. Fun, fun, fun! Time for ${favoriteFood}. Yum! Wave goodbye! The end.`,
-      `Look, ${characterName}! See the ${favoriteAnimal}? The ${favoriteAnimal} is ${favoriteColor}. The ${favoriteAnimal} is soft. ${characterName} likes ${favoriteAnimal}. ${favoriteAnimal} likes ${favoriteFood} too. They share and eat. Good friends! Happy day! Hooray!`,
+      `${characterName} saw a ${favoriteColor} ${favoriteAnimal}. Big ${favoriteAnimal}! Happy ${favoriteAnimal}! The ${favoriteAnimal} saw ${characterName}. Happy ${characterName}! ${characterName} played with ${favoriteColor} toys. Fun, fun, fun! Time for ${favoriteFood}. Yum! Wave goodbye! The end.`,
+      `Look, ${characterName}! See the ${favoriteAnimal}? The ${favoriteAnimal} is ${favoriteColor}. The ${favoriteAnimal} is soft. ${characterName} likes ${favoriteAnimal}. ${favoriteAnimal} likes ${favoriteFood} too. ${characterName} shares and eats. Good friends! Happy day! Hooray!`,
       `Go, ${characterName}, go! Run to the ${favoriteColor} house. The ${favoriteAnimal} runs too. Fast, fast, fast! Stop for ${favoriteFood}. Yum, yum! Time to play with ${favoriteColor} ball. Play and laugh. What a day! Home we go.`
     ];
     return simpleStories[Math.floor(Math.random() * simpleStories.length)];
   }
 
-  private static createMediumStory(characterName: string, userElements: any): string {
+  private static createMediumStory(characterName: string, userElements: any, pronouns: { subject: string, object: string, possessive: string }): string {
     // 2nd-3rd Grade Style: Jeff Kinney, Roald Dahl, Dav Pilkey, Andrea Beaty
     // Engaging plots with humor, simple dialogue, and kid-friendly adventures
     const { favoriteColor, favoriteAnimal, favoriteFood, hobbies } = userElements;
     const mainHobby = hobbies[0] || 'playing';
     
     const mediumStories = [
-      `${characterName} was having the most ordinary Tuesday ever when something extraordinary happened. A talking ${favoriteAnimal} with beautiful ${favoriteColor} fur knocked on the front door! "I need your help," said the ${favoriteAnimal} politely. "I've lost my favorite ${favoriteFood} recipe!" It turns out there was a mystery in the park that only a brave kid who loved ${mainHobby} like ${characterName} could solve. Together, they followed mysterious ${favoriteColor} paw prints that led to a hidden treasure chest filled with magical recipes. What an adventure! ${characterName} and the ${favoriteAnimal} decided to meet every Tuesday for more fun.`,
-      `"This is going to be AWESOME!" shouted ${characterName} as they grabbed their ${favoriteColor} backpack and raced to the playground for some ${mainHobby}. But when they arrived, they discovered a very sad ${favoriteAnimal} sitting all alone on a bench, looking at an empty ${favoriteFood} container. The ${favoriteAnimal} had lost its lunch and couldn't find any ${favoriteFood} anywhere! ${characterName} had a brilliant idea - they would organize the greatest ${favoriteColor}-themed treasure hunt the neighborhood had ever seen! By the end of the day, not only did they find plenty of ${favoriteFood} to share, but they also made twenty new friends who loved ${mainHobby} too.`,
-      `${characterName} loved ${mainHobby} and inventing things in their ${favoriteColor} garage workshop. Today's project was a Super-Duper Pet Communicator 3000! When they tested it on a friendly ${favoriteAnimal} from next door while sharing some ${favoriteFood}, something magical happened - they could actually understand each other! The ${favoriteAnimal} told jokes about ${favoriteColor} things, shared secrets, and even helped ${characterName} with homework between bites of ${favoriteFood}. From that day forward, ${characterName} knew that the best inventions always bring friends together, especially when you share your favorite things.`
+      `${characterName} was having the most ordinary Tuesday ever when something extraordinary happened. A talking ${favoriteAnimal} with beautiful ${favoriteColor} fur knocked on the front door! "I need your help," said the ${favoriteAnimal} politely. "I've lost my favorite ${favoriteFood} recipe!" It turns out there was a mystery in the park that only a brave kid who loved ${mainHobby} like ${characterName} could solve. Together, ${pronouns.subject} followed mysterious ${favoriteColor} paw prints that led to a hidden treasure chest filled with magical recipes. What an adventure! ${characterName} and the ${favoriteAnimal} decided to meet every Tuesday for more fun.`,
+      `"This is going to be AWESOME!" shouted ${characterName} as ${pronouns.subject} grabbed ${pronouns.possessive} ${favoriteColor} backpack and raced to the playground for some ${mainHobby}. But when ${pronouns.subject} arrived, ${pronouns.subject} discovered a very sad ${favoriteAnimal} sitting all alone on a bench, looking at an empty ${favoriteFood} container. The ${favoriteAnimal} had lost its lunch and couldn't find any ${favoriteFood} anywhere! ${characterName} had a brilliant idea - ${pronouns.subject} would organize the greatest ${favoriteColor}-themed treasure hunt the neighborhood had ever seen! By the end of the day, not only did ${pronouns.subject} find plenty of ${favoriteFood} to share, but ${pronouns.subject} also made twenty new friends who loved ${mainHobby} too.`,
+      `${characterName} loved ${mainHobby} and inventing things in ${pronouns.possessive} ${favoriteColor} garage workshop. Today's project was a Super-Duper Pet Communicator 3000! When ${pronouns.subject} tested it on a friendly ${favoriteAnimal} from next door while sharing some ${favoriteFood}, something magical happened - ${pronouns.subject} could actually understand each other! The ${favoriteAnimal} told jokes about ${favoriteColor} things, shared secrets, and even helped ${characterName} with homework between bites of ${favoriteFood}. From that day forward, ${characterName} knew that the best inventions always bring friends together, especially when you share your favorite things.`
     ];
     return mediumStories[Math.floor(Math.random() * mediumStories.length)];
   }
 
-  private static createHardStory(characterName: string, userElements: any): string {
+  private static createHardStory(characterName: string, userElements: any, pronouns: { subject: string, object: string, possessive: string }): string {
     // 4th-5th Grade Style: Katherine Applegate, C.S. Lewis, J.K. Rowling
     // More complex plots with character development and meaningful themes
     const { favoriteColor, favoriteAnimal, favoriteFood, hobbies, interests } = userElements;
@@ -150,14 +166,14 @@ export class EarlyReaderStoryGenerator {
     const secondInterest = interests[1] || 'magic';
     
     const hardStories = [
-      `${characterName} had always been fascinated by ${mainHobby}, but nothing could have prepared them for what they discovered that ${favoriteColor}-skied morning. Deep in the ancient forest behind their house, they encountered a magnificent ${favoriteAnimal} who possessed the rare ability to speak human language. "I've been waiting for someone like you," the ${favoriteAnimal} said mysteriously, leading ${characterName} to a hidden grove where ${favoriteColor} flowers grew in perfect circles. The ${favoriteAnimal} explained that these flowers held the secret to understanding ${secondInterest}, but only someone pure of heart who truly appreciated simple pleasures like sharing ${favoriteFood} could unlock their power. As ${characterName} learned to communicate with the forest creatures and master the art of ${secondInterest}, they discovered that the greatest magic of all was the friendship they'd found.`,
-      `When ${characterName} inherited their grandmother's old ${favoriteColor} journal, they never expected it to change their life forever. The journal contained detailed notes about a legendary ${favoriteAnimal} that supposedly lived in the mountains beyond their town. Most people thought it was just a fairy tale, but ${characterName}'s passion for ${mainHobby} had taught them to look beyond the surface of things. Following cryptic clues that mentioned ${favoriteFood} as an offering and ${secondInterest} as a key, ${characterName} embarked on the adventure of a lifetime. The journey tested their courage, wisdom, and determination, but when they finally met the ancient ${favoriteAnimal} in a cave filled with ${favoriteColor} crystals, they realized that the real treasure wasn't gold or jewels—it was the confidence they'd gained and the knowledge that even the most impossible dreams could come true.`,
-      `${characterName} never thought their love of ${mainHobby} would lead to saving their entire town, but that's exactly what happened on the day the ${favoriteColor} comet appeared in the sky. The mysterious comet brought with it a magical ${favoriteAnimal} who landed right in ${characterName}'s backyard while they were enjoying their favorite meal of ${favoriteFood}. The ${favoriteAnimal} spoke of an ancient prophecy involving someone who understood both ${mainHobby} and ${secondInterest}, and who possessed the rare combination of bravery and kindness. Together, ${characterName} and the ${favoriteAnimal} discovered that the comet was actually a warning—a great challenge was coming that would require all their skills, creativity, and the help of every person in town. Through perseverance, teamwork, and the power of believing in themselves, they not only saved their community but also forged friendships that would last a lifetime.`
+      `${characterName} had always been fascinated by ${mainHobby}, but nothing could have prepared ${pronouns.object} for what ${pronouns.subject} discovered that ${favoriteColor}-skied morning. Deep in the ancient forest behind ${pronouns.possessive} house, ${pronouns.subject} encountered a magnificent ${favoriteAnimal} who possessed the rare ability to speak human language. "I've been waiting for someone like you," the ${favoriteAnimal} said mysteriously, leading ${characterName} to a hidden grove where ${favoriteColor} flowers grew in perfect circles. The ${favoriteAnimal} explained that these flowers held the secret to understanding ${secondInterest}, but only someone pure of heart who truly appreciated simple pleasures like sharing ${favoriteFood} could unlock ${pronouns.possessive} power. As ${characterName} learned to communicate with the forest creatures and master the art of ${secondInterest}, ${pronouns.subject} discovered that the greatest magic of all was the friendship ${pronouns.subject}'d found.`,
+      `When ${characterName} inherited ${pronouns.possessive} grandmother's old ${favoriteColor} journal, ${pronouns.subject} never expected it to change ${pronouns.possessive} life forever. The journal contained detailed notes about a legendary ${favoriteAnimal} that supposedly lived in the mountains beyond ${pronouns.possessive} town. Most people thought it was just a fairy tale, but ${characterName}'s passion for ${mainHobby} had taught ${pronouns.object} to look beyond the surface of things. Following cryptic clues that mentioned ${favoriteFood} as an offering and ${secondInterest} as a key, ${characterName} embarked on the adventure of a lifetime. The journey tested ${pronouns.possessive} courage, wisdom, and determination, but when ${pronouns.subject} finally met the ancient ${favoriteAnimal} in a cave filled with ${favoriteColor} crystals, ${pronouns.subject} realized that the real treasure wasn't gold or jewels—it was the confidence ${pronouns.subject}'d gained and the knowledge that even the most impossible dreams could come true.`,
+      `${characterName} never thought ${pronouns.possessive} love of ${mainHobby} would lead to saving ${pronouns.possessive} entire town, but that's exactly what happened on the day the ${favoriteColor} comet appeared in the sky. The mysterious comet brought with it a magical ${favoriteAnimal} who landed right in ${characterName}'s backyard while ${pronouns.subject} was enjoying ${pronouns.possessive} favorite meal of ${favoriteFood}. The ${favoriteAnimal} spoke of an ancient prophecy involving someone who understood both ${mainHobby} and ${secondInterest}, and who possessed the rare combination of bravery and kindness. Together, ${characterName} and the ${favoriteAnimal} discovered that the comet was actually a warning—a great challenge was coming that would require all ${pronouns.possessive} skills, creativity, and the help of every person in town. Through perseverance, teamwork, and the power of believing in ${pronouns.object}self, ${pronouns.subject} not only saved ${pronouns.possessive} community but also forged friendships that would last a lifetime.`
     ];
     return hardStories[Math.floor(Math.random() * hardStories.length)];
   }
 
-  private static createExpertStory(characterName: string, userElements: any): string {
+  private static createExpertStory(characterName: string, userElements: any, pronouns: { subject: string, object: string, possessive: string }): string {
     // 6th-12th Grade Style: Sharon Creech, Louis Sachar, Suzanne Collins, John Green
     // Sophisticated themes with complex character development and deeper meaning
     const { favoriteColor, favoriteAnimal, favoriteFood, hobbies, interests } = userElements;
@@ -166,9 +182,9 @@ export class EarlyReaderStoryGenerator {
     const thirdInterest = interests[2] || 'science';
     
     const expertStories = [
-      `The morning ${characterName} turned sixteen, they discovered that their lifelong obsession with ${mainHobby} wasn't just a hobby—it was preparation for something far greater than they could have imagined. The mysterious ${favoriteAnimal} that had been appearing in their dreams for years finally materialized in their room, its ${favoriteColor} eyes holding depths of ancient wisdom. "Your journey begins now," the creature whispered, revealing that ${characterName} possessed a rare gift that connected them to both ${secondInterest} and ${thirdInterest} in ways that could reshape the balance between two parallel worlds. As ${characterName} learned to navigate between realities, they discovered that even simple pleasures like sharing ${favoriteFood} with friends took on profound meaning when viewed through the lens of infinite possibility. The choices they made would not only determine their own fate but also the future of countless others who depended on someone brave enough to bridge the gap between what is and what could be.`,
-      `${characterName} had always felt different, but it wasn't until they met the enigmatic ${favoriteAnimal} in the abandoned ${favoriteColor} lighthouse that they understood why. The creature, ancient beyond measure, revealed that ${characterName}'s passion for ${mainHobby} and deep understanding of ${secondInterest} marked them as one of the rare individuals capable of seeing beyond the veil of ordinary reality. Through a series of increasingly challenging trials that tested not only their intellectual grasp of ${thirdInterest} but also their emotional resilience and moral compass, ${characterName} learned that true power lay not in what they could take from the world, but in what they could give back to it. Even their simple ritual of eating ${favoriteFood} while contemplating life's mysteries became a sacred practice that connected them to the universal truths the ${favoriteAnimal} had spent centuries protecting. In the end, ${characterName} realized that growing up meant accepting responsibility not just for their own choices, but for the ripple effects those choices would have on everyone around them.`,
-      `The letter arrived on ${characterName}'s seventeenth birthday, written in ${favoriteColor} ink that seemed to shimmer with its own inner light. It spoke of a destiny connected to their love of ${mainHobby}, their intellectual curiosity about ${secondInterest}, and their scientific interest in ${thirdInterest}. The sender was revealed to be a ${favoriteAnimal} of extraordinary intelligence who had been watching ${characterName} for years, waiting for the right moment to reveal a truth that would change everything they thought they knew about themselves and the world. As ${characterName} embarked on a journey that would take them from the familiar comfort of sharing ${favoriteFood} with family to the edge of known reality itself, they learned that the most important battles aren't fought with weapons or armies, but with ideas, compassion, and the courage to stand up for what's right even when the cost seems unbearable. The ${favoriteAnimal} taught them that true wisdom comes not from having all the answers, but from asking the right questions and being brave enough to follow where those questions lead.`
+      `The morning ${characterName} turned sixteen, ${pronouns.subject} discovered that ${pronouns.possessive} lifelong obsession with ${mainHobby} wasn't just a hobby—it was preparation for something far greater than ${pronouns.subject} could have imagined. The mysterious ${favoriteAnimal} that had been appearing in ${pronouns.possessive} dreams for years finally materialized in ${pronouns.possessive} room, its ${favoriteColor} eyes holding depths of ancient wisdom. "Your journey begins now," the creature whispered, revealing that ${characterName} possessed a rare gift that connected ${pronouns.object} to both ${secondInterest} and ${thirdInterest} in ways that could reshape the balance between two parallel worlds. As ${characterName} learned to navigate between realities, ${pronouns.subject} discovered that even simple pleasures like sharing ${favoriteFood} with friends took on profound meaning when viewed through the lens of infinite possibility. The choices ${pronouns.subject} made would not only determine ${pronouns.possessive} own fate but also the future of countless others who depended on someone brave enough to bridge the gap between what is and what could be.`,
+      `${characterName} had always felt different, but it wasn't until ${pronouns.subject} met the enigmatic ${favoriteAnimal} in the abandoned ${favoriteColor} lighthouse that ${pronouns.subject} understood why. The creature, ancient beyond measure, revealed that ${characterName}'s passion for ${mainHobby} and deep understanding of ${secondInterest} marked ${pronouns.object} as one of the rare individuals capable of seeing beyond the veil of ordinary reality. Through a series of increasingly challenging trials that tested not only ${pronouns.possessive} intellectual grasp of ${thirdInterest} but also ${pronouns.possessive} emotional resilience and moral compass, ${characterName} learned that true power lay not in what ${pronouns.subject} could take from the world, but in what ${pronouns.subject} could give back to it. Even ${pronouns.possessive} simple ritual of eating ${favoriteFood} while contemplating life's mysteries became a sacred practice that connected ${pronouns.object} to the universal truths the ${favoriteAnimal} had spent centuries protecting. In the end, ${characterName} realized that growing up meant accepting responsibility not just for ${pronouns.possessive} own choices, but for the ripple effects those choices would have on everyone around ${pronouns.object}.`,
+      `The letter arrived on ${characterName}'s seventeenth birthday, written in ${favoriteColor} ink that seemed to shimmer with its own inner light. It spoke of a destiny connected to ${pronouns.possessive} love of ${mainHobby}, ${pronouns.possessive} intellectual curiosity about ${secondInterest}, and ${pronouns.possessive} scientific interest in ${thirdInterest}. The sender was revealed to be a ${favoriteAnimal} of extraordinary intelligence who had been watching ${characterName} for years, waiting for the right moment to reveal a truth that would change everything ${pronouns.subject} thought ${pronouns.subject} knew about ${pronouns.object}self and the world. As ${characterName} embarked on a journey that would take ${pronouns.object} from the familiar comfort of sharing ${favoriteFood} with family to the edge of known reality itself, ${pronouns.subject} learned that the most important battles aren't fought with weapons or armies, but with ideas, compassion, and the courage to stand up for what's right even when the cost seems unbearable. The ${favoriteAnimal} taught ${pronouns.object} that true wisdom comes not from having all the answers, but from asking the right questions and being brave enough to follow where those questions lead.`
     ];
     return expertStories[Math.floor(Math.random() * expertStories.length)];
   }
@@ -179,7 +195,8 @@ export class EarlyReaderStoryGenerator {
     targetPageCount: number, 
     characterName: string, 
     userElements: any, 
-    difficulty: DifficultyLevel
+    difficulty: DifficultyLevel,
+    pronouns: { subject: string, object: string, possessive: string }
   ): string[] {
     const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 0);
     const pages: string[] = [];
@@ -239,7 +256,7 @@ export class EarlyReaderStoryGenerator {
 
     // Ensure we have the target number of pages with organic user element integration
     while (pages.length < targetPageCount) {
-      const continuationPage = this.generateContinuationPage(characterName, userElements, difficulty, pages.length);
+      const continuationPage = this.generateContinuationPage(characterName, userElements, difficulty, pages.length, pronouns);
       pages.push(continuationPage);
     }
 
@@ -250,7 +267,8 @@ export class EarlyReaderStoryGenerator {
     characterName: string, 
     userElements: any, 
     difficulty: DifficultyLevel,
-    pageNumber: number
+    pageNumber: number,
+    pronouns: { subject: string, object: string, possessive: string }
   ): string {
     const { favoriteColor, favoriteAnimal, favoriteFood, hobbies } = userElements;
     const mainHobby = hobbies[0] || 'playing';
