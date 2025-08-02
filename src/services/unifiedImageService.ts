@@ -130,7 +130,7 @@ export class UnifiedImageService {
     const artStyle = this.getArtStyleForDifficulty(difficulty);
     
     // ENHANCED PROMPT ENGINEERING based on user reference images
-    let prompt = `A beautiful children's book illustration depicting the scene where `;
+    let prompt = `A beautiful children's book illustration showing the scene described in the story text but WITHOUT ANY TEXT, TITLES, OR WORDS VISIBLE. `;
     
     // Main subject: Always start with the character
     prompt += `${characterDesc} is featured in the story in the setting described in the story `;
@@ -138,6 +138,8 @@ export class UnifiedImageService {
     // Intelligent action + interaction analysis
     const sceneDescription = this.buildIntelligentScene(storyText, storyContext, character);
     prompt += `${sceneDescription} based on this story context: ${storyText.substring(0, 100)}... `;
+    
+    // Add explicit negative prompt elements inline
     
     // CRITICAL: Emphasize any specific colors mentioned in the story text for accuracy
     const criticalColors = this.extractCriticalColorDetails(storyText);
@@ -469,7 +471,10 @@ export class UnifiedImageService {
       'TEXT-FREE ARTWORK ONLY',
       'NO LARGE TITLE TEXT OR STORY TITLES',
       'NO BOOK TITLES OR CHAPTER HEADINGS VISIBLE',
-      'REMOVE ALL TEXT ELEMENTS FROM THE SCENE'
+      'REMOVE ALL TEXT ELEMENTS FROM THE SCENE',
+      'COMPLETELY TEXT-FREE IMAGE WITH NO CAPTIONS',
+      'NO SPEECH BUBBLES OR TEXT OVERLAYS OF ANY KIND',
+      'ILLUSTRATION ONLY WITHOUT ANY WRITTEN WORDS'
     ];
     
     return `${baseQuality.join(', ')}, ${noTextEnforcement.join(', ')}, realistic children's photography style with natural lighting, appealing to all children regardless of gender, diverse and inclusive, safe and wholesome content.`;
