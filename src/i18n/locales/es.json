@@ -392,6 +392,35 @@
       "medium": "2do - 3er Grado",
       "hard": "4to - 5to Grado",
       "expert": "6to Grado+"
-    }
+    },
+    "header": "Aventura de Lectura",
+    "endSession": "Terminar Sesión",
+    "nextPage": "Página Siguiente",
+    "prevPage": "Página Anterior",
+    "currentReading": "Nivel de Lectura Actual:",
+    "readingLevelHeader": "Nivel de Lectura",
+    "readingLevelDescription": "Esta historia está escrita a nivel {level}"
+  },
+  "sessionEnded": {
+    "completed": "¡Sesión de Lectura Completada!",
+    "premiumCompleted": "¡Sesión Premium Completada!",
+    "readingProgress": "Progreso de Lectura",
+    "of": "de",
+    "pages": "páginas",
+    "wordsRead": "Palabras Leídas",
+    "timeSpent": "Tiempo Empleado",
+    "accuracy": "Precisión",
+    "readingLevel": "Nivel de Lectura",
+    "level": "Nivel",
+    "unlockPremium": "¡Desbloquea Beneficios Premium!",
+    "premiumBenefits": {
+      "unlimitedSessions": "Sesiones de lectura ilimitadas",
+      "customDifficulty": "Ajuste personalizado de dificultad de historias",
+      "extendedLibrary": "Biblioteca extendida de historias con más temas",
+      "advancedTracking": "Seguimiento avanzado de progreso y análisis",
+      "upgradeToPremium": "Actualizar a Premium"
+    },
+    "goToHome": "Ir al Inicio",
+    "startNewStory": "Comenzar Nueva Historia"
   }
 }

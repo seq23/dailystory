@@ -447,6 +447,13 @@
     "previous": "← Previous",
     "next": "Next →",
     "addMorePages": "Add More Pages",
+    "header": "Reading Adventure",
+    "endSession": "End Session",
+    "nextPage": "Next Page",
+    "prevPage": "Previous Page",
+    "currentReading": "Current Reading Level:",
+    "readingLevelHeader": "Reading Level",
+    "readingLevelDescription": "This story is written at a {level} level",
     "encouragementMessages": {
       "outstanding": "Outstanding reading achievement! You're becoming a reading champion!",
       "excellent": "Excellent work! You're making great progress!",
@@ -459,5 +466,27 @@
       "hard": "4th - 5th Grade",
       "expert": "6th Grade+"
     }
+  },
+  "sessionEnded": {
+    "completed": "Reading Session Completed!",
+    "premiumCompleted": "Premium Session Completed!",
+    "readingProgress": "Reading Progress",
+    "of": "of",
+    "pages": "pages",
+    "wordsRead": "Words Read",
+    "timeSpent": "Time Spent",
+    "accuracy": "Accuracy",
+    "readingLevel": "Reading Level",
+    "level": "Level",
+    "unlockPremium": "Unlock Premium Benefits!",
+    "premiumBenefits": {
+      "unlimitedSessions": "Unlimited reading sessions",
+      "customDifficulty": "Custom story difficulty adjustment",
+      "extendedLibrary": "Extended story library with more topics",
+      "advancedTracking": "Advanced progress tracking & analytics",
+      "upgradeToPremium": "Upgrade to Premium"
+    },
+    "goToHome": "Go to Home",
+    "startNewStory": "Start New Story"
   }
 }

@@ -392,6 +392,35 @@
       "medium": "2ème - 3ème année",
       "hard": "4ème - 5ème année",
       "expert": "6ème année+"
-    }
+    },
+    "header": "Aventure de Lecture",
+    "endSession": "Terminer la Session",
+    "nextPage": "Page Suivante",
+    "prevPage": "Page Précédente",
+    "currentReading": "Niveau de Lecture Actuel:",
+    "readingLevelHeader": "Niveau de Lecture",
+    "readingLevelDescription": "Cette histoire est écrite au niveau {level}"
+  },
+  "sessionEnded": {
+    "completed": "Session de Lecture Terminée!",
+    "premiumCompleted": "Session Premium Terminée!",
+    "readingProgress": "Progrès de Lecture",
+    "of": "de",
+    "pages": "pages",
+    "wordsRead": "Mots Lus",
+    "timeSpent": "Temps Passé",
+    "accuracy": "Précision",
+    "readingLevel": "Niveau de Lecture",
+    "level": "Niveau",
+    "unlockPremium": "Débloquez les Avantages Premium!",
+    "premiumBenefits": {
+      "unlimitedSessions": "Sessions de lecture illimitées",
+      "customDifficulty": "Ajustement personnalisé de la difficulté des histoires",
+      "extendedLibrary": "Bibliothèque d'histoires étendue avec plus de sujets",
+      "advancedTracking": "Suivi avancé des progrès et analyses",
+      "upgradeToPremium": "Passer à Premium"
+    },
+    "goToHome": "Aller à l'Accueil",
+    "startNewStory": "Commencer une Nouvelle Histoire"
   }
 }
