@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Play, Square, Crown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { UserInfo } from "@/types";
 
 interface ElevenLabsAudioProps {
@@ -27,9 +28,11 @@ export const ElevenLabsAudio = ({
   isExtendedPage = false 
 }: ElevenLabsAudioProps) => {
   const { t } = useTranslation();
+  const { isMobileDevice, isCapacitor } = useIsMobile();
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [playedPages, setPlayedPages] = useState<Set<number>>(new Set()); // Track which pages have been played
+  const [audioInitialized, setAudioInitialized] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const { toast } = useToast();
 
@@ -38,6 +41,33 @@ export const ElevenLabsAudio = ({
   const hasPlayedCurrentPage = playedPages.has(currentPage);
   const isWithinFreeLimit = currentPage < maxFreePages;
   const canUseAudio = isPremium || (!hasPlayedCurrentPage && isWithinFreeLimit && !isExtendedPage);
+
+  // Mobile audio initialization - required for iOS/Android
+  const initializeMobileAudio = async () => {
+    if (audioInitialized || !isMobileDevice) return;
+    
+    try {
+      // Create a silent audio element to unlock audio context on mobile
+      const audio = new Audio();
+      audio.preload = 'metadata';
+      // Use a small silent audio data URL to avoid network requests
+      audio.src = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMeBS113+TQeCkELI7L7tmNQAgMW7Dn7adTEw1GnN/y';
+      
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        await playPromise.catch(() => {}); // Ignore errors for silent audio
+      }
+      
+      audio.pause();
+      audio.currentTime = 0;
+      
+      setAudioInitialized(true);
+    } catch (error) {
+      console.log('Mobile audio initialization optional step failed:', error);
+      // Not critical, continue anyway
+      setAudioInitialized(true);
+    }
+  };
 
   const playAudio = async () => {
     if (!canUseAudio) {
@@ -52,6 +82,11 @@ export const ElevenLabsAudio = ({
         onUpgrade?.();
       }
       return;
+    }
+
+    // Initialize mobile audio if needed
+    if (isMobileDevice && !audioInitialized) {
+      await initializeMobileAudio();
     }
 
     setIsLoading(true);
@@ -81,10 +116,35 @@ export const ElevenLabsAudio = ({
         audioRef.current.pause();
       }
       
+      // Enhanced mobile audio handling
       audioRef.current = new Audio(audioUrl);
+      
+      // Mobile-specific audio configuration
+      if (isMobileDevice) {
+        audioRef.current.preload = 'metadata';
+        // Ensure audio is ready for mobile playback
+        await new Promise((resolve) => {
+          if (audioRef.current) {
+            audioRef.current.addEventListener('canplaythrough', resolve, { once: true });
+            audioRef.current.load();
+          }
+        });
+      }
+      
       audioRef.current.onended = () => {
         setIsPlaying(false);
         URL.revokeObjectURL(audioUrl);
+      };
+      
+      // Enhanced error handling for mobile
+      audioRef.current.onerror = () => {
+        setIsPlaying(false);
+        URL.revokeObjectURL(audioUrl);
+        toast({
+          title: "Audio Error",
+          description: isMobileDevice ? "Audio playback failed. Please try again or check your device settings." : "Could not play audio. Please try again.",
+          variant: "destructive",
+        });
       };
       
       await audioRef.current.play();
@@ -99,7 +159,9 @@ export const ElevenLabsAudio = ({
       console.error('Audio playback error:', error);
       toast({
         title: "Audio Error",
-        description: "Could not play audio. Please try again.",
+        description: isMobileDevice ? 
+          "Could not play audio. On mobile devices, ensure sound is enabled and try again." : 
+          "Could not play audio. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -153,13 +215,13 @@ export const ElevenLabsAudio = ({
   }, []);
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 flex-wrap">
       <Button
         onClick={isPlaying ? stopAudio : playAudio}
         disabled={isLoading || (!canUseAudio && !isPremium)}
         variant="outline"
-        size="sm"
-        className="gap-2"
+        size={isMobileDevice ? "default" : "sm"}
+        className={`gap-2 ${isMobileDevice ? 'min-h-[44px] px-4' : ''}`} // iOS/Android touch target size
       >
         {isLoading ? (
           <div className="w-4 h-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -172,12 +234,17 @@ export const ElevenLabsAudio = ({
       </Button>
 
       {!isPremium && (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {!canUseAudio && (
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button onClick={onUpgrade} variant="outline" size="sm">
+                  <Button 
+                    onClick={onUpgrade} 
+                    variant="outline" 
+                    size={isMobileDevice ? "default" : "sm"}
+                    className={isMobileDevice ? 'min-h-[44px] px-4' : ''}
+                  >
                     {t("audioReading.upgrade", "Upgrade")}
                   </Button>
                 </TooltipTrigger>

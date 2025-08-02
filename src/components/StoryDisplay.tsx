@@ -910,7 +910,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                 </div>
 
                 {/* Audio Controls Section - Using ElevenLabs TTS */}
-                <div className="flex-shrink-0 p-6 border-t border-gray-100 audio-controls">
+                <div className="flex-shrink-0 p-3 sm:p-4 lg:p-6 border-t border-gray-100 audio-controls">
                   <ElevenLabsAudio 
                     text={currentStory}
                     userInfo={userInfo}

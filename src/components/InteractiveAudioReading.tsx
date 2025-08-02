@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Play } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 import type { UserInfo } from '@/types';
 
 interface InteractiveAudioReadingProps {
@@ -18,11 +19,13 @@ export const InteractiveAudioReading = ({
   isEnabled 
 }: InteractiveAudioReadingProps) => {
   const { t } = useTranslation();
+  const { isMobileDevice } = useIsMobile();
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentWordIndex, setCurrentWordIndex] = useState(-1);
   const [words, setWords] = useState<string[]>([]);
   const [audioSpeed, setAudioSpeed] = useState(userInfo.nativeLanguage === 'en' ? 1.0 : 0.8);
   const [hasPlayedAudio, setHasPlayedAudio] = useState(false);
+  const [audioInitialized, setAudioInitialized] = useState(false);
   
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -60,8 +63,29 @@ export const InteractiveAudioReading = ({
     setWords(textWords);
   }, [text]);
 
+  // Mobile audio initialization
+  const initializeMobileAudio = async () => {
+    if (audioInitialized || !isMobileDevice) return;
+    
+    try {
+      const audio = new Audio();
+      audio.src = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMeBS113+TQeCkELI7L7tmNQAgMW7Dn7adTEw1GnN/y';
+      await audio.play().catch(() => {});
+      audio.pause();
+      setAudioInitialized(true);
+    } catch (error) {
+      console.log('Mobile audio init failed:', error);
+      setAudioInitialized(true);
+    }
+  };
+
   const startReading = async () => {
     if (!isEnabled || isPlaying || hasPlayedAudio) return;
+    
+    // Initialize mobile audio if needed
+    if (isMobileDevice && !audioInitialized) {
+      await initializeMobileAudio();
+    }
     
     try {
       setIsPlaying(true);
@@ -97,6 +121,18 @@ export const InteractiveAudioReading = ({
         }
         
         audioRef.current = new Audio(audioUrl);
+        
+        // Mobile-specific audio setup
+        if (isMobileDevice) {
+          audioRef.current.preload = 'metadata';
+          await new Promise((resolve) => {
+            if (audioRef.current) {
+              audioRef.current.addEventListener('canplaythrough', resolve, { once: true });
+              audioRef.current.load();
+            }
+          });
+        }
+        
         audioRef.current.onended = () => {
           setIsPlaying(false);
           setCurrentWordIndex(-1);
@@ -211,10 +247,10 @@ export const InteractiveAudioReading = ({
             onClick={startReading}
             disabled={isPlaying || hasPlayedAudio}
             variant="outline"
-            size="sm"
+            size={isMobileDevice ? "default" : "sm"}
             className={`rounded-full hover:bg-blue-100 transition-colors ${
               hasPlayedAudio ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
+            } ${isMobileDevice ? 'min-h-[44px] px-4' : ''}`} // Mobile touch target
           >
             <Play className="w-4 h-4" />
           </Button>
@@ -235,29 +271,29 @@ export const InteractiveAudioReading = ({
       </div>
 
       {/* Speed controls */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 flex-wrap justify-center">
         <span className="text-xs text-gray-600 mr-2">{t("audioReading.speed", "Speed")}:</span>
         <Button
           onClick={() => adjustSpeed(0.5)}
           variant="ghost"
-          size="sm"
-          className={`text-xs ${audioSpeed === 0.5 ? 'bg-blue-100' : ''}`}
+          size={isMobileDevice ? "default" : "sm"}
+          className={`text-xs ${audioSpeed === 0.5 ? 'bg-blue-100' : ''} ${isMobileDevice ? 'min-h-[36px] px-3' : ''}`}
         >
           0.5x
         </Button>
         <Button
           onClick={() => adjustSpeed(0.8)}
           variant="ghost"
-          size="sm"
-          className={`text-xs ${audioSpeed === 0.8 ? 'bg-blue-100' : ''}`}
+          size={isMobileDevice ? "default" : "sm"}
+          className={`text-xs ${audioSpeed === 0.8 ? 'bg-blue-100' : ''} ${isMobileDevice ? 'min-h-[36px] px-3' : ''}`}
         >
           0.8x
         </Button>
         <Button
           onClick={() => adjustSpeed(1.0)}
           variant="ghost"
-          size="sm"
-          className={`text-xs ${audioSpeed === 1.0 ? 'bg-blue-100' : ''}`}
+          size={isMobileDevice ? "default" : "sm"}
+          className={`text-xs ${audioSpeed === 1.0 ? 'bg-blue-100' : ''} ${isMobileDevice ? 'min-h-[36px] px-3' : ''}`}
         >
           1x
         </Button>
