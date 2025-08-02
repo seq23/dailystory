@@ -33,20 +33,29 @@ export const InteractiveWord = ({
   
   // FIXED: Use user's native language for button text translation
   const userLanguageT = (key: string, fallback: string) => {
-    console.log('🌐 Translation Debug:', {
-      key,
-      userNativeLanguage: userInfo?.nativeLanguage,
-      currentI18nLanguage: i18n.language,
-      fallback
-    });
-    
-    if (userInfo?.nativeLanguage && userInfo.nativeLanguage !== 'en') {
-      // Try to get translation in user's native language
-      const translation = t(key, { lng: userInfo.nativeLanguage });
-      console.log('🗣️ Got translation:', { key, translation, language: userInfo.nativeLanguage });
-      return translation !== key ? translation : fallback; // Return fallback if translation key not found
+    try {
+      console.log('🌐 Translation Debug:', {
+        key,
+        userNativeLanguage: userInfo?.nativeLanguage,
+        currentI18nLanguage: i18n.language,
+        fallback
+      });
+      
+      if (userInfo?.nativeLanguage && userInfo.nativeLanguage !== 'en') {
+        // Change language temporarily to get the correct translation
+        const originalLang = i18n.language;
+        i18n.changeLanguage(userInfo.nativeLanguage);
+        const translation = t(key);
+        i18n.changeLanguage(originalLang); // Restore original language
+        
+        console.log('🗣️ Got translation:', { key, translation, language: userInfo.nativeLanguage });
+        return translation && translation !== key ? translation : fallback;
+      }
+      return t(key) || fallback;
+    } catch (error) {
+      console.error('Translation error:', error);
+      return fallback;
     }
-    return t(key) || fallback;
   };
   const [showTooltip, setShowTooltip] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -321,9 +330,9 @@ export const InteractiveWord = ({
         
         // Show fallback definition even if API fails
         const fallbackDefinition = getWordDefinition(cleanWord, sentenceContext);
-        setWordData({
-          definition: fallbackDefinition,
-          phonetic: getPhoneticSpelling(cleanWord),
+         setWordData({
+           definition: fallbackDefinition,
+           phonetic: getPhoneticSpelling(cleanWord),
            sampleSentence: `${userLanguageT('interactiveWord.example', 'Example')}: "${cleanWord}" in context.`
          });
          
