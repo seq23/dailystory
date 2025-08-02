@@ -422,11 +422,21 @@
     "addToVocabulary": "Guardar Palabra",
     "etymology": "Origen de la Palabra",
     "translationError": "Traducción no disponible",
+    "audioUnavailable": "Audio no disponible",
+    "definitionShown": "Definición mostrada abajo. Prueba con auriculares si es necesario.",
+    "audioNotSupported": "Audio no compatible con este dispositivo. Definición mostrada abajo.",
+    "touchToEnable": "Toca para Habilitar Audio",
+    "tapAgain": "Toca este botón otra vez para habilitar explicaciones de audio.",
+    "audioNotAvailable": "Audio No Disponible",
+    "tryHeadphones": "Prueba usar auriculares o habilitar permisos de audio.",
     "difficulty": {
       "beginner": "Fácil",
       "intermediate": "Medio",
       "advanced": "Difícil"
     }
+  },
+  "common": {
+    "close": "Cerrar"
   },
   "gamification": {
     "achievements": {

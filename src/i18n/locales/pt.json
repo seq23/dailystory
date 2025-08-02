@@ -255,6 +255,16 @@
     "synonym": "Sinônimo",
     "example": "Exemplo",
     "etymology": "Origem",
+    "loading": "Carregando...",
+    "addToVocabulary": "Salvar Palavra",
+    "translationError": "Tradução não disponível",
+    "audioUnavailable": "Áudio indisponível",
+    "definitionShown": "Definição mostrada abaixo. Tente com fones de ouvido se necessário.",
+    "audioNotSupported": "Áudio não suportado neste dispositivo. Definição mostrada abaixo.",
+    "touchToEnable": "Toque para Habilitar Áudio",
+    "tapAgain": "Toque neste botão novamente para habilitar explicações em áudio.",
+    "audioNotAvailable": "Áudio Não Disponível",
+    "tryHeadphones": "Tente usar fones de ouvido ou habilitar permissões de áudio.",
     "difficulty": {
       "beginner": "Iniciante",
       "intermediate": "Intermediário",
@@ -586,6 +596,9 @@
     "currentReading": "Nível de Leitura Atual:",
     "readingLevelHeader": "Nível de Leitura",
     "readingLevelDescription": "Esta história está escrita no nível {level}"
+  },
+  "common": {
+    "close": "Fechar"
   },
   "gamification": {
     "achievements": {

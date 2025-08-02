@@ -255,6 +255,16 @@
     "synonym": "समानार्थी",
     "example": "उदाहरण",
     "etymology": "मूल",
+    "loading": "लोड हो रहा है...",
+    "addToVocabulary": "शब्द सेव करें",
+    "translationError": "अनुवाद उपलब्ध नहीं",
+    "audioUnavailable": "ऑडियो उपलब्ध नहीं",
+    "definitionShown": "परिभाषा नीचे दिखाई गई है। यदि आवश्यक हो तो हेडफ़ोन का उपयोग करें।",
+    "audioNotSupported": "इस डिवाइस पर ऑडियो समर्थित नहीं है। परिभाषा नीचे दिखाई गई है।",
+    "touchToEnable": "ऑडियो सक्षम करने के लिए स्पर्श करें",
+    "tapAgain": "ऑडियो स्पष्टीकरण सक्षम करने के लिए इस बटन को फिर से टैप करें।",
+    "audioNotAvailable": "ऑडियो उपलब्ध नहीं",
+    "tryHeadphones": "हेडफ़ोन का उपयोग करने या ऑडियो अनुमतियाँ सक्षम करने का प्रयास करें।",
     "difficulty": {
       "beginner": "शुरुआती",
       "intermediate": "मध्यम",
@@ -586,6 +596,9 @@
     "currentReading": "वर्तमान पठन स्तर:",
     "readingLevelHeader": "पठन स्तर",
     "readingLevelDescription": "यह कहानी {level} स्तर पर लिखी गई है"
+  },
+  "common": {
+    "close": "बंद करें"
   },
   "gamification": {
     "achievements": {

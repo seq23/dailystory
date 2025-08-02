@@ -180,19 +180,15 @@ export const InteractiveWord = ({
     
     try {
       const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
-      console.log('Explaining word:', cleanWord, 'TTS service available:', !!ttsService);
-      
-      console.log('InteractiveWord Debug:', {
-        isNativeEnglishSpeaker,
-        userNativeLanguage,
-        userInfo: userInfo ? {
-          name: userInfo.name,
-          nativeLanguage: userInfo.nativeLanguage
-        } : 'No userInfo'
+      console.log('Mobile Explain Debug:', {
+        cleanWord, 
+        userNativeLanguage, 
+        isESLLearner, 
+        difficulty,
+        isMobile: /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
       });
       
       // Get word data from dictionary in user's native language
-      console.log(`Calling word-dictionary for: ${cleanWord} userLevel: ${difficulty} language: ${userNativeLanguage}`);
       const { data: wordData, error: wordError } = await supabase.functions.invoke('word-dictionary', {
         body: { 
           word: cleanWord, 
@@ -201,28 +197,38 @@ export const InteractiveWord = ({
         }
       });
       
-      console.log('Dictionary response:', { data: wordData, error: wordError });
+      console.log('Mobile Dictionary Response:', { data: wordData, error: wordError });
       
       if (!wordError && wordData) {
         setWordData(wordData);
         
-        // Show definition toast for non-English speakers
-        if (!isNativeEnglishSpeaker && userNativeLanguage !== 'en') {
+        // Mobile-specific: Show translated explanation for all non-English speakers
+        if (userNativeLanguage !== 'en') {
+          const mobileToastTitle = userNativeLanguage === 'es' ? 'Definición' :
+                                 userNativeLanguage === 'fr' ? 'Définition' :
+                                 userNativeLanguage === 'zh' ? '定义' :
+                                 userNativeLanguage === 'ar' ? 'تعريف' :
+                                 userNativeLanguage === 'hi' ? 'परिभाषा' :
+                                 userNativeLanguage === 'pt' ? 'Definição' :
+                                 'Definition';
+          
           toast({
-            title: `Definition (${userNativeLanguage.toUpperCase()})`,
+            title: mobileToastTitle,
             description: `"${cleanWord}" = ${wordData.definition}`,
-            duration: 4000,
+            duration: 5000,
           });
         }
         
-        // Create explanation text for TTS in user's native language
-        const explanation = `The word ${cleanWord} is pronounced ${wordData.phonetic}. ${wordData.definition}. Here's an example: ${wordData.sampleSentence}`;
+        // Create multilingual explanation for mobile TTS
+        const explanation = userNativeLanguage !== 'en' && wordData.explanation 
+          ? wordData.explanation // Use localized explanation from dictionary service
+          : `The word ${cleanWord} is pronounced ${wordData.phonetic}. ${wordData.definition}. Here's an example: ${wordData.sampleSentence}`;
         
-        // Always try Web Speech API first on mobile for better reliability
+        // Mobile optimized: Always prefer Web Speech API for better mobile compatibility
         const isMobile = /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         
         if (isMobile || !ttsService) {
-          console.log('Using Web Speech API fallback');
+          console.log('Using Web Speech API for mobile:', { userNativeLanguage, explanation: explanation.substring(0, 50) + '...' });
           
           if ('speechSynthesis' in window) {
             // Cancel any existing speech
@@ -234,11 +240,22 @@ export const InteractiveWord = ({
             utterance.pitch = 1.0;
             utterance.volume = 1.0;
             
+            // Try to set voice for user's language
+            const voices = speechSynthesis.getVoices();
+            const languageVoice = voices.find(voice => 
+              voice.lang.startsWith(userNativeLanguage) || 
+              voice.lang.includes(userNativeLanguage)
+            );
+            if (languageVoice) {
+              utterance.voice = languageVoice;
+              console.log('Set mobile voice for language:', userNativeLanguage, languageVoice.name);
+            }
+            
             utterance.onerror = (error) => {
               console.error('Speech synthesis error:', error);
               toast({
-                title: "Audio unavailable", 
-                description: "Definition shown below. Try with headphones if needed.",
+                title: t("interactiveWord.audioUnavailable", "Audio unavailable"), 
+                description: t("interactiveWord.definitionShown", "Definition shown below. Try with headphones if needed."),
                 duration: 3000,
               });
               setIsPlaying(false);
@@ -253,8 +270,8 @@ export const InteractiveWord = ({
           } else {
             console.log('Speech synthesis not available');
             toast({
-              title: "Audio unavailable", 
-              description: "Audio not supported on this device. Definition shown below.",
+              title: t("interactiveWord.audioUnavailable", "Audio unavailable"), 
+              description: t("interactiveWord.audioNotSupported", "Audio not supported on this device. Definition shown below."),
               duration: 3000,
             });
             setIsPlaying(false);
@@ -278,17 +295,17 @@ export const InteractiveWord = ({
     } catch (error) {
       console.error('Error explaining word:', error);
       
-      // Enhanced mobile error handling
+      // Enhanced mobile error handling with translations
       if (error.message?.includes('not allowed') || error.message?.includes('permission') || error.message?.includes('gesture')) {
         toast({
-          title: "Touch to Enable Audio",
-          description: "Tap this button again to enable audio explanations.",
+          title: t("interactiveWord.touchToEnable", "Touch to Enable Audio"),
+          description: t("interactiveWord.tapAgain", "Tap this button again to enable audio explanations."),
           duration: 4000,
         });
       } else {
         toast({
-          title: "Audio Not Available",
-          description: "Try using headphones or enabling audio permissions.",
+          title: t("interactiveWord.audioNotAvailable", "Audio Not Available"),
+          description: t("interactiveWord.tryHeadphones", "Try using headphones or enabling audio permissions."),
           duration: 3000,
         });
       }
@@ -720,8 +737,10 @@ export const InteractiveWord = ({
    );
 };
 
-// Add mobile-specific optimizations for native apps
+// Add mobile-specific optimizations for native apps with enhanced translation debugging
 const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
+  const { t, i18n } = useTranslation();
+  
   // Detect if we're running in Capacitor (native mobile app)
   const isNativeApp = typeof window !== 'undefined' && 
     (window as any).Capacitor?.isNativePlatform?.();
@@ -731,6 +750,17 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
     (/Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
      window.matchMedia('(max-width: 768px)').matches ||
      isNativeApp);
+
+  // Mobile translation debugging
+  if (isMobileDevice) {
+    console.log('Mobile Translation Debug:', {
+      word: props.word,
+      userNativeLanguage: props.userInfo?.nativeLanguage,
+      currentLanguage: i18n.language,
+      explainButtonText: t("interactiveWord.explain"),
+      isESL: props.userInfo?.nativeLanguage !== 'en'
+    });
+  }
 
   // Apply mobile-specific optimizations
   const optimizedProps = {

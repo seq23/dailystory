@@ -956,37 +956,40 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                           <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
                         </Button>
                         
-                         {/* Alert Tooltip with X button */}
+                         {/* Alert Tooltip with X button - Mobile Optimized */}
                          {showAddPagesAlert && (
-                           <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-amber-600 text-white px-2 py-1 rounded text-xs whitespace-nowrap z-50 animate-pulse">
+                           <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-amber-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-[60] animate-pulse shadow-lg max-w-[90vw] min-w-[200px]">
                              <div className="flex items-center gap-2">
-                               <span>{t("storyDisplay.addPagesAlert")}</span>
+                               <span className="font-medium">{t("storyDisplay.addPagesAlert")}</span>
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setShowAddPagesAlert(false);
                                 }}
-                                className="text-white hover:text-amber-200 transition-colors"
+                                className="text-white hover:text-amber-200 transition-colors p-1 -m-1"
+                                aria-label={t("common.close", "Close")}
                               >
-                                <X className="w-3 h-3" />
+                                <X className="w-4 h-4" />
                               </button>
                             </div>
                             {/* Arrow pointing down */}
-                            <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-l-2 border-r-2 border-t-4 border-transparent border-t-amber-600"></div>
+                            <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-l-4 border-r-4 border-t-6 border-transparent border-t-amber-600"></div>
                           </div>
                         )}
                         
-                         {/* Regular Tooltip */}
+                         {/* Regular Tooltip - Mobile Optimized */}
                          {!showAddPagesAlert && canAddMorePages && (
-                           <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 rounded text-xs transition-all duration-300 pointer-events-none whitespace-nowrap z-50 bg-gray-800 text-white opacity-0 group-hover:opacity-100">
+                           <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 rounded-lg text-sm transition-all duration-300 pointer-events-none whitespace-nowrap z-[55] bg-gray-800 text-white opacity-0 group-hover:opacity-100 shadow-lg max-w-[90vw]">
                              {t("storyDisplay.addPagesTooltip")}
+                             <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-l-2 border-r-2 border-t-4 border-transparent border-t-gray-800"></div>
                            </div>
                          )}
                          
-                         {/* Disabled state tooltip */}
+                         {/* Disabled state tooltip - Mobile Optimized */}
                          {!canAddMorePages && (
-                           <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 rounded text-xs transition-all duration-300 pointer-events-none whitespace-nowrap z-50 bg-gray-800 text-white opacity-0 group-hover:opacity-100">
+                           <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 rounded-lg text-sm transition-all duration-300 pointer-events-none whitespace-nowrap z-[55] bg-gray-800 text-white opacity-0 group-hover:opacity-100 shadow-lg max-w-[90vw]">
                              {t("storyDisplay.addPagesDisabled")}
+                             <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-l-2 border-r-2 border-t-4 border-transparent border-t-gray-800"></div>
                            </div>
                          )}
                       </div>

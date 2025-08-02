@@ -246,6 +246,16 @@
     "synonym": "مرادف",
     "example": "مثال",
     "etymology": "الأصل",
+    "loading": "جارٍ التحميل...",
+    "addToVocabulary": "حفظ الكلمة",
+    "translationError": "الترجمة غير متاحة",
+    "audioUnavailable": "الصوت غير متاح",
+    "definitionShown": "التعريف معروض أدناه. جرب استخدام سماعات الأذن إذا لزم الأمر.",
+    "audioNotSupported": "الصوت غير مدعوم على هذا الجهاز. التعريف معروض أدناه.",
+    "touchToEnable": "المس لتفعيل الصوت",
+    "tapAgain": "اضغط على هذا الزر مرة أخرى لتفعيل شرح الصوت.",
+    "audioNotAvailable": "الصوت غير متاح",
+    "tryHeadphones": "جرب استخدام سماعات الأذن أو تفعيل أذونات الصوت.",
     "difficulty": {
       "beginner": "مبتدئ",
       "intermediate": "متوسط",
@@ -571,6 +581,9 @@
     "currentReading": "مستوى القراءة الحالي:",
     "readingLevelHeader": "مستوى القراءة",
     "readingLevelDescription": "هذه القصة مكتوبة على مستوى {level}"
+  },
+  "common": {
+    "close": "إغلاق"
   },
   "gamification": {
     "achievements": {

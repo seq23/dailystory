@@ -255,6 +255,16 @@
     "synonym": "同义词",
     "example": "例子",
     "etymology": "词源",
+    "loading": "加载中...",
+    "addToVocabulary": "保存单词",
+    "translationError": "翻译不可用",
+    "audioUnavailable": "音频不可用",
+    "definitionShown": "定义显示在下方。如需要请尝试使用耳机。",
+    "audioNotSupported": "此设备不支持音频。定义显示在下方。",
+    "touchToEnable": "触摸启用音频",
+    "tapAgain": "再次点击此按钮以启用音频解释。",
+    "audioNotAvailable": "音频不可用",
+    "tryHeadphones": "请尝试使用耳机或启用音频权限。",
     "difficulty": {
       "beginner": "初学者",
       "intermediate": "中级",
@@ -580,6 +590,9 @@
     },
     "goToHome": "回到首页",
     "startNewStory": "开始新故事"
+  },
+  "common": {
+    "close": "关闭"
   },
   "gamification": {
     "achievements": {
