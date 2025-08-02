@@ -31,40 +31,26 @@ export const InteractiveWord = ({
   const { toast } = useToast();
   const { isMobileDevice, isCapacitor } = useIsMobile();
   
-  // FIXED: Simple and reliable translation helper for user's native language
+  // SIMPLIFIED: Safe translation helper with error protection
   const userLanguageT = (key: string, fallback: string) => {
-    console.log('🌐 Translation Debug:', {
-      key,
-      userNativeLanguage: userInfo?.nativeLanguage,
-      currentI18nLanguage: i18n.language,
-      fallback,
-      resourcesAvailable: i18n.hasResourceBundle(userInfo?.nativeLanguage || 'en', 'translation')
-    });
-    
-    if (userInfo?.nativeLanguage && userInfo.nativeLanguage !== 'en') {
-      try {
-        // Use direct resource access - more reliable
-        const targetLanguage = userInfo.nativeLanguage;
-        if (i18n.hasResourceBundle(targetLanguage, 'translation')) {
-          const translation = i18n.t(key, { lng: targetLanguage });
-          console.log('🗣️ Got translation result:', { 
-            key, 
-            translation, 
-            language: targetLanguage,
-            fallbackUsed: translation === key
-          });
-          // If translation equals key, that means no translation was found
-          return translation !== key ? translation : fallback;
-        } else {
-          console.warn('⚠️ No resource bundle for language:', targetLanguage);
-          return fallback;
-        }
-      } catch (error) {
-        console.error('❌ Translation error:', error);
-        return fallback;
+    try {
+      console.log('🌐 Translation Debug:', {
+        key,
+        userNativeLanguage: userInfo?.nativeLanguage,
+        fallback
+      });
+      
+      if (userInfo?.nativeLanguage && userInfo.nativeLanguage !== 'en') {
+        // Simple fallback approach to prevent crashes
+        const translation = t(key, { lng: userInfo.nativeLanguage });
+        console.log('🗣️ Translation result:', { key, translation, language: userInfo.nativeLanguage });
+        return translation || fallback;
       }
+      return t(key) || fallback;
+    } catch (error) {
+      console.error('❌ Translation error (safe fallback):', error);
+      return fallback; // Always return fallback on error
     }
-    return t(key) || fallback;
   };
   const [showTooltip, setShowTooltip] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -211,13 +197,11 @@ export const InteractiveWord = ({
     e.stopPropagation();
     if (isPlaying || isLoadingWordData) return;
     
-    // Enhanced mobile debugging
-    console.log('Mobile Explain Debug:', {
-      word: word.replace(/[.,!?;:'"()]/g, ''),
+    console.log('🔍 EXPLAIN CLICKED - Debug info:', {
+      word,
       userNativeLanguage,
       difficulty,
       isMobileDevice,
-      isCapacitor,
       touchEvent: e.type === 'touchstart'
     });
     
@@ -227,150 +211,59 @@ export const InteractiveWord = ({
     try {
       const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
       
-      // Get word data from dictionary in user's native language with retry logic
-      const { data: wordData, error: wordError } = await supabase.functions.invoke('word-dictionary', {
-        body: { 
-          word: cleanWord, 
-          userLevel: difficulty,
-          userLanguage: userNativeLanguage
-        }
+      // Simple fallback definition first
+      const fallbackDefinition = getWordDefinition(cleanWord, sentenceContext);
+      
+      console.log('📝 Using fallback definition:', fallbackDefinition);
+      
+      // Show definition immediately
+      toast({
+        title: userLanguageT('interactiveWord.definition', 'Definition'),
+        description: `"${cleanWord}" = ${fallbackDefinition}`,
+        duration: 5000,
       });
       
-      console.log('🚨 CRITICAL DEBUG - Word Dictionary Response:', { wordData, wordError });
-      
-      if (!wordError && wordData) {
-        setWordData(wordData);
-        
-        // Show definition with translation fallback
-        const definition = wordData.definition || userLanguageT('interactiveWord.definition', 'Definition');
-        
-        // Always show toast notification
-        toast({
-          title: userLanguageT('interactiveWord.definition', 'Definition'),
-          description: `"${cleanWord}" = ${definition}`,
-          duration: 5000,
-        });
-        
-        console.log('🚨 BEFORE AUDIO: About to start speech synthesis');
-        
-        // ENHANCED: Ensure speech synthesis works on all browsers and mobile
-        console.log('🔊 AUDIO DEBUG - Starting speech synthesis:', { 
-          definition, 
-          userNativeLanguage,
-          isMobileDevice,
-          speechSynthesisSupported: 'speechSynthesis' in window,
-          voicesLoaded: speechSynthesis.getVoices().length > 0,
-          isESLLearner,
-          wordData: !!wordData
-        });
-        
-        // Enhanced speech function with mobile Safari compatibility
-        const speakDefinition = () => {
-          try {
-            speechSynthesis.cancel(); // Clear any existing speech
-            
-            const utterance = new SpeechSynthesisUtterance(definition);
-            utterance.rate = isESLLearner ? 0.6 : 0.7;
-            utterance.pitch = 1.0;
-            utterance.volume = 1.0;
-            
-            // Enhanced voice selection with debugging
-            const voices = speechSynthesis.getVoices();
-            console.log('🗣️ Available voices:', voices.map(v => ({ name: v.name, lang: v.lang, localService: v.localService })));
-            
-            if (userNativeLanguage !== 'en') {
-              const languagePrefix = userNativeLanguage.substring(0, 2);
-              const nativeVoice = voices.find(voice => 
-                voice.lang.toLowerCase().startsWith(languagePrefix.toLowerCase())
-              );
-              
-              if (nativeVoice) {
-                utterance.voice = nativeVoice;
-                utterance.lang = nativeVoice.lang;
-                console.log('✅ Selected native voice:', { name: nativeVoice.name, lang: nativeVoice.lang });
-              } else {
-                console.log('⚠️ No native voice found for:', languagePrefix);
-                // Fallback: try setting language without specific voice
-                utterance.lang = userNativeLanguage;
-              }
-            }
-            
-            utterance.onstart = () => {
-              console.log('🎵 Speech STARTED');
-              setIsPlaying(true);
-            };
-            utterance.onend = () => {
-              console.log('🔇 Speech ENDED');
-              setIsPlaying(false);
-            };
-            utterance.onerror = (event) => {
-              console.error('❌ Speech ERROR:', event.error, event);
-              setIsPlaying(false);
-            };
-            
-            console.log('🚀 Calling speechSynthesis.speak()');
-            speechSynthesis.speak(utterance);
-            
-          } catch (error) {
-            console.error('❌ Speech synthesis exception:', error);
-            setIsPlaying(false);
-          }
-        };
-        
-        // Handle voice loading for different browsers
-        if (speechSynthesis.getVoices().length === 0) {
-          console.log('⏳ Waiting for voices to load...');
-          speechSynthesis.addEventListener('voiceschanged', () => {
-            console.log('🔄 Voices loaded, attempting speech');
-            speakDefinition();
-          }, { once: true });
+      // Try audio with safety checks
+      if ('speechSynthesis' in window) {
+        try {
+          console.log('🎵 Starting simple speech synthesis');
+          const utterance = new SpeechSynthesisUtterance(fallbackDefinition);
+          utterance.rate = 0.7;
+          utterance.pitch = 1.0;
+          utterance.volume = 1.0;
           
-          // Timeout fallback
-          setTimeout(() => {
-            if (speechSynthesis.getVoices().length === 0) {
-              console.log('⚠️ Voices still not loaded, attempting anyway');
-              speakDefinition();
-            }
-          }, 1000);
-        } else {
-          speakDefinition();
+          utterance.onstart = () => {
+            console.log('✅ Speech started');
+            setIsPlaying(true);
+          };
+          utterance.onend = () => {
+            console.log('✅ Speech ended');
+            setIsPlaying(false);
+          };
+          utterance.onerror = (event) => {
+            console.error('❌ Speech error:', event);
+            setIsPlaying(false);
+          };
+          
+          speechSynthesis.speak(utterance);
+        } catch (audioError) {
+          console.error('❌ Audio error (safe fallback):', audioError);
+          setIsPlaying(false);
         }
-        
       } else {
-        console.error('Failed to get word data:', wordError);
-        
-        // Show fallback definition even if API fails
-        const fallbackDefinition = getWordDefinition(cleanWord, sentenceContext);
-         setWordData({
-           definition: fallbackDefinition,
-           phonetic: getPhoneticSpelling(cleanWord),
-           sampleSentence: `${userLanguageT('interactiveWord.example', 'Example')}: "${cleanWord}" in context.`
-         });
-         
-         toast({
-           title: userLanguageT('interactiveWord.definition', 'Definition'),
-           description: `"${cleanWord}" = ${fallbackDefinition}`,
-           duration: 5000,
-         });
+        console.warn('⚠️ Speech synthesis not supported');
+        setIsPlaying(false);
       }
+      
     } catch (error) {
-      console.error('Error explaining word:', error);
+      console.error('❌ Handle explain error (safe fallback):', error);
       
-       // Simple error handling with translation fallbacks
-       toast({
-         title: userLanguageT("interactiveWord.audioNotAvailable", "Audio Not Available"),
-         description: userLanguageT("interactiveWord.definitionShown", "Definition shown below. Try with headphones if needed."),
-         duration: 3000,
-       });
-      
-      // Always show word data even if audio fails
-      const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
-      const definition = getWordDefinition(cleanWord, sentenceContext);
-      setWordData({
-        definition,
-        phonetic: getPhoneticSpelling(cleanWord),
-         sampleSentence: `${userLanguageT('interactiveWord.example', 'Example')}: "${cleanWord}" in context.`
-       });
+      // Always show fallback toast even on error
+      toast({
+        title: userLanguageT("interactiveWord.definition", "Definition"),
+        description: `"${word.replace(/[.,!?;:'"()]/g, '')}" = ${getWordDefinition(word.replace(/[.,!?;:'"()]/g, ''), sentenceContext)}`,
+        duration: 3000,
+      });
     } finally {
       setIsLoadingWordData(false);
       setIsPlaying(false);
