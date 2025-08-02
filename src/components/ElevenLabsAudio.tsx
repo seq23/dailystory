@@ -42,7 +42,7 @@ export const ElevenLabsAudio = ({ text, userInfo, isPremium = false, onUpgrade }
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          text: text.slice(0, 500), // Limit text for free users
+          text: isPremium ? text.slice(0, 1000) : text.slice(0, 500), // Premium users get longer text
           voice: getVoiceForUser(userInfo),
           model: "eleven_multilingual_v2"
         })
