@@ -242,7 +242,7 @@ export const FloatingTimer = ({
               </div>
               {timeRemaining >= 20 * 60 && (
                 <div className="text-xs sm:text-sm text-muted-foreground font-medium mt-1">
-                  {t("floatingTimer.maxLimit")}
+                  Max Limit
                 </div>
               )}
               <div className="text-xs sm:text-sm text-muted-foreground font-medium">
