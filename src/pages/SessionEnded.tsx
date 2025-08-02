@@ -28,8 +28,14 @@ const SessionEnded = ({ onHome, onNewStory, isPremium = false, onUpgrade }: Sess
 
   // Ensure language is properly loaded from localStorage on component mount
   React.useEffect(() => {
+    console.log('SessionEnded: Current language:', i18n.language);
+    console.log('SessionEnded: Available languages:', Object.keys(i18n.options.resources || {}));
+    
     const savedLanguage = localStorage.getItem('i18nextLng');
-    if (savedLanguage && savedLanguage !== i18n.language) {
+    console.log('SessionEnded: Saved language in localStorage:', savedLanguage);
+    
+    if (savedLanguage && savedLanguage !== i18n.language && savedLanguage !== 'en-US') {
+      console.log('SessionEnded: Changing language to:', savedLanguage);
       i18n.changeLanguage(savedLanguage);
     }
   }, [i18n]);

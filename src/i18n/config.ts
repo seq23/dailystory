@@ -26,9 +26,9 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: 'en', // Always start with English
+    // Don't force English - let detection work
     fallbackLng: 'en',
-    debug: false,
+    debug: true, // Enable debug to see what's happening
     interpolation: {
       escapeValue: false,
     },
