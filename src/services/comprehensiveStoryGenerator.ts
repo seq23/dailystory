@@ -149,49 +149,42 @@ export class ComprehensiveStoryGenerator {
     }
   }
   
-  // Mo Willems/Eric Carle inspired - Simple, repetitive, joyful
+  // Ages 3-6 appropriate - Very simple words and concepts
   private static createEasyAuthorStyle(
     name: string, 
     userElements: any,
     culturalElements: any,
     tracker: StoryElementTracker
   ): string {
-    const setting = culturalElements.setting || 'garden';
-    const animals = userElements.favoriteAnimals;
-    const colors = userElements.favoriteColors;
-    const foods = userElements.favoriteFoods;
-    const hobbies = userElements.hobbies;
+    // Simple 3-6 year old vocabulary only
+    const simpleAnimals = this.simplifyAnimalsForAge3to6(userElements.favoriteAnimals);
+    const simpleColors = this.simplifyColorsForAge3to6(userElements.favoriteColors);
+    const simpleFoods = this.simplifyFoodsForAge3to6(userElements.favoriteFoods);
+    const simpleActions = this.simplifyActionsForAge3to6(userElements.hobbies);
     
-    // Intelligent narrative weaving - create story variations based on content
+    // Very simple story patterns for ages 3-6
     const storyVariations = [
-      // Discovery story - animal appears during activity  
+      // Basic "see and play" story  
       () => {
-        const hobby = this.selectRandomElement(hobbies);
-        const animal = this.selectRandomElement(animals);
-        const color = this.selectRandomElement(colors);
-        return `${name} was ${hobby} in the ${setting}. Something ${color} caught ${name}'s eye. It was ${this.getAnimalForStory(animal, 'with-article')}! The ${this.getSingularForm(animal)} looked friendly. ${name} and the ${this.getSingularForm(animal)} became best friends. They played together every day. What a wonderful friendship!`;
+        const animal = this.selectRandomElement(simpleAnimals);
+        const color = this.selectRandomElement(simpleColors);
+        return `${name} sees ${this.getSimpleAnimal(animal)}. The ${animal} is ${color}. ${name} says "Hi ${animal}!" The ${animal} is happy. They play together. ${name} likes the ${animal}. The end.`;
       },
       
-      // Adventure story - multiple elements woven naturally
+      // Simple food sharing story
       () => {
-        const animal1 = this.selectRandomElement(animals);
-        const animal2 = animals.length > 1 ? this.selectDifferentElement(animals, animal1) : null;
-        const food = this.selectRandomElement(foods);
-        const color = this.selectRandomElement(colors);
-        
-        if (animal2) {
-          return `${name} packed some ${food} for a picnic. While walking through the ${setting}, ${name} heard a sound. ${this.getAnimalForStory(animal1, 'with-article').charAt(0).toUpperCase() + this.getAnimalForStory(animal1, 'with-article').slice(1)} was playing with ${this.getAnimalForStory(animal2, 'with-article')}! They were both ${color} and beautiful. ${name} shared the ${food} with the new friends. They all had the best day ever!`;
-        } else {
-          return `${name} was looking for ${this.getAnimalForStory(animal1, 'with-article')} in the ${setting}. The ${this.getSingularForm(animal1)} was hiding behind a ${color} tree! ${name} brought some ${food} to share. They became great friends and had many adventures together.`;
-        }
+        const animal = this.selectRandomElement(simpleAnimals);
+        const food = this.selectRandomElement(simpleFoods);
+        const color = this.selectRandomElement(simpleColors);
+        return `${name} has ${food}. ${name} sees ${this.getSimpleAnimal(animal)}. The ${animal} is ${color}. ${name} shares the ${food}. The ${animal} is happy. ${name} is happy too. Good friends!`;
       },
       
-      // Magical/surprise story 
+      // Basic action story
       () => {
-        const animal = this.selectRandomElement(animals);
-        const color = this.selectRandomElement(colors);
-        const hobby = this.selectRandomElement(hobbies);
-        return `${name} loved ${hobby} every morning. One day, something magical happened in the ${setting}. ${this.getAnimalForStory(animal, 'with-article').charAt(0).toUpperCase() + this.getAnimalForStory(animal, 'with-article').slice(1)} appeared, shining ${color}! The ${this.getSingularForm(animal)} could talk! "${name}, let's be friends!" said the ${this.getSingularForm(animal)}. From that day on, they went ${hobby} together. Magic was everywhere!`;
+        const animal = this.selectRandomElement(simpleAnimals);
+        const action = this.selectRandomElement(simpleActions);
+        const color = this.selectRandomElement(simpleColors);
+        return `${name} likes to ${action}. ${name} sees ${this.getSimpleAnimal(animal)}. The ${animal} is ${color}. They ${action} together. Fun! ${name} and ${animal} are friends. Happy day!`;
       }
     ];
     
@@ -364,6 +357,71 @@ export class ComprehensiveStoryGenerator {
     return selectedNarrative();
   }
   
+  // Age 3-6 vocabulary simplification methods
+  private static simplifyAnimalsForAge3to6(animals: string[]): string[] {
+    const simpleAnimals = ['cat', 'dog', 'bird', 'fish', 'bear', 'rabbit', 'frog', 'duck', 'cow', 'pig'];
+    return animals.map(animal => {
+      const simple = animal.toLowerCase().trim();
+      // Map complex animals to simple ones
+      if (simple.includes('kitten') || simple.includes('cat')) return 'cat';
+      if (simple.includes('puppy') || simple.includes('dog')) return 'dog';
+      if (simple.includes('bunny') || simple.includes('rabbit')) return 'rabbit';
+      if (simple.includes('duck') || simple.includes('goose')) return 'duck';
+      if (simple.includes('cow') || simple.includes('bull')) return 'cow';
+      
+      // Use original if already simple, otherwise default to cat
+      return simpleAnimals.includes(simple) ? simple : 'cat';
+    });
+  }
+  
+  private static simplifyColorsForAge3to6(colors: string[]): string[] {
+    const simpleColors = ['red', 'blue', 'green', 'yellow', 'pink', 'white', 'black', 'brown', 'orange', 'purple'];
+    return colors.map(color => {
+      const simple = color.toLowerCase().trim();
+      return simpleColors.includes(simple) ? simple : 'blue';
+    });
+  }
+  
+  private static simplifyFoodsForAge3to6(foods: string[]): string[] {
+    const simpleFoods = ['apple', 'bread', 'milk', 'cookie', 'banana', 'cheese', 'egg', 'cake', 'rice', 'soup'];
+    return foods.map(food => {
+      const simple = food.toLowerCase().trim();
+      // Map complex foods to simple ones
+      if (simple.includes('pizza')) return 'bread';
+      if (simple.includes('sandwich')) return 'bread';
+      if (simple.includes('cereal')) return 'milk';
+      if (simple.includes('fruit')) return 'apple';
+      
+      // Use original if already simple, otherwise default to apple
+      return simpleFoods.includes(simple) ? simple : 'apple';
+    });
+  }
+  
+  private static simplifyActionsForAge3to6(actions: string[]): string[] {
+    const simpleActions = ['play', 'run', 'jump', 'walk', 'sit', 'eat', 'sleep', 'sing', 'dance', 'read'];
+    return actions.map(action => {
+      const simple = action.toLowerCase().trim();
+      // Map complex actions to simple ones
+      if (simple.includes('playing') || simple.includes('play')) return 'play';
+      if (simple.includes('running') || simple.includes('run')) return 'run';
+      if (simple.includes('jumping') || simple.includes('jump')) return 'jump';
+      if (simple.includes('walking') || simple.includes('walk')) return 'walk';
+      if (simple.includes('reading') || simple.includes('read')) return 'read';
+      if (simple.includes('singing') || simple.includes('sing')) return 'sing';
+      if (simple.includes('dancing') || simple.includes('dance')) return 'dance';
+      
+      // Use original if already simple, otherwise default to play
+      return simpleActions.includes(simple) ? simple : 'play';
+    });
+  }
+  
+  private static getSimpleAnimal(animal: string): string {
+    const simple = animal.toLowerCase().trim();
+    // Always add "a" for 3-6 year olds (simple grammar)
+    const vowelStart = /^[aeiou]/.test(simple);
+    return vowelStart ? `an ${simple}` : `a ${simple}`;
+  }
+
   // Helper method to randomly select an element from an array
   private static selectRandomElement(array: string[]): string {
     if (!array || array.length === 0) return 'something';
