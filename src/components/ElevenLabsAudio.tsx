@@ -38,8 +38,8 @@ export const ElevenLabsAudio = ({
 
   const playAudio = async () => {
     if (!canUseAudio) {
-      // Only show notification when free limit is reached
-      if (!isWithinFreeLimit && !isPremium) {
+      // Only show notification when free limit is reached (played all 10 pages)
+      if (playedPages.size >= maxFreePages && !isPremium) {
         toast({
           title: "🎵 Free Limit Reached",
           description: "You've used all 10 free audio plays! Upgrade to Premium for unlimited audio on all pages.",
