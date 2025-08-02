@@ -233,33 +233,40 @@ export const InteractiveWord = ({
     try {
       const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
       
-      // Get definition in user's native language if possible
-      let definition = getWordDefinition(cleanWord, sentenceContext);
-      let definitionToSpeak = definition;
+      // Always try to get proper definition from API first
+      let definition = '';
+      let definitionToSpeak = '';
       
-      // Try to get translated definition via dictionary API
-      if (userNativeLanguage !== 'en') {
-        try {
-          console.log('📞 Calling word-dictionary for native language');
-          const { data: wordData, error: wordError } = await supabase.functions.invoke('word-dictionary', {
-            body: { 
-              word: cleanWord, 
-              userLevel: difficulty,
-              userLanguage: userNativeLanguage
-            }
-          });
-          
-          if (!wordError && wordData?.definition) {
-            definition = wordData.definition;
-            definitionToSpeak = wordData.definition;
-            console.log('✅ Got native language definition:', definition);
+      // Try to get definition via dictionary API for ALL users
+      try {
+        console.log('📞 Calling word-dictionary API for:', { cleanWord, userNativeLanguage, difficulty });
+        const { data: wordData, error: wordError } = await supabase.functions.invoke('word-dictionary', {
+          body: { 
+            word: cleanWord, 
+            userLevel: difficulty,
+            userLanguage: userNativeLanguage
           }
-        } catch (apiError) {
-          console.warn('⚠️ API call failed, using fallback');
+        });
+        
+        console.log('📞 API Response:', { wordData, wordError });
+        
+        if (!wordError && wordData?.definition) {
+          definition = wordData.definition;
+          definitionToSpeak = wordData.definition;
+          console.log('✅ Got proper API definition:', definition);
+        } else {
+          console.warn('⚠️ API call failed or no definition, using local fallback');
+          // Only use local definitions as fallback
+          definition = getWordDefinition(cleanWord, sentenceContext);
+          definitionToSpeak = definition;
         }
+      } catch (apiError) {
+        console.warn('⚠️ API call threw error, using local fallback:', apiError);
+        definition = getWordDefinition(cleanWord, sentenceContext);
+        definitionToSpeak = definition;
       }
       
-      console.log('📝 Using definition:', definition);
+      console.log('📝 Final definition to use:', definition);
       
       // Show definition immediately
       toast({
@@ -367,6 +374,15 @@ export const InteractiveWord = ({
       'reading': 'looking at words and understanding what they mean',
       'writing': 'making letters and words on paper',
       'drawing': 'making pictures with pencils or crayons',
+      'journeyed': 'traveled from one place to another on an adventure',
+      'appeared': 'showed up or came into sight',
+      'explained': 'told someone about something to help them understand',
+      'recognized': 'knew or remembered something from before',
+      'destined': 'meant to happen or planned by fate',
+      'adventure': 'an exciting journey or experience',
+      'mission': 'an important job or task to complete',
+      'remarkable': 'very special or amazing',
+      'bushes': 'small plants with lots of leaves and branches',
       
       // Animals
       'elephant': 'a very big gray animal with a long nose called a trunk',
@@ -393,6 +409,9 @@ export const InteractiveWord = ({
       'mountain': 'a very tall hill',
       'ocean': 'a very big body of water',
       'river': 'water that flows from one place to another',
+      'tree': 'a tall plant with a thick trunk, branches, and leaves',
+      'oak': 'a type of strong tree with thick branches',
+      'neighborhood': 'the area around your home where you live',
       
       // Colors and descriptions
       'magical': 'special and wonderful, like in fairy tales',
@@ -404,7 +423,12 @@ export const InteractiveWord = ({
       'happy': 'feeling good and cheerful',
       'excited': 'feeling very happy about something',
       'surprised': 'feeling amazed when something unexpected happens',
-      'proud': 'feeling good about something you did well'
+      'proud': 'feeling good about something you did well',
+      'important': 'very special and needed',
+      'urgent': 'needs to be done right away',
+      'wonderful': 'really amazing and great',
+      'different': 'not the same as others',
+      'blue': 'the color of the sky on a clear day'
     };
 
     // Check if we have a specific definition
