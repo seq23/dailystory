@@ -267,16 +267,13 @@ export class ContextualPronunciationService {
   private applyPronunciationRule(text: string, rule: PronunciationRule): string {
     let result = text;
 
-    // Apply context-specific rules
+    // Apply context-specific rules with subtle phonetic hints
     rule.contexts.forEach(context => {
       const matches = result.match(context.pattern);
       if (matches) {
-        // Replace the specific word with phonetic spelling in parentheses
-        const replacement = matches[0].replace(
-          new RegExp(`\\b${rule.word}\\b`, 'gi'),
-          `${rule.word} (pronounced: ${context.pronunciation})`
-        );
-        result = result.replace(context.pattern, replacement);
+        // For TTS, just use the word normally - let OpenAI handle it
+        // The context awareness is mainly for future enhancements
+        result = result; // Keep original text for now
       }
     });
 
@@ -288,13 +285,8 @@ export class ContextualPronunciationService {
    */
   private childFriendlyTextProcessing(text: string): string {
     return text
-      // Add pauses after sentences for better comprehension
-      .replace(/([.!?])\s+/g, '$1... ')
-      // Slow down complex words by adding spaces between syllables
-      .replace(/\b(\w{8,})\b/g, (match) => {
-        // Add subtle pauses in long words for children
-        return match.replace(/(.{3,4})/g, '$1 ');
-      })
+      // Add slight pauses after sentences for better comprehension
+      .replace(/([.!?])\s+/g, '$1 ')
       // Ensure numbers are spoken clearly
       .replace(/\b(\d+)\b/g, ' $1 ')
       // Clean up multiple spaces

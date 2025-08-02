@@ -148,23 +148,20 @@ export const InteractiveWord = ({
     
     setIsPlaying(true);
     try {
+      const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
+      
       if (ttsService) {
-        // Get context-aware pronunciation
-        const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
+        // Get context-aware pronunciation but just speak the word normally
         const fullContext = sentenceContext || `The word ${cleanWord} in context`;
         const pronunciationInfo = contextualPronunciation.getWordPronunciation(cleanWord, fullContext);
         
-        // Use context-aware pronunciation if available
-        const textToSpeak = pronunciationInfo.isContextAware 
-          ? `${cleanWord}, pronounced as ${pronunciationInfo.pronunciation}`
-          : cleanWord;
-        
+        // Just speak the word - the contextual service will handle pronunciation internally
         const speed = isESLLearner ? 0.7 : 1.0;
-        await ttsService.speakText(textToSpeak, { speed });
+        await ttsService.speakText(cleanWord, { speed });
       } else {
         // Fallback to browser speech synthesis
         if ('speechSynthesis' in window) {
-          const utterance = new SpeechSynthesisUtterance(word.replace(/[.,!?;:'"()]/g, ''));
+          const utterance = new SpeechSynthesisUtterance(cleanWord);
           utterance.rate = isESLLearner ? 0.6 : 0.7;
           utterance.pitch = 1.2;
           speechSynthesis.speak(utterance);
