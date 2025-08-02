@@ -463,6 +463,8 @@ export const InteractiveWord = ({
       };
       const langName = languageNames[userNativeLanguage] || userNativeLanguage;
       
+      console.log('🔵 Starting translation for:', { cleanWord, userNativeLanguage, langName });
+      
       // Create a translation request to Supabase function
       const { data, error } = await supabase.functions.invoke('translate-word', {
         body: {
@@ -475,6 +477,8 @@ export const InteractiveWord = ({
       if (!error && data) {
         const translationText = data.translation || `Translation: ${data.translated_word}`;
         
+        console.log('✅ Translation received:', translationText);
+        
         // Show translation in a toast
         toast({
           title: `${cleanWord} in ${langName}`,
@@ -482,49 +486,74 @@ export const InteractiveWord = ({
           duration: 5000,
         });
 
-        // Try multiple audio approaches for better mobile compatibility
-        console.log('🎵 Attempting to play translation audio:', {
-          text: translationText,
-          language: userNativeLanguage,
-          speechSynthesisSupported: 'speechSynthesis' in window,
-          voicesLength: speechSynthesis?.getVoices()?.length || 0
-        });
-
-        // First try OpenAI TTS for better quality and reliability
+        // Try OpenAI TTS first for high-quality audio
+        console.log('🎵 Attempting OpenAI TTS...');
         try {
-          if (ttsService && translationText) {
-            console.log('🤖 Trying OpenAI TTS for translation');
+          if (ttsService) {
+            console.log('🤖 Playing translation with OpenAI TTS:', translationText);
             await ttsService.speakText(translationText, {
               voice: 'nova',
               speed: 0.7
             });
-            console.log('✅ OpenAI TTS succeeded');
+            console.log('✅ OpenAI TTS playback completed successfully');
             setIsPlaying(false);
             return;
+          } else {
+            console.warn('⚠️ TTS service not available');
           }
         } catch (ttsError) {
-          console.warn('⚠️ OpenAI TTS failed, falling back to browser speech:', ttsError);
+          console.error('❌ OpenAI TTS failed:', ttsError);
+          
+          // Show TTS error to user
+          toast({
+            title: "Audio Error",
+            description: "High-quality audio failed. Trying backup audio...",
+            duration: 2000,
+          });
         }
 
-        // Fallback to browser speech synthesis
+        // Fallback to browser speech synthesis with enhanced mobile support
+        console.log('🗣️ Falling back to browser speech synthesis...');
         if ('speechSynthesis' in window) {
           try {
+            // Initialize audio context for mobile (required for audio playback)
+            if ('AudioContext' in window || 'webkitAudioContext' in window) {
+              const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+              const audioContext = new AudioContext();
+              
+              // Resume audio context if suspended (common on mobile)
+              if (audioContext.state === 'suspended') {
+                console.log('🔊 Resuming suspended audio context...');
+                await audioContext.resume();
+              }
+            }
+            
             // Cancel any existing speech
             speechSynthesis.cancel();
             
-            // Wait a bit for cancellation to complete
+            // Wait for cancellation to complete
             await new Promise(resolve => setTimeout(resolve, 100));
             
+            // Ensure voices are loaded
+            let voices = speechSynthesis.getVoices();
+            if (voices.length === 0) {
+              console.log('⏳ Waiting for voices to load...');
+              await new Promise(resolve => {
+                speechSynthesis.onvoiceschanged = resolve;
+                setTimeout(resolve, 1000); // Timeout after 1 second
+              });
+              voices = speechSynthesis.getVoices();
+            }
+            
+            console.log('🗣️ Available voices:', voices.map(v => ({ name: v.name, lang: v.lang })));
+            
             const utterance = new SpeechSynthesisUtterance(translationText);
-            utterance.rate = 0.6; // Slower for better comprehension
+            utterance.rate = 0.6;
             utterance.pitch = 1.0;
             utterance.volume = 1.0;
             utterance.lang = userNativeLanguage;
             
             // Find best voice for user's language
-            const voices = speechSynthesis.getVoices();
-            console.log('🗣️ Available voices:', voices.map(v => ({ name: v.name, lang: v.lang })));
-            
             const languageCode = userNativeLanguage.substring(0, 2);
             const nativeVoice = voices.find(voice => 
               voice.lang.toLowerCase().startsWith(languageCode.toLowerCase())
@@ -535,65 +564,78 @@ export const InteractiveWord = ({
               console.log('✅ Using native voice:', { name: nativeVoice.name, lang: nativeVoice.lang });
             } else {
               console.log('⚠️ No native voice found, using default');
+              // Try to find any voice that might work
+              const fallbackVoice = voices.find(v => v.lang.includes(languageCode)) || voices[0];
+              if (fallbackVoice) {
+                utterance.voice = fallbackVoice;
+                console.log('🔄 Using fallback voice:', { name: fallbackVoice.name, lang: fallbackVoice.lang });
+              }
             }
             
             utterance.onstart = () => {
-              console.log('✅ Translation speech started');
+              console.log('✅ Browser speech started');
               setIsPlaying(true);
             };
+            
             utterance.onend = () => {
-              console.log('✅ Translation speech ended');
+              console.log('✅ Browser speech ended');
               setIsPlaying(false);
             };
+            
             utterance.onerror = (event) => {
-              console.error('❌ Translation speech error:', event);
+              console.error('❌ Browser speech error:', event);
               setIsPlaying(false);
               
-              // Show error message to user
               toast({
                 title: "Audio Error",
-                description: "Could not play audio. Try enabling sound or checking volume.",
-                duration: 3000,
+                description: `Speech error: ${event.error}. Check device volume or audio settings.`,
+                duration: 4000,
               });
             };
             
-            console.log('🎵 Starting speech synthesis...');
+            console.log('🎵 Starting browser speech synthesis...');
             speechSynthesis.speak(utterance);
             
-            // Set a timeout to ensure we don't get stuck in playing state
+            // Fallback timeout
             setTimeout(() => {
-              if (isPlaying) {
-                console.log('⏰ Speech timeout, stopping...');
+              if (speechSynthesis.speaking) {
+                console.log('⏰ Speech taking too long, checking status...');
+              } else {
+                console.log('⏰ Speech not started, force stopping...');
                 speechSynthesis.cancel();
                 setIsPlaying(false);
               }
-            }, 10000);
+            }, 8000);
             
           } catch (audioError) {
-            console.error('❌ Translation audio error:', audioError);
+            console.error('❌ Browser speech error:', audioError);
             setIsPlaying(false);
             
             toast({
               title: "Audio Not Available",
-              description: "Audio playback is not supported on this device.",
-              duration: 3000,
+              description: "Audio playback failed. Please check your device settings and try again.",
+              duration: 4000,
             });
           }
         } else {
-          console.warn('⚠️ Speech synthesis not supported');
+          console.warn('⚠️ Speech synthesis not supported on this device');
           setIsPlaying(false);
           
           toast({
             title: "Audio Not Supported",
-            description: "Your browser doesn't support audio playback.",
+            description: "Your device doesn't support audio playback for translations.",
             duration: 3000,
           });
         }
 
         // Also get word data for additional context
         if (ttsService) {
-          const wordData = await ttsService.getWordData(cleanWord, difficulty as 'easy' | 'medium' | 'hard');
-          setWordData(wordData);
+          try {
+            const wordData = await ttsService.getWordData(cleanWord, difficulty as 'easy' | 'medium' | 'hard');
+            setWordData(wordData);
+          } catch (err) {
+            console.warn('Could not get word data:', err);
+          }
         }
       } else {
         // Fallback: show simple translation message
@@ -606,7 +648,7 @@ export const InteractiveWord = ({
         setIsPlaying(false);
       }
     } catch (error) {
-      console.error('Error translating word:', error);
+      console.error('❌ Translation error:', error);
       // Fallback message
       toast({
         title: t("interactiveWord.translate"),
