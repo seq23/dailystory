@@ -894,10 +894,10 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                   </div>
                   <div>
                     <h1 className="text-lg sm:text-xl font-bold text-gray-800">
-                      {userInfo.name}'s Reading Adventure
+                      {t("freeReadingSession.session.title", "{name}'s Reading Adventure").replace("{name}", userInfo.name)}
                     </h1>
                     <p className="text-sm text-gray-600">
-                      Page {currentPage + 1} of {story.length}
+                      {t("freeReadingSession.navigation.pageInfo", "{current} / {total}").replace("{current}", (currentPage + 1).toString()).replace("{total}", story.length.toString())}
                     </p>
                   </div>
                 </div>
@@ -906,11 +906,11 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                   {/* Navigation buttons - Mobile responsive */}
                   <Button onClick={onNewStory} variant="outline" size="sm" className="text-xs sm:text-sm px-2 sm:px-3">
                     <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                    <span className="hidden sm:inline">New Story</span>
-                  </Button>
-                  <Button onClick={onHome} variant="outline" size="sm" className="text-xs sm:text-sm px-2 sm:px-3">
-                    <Home className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                    <span className="hidden sm:inline">Home</span>
+                     <span className="hidden sm:inline">{t("sessionEnded.startNewStory", "New Story")}</span>
+                   </Button>
+                   <Button onClick={onHome} variant="outline" size="sm" className="text-xs sm:text-sm px-2 sm:px-3">
+                     <Home className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                     <span className="hidden sm:inline">{t("sessionEnded.goToHome", "Home")}</span>
                   </Button>
                   
                   {/* Start session button - Mobile responsive */}
@@ -970,7 +970,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                           
                           <div className="text-center">
                             <span className="text-sm font-bold text-gray-700 bg-gradient-to-r from-purple-100 to-pink-100 px-3 py-1 rounded-full border border-purple-200">
-                              📚 Reading Level {getDifficultyIndex() + 1}
+                              📚 {t("storyDisplay.readingLevel")} {getDifficultyIndex() + 1}
                             </span>
                           </div>
                           
@@ -995,7 +995,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                       <div className="mb-4">
                         <Progress value={progress} className="h-2" />
                         <p className="text-sm text-gray-600 mt-2 text-center">
-                          Reading Progress: {Math.round(progress)}%
+                          {t("storyDisplay.readingProgress")}: {Math.round(progress)}%
                         </p>
                       </div>
                     </div>
@@ -1050,7 +1050,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                           size="sm"
                           className="flex-shrink-0 min-w-[80px]"
                         >
-                          {t("freeReadingSession.navigation.previous")}
+                          {t("storyDisplay.previous")}
                         </Button>
                         
                         <div className="flex flex-col items-center gap-1 px-2">
@@ -1113,7 +1113,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                           size="sm"
                           className="flex-shrink-0 min-w-[80px]"
                         >
-                          {t("freeReadingSession.navigation.next")}
+                          {t("storyDisplay.next")}
                         </Button>
                       </div>
                     </div>

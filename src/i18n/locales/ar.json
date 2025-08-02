@@ -66,9 +66,14 @@
         "features": {
           "unlimited": "قصص غير محدودة",
           "aiFeatures": "ميزات الذكاء الاصطناعي المتقدمة"
-        }
-      }
-    },
+     }
+   },
+   "readingLevel": {
+     "label": "مستوى القراءة",
+     "easier": "🌟 اجعل هذه القصة أسهل",
+     "harder": "🚀 اجعل هذه القصة أصعب"
+   }
+  },
     "form": {
       "labels": {
         "displayName": "اسم العرض",
@@ -115,6 +120,25 @@
     "navigation": {
       "backToTrial": "العودة إلى التجربة المجانية",
       "back": "رجوع"
+    }
+  },
+  "freeReadingSession": {
+    "session": {
+      "title": "مغامرة قراءة {name}",
+      "titleNotStarted": "جلسة قراءة مجانية",
+      "subtitle": "صفحة {currentPage} من {totalPages}",
+      "subtitleNotStarted": "انقر على \"بدء القراءة\" لبدء تجربة الـ 20 دقيقة",
+      "startReading": "بدء القراءة"
+    },
+    "navigation": {
+      "previous": "← السابق",
+      "next": "التالي →",
+      "pageInfo": "{current} / {total}"
+    },
+    "readingLevel": {
+      "label": "مستوى القراءة",
+      "easier": "🌟 اجعل هذه القصة أسهل",
+      "harder": "🚀 اجعل هذه القصة أصعب"
     }
   },
   "userInfoForm": {
