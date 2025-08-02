@@ -132,11 +132,21 @@ export class GrammarValidator {
       });
     }
     
-    // Check for missing articles before singular countable nouns
-    const missingArticlePattern = /\b(with|play with|see|find|hold|catch|throw|pick up|grab|get)\s+(blue|red|green|yellow|pink|purple|orange|big|small|round|square)\s+(ball|toy|book|cat|dog|car|house|tree|flower|apple|cookie|cup|box|bag)\b/gi;
+    // Check for missing articles before singular countable nouns (with adjectives)
+    const missingArticlePattern = /\b(with|play with|see|find|hold|catch|throw|pick up|grab|get|likes|loves|wants|needs)\s+(blue|red|green|yellow|pink|purple|orange|big|small|round|square)\s+(ball|toy|book|cat|dog|car|house|tree|flower|apple|cookie|cup|box|bag)\b/gi;
     const articleMatches = Array.from(text.matchAll(missingArticlePattern));
     if (articleMatches.length > 0) {
       articleMatches.forEach(match => {
+        const [fullMatch] = match;
+        errors.push(`Grammar error: "${fullMatch}" needs an article (a/the) before the noun`);
+      });
+    }
+    
+    // Check for missing articles before singular countable nouns (without adjectives)
+    const missingArticleSimplePattern = /\b(likes|loves|sees|finds|wants|needs|has|gets|throws|catches|holds)\s+(ball|toy|book|cat|dog|car|house|tree|flower|apple|cookie|cup|box|bag)\b/gi;
+    const simpleArticleMatches = Array.from(text.matchAll(missingArticleSimplePattern));
+    if (simpleArticleMatches.length > 0) {
+      simpleArticleMatches.forEach(match => {
         const [fullMatch] = match;
         errors.push(`Grammar error: "${fullMatch}" needs an article (a/the) before the noun`);
       });
@@ -220,10 +230,16 @@ export const validateAndFixGrammar = (text: string): string => {
     // Attempt basic fixes for common issues
     let fixedText = text;
     
-    // Fix missing articles before singular countable nouns
-    fixedText = fixedText.replace(/\b(with|play with|see|find|hold|catch|throw|pick up|grab|get)\s+(blue|red|green|yellow|pink|purple|orange|big|small|round|square)\s+(ball|toy|book|cat|dog|car|house|tree|flower|apple|cookie|cup|box|bag)\b/gi, 
+    // Fix missing articles before singular countable nouns (with adjectives)
+    fixedText = fixedText.replace(/\b(with|play with|see|find|hold|catch|throw|pick up|grab|get|likes|loves|wants|needs)\s+(blue|red|green|yellow|pink|purple|orange|big|small|round|square)\s+(ball|toy|book|cat|dog|car|house|tree|flower|apple|cookie|cup|box|bag)\b/gi, 
       (match, verb, adjective, noun) => {
         return `${verb} the ${adjective} ${noun}`;
+      });
+    
+    // Fix missing articles before singular countable nouns (without adjectives)
+    fixedText = fixedText.replace(/\b(likes|loves|sees|finds|wants|needs|has|gets|throws|catches|holds)\s+(ball|toy|book|cat|dog|car|house|tree|flower|apple|cookie|cup|box|bag)\b/gi, 
+      (match, verb, noun) => {
+        return `${verb} the ${noun}`;
       });
     
     // Fix double spaces
