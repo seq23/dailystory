@@ -475,26 +475,10 @@ export const getPhoneticSpelling = (word: string): string | null => {
   return phoneticDictionary[cleanWord] || null;
 };
 
-// Function to speak a word using Web Speech API with contextual processing
-export const speakWord = (word: string, context?: string): void => {
+// Function to speak a word using Web Speech API
+export const speakWord = (word: string): void => {
   if ('speechSynthesis' in window) {
-    // Apply contextual preprocessing for better pronunciation
-    const textToProcess = context ? `${context} ${word}` : word;
-    let processedText = word;
-    
-    // Try to import and use contextual processing if available
-    try {
-      // This will be resolved at runtime when the function is available
-      const { cleanChildrensTextForSpeech } = require('../utils/contextualPronunciation');
-      processedText = cleanChildrensTextForSpeech(textToProcess);
-      const words = processedText.split(' ');
-      processedText = words[words.length - 1] || word;
-    } catch (error) {
-      // Fallback to basic cleaning if contextual processing isn't available
-      processedText = word.replace(/[.,!?;:'"()]/g, '');
-    }
-    
-    const utterance = new SpeechSynthesisUtterance(processedText);
+    const utterance = new SpeechSynthesisUtterance(word);
     utterance.rate = 0.7; // Slower speech for kids
     utterance.pitch = 1.1; // Slightly higher pitch
     utterance.volume = 0.8;

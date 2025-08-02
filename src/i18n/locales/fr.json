@@ -341,16 +341,5 @@
     "skip": "Ignorer le Tutoriel", 
     "next": "Suivant",
     "startReading": "Commencer à Lire!"
-  },
-  "floatingTimer": {
-    "startTimer": "Démarrer le Minuteur de Lecture",
-    "pauseTimer": "Mettre en Pause le Minuteur", 
-    "reduceTime": "Réduire le Temps de 5 Minutes",
-    "endSession": "Terminer la Session de Lecture",
-    "maxLimit": "Temps Maximum"
-  },
-  "readingLevels": {
-    "easier": "🌟 Rendre la lecture plus facile et amusante!",
-    "harder": "🚀 Augmenter le défi de lecture!"
   }
 }

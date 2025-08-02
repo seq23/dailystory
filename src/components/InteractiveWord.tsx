@@ -3,13 +3,11 @@ import { useTranslation } from "react-i18next";
 import { getPhoneticSpelling } from "@/utils/phoneticDictionary";
 import { Volume2, HelpCircle, Languages, BookOpen, Lightbulb, Plus, Crown } from "lucide-react";
 import { createOpenAITTSService } from "@/services/textToSpeechService";
-import { cleanChildrensTextForSpeech } from "@/utils/contextualPronunciation";
 import { useToast } from "@/hooks/use-toast";
 import type { UserInfo } from "@/types";
 
 interface InteractiveWordProps {
   word: string;
-  context?: string; // Add context for better pronunciation
   className?: string;
   difficulty?: "easy" | "medium" | "hard" | "expert";
   userInfo?: UserInfo; // New prop to adapt behavior
@@ -18,7 +16,6 @@ interface InteractiveWordProps {
 
 export const InteractiveWord = ({ 
   word, 
-  context,
   className = "", 
   difficulty = "easy",
   userInfo,
@@ -41,10 +38,10 @@ export const InteractiveWord = ({
   const phoneticSpelling = getPhoneticSpelling(word);
 
   useEffect(() => {
-    // Initialize ElevenLabs TTS service with user info for language-appropriate speed
-    const service = createOpenAITTSService(userInfo);
+    // Initialize OpenAI TTS service using the improved service
+    const service = createOpenAITTSService();
     setTtsService(service);
-  }, [userInfo]);
+  }, []);
 
   // Determine if user is a native English speaker
   const isNativeEnglishSpeaker = userInfo?.nativeLanguage === "en";
@@ -149,24 +146,14 @@ export const InteractiveWord = ({
     setIsPlaying(true);
     try {
       if (ttsService) {
-        // Use context-aware pronunciation if available
-        if (context && ttsService.pronounceWord) {
-          await ttsService.pronounceWord(word, context);
-        } else {
-          // Fallback to regular speakText with speed parameter
-          const speed = isESLLearner ? 0.6 : 0.7;
-          await ttsService.speakText(word, { speed });
-        }
+        // For ESL learners, use slower pronunciation
+        const speed = isESLLearner ? 0.7 : 1.0;
+        const voice = 'nova'; // Use consistent nova voice
+        await ttsService.speakText(word, { speed, voice });
       } else {
         // Fallback to browser speech synthesis
         if ('speechSynthesis' in window) {
-          // Use contextual preprocessing for consistent pronunciation
-          const textToProcess = context ? `${context} ${word}` : word;
-          const processedText = cleanChildrensTextForSpeech ? cleanChildrensTextForSpeech(textToProcess) : word;
-          const words = processedText.split(' ');
-          const processedWord = words[words.length - 1] || word;
-          
-          const utterance = new SpeechSynthesisUtterance(processedWord);
+          const utterance = new SpeechSynthesisUtterance(word.replace(/[.,!?;:'"()]/g, ''));
           utterance.rate = isESLLearner ? 0.6 : 0.7;
           utterance.pitch = 1.2;
           speechSynthesis.speak(utterance);
