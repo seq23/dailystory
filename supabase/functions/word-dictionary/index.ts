@@ -27,17 +27,18 @@ serve(async (req) => {
   }
 
   try {
-    const { word, userLevel = 'easy' } = await req.json();
+    const { word, userLevel = 'easy', userLanguage = 'en' } = await req.json();
 
     if (!word) {
       throw new Error('Word is required');
     }
 
     const cleanWord = word.toLowerCase().replace(/[.,!?;:'"()]/g, '').trim();
+    const cacheKey = `${cleanWord}-${userLanguage}-${userLevel}`;
     
     // Check cache first
-    if (wordCache.has(cleanWord)) {
-      const cachedData = wordCache.get(cleanWord)!;
+    if (wordCache.has(cacheKey)) {
+      const cachedData = wordCache.get(cacheKey)!;
       return new Response(JSON.stringify(cachedData), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -47,8 +48,23 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
+    // Language-specific prompts
+    const languageMap: { [key: string]: string } = {
+      'en': 'English',
+      'fr': 'French',
+      'es': 'Spanish', 
+      'zh': 'Chinese',
+      'hi': 'Hindi',
+      'pt': 'Portuguese',
+      'ar': 'Arabic'
+    };
+
+    const targetLanguage = languageMap[userLanguage] || 'English';
+    const isEnglish = userLanguage === 'en';
+
     // Generate comprehensive word data using OpenAI
-    const prompt = `Provide comprehensive information for the word "${cleanWord}" suitable for a ${userLevel} level reader. Return ONLY a JSON object with this exact structure:
+    const prompt = isEnglish 
+      ? `Provide comprehensive information for the word "${cleanWord}" suitable for a ${userLevel} level reader. Return ONLY a JSON object with this exact structure:
 {
   "word": "${cleanWord}",
   "definition": "child-friendly definition in simple terms",
@@ -58,7 +74,18 @@ serve(async (req) => {
   "partOfSpeech": "noun/verb/adjective/etc"
 }
 
-Make the definition simple and clear for children. The sample sentence should be engaging and relatable to kids. Ensure the phonetic pronunciation follows standard dictionary format like /wɜːrd/.`;
+Make the definition simple and clear for children. The sample sentence should be engaging and relatable to kids. Ensure the phonetic pronunciation follows standard dictionary format like /wɜːrd/.`
+      : `Provide comprehensive information for the word "${cleanWord}" suitable for a ${userLevel} level reader. Return ONLY a JSON object with this exact structure:
+{
+  "word": "${cleanWord}",
+  "definition": "child-friendly definition in simple terms IN ${targetLanguage}",
+  "phonetic": "phonetic pronunciation using standard dictionary format (always in English)",
+  "sampleSentence": "age-appropriate example sentence using the word IN ${targetLanguage}",
+  "difficulty": "easy/medium/hard based on word complexity",
+  "partOfSpeech": "noun/verb/adjective/etc IN ${targetLanguage}"
+}
+
+IMPORTANT: The definition and sampleSentence must be in ${targetLanguage}, but the phonetic pronunciation must always be in English. Make the definition simple and clear for children. The sample sentence should be engaging and relatable to kids.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -109,7 +136,7 @@ Make the definition simple and clear for children. The sample sentence should be
     }
 
     // Cache the result
-    wordCache.set(cleanWord, wordData);
+    wordCache.set(cacheKey, wordData);
 
     console.log(`Generated dictionary entry for: ${cleanWord}`);
 

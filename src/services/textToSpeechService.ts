@@ -186,19 +186,20 @@ export class OpenAITTSService {
   }
 
   // Method to explain a word using the word dictionary service
-  async explainWord(word: string, userLevel: 'easy' | 'medium' | 'hard' = 'easy'): Promise<void> {
+  async explainWord(word: string, userLevel: 'easy' | 'medium' | 'hard' = 'easy', userLanguage: string = 'en'): Promise<void> {
     const cleanWord = word.replace(/[.,!?;:'"()]/g, '').trim();
     
     if (!cleanWord) return;
 
     try {
       // Get comprehensive word data from dictionary service
-      console.log('Calling word-dictionary for:', cleanWord, 'userLevel:', userLevel);
+      console.log('Calling word-dictionary for:', cleanWord, 'userLevel:', userLevel, 'userLanguage:', userLanguage);
       
       const { data, error } = await supabase.functions.invoke('word-dictionary', {
         body: {
           word: cleanWord,
-          userLevel: userLevel
+          userLevel: userLevel,
+          userLanguage: userLanguage
         }
       });
 
@@ -212,7 +213,7 @@ export class OpenAITTSService {
       const wordData = data;
       
       // Create comprehensive explanation text
-      const explanationText = `The word ${cleanWord} is pronounced ${wordData.phonetic}. It means: ${wordData.definition}. Here's an example: ${wordData.sampleSentence}`;
+      const explanationText = `The word ${cleanWord} is pronounced ${wordData.phonetic}. ${wordData.definition}. Here's an example: ${wordData.sampleSentence}`;
       
       await this.speakText(explanationText);
     } catch (error) {
@@ -223,18 +224,19 @@ export class OpenAITTSService {
   }
 
   // Method to get word definition data without speaking
-  async getWordData(word: string, userLevel: 'easy' | 'medium' | 'hard' = 'easy'): Promise<any> {
+  async getWordData(word: string, userLevel: 'easy' | 'medium' | 'hard' = 'easy', userLanguage: string = 'en'): Promise<any> {
     const cleanWord = word.replace(/[.,!?;:'"()]/g, '').trim();
     
     if (!cleanWord) return null;
 
     try {
-      console.log('Getting word data for:', cleanWord, 'userLevel:', userLevel);
+      console.log('Getting word data for:', cleanWord, 'userLevel:', userLevel, 'userLanguage:', userLanguage);
       
       const { data, error } = await supabase.functions.invoke('word-dictionary', {
         body: {
           word: cleanWord,
-          userLevel: userLevel
+          userLevel: userLevel,
+          userLanguage: userLanguage
         }
       });
 

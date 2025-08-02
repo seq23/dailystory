@@ -182,10 +182,6 @@ export const InteractiveWord = ({
       const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
       console.log('Explaining word:', cleanWord, 'TTS service available:', !!ttsService);
       
-      // Get word definition in user's native language if not English
-      let definition = getWordDefinition(cleanWord, sentenceContext);
-      let explanation = `${cleanWord} means: ${definition}`;
-      
       console.log('InteractiveWord Debug:', {
         isNativeEnglishSpeaker,
         userNativeLanguage,
@@ -195,117 +191,89 @@ export const InteractiveWord = ({
         } : 'No userInfo'
       });
       
-      // If user is not a native English speaker, get explanation in their language
-      if (!isNativeEnglishSpeaker && userNativeLanguage !== 'en') {
-        console.log('Attempting translation for non-English speaker...');
-        try {
-          const { data: translationData, error: translationError } = await supabase.functions.invoke('translate-word', {
-            body: {
-              word: definition,
-              targetLanguage: userNativeLanguage,
-              context: `Definition of the word "${cleanWord}"`
-            }
-          });
-          
-          console.log('Translation result:', { translationData, translationError });
-          
-          if (!translationError && translationData?.translation) {
-            explanation = `${cleanWord} means: ${translationData.translation}`;
-            console.log('Using translated explanation:', explanation);
-            
-            // Show a toast to highlight the translation
-            toast({
-              title: `Translation (${userNativeLanguage.toUpperCase()})`,
-              description: `"${cleanWord}" = ${translationData.translation}`,
-              duration: 4000,
-            });
-          } else {
-            console.log('Translation failed, using English definition');
-          }
-        } catch (error) {
-          console.log('Translation failed with error:', error);
+      // Get word data from dictionary in user's native language
+      console.log(`Calling word-dictionary for: ${cleanWord} userLevel: ${difficulty} language: ${userNativeLanguage}`);
+      const { data: wordData, error: wordError } = await supabase.functions.invoke('word-dictionary', {
+        body: { 
+          word: cleanWord, 
+          userLevel: difficulty,
+          userLanguage: userNativeLanguage
         }
-      } else {
-        console.log('User is English speaker or using English, no translation needed');
-      }
+      });
       
-      // Always try Web Speech API first on mobile for better reliability
-      const isMobile = /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      console.log('Dictionary response:', { data: wordData, error: wordError });
       
-      if (isMobile || !ttsService) {
-        console.log('Using Web Speech API fallback');
+      if (!wordError && wordData) {
+        setWordData(wordData);
         
-        if ('speechSynthesis' in window) {
-          // Cancel any existing speech
-          speechSynthesis.cancel();
-          await new Promise(resolve => setTimeout(resolve, 100));
+        // Show definition toast for non-English speakers
+        if (!isNativeEnglishSpeaker) {
+          toast({
+            title: `Definition (${userNativeLanguage.toUpperCase()})`,
+            description: `"${cleanWord}" = ${wordData.definition}`,
+            duration: 4000,
+          });
+        }
+        
+        // Create explanation text for TTS in user's native language
+        const explanation = `The word ${cleanWord} is pronounced ${wordData.phonetic}. ${wordData.definition}. Here's an example: ${wordData.sampleSentence}`;
+        
+        // Always try Web Speech API first on mobile for better reliability
+        const isMobile = /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        if (isMobile || !ttsService) {
+          console.log('Using Web Speech API fallback');
           
-          const utterance = new SpeechSynthesisUtterance(explanation);
-          utterance.rate = isESLLearner ? 0.6 : 0.7;
-          utterance.pitch = 1.0;
-          utterance.volume = 1.0;
-          
-          utterance.onerror = (error) => {
-            console.error('Speech synthesis error:', error);
+          if ('speechSynthesis' in window) {
+            // Cancel any existing speech
+            speechSynthesis.cancel();
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            const utterance = new SpeechSynthesisUtterance(explanation);
+            utterance.rate = isESLLearner ? 0.6 : 0.7;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+            
+            utterance.onerror = (error) => {
+              console.error('Speech synthesis error:', error);
+              toast({
+                title: "Audio unavailable", 
+                description: "Definition shown below. Try with headphones if needed.",
+                duration: 3000,
+              });
+              setIsPlaying(false);
+            };
+            
+            utterance.onend = () => {
+              setIsPlaying(false);
+            };
+            
+            speechSynthesis.speak(utterance);
+            return;
+          } else {
+            console.log('Speech synthesis not available');
             toast({
               title: "Audio unavailable", 
-              description: "Definition shown below. Try with headphones if needed.",
+              description: "Audio not supported on this device. Definition shown below.",
               duration: 3000,
             });
             setIsPlaying(false);
-          };
-          
-          utterance.onend = () => {
-            setIsPlaying(false);
-          };
-          
-          speechSynthesis.speak(utterance);
-          
-          // Set word data for display
-          try {
-            const data = await ttsService?.getWordData?.(cleanWord, difficulty as 'easy' | 'medium' | 'hard') || {
-              definition,
-              phonetic: getPhoneticSpelling(cleanWord),
-              sampleSentence: `Here's an example: "${cleanWord}" in a sentence.`
-            };
-            setWordData(data);
-          } catch (error) {
-            console.error('Error getting word data:', error);
-            setWordData({
-              definition,
-              phonetic: getPhoneticSpelling(cleanWord),
-              sampleSentence: `Here's an example: "${cleanWord}" in a sentence.`
-            });
+            return;
           }
-          
-          return;
-        } else {
-          console.log('Speech synthesis not available');
-          toast({
-            title: "Audio unavailable", 
-            description: "Audio not supported on this device. Definition shown below.",
-            duration: 3000,
-          });
-          
-          // Still show the definition even without audio
-          setWordData({
-            definition,
-            phonetic: getPhoneticSpelling(cleanWord),
-            sampleSentence: `Here's an example: "${cleanWord}" in a sentence.`
-          });
-          setIsPlaying(false);
-          return;
         }
-      }
-      
-      if (ttsService) {
-        // Get comprehensive word data and speak it in English
-        const userLevel = difficulty === 'easy' ? 'easy' : difficulty === 'medium' ? 'medium' : 'hard';
-        await ttsService.explainWord(word, userLevel);
         
-        // Also get the word data for display
-        const data = await ttsService.getWordData(word, userLevel);
-        setWordData(data);
+        if (ttsService) {
+          console.log('TTS Request: voice=nova, speed=0.6, text="' + explanation.substring(0, 50) + '..."');
+          
+          // Use TTS to speak the explanation
+          await ttsService.speakText(explanation, {
+            speed: 0.6,
+            userInfo
+          });
+        }
+      } else {
+        console.error('Failed to get word data:', wordError);
+        setIsPlaying(false);
       }
     } catch (error) {
       console.error('Error explaining word:', error);
