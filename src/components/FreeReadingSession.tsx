@@ -7,7 +7,7 @@ import type { UserInfo, SessionStats } from "@/types";
 import type { Achievement } from "@/services/gamificationService";
 import { InteractiveAudioReading } from "@/components/InteractiveAudioReading";
 import { ElevenLabsAudio } from "@/components/ElevenLabsAudio";
-import { EarlyReaderStoryGenerator } from "@/services/earlyReaderStoryGenerator";
+import { UniversalContentManager } from "@/services/universalContentManager";
 import { UnifiedImageService, type EstablishedCharacter } from "@/services/unifiedImageService";
 
 import { APP_CONFIG } from "@/constants/app";
@@ -278,13 +278,21 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
         console.log('Story config:', storyConfig);
 
         if (!isCancelled) {
-          // Generate story content using the new generator
-          const { pages, config } = EarlyReaderStoryGenerator.generateStory(
+          // Generate story content using Universal Content Manager
+          const storyResult = await UniversalContentManager.generateStory(
             userInfo, 
-            currentDifficulty as 'easy' | 'medium' | 'hard' | 'expert', 
-            10
+            currentDifficulty as 'easy' | 'medium' | 'hard' | 'expert',
+            { isPremium: false, userId: userInfo.name }
           );
-          const generatedStory = { pages, config, images: [], wordCount: pages.join(' ').split(' ').length, title: `${userInfo.name}'s Adventure`, theme: 'adventure', readingLevel: currentDifficulty };
+          const generatedStory = { 
+            pages: storyResult.story.segments.map(s => s.text), 
+            config: { readingLevel: currentDifficulty }, 
+            images: [], 
+            wordCount: storyResult.story.wordCount, 
+            title: storyResult.story.title, 
+            theme: 'adventure', 
+            readingLevel: currentDifficulty 
+          };
           setStoryImages(generatedStory.images || []);
           
           if (!isCancelled) {
@@ -433,14 +441,19 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
       try {
         if (!establishedCharacter) return;
         
-        // Generate new story at the new difficulty level with SAME page count
+        // Generate new story at the new difficulty level using Universal Content Manager
         const currentPageCount = story.length;
-        const { pages: newPages, config: newConfig } = EarlyReaderStoryGenerator.generateStory(
+        const storyResult = await UniversalContentManager.generateStory(
           userInfo, 
-          newDifficulty as 'easy' | 'medium' | 'hard' | 'expert', 
-          currentPageCount
+          newDifficulty as 'easy' | 'medium' | 'hard' | 'expert',
+          { isPremium: false, userId: userInfo.name }
         );
-        const updatedStory = { pages: newPages, config: newConfig, images: [], wordCount: newPages.join(' ').split(' ').length };
+        const updatedStory = { 
+          pages: storyResult.story.segments.map(s => s.text), 
+          config: { readingLevel: newDifficulty }, 
+          images: [], 
+          wordCount: storyResult.story.wordCount 
+        };
         
         // Ensure exact same page count (no change in navigation)
         let pages = updatedStory.pages;
@@ -539,12 +552,13 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     try {
       console.log('Maintaining character consistency for page extension:', establishedCharacter.userName);
 
-      // Generate new pages using the new generator
-      const { pages: newPages, config } = EarlyReaderStoryGenerator.generateStory(
+      // Generate new pages using Universal Content Manager
+      const storyResult = await UniversalContentManager.generateStory(
         userInfo, 
-        currentDifficulty as 'easy' | 'medium' | 'hard' | 'expert', 
-        5
+        currentDifficulty as 'easy' | 'medium' | 'hard' | 'expert',
+        { isPremium: false, userId: userInfo.name }
       );
+      const newPages = storyResult.story.segments.map(s => s.text).slice(0, 5);
       
       // Add new pages and generate images for them
       const startPageIndex = story.length;
@@ -1089,7 +1103,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                         <div className="text-center w-full">
                           {/* Apply reading level configuration with proper responsive design */}
                           {(() => {
-                            const config = EarlyReaderStoryGenerator.getReadingConfigForDifficulty(currentDifficulty);
+                            const config = { fontSize: 'text-lg', lineHeight: 'leading-relaxed', spacing: 'space-y-2' };
                             return (
                               <div className={`${config.fontSize} ${config.lineHeight} ${config.spacing} font-medium text-gray-800 max-w-full break-words hyphens-auto leading-relaxed`}>
                                 {processTextForPhonetics(
