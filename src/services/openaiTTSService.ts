@@ -1,5 +1,5 @@
-// Supabase client will be available globally in edge functions
-declare const supabase: any;
+import { supabase } from "@/integrations/supabase/client";
+import { contextualPronunciation } from "./contextualPronunciation";
 
 export type OpenAIVoice = 'alloy' | 'echo' | 'fable' | 'onyx' | 'nova' | 'shimmer';
 
@@ -14,28 +14,29 @@ export class OpenAITTSService {
 
   async speakText(text: string, options: TTSOptions = {}): Promise<void> {
     try {
-      const cacheKey = `${text}-${options.voice || 'alloy'}-${options.speed || 1.0}`;
+      // Process text for better pronunciation
+      const processedText = contextualPronunciation.processTextForPronunciation(text, true);
+      const cacheKey = `${processedText}-${options.voice || 'alloy'}-${options.speed || 1.0}`;
       
       let audioUrl = this.audioCache.get(cacheKey);
       
       if (!audioUrl) {
-        const response = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/openai-tts', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            text: text.replace(/[.,!?;:'"()]/g, ''), // Clean text
-            voice: options.voice || 'nova', // Use more natural voice
+        const { data, error } = await supabase.functions.invoke('openai-tts', {
+          body: {
+            text: processedText,
+            voice: options.voice || 'nova',
             speed: options.speed || 1.0
-          })
+          }
         });
 
-        if (!response.ok) throw new Error('TTS request failed');
-        const data = await response.arrayBuffer();
-        // Convert response to blob URL
-        const blob = new Blob([data], { type: 'audio/mpeg' });
-        audioUrl = URL.createObjectURL(blob);
+        if (error) throw new Error(error.message);
+        if (!data?.audioContent) throw new Error('No audio data received');
+
+        // Convert base64 to blob
+        const audioBuffer = Uint8Array.from(atob(data.audioContent), c => c.charCodeAt(0));
+        const audioBlob = new Blob([audioBuffer], { type: 'audio/mpeg' });
+
+        audioUrl = URL.createObjectURL(audioBlob);
         this.audioCache.set(cacheKey, audioUrl);
       }
 

@@ -34,6 +34,7 @@ export const processTextForPhonetics = (
         difficulty={difficulty}
         userInfo={userInfo}
         isPremium={isPremium}
+        sentenceContext={text}
       />
     );
   }).filter(Boolean);

@@ -1,5 +1,6 @@
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { contextualPronunciation } from "./contextualPronunciation";
 
 export interface TextToSpeechConfig {
   voice?: string;
@@ -18,13 +19,13 @@ export class OpenAITTSService {
   }
 
   async speakText(text: string, options?: { speed?: number }): Promise<void> {
-    // Clean the text for speech
-    const cleanText = text.replace(/[.,!?;:'"()]/g, '').trim();
+    // Process text for better pronunciation
+    const processedText = contextualPronunciation.processTextForPronunciation(text, true);
     
-    if (!cleanText) return;
+    if (!processedText) return;
 
     // Check cache first - include speed in cache key for different speeds
-    const cacheKey = `${cleanText}_${this.voice}_${options?.speed || this.speed}`;
+    const cacheKey = `${processedText}_${this.voice}_${options?.speed || this.speed}`;
     if (this.audioCache.has(cacheKey)) {
       const audioUrl = this.audioCache.get(cacheKey)!;
       await this.playAudio(audioUrl);
@@ -34,12 +35,12 @@ export class OpenAITTSService {
     try {
       // Use Supabase functions.invoke for proper authentication
       const speedToUse = options?.speed || this.speed;
-      console.log(`TTS Request: voice=${this.voice}, speed=${speedToUse}, text="${cleanText.substring(0, 50)}..."`);
+      console.log(`TTS Request: voice=${this.voice}, speed=${speedToUse}, text="${processedText.substring(0, 50)}..."`);
       console.log('About to call openai-tts function...');
       
       const { data, error } = await supabase.functions.invoke('openai-tts', {
         body: {
-          text: cleanText,
+          text: processedText,
           voice: this.voice,
           speed: speedToUse
         }
@@ -97,7 +98,7 @@ export class OpenAITTSService {
       }
       
       // Fallback to browser speech synthesis with child-friendly settings
-      this.fallbackToWebSpeech(cleanText);
+      this.fallbackToWebSpeech(processedText);
     }
   }
 

@@ -4,14 +4,16 @@ import { getPhoneticSpelling } from "@/utils/phoneticDictionary";
 import { Volume2, HelpCircle, Languages, BookOpen, Lightbulb, Plus, Crown } from "lucide-react";
 import { createOpenAITTSService } from "@/services/textToSpeechService";
 import { useToast } from "@/hooks/use-toast";
+import { contextualPronunciation } from "@/services/contextualPronunciation";
 import type { UserInfo } from "@/types";
 
 interface InteractiveWordProps {
   word: string;
   className?: string;
   difficulty?: "easy" | "medium" | "hard" | "expert";
-  userInfo?: UserInfo; // New prop to adapt behavior
-  isPremium?: boolean; // Add premium status
+  userInfo?: UserInfo;
+  isPremium?: boolean;
+  sentenceContext?: string;
 }
 
 export const InteractiveWord = ({ 
@@ -19,7 +21,8 @@ export const InteractiveWord = ({
   className = "", 
   difficulty = "easy",
   userInfo,
-  isPremium = false
+  isPremium = false,
+  sentenceContext = ""
 }: InteractiveWordProps) => {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
@@ -146,10 +149,18 @@ export const InteractiveWord = ({
     setIsPlaying(true);
     try {
       if (ttsService) {
-        // For ESL learners, use slower pronunciation
+        // Get context-aware pronunciation
+        const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
+        const fullContext = sentenceContext || `The word ${cleanWord} in context`;
+        const pronunciationInfo = contextualPronunciation.getWordPronunciation(cleanWord, fullContext);
+        
+        // Use context-aware pronunciation if available
+        const textToSpeak = pronunciationInfo.isContextAware 
+          ? `${cleanWord}, pronounced as ${pronunciationInfo.pronunciation}`
+          : cleanWord;
+        
         const speed = isESLLearner ? 0.7 : 1.0;
-        const voice = 'nova'; // Use consistent nova voice
-        await ttsService.speakText(word, { speed, voice });
+        await ttsService.speakText(textToSpeak, { speed });
       } else {
         // Fallback to browser speech synthesis
         if ('speechSynthesis' in window) {
