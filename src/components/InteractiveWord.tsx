@@ -215,7 +215,7 @@ export const InteractiveWord = ({
         setWordData(wordData);
         
         // Show definition with translation fallback
-        const definition = wordData.definition || t('interactiveWord.definition', 'Definition');
+        const definition = wordData.definition || userLanguageT('interactiveWord.definition', 'Definition');
         
         // Use native TTS to speak the explanation in user's language
         if (ttsService && definition) {
@@ -239,7 +239,7 @@ export const InteractiveWord = ({
             console.error('TTS Error:', ttsError);
             // Fallback to toast if TTS fails
             toast({
-              title: t('interactiveWord.definition', 'Definition'),
+              title: userLanguageT('interactiveWord.definition', 'Definition'),
               description: definition,
               duration: 4000,
             });
@@ -247,7 +247,7 @@ export const InteractiveWord = ({
         } else {
           // Fallback to toast if no TTS service
           toast({
-            title: t('interactiveWord.definition', 'Definition'),
+            title: userLanguageT('interactiveWord.definition', 'Definition'),
             description: `"${cleanWord}" = ${definition}`,
             duration: 5000,
           });
@@ -255,19 +255,19 @@ export const InteractiveWord = ({
         
         // Build explanation with fallbacks
         const explanationParts = [];
-        if (wordData.phonetic) {
-          explanationParts.push(`${cleanWord} ${t('interactiveWord.pronouncedAs', 'is pronounced')} ${wordData.phonetic}.`);
-        }
-        if (wordData.definition) {
-          explanationParts.push(wordData.definition);
-        }
-        if (wordData.sampleSentence) {
-          explanationParts.push(`${t('interactiveWord.example', 'Example')}: ${wordData.sampleSentence}`);
-        }
-        
-        const explanation = explanationParts.length > 0 
-          ? explanationParts.join(' ') 
-          : `${cleanWord} ${t('interactiveWord.isAWord', 'is a word')}.`;
+         if (wordData.phonetic) {
+           explanationParts.push(`${cleanWord} ${userLanguageT('interactiveWord.pronouncedAs', 'is pronounced')} ${wordData.phonetic}.`);
+         }
+         if (wordData.definition) {
+           explanationParts.push(wordData.definition);
+         }
+         if (wordData.sampleSentence) {
+           explanationParts.push(`${userLanguageT('interactiveWord.example', 'Example')}: ${wordData.sampleSentence}`);
+         }
+         
+         const explanation = explanationParts.length > 0 
+           ? explanationParts.join(' ') 
+           : `${cleanWord} ${userLanguageT('interactiveWord.isAWord', 'is a word')}.`;
         
         // Simplified speech synthesis - no complex mobile handling
         if ('speechSynthesis' in window) {
@@ -320,24 +320,24 @@ export const InteractiveWord = ({
         setWordData({
           definition: fallbackDefinition,
           phonetic: getPhoneticSpelling(cleanWord),
-          sampleSentence: `${t('interactiveWord.example', 'Example')}: "${cleanWord}" in context.`
-        });
-        
-        toast({
-          title: t('interactiveWord.definition', 'Definition'),
-          description: `"${cleanWord}" = ${fallbackDefinition}`,
-          duration: 5000,
-        });
+           sampleSentence: `${userLanguageT('interactiveWord.example', 'Example')}: "${cleanWord}" in context.`
+         });
+         
+         toast({
+           title: userLanguageT('interactiveWord.definition', 'Definition'),
+           description: `"${cleanWord}" = ${fallbackDefinition}`,
+           duration: 5000,
+         });
       }
     } catch (error) {
       console.error('Error explaining word:', error);
       
-      // Simple error handling with translation fallbacks
-      toast({
-        title: t("interactiveWord.audioNotAvailable", "Audio Not Available"),
-        description: t("interactiveWord.definitionShown", "Definition shown below. Try with headphones if needed."),
-        duration: 3000,
-      });
+       // Simple error handling with translation fallbacks
+       toast({
+         title: userLanguageT("interactiveWord.audioNotAvailable", "Audio Not Available"),
+         description: userLanguageT("interactiveWord.definitionShown", "Definition shown below. Try with headphones if needed."),
+         duration: 3000,
+       });
       
       // Always show word data even if audio fails
       const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
@@ -345,8 +345,8 @@ export const InteractiveWord = ({
       setWordData({
         definition,
         phonetic: getPhoneticSpelling(cleanWord),
-        sampleSentence: `${t('interactiveWord.example', 'Example')}: "${cleanWord}" in context.`
-      });
+         sampleSentence: `${userLanguageT('interactiveWord.example', 'Example')}: "${cleanWord}" in context.`
+       });
     } finally {
       setIsLoadingWordData(false);
       setIsPlaying(false);
@@ -701,7 +701,7 @@ export const InteractiveWord = ({
                 disabled={isLoadingWordData}
               >
                 <Languages className="w-3 h-3" />
-                <span className="hidden xs:inline">{isLoadingWordData ? (t("interactiveWord.loading") || "Loading...") : (t("interactiveWord.translate") || "Translate")}</span>
+                <span className="hidden xs:inline">{isLoadingWordData ? userLanguageT("interactiveWord.loading", "Loading...") : userLanguageT("interactiveWord.translate", "Translate")}</span>
                 <span className="xs:hidden">Trans</span>
               </button>
             )}
@@ -718,7 +718,7 @@ export const InteractiveWord = ({
                 disabled={!isPremium}
               >
                 {isPremium ? <Plus className="w-3 h-3" /> : <Crown className="w-3 h-3" />}
-                <span className="hidden xs:inline">{t("interactiveWord.addToVocabulary", "Save Word")}</span>
+                <span className="hidden xs:inline">{userLanguageT("interactiveWord.addToVocabulary", "Save Word")}</span>
                 <span className="xs:hidden">Save</span>
               </button>
               
@@ -741,7 +741,7 @@ export const InteractiveWord = ({
                 className="flex items-center gap-1 text-xs bg-indigo-50 hover:bg-indigo-100 active:bg-indigo-200 border border-indigo-200 px-2.5 py-2 rounded-md transition-colors touch-manipulation min-h-[36px] font-medium text-indigo-700 shadow-sm"
               >
                 <Lightbulb className="w-3 h-3" />
-                <span className="hidden xs:inline">{t("interactiveWord.etymology") || "Etymology"}</span>
+                <span className="hidden xs:inline">{userLanguageT("interactiveWord.etymology", "Etymology")}</span>
                 <span className="xs:hidden">Info</span>
               </button>
             )}
