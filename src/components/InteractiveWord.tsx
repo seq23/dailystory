@@ -449,6 +449,8 @@ export const InteractiveWord = ({
     if (isLoadingWordData || isNativeEnglishSpeaker) return;
     
     setIsLoadingWordData(true);
+    setIsPlaying(true);
+    
     try {
       const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
       const languageNames: Record<string, string> = {
@@ -471,12 +473,60 @@ export const InteractiveWord = ({
       });
 
       if (!error && data) {
+        const translationText = data.translation || `Translation: ${data.translated_word}`;
+        
         // Show translation in a toast
         toast({
           title: `${cleanWord} in ${langName}`,
-          description: data.translation || `Translation: ${data.translated_word}`,
+          description: translationText,
           duration: 5000,
         });
+
+        // Play audio explanation in user's native language
+        if ('speechSynthesis' in window) {
+          try {
+            console.log('🎵 Playing translation audio:', {
+              text: translationText,
+              language: userNativeLanguage
+            });
+            
+            const utterance = new SpeechSynthesisUtterance(translationText);
+            utterance.rate = 0.7;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+            utterance.lang = userNativeLanguage;
+            
+            // Find best voice for user's language
+            const voices = speechSynthesis.getVoices();
+            const languageCode = userNativeLanguage.substring(0, 2);
+            const nativeVoice = voices.find(voice => 
+              voice.lang.toLowerCase().startsWith(languageCode.toLowerCase())
+            );
+            
+            if (nativeVoice) {
+              utterance.voice = nativeVoice;
+              console.log('✅ Using native voice:', { name: nativeVoice.name, lang: nativeVoice.lang });
+            }
+            
+            utterance.onstart = () => console.log('✅ Translation speech started');
+            utterance.onend = () => {
+              console.log('✅ Translation speech ended');
+              setIsPlaying(false);
+            };
+            utterance.onerror = (event) => {
+              console.error('❌ Translation speech error:', event);
+              setIsPlaying(false);
+            };
+            
+            speechSynthesis.speak(utterance);
+          } catch (audioError) {
+            console.error('❌ Translation audio error:', audioError);
+            setIsPlaying(false);
+          }
+        } else {
+          console.warn('⚠️ Speech synthesis not supported');
+          setIsPlaying(false);
+        }
 
         // Also get word data for additional context
         if (ttsService) {
@@ -491,6 +541,7 @@ export const InteractiveWord = ({
           description: t("interactiveWord.translationError", "Translation service temporarily unavailable"),
           duration: 3000,
         });
+        setIsPlaying(false);
       }
     } catch (error) {
       console.error('Error translating word:', error);
@@ -500,6 +551,7 @@ export const InteractiveWord = ({
         description: t("interactiveWord.translationError", "Translation not available"),
         duration: 3000,
       });
+      setIsPlaying(false);
     } finally {
       setIsLoadingWordData(false);
     }
