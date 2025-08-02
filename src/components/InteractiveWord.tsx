@@ -212,6 +212,13 @@ export const InteractiveWord = ({
           if (!translationError && translationData?.translation) {
             explanation = `${cleanWord} means: ${translationData.translation}`;
             console.log('Using translated explanation:', explanation);
+            
+            // Show a toast to highlight the translation
+            toast({
+              title: `Translation (${userNativeLanguage.toUpperCase()})`,
+              description: `"${cleanWord}" = ${translationData.translation}`,
+              duration: 4000,
+            });
           } else {
             console.log('Translation failed, using English definition');
           }
