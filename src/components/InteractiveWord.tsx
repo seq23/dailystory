@@ -198,6 +198,12 @@ export const InteractiveWord = ({
       });
       
       console.log('Mobile Dictionary Response:', { data: wordData, error: wordError });
+      console.log('Raw wordData fields:', {
+        definition: wordData?.definition,
+        phonetic: wordData?.phonetic, 
+        sampleSentence: wordData?.sampleSentence,
+        explanation: wordData?.explanation
+      });
       
       if (!wordError && wordData) {
         setWordData(wordData);
@@ -226,13 +232,27 @@ export const InteractiveWord = ({
           ? explanationParts.join(' ') 
           : `${cleanWord} ${t('interactiveWord.isAWord', 'is a word')}.`;
         
+        console.log('Built explanation for mobile TTS:', {
+          userNativeLanguage,
+          explanationLength: explanation.length,
+          explanationPreview: explanation.substring(0, 100) + '...',
+          explanationParts: explanationParts.length
+        });
+        
         // Mobile optimized: Always prefer Web Speech API for better mobile compatibility
         const isMobile = /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         
         if (isMobile || !ttsService) {
-          console.log('Using Web Speech API for mobile:', { userNativeLanguage, explanation: explanation.substring(0, 50) + '...' });
+          console.log('Using Web Speech API for mobile explain button:', { 
+            userNativeLanguage, 
+            isMobile,
+            hasTtsService: !!ttsService,
+            explanationPreview: explanation.substring(0, 50) + '...' 
+          });
           
           if ('speechSynthesis' in window) {
+            console.log('Speech synthesis available, starting TTS process...');
+            
             // Cancel any existing speech
             speechSynthesis.cancel();
             await new Promise(resolve => setTimeout(resolve, 100));
@@ -282,8 +302,22 @@ export const InteractiveWord = ({
               utterance.lang = userNativeLanguage;
             }
             
+            console.log('About to speak explanation with utterance settings:', {
+              text: explanation.substring(0, 50) + '...',
+              voice: utterance.voice?.name || 'default',
+              lang: utterance.lang,
+              rate: utterance.rate,
+              pitch: utterance.pitch,
+              volume: utterance.volume
+            });
+            
             utterance.onerror = (error) => {
               console.error('Speech synthesis error:', error);
+              console.error('Error event details:', {
+                error: error.error,
+                type: error.type,
+                currentTarget: error.currentTarget
+              });
               toast({
                 title: t("interactiveWord.audioUnavailable", "Audio unavailable"), 
                 description: t("interactiveWord.definitionShown", "Definition shown below. Try with headphones if needed."),
@@ -293,9 +327,15 @@ export const InteractiveWord = ({
             };
             
             utterance.onend = () => {
+              console.log('Speech synthesis completed successfully');
               setIsPlaying(false);
             };
             
+            utterance.onstart = () => {
+              console.log('Speech synthesis started');
+            };
+            
+            console.log('Calling speechSynthesis.speak()...');
             speechSynthesis.speak(utterance);
             return;
           } else {
