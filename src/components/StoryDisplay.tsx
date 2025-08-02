@@ -808,38 +808,40 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                 <div className="flex-shrink-0 p-6 border-b border-gray-100">
                   {/* Difficulty Level Selector */}
                   <div id="reading-level-controls" className="mb-4 reading-level-controls">
-                    <div className="flex gap-3 justify-center items-center">
+                    <div className="flex gap-4 justify-center items-center">
                       <div className="relative group">
                         <Button
                           onClick={() => changeDifficulty('easier')}
                           disabled={!canDecreaseDifficulty() || isLoading}
                           variant="outline"
-                          size="sm"
-                          className="p-2"
+                          size="lg"
+                          className="p-3 transition-all duration-200 hover:scale-110 hover:shadow-lg bg-gradient-to-br from-blue-50 to-indigo-100 border-2 border-blue-200 hover:border-blue-300 text-blue-700 rounded-xl"
                         >
-                          <ChevronDown className="w-4 h-4" />
+                          <ChevronDown className="w-5 h-5" />
                         </Button>
-                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
-                          Make story easier
+                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-blue-600 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-[100] shadow-lg before:content-[''] before:absolute before:bottom-full before:left-1/2 before:-translate-x-1/2 before:border-4 before:border-transparent before:border-b-blue-600">
+                          🌟 Make this story easier
                         </div>
                       </div>
                       
-                      <span className="text-sm font-medium text-gray-600">
-                        Reading Level
-                      </span>
+                      <div className="text-center">
+                        <span className="text-sm font-bold text-gray-700 bg-gradient-to-r from-purple-100 to-pink-100 px-3 py-1 rounded-full border border-purple-200">
+                          📚 Reading Level
+                        </span>
+                      </div>
                       
                       <div className="relative group">
                         <Button
                           onClick={() => changeDifficulty('harder')}
                           disabled={!canIncreaseDifficulty() || isLoading}
                           variant="outline"
-                          size="sm"
-                          className="p-2"
+                          size="lg"
+                          className="p-3 transition-all duration-200 hover:scale-110 hover:shadow-lg bg-gradient-to-br from-green-50 to-emerald-100 border-2 border-green-200 hover:border-green-300 text-green-700 rounded-xl"
                         >
-                          <ChevronUp className="w-4 h-4" />
+                          <ChevronUp className="w-5 h-5" />
                         </Button>
-                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
-                          Make story harder
+                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-green-600 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-[100] shadow-lg before:content-[''] before:absolute before:bottom-full before:left-1/2 before:-translate-x-1/2 before:border-4 before:border-transparent before:border-b-green-600">
+                          🚀 Make this story harder
                         </div>
                       </div>
                     </div>
