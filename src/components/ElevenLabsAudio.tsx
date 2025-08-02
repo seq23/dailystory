@@ -154,25 +154,12 @@ export const ElevenLabsAudio = ({
 
       {!isPremium && (
         <div className="flex items-center gap-2">
-          <Badge variant={canUseAudio ? "secondary" : "destructive"} className="text-xs">
-            <Crown className="w-3 h-3 mr-1" />
-            {isExtendedPage ? "Premium Only" : `${Math.max(0, maxFreePages - playedPages.size)} Free Left`}
-          </Badge>
           {!canUseAudio && (
             <Button onClick={onUpgrade} variant="outline" size="sm">
               Upgrade
             </Button>
           )}
         </div>
-      )}
-      
-      {!isPremium && playedPages.size > 0 && (
-        <p className="text-xs text-amber-600 font-medium">
-          {isExtendedPage 
-            ? t("audioReading.extendedPagesNeedPremium", "🔒 Extended pages need Premium")
-            : `🎵 ${playedPages.size}/${maxFreePages} ${t("audioReading.freeAudioUsed", "free audio used")}`
-          }
-        </p>
       )}
     </div>
   );
