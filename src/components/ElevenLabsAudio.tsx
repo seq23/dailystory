@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Play, Square, Crown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { UserInfo } from "@/types";
@@ -155,9 +156,18 @@ export const ElevenLabsAudio = ({
       {!isPremium && (
         <div className="flex items-center gap-2">
           {!canUseAudio && (
-            <Button onClick={onUpgrade} variant="outline" size="sm">
-              Upgrade
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button onClick={onUpgrade} variant="outline" size="sm">
+                    {t("audioReading.upgrade", "Upgrade")}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{t("audioReading.upgradeTooltip", "Upgrade to Premium for unlimited audio plays")}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
         </div>
       )}

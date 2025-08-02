@@ -353,6 +353,8 @@
     "speed": "Vitesse",
     "stop": "Arrêter",
     "generating": "Génération...",
+    "upgrade": "Mettre à niveau",
+    "upgradeTooltip": "Passez à Premium pour des lectures audio illimitées",
     "freeAudioUsed": "audio gratuit utilisé",
     "extendedPagesNeedPremium": "🔒 Les pages étendues nécessitent Premium"
   },

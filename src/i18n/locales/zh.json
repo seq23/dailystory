@@ -525,6 +525,8 @@
     "speed": "速度",
     "stop": "停止",
     "generating": "生成中...",
+    "upgrade": "升级",
+    "upgradeTooltip": "升级到高级版可无限播放音频",
     "freeAudioUsed": "免费音频已使用",
     "extendedPagesNeedPremium": "🔒 扩展页面需要高级版"
   },

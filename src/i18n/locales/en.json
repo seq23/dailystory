@@ -436,6 +436,8 @@
     "speed": "Speed",
     "stop": "Stop",
     "generating": "Generating...",
+    "upgrade": "Upgrade",
+    "upgradeTooltip": "Upgrade to Premium for unlimited audio plays",
     "freeAudioUsed": "free audio used",
     "extendedPagesNeedPremium": "🔒 Extended pages need Premium"
   },

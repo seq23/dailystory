@@ -353,6 +353,8 @@
     "speed": "Velocidad",
     "stop": "Detener",
     "generating": "Generando...",
+    "upgrade": "Actualizar",
+    "upgradeTooltip": "Actualiza a Premium para reproducciones de audio ilimitadas",
     "freeAudioUsed": "audio gratuito usado",
     "extendedPagesNeedPremium": "🔒 Las páginas extendidas necesitan Premium"
   },
