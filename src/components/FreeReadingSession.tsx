@@ -15,6 +15,9 @@ import { useTranslation } from "react-i18next";
 import { processTextForPhonetics } from "@/utils/textProcessor";
 import { TutorialOverlay } from "@/components/TutorialOverlay";
 import { FloatingTimer } from "@/components/FloatingTimer";
+import { useGamification } from "@/hooks/useGamification";
+import { AchievementNotification } from "@/components/AchievementNotification";
+import { setupGamificationGlobals, cleanupGamificationGlobals } from "@/utils/gamificationGlobals";
 
 // Import avatar assets
 import avatarBoyPale from "@/assets/avatar-boy-pale.jpg";
@@ -54,6 +57,26 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
 }) => {
   const { toast } = useToast();
   const { t } = useTranslation();
+
+  // Initialize gamification
+  const {
+    userStats,
+    recordReadingSession,
+    addVocabularyWord,
+    getNextAchievement,
+    hasNewAchievements
+  } = useGamification({
+    userId: userInfo?.name || 'guest',
+    onAchievementUnlocked: (achievement) => {
+      setCurrentAchievement(achievement);
+    },
+    onLevelUp: (newLevel) => {
+      // Level up happens silently, no toast notification
+      console.log('Level up to:', newLevel);
+    }
+  });
+
+  const [currentAchievement, setCurrentAchievement] = useState(null);
   
   // Story state
   const [story, setStory] = useState<string[]>([]);
@@ -141,6 +164,12 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   
   const canDecreaseDifficulty = () => getDifficultyIndex() > 0;
   const canIncreaseDifficulty = () => getDifficultyIndex() < difficultyLevels.length - 1;
+
+  // Setup gamification globals on mount
+  useEffect(() => {
+    setupGamificationGlobals(addVocabularyWord);
+    return () => cleanupGamificationGlobals();
+  }, [addVocabularyWord]);
 
   // Generate story on component mount - show immediate fallback then upgrade
   useEffect(() => {
@@ -665,6 +694,17 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     if (sessionEnded) return;
     
     setSessionEnded(true);
+    
+    // Record reading session for gamification
+    const timeSpent = APP_CONFIG.FREE_SESSION_DURATION - timeRemaining;
+    recordReadingSession({
+      wordsRead,
+      timeSpent,
+      pagesRead: currentPage + 1,
+      storyCompleted: currentPage >= story.length - 1,
+      readingSpeed: Math.round((wordsRead / (timeSpent / 60)) || 0)
+    });
+    
     startCelebration();
   };
 
@@ -1133,6 +1173,15 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
             }}
             onStepChange={setCurrentTutorialStep}
           />
+
+          {/* Achievement Notification */}
+          {currentAchievement && (
+            <AchievementNotification
+              achievement={currentAchievement}
+              isVisible={!!currentAchievement}
+              onClose={() => setCurrentAchievement(null)}
+            />
+          )}
         </>
       )}
       </div>

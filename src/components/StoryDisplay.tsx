@@ -17,6 +17,7 @@ import { FloatingTimer } from "@/components/FloatingTimer";
 import { useGamification } from "@/hooks/useGamification";
 import { GamificationDashboard } from "@/components/GamificationDashboard";
 import { AchievementNotification } from "@/components/AchievementNotification";
+import { setupGamificationGlobals, cleanupGamificationGlobals } from "@/utils/gamificationGlobals";
 
 // Import avatar assets
 import avatarBoyPale from "@/assets/avatar-boy-pale.jpg";
@@ -67,7 +68,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
   } = useGamification({
     userId: userInfo?.name || 'guest',
     onAchievementUnlocked: (achievement) => {
-      console.log('New achievement unlocked:', achievement.title);
+      setCurrentAchievement(achievement);
     },
     onLevelUp: (newLevel) => {
       // Level up happens silently, no toast notification
@@ -150,6 +151,12 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
   
   const canDecreaseDifficulty = () => getDifficultyIndex() > 0;
   const canIncreaseDifficulty = () => getDifficultyIndex() < difficultyLevels.length - 1;
+
+  // Setup gamification globals on mount
+  useEffect(() => {
+    setupGamificationGlobals(addVocabularyWord);
+    return () => cleanupGamificationGlobals();
+  }, [addVocabularyWord]);
 
   // Generate story on component mount
   useEffect(() => {
@@ -991,6 +998,15 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
         />
       )}
       
+      {/* Achievement Notification */}
+      {currentAchievement && (
+        <AchievementNotification
+          achievement={currentAchievement}
+          isVisible={!!currentAchievement}
+          onClose={() => setCurrentAchievement(null)}
+        />
+      )}
+
       {/* Improved Tutorial */}
       <TutorialOverlay
         isVisible={tutorialActive} 
