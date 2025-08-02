@@ -265,7 +265,17 @@ export const FloatingTimer = ({
                     className={`bg-gradient-to-b from-white to-gray-50 backdrop-blur-sm border-2 border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground shadow-xl w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-2xl hover:border-primary/50 touch-manipulation ${getTutorialClasses(1)}`}
                     style={{ touchAction: 'manipulation' }}
                   >
-                    {isReading ? <Pause className="w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8" /> : <Play className="w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 ml-1" />}
+                    <div className="flex items-center justify-center w-full h-full relative">
+                      {isReading ? (
+                        <Pause className="w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 !block !opacity-100 force-visible" style={{ display: 'block !important', opacity: '1 !important' }} />
+                      ) : (
+                        <Play className="w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 ml-1 !block !opacity-100 force-visible" style={{ display: 'block !important', opacity: '1 !important' }} />
+                      )}
+                      {/* Fallback text for when icons don't render on mobile */}
+                      <span className="sr-only text-xs font-bold absolute inset-0 flex items-center justify-center text-primary">
+                        {isReading ? "⏸" : "▶"}
+                      </span>
+                    </div>
                 </Button>
               </TooltipTrigger>
               <TooltipContent 

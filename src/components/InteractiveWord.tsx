@@ -180,17 +180,81 @@ export const InteractiveWord = ({
     if (isPlaying || isLoadingWordData) return;
     
     setIsLoadingWordData(true);
+    setIsPlaying(true);
+    
     try {
-      if (ttsService) {
-        // For mobile, ensure audio context is properly initialized within user gesture
-        if (/Mobi|Android/i.test(navigator.userAgent)) {
-          // Create and resume audio context within user gesture for mobile
-          const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-          if (AudioContext && (ttsService as any).audioContext?.state === 'suspended') {
-            await (ttsService as any).audioContext.resume();
+      // Mobile-specific audio initialization
+      const isMobile = /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
+      if (isMobile) {
+        // Create a new audio context within the user gesture for mobile
+        const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+        let newAudioContext: AudioContext | null = null;
+        
+        try {
+          newAudioContext = new AudioContext();
+          console.log('Created new AudioContext for mobile:', newAudioContext.state);
+          
+          // Ensure context is running
+          if (newAudioContext.state === 'suspended') {
+            await newAudioContext.resume();
+            console.log('Resumed AudioContext:', newAudioContext.state);
+          }
+          
+          // Initialize TTS service with new context if needed
+          if (ttsService && (ttsService as any).audioContext?.state !== 'running') {
+            (ttsService as any).audioContext = newAudioContext;
+          }
+        } catch (audioError) {
+          console.log('AudioContext creation failed, using fallback:', audioError);
+          
+          // Mobile fallback: use Web Speech API with better error handling
+          const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
+          const definition = getWordDefinition(cleanWord, sentenceContext);
+          const explanation = `The word ${cleanWord} means: ${definition}`;
+          
+          if ('speechSynthesis' in window) {
+            // Cancel any existing speech
+            speechSynthesis.cancel();
+            
+            // Wait a moment to ensure cancellation
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            const utterance = new SpeechSynthesisUtterance(explanation);
+            utterance.rate = 0.8;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+            
+            // Add error handling for utterance
+            utterance.onerror = (error) => {
+              console.error('Speech synthesis error:', error);
+              toast({
+                title: "Audio Error", 
+                description: "Please enable audio or try with headphones connected.",
+                duration: 3000,
+              });
+            };
+            
+            utterance.onend = () => {
+              setIsPlaying(false);
+            };
+            
+            speechSynthesis.speak(utterance);
+            
+            // Set word data for display
+            const data = await ttsService?.getWordData?.(cleanWord, difficulty as 'easy' | 'medium' | 'hard') || {
+              definition,
+              phonetic: getPhoneticSpelling(cleanWord),
+              sampleSentence: `Here's an example: ${cleanWord} in a sentence.`
+            };
+            setWordData(data);
+            
+            return; // Exit early for fallback
           }
         }
-        
+      }
+      
+      if (ttsService) {
         // Get comprehensive word data and speak it
         const userLevel = difficulty === 'easy' ? 'easy' : difficulty === 'medium' ? 'medium' : 'hard';
         await ttsService.explainWord(word, userLevel);
@@ -201,16 +265,33 @@ export const InteractiveWord = ({
       }
     } catch (error) {
       console.error('Error explaining word:', error);
-      // Better mobile fallback with toast notification
-      if (error.message?.includes('not allowed') || error.message?.includes('permission')) {
+      
+      // Enhanced mobile error handling
+      if (error.message?.includes('not allowed') || error.message?.includes('permission') || error.message?.includes('gesture')) {
         toast({
-          title: "Audio Permission Required",
-          description: "Please enable audio permissions or try again after interacting with the page.",
+          title: "Touch to Enable Audio",
+          description: "Tap this button again to enable audio explanations.",
           duration: 4000,
         });
+      } else {
+        toast({
+          title: "Audio Not Available",
+          description: "Try using headphones or enabling audio permissions.",
+          duration: 3000,
+        });
       }
+      
+      // Show word data even if audio fails
+      const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
+      const definition = getWordDefinition(cleanWord, sentenceContext);
+      setWordData({
+        definition,
+        phonetic: getPhoneticSpelling(cleanWord),
+        sampleSentence: `Example: "${cleanWord}" in context.`
+      });
     } finally {
       setIsLoadingWordData(false);
+      setIsPlaying(false);
     }
   };
 
@@ -468,29 +549,40 @@ export const InteractiveWord = ({
       
       {showTooltip && (
         <div 
-          className="fixed z-[99999] bg-white border border-gray-200 text-gray-900 px-4 py-4 sm:px-6 sm:py-5 rounded-xl shadow-2xl text-sm sm:text-base font-medium backdrop-blur-sm"
+          className={`fixed z-[99999] bg-white border border-gray-200 text-gray-900 px-3 py-3 sm:px-4 sm:py-4 rounded-xl shadow-2xl text-xs sm:text-sm font-medium backdrop-blur-sm transition-all duration-200 ${
+            /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+              ? 'max-h-[70vh] overflow-y-auto scrollbar-thin' 
+              : ''
+          }`}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
           onTouchStart={(e) => e.stopPropagation()}
           style={{
-            // Fixed positioning based on word location - made larger for kids
+            // Mobile-optimized positioning with better viewport handling
             ...(tooltipPosition.horizontal === 'left' ? {
-              left: `${Math.max(20, wordRef.current?.getBoundingClientRect().left || 0)}px`,
+              left: `${Math.max(10, wordRef.current?.getBoundingClientRect().left || 0)}px`,
             } : tooltipPosition.horizontal === 'right' ? {
-              right: `${Math.max(20, window.innerWidth - (wordRef.current?.getBoundingClientRect().right || window.innerWidth))}px`,
+              right: `${Math.max(10, window.innerWidth - (wordRef.current?.getBoundingClientRect().right || window.innerWidth))}px`,
             } : {
-              left: `${Math.max(20, Math.min(window.innerWidth - 400, (wordRef.current?.getBoundingClientRect().left || 0) + (wordRef.current?.getBoundingClientRect().width || 0) / 2 - 200))}px`,
+              left: `${Math.max(10, Math.min(window.innerWidth - 320, (wordRef.current?.getBoundingClientRect().left || 0) + (wordRef.current?.getBoundingClientRect().width || 0) / 2 - 160))}px`,
             }),
             ...(tooltipPosition.vertical === 'top' ? {
-              bottom: `${window.innerHeight - (wordRef.current?.getBoundingClientRect().top || 0) + 12}px`,
+              bottom: `${Math.max(10, window.innerHeight - (wordRef.current?.getBoundingClientRect().top || 0) + 8)}px`,
+              maxHeight: `${Math.max(200, (wordRef.current?.getBoundingClientRect().top || 0) - 20)}px`,
             } : {
-              top: `${(wordRef.current?.getBoundingClientRect().bottom || 0) + 12}px`,
+              top: `${Math.max(10, (wordRef.current?.getBoundingClientRect().bottom || 0) + 8)}px`,
+              maxHeight: `${Math.max(200, window.innerHeight - (wordRef.current?.getBoundingClientRect().bottom || 0) - 20)}px`,
             }),
-            maxWidth: 'min(400px, 92vw)',
-            minWidth: 'min(320px, 88vw)',
-            width: 'max-content',
+            maxWidth: 'min(340px, calc(100vw - 20px))',
+            minWidth: 'min(280px, calc(100vw - 40px))',
+            width: 'auto',
             boxShadow: '0 15px 50px -15px rgba(0, 0, 0, 0.4)',
-            border: '2px solid rgba(0, 0, 0, 0.1)'
+            border: '2px solid rgba(0, 0, 0, 0.1)',
+            // Ensure tooltip stays within safe area on mobile
+            marginLeft: 'max(0px, env(safe-area-inset-left))',
+            marginRight: 'max(0px, env(safe-area-inset-right))',
+            marginTop: 'max(0px, env(safe-area-inset-top))',
+            marginBottom: 'max(0px, env(safe-area-inset-bottom))'
           }}
         >
           {/* Phonetic spelling */}
@@ -514,39 +606,39 @@ export const InteractiveWord = ({
             </div>
           )}
           
-          {/* Action buttons - larger and more spaced for kids */}
-          <div className="grid grid-cols-2 gap-3 mb-2">
+          {/* Action buttons - mobile-optimized sizing */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
             <button
               onClick={handlePronounce}
-              className="flex items-center justify-center gap-2 text-sm bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 px-4 py-3 rounded-lg transition-colors touch-manipulation min-h-[48px] font-semibold text-blue-700 shadow-sm"
+              className="flex items-center justify-center gap-2 text-xs sm:text-sm bg-blue-50 hover:bg-blue-100 active:bg-blue-200 border-2 border-blue-200 px-3 py-2.5 sm:px-4 sm:py-3 rounded-lg transition-colors touch-manipulation min-h-[44px] font-semibold text-blue-700 shadow-sm"
               disabled={isPlaying}
             >
-              <Volume2 className="w-4 h-4" />
+              <Volume2 className="w-3 h-3 sm:w-4 sm:h-4" />
               {t("interactiveWord.hearIt")}
             </button>
             
             <button
               onClick={handleExplain}
-              className="flex items-center justify-center gap-2 text-sm bg-green-50 hover:bg-green-100 border-2 border-green-200 px-4 py-3 rounded-lg transition-colors touch-manipulation min-h-[48px] font-semibold text-green-700 shadow-sm"
+              className="flex items-center justify-center gap-2 text-xs sm:text-sm bg-green-50 hover:bg-green-100 active:bg-green-200 border-2 border-green-200 px-3 py-2.5 sm:px-4 sm:py-3 rounded-lg transition-colors touch-manipulation min-h-[44px] font-semibold text-green-700 shadow-sm"
               disabled={isPlaying || isLoadingWordData}
             >
-              <HelpCircle className="w-4 h-4" />
+              <HelpCircle className="w-3 h-3 sm:w-4 sm:h-4" />
               {isLoadingWordData ? t("interactiveWord.loading") : t("interactiveWord.explain")}
             </button>
           </div>
 
-          {/* Secondary buttons row */}
-          <div className="flex items-center gap-2 flex-wrap">{/* ESL Translation and other buttons continue here */}
-
+          {/* Secondary buttons row - mobile-optimized */}
+          <div className="flex items-center gap-1.5 flex-wrap">
             {/* Translation button for ESL learners only */}
             {isESLLearner && (
               <button
                 onClick={handleTranslate}
-                className="flex items-center gap-1 text-xs bg-purple-50 hover:bg-purple-100 border border-purple-200 px-3 py-2 rounded-md transition-colors touch-manipulation min-h-[36px] font-medium text-purple-700"
+                className="flex items-center gap-1 text-xs bg-purple-50 hover:bg-purple-100 active:bg-purple-200 border border-purple-200 px-2.5 py-2 rounded-md transition-colors touch-manipulation min-h-[36px] font-medium text-purple-700 shadow-sm"
                 disabled={isLoadingWordData}
               >
                 <Languages className="w-3 h-3" />
-                {isLoadingWordData ? t("interactiveWord.loading") : t("interactiveWord.translate")}
+                <span className="hidden xs:inline">{isLoadingWordData ? t("interactiveWord.loading") : t("interactiveWord.translate")}</span>
+                <span className="xs:hidden">Trans</span>
               </button>
             )}
 
@@ -554,25 +646,26 @@ export const InteractiveWord = ({
             <div className="relative group">
               <button
                 onClick={isPremium ? handleAddToVocabulary : undefined}
-                className={`flex items-center gap-1 text-xs px-3 py-2 rounded-md transition-colors touch-manipulation min-h-[36px] font-medium ${
+                className={`flex items-center gap-1 text-xs px-2.5 py-2 rounded-md transition-colors touch-manipulation min-h-[36px] font-medium shadow-sm ${
                   isPremium 
-                    ? 'bg-yellow-50 hover:bg-yellow-100 border border-yellow-200 text-yellow-700 cursor-pointer' 
+                    ? 'bg-yellow-50 hover:bg-yellow-100 active:bg-yellow-200 border border-yellow-200 text-yellow-700 cursor-pointer' 
                     : 'bg-gray-100 text-gray-500 cursor-not-allowed opacity-60 border border-gray-200'
                 }`}
                 disabled={!isPremium}
               >
                 {isPremium ? <Plus className="w-3 h-3" /> : <Crown className="w-3 h-3" />}
-                {t("interactiveWord.addToVocabulary", "Save Word")}
+                <span className="hidden xs:inline">{t("interactiveWord.addToVocabulary", "Save Word")}</span>
+                <span className="xs:hidden">Save</span>
               </button>
               
-              {/* Premium tooltip for free users */}
+              {/* Premium tooltip for free users - mobile optimized */}
               {!isPremium && (
-                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 shadow-lg">
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 shadow-lg max-w-[200px]">
                   <div className="flex items-center gap-1">
                     <Crown className="w-3 h-3" />
-                    <span>Premium Feature - Upgrade to save words!</span>
+                    <span>Premium Feature</span>
                   </div>
-                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-l-4 border-r-4 border-t-4 border-transparent border-t-purple-600"></div>
+                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-l-2 border-r-2 border-t-2 border-transparent border-t-purple-600"></div>
                 </div>
               )}
             </div>
@@ -581,10 +674,11 @@ export const InteractiveWord = ({
             {isNativeEnglishSpeaker && userInfo?.age && userInfo.age > 12 && (
               <button
                 onClick={() => {/* TODO: Implement etymology lookup */}}
-                className="flex items-center gap-1 text-xs bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-3 py-2 rounded-md transition-colors touch-manipulation min-h-[36px] font-medium text-indigo-700"
+                className="flex items-center gap-1 text-xs bg-indigo-50 hover:bg-indigo-100 active:bg-indigo-200 border border-indigo-200 px-2.5 py-2 rounded-md transition-colors touch-manipulation min-h-[36px] font-medium text-indigo-700 shadow-sm"
               >
                 <Lightbulb className="w-3 h-3" />
-                {t("interactiveWord.etymology")}
+                <span className="hidden xs:inline">{t("interactiveWord.etymology")}</span>
+                <span className="xs:hidden">Info</span>
               </button>
             )}
           </div>
