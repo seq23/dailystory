@@ -576,6 +576,7 @@
       "levelUp": "लेवल अप!",
       "levelUpDescription": "बधाई हो! आपने स्तर {level} तक पहुंच गया है!",
       "pointsEarned": "+{points} अंक प्राप्त!",
+      "pointsLabel": "अंक प्राप्त!",
       "awesome": "बहुत बढ़िया!",
       "streak": "{streak} दिन की लकीर!",
       "streakDescription": "अद्भुत! आप {streak} दिनों से लगातार पढ़ रहे हैं!",

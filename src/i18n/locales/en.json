@@ -475,6 +475,7 @@
       "levelUp": "Level Up!",
       "levelUpDescription": "Congratulations! You've reached level {level}!",
       "pointsEarned": "+{points} Points Earned!",
+      "pointsLabel": "Points Earned!",
       "awesome": "Awesome!",
       "streak": "{streak} Day Streak!",
       "streakDescription": "Amazing! You've been reading for {streak} days in a row!",

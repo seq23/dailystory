@@ -561,6 +561,7 @@
       "levelUp": "ارتقاء المستوى!",
       "levelUpDescription": "تهانينا! لقد وصلت إلى المستوى {level}!",
       "pointsEarned": "+{points} نقطة مكتسبة!",
+      "pointsLabel": "نقاط مكتسبة!",
       "awesome": "رائع!",
       "streak": "{streak} يوم متتالي!",
       "streakDescription": "مذهل! لقد كنت تقرأ لمدة {streak} أيام متتالية!",

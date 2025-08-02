@@ -422,6 +422,7 @@
       "levelUp": "Niveau Supérieur !",
       "levelUpDescription": "Félicitations ! Vous avez atteint le niveau {level} !",
       "pointsEarned": "+{points} Points Gagnés !",
+      "pointsLabel": "Points Gagnés !",
       "awesome": "Génial !",
       "streak": "{streak} Jours Consécutifs !",
       "streakDescription": "Incroyable ! Vous lisez depuis {streak} jours d'affilée !",

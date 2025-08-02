@@ -576,6 +576,7 @@
       "levelUp": "Subiu de Nível!",
       "levelUpDescription": "Parabéns! Você alcançou o nível {level}!",
       "pointsEarned": "+{points} Pontos Ganhos!",
+      "pointsLabel": "Pontos Ganhos!",
       "awesome": "Incrível!",
       "streak": "Sequência de {streak} Dias!",
       "streakDescription": "Fantástico! Você tem lido por {streak} dias seguidos!",

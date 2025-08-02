@@ -570,6 +570,7 @@
       "levelUp": "升级！",
       "levelUpDescription": "恭喜！您已达到第{level}级！",
       "pointsEarned": "+{points}分获得！",
+      "pointsLabel": "分数获得！",
       "awesome": "太棒了！",
       "streak": "{streak}天连续！",
       "streakDescription": "太棒了！您已经连续阅读{streak}天了！",
