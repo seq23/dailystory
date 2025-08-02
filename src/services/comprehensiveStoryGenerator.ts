@@ -2,6 +2,7 @@
 import type { UserInfo, DifficultyLevel } from "@/types";
 import CulturalAdaptationService from "./culturalAdaptationService";
 import { ContentSecurity } from "@/utils/security";
+import GrammarValidator from "@/utils/grammarValidator";
 
 // Author-inspired writing styles for authentic story creation
 const AUTHOR_STYLES = {
@@ -146,7 +147,7 @@ export class ComprehensiveStoryGenerator {
   ): string {
     const setting = culturalElements.setting || 'garden';
     
-    return `${name} sees a ${animal}. The ${animal} is ${color}. ${name} says hello. The ${animal} says hello too. ${name} smiles big. The ${animal} smiles big too. They dance together. They laugh together. ${name} is happy. The ${animal} is happy. What a wonderful day!`;
+    return `${name} sees ${GrammarValidator.createNounPhrase('', animal)}. The ${animal} is ${color}. ${name} says hello. The ${animal} says hello too. ${name} smiles big. The ${animal} smiles big too. They dance together. They laugh together. ${name} is happy. The ${animal} is happy. What a wonderful day!`;
   }
   
   // Kevin Henkes inspired - Gentle character-driven stories
@@ -160,7 +161,7 @@ export class ComprehensiveStoryGenerator {
     const setting = culturalElements.setting || 'neighborhood park';
     const food = culturalElements.food || 'sandwich';
     
-    return `${name} loved ${hobby} more than anything else. One sunny morning, ${name} went to the ${setting} with a ${food} for lunch. There, hiding behind an old oak tree, was a lonely ${animal}. The ${animal} looked sad and hungry. ${name} shared the ${food} with their new friend. They spent the whole day playing ${hobby} together. From that day on, ${name} and the ${animal} were inseparable. Every morning, they would meet at the ${setting} for new adventures. ${name} learned that the best part of ${hobby} was sharing it with a friend.`;
+    return `${name} loved ${hobby} more than anything else. One sunny morning, ${name} went to the ${setting} with ${GrammarValidator.createNounPhrase('', food)} for lunch. There, hiding behind an old oak tree, was ${GrammarValidator.createNounPhrase('lonely', animal)}. The ${animal} looked sad and hungry. ${name} shared the ${food} with their new friend. They spent the whole day playing ${hobby} together. From that day on, ${name} and the ${animal} were inseparable. Every morning, they would meet at the ${setting} for new adventures. ${name} learned that the best part of ${hobby} was sharing it with a friend.`;
   }
   
   // Roald Dahl inspired - Whimsical with character growth

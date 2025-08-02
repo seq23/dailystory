@@ -7,6 +7,7 @@ import type { UserInfo, DifficultyLevel } from "@/types";
 import { VocabularyLevelClassifier } from "@/utils/vocabularyLevelClassifier";
 import StoryQualityChecker from "@/utils/storyQualityChecker";
 import { validateAndFixGrammar } from '@/utils/grammarValidator';
+import GrammarValidator from '@/utils/grammarValidator';
 
 interface ProgressiveReadingConfig {
   maxWordsPerPage: number;
@@ -195,7 +196,7 @@ export class ProgressiveStoryGenerator {
     pageIndex: number
   ): string {
     const easyTemplates = [
-      `${name} saw a ${animal}.`,
+      `${name} saw ${GrammarValidator.createNounPhrase('', animal)}.`,
       `The ${animal} was ${color}.`,
       `${name} smiled.`,
       `The ${animal} ran.`,
@@ -221,7 +222,7 @@ export class ProgressiveStoryGenerator {
   ): string {
     const bridgeTemplates = [
       `${name} woke up.`,
-      `A ${color} ${animal} was outside.`,
+      `${GrammarValidator.createNounPhrase(color, animal, false)} was outside.`,
       `${name} went out.`,
       `The ${animal} seemed nice.`,
       `${name} started to play.`,

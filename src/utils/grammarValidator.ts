@@ -1,6 +1,80 @@
 // Grammar validation utilities to prevent subject-verb agreement errors
 export class GrammarValidator {
   
+  // Common plural endings to detect plural nouns
+  private static PLURAL_PATTERNS = [
+    /s$/i,           // dogs, cats, books
+    /es$/i,          // dishes, boxes, wishes
+    /ies$/i,         // berries, babies, stories
+    /ves$/i,         // leaves, wolves, knives
+    /i$/i,           // cacti, fungi
+    /ae$/i,          // larvae, antennae
+    /a$/i,           // data, criteria (some Latin plurals)
+  ];
+
+  // Irregular plurals that don't follow standard patterns
+  private static IRREGULAR_PLURALS = new Set([
+    'children', 'feet', 'geese', 'men', 'women', 'teeth', 'mice', 'people',
+    'sheep', 'deer', 'fish', 'species', 'series', 'means', 'aircraft'
+  ]);
+
+  /**
+   * Determines if a noun is plural
+   */
+  static isPlural(noun: string): boolean {
+    if (!noun || typeof noun !== 'string') return false;
+    
+    const cleanNoun = noun.trim().toLowerCase();
+    
+    // Check irregular plurals first
+    if (this.IRREGULAR_PLURALS.has(cleanNoun)) {
+      return true;
+    }
+    
+    // Check common plural patterns
+    return this.PLURAL_PATTERNS.some(pattern => pattern.test(cleanNoun));
+  }
+
+  /**
+   * Gets the correct article (a/an/the) for a noun, or empty string for plurals
+   */
+  static getCorrectArticle(noun: string, definite: boolean = false): string {
+    if (!noun || typeof noun !== 'string') return '';
+    
+    const cleanNoun = noun.trim().toLowerCase();
+    
+    // If plural, don't use indefinite articles
+    if (this.isPlural(cleanNoun)) {
+      return definite ? 'the ' : '';
+    }
+    
+    // For singular nouns
+    if (definite) {
+      return 'the ';
+    }
+    
+    // Use 'an' before vowel sounds, 'a' before consonants
+    const vowelSounds = /^[aeiou]/i;
+    return vowelSounds.test(cleanNoun) ? 'an ' : 'a ';
+  }
+
+  /**
+   * Creates a grammatically correct phrase with article + adjective + noun
+   */
+  static createNounPhrase(adjective: string, noun: string, definite: boolean = false): string {
+    if (!noun) return '';
+    
+    const article = this.getCorrectArticle(noun, definite);
+    const cleanAdjective = adjective?.trim() || '';
+    const cleanNoun = noun.trim();
+    
+    if (cleanAdjective) {
+      return `${article}${cleanAdjective} ${cleanNoun}`;
+    }
+    
+    return `${article}${cleanNoun}`;
+  }
+  
   // Common present tense verbs that need conjugation with third person singular
   private static CONJUGATION_VERBS = {
     'eat': { thirdPerson: 'eats', other: 'eat' },
@@ -132,6 +206,16 @@ export class GrammarValidator {
       });
     }
     
+    // Check for incorrect articles with plural nouns (a dogs, an cats)
+    const incorrectArticlePattern = /\b(a|an)\s+([a-zA-Z]*s\b|children|feet|geese|men|women|teeth|mice|people|sheep|deer|fish)/gi;
+    const incorrectArticleMatches = Array.from(text.matchAll(incorrectArticlePattern));
+    if (incorrectArticleMatches.length > 0) {
+      incorrectArticleMatches.forEach(match => {
+        const [fullMatch, article, noun] = match;
+        errors.push(`Grammar error: "${fullMatch}" - don't use "${article}" with plural noun "${noun}"`);
+      });
+    }
+    
     // Check for missing articles before singular countable nouns (with adjectives)
     const missingArticlePattern = /\b(with|play with|see|find|hold|catch|throw|pick up|grab|get|likes|loves|wants|needs)\s+(blue|red|green|yellow|pink|purple|orange|big|small|round|square)\s+(ball|toy|book|cat|dog|car|house|tree|flower|apple|cookie|cup|box|bag)\b/gi;
     const articleMatches = Array.from(text.matchAll(missingArticlePattern));
@@ -230,6 +314,12 @@ export const validateAndFixGrammar = (text: string): string => {
     // Attempt basic fixes for common issues
     let fixedText = text;
     
+    // Fix incorrect articles with plural nouns (a dogs -> dogs, an cats -> cats)
+    fixedText = fixedText.replace(/\b(a|an)\s+([a-zA-Z]*s\b|children|feet|geese|men|women|teeth|mice|people|sheep|deer|fish)/gi, 
+      (match, article, noun) => {
+        return noun;
+      });
+    
     // Fix missing articles before singular countable nouns (with adjectives)
     fixedText = fixedText.replace(/\b(with|play with|see|find|hold|catch|throw|pick up|grab|get|likes|loves|wants|needs)\s+(blue|red|green|yellow|pink|purple|orange|big|small|round|square)\s+(ball|toy|book|cat|dog|car|house|tree|flower|apple|cookie|cup|box|bag)\b/gi, 
       (match, verb, adjective, noun) => {
@@ -257,14 +347,18 @@ export const validateAndFixGrammar = (text: string): string => {
 
 // Quick test to verify grammar validation works
 if (typeof window !== 'undefined') {
-  // Test the specific error we fixed
+  // Test the specific errors we fixed
   const testCases = [
     'He eat pizza.',      // Should detect error
     'He eats pizza.',     // Should pass
     'She run fast.',      // Should detect error  
     'She runs fast.',     // Should pass
     'They eat pizza.',    // Should pass
-    'Alex eats pizza.'    // Should pass
+    'Alex eats pizza.',   // Should pass
+    'Scooter saw a dogs.',// Should detect plural article error
+    'Emma likes a cats.', // Should detect plural article error
+    'Sam found dogs.',    // Should pass
+    'Anna has cats.'      // Should pass
   ];
   
   console.log('🧪 Grammar Validator Test Results:');

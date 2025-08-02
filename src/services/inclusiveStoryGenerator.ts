@@ -1,5 +1,6 @@
 import type { UserInfo, DifficultyLevel } from "@/types";
 import CulturalAdaptationService from "./culturalAdaptationService";
+import GrammarValidator from "@/utils/grammarValidator";
 
 // Author-inspired writing styles by difficulty level
 const AUTHOR_STYLES = {
@@ -338,7 +339,7 @@ export class InclusiveStoryGenerator {
       if (!progress.metCharacter) {
         // Kevin Henkes style gentle introduction of characters
         const animal = elementTracker.getStoryCharacter(['wise owl', 'gentle deer', 'kind rabbit']);
-        return `A soft rustling in the bushes made ${characterName} turn around. There, with kind eyes and a gentle smile, sat a ${animal} who seemed both wise and friendly.`;
+        return `A soft rustling in the bushes made ${characterName} turn around. There, with kind eyes and a gentle smile, sat ${GrammarValidator.createNounPhrase('', animal)} who seemed both wise and friendly.`;
       } else if (!progress.foundObject) {
         // Jan Brett style storytelling with emotional depth
         return `"I've lost something very precious," the friend said quietly. "My grandmother's ${elementTracker.object}. Without it, I feel like a part of my heart is missing."`;

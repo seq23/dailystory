@@ -1,6 +1,7 @@
 import type { UserInfo, DifficultyLevel } from "@/types";
 import CulturalAdaptationService from "./culturalAdaptationService";
 import { validateAndFixGrammar } from '@/utils/grammarValidator';
+import GrammarValidator from '@/utils/grammarValidator';
 import StoryQualityChecker from '@/utils/storyQualityChecker';
 
 interface StoryTemplate {
@@ -77,7 +78,7 @@ export class ImprovedStoryGenerator {
           introduction: `This is ${characterName}.`,
           adventure: [
             `${characterName} likes to play outside.`,
-            `${pronouns.subject.charAt(0).toUpperCase() + pronouns.subject.slice(1)} sees a ${favoriteAnimal}.`,
+            `${pronouns.subject.charAt(0).toUpperCase() + pronouns.subject.slice(1)} sees ${GrammarValidator.createNounPhrase('', favoriteAnimal)}.`,
             `The ${favoriteAnimal} is nice.`,
             `${characterName} says hello.`,
             `The ${favoriteAnimal} comes closer.`,
