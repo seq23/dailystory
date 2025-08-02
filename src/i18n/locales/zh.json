@@ -529,8 +529,8 @@
     "addMorePages": "添加更多页面",
     "storyCompletedToast": {
       "title": "🎉 故事完成了！",
-      "descriptionWords": "太棒了！您阅读了 {wordsRead} 个单词并完成了这个故事！",
-      "descriptionWordsTime": "做得很好！您在 {minutes} 分钟内阅读了 {wordsRead} 个单词。"
+      "descriptionWords": "太棒了！您阅读了 {{wordsRead}} 个单词并完成了这个故事！",
+      "descriptionWordsTime": "做得很好！您在 {{minutes}} 分钟内阅读了 {{wordsRead}} 个单词。"
     },
     "addPagesSuccess": {
       "title": "增加了5页！📚",

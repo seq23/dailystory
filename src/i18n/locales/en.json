@@ -450,8 +450,8 @@
     "finish": "🎉 Finish Story",
     "storyCompletedToast": {
       "title": "🎉 Story Completed!",
-      "descriptionWords": "Amazing! You read {wordsRead} words and completed the story!",
-      "descriptionWordsTime": "Great job! You read {wordsRead} words in {minutes} minutes."
+      "descriptionWords": "Amazing! You read {{wordsRead}} words and completed the story!",
+      "descriptionWordsTime": "Great job! You read {{wordsRead}} words in {{minutes}} minutes."
     },
     "addPagesSuccess": {
       "title": "5 More Pages Added! 📚",

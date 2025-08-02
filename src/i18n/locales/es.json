@@ -362,8 +362,8 @@
     "addMorePages": "Agregar Más Páginas",
     "storyCompletedToast": {
       "title": "🎉 ¡Historia Completada!",
-      "descriptionWords": "¡Increíble! ¡Leíste {wordsRead} palabras y completaste la historia!",
-      "descriptionWordsTime": "¡Buen trabajo! Leíste {wordsRead} palabras en {minutes} minutos."
+      "descriptionWords": "¡Increíble! ¡Leíste {{wordsRead}} palabras y completaste la historia!",
+      "descriptionWordsTime": "¡Buen trabajo! Leíste {{wordsRead}} palabras en {{minutes}} minutos."
     },
     "addPagesSuccess": {
       "title": "¡5 Páginas más añadidas! 📚",

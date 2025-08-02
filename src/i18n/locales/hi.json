@@ -557,8 +557,8 @@
     "addMorePages": "और पृष्ठ जोड़ें",
     "storyCompletedToast": {
       "title": "🎉 कहानी पूरी हुई!",
-      "descriptionWords": "शानदार! आपने {wordsRead} शब्द पढ़े और कहानी पूरी की!",
-      "descriptionWordsTime": "बहुत अच्छा! आपने {minutes} मिनट में {wordsRead} शब्द पढ़े।"
+      "descriptionWords": "शानदार! आपने {{wordsRead}} शब्द पढ़े और कहानी पूरी की!",
+      "descriptionWordsTime": "बहुत अच्छा! आपने {{minutes}} मिनट में {{wordsRead}} शब्द पढ़े।"
     },
     "addPagesSuccess": {
       "title": "5 और पेज जोड़े गए! 📚",

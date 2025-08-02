@@ -542,8 +542,8 @@
     "addMorePages": "إضافة المزيد من الصفحات",
     "storyCompletedToast": {
       "title": "🎉 اكتملت القصة!",
-      "descriptionWords": "رائع! لقد قرأت {wordsRead} كلمة وأكملت القصة!",
-      "descriptionWordsTime": "عمل جيد! قرأت {wordsRead} كلمة في {minutes} دقيقة."
+      "descriptionWords": "رائع! لقد قرأت {{wordsRead}} كلمة وأكملت القصة!",
+      "descriptionWordsTime": "عمل جيد! قرأت {{wordsRead}} كلمة في {{minutes}} دقيقة."
     },
     "addPagesSuccess": {
       "title": "تم إضافة 5 صفحات أخرى! 📚",
