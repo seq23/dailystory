@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Play } from 'lucide-react';
-import { createOpenAITTSService } from '@/services/textToSpeechService';
 import type { UserInfo } from '@/types';
 
 interface InteractiveAudioReadingProps {
@@ -21,12 +20,39 @@ export const InteractiveAudioReading = ({
   const { t } = useTranslation();
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentWordIndex, setCurrentWordIndex] = useState(-1);
-  const [ttsService] = useState(() => createOpenAITTSService());
   const [words, setWords] = useState<string[]>([]);
   const [audioSpeed, setAudioSpeed] = useState(userInfo.nativeLanguage === 'en' ? 1.0 : 0.8);
-  const [hasPlayedAudio, setHasPlayedAudio] = useState(false); // Track if audio has been played
+  const [hasPlayedAudio, setHasPlayedAudio] = useState(false);
   
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Voice selection using same logic as ElevenLabsAudio
+  const getVoiceForUser = (userInfo: UserInfo) => {
+    const age = userInfo.age;
+    const isGirl = userInfo.avatar?.type === 'girl';
+    const isNativeEnglishSpeaker = userInfo.nativeLanguage === 'en';
+    
+    if (!isNativeEnglishSpeaker) {
+      // Use multilingual voices for non-native speakers
+      if (age <= 8) {
+        return isGirl ? "EXAVITQu4vr4xnSDxMaL" : "TX3LPaxmHKxFdv7VOQHJ"; // Sarah or Liam
+      } else if (age <= 12) {
+        return isGirl ? "XB0fDUnXU5powFXDhCwa" : "N2lVS1w4EtoT3dr4eOWO"; // Charlotte or Callum
+      } else {
+        return isGirl ? "9BWtsMINqrJLrRacOk9x" : "CwhRBWXzGAHq8TQ4Fs17"; // Aria or Roger
+      }
+    } else {
+      // Use most natural voices for native English speakers
+      if (age <= 8) {
+        return isGirl ? "EXAVITQu4vr4xnSDxMaL" : "TX3LPaxmHKxFdv7VOQHJ"; // Sarah or Liam
+      } else if (age <= 12) {
+        return isGirl ? "cgSgspJ2msm6clMCkdW9" : "nPczCjzI2devNBz1zQrb"; // Jessica or Brian (very natural)
+      } else {
+        return isGirl ? "cgSgspJ2msm6clMCkdW9" : "onwK4e9ZLuTAKqWW03F9"; // Jessica or Daniel (most natural)
+      }
+    }
+  };
 
   useEffect(() => {
     // Split text into words for highlighting
@@ -43,18 +69,50 @@ export const InteractiveAudioReading = ({
       
       // Calculate timing for word highlighting
       const totalWords = words.length;
-      const estimatedDuration = text.length * 100; // Rough estimate in ms
+      const estimatedDuration = text.length * 100;
       const wordsPerSecond = totalWords / (estimatedDuration / 1000);
       const wordInterval = 1000 / wordsPerSecond / audioSpeed;
 
-      // Start TTS  
-      await ttsService.speakText(text, { speed: audioSpeed });
+      // Use ElevenLabs TTS for consistent high-quality audio
+      const voice = getVoiceForUser(userInfo);
+      const isNativeEnglishSpeaker = userInfo.nativeLanguage === 'en';
+      const model = isNativeEnglishSpeaker ? "eleven_turbo_v2" : "eleven_multilingual_v2";
+      
+      const response = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/elevenlabs-tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: text.slice(0, 1000), // Limit text length
+          voice: voice,
+          model: model
+        })
+      });
 
-      // Mark audio as played for free users
-      setHasPlayedAudio(true);
-
-      // Highlight words with timing
-      highlightWords(wordInterval);
+      if (response.ok) {
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        
+        if (audioRef.current) {
+          audioRef.current.pause();
+        }
+        
+        audioRef.current = new Audio(audioUrl);
+        audioRef.current.onended = () => {
+          setIsPlaying(false);
+          setCurrentWordIndex(-1);
+          URL.revokeObjectURL(audioUrl);
+        };
+        
+        await audioRef.current.play();
+        
+        // Mark audio as played
+        setHasPlayedAudio(true);
+        
+        // Highlight words with timing
+        highlightWords(wordInterval);
+      } else {
+        throw new Error('ElevenLabs TTS failed');
+      }
       
     } catch (error) {
       console.error('Error starting audio reading:', error);
