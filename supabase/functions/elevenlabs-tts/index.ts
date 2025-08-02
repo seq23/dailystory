@@ -13,6 +13,7 @@ serve(async (req) => {
   }
 
   try {
+    console.log('ElevenLabs TTS function called');
     const { text, voice, model } = await req.json();
 
     if (!text) {
@@ -20,7 +21,9 @@ serve(async (req) => {
     }
 
     const elevenLabsApiKey = Deno.env.get('ELEVENLABS_API_KEY');
+    console.log('ElevenLabs API Key configured:', elevenLabsApiKey ? 'YES' : 'NO');
     if (!elevenLabsApiKey) {
+      console.error('ELEVENLABS_API_KEY environment variable is not set');
       throw new Error('ElevenLabs API key not configured');
     }
 
