@@ -23,14 +23,14 @@ export const AchievementNotification = ({
   // Debug logging to identify the interpolation issue
   useEffect(() => {
     if (isVisible) {
-      console.log('Achievement notification data:', {
-        achievement,
-        points: achievement.points,
-        pointsType: typeof achievement.points,
-        translationKey: 'gamification.achievements.pointsEarned',
-        interpolationData: { points: achievement.points },
-        directTranslation: t('gamification.achievements.pointsEarned', { points: achievement.points })
-      });
+      console.log('=== ACHIEVEMENT DEBUG ===');
+      console.log('Points value:', achievement.points);
+      console.log('Points type:', typeof achievement.points);
+      console.log('Achievement title:', achievement.title);
+      console.log('Translation result:', t('gamification.achievements.pointsEarned', { points: achievement.points }));
+      console.log('Raw translation key:', t('gamification.achievements.pointsEarned'));
+      console.log('Points as string:', String(achievement.points));
+      console.log('=========================');
     }
   }, [isVisible, achievement, t]);
 
