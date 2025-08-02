@@ -323,9 +323,9 @@ export class EarlyReaderStoryGenerator {
     pages.forEach((page, index) => {
       const wordCount = page.split(/\s+/).filter(word => word.trim().length > 0).length;
       if (wordCount > maxWordsPerPage) {
-        console.warn(`Page ${index + 1} exceeds word limit: ${wordCount} words (max: ${maxWordsPerPage}) - "${page.substring(0, 50)}..."`);
+        console.warn(`❌ Page ${index + 1} exceeds word limit: ${wordCount} words (max: ${maxWordsPerPage}) - "${page.substring(0, 50)}..."`);
       } else {
-        console.log(`✓ Page ${index + 1}: ${wordCount}/${maxWordsPerPage} words (${difficulty} level)`);
+        console.log(`✅ Page ${index + 1}: ${wordCount}/${maxWordsPerPage} words (${difficulty} level)`);
       }
     });
   }
