@@ -1,5 +1,7 @@
 // Enhanced story generator with word limits for early readers
 import type { UserInfo, DifficultyLevel } from "@/types";
+import StoryQualityChecker from "@/utils/storyQualityChecker";
+import GrammarValidator from "@/utils/grammarValidator";
 
 interface ReadingConfig {
   maxWordsPerPage: number;
@@ -69,6 +71,13 @@ export class EarlyReaderStoryGenerator {
     
     // Verify word limits are being enforced
     this.verifyWordLimits(pages, config.maxWordsPerPage, difficulty);
+    
+    // Quality check the generated story
+    const qualityCheck = StoryQualityChecker.checkStoryQuality(pages, difficulty);
+    if (!qualityCheck.isValid) {
+      console.warn('Story quality issues detected:', qualityCheck.issues);
+      // Log quality issues but don't block generation in production
+    }
     
     return { pages, config };
   }
