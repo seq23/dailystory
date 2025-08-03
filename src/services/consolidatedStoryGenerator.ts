@@ -73,7 +73,7 @@ export class ConsolidatedStoryGenerator {
 
     try {
       console.log(`🎯 Starting consolidated story generation for ${userInfo.name} (${difficulty} level)`);
-      console.log(`📊 Using word count standards: ${difficulty} = 3-8 words for easy, 8-25 for medium, etc.`);
+      console.log(`📊 Using TTS-optimized word count standards: Easy(2-4), Medium(4-8), Hard(6-12), Expert(8-15) words per page`);
       console.log(`🎯 CRITICAL: Current story templates for ${difficulty}:`, getLanguageTemplates('en', difficulty));
 
       // Phase 9: Ensure proper name capitalization throughout the process
@@ -379,23 +379,24 @@ export class ConsolidatedStoryGenerator {
   }
 
   /**
-   * Calculates a quality score for the generated story
+   * Calculates a quality score for the generated story (TTS-optimized)
    */
   private static calculateQualityScore(pages: string[], parsedTags: ParsedTag[]): number {
     let score = 0.5; // Base score
     
-    // Check for variety in content
-    const uniqueWords = new Set(pages.join(' ').toLowerCase().split(/\s+/));
-    if (uniqueWords.size > 30) score += 0.2;
+    // Check for TTS-appropriate word count variety
+    const wordCounts = pages.map(page => page.split(/\s+/).filter(w => w.trim()).length);
+    const avgWordCount = wordCounts.reduce((a, b) => a + b, 0) / wordCounts.length;
+    if (avgWordCount >= 2 && avgWordCount <= 15) score += 0.2; // TTS-friendly range
     
     // Check for proper use of parsed elements
     if (parsedTags.length > 0) score += 0.1;
     
-    // Check for proper sentence structure
-    const wellFormedSentences = pages.filter(page => 
-      page.trim().length > 10 && page.match(/[.!?]$/)
+    // Check for TTS-friendly sentence structure (complete thoughts, proper punctuation)
+    const ttsReadySentences = pages.filter(page => 
+      page.trim().length > 3 && page.match(/[.!?]$/) && !page.includes('{')
     );
-    if (wellFormedSentences.length === pages.length) score += 0.2;
+    if (ttsReadySentences.length === pages.length) score += 0.2;
     
     return Math.min(1.0, score);
   }

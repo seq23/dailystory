@@ -1,32 +1,32 @@
 // Enhanced story templates with intelligent user input distribution
 export const ENHANCED_STORY_TEMPLATES = {
   easy: [
-    // Template set 1: Adventure progression
+    // Template set 1: Adventure progression (2-4 words per micro-page for TTS)
     [
-      "{name} wakes up in the morning.",
-      "{pronoun} sees a {primary_animal}.",
-      "The {primary_animal} looks {primary_color}.",
-      "{name} says hello.",
-      "They become friends.",
-      "{name} and the {primary_animal} play.",
-      "They find a {primary_food}.",
-      "{name} shares the {primary_food}.",
-      "The {primary_animal} is happy.",
-      "{name} smiles and continues exploring."
+      "{name} wakes up",
+      "{pronoun} sees {animal}",
+      "{animal} looks {color}",
+      "{name} says hello",
+      "They become friends",
+      "{name} and {animal} play",
+      "They find {food}",
+      "{name} shares {food}",
+      "{animal} is happy",
+      "{name} smiles happily"
     ],
     
-    // Template set 2: Discovery story
+    // Template set 2: Discovery story (2-4 words per micro-page for TTS)
     [
-      "{name} goes to a {setting}.",
-      "{pronoun} sees many things.",
-      "A {secondary_animal} runs by.",
-      "{name} follows {pronoun_object}.",
-      "They find a {primary_object}.",
-      "The {primary_object} is {secondary_color}.",
-      "{name} picks it up.",
-      "The {friend_animal} wants to play.",
-      "They all play together.",
-      "{name} has fun and wants more adventures."
+      "{name} goes {setting}",
+      "{pronoun} sees things",
+      "{animal} runs by",
+      "{name} follows {animal}",
+      "They find {object}",
+      "{object} is {color}",
+      "{name} picks up",
+      "{animal} wants play",
+      "They play together",
+      "{name} has fun"
     ],
     
     // Template set 3: Helping story
@@ -59,18 +59,18 @@ export const ENHANCED_STORY_TEMPLATES = {
   ],
   
   medium: [
-    // Template set 1: Magical adventure
+    // Template set 1: Magical adventure (4-8 words per micro-page for TTS)
     [
-      "{name} discovers a magical {setting}.",
-      "A wise {primary_animal} lives there.",
-      "The {primary_animal} can talk!",
-      "{pronoun} tells {name} a secret.",
-      "There is a hidden {primary_object}.",
-      "It has special powers.",
-      "{name} must find it.",
-      "They search through the {secondary_color} forest.",
-      "Together they overcome challenges.",
-      "The magical adventure teaches {name} about {theme}."
+      "{name} discovers magical {setting} today",
+      "Wise {animal} lives there happily",
+      "{animal} can talk to {name}",
+      "{pronoun} tells {name} secret words",
+      "Hidden {object} waits for discovery",
+      "It has very special powers",
+      "{name} must find it quickly",
+      "They search through {color} forest",
+      "Together they overcome all challenges",
+      "Magical adventure teaches {name} about friendship"
     ],
     
     // Template set 2: Problem solving
@@ -89,34 +89,34 @@ export const ENHANCED_STORY_TEMPLATES = {
   ],
   
   hard: [
-    // Template set 1: Hero's journey
+    // Template set 1: Hero's journey (6-12 words per micro-page for TTS)
     [
-      "{name} lived in a peaceful {setting}.",
-      "One day, something strange happened.",
-      "The {primary_animal}s started acting differently.",
-      "{name} noticed they seemed scared.",
-      "{pronoun} decided to investigate the mystery.",
-      "With courage, {name} ventured into unknown territory.",
-      "There, {pronoun} discovered the {antagonists} were causing trouble.",
-      "{name} had to make a difficult choice.",
-      "Using {pronoun_possessive} {skills}, {name} found a solution.",
-      "The {setting} was peaceful again, and {name} had grown wiser."
+      "{name} lived peacefully in beautiful {setting} with friends",
+      "One day something very strange and mysterious happened",
+      "{animal}s started acting differently and seemed quite scared",
+      "{name} noticed their fear and decided to help",
+      "{pronoun} bravely decided to investigate this puzzling mystery",
+      "With great courage {name} ventured into unknown territory",
+      "There {pronoun} discovered {antagonist} creatures causing trouble everywhere",
+      "{name} had to make a very difficult choice",
+      "Using special {skill} abilities {name} found perfect solution",
+      "{setting} became peaceful again and {name} grew wiser"
     ]
   ],
   
   expert: [
-    // Template set 1: Philosophical journey
+    // Template set 1: Philosophical journey (8-15 words per micro-page for TTS)
     [
-      "{name} began to question {belief_system}.",
-      "The nature of {complex_concept} seemed unclear.",
-      "A mysterious {primary_animal} appeared as a guide.",
-      "Together, they explored {mysterious_element}.",
-      "{name} faced {difficult_choice_1} versus {difficult_choice_2}.",
-      "The journey revealed {profound_truth}.",
-      "Through {self_discovery}, {name} found inner peace.",
-      "{character_growth} transformed {pronoun_possessive} understanding.",
-      "The {principle} became clear to {name}.",
-      "{name} achieved {transcendent_understanding} of existence."
+      "{name} began questioning the fundamental nature of reality and existence",
+      "Complex concepts about consciousness and time seemed increasingly unclear and puzzling",
+      "Mysterious wise {animal} appeared unexpectedly offering guidance through unknown realms",
+      "Together they carefully explored ancient mysteries hidden within cosmic dimensions",
+      "{name} faced impossible choice between personal desires and universal responsibility",
+      "Long challenging journey gradually revealed profound truths about interconnected consciousness",
+      "Through deep self-discovery and reflection {name} finally found lasting inner peace",
+      "Transformative character growth completely changed {pronoun_possessive} understanding of universal principles",
+      "Essential principles of harmony and balance became crystal clear to {name}",
+      "{name} achieved transcendent understanding of existence and cosmic purpose in life"
     ]
   ]
 };
