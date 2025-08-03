@@ -98,13 +98,13 @@ export class PremiumStoryService {
       const continuationStory: Story = {
         id: `${baseStory.id}_cont_${Date.now()}`,
         title: `${baseStory.title} - Chapter ${baseStory.continuationCount + 2}`,
-        segments: storyResult.pages.map((page, index) => ({
-          text: page,
+        segments: storyResult.story.segments.map((segment, index) => ({
+          text: segment.text,
           illustration: `/api/illustrations/continuation-${index + 1}.jpg`
         })),
         difficulty,
-        estimatedReadingTime: Math.ceil(storyResult.pages.join(' ').split(' ').length / 100),
-        wordCount: storyResult.pages.join(' ').split(' ').length
+        estimatedReadingTime: storyResult.story.estimatedReadingTime,
+        wordCount: storyResult.story.wordCount
       };
       
       // Update continuation tracking

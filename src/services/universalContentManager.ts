@@ -244,13 +244,13 @@ export class UniversalContentManager {
     const story: Story = {
       id: crypto.randomUUID(),
       title: this.generateStoryTitle(userInfo, difficulty),
-      segments: storyResult.pages.map((page, index) => ({
-        text: page,
+      segments: storyResult.story.segments.map((segment, index) => ({
+        text: segment.text,
         illustration: `/api/illustrations/story-${index + 1}.jpg`
       })),
       difficulty,
-      estimatedReadingTime: Math.ceil(storyResult.pages.join(' ').split(' ').length / 100),
-      wordCount: storyResult.pages.join(' ').split(' ').length
+      estimatedReadingTime: storyResult.story.estimatedReadingTime,
+      wordCount: storyResult.story.wordCount
     };
     
     return story;

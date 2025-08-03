@@ -171,13 +171,13 @@ export class FreeUserStoryService {
     const story: Story = {
       id: crypto.randomUUID(),
       title: this.generateTitle(processedUserInfo, difficulty),
-      segments: storyResult.pages.map((page, index) => ({
-        text: page,
+      segments: storyResult.story.segments.map((segment, index) => ({
+        text: segment.text,
         illustration: `/api/illustrations/free-${index + 1}.jpg`
       })),
       difficulty,
-      estimatedReadingTime: Math.ceil(storyResult.pages.join(' ').split(' ').length / 100),
-      wordCount: storyResult.pages.join(' ').split(' ').length
+      estimatedReadingTime: storyResult.story.estimatedReadingTime,
+      wordCount: storyResult.story.wordCount
     };
     
     // Cache the new session
