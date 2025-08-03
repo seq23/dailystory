@@ -283,6 +283,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
           console.log('🚀 FreeReadingSession: About to call UniversalContentManager.generateNewStoryWithAntiRepetition');
           console.log('📊 FreeReadingSession: Current difficulty:', currentDifficulty);
           console.log('🎯 FreeReadingSession: User info:', userInfo);
+          console.log('🔍 FreeReadingSession: Current story BEFORE generation:', story.slice(0, 2));
           
           const storyResult = await UniversalContentManager.generateNewStoryWithAntiRepetition(
             userInfo, 
@@ -301,7 +302,10 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
           setStoryImages(generatedStory.images || []);
           
           if (!isCancelled) {
-            console.log('Generated enhanced story, replacing fallback...');
+            console.log('📚 FreeReadingSession: Generated enhanced story, replacing fallback...');
+            console.log('📖 FreeReadingSession: Story first page:', generatedStory.pages[0]);
+            console.log('🔍 FreeReadingSession: Story pages sample:', generatedStory.pages.slice(0, 3));
+            console.log('📊 FreeReadingSession: Total pages generated:', generatedStory.pages.length);
             
             // Ensure we have exactly 10 pages
             const targetPages = 10;
@@ -1155,23 +1159,23 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                             // Use difficulty-based font sizing with proper hierarchy (no overflow)
                              const getFontSizeForDifficulty = (difficulty: string) => {
                                console.log('FreeReadingSession: Getting font size for difficulty:', difficulty);
-                               switch (difficulty) {
-                                 case 'easy': 
-                                   console.log('FreeReadingSession: Using big text for Level 1 (young children)');
-                                   return 'text-2xl sm:text-3xl'; // Big for young children, responsive
-                                 case 'medium': 
-                                   console.log('FreeReadingSession: Using medium text for Level 2');
-                                   return 'text-xl sm:text-2xl'; // A little smaller than level 1
-                                 case 'hard': 
-                                   console.log('FreeReadingSession: Using normal text for Level 3');
-                                   return 'text-lg sm:text-xl'; // Normal size, same as expert
-                                 case 'expert': 
-                                   console.log('FreeReadingSession: Using normal text for Level 4');
-                                   return 'text-lg sm:text-xl'; // Normal size, same as hard
-                                 default: 
-                                   console.log('FreeReadingSession: Default case - using Level 1 fonts');
-                                   return 'text-2xl sm:text-3xl';
-                               }
+                                switch (difficulty) {
+                                  case 'easy': 
+                                    console.log('FreeReadingSession: Using EXTRA BIG text for Level 1 (young children)');
+                                    return 'text-4xl sm:text-5xl md:text-6xl'; // EXTRA BIG for young children
+                                  case 'medium': 
+                                    console.log('FreeReadingSession: Using big text for Level 2');
+                                    return 'text-3xl sm:text-4xl'; // Big for level 2
+                                  case 'hard': 
+                                    console.log('FreeReadingSession: Using medium text for Level 3');
+                                    return 'text-2xl sm:text-3xl'; // Medium size
+                                  case 'expert': 
+                                    console.log('FreeReadingSession: Using normal text for Level 4');
+                                    return 'text-xl sm:text-2xl'; // Normal size
+                                  default: 
+                                    console.log('FreeReadingSession: Default case - using EXTRA BIG fonts for young children');
+                                    return 'text-4xl sm:text-5xl md:text-6xl';
+                                }
                              };
                             
                             const config = { 
