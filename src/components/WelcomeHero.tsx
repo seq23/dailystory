@@ -53,10 +53,10 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
       <header className="relative z-20 bg-black/15 backdrop-blur-sm border-b border-white/20">
         <div className="container mx-auto px-3 sm:px-6 py-3 sm:py-6">
           
-          {/* Mobile Layout - RTL Safe */}
-          <div className="flex sm:hidden relative items-center min-h-[50px]">
-            {/* Language Selector - Start Position (left in LTR, right in RTL) */}
-            <div className="absolute start-0 top-0">
+          {/* Mobile Layout - Fixed Overlap Prevention */}
+          <div className="flex sm:hidden justify-between items-center gap-2 min-h-[50px]">
+            {/* Language Selector - Flexible */}
+            <div className="flex-shrink-0">
               <div className="flex items-center gap-1 bg-white/10 backdrop-blur-sm rounded-full px-2 py-1 border border-white/20 touch-target">
                 <Globe className="w-3 h-3 text-white" />
                 <Select value={i18n.language} onValueChange={handleLanguageChange}>
@@ -76,28 +76,22 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
               </div>
             </div>
             
-            {/* Company Logo - Centered */}
-            <div className="flex items-center gap-2 mx-auto">
+            {/* Company Logo - Centered with overflow protection */}
+            <div className="flex items-center gap-1 flex-1 justify-center min-w-0 px-2">
               <img 
                 src={logoImage} 
                 alt="Time 2 Read Logo" 
-                className="w-6 h-6 drop-shadow-lg"
+                className="w-5 h-5 flex-shrink-0 drop-shadow-lg"
               />
-              <div className="flex items-center font-comic mobile-text-fixed">
-                <h1 className="text-sm font-bold text-white drop-shadow-lg">
-                  Time
-                </h1>
-                <span className="text-lg font-schoolbell text-yellow-300 drop-shadow-lg mx-0.5 transform rotate-3">
-                  2
-                </span>
-                <h1 className="text-sm font-bold text-white drop-shadow-lg">
-                  Read!
-                </h1>
+              <div className="flex items-center font-comic mobile-text-fixed truncate">
+                <h1 className="text-xs font-bold text-white drop-shadow-lg">Time</h1>
+                <span className="text-sm font-schoolbell text-yellow-300 drop-shadow-lg mx-0.5">2</span>
+                <h1 className="text-xs font-bold text-white drop-shadow-lg">Read!</h1>
               </div>
             </div>
 
-            {/* Sign In Button - End Position (right in LTR, left in RTL) */}
-            <div className="absolute end-0 top-0">
+            {/* Sign In Button - Flexible */}
+            <div className="flex-shrink-0">
               {onSignIn && (
                   <Button 
                     variant="outline" 
@@ -105,8 +99,8 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                     onClick={onSignIn}
                     className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-purple-300/50 text-white hover:bg-purple-400/30 text-xs font-semibold shadow-lg px-2 py-1 h-8"
                   >
-                    <Crown className="w-3 h-3 mr-1 flex-shrink-0" />
-                    {t("welcomeHero.signIn")}
+                    <Crown className="w-3 h-3 flex-shrink-0" />
+                    <span className="hidden xs:inline ml-1">{t("welcomeHero.signIn")}</span>
                   </Button>
               )}
             </div>
