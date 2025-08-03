@@ -47,7 +47,12 @@ export class ConsolidatedStoryGenerator {
     const startTime = Date.now();
     
     // Get language configuration using the new service
-    const languageConfig = LanguagePreferenceService.getLanguageConfig(userInfo);
+    // CRITICAL: Determine if user is premium to enforce language restrictions
+    const { SubscriptionManager } = await import('./subscriptionManager');
+    const isPremium = await SubscriptionManager.isPremiumUser();
+    console.log(`🔒 User premium status: ${isPremium ? 'PREMIUM' : 'FREE'}`);
+    
+    const languageConfig = LanguagePreferenceService.getLanguageConfig(userInfo, isPremium);
     
     const fullConfig: ConsolidatedStoryConfig = {
       pageCount: APP_CONFIG.DEFAULT_PAGE_COUNT,
@@ -55,8 +60,8 @@ export class ConsolidatedStoryGenerator {
       antiRepetition: true,
       culturalAdaptation: true,
       ...config,
-      // Use dynamic story language instead of hardcoded English
-      language: languageConfig.storyLanguage
+      // CRITICAL: Always use English for free users, respect preferences for premium
+      language: isPremium ? languageConfig.storyLanguage : 'en'
     };
 
     console.log('🎯 Consolidated Story Generation Starting', {
