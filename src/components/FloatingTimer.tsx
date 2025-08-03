@@ -168,9 +168,9 @@ export const FloatingTimer = ({
         className={`fixed z-30 flex flex-col items-center gap-3 sm:gap-4 md:gap-6 ${isTutorialTimerStep ? "ring-4 ring-primary/50 shadow-2xl shadow-primary/30" : ""}`}
         id="floating-timer" 
         style={isTutorialTimerStep ? {
-          // Tutorial positioning - moved higher to avoid tooltip overlap
+          // Tutorial positioning - moved much higher to avoid tooltip overlap
           position: 'fixed',
-          top: '35%',
+          top: '20%',
           left: '50%',
           bottom: 'auto',
           right: 'auto',

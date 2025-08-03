@@ -300,7 +300,7 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
         return positioning;
       } else {
         const positioning = {
-          bottom: `${margin + adjustedBottomMargin + 40}px`, // Bottom positioning on desktop below timer
+          bottom: `${margin + adjustedBottomMargin + 60}px`, // Bottom positioning on desktop below timer
           left: "50%",
           right: "auto",
           top: "auto",
