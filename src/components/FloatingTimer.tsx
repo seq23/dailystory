@@ -158,10 +158,23 @@ export const FloatingTimer = ({
     return "#16a34a"; // green
   };
 
+  const isTutorialTimerStep = showTutorial && tutorialStep === 0;
+
   return (
       <TooltipProvider>
-      {/* Floating Timer Container - Mobile optimized */}
-      <div className="fixed bottom-6 left-6 sm:left-8 z-30 flex flex-col items-center gap-6 md:gap-6 gap-3" id="floating-timer" style={{ marginLeft: 'max(1rem, env(safe-area-inset-left))', marginBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+      {/* Floating Timer Container - Mobile optimized with tutorial positioning */}
+      <div 
+        className={`fixed z-30 flex flex-col items-center gap-3 sm:gap-4 md:gap-6 ${
+          isTutorialTimerStep 
+            ? 'top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2' // Centered during tutorial
+            : 'bottom-6 left-6 sm:left-8' // Normal position
+        }`}
+        id="floating-timer" 
+        style={isTutorialTimerStep ? {} : { 
+          marginLeft: 'max(1rem, env(safe-area-inset-left))', 
+          marginBottom: 'max(1rem, env(safe-area-inset-bottom))' 
+        }}
+      >
         
         {/* Main Timer Circle - Professional & Larger */}
         <div className="relative">

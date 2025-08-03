@@ -268,32 +268,30 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
     const margin = isMobile ? 20 : isTablet ? 25 : 40;
     const clearance = isMobile ? 120 : isTablet ? 140 : 160; // Extra space to avoid covering targets
 
-    // SPECIAL HANDLING FOR TIMER STEP - Avoid tutorial timer in top middle
+    // SPECIAL HANDLING FOR TIMER STEP - Timer is now centered, place tutorial card to avoid overlap
     if (target === "timer-display") {
-      // Tutorial timer is in top middle, place tutorial card at bottom or side
       if (isMobile) {
         return {
-          bottom: `${margin + 80}px`, // Bottom positioning to avoid top middle timer
+          top: `${margin}px`, // Top positioning on mobile to avoid scrolling
           left: `${margin}px`,
-          right: "auto",
-          top: "auto",
+          right: `${margin}px`,
           transform: "none",
           maxWidth: `${tooltipWidth}px`
         };
       } else if (isTablet) {
         return {
-          top: "50%",
-          left: `${margin}px`, // Left side to avoid top middle timer
+          top: `${margin + 20}px`, // Top positioning on tablet
+          left: `${margin}px`,
           right: "auto",
-          transform: "translateY(-50%)",
+          transform: "none",
           maxWidth: `${tooltipWidth}px`
         };
       } else {
         return {
-          top: "50%",
-          left: `${margin + 40}px`, // Left side to avoid top middle timer
+          top: `${margin + 40}px`, // Top positioning on desktop
+          left: `${margin + 40}px`,
           right: "auto",
-          transform: "translateY(-50%)",
+          transform: "none",
           maxWidth: `${tooltipWidth}px`
         };
       }
