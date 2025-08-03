@@ -290,6 +290,60 @@ export class UniversalContentManager {
     };
   }
 
+  /**
+   * Generates a new story for free users while preserving anti-repetition cache
+   */
+  static async generateNewStoryWithAntiRepetition(
+    userInfo: UserInfo,
+    difficulty: DifficultyLevel,
+    config: ContentManagerConfig
+  ): Promise<StoryGenerationResult> {
+    console.log('🔄 Generating new story for free user with anti-repetition preservation');
+    
+    try {
+      // Process user inputs for translation/correction
+      const processedData = await this.processAllUserInputs(userInfo);
+      
+      // Generate a NEW story (not continuation) but preserve anti-repetition state
+      const storyResult = await ConsolidatedStoryGenerator.generateStory(
+        processedData.processedUserInfo,
+        difficulty,
+        {
+          pageCount: 5,
+          language: 'en' as SupportedLanguage,
+          useSmartParsing: true,
+          antiRepetition: true,
+          culturalAdaptation: true,
+          preserveAntiRepetition: true // IMPORTANT: This preserves the anti-repetition cache
+        }
+      );
+
+      return {
+        story: storyResult.story,
+        isNewStory: true,
+        isContinuation: false,
+        sessionInfo: {
+          sessionNumber: 1,
+          remainingSessions: 99,
+          isUnlimited: false
+        }
+      };
+    } catch (error) {
+      console.error('Error generating new story with anti-repetition:', error);
+      const fallbackStory = await this.generateFallbackStory(userInfo, difficulty);
+      return {
+        story: fallbackStory,
+        isNewStory: true,
+        isContinuation: false,
+        sessionInfo: {
+          sessionNumber: 1,
+          remainingSessions: 99,
+          isUnlimited: false
+        }
+      };
+    }
+  }
+
   // Continue existing story for premium users
   static async continueExistingStory(
     currentStory: string[],

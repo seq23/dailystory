@@ -1,27 +1,61 @@
-// Advanced anti-repetition system for story generation
+import { PersistentAntiRepetitionService } from "@/services/persistentAntiRepetitionService";
+
+// Advanced anti-repetition system for story generation with persistence
 export class AntiRepetitionSystem {
   private static usedSentences = new Set<string>();
   private static pageContent: string[] = [];
+  private static persistentSignatures = new Set<string>();
+  private static isInitialized = false;
   
   /**
-   * Clears all cached content for new story generation
+   * Initializes the anti-repetition system with persistent data
    */
-  static clearCache(): void {
+  static async initialize(): Promise<void> {
+    if (this.isInitialized) return;
+    
+    try {
+      this.persistentSignatures = await PersistentAntiRepetitionService.loadContentSignatures();
+      this.isInitialized = true;
+      console.log(`Loaded ${this.persistentSignatures.size} content signatures from database`);
+    } catch (error) {
+      console.error('Error initializing anti-repetition system:', error);
+      this.isInitialized = true; // Mark as initialized even on error to prevent repeated attempts
+    }
+  }
+
+  /**
+   * Clears session cache but preserves persistent signatures unless force cleared
+   */
+  static clearCache(preservePersistent: boolean = true): void {
     this.usedSentences.clear();
     this.pageContent = [];
+    
+    if (!preservePersistent) {
+      this.persistentSignatures.clear();
+      this.isInitialized = false;
+    }
   }
   
   /**
-   * Checks if content is too similar to previously generated content
+   * Checks if content is too similar to previously generated content (includes persistent storage)
    */
-  static isDuplicate(content: string, minimumSimilarity: number = 0.5): boolean {
-    const normalized = this.normalizeContent(content);
+  static async isDuplicate(content: string, minimumSimilarity: number = 0.5): Promise<boolean> {
+    await this.initialize(); // Ensure persistent data is loaded
     
-    // Check against all used sentences
+    const normalized = this.normalizeContent(content);
+    const contentSignature = PersistentAntiRepetitionService.generateContentSignature(content);
+    
+    // Check against persistent signatures first (database stored)
+    if (this.persistentSignatures.has(contentSignature)) {
+      console.log(`Persistent duplicate detected: "${content}"`);
+      return true;
+    }
+    
+    // Check against all used sentences in current session
     for (const existing of this.usedSentences) {
       const similarity = this.calculateSimilarity(normalized, existing);
       if (similarity >= minimumSimilarity) {
-        console.log(`Duplicate detected: "${content}" similar to "${existing}" (${similarity.toFixed(2)})`);
+        console.log(`Session duplicate detected: "${content}" similar to "${existing}" (${similarity.toFixed(2)})`);
         return true;
       }
     }
@@ -30,7 +64,32 @@ export class AntiRepetitionSystem {
     for (let i = Math.max(0, this.pageContent.length - 3); i < this.pageContent.length; i++) {
       const recentNormalized = this.normalizeContent(this.pageContent[i]);
       if (normalized === recentNormalized) {
-        console.log(`Exact duplicate detected in recent pages: "${content}"`);
+        console.log(`Recent page duplicate detected: "${content}"`);
+        return true;
+      }
+    }
+    
+    return false;
+  }
+
+  /**
+   * Synchronous version for backward compatibility
+   */
+  static isDuplicateSync(content: string, minimumSimilarity: number = 0.5): boolean {
+    const normalized = this.normalizeContent(content);
+    const contentSignature = PersistentAntiRepetitionService.generateContentSignature(content);
+    
+    // Check against loaded persistent signatures
+    if (this.persistentSignatures.has(contentSignature)) {
+      console.log(`Persistent duplicate detected (sync): "${content}"`);
+      return true;
+    }
+    
+    // Check against session content
+    for (const existing of this.usedSentences) {
+      const similarity = this.calculateSimilarity(normalized, existing);
+      if (similarity >= minimumSimilarity) {
+        console.log(`Session duplicate detected (sync): "${content}" similar to "${existing}" (${similarity.toFixed(2)})`);
         return true;
       }
     }
@@ -39,12 +98,52 @@ export class AntiRepetitionSystem {
   }
   
   /**
-   * Adds content to the tracking system
+   * Adds content to the tracking system (both session and persistent storage)
    */
-  static addContent(content: string): void {
+  static async addContent(content: string, sessionNumber?: number): Promise<void> {
     const normalized = this.normalizeContent(content);
+    const contentSignature = PersistentAntiRepetitionService.generateContentSignature(content);
+    
+    // Add to session storage
     this.usedSentences.add(normalized);
     this.pageContent.push(content);
+    
+    // Add to persistent storage
+    this.persistentSignatures.add(contentSignature);
+    
+    try {
+      const currentSession = sessionNumber || await PersistentAntiRepetitionService.getCurrentSessionNumber();
+      await PersistentAntiRepetitionService.saveContentSignature(contentSignature, currentSession);
+      
+      // Cleanup old signatures periodically (every 50 additions)
+      if (this.persistentSignatures.size % 50 === 0) {
+        await PersistentAntiRepetitionService.cleanupOldSignatures();
+      }
+    } catch (error) {
+      console.error('Error saving content to persistent storage:', error);
+    }
+  }
+
+  /**
+   * Synchronous version for backward compatibility
+   */
+  static addContentSync(content: string): void {
+    const normalized = this.normalizeContent(content);
+    const contentSignature = PersistentAntiRepetitionService.generateContentSignature(content);
+    
+    // Add to session storage
+    this.usedSentences.add(normalized);
+    this.pageContent.push(content);
+    
+    // Add to in-memory persistent signatures
+    this.persistentSignatures.add(contentSignature);
+    
+    // Save to database asynchronously without blocking
+    PersistentAntiRepetitionService.getCurrentSessionNumber()
+      .then(sessionNumber => 
+        PersistentAntiRepetitionService.saveContentSignature(contentSignature, sessionNumber)
+      )
+      .catch(error => console.error('Error saving content to persistent storage:', error));
   }
   
   /**

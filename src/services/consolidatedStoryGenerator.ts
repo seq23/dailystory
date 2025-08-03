@@ -59,9 +59,10 @@ export class ConsolidatedStoryGenerator {
       config: fullConfig
     });
 
-    // Phase 8: Clear anti-repetition cache for new story (unless preserving for continuation)
+    // Phase 8: Initialize anti-repetition system and clear cache for new story (unless preserving for continuation)
+    await AntiRepetitionSystem.initialize();
     if (!fullConfig.preserveAntiRepetition) {
-      AntiRepetitionSystem.clearCache();
+      AntiRepetitionSystem.clearCache(true); // Preserve persistent signatures
     }
 
     try {
@@ -119,7 +120,7 @@ export class ConsolidatedStoryGenerator {
         if (fullConfig.antiRepetition) {
           const diversityScore = AntiRepetitionSystem.calculateDiversityScore(processedPage);
           
-          if (diversityScore < 0.7 && AntiRepetitionSystem.isDuplicate(processedPage)) {
+          if (diversityScore < 0.7 && AntiRepetitionSystem.isDuplicateSync(processedPage)) {
             // Generate variations to avoid repetition
             const variations = AntiRepetitionSystem.generateVariations(processedPage, extractedElements);
             if (variations.length > 0) {
@@ -130,7 +131,7 @@ export class ConsolidatedStoryGenerator {
             }
           }
           
-          AntiRepetitionSystem.addContent(processedPage);
+          await AntiRepetitionSystem.addContent(processedPage);
         }
         
         pages.push(processedPage);
@@ -310,6 +311,6 @@ export class ConsolidatedStoryGenerator {
   static clearCaches(): void {
     this.usedTemplates.clear();
     this.usedCombinations.clear();
-    AntiRepetitionSystem.clearCache();
+    AntiRepetitionSystem.clearCache(false); // Clear everything including persistent
   }
 }

@@ -552,8 +552,8 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     try {
       console.log('Maintaining character consistency for page extension:', establishedCharacter.userName);
 
-      // Generate new pages using Universal Content Manager
-      const storyResult = await UniversalContentManager.generateStory(
+      // Generate new pages using Universal Content Manager with anti-repetition preservation
+      const storyResult = await UniversalContentManager.generateNewStoryWithAntiRepetition(
         userInfo, 
         currentDifficulty as 'easy' | 'medium' | 'hard' | 'expert',
         { isPremium: false, userId: userInfo.name }

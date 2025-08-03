@@ -184,6 +184,36 @@ export type Database = {
         }
         Relationships: []
       }
+      user_content_signatures: {
+        Row: {
+          content_signature: string
+          content_type: string
+          created_at: string
+          id: string
+          story_session_number: number
+          updated_at: string
+          user_identifier: string
+        }
+        Insert: {
+          content_signature: string
+          content_type?: string
+          created_at?: string
+          id?: string
+          story_session_number?: number
+          updated_at?: string
+          user_identifier: string
+        }
+        Update: {
+          content_signature?: string
+          content_type?: string
+          created_at?: string
+          id?: string
+          story_session_number?: number
+          updated_at?: string
+          user_identifier?: string
+        }
+        Relationships: []
+      }
       vocabulary_progress: {
         Row: {
           definition: string | null
