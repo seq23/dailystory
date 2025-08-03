@@ -1,6 +1,7 @@
 // Intelligent user input distribution system for natural story flow
 import { UserInfo, DifficultyLevel } from "@/types";
 import { NameFormatter } from "@/utils/nameFormatter";
+import { SmartInputParser } from "@/services/smartInputParser";
 
 interface DistributionContext {
   pageIndex: number;
@@ -16,23 +17,25 @@ export class UserInputDistributor {
   /**
    * Initialize the distribution system with user inputs
    */
-  static initialize(userInfo: UserInfo): void {
+  static async initialize(userInfo: UserInfo): Promise<void> {
     this.userElementsPool.clear();
     this.usedElements.clear();
 
-    // Extract and organize user inputs
-    const animals = this.extractAnimals(userInfo);
-    const foods = this.extractFoods(userInfo);
+    // Extract and organize user inputs with intelligent parsing
+    const animals = await this.extractAnimals(userInfo);
+    const foods = await this.extractFoods(userInfo);
     const colors = this.extractColors(userInfo);
     const objects = this.extractObjects(userInfo);
+    const activities = this.extractActivities(userInfo);
 
     this.userElementsPool.set('animals', animals);
     this.userElementsPool.set('foods', foods);
     this.userElementsPool.set('colors', colors);
     this.userElementsPool.set('objects', objects);
+    this.userElementsPool.set('activities', activities);
 
     // Initialize usage tracking
-    ['animals', 'foods', 'colors', 'objects'].forEach(category => {
+    ['animals', 'foods', 'colors', 'objects', 'activities'].forEach(category => {
       this.usedElements.set(category, new Set());
     });
   }
@@ -96,7 +99,9 @@ export class UserInputDistributor {
       '{friend_object}': this.getNextElement('objects', context),
       
       // Activity elements
-      '{favorite_activity}': userInfo.hobbies || 'playing',
+      '{favorite_activity}': this.getNextElement('activities', context),
+      '{favorite_activity_1}': this.getNextElement('activities', context),
+      '{favorite_activity_2}': this.getNextElement('activities', context),
       
       // Pronouns based on avatar
       '{pronoun}': this.getPronoun(userInfo, 'subject'),
@@ -111,25 +116,42 @@ export class UserInputDistributor {
   }
 
   /**
-   * Extract animals from user input with smart parsing
+   * Extract animals from user input with intelligent multi-tag parsing
    */
-  private static extractAnimals(userInfo: UserInfo): string[] {
+  private static async extractAnimals(userInfo: UserInfo): Promise<string[]> {
     const animals = new Set<string>();
     
-    // Add favorite animal
+    // Parse favorite animal input using SmartInputParser
     if (userInfo.favoriteAnimal) {
-      animals.add(userInfo.favoriteAnimal.toLowerCase());
+      try {
+        const animalTags = userInfo.favoriteAnimal.split(/[,\s]+/).filter(tag => tag.trim().length > 0);
+        if (animalTags.length > 1) {
+          // Multiple animals detected - use smart parsing
+          const parseResult = await SmartInputParser.parseTaggedInput(animalTags, userInfo);
+          parseResult.parsedTags.forEach(tag => {
+            if (tag.category === 'animal' || this.isAnimalWord(tag.corrected)) {
+              animals.add(tag.corrected.toLowerCase());
+            }
+          });
+        } else {
+          // Single animal
+          animals.add(userInfo.favoriteAnimal.toLowerCase().trim());
+        }
+      } catch (error) {
+        console.warn('Smart parsing failed, using fallback:', error);
+        animals.add(userInfo.favoriteAnimal.toLowerCase().trim());
+      }
     }
     
-    // Extract from hobbies/interests
-    const animalWords = ['dog', 'cat', 'bird', 'fish', 'rabbit', 'hamster', 'horse', 'lion', 'tiger', 'bear', 'elephant', 'giraffe', 'monkey', 'dolphin', 'whale', 'penguin', 'owl', 'fox', 'deer', 'butterfly'];
-    const text = (userInfo.hobbies || '').toLowerCase();
-    
-    animalWords.forEach(animal => {
-      if (text.includes(animal)) {
-        animals.add(animal);
-      }
-    });
+    // Extract from hobbies/interests with parsing
+    if (userInfo.hobbies) {
+      const hobbyTags = userInfo.hobbies.split(/[,\s]+/).filter(tag => tag.trim().length > 0);
+      hobbyTags.forEach(tag => {
+        if (this.isAnimalWord(tag.toLowerCase())) {
+          animals.add(tag.toLowerCase());
+        }
+      });
+    }
     
     // Ensure we have at least 2-3 animals for variety
     const animalList = Array.from(animals);
@@ -146,22 +168,58 @@ export class UserInputDistributor {
   }
 
   /**
-   * Extract foods from user input
+   * Check if a word is an animal
    */
-  private static extractFoods(userInfo: UserInfo): string[] {
+  private static isAnimalWord(word: string): boolean {
+    const animalWords = [
+      'dog', 'dogs', 'cat', 'cats', 'bird', 'birds', 'fish', 'fishes', 'rabbit', 'rabbits', 
+      'hamster', 'hamsters', 'horse', 'horses', 'lion', 'lions', 'tiger', 'tigers', 
+      'bear', 'bears', 'elephant', 'elephants', 'giraffe', 'giraffes', 'monkey', 'monkeys', 
+      'dolphin', 'dolphins', 'whale', 'whales', 'penguin', 'penguins', 'owl', 'owls', 
+      'fox', 'foxes', 'deer', 'butterfly', 'butterflies', 'pig', 'pigs', 'cow', 'cows',
+      'sheep', 'wolf', 'wolves', 'duck', 'ducks', 'chicken', 'chickens'
+    ];
+    return animalWords.includes(word.toLowerCase());
+  }
+
+  /**
+   * Extract foods from user input with intelligent multi-tag parsing
+   */
+  private static async extractFoods(userInfo: UserInfo): Promise<string[]> {
     const foods = new Set<string>();
     
+    // Parse favorite food input using SmartInputParser  
     if (userInfo.favoriteFood) {
-      foods.add(userInfo.favoriteFood.toLowerCase());
+      try {
+        const foodTags = userInfo.favoriteFood.split(/[,\s]+/).filter(tag => tag.trim().length > 0);
+        if (foodTags.length > 1) {
+          // Multiple foods detected - use smart parsing
+          const parseResult = await SmartInputParser.parseTaggedInput(foodTags, userInfo);
+          parseResult.parsedTags.forEach(tag => {
+            if (tag.category === 'food' || this.isFoodWord(tag.corrected)) {
+              foods.add(tag.corrected.toLowerCase());
+            }
+          });
+        } else {
+          // Single food
+          foods.add(userInfo.favoriteFood.toLowerCase().trim());
+        }
+      } catch (error) {
+        console.warn('Smart food parsing failed, using fallback:', error);
+        foods.add(userInfo.favoriteFood.toLowerCase().trim());
+      }
     }
     
-    // Add some variety
-    const foodOptions = ['apple', 'cookie', 'pizza', 'sandwich', 'cake', 'ice cream', 'banana', 'carrot'];
-    foodOptions.forEach(food => {
-      if ((userInfo.favoriteFood || '').toLowerCase().includes(food)) {
-        foods.add(food);
-      }
-    });
+    // Extract from hobbies/special requests with parsing
+    const additionalSources = [userInfo.hobbies, userInfo.specialRequest].filter(Boolean);
+    for (const source of additionalSources) {
+      const tags = source!.split(/[,\s]+/).filter(tag => tag.trim().length > 0);
+      tags.forEach(tag => {
+        if (this.isFoodWord(tag.toLowerCase())) {
+          foods.add(tag.toLowerCase());
+        }
+      });
+    }
     
     const foodList = Array.from(foods);
     if (foodList.length < 2) {
@@ -169,6 +227,20 @@ export class UserInputDistributor {
     }
     
     return foodList.slice(0, 3);
+  }
+
+  /**
+   * Check if a word is food-related
+   */
+  private static isFoodWord(word: string): boolean {
+    const foodWords = [
+      'apple', 'apples', 'cookie', 'cookies', 'pizza', 'pizzas', 'sandwich', 'sandwiches',
+      'cake', 'cakes', 'ice cream', 'banana', 'bananas', 'carrot', 'carrots', 'burger',
+      'burgers', 'pasta', 'bread', 'cheese', 'chocolate', 'candy', 'fruit', 'fruits',
+      'vegetable', 'vegetables', 'milk', 'juice', 'water', 'soup', 'salad', 'fish',
+      'chicken', 'meat', 'rice', 'noodles', 'cereal', 'yogurt', 'berry', 'berries'
+    ];
+    return foodWords.includes(word.toLowerCase());
   }
 
   /**
@@ -203,6 +275,58 @@ export class UserInputDistributor {
   }
 
   /**
+   * Extract activities from user hobbies and special requests
+   */
+  private static extractActivities(userInfo: UserInfo): string[] {
+    const activities = new Set<string>();
+    
+    // Parse hobbies for activities
+    if (userInfo.hobbies) {
+      const hobbyTags = userInfo.hobbies.split(/[,\s]+/).filter(tag => tag.trim().length > 0);
+      hobbyTags.forEach(tag => {
+        if (this.isActivityWord(tag.toLowerCase())) {
+          activities.add(tag.toLowerCase());
+        }
+      });
+    }
+    
+    // Parse special requests for activities
+    if (userInfo.specialRequest) {
+      const requestTags = userInfo.specialRequest.split(/[,\s]+/).filter(tag => tag.trim().length > 0);
+      requestTags.forEach(tag => {
+        if (this.isActivityWord(tag.toLowerCase())) {
+          activities.add(tag.toLowerCase());
+        }
+      });
+    }
+    
+    const activityList = Array.from(activities);
+    if (activityList.length < 2) {
+      const defaults = ['playing', 'reading', 'exploring'];
+      defaults.forEach(activity => {
+        if (!activityList.includes(activity)) {
+          activityList.push(activity);
+        }
+      });
+    }
+    
+    return activityList.slice(0, 3);
+  }
+
+  /**
+   * Check if a word is activity-related
+   */
+  private static isActivityWord(word: string): boolean {
+    const activityWords = [
+      'playing', 'reading', 'drawing', 'painting', 'dancing', 'singing', 'running',
+      'jumping', 'swimming', 'biking', 'cooking', 'gardening', 'exploring', 'hiking',
+      'climbing', 'soccer', 'football', 'basketball', 'tennis', 'baseball', 'music',
+      'art', 'crafts', 'building', 'writing', 'storytelling', 'acting', 'theater'
+    ];
+    return activityWords.includes(word.toLowerCase());
+  }
+
+  /**
    * Get default element when user input is insufficient
    */
   private static getDefaultElement(category: string): string {
@@ -210,7 +334,8 @@ export class UserInputDistributor {
       animals: 'cat',
       foods: 'apple',
       colors: 'blue',
-      objects: 'toy'
+      objects: 'toy',
+      activities: 'playing'
     };
     
     return defaults[category as keyof typeof defaults] || 'thing';

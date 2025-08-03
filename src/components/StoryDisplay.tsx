@@ -967,19 +967,22 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                     <div className="text-center w-full">
                       {/* Story Text with Interactive Words and Reading Level Configuration */}
                       {(() => {
-                        // Use difficulty-based font sizing for better readability
+                        // Use difficulty-based font sizing with proper hierarchy (no overflow)
                         const getFontSizeForDifficulty = (difficulty: string) => {
                           console.log('StoryDisplay: Getting font size for difficulty:', difficulty);
                           switch (difficulty) {
                             case 'easy': 
-                              console.log('StoryDisplay: Using EXTRA LARGE fonts for Level 1');
-                              return 'text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl'; // Extra large for level 1 (ages 3-6)
-                            case 'medium': return 'text-2xl sm:text-3xl md:text-4xl lg:text-5xl';
-                            case 'hard': return 'text-xl sm:text-2xl md:text-3xl lg:text-4xl';
-                            case 'expert': return 'text-lg sm:text-xl md:text-2xl lg:text-3xl';
+                              console.log('StoryDisplay: Using large fonts for Level 1 (fits screen)');
+                              return 'text-2xl sm:text-3xl md:text-4xl'; // Large for youngest kids, fits screen
+                            case 'medium': 
+                              return 'text-xl sm:text-2xl md:text-3xl'; // Smaller than easy
+                            case 'hard': 
+                              return 'text-lg sm:text-xl md:text-2xl'; // Smaller than medium
+                            case 'expert': 
+                              return 'text-base sm:text-lg md:text-xl'; // Smallest for advanced readers
                             default: 
-                              console.log('StoryDisplay: Default case - using large fonts');
-                              return 'text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl';
+                              console.log('StoryDisplay: Default case - using easy level fonts');
+                              return 'text-2xl sm:text-3xl md:text-4xl';
                           }
                         };
                         
@@ -994,7 +997,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                         const shouldUseInteractiveWords = currentStory.length < 1000;
                         
                         return (
-                          <div className={`${config.fontSize} ${config.lineHeight} ${config.spacing} ${currentDifficulty === 'easy' ? 'font-black' : 'font-bold'} text-gray-800 max-w-full break-words hyphens-auto leading-relaxed overflow-hidden`}>
+                          <div className={`${config.fontSize} ${config.lineHeight} ${config.spacing} font-bold text-gray-800 max-w-full break-words hyphens-auto leading-relaxed overflow-hidden`}>
                             <div className="max-h-[400px] overflow-y-auto px-2">
                               {shouldUseInteractiveWords ? 
                                 processTextForPhonetics(

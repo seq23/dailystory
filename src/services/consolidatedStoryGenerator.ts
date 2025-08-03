@@ -90,7 +90,7 @@ export class ConsolidatedStoryGenerator {
       }
 
       // Phase 1 & 5: Generate story pages using enhanced intelligent templates
-      UserInputDistributor.initialize(processedUserInfo);
+      await UserInputDistributor.initialize(processedUserInfo);
       const enhancedTemplate = getEnhancedTemplate(difficulty);
       
       if (!enhancedTemplate.length) {
@@ -123,7 +123,7 @@ export class ConsolidatedStoryGenerator {
           storyElements: extractedElements
         };
         
-        let processedPage = TemplateVariableProcessor.processTemplate(template, variableContext);
+        let processedPage = await TemplateVariableProcessor.processTemplate(template, variableContext);
         
         // Phase 8: Anti-repetition system checks with improved thresholds
         if (fullConfig.antiRepetition) {

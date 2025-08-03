@@ -17,11 +17,11 @@ export class TemplateVariableProcessor {
   /**
    * Processes all template variables in a given template string
    */
-  static processTemplate(template: string, context: VariableContext): string {
+  static async processTemplate(template: string, context: VariableContext): Promise<string> {
     let processed = template;
     
     // Initialize intelligent user input distribution
-    UserInputDistributor.initialize(context.userInfo);
+    await UserInputDistributor.initialize(context.userInfo);
     
     // Get intelligent template variables
     const distributionContext = {
