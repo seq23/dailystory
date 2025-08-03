@@ -356,6 +356,19 @@
       "endSession": "🔚 अपना पढ़ने का सेशन समाप्त करने के लिए क्लिक करें!"
     }
   },
+  "audioReading": {
+    "playAudio": "ऑडियो रीडिंग चलाएं",
+    "audioPlaying": "ऑडियो चल रहा है...",
+    "audioUsed": "ऑडियो उपयोग किया गया",
+    "audioUsedTooltip": "ऑडियो उपयोग किया गया (मुफ्त उपयोगकर्ताओं के लिए प्रति पेज 1 बार)",
+    "speed": "गति",
+    "stop": "रोकें",
+    "generating": "जेनरेट हो रहा है...",
+    "upgrade": "अपग्रेड करें",
+    "upgradeTooltip": "असीमित ऑडियो प्ले के लिए प्रीमियम में अपग्रेड करें",
+    "freeAudioUsed": "मुफ्त ऑडियो उपयोग किया गया",
+    "extendedPagesNeedPremium": "🔒 विस्तारित पेजों के लिए प्रीमियम चाहिए"
+  },
   "freeReadingSession": {
     "navigation": {
       "previous": "← पिछला",

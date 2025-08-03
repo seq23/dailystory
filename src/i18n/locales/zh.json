@@ -356,6 +356,19 @@
       "endSession": "🔚 点击结束您的阅读会话！"
     }
   },
+  "audioReading": {
+    "playAudio": "播放音频阅读",
+    "audioPlaying": "音频播放中...",
+    "audioUsed": "音频已使用",
+    "audioUsedTooltip": "音频已使用（免费用户每页1次）",
+    "speed": "速度",
+    "stop": "停止",
+    "generating": "生成中...",
+    "upgrade": "升级",
+    "upgradeTooltip": "升级到高级版以获得无限音频播放",
+    "freeAudioUsed": "免费音频已使用",
+    "extendedPagesNeedPremium": "🔒 扩展页面需要高级版"
+  },
   "freeReadingSession": {
     "navigation": {
       "previous": "← 上一页",

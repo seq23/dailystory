@@ -357,6 +357,19 @@
       "endSession": "🔚 انقر لإنهاء جلسة القراءة!"
     }
   },
+  "audioReading": {
+    "playAudio": "تشغيل القراءة الصوتية",
+    "audioPlaying": "الصوت يعمل...",
+    "audioUsed": "تم استخدام الصوت",
+    "audioUsedTooltip": "تم استخدام الصوت (مرة واحدة لكل صفحة للمستخدمين المجانيين)",
+    "speed": "السرعة",
+    "stop": "إيقاف",
+    "generating": "جاري الإنتاج...",
+    "upgrade": "ترقية",
+    "upgradeTooltip": "ترقى إلى بريميوم للحصول على تشغيل صوتي غير محدود",
+    "freeAudioUsed": "تم استخدام الصوت المجاني",
+    "extendedPagesNeedPremium": "🔒 الصفحات الممتدة تحتاج بريميوم"
+  },
   "freeReadingSession": {
     "navigation": {
       "previous": "← السابق",
