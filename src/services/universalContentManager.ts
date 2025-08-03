@@ -1,4 +1,5 @@
 import { UserInfo, Story, DifficultyLevel } from "@/types";
+import { SupportedLanguage } from "@/types/multilingual";
 import { SmartInputParser } from "./smartInputParser";
 import { ConsolidatedStoryGenerator } from "./consolidatedStoryGenerator";
 import { PremiumStoryService } from "./premiumStoryService";
@@ -310,7 +311,7 @@ export class UniversalContentManager {
       // Create a special configuration that preserves anti-repetition state
       const continuationConfig = {
         pageCount: 5,
-        language: 'en' as const,
+        language: 'en' as SupportedLanguage,
         useSmartParsing: true,
         antiRepetition: true,
         culturalAdaptation: true,
