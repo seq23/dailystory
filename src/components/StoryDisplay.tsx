@@ -951,12 +951,17 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                       {(() => {
                         // Use difficulty-based font sizing for better readability
                         const getFontSizeForDifficulty = (difficulty: string) => {
+                          console.log('StoryDisplay: Getting font size for difficulty:', difficulty);
                           switch (difficulty) {
-                            case 'easy': return 'text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl'; // Extra large for level 1 (ages 3-6)
+                            case 'easy': 
+                              console.log('StoryDisplay: Using EXTRA LARGE fonts for Level 1');
+                              return 'text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl'; // Extra large for level 1 (ages 3-6)
                             case 'medium': return 'text-2xl sm:text-3xl md:text-4xl lg:text-5xl';
                             case 'hard': return 'text-xl sm:text-2xl md:text-3xl lg:text-4xl';
                             case 'expert': return 'text-lg sm:text-xl md:text-2xl lg:text-3xl';
-                            default: return 'text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl';
+                            default: 
+                              console.log('StoryDisplay: Default case - using large fonts');
+                              return 'text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl';
                           }
                         };
                         
@@ -965,6 +970,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                           lineHeight: 'leading-relaxed', 
                           spacing: 'space-y-4' 
                         };
+                        console.log('StoryDisplay: Final font config:', config, 'Current difficulty:', currentDifficulty);
                         
                         // Performance optimization: Only process text for phonetics if it's not too long
                         const shouldUseInteractiveWords = currentStory.length < 1000;
