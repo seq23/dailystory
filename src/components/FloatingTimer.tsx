@@ -158,10 +158,26 @@ export const FloatingTimer = ({
     return "#16a34a"; // green
   };
 
+  // Check if tutorial is active and on step 1 (timer step)
+  const isTutorialTimerStep = document.querySelector('.tutorial-highlight') && 
+    document.querySelector('#floating-timer')?.classList.contains('tutorial-highlight');
+
   return (
       <TooltipProvider>
-      {/* Floating Timer Container - Mobile optimized */}
-      <div className="fixed bottom-8 left-4 right-4 sm:left-6 sm:right-auto z-30 flex flex-col items-start sm:items-center max-w-fit" id="floating-timer" style={{ marginLeft: 'max(0.75rem, env(safe-area-inset-left))', marginBottom: 'max(1rem, env(safe-area-inset-bottom))', marginRight: 'max(0.75rem, env(safe-area-inset-right))' }}>
+      {/* Floating Timer Container - Mobile optimized with tutorial centering */}
+      <div 
+        className={`fixed z-30 flex flex-col items-center max-w-fit transition-all duration-300 ${
+          isTutorialTimerStep 
+            ? 'top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2' 
+            : 'bottom-8 left-4 right-4 sm:left-6 sm:right-auto items-start sm:items-center'
+        }`} 
+        id="floating-timer" 
+        style={!isTutorialTimerStep ? { 
+          marginLeft: 'max(0.75rem, env(safe-area-inset-left))', 
+          marginBottom: 'max(1rem, env(safe-area-inset-bottom))', 
+          marginRight: 'max(0.75rem, env(safe-area-inset-right))' 
+        } : {}}
+      >
         
         {/* Main Timer Circle - Professional & Larger */}
         <div className="relative">
