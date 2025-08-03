@@ -273,12 +273,13 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
       // Tutorial timer is in top middle, place tutorial card at bottom or side
       if (isMobile) {
         return {
-          bottom: `${margin + 80}px`, // Bottom positioning to avoid top middle timer
+          bottom: `${margin + 100}px`, // Bottom positioning to avoid top middle timer
           left: `${margin}px`,
-          right: "auto",
+          right: `${margin}px`,
           top: "auto",
           transform: "none",
-          maxWidth: `${tooltipWidth}px`
+          maxWidth: "90vw", // Use viewport width for mobile
+          width: "calc(100vw - 40px)" // Full width minus margins
         };
       } else if (isTablet) {
         return {
@@ -286,7 +287,8 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
           left: `${margin}px`, // Left side to avoid top middle timer
           right: "auto",
           transform: "translateY(-50%)",
-          maxWidth: `${tooltipWidth}px`
+          maxWidth: `${tooltipWidth}px`,
+          width: `${tooltipWidth}px`
         };
       } else {
         return {
@@ -294,7 +296,8 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
           left: `${margin + 40}px`, // Left side to avoid top middle timer
           right: "auto",
           transform: "translateY(-50%)",
-          maxWidth: `${tooltipWidth}px`
+          maxWidth: `${tooltipWidth}px`,
+          width: `${tooltipWidth}px`
         };
       }
     }
@@ -448,7 +451,7 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
         className={`fixed z-50 transition-all duration-300 ${isAnimating ? 'opacity-100 scale-100' : 'opacity-0 scale-95'} hidden sm:block`}
         style={tooltipStyle}
       >
-        <Card className="w-full max-w-[320px] sm:max-w-[400px] md:w-[400px] bg-white dark:bg-gray-900 shadow-xl border-2 border-primary/30 rounded-2xl overflow-hidden">
+        <Card className="w-full bg-white dark:bg-gray-900 shadow-xl border-2 border-primary/30 rounded-2xl overflow-hidden" style={{ maxWidth: tooltipStyle.maxWidth || '400px', width: tooltipStyle.width || 'auto' }}>
           {/* Clean arrow pointing to target */}
           <div className="absolute -z-10">
             <div 
