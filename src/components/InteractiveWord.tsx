@@ -1272,6 +1272,37 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
   };
 
   // Mobile-optimized word explanation with TTS
+  
+  // Helper function to create native language explanations
+  const generateNativeLanguageExplanation = async (word: string, wordData: any, userLanguage: string): Promise<string> => {
+    try {
+      // Use translate-batch to get the explanation in user's language
+      const textsToTranslate = [
+        wordData.definition || 'a word',
+        wordData.sampleSentence || `This is the word: ${word}`
+      ];
+      
+      const response = await supabase.functions.invoke('translate-batch', {
+        body: {
+          texts: textsToTranslate,
+          targetLanguage: userLanguage,
+          sourceLanguage: 'en',
+          context: 'word_explanation'
+        }
+      });
+      
+      if (response.data?.translations) {
+        const [translatedDefinition, translatedExample] = response.data.translations;
+        return `${word}. ${translatedDefinition.translatedText}. ${translatedExample.translatedText}`;
+      }
+    } catch (error) {
+      console.log('Translation failed, using simple format:', error);
+    }
+    
+    // Fallback to simple format if translation fails
+    return `${word}. ${wordData.definition || 'a word'}.`;
+  };
+
   const handleMobileExplain = async () => {
     console.log('📚 Mobile Explain: Function called');
     if (isLoadingMobile || isPlayingMobile) {
@@ -1334,10 +1365,19 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
       const voiceId = getVoiceForUser();
       console.log('📚 Mobile Explain: Voice ID:', voiceId);
       
-      // Create a simple explanation that works for all languages
-      const explanationText = wordData.definition 
-        ? `${props.word}. ${wordData.definition}.${wordData.sampleSentence ? ` Example: ${wordData.sampleSentence}` : ''}`
-        : `${props.word} is a word.`;
+      // Create appropriate explanation based on user's language
+      let explanationText;
+      const userLanguage = props.userInfo?.nativeLanguage || 'en';
+      
+      if (userLanguage === 'en') {
+        // English explanation (current format)
+        explanationText = wordData.definition 
+          ? `${props.word}. ${wordData.definition}.${wordData.sampleSentence ? ` Example: ${wordData.sampleSentence}` : ''}`
+          : `${props.word} is a word.`;
+      } else {
+        // For non-English users, provide translation-based explanation
+        explanationText = await generateNativeLanguageExplanation(props.word, wordData, userLanguage);
+      }
       
       console.log('📚 Mobile Explain: TTS text:', explanationText.substring(0, 100) + '...');
       
