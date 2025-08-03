@@ -78,41 +78,68 @@ export class UserInputDistributor {
   static getTemplateVariables(userInfo: UserInfo, context: DistributionContext): Record<string, string> {
     const name = NameFormatter.capitalize(userInfo.name || 'Alex');
     
-    return {
-      // Basic user info
+    // Ensure we have fallback values to prevent incomplete sentences
+    const safeFavoriteAnimal = userInfo.favoriteAnimal || 'cat';
+    const safeFavoriteFood = userInfo.favoriteFood || 'apple';
+    const safeFavoriteColor = userInfo.favoriteColor || 'blue';
+    const safeHobbies = userInfo.hobbies || 'playing';
+    
+    console.log(`🎯 Generating template variables for page ${context.pageIndex + 1}/${context.totalPages}`);
+    console.log(`📝 UserInfo: animal=${safeFavoriteAnimal}, food=${safeFavoriteFood}, color=${safeFavoriteColor}, hobby=${safeHobbies}`);
+    
+    // Get pronouns
+    const pronouns = this.getPronouns(userInfo);
+    
+    const allVariables = {
+      // Basic user info - ALWAYS provide fallbacks
       '{name}': name,
+      '{character}': name,
       '{age}': userInfo.age?.toString() || '6',
       
-      // Primary elements (most important - used early)
-      '{primary_animal}': this.getNextElement('animals', context),
-      '{primary_food}': this.getNextElement('foods', context),
-      '{primary_color}': this.getNextElement('colors', context),
-      '{primary_object}': this.getNextElement('objects', context),
+      // Primary elements (most important - used early) - with fallbacks
+      '{primary_animal}': this.getNextElement('animals', context) || safeFavoriteAnimal,
+      '{animal}': this.getNextElement('animals', context) || safeFavoriteAnimal,
+      '{primary_food}': this.getNextElement('foods', context) || safeFavoriteFood,
+      '{food}': this.getNextElement('foods', context) || safeFavoriteFood,
+      '{primary_color}': this.getNextElement('colors', context) || safeFavoriteColor,
+      '{color}': this.getNextElement('colors', context) || safeFavoriteColor,
+      '{primary_object}': this.getNextElement('objects', context) || 'treasure',
+      '{object}': this.getNextElement('objects', context) || 'treasure',
       
-      // Secondary elements (used mid-story)
-      '{secondary_animal}': this.getNextElement('animals', context),
-      '{secondary_food}': this.getNextElement('foods', context),
-      '{secondary_color}': this.getNextElement('colors', context),
+      // Secondary elements (used mid-story) - with fallbacks
+      '{secondary_animal}': this.getSecondaryAnimal(safeFavoriteAnimal),
+      '{secondary_food}': this.getSecondaryFood(safeFavoriteFood),
+      '{secondary_color}': this.getSecondaryColor(safeFavoriteColor),
       
-      // Friend/companion elements (used for relationships)
-      '{friend_animal}': this.getNextElement('animals', context),
-      '{friend_object}': this.getNextElement('objects', context),
+      // Friend/companion elements (used for relationships) - with fallbacks
+      '{friend_animal}': this.getFriendAnimal(safeFavoriteAnimal),
+      '{friend_object}': this.getNextElement('objects', context) || 'toy',
       
-      // Activity elements
-      '{favorite_activity}': this.getNextElement('activities', context),
-      '{favorite_activity_1}': this.getNextElement('activities', context),
-      '{favorite_activity_2}': this.getNextElement('activities', context),
+      // Activity elements - with fallbacks
+      '{favorite_activity}': this.getNextElement('activities', context) || safeHobbies,
+      '{favorite_activity_1}': this.getNextElement('activities', context) || 'playing',
+      '{favorite_activity_2}': this.getNextElement('activities', context) || 'exploring',
+      '{hobby}': safeHobbies,
+      '{hobbies}': safeHobbies,
       
-      // Pronouns based on avatar
-      '{pronoun}': this.getPronoun(userInfo, 'subject'),
-      '{pronoun_object}': this.getPronoun(userInfo, 'object'),
-      '{pronoun_possessive}': this.getPronoun(userInfo, 'possessive'),
+      // Pronouns based on avatar - ALWAYS provide fallbacks
+      '{pronoun}': pronouns.subject,
+      '{pronoun_subject}': pronouns.subject,
+      '{pronoun_object}': pronouns.object,
+      '{pronoun_possessive}': pronouns.possessive,
       
-      // Contextual elements
+      // Contextual elements - with fallbacks
       '{setting}': this.getContextualSetting(context),
       '{time_of_day}': this.getTimeOfDay(context),
       '{action}': this.getContextualAction(context),
+      
+      // Additional common template variables
+      '{skill}': this.getRandomSkill(context.difficulty),
+      '{antagonist}': this.getRandomAntagonist(context.difficulty)
     };
+    
+    console.log(`🎯 Generated template variables:`, allVariables);
+    return allVariables;
   }
 
   /**
@@ -355,6 +382,111 @@ export class UserInputDistributor {
     
     const selected = pronouns[avatarType as keyof typeof pronouns] || pronouns.default;
     return selected[type];
+  }
+
+  /**
+   * Get pronouns object for easy access
+   */
+  private static getPronouns(userInfo: UserInfo): { subject: string; object: string; possessive: string } {
+    const avatarType = userInfo.avatar?.type || 'neutral';
+    
+    if (avatarType === 'boy') {
+      return { subject: 'he', object: 'him', possessive: 'his' };
+    } else if (avatarType === 'girl') {
+      return { subject: 'she', object: 'her', possessive: 'her' };
+    }
+    
+    // Default to gender-neutral
+    return { subject: 'they', object: 'them', possessive: 'their' };
+  }
+
+  /**
+   * Get secondary animal for variety
+   */
+  private static getSecondaryAnimal(primaryAnimal: string): string {
+    const animalPairs = {
+      cat: 'bird',
+      dog: 'rabbit',
+      bird: 'cat',
+      rabbit: 'dog',
+      elephant: 'mouse',
+      mouse: 'elephant',
+      lion: 'zebra',
+      fish: 'octopus'
+    };
+    
+    return animalPairs[primaryAnimal.toLowerCase()] || 'friend';
+  }
+
+  /**
+   * Get friend animal for variety
+   */
+  private static getFriendAnimal(primaryAnimal: string): string {
+    const friendAnimals = ['puppy', 'kitten', 'bunny', 'duckling', 'bear cub', 'owl'];
+    const filtered = friendAnimals.filter(animal => !animal.includes(primaryAnimal.toLowerCase()));
+    return filtered[Math.floor(Math.random() * filtered.length)] || 'friend';
+  }
+
+  /**
+   * Get secondary food for variety
+   */
+  private static getSecondaryFood(primaryFood: string): string {
+    const foodPairs = {
+      apple: 'banana',
+      banana: 'apple',
+      cookie: 'cake',
+      cake: 'cookie',
+      pizza: 'sandwich',
+      sandwich: 'pizza'
+    };
+    
+    return foodPairs[primaryFood.toLowerCase()] || 'treats';
+  }
+
+  /**
+   * Get secondary color for variety
+   */
+  private static getSecondaryColor(primaryColor: string): string {
+    const colorPairs = {
+      blue: 'green',
+      green: 'blue',
+      red: 'yellow',
+      yellow: 'red',
+      purple: 'pink',
+      pink: 'purple'
+    };
+    
+    return colorPairs[primaryColor.toLowerCase()] || 'rainbow';
+  }
+
+  /**
+   * Get random skill based on difficulty
+   */
+  private static getRandomSkill(difficulty: DifficultyLevel): string {
+    const skills = {
+      easy: ['kindness', 'sharing', 'helping'],
+      medium: ['courage', 'wisdom', 'friendship'],
+      hard: ['bravery', 'intelligence', 'creativity'],
+      expert: ['leadership', 'determination', 'innovation']
+    };
+    
+    const options = skills[difficulty] || skills.easy;
+    return options[Math.floor(Math.random() * options.length)];
+  }
+
+  /**
+   * Get random antagonist based on difficulty
+   */
+  private static getRandomAntagonist(difficulty: DifficultyLevel): string {
+    const antagonists = {
+      easy: ['grumpy', 'messy', 'forgetful'],
+      medium: ['mischievous', 'sneaky', 'troublesome'],
+      hard: ['mysterious', 'cunning', 'powerful'],
+      expert: ['ancient', 'formidable', 'legendary']
+    };
+    
+    const options = antagonists[difficulty] || antagonists.easy;
+    return options[Math.floor(Math.random() * options.length)];
   }
 
   /**

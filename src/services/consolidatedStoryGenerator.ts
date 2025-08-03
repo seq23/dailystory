@@ -303,6 +303,31 @@ export class ConsolidatedStoryGenerator {
     // Only fix the most critical grammar issues
     let fixed = text;
     
+    // CRITICAL FIX: Check for incomplete sentences and template replacement failures
+    // Fix sentences that end with "a " or "an " (incomplete articles)
+    fixed = fixed.replace(/\s+(a|an)\s*$/gi, '');
+    
+    // Fix sentences that end with incomplete words or hanging prepositions
+    fixed = fixed.replace(/\s+(to|with|in|on|at|by|for|of)\s*$/gi, '');
+    
+    // Remove any remaining template variables that weren't processed
+    fixed = fixed.replace(/\{[^}]*\}/g, '');
+    
+    // Fix obvious incomplete sentences - if sentence is too short, make it complete
+    if (fixed.trim().length < 10 && !fixed.includes('.')) {
+      const words = fixed.trim().split(/\s+/);
+      if (words.length >= 2) {
+        // Try to complete common incomplete patterns
+        if (words[words.length - 1] === 'a' || words[words.length - 1] === 'an') {
+          words.pop(); // Remove incomplete article
+          fixed = words.join(' ') + '.';
+        } else if (words.length < 3) {
+          // Add a simple completion for very short sentences
+          fixed = fixed.trim() + ' happily.';
+        }
+      }
+    }
+    
     // Fix obvious pronoun-verb agreement errors
     fixed = fixed.replace(/\b(he|she|it)\s+(eat|run|play|like|go|come|see|find|help|love|want|need|have|do|say|get|know|think|feel|look|try|make|take|give|work|call|move|turn|start|stop|walk|talk|ask|tell|show|hear|listen|watch|learn|teach|read|write|draw|sing|dance|swim|jump|fly|sleep|wake|open|close|carry|hold|pick|drop|push|pull|throw|catch)\b/gi, 
       (match, pronoun, verb) => {
@@ -330,9 +355,6 @@ export class ConsolidatedStoryGenerator {
       return match; // Keep original if not plural
     });
     
-    // Remove obvious template variables that weren't processed
-    fixed = fixed.replace(/\{[^}]*\}/g, '');
-    
     // Fix double spaces
     fixed = fixed.replace(/\s+/g, ' ');
     
@@ -340,6 +362,11 @@ export class ConsolidatedStoryGenerator {
     fixed = fixed.trim();
     if (fixed && !fixed.match(/[.!?]$/)) {
       fixed += '.';
+    }
+    
+    // Final check: If sentence is still too short or incomplete, provide a fallback
+    if (fixed.trim().length < 5) {
+      fixed = 'The adventure continues.';
     }
     
     console.log('✅ Post-grammar validation:', fixed);
@@ -475,85 +502,78 @@ export class ConsolidatedStoryGenerator {
   }
 
   /**
-   * Adjusts page word count to meet industry standards per reading level
+   * Adjusts page word count to meet difficulty requirements
    */
   private static adjustPageWordCount(
-    page: string, 
+    originalPage: string, 
     difficulty: DifficultyLevel, 
-    adjustment: 'expand' | 'reduce'
+    adjustmentType: 'expand' | 'reduce'
   ): string {
-    // Updated TTS-optimized word count standards - ensuring complete thoughts
-    const wordCounts = {
-      easy: { min: 3, max: 6 },    // Ages 3-5: Complete simple sentences for TTS
-      medium: { min: 5, max: 9 },  // Ages 5-7: Slightly longer sentences
-      hard: { min: 7, max: 13 },   // Ages 7-9: More complex sentences
-      expert: { min: 9, max: 16 }  // Ages 9-11+: Advanced vocabulary and complexity
-    };
-
-    const target = wordCounts[difficulty] || wordCounts.medium;
-    const words = page.split(/\s+/).filter(word => word.trim());
+    console.log(`🔧 Adjusting page word count: ${adjustmentType} for ${difficulty}`);
+    console.log(`📝 Original: "${originalPage}"`);
     
-    if (adjustment === 'expand' && words.length < target.min) {
-      // Add simple descriptive words to reach minimum
-      const expansions = [
-        'very', 'really', 'quite', 'so', 'always', 'sometimes', 'then', 'also',
-        'wonderful', 'amazing', 'special', 'beautiful', 'exciting', 'fun', 'big', 'small'
-      ];
-      
-      let expandedPage = page;
-      let attempts = 0;
-      const targetWordsNeeded = target.min - words.length;
-      
-      console.log(`🔧 Need to expand from ${words.length} to at least ${target.min} words (need ${targetWordsNeeded} more)`);
-      
-      while (expandedPage.split(/\s+/).filter(w => w.trim()).length < target.min && attempts < 10) {
-        const expansion = expansions[Math.floor(Math.random() * expansions.length)];
-        
-        // Try multiple insertion strategies
-        if (attempts < 3) {
-          // Insert expansion before verbs
-          expandedPage = expandedPage.replace(/\b(was|is|were|are|looked|seemed|felt|went|came|saw|found)\b/, `${expansion} $1`);
-        } else if (attempts < 6) {
-          // Insert expansion before nouns
-          expandedPage = expandedPage.replace(/\b(cat|dog|bird|house|tree|friend|adventure|day|time)\b/, `${expansion} $1`);
-        } else {
-          // Add to the end of sentences
-          expandedPage = expandedPage.replace(/\./, ` ${expansion}.`);
-        }
-        
-        attempts++;
-      }
-      
-      // Last resort: just add words at the end
-      const currentCount = expandedPage.split(/\s+/).filter(w => w.trim()).length;
-      if (currentCount < target.min) {
-        const wordsStillNeeded = target.min - currentCount;
-        const additionalWords = expansions.slice(0, wordsStillNeeded).join(' ');
-        expandedPage = expandedPage.replace(/\.$/, ` ${additionalWords}.`);
-      }
-      
-      console.log(`📝 Expanded page: ${words.length} -> ${expandedPage.split(/\s+/).filter(w => w.trim()).length} words`);
-      return expandedPage;
-      
-    } else if (adjustment === 'reduce' && words.length > target.max) {
-      // Remove unnecessary words to reach maximum
-      let reducedWords = words.slice(0, target.max);
-      
-      // Ensure the page still makes sense by keeping important words
-      if (reducedWords.length > 3) {
-        // Keep first and last few words, remove from middle if needed
-        const beginning = reducedWords.slice(0, 2);
-        const ending = reducedWords.slice(-2);
-        const middle = reducedWords.slice(2, -2).slice(0, target.max - 4);
-        reducedWords = [...beginning, ...middle, ...ending];
-      }
-      
-      const reducedPage = reducedWords.join(' ').replace(/\s+/g, ' ').trim();
-      console.log(`📝 Reduced page: ${words.length} -> ${reducedWords.length} words`);
-      return reducedPage.endsWith('.') ? reducedPage : reducedPage + '.';
+    // First, fix any incomplete sentences
+    let adjustedPage = originalPage;
+    
+    // Remove incomplete endings like "a " or "an "
+    adjustedPage = adjustedPage.replace(/\s+(a|an)\s*$/gi, '');
+    
+    // Complete obviously incomplete sentences
+    if (adjustedPage.trim().endsWith(' sees')) {
+      adjustedPage = adjustedPage.replace(/\s+sees\s*$/, ' sees something amazing');
+    }
+    if (adjustedPage.trim().endsWith(' finds')) {
+      adjustedPage = adjustedPage.replace(/\s+finds\s*$/, ' finds a treasure');
+    }
+    if (adjustedPage.trim().endsWith(' meets')) {
+      adjustedPage = adjustedPage.replace(/\s+meets\s*$/, ' meets a friend');
     }
     
-    return page; // No adjustment needed
+    const expectedWordCounts = {
+      easy: { min: 3, max: 6 },
+      medium: { min: 5, max: 9 },
+      hard: { min: 7, max: 13 },
+      expert: { min: 9, max: 16 }
+    };
+    
+    const expected = expectedWordCounts[difficulty];
+    
+    if (adjustmentType === 'expand') {
+      // Add appropriate expansions for the difficulty level
+      const expansions = {
+        easy: [' very much', ' happily', ' today', ' together', ' nicely'],
+        medium: [' with great joy', ' in the bright sunshine', ' feeling very happy', ' with new friends'],
+        hard: [' with tremendous excitement', ' discovering something wonderful', ' feeling incredibly grateful'],
+        expert: [' experiencing profound happiness', ' with extraordinary determination', ' achieving remarkable success']
+      };
+      
+      const difficultyExpansions = expansions[difficulty] || expansions.easy;
+      const randomExpansion = difficultyExpansions[Math.floor(Math.random() * difficultyExpansions.length)];
+      
+      // Add expansion before the final punctuation
+      adjustedPage = adjustedPage.replace(/([.!?])$/, `${randomExpansion}$1`);
+      
+    } else if (adjustmentType === 'reduce') {
+      // Remove extra words while keeping meaning
+      adjustedPage = adjustedPage
+        .replace(/\s+(very|really|quite|so|extremely|incredibly)\s+/gi, ' ')
+        .replace(/\s+and\s+[^.]*$/, '.')
+        .replace(/\s*,\s*[^,]*$/, '.');
+    }
+    
+    // Ensure minimum word count is met even after reduction
+    const finalWordCount = adjustedPage.split(/\s+/).filter(w => w.trim()).length;
+    if (finalWordCount < expected.min) {
+      adjustedPage = adjustedPage.replace(/([.!?])$/, ' happily$1');
+    }
+    
+    // Final safety check - if still incomplete, provide complete sentence
+    if (adjustedPage.trim().length < 10 || !adjustedPage.match(/[.!?]$/)) {
+      adjustedPage = `The adventure continues with joy.`;
+    }
+    
+    console.log(`✅ Adjusted: "${adjustedPage}"`);
+    return adjustedPage;
   }
 
   /**
