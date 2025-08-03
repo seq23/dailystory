@@ -208,15 +208,18 @@ export class ConsolidatedStoryGenerator {
   }
 
   /**
-   * Phase 2: Light grammar validation - only fixes critical errors
+   * Phase 2: Enhanced grammar validation - fixes critical errors
    */
   private static lightGrammarValidation(text: string): string {
+    console.log('🔍 Pre-grammar validation:', text);
+    
     // Only fix the most critical grammar issues
     let fixed = text;
     
     // Fix obvious pronoun-verb agreement errors
     fixed = fixed.replace(/\b(he|she|it)\s+(eat|run|play|like|go|come|see|find|help|love|want|need|have|do|say|get|know|think|feel|look|try|make|take|give|work|call|move|turn|start|stop|walk|talk|ask|tell|show|hear|listen|watch|learn|teach|read|write|draw|sing|dance|swim|jump|fly|sleep|wake|open|close|carry|hold|pick|drop|push|pull|throw|catch)\b/gi, 
       (match, pronoun, verb) => {
+        console.log(`🔧 Grammar fix: "${match}" -> "${pronoun} ${GrammarValidator.conjugateVerb(verb, pronoun)}"`);
         const correctVerb = GrammarValidator.conjugateVerb(verb, pronoun);
         return `${pronoun} ${correctVerb}`;
       });
@@ -225,6 +228,7 @@ export class ConsolidatedStoryGenerator {
     fixed = fixed.replace(/\ba\s+([a-z]+s)\b/gi, (match, noun) => {
       // Check if it's a plural noun
       if (GrammarValidator.isPlural(noun)) {
+        console.log(`🔧 Article fix: "${match}" -> "${noun}" (removed 'a' from plural)`);
         return noun; // Remove the "a" for plural nouns
       }
       return match; // Keep original if not plural
@@ -233,6 +237,7 @@ export class ConsolidatedStoryGenerator {
     // Fix "an" with plural nouns too
     fixed = fixed.replace(/\ban\s+([a-z]+s)\b/gi, (match, noun) => {
       if (GrammarValidator.isPlural(noun)) {
+        console.log(`🔧 Article fix: "${match}" -> "${noun}" (removed 'an' from plural)`);
         return noun; // Remove the "an" for plural nouns
       }
       return match; // Keep original if not plural
@@ -250,6 +255,7 @@ export class ConsolidatedStoryGenerator {
       fixed += '.';
     }
     
+    console.log('✅ Post-grammar validation:', fixed);
     return fixed;
   }
 
