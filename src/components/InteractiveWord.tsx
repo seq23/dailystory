@@ -1034,6 +1034,13 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
   
   // ENHANCED: Debug and fix translation issues for Arabic, Chinese, Hindi (mobile version)
   const userLanguageT = useCallback((key: string, fallback: string) => {
+    console.log('🌐 Mobile Translation Debug:', {
+      key,
+      fallback,
+      userLanguage: props.userInfo?.nativeLanguage,
+      userInfo: props.userInfo
+    });
+    
     if (props.userInfo?.nativeLanguage && props.userInfo.nativeLanguage !== 'en') {
       try {
         // Approach 1: Try direct i18n translation
