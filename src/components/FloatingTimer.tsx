@@ -165,7 +165,7 @@ export const FloatingTimer = ({
       <TooltipProvider>
       {/* Floating Timer Container - Mobile optimized with tutorial centering */}
       <div 
-        className={`fixed z-50 flex flex-col items-center max-w-fit transition-all duration-300 ${
+        className={`fixed z-30 flex flex-col items-center max-w-fit transition-all duration-300 ${
           isTutorialTimerStep 
             ? 'top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2' 
             : 'bottom-8 left-4 right-4 sm:left-6 sm:right-auto items-start sm:items-center'
@@ -175,10 +175,7 @@ export const FloatingTimer = ({
           marginLeft: 'max(0.75rem, env(safe-area-inset-left))', 
           marginBottom: 'max(1rem, env(safe-area-inset-bottom))', 
           marginRight: 'max(0.75rem, env(safe-area-inset-right))' 
-        } : {
-          marginTop: 'max(2rem, env(safe-area-inset-top))',
-          marginBottom: 'max(2rem, env(safe-area-inset-bottom))'
-        }}
+        } : {}}
       >
         
         {/* Main Timer Circle - Professional & Larger */}
