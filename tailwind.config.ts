@@ -29,6 +29,13 @@ export default {
 				'schoolbell': ['Schoolbell', 'cursive', 'sans-serif'],
 				'inter': ['Inter', 'ui-sans-serif', 'system-ui'],
 				'sans': ['Fredoka', 'ui-sans-serif', 'system-ui'],
+				// Multilingual font families
+				'arabic': ['Tajawal', 'Amiri', 'sans-serif'],
+				'arabic-fun': ['Amiri', 'Tajawal', 'serif'],
+				'chinese': ['Noto Sans SC', 'Ma Shan Zheng', 'sans-serif'],
+				'chinese-fun': ['Ma Shan Zheng', 'Noto Sans SC', 'serif'],
+				'hindi': ['Noto Sans Devanagari', 'Kalam', 'sans-serif'],
+				'hindi-fun': ['Kalam', 'Noto Sans Devanagari', 'cursive'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',

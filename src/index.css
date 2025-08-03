@@ -205,6 +205,86 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground font-fun;
   }
+
+  /* RTL support for Arabic */
+  [dir="rtl"] {
+    direction: rtl;
+    text-align: right;
+  }
+
+  [dir="rtl"] .font-fun {
+    font-family: 'Tajawal', 'Amiri', sans-serif;
+  }
+
+  [dir="rtl"] input, [dir="rtl"] textarea {
+    text-align: right;
+    direction: rtl;
+  }
+
+  /* Language-specific typography */
+  [lang="ar"] {
+    font-family: 'Tajawal', 'Amiri', sans-serif;
+    direction: rtl;
+    text-align: right;
+  }
+
+  [lang="ar"] .font-fun {
+    font-family: 'Amiri', 'Tajawal', serif;
+  }
+
+  [lang="zh"] {
+    font-family: 'Noto Sans SC', 'Ma Shan Zheng', sans-serif;
+  }
+
+  [lang="zh"] .font-fun {
+    font-family: 'Ma Shan Zheng', 'Noto Sans SC', serif;
+  }
+
+  [lang="hi"] {
+    font-family: 'Noto Sans Devanagari', 'Kalam', sans-serif;
+  }
+
+  [lang="hi"] .font-fun {
+    font-family: 'Kalam', 'Noto Sans Devanagari', cursive;
+  }
+
+  /* RTL layout adjustments */
+  [dir="rtl"] .flex {
+    flex-direction: row-reverse;
+  }
+
+  [dir="rtl"] .justify-start {
+    justify-content: flex-end;
+  }
+
+  [dir="rtl"] .justify-end {
+    justify-content: flex-start;
+  }
+
+  [dir="rtl"] .text-left {
+    text-align: right;
+  }
+
+  [dir="rtl"] .text-right {
+    text-align: left;
+  }
+
+  [dir="rtl"] .ml-auto {
+    margin-left: unset;
+    margin-right: auto;
+  }
+
+  [dir="rtl"] .mr-auto {
+    margin-right: unset;
+    margin-left: auto;
+  }
+
+  /* Input placeholder RTL support */
+  [dir="rtl"] input::placeholder,
+  [dir="rtl"] textarea::placeholder {
+    text-align: right;
+    direction: rtl;
+  }
 }
 
 /* Custom animations for add pages alert */
@@ -406,4 +486,57 @@ All colors MUST be HSL.
   .active\:bg-indigo-200:active {
     background-color: rgb(199 210 254);
   }
+
+  /* Multilingual input enhancements */
+  .multilingual-input {
+    unicode-bidi: plaintext;
+    text-align: start;
+  }
+
+  /* Language detection feedback */
+  .translation-feedback {
+    @apply text-xs text-muted-foreground mt-1 p-2 bg-muted/50 rounded-md;
+    border-left: 3px solid hsl(var(--primary));
+  }
+
+  [dir="rtl"] .translation-feedback {
+    border-left: none;
+    border-right: 3px solid hsl(var(--primary));
+  }
+
+  /* Enhanced language switching */
+  .language-picker {
+    @apply transition-all duration-300 ease-in-out;
+  }
+
+  .language-picker:hover {
+    @apply scale-105 shadow-md;
+  }
+
+  /* Improved loading states for translations */
+  .translation-loading {
+    @apply animate-pulse bg-gradient-to-r from-muted via-muted/50 to-muted;
+  }
+
+  /* Better visual hierarchy for multilingual content */
+  .content-hierarchy {
+    line-height: 1.6;
+    letter-spacing: 0.01em;
+  }
+
+  [lang="ar"] .content-hierarchy {
+    line-height: 1.8;
+    letter-spacing: 0.02em;
+  }
+
+  [lang="zh"] .content-hierarchy {
+    line-height: 1.7;
+    letter-spacing: 0.05em;
+  }
+
+  [lang="hi"] .content-hierarchy {
+    line-height: 1.7;
+    letter-spacing: 0.01em;
+  }
+}
 }

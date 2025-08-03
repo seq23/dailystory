@@ -11,7 +11,8 @@ import { ColorPicker } from "@/components/ui/color-picker";
 import { AvatarPicker } from "@/components/ui/avatar-picker";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { ChevronRight, User, GraduationCap, Heart, Star, Globe, Sparkles, AlertCircle, ArrowRightLeft, CheckCircle } from "lucide-react";
+import { ChevronRight, User, GraduationCap, Heart, Star, Globe, Sparkles, AlertCircle, ArrowRightLeft, CheckCircle, Loader2 } from "lucide-react";
+import LanguageSwitcher from './LanguageSwitcher';
 import { ContentSecurity, SecurityLogger } from "@/utils/security";
 import { useToast } from "@/hooks/use-toast";
 import { SmartInputParser } from "@/services/smartInputParser";
@@ -55,6 +56,8 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
     confidence: number; 
   }>>({});
   const [isProcessingInputs, setIsProcessingInputs] = useState(false);
+  const [translations, setTranslations] = useState<Record<string, string>>({});
+  const [translationLoading, setTranslationLoading] = useState<Record<string, boolean>>({});
 
   // Enhanced content filtering with grade-aware security and multilingual support
   const contentFilter = (text: string): { hasInappropriateContent: boolean; reason?: string } => {
@@ -310,16 +313,28 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
         <Card className="relative z-10 w-full max-w-5xl bg-gradient-card shadow-2xl border-0 rounded-2xl sm:rounded-3xl md:rounded-3xl p-4 sm:p-6 md:p-10 touch-feedback backdrop-blur-sm bg-white/95 dark:bg-gray-900/95">
           {/* Header */}
           <div className="text-center mb-8 md:mb-10" id="welcome-title">
+            <div className="flex items-center justify-between mb-4 md:mb-6">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onBack}
+                className="flex items-center gap-2"
+              >
+                <ChevronRight className="w-4 h-4 rotate-180" />
+                {t('userInfoForm.back', 'Back')}
+              </Button>
+              <LanguageSwitcher />
+            </div>
             <div className="flex justify-center mb-4 md:mb-6">
               <div className="relative p-4 md:p-6 bg-gradient-primary rounded-full text-white shadow-glow">
                 <Sparkles className="w-10 h-10 md:w-16 md:h-16 animate-pulse" />
                 <div className="absolute inset-0 bg-white/20 rounded-full animate-ping"></div>
               </div>
             </div>
-            <h2 className="text-3xl md:text-5xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent mb-3 md:mb-4">
+            <h2 className="text-3xl md:text-5xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent mb-3 md:mb-4 content-hierarchy">
               {t("userInfoForm.title")}
             </h2>
-            <p className="text-muted-foreground text-lg md:text-xl px-4 leading-relaxed">
+            <p className="text-muted-foreground text-lg md:text-xl px-4 leading-relaxed content-hierarchy">
               {t("userInfoForm.subtitle")}
             </p>
           </div>

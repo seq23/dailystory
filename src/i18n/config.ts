@@ -26,21 +26,33 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    // Don't force English - let detection work
     fallbackLng: 'en',
     debug: false,
     interpolation: {
       escapeValue: false,
     },
     detection: {
-      order: ['localStorage'], // Only check localStorage, don't auto-detect from browser
+      order: ['localStorage'],
       caches: ['localStorage'],
     },
-    // Force refresh of translations
     load: 'languageOnly',
     cleanCode: true,
     keySeparator: '.',
     nsSeparator: false,
+    react: {
+      useSuspense: false, // Prevent rendering issues with async translations
+    },
   });
+
+// Update document direction and language attributes when language changes
+i18n.on('languageChanged', (lng) => {
+  const isRTL = lng === 'ar';
+  document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
+  document.documentElement.lang = lng;
+  
+  // Apply language-specific font classes to body
+  document.body.className = document.body.className.replace(/\blang-\w+\b/g, '');
+  document.body.classList.add(`lang-${lng}`);
+});
 
 export default i18n;

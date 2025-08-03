@@ -573,5 +573,9 @@
     "turquoise": "Turquoise",
     "black": "Noir",
     "white": "Blanc"
+  },
+  "userForm": {
+    "translating": "Traduction en cours...",
+    "back": "Retour"
   }
 }

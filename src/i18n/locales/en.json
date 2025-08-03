@@ -632,5 +632,9 @@
     "turquoise": "Turquoise",
     "black": "Black",
     "white": "White"
+  },
+  "userForm": {
+    "translating": "Translating...",
+    "back": "Back"
   }
 }

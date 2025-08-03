@@ -726,5 +726,9 @@
     "turquoise": "Turquesa",
     "black": "Preto",
     "white": "Branco"
+  },
+  "userForm": {
+    "translating": "Traduzindo...",
+    "back": "Voltar"
   }
 }
