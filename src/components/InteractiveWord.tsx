@@ -1326,46 +1326,54 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
         return;
       }
       
-      // CRITICAL FIX: Handle TTS audio properly - response.data is the audio ArrayBuffer
+      // CRITICAL FIX: Handle TTS audio properly - ElevenLabs returns audio buffer
       if (!ttsResponse.data) {
         console.warn('No TTS audio data received, skipping audio');
         setIsLoadingMobile(false);
         return;
       }
       
+      console.log('Mobile Explain: TTS response received, creating audio');
+      
+      // Convert ArrayBuffer to Blob (ElevenLabs returns audio/mpeg data)
       const audioBlob = new Blob([ttsResponse.data], { type: 'audio/mpeg' });
       const audioUrl = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioUrl);
       
-      audio.preload = 'metadata';
+      console.log('Mobile Explain: Creating audio element for playback');
+      
+      const audio = new Audio();
+      audio.src = audioUrl;
+      audio.preload = 'auto';
       audio.volume = 0.9;
-      audio.crossOrigin = 'anonymous';
-      
-      audio.onended = () => {
-        console.log('Mobile Explain: TTS ended');
-        setIsPlayingMobile(false);
-        URL.revokeObjectURL(audioUrl);
-      };
-      
-      audio.onerror = (e) => {
-        console.error('Mobile Explain: TTS playback error:', e);
-        setIsPlayingMobile(false);
-        URL.revokeObjectURL(audioUrl);
-      };
       
       setIsPlayingMobile(true);
       console.log('Mobile Explain: Starting TTS playback');
       
-      // Ensure user interaction for mobile audio
-      try {
-        await audio.play();
-        console.log('Mobile Explain: Audio started successfully');
-      } catch (playError) {
-        console.error('Mobile Explain: Play error:', playError);
-        setIsPlayingMobile(false);
-        URL.revokeObjectURL(audioUrl);
-        throw new Error('Audio playback requires user interaction');
-      }
+      // Use promise-based audio handling
+      await new Promise((resolve, reject) => {
+        audio.onended = () => {
+          console.log('Mobile Explain: TTS ended');
+          setIsPlayingMobile(false);
+          URL.revokeObjectURL(audioUrl);
+          resolve(undefined);
+        };
+        
+        audio.onerror = (e) => {
+          console.error('Mobile Explain: TTS playback error:', e);
+          setIsPlayingMobile(false);
+          URL.revokeObjectURL(audioUrl);
+          reject(new Error('Audio playback failed'));
+        };
+        
+        audio.play().then(() => {
+          console.log('Mobile Explain: Audio started successfully');
+        }).catch((playError) => {
+          console.error('Mobile Explain: Play error:', playError);
+          setIsPlayingMobile(false);
+          URL.revokeObjectURL(audioUrl);
+          reject(new Error('Audio playback requires user interaction'));
+        });
+      });
       
     } catch (error) {
       console.error('Mobile Explain Error:', error);
