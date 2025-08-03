@@ -1285,35 +1285,59 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
     try {
       console.log('📚 Mobile Explain: Starting for word:', props.word);
       
-      // Get word definition first
+      // Get word definition first - with language fallback
       console.log('📚 Mobile Explain: About to call word-dictionary API...');
-      const response = await supabase.functions.invoke('word-dictionary', {
-        body: {
-          word: props.word,
-          targetLanguage: props.userInfo?.nativeLanguage || 'en',
-          context: props.sentenceContext || ''
-        }
-      });
+      let response;
+      let wordData;
       
-      console.log('📚 Mobile Explain: word-dictionary API response:', response);
+      try {
+        // First try with user's native language
+        response = await supabase.functions.invoke('word-dictionary', {
+          body: {
+            word: props.word,
+            targetLanguage: props.userInfo?.nativeLanguage || 'en',
+            context: props.sentenceContext || ''
+          }
+        });
+        
+        console.log('📚 Mobile Explain: word-dictionary API response:', response);
 
-      if (response.error) {
-        console.error('📚 Mobile Explain: Dictionary API Error:', response.error);
-        throw new Error('Could not get word definition');
+        if (response.error || !response.data) {
+          throw new Error('Primary language request failed');
+        }
+        
+        wordData = response.data;
+      } catch (error) {
+        console.log('📚 Mobile Explain: Primary language failed, trying English fallback...');
+        
+        // Fallback to English if user's language fails
+        response = await supabase.functions.invoke('word-dictionary', {
+          body: {
+            word: props.word,
+            targetLanguage: 'en',
+            context: props.sentenceContext || ''
+          }
+        });
+        
+        if (response.error || !response.data) {
+          throw new Error('Could not get word definition in any language');
+        }
+        
+        wordData = response.data;
       }
       
-      const wordData = response.data;
       setMobileWordData(wordData);
       console.log('📚 Mobile Explain: Got word data:', wordData);
       
-      // Generate TTS for explanation (available for all users)
+      // Generate TTS for explanation (use simple English explanation for all users)
       console.log('📚 Mobile Explain: About to get voice...');
       const voiceId = getVoiceForUser();
       console.log('📚 Mobile Explain: Voice ID:', voiceId);
       
+      // Create a simple explanation that works for all languages
       const explanationText = wordData.definition 
         ? `${props.word}. ${wordData.definition}.${wordData.sampleSentence ? ` Example: ${wordData.sampleSentence}` : ''}`
-        : `${props.word} is a word in English.`;
+        : `${props.word} is a word.`;
       
       console.log('📚 Mobile Explain: TTS text:', explanationText.substring(0, 100) + '...');
       
