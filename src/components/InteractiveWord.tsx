@@ -1318,34 +1318,26 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
       console.log('📚 Mobile Explain: TTS text:', explanationText.substring(0, 100) + '...');
       
       console.log('📚 Mobile Explain: About to call elevenlabs-tts...');
-      const ttsResponse = await supabase.functions.invoke('elevenlabs-tts', {
-        body: {
-          text: explanationText.slice(0, 800), // Limit for better performance
+      
+      // Use direct fetch like ElevenLabsAudio component - this works correctly
+      const ttsResponse = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/elevenlabs-tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: explanationText.slice(0, 800),
           voice: voiceId,
           model: 'eleven_turbo_v2_5'
-        }
+        })
       });
-      
-      console.log('📚 Mobile Explain: elevenlabs-tts response received:', ttsResponse);
 
-      if (ttsResponse.error) {
-        console.error('TTS API Error:', ttsResponse.error);
-        // Don't throw here - just skip TTS but keep the definition
-        setIsLoadingMobile(false);
-        return;
+      if (!ttsResponse.ok) {
+        throw new Error('Failed to generate audio explanation');
       }
       
-      // CRITICAL FIX: Handle TTS audio properly - ElevenLabs returns raw audio response
-      if (!ttsResponse.data) {
-        console.warn('No TTS audio data received, skipping audio');
-        setIsLoadingMobile(false);
-        return;
-      }
+      console.log('📚 Mobile Explain: Direct fetch response received');
       
-      console.log('Mobile Explain: TTS response received, creating audio');
-      
-      // Convert the response data directly to blob (ElevenLabs returns audio buffer)
-      const audioBlob = new Blob([ttsResponse.data], { type: 'audio/mpeg' });
+      // This is the key fix - use response.blob() directly like ElevenLabsAudio
+      const audioBlob = await ttsResponse.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
       
       console.log('Mobile Explain: Audio blob created, setting up audio element');
