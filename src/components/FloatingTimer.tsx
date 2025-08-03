@@ -169,13 +169,13 @@ export const FloatingTimer = ({
         id="floating-timer" 
         style={(() => {
           const style = isTutorialTimerStep ? {
-            // Tutorial positioning - moved much higher to avoid tooltip overlap
+            // Tutorial positioning - moved to right side to avoid tooltip overlap
             position: 'fixed' as const,
-            top: '20%',
-            left: '50%',
+            top: '35%',
+            right: '2rem',
+            left: 'auto',
             bottom: 'auto',
-            right: 'auto',
-            transform: 'translate(-50%, -50%)',
+            transform: 'none',
             zIndex: 55
           } : {
             // Normal bottom-left positioning
