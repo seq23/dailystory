@@ -271,9 +271,14 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
     // SPECIAL HANDLING FOR TIMER STEP - Timer is positioned at 35%, place tutorial card in bottom area
     if (target === "timer-display") {
       console.log('TutorialOverlay: Timer positioning', { isMobile, isTablet });
+      
+      // For the pause button tutorial specifically, position the tooltip higher to avoid cutoff
+      const isPauseButtonStep = document.querySelector('[data-state="open"]'); // Tooltip is open during pause button demo
+      const adjustedBottomMargin = isPauseButtonStep ? 140 : 60; // More space when pause button tooltip is showing
+      
       if (isMobile) {
         const positioning = {
-          bottom: `${margin + 60}px`, // Bottom positioning on mobile below timer
+          bottom: `${margin + adjustedBottomMargin}px`, // Bottom positioning on mobile below timer
           left: `${margin}px`,
           right: `${margin}px`,
           top: "auto",
@@ -284,7 +289,7 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
         return positioning;
       } else if (isTablet) {
         const positioning = {
-          bottom: `${margin + 80}px`, // Bottom positioning on tablet below timer
+          bottom: `${margin + adjustedBottomMargin + 20}px`, // Bottom positioning on tablet below timer
           left: `${margin}px`,
           right: `${margin}px`,
           top: "auto",
@@ -295,7 +300,7 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
         return positioning;
       } else {
         const positioning = {
-          bottom: `${margin + 100}px`, // Bottom positioning on desktop below timer
+          bottom: `${margin + adjustedBottomMargin + 40}px`, // Bottom positioning on desktop below timer
           left: "50%",
           right: "auto",
           top: "auto",
