@@ -301,10 +301,11 @@
       "avatarPreview": {
         "label": "你的头像："
       },
-      "favoriteColor": {
-        "label": "你最喜欢的颜色是什么？",
-        "optional": "（可选）"
-      },
+       "favoriteColor": {
+         "label": "你最喜欢的颜色是什么？",
+         "optional": "（可选）",
+         "placeholder": "下拉选择颜色"
+       },
        "favoriteAnimal": {
          "label": "你最喜欢的动物是什么？",
          "placeholder": "狗、猫、狮子、海豚...",
@@ -705,5 +706,19 @@
       "chapterMaster": "在单次阅读中阅读25页",
       "bookExplorer": "在单次阅读中阅读50页"
     }
+  },
+  "colors": {
+    "red": "红色",
+    "orange": "橙色", 
+    "yellow": "黄色",
+    "green": "绿色",
+    "blue": "蓝色",
+    "purple": "紫色",
+    "brown": "棕色",
+    "pink": "粉色",
+    "gray": "灰色",
+    "turquoise": "青绿色",
+    "black": "黑色",
+    "white": "白色"
   }
 }

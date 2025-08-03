@@ -292,10 +292,11 @@
       "avatarPreview": {
         "label": "صورتك الرمزية:"
       },
-      "favoriteColor": {
-        "label": "ما هو لونك المفضل؟",
-        "optional": "(اختياري)"
-      },
+       "favoriteColor": {
+         "label": "ما هو لونك المفضل؟",
+         "optional": "(اختياري)",
+         "placeholder": "اسحب لأسفل لاختيار اللون"
+       },
        "favoriteAnimal": {
          "label": "ما هو حيوانك المفضل؟",
          "placeholder": "قطة، كلب، أسد، دولفين...",
@@ -696,5 +697,19 @@
       "chapterMaster": "اقرأ 25 صفحة في جلسة واحدة",
       "bookExplorer": "اقرأ 50 صفحة في جلسة واحدة"
     }
+  },
+  "colors": {
+    "red": "أحمر",
+    "orange": "برتقالي", 
+    "yellow": "أصفر",
+    "green": "أخضر",
+    "blue": "أزرق",
+    "purple": "بنفسجي",
+    "brown": "بني",
+    "pink": "وردي",
+    "gray": "رمادي",
+    "turquoise": "فيروزي",
+    "black": "أسود",
+    "white": "أبيض"
   }
 }

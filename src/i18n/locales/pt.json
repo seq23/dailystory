@@ -301,10 +301,11 @@
       "avatarPreview": {
         "label": "Seu avatar:"
       },
-      "favoriteColor": {
-        "label": "Qual é sua cor favorita?",
-        "optional": "(Opcional)"
-      },
+       "favoriteColor": {
+         "label": "Qual é sua cor favorita?",
+         "optional": "(Opcional)",
+         "placeholder": "Puxe para baixo para selecionar cor"
+       },
        "favoriteAnimal": {
          "label": "Qual é seu animal favorito?",
          "placeholder": "cachorro, gato, leão, golfinho...",
@@ -711,5 +712,19 @@
       "chapterMaster": "Leia 25 páginas em uma única sessão",
       "bookExplorer": "Leia 50 páginas em uma única sessão"
     }
+  },
+  "colors": {
+    "red": "Vermelho",
+    "orange": "Laranja", 
+    "yellow": "Amarelo",
+    "green": "Verde",
+    "blue": "Azul",
+    "purple": "Roxo",
+    "brown": "Marrom",
+    "pink": "Rosa",
+    "gray": "Cinza",
+    "turquoise": "Turquesa",
+    "black": "Preto",
+    "white": "Branco"
   }
 }

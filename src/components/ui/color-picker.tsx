@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useTranslation } from "react-i18next"
 
 interface ColorPickerProps {
   value: string
@@ -14,19 +15,20 @@ export const ColorPicker = React.forwardRef<
   HTMLButtonElement,
   ColorPickerProps
 >(({ value, onChange, className }, ref) => {
+  const { t } = useTranslation();
   const primaryColors = [
-    { name: "Red", color: "#ff0000" },
-    { name: "Orange", color: "#ffa500" },
-    { name: "Yellow", color: "#ffff00" },
-    { name: "Green", color: "#008000" },
-    { name: "Blue", color: "#0000ff" },
-    { name: "Purple", color: "#800080" },
-    { name: "Brown", color: "#8b4513" },
-    { name: "Pink", color: "#ffc0cb" },
-    { name: "Gray", color: "#808080" },
-    { name: "Turquoise", color: "#40e0d0" },
-    { name: "Black", color: "#000000" },
-    { name: "White", color: "#ffffff" },
+    { name: t("colors.red", "Red"), color: "#ff0000" },
+    { name: t("colors.orange", "Orange"), color: "#ffa500" },
+    { name: t("colors.yellow", "Yellow"), color: "#ffff00" },
+    { name: t("colors.green", "Green"), color: "#008000" },
+    { name: t("colors.blue", "Blue"), color: "#0000ff" },
+    { name: t("colors.purple", "Purple"), color: "#800080" },
+    { name: t("colors.brown", "Brown"), color: "#8b4513" },
+    { name: t("colors.pink", "Pink"), color: "#ffc0cb" },
+    { name: t("colors.gray", "Gray"), color: "#808080" },
+    { name: t("colors.turquoise", "Turquoise"), color: "#40e0d0" },
+    { name: t("colors.black", "Black"), color: "#000000" },
+    { name: t("colors.white", "White"), color: "#ffffff" },
   ];
 
   const handleColorSelect = (colorName: string) => {
@@ -58,7 +60,7 @@ export const ColorPicker = React.forwardRef<
                   style={{ backgroundColor: getSelectedColor() }}
                 />
               )}
-              <span>{value || "Pull down to select color"}</span>
+              <span>{value || t("userInfoForm.fields.favoriteColor.placeholder", "Pull down to select color")}</span>
             </div>
             <ChevronDown className="h-4 w-4 opacity-50" />
           </div>

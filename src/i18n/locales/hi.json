@@ -301,10 +301,11 @@
       "avatarPreview": {
         "label": "आपका अवतार:"
       },
-      "favoriteColor": {
-        "label": "आपका पसंदीदा रंग कौन सा है?",
-        "optional": "(वैकल्पिक)"
-      },
+       "favoriteColor": {
+         "label": "आपका पसंदीदा रंग कौन सा है?",
+         "optional": "(वैकल्पिक)",
+         "placeholder": "रंग चुनने के लिए नीचे खींचें"
+       },
        "favoriteAnimal": {
          "label": "आपका पसंदीदा जानवर कौन सा है?",
          "placeholder": "कुत्ता, बिल्ली, शेर, डॉल्फिन...",
@@ -711,5 +712,19 @@
       "chapterMaster": "एक सत्र में 25 पृष्ठ पढ़ें",
       "bookExplorer": "एक सत्र में 50 पृष्ठ पढ़ें"
     }
+  },
+  "colors": {
+    "red": "लाल",
+    "orange": "नारंगी", 
+    "yellow": "पीला",
+    "green": "हरा",
+    "blue": "नीला",
+    "purple": "बैंगनी",
+    "brown": "भूरा",
+    "pink": "गुलाबी",
+    "gray": "स्लेटी",
+    "turquoise": "फिरोज़ा",
+    "black": "काला",
+    "white": "सफ़ेद"
   }
 }
