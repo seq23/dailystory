@@ -53,10 +53,10 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
       <header className="relative z-20 bg-black/15 backdrop-blur-sm border-b border-white/20">
         <div className="container mx-auto px-3 sm:px-6 py-3 sm:py-6">
           
-          {/* Mobile Layout */}
+          {/* Mobile Layout - RTL Safe */}
           <div className="flex sm:hidden relative items-center min-h-[50px]">
-            {/* Language Selector - Top Left */}
-            <div className="absolute left-0 top-0">
+            {/* Language Selector - Start Position (left in LTR, right in RTL) */}
+            <div className="absolute start-0 top-0">
               <div className="flex items-center gap-1 bg-white/10 backdrop-blur-sm rounded-full px-2 py-1 border border-white/20 touch-target">
                 <Globe className="w-3 h-3 text-white" />
                 <Select value={i18n.language} onValueChange={handleLanguageChange}>
@@ -65,10 +65,10 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                   </SelectTrigger>
                   <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 mobile-scroll">
                     <SelectItem value="en" className="touch-target">EN</SelectItem>
-                    <SelectItem value="ar" className="touch-target">AR</SelectItem>
+                    <SelectItem value="ar" className="touch-target">العربية</SelectItem>
                     <SelectItem value="es" className="touch-target">ES</SelectItem>
-                    <SelectItem value="zh" className="touch-target">ZH</SelectItem>
-                    <SelectItem value="hi" className="touch-target">HI</SelectItem>
+                    <SelectItem value="zh" className="touch-target">中文</SelectItem>
+                    <SelectItem value="hi" className="touch-target">हिं</SelectItem>
                     <SelectItem value="pt" className="touch-target">PT</SelectItem>
                     <SelectItem value="fr" className="touch-target">FR</SelectItem>
                   </SelectContent>
@@ -96,8 +96,8 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
               </div>
             </div>
 
-            {/* Sign In Button - Top Right */}
-            <div className="absolute right-0 top-0">
+            {/* Sign In Button - End Position (right in LTR, left in RTL) */}
+            <div className="absolute end-0 top-0">
               {onSignIn && (
                   <Button 
                     variant="outline" 
