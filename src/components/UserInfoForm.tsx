@@ -713,14 +713,16 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
 
           {/* Navigation buttons */}
           <div className="flex flex-col sm:flex-row gap-4 md:gap-6 justify-between pt-8 border-t border-primary/20">
-            <MobileOptimizedButton
-              variant="outline"
-              size="lg"
-              onClick={onBack}
-              className="flex-1 sm:max-w-xs order-2 sm:order-1 text-lg py-6 rounded-xl hover:scale-105 transition-all duration-200"
-            >
-              {t("userInfoForm.buttons.backToHome")}
-            </MobileOptimizedButton>
+            <div className="flex-1 sm:max-w-xs order-2 sm:order-1">
+              <MobileOptimizedButton
+                variant="outline"
+                size="lg"
+                onClick={onBack}
+                className="w-full text-lg py-6 rounded-xl hover:scale-105 transition-all duration-200"
+              >
+                {t("userInfoForm.buttons.backToHome")}
+              </MobileOptimizedButton>
+            </div>
             <MobileTooltip
               content={!isFormComplete() ? t("userInfoForm.tooltips.nameRequired", "Please enter your child's name first") : ""}
               side="top"

@@ -963,7 +963,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                 </div>
 
                 {/* Scrollable Story Content */}
-                <div className="flex-1 overflow-y-auto p-6">
+                <div className="story-content flex-1 overflow-y-auto p-6">
                   <div className="flex items-center justify-center min-h-full">
                     <div className="text-center w-full">
                       {/* Story Text with Interactive Words and Reading Level Configuration */}
@@ -998,7 +998,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                         const shouldUseInteractiveWords = currentStory.length < 1000;
                         
                         return (
-                          <div className={`${config.fontSize} ${config.lineHeight} ${config.spacing} font-bold text-gray-800 max-w-full break-words hyphens-auto leading-relaxed overflow-hidden`} dir="ltr" style={{ textAlign: 'left' }}>
+                          <div className={`story-text ${config.fontSize} ${config.lineHeight} ${config.spacing} font-bold text-gray-800 max-w-full break-words hyphens-auto leading-relaxed overflow-hidden`} dir="ltr" style={{ textAlign: 'left' }}>
                             <div className="max-h-[400px] overflow-y-auto px-2">
                               {shouldUseInteractiveWords ? 
                                 processTextForPhonetics(

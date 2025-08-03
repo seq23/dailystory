@@ -247,6 +247,14 @@ All colors MUST be HSL.
     font-family: 'Ma Shan Zheng', 'Noto Sans SC', serif;
   }
 
+  /* Ensure story content uses English-appropriate fonts regardless of UI language */
+  [lang="zh"] .story-content,
+  [lang="zh"] .story-text,
+  [lang="zh"] .story-display {
+    font-family: 'Fredoka', 'Comic Neue', cursive, sans-serif !important;
+    letter-spacing: 0.01em;
+  }
+
   [lang="hi"] {
     font-family: 'Noto Sans Devanagari', 'Kalam', sans-serif;
   }

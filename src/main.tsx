@@ -7,6 +7,7 @@ import './utils/languageSeparationTest' // Test language separation functionalit
 import './utils/comprehensiveLanguageTest' // Comprehensive cross-device language testing
 import './utils/storyQualityVerificationTest' // Industry standard quality verification
 import './utils/issueResolutionVerificationTest' // Complete issue resolution verification
+import './utils/runVerificationTests' // Centralized test runner
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

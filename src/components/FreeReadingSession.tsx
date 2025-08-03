@@ -1143,7 +1143,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                     </div>
 
                     {/* Scrollable Story Content */}
-                    <div id="story-content" className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6">
+                    <div id="story-content" className="story-content flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6">
                       <div className="flex items-center justify-center min-h-full">
                         <div className="text-center w-full">
                           {/* Apply reading level configuration with proper responsive design */}
@@ -1171,7 +1171,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                             };
                             
                             return (
-                              <div className={`${config.fontSize} ${config.lineHeight} ${config.spacing} font-bold text-gray-800 max-w-full break-words hyphens-auto leading-relaxed overflow-hidden`} dir="ltr" style={{ textAlign: 'left' }}>
+                              <div className={`story-text ${config.fontSize} ${config.lineHeight} ${config.spacing} font-bold text-gray-800 max-w-full break-words hyphens-auto leading-relaxed overflow-hidden`} dir="ltr" style={{ textAlign: 'left' }}>
                                 <div className="max-h-[400px] overflow-y-auto px-2">
                                   {processTextForPhonetics(
                                     currentStory, 
