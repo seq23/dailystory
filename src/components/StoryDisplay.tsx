@@ -60,6 +60,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
 }) => {
   const { toast } = useToast();
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
 
   // Initialize gamification
   const {
@@ -969,23 +970,26 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                       {/* Story Text with Interactive Words and Reading Level Configuration */}
                       {(() => {
                         // Use difficulty-based font sizing with proper hierarchy (no overflow)
-                        const getFontSizeForDifficulty = (difficulty: string) => {
-                          console.log('StoryDisplay: Getting font size for difficulty:', difficulty);
-                          switch (difficulty) {
-                            case 'easy': 
-                              console.log('StoryDisplay: Using large fonts for Level 1 (fits screen)');
-                              return 'text-2xl sm:text-3xl md:text-4xl'; // Large for youngest kids, fits screen
-                            case 'medium': 
-                              return 'text-xl sm:text-2xl md:text-3xl'; // Smaller than easy
-                            case 'hard': 
-                              return 'text-lg sm:text-xl md:text-2xl'; // Smaller than medium
-                            case 'expert': 
-                              return 'text-base sm:text-lg md:text-xl'; // Smallest for advanced readers
-                            default: 
-                              console.log('StoryDisplay: Default case - using easy level fonts');
-                              return 'text-2xl sm:text-3xl md:text-4xl';
-                          }
-                        };
+                         const getFontSizeForDifficulty = (difficulty: string) => {
+                           console.log('StoryDisplay: Getting font size for difficulty:', difficulty);
+                           switch (difficulty) {
+                             case 'easy': 
+                               console.log('StoryDisplay: Using big text for Level 1 (young children)');
+                               return isMobile ? 'text-2xl' : 'text-3xl'; // Big for young children, responsive
+                             case 'medium': 
+                               console.log('StoryDisplay: Using medium text for Level 2');
+                               return isMobile ? 'text-xl' : 'text-2xl'; // A little smaller than level 1
+                             case 'hard': 
+                               console.log('StoryDisplay: Using normal text for Level 3');
+                               return isMobile ? 'text-lg' : 'text-xl'; // Normal size, same as expert
+                             case 'expert': 
+                               console.log('StoryDisplay: Using normal text for Level 4');
+                               return isMobile ? 'text-lg' : 'text-xl'; // Normal size, same as hard
+                             default: 
+                               console.log('StoryDisplay: Default case - using Level 1 fonts');
+                               return isMobile ? 'text-2xl' : 'text-3xl';
+                           }
+                         };
                         
                         const config = { 
                           fontSize: getFontSizeForDifficulty(currentDifficulty), 
