@@ -91,7 +91,17 @@ Deno.serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are a helpful translation assistant. Translate foreign language text to simple English suitable for children's stories. Provide only the translation, no explanations. For common words: French "glace" = "ice cream", "pomme" = "apple", Spanish "perro" = "dog", "gato" = "cat".`
+            content: `You are a helpful translation assistant. Translate foreign language text to simple English suitable for children's stories. Provide only the translation, no explanations. 
+
+CRITICAL: For these specific common words that users have reported issues with:
+- French "glace" = "ice cream" (NOT "glass")
+- French "pomme" = "apple" (NOT "palm") 
+- French "chien" = "dog"
+- French "chat" = "cat"
+- Spanish "perro" = "dog"
+- Spanish "gato" = "cat"
+
+Always use these exact translations for these words.`
           },
           {
             role: 'user',

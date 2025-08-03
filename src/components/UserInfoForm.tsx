@@ -102,6 +102,13 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
         setTranslationLoading(prev => ({ ...prev, [field as string]: true }));
         
         try {
+          console.log(`🔄 Real-time translation triggered for ${field}: "${sanitizedValue}"`);
+          console.log(`📋 User info:`, { 
+            nativeLanguage: formData.nativeLanguage, 
+            grade: formData.grade,
+            age: formData.age 
+          });
+          
           // Use SmartInputParser for processing (includes translation)
           const result = await SmartInputParser.parseTaggedInput(
             [sanitizedValue],
@@ -114,6 +121,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
             
             // If translation/correction occurred, show feedback and update form
             if (processedTag.original !== processedTag.corrected) {
+              console.log(`✅ Translation completed: "${processedTag.original}" → "${processedTag.corrected}"`);
               setTranslations(prev => ({ 
                 ...prev, 
                 [field as string]: `${processedTag.original} → ${processedTag.corrected}` 
@@ -127,12 +135,13 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                 setTranslations(prev => ({ ...prev, [field as string]: '' }));
               }, 3000);
             } else {
+              console.log(`ℹ️ No translation needed for: "${processedTag.original}"`);
               // Clear any existing translation for this field
               setTranslations(prev => ({ ...prev, [field as string]: '' }));
             }
           }
         } catch (error) {
-          console.error('Error processing input:', error);
+          console.error(`❌ Translation error for "${sanitizedValue}":`, error);
           // Continue with original value if processing fails
         } finally {
           setTranslationLoading(prev => ({ ...prev, [field as string]: false }));
