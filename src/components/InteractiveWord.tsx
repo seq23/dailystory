@@ -231,9 +231,64 @@ export const InteractiveWord = ({
     try {
       const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
       
-      // Use ElevenLabs for high-quality pronunciation
+      // For non-English speakers, use browser speech synthesis for better pronunciation
+      if (!isNativeEnglishSpeaker) {
+        console.log('TTS: Using browser speech for non-English user');
+        
+        if ('speechSynthesis' in window) {
+          // Cancel any existing speech
+          speechSynthesis.cancel();
+          await new Promise(resolve => setTimeout(resolve, 100));
+          
+          const utterance = new SpeechSynthesisUtterance(cleanWord);
+          utterance.rate = 0.8;
+          utterance.pitch = 1.0;
+          utterance.volume = 1.0;
+          utterance.lang = 'en'; // Always pronounce English words in English
+          
+          // Load voices if needed
+          let voices = speechSynthesis.getVoices();
+          if (voices.length === 0) {
+            await new Promise(resolve => {
+              speechSynthesis.onvoiceschanged = resolve;
+              setTimeout(resolve, 1000);
+            });
+            voices = speechSynthesis.getVoices();
+          }
+          
+          // Find an English voice for proper pronunciation
+          const englishVoice = voices.find(voice => 
+            voice.lang.toLowerCase().startsWith('en')
+          );
+          
+          if (englishVoice) {
+            utterance.voice = englishVoice;
+            console.log(`TTS: Using English voice: ${englishVoice.name}`);
+          }
+          
+          utterance.onend = () => {
+            console.log('TTS: Browser speech ended');
+            setIsPlaying(false);
+          };
+          
+          utterance.onerror = (e) => {
+            console.error('TTS: Browser speech error:', e);
+            setIsPlaying(false);
+          };
+          
+          speechSynthesis.speak(utterance);
+          console.log('TTS: Browser speech synthesis started');
+          return; // Exit early, don't use ElevenLabs
+        } else {
+          throw new Error('Speech synthesis not available');
+        }
+      }
+      
+      // For English speakers, use ElevenLabs for high-quality pronunciation
       const voice = getVoiceForUser(userInfo);
-      const model = isNativeEnglishSpeaker ? "eleven_turbo_v2" : "eleven_multilingual_v2";
+      const model = "eleven_turbo_v2";
+      console.log('TTS: Using ElevenLabs for English speaker');
+      
       const response = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/elevenlabs-tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -266,7 +321,28 @@ export const InteractiveWord = ({
       }
     } catch (error) {
       console.error('Error pronouncing word:', error);
-      setIsPlaying(false);
+      
+      // Fallback to browser speech synthesis
+      if ('speechSynthesis' in window) {
+        try {
+          const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
+          const utterance = new SpeechSynthesisUtterance(cleanWord);
+          utterance.rate = 0.8;
+          utterance.pitch = 1.0;
+          utterance.volume = 1.0;
+          utterance.lang = 'en';
+          
+          utterance.onend = () => setIsPlaying(false);
+          utterance.onerror = () => setIsPlaying(false);
+          
+          speechSynthesis.speak(utterance);
+        } catch (fallbackError) {
+          console.error('Fallback speech also failed:', fallbackError);
+          setIsPlaying(false);
+        }
+      } else {
+        setIsPlaying(false);
+      }
     }
   };
 
@@ -1128,13 +1204,71 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
     setIsPlayingMobile(true);
     
     try {
-      const voiceId = getVoiceForUser();
-      console.log('Mobile TTS: Starting pronunciation for word:', props.word, 'Voice:', voiceId);
+      const cleanWord = props.word.replace(/[.,!?;:'"()]/g, '');
+      const userLanguage = props.userInfo?.nativeLanguage || 'en';
       
-      // CRITICAL FIX: Use supabase.functions.invoke properly for binary data
+      console.log('Mobile TTS: Starting pronunciation for word:', cleanWord, 'Language:', userLanguage);
+      
+      // For non-English speakers, use browser speech synthesis for better native pronunciation
+      if (userLanguage !== 'en') {
+        console.log('Mobile TTS: Using browser speech for non-English user');
+        
+        if ('speechSynthesis' in window) {
+          // Cancel any existing speech
+          speechSynthesis.cancel();
+          await new Promise(resolve => setTimeout(resolve, 100));
+          
+          const utterance = new SpeechSynthesisUtterance(cleanWord);
+          utterance.rate = 0.8;
+          utterance.pitch = 1.0;
+          utterance.volume = 1.0;
+          utterance.lang = 'en'; // Always pronounce English words in English
+          
+          // Load voices if needed
+          let voices = speechSynthesis.getVoices();
+          if (voices.length === 0) {
+            await new Promise(resolve => {
+              speechSynthesis.onvoiceschanged = resolve;
+              setTimeout(resolve, 1000);
+            });
+            voices = speechSynthesis.getVoices();
+          }
+          
+          // Find an English voice for proper pronunciation
+          const englishVoice = voices.find(voice => 
+            voice.lang.toLowerCase().startsWith('en')
+          );
+          
+          if (englishVoice) {
+            utterance.voice = englishVoice;
+            console.log(`Mobile TTS: Using English voice: ${englishVoice.name}`);
+          }
+          
+          utterance.onend = () => {
+            console.log('Mobile TTS: Browser speech ended');
+            setIsPlayingMobile(false);
+          };
+          
+          utterance.onerror = (e) => {
+            console.error('Mobile TTS: Browser speech error:', e);
+            setIsPlayingMobile(false);
+          };
+          
+          speechSynthesis.speak(utterance);
+          console.log('Mobile TTS: Browser speech synthesis started');
+          return; // Exit early, don't use ElevenLabs
+        } else {
+          throw new Error('Speech synthesis not available');
+        }
+      }
+      
+      // For English speakers, use ElevenLabs for high-quality pronunciation
+      const voiceId = getVoiceForUser();
+      console.log('Mobile TTS: Using ElevenLabs for English speaker, Voice:', voiceId);
+      
       const response = await supabase.functions.invoke('elevenlabs-tts', {
         body: {
-          text: props.word,
+          text: cleanWord,
           voice: voiceId,
           model: 'eleven_turbo_v2_5'
         }
@@ -1455,69 +1589,121 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
       
       console.log('📚 Mobile Explain: About to call elevenlabs-tts...');
       
-      // Use direct fetch like ElevenLabsAudio component - this works correctly
-      const ttsResponse = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/elevenlabs-tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text: explanationText.slice(0, 800),
-          voice: voiceId,
-          model: 'eleven_turbo_v2_5'
-        })
-      });
-
-      if (!ttsResponse.ok) {
-        throw new Error('Failed to generate audio explanation');
-      }
-      
-      console.log('📚 Mobile Explain: Direct fetch response received');
-      
-      // This is the key fix - use response.blob() directly like ElevenLabsAudio
-      const audioBlob = await ttsResponse.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
-      
-      console.log('Mobile Explain: Audio blob created, setting up audio element');
-      
-      const audio = new Audio();
-      audio.src = audioUrl;
-      audio.preload = 'auto';
-      audio.volume = 0.9;
-      
-      setIsPlayingMobile(true);
-      console.log('Mobile Explain: Starting TTS playback');
-      
-      // Simplified audio handling - removed timeout since audio is working correctly
-      const playAudio = () => {
-        return new Promise((resolve, reject) => {
-          // No timeout - audio functionality is working, let it complete naturally
+      // For non-English users, use browser speech synthesis for native language TTS
+      if (userLanguage !== 'en') {
+        console.log('📚 Mobile Explain: Using browser speech for native language');
+        
+        if ('speechSynthesis' in window) {
+          // Cancel any existing speech
+          speechSynthesis.cancel();
+          await new Promise(resolve => setTimeout(resolve, 100));
           
-          audio.onended = () => {
-            console.log('Mobile Explain: TTS ended');
+          const utterance = new SpeechSynthesisUtterance(explanationText);
+          utterance.rate = 0.7;
+          utterance.pitch = 1.0;
+          utterance.volume = 1.0;
+          utterance.lang = userLanguage;
+          
+          // Load voices if needed
+          let voices = speechSynthesis.getVoices();
+          if (voices.length === 0) {
+            await new Promise(resolve => {
+              speechSynthesis.onvoiceschanged = resolve;
+              setTimeout(resolve, 1000);
+            });
+            voices = speechSynthesis.getVoices();
+          }
+          
+          // Find best voice for user's language
+          const languageCode = userLanguage.substring(0, 2);
+          const nativeVoice = voices.find(voice => 
+            voice.lang.toLowerCase().startsWith(languageCode.toLowerCase())
+          );
+          
+          if (nativeVoice) {
+            utterance.voice = nativeVoice;
+            console.log(`📚 Mobile Explain: Using native voice: ${nativeVoice.name} for ${userLanguage}`);
+          }
+          
+          setIsPlayingMobile(true);
+          
+          utterance.onend = () => {
+            console.log('📚 Mobile Explain: Native language speech ended');
             setIsPlayingMobile(false);
-            URL.revokeObjectURL(audioUrl);
-            resolve(undefined);
           };
           
-          audio.onerror = (e) => {
-            console.error('Mobile Explain: TTS playback error:', e);
+          utterance.onerror = (e) => {
+            console.error('📚 Mobile Explain: Native language speech error:', e);
             setIsPlayingMobile(false);
-            URL.revokeObjectURL(audioUrl);
-            reject(new Error('Audio playback failed'));
           };
           
-          // Try to play audio
-          audio.play().then(() => {
-            console.log('Mobile Explain: Audio started successfully');
-          }).catch((playError) => {
-            console.error('Mobile Explain: Play error:', playError);
-            setIsPlayingMobile(false);
-            URL.revokeObjectURL(audioUrl);
-            reject(new Error('Audio playback requires user interaction'));
-          });
+          speechSynthesis.speak(utterance);
+          console.log('📚 Mobile Explain: Native language speech synthesis started');
+        } else {
+          throw new Error('Speech synthesis not available');
+        }
+      } else {
+        // For English users, use ElevenLabs TTS
+        console.log('📚 Mobile Explain: Using ElevenLabs for English');
+        
+        const ttsResponse = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/elevenlabs-tts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: explanationText.slice(0, 800),
+            voice: voiceId,
+            model: 'eleven_turbo_v2_5'
+          })
         });
-      };
-      
-      await playAudio();
+
+        if (!ttsResponse.ok) {
+          throw new Error('Failed to generate audio explanation');
+        }
+        
+        console.log('📚 Mobile Explain: ElevenLabs response received');
+        
+        const audioBlob = await ttsResponse.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        
+        console.log('📚 Mobile Explain: Audio blob created, setting up audio element');
+        
+        const audio = new Audio();
+        audio.src = audioUrl;
+        audio.preload = 'auto';
+        audio.volume = 0.9;
+        
+        setIsPlayingMobile(true);
+        console.log('📚 Mobile Explain: Starting ElevenLabs TTS playback');
+        
+        const playAudio = () => {
+          return new Promise((resolve, reject) => {
+            audio.onended = () => {
+              console.log('📚 Mobile Explain: ElevenLabs TTS ended');
+              setIsPlayingMobile(false);
+              URL.revokeObjectURL(audioUrl);
+              resolve(undefined);
+            };
+            
+            audio.onerror = (e) => {
+              console.error('📚 Mobile Explain: ElevenLabs TTS playback error:', e);
+              setIsPlayingMobile(false);
+              URL.revokeObjectURL(audioUrl);
+              reject(new Error('Audio playback failed'));
+            };
+            
+            audio.play().then(() => {
+              console.log('📚 Mobile Explain: ElevenLabs audio started successfully');
+            }).catch((playError) => {
+              console.error('📚 Mobile Explain: ElevenLabs play error:', playError);
+              setIsPlayingMobile(false);
+              URL.revokeObjectURL(audioUrl);
+              reject(new Error('Audio playback requires user interaction'));
+            });
+          });
+        };
+        
+        await playAudio();
+      }
       
     } catch (error) {
       console.error('Mobile Explain Error:', error);
