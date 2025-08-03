@@ -289,7 +289,7 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
         return positioning;
       } else if (isTablet) {
         const positioning = {
-          bottom: `${margin + adjustedBottomMargin + 20}px`, // Bottom positioning on tablet below timer
+          bottom: `${margin + adjustedBottomMargin + 40}px`, // Bottom positioning on tablet below timer
           left: `${margin}px`,
           right: `${margin}px`,
           top: "auto",
