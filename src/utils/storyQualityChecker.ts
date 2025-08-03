@@ -1,5 +1,5 @@
 // Story quality checker to ensure consistent quality standards
-import GrammarValidator from './grammarValidator';
+import { GrammarValidator } from './grammarValidator';
 
 interface QualityIssue {
   type: 'grammar' | 'flow' | 'structure' | 'readability';
