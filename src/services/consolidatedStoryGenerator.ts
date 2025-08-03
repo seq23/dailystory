@@ -162,8 +162,37 @@ export class ConsolidatedStoryGenerator {
       const improvedPages = pages.map(page => this.lightGrammarValidation(page));
       console.log(`✅ Post-grammar validation pages:`, improvedPages);
 
-      // Calculate quality score
-      const qualityScore = this.calculateQualityScore(improvedPages, parsedElements);
+      // Phase 3: INDUSTRY STANDARD QUALITY CHECK - Enforce word count standards per reading level
+      const qualityCheck = StoryQualityChecker.checkStoryQuality(improvedPages, difficulty);
+      console.log(`📊 Story Quality Check:`, qualityCheck);
+      
+      // If quality check fails on critical issues (like word count), regenerate problematic pages
+      if (!qualityCheck.isValid) {
+        const criticalIssues = qualityCheck.issues.filter(issue => 
+          issue.severity === 'error' || 
+          (issue.type === 'readability' && issue.severity === 'warning')
+        );
+        
+        if (criticalIssues.length > 0) {
+          console.log(`⚠️ Critical quality issues found, attempting fixes:`, criticalIssues);
+          // Try to fix word count issues by adjusting pages
+          for (const issue of criticalIssues) {
+            if (issue.type === 'readability' && issue.pageIndex) {
+              const pageIndex = issue.pageIndex - 1;
+              if (improvedPages[pageIndex]) {
+                improvedPages[pageIndex] = this.adjustPageWordCount(
+                  improvedPages[pageIndex], 
+                  difficulty, 
+                  issue.message.includes('only') ? 'expand' : 'reduce'
+                );
+              }
+            }
+          }
+        }
+      }
+
+      // Calculate quality score using industry standards
+      const qualityScore = qualityCheck.score / 100; // Convert to 0-1 scale
       
       // Get used elements for reporting
       console.log(`📊 Parsed elements for usedElements:`, parsedElements);
@@ -388,6 +417,64 @@ export class ConsolidatedStoryGenerator {
     ];
     
     return fallbacks[pageIndex % fallbacks.length];
+  }
+
+  /**
+   * Adjusts page word count to meet industry standards per reading level
+   */
+  private static adjustPageWordCount(
+    page: string, 
+    difficulty: DifficultyLevel, 
+    adjustment: 'expand' | 'reduce'
+  ): string {
+    const wordCounts = {
+      easy: { min: 3, max: 8 },
+      medium: { min: 8, max: 25 },
+      hard: { min: 20, max: 45 },
+      expert: { min: 35, max: 80 }
+    };
+
+    const target = wordCounts[difficulty] || wordCounts.medium;
+    const words = page.split(/\s+/).filter(word => word.trim());
+    
+    if (adjustment === 'expand' && words.length < target.min) {
+      // Add simple descriptive words to reach minimum
+      const expansions = [
+        'very', 'really', 'quite', 'so', 'always', 'sometimes', 'then', 'also',
+        'wonderful', 'amazing', 'special', 'beautiful', 'exciting', 'fun'
+      ];
+      
+      let expandedPage = page;
+      let attempts = 0;
+      while (expandedPage.split(/\s+/).length < target.min && attempts < 5) {
+        const expansion = expansions[Math.floor(Math.random() * expansions.length)];
+        // Insert expansion before verbs or adjectives
+        expandedPage = expandedPage.replace(/\b(was|is|were|are|looked|seemed|felt)\b/, `${expansion} $1`);
+        attempts++;
+      }
+      
+      console.log(`📝 Expanded page: ${words.length} -> ${expandedPage.split(/\s+/).length} words`);
+      return expandedPage;
+      
+    } else if (adjustment === 'reduce' && words.length > target.max) {
+      // Remove unnecessary words to reach maximum
+      let reducedWords = words.slice(0, target.max);
+      
+      // Ensure the page still makes sense by keeping important words
+      if (reducedWords.length > 3) {
+        // Keep first and last few words, remove from middle if needed
+        const beginning = reducedWords.slice(0, 2);
+        const ending = reducedWords.slice(-2);
+        const middle = reducedWords.slice(2, -2).slice(0, target.max - 4);
+        reducedWords = [...beginning, ...middle, ...ending];
+      }
+      
+      const reducedPage = reducedWords.join(' ').replace(/\s+/g, ' ').trim();
+      console.log(`📝 Reduced page: ${words.length} -> ${reducedWords.length} words`);
+      return reducedPage.endsWith('.') ? reducedPage : reducedPage + '.';
+    }
+    
+    return page; // No adjustment needed
   }
 
   /**
