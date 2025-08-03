@@ -1091,8 +1091,32 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
       console.log('Mobile TTS: Is Uint8Array?', response.data instanceof Uint8Array);
       console.log('Mobile TTS: Constructor name:', response.data?.constructor?.name);
       
-      // Handle audio blob properly for mobile - create blob from response data
-      const audioBlob = new Blob([response.data], { type: 'audio/mpeg' });
+      // CRITICAL FIX: Handle different data types from Supabase functions
+      let audioData;
+      if (response.data instanceof ArrayBuffer) {
+        audioData = response.data;
+      } else if (response.data instanceof Uint8Array) {
+        audioData = response.data.buffer.slice(
+          response.data.byteOffset, 
+          response.data.byteOffset + response.data.byteLength
+        );
+      } else if (typeof response.data === 'string') {
+        // Base64 encoded data - decode it
+        const binaryString = atob(response.data);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        audioData = bytes.buffer;
+      } else {
+        console.error('Unexpected data type:', typeof response.data, response.data);
+        throw new Error('Unexpected audio data format: ' + typeof response.data);
+      }
+      
+      console.log('Mobile TTS: Processed audio data size:', audioData.byteLength);
+      
+      // Handle audio blob properly for mobile - create blob from processed data
+      const audioBlob = new Blob([audioData], { type: 'audio/mpeg' });
       console.log('Mobile TTS: Audio blob created, size:', audioBlob.size, 'type:', audioBlob.type);
       
       const audioUrl = URL.createObjectURL(audioBlob);
