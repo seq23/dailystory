@@ -477,8 +477,19 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
         if (pages.length !== currentPageCount) {
           if (pages.length < currentPageCount) {
             const additionalPages = currentPageCount - pages.length;
+            
+            // Better contextual fallback for difficulty changes
+            const difficultyFallbacks = [
+              `${userInfo.name} adapts to the new ${newDifficulty} challenge.`,
+              `The ${newDifficulty} adventure reveals new possibilities.`,
+              `${userInfo.name} discovers hidden strengths at this level.`,
+              `The story grows more ${direction === 'harder' ? 'complex' : 'accessible'} and engaging.`,
+              `${userInfo.name} meets the ${newDifficulty} challenge with confidence.`
+            ];
+            
             for (let i = 0; i < additionalPages; i++) {
-              pages.push(`${userInfo.name}'s adventure continues with more exciting discoveries...`);
+              const fallbackIndex = i % difficultyFallbacks.length;
+              pages.push(difficultyFallbacks[fallbackIndex]);
             }
           } else {
             pages = pages.slice(0, currentPageCount);
