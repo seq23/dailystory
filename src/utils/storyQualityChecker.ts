@@ -100,12 +100,12 @@ export class StoryQualityChecker {
    */
   private static checkReadabilityLevel(pages: string[], difficulty: string): QualityIssue[] {
     const issues: QualityIssue[] = [];
-    // New TTS-optimized word count standards for ages 3-11+
+    // Updated TTS-optimized word count standards - ensuring complete thoughts
     const expectedWordCounts = {
-      easy: { min: 2, max: 4 },    // Ages 3-5: Perfect for TTS word-by-word interaction
-      medium: { min: 4, max: 8 },  // Ages 5-7: Slightly longer for early readers
-      hard: { min: 6, max: 12 },   // Ages 7-9: More complex sentences
-      expert: { min: 8, max: 15 }  // Ages 9-11+: Advanced vocabulary and complexity
+      easy: { min: 3, max: 6 },    // Ages 3-5: Complete simple sentences for TTS
+      medium: { min: 5, max: 9 },  // Ages 5-7: Slightly longer sentences
+      hard: { min: 7, max: 13 },   // Ages 7-9: More complex sentences
+      expert: { min: 9, max: 16 }  // Ages 9-11+: Advanced vocabulary and complexity
     };
     
     const expected = expectedWordCounts[difficulty] || expectedWordCounts.medium;

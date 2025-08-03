@@ -1,60 +1,60 @@
 // Enhanced story templates with intelligent user input distribution
 export const ENHANCED_STORY_TEMPLATES = {
   easy: [
-    // Template set 1: Adventure progression (2-4 words per micro-page for TTS)
+    // Template set 1: Adventure progression (3-6 words per page - complete thoughts)
     [
-      "{name} wakes up",
-      "{pronoun} sees {animal}",
-      "{animal} looks {color}",
-      "{name} says hello",
-      "They become friends",
-      "{name} and {animal} play",
-      "They find {food}",
-      "{name} shares {food}",
-      "{animal} is happy",
-      "{name} smiles happily"
+      "{name} wakes up early",
+      "{pronoun} sees a {animal}",
+      "The {animal} looks {color}",
+      "{name} says hello nicely",
+      "They become good friends",
+      "{name} and {animal} play together",
+      "They find some {food}",
+      "{name} shares the {food}",
+      "The {animal} is happy",
+      "{name} smiles very happily"
     ],
     
-    // Template set 2: Discovery story (2-4 words per micro-page for TTS)
+    // Template set 2: Discovery story (3-6 words per page - complete thoughts)
     [
-      "{name} goes {setting}",
-      "{pronoun} sees things",
-      "{animal} runs by",
-      "{name} follows {animal}",
-      "They find {object}",
-      "{object} is {color}",
-      "{name} picks up",
-      "{animal} wants play",
-      "They play together",
-      "{name} has fun"
+      "{name} goes to {setting}",
+      "{pronoun} sees many things",
+      "A {animal} runs by",
+      "{name} follows the {animal}",
+      "They find a {object}",
+      "The {object} is {color}",
+      "{name} picks it up",
+      "The {animal} wants to play",
+      "They play together happily",
+      "{name} has lots of fun"
     ],
     
-    // Template set 3: Helping story
+    // Template set 3: Helping story (3-6 words per page - complete thoughts)
     [
-      "{name} meets a {primary_animal}.",
-      "The {primary_animal} looks sad.",
-      "{pronoun} lost {pronoun_possessive} {primary_food}.",
-      "{name} wants to help.",
-      "They look around the {setting}.",
-      "{name} finds the {primary_food}.",
-      "It is under a {secondary_color} box.",
-      "{name} gives it back.",
-      "The {primary_animal} is happy.",
-      "They are good friends and ready for more adventures."
+      "{name} meets a {primary_animal}",
+      "The {primary_animal} looks sad",
+      "It lost its {primary_food}",
+      "{name} wants to help",
+      "They look around everywhere",
+      "{name} finds the {primary_food}",
+      "It was under something",
+      "{name} gives it back",
+      "The {primary_animal} is happy",
+      "They are good friends"
     ],
     
-    // Template set 4: Sharing story  
+    // Template set 4: Sharing story (3-6 words per page - complete thoughts)
     [
-      "{name} has a {primary_object}.",
-      "It is {pronoun_possessive} favorite toy.",
-      "A {friend_animal} wants to play.",
-      "{name} shares the {primary_object}.",
-      "They play together.",
-      "The {friend_animal} is very happy.",
-      "{name} feels good inside.",
-      "Sharing makes friends.",
-      "They play all day.",
-      "Both friends are happy and excited for tomorrow."
+      "{name} has a {primary_object}",
+      "It is {pronoun_possessive} favorite toy",
+      "A {friend_animal} wants to play",
+      "{name} shares the {primary_object}",
+      "They play together nicely",
+      "The {friend_animal} is happy",
+      "{name} feels very good",
+      "Sharing makes good friends",
+      "They play all day",
+      "Both friends are very happy"
     ]
   ],
   

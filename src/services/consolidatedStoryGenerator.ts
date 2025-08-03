@@ -73,7 +73,7 @@ export class ConsolidatedStoryGenerator {
 
     try {
       console.log(`🎯 Starting consolidated story generation for ${userInfo.name} (${difficulty} level)`);
-      console.log(`📊 Using TTS-optimized word count standards: Easy(2-4), Medium(4-8), Hard(6-12), Expert(8-15) words per page`);
+      console.log(`📊 Using updated TTS-optimized word count standards: Easy(3-6), Medium(5-9), Hard(7-13), Expert(9-16) words per page`);
       console.log(`🌍 Target story language: ${fullConfig.language}`);
       console.log(`🎯 Available templates for ${fullConfig.language}/${difficulty}:`, getLanguageTemplates(fullConfig.language, difficulty).length);
 
@@ -482,12 +482,12 @@ export class ConsolidatedStoryGenerator {
     difficulty: DifficultyLevel, 
     adjustment: 'expand' | 'reduce'
   ): string {
-    // TTS-optimized word count standards for all ages (3-11+)
+    // Updated TTS-optimized word count standards - ensuring complete thoughts
     const wordCounts = {
-      easy: { min: 2, max: 4 },    // Ages 3-5: Perfect for TTS word-by-word
-      medium: { min: 4, max: 8 },  // Ages 5-7: Slightly longer for early readers
-      hard: { min: 6, max: 12 },   // Ages 7-9: More complex sentences
-      expert: { min: 8, max: 15 }  // Ages 9-11+: Advanced vocabulary
+      easy: { min: 3, max: 6 },    // Ages 3-5: Complete simple sentences for TTS
+      medium: { min: 5, max: 9 },  // Ages 5-7: Slightly longer sentences
+      hard: { min: 7, max: 13 },   // Ages 7-9: More complex sentences
+      expert: { min: 9, max: 16 }  // Ages 9-11+: Advanced vocabulary and complexity
     };
 
     const target = wordCounts[difficulty] || wordCounts.medium;
