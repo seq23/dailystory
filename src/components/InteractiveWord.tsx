@@ -1346,40 +1346,50 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
       audio.preload = 'auto';
       audio.volume = 0.9;
       
-      // Mobile-specific audio handling like ElevenLabsAudio component
-      await new Promise((resolve) => {
-        audio.addEventListener('canplaythrough', resolve, { once: true });
-        audio.load();
-      });
-      
       setIsPlayingMobile(true);
       console.log('Mobile Explain: Starting TTS playback');
       
-      // Use promise-based audio handling
-      await new Promise((resolve, reject) => {
-        audio.onended = () => {
-          console.log('Mobile Explain: TTS ended');
-          setIsPlayingMobile(false);
-          URL.revokeObjectURL(audioUrl);
-          resolve(undefined);
-        };
-        
-        audio.onerror = (e) => {
-          console.error('Mobile Explain: TTS playback error:', e);
-          setIsPlayingMobile(false);
-          URL.revokeObjectURL(audioUrl);
-          reject(new Error('Audio playback failed'));
-        };
-        
-        audio.play().then(() => {
-          console.log('Mobile Explain: Audio started successfully');
-        }).catch((playError) => {
-          console.error('Mobile Explain: Play error:', playError);
-          setIsPlayingMobile(false);
-          URL.revokeObjectURL(audioUrl);
-          reject(new Error('Audio playback requires user interaction'));
+      // Simplified audio handling with timeout
+      const playAudio = () => {
+        return new Promise((resolve, reject) => {
+          // Set timeout to prevent infinite loading
+          const timeout = setTimeout(() => {
+            console.log('Mobile Explain: Audio timeout reached');
+            setIsPlayingMobile(false);
+            URL.revokeObjectURL(audioUrl);
+            reject(new Error('Audio playback timeout'));
+          }, 10000); // 10 second timeout
+          
+          audio.onended = () => {
+            console.log('Mobile Explain: TTS ended');
+            clearTimeout(timeout);
+            setIsPlayingMobile(false);
+            URL.revokeObjectURL(audioUrl);
+            resolve(undefined);
+          };
+          
+          audio.onerror = (e) => {
+            console.error('Mobile Explain: TTS playback error:', e);
+            clearTimeout(timeout);
+            setIsPlayingMobile(false);
+            URL.revokeObjectURL(audioUrl);
+            reject(new Error('Audio playback failed'));
+          };
+          
+          // Try to play audio
+          audio.play().then(() => {
+            console.log('Mobile Explain: Audio started successfully');
+          }).catch((playError) => {
+            console.error('Mobile Explain: Play error:', playError);
+            clearTimeout(timeout);
+            setIsPlayingMobile(false);
+            URL.revokeObjectURL(audioUrl);
+            reject(new Error('Audio playback requires user interaction'));
+          });
         });
-      });
+      };
+      
+      await playAudio();
       
     } catch (error) {
       console.error('Mobile Explain Error:', error);
