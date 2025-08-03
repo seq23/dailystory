@@ -268,14 +268,15 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
     const margin = isMobile ? 20 : isTablet ? 25 : 40;
     const clearance = isMobile ? 120 : isTablet ? 140 : 160; // Extra space to avoid covering targets
 
-    // SPECIAL HANDLING FOR TIMER STEP - Timer is now centered, place tutorial card to avoid overlap
+    // SPECIAL HANDLING FOR TIMER STEP - Timer is positioned at 35%, place tutorial card in bottom area
     if (target === "timer-display") {
       console.log('TutorialOverlay: Timer positioning', { isMobile, isTablet });
       if (isMobile) {
         const positioning = {
-          top: `${margin}px`, // Top positioning on mobile to avoid scrolling
+          bottom: `${margin + 60}px`, // Bottom positioning on mobile below timer
           left: `${margin}px`,
           right: `${margin}px`,
+          top: "auto",
           transform: "none",
           maxWidth: `${tooltipWidth}px`
         };
@@ -283,9 +284,10 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
         return positioning;
       } else if (isTablet) {
         const positioning = {
-          top: `${margin + 20}px`, // Top positioning on tablet
+          bottom: `${margin + 80}px`, // Bottom positioning on tablet below timer
           left: `${margin}px`,
-          right: "auto",
+          right: `${margin}px`,
+          top: "auto",
           transform: "none",
           maxWidth: `${tooltipWidth}px`
         };
@@ -293,10 +295,11 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
         return positioning;
       } else {
         const positioning = {
-          top: `${margin + 40}px`, // Top positioning on desktop
-          left: `${margin + 40}px`,
+          bottom: `${margin + 100}px`, // Bottom positioning on desktop below timer
+          left: "50%",
           right: "auto",
-          transform: "none",
+          top: "auto",
+          transform: "translateX(-50%)",
           maxWidth: `${tooltipWidth}px`
         };
         console.log('Desktop timer positioning:', positioning);
