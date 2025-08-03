@@ -1273,8 +1273,13 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
 
   // Mobile-optimized word explanation with TTS
   const handleMobileExplain = async () => {
-    if (isLoadingMobile || isPlayingMobile) return;
+    console.log('📚 Mobile Explain: Function called');
+    if (isLoadingMobile || isPlayingMobile) {
+      console.log('📚 Mobile Explain: Blocked - already loading or playing');
+      return;
+    }
     
+    console.log('📚 Mobile Explain: Starting...');
     setIsLoadingMobile(true);
     
     try {
