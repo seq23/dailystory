@@ -607,3 +607,15 @@ All colors MUST be HSL.
     letter-spacing: 0.01em;
   }
 }
+
+/* Custom responsive display utilities for mobile + tablet */
+@media (max-width: 1024px) {
+  .mobile-tablet\:block { display: block; }
+  .mobile-tablet\:hidden { display: none; }
+  .mobile-tablet\:inline { display: inline; }
+  .mobile-tablet\:flex { display: flex; }
+  
+  .mobile-tablet\:text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+  .mobile-tablet\:text-base { font-size: 1rem; line-height: 1.5rem; }
+  .mobile-tablet\:text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+}

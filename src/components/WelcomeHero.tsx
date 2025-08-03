@@ -267,8 +267,8 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                   </CarouselItem>
                 </CarouselContent>
                 
-                <CarouselPrevious className="left-2 md:left-4 bg-white/20 border-white/30 text-white hover:bg-white/30 h-8 w-8 md:h-10 md:w-10" />
-                <CarouselNext className="right-2 md:right-4 bg-white/20 border-white/30 text-white hover:bg-white/30 h-8 w-8 md:h-10 md:w-10" />
+                <CarouselPrevious className="left-2 md:left-4 bg-white/20 border-white/30 text-white hover:bg-white/30 h-10 w-10 md:h-12 md:w-12 touch-target transition-all duration-200" />
+                <CarouselNext className="right-2 md:right-4 bg-white/20 border-white/30 text-white hover:bg-white/30 h-10 w-10 md:h-12 md:w-12 touch-target transition-all duration-200" />
               </Carousel>
               
               <div className="absolute -top-2 -right-2 md:-top-4 md:-right-4 animate-bounce-gentle">

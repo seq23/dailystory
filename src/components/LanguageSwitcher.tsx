@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Globe, Check } from 'lucide-react';
 import { useState } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const languages = [
   { code: 'en', name: 'English', nativeName: 'English' },
@@ -22,6 +23,7 @@ const languages = [
 export default function LanguageSwitcher() {
   const { i18n, t } = useTranslation();
   const [isChanging, setIsChanging] = useState(false);
+  const { isMobileOrTablet } = useIsMobile();
 
   const handleLanguageChange = async (languageCode: string) => {
     if (languageCode === i18n.language) return;
@@ -49,17 +51,17 @@ export default function LanguageSwitcher() {
           disabled={isChanging}
         >
           <Globe className="w-4 h-4 mr-2 flex-shrink-0" />
-          <span className="content-hierarchy hidden xs:inline font-medium">
+          <span className="content-hierarchy hidden mobile-tablet:inline font-medium">
             {currentLanguage.nativeName}
           </span>
-          <span className="content-hierarchy xs:hidden text-xs font-medium">
+          <span className="content-hierarchy mobile-tablet:hidden text-xs font-medium">
             {currentLanguage.code.toUpperCase()}
           </span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent 
         align="end" 
-        className="w-48 mobile-scroll max-h-60 overflow-y-auto touch-target"
+        className="w-56 mobile-scroll max-h-60 overflow-y-auto touch-target bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50"
         sideOffset={4}
       >
         {languages.map((language) => (

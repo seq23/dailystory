@@ -17,14 +17,14 @@ export const MobileOptimizedButton: React.FC<MobileOptimizedButtonProps> = ({
   const { isMobileDevice } = useIsMobile();
 
   const mobileClasses = isMobileDevice ? {
-    sm: 'min-h-[36px] min-w-[36px] px-3 py-2 text-sm',
-    default: 'min-h-[44px] min-w-[44px] px-4 py-2 text-base',
-    lg: 'min-h-[48px] min-w-[48px] px-6 py-3 text-lg'
+    sm: 'min-h-[40px] min-w-[40px] px-3 py-2 text-sm touch-target',
+    default: 'min-h-[48px] min-w-[48px] px-4 py-3 text-base touch-target',
+    lg: 'min-h-[52px] min-w-[52px] px-6 py-4 text-lg touch-target'
   }[mobileSize] : '';
 
   const finalClassName = cn(
     className,
-    isMobileDevice && 'touch-target touch-feedback mobile-text-fixed',
+    isMobileDevice && 'touch-target touch-feedback mobile-text-fixed transition-transform active:scale-95',
     mobileClasses
   );
 
