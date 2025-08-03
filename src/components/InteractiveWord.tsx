@@ -62,6 +62,12 @@ export const InteractiveWord = ({
             'interactiveWord.explain': 'समझाएं',
             'interactiveWord.translate': 'अनुवाद करें',
             'interactiveWord.addToVocabulary': 'शब्द सहेजें'
+          },
+          'pt': {
+            'interactiveWord.hearIt': 'Ouvir',
+            'interactiveWord.explain': 'Explicar',
+            'interactiveWord.translate': 'Traduzir',
+            'interactiveWord.addToVocabulary': 'Salvar palavra'
           }
         };
         
@@ -1058,6 +1064,13 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
             'interactiveWord.translate': 'अनुवाद करें',
             'interactiveWord.addToVocabulary': 'शब्द सहेजें',
             'interactiveWord.loading': 'लोड हो रहा है...'
+          },
+          'pt': {
+            'interactiveWord.hearIt': 'Ouvir',
+            'interactiveWord.explain': 'Explicar',
+            'interactiveWord.translate': 'Traduzir',
+            'interactiveWord.addToVocabulary': 'Salvar palavra',
+            'interactiveWord.loading': 'Carregando...'
           }
         };
         
