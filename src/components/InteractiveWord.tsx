@@ -1391,7 +1391,9 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
 
   // Enhanced mobile word click handler
   const handleMobileWordClick = () => {
+    console.log('📱 Mobile word clicked, current showMobileTTS:', showMobileTTS);
     setShowMobileTTS(!showMobileTTS);
+    console.log('📱 Mobile word clicked, new showMobileTTS:', !showMobileTTS);
   };
 
   // Check if this word is a user name - if so, don't make it interactive
@@ -1464,7 +1466,10 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
               </button>
               
               <button
-                onClick={handleMobileExplain}
+                onClick={() => {
+                  console.log('📚 Explain button clicked, isLoadingMobile:', isLoadingMobile, 'isPlayingMobile:', isPlayingMobile);
+                  handleMobileExplain();
+                }}
                 disabled={isLoadingMobile || isPlayingMobile}
                 className="flex flex-col items-center justify-center gap-2 bg-green-50 hover:bg-green-100 active:bg-green-200 border-2 border-green-200 p-4 rounded-xl transition-colors touch-manipulation min-h-[80px] font-semibold text-green-700 disabled:opacity-50"
               >
