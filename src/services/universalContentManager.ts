@@ -45,12 +45,12 @@ export class UniversalContentManager {
     console.log('🚀 Universal Content Manager: Starting ENHANCED story generation pipeline');
     
     // Validate language configuration before proceeding
-    const languageValidation = LanguagePreferenceService.validateLanguageConfiguration(userInfo);
+    const languageValidation = LanguagePreferenceService.validateLanguageConfiguration(userInfo, config.isPremium);
     if (!languageValidation.isValid) {
       console.warn('Language configuration issues:', languageValidation.issues);
     }
 
-    const languageConfig = LanguagePreferenceService.getLanguageConfig(userInfo);
+    const languageConfig = LanguagePreferenceService.getLanguageConfig(userInfo, config.isPremium);
     console.log('🌐 Language Configuration:', languageConfig);
     
     try {
@@ -245,7 +245,7 @@ export class UniversalContentManager {
   ): Promise<Story> {
     
     // Get language configuration for story generation
-    const languageConfig = LanguagePreferenceService.getLanguageConfig(userInfo);
+    const languageConfig = LanguagePreferenceService.getLanguageConfig(userInfo, config.isPremium);
     
     // Generate the story using consolidated generator with clean English inputs
     const storyResult = await ConsolidatedStoryGenerator.generateStory(userInfo, difficulty, {
@@ -333,7 +333,7 @@ export class UniversalContentManager {
         difficulty,
         {
           pageCount: 10, // FIXED: Request 10 pages instead of 5
-          language: LanguagePreferenceService.getStoryLanguage(processedData.processedUserInfo),
+          language: LanguagePreferenceService.getStoryLanguage(processedData.processedUserInfo, false), // Free users always get English
           useSmartParsing: true,
           antiRepetition: true,
           culturalAdaptation: true,
@@ -496,7 +496,7 @@ export class UniversalContentManager {
       // Create a special configuration that preserves anti-repetition state
       const continuationConfig = {
         pageCount: 5,
-        language: LanguagePreferenceService.getStoryLanguage(userInfo),
+        language: LanguagePreferenceService.getStoryLanguage(userInfo, true), // Premium users can use their preference
         useSmartParsing: true,
         antiRepetition: true,
         culturalAdaptation: true,

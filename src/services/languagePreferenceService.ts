@@ -23,11 +23,16 @@ export class LanguagePreferenceService {
 
   /**
    * Gets the story content language - separate from UI and native language
-   * Default: English for all users
-   * Premium users can potentially set different story languages in the future
+   * Free users: Always English
+   * Premium users: Can set different story languages
    */
-  static getStoryLanguage(userInfo: UserInfo): SupportedLanguage {
-    // Check if user has a story language preference set
+  static getStoryLanguage(userInfo: UserInfo, isPremium: boolean = false): SupportedLanguage {
+    // Free users are restricted to English only
+    if (!isPremium) {
+      return 'en';
+    }
+
+    // Premium users can use language preferences
     if (userInfo.storyLanguagePreference) {
       // Verify the preference is in enabled languages
       const enabledLanguages = getEnabledLanguages();
@@ -94,25 +99,25 @@ export class LanguagePreferenceService {
   /**
    * Gets language configuration for story generation
    */
-  static getLanguageConfig(userInfo: UserInfo) {
+  static getLanguageConfig(userInfo: UserInfo, isPremium: boolean = false) {
     return {
       uiLanguage: this.getUILanguage(),
       nativeLanguage: this.getNativeLanguage(userInfo),
-      storyLanguage: this.getStoryLanguage(userInfo)
+      storyLanguage: this.getStoryLanguage(userInfo, isPremium)
     };
   }
 
   /**
    * Validates that all required languages are available
    */
-  static validateLanguageConfiguration(userInfo: UserInfo): {
+  static validateLanguageConfiguration(userInfo: UserInfo, isPremium: boolean = false): {
     isValid: boolean;
     issues: string[];
   } {
     const issues: string[] = [];
     
     // Check story language
-    const storyLanguage = this.getStoryLanguage(userInfo);
+    const storyLanguage = this.getStoryLanguage(userInfo, isPremium);
     if (!this.isStoryLanguageEnabled(storyLanguage)) {
       issues.push(`Story language ${storyLanguage} is not enabled`);
     }
@@ -124,7 +129,7 @@ export class LanguagePreferenceService {
       issues.push(`UI language ${uiLanguage} is not supported`);
     }
 
-    // Verify story language is enabled (removed hardcoded English restriction)
+    // Verify story language is enabled
     if (!this.isStoryLanguageEnabled(storyLanguage)) {
       issues.push(`Story language '${storyLanguage}' is not enabled in STORY_LANGUAGES configuration`);
     }
@@ -138,7 +143,7 @@ export class LanguagePreferenceService {
   /**
    * Cross-device validation for mobile, tablet, desktop compatibility
    */
-  static validateCrossDeviceCompatibility(userInfo: UserInfo): {
+  static validateCrossDeviceCompatibility(userInfo: UserInfo, isPremium: boolean = false): {
     isValid: boolean;
     deviceChecks: Array<{
       device: string;
@@ -150,7 +155,7 @@ export class LanguagePreferenceService {
     const devices = ['mobile', 'tablet', 'desktop'];
     const deviceChecks = devices.map(device => ({
       device,
-      storyLanguage: this.getStoryLanguage(userInfo),
+      storyLanguage: this.getStoryLanguage(userInfo, isPremium),
       fontSupport: true, // Fonts are loaded in HTML head
       rtlSupport: userInfo.nativeLanguage === 'ar' ? true : true // RTL handled in CSS
     }));
