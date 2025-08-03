@@ -277,9 +277,4 @@ export class ComprehensiveLanguageTest {
   }
 }
 
-// Auto-run comprehensive tests
-if (process.env.NODE_ENV === 'development') {
-  setTimeout(() => {
-    ComprehensiveLanguageTest.runAllTests();
-  }, 2000);
-}
+// Tests can be run manually if needed

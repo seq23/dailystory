@@ -167,10 +167,4 @@ export class LanguageSeparationTest {
   }
 }
 
-// Auto-run tests in development
-if (process.env.NODE_ENV === 'development') {
-  // Run tests after a delay to ensure i18n is initialized
-  setTimeout(() => {
-    LanguageSeparationTest.runAllTests();
-  }, 1000);
-}
+// Tests can be run manually if needed

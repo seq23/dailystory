@@ -326,9 +326,4 @@ export class StoryQualityVerificationTest {
   }
 }
 
-// Auto-run quality tests
-if (process.env.NODE_ENV === 'development') {
-  setTimeout(() => {
-    StoryQualityVerificationTest.runAllQualityTests();
-  }, 3000);
-}
+// Tests can be run manually if needed

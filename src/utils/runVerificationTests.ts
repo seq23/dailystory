@@ -65,9 +65,4 @@ export class VerificationTestRunner {
   }
 }
 
-// Auto-run in development
-if (import.meta.env.DEV) {
-  setTimeout(() => {
-    VerificationTestRunner.runAllTests();
-  }, 3000);
-}
+// Tests can be run manually if needed

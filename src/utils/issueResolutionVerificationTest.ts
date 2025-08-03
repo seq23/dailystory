@@ -374,9 +374,4 @@ export class IssueResolutionVerificationTest {
   }
 }
 
-// Auto-run verification tests
-if (process.env.NODE_ENV === 'development') {
-  setTimeout(() => {
-    IssueResolutionVerificationTest.runCompleteVerification();
-  }, 4000);
-}
+// Tests can be run manually if needed

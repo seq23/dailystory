@@ -280,10 +280,4 @@ ${deviceSupport.join('\n')}`;
   }
 }
 
-// Auto-run verification in development
-if (process.env.NODE_ENV === 'development') {
-  // Run verification after a short delay to ensure all modules are loaded
-  setTimeout(() => {
-    QuotationMarkVerifier.runFullVerification();
-  }, 1000);
-}
+// Tests can be run manually if needed
