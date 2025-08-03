@@ -299,33 +299,46 @@
     "inputCorrectionsMade": "已应用更正"
   },
   "tutorial": {
-    "step1": {
-      "title": "阅读计时器",
-      "description": "点击播放按钮开始你的阅读计时器！随时可以暂停休息。"
+    "timer": {
+      "title": "⏰ 阅读计时器",
+      "description": "这显示您的阅读时间！点击播放按钮开始/暂停您的计时器。需要时使用减号按钮减少时间。"
     },
-    "step2": {
-      "title": "计时器控制",
-      "description": "使用-按钮减少5分钟，或使用X按钮随时结束你的会话！"
+    "navigation": {
+      "title": "📖 页面导航", 
+      "description": "使用上一页和下一页按钮在故事页面之间移动。页面计数器显示您的当前位置。"
     },
-    "step3": {
-      "title": "故事导航",
-      "description": "使用这些箭头按钮浏览故事页面。按照自己的节奏前进或后退！"
+    "audio": {
+      "title": "🎵 音频阅读",
+      "description": "点击收听故事朗读！非常适合跟读和学习发音。"
     },
-    "step4": {
-      "title": "互动单词",
-      "description": "点击故事中的任何单词获取翻译和发音！这帮助你学习新单词。"
+    "addPages": {
+      "title": "➕ 添加更多页面",
+      "description": "想要继续冒险吗？点击此按钮为您的故事添加5页更多内容！"
     },
-    "step5": {
-      "title": "阅读级别",
-      "description": "调整难度！使用'简单'或'困难'按钮完美匹配你的阅读水平。"
+    "difficulty": {
+      "title": "🎯 阅读级别",
+      "description": "立即让故事变得更容易或更难！向上箭头使其更难，向下箭头使其更容易以匹配您的阅读水平。"
     },
-    "step6": {
-      "title": "享受阅读！",
-      "description": "你现在准备好开始精彩的阅读冒险了！享受你的个性化故事。"
-    },
+    "step": "教程",
+    "of": "的",
+    "previous": "上一步",
     "skip": "跳过教程",
     "next": "下一步",
-    "previous": "上一步",
-    "finish": "完成"
+    "startReading": "开始阅读！"
+  },
+  "sessionEnded": {
+    "congratulations": "恭喜！",
+    "completedReading": "您已完成阅读会话！",
+    "timeSpent": "花费时间：{minutes} 分钟",
+    "pagesRead": "阅读页数：{pages}",
+    "wordsRead": "阅读单词数：{words}",
+    "goHome": "回到首页",
+    "readAnother": "阅读另一个故事"
+  },
+  "readingLevel": {
+    "easier": "更容易",
+    "harder": "更困难",
+    "tutorialTitle": "💡 提示：让故事更容易或更困难！",
+    "tutorialText": "点击这些按钮调整难度"
   }
 }
