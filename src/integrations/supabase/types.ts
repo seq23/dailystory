@@ -100,6 +100,51 @@ export type Database = {
           },
         ]
       }
+      saved_stories: {
+        Row: {
+          content: Json
+          created_at: string
+          difficulty: string
+          estimated_reading_time: number | null
+          id: string
+          is_favorite: boolean | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+          user_id: string
+          user_preferences: Json | null
+          word_count: number | null
+        }
+        Insert: {
+          content: Json
+          created_at?: string
+          difficulty: string
+          estimated_reading_time?: number | null
+          id?: string
+          is_favorite?: boolean | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          user_id: string
+          user_preferences?: Json | null
+          word_count?: number | null
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          difficulty?: string
+          estimated_reading_time?: number | null
+          id?: string
+          is_favorite?: boolean | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+          user_preferences?: Json | null
+          word_count?: number | null
+        }
+        Relationships: []
+      }
       stories: {
         Row: {
           age_group: string
@@ -145,6 +190,39 @@ export type Database = {
           title?: string
           vocabulary_words?: string[] | null
           word_count?: number | null
+        }
+        Relationships: []
+      }
+      story_collections: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_default: boolean | null
+          name: string
+          story_ids: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_default?: boolean | null
+          name: string
+          story_ids?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_default?: boolean | null
+          name?: string
+          story_ids?: string[] | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -211,6 +289,69 @@ export type Database = {
           story_session_number?: number
           updated_at?: string
           user_identifier?: string
+        }
+        Relationships: []
+      }
+      user_preferences: {
+        Row: {
+          age: number | null
+          avatar_skin_tone: string | null
+          avatar_type: string | null
+          created_at: string
+          display_name: string | null
+          favorite_animal: string | null
+          favorite_color: string | null
+          favorite_food: string | null
+          grade_level: string | null
+          hobbies: string | null
+          id: string
+          is_premium: boolean | null
+          learning_goal: string | null
+          native_language: string | null
+          reading_preferences: Json | null
+          story_preferences: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          age?: number | null
+          avatar_skin_tone?: string | null
+          avatar_type?: string | null
+          created_at?: string
+          display_name?: string | null
+          favorite_animal?: string | null
+          favorite_color?: string | null
+          favorite_food?: string | null
+          grade_level?: string | null
+          hobbies?: string | null
+          id?: string
+          is_premium?: boolean | null
+          learning_goal?: string | null
+          native_language?: string | null
+          reading_preferences?: Json | null
+          story_preferences?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          age?: number | null
+          avatar_skin_tone?: string | null
+          avatar_type?: string | null
+          created_at?: string
+          display_name?: string | null
+          favorite_animal?: string | null
+          favorite_color?: string | null
+          favorite_food?: string | null
+          grade_level?: string | null
+          hobbies?: string | null
+          id?: string
+          is_premium?: boolean | null
+          learning_goal?: string | null
+          native_language?: string | null
+          reading_preferences?: Json | null
+          story_preferences?: Json | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
