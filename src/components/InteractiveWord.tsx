@@ -1087,18 +1087,22 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
       
       // Handle audio blob properly for mobile - response.data is already the audio ArrayBuffer
       const audioBlob = new Blob([response.data], { type: 'audio/mpeg' });
+      console.log('Mobile TTS: Audio blob created, size:', audioBlob.size, 'type:', audioBlob.type);
+      
       const audioUrl = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioUrl);
+      console.log('Mobile TTS: Audio URL created:', audioUrl.substring(0, 50) + '...');
+      
+      // Create audio element without source first
+      const audio = new Audio();
       
       // Enhanced mobile-specific audio configuration
-      audio.preload = 'metadata';
-      audio.volume = 0.9;
-      audio.crossOrigin = 'anonymous';
+      audio.preload = 'none'; // Better for mobile performance
+      audio.volume = 0.8;
       
-      // Better mobile audio event handling
-      audio.oncanplaythrough = () => {
-        console.log('Mobile TTS: Audio ready to play');
-      };
+      // Set up all event handlers BEFORE setting src
+      audio.onloadstart = () => console.log('Mobile TTS: Audio load started');
+      audio.oncanplay = () => console.log('Mobile TTS: Audio can play');
+      audio.onloadeddata = () => console.log('Mobile TTS: Audio data loaded');
       
       audio.onended = () => {
         console.log('Mobile TTS: Audio ended');
@@ -1108,27 +1112,34 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
       
       audio.onerror = (e) => {
         console.error('Mobile TTS: Audio playback error:', e);
+        console.error('Audio error details:', {
+          error: audio.error,
+          networkState: audio.networkState,
+          readyState: audio.readyState,
+          currentSrc: audio.currentSrc
+        });
         setIsPlayingMobile(false);
         URL.revokeObjectURL(audioUrl);
-        toast({
-          title: "Audio playback failed",
-          description: "Please try again or check your device audio settings.",
-          variant: "destructive"
-        });
+        throw new Error('Audio format not supported on this device');
       };
+      
+      // NOW set the source
+      audio.src = audioUrl;
       
       // Mobile requires user interaction before playing audio
       console.log('Mobile TTS: Starting audio playback');
       
-      // Ensure user interaction for mobile audio
+      // Ensure user interaction for mobile audio with better error handling
       try {
-        await audio.play();
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          await playPromise;
+        }
         console.log('Mobile TTS: Audio started successfully');
       } catch (playError) {
         console.error('Mobile TTS: Play error:', playError);
-        // On mobile, audio might fail without user interaction - this is expected
-        // Try again with user gesture
-        throw new Error('Audio playback requires user interaction');
+        URL.revokeObjectURL(audioUrl);
+        throw new Error('Audio playback requires user interaction or format not supported');
       }
       
     } catch (error) {
@@ -1140,6 +1151,10 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
         ? "TTS service temporarily unavailable"
         : error.message?.includes('network') || error.message?.includes('fetch')
         ? "Network error - please check your connection"
+        : error.message?.includes('format not supported')
+        ? "Audio format not supported on this device"
+        : error.message?.includes('user interaction')
+        ? "Tap the button again to enable audio"
         : "Audio unavailable - please try again";
         
       toast({
