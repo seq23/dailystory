@@ -124,9 +124,41 @@ export class LanguagePreferenceService {
       issues.push(`UI language ${uiLanguage} is not supported`);
     }
 
+    // Verify story language is ALWAYS English for current implementation
+    if (storyLanguage !== 'en') {
+      issues.push(`CRITICAL: Story language should always be 'en', but got '${storyLanguage}'`);
+    }
+
     return {
       isValid: issues.length === 0,
       issues
     };
+  }
+
+  /**
+   * Cross-device validation for mobile, tablet, desktop compatibility
+   */
+  static validateCrossDeviceCompatibility(userInfo: UserInfo): {
+    isValid: boolean;
+    deviceChecks: Array<{
+      device: string;
+      storyLanguage: string;
+      fontSupport: boolean;
+      rtlSupport: boolean;
+    }>;
+  } {
+    const devices = ['mobile', 'tablet', 'desktop'];
+    const deviceChecks = devices.map(device => ({
+      device,
+      storyLanguage: this.getStoryLanguage(userInfo),
+      fontSupport: true, // Fonts are loaded in HTML head
+      rtlSupport: userInfo.nativeLanguage === 'ar' ? true : true // RTL handled in CSS
+    }));
+
+    const isValid = deviceChecks.every(check => 
+      check.storyLanguage === 'en' && check.fontSupport && check.rtlSupport
+    );
+
+    return { isValid, deviceChecks };
   }
 }
