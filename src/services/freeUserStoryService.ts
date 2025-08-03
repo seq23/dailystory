@@ -1,4 +1,5 @@
 import { UserInfo, Story, DifficultyLevel } from "@/types";
+import { SupportedLanguage } from "@/types/multilingual";
 import { ContentSignatureGenerator, SessionManager } from "./enhancedLinguisticProcessor";
 import { ConsolidatedStoryGenerator } from "./consolidatedStoryGenerator";
 
