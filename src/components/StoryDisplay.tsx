@@ -90,6 +90,12 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
   const [currentDifficulty, setCurrentDifficulty] = useState<'easy' | 'medium' | 'hard' | 'expert'>(() => {
     // Initialize difficulty from userInfo
     const readingLevel = userInfo.readingLevel || (userInfo as any).difficultyLevel || userInfo.readingAbility || 'easy';
+    console.log('StoryDisplay: User reading level:', readingLevel, 'Mapped to difficulty:', 
+      readingLevel === 'beginner' ? 'easy' :
+      readingLevel === 'elementary' ? 'medium' :
+      readingLevel === 'intermediate' ? 'hard' : 
+      readingLevel === 'advanced' ? 'expert' : 
+      readingLevel);
     return (readingLevel === 'beginner' ? 'easy' :
             readingLevel === 'elementary' ? 'medium' :
             readingLevel === 'intermediate' ? 'hard' : 
