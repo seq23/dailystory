@@ -14,12 +14,23 @@ export class AntiRepetitionSystem {
   /**
    * Checks if content is too similar to previously generated content
    */
-  static isDuplicate(content: string, minimumSimilarity: number = 0.8): boolean {
+  static isDuplicate(content: string, minimumSimilarity: number = 0.5): boolean {
     const normalized = this.normalizeContent(content);
     
+    // Check against all used sentences
     for (const existing of this.usedSentences) {
       const similarity = this.calculateSimilarity(normalized, existing);
       if (similarity >= minimumSimilarity) {
+        console.log(`Duplicate detected: "${content}" similar to "${existing}" (${similarity.toFixed(2)})`);
+        return true;
+      }
+    }
+    
+    // Check for exact matches in recent page content (more strict)
+    for (let i = Math.max(0, this.pageContent.length - 3); i < this.pageContent.length; i++) {
+      const recentNormalized = this.normalizeContent(this.pageContent[i]);
+      if (normalized === recentNormalized) {
+        console.log(`Exact duplicate detected in recent pages: "${content}"`);
         return true;
       }
     }
@@ -42,34 +53,51 @@ export class AntiRepetitionSystem {
   static generateVariations(sentence: string, userElements: Record<string, any>): string[] {
     const variations: string[] = [];
     
-    // Synonym replacements
+    // Enhanced synonym replacements
     const synonymMap = {
-      'happy': ['joyful', 'cheerful', 'delighted', 'glad'],
-      'sad': ['unhappy', 'upset', 'disappointed'],
-      'big': ['large', 'huge', 'enormous', 'giant'],
-      'small': ['tiny', 'little', 'miniature'],
-      'beautiful': ['lovely', 'gorgeous', 'wonderful', 'amazing'],
-      'fun': ['exciting', 'enjoyable', 'entertaining'],
-      'went': ['traveled', 'journeyed', 'walked', 'moved'],
-      'found': ['discovered', 'spotted', 'saw', 'came across'],
-      'said': ['spoke', 'told', 'mentioned', 'announced']
+      'happy': ['joyful', 'cheerful', 'delighted', 'glad', 'excited'],
+      'sad': ['unhappy', 'upset', 'disappointed', 'gloomy'],
+      'big': ['large', 'huge', 'enormous', 'giant', 'massive'],
+      'small': ['tiny', 'little', 'miniature', 'petite'],
+      'beautiful': ['lovely', 'gorgeous', 'wonderful', 'amazing', 'pretty'],
+      'fun': ['exciting', 'enjoyable', 'entertaining', 'delightful'],
+      'went': ['traveled', 'journeyed', 'walked', 'moved', 'headed'],
+      'found': ['discovered', 'spotted', 'saw', 'came across', 'noticed'],
+      'said': ['spoke', 'told', 'mentioned', 'announced', 'whispered'],
+      'play': ['have fun', 'enjoy', 'spend time', 'engage'],
+      'see': ['notice', 'spot', 'observe', 'watch', 'look at'],
+      'run': ['dash', 'hurry', 'race', 'sprint'],
+      'walk': ['stroll', 'wander', 'move', 'go']
     };
     
-    // Create variations with synonyms
-    let variation = sentence;
+    // Create more sophisticated variations
+    let baseVariation = sentence;
+    
+    // Try different synonym combinations
     Object.entries(synonymMap).forEach(([word, synonyms]) => {
       const regex = new RegExp(`\\b${word}\\b`, 'gi');
-      if (regex.test(variation)) {
-        synonyms.forEach(synonym => {
-          variations.push(variation.replace(regex, synonym));
+      if (regex.test(baseVariation)) {
+        synonyms.forEach((synonym, index) => {
+          // Only create a few variations to avoid overwhelming
+          if (index < 2) {
+            variations.push(baseVariation.replace(regex, synonym));
+          }
         });
       }
     });
     
     // Structure variations
-    variations.push(this.restructureSentence(sentence));
+    const restructured = this.restructureSentence(sentence);
+    if (restructured !== sentence) {
+      variations.push(restructured);
+    }
     
-    return variations.filter(v => v !== sentence && v.length > 0);
+    // Context-aware variations using user elements
+    if (userElements.name) {
+      variations.push(sentence.replace(new RegExp(`\\b${userElements.name}\\b`, 'gi'), 'our friend'));
+    }
+    
+    return variations.filter(v => v !== sentence && v.length > 0).slice(0, 5); // Limit to 5 best variations
   }
   
   /**

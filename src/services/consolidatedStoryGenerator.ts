@@ -8,6 +8,8 @@ import { NameFormatter } from "@/utils/nameFormatter";
 import { AntiRepetitionSystem } from "@/utils/antiRepetitionSystem";
 import { TemplateVariableProcessor } from "@/utils/templateVariableProcessor";
 import { APP_CONFIG } from "@/constants/app";
+import { getEnhancedTemplate } from "@/constants/enhancedStoryTemplates";
+import { UserInputDistributor } from "@/services/userInputDistributor";
 // Generate unique ID utility
 const generateUniqueId = () => Math.random().toString(36).substr(2, 9);
 
@@ -82,20 +84,22 @@ export class ConsolidatedStoryGenerator {
         console.log('📝 Smart Parsing Results:', SmartInputParser.generateProcessingReport(parsingResult));
       }
 
-      // Phase 1 & 5: Generate story pages using enhanced template processing
-      const templates = getLanguageTemplates(fullConfig.language, difficulty);
-      if (!templates.length) {
-        console.warn(`No templates available for ${fullConfig.language}/${difficulty}, using fallback`);
+      // Phase 1 & 5: Generate story pages using enhanced intelligent templates
+      UserInputDistributor.initialize(processedUserInfo);
+      const enhancedTemplate = getEnhancedTemplate(difficulty);
+      
+      if (!enhancedTemplate.length) {
+        console.warn(`No enhanced templates available for ${difficulty}, using fallback`);
         return this.generateFallbackStoryResult(processedUserInfo, difficulty, startTime);
       }
 
       const pages: string[] = [];
       const extractedElements = SmartInputParser.extractStoryElements(parsedElements);
       
-      // Phase 3: Enhanced element distribution and selection
-      for (let i = 0; i < fullConfig.pageCount; i++) {
-        const templateIndex = i % templates.length;
-        let template = templates[templateIndex];
+      // Phase 3: Enhanced element distribution and selection with intelligent templates
+      const totalPages = Math.min(fullConfig.pageCount, enhancedTemplate.length);
+      for (let i = 0; i < totalPages; i++) {
+        let template = enhancedTemplate[i];
         
         // Phase 1: Comprehensive template variable processing
         const variableContext = {
@@ -118,9 +122,8 @@ export class ConsolidatedStoryGenerator {
             if (variations.length > 0) {
               processedPage = variations[Math.floor(Math.random() * variations.length)];
             } else {
-              // Fallback to alternative template
-              const altTemplateIndex = (templateIndex + 1) % templates.length;
-              processedPage = TemplateVariableProcessor.processTemplate(templates[altTemplateIndex], variableContext);
+              // Fallback to simple variation
+              processedPage = `${processedUserInfo.name} continues the story.`;
             }
           }
           

@@ -3,6 +3,7 @@ import { UserInfo, DifficultyLevel } from "@/types";
 import { NameFormatter } from "./nameFormatter";
 import { GrammarValidator } from "./grammarValidator";
 import { SentenceValidator } from "./sentenceValidator";
+import { UserInputDistributor } from "@/services/userInputDistributor";
 
 interface VariableContext {
   userInfo: UserInfo;
@@ -19,11 +20,26 @@ export class TemplateVariableProcessor {
   static processTemplate(template: string, context: VariableContext): string {
     let processed = template;
     
-    // Process all variable types with fallbacks
-    processed = this.processBasicVariables(processed, context);
+    // Initialize intelligent user input distribution
+    UserInputDistributor.initialize(context.userInfo);
+    
+    // Get intelligent template variables
+    const distributionContext = {
+      pageIndex: context.pageIndex,
+      totalPages: context.totalPages,
+      difficulty: context.difficulty,
+      usedInputs: new Set<string>()
+    };
+    
+    const intelligentVariables = UserInputDistributor.getTemplateVariables(context.userInfo, distributionContext);
+    
+    // Apply intelligent variable replacements first
+    Object.entries(intelligentVariables).forEach(([variable, value]) => {
+      processed = processed.replace(new RegExp(variable.replace(/[{}]/g, '\\$&'), 'g'), value);
+    });
+    
+    // Process remaining advanced variables for expert difficulty
     processed = this.processAdvancedVariables(processed, context);
-    processed = this.processConditionalVariables(processed, context);
-    processed = this.processGrammaticalVariables(processed, context);
     
     // Final cleanup and validation
     processed = this.cleanupTemplate(processed);
@@ -183,9 +199,9 @@ export class TemplateVariableProcessor {
   }
   
   private static getCharacters(context: VariableContext): string {
-    const baseCharacters = ['friends', 'animals', 'helpers'];
-    const userAnimal = context.userInfo.favoriteAnimal || 'cats';
-    return [this.pluralize(userAnimal), ...baseCharacters].join(', ');
+    // This method is deprecated - use UserInputDistributor instead
+    console.warn('getCharacters is deprecated. Use UserInputDistributor for intelligent distribution.');
+    return context.userInfo.favoriteAnimal || 'friend';
   }
   
   private static getPlaces(difficulty: DifficultyLevel): string {

@@ -189,6 +189,18 @@ export class GrammarValidator {
   static validateStoryText(text: string): { isValid: boolean; errors: string[] } {
     const errors: string[] = [];
     
+    // Check for comma-separated subjects with singular verbs (dogs, cats, lions is happy)
+    const multipleSubjectPattern = /\b([a-zA-Z]+),\s*([a-zA-Z]+)(?:,\s*([a-zA-Z]+))?\s+(is|was|has|does|goes|runs|eats|plays|likes|loves|wants|needs|sees|finds|helps|makes|takes|gives|works|calls|moves|turns|starts|stops|walks|talks|asks|tells|shows|hears|listens|watches|learns|teaches|reads|writes|draws|sings|dances|swims|jumps|flies|sleeps|wakes|opens|closes|carries|holds|picks|drops|pushes|pulls|throws|catches)\b/gi;
+    
+    const multipleSubjectMatches = Array.from(text.matchAll(multipleSubjectPattern));
+    if (multipleSubjectMatches.length > 0) {
+      multipleSubjectMatches.forEach(match => {
+        const [fullMatch, subject1, subject2, subject3, verb] = match;
+        const pluralVerb = this.makePluralVerb(verb);
+        errors.push(`Grammar error: Multiple subjects "${subject1}, ${subject2}${subject3 ? ', ' + subject3 : ''}" need plural verb "${pluralVerb}" not "${verb}"`);
+      });
+    }
+    
     // Check for pronoun + base verb errors (he eat, she run, etc.)
     const pronounVerbPattern = /\b(he|she|it)\s+(eat|run|play|like|go|come|see|find|help|love|want|need|have|do|say|get|know|think|feel|look|try|make|take|give|work|call|move|turn|start|stop|walk|talk|ask|tell|show|hear|listen|watch|learn|teach|read|write|draw|sing|dance|swim|jump|fly|sleep|wake|open|close|carry|hold|pick|drop|push|pull|throw|catch)\b/gi;
     
@@ -301,6 +313,70 @@ export class GrammarValidator {
     }
     
     return sentence + '.';
+  }
+
+  /**
+   * Converts singular verb to plural form
+   */
+  private static makePluralVerb(verb: string): string {
+    const singularToPlural = {
+      'is': 'are',
+      'was': 'were', 
+      'has': 'have',
+      'does': 'do',
+      'goes': 'go',
+      'runs': 'run',
+      'eats': 'eat',
+      'plays': 'play',
+      'likes': 'like',
+      'loves': 'love',
+      'wants': 'want',
+      'needs': 'need',
+      'sees': 'see',
+      'finds': 'find',
+      'helps': 'help',
+      'makes': 'make',
+      'takes': 'take',
+      'gives': 'give',
+      'works': 'work',
+      'calls': 'call',
+      'moves': 'move',
+      'turns': 'turn',
+      'starts': 'start',
+      'stops': 'stop',
+      'walks': 'walk',
+      'talks': 'talk',
+      'asks': 'ask',
+      'tells': 'tell',
+      'shows': 'show',
+      'hears': 'hear',
+      'listens': 'listen',
+      'watches': 'watch',
+      'learns': 'learn',
+      'teaches': 'teach',
+      'reads': 'read',
+      'writes': 'write',
+      'draws': 'draw',
+      'sings': 'sing',
+      'dances': 'dance',
+      'swims': 'swim',
+      'jumps': 'jump',
+      'flies': 'fly',
+      'sleeps': 'sleep',
+      'wakes': 'wake',
+      'opens': 'open',
+      'closes': 'close',
+      'carries': 'carry',
+      'holds': 'hold',
+      'picks': 'pick',
+      'drops': 'drop',
+      'pushes': 'push',
+      'pulls': 'pull',
+      'throws': 'throw',
+      'catches': 'catch'
+    };
+    
+    return singularToPlural[verb.toLowerCase()] || verb;
   }
 }
 

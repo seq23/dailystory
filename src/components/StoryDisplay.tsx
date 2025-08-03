@@ -172,11 +172,19 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
     return () => cleanupGamificationGlobals();
   }, [addVocabularyWord, isPremium]);
 
+  // Story persistence state
+  const [cachedStory, setCachedStory] = useState<string[] | null>(null);
+  const [storyGenerated, setStoryGenerated] = useState(false);
+
   // Generate story on component mount using Universal Content Manager
   useEffect(() => {
+    // Only generate story once per component mount
+    if (storyGenerated) return;
+    
     const generateStory = async () => {
       try {
         setIsLoading(true);
+        setStoryGenerated(true); // Mark as generated to prevent regeneration
         
         const readingLevel = userInfo.readingLevel || (userInfo as any).difficultyLevel || 'easy';
         const initialDifficulty = (readingLevel === 'beginner' ? 'easy' :
@@ -204,8 +212,10 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
           sessionInfo: storyResult.sessionInfo
         });
         
-        // Update story state
-        setStory(storyResult.story.segments.map(segment => segment.text));
+        // Update story state and cache it
+        const storyPages = storyResult.story.segments.map(segment => segment.text);
+        setStory(storyPages);
+        setCachedStory(storyPages); // Cache the story to prevent regeneration
         setStoryImages(storyResult.story.segments.map((segment, index) => ({
           url: segment.illustration || '',
           prompt: `Illustration for page ${index + 1}`
@@ -317,6 +327,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
         })();
         
         setStory(fallbackStory);
+        setCachedStory(fallbackStory); // Cache fallback story too
         setWordsRead(fallbackStory.join(' ').split(' ').length);
         
         toast({
@@ -347,7 +358,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
 
     // Start story generation immediately but don't block UI
     generateStory();
-  }, [toast]); // Phase 7: Remove userInfo dependency to prevent story regeneration
+  }, []); // No dependencies - generate story only once on mount
 
   // Timer countdown (with pause support)
   useEffect(() => {
