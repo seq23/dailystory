@@ -1283,9 +1283,10 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
     setIsLoadingMobile(true);
     
     try {
-      console.log('Mobile Explain: Starting for word:', props.word);
+      console.log('📚 Mobile Explain: Starting for word:', props.word);
       
       // Get word definition first
+      console.log('📚 Mobile Explain: About to call word-dictionary API...');
       const response = await supabase.functions.invoke('word-dictionary', {
         body: {
           word: props.word,
@@ -1293,24 +1294,30 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
           context: props.sentenceContext || ''
         }
       });
+      
+      console.log('📚 Mobile Explain: word-dictionary API response:', response);
 
       if (response.error) {
-        console.error('Dictionary API Error:', response.error);
+        console.error('📚 Mobile Explain: Dictionary API Error:', response.error);
         throw new Error('Could not get word definition');
       }
       
       const wordData = response.data;
       setMobileWordData(wordData);
-      console.log('Mobile Explain: Got word data:', wordData);
+      console.log('📚 Mobile Explain: Got word data:', wordData);
       
       // Generate TTS for explanation (available for all users)
+      console.log('📚 Mobile Explain: About to get voice...');
       const voiceId = getVoiceForUser();
+      console.log('📚 Mobile Explain: Voice ID:', voiceId);
+      
       const explanationText = wordData.definition 
         ? `${props.word}. ${wordData.definition}.${wordData.sampleSentence ? ` Example: ${wordData.sampleSentence}` : ''}`
         : `${props.word} is a word in English.`;
       
-      console.log('Mobile Explain: TTS text:', explanationText.substring(0, 100) + '...');
+      console.log('📚 Mobile Explain: TTS text:', explanationText.substring(0, 100) + '...');
       
+      console.log('📚 Mobile Explain: About to call elevenlabs-tts...');
       const ttsResponse = await supabase.functions.invoke('elevenlabs-tts', {
         body: {
           text: explanationText.slice(0, 800), // Limit for better performance
@@ -1318,6 +1325,8 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
           model: 'eleven_turbo_v2_5'
         }
       });
+      
+      console.log('📚 Mobile Explain: elevenlabs-tts response received:', ttsResponse);
 
       if (ttsResponse.error) {
         console.error('TTS API Error:', ttsResponse.error);
