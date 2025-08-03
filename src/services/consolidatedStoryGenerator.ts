@@ -10,6 +10,7 @@ import { TemplateVariableProcessor } from "@/utils/templateVariableProcessor";
 import { APP_CONFIG } from "@/constants/app";
 import { getEnhancedTemplate } from "@/constants/enhancedStoryTemplates";
 import { UserInputDistributor } from "@/services/userInputDistributor";
+import { LanguagePreferenceService } from "./languagePreferenceService";
 // Generate unique ID utility
 const generateUniqueId = () => Math.random().toString(36).substring(2, 11);
 
@@ -44,14 +45,17 @@ export class ConsolidatedStoryGenerator {
   ): Promise<StoryGenerationResult> {
     const startTime = Date.now();
     
+    // Get language configuration using the new service
+    const languageConfig = LanguagePreferenceService.getLanguageConfig(userInfo);
+    
     const fullConfig: ConsolidatedStoryConfig = {
       pageCount: APP_CONFIG.DEFAULT_PAGE_COUNT,
       useSmartParsing: true,
       antiRepetition: true,
       culturalAdaptation: true,
       ...config,
-      // ALWAYS override language to English regardless of user's native language
-      language: 'en'
+      // Use dynamic story language instead of hardcoded English
+      language: languageConfig.storyLanguage
     };
 
     console.log('🎯 Consolidated Story Generation Starting', {

@@ -5,6 +5,7 @@ import { ConsolidatedStoryGenerator } from "./consolidatedStoryGenerator";
 import { PremiumStoryService } from "./premiumStoryService";
 import { FreeUserStoryService } from "./freeUserStoryService";
 import { AntiRepetitionSystem } from "@/utils/antiRepetitionSystem";
+import { LanguagePreferenceService } from "./languagePreferenceService";
 
 export interface ContentManagerConfig {
   isPremium: boolean;
@@ -42,6 +43,15 @@ export class UniversalContentManager {
     config: ContentManagerConfig
   ): Promise<StoryGenerationResult> {
     console.log('🚀 Universal Content Manager: Starting ENHANCED story generation pipeline');
+    
+    // Validate language configuration before proceeding
+    const languageValidation = LanguagePreferenceService.validateLanguageConfiguration(userInfo);
+    if (!languageValidation.isValid) {
+      console.warn('Language configuration issues:', languageValidation.issues);
+    }
+
+    const languageConfig = LanguagePreferenceService.getLanguageConfig(userInfo);
+    console.log('🌐 Language Configuration:', languageConfig);
     
     try {
       // Step 1: Process all user inputs through intelligent processing (Translation + Spelling + Grammar)
@@ -234,10 +244,13 @@ export class UniversalContentManager {
     config: ContentManagerConfig
   ): Promise<Story> {
     
+    // Get language configuration for story generation
+    const languageConfig = LanguagePreferenceService.getLanguageConfig(userInfo);
+    
     // Generate the story using consolidated generator with clean English inputs
     const storyResult = await ConsolidatedStoryGenerator.generateStory(userInfo, difficulty, {
       pageCount: 10, // Premium users get 10 pages
-      language: 'en',
+      language: languageConfig.storyLanguage,
       useSmartParsing: true,
       antiRepetition: true,
       culturalAdaptation: true
@@ -318,7 +331,7 @@ export class UniversalContentManager {
         difficulty,
         {
           pageCount: 10, // FIXED: Request 10 pages instead of 5
-          language: 'en' as SupportedLanguage,
+          language: LanguagePreferenceService.getStoryLanguage(processedData.processedUserInfo),
           useSmartParsing: true,
           antiRepetition: true,
           culturalAdaptation: true,
@@ -481,7 +494,7 @@ export class UniversalContentManager {
       // Create a special configuration that preserves anti-repetition state
       const continuationConfig = {
         pageCount: 5,
-        language: 'en' as SupportedLanguage,
+        language: LanguagePreferenceService.getStoryLanguage(userInfo),
         useSmartParsing: true,
         antiRepetition: true,
         culturalAdaptation: true,

@@ -10,6 +10,8 @@ import { Globe, Check } from 'lucide-react';
 import { useState } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
+// This component controls the UI/interface language only.
+// Story content language is handled separately in LanguagePreferenceService.
 const languages = [
   { code: 'en', name: 'English', nativeName: 'English' },
   { code: 'es', name: 'Spanish', nativeName: 'Español' },

@@ -29,6 +29,7 @@ export interface UserInfo {
   readingAbility?: DifficultyLevel;
   readingLevel?: string; // Add this for compatibility
   interests?: string[]; // Add this for compatibility
+  storyLanguagePreference?: LanguageCode; // New: separate story content language from native language
 }
 
 export interface StorySegment {
