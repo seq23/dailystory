@@ -15,6 +15,13 @@ serve(async (req) => {
   try {
     console.log('ElevenLabs TTS function called');
     const { text, voice, model } = await req.json();
+    
+    console.log('TTS Request details:', {
+      textLength: text?.length,
+      voice: voice,
+      model: model,
+      textPreview: text?.substring(0, 50) + '...'
+    });
 
     if (!text) {
       throw new Error('Text is required');
@@ -27,34 +34,49 @@ serve(async (req) => {
       throw new Error('ElevenLabs API key not configured');
     }
 
-    // Generate speech using ElevenLabs API
-    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voice || '9BWtsMINqrJLrRacOk9x'}`, {
+    // Generate speech using ElevenLabs API with enhanced multilingual support
+    const apiUrl = `https://api.elevenlabs.io/v1/text-to-speech/${voice || '9BWtsMINqrJLrRacOk9x'}`;
+    console.log('Making request to ElevenLabs:', apiUrl);
+    
+    const requestBody = {
+      text: text.slice(0, 1000), // Limit text length
+      model_id: model || 'eleven_multilingual_v2', // Use multilingual model for better French support
+      voice_settings: {
+        stability: 0.5,
+        similarity_boost: 0.8,
+        style: 0.2,
+        use_speaker_boost: true
+      }
+    };
+    
+    console.log('Request body:', JSON.stringify(requestBody, null, 2));
+    
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Accept': 'audio/mpeg',
         'Content-Type': 'application/json',
         'xi-api-key': elevenLabsApiKey,
       },
-      body: JSON.stringify({
-        text: text.slice(0, 1000), // Limit text length
-        model_id: model || 'eleven_multilingual_v2',
-        voice_settings: {
-          stability: 0.5,
-          similarity_boost: 0.8,
-          style: 0.2,
-          use_speaker_boost: true
-        }
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('ElevenLabs API error:', errorText);
-      throw new Error(`ElevenLabs API error: ${response.status}`);
+      console.error('ElevenLabs API error details:', {
+        status: response.status,
+        statusText: response.statusText,
+        errorText: errorText
+      });
+      throw new Error(`ElevenLabs API error: ${response.status} - ${errorText}`);
     }
 
     // Return audio data
     const audioData = await response.arrayBuffer();
+    console.log('Successfully generated audio:', {
+      size: audioData.byteLength,
+      contentType: response.headers.get('content-type')
+    });
     
     return new Response(audioData, {
       headers: {

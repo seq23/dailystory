@@ -1080,7 +1080,12 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
         throw new Error(response.error.message || 'TTS failed');
       }
       
-      // Handle audio blob properly for mobile
+      // CRITICAL FIX: The edge function returns audio data directly, not as a nested object
+      if (!response.data) {
+        throw new Error('No audio data received from TTS service');
+      }
+      
+      // Handle audio blob properly for mobile - response.data is already the audio ArrayBuffer
       const audioBlob = new Blob([response.data], { type: 'audio/mpeg' });
       const audioUrl = URL.createObjectURL(audioBlob);
       const audio = new Audio(audioUrl);
@@ -1184,7 +1189,13 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
         return;
       }
       
-      // Handle TTS audio
+      // CRITICAL FIX: Handle TTS audio properly - response.data is the audio ArrayBuffer
+      if (!ttsResponse.data) {
+        console.warn('No TTS audio data received, skipping audio');
+        setIsLoadingMobile(false);
+        return;
+      }
+      
       const audioBlob = new Blob([ttsResponse.data], { type: 'audio/mpeg' });
       const audioUrl = URL.createObjectURL(audioBlob);
       const audio = new Audio(audioUrl);
