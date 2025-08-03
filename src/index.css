@@ -299,18 +299,19 @@ All colors MUST be HSL.
     text-align: left !important;
   }
 
-  /* HOMEPAGE RTL FIXES: Keep ALL homepage elements LTR */
-  [dir="rtl"] header,
-  [dir="rtl"] .welcome-hero,
-  [dir="rtl"] .hero-content,
-  [dir="rtl"] .company-title,
-  [dir="rtl"] .sign-in-btn,
-  [dir="rtl"] .language-picker,
-  [dir="rtl"] .carousel-nav,
-  [dir="rtl"] .carousel-container,
-  [dir="rtl"] .carousel-item,
-  [dir="rtl"] .carousel,
-  [dir="rtl"] nav {
+  /* HOMEPAGE: ALWAYS LTR - NO RTL EVER ON HOMEPAGE */
+  [dir="rtl"] .homepage,
+  [dir="rtl"] body:has(.homepage),
+  [dir="rtl"] #root:has(.homepage),
+  [dir="rtl"] main:has(.homepage) {
+    direction: ltr !important;
+  }
+
+  /* Force ALL homepage content to be LTR */
+  [dir="rtl"] .homepage *,
+  [dir="rtl"] .welcome-hero *,
+  [dir="rtl"] .hero-content *,
+  [dir="rtl"] .carousel-container * {
     direction: ltr !important;
     text-align: left !important;
   }
