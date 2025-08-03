@@ -1115,83 +1115,159 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
       
       console.log('Mobile TTS: Processed audio data size:', audioData.byteLength);
       
-      // Handle audio blob properly for mobile - create blob from processed data
-      const audioBlob = new Blob([audioData], { type: 'audio/mpeg' });
-      console.log('Mobile TTS: Audio blob created, size:', audioBlob.size, 'type:', audioBlob.type);
+      // Enhanced mobile audio handling with multiple format support
+      console.log('Mobile TTS: Creating audio with enhanced compatibility');
       
-      const audioUrl = URL.createObjectURL(audioBlob);
-      console.log('Mobile TTS: Audio URL created:', audioUrl.substring(0, 50) + '...');
+      // Try multiple audio formats for better mobile support
+      const audioFormats = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg'];
+      let audioUrl = null;
+      let successfulFormat = null;
       
-      // Create audio element without source first
+      for (const format of audioFormats) {
+        try {
+          const testBlob = new Blob([audioData], { type: format });
+          const testUrl = URL.createObjectURL(testBlob);
+          
+          // Test if browser can play this format
+          const testAudio = new Audio();
+          const canPlay = testAudio.canPlayType(format);
+          
+          console.log(`Mobile TTS: Format ${format} support:`, canPlay);
+          
+          if (canPlay === 'probably' || canPlay === 'maybe') {
+            audioUrl = testUrl;
+            successfulFormat = format;
+            console.log(`Mobile TTS: Selected format: ${format}`);
+            break;
+          } else {
+            URL.revokeObjectURL(testUrl);
+          }
+        } catch (formatError) {
+          console.warn(`Mobile TTS: Format ${format} failed:`, formatError);
+        }
+      }
+      
+      if (!audioUrl) {
+        // Fallback to basic format
+        const audioBlob = new Blob([audioData], { type: 'audio/mpeg' });
+        audioUrl = URL.createObjectURL(audioBlob);
+        successfulFormat = 'audio/mpeg';
+        console.log('Mobile TTS: Using fallback format');
+      }
+      
+      console.log('Mobile TTS: Audio URL created with format:', successfulFormat);
+      
+      // Create audio element with enhanced mobile configuration
       const audio = new Audio();
       
-      // Enhanced mobile-specific audio configuration
-      audio.preload = 'none'; // Better for mobile performance
-      audio.volume = 0.8;
+      // Mobile-optimized settings
+      audio.preload = 'metadata';
+      audio.volume = 0.9;
+      audio.crossOrigin = 'anonymous';
       
-      // Set up all event handlers BEFORE setting src
-      audio.onloadstart = () => console.log('Mobile TTS: Audio load started');
-      audio.oncanplay = () => console.log('Mobile TTS: Audio can play');
-      audio.onloadeddata = () => console.log('Mobile TTS: Audio data loaded');
+      // Enhanced event handlers with better mobile support
+      const cleanup = () => {
+        setIsPlayingMobile(false);
+        if (audioUrl) {
+          URL.revokeObjectURL(audioUrl);
+        }
+      };
       
       audio.onended = () => {
-        console.log('Mobile TTS: Audio ended');
-        setIsPlayingMobile(false);
-        URL.revokeObjectURL(audioUrl);
+        console.log('Mobile TTS: Audio playback completed');
+        cleanup();
       };
       
       audio.onerror = (e) => {
-        console.error('Mobile TTS: Audio playback error:', e);
+        console.error('Mobile TTS: Audio error:', e);
         console.error('Audio error details:', {
-          error: audio.error,
+          error: audio.error?.code,
+          message: audio.error?.message,
           networkState: audio.networkState,
-          readyState: audio.readyState,
-          currentSrc: audio.currentSrc
+          readyState: audio.readyState
         });
-        setIsPlayingMobile(false);
-        URL.revokeObjectURL(audioUrl);
-        throw new Error('Audio format not supported on this device');
+        cleanup();
+        throw new Error(`Audio playback failed (${audio.error?.code || 'unknown error'})`);
       };
       
-      // NOW set the source
+      // Set source and attempt playback
       audio.src = audioUrl;
+      console.log('Mobile TTS: Starting enhanced audio playback');
       
-      // Mobile requires user interaction before playing audio
-      console.log('Mobile TTS: Starting audio playback');
-      
-      // Ensure user interaction for mobile audio with better error handling
       try {
+        // Use promise-based play with timeout for mobile compatibility
         const playPromise = audio.play();
+        
         if (playPromise !== undefined) {
-          await playPromise;
+          // Add timeout for mobile devices that may hang
+          const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Audio play timeout')), 5000);
+          });
+          
+          await Promise.race([playPromise, timeoutPromise]);
         }
-        console.log('Mobile TTS: Audio started successfully');
+        
+        console.log('Mobile TTS: Audio playback started successfully');
+        setIsPlayingMobile(true);
+        
       } catch (playError) {
-        console.error('Mobile TTS: Play error:', playError);
-        URL.revokeObjectURL(audioUrl);
-        throw new Error('Audio playback requires user interaction or format not supported');
+        console.error('Mobile TTS: Enhanced play error:', playError);
+        cleanup();
+        
+        // Provide specific error messages for mobile
+        if (playError.name === 'NotAllowedError') {
+          throw new Error('Audio requires user interaction - please tap the button again');
+        } else if (playError.name === 'NotSupportedError') {
+          throw new Error('Audio format not supported on this device');
+        } else {
+          throw new Error('Audio playback failed - please try again');
+        }
       }
       
     } catch (error) {
       console.error('Mobile TTS Error Details:', error);
       setIsPlayingMobile(false);
       
-      // Provide different error messages for different scenarios
-      const errorMessage = error.message?.includes('API key') 
-        ? "TTS service temporarily unavailable"
-        : error.message?.includes('network') || error.message?.includes('fetch')
-        ? "Network error - please check your connection"
-        : error.message?.includes('format not supported')
-        ? "Audio format not supported on this device"
-        : error.message?.includes('user interaction')
-        ? "Tap the button again to enable audio"
-        : "Audio unavailable - please try again";
+      // Try fallback to browser speech synthesis
+      try {
+        console.log('Mobile TTS: Attempting browser speech synthesis fallback');
         
-      toast({
-        title: "Audio unavailable",
-        description: errorMessage,
-        variant: "destructive"
-      });
+        if ('speechSynthesis' in window) {
+          const utterance = new SpeechSynthesisUtterance(props.word.replace(/[^\w\s]/g, ''));
+          utterance.rate = 0.8;
+          utterance.pitch = 1.0;
+          utterance.volume = 0.9;
+          
+          utterance.onstart = () => {
+            console.log('Mobile TTS: Browser speech started');
+            setIsPlayingMobile(true);
+          };
+          
+          utterance.onend = () => {
+            console.log('Mobile TTS: Browser speech ended');
+            setIsPlayingMobile(false);
+          };
+          
+          utterance.onerror = (e) => {
+            console.error('Mobile TTS: Browser speech error:', e);
+            setIsPlayingMobile(false);
+          };
+          
+          window.speechSynthesis.speak(utterance);
+          console.log('Mobile TTS: Browser speech synthesis started');
+        } else {
+          throw new Error('Speech synthesis not supported');
+        }
+      } catch (fallbackError) {
+        console.error('Mobile TTS: Fallback also failed:', fallbackError);
+        
+        // Only show toast if no fallback worked
+        toast({
+          title: "Audio temporarily unavailable",
+          description: "Please try again in a moment. All word features remain fully accessible.",
+          duration: 3000,
+        });
+      }
     }
   };
 
@@ -1297,13 +1373,10 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
         });
       }
       
-      const errorMessage = props.isPremium 
-        ? "Explanation service temporarily unavailable"
-        : "Basic explanation available - upgrade for full features";
-        
+      // Show generic error message - explanation features are available to all users
       toast({
-        title: "Limited explanation",
-        description: errorMessage,
+        title: "Service temporarily unavailable",
+        description: "Word explanation will be available shortly. All features are included in your access.",
         variant: "destructive"
       });
     } finally {
