@@ -296,17 +296,29 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
               <MobileOptimizedButton
                 variant="ghost"
                 size="sm"
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('Back button touched (mobile)');
+                  onBack();
+                }}
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  console.log('Back button clicked');
+                  console.log('Back button clicked (desktop)');
                   onBack();
                 }}
-                className="flex items-center gap-2 min-h-[44px] min-w-[44px] touch-target z-10 relative"
+                className="flex items-center gap-2 min-h-[48px] min-w-[48px] touch-target z-20 relative cursor-pointer select-none"
                 type="button"
+                style={{ 
+                  WebkitTapHighlightColor: 'transparent',
+                  WebkitTouchCallout: 'none',
+                  WebkitUserSelect: 'none',
+                  touchAction: 'manipulation'
+                }}
               >
-                <ChevronRight className={`w-4 h-4 ${i18n.language === 'ar' ? '' : 'rotate-180'}`} />
-                {t('userInfoForm.buttons.back', 'Back')}
+                <ChevronRight className={`w-4 h-4 flex-shrink-0 ${i18n.language === 'ar' ? '' : 'rotate-180'}`} />
+                <span className="whitespace-nowrap">{t('userInfoForm.buttons.back', 'Back')}</span>
               </MobileOptimizedButton>
               
             </div>
