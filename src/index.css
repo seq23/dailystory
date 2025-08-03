@@ -384,12 +384,54 @@ All colors MUST be HSL.
   .touch-target {
     min-height: 44px;
     min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
   }
   
   /* Improved touch feedback */
   .touch-feedback {
     -webkit-tap-highlight-color: rgba(var(--primary), 0.1);
     tap-highlight-color: rgba(var(--primary), 0.1);
+    transition: background-color 0.15s ease;
+  }
+  
+  .touch-feedback:active {
+    background-color: rgba(var(--primary), 0.1);
+    transform: scale(0.98);
+  }
+  
+  /* Mobile wrapper optimizations */
+  .mobile-wrapper {
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh; /* Dynamic viewport height for mobile */
+    touch-action: pan-y pinch-zoom;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+  
+  /* Mobile safe areas */
+  .mobile-safe-area {
+    padding-top: max(1rem, env(safe-area-inset-top));
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+  
+  /* Mobile text scaling prevention */
+  .mobile-text-fixed {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+  
+  /* Mobile input optimization */
+  .mobile-input {
+    font-size: 16px; /* Prevents zoom on iOS */
+    -webkit-appearance: none;
+    appearance: none;
   }
   
   /* Prevent zoom on inputs on iOS */
@@ -440,6 +482,28 @@ All colors MUST be HSL.
     }
     .xs\:hidden {
       display: none;
+    }
+    .xs\:block {
+      display: block;
+    }
+    .xs\:flex {
+      display: flex;
+    }
+  }
+  
+  /* Mobile-first responsive text */
+  @media (max-width: 767px) {
+    .mobile-text-sm {
+      font-size: 0.875rem;
+      line-height: 1.25rem;
+    }
+    .mobile-text-base {
+      font-size: 1rem;
+      line-height: 1.5rem;
+    }
+    .mobile-text-lg {
+      font-size: 1.125rem;
+      line-height: 1.75rem;
     }
   }
   

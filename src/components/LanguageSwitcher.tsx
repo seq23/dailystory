@@ -45,33 +45,37 @@ export default function LanguageSwitcher() {
         <Button 
           variant="outline" 
           size="sm" 
-          className={`language-picker touch-target ${isChanging ? 'translation-loading' : ''}`}
+          className={`language-picker touch-target touch-feedback mobile-text-fixed ${isChanging ? 'translation-loading' : ''}`}
           disabled={isChanging}
         >
-          <Globe className="w-4 h-4 mr-2" />
-          <span className="content-hierarchy hidden xs:inline">
+          <Globe className="w-4 h-4 mr-2 flex-shrink-0" />
+          <span className="content-hierarchy hidden xs:inline font-medium">
             {currentLanguage.nativeName}
           </span>
-          <span className="content-hierarchy xs:hidden text-xs">
+          <span className="content-hierarchy xs:hidden text-xs font-medium">
             {currentLanguage.code.toUpperCase()}
           </span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48 mobile-scroll max-h-60 overflow-y-auto">
+      <DropdownMenuContent 
+        align="end" 
+        className="w-48 mobile-scroll max-h-60 overflow-y-auto touch-target"
+        sideOffset={4}
+      >
         {languages.map((language) => (
           <DropdownMenuItem
             key={language.code}
             onClick={() => handleLanguageChange(language.code)}
-            className={`flex items-center justify-between cursor-pointer content-hierarchy ${
+            className={`flex items-center justify-between cursor-pointer content-hierarchy touch-target touch-feedback p-4 ${
               language.code === i18n.language ? 'bg-muted' : ''
             }`}
           >
-            <div className="flex flex-col">
-              <span className="font-medium">{language.nativeName}</span>
-              <span className="text-xs text-muted-foreground">{language.name}</span>
+            <div className="flex flex-col flex-1">
+              <span className="font-medium text-base mobile-text-fixed">{language.nativeName}</span>
+              <span className="text-sm text-muted-foreground mobile-text-fixed">{language.name}</span>
             </div>
             {language.code === i18n.language && (
-              <Check className="w-4 h-4 text-primary" />
+              <Check className="w-5 h-5 text-primary flex-shrink-0 ml-2" />
             )}
           </DropdownMenuItem>
         ))}

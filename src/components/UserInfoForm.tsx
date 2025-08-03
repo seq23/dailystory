@@ -15,6 +15,7 @@ import { ChevronRight, User, GraduationCap, Heart, Star, Globe, Sparkles, AlertC
 import LanguageSwitcher from './LanguageSwitcher';
 import { ContentSecurity, SecurityLogger } from "@/utils/security";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { SmartInputParser } from "@/services/smartInputParser";
 import type { UserInfo, Grade, LanguageCode, LearningGoal } from "@/types";
 
@@ -28,6 +29,7 @@ interface UserInfoFormProps {
 export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
+  const { isMobileDevice } = useIsMobile();
   const [formData, setFormData] = useState<UserInfo>({
     name: "",
     age: 6,

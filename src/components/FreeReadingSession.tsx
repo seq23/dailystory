@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { BookOpen, Timer, Star, Crown, Sparkles, TrendingUp, Award, Clock, Play, Pause, Minus, X, ChevronUp, ChevronDown, Plus, Home, RotateCcw } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { UserInfo, SessionStats } from "@/types";
 import type { Achievement } from "@/services/gamificationService";
 import { InteractiveAudioReading } from "@/components/InteractiveAudioReading";

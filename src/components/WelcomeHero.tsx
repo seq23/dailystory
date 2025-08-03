@@ -48,7 +48,7 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero flex flex-col relative overflow-hidden">
+    <div className="min-h-screen mobile-wrapper bg-gradient-hero flex flex-col relative overflow-hidden">
       {/* Header with Company Branding and Language Selector */}
       <header className="relative z-20 bg-black/15 backdrop-blur-sm border-b border-white/20">
         <div className="container mx-auto px-3 sm:px-6 py-3 sm:py-6">
@@ -57,20 +57,20 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
           <div className="flex sm:hidden relative items-center min-h-[50px]">
             {/* Language Selector - Top Left */}
             <div className="absolute left-0 top-0">
-              <div className="flex items-center gap-1 bg-white/10 backdrop-blur-sm rounded-full px-2 py-1 border border-white/20">
+              <div className="flex items-center gap-1 bg-white/10 backdrop-blur-sm rounded-full px-2 py-1 border border-white/20 touch-target">
                 <Globe className="w-3 h-3 text-white" />
                 <Select value={i18n.language} onValueChange={handleLanguageChange}>
-                  <SelectTrigger className="w-[60px] border-none bg-transparent text-white text-xs h-auto p-0 focus:ring-0">
+                  <SelectTrigger className="w-[60px] border-none bg-transparent text-white text-xs h-auto p-0 focus:ring-0 mobile-input touch-target">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
-                    <SelectItem value="en">EN</SelectItem>
-                    <SelectItem value="ar">AR</SelectItem>
-                    <SelectItem value="es">ES</SelectItem>
-                    <SelectItem value="zh">ZH</SelectItem>
-                    <SelectItem value="hi">HI</SelectItem>
-                    <SelectItem value="pt">PT</SelectItem>
-                    <SelectItem value="fr">FR</SelectItem>
+                  <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 mobile-scroll">
+                    <SelectItem value="en" className="touch-target">EN</SelectItem>
+                    <SelectItem value="ar" className="touch-target">AR</SelectItem>
+                    <SelectItem value="es" className="touch-target">ES</SelectItem>
+                    <SelectItem value="zh" className="touch-target">ZH</SelectItem>
+                    <SelectItem value="hi" className="touch-target">HI</SelectItem>
+                    <SelectItem value="pt" className="touch-target">PT</SelectItem>
+                    <SelectItem value="fr" className="touch-target">FR</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -83,7 +83,7 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                 alt="Time 2 Read Logo" 
                 className="w-6 h-6 drop-shadow-lg"
               />
-              <div className="flex items-center font-comic">
+              <div className="flex items-center font-comic mobile-text-fixed">
                 <h1 className="text-sm font-bold text-white drop-shadow-lg">
                   Time
                 </h1>
