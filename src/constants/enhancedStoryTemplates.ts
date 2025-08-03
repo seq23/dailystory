@@ -1,60 +1,60 @@
-// Enhanced story templates with intelligent user input distribution
+// Enhanced story templates with Level 1 vocabulary for 3-5 year olds
 export const ENHANCED_STORY_TEMPLATES = {
   easy: [
-    // Template set 1: Adventure progression (3-6 words per page - complete thoughts)
+    // Template set 1: Simple play story (3-4 words per page - Level 1 vocabulary only)
     [
-      "{name} wakes up early",
-      "{pronoun} sees a {animal}",
-      "The {animal} looks {color}",
-      "{name} says hello nicely",
-      "They become good friends",
-      "{name} and {animal} play together",
-      "They find some {food}",
-      "{name} shares the {food}",
-      "The {animal} is happy",
-      "{name} smiles very happily"
+      "{name} sees a {animal}",
+      "The {animal} is {color}",
+      "{name} says hello",
+      "They play ball",
+      "The {animal} runs fast",
+      "{name} runs too",
+      "They have fun",
+      "{name} likes the {animal}",
+      "They are friends",
+      "{name} is happy"
     ],
     
-    // Template set 2: Discovery story (3-6 words per page - complete thoughts)
+    // Template set 2: Finding story (3-4 words per page - Level 1 vocabulary only)
     [
-      "{name} goes to {setting}",
-      "{pronoun} sees many things",
-      "A {animal} runs by",
-      "{name} follows the {animal}",
-      "They find a {object}",
+      "{name} goes out",
+      "{pronoun} finds a {object}",
       "The {object} is {color}",
       "{name} picks it up",
-      "The {animal} wants to play",
-      "They play together happily",
-      "{name} has lots of fun"
+      "A {animal} comes",
+      "It wants the {object}",
+      "{name} gives it",
+      "The {animal} is happy",
+      "They play together",
+      "{name} feels good"
     ],
     
-    // Template set 3: Helping story (3-6 words per page - complete thoughts)
+    // Template set 3: Help story (3-4 words per page - Level 1 vocabulary only)  
     [
-      "{name} meets a {primary_animal}",
-      "The {primary_animal} looks sad",
-      "It lost its {primary_food}",
+      "{name} sees a {animal}",
+      "The {animal} looks sad",
+      "It lost its {food}",
       "{name} wants to help",
-      "They look around everywhere",
-      "{name} finds the {primary_food}",
-      "It was under something",
+      "They look and look",
+      "{name} finds the {food}",
+      "It was under rocks",
       "{name} gives it back",
-      "The {primary_animal} is happy",
+      "The {animal} is happy",
       "They are good friends"
     ],
     
-    // Template set 4: Sharing story (3-6 words per page - complete thoughts)
+    // Template set 4: Share story (3-4 words per page - Level 1 vocabulary only)
     [
-      "{name} has a {primary_object}",
-      "It is {pronoun_possessive} favorite toy",
-      "A {friend_animal} wants to play",
-      "{name} shares the {primary_object}",
-      "They play together nicely",
-      "The {friend_animal} is happy",
-      "{name} feels very good",
-      "Sharing makes good friends",
+      "{name} has a {object}",
+      "It is {color}",
+      "A {animal} comes",
+      "It wants to play",
+      "{name} lets it play",
+      "They play together",
+      "The {animal} is happy", 
+      "{name} is happy too",
       "They play all day",
-      "Both friends are very happy"
+      "Good friends share"
     ]
   ],
   

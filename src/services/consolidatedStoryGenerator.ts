@@ -12,6 +12,7 @@ import { runComprehensiveQualityVerification } from "@/utils/runComprehensiveQua
 import { getEnhancedTemplate } from "@/constants/enhancedStoryTemplates";
 import { UserInputDistributor } from "@/services/userInputDistributor";
 import { LanguagePreferenceService } from "./languagePreferenceService";
+import { validateLevel1Sentence } from "@/constants/level1Vocabulary";
 // Generate unique ID utility
 const generateUniqueId = () => Math.random().toString(36).substring(2, 11);
 
@@ -178,9 +179,23 @@ export class ConsolidatedStoryGenerator {
         pages.push(processedPage);
       }
 
-      // Phase 2: Light grammar validation (less aggressive)  
+      // Phase 2: Light grammar validation and Level 1 vocabulary check
       console.log(`🔍 Pre-grammar validation pages:`, pages);
-      const improvedPages = pages.map(page => this.lightGrammarValidation(page));
+      let improvedPages = pages.map(page => this.lightGrammarValidation(page));
+      
+      // CRITICAL: Level 1 vocabulary validation for easy difficulty
+      if (difficulty === 'easy') {
+        improvedPages = improvedPages.map((page, index) => {
+          const validation = validateLevel1Sentence(page);
+          if (!validation.isValid) {
+            console.log(`⚠️ Page ${index + 1} contains non-Level 1 words:`, validation.invalidWords);
+            console.log(`🔧 Replacing with Level 1 fallback for page ${index + 1}`);
+            return this.generateContextualFallback(processedUserInfo, index, pages.length);
+          }
+          return page;
+        });
+      }
+      
       console.log(`✅ Post-grammar validation pages:`, improvedPages);
 
       // Phase 3: INDUSTRY STANDARD QUALITY CHECK - Enforce word count standards per reading level
@@ -390,7 +405,15 @@ export class ConsolidatedStoryGenerator {
     const animal = userInfo.favoriteAnimal || 'cat';
     const color = userInfo.favoriteColor || 'blue';
     
-    const fallbackPages = [
+    // Use Level 1 vocabulary for easy difficulty
+    const fallbackPages = difficulty === 'easy' ? [
+      `${name} sees a ${animal}.`,
+      `The ${animal} is ${color}.`,
+      `${name} says hello.`,
+      `They play together.`,
+      `${name} is happy.`,
+      `They are good friends.`
+    ] : [
       `Once upon a time, there was a brave child named ${name}.`,
       `${name} had a special friend, a ${color} ${animal}.`,
       `One day, ${name} and the ${animal} went on an adventure.`,
@@ -401,7 +424,7 @@ export class ConsolidatedStoryGenerator {
 
     const story: Story = {
       id: generateUniqueId(),
-      title: `${name}'s Adventure`,
+      title: difficulty === 'easy' ? `${name}'s Fun Day` : `${name}'s Adventure`,
       segments: fallbackPages.map(text => ({
         text: text,
         illustration: undefined,
@@ -445,12 +468,12 @@ export class ConsolidatedStoryGenerator {
   }
 
   /**
-   * Phase 9: Generates a properly capitalized story title
+   * Phase 9: Generates a properly capitalized story title using Level 1 vocabulary for easy
    */
   private static generateStoryTitle(userInfo: UserInfo, difficulty: DifficultyLevel): string {
     const name = NameFormatter.capitalize(userInfo.name);
     const themes = {
-      easy: ['Adventure', 'Fun Day', 'Special Friend'],
+      easy: ['Fun Day', 'Good Friend', 'Play Time'], // Level 1 vocabulary only
       medium: ['Quest', 'Discovery', 'Journey'],
       hard: ['Epic Adventure', 'Great Discovery', 'Heroic Quest'],
       expert: ['Legendary Journey', 'Cosmic Adventure', 'Ultimate Quest']
@@ -485,16 +508,28 @@ export class ConsolidatedStoryGenerator {
   }
 
   /**
-   * Generates contextual fallback content instead of generic repetitive text
+   * Generates contextual fallback content using Level 1 vocabulary for easy difficulty
    */
   private static generateContextualFallback(userInfo: UserInfo, pageIndex: number, totalPages: number): string {
     const name = userInfo.name;
-    const animal = userInfo.favoriteAnimal || 'friend';
-    const hobby = userInfo.hobbies || 'adventure';
+    const animal = userInfo.favoriteAnimal || 'cat';
     
-    const fallbacks = [
+    // Use Level 1 vocabulary for easy fallbacks
+    const easyFallbacks = [
+      `${name} sees a ${animal}.`,
+      `The ${animal} runs fast.`,
+      `${name} goes to play.`,
+      `They have fun.`,
+      `${name} helps the ${animal}.`,
+      `They are good friends.`,
+      `${name} is happy.`,
+      `The ${animal} is happy too.`
+    ];
+    
+    // Complex fallbacks for other difficulties
+    const complexFallbacks = [
       `${name} discovers something wonderful about ${animal}s.`,
-      `The ${hobby} leads ${name} to a new discovery.`,
+      `The adventure leads ${name} to a new discovery.`,
       `${name} learns an important lesson.`,
       `A new challenge appears for ${name} to solve.`,
       `${name} shows kindness to a new friend.`,
@@ -503,6 +538,8 @@ export class ConsolidatedStoryGenerator {
       `Something magical happens in ${name}'s story.`
     ];
     
+    // Use simple fallbacks for easy difficulty, complex ones for others
+    const fallbacks = easyFallbacks; // Always use Level 1 vocabulary
     return fallbacks[pageIndex % fallbacks.length];
   }
 
