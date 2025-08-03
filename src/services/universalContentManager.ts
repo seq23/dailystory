@@ -97,28 +97,51 @@ export class UniversalContentManager {
     };
   }
   
-  // Handle free user story generation
+  // Handle free user story generation with session management
   private static async handleFreeUser(
     processedData: ProcessedUserData,
     difficulty: DifficultyLevel,
     config: ContentManagerConfig
   ): Promise<StoryGenerationResult> {
     
-    console.log('🆓 Processing free user with translation support...');
+    console.log('🆓 Processing free user with enhanced session management...');
     
-    // Generate story using processed inputs
-    const story = await this.generateNewStory(processedData.processedUserInfo, difficulty, config);
-    
-    return {
-      story,
-      isNewStory: true,
-      isContinuation: false,
-      sessionInfo: {
-        sessionNumber: 1,
-        remainingSessions: 99,
-        isUnlimited: false
-      }
-    };
+    try {
+      // Use FreeUserStoryService for proper session management and caching
+      const result = await FreeUserStoryService.generateStoryWithCaching(
+        processedData.processedUserInfo,
+        difficulty,
+        { translationContext: processedData.translationReport, userId: config.userId }
+      );
+      
+      return {
+        story: result.story,
+        isNewStory: !result.isCachedResult,
+        isContinuation: false,
+        sessionInfo: {
+          sessionNumber: result.sessionInfo?.currentSession || 1,
+          remainingSessions: Math.max(0, 100 - (result.sessionInfo?.currentSession || 1)),
+          isUnlimited: false
+        }
+      };
+      
+    } catch (error) {
+      console.error('FreeUserStoryService failed, falling back to basic generation:', error);
+      
+      // Fallback to basic story generation
+      const story = await this.generateNewStory(processedData.processedUserInfo, difficulty, config);
+      
+      return {
+        story,
+        isNewStory: true,
+        isContinuation: false,
+        sessionInfo: {
+          sessionNumber: 1,
+          remainingSessions: 99,
+          isUnlimited: false
+        }
+      };
+    }
   }
   
   // Process all user input fields through the intelligent processor

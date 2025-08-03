@@ -96,16 +96,19 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
     }
   };
 
-  // Enhanced input processing with better error handling and performance
-  const handleIntelligentProcessing = async (field: string, value: string) => {
+  // Translation-only processing (preserves user's exact input as tags)
+  const handleTranslationProcessing = async (field: string, value: string) => {
     if (!value || typeof value !== 'string') return;
     
     const trimmedValue = value.trim();
     if (trimmedValue.length === 0 || trimmedValue.length > 200) return;
     
-    // Only process certain fields that benefit from correction/translation
-    const processableFields = ['favoriteAnimal', 'favoriteFood', 'hobbies', 'specialRequest'];
-    if (!processableFields.includes(field)) return;
+    // Only process fields that benefit from translation
+    const translatableFields = ['favoriteAnimal', 'favoriteFood', 'hobbies', 'specialRequest'];
+    if (!translatableFields.includes(field)) return;
+
+    // Check if user's native language is not English
+    if (formData.nativeLanguage === 'en') return;
 
     // Debounce processing to avoid excessive API calls
     if (isProcessingInputs) return;
@@ -119,42 +122,32 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
         formData
       );
 
-      // Store processing preview
-      setTranslationPreviews(prev => ({
-        ...prev,
-        [field]: {
-          originalInput: processed.originalInput,
-          processedInput: processed.processedInput,
-          isTranslated: processed.needsTranslation || processed.correctedInput !== processed.originalInput,
-          confidence: processed.confidence
-        }
-      }));
+      // Store translation preview (only for actual translations, not spelling corrections)
+      if (processed.needsTranslation) {
+        setTranslationPreviews(prev => ({
+          ...prev,
+          [field]: {
+            originalInput: processed.originalInput,
+            processedInput: processed.processedInput,
+            isTranslated: true,
+            confidence: processed.confidence
+          }
+        }));
 
-      // Auto-apply if translation needed or spelling correction applied
-      const needsApplying = processed.needsTranslation || 
-                           processed.correctedInput !== processed.originalInput ||
-                           processed.processedInput !== processed.originalInput;
-                           
-      if (needsApplying && processed.confidence > 0.6) {
-        setFormData(prev => ({ ...prev, [field]: processed.processedInput }));
-        
-        if (processed.needsTranslation) {
+        // Auto-apply translation if confidence is high
+        if (processed.confidence > 0.6) {
+          setFormData(prev => ({ ...prev, [field]: processed.processedInput }));
+          
           toast({
             title: "✨ Translation Applied",
             description: `Converted "${processed.originalInput}" to English for your story.`,
             duration: 3000,
           });
-        } else if (processed.correctedInput !== processed.originalInput) {
-          toast({
-            title: "📝 Spelling Fixed",
-            description: `Improved "${processed.originalInput}" for better story quality.`,
-            duration: 2500,
-          });
         }
       }
       
     } catch (error) {
-      console.error('Intelligent processing failed:', error);
+      console.error('Translation processing failed:', error);
     } finally {
       setIsProcessingInputs(false);
     }
@@ -550,7 +543,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                         <TagInput
                           value={formData.favoriteAnimal}
                           onChange={(value) => handleInputChange("favoriteAnimal", value)}
-                          onBlur={(value) => handleIntelligentProcessing("favoriteAnimal", value)}
+                          onBlur={(value) => handleTranslationProcessing("favoriteAnimal", value)}
                           placeholder={t("userInfoForm.fields.favoriteAnimal.placeholder", "dog, cat, lion, dolphin...")}
                           className="text-base md:text-lg min-h-[80px] md:min-h-[100px] rounded-xl md:rounded-2xl border-2 border-primary/20"
                         />
@@ -592,7 +585,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                         <TagInput
                           value={formData.favoriteFood}
                           onChange={(value) => handleInputChange("favoriteFood", value)}
-                          onBlur={(value) => handleIntelligentProcessing("favoriteFood", value)}
+                          onBlur={(value) => handleTranslationProcessing("favoriteFood", value)}
                           placeholder={t("userInfoForm.fields.favoriteFood.placeholder", "pizza, ice cream, apples, cookies...")}
                           className="text-base md:text-lg min-h-[80px] md:min-h-[100px] rounded-xl md:rounded-2xl border-2 border-primary/20"
                         />
@@ -634,7 +627,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                         <TagInput
                           value={formData.hobbies}
                           onChange={(value) => handleInputChange("hobbies", value)}
-                          onBlur={(value) => handleIntelligentProcessing("hobbies", value)}
+                          onBlur={(value) => handleTranslationProcessing("hobbies", value)}
                           placeholder={t("userInfoForm.fields.hobbies.placeholder", "soccer, drawing, dancing, video games...")}
                           className="text-base md:text-lg min-h-[80px] md:min-h-[100px] rounded-xl md:rounded-2xl border-2 border-primary/20"
                         />
@@ -685,7 +678,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
               <TagInput
                 value={formData.specialRequest}
                 onChange={(value) => handleInputChange("specialRequest", value)}
-                onBlur={(value) => handleIntelligentProcessing("specialRequest", value)}
+                onBlur={(value) => handleTranslationProcessing("specialRequest", value)}
                 placeholder={t("userInfoForm.fields.specialRequest.placeholder")}
                 className="text-base md:text-lg min-h-[80px] md:min-h-[100px]"
               />
