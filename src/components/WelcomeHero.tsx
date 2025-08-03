@@ -164,32 +164,133 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
       </header>
 
       {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center relative z-10 py-8">
+      <main className="flex-1 flex items-center justify-center relative z-10">
         <div className="container mx-auto px-4 text-center">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl sm:text-5xl font-bold text-white mb-6 drop-shadow-lg">
-              {t("welcome.title", "Create Amazing Stories")}
-              <span className="block bg-gradient-to-r from-yellow-300 to-pink-300 bg-clip-text text-transparent">
-                {t("welcome.subtitle", "Just for You!")}
-              </span>
-            </h2>
+          <div className="max-w-5xl mx-auto">
+            {/* Hero Section */}
+            <div className="mb-12">
+              <div className="flex justify-center mb-8">
+                <div className="relative w-full max-w-md">
+                  <img 
+                    src={heroImage} 
+                    alt="Children reading together" 
+                    className="w-full h-auto rounded-2xl shadow-2xl border-4 border-white/20"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-2xl"></div>
+                </div>
+              </div>
 
-            <p className="text-lg text-white/90 mb-8 max-w-2xl mx-auto">
-              {t("welcome.description", "Personalized reading adventures that grow with your child's learning journey")}
-            </p>
+              <h2 className="text-4xl sm:text-6xl font-bold text-white mb-6 drop-shadow-lg">
+                {t("welcome.title", "Create Amazing Stories")}
+                <span className="block bg-gradient-to-r from-yellow-300 to-pink-300 bg-clip-text text-transparent">
+                  {t("welcome.subtitle", "Just for You!")}
+                </span>
+              </h2>
 
-            <Button 
-              variant="hero" 
-              size="xl" 
-              onClick={onGetStarted}
-              className="relative hover:scale-105 shadow-glow transition-all duration-300 touch-target"
-            >
-              <Users className="w-6 h-6" />
-              {t("welcome.getStarted", "Create Your First Story")}
-            </Button>
+              <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto leading-relaxed">
+                {t("welcome.description", "Personalized reading adventures that grow with your child's learning journey")}
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <Button 
+                  onClick={onGetStarted}
+                  size="lg"
+                  className={`bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 text-lg px-8 py-4 rounded-full touch-target ${
+                    isShaking ? 'animate-bounce' : ''
+                  }`}
+                >
+                  <Sparkles className="w-6 h-6 mr-2" />
+                  {t("welcome.getStarted", "Create Your First Story")}
+                </Button>
+              </div>
+            </div>
+
+            {/* Features Carousel */}
+            <div className="mb-12">
+              <h3 className="text-2xl sm:text-3xl font-bold text-white mb-8 drop-shadow-lg">
+                {t("welcome.features.title", "Reading Adventures Everywhere")}
+              </h3>
+              
+              <div className="max-w-4xl mx-auto">
+                <Carousel setApi={setApi} className="w-full">
+                  <CarouselContent>
+                    <CarouselItem>
+                      <div className="relative">
+                        <img 
+                          src={carouselImage1} 
+                          alt="Reading in the car"
+                          className="w-full h-48 sm:h-64 object-cover rounded-xl shadow-lg"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-xl"></div>
+                        <div className="absolute bottom-4 left-4 text-white">
+                          <h4 className="text-xl font-bold mb-2">{t("welcome.features.anywhere", "Read Anywhere")}</h4>
+                          <p className="text-sm">{t("welcome.features.anywhereDesc", "Perfect for car rides and travel")}</p>
+                        </div>
+                      </div>
+                    </CarouselItem>
+                    <CarouselItem>
+                      <div className="relative">
+                        <img 
+                          src={carouselImage2} 
+                          alt="Reading at home"
+                          className="w-full h-48 sm:h-64 object-cover rounded-xl shadow-lg"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-xl"></div>
+                        <div className="absolute bottom-4 left-4 text-white">
+                          <h4 className="text-xl font-bold mb-2">{t("welcome.features.home", "Cozy Reading")}</h4>
+                          <p className="text-sm">{t("welcome.features.homeDesc", "Create magical moments at home")}</p>
+                        </div>
+                      </div>
+                    </CarouselItem>
+                    <CarouselItem>
+                      <div className="relative">
+                        <img 
+                          src={carouselImage3} 
+                          alt="Reading outdoors"
+                          className="w-full h-48 sm:h-64 object-cover rounded-xl shadow-lg"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-xl"></div>
+                        <div className="absolute bottom-4 left-4 text-white">
+                          <h4 className="text-xl font-bold mb-2">{t("welcome.features.outdoor", "Nature Stories")}</h4>
+                          <p className="text-sm">{t("welcome.features.outdoorDesc", "Adventures in the great outdoors")}</p>
+                        </div>
+                      </div>
+                    </CarouselItem>
+                    <CarouselItem>
+                      <div className="relative">
+                        <img 
+                          src={carouselImage4} 
+                          alt="Reading in library"
+                          className="w-full h-48 sm:h-64 object-cover rounded-xl shadow-lg"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-xl"></div>
+                        <div className="absolute bottom-4 left-4 text-white">
+                          <h4 className="text-xl font-bold mb-2">{t("welcome.features.library", "Learning Together")}</h4>
+                          <p className="text-sm">{t("welcome.features.libraryDesc", "Discover new worlds of knowledge")}</p>
+                        </div>
+                      </div>
+                    </CarouselItem>
+                  </CarouselContent>
+                  <CarouselPrevious className="hidden sm:flex" />
+                  <CarouselNext className="hidden sm:flex" />
+                </Carousel>
+              </div>
+            </div>
+
+            {/* Call to Action */}
+            <div className="text-center">
+              <Button 
+                onClick={onGetStarted}
+                size="lg"
+                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 text-lg px-8 py-4 rounded-full touch-target"
+              >
+                <BookOpen className="w-6 h-6 mr-2" />
+                {t("welcome.startReading", "Start Reading Now")}
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 };
