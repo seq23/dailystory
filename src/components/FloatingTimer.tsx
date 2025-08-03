@@ -175,7 +175,7 @@ export const FloatingTimer = ({
           bottom: 'auto',
           right: 'auto',
           transform: 'translate(-50%, -50%)',
-          zIndex: 60
+          zIndex: 45
         } : { 
           // Normal bottom-left positioning
           bottom: '1.5rem',
