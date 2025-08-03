@@ -45,16 +45,19 @@ export default function LanguageSwitcher() {
         <Button 
           variant="outline" 
           size="sm" 
-          className={`language-picker ${isChanging ? 'translation-loading' : ''}`}
+          className={`language-picker touch-target ${isChanging ? 'translation-loading' : ''}`}
           disabled={isChanging}
         >
           <Globe className="w-4 h-4 mr-2" />
-          <span className="content-hierarchy">
+          <span className="content-hierarchy hidden xs:inline">
             {currentLanguage.nativeName}
+          </span>
+          <span className="content-hierarchy xs:hidden text-xs">
+            {currentLanguage.code.toUpperCase()}
           </span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
+      <DropdownMenuContent align="end" className="w-48 mobile-scroll max-h-60 overflow-y-auto">
         {languages.map((language) => (
           <DropdownMenuItem
             key={language.code}

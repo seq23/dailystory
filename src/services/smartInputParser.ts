@@ -153,8 +153,10 @@ export class SmartInputParser {
       // First, try to translate foreign words to English
       const userLanguage = userInfo?.nativeLanguage || userInfo?.language || 'en';
       
+      console.log(`🔍 Processing input: "${tag}" | User language: ${userLanguage} | Grade: ${userInfo?.grade || 'K'}`);
+      
       if (userLanguage !== 'en') {
-        console.log(`Attempting translation for "${tag}" from ${userLanguage} to English`);
+        console.log(`🌍 Attempting translation for "${tag}" from ${userLanguage} to English`);
         
         const { data: translationData, error: translationError } = await supabase.functions.invoke('translate-to-english', {
           body: {
@@ -166,15 +168,20 @@ export class SmartInputParser {
         });
 
         if (!translationError && translationData?.success && translationData?.isTranslated) {
-          console.log(`Translation successful: "${tag}" → "${translationData.translatedText}"`);
+          console.log(`✅ Translation successful: "${tag}" → "${translationData.translatedText}" (confidence: ${translationData.confidence})`);
           return {
             corrected: translationData.translatedText,
             confidence: translationData.confidence || 0.8
           };
+        } else if (translationError) {
+          console.warn(`❌ Translation failed for "${tag}":`, translationError);
+        } else {
+          console.log(`ℹ️ No translation needed for "${tag}" (already English or no changes)`);
         }
       }
 
       // If translation didn't work or user is English native, try spelling correction
+      console.log(`🔤 Attempting spelling correction for "${tag}"`);
       const { data, error } = await supabase.functions.invoke('correct-spelling', {
         body: {
           text: tag,
@@ -184,7 +191,7 @@ export class SmartInputParser {
       });
 
       if (error) {
-        console.warn('Spelling correction failed:', error);
+        console.warn(`❌ Spelling correction failed for "${tag}":`, error);
         return this.fallbackSpellingCorrection(tag);
       }
 
@@ -194,9 +201,11 @@ export class SmartInputParser {
       
       // Only use correction if confidence is high enough and correction makes sense
       if (confidence < 0.6 || correctedText.length < tag.length * 0.5) {
+        console.log(`⚠️ Low confidence correction for "${tag}" (${confidence}), keeping original`);
         return { corrected: tag, confidence: 0.5 };
       }
 
+      console.log(`✅ Spelling correction: "${tag}" → "${correctedText}" (confidence: ${confidence})`);
       return {
         corrected: correctedText,
         confidence: confidence

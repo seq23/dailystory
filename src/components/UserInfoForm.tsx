@@ -68,7 +68,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
     };
   };
 
-  // Enhanced input handler with intelligent processing
+  // Enhanced input handler with intelligent processing and real-time translation
   const handleInputChange = async (field: keyof UserInfo, value: string | number) => {
     if (typeof value === 'string') {
       // Check if this is a deletion (shorter text) - skip security validation for deletions
@@ -93,7 +93,51 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
         }
       }
       
+      // Update form data immediately
       setFormData(prev => ({ ...prev, [field]: sanitizedValue }));
+
+      // Handle real-time translation for specific fields
+      if (['favoriteAnimal', 'favoriteFood', 'favoriteColor', 'hobbies'].includes(field as string) && sanitizedValue.trim()) {
+        // Show loading state for translation
+        setTranslationLoading(prev => ({ ...prev, [field as string]: true }));
+        
+        try {
+          // Use SmartInputParser for processing (includes translation)
+          const result = await SmartInputParser.parseTaggedInput(
+            [sanitizedValue],
+            formData,
+            true // mobile optimized
+          );
+
+          if (result.parsedTags.length > 0) {
+            const processedTag = result.parsedTags[0];
+            
+            // If translation/correction occurred, show feedback and update form
+            if (processedTag.original !== processedTag.corrected) {
+              setTranslations(prev => ({ 
+                ...prev, 
+                [field as string]: `${processedTag.original} → ${processedTag.corrected}` 
+              }));
+              
+              // Update the form data with the processed (corrected/translated) value
+              setFormData(prev => ({ ...prev, [field]: processedTag.corrected }));
+              
+              // Clear translation feedback after 3 seconds
+              setTimeout(() => {
+                setTranslations(prev => ({ ...prev, [field as string]: '' }));
+              }, 3000);
+            } else {
+              // Clear any existing translation for this field
+              setTranslations(prev => ({ ...prev, [field as string]: '' }));
+            }
+          }
+        } catch (error) {
+          console.error('Error processing input:', error);
+          // Continue with original value if processing fails
+        } finally {
+          setTranslationLoading(prev => ({ ...prev, [field as string]: false }));
+        }
+      }
     } else {
       setFormData(prev => ({ ...prev, [field]: value }));
     }
@@ -584,10 +628,14 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                         <TagInput
                           value={formData.favoriteAnimal}
                           onChange={(value) => handleInputChange("favoriteAnimal", value)}
-                          onBlur={() => handleTranslationProcessing()}
                           placeholder={t("userInfoForm.fields.favoriteAnimal.placeholder", "dog, cat, lion, dolphin...")}
-                          className="text-base md:text-lg min-h-[80px] md:min-h-[100px] rounded-xl md:rounded-2xl border-2 border-primary/20"
+                          className={`multilingual-input text-base md:text-lg min-h-[80px] md:min-h-[100px] rounded-xl md:rounded-2xl border-2 border-primary/20`}
                         />
+                        {translationLoading.favoriteAnimal && (
+                          <div className="absolute right-3 top-3">
+                            <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                          </div>
+                        )}
                       </div>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -595,23 +643,18 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-                <div className="relative">
-                  {isProcessingInputs && (
-                    <div className="absolute right-3 top-3">
-                      <ArrowRightLeft className="w-4 h-4 text-blue-500 animate-spin" />
-                    </div>
-                  )}
-                   {translationPreviews.favoriteAnimal?.isTranslated && (
-                     <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                       <div className="flex items-center gap-2">
-                         <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
-                         <span className="text-sm text-green-700 dark:text-green-300">
-                           Fixed: "{translationPreviews.favoriteAnimal.originalInput}" → "{translationPreviews.favoriteAnimal.processedInput}"
-                         </span>
-                       </div>
-                     </div>
-                   )}
-                </div>
+                {translationLoading.favoriteAnimal && (
+                  <div className="translation-feedback">
+                    <Loader2 className="w-3 h-3 animate-spin inline mr-1" />
+                    {t('userForm.translating', 'Translating...')}
+                  </div>
+                )}
+                {translations.favoriteAnimal && !translationLoading.favoriteAnimal && (
+                  <div className="translation-feedback">
+                    <Globe className="w-3 h-3 inline mr-1" />
+                    {translations.favoriteAnimal}
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -626,10 +669,14 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                         <TagInput
                           value={formData.favoriteFood}
                           onChange={(value) => handleInputChange("favoriteFood", value)}
-                          onBlur={() => handleTranslationProcessing()}
                           placeholder={t("userInfoForm.fields.favoriteFood.placeholder", "pizza, ice cream, apples, cookies...")}
-                          className="text-base md:text-lg min-h-[80px] md:min-h-[100px] rounded-xl md:rounded-2xl border-2 border-primary/20"
+                          className={`multilingual-input text-base md:text-lg min-h-[80px] md:min-h-[100px] rounded-xl md:rounded-2xl border-2 border-primary/20`}
                         />
+                        {translationLoading.favoriteFood && (
+                          <div className="absolute right-3 top-3">
+                            <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                          </div>
+                        )}
                       </div>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -637,23 +684,18 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-                <div className="relative">
-                  {isProcessingInputs && (
-                    <div className="absolute right-3 top-3">
-                      <ArrowRightLeft className="w-4 h-4 text-blue-500 animate-spin" />
-                    </div>
-                  )}
-                   {translationPreviews.favoriteFood?.isTranslated && (
-                     <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                       <div className="flex items-center gap-2">
-                         <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
-                         <span className="text-sm text-green-700 dark:text-green-300">
-                           Fixed: "{translationPreviews.favoriteFood.originalInput}" → "{translationPreviews.favoriteFood.processedInput}"
-                         </span>
-                       </div>
-                     </div>
-                   )}
-                </div>
+                {translationLoading.favoriteFood && (
+                  <div className="translation-feedback">
+                    <Loader2 className="w-3 h-3 animate-spin inline mr-1" />
+                    {t('userForm.translating', 'Translating...')}
+                  </div>
+                )}
+                {translations.favoriteFood && !translationLoading.favoriteFood && (
+                  <div className="translation-feedback">
+                    <Globe className="w-3 h-3 inline mr-1" />
+                    {translations.favoriteFood}
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -668,10 +710,14 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                         <TagInput
                           value={formData.hobbies}
                           onChange={(value) => handleInputChange("hobbies", value)}
-                          onBlur={() => handleTranslationProcessing()}
                           placeholder={t("userInfoForm.fields.hobbies.placeholder", "soccer, drawing, dancing, video games...")}
-                          className="text-base md:text-lg min-h-[80px] md:min-h-[100px] rounded-xl md:rounded-2xl border-2 border-primary/20"
+                          className={`multilingual-input text-base md:text-lg min-h-[80px] md:min-h-[100px] rounded-xl md:rounded-2xl border-2 border-primary/20`}
                         />
+                        {translationLoading.hobbies && (
+                          <div className="absolute right-3 top-3">
+                            <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                          </div>
+                        )}
                       </div>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -679,23 +725,18 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-                <div className="relative">
-                  {isProcessingInputs && (
-                    <div className="absolute right-3 top-3">
-                      <ArrowRightLeft className="w-4 h-4 text-blue-500 animate-spin" />
-                    </div>
-                  )}
-                  {translationPreviews.hobbies?.isTranslated && (
-                    <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
-                        <span className="text-sm text-green-700 dark:text-green-300">
-                          Translated: "{translationPreviews.hobbies.originalInput}" → "{translationPreviews.hobbies.processedInput}"
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                {translationLoading.hobbies && (
+                  <div className="translation-feedback">
+                    <Loader2 className="w-3 h-3 animate-spin inline mr-1" />
+                    {t('userForm.translating', 'Translating...')}
+                  </div>
+                )}
+                {translations.hobbies && !translationLoading.hobbies && (
+                  <div className="translation-feedback">
+                    <Globe className="w-3 h-3 inline mr-1" />
+                    {translations.hobbies}
+                  </div>
+                )}
               </div>
             </div>
           </div>
