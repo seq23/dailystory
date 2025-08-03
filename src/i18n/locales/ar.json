@@ -341,5 +341,70 @@
     "harder": "أصعب",
     "tutorialTitle": "💡 نصيحة: اجعل القصص أسهل أو أصعب!",
     "tutorialText": "انقر على هذه الأزرار لضبط الصعوبة"
+  },
+  "floatingTimer": {
+    "maxLimit": "الحد الأقصى",
+    "readingTime": "وقت القراءة",
+    "startTimer": "بدء المؤقت",
+    "pauseTimer": "إيقاف المؤقت مؤقتاً",
+    "reduceTime": "تقليل 5 دقائق",
+    "endSession": "إنهاء جلسة القراءة",
+    "congratulations": "تهانينا!",
+    "sessionComplete": "لقد أكملت جلسة القراءة!",
+    "sequentialTooltips": {
+      "startPause": "🎯 انقر لبدء/إيقاف مؤقت القراءة مؤقتاً!",
+      "reduceTime": "⏰ تقليل الوقت بـ 5 دقائق!",
+      "endSession": "🔚 انقر لإنهاء جلسة القراءة!"
+    }
+  },
+  "freeReadingSession": {
+    "navigation": {
+      "previous": "← السابق",
+      "next": "التالي →",
+      "pageInfo": "{current} / {total}"
+    },
+    "celebration": {
+      "congratulations": "تهانينا!",
+      "sessionComplete": "لقد أكملت جلسة القراءة المجانية!"
+    }
+  },
+  "storyDisplay": {
+    "readingLevel": "مستوى القراءة",
+    "readingProgress": "تقدم القراءة",
+    "previous": "← السابق",
+    "next": "التالي ←",
+    "finish": "🎉 إنهاء القصة",
+    "storyCompletedToast": {
+      "title": "🎉 اكتملت القصة!",
+      "descriptionWords": "رائع! لقد قرأت {{wordsRead}} كلمة وأكملت القصة!",
+      "descriptionWordsTime": "عمل رائع! قرأت {{wordsRead}} كلمة في {{minutes}} دقيقة."
+    },
+    "addPagesSuccess": {
+      "title": "تمت إضافة 5 صفحات أخرى! 📚",
+      "description": "تم توسيع قصتك!"
+    },
+    "addMorePages": "إضافة صفحات أخرى",
+    "addPagesTooltip": "+ 5 صفحات - متاح فقط في الصفحة الأخيرة",
+    "addPagesAlert": "⏰ أضف صفحات أخرى الآن!",
+    "addPagesDisabled": "الوصول إلى الصفحة الأخيرة لإضافة المزيد",
+    "header": "مغامرة القراءة",
+    "endSession": "إنهاء الجلسة",
+    "nextPage": "الصفحة التالية",
+    "prevPage": "الصفحة السابقة",
+    "currentReading": "مستوى القراءة الحالي:",
+    "readingLevelHeader": "مستوى القراءة",
+    "readingLevelDescription": "هذه القصة مكتوبة على مستوى {level}",
+    "encouragementMessages": {
+      "outstanding": "إنجاز قراءة متميز! أنت تصبح بطل قراءة!",
+      "excellent": "عمل ممتاز! أنت تحرز تقدماً رائعاً!",
+      "great": "بداية رائعة! استمر في عادة القراءة الرائعة!",
+      "everyPage": "كل صفحة مهمة! أنت في طريقك لتصبح قارئاً رائعاً!"
+    },
+    "difficultyLabels": {
+      "easy": "ما قبل الروضة - الصف الأول",
+      "medium": "الصف الثاني - الثالث",
+      "hard": "الصف الرابع - الخامس",
+      "expert": "الصف السادس فما فوق"
+    }
   }
 }

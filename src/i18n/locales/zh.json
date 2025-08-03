@@ -340,5 +340,70 @@
     "harder": "更困难",
     "tutorialTitle": "💡 提示：让故事更容易或更困难！",
     "tutorialText": "点击这些按钮调整难度"
+  },
+  "floatingTimer": {
+    "maxLimit": "最大限制",
+    "readingTime": "阅读时间",
+    "startTimer": "开始计时器",
+    "pauseTimer": "暂停计时器",
+    "reduceTime": "减少5分钟",
+    "endSession": "结束阅读会话",
+    "congratulations": "恭喜！",
+    "sessionComplete": "您已完成阅读会话！",
+    "sequentialTooltips": {
+      "startPause": "🎯 点击开始/暂停您的阅读计时器！",
+      "reduceTime": "⏰ 减少5分钟时间！",
+      "endSession": "🔚 点击结束您的阅读会话！"
+    }
+  },
+  "freeReadingSession": {
+    "navigation": {
+      "previous": "← 上一页",
+      "next": "下一页 →",
+      "pageInfo": "{current} / {total}"
+    },
+    "celebration": {
+      "congratulations": "恭喜！",
+      "sessionComplete": "您已完成免费阅读会话！"
+    }
+  },
+  "storyDisplay": {
+    "readingLevel": "阅读级别",
+    "readingProgress": "阅读进度",
+    "previous": "← 上一页",
+    "next": "下一页 →",
+    "finish": "🎉 完成故事",
+    "storyCompletedToast": {
+      "title": "🎉 故事完成！",
+      "descriptionWords": "太棒了！您阅读了{{wordsRead}}个单词并完成了故事！",
+      "descriptionWordsTime": "做得很好！您在{{minutes}}分钟内阅读了{{wordsRead}}个单词。"
+    },
+    "addPagesSuccess": {
+      "title": "添加了5页更多内容！📚",
+      "description": "您的故事已扩展！"
+    },
+    "addMorePages": "添加更多页面",
+    "addPagesTooltip": "+ 5页 - 仅在最后一页可用",
+    "addPagesAlert": "⏰ 现在添加更多页面！",
+    "addPagesDisabled": "到达最后一页即可添加更多",
+    "header": "阅读冒险",
+    "endSession": "结束会话",
+    "nextPage": "下一页",
+    "prevPage": "上一页",
+    "currentReading": "当前阅读级别：",
+    "readingLevelHeader": "阅读级别",
+    "readingLevelDescription": "这个故事写在{level}级别",
+    "encouragementMessages": {
+      "outstanding": "出色的阅读成就！您正在成为阅读冠军！",
+      "excellent": "优秀的工作！您正在取得很大进步！",
+      "great": "很好的开始！保持这个精彩的阅读习惯！",
+      "everyPage": "每一页都很重要！您正在成为一个伟大的读者！"
+    },
+    "difficultyLabels": {
+      "easy": "学前班 - 一年级",
+      "medium": "二年级 - 三年级",
+      "hard": "四年级 - 五年级",
+      "expert": "六年级+"
+    }
   }
 }

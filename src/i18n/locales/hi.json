@@ -340,5 +340,70 @@
     "harder": "कठिन",
     "tutorialTitle": "💡 टिप: कहानियों को आसान या कठिन बनाएं!",
     "tutorialText": "कठिनाई समायोजित करने के लिए इन बटनों पर क्लिक करें"
+  },
+  "floatingTimer": {
+    "maxLimit": "अधिकतम सीमा",
+    "readingTime": "पढ़ने का समय",
+    "startTimer": "टाइमर शुरू करें",
+    "pauseTimer": "टाइमर रोकें",
+    "reduceTime": "5 मिनट कम करें",
+    "endSession": "पढ़ने का सेशन समाप्त करें",
+    "congratulations": "बधाई हो!",
+    "sessionComplete": "आपने अपना पढ़ने का सेशन पूरा किया!",
+    "sequentialTooltips": {
+      "startPause": "🎯 अपना पढ़ने का टाइमर शुरू/रोकने के लिए क्लिक करें!",
+      "reduceTime": "⏰ समय को 5 मिनट कम करें!",
+      "endSession": "🔚 अपना पढ़ने का सेशन समाप्त करने के लिए क्लिक करें!"
+    }
+  },
+  "freeReadingSession": {
+    "navigation": {
+      "previous": "← पिछला",
+      "next": "अगला →",
+      "pageInfo": "{current} / {total}"
+    },
+    "celebration": {
+      "congratulations": "बधाई हो!",
+      "sessionComplete": "आपने अपना मुफ्त पढ़ने का सेशन पूरा किया!"
+    }
+  },
+  "storyDisplay": {
+    "readingLevel": "पढ़ने का स्तर",
+    "readingProgress": "पढ़ने की प्रगति",
+    "previous": "← पिछला",
+    "next": "अगला →",
+    "finish": "🎉 कहानी समाप्त करें",
+    "storyCompletedToast": {
+      "title": "🎉 कहानी पूरी हुई!",
+      "descriptionWords": "शानदार! आपने {{wordsRead}} शब्द पढ़े और कहानी पूरी की!",
+      "descriptionWordsTime": "बेहतरीन काम! आपने {{minutes}} मिनट में {{wordsRead}} शब्द पढ़े।"
+    },
+    "addPagesSuccess": {
+      "title": "5 और पेज जोड़े गए! 📚",
+      "description": "आपकी कहानी बढ़ा दी गई है!"
+    },
+    "addMorePages": "और पेज जोड़ें",
+    "addPagesTooltip": "+ 5 पेज - केवल अंतिम पेज पर उपलब्ध",
+    "addPagesAlert": "⏰ अब और पेज जोड़ें!",
+    "addPagesDisabled": "और जोड़ने के लिए अंतिम पेज तक पहुंचें",
+    "header": "पढ़ने का साहसिक कार्य",
+    "endSession": "सेशन समाप्त करें",
+    "nextPage": "अगला पेज",
+    "prevPage": "पिछला पेज",
+    "currentReading": "वर्तमान पढ़ने का स्तर:",
+    "readingLevelHeader": "पढ़ने का स्तर",
+    "readingLevelDescription": "यह कहानी {level} स्तर पर लिखी गई है",
+    "encouragementMessages": {
+      "outstanding": "उत्कृष्ट पढ़ने की उपलब्धि! आप एक पढ़ने के चैंपियन बन रहे हैं!",
+      "excellent": "उत्कृष्ट काम! आप शानदार प्रगति कर रहे हैं!",
+      "great": "शानदार शुरुआत! पढ़ने की अद्भुत आदत जारी रखें!",
+      "everyPage": "हर पेज मायने रखता है! आप एक महान पाठक बनने के रास्ते पर हैं!"
+    },
+    "difficultyLabels": {
+      "easy": "प्री-के - पहली कक्षा",
+      "medium": "दूसरी - तीसरी कक्षा",
+      "hard": "चौथी - पांचवीं कक्षा",
+      "expert": "छठी कक्षा+"
+    }
   }
 }
