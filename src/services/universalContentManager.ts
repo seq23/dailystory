@@ -6,6 +6,7 @@ import { PremiumStoryService } from "./premiumStoryService";
 import { FreeUserStoryService } from "./freeUserStoryService";
 import { AntiRepetitionSystem } from "@/utils/antiRepetitionSystem";
 import { LanguagePreferenceService } from "./languagePreferenceService";
+import { EnhancedSessionManager } from "./enhancedSessionManager";
 
 export interface ContentManagerConfig {
   isPremium: boolean;
@@ -53,6 +54,19 @@ export class UniversalContentManager {
     const languageConfig = LanguagePreferenceService.getLanguageConfig(userInfo, config.isPremium);
     console.log('🌐 Language Configuration:', languageConfig);
     
+    // Enhanced session management - check if user can generate new story
+    const sessionCheck = await EnhancedSessionManager.canGenerateNewStory(
+      userInfo,
+      difficulty,
+      config.isPremium
+    );
+    
+    if (!sessionCheck.canGenerate) {
+      throw new Error(sessionCheck.reason || 'Cannot generate new story at this time');
+    }
+    
+    console.log('✅ Session check passed:', sessionCheck.sessionInfo);
+    
     try {
       // Step 1: Process all user inputs through intelligent processing (Translation + Spelling + Grammar)
       const processedData = await this.processAllUserInputs(userInfo);
@@ -61,9 +75,9 @@ export class UniversalContentManager {
       
       // Step 2: Route to appropriate service based on premium status
       if (config.isPremium) {
-        return await this.handlePremiumUser(processedData, difficulty, config);
+        return await this.handlePremiumUser(processedData, difficulty, config, sessionCheck.sessionInfo);
       } else {
-        return await this.handleFreeUser(processedData, difficulty, config);
+        return await this.handleFreeUser(processedData, difficulty, config, sessionCheck.sessionInfo);
       }
       
     } catch (error) {
@@ -76,7 +90,7 @@ export class UniversalContentManager {
         story: fallbackStory,
         isNewStory: true,
         isContinuation: false,
-        sessionInfo: {
+        sessionInfo: sessionCheck?.sessionInfo || {
           sessionNumber: 1,
           remainingSessions: config.isPremium ? -1 : 99,
           isUnlimited: config.isPremium
@@ -85,11 +99,12 @@ export class UniversalContentManager {
     }
   }
   
-  // Handle premium user story generation
+  // Handle premium user story generation with enhanced session management
   private static async handlePremiumUser(
     processedData: ProcessedUserData,
     difficulty: DifficultyLevel,
-    config: ContentManagerConfig
+    config: ContentManagerConfig,
+    sessionInfo: any
   ): Promise<StoryGenerationResult> {
     
     console.log('👑 Processing premium user with enhanced features...');
@@ -101,7 +116,7 @@ export class UniversalContentManager {
       story,
       isNewStory: true,
       isContinuation: false,
-      sessionInfo: {
+      sessionInfo: sessionInfo || {
         sessionNumber: 1,
         remainingSessions: -1, // Unlimited
         isUnlimited: true
@@ -109,11 +124,12 @@ export class UniversalContentManager {
     };
   }
   
-  // Handle free user story generation with session management
+  // Handle free user story generation with enhanced session management  
   private static async handleFreeUser(
     processedData: ProcessedUserData,
     difficulty: DifficultyLevel,
-    config: ContentManagerConfig
+    config: ContentManagerConfig,
+    sessionInfo: any
   ): Promise<StoryGenerationResult> {
     
     console.log('🆓 Processing free user with enhanced session management...');
@@ -130,7 +146,7 @@ export class UniversalContentManager {
         story: result.story,
         isNewStory: !result.isCachedResult,
         isContinuation: false,
-        sessionInfo: {
+        sessionInfo: sessionInfo || {
           sessionNumber: result.sessionInfo?.currentSession || 1,
           remainingSessions: Math.max(0, 100 - (result.sessionInfo?.currentSession || 1)),
           isUnlimited: false

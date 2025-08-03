@@ -30,12 +30,64 @@ export interface ContinuationContext {
   };
 }
 
-// In-memory storage for premium features (will be replaced with database when tables are available)
+// Persistent storage for premium features - ensures no repetition across sessions
 const storyLibraryCache = new Map<string, StoryLibraryEntry[]>();
 const continuationCache = new Map<string, any>();
 const learningProfilesCache = new Map<string, any>();
 
+// Storage keys for persistent premium data
+const PREMIUM_STORY_LIBRARY_KEY = 'time2read_premium_story_library';
+const PREMIUM_CONTINUATION_KEY = 'time2read_premium_continuation';
+
 export class PremiumStoryService {
+  
+  /**
+   * Load premium user stories from persistent storage
+   */
+  private static loadUserStories(userId: string): StoryLibraryEntry[] {
+    try {
+      if (typeof window === 'undefined') return [];
+      
+      const stored = localStorage.getItem(`${PREMIUM_STORY_LIBRARY_KEY}_${userId}`);
+      if (!stored) return [];
+      
+      const stories = JSON.parse(stored);
+      console.log(`📚 Loaded ${stories.length} premium stories for user ${userId}`);
+      return stories.map((s: any) => ({
+        ...s,
+        createdAt: new Date(s.createdAt)
+      }));
+    } catch (error) {
+      console.error('Error loading premium stories:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Save premium user stories to persistent storage
+   */
+  private static saveUserStories(userId: string, stories: StoryLibraryEntry[]): void {
+    try {
+      if (typeof window === 'undefined') return;
+      
+      // Premium users can have unlimited stories, but limit storage to last 1000 for performance
+      const storiesToSave = stories.slice(-1000);
+      localStorage.setItem(`${PREMIUM_STORY_LIBRARY_KEY}_${userId}`, JSON.stringify(storiesToSave));
+      console.log(`💾 Saved ${storiesToSave.length} premium stories for user ${userId}`);
+    } catch (error) {
+      console.error('Error saving premium stories:', error);
+    }
+  }
+
+  /**
+   * Initialize premium story cache from persistent storage
+   */
+  private static initializePremiumCache(userId: string): void {
+    if (!storyLibraryCache.has(userId)) {
+      const persistentStories = this.loadUserStories(userId);
+      storyLibraryCache.set(userId, persistentStories);
+    }
+  }
   
   // Translation-aware story library management
   static async getOrCreateStoryLibrary(
@@ -228,6 +280,29 @@ Create a seamless continuation that:
     } catch (error) {
       console.error('Error updating personalization learning:', error);
     }
+  }
+  
+  /**
+   * Calculate story signature similarity for premium anti-repetition
+   */
+  private static calculateStorySignatureSimilarity(sig1: string, sig2: string): number {
+    if (sig1 === sig2) return 1.0;
+    if (!sig1 || !sig2) return 0.0;
+    
+    // Enhanced similarity calculation for premium stories
+    const tokens1 = sig1.toLowerCase().split('_');
+    const tokens2 = sig2.toLowerCase().split('_');
+    
+    let matches = 0;
+    const maxLength = Math.max(tokens1.length, tokens2.length);
+    
+    for (let i = 0; i < maxLength; i++) {
+      if (tokens1[i] && tokens2[i] && tokens1[i] === tokens2[i]) {
+        matches++;
+      }
+    }
+    
+    return matches / maxLength;
   }
   
   // Helper methods

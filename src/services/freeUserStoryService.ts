@@ -18,11 +18,63 @@ export interface FreeUserSession {
   sessionNumber: number;
 }
 
-// In-memory storage for free user sessions (will be replaced with database when tables are available)
+// Persistent storage for free user sessions - ensures no repetition across sessions
 const freeUserSessionsCache = new Map<string, FreeUserSession[]>();
 const sessionAnalyticsCache = new Map<string, any>();
 
+// Session storage keys for persistence
+const FREE_USER_SESSIONS_KEY = 'time2read_free_user_sessions';
+const SESSION_ANALYTICS_KEY = 'time2read_session_analytics';
+
 export class FreeUserStoryService {
+
+  /**
+   * Load user sessions from persistent storage (localStorage)
+   */
+  private static loadUserSessions(userId: string): FreeUserSession[] {
+    try {
+      if (typeof window === 'undefined') return [];
+      
+      const stored = localStorage.getItem(`${FREE_USER_SESSIONS_KEY}_${userId}`);
+      if (!stored) return [];
+      
+      const sessions = JSON.parse(stored);
+      console.log(`📁 Loaded ${sessions.length} persistent sessions for user ${userId}`);
+      return sessions.map((s: any) => ({
+        ...s,
+        createdAt: new Date(s.createdAt)
+      }));
+    } catch (error) {
+      console.error('Error loading user sessions:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Save user sessions to persistent storage
+   */
+  private static saveUserSessions(userId: string, sessions: FreeUserSession[]): void {
+    try {
+      if (typeof window === 'undefined') return;
+      
+      // Keep only the most recent 100 sessions to prevent storage bloat
+      const sessionsToSave = sessions.slice(-100);
+      localStorage.setItem(`${FREE_USER_SESSIONS_KEY}_${userId}`, JSON.stringify(sessionsToSave));
+      console.log(`💾 Saved ${sessionsToSave.length} sessions for user ${userId}`);
+    } catch (error) {
+      console.error('Error saving user sessions:', error);
+    }
+  }
+
+  /**
+   * Initialize session cache from persistent storage
+   */
+  private static initializeSessionCache(userId: string): void {
+    if (!freeUserSessionsCache.has(userId)) {
+      const persistentSessions = this.loadUserSessions(userId);
+      freeUserSessionsCache.set(userId, persistentSessions);
+    }
+  }
   
   // Translation processing same as premium (universal feature)
   static async processWithTranslation(
@@ -85,7 +137,10 @@ export class FreeUserStoryService {
     const newSignature = SessionManager.generateSessionSignature(userInfo, difficulty, translationContext);
     
     try {
-      // Get existing sessions from cache
+      // Initialize session cache from persistent storage
+      this.initializeSessionCache(userId);
+      
+      // Get existing sessions from cache (now includes persistent sessions)
       const existingSessions = freeUserSessionsCache.get(userId) || [];
       
       // Check uniqueness with translation awareness
@@ -96,12 +151,13 @@ export class FreeUserStoryService {
       const remainingSessions = Math.max(0, 100 - existingSessions.length);
       const canGenerate = isUnique && remainingSessions > 0;
       
-      console.log('📊 Free user session check:', {
+      console.log('📊 Free user session check (with persistence):', {
         sessionNumber,
         remainingSessions,
         isUnique,
         canGenerate,
-        totalExistingSessions: existingSessions.length
+        totalExistingSessions: existingSessions.length,
+        persistentSessionsLoaded: true
       });
       
       return {
@@ -254,12 +310,22 @@ export class FreeUserStoryService {
         sessionNumber: sessionInfo.sessionNumber
       };
       
-      // Add to cache
+      // Add to cache and persist to storage
       const existingSessions = freeUserSessionsCache.get(userId) || [];
       existingSessions.push(session);
       freeUserSessionsCache.set(userId, existingSessions);
       
-      console.log('💾 Session cached successfully');
+      // Save to persistent storage
+      this.saveUserSessions(userId, existingSessions);
+      
+      console.log(`💾 Cached and persisted session for ${userId}. Total sessions: ${existingSessions.length}/100`);
+      
+      // Update analytics
+      sessionAnalyticsCache.set(userId, {
+        totalSessions: existingSessions.length,
+        lastSessionDate: session.createdAt,
+        storiesGenerated: existingSessions.length
+      });
       
     } catch (error) {
       console.error('Error caching session:', error);
