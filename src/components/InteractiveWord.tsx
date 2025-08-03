@@ -1063,37 +1063,72 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
     
     try {
       const voiceId = getVoiceForUser();
+      console.log('Mobile TTS: Starting pronunciation for word:', props.word, 'Voice:', voiceId);
+      
       const response = await supabase.functions.invoke('elevenlabs-tts', {
         body: {
           text: props.word,
-          voiceId: voiceId,
-          modelId: 'eleven_turbo_v2_5'
+          voice: voiceId,
+          model: 'eleven_turbo_v2_5' // Fast model for better mobile performance
         }
       });
 
-      if (response.error) throw response.error;
+      console.log('Mobile TTS Response:', response);
+
+      if (response.error) {
+        console.error('Mobile TTS Error:', response.error);
+        throw new Error(response.error.message || 'TTS failed');
+      }
       
-      const audioBlob = await response.data;
-      const audioUrl = URL.createObjectURL(new Blob([audioBlob], { type: 'audio/mpeg' }));
+      // Handle audio blob properly for mobile
+      const audioBlob = new Blob([response.data], { type: 'audio/mpeg' });
+      const audioUrl = URL.createObjectURL(audioBlob);
       const audio = new Audio(audioUrl);
       
-      // Mobile-specific audio configuration
+      // Enhanced mobile-specific audio configuration
       audio.preload = 'metadata';
-      audio.volume = 0.8;
+      audio.volume = 0.9;
+      audio.crossOrigin = 'anonymous';
+      
+      // Better mobile audio event handling
+      audio.oncanplaythrough = () => {
+        console.log('Mobile TTS: Audio ready to play');
+      };
       
       audio.onended = () => {
+        console.log('Mobile TTS: Audio ended');
         setIsPlayingMobile(false);
         URL.revokeObjectURL(audioUrl);
       };
       
+      audio.onerror = (e) => {
+        console.error('Mobile TTS: Audio playback error:', e);
+        setIsPlayingMobile(false);
+        URL.revokeObjectURL(audioUrl);
+        toast({
+          title: "Audio playback failed",
+          description: "Please try again or check your device audio settings.",
+          variant: "destructive"
+        });
+      };
+      
+      console.log('Mobile TTS: Starting audio playback');
       await audio.play();
       
     } catch (error) {
-      console.error('Mobile TTS error:', error);
+      console.error('Mobile TTS Error Details:', error);
       setIsPlayingMobile(false);
+      
+      // Provide different error messages for different scenarios
+      const errorMessage = error.message?.includes('API key') 
+        ? "TTS service temporarily unavailable"
+        : error.message?.includes('network') || error.message?.includes('fetch')
+        ? "Network error - please check your connection"
+        : "Audio unavailable - please try again";
+        
       toast({
         title: "Audio unavailable",
-        description: "Please try again or enable audio permissions.",
+        description: errorMessage,
         variant: "destructive"
       });
     }
@@ -1101,12 +1136,14 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
 
   // Mobile-optimized word explanation with TTS
   const handleMobileExplain = async () => {
-    if (isLoadingMobile) return;
+    if (isLoadingMobile || isPlayingMobile) return;
     
     setIsLoadingMobile(true);
     
     try {
-      // Get word definition
+      console.log('Mobile Explain: Starting for word:', props.word);
+      
+      // Get word definition first
       const response = await supabase.functions.invoke('word-dictionary', {
         body: {
           word: props.word,
@@ -1115,45 +1152,81 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
         }
       });
 
-      if (response.error) throw response.error;
+      if (response.error) {
+        console.error('Dictionary API Error:', response.error);
+        throw new Error('Could not get word definition');
+      }
       
       const wordData = response.data;
       setMobileWordData(wordData);
+      console.log('Mobile Explain: Got word data:', wordData);
       
-      // Generate TTS for explanation
+      // Generate TTS for explanation (available for all users)
       const voiceId = getVoiceForUser();
-      const explanationText = `${props.word}. ${wordData.definition}. Example: ${wordData.sampleSentence}`;
+      const explanationText = wordData.definition 
+        ? `${props.word}. ${wordData.definition}.${wordData.sampleSentence ? ` Example: ${wordData.sampleSentence}` : ''}`
+        : `${props.word} is a word in English.`;
+      
+      console.log('Mobile Explain: TTS text:', explanationText.substring(0, 100) + '...');
       
       const ttsResponse = await supabase.functions.invoke('elevenlabs-tts', {
         body: {
-          text: explanationText,
-          voiceId: voiceId,
-          modelId: 'eleven_turbo_v2_5'
+          text: explanationText.slice(0, 800), // Limit for better performance
+          voice: voiceId,
+          model: 'eleven_turbo_v2_5'
         }
       });
 
-      if (ttsResponse.error) throw ttsResponse.error;
+      if (ttsResponse.error) {
+        console.error('TTS API Error:', ttsResponse.error);
+        // Don't throw here - just skip TTS but keep the definition
+        setIsLoadingMobile(false);
+        return;
+      }
       
-      const audioBlob = await ttsResponse.data;
-      const audioUrl = URL.createObjectURL(new Blob([audioBlob], { type: 'audio/mpeg' }));
+      // Handle TTS audio
+      const audioBlob = new Blob([ttsResponse.data], { type: 'audio/mpeg' });
+      const audioUrl = URL.createObjectURL(audioBlob);
       const audio = new Audio(audioUrl);
       
       audio.preload = 'metadata';
-      audio.volume = 0.8;
+      audio.volume = 0.9;
+      audio.crossOrigin = 'anonymous';
       
       audio.onended = () => {
+        console.log('Mobile Explain: TTS ended');
+        setIsPlayingMobile(false);
+        URL.revokeObjectURL(audioUrl);
+      };
+      
+      audio.onerror = (e) => {
+        console.error('Mobile Explain: TTS playback error:', e);
         setIsPlayingMobile(false);
         URL.revokeObjectURL(audioUrl);
       };
       
       setIsPlayingMobile(true);
+      console.log('Mobile Explain: Starting TTS playback');
       await audio.play();
       
     } catch (error) {
-      console.error('Mobile explanation error:', error);
+      console.error('Mobile Explain Error:', error);
+      
+      // Provide fallback explanation without TTS
+      if (!mobileWordData) {
+        setMobileWordData({
+          definition: `${props.word} is a word. Tap 'Hear It' to hear the pronunciation.`,
+          sampleSentence: ""
+        });
+      }
+      
+      const errorMessage = props.isPremium 
+        ? "Explanation service temporarily unavailable"
+        : "Basic explanation available - upgrade for full features";
+        
       toast({
-        title: "Explanation unavailable", 
-        description: "Please try again later.",
+        title: "Limited explanation",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -1215,22 +1288,31 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
               <button
                 onClick={handleMobilePronounce}
                 disabled={isPlayingMobile}
-                className="flex flex-col items-center justify-center gap-2 bg-blue-50 hover:bg-blue-100 active:bg-blue-200 border-2 border-blue-200 p-4 rounded-xl transition-colors touch-manipulation min-h-[80px] font-semibold text-blue-700"
+                className="flex flex-col items-center justify-center gap-2 bg-blue-50 hover:bg-blue-100 active:bg-blue-200 border-2 border-blue-200 p-4 rounded-xl transition-colors touch-manipulation min-h-[80px] font-semibold text-blue-700 disabled:opacity-50"
               >
                 <Volume2 className="w-6 h-6" />
-                <span className="text-sm">Hear It</span>
+                <span className="text-sm">
+                  {isPlayingMobile ? "Playing..." : t("interactiveWord.hearIt", "Hear It")}
+                </span>
               </button>
               
               <button
                 onClick={handleMobileExplain}
                 disabled={isLoadingMobile || isPlayingMobile}
-                className="flex flex-col items-center justify-center gap-2 bg-green-50 hover:bg-green-100 active:bg-green-200 border-2 border-green-200 p-4 rounded-xl transition-colors touch-manipulation min-h-[80px] font-semibold text-green-700"
+                className="flex flex-col items-center justify-center gap-2 bg-green-50 hover:bg-green-100 active:bg-green-200 border-2 border-green-200 p-4 rounded-xl transition-colors touch-manipulation min-h-[80px] font-semibold text-green-700 disabled:opacity-50"
               >
                 <HelpCircle className="w-6 h-6" />
                 <span className="text-sm">
-                  {isLoadingMobile ? "Loading..." : "Explain"}
+                  {isLoadingMobile ? t("interactiveWord.loading", "Loading...") : t("interactiveWord.explain", "Explain")}
                 </span>
               </button>
+            </div>
+            
+            {/* User type indicator for transparency */}
+            <div className="text-center mb-4">
+              <span className="text-xs text-gray-500">
+                {props.isPremium ? "✨ Premium Features" : "🎁 Free Trial - All features available"}
+              </span>
             </div>
             
             <button
