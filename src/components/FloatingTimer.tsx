@@ -158,8 +158,8 @@ export const FloatingTimer = ({
     return "#16a34a"; // green
   };
 
-  // Check if tutorial is active and on step 1 (timer step)
-  const isTutorialTimerStep = showTutorial && tutorialStep === 1;
+  // Check if tutorial is active and on step 0 (timer step - first step)
+  const isTutorialTimerStep = showTutorial && tutorialStep === 0;
 
   return (
       <TooltipProvider>
