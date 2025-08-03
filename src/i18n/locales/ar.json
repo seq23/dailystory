@@ -334,6 +334,8 @@
     "pagesRead": "الصفحات المقروءة: {pages}",
     "wordsRead": "الكلمات المقروءة: {words}",
     "goHome": "العودة للصفحة الرئيسية",
+    "goToHome": "الذهاب للصفحة الرئيسية",
+    "startNewStory": "بدء قصة جديدة",
     "readAnother": "اقرأ قصة أخرى"
   },
   "readingLevel": {

@@ -333,6 +333,8 @@
     "pagesRead": "पढ़े गए पन्ने: {pages}",
     "wordsRead": "पढ़े गए शब्द: {words}",
     "goHome": "होम पर वापस जाएं",
+    "goToHome": "होम पर जाएं",
+    "startNewStory": "नई कहानी शुरू करें",
     "readAnother": "दूसरी कहानी पढ़ें"
   },
   "readingLevel": {

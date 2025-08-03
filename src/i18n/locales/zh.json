@@ -333,6 +333,8 @@
     "pagesRead": "阅读页数：{pages}",
     "wordsRead": "阅读单词数：{words}",
     "goHome": "回到首页",
+    "goToHome": "前往首页",
+    "startNewStory": "开始新故事",
     "readAnother": "阅读另一个故事"
   },
   "readingLevel": {
