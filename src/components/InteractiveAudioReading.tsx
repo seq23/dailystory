@@ -19,7 +19,7 @@ export const InteractiveAudioReading = ({
   isEnabled 
 }: InteractiveAudioReadingProps) => {
   const { t } = useTranslation();
-  const { isMobileDevice } = useIsMobile();
+  const { isMobileOrTablet } = useIsMobile();
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentWordIndex, setCurrentWordIndex] = useState(-1);
   const [words, setWords] = useState<string[]>([]);
@@ -65,7 +65,7 @@ export const InteractiveAudioReading = ({
 
   // Mobile audio initialization
   const initializeMobileAudio = async () => {
-    if (audioInitialized || !isMobileDevice) return;
+    if (audioInitialized || !isMobileOrTablet) return;
     
     try {
       const audio = new Audio();
@@ -83,7 +83,7 @@ export const InteractiveAudioReading = ({
     if (!isEnabled || isPlaying || hasPlayedAudio) return;
     
     // Initialize mobile audio if needed
-    if (isMobileDevice && !audioInitialized) {
+    if (isMobileOrTablet && !audioInitialized) {
       await initializeMobileAudio();
     }
     
@@ -123,7 +123,7 @@ export const InteractiveAudioReading = ({
         audioRef.current = new Audio(audioUrl);
         
         // Mobile-specific audio setup
-        if (isMobileDevice) {
+        if (isMobileOrTablet) {
           audioRef.current.preload = 'metadata';
           await new Promise((resolve) => {
             if (audioRef.current) {
@@ -247,10 +247,10 @@ export const InteractiveAudioReading = ({
             onClick={startReading}
             disabled={isPlaying || hasPlayedAudio}
             variant="outline"
-            size={isMobileDevice ? "default" : "sm"}
+            size={isMobileOrTablet ? "default" : "sm"}
             className={`rounded-full hover:bg-blue-100 transition-colors ${
               hasPlayedAudio ? 'opacity-50 cursor-not-allowed' : ''
-            } ${isMobileDevice ? 'min-h-[44px] px-4' : ''}`} // Mobile touch target
+            } ${isMobileOrTablet ? 'min-h-[44px] px-4' : ''}`} // Mobile touch target
           >
             <Play className="w-4 h-4" />
           </Button>
@@ -276,24 +276,24 @@ export const InteractiveAudioReading = ({
         <Button
           onClick={() => adjustSpeed(0.5)}
           variant="ghost"
-          size={isMobileDevice ? "default" : "sm"}
-          className={`text-xs ${audioSpeed === 0.5 ? 'bg-blue-100' : ''} ${isMobileDevice ? 'min-h-[36px] px-3' : ''}`}
+          size={isMobileOrTablet ? "default" : "sm"}
+          className={`text-xs ${audioSpeed === 0.5 ? 'bg-blue-100' : ''} ${isMobileOrTablet ? 'min-h-[36px] px-3' : ''}`}
         >
           0.5x
         </Button>
         <Button
           onClick={() => adjustSpeed(0.8)}
           variant="ghost"
-          size={isMobileDevice ? "default" : "sm"}
-          className={`text-xs ${audioSpeed === 0.8 ? 'bg-blue-100' : ''} ${isMobileDevice ? 'min-h-[36px] px-3' : ''}`}
+          size={isMobileOrTablet ? "default" : "sm"}
+          className={`text-xs ${audioSpeed === 0.8 ? 'bg-blue-100' : ''} ${isMobileOrTablet ? 'min-h-[36px] px-3' : ''}`}
         >
           0.8x
         </Button>
         <Button
           onClick={() => adjustSpeed(1.0)}
           variant="ghost"
-          size={isMobileDevice ? "default" : "sm"}
-          className={`text-xs ${audioSpeed === 1.0 ? 'bg-blue-100' : ''} ${isMobileDevice ? 'min-h-[36px] px-3' : ''}`}
+          size={isMobileOrTablet ? "default" : "sm"}
+          className={`text-xs ${audioSpeed === 1.0 ? 'bg-blue-100' : ''} ${isMobileOrTablet ? 'min-h-[36px] px-3' : ''}`}
         >
           1x
         </Button>

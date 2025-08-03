@@ -6,10 +6,10 @@ interface MobileKeyboardHandlerProps {
 }
 
 export const MobileKeyboardHandler: React.FC<MobileKeyboardHandlerProps> = ({ children }) => {
-  const { isMobileDevice } = useIsMobile();
+  const { isMobileOrTablet } = useIsMobile();
 
   useEffect(() => {
-    if (!isMobileDevice) return;
+    if (!isMobileOrTablet) return;
 
     let originalViewportHeight = window.innerHeight;
     let keyboardOpen = false;
@@ -18,7 +18,7 @@ export const MobileKeyboardHandler: React.FC<MobileKeyboardHandlerProps> = ({ ch
       const currentHeight = window.innerHeight;
       const heightDifference = originalViewportHeight - currentHeight;
       
-      // Keyboard is considered open if viewport shrinks by more than 150px
+      // Keyboard is considered open if viewport shrinks by more than 150px (mobile) or 200px (tablet)
       const wasKeyboardOpen = keyboardOpen;
       keyboardOpen = heightDifference > 150;
 
@@ -61,7 +61,7 @@ export const MobileKeyboardHandler: React.FC<MobileKeyboardHandlerProps> = ({ ch
       document.removeEventListener('focusin', handleFocusIn);
       document.body.classList.remove('keyboard-open');
     };
-  }, [isMobileDevice]);
+  }, [isMobileOrTablet]);
 
   return <>{children}</>;
 };

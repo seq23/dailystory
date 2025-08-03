@@ -31,7 +31,7 @@ export const InteractiveWord = ({
 }: InteractiveWordProps) => {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
-  const { isMobileDevice, isCapacitor } = useIsMobile();
+  const { isMobileOrTablet, isCapacitor } = useIsMobile();
   
   // ENHANCED: Debug and fix translation issues for Arabic, Chinese, Hindi
   const userLanguageT = useCallback((key: string, fallback: string) => {
@@ -250,7 +250,7 @@ export const InteractiveWord = ({
         const audio = new Audio(audioUrl);
         
         // Mobile-specific audio configuration
-        if (isMobileDevice) {
+        if (isMobileOrTablet) {
           audio.preload = 'metadata';
         }
         
@@ -278,7 +278,7 @@ export const InteractiveWord = ({
       word,
       userNativeLanguage,
       difficulty,
-      isMobileDevice,
+      isMobileOrTablet,
       touchEvent: e.type === 'touchstart'
     });
     
@@ -351,7 +351,7 @@ export const InteractiveWord = ({
           const audio = new Audio(audioUrl);
           
           // Mobile-specific audio configuration
-          if (isMobileDevice) {
+          if (isMobileOrTablet) {
             audio.preload = 'metadata';
           }
           
@@ -831,10 +831,10 @@ export const InteractiveWord = ({
     <span
       ref={wordRef}
       className={`relative inline-block cursor-pointer touch-manipulation ${className} ${isPlaying ? 'opacity-70' : ''}`}
-      onMouseEnter={!isMobileDevice ? handleMouseEnter : undefined}
-      onMouseLeave={!isMobileDevice ? handleMouseLeave : undefined}
-      onTouchStart={isMobileDevice ? handleMouseEnter : undefined}
-      onTouchEnd={isMobileDevice ? () => {
+      onMouseEnter={!isMobileOrTablet ? handleMouseEnter : undefined}
+      onMouseLeave={!isMobileOrTablet ? handleMouseLeave : undefined}
+      onTouchStart={isMobileOrTablet ? handleMouseEnter : undefined}
+      onTouchEnd={isMobileOrTablet ? () => {
         // Brief delay to allow touch interaction before hiding
         setTimeout(handleMouseLeave, 3000);
       } : undefined}
@@ -929,7 +929,7 @@ export const InteractiveWord = ({
             <button
               onClick={handleExplain}
               onTouchStart={(e) => {
-                if (isMobileDevice) {
+                if (isMobileOrTablet) {
                   e.preventDefault();
                   handleExplain(e);
                 }
@@ -1099,10 +1099,7 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
     (window as any).Capacitor?.isNativePlatform?.();
 
   // Enhanced mobile detection for tablets and phones
-  const isMobileDevice = typeof window !== 'undefined' && 
-    (/Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
-     navigator.maxTouchPoints > 0 || 
-     window.innerWidth <= 768);
+  const { isMobileOrTablet: isMobileDevice } = useIsMobile(); 
 
   // Get voice based on user avatar and difficulty level
   const getVoiceForUser = () => {

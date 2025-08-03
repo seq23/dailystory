@@ -19,7 +19,7 @@ export const MobileTooltip: React.FC<MobileTooltipProps> = ({
   align = 'center',
   disabled = false
 }) => {
-  const { isMobileDevice } = useIsMobile();
+  const { isMobile, isTablet, isMobileOrTablet } = useIsMobile();
   const [isVisible, setIsVisible] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const triggerRef = useRef<HTMLDivElement>(null);
@@ -67,18 +67,20 @@ export const MobileTooltip: React.FC<MobileTooltipProps> = ({
       if (align === 'end') y = triggerRect.bottom - tooltipRect.height;
     }
 
-    // Mobile-specific boundary checks with safe areas
-    if (isMobileDevice) {
+    // Mobile and Tablet specific boundary checks with safe areas
+    if (isMobileOrTablet) {
+      const padding = isMobile ? 16 : 24; // Larger padding for tablets
+      
       // Horizontal boundary check
-      if (x < 16) x = 16; // Left padding
-      if (x + tooltipRect.width > viewportWidth - 16) {
-        x = viewportWidth - tooltipRect.width - 16; // Right padding
+      if (x < padding) x = padding;
+      if (x + tooltipRect.width > viewportWidth - padding) {
+        x = viewportWidth - tooltipRect.width - padding;
       }
 
       // Vertical boundary check with safe areas
-      if (y < safeAreaTop + 16) y = safeAreaTop + 16; // Top safe area + padding
-      if (y + tooltipRect.height > viewportHeight - safeAreaBottom - 16) {
-        y = viewportHeight - tooltipRect.height - safeAreaBottom - 16; // Bottom safe area + padding
+      if (y < safeAreaTop + padding) y = safeAreaTop + padding;
+      if (y + tooltipRect.height > viewportHeight - safeAreaBottom - padding) {
+        y = viewportHeight - tooltipRect.height - safeAreaBottom - padding;
       }
     }
 
@@ -99,7 +101,7 @@ export const MobileTooltip: React.FC<MobileTooltipProps> = ({
       const timer = setTimeout(calculatePosition, 0);
       return () => clearTimeout(timer);
     }
-  }, [isVisible, side, align, isMobileDevice]);
+  }, [isVisible, side, align, isMobileOrTablet]);
 
   useEffect(() => {
     if (isVisible) {
@@ -122,8 +124,8 @@ export const MobileTooltip: React.FC<MobileTooltipProps> = ({
         ref={triggerRef}
         onMouseEnter={showTooltip}
         onMouseLeave={hideTooltip}
-        onTouchStart={isMobileDevice ? showTooltip : undefined}
-        onTouchEnd={isMobileDevice ? hideTooltip : undefined}
+        onTouchStart={isMobileOrTablet ? showTooltip : undefined}
+        onTouchEnd={isMobileOrTablet ? hideTooltip : undefined}
         className="inline-block"
       >
         {children}
@@ -135,7 +137,8 @@ export const MobileTooltip: React.FC<MobileTooltipProps> = ({
           className={cn(
             "fixed z-[9999] px-3 py-2 text-sm text-white bg-gray-900 rounded-lg shadow-lg",
             "transition-opacity duration-200",
-            isMobileDevice && "max-w-[90vw] text-center break-words",
+            isMobileOrTablet && "max-w-[90vw] text-center break-words",
+            isTablet && "text-base px-4 py-3", // Larger text/padding for tablets
             className
           )}
           style={{

@@ -28,7 +28,7 @@ export const ElevenLabsAudio = ({
   isExtendedPage = false 
 }: ElevenLabsAudioProps) => {
   const { t } = useTranslation();
-  const { isMobileDevice, isCapacitor } = useIsMobile();
+  const { isMobileOrTablet, isCapacitor } = useIsMobile();
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [playedPages, setPlayedPages] = useState<Set<number>>(new Set()); // Track which pages have been played
@@ -44,7 +44,7 @@ export const ElevenLabsAudio = ({
 
   // Mobile audio initialization - required for iOS/Android
   const initializeMobileAudio = async () => {
-    if (audioInitialized || !isMobileDevice) return;
+    if (audioInitialized || !isMobileOrTablet) return;
     
     try {
       // Create a silent audio element to unlock audio context on mobile
@@ -85,7 +85,7 @@ export const ElevenLabsAudio = ({
     }
 
     // Initialize mobile audio if needed
-    if (isMobileDevice && !audioInitialized) {
+    if (isMobileOrTablet && !audioInitialized) {
       await initializeMobileAudio();
     }
 
@@ -120,7 +120,7 @@ export const ElevenLabsAudio = ({
       audioRef.current = new Audio(audioUrl);
       
       // Mobile-specific audio configuration
-      if (isMobileDevice) {
+      if (isMobileOrTablet) {
         audioRef.current.preload = 'metadata';
         // Ensure audio is ready for mobile playback
         await new Promise((resolve) => {
@@ -142,7 +142,7 @@ export const ElevenLabsAudio = ({
         URL.revokeObjectURL(audioUrl);
         toast({
           title: "Audio Error",
-          description: isMobileDevice ? "Audio playback failed. Please try again or check your device settings." : "Could not play audio. Please try again.",
+          description: isMobileOrTablet ? "Audio playback failed. Please try again or check your device settings." : "Could not play audio. Please try again.",
           variant: "destructive",
         });
       };
@@ -159,8 +159,8 @@ export const ElevenLabsAudio = ({
       console.error('Audio playback error:', error);
       toast({
         title: "Audio Error",
-        description: isMobileDevice ? 
-          "Could not play audio. On mobile devices, ensure sound is enabled and try again." : 
+        description: isMobileOrTablet ? 
+          "Could not play audio. On mobile devices, ensure sound is enabled and try again." :
           "Could not play audio. Please try again.",
         variant: "destructive",
       });
@@ -220,8 +220,8 @@ export const ElevenLabsAudio = ({
         onClick={isPlaying ? stopAudio : playAudio}
         disabled={isLoading || (!canUseAudio && !isPremium)}
         variant="outline"
-        size={isMobileDevice ? "default" : "sm"}
-        className={`gap-2 ${isMobileDevice ? 'min-h-[44px] px-4' : ''}`} // iOS/Android touch target size
+        size={isMobileOrTablet ? "default" : "sm"}
+        className={`gap-2 ${isMobileOrTablet ? 'min-h-[44px] px-4' : ''}`} // iOS/Android touch target size
       >
         {isLoading ? (
           <div className="w-4 h-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -242,8 +242,8 @@ export const ElevenLabsAudio = ({
                   <Button 
                     onClick={onUpgrade} 
                     variant="outline" 
-                    size={isMobileDevice ? "default" : "sm"}
-                    className={isMobileDevice ? 'min-h-[44px] px-4' : ''}
+                    size={isMobileOrTablet ? "default" : "sm"}
+                    className={isMobileOrTablet ? 'min-h-[44px] px-4' : ''}
                   >
                     {t("audioReading.upgrade", "Upgrade")}
                   </Button>

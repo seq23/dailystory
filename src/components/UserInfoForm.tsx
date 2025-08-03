@@ -29,7 +29,7 @@ interface UserInfoFormProps {
 export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
-  const { isMobileDevice } = useIsMobile();
+  const { isMobileOrTablet } = useIsMobile();
   const [formData, setFormData] = useState<UserInfo>({
     name: "",
     age: 6,

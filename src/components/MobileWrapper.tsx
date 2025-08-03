@@ -6,12 +6,12 @@ interface MobileWrapperProps {
 }
 
 export const MobileWrapper: React.FC<MobileWrapperProps> = ({ children }) => {
-  const { isMobileDevice, isCapacitor } = useIsMobile();
+  const { isMobileOrTablet, isCapacitor } = useIsMobile();
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     // Mobile initialization
-    if (isMobileDevice) {
+    if (isMobileOrTablet) {
       // Prevent double-tap zoom
       document.addEventListener('touchstart', function (event) {
         if (event.touches.length > 1) {
@@ -54,11 +54,11 @@ export const MobileWrapper: React.FC<MobileWrapperProps> = ({ children }) => {
     setIsInitialized(true);
 
     return () => {
-      if (isMobileDevice) {
+      if (isMobileOrTablet) {
         document.body.classList.remove('mobile-optimized', 'mobile-text-fixed');
       }
     };
-  }, [isMobileDevice]);
+  }, [isMobileOrTablet]);
 
   if (!isInitialized) {
     return (
@@ -72,7 +72,7 @@ export const MobileWrapper: React.FC<MobileWrapperProps> = ({ children }) => {
   }
 
   return (
-    <div className={`${isMobileDevice ? 'mobile-wrapper mobile-safe-area' : ''}`}>
+    <div className={`${isMobileOrTablet ? 'mobile-wrapper mobile-safe-area' : ''}`}>
       {children}
     </div>
   );
