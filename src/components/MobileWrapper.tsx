@@ -72,7 +72,10 @@ export const MobileWrapper: React.FC<MobileWrapperProps> = ({ children }) => {
   }
 
   return (
-    <div className={`${isMobileOrTablet ? 'mobile-wrapper mobile-safe-area' : ''}`}>
+    <div 
+      className={`homepage ${isMobileOrTablet ? 'mobile-wrapper mobile-safe-area' : ''}`}
+      style={{ direction: 'ltr', textAlign: 'left' }}
+    >
       {children}
     </div>
   );
