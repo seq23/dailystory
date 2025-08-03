@@ -280,6 +280,10 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
 
         if (!isCancelled) {
           // Generate story content using Universal Content Manager with anti-repetition
+          console.log('🚀 FreeReadingSession: About to call UniversalContentManager.generateNewStoryWithAntiRepetition');
+          console.log('📊 FreeReadingSession: Current difficulty:', currentDifficulty);
+          console.log('🎯 FreeReadingSession: User info:', userInfo);
+          
           const storyResult = await UniversalContentManager.generateNewStoryWithAntiRepetition(
             userInfo, 
             currentDifficulty as 'easy' | 'medium' | 'hard' | 'expert',

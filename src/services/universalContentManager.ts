@@ -320,6 +320,8 @@ export class UniversalContentManager {
     config: ContentManagerConfig
   ): Promise<StoryGenerationResult> {
     console.log('🔄 Generating new story for free user with anti-repetition preservation');
+    console.log('📊 DEBUGGING: Using updated word count standards (easy: 3-8, medium: 8-25, etc.)');
+    console.log('🎯 User info received:', userInfo);
     
     try {
       // Process user inputs for translation/correction
