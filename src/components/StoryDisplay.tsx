@@ -347,7 +347,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
 
     // Start story generation immediately but don't block UI
     generateStory();
-  }, [userInfo, toast]);
+  }, [toast]); // Phase 7: Remove userInfo dependency to prevent story regeneration
 
   // Timer countdown (with pause support)
   useEffect(() => {

@@ -150,29 +150,66 @@ export class SmartInputParser {
     userInfo?: any
   ): Promise<{ corrected: string; confidence: number }> {
     try {
+      // Fix API parameter mismatch - use correct parameters that match the function
       const { data, error } = await supabase.functions.invoke('correct-spelling', {
         body: {
-          input: tag,
-          fieldName: 'tag',
-          userInfo: userInfo || {},
-          context: 'story_element'
+          text: tag,
+          gradeLevel: userInfo?.grade || userInfo?.gradeLevel || 'K',
+          context: 'user_form_input'
         }
       });
 
       if (error) {
         console.warn('Spelling correction failed:', error);
+        // Implement fallback spelling correction using local dictionary
+        return this.fallbackSpellingCorrection(tag);
+      }
+
+      // Add confidence threshold to prevent over-correction
+      const confidence = data?.confidence || 0.8;
+      const correctedText = data?.correctedText || tag;
+      
+      // Only use correction if confidence is high enough and correction makes sense
+      if (confidence < 0.6 || correctedText.length < tag.length * 0.5) {
         return { corrected: tag, confidence: 0.5 };
       }
 
       return {
-        corrected: data?.correctedText || tag,
-        confidence: data?.confidence || 0.7
+        corrected: correctedText,
+        confidence: confidence
       };
 
     } catch (error) {
       console.warn('Spelling correction error:', error);
-      return { corrected: tag, confidence: 0.5 };
+      return this.fallbackSpellingCorrection(tag);
     }
+  }
+
+  /**
+   * Fallback spelling correction using local dictionary
+   */
+  private static fallbackSpellingCorrection(tag: string): { corrected: string; confidence: number } {
+    const commonCorrections: Record<string, string> = {
+      'lionns': 'lions',
+      'elefant': 'elephant',
+      'colr': 'color',
+      'favrite': 'favorite',
+      'freind': 'friend',
+      'animel': 'animal',
+      'plaing': 'playing',
+      'readng': 'reading',
+      'writting': 'writing',
+      'hapiness': 'happiness',
+      'beutiful': 'beautiful',
+      'intresting': 'interesting'
+    };
+    
+    const lowercaseTag = tag.toLowerCase();
+    if (commonCorrections[lowercaseTag]) {
+      return { corrected: commonCorrections[lowercaseTag], confidence: 0.9 };
+    }
+    
+    return { corrected: tag, confidence: 0.5 };
   }
 
   /**

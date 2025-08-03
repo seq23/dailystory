@@ -1,9 +1,14 @@
-import { UserInfo, DifficultyLevel } from "@/types";
+import { UserInfo, DifficultyLevel, Story } from "@/types";
 import { SmartInputParser, ParsedTag } from "./smartInputParser";
 import { STORY_LANGUAGES, getLanguageTemplates } from "@/constants/storyLanguages";
 import { MultilingualStoryRequest, SupportedLanguage } from "@/types/multilingual";
 import { StoryQualityChecker } from "@/utils/storyQualityChecker";
-import { validateAndFixGrammar } from "@/utils/grammarValidator";
+import { validateAndFixGrammar, GrammarValidator } from "@/utils/grammarValidator";
+import { NameFormatter } from "@/utils/nameFormatter";
+import { AntiRepetitionSystem } from "@/utils/antiRepetitionSystem";
+import { TemplateVariableProcessor } from "@/utils/templateVariableProcessor";
+// Generate unique ID utility
+const generateUniqueId = () => Math.random().toString(36).substr(2, 9);
 
 export interface ConsolidatedStoryConfig {
   pageCount: number;
@@ -14,20 +19,11 @@ export interface ConsolidatedStoryConfig {
 }
 
 export interface StoryGenerationResult {
-  pages: string[];
-  metadata: {
-    processingTime: number;
-    parsedElements: ParsedTag[];
-    templateUsed: string;
-    qualityScore: number;
-    language: SupportedLanguage;
-    elementsUsed: {
-      characters: string[];
-      objects: string[];
-      settings: string[];
-      themes: string[];
-    };
-  };
+  story: Story;
+  processingTime: number;
+  usedElements: Record<string, string[]>;
+  qualityScore: number;
+  templateIdentifier: string;
 }
 
 export class ConsolidatedStoryGenerator {
@@ -35,7 +31,7 @@ export class ConsolidatedStoryGenerator {
   private static usedCombinations = new Set<string>();
 
   /**
-   * Main story generation method - consolidates all previous generators
+   * Main story generation method - consolidates all previous generators with 10-phase improvements
    */
   static async generateStory(
     userInfo: UserInfo,
@@ -45,7 +41,7 @@ export class ConsolidatedStoryGenerator {
     const startTime = Date.now();
     
     const fullConfig: ConsolidatedStoryConfig = {
-      pageCount: 10,
+      pageCount: 6,
       language: 'en',
       useSmartParsing: true,
       antiRepetition: true,
@@ -53,341 +49,260 @@ export class ConsolidatedStoryGenerator {
       ...config
     };
 
-    console.log('🎨 Consolidated Story Generator: Starting enhanced generation...');
+    console.log('🎯 Consolidated Story Generation Starting', {
+      userInfo: userInfo.name,
+      difficulty,
+      config: fullConfig
+    });
+
+    // Phase 8: Clear anti-repetition cache for new story
+    AntiRepetitionSystem.clearCache();
 
     try {
-      // Step 1: Smart parsing of user inputs (if enabled)
-      let parsedElements: ParsedTag[] = [];
-      let storyElements = {
-        characters: [userInfo.favoriteAnimal || 'friendly animal'],
-        objects: [userInfo.favoriteFood || 'special treasure'],
-        settings: ['magical place'],
-        themes: [userInfo.hobbies || 'adventure']
+      // Phase 9: Ensure proper name capitalization throughout the process
+      const processedUserInfo = {
+        ...userInfo,
+        name: NameFormatter.capitalize(userInfo.name)
       };
 
+      // Phase 10 & 4: Parse user input with enhanced spelling correction
+      let parsedElements: ParsedTag[] = [];
       if (fullConfig.useSmartParsing) {
-        parsedElements = await this.parseUserInputs(userInfo);
-        storyElements = SmartInputParser.extractStoryElements(parsedElements);
+        const userTags = [
+          processedUserInfo.favoriteAnimal,
+          processedUserInfo.favoriteFood,
+          processedUserInfo.hobbies,
+          processedUserInfo.specialRequest
+        ].filter(Boolean);
+
+        const parsingResult = await SmartInputParser.parseTaggedInput(userTags, processedUserInfo);
+        parsedElements = parsingResult.parsedTags;
+        
+        console.log('📝 Smart Parsing Results:', SmartInputParser.generateProcessingReport(parsingResult));
       }
 
-      // Step 2: Generate story pages with intelligent element weaving
-      const pages = await this.generatePagesWithElements(
-        userInfo,
+      // Phase 1 & 5: Generate story pages using enhanced template processing
+      const templates = getLanguageTemplates(fullConfig.language, difficulty);
+      if (!templates.length) {
+        console.warn(`No templates available for ${fullConfig.language}/${difficulty}, using fallback`);
+        return this.generateFallbackStoryResult(processedUserInfo, difficulty, startTime);
+      }
+
+      const pages: string[] = [];
+      const extractedElements = SmartInputParser.extractStoryElements(parsedElements);
+      
+      // Phase 3: Enhanced element distribution and selection
+      for (let i = 0; i < fullConfig.pageCount; i++) {
+        const templateIndex = i % templates.length;
+        let template = templates[templateIndex];
+        
+        // Phase 1: Comprehensive template variable processing
+        const variableContext = {
+          userInfo: processedUserInfo,
+          difficulty,
+          pageIndex: i,
+          totalPages: fullConfig.pageCount,
+          storyElements: extractedElements
+        };
+        
+        let processedPage = TemplateVariableProcessor.processTemplate(template, variableContext);
+        
+        // Phase 8: Anti-repetition system checks
+        if (fullConfig.antiRepetition) {
+          const diversityScore = AntiRepetitionSystem.calculateDiversityScore(processedPage);
+          
+          if (diversityScore < 0.7 && AntiRepetitionSystem.isDuplicate(processedPage)) {
+            // Generate variations to avoid repetition
+            const variations = AntiRepetitionSystem.generateVariations(processedPage, extractedElements);
+            if (variations.length > 0) {
+              processedPage = variations[Math.floor(Math.random() * variations.length)];
+            } else {
+              // Fallback to alternative template
+              const altTemplateIndex = (templateIndex + 1) % templates.length;
+              processedPage = TemplateVariableProcessor.processTemplate(templates[altTemplateIndex], variableContext);
+            }
+          }
+          
+          AntiRepetitionSystem.addContent(processedPage);
+        }
+        
+        pages.push(processedPage);
+      }
+
+      // Phase 2: Light grammar validation (less aggressive)
+      const improvedPages = pages.map(page => this.lightGrammarValidation(page));
+
+      // Calculate quality score
+      const qualityScore = this.calculateQualityScore(improvedPages, parsedElements);
+      
+      // Get used elements for reporting
+      const usedElements = parsedElements.reduce((acc, tag) => {
+        acc[tag.category] = acc[tag.category] || [];
+        acc[tag.category].push(tag.corrected);
+        return acc;
+      }, {} as Record<string, string[]>);
+
+      const story: Story = {
+        id: generateUniqueId(),
+        title: this.generateStoryTitle(processedUserInfo, difficulty),
+        segments: improvedPages.map(text => ({
+          text: text,
+          illustration: undefined,
+          audioUrl: undefined
+        })),
         difficulty,
-        storyElements,
-        fullConfig
-      );
-
-      // Step 3: Apply quality checking and improvements
-      const improvedPages = pages.map(page => 
-        validateAndFixGrammar(page)
-      );
-
-      // Step 4: Calculate quality score
-      const qualityScore = this.calculateQualityScore(improvedPages, storyElements);
+        estimatedReadingTime: Math.ceil(improvedPages.join(' ').split(' ').length / 100),
+        wordCount: improvedPages.join(' ').split(' ').filter(word => word.trim()).length
+      };
 
       const processingTime = Date.now() - startTime;
-
-      console.log(`✨ Story generated in ${processingTime}ms with quality score: ${qualityScore}`);
+      console.log('✅ Consolidated Story Generation Completed', {
+        processingTime: `${processingTime}ms`,
+        pageCount: improvedPages.length,
+        wordCount: story.wordCount,
+        qualityScore,
+        usedElements
+      });
 
       return {
-        pages: improvedPages,
-        metadata: {
-          processingTime,
-          parsedElements,
-          templateUsed: this.getTemplateIdentifier(difficulty, fullConfig.language),
-          qualityScore,
-          language: fullConfig.language,
-          elementsUsed: storyElements
-        }
+        story,
+        processingTime,
+        usedElements,
+        qualityScore,
+        templateIdentifier: this.getTemplateIdentifier(difficulty, fullConfig.language)
       };
 
     } catch (error) {
-      console.error('Consolidated story generation failed:', error);
-      return this.generateFallbackStory(userInfo, difficulty, fullConfig);
+      console.error('❌ Consolidated Story Generation Error', error);
+      return this.generateFallbackStoryResult(userInfo, difficulty, startTime);
     }
   }
 
   /**
-   * Parse user inputs using SmartInputParser
+   * Phase 2: Light grammar validation - only fixes critical errors
    */
-  private static async parseUserInputs(userInfo: UserInfo): Promise<ParsedTag[]> {
-    const inputTags: string[] = [];
-
-    // Collect all user inputs as tags
-    if (userInfo.favoriteAnimal) {
-      inputTags.push(...userInfo.favoriteAnimal.split(',').map(s => s.trim()));
+  private static lightGrammarValidation(text: string): string {
+    // Only fix the most critical grammar issues
+    let fixed = text;
+    
+    // Fix obvious pronoun-verb agreement errors
+    fixed = fixed.replace(/\b(he|she|it)\s+(eat|run|play|like|go|come|see|find|help|love|want|need|have|do|say|get|know|think|feel|look|try|make|take|give|work|call|move|turn|start|stop|walk|talk|ask|tell|show|hear|listen|watch|learn|teach|read|write|draw|sing|dance|swim|jump|fly|sleep|wake|open|close|carry|hold|pick|drop|push|pull|throw|catch)\b/gi, 
+      (match, pronoun, verb) => {
+        const correctVerb = GrammarValidator.conjugateVerb(verb, pronoun);
+        return `${pronoun} ${correctVerb}`;
+      });
+    
+    // Remove obvious template variables that weren't processed
+    fixed = fixed.replace(/\{[^}]*\}/g, '');
+    
+    // Fix double spaces
+    fixed = fixed.replace(/\s+/g, ' ');
+    
+    // Ensure proper sentence ending
+    fixed = fixed.trim();
+    if (fixed && !fixed.match(/[.!?]$/)) {
+      fixed += '.';
     }
-    if (userInfo.favoriteFood) {
-      inputTags.push(...userInfo.favoriteFood.split(',').map(s => s.trim()));
-    }
-    if (userInfo.hobbies) {
-      inputTags.push(...userInfo.hobbies.split(',').map(s => s.trim()));
-    }
-    if (userInfo.specialRequest) {
-      inputTags.push(...userInfo.specialRequest.split(',').map(s => s.trim()));
-    }
-
-    const result = await SmartInputParser.parseTaggedInput(inputTags, userInfo, true);
-    return result.parsedTags;
+    
+    return fixed;
   }
 
   /**
-   * Generate story pages with intelligent element distribution
+   * Generates a fallback story result when main generation fails
    */
-  private static async generatePagesWithElements(
-    userInfo: UserInfo,
-    difficulty: DifficultyLevel,
-    elements: { characters: string[]; objects: string[]; settings: string[]; themes: string[] },
-    config: ConsolidatedStoryConfig
-  ): Promise<string[]> {
-    
-    const templates = getLanguageTemplates(config.language, difficulty);
-    if (templates.length === 0) {
-      throw new Error(`No templates available for ${config.language}/${difficulty}`);
-    }
-
-    const pages: string[] = [];
-    const usedElementIndices = new Set<string>();
-
-    for (let i = 0; i < config.pageCount; i++) {
-      // Select template with anti-repetition
-      const template = this.selectTemplate(templates, i, config.antiRepetition);
-      
-      // Select elements for this page (rotate to avoid repetition)
-      const pageElements = this.selectElementsForPage(elements, i, usedElementIndices);
-      
-      // Process template with selected elements
-      const page = this.processTemplate(template, userInfo, pageElements, i, config.pageCount);
-      
-      pages.push(page);
-    }
-
-    return pages;
-  }
-
-  /**
-   * Select template with anti-repetition logic
-   */
-  private static selectTemplate(templates: string[], pageIndex: number, antiRepetition: boolean): string {
-    if (!antiRepetition) {
-      return templates[pageIndex % templates.length];
-    }
-
-    // Try to find an unused template
-    const availableTemplates = templates.filter(template => 
-      !this.usedTemplates.has(template)
-    );
-
-    let selectedTemplate: string;
-
-    if (availableTemplates.length > 0) {
-      selectedTemplate = availableTemplates[pageIndex % availableTemplates.length];
-    } else {
-      // All templates used, reset and continue
-      this.usedTemplates.clear();
-      selectedTemplate = templates[pageIndex % templates.length];
-    }
-
-    this.usedTemplates.add(selectedTemplate);
-    return selectedTemplate;
-  }
-
-  /**
-   * Select and rotate elements for page
-   */
-  private static selectElementsForPage(
-    elements: { characters: string[]; objects: string[]; settings: string[]; themes: string[] },
-    pageIndex: number,
-    usedElementIndices: Set<string>
-  ): { character: string; object: string; setting: string; theme: string } {
-    
-    const getRotatedElement = (array: string[], category: string): string => {
-      if (array.length === 0) return '';
-      
-      // Try to find unused element
-      for (let i = 0; i < array.length; i++) {
-        const index = (pageIndex + i) % array.length;
-        const key = `${category}-${index}`;
-        
-        if (!usedElementIndices.has(key)) {
-          usedElementIndices.add(key);
-          return array[index];
-        }
-      }
-      
-      // All used, just rotate
-      return array[pageIndex % array.length];
-    };
-
-    return {
-      character: getRotatedElement(elements.characters, 'character'),
-      object: getRotatedElement(elements.objects, 'object'),
-      setting: getRotatedElement(elements.settings, 'setting'),
-      theme: getRotatedElement(elements.themes, 'theme')
-    };
-  }
-
-  /**
-   * Process template with user data and selected elements
-   */
-  private static processTemplate(
-    template: string,
-    userInfo: UserInfo,
-    elements: { character: string; object: string; setting: string; theme: string },
-    pageIndex: number,
-    totalPages: number
-  ): string {
-    
-    const pronouns = this.getPronounsFromUserInfo(userInfo);
-    const storyPosition = this.getStoryPosition(pageIndex, totalPages);
-    
-    // Enhanced template variable replacement
-    let processed = template
-      .replace(/{name}/g, userInfo.name || 'Alex')
-      .replace(/{character}/g, elements.character)
-      .replace(/{characters}/g, elements.character + 's')
-      .replace(/{object}/g, elements.object)
-      .replace(/{objects}/g, elements.object + 's')
-      .replace(/{setting}/g, elements.setting)
-      .replace(/{settings}/g, elements.setting + 's')
-      .replace(/{theme}/g, elements.theme)
-      .replace(/{themes}/g, elements.theme + 's')
-      .replace(/{pronoun}/g, pronouns.subject)
-      .replace(/{pronouns}/g, pronouns.object)
-      .replace(/{possessive}/g, pronouns.possessive)
-      .replace(/{age}/g, userInfo.age?.toString() || '8')
-      .replace(/{position}/g, storyPosition);
-
-    // Advanced replacements for complex templates
-    processed = this.processAdvancedTemplateVariables(processed, userInfo, elements, pageIndex);
-
-    return processed;
-  }
-
-  /**
-   * Process advanced template variables for higher difficulty levels
-   */
-  private static processAdvancedTemplateVariables(
-    template: string,
-    userInfo: UserInfo,
-    elements: any,
-    pageIndex: number
-  ): string {
-    
-    const timeOfDay = ['morning', 'afternoon', 'evening'][pageIndex % 3];
-    const emotions = ['excited', 'curious', 'determined', 'joyful'][pageIndex % 4];
-    const actions = ['discovered', 'explored', 'created', 'solved'][pageIndex % 4];
-    
-    return template
-      .replace(/{time_of_day}/g, timeOfDay)
-      .replace(/{emotion}/g, emotions)
-      .replace(/{action}/g, actions)
-      .replace(/{mysterious_element}/g, `mysterious ${elements.object}`)
-      .replace(/{complex_concept}/g, 'the power of friendship')
-      .replace(/{moral_lesson}/g, 'kindness and cooperation')
-      .replace(/{belief_system}/g, 'the way things work')
-      .replace(/{problem}/g, `missing ${elements.object}`)
-      .replace(/{solution}/g, `find the ${elements.object}`)
-      .replace(/{skill}/g, userInfo.hobbies || 'special talent')
-      .replace(/{place}/g, elements.setting);
-  }
-
-  /**
-   * Get pronouns based on user info
-   */
-  private static getPronounsFromUserInfo(userInfo: UserInfo): { subject: string; object: string; possessive: string } {
-    const gender = userInfo.avatar?.type || 'neutral';
-    
-    switch (gender) {
-      case 'girl':
-        return { subject: 'she', object: 'her', possessive: 'her' };
-      case 'boy':
-        return { subject: 'he', object: 'him', possessive: 'his' };
-      default:
-        return { subject: 'they', object: 'them', possessive: 'their' };
-    }
-  }
-
-  /**
-   * Determine story position for template selection
-   */
-  private static getStoryPosition(pageIndex: number, totalPages: number): 'beginning' | 'middle' | 'end' {
-    if (pageIndex < totalPages * 0.3) return 'beginning';
-    if (pageIndex > totalPages * 0.7) return 'end';
-    return 'middle';
-  }
-
-  /**
-   * Calculate story quality score
-   */
-  private static calculateQualityScore(pages: string[], elements: any): number {
-    let score = 0;
-    
-    // Check element usage diversity
-    const allText = pages.join(' ');
-    score += elements.characters.length * 10;
-    score += elements.objects.length * 10;
-    score += elements.settings.length * 10;
-    
-    // Check for repetition
-    const words = allText.split(' ');
-    const uniqueWords = new Set(words);
-    score += (uniqueWords.size / words.length) * 50;
-    
-    // Check story length appropriateness
-    if (pages.length >= 8) score += 20;
-    
-    return Math.min(100, Math.max(0, score));
-  }
-
-  /**
-   * Generate fallback story
-   */
-  private static generateFallbackStory(
-    userInfo: UserInfo,
-    difficulty: DifficultyLevel,
-    config: ConsolidatedStoryConfig
+  private static generateFallbackStoryResult(
+    userInfo: UserInfo, 
+    difficulty: DifficultyLevel, 
+    startTime: number
   ): StoryGenerationResult {
+    const name = NameFormatter.capitalize(userInfo.name || 'Alex');
+    const animal = userInfo.favoriteAnimal || 'cat';
+    const color = userInfo.favoriteColor || 'blue';
     
-    const pages = [
-      `Once upon a time, there was a child named ${userInfo.name}.`,
-      `${userInfo.name} loved ${userInfo.favoriteAnimal || 'animals'} and ${userInfo.favoriteFood || 'good food'}.`,
-      `One day, ${userInfo.name} went on a wonderful adventure.`,
-      `${userInfo.name} learned something important and returned home happy.`,
-      'The end.'
+    const fallbackPages = [
+      `Once upon a time, there was a brave child named ${name}.`,
+      `${name} had a special friend, a ${color} ${animal}.`,
+      `One day, ${name} and the ${animal} went on an adventure.`,
+      `They discovered something amazing together.`,
+      `${name} learned that friendship makes everything better.`,
+      `And they all lived happily ever after!`
     ];
 
+    const story: Story = {
+      id: generateUniqueId(),
+      title: `${name}'s Adventure`,
+      segments: fallbackPages.map(text => ({
+        text: text,
+        illustration: undefined,
+        audioUrl: undefined
+      })),
+      difficulty,
+      estimatedReadingTime: 3,
+      wordCount: fallbackPages.join(' ').split(' ').filter(word => word.trim()).length
+    };
+
     return {
-      pages,
-      metadata: {
-        processingTime: 0,
-        parsedElements: [],
-        templateUsed: 'fallback',
-        qualityScore: 50,
-        language: config.language,
-        elementsUsed: {
-          characters: [userInfo.favoriteAnimal || 'friend'],
-          objects: [userInfo.favoriteFood || 'treasure'],
-          settings: ['home'],
-          themes: ['adventure']
-        }
-      }
+      story,
+      processingTime: Date.now() - startTime,
+      usedElements: { characters: [animal], themes: ['adventure'] },
+      qualityScore: 0.6,
+      templateIdentifier: `fallback_${difficulty}`
     };
   }
 
   /**
-   * Get template identifier for metadata
+   * Calculates a quality score for the generated story
    */
-  private static getTemplateIdentifier(difficulty: DifficultyLevel, language: SupportedLanguage): string {
-    return `${language}-${difficulty}-consolidated`;
+  private static calculateQualityScore(pages: string[], parsedTags: ParsedTag[]): number {
+    let score = 0.5; // Base score
+    
+    // Check for variety in content
+    const uniqueWords = new Set(pages.join(' ').toLowerCase().split(/\s+/));
+    if (uniqueWords.size > 30) score += 0.2;
+    
+    // Check for proper use of parsed elements
+    if (parsedTags.length > 0) score += 0.1;
+    
+    // Check for proper sentence structure
+    const wellFormedSentences = pages.filter(page => 
+      page.trim().length > 10 && page.match(/[.!?]$/)
+    );
+    if (wellFormedSentences.length === pages.length) score += 0.2;
+    
+    return Math.min(1.0, score);
   }
 
   /**
-   * Clear caches (for testing or memory management)
+   * Phase 9: Generates a properly capitalized story title
+   */
+  private static generateStoryTitle(userInfo: UserInfo, difficulty: DifficultyLevel): string {
+    const name = NameFormatter.capitalize(userInfo.name);
+    const themes = {
+      easy: ['Adventure', 'Fun Day', 'Special Friend'],
+      medium: ['Quest', 'Discovery', 'Journey'],
+      hard: ['Epic Adventure', 'Great Discovery', 'Heroic Quest'],
+      expert: ['Legendary Journey', 'Cosmic Adventure', 'Ultimate Quest']
+    };
+    
+    const themeOptions = themes[difficulty] || themes.easy;
+    const theme = themeOptions[Math.floor(Math.random() * themeOptions.length)];
+    
+    return `${name}'s ${theme}`;
+  }
+
+  /**
+   * Generates a template identifier for tracking
+   */
+  private static getTemplateIdentifier(difficulty: DifficultyLevel, language: SupportedLanguage): string {
+    return `${language}_${difficulty}_v2`;
+  }
+
+  /**
+   * Clears all caches - useful for testing and new sessions
    */
   static clearCaches(): void {
     this.usedTemplates.clear();
     this.usedCombinations.clear();
+    AntiRepetitionSystem.clearCache();
   }
 }
