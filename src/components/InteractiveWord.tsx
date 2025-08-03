@@ -107,6 +107,16 @@ export const InteractiveWord = ({
   const isNativeEnglishSpeaker = userInfo?.nativeLanguage === "en";
   const isESLLearner = userInfo?.nativeLanguage !== "en";
   const userNativeLanguage = userInfo?.nativeLanguage || "en";
+  
+  // 🧪 TEMPORARY DEBUG: Log language detection for troubleshooting
+  console.log('🌍 Language Detection Debug:', {
+    userInfoNativeLanguage: userInfo?.nativeLanguage,
+    isNativeEnglishSpeaker,
+    isESLLearner,
+    userNativeLanguage,
+    shouldUseBrowserTTS: !isNativeEnglishSpeaker,
+    shouldUseElevenLabs: isNativeEnglishSpeaker
+  });
 
   // Use enhanced vocabulary classifier for better difficulty assessment
   const wordDifficulty = VocabularyLevelClassifier.getWordDifficulty(word, difficulty);
@@ -355,7 +365,10 @@ export const InteractiveWord = ({
       userNativeLanguage,
       difficulty,
       isMobileOrTablet,
-      touchEvent: e.type === 'touchstart'
+      touchEvent: e.type === 'touchstart',
+      isNativeEnglishSpeaker,
+      isESLLearner,
+      userInfo
     });
     
     setIsLoadingWordData(true);
