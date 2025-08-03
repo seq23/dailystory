@@ -291,15 +291,21 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
 
         <Card className="relative z-10 w-full max-w-5xl bg-gradient-card shadow-2xl border-0 rounded-2xl sm:rounded-3xl md:rounded-3xl p-4 sm:p-6 md:p-10 touch-feedback backdrop-blur-sm bg-white/95 dark:bg-gray-900/95">
           {/* Header */}
-          <div className="text-center mb-8 md:mb-10" id="welcome-title">
+            <div className="text-center mb-8 md:mb-10" id="welcome-title">
             <div className="flex items-center justify-between mb-4 md:mb-6">
               <MobileOptimizedButton
                 variant="ghost"
                 size="sm"
-                onClick={onBack}
-                className="flex items-center gap-2"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('Back button clicked');
+                  onBack();
+                }}
+                className="flex items-center gap-2 min-h-[44px] min-w-[44px] touch-target z-10 relative"
+                type="button"
               >
-                <ChevronRight className="w-4 h-4 rotate-180" />
+                <ChevronRight className={`w-4 h-4 ${i18n.language === 'ar' ? '' : 'rotate-180'}`} />
                 {t('userInfoForm.buttons.back', 'Back')}
               </MobileOptimizedButton>
               
