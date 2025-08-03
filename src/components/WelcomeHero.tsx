@@ -34,11 +34,9 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
   }, [api]);
 
   useEffect(() => {
-    // Stop shaking after 5 seconds
     const timer = setTimeout(() => {
       setIsShaking(false);
     }, 5000);
-
     return () => clearTimeout(timer);
   }, []);
 
@@ -53,31 +51,31 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
       <header className="relative z-20 bg-black/15 backdrop-blur-sm border-b border-white/20">
         <div className="container mx-auto px-3 sm:px-6 py-3 sm:py-6">
           
-          {/* Mobile Layout */}
-          <div className="flex sm:hidden relative items-center min-h-[50px]">
-            {/* Language Selector - Top Left */}
-            <div className="absolute left-0 top-0">
+          {/* Mobile Layout - Fixed for overlapping */}
+          <div className="flex sm:hidden relative items-center justify-between w-full min-h-[50px] px-1">
+            {/* Language Selector - Left Side */}
+            <div className="flex-shrink-0">
               <div className="flex items-center gap-1 bg-white/10 backdrop-blur-sm rounded-full px-2 py-1 border border-white/20 touch-target">
-                <Globe className="w-3 h-3 text-white" />
+                <Globe className="w-3 h-3 text-white flex-shrink-0" />
                 <Select value={i18n.language} onValueChange={handleLanguageChange}>
-                  <SelectTrigger className="w-[60px] border-none bg-transparent text-white text-xs h-auto p-0 focus:ring-0 mobile-input touch-target">
+                  <SelectTrigger className="w-[50px] border-none bg-transparent text-white text-xs h-auto p-0 focus:ring-0 mobile-input touch-target">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 mobile-scroll">
-                    <SelectItem value="en" className="touch-target">EN</SelectItem>
-                    <SelectItem value="ar" className="touch-target">AR</SelectItem>
-                    <SelectItem value="es" className="touch-target">ES</SelectItem>
-                    <SelectItem value="zh" className="touch-target">ZH</SelectItem>
-                    <SelectItem value="hi" className="touch-target">HI</SelectItem>
-                    <SelectItem value="pt" className="touch-target">PT</SelectItem>
-                    <SelectItem value="fr" className="touch-target">FR</SelectItem>
+                  <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 mobile-scroll w-[200px]">
+                    <SelectItem value="en" className="touch-target p-3">English</SelectItem>
+                    <SelectItem value="ar" className="touch-target p-3">العربية</SelectItem>
+                    <SelectItem value="es" className="touch-target p-3">Español</SelectItem>
+                    <SelectItem value="zh" className="touch-target p-3">中文</SelectItem>
+                    <SelectItem value="hi" className="touch-target p-3">हिन्दी</SelectItem>
+                    <SelectItem value="pt" className="touch-target p-3">Português</SelectItem>
+                    <SelectItem value="fr" className="touch-target p-3">Français</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
             
             {/* Company Logo - Centered */}
-            <div className="flex items-center gap-2 mx-auto">
+            <div className="flex items-center gap-2 mx-auto flex-shrink-0">
               <img 
                 src={logoImage} 
                 alt="Time 2 Read Logo" 
@@ -96,281 +94,102 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
               </div>
             </div>
 
-            {/* Sign In Button - Top Right */}
-            <div className="absolute right-0 top-0">
+            {/* Sign In Button - Right Side */}
+            <div className="flex-shrink-0">
               {onSignIn && (
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={onSignIn}
-                    className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-purple-300/50 text-white hover:bg-purple-400/30 text-xs font-semibold shadow-lg px-2 py-1 h-8"
-                  >
-                    <Crown className="w-3 h-3 mr-1 flex-shrink-0" />
-                    {t("welcomeHero.signIn")}
-                  </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onSignIn}
+                  className="text-white text-xs px-2 py-1 h-auto touch-target touch-feedback whitespace-nowrap"
+                >
+                  {t("welcome.signIn", "Sign In")}
+                </Button>
               )}
             </div>
           </div>
 
-          {/* Desktop Layout - Unchanged */}
+          {/* Desktop Layout */}
           <div className="hidden sm:flex items-center justify-between">
-            {/* Language Selector */}
-            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-2 sm:px-3 py-1 sm:py-2 border border-white/20">
-              <Globe className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-3 py-2 border border-white/20">
+              <Globe className="w-4 h-4 text-white" />
               <Select value={i18n.language} onValueChange={handleLanguageChange}>
-                <SelectTrigger className="w-[100px] sm:w-[140px] border-none bg-transparent text-white text-xs sm:text-sm h-auto p-0 focus:ring-0">
-                  <SelectValue placeholder={t("welcomeHero.languageSelector.placeholder")} />
+                <SelectTrigger className="w-[140px] border-none bg-transparent text-white text-sm h-auto p-0 focus:ring-0">
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
                   <SelectItem value="en">English</SelectItem>
                   <SelectItem value="ar">العربية</SelectItem>
                   <SelectItem value="es">Español</SelectItem>
                   <SelectItem value="zh">中文</SelectItem>
-                  <SelectItem value="hi">हिंदी</SelectItem>
+                  <SelectItem value="hi">हिन्दी</SelectItem>
                   <SelectItem value="pt">Português</SelectItem>
                   <SelectItem value="fr">Français</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Company Logo */}
-            <div className="flex items-center gap-2 sm:gap-4 hover-scale transition-all duration-300">
+            <div className="flex items-center gap-4">
               <img 
                 src={logoImage} 
                 alt="Time 2 Read Logo" 
-                className="w-8 h-8 sm:w-12 sm:h-12 md:w-16 md:h-16 drop-shadow-lg"
+                className="w-12 h-12 drop-shadow-lg"
               />
-              <div className="flex flex-col">
-                <div className="flex items-center font-comic">
-                  <h1 className="text-lg sm:text-2xl md:text-4xl font-bold text-white drop-shadow-lg">
-                    Time
-                  </h1>
-                  <span className="text-2xl sm:text-4xl md:text-6xl font-schoolbell text-yellow-300 drop-shadow-lg mx-0.5 transform rotate-3">
-                    2
-                  </span>
-                  <h1 className="text-lg sm:text-2xl md:text-4xl font-bold text-white drop-shadow-lg">
-                    Read!
-                  </h1>
-                </div>
-                <p className="text-xs sm:text-sm text-white/80 hidden sm:block">{t("welcomeHero.companyTagline")}</p>
+              <div className="flex items-center font-comic">
+                <h1 className="text-2xl font-bold text-white drop-shadow-lg">
+                  Time
+                </h1>
+                <span className="text-4xl font-schoolbell text-yellow-300 drop-shadow-lg mx-1 transform rotate-3">
+                  2
+                </span>
+                <h1 className="text-2xl font-bold text-white drop-shadow-lg">
+                  Read!
+                </h1>
               </div>
             </div>
 
-            {/* Sign In Button - Premium Users */}
-            <div className="flex items-center flex-shrink-0">
-              {onSignIn && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={onSignIn}
-                        className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-purple-300/50 text-white hover:bg-purple-400/30 text-xs sm:text-sm font-semibold shadow-lg px-2 sm:px-3 py-1 sm:py-2"
-                      >
-                        <Crown className="w-3 h-3 mr-1 flex-shrink-0" />
-                        <span className="hidden sm:inline">{t("welcomeHero.signIn")} - Premium</span>
-                        <span className="sm:hidden">Sign In</span>
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent className="bg-white text-gray-900 border border-gray-200 shadow-lg">
-                      <div className="flex items-center gap-2 p-2">
-                        <Crown className="w-4 h-4 text-purple-600" />
-                        <span className="font-medium">Premium Users Only</span>
-                      </div>
-                      <p className="text-xs text-gray-600 mt-1">
-                        Access unlimited stories, AI images, advanced features & more!
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
-            </div>
+            {onSignIn && (
+              <Button
+                variant="outline"
+                size="default"
+                onClick={onSignIn}
+                className="text-white border-white bg-white/20 hover:bg-white hover:text-gray-800"
+              >
+                <Crown className="w-4 h-4 mr-2" />
+                {t("welcome.signIn", "Sign In")}
+              </Button>
+            )}
           </div>
         </div>
       </header>
 
-      {/* Floating background elements */}
-      <div className="absolute inset-0 opacity-20">
-        <div className="absolute top-20 left-20 w-32 h-32 bg-white/30 rounded-full animate-float blur-xl"></div>
-        <div className="absolute top-40 right-32 w-24 h-24 bg-yellow-300/40 rounded-full animate-bounce-gentle blur-lg"></div>
-        <div className="absolute bottom-32 left-1/4 w-20 h-20 bg-pink-300/40 rounded-full animate-float blur-lg"></div>
-        <div className="absolute bottom-20 right-20 w-28 h-28 bg-blue-300/30 rounded-full animate-bounce-gentle blur-xl"></div>
-      </div>
-
-      {/* Main Content Area */}
-      <div className="flex-1 flex items-center justify-center relative z-10 py-4 md:py-8">
-        <div className="container mx-auto px-4 md:px-6 text-center">
+      {/* Main Content */}
+      <div className="flex-1 flex items-center justify-center relative z-10 py-8">
+        <div className="container mx-auto px-4 text-center">
           <div className="max-w-4xl mx-auto">
-            {/* Hero Carousel */}
-            <div className="mb-6 md:mb-8 relative">
-              <Carousel setApi={setApi} className="w-full max-w-3xl mx-auto">
-                <CarouselContent>
-                  <CarouselItem>
-                    <div className="relative">
-                      <img 
-                        src={carouselImage1} 
-                        alt="Black girl reading on tablet in car" 
-                        className="w-full h-48 sm:h-64 md:h-80 lg:h-96 object-cover rounded-2xl md:rounded-3xl shadow-glow border-2 md:border-4 border-white/20"
-                      />
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent rounded-b-2xl md:rounded-b-3xl p-3 md:p-4">
-                        <p className="text-white font-inter font-medium text-xs sm:text-sm md:text-base">
-                          {t("welcomeHero.carousel.item1")}
-                        </p>
-                      </div>
-                    </div>
-                  </CarouselItem>
-                  
-                  <CarouselItem>
-                    <div className="relative">
-                      <img 
-                        src={carouselImage2} 
-                        alt="Asian boy reading on laptop at home" 
-                        className="w-full h-48 sm:h-64 md:h-80 lg:h-96 object-cover rounded-2xl md:rounded-3xl shadow-glow border-2 md:border-4 border-white/20"
-                      />
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent rounded-b-2xl md:rounded-b-3xl p-3 md:p-4">
-                        <p className="text-white font-inter font-medium text-xs sm:text-sm md:text-base">
-                          {t("welcomeHero.carousel.item2")}
-                        </p>
-                      </div>
-                    </div>
-                  </CarouselItem>
-                  
-                  <CarouselItem>
-                    <div className="relative">
-                      <img 
-                        src={carouselImage3} 
-                        alt="Hispanic girl reading on phone in park" 
-                        className="w-full h-48 sm:h-64 md:h-80 lg:h-96 object-cover rounded-2xl md:rounded-3xl shadow-glow border-2 md:border-4 border-white/20"
-                      />
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent rounded-b-2xl md:rounded-b-3xl p-3 md:p-4">
-                        <p className="text-white font-inter font-medium text-xs sm:text-sm md:text-base">
-                          {t("welcomeHero.carousel.item3")}
-                        </p>
-                      </div>
-                    </div>
-                  </CarouselItem>
-                  
-                  <CarouselItem>
-                    <div className="relative">
-                      <img 
-                        src={carouselImage4} 
-                        alt="White boy reading on tablet in library" 
-                        className="w-full h-48 sm:h-64 md:h-80 lg:h-96 object-cover rounded-2xl md:rounded-3xl shadow-glow border-2 md:border-4 border-white/20"
-                      />
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent rounded-b-2xl md:rounded-b-3xl p-3 md:p-4">
-                        <p className="text-white font-inter font-medium text-xs sm:text-sm md:text-base">
-                          {t("welcomeHero.carousel.item4")}
-                        </p>
-                      </div>
-                    </div>
-                  </CarouselItem>
-                </CarouselContent>
-                
-                <CarouselPrevious className="left-2 md:left-4 bg-white/20 border-white/30 text-white hover:bg-white/30 h-8 w-8 md:h-10 md:w-10" />
-                <CarouselNext className="right-2 md:right-4 bg-white/20 border-white/30 text-white hover:bg-white/30 h-8 w-8 md:h-10 md:w-10" />
-              </Carousel>
-              
-              <div className="absolute -top-2 -right-2 md:-top-4 md:-right-4 animate-bounce-gentle">
-                <Sparkles className="w-8 h-8 md:w-12 md:h-12 text-yellow-300 drop-shadow-lg" />
-              </div>
-              <div className="absolute -bottom-2 -left-2 md:-bottom-4 md:-left-4 animate-float">
-                <Heart className="w-6 h-6 md:w-10 md:h-10 text-pink-300 drop-shadow-lg" />
-              </div>
-            </div>
-
-            {/* Main Title */}
-            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-white mb-4 md:mb-6 drop-shadow-lg leading-tight">
-              {t("welcomeHero.title")}
+            <h2 className="text-3xl sm:text-5xl font-bold text-white mb-6 drop-shadow-lg">
+              {t("welcome.title", "Create Amazing Stories")}
               <span className="block bg-gradient-to-r from-yellow-300 to-pink-300 bg-clip-text text-transparent">
-                {t("welcomeHero.titleHighlight")}
+                {t("welcome.subtitle", "Just for You!")}
               </span>
             </h2>
 
-            {/* Subtitle */}
-            <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-white/90 mb-6 md:mb-8 max-w-2xl mx-auto leading-relaxed drop-shadow-md px-2">
-              {t("welcomeHero.subtitle")}
+            <p className="text-lg text-white/90 mb-8 max-w-2xl mx-auto">
+              {t("welcome.description", "Personalized reading adventures that grow with your child's learning journey")}
             </p>
 
-            {/* Features */}
-            <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 md:gap-6 mb-8 md:mb-10 px-2">
-              <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 md:px-6 py-2 md:py-3 border border-white/30 text-sm md:text-base">
-                <BookOpen className="w-4 h-4 md:w-6 md:h-6 text-yellow-300 flex-shrink-0" />
-                <div className="text-white font-medium">
-                  {t("welcomeHero.features.reading.title")}
-                  <div className="text-xs text-center">{t("welcomeHero.features.reading.subtitle")}</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 md:px-6 py-2 md:py-3 border border-white/30 text-sm md:text-base">
-                <Sparkles className="w-4 h-4 md:w-6 md:h-6 text-pink-300 flex-shrink-0" />
-                <span className="text-white font-medium">{t("welcomeHero.features.personalized")}</span>
-              </div>
-              <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 md:px-6 py-2 md:py-3 border border-white/30 text-sm md:text-base">
-                <Heart className="w-4 h-4 md:w-6 md:h-6 text-blue-300 flex-shrink-0" />
-                <span className="text-white font-medium">{t("welcomeHero.features.gradeLevel")}</span>
-              </div>
-            </div>
-
-            {/* CTA Button - Free Trial/Guest Users */}
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="hero" 
-                    size="xl" 
-                    onClick={onGetStarted}
-                    className={`relative hover:scale-105 shadow-glow transition-all duration-300 hover:shadow-2xl hover:shadow-primary/50 group overflow-hidden ${
-                      isShaking ? 'animate-shake-hard' : 'animate-bounce-gentle'
-                    } hover:animate-none`}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 via-pink-400/20 to-blue-400/20 animate-pulse group-hover:animate-none"></div>
-                    <Users className="w-6 h-6 relative z-10 animate-pulse group-hover:animate-none" />
-                    <span className="relative z-10 text-center break-words leading-tight">
-                      <span className="block sm:inline">{t("welcomeHero.ctaButtonNew") || "Create Your First Story"}</span>
-                      <span className="block sm:inline sm:ml-1 text-xs sm:text-sm opacity-90">- {t("welcomeHero.freeTrial") || "Free Trial"}</span>
-                    </span>
-                    <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent className="bg-white text-gray-900 border border-gray-200 shadow-lg">
-                  <div className="flex items-center gap-2 p-2">
-                    <Users className="w-4 h-4 text-green-600" />
-                    <span className="font-medium">Free Trial & Guest Users</span>
-                  </div>
-                  <p className="text-xs text-gray-600 mt-1">
-                    Try our platform with basic stories and limited time. No signup required!
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-
-            <p className="text-white/70 mt-4 text-sm">
-              {t("welcomeHero.safetyNote")}
-            </p>
+            <Button 
+              variant="hero" 
+              size="xl" 
+              onClick={onGetStarted}
+              className="relative hover:scale-105 shadow-glow transition-all duration-300 touch-target"
+            >
+              <Users className="w-6 h-6" />
+              {t("welcome.getStarted", "Create Your First Story")}
+            </Button>
           </div>
         </div>
       </div>
-
-      {/* Footer with Company Information */}
-      <footer className="relative z-20 bg-black/20 backdrop-blur-sm border-t border-white/10 py-6 mt-auto">
-        <div className="container mx-auto px-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-white/70 text-sm">
-            <div className="flex flex-col items-center md:items-start">
-              <div className="font-semibold text-white/90 mb-1">{t("welcomeHero.footer.companyName")}</div>
-              <div className="text-xs">{t("welcomeHero.footer.description")}</div>
-            </div>
-            
-            <div className="flex flex-col md:flex-row items-center gap-4 text-xs">
-              <div>© {new Date().getFullYear()} {t("welcomeHero.footer.companyName")}. {t("welcomeHero.footer.copyright")}</div>
-              <div className="flex gap-4">
-                <button className="hover:text-white/90 transition-colors">{t("welcomeHero.footer.privacyPolicy")}</button>
-                <button className="hover:text-white/90 transition-colors">{t("welcomeHero.footer.termsOfService")}</button>
-                <a href="mailto:hello@time-2-read.com" className="hover:text-white/90 transition-colors">{t("welcomeHero.footer.contactUs")}</a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };
