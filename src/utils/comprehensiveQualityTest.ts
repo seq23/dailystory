@@ -56,11 +56,12 @@ export class ComprehensiveQualityTester {
   }
 
   private static getExpectedWordCount(difficulty: DifficultyLevel): { min: number; max: number } {
+    // Updated TTS-optimized word count standards - ensuring complete thoughts
     const ranges = {
-      easy: { min: 3, max: 8 },
-      medium: { min: 8, max: 25 },
-      hard: { min: 20, max: 45 },
-      expert: { min: 35, max: 80 }
+      easy: { min: 3, max: 6 },     // Ages 3-5: Complete simple sentences for TTS
+      medium: { min: 5, max: 9 },   // Ages 5-7: Slightly longer sentences
+      hard: { min: 7, max: 13 },    // Ages 7-9: More complex sentences
+      expert: { min: 9, max: 16 }   // Ages 9-11+: Advanced vocabulary and complexity
     };
     return ranges[difficulty];
   }

@@ -37,10 +37,10 @@ export class StoryQualityVerificationTest {
 
     const difficulties: DifficultyLevel[] = ['easy', 'medium', 'hard', 'expert'];
     const expectedWordCounts = {
-      easy: { min: 3, max: 8 },
-      medium: { min: 8, max: 25 },
-      hard: { min: 20, max: 45 },
-      expert: { min: 35, max: 80 }
+      easy: { min: 3, max: 6 },     // Ages 3-5: Complete simple sentences for TTS
+      medium: { min: 5, max: 9 },   // Ages 5-7: Slightly longer sentences  
+      hard: { min: 7, max: 13 },    // Ages 7-9: More complex sentences
+      expert: { min: 9, max: 16 }   // Ages 9-11+: Advanced vocabulary and complexity
     };
 
     const results = [];
@@ -191,16 +191,16 @@ export class StoryQualityVerificationTest {
     
     // Test data simulating pages that need adjustment
     const testCases = [
-      { text: 'Short.', difficulty: 'easy' as DifficultyLevel }, // Too short for easy (needs 3-8)
+      { text: 'Short.', difficulty: 'easy' as DifficultyLevel }, // Too short for easy (needs 3-6)
       { text: 'This is a very long sentence that definitely exceeds the maximum word count for easy level stories and should be reduced automatically.', difficulty: 'easy' as DifficultyLevel }, // Too long for easy
-      { text: 'Medium test.', difficulty: 'medium' as DifficultyLevel }, // Too short for medium (needs 8-25)
+      { text: 'Medium test.', difficulty: 'medium' as DifficultyLevel }, // Too short for medium (needs 5-9)
     ];
 
     const wordCountRanges = {
-      easy: { min: 3, max: 8 },
-      medium: { min: 8, max: 25 },
-      hard: { min: 20, max: 45 },
-      expert: { min: 35, max: 80 }
+      easy: { min: 3, max: 6 },     // Ages 3-5: Complete simple sentences for TTS
+      medium: { min: 5, max: 9 },   // Ages 5-7: Slightly longer sentences
+      hard: { min: 7, max: 13 },    // Ages 7-9: More complex sentences  
+      expert: { min: 9, max: 16 }   // Ages 9-11+: Advanced vocabulary and complexity
     };
 
     const adjustmentTests = [];
