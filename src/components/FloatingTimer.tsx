@@ -161,7 +161,7 @@ export const FloatingTimer = ({
   return (
       <TooltipProvider>
       {/* Floating Timer Container - Mobile optimized */}
-      <div className="fixed bottom-6 left-6 sm:left-8 z-30 flex flex-col items-center gap-6 md:gap-6 gap-3" id="floating-timer" style={{ marginLeft: 'max(1rem, env(safe-area-inset-left))', marginBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+      <div className="fixed bottom-4 left-4 right-4 sm:left-6 sm:right-auto z-30 flex flex-col items-start sm:items-center max-w-fit" id="floating-timer" style={{ marginLeft: 'max(0.5rem, env(safe-area-inset-left))', marginBottom: 'max(0.5rem, env(safe-area-inset-bottom))', marginRight: 'max(0.5rem, env(safe-area-inset-right))' }}>
         
         {/* Main Timer Circle - Professional & Larger */}
         <div className="relative">
@@ -201,7 +201,7 @@ export const FloatingTimer = ({
           )}
           
           {/* Main Timer Circle - Mobile responsive */}
-          <div className="relative w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 bg-gradient-to-br from-white to-gray-50 backdrop-blur-sm rounded-full shadow-2xl border-2 sm:border-4 border-white/80 flex items-center justify-center ring-2 sm:ring-4 ring-primary/20">
+          <div className="relative w-20 h-20 sm:w-28 sm:h-28 md:w-36 md:h-36 bg-gradient-to-br from-white to-gray-50 backdrop-blur-sm rounded-full shadow-2xl border-2 sm:border-4 border-white/80 flex items-center justify-center ring-2 sm:ring-4 ring-primary/20">
             {/* Outer glow ring */}
             <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/10 to-transparent animate-pulse"></div>
             
