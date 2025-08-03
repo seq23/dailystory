@@ -317,7 +317,7 @@ export class UniversalContentManager {
         processedData.processedUserInfo,
         difficulty,
         {
-          pageCount: 5,
+          pageCount: 10, // FIXED: Request 10 pages instead of 5
           language: 'en' as SupportedLanguage,
           useSmartParsing: true,
           antiRepetition: true,
@@ -326,8 +326,11 @@ export class UniversalContentManager {
         }
       );
 
+      // Enhanced validation: ensure we have exactly 10 pages with quality content
+      const story = this.validateAndEnsureCompleteness(storyResult.story, userInfo, difficulty);
+
       return {
-        story: storyResult.story,
+        story,
         isNewStory: true,
         isContinuation: false,
         sessionInfo: {
@@ -350,6 +353,111 @@ export class UniversalContentManager {
         }
       };
     }
+  }
+
+  /**
+   * Validates story completeness and fills gaps with contextual content
+   */
+  private static validateAndEnsureCompleteness(
+    story: Story,
+    userInfo: UserInfo,
+    difficulty: DifficultyLevel
+  ): Story {
+    const targetPages = 10;
+    let segments = [...story.segments];
+    
+    console.log(`Story validation: received ${segments.length} pages, target: ${targetPages}`);
+    
+    // If we have fewer than target pages, generate contextual continuation content
+    if (segments.length < targetPages) {
+      const missingPages = targetPages - segments.length;
+      console.log(`Generating ${missingPages} contextual continuation pages...`);
+      
+      // Create contextual continuation templates based on difficulty
+      const continuationTemplates = this.getContinuationTemplates(difficulty);
+      
+      for (let i = 0; i < missingPages; i++) {
+        const templateIndex = i % continuationTemplates.length;
+        let continuationText = continuationTemplates[templateIndex];
+        
+        // Replace placeholders with user-specific content
+        continuationText = continuationText
+          .replace(/{name}/g, userInfo.name)
+          .replace(/{animal}/g, userInfo.favoriteAnimal || 'animal')
+          .replace(/{hobby}/g, userInfo.hobbies || 'adventure')
+          .replace(/{food}/g, userInfo.favoriteFood || 'treats')
+          .replace(/{color}/g, userInfo.favoriteColor || 'bright');
+        
+        segments.push({
+          text: continuationText,
+          illustration: undefined,
+          audioUrl: undefined
+        });
+      }
+    }
+    
+    // If we have too many pages, trim to target
+    if (segments.length > targetPages) {
+      segments = segments.slice(0, targetPages);
+    }
+    
+    return {
+      ...story,
+      segments,
+      wordCount: segments.reduce((count, segment) => 
+        count + segment.text.split(' ').filter(word => word.trim()).length, 0
+      )
+    };
+  }
+
+  /**
+   * Get contextual continuation templates based on difficulty
+   */
+  private static getContinuationTemplates(difficulty: DifficultyLevel): string[] {
+    const templates = {
+      easy: [
+        "{name} finds a new {color} {animal} friend.",
+        "The {animal} shows {name} a secret place.",
+        "{name} learns something new about {hobby}.",
+        "They discover a magical {food} tree.",
+        "The adventure becomes even more exciting!",
+        "{name} helps the {animal} solve a puzzle.",
+        "Together they explore the wonderful world.",
+        "The {color} sky makes everything beautiful."
+      ],
+      medium: [
+        "{name} discovers an ancient mystery about the {animal}.",
+        "The {hobby} skills help {name} overcome a new challenge.",
+        "A wise elder teaches {name} about {color} magic.",
+        "The journey leads to a hidden {food} sanctuary.",
+        "{name} must choose between two important paths.",
+        "The {animal} reveals a special talent.",
+        "New friends join {name} on the adventure.",
+        "The story reaches an exciting turning point."
+      ],
+      hard: [
+        "{name} uncovers the deeper meaning behind the {animal}'s behavior.",
+        "The mastery of {hobby} becomes crucial for the quest.",
+        "An unexpected alliance changes everything for {name}.",
+        "The {color} crystal holds the key to the mystery.",
+        "{name} faces a moral dilemma about {food} distribution.",
+        "The {animal} community depends on {name}'s decision.",
+        "Ancient wisdom guides {name} through uncertainty.",
+        "The adventure reveals {name}'s true potential."
+      ],
+      expert: [
+        "{name} contemplates the philosophical implications of the {animal}'s existence.",
+        "The pursuit of {hobby} leads to profound self-discovery.",
+        "Existential questions about {color} perception arise.",
+        "The {food} becomes a metaphor for life's abundance.",
+        "{name} grapples with complex ethical considerations.",
+        "The {animal}'s wisdom transcends ordinary understanding.",
+        "Universal truths emerge through {name}'s journey.",
+        "The narrative reaches transcendent dimensions."
+      ]
+    };
+    
+    return templates[difficulty] || templates.easy;
   }
 
   // Continue existing story for premium users

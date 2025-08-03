@@ -302,10 +302,27 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
             const targetPages = 10;
             let pages = generatedStory.pages;
             
+            // The story should now come with exactly 10 pages from the improved generator
+            // But add safety check with better fallback content
             if (pages.length < targetPages) {
+              console.warn(`Story generator returned ${pages.length} pages, expected ${targetPages}. Adding contextual content...`);
               const additionalPages = targetPages - pages.length;
+              
+              // Better contextual fallback content
+              const contextualContinuations = [
+                `${userInfo.name} explores a new part of the magical world.`,
+                `A friendly ${userInfo.favoriteAnimal || 'creature'} joins the adventure.`,
+                `${userInfo.name} discovers a hidden talent for ${userInfo.hobbies || 'problem-solving'}.`,
+                `The journey leads to an unexpected surprise.`,
+                `${userInfo.name} helps someone in need along the way.`,
+                `A beautiful ${userInfo.favoriteColor || 'golden'} light guides the path forward.`,
+                `${userInfo.name} learns something important about friendship.`,
+                `The adventure reaches its most exciting moment yet!`
+              ];
+              
               for (let i = 0; i < additionalPages; i++) {
-                pages.push(`${userInfo.name}'s adventure continues with more exciting discoveries...`);
+                const fallbackIndex = i % contextualContinuations.length;
+                pages.push(contextualContinuations[fallbackIndex]);
               }
             } else if (pages.length > targetPages) {
               pages = pages.slice(0, targetPages);

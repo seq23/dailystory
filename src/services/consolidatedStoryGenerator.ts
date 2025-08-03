@@ -102,9 +102,17 @@ export class ConsolidatedStoryGenerator {
       const extractedElements = SmartInputParser.extractStoryElements(parsedElements);
       
       // Phase 3: Enhanced element distribution and selection with intelligent templates
-      const totalPages = Math.min(fullConfig.pageCount, enhancedTemplate.length);
+      const totalPages = fullConfig.pageCount; // Generate exactly the requested number of pages
+      console.log(`Generating ${totalPages} pages using ${enhancedTemplate.length} template pages`);
+      
       for (let i = 0; i < totalPages; i++) {
-        let template = enhancedTemplate[i];
+        // Use template cycling if we need more pages than templates available
+        let template = enhancedTemplate[i % enhancedTemplate.length];
+        
+        // Add variation for repeated templates
+        if (i >= enhancedTemplate.length) {
+          template = this.addTemplateVariation(template, i, processedUserInfo);
+        }
         
         // Phase 1: Comprehensive template variable processing
         const variableContext = {
@@ -117,18 +125,23 @@ export class ConsolidatedStoryGenerator {
         
         let processedPage = TemplateVariableProcessor.processTemplate(template, variableContext);
         
-        // Phase 8: Anti-repetition system checks
+        // Phase 8: Anti-repetition system checks with improved thresholds
         if (fullConfig.antiRepetition) {
           const diversityScore = AntiRepetitionSystem.calculateDiversityScore(processedPage);
           
-          if (diversityScore < 0.7 && AntiRepetitionSystem.isDuplicateSync(processedPage)) {
+          // More lenient threshold to reduce over-filtering
+          if (diversityScore < 0.5 && AntiRepetitionSystem.isDuplicateSync(processedPage, 0.8)) {
+            console.log(`Page ${i + 1}: Low diversity (${diversityScore.toFixed(2)}), generating variations...`);
+            
             // Generate variations to avoid repetition
             const variations = AntiRepetitionSystem.generateVariations(processedPage, extractedElements);
             if (variations.length > 0) {
               processedPage = variations[Math.floor(Math.random() * variations.length)];
+              console.log(`Page ${i + 1}: Using variation: "${processedPage.substring(0, 50)}..."`);
             } else {
-              // Fallback to simple variation
-              processedPage = `${processedUserInfo.name} continues the story.`;
+              // Better contextual fallback
+              processedPage = this.generateContextualFallback(processedUserInfo, i, totalPages);
+              console.log(`Page ${i + 1}: Using contextual fallback`);
             }
           }
           
@@ -321,6 +334,43 @@ export class ConsolidatedStoryGenerator {
    */
   private static getTemplateIdentifier(difficulty: DifficultyLevel, language: SupportedLanguage): string {
     return `${language}_${difficulty}_v2`;
+  }
+
+  /**
+   * Adds variation to repeated templates
+   */
+  private static addTemplateVariation(template: string, pageIndex: number, userInfo: UserInfo): string {
+    const variations = [
+      "Then, " + template.toLowerCase(),
+      "Next, " + template.toLowerCase(),
+      "After that, " + template.toLowerCase(),
+      "Suddenly, " + template.toLowerCase(),
+      "Meanwhile, " + template.toLowerCase()
+    ];
+    
+    return variations[pageIndex % variations.length];
+  }
+
+  /**
+   * Generates contextual fallback content instead of generic repetitive text
+   */
+  private static generateContextualFallback(userInfo: UserInfo, pageIndex: number, totalPages: number): string {
+    const name = userInfo.name;
+    const animal = userInfo.favoriteAnimal || 'friend';
+    const hobby = userInfo.hobbies || 'adventure';
+    
+    const fallbacks = [
+      `${name} discovers something wonderful about ${animal}s.`,
+      `The ${hobby} leads ${name} to a new discovery.`,
+      `${name} learns an important lesson.`,
+      `A new challenge appears for ${name} to solve.`,
+      `${name} shows kindness to a new friend.`,
+      `The adventure takes an unexpected turn for ${name}.`,
+      `${name} uses creativity to solve a problem.`,
+      `Something magical happens in ${name}'s story.`
+    ];
+    
+    return fallbacks[pageIndex % fallbacks.length];
   }
 
   /**
