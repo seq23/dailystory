@@ -59,64 +59,64 @@ export const ENHANCED_STORY_TEMPLATES = {
   ],
   
   medium: [
-    // Template set 1: Magical adventure (4-8 words per micro-page for TTS)
+    // Template set 1: Magical adventure (5-9 words per page - complete thoughts)
     [
-      "{name} discovers magical {setting} today",
-      "Wise {animal} lives there happily",
-      "{animal} can talk to {name}",
-      "{pronoun} tells {name} secret words",
-      "Hidden {object} waits for discovery",
-      "It has very special powers",
-      "{name} must find it quickly",
-      "They search through {color} forest",
-      "Together they overcome all challenges",
-      "Magical adventure teaches {name} about friendship"
+      "{name} discovers a magical {setting} today",
+      "A wise {animal} lives there happily",
+      "The {animal} can talk to {name}",
+      "It tells {name} some secret words",
+      "A hidden {object} waits for discovery",
+      "It has very special magical powers",
+      "{name} must find it very quickly",
+      "They search through the {color} forest",
+      "Together they overcome all the challenges",
+      "This magical adventure teaches {name} about friendship"
     ],
     
-    // Template set 2: Problem solving
+    // Template set 2: Problem solving (5-9 words per page - complete thoughts)
     [
-      "The {setting} has a big problem.",
-      "All the {primary_animal}s are missing their {primary_food}.",
-      "{name} decides to help.",
-      "{pronoun} meets a helpful {secondary_animal}.",
-      "They work together as a team.",
-      "The {secondary_animal} shows {name} a secret path.",
-      "They find where the {primary_food} is hidden.",
-      "A mischievous {friend_animal} took it for fun.",
-      "{name} explains why sharing is important.",
-      "Everyone learns and becomes friends."
+      "The {setting} has a very big problem",
+      "All the {primary_animal}s are missing their {primary_food}",
+      "{name} decides to help them right away",
+      "{pronoun} meets a very helpful {secondary_animal}",
+      "They work together as a great team",
+      "The {secondary_animal} shows {name} a secret path",
+      "They find where the {primary_food} is hidden",
+      "A mischievous {friend_animal} took it for fun",
+      "{name} explains why sharing is very important",
+      "Everyone learns the lesson and becomes friends"
     ]
   ],
   
   hard: [
-    // Template set 1: Hero's journey (6-12 words per micro-page for TTS)
+    // Template set 1: Hero's journey (7-13 words per page - complete thoughts)
     [
-      "{name} lived peacefully in beautiful {setting} with friends",
-      "One day something very strange and mysterious happened",
-      "{animal}s started acting differently and seemed quite scared",
-      "{name} noticed their fear and decided to help",
-      "{pronoun} bravely decided to investigate this puzzling mystery",
-      "With great courage {name} ventured into unknown territory",
-      "There {pronoun} discovered {antagonist} creatures causing trouble everywhere",
-      "{name} had to make a very difficult choice",
-      "Using special {skill} abilities {name} found perfect solution",
-      "{setting} became peaceful again and {name} grew wiser"
+      "{name} lived peacefully in the beautiful {setting} with many friends",
+      "One day something very strange and mysterious happened there",
+      "The {animal}s started acting differently and seemed quite scared",
+      "{name} noticed their fear and decided to help them",
+      "{pronoun} bravely decided to investigate this very puzzling mystery",
+      "With great courage {name} ventured into the unknown territory",
+      "There {pronoun} discovered some {antagonist} creatures causing trouble everywhere",
+      "{name} had to make a very difficult and important choice",
+      "Using special {skill} abilities {name} found the perfect solution",
+      "The {setting} became peaceful again and {name} grew much wiser"
     ]
   ],
   
   expert: [
-    // Template set 1: Philosophical journey (8-15 words per micro-page for TTS)
+    // Template set 1: Complex adventure (9-16 words per page - complete thoughts)
     [
-      "{name} began questioning the fundamental nature of reality and existence",
-      "Complex concepts about consciousness and time seemed increasingly unclear and puzzling",
-      "Mysterious wise {animal} appeared unexpectedly offering guidance through unknown realms",
-      "Together they carefully explored ancient mysteries hidden within cosmic dimensions",
-      "{name} faced impossible choice between personal desires and universal responsibility",
-      "Long challenging journey gradually revealed profound truths about interconnected consciousness",
-      "Through deep self-discovery and reflection {name} finally found lasting inner peace",
-      "Transformative character growth completely changed {pronoun_possessive} understanding of universal principles",
-      "Essential principles of harmony and balance became crystal clear to {name}",
-      "{name} achieved transcendent understanding of existence and cosmic purpose in life"
+      "{name} began exploring the fascinating world of science and discovery",
+      "Complex questions about nature and the universe seemed increasingly interesting and important",
+      "A mysterious wise {animal} appeared unexpectedly offering guidance through unknown realms",
+      "Together they carefully explored ancient mysteries hidden within the natural world",
+      "{name} faced an important choice between personal desires and helping others",
+      "The long challenging journey gradually revealed amazing truths about friendship and courage",
+      "Through deep thinking and reflection {name} finally found lasting inner peace",
+      "This transformative character growth completely changed {pronoun_possessive} understanding of life's principles",
+      "Essential principles of kindness and balance became crystal clear to {name}",
+      "{name} achieved a deeper understanding of friendship and {pronoun_possessive} purpose in life"
     ]
   ]
 };
