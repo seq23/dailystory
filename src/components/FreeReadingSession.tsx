@@ -1105,16 +1105,13 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                           {(() => {
                             // Use difficulty-based font sizing for better readability (same as StoryDisplay)
                             const getFontSizeForDifficulty = (difficulty: string) => {
-                              console.log('FreeReadingSession: Getting font size for difficulty:', difficulty);
                               switch (difficulty) {
                                 case 'easy': 
-                                  console.log('FreeReadingSession: Using EXTRA LARGE fonts for Level 1');
                                   return 'text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl'; // Extra large for level 1 (ages 3-6)
                                 case 'medium': return 'text-2xl sm:text-3xl md:text-4xl lg:text-5xl';
                                 case 'hard': return 'text-xl sm:text-2xl md:text-3xl lg:text-4xl';
                                 case 'expert': return 'text-lg sm:text-xl md:text-2xl lg:text-3xl';
                                 default: 
-                                  console.log('FreeReadingSession: Default case - using large fonts');
                                   return 'text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl';
                               }
                             };
@@ -1124,7 +1121,6 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                               lineHeight: 'leading-relaxed', 
                               spacing: 'space-y-4' 
                             };
-                            console.log('FreeReadingSession: Final font config:', config, 'Current difficulty:', currentDifficulty);
                             
                             return (
                               <div className={`${config.fontSize} ${config.lineHeight} ${config.spacing} ${currentDifficulty === 'easy' ? 'font-black' : 'font-bold'} text-gray-800 max-w-full break-words hyphens-auto leading-relaxed overflow-hidden`}>

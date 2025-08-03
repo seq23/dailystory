@@ -261,21 +261,24 @@
         "label": "Quelle est votre couleur ou nuance préférée ?",
         "optional": "(Optionnel)"
       },
-      "favoriteAnimal": {
-        "label": "Quel est votre animal préféré ?",
-        "placeholder": "chien, chat, lion, dauphin...",
-        "optional": "(Optionnel)"
-      },
-      "favoriteFood": {
-        "label": "Quelle est votre nourriture préférée ?",
-        "placeholder": "pizza, glace, pommes, biscuits...",
-        "optional": "(Optionnel)"
-      },
-      "hobbies": {
-        "label": "Qu'aimez-vous faire ?",
-        "placeholder": "football, dessiner, danser, jeux vidéo...",
-        "optional": "(Optionnel)"
-      },
+       "favoriteAnimal": {
+         "label": "Quel est votre animal préféré ?",
+         "placeholder": "chien, chat, lion, dauphin...",
+         "optional": "(Optionnel)",
+         "tooltip": "Entrez les animaux comme des mots simples - singulier ou pluriel, peu importe !"
+       },
+       "favoriteFood": {
+         "label": "Quelle est votre nourriture préférée ?",
+         "placeholder": "pizza, glace, pommes, biscuits...",
+         "optional": "(Optionnel)",
+         "tooltip": "Entrez les aliments comme des mots simples - pluriel ou singulier fonctionne !"
+       },
+       "hobbies": {
+         "label": "Qu'aimez-vous faire ?",
+         "placeholder": "football, dessiner, danser, jeux vidéo...",
+         "optional": "(Optionnel)",
+         "tooltip": "Entrez les activités que votre enfant aime - comme vous voulez !"
+       },
       "specialRequest": {
         "label": "Quelque chose de spécial que vous aimeriez dans votre histoire ?",
         "placeholder": "dinosaures, princesses, aventures spatiales, magie...",

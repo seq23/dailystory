@@ -265,21 +265,24 @@
         "label": "What is your favorite color or shade?",
         "optional": "(Optional)"
       },
-      "favoriteAnimal": {
-        "label": "What's your favorite animal?",
-        "placeholder": "dog, cat, lion, dolphin...",
-        "optional": "(Optional)"
-      },
-      "favoriteFood": {
-        "label": "What's your favorite food?",
-        "placeholder": "pizza, ice cream, apples, cookies...",
-        "optional": "(Optional)"
-      },
-      "hobbies": {
-        "label": "What do you love doing?",
-        "placeholder": "soccer, drawing, dancing, video games...",
-        "optional": "(Optional)"
-      },
+       "favoriteAnimal": {
+         "label": "What's your favorite animal?",
+         "placeholder": "dog, cat, lion, dolphin...",
+         "optional": "(Optional)",
+         "tooltip": "Enter animals as simple words - singular or plural doesn't matter!"
+       },
+       "favoriteFood": {
+         "label": "What's your favorite food?",
+         "placeholder": "pizza, ice cream, apples, cookies...",
+         "optional": "(Optional)",
+         "tooltip": "Enter foods as simple words - plural or singular works!"
+       },
+       "hobbies": {
+         "label": "What do you love doing?",
+         "placeholder": "soccer, drawing, dancing, video games...",
+         "optional": "(Optional)",
+         "tooltip": "Enter activities your child enjoys - any way you like!"
+       },
       "specialRequest": {
         "label": "Anything special you'd like in your story?",
         "placeholder": "dinosaurs, princesses, space adventures, magic...",

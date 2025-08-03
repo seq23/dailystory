@@ -305,21 +305,24 @@
         "label": "你最喜欢的颜色是什么？",
         "optional": "（可选）"
       },
-      "favoriteAnimal": {
-        "label": "你最喜欢的动物是什么？",
-        "placeholder": "狗、猫、狮子、海豚...",
-        "optional": "（可选）"
-      },
-      "favoriteFood": {
-        "label": "你最喜欢的食物是什么？",
-        "placeholder": "披萨、冰淇淋、苹果、饼干...",
-        "optional": "（可选）"
-      },
-      "hobbies": {
-        "label": "你喜欢做什么来娱乐？",
-        "placeholder": "足球、画画、跳舞、电子游戏...",
-        "optional": "（可选）"
-      },
+       "favoriteAnimal": {
+         "label": "你最喜欢的动物是什么？",
+         "placeholder": "狗、猫、狮子、海豚...",
+         "optional": "（可选）",
+         "tooltip": "输入动物作为简单的词 - 单数或复数都没关系！"
+       },
+       "favoriteFood": {
+         "label": "你最喜欢的食物是什么？",
+         "placeholder": "披萨、冰淇淋、苹果、饼干...",
+         "optional": "（可选）",
+         "tooltip": "输入食物作为简单的词 - 复数或单数都可以！"
+       },
+       "hobbies": {
+         "label": "你喜欢做什么来娱乐？",
+         "placeholder": "足球、画画、跳舞、电子游戏...",
+         "optional": "（可选）",
+         "tooltip": "输入你的孩子喜欢的活动 - 怎样都可以！"
+       },
       "specialRequest": {
         "label": "有什么特别的想要包含在你的故事中吗？",
         "placeholder": "恐龙、公主、太空冒险、魔法...",

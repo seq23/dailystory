@@ -216,7 +216,6 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
 
     // Use the selected reading ability, or fall back to age-based difficulty
     const difficulty = formData.readingAbility || (formData.age <= 6 ? "easy" : formData.age <= 9 ? "medium" : formData.age <= 12 ? "hard" : "expert");
-    console.log('UserInfoForm: Submitting with readingAbility:', formData.readingAbility, 'final difficulty:', difficulty, 'form data:', formData);
     
     SecurityLogger.log('form_submission_success', {
       difficultyLevel: difficulty,
@@ -552,13 +551,13 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                           value={formData.favoriteAnimal}
                           onChange={(value) => handleInputChange("favoriteAnimal", value)}
                           onBlur={(value) => handleIntelligentProcessing("favoriteAnimal", value)}
-                          placeholder="dog, cats, rabbits..."
+                          placeholder={t("userInfoForm.fields.favoriteAnimal.placeholder", "dog, cat, lion, dolphin...")}
                           className="text-base md:text-lg min-h-[80px] md:min-h-[100px] rounded-xl md:rounded-2xl border-2 border-primary/20"
                         />
                       </div>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>Enter animals as simple words - singular or plural doesn't matter!</p>
+                      <p>{t("userInfoForm.fields.favoriteAnimal.tooltip", "Enter animals as simple words - singular or plural doesn't matter!")}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -594,13 +593,13 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                           value={formData.favoriteFood}
                           onChange={(value) => handleInputChange("favoriteFood", value)}
                           onBlur={(value) => handleIntelligentProcessing("favoriteFood", value)}
-                          placeholder="pizza, apples, cookies..."
+                          placeholder={t("userInfoForm.fields.favoriteFood.placeholder", "pizza, ice cream, apples, cookies...")}
                           className="text-base md:text-lg min-h-[80px] md:min-h-[100px] rounded-xl md:rounded-2xl border-2 border-primary/20"
                         />
                       </div>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>Enter foods as simple words - plural or singular works!</p>
+                      <p>{t("userInfoForm.fields.favoriteFood.tooltip", "Enter foods as simple words - plural or singular works!")}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -636,13 +635,13 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                           value={formData.hobbies}
                           onChange={(value) => handleInputChange("hobbies", value)}
                           onBlur={(value) => handleIntelligentProcessing("hobbies", value)}
-                          placeholder="reading, swimming, drawing..."
+                          placeholder={t("userInfoForm.fields.hobbies.placeholder", "soccer, drawing, dancing, video games...")}
                           className="text-base md:text-lg min-h-[80px] md:min-h-[100px] rounded-xl md:rounded-2xl border-2 border-primary/20"
                         />
                       </div>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>Enter activities your child enjoys - any way you like!</p>
+                      <p>{t("userInfoForm.fields.hobbies.tooltip", "Enter activities your child enjoys - any way you like!")}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>

@@ -305,21 +305,24 @@
         "label": "Qual é sua cor favorita?",
         "optional": "(Opcional)"
       },
-      "favoriteAnimal": {
-        "label": "Qual é seu animal favorito?",
-        "placeholder": "cachorro, gato, leão, golfinho...",
-        "optional": "(Opcional)"
-      },
-      "favoriteFood": {
-        "label": "Qual é sua comida favorita?",
-        "placeholder": "pizza, sorvete, maçã, biscoitos...",
-        "optional": "(Opcional)"
-      },
-      "hobbies": {
-        "label": "O que você gosta de fazer para se divertir?",
-        "placeholder": "futebol, desenhar, dançar, videogames...",
-        "optional": "(Opcional)"
-      },
+       "favoriteAnimal": {
+         "label": "Qual é seu animal favorito?",
+         "placeholder": "cachorro, gato, leão, golfinho...",
+         "optional": "(Opcional)",
+         "tooltip": "Digite animais como palavras simples - singular ou plural, não importa!"
+       },
+       "favoriteFood": {
+         "label": "Qual é sua comida favorita?",
+         "placeholder": "pizza, sorvete, maçã, biscoitos...",
+         "optional": "(Opcional)",
+         "tooltip": "Digite comidas como palavras simples - plural ou singular funciona!"
+       },
+       "hobbies": {
+         "label": "O que você gosta de fazer para se divertir?",
+         "placeholder": "futebol, desenhar, dançar, videogames...",
+         "optional": "(Opcional)",
+         "tooltip": "Digite atividades que seu filho gosta - como quiser!"
+       },
       "specialRequest": {
         "label": "Há algo especial que você quer incluir em sua história?",
         "placeholder": "dinossauros, princesas, aventuras espaciais, magia...",
