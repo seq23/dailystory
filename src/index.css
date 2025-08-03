@@ -221,7 +221,7 @@ All colors MUST be HSL.
     direction: rtl;
   }
 
-  /* Language-specific typography */
+  /* Language-specific typography - UI only, not content */
   [lang="ar"] {
     font-family: 'Tajawal', 'Amiri', sans-serif;
     direction: rtl;
@@ -230,6 +230,13 @@ All colors MUST be HSL.
 
   [lang="ar"] .font-fun {
     font-family: 'Amiri', 'Tajawal', serif;
+  }
+
+  /* Story content should always be LTR for English reading */
+  [lang="ar"] .story-content,
+  [lang="ar"] [dir="ltr"] {
+    direction: ltr !important;
+    text-align: left !important;
   }
 
   [lang="zh"] {

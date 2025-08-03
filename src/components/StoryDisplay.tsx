@@ -998,7 +998,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                         const shouldUseInteractiveWords = currentStory.length < 1000;
                         
                         return (
-                          <div className={`${config.fontSize} ${config.lineHeight} ${config.spacing} font-bold text-gray-800 max-w-full break-words hyphens-auto leading-relaxed overflow-hidden`}>
+                          <div className={`${config.fontSize} ${config.lineHeight} ${config.spacing} font-bold text-gray-800 max-w-full break-words hyphens-auto leading-relaxed overflow-hidden`} dir="ltr" style={{ textAlign: 'left' }}>
                             <div className="max-h-[400px] overflow-y-auto px-2">
                               {shouldUseInteractiveWords ? 
                                 processTextForPhonetics(

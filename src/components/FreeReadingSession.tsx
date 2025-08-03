@@ -1155,7 +1155,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                             };
                             
                             return (
-                              <div className={`${config.fontSize} ${config.lineHeight} ${config.spacing} font-bold text-gray-800 max-w-full break-words hyphens-auto leading-relaxed overflow-hidden`}>
+                              <div className={`${config.fontSize} ${config.lineHeight} ${config.spacing} font-bold text-gray-800 max-w-full break-words hyphens-auto leading-relaxed overflow-hidden`} dir="ltr" style={{ textAlign: 'left' }}>
                                 <div className="max-h-[400px] overflow-y-auto px-2">
                                   {processTextForPhonetics(
                                     currentStory, 
