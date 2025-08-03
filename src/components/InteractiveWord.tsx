@@ -1117,8 +1117,19 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
         });
       };
       
+      // Mobile requires user interaction before playing audio
       console.log('Mobile TTS: Starting audio playback');
-      await audio.play();
+      
+      // Ensure user interaction for mobile audio
+      try {
+        await audio.play();
+        console.log('Mobile TTS: Audio started successfully');
+      } catch (playError) {
+        console.error('Mobile TTS: Play error:', playError);
+        // On mobile, audio might fail without user interaction - this is expected
+        // Try again with user gesture
+        throw new Error('Audio playback requires user interaction');
+      }
       
     } catch (error) {
       console.error('Mobile TTS Error Details:', error);
@@ -1218,7 +1229,17 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
       
       setIsPlayingMobile(true);
       console.log('Mobile Explain: Starting TTS playback');
-      await audio.play();
+      
+      // Ensure user interaction for mobile audio
+      try {
+        await audio.play();
+        console.log('Mobile Explain: Audio started successfully');
+      } catch (playError) {
+        console.error('Mobile Explain: Play error:', playError);
+        setIsPlayingMobile(false);
+        URL.revokeObjectURL(audioUrl);
+        throw new Error('Audio playback requires user interaction');
+      }
       
     } catch (error) {
       console.error('Mobile Explain Error:', error);
@@ -1250,8 +1271,15 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
     setShowMobileTTS(!showMobileTTS);
   };
 
+  // Check if this word is a user name - if so, don't make it interactive
+  const cleanWord = props.word.replace(/[^\w\s]/g, '').toLowerCase().trim();
+  const isUserName = props.userInfo?.name && cleanWord === props.userInfo.name.toLowerCase();
+
   console.log('📱 Mobile Wrapper Active:', {
     word: props.word,
+    cleanWord,
+    isUserName,
+    userName: props.userInfo?.name,
     userNativeLanguage: props.userInfo?.nativeLanguage,
     isMobileDevice,
     isNativeApp,
@@ -1261,6 +1289,11 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
   // If not mobile, use regular component
   if (!isMobileDevice) {
     return <InteractiveWord {...props} />;
+  }
+
+  // If this is a user name on mobile, render as plain text (no underline, no interaction)
+  if (isUserName) {
+    return <span className={props.className || ''}>{props.word}</span>;
   }
 
   // Mobile-optimized rendering with dedicated TTS windows
