@@ -159,6 +159,7 @@ export const FloatingTimer = ({
   };
 
   const isTutorialTimerStep = showTutorial && tutorialStep === 0;
+  console.log('FloatingTimer render:', { showTutorial, tutorialStep, isTutorialTimerStep });
 
   return (
       <TooltipProvider>

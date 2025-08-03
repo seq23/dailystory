@@ -270,30 +270,37 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
 
     // SPECIAL HANDLING FOR TIMER STEP - Timer is now centered, place tutorial card to avoid overlap
     if (target === "timer-display") {
+      console.log('TutorialOverlay: Timer positioning', { isMobile, isTablet });
       if (isMobile) {
-        return {
+        const positioning = {
           top: `${margin}px`, // Top positioning on mobile to avoid scrolling
           left: `${margin}px`,
           right: `${margin}px`,
           transform: "none",
           maxWidth: `${tooltipWidth}px`
         };
+        console.log('Mobile timer positioning:', positioning);
+        return positioning;
       } else if (isTablet) {
-        return {
+        const positioning = {
           top: `${margin + 20}px`, // Top positioning on tablet
           left: `${margin}px`,
           right: "auto",
           transform: "none",
           maxWidth: `${tooltipWidth}px`
         };
+        console.log('Tablet timer positioning:', positioning);
+        return positioning;
       } else {
-        return {
+        const positioning = {
           top: `${margin + 40}px`, // Top positioning on desktop
           left: `${margin + 40}px`,
           right: "auto",
           transform: "none",
           maxWidth: `${tooltipWidth}px`
         };
+        console.log('Desktop timer positioning:', positioning);
+        return positioning;
       }
     }
 
