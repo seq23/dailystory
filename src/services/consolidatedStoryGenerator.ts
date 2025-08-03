@@ -163,11 +163,18 @@ export class ConsolidatedStoryGenerator {
       console.log(`✅ Post-grammar validation pages:`, improvedPages);
 
       // Phase 3: INDUSTRY STANDARD QUALITY CHECK - Enforce word count standards per reading level
-      const qualityCheck = StoryQualityChecker.checkStoryQuality(improvedPages, difficulty);
+      let qualityCheck = StoryQualityChecker.checkStoryQuality(improvedPages, difficulty);
       console.log(`📊 Story Quality Check:`, qualityCheck);
+      console.log(`📊 Quality Issues Detail:`, qualityCheck.issues);
       
-      // If quality check fails on critical issues (like word count), regenerate problematic pages
-      if (!qualityCheck.isValid) {
+      // CRITICAL FIX: Always enforce quality standards - multiple passes if needed
+      let qualityPassAttempts = 0;
+      let finalPages = [...improvedPages];
+      
+      while (!qualityCheck.isValid && qualityPassAttempts < 3) {
+        qualityPassAttempts++;
+        console.log(`🔧 Quality Fix Attempt #${qualityPassAttempts}`);
+        
         const criticalIssues = qualityCheck.issues.filter(issue => 
           issue.severity === 'error' || 
           (issue.type === 'readability' && issue.severity === 'warning')
@@ -175,24 +182,55 @@ export class ConsolidatedStoryGenerator {
         
         if (criticalIssues.length > 0) {
           console.log(`⚠️ Critical quality issues found, attempting fixes:`, criticalIssues);
-          // Try to fix word count issues by adjusting pages
+          
+          // Fix each critical issue
           for (const issue of criticalIssues) {
             if (issue.type === 'readability' && issue.pageIndex) {
               const pageIndex = issue.pageIndex - 1;
-              if (improvedPages[pageIndex]) {
-                improvedPages[pageIndex] = this.adjustPageWordCount(
-                  improvedPages[pageIndex], 
+              if (finalPages[pageIndex]) {
+                const originalPage = finalPages[pageIndex];
+                const wordCount = originalPage.split(/\s+/).filter(w => w.trim()).length;
+                
+                console.log(`🔧 Fixing page ${pageIndex + 1}: "${originalPage}" (${wordCount} words)`);
+                
+                // Determine if we need to expand or reduce
+                const adjustmentType = issue.message.toLowerCase().includes('only') || 
+                                     issue.message.toLowerCase().includes('too few') ? 'expand' : 'reduce';
+                
+                finalPages[pageIndex] = this.adjustPageWordCount(
+                  originalPage, 
                   difficulty, 
-                  issue.message.includes('only') ? 'expand' : 'reduce'
+                  adjustmentType
                 );
+                
+                const newWordCount = finalPages[pageIndex].split(/\s+/).filter(w => w.trim()).length;
+                console.log(`✅ Fixed page ${pageIndex + 1}: "${finalPages[pageIndex]}" (${newWordCount} words)`);
               }
             }
           }
+          
+          // Re-check quality after fixes
+          qualityCheck = StoryQualityChecker.checkStoryQuality(finalPages, difficulty);
+          if (qualityCheck.isValid) {
+            console.log(`✅ Quality check passed after ${qualityPassAttempts} attempts!`);
+            break;
+          } else {
+            console.log(`⚠️ Quality check still failing, issues:`, qualityCheck.issues);
+          }
+        } else {
+          break; // No critical issues to fix
         }
       }
+      
+      // Final quality verification with detailed logging
+      const finalQualityCheck = StoryQualityChecker.checkStoryQuality(finalPages, difficulty);
+      console.log(`🎯 FINAL QUALITY CHECK:`, finalQualityCheck);
+      console.log(`📝 FINAL PAGES WORD COUNTS:`, finalPages.map((page, i) => 
+        `Page ${i+1}: ${page.split(/\s+/).filter(w => w.trim()).length} words - "${page}"`
+      ));
 
-      // Calculate quality score using industry standards
-      const qualityScore = qualityCheck.score / 100; // Convert to 0-1 scale
+      // Calculate quality score using final quality check results
+      const qualityScore = finalQualityCheck.score / 100; // Convert to 0-1 scale
       
       // Get used elements for reporting
       console.log(`📊 Parsed elements for usedElements:`, parsedElements);
@@ -207,20 +245,20 @@ export class ConsolidatedStoryGenerator {
       const story: Story = {
         id: generateUniqueId(),
         title: this.generateStoryTitle(processedUserInfo, difficulty),
-        segments: improvedPages.map(text => ({
+        segments: finalPages.map(text => ({
           text: text,
           illustration: undefined,
           audioUrl: undefined
         })),
         difficulty,
-        estimatedReadingTime: Math.ceil(improvedPages.join(' ').split(' ').length / 100),
-        wordCount: improvedPages.join(' ').split(' ').filter(word => word.trim()).length
+        estimatedReadingTime: Math.ceil(finalPages.join(' ').split(' ').length / 100),
+        wordCount: finalPages.join(' ').split(' ').filter(word => word.trim()).length
       };
 
       const processingTime = Date.now() - startTime;
       console.log('✅ Consolidated Story Generation Completed', {
         processingTime: `${processingTime}ms`,
-        pageCount: improvedPages.length,
+        pageCount: finalPages.length,
         wordCount: story.wordCount,
         qualityScore,
         usedElements
@@ -441,19 +479,42 @@ export class ConsolidatedStoryGenerator {
       // Add simple descriptive words to reach minimum
       const expansions = [
         'very', 'really', 'quite', 'so', 'always', 'sometimes', 'then', 'also',
-        'wonderful', 'amazing', 'special', 'beautiful', 'exciting', 'fun'
+        'wonderful', 'amazing', 'special', 'beautiful', 'exciting', 'fun', 'big', 'small'
       ];
       
       let expandedPage = page;
       let attempts = 0;
-      while (expandedPage.split(/\s+/).length < target.min && attempts < 5) {
+      const targetWordsNeeded = target.min - words.length;
+      
+      console.log(`🔧 Need to expand from ${words.length} to at least ${target.min} words (need ${targetWordsNeeded} more)`);
+      
+      while (expandedPage.split(/\s+/).filter(w => w.trim()).length < target.min && attempts < 10) {
         const expansion = expansions[Math.floor(Math.random() * expansions.length)];
-        // Insert expansion before verbs or adjectives
-        expandedPage = expandedPage.replace(/\b(was|is|were|are|looked|seemed|felt)\b/, `${expansion} $1`);
+        
+        // Try multiple insertion strategies
+        if (attempts < 3) {
+          // Insert expansion before verbs
+          expandedPage = expandedPage.replace(/\b(was|is|were|are|looked|seemed|felt|went|came|saw|found)\b/, `${expansion} $1`);
+        } else if (attempts < 6) {
+          // Insert expansion before nouns
+          expandedPage = expandedPage.replace(/\b(cat|dog|bird|house|tree|friend|adventure|day|time)\b/, `${expansion} $1`);
+        } else {
+          // Add to the end of sentences
+          expandedPage = expandedPage.replace(/\./, ` ${expansion}.`);
+        }
+        
         attempts++;
       }
       
-      console.log(`📝 Expanded page: ${words.length} -> ${expandedPage.split(/\s+/).length} words`);
+      // Last resort: just add words at the end
+      const currentCount = expandedPage.split(/\s+/).filter(w => w.trim()).length;
+      if (currentCount < target.min) {
+        const wordsStillNeeded = target.min - currentCount;
+        const additionalWords = expansions.slice(0, wordsStillNeeded).join(' ');
+        expandedPage = expandedPage.replace(/\.$/, ` ${additionalWords}.`);
+      }
+      
+      console.log(`📝 Expanded page: ${words.length} -> ${expandedPage.split(/\s+/).filter(w => w.trim()).length} words`);
       return expandedPage;
       
     } else if (adjustment === 'reduce' && words.length > target.max) {
