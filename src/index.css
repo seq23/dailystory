@@ -304,8 +304,20 @@ All colors MUST be HSL.
   [dir="rtl"] .homepage nav,
   [dir="rtl"] .homepage .carousel-container,
   [dir="rtl"] .homepage .carousel-nav,
+  [dir="rtl"] .homepage .carousel,
+  [dir="rtl"] .homepage .carousel-item,
+  [dir="rtl"] .homepage .carousel-content,
+  [dir="rtl"] .homepage .carousel-indicators,
+  [dir="rtl"] .homepage .carousel-buttons,
   [dir="rtl"] .homepage .language-picker,
   [dir="rtl"] .homepage .sign-in-btn {
+    direction: ltr !important;
+  }
+
+  /* Force carousel mechanics to stay LTR while allowing Arabic text */
+  [dir="rtl"] .homepage .carousel-container *,
+  [dir="rtl"] .homepage .carousel *,
+  [dir="rtl"] .homepage .carousel-item *:not(.carousel-text) {
     direction: ltr !important;
   }
 
@@ -313,7 +325,8 @@ All colors MUST be HSL.
   [dir="rtl"] .homepage .hero-content,
   [dir="rtl"] .homepage .welcome-hero h1,
   [dir="rtl"] .homepage .welcome-hero h2,
-  [dir="rtl"] .homepage .welcome-hero p {
+  [dir="rtl"] .homepage .welcome-hero p,
+  [dir="rtl"] .homepage .carousel-text {
     text-align: center !important;
   }
 
