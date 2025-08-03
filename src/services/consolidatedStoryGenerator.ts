@@ -153,18 +153,23 @@ export class ConsolidatedStoryGenerator {
         pages.push(processedPage);
       }
 
-      // Phase 2: Light grammar validation (less aggressive)
+      // Phase 2: Light grammar validation (less aggressive)  
+      console.log(`🔍 Pre-grammar validation pages:`, pages);
       const improvedPages = pages.map(page => this.lightGrammarValidation(page));
+      console.log(`✅ Post-grammar validation pages:`, improvedPages);
 
       // Calculate quality score
       const qualityScore = this.calculateQualityScore(improvedPages, parsedElements);
       
       // Get used elements for reporting
+      console.log(`📊 Parsed elements for usedElements:`, parsedElements);
       const usedElements = parsedElements.reduce((acc, tag) => {
         acc[tag.category] = acc[tag.category] || [];
+        console.log(`📝 Adding to usedElements - category: ${tag.category}, corrected: "${tag.corrected}"`);
         acc[tag.category].push(tag.corrected);
         return acc;
       }, {} as Record<string, string[]>);
+      console.log(`🏁 Final usedElements:`, usedElements);
 
       const story: Story = {
         id: generateUniqueId(),

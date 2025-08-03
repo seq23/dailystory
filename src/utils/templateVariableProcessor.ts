@@ -195,6 +195,8 @@ export class TemplateVariableProcessor {
    * Fix quotation marks around corrected words
    */
   private static fixQuotationMarks(text: string): string {
+    console.log(`🔧 Pre-quotation-fix text: "${text}"`);
+    
     // Remove quotation marks around single words that are likely corrections
     // Pattern: word, word and "word" -> word, word and word
     let fixed = text.replace(/(\w+),\s*(\w+)\s+and\s+"([^"]+)"/g, '$1, $2 and $3');
@@ -206,8 +208,17 @@ export class TemplateVariableProcessor {
     // Remove quotes around words at the beginning of sentences
     fixed = fixed.replace(/^"([^"]+)"/g, '$1');
     
-    // Remove quotes around single words (but preserve quotes around phrases)
-    fixed = fixed.replace(/"(\w+)"/g, '$1');
+    // Remove quotes around single words (but preserve quotes around phrases with spaces)
+    fixed = fixed.replace(/"([^\s"]+)"/g, '$1');
+    
+    // Additional patterns for the specific reported issue
+    // Handle patterns like: perro, gato and "lions"
+    fixed = fixed.replace(/([a-zA-Z]+),\s*([a-zA-Z]+)\s+and\s+"([a-zA-Z]+)"/g, '$1, $2 and $3');
+    
+    // Handle any remaining JSON stringification artifacts
+    fixed = fixed.replace(/\[|\]/g, '').replace(/\\\"/g, '"');
+    
+    console.log(`✅ Post-quotation-fix text: "${fixed}"`);
     
     return fixed;
   }
