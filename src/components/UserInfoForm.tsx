@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
+import { MobileOptimizedButton } from "@/components/MobileOptimizedButton";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,7 +10,7 @@ import { TagInput } from "@/components/ui/tag-input";
 import { ColorPicker } from "@/components/ui/color-picker";
 import { AvatarPicker } from "@/components/ui/avatar-picker";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { MobileTooltip } from "@/components/MobileTooltip";
 import { ChevronRight, User, GraduationCap, Heart, Star, Globe, Sparkles, AlertCircle, ArrowRightLeft, CheckCircle, Loader2 } from "lucide-react";
 import LanguageSwitcher from './LanguageSwitcher';
 import { ContentSecurity, SecurityLogger } from "@/utils/security";
@@ -293,7 +293,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
           {/* Header */}
           <div className="text-center mb-8 md:mb-10" id="welcome-title">
             <div className="flex items-center justify-between mb-4 md:mb-6">
-              <Button
+              <MobileOptimizedButton
                 variant="ghost"
                 size="sm"
                 onClick={onBack}
@@ -301,7 +301,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
               >
                 <ChevronRight className="w-4 h-4 rotate-180" />
                 {t('userInfoForm.back', 'Back')}
-              </Button>
+              </MobileOptimizedButton>
               <LanguageSwitcher />
             </div>
             <div className="flex justify-center mb-4 md:mb-6">
@@ -357,9 +357,11 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                   value={formData.name}
                   onChange={(e) => handleInputChange("name", e.target.value)}
                   placeholder={t("userInfoForm.fields.name.placeholder")}
-                  className={`text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 focus:border-primary/50 touch-target ${
+                  className={`text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 focus:border-primary/50 mobile-input ${
                     showValidationErrors && !formData.name ? 'border-red-300 bg-red-50' : 'border-primary/20'
                   }`}
+                  autoComplete="given-name"
+                  inputMode="text"
                 />
               </div>
 
@@ -575,28 +577,24 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                   {t("userInfoForm.fields.favoriteAnimal.label")}
                   <span className="text-xs md:text-sm text-muted-foreground ml-2">{t("userInfoForm.fields.favoriteAnimal.optional")}</span>
                 </Label>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="relative">
-                        <TagInput
-                          value={formData.favoriteAnimal}
-                          onChange={(value) => handleInputChange("favoriteAnimal", value)}
-                          placeholder={t("userInfoForm.fields.favoriteAnimal.placeholder", "dog, cat, lion, dolphin...")}
-                          className={`multilingual-input text-base md:text-lg min-h-[80px] md:min-h-[100px] rounded-xl md:rounded-2xl border-2 border-primary/20`}
-                        />
-                        {translationLoading.favoriteAnimal && (
-                          <div className="absolute right-3 top-3">
-                            <Loader2 className="w-4 h-4 text-primary animate-spin" />
-                          </div>
-                        )}
+                <MobileTooltip
+                  content={t("userInfoForm.fields.favoriteAnimal.tooltip", "Enter animals as simple words - singular or plural doesn't matter!")}
+                  side="top"
+                >
+                  <div className="relative">
+                    <TagInput
+                      value={formData.favoriteAnimal}
+                      onChange={(value) => handleInputChange("favoriteAnimal", value)}
+                      placeholder={t("userInfoForm.fields.favoriteAnimal.placeholder", "dog, cat, lion, dolphin...")}
+                      className={`multilingual-input text-base md:text-lg min-h-[80px] md:min-h-[100px] rounded-xl md:rounded-2xl border-2 border-primary/20`}
+                    />
+                    {translationLoading.favoriteAnimal && (
+                      <div className="absolute right-3 top-3">
+                        <Loader2 className="w-4 h-4 text-primary animate-spin" />
                       </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{t("userInfoForm.fields.favoriteAnimal.tooltip", "Enter animals as simple words - singular or plural doesn't matter!")}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                    )}
+                  </div>
+                </MobileTooltip>
                 {translationLoading.favoriteAnimal && (
                   <div className="translation-feedback">
                     <Loader2 className="w-3 h-3 animate-spin inline mr-1" />
@@ -616,28 +614,24 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                   {t("userInfoForm.fields.favoriteFood.label")}
                   <span className="text-xs md:text-sm text-muted-foreground ml-2">{t("userInfoForm.fields.favoriteFood.optional")}</span>
                 </Label>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="relative">
-                        <TagInput
-                          value={formData.favoriteFood}
-                          onChange={(value) => handleInputChange("favoriteFood", value)}
-                          placeholder={t("userInfoForm.fields.favoriteFood.placeholder", "pizza, ice cream, apples, cookies...")}
-                          className={`multilingual-input text-base md:text-lg min-h-[80px] md:min-h-[100px] rounded-xl md:rounded-2xl border-2 border-primary/20`}
-                        />
-                        {translationLoading.favoriteFood && (
-                          <div className="absolute right-3 top-3">
-                            <Loader2 className="w-4 h-4 text-primary animate-spin" />
-                          </div>
-                        )}
+                <MobileTooltip
+                  content={t("userInfoForm.fields.favoriteFood.tooltip", "Enter foods as simple words - plural or singular works!")}
+                  side="top"
+                >
+                  <div className="relative">
+                    <TagInput
+                      value={formData.favoriteFood}
+                      onChange={(value) => handleInputChange("favoriteFood", value)}
+                      placeholder={t("userInfoForm.fields.favoriteFood.placeholder", "pizza, ice cream, apples, cookies...")}
+                      className={`multilingual-input text-base md:text-lg min-h-[80px] md:min-h-[100px] rounded-xl md:rounded-2xl border-2 border-primary/20`}
+                    />
+                    {translationLoading.favoriteFood && (
+                      <div className="absolute right-3 top-3">
+                        <Loader2 className="w-4 h-4 text-primary animate-spin" />
                       </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{t("userInfoForm.fields.favoriteFood.tooltip", "Enter foods as simple words - plural or singular works!")}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                    )}
+                  </div>
+                </MobileTooltip>
                 {translationLoading.favoriteFood && (
                   <div className="translation-feedback">
                     <Loader2 className="w-3 h-3 animate-spin inline mr-1" />
@@ -657,28 +651,24 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                   {t("userInfoForm.fields.hobbies.label")}
                   <span className="text-xs md:text-sm text-muted-foreground ml-2">{t("userInfoForm.fields.hobbies.optional")}</span>
                 </Label>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="relative">
-                        <TagInput
-                          value={formData.hobbies}
-                          onChange={(value) => handleInputChange("hobbies", value)}
-                          placeholder={t("userInfoForm.fields.hobbies.placeholder", "soccer, drawing, dancing, video games...")}
-                          className={`multilingual-input text-base md:text-lg min-h-[80px] md:min-h-[100px] rounded-xl md:rounded-2xl border-2 border-primary/20`}
-                        />
-                        {translationLoading.hobbies && (
-                          <div className="absolute right-3 top-3">
-                            <Loader2 className="w-4 h-4 text-primary animate-spin" />
-                          </div>
-                        )}
+                <MobileTooltip
+                  content={t("userInfoForm.fields.hobbies.tooltip", "Enter activities your child enjoys - any way you like!")}
+                  side="top"
+                >
+                  <div className="relative">
+                    <TagInput
+                      value={formData.hobbies}
+                      onChange={(value) => handleInputChange("hobbies", value)}
+                      placeholder={t("userInfoForm.fields.hobbies.placeholder", "soccer, drawing, dancing, video games...")}
+                      className={`multilingual-input text-base md:text-lg min-h-[80px] md:min-h-[100px] rounded-xl md:rounded-2xl border-2 border-primary/20`}
+                    />
+                    {translationLoading.hobbies && (
+                      <div className="absolute right-3 top-3">
+                        <Loader2 className="w-4 h-4 text-primary animate-spin" />
                       </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{t("userInfoForm.fields.hobbies.tooltip", "Enter activities your child enjoys - any way you like!")}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                    )}
+                  </div>
+                </MobileTooltip>
                 {translationLoading.hobbies && (
                   <div className="translation-feedback">
                     <Loader2 className="w-3 h-3 animate-spin inline mr-1" />
@@ -723,43 +713,38 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
 
           {/* Navigation buttons */}
           <div className="flex flex-col sm:flex-row gap-4 md:gap-6 justify-between pt-8 border-t border-primary/20">
-            <Button
+            <MobileOptimizedButton
               variant="outline"
               size="lg"
               onClick={onBack}
               className="flex-1 sm:max-w-xs order-2 sm:order-1 text-lg py-6 rounded-xl hover:scale-105 transition-all duration-200"
             >
               {t("userInfoForm.buttons.backToHome")}
-            </Button>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="flex-1 sm:max-w-xs order-1 sm:order-2">
-                    <Button
-                      id="create-story-button"
-                      variant="default"
-                      size="lg"
-                      onClick={handleSubmit}
-                      disabled={!isFormComplete()}
-                      className={`w-full transition-all duration-300 text-lg py-6 rounded-xl shadow-glow touch-target ${
-                        isFormComplete() 
-                          ? 'bg-gradient-primary hover:scale-105 text-white font-semibold' 
-                          : 'bg-gray-200 text-gray-400 cursor-not-allowed opacity-50'
-                      }`}
-                    >
-                      <Sparkles className="w-5 h-5 mr-2 animate-pulse" />
-                      {t("userInfoForm.buttons.createStory")}
-                      <ChevronRight className="w-5 h-5 ml-2" />
-                    </Button>
-                  </div>
-                </TooltipTrigger>
-                {!isFormComplete() && (
-                  <TooltipContent side="top" className="bg-gray-800 text-white px-3 py-2 rounded-lg text-sm z-50">
-                    {t("userInfoForm.tooltips.nameRequired", "Please enter your child's name first")}
-                  </TooltipContent>
-                )}
-              </Tooltip>
-            </TooltipProvider>
+            </MobileOptimizedButton>
+            <MobileTooltip
+              content={!isFormComplete() ? t("userInfoForm.tooltips.nameRequired", "Please enter your child's name first") : ""}
+              side="top"
+              disabled={isFormComplete()}
+            >
+              <div className="flex-1 sm:max-w-xs order-1 sm:order-2">
+                <MobileOptimizedButton
+                  id="create-story-button"
+                  variant="default"
+                  size="lg"
+                  onClick={handleSubmit}
+                  disabled={!isFormComplete()}
+                  className={`w-full transition-all duration-300 text-lg py-6 rounded-xl shadow-glow ${
+                    isFormComplete() 
+                      ? 'bg-gradient-primary hover:scale-105 text-white font-semibold' 
+                      : 'bg-gray-200 text-gray-400 cursor-not-allowed opacity-50'
+                  }`}
+                >
+                  <Sparkles className="w-5 h-5 mr-2 animate-pulse" />
+                  {t("userInfoForm.buttons.createStory")}
+                  <ChevronRight className="w-5 h-5 ml-2" />
+                </MobileOptimizedButton>
+              </div>
+            </MobileTooltip>
           </div>
         </Card>
       </div>

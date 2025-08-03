@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
+import { MobileKeyboardHandler } from "@/components/MobileKeyboardHandler";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { UserInfoForm } from "@/components/UserInfoForm";
 import StoryDisplay from "@/components/StoryDisplay";
-import { Button } from "@/components/ui/button";
+import { MobileOptimizedButton } from "@/components/MobileOptimizedButton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookOpen, BarChart3, Settings, LogOut } from "lucide-react";
 import type { UserInfo, Grade, LanguageCode, LearningGoal } from "@/types";
@@ -162,6 +163,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
   }
 
   return (
+    <MobileKeyboardHandler>
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
       <header className="bg-white shadow-sm border-b">
         <div className="container mx-auto px-4 py-4">
@@ -173,17 +175,17 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                 <p className="text-sm text-gray-600">Welcome back, {userInfo.name}!</p>
               </div>
             </div>
-            <Button onClick={handleSignOut} variant="outline" size="sm">
+            <MobileOptimizedButton onClick={handleSignOut} variant="outline" size="sm">
               <LogOut className="w-4 h-4 mr-2" />
               Sign Out
-            </Button>
+            </MobileOptimizedButton>
           </div>
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-6">
         <Tabs value={currentView} onValueChange={(value) => setCurrentView(value as AppView)}>
-          <TabsList className="grid w-full grid-cols-4 max-w-2xl mx-auto mb-6">
+          <TabsList className="grid w-full grid-cols-4 max-w-2xl mx-auto mb-6 mobile-safe-area">
             <TabsTrigger value="story" className="flex items-center gap-2">
               <BookOpen className="w-4 h-4" />
               <span className="hidden sm:inline">Stories</span>
@@ -248,5 +250,6 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
         </Tabs>
       </main>
     </div>
+    </MobileKeyboardHandler>
   );
 };

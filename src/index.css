@@ -608,6 +608,24 @@ All colors MUST be HSL.
   }
 }
 
+/* Mobile Keyboard Handling */
+.keyboard-open {
+  --viewport-adjust: calc(var(--keyboard-height, 0px) * 0.5);
+}
+
+.keyboard-open .mobile-input:focus {
+  position: relative;
+  z-index: 1000;
+}
+
+/* Enhanced Mobile Performance */
+.mobile-optimized * {
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-perspective: 1000;
+  perspective: 1000;
+}
+
 /* Custom responsive display utilities for mobile + tablet */
 @media (max-width: 1024px) {
   .mobile-tablet\:block { display: block; }
