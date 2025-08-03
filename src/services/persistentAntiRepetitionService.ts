@@ -45,7 +45,7 @@ export class PersistentAntiRepetitionService {
       
       // Store a persistent device ID for this browser
       if (!localStorage.getItem('time2read_device_id')) {
-        localStorage.setItem('time2read_device_id', Math.random().toString(36).substr(2, 9));
+        localStorage.setItem('time2read_device_id', Math.random().toString(36).substring(2, 11));
       }
       
       // Create a hash of the fingerprint
@@ -53,7 +53,7 @@ export class PersistentAntiRepetitionService {
     } catch (error) {
       console.error('Error generating device fingerprint:', error);
       // Fallback for environments where localStorage or other APIs aren't available
-      return `guest_${Math.random().toString(36).substr(2, 9)}`;
+      return `guest_${Math.random().toString(36).substring(2, 11)}`;
     }
   }
   

@@ -4,6 +4,7 @@ import { SmartInputParser } from "./smartInputParser";
 import { ConsolidatedStoryGenerator } from "./consolidatedStoryGenerator";
 import { PremiumStoryService } from "./premiumStoryService";
 import { FreeUserStoryService } from "./freeUserStoryService";
+import { AntiRepetitionSystem } from "@/utils/antiRepetitionSystem";
 
 export interface ContentManagerConfig {
   isPremium: boolean;
@@ -270,12 +271,19 @@ export class UniversalContentManager {
     return titleOptions[Math.floor(Math.random() * titleOptions.length)];
   }
   
-  // Fallback story generation
+  // Fallback story generation with anti-repetition tracking
   private static async generateFallbackStory(userInfo: UserInfo, difficulty: DifficultyLevel): Promise<Story> {
     const simpleStory = `Once upon a time, there was a child named ${userInfo.name}. 
     ${userInfo.name} loved ${userInfo.favoriteAnimal}s and ${userInfo.favoriteFood}. 
     One day, ${userInfo.name} went on a wonderful adventure. 
     The end.`;
+    
+    // Add to anti-repetition system even for fallback
+    try {
+      await AntiRepetitionSystem.addContent(simpleStory);
+    } catch (error) {
+      console.error('Error adding fallback story to anti-repetition:', error);
+    }
     
     return {
       id: crypto.randomUUID(),
@@ -391,7 +399,7 @@ export class UniversalContentManager {
     } catch (error) {
       console.error('Story continuation failed:', error);
       // Fallback to basic continuation
-      return this.generateFallbackStory(userInfo, difficulty);
+      return await this.generateFallbackStory(userInfo, difficulty);
     }
   }
 }

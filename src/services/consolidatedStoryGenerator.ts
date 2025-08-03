@@ -11,7 +11,7 @@ import { APP_CONFIG } from "@/constants/app";
 import { getEnhancedTemplate } from "@/constants/enhancedStoryTemplates";
 import { UserInputDistributor } from "@/services/userInputDistributor";
 // Generate unique ID utility
-const generateUniqueId = () => Math.random().toString(36).substr(2, 9);
+const generateUniqueId = () => Math.random().toString(36).substring(2, 11);
 
 export interface ConsolidatedStoryConfig {
   pageCount: number;
