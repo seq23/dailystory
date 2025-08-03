@@ -87,7 +87,15 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
   const [storyImages, setStoryImages] = useState<Array<{url?: string, prompt: string}>>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [currentDifficulty, setCurrentDifficulty] = useState<'easy' | 'medium' | 'hard' | 'expert'>('easy');
+  const [currentDifficulty, setCurrentDifficulty] = useState<'easy' | 'medium' | 'hard' | 'expert'>(() => {
+    // Initialize difficulty from userInfo
+    const readingLevel = userInfo.readingLevel || (userInfo as any).difficultyLevel || userInfo.readingAbility || 'easy';
+    return (readingLevel === 'beginner' ? 'easy' :
+            readingLevel === 'elementary' ? 'medium' :
+            readingLevel === 'intermediate' ? 'hard' : 
+            readingLevel === 'advanced' ? 'expert' : 
+            readingLevel) as 'easy' | 'medium' | 'hard' | 'expert';
+  });
   
   // Session state
   const [timeRemaining, setTimeRemaining] = useState(APP_CONFIG.FREE_SESSION_DURATION);
@@ -938,11 +946,11 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                         // Use difficulty-based font sizing for better readability
                         const getFontSizeForDifficulty = (difficulty: string) => {
                           switch (difficulty) {
-                            case 'easy': return 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl'; // Much bigger for easiest level
+                            case 'easy': return 'text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl'; // Extra large for level 1 (ages 3-6)
                             case 'medium': return 'text-2xl sm:text-3xl md:text-4xl lg:text-5xl';
                             case 'hard': return 'text-xl sm:text-2xl md:text-3xl lg:text-4xl';
                             case 'expert': return 'text-lg sm:text-xl md:text-2xl lg:text-3xl';
-                            default: return 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl';
+                            default: return 'text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl';
                           }
                         };
                         
@@ -956,7 +964,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                         const shouldUseInteractiveWords = currentStory.length < 1000;
                         
                         return (
-                          <div className={`${config.fontSize} ${config.lineHeight} ${config.spacing} font-bold text-gray-800 max-w-full break-words hyphens-auto leading-relaxed overflow-hidden`}>
+                          <div className={`${config.fontSize} ${config.lineHeight} ${config.spacing} ${currentDifficulty === 'easy' ? 'font-black' : 'font-bold'} text-gray-800 max-w-full break-words hyphens-auto leading-relaxed overflow-hidden`}>
                             <div className="max-h-[400px] overflow-y-auto px-2">
                               {shouldUseInteractiveWords ? 
                                 processTextForPhonetics(
