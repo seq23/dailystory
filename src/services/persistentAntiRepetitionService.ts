@@ -110,12 +110,16 @@ export class PersistentAntiRepetitionService {
       console.log('💾 Saving content signature for anti-repetition:', { identifier, contentType, sessionNumber });
       
       // Check if signature already exists
-      const { data: existing } = await supabase
+      const { data: existing, error: existingError } = await supabase
         .from('user_content_signatures')
         .select('id')
         .eq('user_identifier', identifier)
         .eq('content_signature', contentSignature)
-        .single();
+        .maybeSingle();
+      
+      if (existingError) {
+        console.error('Error checking existing signature:', existingError);
+      }
       
       if (existing) {
         console.log('🔄 Content signature already exists, skipping save');
@@ -154,9 +158,9 @@ export class PersistentAntiRepetitionService {
         .select('id')
         .eq('user_identifier', identifier)
         .eq('content_signature', signature)
-        .single();
+        .maybeSingle();
       
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         console.error('Error checking duplicate content:', error);
         return false;
       }
@@ -181,9 +185,9 @@ export class PersistentAntiRepetitionService {
         .eq('user_identifier', identifier)
         .order('story_session_number', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
       
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         console.error('Error getting session number:', error);
         return 1;
       }

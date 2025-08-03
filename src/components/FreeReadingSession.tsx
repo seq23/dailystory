@@ -278,8 +278,8 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
         console.log('Story config:', storyConfig);
 
         if (!isCancelled) {
-          // Generate story content using Universal Content Manager
-          const storyResult = await UniversalContentManager.generateStory(
+          // Generate story content using Universal Content Manager with anti-repetition
+          const storyResult = await UniversalContentManager.generateNewStoryWithAntiRepetition(
             userInfo, 
             currentDifficulty as 'easy' | 'medium' | 'hard' | 'expert',
             { isPremium: false, userId: userInfo.name }
@@ -443,7 +443,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
         
         // Generate new story at the new difficulty level using Universal Content Manager
         const currentPageCount = story.length;
-        const storyResult = await UniversalContentManager.generateStory(
+        const storyResult = await UniversalContentManager.generateNewStoryWithAntiRepetition(
           userInfo, 
           newDifficulty as 'easy' | 'medium' | 'hard' | 'expert',
           { isPremium: false, userId: userInfo.name }

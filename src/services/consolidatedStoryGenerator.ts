@@ -201,6 +201,23 @@ export class ConsolidatedStoryGenerator {
         return `${pronoun} ${correctVerb}`;
       });
     
+    // Fix incorrect articles with plural nouns (e.g., "a dogs" -> "dogs", "a cats" -> "cats")
+    fixed = fixed.replace(/\ba\s+([a-z]+s)\b/gi, (match, noun) => {
+      // Check if it's a plural noun
+      if (GrammarValidator.isPlural(noun)) {
+        return noun; // Remove the "a" for plural nouns
+      }
+      return match; // Keep original if not plural
+    });
+    
+    // Fix "an" with plural nouns too
+    fixed = fixed.replace(/\ban\s+([a-z]+s)\b/gi, (match, noun) => {
+      if (GrammarValidator.isPlural(noun)) {
+        return noun; // Remove the "an" for plural nouns
+      }
+      return match; // Keep original if not plural
+    });
+    
     // Remove obvious template variables that weren't processed
     fixed = fixed.replace(/\{[^}]*\}/g, '');
     
