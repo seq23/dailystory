@@ -1489,20 +1489,13 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
       setIsPlayingMobile(true);
       console.log('Mobile Explain: Starting TTS playback');
       
-      // Simplified audio handling with timeout
+      // Simplified audio handling - removed timeout since audio is working correctly
       const playAudio = () => {
         return new Promise((resolve, reject) => {
-          // Set timeout to prevent infinite loading
-          const timeout = setTimeout(() => {
-            console.log('Mobile Explain: Audio timeout reached');
-            setIsPlayingMobile(false);
-            URL.revokeObjectURL(audioUrl);
-            reject(new Error('Audio playback timeout'));
-          }, 10000); // 10 second timeout
+          // No timeout - audio functionality is working, let it complete naturally
           
           audio.onended = () => {
             console.log('Mobile Explain: TTS ended');
-            clearTimeout(timeout);
             setIsPlayingMobile(false);
             URL.revokeObjectURL(audioUrl);
             resolve(undefined);
@@ -1510,7 +1503,6 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
           
           audio.onerror = (e) => {
             console.error('Mobile Explain: TTS playback error:', e);
-            clearTimeout(timeout);
             setIsPlayingMobile(false);
             URL.revokeObjectURL(audioUrl);
             reject(new Error('Audio playback failed'));
@@ -1521,7 +1513,6 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
             console.log('Mobile Explain: Audio started successfully');
           }).catch((playError) => {
             console.error('Mobile Explain: Play error:', playError);
-            clearTimeout(timeout);
             setIsPlayingMobile(false);
             URL.revokeObjectURL(audioUrl);
             reject(new Error('Audio playback requires user interaction'));
