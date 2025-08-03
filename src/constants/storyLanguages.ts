@@ -63,14 +63,14 @@ export const STORY_LANGUAGES: Record<string, LanguageStoryConfig> = {
     enabled: false, // Will be enabled in future phases
     templateSets: {
       easy: [
-        "Había una vez un {character} llamado {name} que vivía en {setting}.",
-        "A {name} le encantaba jugar con {objects} todos los días.",
-        "Un día soleado, {name} encontró un {object} muy especial.",
-        "Decidió compartir el {object} con todos los {characters} del {setting}.",
-        "¡Todos estaban muy felices! Jugaron juntos hasta que se puso el sol.",
-        "Desde ese día, {name} y los {characters} fueron los mejores amigos.",
-        "Aprendieron que compartir hace todo más divertido y especial.",
-        "Y todos vivieron felices para siempre en su maravilloso {setting}."
+        "{name} juega afuera.",
+        "{name} encuentra un {object}.",
+        "El {character} está feliz.",
+        "{name} ama el {object}.",
+        "Ellos ven un {character}.",
+        "{name} ayuda al {character}.",
+        "Todos juegan juntos.",
+        "Son mejores amigos."
       ],
       medium: [
         "En un {setting} lejano, vivía un {character} curioso llamado {name}.",
@@ -117,14 +117,14 @@ export const STORY_LANGUAGES: Record<string, LanguageStoryConfig> = {
     enabled: false,
     templateSets: {
       easy: [
-        "Il était une fois un {character} nommé {name} qui vivait dans {setting}.",
-        "{name} adorait jouer avec {objects} tous les jours.",
-        "Un jour ensoleillé, {name} a trouvé un {object} très spécial.",
-        "Il a décidé de partager le {object} avec tous les {characters} du {setting}.",
-        "Tout le monde était si heureux! Ils ont tous joué ensemble jusqu'au coucher du soleil.",
-        "À partir de ce jour, {name} et les {characters} étaient les meilleurs amis.",
-        "Ils ont appris que partager rend tout plus amusant et spécial.",
-        "Et ils vécurent tous heureux pour toujours dans leur merveilleux {setting}."
+        "{name} joue dehors.",
+        "{name} trouve un {object}.",
+        "Le {character} est content.",
+        "{name} aime le {object}.",
+        "Ils voient un {character}.",
+        "{name} aide le {character}.",
+        "Tous jouent ensemble.",
+        "Ils sont meilleurs amis."
       ],
       medium: [
         "Dans un {setting} lointain, vivait un {character} curieux nommé {name}.",

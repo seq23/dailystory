@@ -160,7 +160,7 @@ export class FreeUserStoryService {
       processedUserInfo,
       difficulty,
       {
-        pageCount: 8, // Free users get 8 pages
+        pageCount: 10, // Free users also get 10 pages now
         language: 'en',
         useSmartParsing: true,
         antiRepetition: true,

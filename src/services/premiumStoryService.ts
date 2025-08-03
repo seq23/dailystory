@@ -86,7 +86,7 @@ export class PremiumStoryService {
         userInfo,
         difficulty,
         {
-          pageCount: 5, // Continuation pages
+          pageCount: 10, // Continuation pages - same as main stories
           language: 'en',
           useSmartParsing: true,
           antiRepetition: true,

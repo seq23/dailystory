@@ -234,7 +234,7 @@ export class UniversalContentManager {
     
     // Generate the story using consolidated generator with clean English inputs
     const storyResult = await ConsolidatedStoryGenerator.generateStory(userInfo, difficulty, {
-      pageCount: 10,
+      pageCount: 10, // Premium users get 10 pages
       language: 'en',
       useSmartParsing: true,
       antiRepetition: true,
