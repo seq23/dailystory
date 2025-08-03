@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BookOpen, Star, TrendingUp, Volume2, Trash2, Plus } from 'lucide-react';
-import { OpenAITTSService } from '@/services/openaiTTSService';
+import { UnifiedTTSService } from '@/services/unifiedTTSService';
 import type { UserInfo } from '@/types';
 
 interface VocabularyWord {
@@ -29,7 +29,7 @@ interface VocabularyCollectorProps {
 export const VocabularyCollector = ({ userInfo, isVisible, onClose, enablePersistence = true }: VocabularyCollectorProps) => {
   const { t } = useTranslation();
   const [vocabulary, setVocabulary] = useState<VocabularyWord[]>([]);
-  const [ttsService] = useState(() => new OpenAITTSService());
+  const [ttsService] = useState(() => new UnifiedTTSService());
   const [playingWord, setPlayingWord] = useState<string | null>(null);
 
   // Load vocabulary from localStorage (only for premium users)

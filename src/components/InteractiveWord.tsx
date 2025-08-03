@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { getPhoneticSpelling } from "@/utils/phoneticDictionary";
 import { Volume2, HelpCircle, Languages, BookOpen, Lightbulb, Plus, Crown } from "lucide-react";
-import { createOpenAITTSService } from "@/services/textToSpeechService";
+import { UnifiedTTSService } from "@/services/unifiedTTSService";
 import { useToast } from "@/hooks/use-toast";
 import { contextualPronunciation } from "@/services/contextualPronunciation";
 import { supabase } from "@/integrations/supabase/client";
@@ -95,12 +95,13 @@ export const InteractiveWord = ({
   const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const wordRef = useRef<HTMLSpanElement>(null);
   const phoneticSpelling = getPhoneticSpelling(word);
+  const { isMobile } = useIsMobile();
 
   useEffect(() => {
-    // Initialize OpenAI TTS service using the improved service
-    const service = createOpenAITTSService();
+    // Initialize Unified TTS service
+    const service = new UnifiedTTSService({ mobileOptimized: isMobile });
     setTtsService(service);
-  }, []);
+  }, [isMobile]);
 
   // Determine if user is a native English speaker
   const isNativeEnglishSpeaker = userInfo?.nativeLanguage === "en";

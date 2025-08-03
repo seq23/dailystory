@@ -14,7 +14,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { ChevronRight, User, GraduationCap, Heart, Star, Globe, Sparkles, AlertCircle, ArrowRightLeft, CheckCircle } from "lucide-react";
 import { ContentSecurity, SecurityLogger } from "@/utils/security";
 import { useToast } from "@/hooks/use-toast";
-import { IntelligentInputProcessor } from "@/services/intelligentInputProcessor";
+import { SmartInputParser } from "@/services/smartInputParser";
 import type { UserInfo, Grade, LanguageCode, LearningGoal } from "@/types";
 
 export type { UserInfo } from "@/types";
@@ -116,34 +116,41 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
     try {
       setIsProcessingInputs(true);
       
-      const processed = await IntelligentInputProcessor.processUserInput(
-        trimmedValue,
-        field,
-        formData
+      // Parse individual tags using Smart Input Parser
+      const tags = trimmedValue.split(',').map(s => s.trim()).filter(Boolean);
+      const parsed = await SmartInputParser.parseTaggedInput(tags, formData, true);
+      
+      // Find corrections for this field
+      const fieldCorrections = parsed.parsedTags.filter(pt => 
+        tags.some(tag => tag.toLowerCase() === pt.original.toLowerCase() && pt.original !== pt.corrected)
       );
 
-      // Store translation preview (only for actual translations, not spelling corrections)
-      if (processed.needsTranslation) {
+      // Store translation preview (only for actual corrections)
+      if (fieldCorrections.length > 0) {
+        const originalInput = tags.join(', ');
+        const processedInput = tags.map(tag => {
+          const correction = parsed.parsedTags.find(pt => pt.original.toLowerCase() === tag.toLowerCase());
+          return correction ? correction.corrected : tag;
+        }).join(', ');
+        
         setTranslationPreviews(prev => ({
           ...prev,
           [field]: {
-            originalInput: processed.originalInput,
-            processedInput: processed.processedInput,
+            originalInput,
+            processedInput,
             isTranslated: true,
-            confidence: processed.confidence
+            confidence: 0.9 // High confidence for spelling corrections
           }
         }));
 
-        // Auto-apply translation if confidence is high
-        if (processed.confidence > 0.6) {
-          setFormData(prev => ({ ...prev, [field]: processed.processedInput }));
-          
-          toast({
-            title: "✨ Translation Applied",
-            description: `Converted "${processed.originalInput}" to English for your story.`,
-            duration: 3000,
-          });
-        }
+        // Auto-apply corrections if confidence is high
+        setFormData(prev => ({ ...prev, [field]: processedInput }));
+        
+        toast({
+          title: "✨ Spelling Fixed",
+          description: `Corrected "${originalInput}" to "${processedInput}" for your story.`,
+          duration: 3000,
+        });
       }
       
     } catch (error) {

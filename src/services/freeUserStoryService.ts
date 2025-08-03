@@ -1,6 +1,6 @@
 import { UserInfo, Story, DifficultyLevel } from "@/types";
 import { ContentSignatureGenerator, SessionManager } from "./enhancedLinguisticProcessor";
-import { ComprehensiveStoryGenerator } from "./comprehensiveStoryGenerator";
+import { ConsolidatedStoryGenerator } from "./consolidatedStoryGenerator";
 
 export interface FreeUserSession {
   id: string;
@@ -156,22 +156,28 @@ export class FreeUserStoryService {
     // Generate new story
     const { processedUserInfo } = await this.processWithTranslation(userInfo, translationContext);
     
-    const storyData = ComprehensiveStoryGenerator.generateStory(
+    const storyResult = await ConsolidatedStoryGenerator.generateStory(
       processedUserInfo,
       difficulty,
-      8 // Free users get 8 pages
+      {
+        pageCount: 8, // Free users get 8 pages
+        language: 'en',
+        useSmartParsing: true,
+        antiRepetition: true,
+        culturalAdaptation: true
+      }
     );
     
     const story: Story = {
       id: crypto.randomUUID(),
       title: this.generateTitle(processedUserInfo, difficulty),
-      segments: storyData.pages.map((page, index) => ({
+      segments: storyResult.pages.map((page, index) => ({
         text: page,
         illustration: `/api/illustrations/free-${index + 1}.jpg`
       })),
       difficulty,
-      estimatedReadingTime: Math.ceil(storyData.pages.join(' ').split(' ').length / 100),
-      wordCount: storyData.pages.join(' ').split(' ').length
+      estimatedReadingTime: Math.ceil(storyResult.pages.join(' ').split(' ').length / 100),
+      wordCount: storyResult.pages.join(' ').split(' ').length
     };
     
     // Cache the new session

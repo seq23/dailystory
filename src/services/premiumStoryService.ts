@@ -1,6 +1,6 @@
 import { UserInfo, Story, DifficultyLevel } from "@/types";
 import { ContentSignatureGenerator, SessionManager } from "./enhancedLinguisticProcessor";
-import { ComprehensiveStoryGenerator } from "./comprehensiveStoryGenerator";
+import { ConsolidatedStoryGenerator } from "./consolidatedStoryGenerator";
 
 export interface StoryLibraryEntry {
   id: string;
@@ -81,24 +81,30 @@ export class PremiumStoryService {
         continuationContext
       );
       
-      // Generate continuation using enhanced story generator
-      const storyData = ComprehensiveStoryGenerator.generateStory(
+      // Generate continuation using consolidated story generator
+      const storyResult = await ConsolidatedStoryGenerator.generateStory(
         userInfo,
         difficulty,
-        5 // Continuation pages
+        {
+          pageCount: 5, // Continuation pages
+          language: 'en',
+          useSmartParsing: true,
+          antiRepetition: true,
+          culturalAdaptation: true
+        }
       );
       
       // Create continuation story
       const continuationStory: Story = {
         id: `${baseStory.id}_cont_${Date.now()}`,
         title: `${baseStory.title} - Chapter ${baseStory.continuationCount + 2}`,
-        segments: storyData.pages.map((page, index) => ({
+        segments: storyResult.pages.map((page, index) => ({
           text: page,
           illustration: `/api/illustrations/continuation-${index + 1}.jpg`
         })),
         difficulty,
-        estimatedReadingTime: Math.ceil(storyData.pages.join(' ').split(' ').length / 100),
-        wordCount: storyData.pages.join(' ').split(' ').length
+        estimatedReadingTime: Math.ceil(storyResult.pages.join(' ').split(' ').length / 100),
+        wordCount: storyResult.pages.join(' ').split(' ').length
       };
       
       // Update continuation tracking

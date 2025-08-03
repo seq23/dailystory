@@ -1,6 +1,6 @@
 import { UserInfo, Story, DifficultyLevel } from "@/types";
-import { IntelligentInputProcessor } from "./intelligentInputProcessor";
-import { ComprehensiveStoryGenerator } from "./comprehensiveStoryGenerator";
+import { SmartInputParser } from "./smartInputParser";
+import { ConsolidatedStoryGenerator } from "./consolidatedStoryGenerator";
 import { PremiumStoryService } from "./premiumStoryService";
 import { FreeUserStoryService } from "./freeUserStoryService";
 
@@ -144,7 +144,7 @@ export class UniversalContentManager {
     }
   }
   
-  // Process all user input fields through the intelligent processor
+  // Process all user input fields through the smart input parser
   private static async processAllUserInputs(userInfo: UserInfo): Promise<ProcessedUserData> {
     const fieldsToProcess = [
       'name',
@@ -164,33 +164,52 @@ export class UniversalContentManager {
     let totalConfidence = 0;
     let translationCount = 0;
     
-    for (const field of fieldsToProcess) {
-      const originalValue = userInfo[field as keyof UserInfo] as string;
-      if (!originalValue || typeof originalValue !== 'string') continue;
-      
+    // Collect all input tags for batch processing
+    const allTags: string[] = [];
+    fieldsToProcess.forEach(field => {
+      const value = userInfo[field as keyof UserInfo] as string;
+      if (value && typeof value === 'string') {
+        allTags.push(...value.split(',').map(s => s.trim()).filter(Boolean));
+      }
+    });
+    
+    if (allTags.length > 0) {
       try {
-        const processed = await IntelligentInputProcessor.processUserInput(
-          originalValue,
-          field,
-          userInfo
-        );
+        // Use SmartInputParser for processing
+        const parsed = await SmartInputParser.parseTaggedInput(allTags, userInfo, true);
         
-        // Update the processed user info with clean English
-        (processedUserInfo as any)[field] = processed.processedInput;
-        
-        // Track translation metrics
-        if (processed.needsTranslation) {
-          translationReport.fieldsTranslated.push(field);
-          translationReport.totalTranslations++;
-          totalConfidence += processed.confidence;
-          translationCount++;
+        // Apply corrections back to user info fields
+        for (const field of fieldsToProcess) {
+          const originalValue = userInfo[field as keyof UserInfo] as string;
+          if (!originalValue || typeof originalValue !== 'string') continue;
+          
+          // Process each tag in the field
+          const fieldTags = originalValue.split(',').map(s => s.trim()).filter(Boolean);
+          const processedTags = fieldTags.map(tag => {
+            const parsedTag = parsed.parsedTags.find(pt => pt.original.toLowerCase() === tag.toLowerCase());
+            return parsedTag ? parsedTag.corrected : tag;
+          });
+          
+          (processedUserInfo as any)[field] = processedTags.join(', ');
+          
+          // Track processing metrics
+          const hasCorrections = fieldTags.some(tag => 
+            parsed.parsedTags.some(pt => pt.original.toLowerCase() === tag.toLowerCase() && pt.original !== pt.corrected)
+          );
+          
+          if (hasCorrections) {
+            translationReport.fieldsTranslated.push(field);
+            translationReport.totalTranslations++;
+            totalConfidence += 0.9; // High confidence for spelling corrections
+            translationCount++;
+          }
+          
+          console.log(`Processed ${field}: "${originalValue}" → "${(processedUserInfo as any)[field]}"`);
         }
         
-        console.log(`Processed ${field}: \"${originalValue}\" → \"${processed.processedInput}\"`);
-        
       } catch (error) {
-        console.error(`Failed to process field ${field}:`, error);
-        // Keep original value on error
+        console.error('SmartInputParser failed:', error);
+        // Keep original values on error
       }
     }
     
@@ -213,19 +232,25 @@ export class UniversalContentManager {
     config: ContentManagerConfig
   ): Promise<Story> {
     
-    // Generate the story using comprehensive generator with clean English inputs
-    const storyData = ComprehensiveStoryGenerator.generateStory(userInfo, difficulty, 10);
+    // Generate the story using consolidated generator with clean English inputs
+    const storyResult = await ConsolidatedStoryGenerator.generateStory(userInfo, difficulty, {
+      pageCount: 10,
+      language: 'en',
+      useSmartParsing: true,
+      antiRepetition: true,
+      culturalAdaptation: true
+    });
     
     const story: Story = {
       id: crypto.randomUUID(),
       title: this.generateStoryTitle(userInfo, difficulty),
-      segments: storyData.pages.map((page, index) => ({
+      segments: storyResult.pages.map((page, index) => ({
         text: page,
         illustration: `/api/illustrations/story-${index + 1}.jpg`
       })),
       difficulty,
-      estimatedReadingTime: Math.ceil(storyData.pages.join(' ').split(' ').length / 100),
-      wordCount: storyData.pages.join(' ').split(' ').length
+      estimatedReadingTime: Math.ceil(storyResult.pages.join(' ').split(' ').length / 100),
+      wordCount: storyResult.pages.join(' ').split(' ').length
     };
     
     return story;
