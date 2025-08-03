@@ -299,10 +299,18 @@ All colors MUST be HSL.
     text-align: left !important;
   }
 
-  /* Keep homepage navigation elements LTR to prevent layout breaking */
-  [dir="rtl"] .language-picker,
+  /* HOMEPAGE RTL FIXES: Keep ALL homepage elements LTR */
+  [dir="rtl"] header,
+  [dir="rtl"] .welcome-hero,
+  [dir="rtl"] .hero-content,
+  [dir="rtl"] .company-title,
   [dir="rtl"] .sign-in-btn,
-  [dir="rtl"] .carousel-nav {
+  [dir="rtl"] .language-picker,
+  [dir="rtl"] .carousel-nav,
+  [dir="rtl"] .carousel-container,
+  [dir="rtl"] .carousel-item,
+  [dir="rtl"] .carousel,
+  [dir="rtl"] nav {
     direction: ltr !important;
     text-align: left !important;
   }
