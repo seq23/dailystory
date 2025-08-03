@@ -1025,6 +1025,54 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
   const [mobileWordData, setMobileWordData] = useState<any>(null);
   const [isLoadingMobile, setIsLoadingMobile] = useState(false);
   
+  
+  // ENHANCED: Debug and fix translation issues for Arabic, Chinese, Hindi (mobile version)
+  const userLanguageT = useCallback((key: string, fallback: string) => {
+    if (props.userInfo?.nativeLanguage && props.userInfo.nativeLanguage !== 'en') {
+      try {
+        // Approach 1: Try direct i18n translation
+        const translation = i18n.t(key, { lng: props.userInfo.nativeLanguage });
+        if (translation && translation !== key && translation !== fallback) {
+          return translation;
+        }
+        
+        // Approach 2: Manual fallback with known translations
+        const manualTranslations = {
+          'zh': {
+            'interactiveWord.hearIt': '听一听',
+            'interactiveWord.explain': '解释', 
+            'interactiveWord.translate': '翻译',
+            'interactiveWord.addToVocabulary': '保存单词',
+            'interactiveWord.loading': '加载中...'
+          },
+          'ar': {
+            'interactiveWord.hearIt': 'استمع إليها',
+            'interactiveWord.explain': 'اشرح',
+            'interactiveWord.translate': 'ترجم', 
+            'interactiveWord.addToVocabulary': 'احفظ الكلمة',
+            'interactiveWord.loading': 'جاري التحميل...'
+          },
+          'hi': {
+            'interactiveWord.hearIt': 'सुनें',
+            'interactiveWord.explain': 'समझाएं',
+            'interactiveWord.translate': 'अनुवाद करें',
+            'interactiveWord.addToVocabulary': 'शब्द सहेजें',
+            'interactiveWord.loading': 'लोड हो रहा है...'
+          }
+        };
+        
+        const manualTranslation = manualTranslations[props.userInfo.nativeLanguage]?.[key];
+        if (manualTranslation) {
+          return manualTranslation;
+        }
+      } catch (error) {
+        console.error('❌ Translation error:', error);
+      }
+    }
+    
+    return fallback;
+  }, [props.userInfo?.nativeLanguage]);
+
   // Detect if we're running in Capacitor (native mobile app)
   const isNativeApp = typeof window !== 'undefined' && 
     (window as any).Capacitor?.isNativePlatform?.();
@@ -1550,7 +1598,7 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
               >
                 <Volume2 className="w-6 h-6" />
                 <span className="text-sm">
-                  {isPlayingMobile ? "Playing..." : t("interactiveWord.hearIt", "Hear It")}
+                  {isPlayingMobile ? userLanguageT("interactiveWord.loading", "Playing...") : userLanguageT("interactiveWord.hearIt", "Hear It")}
                 </span>
               </button>
               
@@ -1564,7 +1612,7 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
               >
                 <HelpCircle className="w-6 h-6" />
                 <span className="text-sm">
-                  {isLoadingMobile ? t("interactiveWord.loading", "Loading...") : t("interactiveWord.explain", "Explain")}
+                  {isLoadingMobile ? userLanguageT("interactiveWord.loading", "Loading...") : userLanguageT("interactiveWord.explain", "Explain")}
                 </span>
               </button>
             </div>
