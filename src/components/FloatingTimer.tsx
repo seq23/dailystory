@@ -158,25 +158,10 @@ export const FloatingTimer = ({
     return "#16a34a"; // green
   };
 
-  // Check if tutorial is active and on step 0 (timer step - first step)
-  const isTutorialTimerStep = showTutorial && tutorialStep === 0;
-
   return (
       <TooltipProvider>
-      {/* Floating Timer Container - Mobile optimized with tutorial centering */}
-      <div 
-        className={`fixed z-30 flex flex-col items-center max-w-fit transition-all duration-300 ${
-          isTutorialTimerStep 
-            ? 'top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2' 
-            : 'bottom-8 left-4 right-4 sm:left-6 sm:right-auto items-start sm:items-center'
-        }`} 
-        id="floating-timer" 
-        style={!isTutorialTimerStep ? { 
-          marginLeft: 'max(0.75rem, env(safe-area-inset-left))', 
-          marginBottom: 'max(1rem, env(safe-area-inset-bottom))', 
-          marginRight: 'max(0.75rem, env(safe-area-inset-right))' 
-        } : {}}
-      >
+      {/* Floating Timer Container - Mobile optimized */}
+      <div className="fixed bottom-6 left-6 sm:left-8 z-30 flex flex-col items-center gap-6 md:gap-6 gap-3" id="floating-timer" style={{ marginLeft: 'max(1rem, env(safe-area-inset-left))', marginBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
         
         {/* Main Timer Circle - Professional & Larger */}
         <div className="relative">
@@ -216,7 +201,7 @@ export const FloatingTimer = ({
           )}
           
           {/* Main Timer Circle - Mobile responsive */}
-          <div className="relative w-24 h-24 sm:w-30 sm:h-30 md:w-36 md:h-36 bg-gradient-to-br from-white to-gray-50 backdrop-blur-sm rounded-full shadow-2xl border-2 sm:border-4 border-white/80 flex items-center justify-center ring-2 sm:ring-4 ring-primary/20">
+          <div className="relative w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 bg-gradient-to-br from-white to-gray-50 backdrop-blur-sm rounded-full shadow-2xl border-2 sm:border-4 border-white/80 flex items-center justify-center ring-2 sm:ring-4 ring-primary/20">
             {/* Outer glow ring */}
             <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/10 to-transparent animate-pulse"></div>
             
