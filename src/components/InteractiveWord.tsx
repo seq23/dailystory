@@ -1065,11 +1065,12 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
       const voiceId = getVoiceForUser();
       console.log('Mobile TTS: Starting pronunciation for word:', props.word, 'Voice:', voiceId);
       
+      // CRITICAL FIX: Use supabase.functions.invoke properly for binary data
       const response = await supabase.functions.invoke('elevenlabs-tts', {
         body: {
           text: props.word,
           voice: voiceId,
-          model: 'eleven_turbo_v2_5' // Fast model for better mobile performance
+          model: 'eleven_turbo_v2_5'
         }
       });
 
@@ -1079,13 +1080,18 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
         console.error('Mobile TTS Error:', response.error);
         throw new Error(response.error.message || 'TTS failed');
       }
-      
-      // CRITICAL FIX: The edge function returns audio data directly, not as a nested object
+
+      // CRITICAL FIX: Get the ArrayBuffer from the response
       if (!response.data) {
         throw new Error('No audio data received from TTS service');
       }
       
-      // Handle audio blob properly for mobile - response.data is already the audio ArrayBuffer
+      console.log('Mobile TTS: Audio data received, type:', typeof response.data, 'length:', response.data?.length || response.data?.byteLength || 'unknown');
+      console.log('Mobile TTS: Is ArrayBuffer?', response.data instanceof ArrayBuffer);
+      console.log('Mobile TTS: Is Uint8Array?', response.data instanceof Uint8Array);
+      console.log('Mobile TTS: Constructor name:', response.data?.constructor?.name);
+      
+      // Handle audio blob properly for mobile - create blob from response data
       const audioBlob = new Blob([response.data], { type: 'audio/mpeg' });
       console.log('Mobile TTS: Audio blob created, size:', audioBlob.size, 'type:', audioBlob.type);
       
