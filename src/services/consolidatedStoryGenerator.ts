@@ -3,6 +3,7 @@ import { SmartInputParser, ParsedTag } from "./smartInputParser";
 import { STORY_LANGUAGES, getLanguageTemplates } from "@/constants/storyLanguages";
 import { MultilingualStoryRequest, SupportedLanguage } from "@/types/multilingual";
 import { StoryQualityChecker } from "@/utils/storyQualityChecker";
+import { validateAndFixGrammar } from "@/utils/grammarValidator";
 
 export interface ConsolidatedStoryConfig {
   pageCount: number;
@@ -79,7 +80,7 @@ export class ConsolidatedStoryGenerator {
 
       // Step 3: Apply quality checking and improvements
       const improvedPages = pages.map(page => 
-        StoryQualityChecker.fixGrammarIssues(page)
+        validateAndFixGrammar(page)
       );
 
       // Step 4: Calculate quality score
