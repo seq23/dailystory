@@ -281,6 +281,26 @@
       "avatar": {
         "label": "你想要哪个头像？"
       },
+      "avatarTypes": {
+        "label": "头像类型：",
+        "boy": "男孩",
+        "girl": "女孩",
+        "preferNotToAnswer": "不想回答"
+      },
+      "skinTone": {
+        "label": "肤色：",
+        "select": "选择",
+        "options": {
+          "pale": "苍白",
+          "light": "浅色",
+          "medium": "中等",
+          "olive": "橄榄色",
+          "dark": "深色"
+        }
+      },
+      "avatarPreview": {
+        "label": "你的头像："
+      },
       "favoriteColor": {
         "label": "你最喜欢的颜色是什么？",
         "optional": "（可选）"
