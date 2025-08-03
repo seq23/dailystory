@@ -7,6 +7,7 @@ import { validateAndFixGrammar, GrammarValidator } from "@/utils/grammarValidato
 import { NameFormatter } from "@/utils/nameFormatter";
 import { AntiRepetitionSystem } from "@/utils/antiRepetitionSystem";
 import { TemplateVariableProcessor } from "@/utils/templateVariableProcessor";
+import { APP_CONFIG } from "@/constants/app";
 // Generate unique ID utility
 const generateUniqueId = () => Math.random().toString(36).substr(2, 9);
 
@@ -41,7 +42,7 @@ export class ConsolidatedStoryGenerator {
     const startTime = Date.now();
     
     const fullConfig: ConsolidatedStoryConfig = {
-      pageCount: 6,
+      pageCount: APP_CONFIG.DEFAULT_PAGE_COUNT,
       language: 'en',
       useSmartParsing: true,
       antiRepetition: true,

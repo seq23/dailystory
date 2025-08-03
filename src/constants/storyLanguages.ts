@@ -9,14 +9,14 @@ export const STORY_LANGUAGES: Record<string, LanguageStoryConfig> = {
     enabled: true,
     templateSets: {
       easy: [
-        "Once upon a time, there was a {character} named {name}. {name} lived in a {setting}.",
-        "{name} loved to play with {objects}. Every day, {name} would go outside and have fun.",
-        "One sunny day, {name} found a special {object}. It was the most beautiful {object} ever!",
-        "{name} decided to share the {object} with all the {characters} in the {setting}.",
-        "Everyone was so happy! They all played together until the sun went down.",
-        "From that day on, {name} and the {characters} were the best of friends.",
-        "They learned that sharing makes everything more fun and special.",
-        "And they all lived happily ever after in their wonderful {setting}."
+        "{name} plays outside.",
+        "{name} finds a {object}.",
+        "The {character} is happy.",
+        "{name} loves {object}.",
+        "They see a {character}.",
+        "{name} helps the {character}.",
+        "Everyone plays together.",
+        "They are best friends."
       ],
       medium: [
         "In a {setting} far away, there lived a curious {character} named {name}.",

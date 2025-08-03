@@ -2,6 +2,7 @@
 import { UserInfo, DifficultyLevel } from "@/types";
 import { NameFormatter } from "./nameFormatter";
 import { GrammarValidator } from "./grammarValidator";
+import { SentenceValidator } from "./sentenceValidator";
 
 interface VariableContext {
   userInfo: UserInfo;
@@ -27,7 +28,23 @@ export class TemplateVariableProcessor {
     // Final cleanup and validation
     processed = this.cleanupTemplate(processed);
     
+    // Validate sentence length for difficulty level
+    processed = this.validateSentenceLength(processed, context.difficulty);
+    
     return processed;
+  }
+
+  /**
+   * Validates and adjusts sentence length based on difficulty level
+   */
+  private static validateSentenceLength(text: string, difficulty: DifficultyLevel): string {
+    const validation = SentenceValidator.validateSentence(text, difficulty);
+    
+    if (!validation.isValid && validation.reconstructedSentence) {
+      return validation.reconstructedSentence;
+    }
+    
+    return text;
   }
   
   /**
