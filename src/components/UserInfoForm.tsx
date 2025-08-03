@@ -143,87 +143,11 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
     }
   };
 
+  // This function is no longer needed - replaced by real-time translation
+  // Keeping for now in case of rollback needed
   const handleTranslationProcessing = async () => {
-    if (!formData.favoriteAnimal && !formData.favoriteFood && !formData.hobbies) {
-      return;
-    }
-
-    setIsProcessingInputs(true);
-    
-    try {
-      const fieldsToProcess = [];
-      const fieldMapping: string[] = [];
-      
-      if (formData.favoriteAnimal) {
-        fieldsToProcess.push(formData.favoriteAnimal);
-        fieldMapping.push('favoriteAnimal');
-      }
-      if (formData.favoriteFood) {
-        fieldsToProcess.push(formData.favoriteFood);
-        fieldMapping.push('favoriteFood');
-      }
-      if (formData.hobbies) {
-        fieldsToProcess.push(formData.hobbies);
-        fieldMapping.push('hobbies');
-      }
-
-      console.log('Processing user inputs for translations/corrections:', fieldsToProcess);
-      
-      const result = await SmartInputParser.parseTaggedInput(
-        fieldsToProcess,
-        formData,
-        true // mobile optimized
-      );
-
-      console.log('Smart parsing result:', result);
-
-      // Update form data with corrected/translated values
-      let updatedFormData = { ...formData };
-      let changesMade = false;
-      const changes: string[] = [];
-
-      result.parsedTags.forEach((tag, index) => {
-        if (tag.original !== tag.corrected) {
-          changesMade = true;
-          const fieldName = fieldMapping[index];
-          const change = `"${tag.original}" → "${tag.corrected}"`;
-          changes.push(change);
-          console.log(`Processed: ${change}`);
-          
-          // Update the corresponding field
-          if (fieldName === 'favoriteAnimal') {
-            updatedFormData.favoriteAnimal = tag.corrected;
-          } else if (fieldName === 'favoriteFood') {
-            updatedFormData.favoriteFood = tag.corrected;
-          } else if (fieldName === 'hobbies') {
-            updatedFormData.hobbies = tag.corrected;
-          }
-        }
-      });
-
-      if (changesMade) {
-        setFormData(updatedFormData);
-        
-        toast({
-          title: "✨ Input Processed!",
-          description: `Translations/corrections applied: ${changes.join(', ')}`,
-          duration: 4000,
-        });
-      }
-
-      console.log('Generated processing report:', SmartInputParser.generateProcessingReport(result));
-
-    } catch (error) {
-      console.error('Input processing error:', error);
-      toast({
-        title: t('userInfoForm.validation.contentIssue'),
-        description: t('common.tryAgainLater'),
-        variant: "destructive",
-        duration: 3000,
-      });
-    } finally {
-      setIsProcessingInputs(false);
-    }
+    // Real-time translation is now handled in handleInputChange
+    console.log('📝 Legacy batch processing - now handled in real-time');
   };
 
   const handleSubmit = () => {
@@ -610,10 +534,29 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                   {t("userInfoForm.fields.favoriteColor.label")}
                   <span className="text-xs md:text-sm text-muted-foreground ml-2">{t("userInfoForm.fields.favoriteColor.optional")}</span>
                 </Label>
-                <ColorPicker
-                  value={formData.favoriteColor}
-                  onChange={(color) => handleInputChange("favoriteColor", color)}
-                />
+                <div className="relative">
+                  <ColorPicker
+                    value={formData.favoriteColor}
+                    onChange={(color) => handleInputChange("favoriteColor", color)}
+                  />
+                  {translationLoading.favoriteColor && (
+                    <div className="absolute right-3 top-3">
+                      <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                    </div>
+                  )}
+                </div>
+                {translationLoading.favoriteColor && (
+                  <div className="translation-feedback">
+                    <Loader2 className="w-3 h-3 animate-spin inline mr-1" />
+                    {t('userForm.translating', 'Translating...')}
+                  </div>
+                )}
+                {translations.favoriteColor && !translationLoading.favoriteColor && (
+                  <div className="translation-feedback">
+                    <Globe className="w-3 h-3 inline mr-1" />
+                    {translations.favoriteColor}
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -760,7 +703,6 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
               <TagInput
                 value={formData.specialRequest}
                 onChange={(value) => handleInputChange("specialRequest", value)}
-                onBlur={() => handleTranslationProcessing()}
                 placeholder={t("userInfoForm.fields.specialRequest.placeholder")}
                 className="text-base md:text-lg min-h-[80px] md:min-h-[100px]"
               />
