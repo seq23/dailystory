@@ -18,3 +18,9 @@ verify_jwt = false
 
 [functions.translate-word]
 verify_jwt = false
+
+[functions.translate-to-english]
+verify_jwt = false
+
+[functions.correct-spelling]
+verify_jwt = false

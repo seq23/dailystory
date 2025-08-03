@@ -96,65 +96,84 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
     }
   };
 
-  // Translation-only processing (preserves user's exact input as tags)
-  const handleTranslationProcessing = async (field: string, value: string) => {
-    if (!value || typeof value !== 'string') return;
+  const handleTranslationProcessing = async () => {
+    if (!formData.favoriteAnimal && !formData.favoriteFood && !formData.hobbies) {
+      return;
+    }
+
+    setIsProcessingInputs(true);
     
-    const trimmedValue = value.trim();
-    if (trimmedValue.length === 0 || trimmedValue.length > 200) return;
-    
-    // Only process fields that benefit from translation
-    const translatableFields = ['favoriteAnimal', 'favoriteFood', 'hobbies', 'specialRequest'];
-    if (!translatableFields.includes(field)) return;
-
-    // Check if user's native language is not English
-    if (formData.nativeLanguage === 'en') return;
-
-    // Debounce processing to avoid excessive API calls
-    if (isProcessingInputs) return;
-
     try {
-      setIsProcessingInputs(true);
+      const fieldsToProcess = [];
+      const fieldMapping: string[] = [];
       
-      // Parse individual tags using Smart Input Parser
-      const tags = trimmedValue.split(',').map(s => s.trim()).filter(Boolean);
-      const parsed = await SmartInputParser.parseTaggedInput(tags, formData, true);
+      if (formData.favoriteAnimal) {
+        fieldsToProcess.push(formData.favoriteAnimal);
+        fieldMapping.push('favoriteAnimal');
+      }
+      if (formData.favoriteFood) {
+        fieldsToProcess.push(formData.favoriteFood);
+        fieldMapping.push('favoriteFood');
+      }
+      if (formData.hobbies) {
+        fieldsToProcess.push(formData.hobbies);
+        fieldMapping.push('hobbies');
+      }
+
+      console.log('Processing user inputs for translations/corrections:', fieldsToProcess);
       
-      // Find corrections for this field
-      const fieldCorrections = parsed.parsedTags.filter(pt => 
-        tags.some(tag => tag.toLowerCase() === pt.original.toLowerCase() && pt.original !== pt.corrected)
+      const result = await SmartInputParser.parseTaggedInput(
+        fieldsToProcess,
+        formData,
+        true // mobile optimized
       );
 
-      // Store translation preview (only for actual corrections)
-      if (fieldCorrections.length > 0) {
-        const originalInput = tags.join(', ');
-        const processedInput = tags.map(tag => {
-          const correction = parsed.parsedTags.find(pt => pt.original.toLowerCase() === tag.toLowerCase());
-          return correction ? correction.corrected : tag;
-        }).join(', ');
-        
-        setTranslationPreviews(prev => ({
-          ...prev,
-          [field]: {
-            originalInput,
-            processedInput,
-            isTranslated: true,
-            confidence: 0.9 // High confidence for spelling corrections
-          }
-        }));
+      console.log('Smart parsing result:', result);
 
-        // Auto-apply corrections if confidence is high
-        setFormData(prev => ({ ...prev, [field]: processedInput }));
+      // Update form data with corrected/translated values
+      let updatedFormData = { ...formData };
+      let changesMade = false;
+      const changes: string[] = [];
+
+      result.parsedTags.forEach((tag, index) => {
+        if (tag.original !== tag.corrected) {
+          changesMade = true;
+          const fieldName = fieldMapping[index];
+          const change = `"${tag.original}" → "${tag.corrected}"`;
+          changes.push(change);
+          console.log(`Processed: ${change}`);
+          
+          // Update the corresponding field
+          if (fieldName === 'favoriteAnimal') {
+            updatedFormData.favoriteAnimal = tag.corrected;
+          } else if (fieldName === 'favoriteFood') {
+            updatedFormData.favoriteFood = tag.corrected;
+          } else if (fieldName === 'hobbies') {
+            updatedFormData.hobbies = tag.corrected;
+          }
+        }
+      });
+
+      if (changesMade) {
+        setFormData(updatedFormData);
         
         toast({
-          title: "✨ Spelling Fixed",
-          description: `Corrected "${originalInput}" to "${processedInput}" for your story.`,
-          duration: 3000,
+          title: "✨ Input Processed!",
+          description: `Translations/corrections applied: ${changes.join(', ')}`,
+          duration: 4000,
         });
       }
-      
+
+      console.log('Generated processing report:', SmartInputParser.generateProcessingReport(result));
+
     } catch (error) {
-      console.error('Translation processing failed:', error);
+      console.error('Input processing error:', error);
+      toast({
+        title: t('userInfoForm.validation.contentIssue'),
+        description: t('common.tryAgainLater'),
+        variant: "destructive",
+        duration: 3000,
+      });
     } finally {
       setIsProcessingInputs(false);
     }
@@ -550,7 +569,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                         <TagInput
                           value={formData.favoriteAnimal}
                           onChange={(value) => handleInputChange("favoriteAnimal", value)}
-                          onBlur={(value) => handleTranslationProcessing("favoriteAnimal", value)}
+                          onBlur={() => handleTranslationProcessing()}
                           placeholder={t("userInfoForm.fields.favoriteAnimal.placeholder", "dog, cat, lion, dolphin...")}
                           className="text-base md:text-lg min-h-[80px] md:min-h-[100px] rounded-xl md:rounded-2xl border-2 border-primary/20"
                         />
@@ -592,7 +611,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                         <TagInput
                           value={formData.favoriteFood}
                           onChange={(value) => handleInputChange("favoriteFood", value)}
-                          onBlur={(value) => handleTranslationProcessing("favoriteFood", value)}
+                          onBlur={() => handleTranslationProcessing()}
                           placeholder={t("userInfoForm.fields.favoriteFood.placeholder", "pizza, ice cream, apples, cookies...")}
                           className="text-base md:text-lg min-h-[80px] md:min-h-[100px] rounded-xl md:rounded-2xl border-2 border-primary/20"
                         />
@@ -634,7 +653,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                         <TagInput
                           value={formData.hobbies}
                           onChange={(value) => handleInputChange("hobbies", value)}
-                          onBlur={(value) => handleTranslationProcessing("hobbies", value)}
+                          onBlur={() => handleTranslationProcessing()}
                           placeholder={t("userInfoForm.fields.hobbies.placeholder", "soccer, drawing, dancing, video games...")}
                           className="text-base md:text-lg min-h-[80px] md:min-h-[100px] rounded-xl md:rounded-2xl border-2 border-primary/20"
                         />
@@ -685,7 +704,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
               <TagInput
                 value={formData.specialRequest}
                 onChange={(value) => handleInputChange("specialRequest", value)}
-                onBlur={(value) => handleTranslationProcessing("specialRequest", value)}
+                onBlur={() => handleTranslationProcessing()}
                 placeholder={t("userInfoForm.fields.specialRequest.placeholder")}
                 className="text-base md:text-lg min-h-[80px] md:min-h-[100px]"
               />

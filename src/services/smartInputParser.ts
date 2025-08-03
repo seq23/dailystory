@@ -143,14 +143,38 @@ export class SmartInputParser {
   }
 
   /**
-   * Correct spelling of a single tag using Supabase function
+   * Correct spelling of a single tag using translation and spelling correction
    */
   private static async correctTagSpelling(
     tag: string,
     userInfo?: any
   ): Promise<{ corrected: string; confidence: number }> {
     try {
-      // Fix API parameter mismatch - use correct parameters that match the function
+      // First, try to translate foreign words to English
+      const userLanguage = userInfo?.nativeLanguage || userInfo?.language || 'en';
+      
+      if (userLanguage !== 'en') {
+        console.log(`Attempting translation for "${tag}" from ${userLanguage} to English`);
+        
+        const { data: translationData, error: translationError } = await supabase.functions.invoke('translate-to-english', {
+          body: {
+            text: tag,
+            sourceLanguage: userLanguage,
+            context: 'user_form_input',
+            gradeLevel: userInfo?.grade || userInfo?.gradeLevel || 'K'
+          }
+        });
+
+        if (!translationError && translationData?.success && translationData?.isTranslated) {
+          console.log(`Translation successful: "${tag}" → "${translationData.translatedText}"`);
+          return {
+            corrected: translationData.translatedText,
+            confidence: translationData.confidence || 0.8
+          };
+        }
+      }
+
+      // If translation didn't work or user is English native, try spelling correction
       const { data, error } = await supabase.functions.invoke('correct-spelling', {
         body: {
           text: tag,
@@ -161,7 +185,6 @@ export class SmartInputParser {
 
       if (error) {
         console.warn('Spelling correction failed:', error);
-        // Implement fallback spelling correction using local dictionary
         return this.fallbackSpellingCorrection(tag);
       }
 
@@ -180,16 +203,17 @@ export class SmartInputParser {
       };
 
     } catch (error) {
-      console.warn('Spelling correction error:', error);
+      console.warn('Tag processing error:', error);
       return this.fallbackSpellingCorrection(tag);
     }
   }
 
   /**
-   * Fallback spelling correction using local dictionary
+   * Fallback spelling correction using local dictionary with multilingual support
    */
   private static fallbackSpellingCorrection(tag: string): { corrected: string; confidence: number } {
     const commonCorrections: Record<string, string> = {
+      // English spelling corrections
       'lionns': 'lions',
       'elefant': 'elephant',
       'colr': 'color',
@@ -201,7 +225,34 @@ export class SmartInputParser {
       'writting': 'writing',
       'hapiness': 'happiness',
       'beutiful': 'beautiful',
-      'intresting': 'interesting'
+      'intresting': 'interesting',
+      
+      // Common foreign word translations
+      // Spanish
+      'perro': 'dog',
+      'gato': 'cat',
+      'casa': 'house',
+      'agua': 'water',
+      'comida': 'food',
+      
+      // French  
+      'chien': 'dog',
+      'chat': 'cat',
+      'glace': 'ice cream',
+      'pomme': 'apple',
+      'maison': 'house',
+      'eau': 'water',
+      
+      // German
+      'hund': 'dog',
+      'katze': 'cat',
+      'haus': 'house',
+      'wasser': 'water',
+      
+      // Italian
+      'cane': 'dog',
+      'gatto': 'cat',
+      'acqua': 'water'
     };
     
     const lowercaseTag = tag.toLowerCase();

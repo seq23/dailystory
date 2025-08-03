@@ -68,14 +68,9 @@
         "features": {
           "unlimited": "قصص غير محدودة",
           "aiFeatures": "ميزات الذكاء الاصطناعي المتقدمة"
-     }
-   },
-   "readingLevel": {
-     "label": "مستوى القراءة",
-     "easier": "🌟 اجعل هذه القصة أسهل",
-     "harder": "🚀 اجعل هذه القصة أصعب"
-   }
-  },
+        }
+      }
+    },
     "form": {
       "labels": {
         "displayName": "اسم العرض",
@@ -199,75 +194,8 @@
           "expert": {
             "title": "قراءة خبير",
             "description": "(صف تاسع-ثاني عشر: مفردات متخصصة وكتابة متطورة)"
-    }
-  },
-  "storyDisplay": {
-    "header": {
-      "tagline": "مغامرات القراءة للأطفال",
-      "home": "الرئيسية",
-      "newStory": "قصة جديدة"
-    },
-    "progress": {
-      "page": "صفحة",
-      "of": "من",
-      "progress": "التقدم:"
-    },
-    "difficulty": {
-      "easy": "سهل",
-      "medium": "متوسط",
-      "hard": "صعب", 
-      "expert": "خبير",
-      "level": "مستوى",
-      "easier": "أسهل",
-      "harder": "أصعب",
-      "tutorialTitle": "💡 نصيحة: اجعل القصص أسهل أو أصعب!",
-      "tutorialText": "انقر على هذه الأزرار لتعديل الصعوبة",
-      "tutorialSteps": {
-        "step1": "مؤقت القراءة لمدة 20 دقيقة يعمل! استخدم + لإضافة وقت، - لتقليل الوقت.",
-        "step2": "زر المكبر يقرأ بصوت عالٍ، الميكروفون يسجل قراءتك.",
-        "step3": "أزرار أسهل/أصعب تعدل صعوبة القصة أثناء القراءة.",
-        "step4": "أزرار إضافة/إزالة الصفحات تغير طول قصتك.",
-        "step5": "قراءة سعيدة! استمتع بمغامرتك الشخصية!"
-      }
-    },
-    "illustration": {
-      "creating": "إنشاء رسم توضيحي سحري...",
-      "loading": "تحميل الرسم التوضيحي..."
-    },
-    "navigation": {
-      "previous": "السابق",
-      "next": "التالي",
-      "previousShort": "←",
-      "nextShort": "→"
-    }
-  },
-  "interactiveWord": {
-    "hearIt": "استمع إليها",
-    "explain": "اشرح",
-    "definition": "تعريف",
-    "translate": "ترجم",
-    "synonym": "مرادف",
-    "example": "مثال",
-    "etymology": "الأصل",
-    "loading": "جارٍ التحميل...",
-    "addToVocabulary": "حفظ الكلمة",
-    "translationError": "الترجمة غير متاحة",
-    "audioUnavailable": "الصوت غير متاح",
-    "definitionShown": "التعريف معروض أدناه. جرب استخدام سماعات الأذن إذا لزم الأمر.",
-    "audioNotSupported": "الصوت غير مدعوم على هذا الجهاز. التعريف معروض أدناه.",
-    "touchToEnable": "المس لتفعيل الصوت",
-    "tapAgain": "اضغط على هذا الزر مرة أخرى لتفعيل شرح الصوت.",
-    "audioNotAvailable": "الصوت غير متاح",
-    "tryHeadphones": "جرب استخدام سماعات الأذن أو تفعيل أذونات الصوت.",
-    "difficulty": {
-      "beginner": "مبتدئ",
-      "intermediate": "متوسط",
-      "advanced": "متقدم"
-    },
-    "loading": "جاري التحميل...",
-    "playbackError": "لا يمكن تشغيل الصوت",
-    "translationError": "الترجمة غير متوفرة"
-  }
+          }
+        }
       },
       "avatar": {
         "label": "أي صورة رمزية تريد؟"
@@ -292,29 +220,29 @@
       "avatarPreview": {
         "label": "صورتك الرمزية:"
       },
-       "favoriteColor": {
-         "label": "ما هو لونك المفضل؟",
-         "optional": "(اختياري)",
-         "placeholder": "اسحب لأسفل لاختيار اللون"
-       },
-       "favoriteAnimal": {
-         "label": "ما هو حيوانك المفضل؟",
-         "placeholder": "قطة، كلب، أسد، دولفين...",
-         "optional": "(اختياري)",
-         "tooltip": "اكتب الحيوانات كلمات بسيطة - المفرد أو الجمع لا يهم!"
-       },
-       "favoriteFood": {
-         "label": "ما هو طعامك المفضل؟",
-         "placeholder": "بيتزا، آيس كريم، تفاح، كعك...",
-         "optional": "(اختياري)",
-         "tooltip": "اكتب الأطعمة كلمات بسيطة - الجمع أو المفرد يعمل!"
-       },
-       "hobbies": {
-         "label": "ماذا تحب أن تفعل للمتعة؟",
-         "placeholder": "كرة القدم، الرسم، الرقص، ألعاب الفيديو...",
-         "optional": "(اختياري)",
-         "tooltip": "اكتب الأنشطة التي يستمتع بها طفلك - بأي طريقة تريد!"
-       },
+      "favoriteColor": {
+        "label": "ما هو لونك المفضل؟",
+        "optional": "(اختياري)",
+        "placeholder": "اسحب لأسفل لاختيار اللون"
+      },
+      "favoriteAnimal": {
+        "label": "ما هو حيوانك المفضل؟",
+        "placeholder": "قطة، كلب، أسد، دولفين...",
+        "optional": "(اختياري)",
+        "tooltip": "اكتب الحيوانات كلمات بسيطة - المفرد أو الجمع لا يهم!"
+      },
+      "favoriteFood": {
+        "label": "ما هو طعامك المفضل؟",
+        "placeholder": "بيتزا، آيس كريم، تفاح، كعك...",
+        "optional": "(اختياري)",
+        "tooltip": "اكتب الأطعمة كلمات بسيطة - الجمع أو المفرد يعمل!"
+      },
+      "hobbies": {
+        "label": "ماذا تحب أن تفعل للمتعة؟",
+        "placeholder": "كرة القدم، الرسم، الرقص، ألعاب الفيديو...",
+        "optional": "(اختياري)",
+        "tooltip": "اكتب الأنشطة التي يستمتع بها طفلك - بأي طريقة تريد!"
+      },
       "specialRequest": {
         "label": "أخبرنا إذا كان هناك شيء خاص تريد تضمينه في قصتك؟",
         "placeholder": "ديناصورات، أميرات، مغامرات فضائية، سحر...",
@@ -361,355 +289,12 @@
       "nameRequired": "يرجى إدخال اسم طفلك أولاً"
     }
   },
-  "storyDisplay": {
-    "header": {
-      "readingTime": "وقت القراءة",
-      "progress": "التقدم",
-      "done": "✨ انتهيت!",
-    "newStory": "قصة جديدة",
-    "storyCompletedToast": {
-      "title": "🎉 اكتملت القصة!",
-      "descriptionWords": "رائع! لقد قرأت {wordsRead} كلمة وأكملت القصة!",
-      "descriptionWordsTime": "عمل جيد! قرأت {wordsRead} كلمة في {minutes} دقيقة."
-    },
-      "home": "الرئيسية"
-    },
-    "controls": {
-      "previous": "← السابق"
-    },
-    "navigation": {
-      "pageCounter": "صفحة {{current}} من {{total}}"
-    },
-    "difficulty": {
-      "tutorialSteps": {
-        "step1": "مؤقت القراءة لمدة 20 دقيقة يعمل! استخدم + لإضافة وقت، - لتقليل الوقت.",
-        "step2": "زر المكبر يقرأ بصوت عالٍ، المايكروفون يسجل قراءتك.",
-        "step3": "أزرار أسهل/أصعب تعدل صعوبة القصة أثناء القراءة.",
-        "step4": "أزرار إضافة/إزالة الصفحات تغير طول قصتك.",
-        "step5": "قراءة سعيدة! استمتع بمغامرتك الشخصية!"
-      }
-    },
-    "alerts": {
-      "almostDone": "أوشكت على الانتهاء!",
-      "clickToAdd": "انقر على + لإضافة المزيد من الصفحات!"
-    },
-    "tutorial": {
-      "timer": {
-        "title": "⏰ مؤقت القراءة",
-        "description": "يُظهر هذا وقت قراءتك! انقر على زر التشغيل لبدء/إيقاف مؤقتك مؤقتاً. استخدم زر الناقص لتقليل الوقت إذا لزم الأمر."
-      },
-      "navigation": {
-        "title": "📖 تنقل الصفحات", 
-        "description": "استخدم أزرار السابق والتالي للانتقال بين صفحات القصة. عداد الصفحات يُظهر موقعك الحالي."
-      },
-      "audio": {
-        "title": "🎵 القراءة الصوتية",
-        "description": "انقر لسماع القصة تُقرأ بصوت عالٍ! مثالي للمتابعة وتعلم النطق."
-      },
-      "addPages": {
-        "title": "➕ إضافة المزيد من الصفحات",
-        "description": "تريد متابعة المغامرة؟ انقر على هذا الزر لإضافة 5 صفحات أخرى لقصتك!"
-      },
-      "difficulty": {
-        "title": "🎯 مستوى القراءة",
-        "description": "اجعل القصة أسهل أو أصعب فوراً! السهم لأعلى يجعلها أصعب، السهم لأسفل يجعلها أسهل لتناسب مستوى قراءتك."
-      },
-      "step": "التعليم",
-      "of": "من",
-      "previous": "السابق",
-      "skip": "تخطي التعليم",
-      "next": "التالي", 
-      "startReading": "ابدأ القراءة!"
-    }
-  },
-  "adaptiveUI": {
-    "eslMode": "وضع تعلم اللغة الإنجليزية",
-    "nativeMode": "وضع تحسين القراءة",
-    "learningGoal": "هدف التعلم",
-    "languageSupport": "دعم اللغة نشط",
-    "languageSupportDesc": "قصص وشروحات مكيفة لمتعلمي اللغة الإنجليزية",
-    "eslHelp": {
-      "title": "نصائح لتعلم الإنجليزية",
-      "tip1": "انقر على أي كلمة للحصول على الترجمات والشروحات",
-      "tip2": "استخدم زر الصوت لسماع النطق",
-      "tip3": "القصص مصممة لمساعدتك في تعلم الإنجليزية"
-    },
-    "nativeHelp": {
-      "title": "نصائح لتحسين القراءة",
-      "tip1": "انقر على الكلمات لتعلم المرادفات والمعاني",
-      "tip2": "استخدم أزرار الصعوبة لتحدي نفسك",
-      "tip3": "القصص تساعد في بناء المفردات والفهم"
-    }
-  },
-  "storyDisplay": {
-    "tooltips": {
-      "audioButton": "استمع إلى هذه الصفحة مقروءة بصوت عالٍ (مرة واحدة لكل صفحة)",
-      "microphoneButton": "سجل نفسك وأنت تقرأ (ميزة مميزة)",
-      "makeEasier": "اجعل القصة أسهل",
-      "makeHarder": "اجعل القصة أصعب", 
-      "addPages": "أضف 5 صفحات",
-      "removePages": "إزالة الصفحة"
-    }
-  },
-  "floatingTimer": {
-    "timeRemaining": "الوقت",
-    "pausePlay": "إيقاف/تشغيل المؤقت",
-    "addTime": "إضافة 10 دقائق",
-    "reduceTime": "إزالة 10 دقائق",
-    "addPages": "إضافة المزيد من الصفحات",
-    "timeAdded": {
-      "title": "تم إضافة المزيد من الوقت!",
-      "description": "لديك 10 دقائق إضافية للقراءة!"
-    },
-    "celebration": {
-      "title": "🎉 تهانينا!",
-      "description": "لقد أكملت جلسة القراءة الخاصة بك!"
-    },
-    "maxLimit": "الحد الأقصى"
-  },
-  "learningPath": {
-    "currentPath": "رحلة التعلم الخاصة بك",
-    "progress": "التقدم",
-    "completed": "مكتمل",
-    "challengesCompleted": "التحديات المكتملة",
-    "totalTime": "الوقت الإجمالي",
-    "pointsEarned": "النقاط المكتسبة",
-    "nextRecommended": "الموصى به التالي",
-    "start": "ابدأ",
-    "startChallenge": "ابدأ التحدي",
-    "cancel": "إلغاء",
-    "loading": "إنشاء مسار التعلم الشخصي الخاص بك...",
-    "personalizedFor": "مسار تعلم شخصي لـ",
-    "overview": "نظرة عامة",
-    "challenges": "جميع التحديات",
-    "vocabularyChallenge": "تحدي المفردات",
-    "vocabularyDescription": "تعلم كلمات جديدة من خلال الألعاب التفاعلية.",
-    "comprehensionChallenge": "فهم القراءة",
-    "comprehensionDescription": "اقرأ القصص وأجب على الأسئلة لاختبار الفهم.",
-    "phonicsChallenge": "ممارسة الصوتيات",
-    "phonicsDescription": "مارس النطق وأنماط الصوت."
-  },
-  "sessionEnded": {
-    "completed": "جلسة القراءة مكتملة!",
-    "premiumCompleted": "جلسة البريميوم مكتملة!",
-    "readingProgress": "تقدم القراءة",
-    "of": "من",
-    "pages": "صفحات",
-    "wordsRead": "الكلمات المقروءة",
-    "timeSpent": "الوقت المستغرق",
-    "accuracy": "الدقة",
-    "readingLevel": "مستوى القراءة",
-    "level": "المستوى",
-    "unlockPremium": "افتح مزايا البريميوم!",
-    "goToHome": "العودة للرئيسية",
-    "startNewStory": "ابدأ قصة جديدة",
-    "premiumBenefits": {
-      "unlimitedSessions": "جلسات قراءة غير محدودة",
-      "customDifficulty": "تخصيص صعوبة القصة",
-      "extendedLibrary": "مكتبة قصص موسعة",
-      "advancedTracking": "تتبع متقدم للتقدم",
-      "upgradeToPremium": "الترقية للمميز"
-    }
-  },
-  "tutorial": {
-    "timer": {
-      "title": "⏰ مؤقت القراءة",
-      "description": "يُظهر هذا وقت قراءتك! انقر على زر التشغيل لبدء/إيقاف المؤقت. استخدم زر الناقص لتقليل الوقت إذا لزم الأمر."
-    },
-    "navigation": {
-      "title": "📖 التنقل بين الصفحات",
-      "description": "استخدم أزرار السابق والتالي للتنقل بين صفحات القصة. عداد الصفحات يُظهر موقعك الحالي."
-    },
-    "audio": {
-      "title": "🎵 القراءة الصوتية",
-      "description": "انقر لسماع القصة تُقرأ بصوت عالٍ! مثالي للمتابعة وتعلم النطق."
-    },
-    "addPages": {
-      "title": "➕ إضافة المزيد من الصفحات",
-      "description": "تريد مواصلة المغامرة؟ انقر على هذا الزر لإضافة 5 صفحات أخرى لقصتك!"
-    },
-    "difficulty": {
-      "title": "🎯 مستوى القراءة",
-      "description": "اجعل القصة أسهل أو أصعب فوراً! السهم لأعلى يجعلها أصعب، السهم لأسفل يجعلها أسهل لتناسب مستوى قراءتك."
-    },
-    "step": "الدرس",
-    "of": "من",
-    "previous": "السابق",
-    "next": "التالي",
-    "skip": "تخطي الدرس",
-    "startReading": "ابدأ القراءة!"
-  },
-  "floatingTimer": {
-    "maxLimit": "الحد الأقصى",
-    "readingTime": "وقت القراءة",
-    "startTimer": "بدء المؤقت",
-    "pauseTimer": "إيقاف المؤقت",
-    "reduceTime": "تقليل 5 دقائق",
-    "endSession": "إنهاء جلسة القراءة",
-    "congratulations": "تهانينا!",
-    "sessionComplete": "لقد أكملت جلسة القراءة!",
-    "sequentialTooltips": {
-      "startPause": "🎯 انقر لبدء/إيقاف مؤقت القراءة!",
-      "reduceTime": "⏰ قلل الوقت بـ 5 دقائق!",
-      "endSession": "🔚 انقر لإنهاء جلسة القراءة!"
-    }
-  },
-  "audioReading": {
-    "playAudio": "تشغيل الصوت",
-    "audioPlaying": "يتم تشغيل الصوت...",
-    "audioUsed": "تم استخدام الصوت",
-    "audioUsedTooltip": "تم استخدام الصوت (مرة واحدة لكل صفحة للمستخدمين المجانيين)",
-    "speed": "السرعة",
-    "stop": "إيقاف",
-    "generating": "جاري التحضير...",
-    "upgrade": "ترقية",
-    "upgradeTooltip": "قم بالترقية إلى النسخة المدفوعة للحصول على تشغيل صوتي غير محدود",
-    "freeAudioUsed": "تم استخدام الصوت المجاني",
-    "extendedPagesNeedPremium": "🔒 الصفحات الإضافية تحتاج للعضوية المميزة"
-  },
-  "storyDisplay": {
-    "readingLevel": "مستوى القراءة",
-    "readingProgress": "تقدم القراءة",
-    "previous": "← السابق",
-    "next": "التالي →",
-    "addMorePages": "إضافة المزيد من الصفحات",
-    "addPagesTooltip": "+ 5 صفحات - متاح فقط في الصفحة الأخيرة",
-    "addPagesAlert": "⏰ أضف المزيد من الصفحات الآن!",
-    "addPagesDisabled": "اصل إلى الصفحة الأخيرة لإضافة المزيد",
-    "storyCompletedToast": {
-      "title": "🎉 اكتملت القصة!",
-      "descriptionWords": "رائع! لقد قرأت {{wordsRead}} كلمة وأكملت القصة!",
-      "descriptionWordsTime": "عمل جيد! قرأت {{wordsRead}} كلمة في {{minutes}} دقيقة."
-    },
-    "addPagesSuccess": {
-      "title": "تم إضافة 5 صفحات أخرى! 📚",
-      "description": "تم تمديد قصتك!"
-    },
-    "encouragementMessages": {
-      "outstanding": "إنجاز قراءة رائع! أنت تصبح بطل قراءة!",
-      "excellent": "عمل ممتاز! أنت تحرز تقدماً رائعاً!",
-      "great": "بداية رائعة! استمر في عادة القراءة!",
-      "everyPage": "كل صفحة مهمة! أنت في طريقك لتصبح قارئاً عظيماً!"
-    },
-    "difficultyLabels": {
-      "easy": "ما قبل الروضة - الصف الأول",
-      "medium": "الصف الثاني - الثالث",
-      "hard": "الصف الرابع - الخامس",
-      "expert": "الصف السادس+"
-    },
-    "header": "مغامرة القراءة",
-    "endSession": "إنهاء الجلسة",
-    "nextPage": "الصفحة التالية",
-    "prevPage": "الصفحة السابقة",
-    "currentReading": "مستوى القراءة الحالي:",
-    "readingLevelHeader": "مستوى القراءة",
-    "readingLevelDescription": "هذه القصة مكتوبة على مستوى {level}"
-  },
   "common": {
-    "close": "إغلاق"
-  },
-  "gamification": {
-    "achievements": {
-      "unlocked": "تم إلغاء قفل الإنجاز!",
-      "levelUp": "ارتقاء المستوى!",
-      "levelUpDescription": "تهانينا! لقد وصلت إلى المستوى {level}!",
-      "pointsEarned": "+{points} نقطة مكتسبة!",
-      "pointsLabel": "نقاط مكتسبة!",
-      "awesome": "رائع!",
-      "streak": "{streak} يوم متتالي!",
-      "streakDescription": "مذهل! لقد كنت تقرأ لمدة {streak} أيام متتالية!",
-      "rarityCommon": "إنجاز شائع",
-      "rarityRare": "إنجاز نادر", 
-      "rarityEpic": "إنجاز ملحمي",
-      "rarityLegendary": "إنجاز أسطوري"
-    },
-    "titles": {
-      "firstAdventure": "المغامرة الأولى",
-      "storyExplorer": "مستكشف القصص",
-      "bookworm": "دودة الكتب",
-      "readingChampion": "بطل القراءة",
-      "firstWords": "الكلمات الأولى",
-      "gettingStarted": "البداية",
-      "wordExplorer": "مستكشف الكلمات",
-      "readingBeginner": "مبتدئ القراءة",
-      "wordStarter": "بادئ الكلمات",
-      "wordEnthusiast": "متحمس الكلمات",
-      "dedicatedReader": "قارئ مخلص",
-      "wordMaster": "سيد الكلمات",
-      "wordChampion": "بطل الكلمات",
-      "readingPro": "محترف القراءة",
-      "vocabularyGenius": "عبقري المفردات",
-      "readingStreak3": "عادة القراءة",
-      "readingStreak7": "قارئ أسبوعي",
-      "readingStreak30": "سيد سلسلة القراءة",
-      "firstWordsLearned": "الكلمات الأولى المتعلمة",
-      "wordLearner": "متعلم الكلمات",
-      "vocabularyStarter": "بادئ المفردات",
-      "wordCollector": "جامع الكلمات",
-      "wordBuilder": "بناء الكلمات",
-      "vocabularyScholar": "عالم المفردات",
-      "wordMasterVocab": "سيد الكلمات",
-      "vocabularyExpert": "خبير المفردات",
-      "languageExpert": "خبير اللغات",
-      "vocabularyGeniusVocab": "عبقري المفردات",
-      "speedReader": "القارئ السريع",
-      "earlyBird": "الطائر المبكر",
-      "nightOwl": "بومة الليل",
-      "focusedReader": "القارئ المركز",
-      "pageTurner": "قالب الصفحات",
-      "chapterMaster": "سيد الفصول",
-      "bookExplorer": "مستكشف الكتب"
-    },
-    "descriptions": {
-      "firstAdventure": "أكمل قصتك الأولى",
-      "storyExplorer": "أكمل 5 قصص مختلفة",
-      "bookworm": "أكمل 25 قصة",
-      "readingChampion": "أكمل 100 قصة",
-      "firstWords": "اقرأ 25 كلمة",
-      "gettingStarted": "اقرأ 100 كلمة",
-      "wordExplorer": "اقرأ 250 كلمة",
-      "readingBeginner": "اقرأ 500 كلمة",
-      "wordStarter": "اقرأ 1,000 كلمة",
-      "wordEnthusiast": "اقرأ 2,500 كلمة",
-      "dedicatedReader": "اقرأ 5,000 كلمة",
-      "wordMaster": "اقرأ 10,000 كلمة",
-      "wordChampion": "اقرأ 25,000 كلمة",
-      "readingPro": "اقرأ 50,000 كلمة",
-      "vocabularyGenius": "اقرأ 100,000 كلمة",
-      "readingStreak3": "اقرأ لمدة 3 أيام متتالية",
-      "readingStreak7": "اقرأ لمدة 7 أيام متتالية",
-      "readingStreak30": "اقرأ لمدة 30 يومًا متتاليًا",
-      "firstWordsLearned": "تعلم 5 كلمات مفردات جديدة",
-      "wordLearner": "تعلم 10 كلمات مفردات",
-      "vocabularyStarter": "تعلم 25 كلمة مفردات",
-      "wordCollector": "تعلم 50 كلمة مفردات جديدة",
-      "wordBuilder": "تعلم 75 كلمة مفردات",
-      "vocabularyScholar": "تعلم 100 كلمة مفردات",
-      "wordMasterVocab": "تعلم 150 كلمة مفردات",
-      "vocabularyExpert": "تعلم 200 كلمة مفردات",
-      "languageExpert": "تعلم 300 كلمة مفردات",
-      "vocabularyGeniusVocab": "تعلم 500 كلمة مفردات",
-      "speedReader": "اقرأ بسرعة أكثر من 150 كلمة في الدقيقة",
-      "earlyBird": "اقرأ قصة قبل الساعة 9 صباحًا",
-      "nightOwl": "اقرأ قصة بعد الساعة 8 مساءً",
-      "focusedReader": "اقرأ لمدة 20 دقيقة في جلسة واحدة",
-      "pageTurner": "اقرأ 10 صفحات في جلسة واحدة",
-      "chapterMaster": "اقرأ 25 صفحة في جلسة واحدة",
-      "bookExplorer": "اقرأ 50 صفحة في جلسة واحدة"
-    }
-  },
-  "colors": {
-    "red": "أحمر",
-    "orange": "برتقالي", 
-    "yellow": "أصفر",
-    "green": "أخضر",
-    "blue": "أزرق",
-    "purple": "بنفسجي",
-    "brown": "بني",
-    "pink": "وردي",
-    "gray": "رمادي",
-    "turquoise": "فيروزي",
-    "black": "أسود",
-    "white": "أبيض"
+    "loading": "جاري التحميل...",
+    "error": "خطأ",
+    "success": "نجح",
+    "tryAgainLater": "حاول مرة أخرى لاحقاً",
+    "inputProcessed": "تمت معالجة المدخلات",
+    "inputCorrectionsMade": "تم تطبيق التصحيحات"
   }
 }
