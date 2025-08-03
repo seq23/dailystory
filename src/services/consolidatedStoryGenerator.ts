@@ -74,7 +74,8 @@ export class ConsolidatedStoryGenerator {
     try {
       console.log(`🎯 Starting consolidated story generation for ${userInfo.name} (${difficulty} level)`);
       console.log(`📊 Using TTS-optimized word count standards: Easy(2-4), Medium(4-8), Hard(6-12), Expert(8-15) words per page`);
-      console.log(`🎯 CRITICAL: Current story templates for ${difficulty}:`, getLanguageTemplates('en', difficulty));
+      console.log(`🌍 Target story language: ${fullConfig.language}`);
+      console.log(`🎯 Available templates for ${fullConfig.language}/${difficulty}:`, getLanguageTemplates(fullConfig.language, difficulty).length);
 
       // Phase 9: Ensure proper name capitalization throughout the process
       const processedUserInfo = {
@@ -98,28 +99,38 @@ export class ConsolidatedStoryGenerator {
         console.log('📝 Smart Parsing Results:', SmartInputParser.generateProcessingReport(parsingResult));
       }
 
-      // Phase 1 & 5: Generate story pages using enhanced intelligent templates
+      // Phase 1 & 5: Generate story pages using language-appropriate templates
       await UserInputDistributor.initialize(processedUserInfo);
-      const enhancedTemplate = getEnhancedTemplate(difficulty);
       
-      if (!enhancedTemplate.length) {
-        console.warn(`No enhanced templates available for ${difficulty}, using fallback`);
-        return this.generateFallbackStoryResult(processedUserInfo, difficulty, startTime);
+      // CRITICAL FIX: Use language-specific templates instead of English-only enhanced templates
+      const storyLanguage = fullConfig.language;
+      console.log(`🌍 Using story language: ${storyLanguage} for ${difficulty} difficulty`);
+      
+      const languageTemplates = getLanguageTemplates(storyLanguage, difficulty);
+      
+      if (!languageTemplates.length) {
+        console.warn(`No templates available for ${storyLanguage}/${difficulty}, using English fallback`);
+        const fallbackTemplates = getLanguageTemplates('en', difficulty);
+        if (!fallbackTemplates.length) {
+          console.error(`No fallback templates available, using story generator fallback`);
+          return this.generateFallbackStoryResult(processedUserInfo, difficulty, startTime);
+        }
       }
 
       const pages: string[] = [];
       const extractedElements = SmartInputParser.extractStoryElements(parsedElements);
       
-      // Phase 3: Enhanced element distribution and selection with intelligent templates
+      // Phase 3: Enhanced element distribution and selection with language-appropriate templates
+      const activeTemplates = languageTemplates.length > 0 ? languageTemplates : getLanguageTemplates('en', difficulty);
       const totalPages = fullConfig.pageCount; // Generate exactly the requested number of pages
-      console.log(`Generating ${totalPages} pages using ${enhancedTemplate.length} template pages`);
+      console.log(`🎯 Generating ${totalPages} pages using ${activeTemplates.length} template pages for language: ${storyLanguage}`);
       
       for (let i = 0; i < totalPages; i++) {
         // Use template cycling if we need more pages than templates available
-        let template = enhancedTemplate[i % enhancedTemplate.length];
+        let template = activeTemplates[i % activeTemplates.length];
         
         // Add variation for repeated templates
-        if (i >= enhancedTemplate.length) {
+        if (i >= activeTemplates.length) {
           template = this.addTemplateVariation(template, i, processedUserInfo);
         }
         
@@ -471,11 +482,12 @@ export class ConsolidatedStoryGenerator {
     difficulty: DifficultyLevel, 
     adjustment: 'expand' | 'reduce'
   ): string {
+    // TTS-optimized word count standards for all ages (3-11+)
     const wordCounts = {
-      easy: { min: 3, max: 8 },
-      medium: { min: 8, max: 25 },
-      hard: { min: 20, max: 45 },
-      expert: { min: 35, max: 80 }
+      easy: { min: 2, max: 4 },    // Ages 3-5: Perfect for TTS word-by-word
+      medium: { min: 4, max: 8 },  // Ages 5-7: Slightly longer for early readers
+      hard: { min: 6, max: 12 },   // Ages 7-9: More complex sentences
+      expert: { min: 8, max: 15 }  // Ages 9-11+: Advanced vocabulary
     };
 
     const target = wordCounts[difficulty] || wordCounts.medium;

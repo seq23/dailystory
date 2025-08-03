@@ -9,44 +9,44 @@ export const STORY_LANGUAGES: Record<string, LanguageStoryConfig> = {
     enabled: true,
     templateSets: {
       easy: [
-        "{name} plays outside.",
-        "{name} finds a {object}.",
-        "The {character} is happy.",
-        "{name} loves {object}.",
-        "They see a {character}.",
-        "{name} helps the {character}.",
-        "Everyone plays together.",
-        "They are best friends."
+        "{name} plays outside",
+        "{name} finds {object}",
+        "{character} is happy",
+        "{name} loves {object}",
+        "They see {character}",
+        "{name} helps {character}",
+        "Everyone plays together",
+        "They are friends"
       ],
       medium: [
-        "In a {setting} far away, there lived a curious {character} named {name}.",
-        "{name} had always wondered about the mysterious {object} that appeared every {time}.",
-        "One day, {name} decided to investigate and discover the secret of the {object}.",
-        "The journey led {name} through {places} where {name} met helpful {characters}.",
-        "Each {character} taught {name} something important about {theme}.",
-        "Together, they solved puzzles and overcame challenges using {objects}.",
-        "Finally, {name} understood that the real treasure was the {theme} found along the way.",
-        "With new friends and wisdom, {name} returned home to share the wonderful discoveries."
+        "{name} discovers magical {setting} today",
+        "{name} wondered about mysterious {object}",
+        "One day {name} decided to investigate",
+        "Journey led {name} through wonderful {places}",
+        "Each {character} taught {name} about {theme}",
+        "Together they solved puzzles using {objects}",
+        "{name} understood that real treasure was",
+        "With friends and wisdom {name} returned"
       ],
       hard: [
-        "Long ago, in the {setting}, an extraordinary {character} named {name} embarked on a quest.",
-        "The {character} possessed a unique ability to {action} whenever {condition} occurred.",
-        "This gift became crucial when the {setting} faced a terrible crisis involving {problem}.",
-        "{name} gathered a diverse group of {characters}, each contributing their special {skills}.",
-        "Their adventure took them through treacherous {places} where they encountered {obstacles}.",
-        "Using {objects} and their combined wisdom, they devised an ingenious plan to {solution}.",
-        "The resolution required great sacrifice and demonstrated the power of {moral_lesson}.",
-        "Their success restored harmony to the {setting} and inspired future generations."
+        "Long ago in {setting} extraordinary {character} named {name}",
+        "The {character} possessed unique ability to {action} when",
+        "This gift became crucial when {setting} faced terrible crisis",
+        "{name} gathered diverse group of {characters} each contributing skills",
+        "Their adventure took them through treacherous {places} where encountered",
+        "Using {objects} and combined wisdom they devised ingenious plan",
+        "Resolution required great sacrifice and demonstrated power of {moral_lesson}",
+        "Success restored harmony to {setting} and inspired future"
       ],
       expert: [
-        "In an era where {setting} was governed by ancient laws of {principle}, {name} emerged as an unlikely {role}.",
-        "The {character} discovered that {mysterious_element} held the key to understanding {complex_concept}.",
-        "This revelation challenged everything the inhabitants of {setting} had believed about {belief_system}.",
-        "As {name} delved deeper into the mysteries, {pronoun} uncovered a conspiracy involving {antagonists}.",
-        "The truth demanded that {name} choose between {difficult_choice_1} and {difficult_choice_2}.",
-        "With the fate of {setting} hanging in the balance, {name} utilized {advanced_tools} to {complex_action}.",
-        "The climactic confrontation revealed that {profound_truth} was the ultimate resolution.",
-        "Through courage, wisdom, and {character_growth}, {name} transformed not only {setting} but {self_discovery}."
+        "In era where {setting} governed by ancient laws {name} emerged",
+        "The {character} discovered that {mysterious_element} held key to understanding",
+        "This revelation challenged everything inhabitants of {setting} believed about existence",
+        "As {name} delved deeper into mysteries uncovered conspiracy involving {antagonists}",
+        "Truth demanded that {name} choose between {difficult_choice_1} and {difficult_choice_2}",
+        "With fate of {setting} hanging in balance {name} utilized tools",
+        "Climactic confrontation revealed that {profound_truth} was ultimate resolution bringing peace",
+        "Through courage wisdom and {character_growth} {name} transformed not only world"
       ]
     },
     culturalAdaptations: {

@@ -124,9 +124,9 @@ export class LanguagePreferenceService {
       issues.push(`UI language ${uiLanguage} is not supported`);
     }
 
-    // Verify story language is ALWAYS English for current implementation
-    if (storyLanguage !== 'en') {
-      issues.push(`CRITICAL: Story language should always be 'en', but got '${storyLanguage}'`);
+    // Verify story language is enabled (removed hardcoded English restriction)
+    if (!this.isStoryLanguageEnabled(storyLanguage)) {
+      issues.push(`Story language '${storyLanguage}' is not enabled in STORY_LANGUAGES configuration`);
     }
 
     return {
@@ -156,7 +156,9 @@ export class LanguagePreferenceService {
     }));
 
     const isValid = deviceChecks.every(check => 
-      check.storyLanguage === 'en' && check.fontSupport && check.rtlSupport
+      this.isStoryLanguageEnabled(check.storyLanguage as SupportedLanguage) && 
+      check.fontSupport && 
+      check.rtlSupport
     );
 
     return { isValid, deviceChecks };
