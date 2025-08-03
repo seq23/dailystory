@@ -171,6 +171,9 @@ export class TemplateVariableProcessor {
     // Fix specific grammar issues
     cleaned = this.fixGrammarIssues(cleaned);
     
+    // Fix quotation mark issues around corrected words
+    cleaned = this.fixQuotationMarks(cleaned);
+    
     // Fix double spaces
     cleaned = cleaned.replace(/\s+/g, ' ');
     
@@ -186,6 +189,27 @@ export class TemplateVariableProcessor {
     }
     
     return cleaned;
+  }
+
+  /**
+   * Fix quotation marks around corrected words
+   */
+  private static fixQuotationMarks(text: string): string {
+    // Remove quotation marks around single words that are likely corrections
+    // Pattern: word, word and "word" -> word, word and word
+    let fixed = text.replace(/(\w+),\s*(\w+)\s+and\s+"([^"]+)"/g, '$1, $2 and $3');
+    
+    // Remove quotes around isolated words in lists
+    fixed = fixed.replace(/,\s*"([^"]+)"/g, ', $1');
+    fixed = fixed.replace(/\s+"([^"]+)"/g, ' $1');
+    
+    // Remove quotes around words at the beginning of sentences
+    fixed = fixed.replace(/^"([^"]+)"/g, '$1');
+    
+    // Remove quotes around single words (but preserve quotes around phrases)
+    fixed = fixed.replace(/"(\w+)"/g, '$1');
+    
+    return fixed;
   }
 
   /**

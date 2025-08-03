@@ -197,7 +197,13 @@ export class AntiRepetitionSystem {
       variations.push(sentence.replace(new RegExp(`\\b${userElements.name}\\b`, 'gi'), 'our friend'));
     }
     
-    return variations.filter(v => v !== sentence && v.length > 0).slice(0, 5); // Limit to 5 best variations
+    // Check if any arrays are being stringified incorrectly and fix them
+    const fixedVariations = variations.map(variation => {
+      // Remove any JSON stringification artifacts around words
+      return variation.replace(/"([^"]+)"/g, '$1').replace(/\[|\]/g, '');
+    });
+    
+    return fixedVariations.filter(v => v !== sentence && v.length > 0).slice(0, 5); // Limit to 5 best variations
   }
   
   /**

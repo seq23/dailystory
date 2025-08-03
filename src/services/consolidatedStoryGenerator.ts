@@ -134,9 +134,11 @@ export class ConsolidatedStoryGenerator {
             console.log(`Page ${i + 1}: Low diversity (${diversityScore.toFixed(2)}), generating variations...`);
             
             // Generate variations to avoid repetition
+            console.log(`🔧 Pre-variation page content:`, processedPage);
             const variations = AntiRepetitionSystem.generateVariations(processedPage, extractedElements);
             if (variations.length > 0) {
               processedPage = variations[Math.floor(Math.random() * variations.length)];
+              console.log(`✅ Post-variation page content:`, processedPage);
               console.log(`Page ${i + 1}: Using variation: "${processedPage.substring(0, 50)}..."`);
             } else {
               // Better contextual fallback
