@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Button } from "@/components/ui/button";
+import { MobileOptimizedButton } from "@/components/MobileOptimizedButton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { BookOpen, Timer, Star, Crown, Sparkles, TrendingUp, Award, Clock, Play, Pause, Minus, X, ChevronUp, ChevronDown, Plus, Home, RotateCcw } from "lucide-react";
@@ -987,13 +987,13 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                 </div>
 
                 <div className="flex gap-2">
-                  <Button onClick={onUpgrade} className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+                  <MobileOptimizedButton onClick={onUpgrade} className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
                     <Crown className="w-4 h-4 mr-2" />
                     {t("freeReadingSession.progressReport.premium.upgradeNow")}
-                  </Button>
-                  <Button onClick={onCreateAccount} variant="outline" className="flex-1">
+                  </MobileOptimizedButton>
+                  <MobileOptimizedButton onClick={onCreateAccount} variant="outline" className="flex-1">
                     {t("freeReadingSession.progressReport.premium.createAccount")}
-                  </Button>
+                  </MobileOptimizedButton>
                 </div>
               </div>
             </CardContent>
@@ -1030,22 +1030,22 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                 
                 <div id="navigation-controls" className="flex flex-wrap items-center justify-center gap-1 sm:gap-2">
                   {/* Navigation buttons - Mobile responsive */}
-                  <Button onClick={onNewStory} variant="outline" size="sm" className="text-xs sm:text-sm px-2 sm:px-3">
+                  <MobileOptimizedButton onClick={onNewStory} variant="outline" size="sm" className="text-xs sm:text-sm px-2 sm:px-3">
                     <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                      <span className="hidden sm:inline">{t("sessionEnded.startNewStory", "New Story")}</span>
-                   </Button>
-                   <Button onClick={onHome} variant="outline" size="sm" className="text-xs sm:text-sm px-2 sm:px-3">
+                   </MobileOptimizedButton>
+                   <MobileOptimizedButton onClick={onHome} variant="outline" size="sm" className="text-xs sm:text-sm px-2 sm:px-3">
                      <Home className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                      <span className="hidden sm:inline">{t("sessionEnded.goToHome", "Home")}</span>
-                  </Button>
+                  </MobileOptimizedButton>
                   
                   {/* Start session button - Mobile responsive */}
                   {!sessionStarted && (
-                    <Button onClick={startSession} className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white text-xs sm:text-sm px-2 sm:px-4">
+                    <MobileOptimizedButton onClick={startSession} className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white text-xs sm:text-sm px-2 sm:px-4">
                       <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                       <span className="hidden xs:inline">{t("freeReadingSession.session.startReading")}</span>
                       <span className="xs:hidden">Start</span>
-                    </Button>
+                    </MobileOptimizedButton>
                   )}
                 </div>
               </div>
@@ -1080,7 +1080,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                       <div id="reading-level-controls" className="mb-4 reading-level-controls">
                         <div className="flex gap-4 justify-center items-center">
                           <div className="relative group">
-                            <Button
+                            <MobileOptimizedButton
                               onClick={() => changeDifficulty('easier')}
                               disabled={!canDecreaseDifficulty() || isLoading}
                               variant="outline"
@@ -1088,7 +1088,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                               className="p-3 transition-all duration-200 hover:scale-110 hover:shadow-lg bg-gradient-to-br from-blue-50 to-indigo-100 border-2 border-blue-200 hover:border-blue-300 text-blue-700 rounded-xl"
                             >
                               <ChevronDown className="w-5 h-5" />
-                            </Button>
+                            </MobileOptimizedButton>
                             <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-blue-600 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-[100] shadow-lg before:content-[''] before:absolute before:bottom-full before:left-1/2 before:-translate-x-1/2 before:border-4 before:border-transparent before:border-b-blue-600">
                               {t("freeReadingSession.readingLevel.easier", "🌟 Make this story easier")}
                             </div>
@@ -1101,7 +1101,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                           </div>
                           
                           <div className="relative group">
-                            <Button
+                            <MobileOptimizedButton
                               onClick={() => changeDifficulty('harder')}
                               disabled={!canIncreaseDifficulty() || isLoading}
                               variant="outline"
@@ -1109,7 +1109,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                               className="p-3 transition-all duration-200 hover:scale-110 hover:shadow-lg bg-gradient-to-br from-green-50 to-emerald-100 border-2 border-green-200 hover:border-green-300 text-green-700 rounded-xl"
                             >
                               <ChevronUp className="w-5 h-5" />
-                            </Button>
+                            </MobileOptimizedButton>
                             <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-green-600 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-[100] shadow-lg before:content-[''] before:absolute before:bottom-full before:left-1/2 before:-translate-x-1/2 before:border-4 before:border-transparent before:border-b-green-600">
                               {t("freeReadingSession.readingLevel.harder", "🚀 Make this story harder")}
                             </div>
@@ -1190,7 +1190,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                     {/* Fixed Navigation Footer */}
                     <div className="flex-shrink-0 p-3 sm:p-4 lg:p-6 border-t border-gray-100 bg-gray-50/50">
                       <div className="flex justify-between items-center story-navigation">
-                        <Button 
+                        <MobileOptimizedButton 
                           onClick={() => {
                             setCurrentPage(Math.max(0, currentPage - 1));
                           }}
@@ -1200,14 +1200,14 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                           className="flex-shrink-0 min-w-[80px]"
                         >
                           {t("storyDisplay.previous")}
-                        </Button>
+                        </MobileOptimizedButton>
                         
                         <div className="flex flex-col items-center gap-1 px-2">
                           <span className="text-xs sm:text-sm font-medium text-gray-600 whitespace-nowrap">
                             {currentPage + 1} / {story.length}
                           </span>
                           <div className="relative group">
-                            <Button
+                            <MobileOptimizedButton
                               id="add-pages-button"
                               onClick={addMorePages}
                               disabled={isLoading || currentPage !== story.length - 1}
@@ -1222,7 +1222,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                               }`}
                             >
                               <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
-                            </Button>
+                            </MobileOptimizedButton>
                             
                              {/* Alert Tooltip with X button */}
                              {showAddPagesAlert && (
@@ -1253,7 +1253,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                           </div>
                         </div>
                         
-                        <Button 
+                        <MobileOptimizedButton 
                           onClick={() => {
                             if (currentPage === story.length - 2) {
                               // User is about to complete the story
@@ -1288,7 +1288,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                           className="flex-shrink-0 min-w-[80px]"
                         >
                           {currentPage === story.length - 2 ? t("storyDisplay.finish") : t("storyDisplay.next")}
-                        </Button>
+                        </MobileOptimizedButton>
                       </div>
                     </div>
                   </Card>

@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { MobileTooltip } from "@/components/MobileTooltip";
+import { MobileOptimizedButton } from "@/components/MobileOptimizedButton";
 import { BookOpen, Sparkles, Heart, Globe, Crown, Users } from "lucide-react";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from "@/components/ui/carousel";
 import { APP_CONFIG } from "@/constants/app";
@@ -93,32 +94,31 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
             {/* Premium Sign In Button - Clear with Tooltip */}
             <div className="flex-shrink-0">
               {onSignIn && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={onSignIn}
-                        className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-purple-300/50 text-white hover:bg-purple-400/30 text-xs font-semibold shadow-lg px-2 py-1 h-8 touch-target"
-                      >
-                        <Crown className="w-3 h-3 text-yellow-300 flex-shrink-0" />
-                        <span className="ml-1">Sign In</span>
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent className="bg-white text-gray-900 border border-gray-200 shadow-lg mobile-scroll">
-                      <div className="p-2">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Crown className="w-4 h-4 text-purple-600" />
-                          <span className="font-medium text-sm">Premium Access</span>
-                        </div>
-                        <p className="text-xs text-gray-600">
-                          {t("welcomeHero.signInTooltip", "Sign in or create account for unlimited stories, AI images & premium features!")}
-                        </p>
+                <MobileTooltip
+                  content={
+                    <div className="p-2">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Crown className="w-4 h-4 text-purple-600" />
+                        <span className="font-medium text-sm">Premium Access</span>
                       </div>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                      <p className="text-xs text-gray-600">
+                        {t("welcomeHero.signInTooltip", "Sign in or create account for unlimited stories, AI images & premium features!")}
+                      </p>
+                    </div>
+                  }
+                  side="bottom"
+                  align="end"
+                >
+                  <MobileOptimizedButton 
+                    variant="outline" 
+                    size="sm"
+                    onClick={onSignIn}
+                    className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-purple-300/50 text-white hover:bg-purple-400/30 text-xs font-semibold shadow-lg px-2 py-1 h-8"
+                  >
+                    <Crown className="w-3 h-3 text-yellow-300 flex-shrink-0" />
+                    <span className="ml-1">Sign In</span>
+                  </MobileOptimizedButton>
+                </MobileTooltip>
               )}
             </div>
           </div>
@@ -170,21 +170,9 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
             {/* Sign In Button - Premium Users */}
             <div className="flex items-center flex-shrink-0">
               {onSignIn && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={onSignIn}
-                        className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-purple-300/50 text-white hover:bg-purple-400/30 text-xs sm:text-sm font-semibold shadow-lg px-2 sm:px-3 py-1 sm:py-2"
-                      >
-                        <Crown className="w-3 h-3 mr-1 flex-shrink-0" />
-                        <span className="hidden sm:inline">{t("welcomeHero.signIn")} - Premium</span>
-                        <span className="sm:hidden">Sign In</span>
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent className="bg-white text-gray-900 border border-gray-200 shadow-lg">
+                <MobileTooltip
+                  content={
+                    <div>
                       <div className="flex items-center gap-2 p-2">
                         <Crown className="w-4 h-4 text-purple-600" />
                         <span className="font-medium">Premium Users Only</span>
@@ -192,9 +180,21 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                       <p className="text-xs text-gray-600 mt-1">
                         Access unlimited stories, AI images, advanced features & more!
                       </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                    </div>
+                  }
+                  side="bottom"
+                >
+                  <MobileOptimizedButton 
+                    variant="outline" 
+                    size="sm"
+                    onClick={onSignIn}
+                    className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-purple-300/50 text-white hover:bg-purple-400/30 text-xs sm:text-sm font-semibold shadow-lg px-2 sm:px-3 py-1 sm:py-2"
+                  >
+                    <Crown className="w-3 h-3 mr-1 flex-shrink-0" />
+                    <span className="hidden sm:inline">{t("welcomeHero.signIn")} - Premium</span>
+                    <span className="sm:hidden">Sign In</span>
+                  </MobileOptimizedButton>
+                </MobileTooltip>
               )}
             </div>
           </div>
@@ -323,27 +323,9 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
             </div>
 
             {/* CTA Button - Free Trial/Guest Users */}
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="hero" 
-                    size="xl" 
-                    onClick={onGetStarted}
-                    className={`relative hover:scale-105 shadow-glow transition-all duration-300 hover:shadow-2xl hover:shadow-primary/50 group overflow-hidden ${
-                      isShaking ? 'animate-shake-hard' : 'animate-bounce-gentle'
-                    } hover:animate-none`}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 via-pink-400/20 to-blue-400/20 animate-pulse group-hover:animate-none"></div>
-                    <Users className="w-6 h-6 relative z-10 animate-pulse group-hover:animate-none" />
-                    <span className="relative z-10 text-center break-words leading-tight">
-                      <span className="block sm:inline">{t("welcomeHero.ctaButtonNew") || "Create Your First Story"}</span>
-                      <span className="block sm:inline sm:ml-1 text-xs sm:text-sm opacity-90">- {t("welcomeHero.freeTrial") || "Free Trial"}</span>
-                    </span>
-                    <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent className="bg-white text-gray-900 border border-gray-200 shadow-lg">
+            <MobileTooltip
+              content={
+                <div>
                   <div className="flex items-center gap-2 p-2">
                     <Users className="w-4 h-4 text-green-600" />
                     <span className="font-medium">Free Trial & Guest Users</span>
@@ -351,9 +333,27 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                   <p className="text-xs text-gray-600 mt-1">
                     Try our platform with basic stories and limited time. No signup required!
                   </p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+                </div>
+              }
+              side="top"
+            >
+              <MobileOptimizedButton 
+                variant="hero" 
+                size="xl" 
+                onClick={onGetStarted}
+                className={`relative hover:scale-105 shadow-glow transition-all duration-300 hover:shadow-2xl hover:shadow-primary/50 group overflow-hidden ${
+                  isShaking ? 'animate-shake-hard' : 'animate-bounce-gentle'
+                } hover:animate-none`}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 via-pink-400/20 to-blue-400/20 animate-pulse group-hover:animate-none"></div>
+                <Users className="w-6 h-6 relative z-10 animate-pulse group-hover:animate-none" />
+                <span className="relative z-10 text-center break-words leading-tight">
+                  <span className="block sm:inline">{t("welcomeHero.ctaButtonNew") || "Create Your First Story"}</span>
+                  <span className="block sm:inline sm:ml-1 text-xs sm:text-sm opacity-90">- {t("welcomeHero.freeTrial") || "Free Trial"}</span>
+                </span>
+                <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </MobileOptimizedButton>
+            </MobileTooltip>
 
             <p className="text-white/70 mt-4 text-sm">
               {t("welcomeHero.safetyNote")}

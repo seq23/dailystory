@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { MobileOptimizedButton } from '@/components/MobileOptimizedButton';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle, XCircle, Star, ArrowRight, RotateCcw } from 'lucide-react';
 import type { UserInfo } from '@/types';
@@ -215,9 +215,9 @@ export const ComprehensionQuiz = ({
               <Star className="w-5 h-5" />
               {t('comprehension.title', 'Story Quiz')}
             </CardTitle>
-            <Button variant="ghost" size="sm" onClick={onClose} className="text-white hover:bg-white/20">
+            <MobileOptimizedButton variant="ghost" size="sm" onClick={onClose} className="text-white hover:bg-white/20">
               ✕
-            </Button>
+            </MobileOptimizedButton>
           </div>
           <div className="space-y-2">
             <div className="flex justify-between text-sm opacity-90">
@@ -281,13 +281,13 @@ export const ComprehensionQuiz = ({
               )}
 
               {!showResult && (
-                <Button
+                <MobileOptimizedButton
                   onClick={handleSubmitAnswer}
                   disabled={selectedAnswer === null}
                   className="w-full"
                 >
                   Submit Answer
-                </Button>
+                </MobileOptimizedButton>
               )}
 
               {showResult && currentQuestion < questions.length - 1 && (
@@ -324,14 +324,14 @@ export const ComprehensionQuiz = ({
               </div>
 
               <div className="flex gap-2 justify-center">
-                <Button variant="outline" onClick={handleRetry}>
+                <MobileOptimizedButton variant="outline" onClick={handleRetry}>
                   <RotateCcw className="w-4 h-4 mr-2" />
                   Try Again
-                </Button>
-                <Button onClick={handleComplete}>
+                </MobileOptimizedButton>
+                <MobileOptimizedButton onClick={handleComplete}>
                   <ArrowRight className="w-4 h-4 mr-2" />
                   Continue Reading
-                </Button>
+                </MobileOptimizedButton>
               </div>
             </div>
           )}

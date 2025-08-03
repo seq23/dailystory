@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { MobileOptimizedButton } from '@/components/MobileOptimizedButton';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BookOpen, Star, TrendingUp, Volume2, Trash2, Plus } from 'lucide-react';
@@ -134,9 +134,9 @@ export const VocabularyCollector = ({ userInfo, isVisible, onClose, enablePersis
               <BookOpen className="w-5 h-5" />
               {t('vocabulary.title', 'My Vocabulary Collection')}
             </CardTitle>
-            <Button variant="ghost" size="sm" onClick={onClose} className="text-white hover:bg-white/20">
+            <MobileOptimizedButton variant="ghost" size="sm" onClick={onClose} className="text-white hover:bg-white/20">
               ✕
-            </Button>
+            </MobileOptimizedButton>
           </div>
           <div className="text-sm opacity-90">
             {vocabulary.length} words collected
@@ -285,7 +285,7 @@ const WordCard = ({
       
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Button
+          <MobileOptimizedButton
             size="sm"
             variant="outline"
             onClick={() => onPlay(word.word)}
@@ -294,10 +294,10 @@ const WordCard = ({
           >
             <Volume2 className="w-3 h-3 mr-1" />
             {playingWord === word.word ? 'Playing...' : 'Hear'}
-          </Button>
+          </MobileOptimizedButton>
           
           {!word.mastered && (
-            <Button
+            <MobileOptimizedButton
               size="sm"
               variant="outline"
               onClick={() => onReview(word.word)}
@@ -305,20 +305,20 @@ const WordCard = ({
             >
               <TrendingUp className="w-3 h-3 mr-1" />
               Review
-            </Button>
+            </MobileOptimizedButton>
           )}
         </div>
         
         <div className="flex items-center gap-2 text-xs text-gray-500">
           <span>Reviewed {word.timesReviewed}x</span>
-          <Button
+          <MobileOptimizedButton
             size="sm"
             variant="ghost"
             onClick={() => onRemove(word.word)}
             className="text-red-500 hover:text-red-700 h-6 w-6 p-0"
           >
             <Trash2 className="w-3 h-3" />
-          </Button>
+          </MobileOptimizedButton>
         </div>
       </div>
     </div>

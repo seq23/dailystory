@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Button } from "@/components/ui/button";
+import { MobileOptimizedButton } from "@/components/MobileOptimizedButton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { BookOpen, Home, RotateCcw, Volume2, Timer, Play, Pause, Minus, X, ChevronUp, ChevronDown, Plus } from "lucide-react";
@@ -794,16 +794,16 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
           <div className="flex gap-3 items-center">
             
             {/* 1. Pause/Resume Button - Center */}
-            <Button
+            <MobileOptimizedButton
               size="lg"
               onClick={() => setIsPaused(!isPaused)}
               className="bg-gradient-to-b from-white to-gray-50 backdrop-blur-sm border-2 border-green-500/30 text-green-600 hover:bg-green-500 hover:text-white shadow-xl w-10 h-10 sm:w-12 sm:h-12 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-2xl hover:border-green-500/50"
             >
               {isPaused ? <Play className="w-3 h-3 sm:w-4 sm:h-4" /> : <Pause className="w-3 h-3 sm:w-4 sm:h-4" />}
-            </Button>
+            </MobileOptimizedButton>
             
             {/* 2. Reduce Time Button - Left */}
-            <Button
+            <MobileOptimizedButton
               variant="outline"
               size="lg"
               disabled={timeRemaining <= 300}
@@ -819,10 +819,10 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
               }}
             >
               <Minus className="w-2 h-2 sm:w-3 sm:h-3" />
-            </Button>
+            </MobileOptimizedButton>
 
             {/* 3. End Session Button - Right */}
-            <Button
+            <MobileOptimizedButton
               variant="outline"
               size="lg"
               className="bg-gradient-to-b from-white to-red-50 backdrop-blur-sm border-2 border-red-400/50 text-red-600 hover:bg-red-500 hover:text-white shadow-lg w-8 h-8 sm:w-10 sm:h-10 rounded-full p-0 transition-all duration-300 hover:scale-110 hover:shadow-xl"
@@ -841,7 +841,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
               }}
             >
               <X className="w-2 h-2 sm:w-3 sm:h-3" />
-            </Button>
+            </MobileOptimizedButton>
           </div>
           
           {/* Premium Badge */}
@@ -872,14 +872,14 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
             </div>
           
           <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-2">
-              <Button onClick={handleNewStory} variant="outline" size="sm">
+              <MobileOptimizedButton onClick={handleNewStory} variant="outline" size="sm">
               <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                <span className="hidden sm:inline">{t("sessionEnded.startNewStory", "New Story")}</span>
-               </Button>
-               <Button onClick={onHome} variant="outline" size="sm" className="text-xs sm:text-sm px-2 sm:px-3">
+               </MobileOptimizedButton>
+               <MobileOptimizedButton onClick={onHome} variant="outline" size="sm" className="text-xs sm:text-sm px-2 sm:px-3">
                <Home className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                <span className="hidden sm:inline">{t("sessionEnded.goToHome", "Home")}</span>
-              </Button>
+              </MobileOptimizedButton>
             </div>
           </div>
         </div>
@@ -916,7 +916,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                   <div id="reading-level-controls" className="mb-4 reading-level-controls">
                     <div className="flex gap-4 justify-center items-center">
                       <div className="relative group">
-                        <Button
+                        <MobileOptimizedButton
                           onClick={() => changeDifficulty('easier')}
                           disabled={!canDecreaseDifficulty() || isLoading}
                           variant="outline"
@@ -924,7 +924,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                           className="p-3 transition-all duration-200 hover:scale-110 hover:shadow-lg bg-gradient-to-br from-blue-50 to-indigo-100 border-2 border-blue-200 hover:border-blue-300 text-blue-700 rounded-xl"
                         >
                           <ChevronDown className="w-5 h-5" />
-                        </Button>
+                        </MobileOptimizedButton>
                         <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-blue-600 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-[100] shadow-lg before:content-[''] before:absolute before:bottom-full before:left-1/2 before:-translate-x-1/2 before:border-4 before:border-transparent before:border-b-blue-600">
                           {t("freeReadingSession.readingLevel.easier", "🌟 Make this story easier")}
                         </div>
@@ -937,7 +937,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                       </div>
                       
                       <div className="relative group">
-                        <Button
+                        <MobileOptimizedButton
                           onClick={() => changeDifficulty('harder')}
                           disabled={!canIncreaseDifficulty() || isLoading}
                           variant="outline"
@@ -945,7 +945,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                           className="p-3 transition-all duration-200 hover:scale-110 hover:shadow-lg bg-gradient-to-br from-green-50 to-emerald-100 border-2 border-green-200 hover:border-green-300 text-green-700 rounded-xl"
                         >
                           <ChevronUp className="w-5 h-5" />
-                        </Button>
+                        </MobileOptimizedButton>
                         <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-green-600 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-[100] shadow-lg before:content-[''] before:absolute before:bottom-full before:left-1/2 before:-translate-x-1/2 before:border-4 before:border-transparent before:border-b-green-600">
                           {t("freeReadingSession.readingLevel.harder", "🚀 Make this story harder")}
                         </div>
@@ -1034,21 +1034,21 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                 {/* Fixed Navigation Footer */}
                 <div className="flex-shrink-0 p-6 border-t border-gray-100 bg-gray-50/50">
                   <div className="flex justify-between items-center story-navigation reading-level-controls">
-                    <Button 
+                    <MobileOptimizedButton 
                       onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
                       disabled={currentPage === 0}
                       variant="outline"
                       className="min-w-[100px]"
                     >
                       {t("storyDisplay.previous")}
-                    </Button>
+                    </MobileOptimizedButton>
                     
                     <div className="flex flex-col items-center gap-2">
                       <span className="text-sm font-medium text-gray-600">
                         {currentPage + 1} / {story.length}
                       </span>
                       <div className="relative group">
-                        <Button
+                        <MobileOptimizedButton
                           id="add-pages-button"
                           onClick={addMorePages}
                           disabled={isLoading || !canAddMorePages}
@@ -1063,7 +1063,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                           }`}
                         >
                           <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
-                        </Button>
+                        </MobileOptimizedButton>
                         
                          {/* Alert Tooltip with X button - Mobile Optimized */}
                          {showAddPagesAlert && (
@@ -1104,7 +1104,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                       </div>
                     </div>
                     
-                    <Button 
+                    <MobileOptimizedButton 
                       onClick={() => {
                         if (currentPage === story.length - 2) {
                           // User is about to complete the story
@@ -1154,7 +1154,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                       className="min-w-[100px]"
                     >
                       {currentPage === story.length - 2 ? t("storyDisplay.finish") : t("storyDisplay.next")}
-                    </Button>
+                    </MobileOptimizedButton>
                   </div>
                 </div>
               </Card>
