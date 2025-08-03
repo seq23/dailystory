@@ -288,4 +288,55 @@ export class UniversalContentManager {
       wordCount: simpleStory.split(' ').length
     };
   }
+
+  // Continue existing story for premium users
+  static async continueExistingStory(
+    currentStory: string[],
+    userInfo: UserInfo,
+    difficulty: DifficultyLevel,
+    config: ContentManagerConfig
+  ): Promise<Story> {
+    console.log('🔄 Continuing existing story for premium user...');
+    
+    try {
+      // Get the last few pages for context
+      const lastPages = currentStory.slice(-3).join(' ');
+      const contextualUserInfo = {
+        ...userInfo,
+        specialRequest: `Continue this story: ${lastPages}. Add 5 new pages that follow naturally from where the story left off.`
+      };
+      
+      // Generate continuation using consolidated generator
+      // Create a special configuration that preserves anti-repetition state
+      const continuationConfig = {
+        pageCount: 5,
+        language: 'en' as const,
+        useSmartParsing: true,
+        antiRepetition: true,
+        culturalAdaptation: true,
+        preserveAntiRepetition: true // Special flag for continuation
+      };
+      
+      const storyResult = await ConsolidatedStoryGenerator.generateStory(contextualUserInfo, difficulty, continuationConfig);
+      
+      const story: Story = {
+        id: crypto.randomUUID(),
+        title: this.generateStoryTitle(userInfo, difficulty),
+        segments: storyResult.story.segments.map((segment, index) => ({
+          text: segment.text,
+          illustration: `/api/illustrations/story-${index + 1}.jpg`
+        })),
+        difficulty,
+        estimatedReadingTime: storyResult.story.estimatedReadingTime,
+        wordCount: storyResult.story.wordCount
+      };
+      
+      return story;
+      
+    } catch (error) {
+      console.error('Story continuation failed:', error);
+      // Fallback to basic continuation
+      return this.generateFallbackStory(userInfo, difficulty);
+    }
+  }
 }

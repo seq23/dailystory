@@ -168,6 +168,9 @@ export class TemplateVariableProcessor {
     // Remove any remaining unprocessed variables
     let cleaned = template.replace(/\{[^}]*\}/g, '');
     
+    // Fix specific grammar issues
+    cleaned = this.fixGrammarIssues(cleaned);
+    
     // Fix double spaces
     cleaned = cleaned.replace(/\s+/g, ' ');
     
@@ -183,6 +186,34 @@ export class TemplateVariableProcessor {
     }
     
     return cleaned;
+  }
+
+  /**
+   * Fix common grammar issues in generated text
+   */
+  private static fixGrammarIssues(text: string): string {
+    let fixed = text;
+    
+    // Fix "wakes up morning" -> "wakes up in the morning"
+    fixed = fixed.replace(/wakes up (morning|afternoon|evening|night)/g, 'wakes up in the $1');
+    fixed = fixed.replace(/wakes up ([a-z]+day)/g, 'wakes up on $1');
+    
+    // Fix "goes to the home" -> "goes home"
+    fixed = fixed.replace(/goes to the home/g, 'goes home');
+    fixed = fixed.replace(/goes to the school/g, 'goes to school');
+    fixed = fixed.replace(/goes to the work/g, 'goes to work');
+    
+    // Fix missing articles before time periods
+    fixed = fixed.replace(/in morning/g, 'in the morning');
+    fixed = fixed.replace(/in afternoon/g, 'in the afternoon');
+    fixed = fixed.replace(/in evening/g, 'in the evening');
+    fixed = fixed.replace(/at night/g, 'at night'); // This one is correct
+    
+    // Fix duplicate articles
+    fixed = fixed.replace(/the the/g, 'the');
+    fixed = fixed.replace(/a a/g, 'a');
+    
+    return fixed;
   }
   
   // Helper methods for generating contextual content

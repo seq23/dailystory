@@ -19,6 +19,7 @@ export interface ConsolidatedStoryConfig {
   useSmartParsing: boolean;
   antiRepetition: boolean;
   culturalAdaptation: boolean;
+  preserveAntiRepetition?: boolean; // Don't clear cache for story continuations
 }
 
 export interface StoryGenerationResult {
@@ -58,8 +59,10 @@ export class ConsolidatedStoryGenerator {
       config: fullConfig
     });
 
-    // Phase 8: Clear anti-repetition cache for new story
-    AntiRepetitionSystem.clearCache();
+    // Phase 8: Clear anti-repetition cache for new story (unless preserving for continuation)
+    if (!fullConfig.preserveAntiRepetition) {
+      AntiRepetitionSystem.clearCache();
+    }
 
     try {
       // Phase 9: Ensure proper name capitalization throughout the process

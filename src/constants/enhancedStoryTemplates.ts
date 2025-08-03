@@ -3,7 +3,7 @@ export const ENHANCED_STORY_TEMPLATES = {
   easy: [
     // Template set 1: Adventure progression
     [
-      "{name} wakes up {time_of_day}.",
+      "{name} wakes up in the morning.",
       "{pronoun} sees a {primary_animal}.",
       "The {primary_animal} looks {primary_color}.",
       "{name} says hello.",
@@ -12,12 +12,12 @@ export const ENHANCED_STORY_TEMPLATES = {
       "They find a {primary_food}.",
       "{name} shares the {primary_food}.",
       "The {primary_animal} is happy.",
-      "{name} smiles. The end."
+      "{name} smiles and continues exploring."
     ],
     
     // Template set 2: Discovery story
     [
-      "{name} goes to the {setting}.",
+      "{name} goes to a {setting}.",
       "{pronoun} sees many things.",
       "A {secondary_animal} runs by.",
       "{name} follows {pronoun_object}.",
@@ -26,7 +26,7 @@ export const ENHANCED_STORY_TEMPLATES = {
       "{name} picks it up.",
       "The {friend_animal} wants to play.",
       "They all play together.",
-      "{name} has fun. The end."
+      "{name} has fun and wants more adventures."
     ],
     
     // Template set 3: Helping story
@@ -40,7 +40,7 @@ export const ENHANCED_STORY_TEMPLATES = {
       "It is under a {secondary_color} box.",
       "{name} gives it back.",
       "The {primary_animal} is happy.",
-      "They are good friends now."
+      "They are good friends and ready for more adventures."
     ],
     
     // Template set 4: Sharing story  
@@ -54,7 +54,7 @@ export const ENHANCED_STORY_TEMPLATES = {
       "{name} feels good inside.",
       "Sharing makes friends.",
       "They play all day.",
-      "Both friends are happy."
+      "Both friends are happy and excited for tomorrow."
     ]
   ],
   

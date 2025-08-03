@@ -649,13 +649,26 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
     if (!isOnLastPage) return; // Only allow adding pages when on the last page
     
     try {
-      // Generate extended story using Universal Content Manager
-      const storyResult = await UniversalContentManager.generateStory(
-        userInfo, 
-        currentDifficulty,
-        { isPremium, userId: userInfo?.name || 'guest', maxSessions: 100 }
-      );
-      const newPages = storyResult.story.segments.map(segment => segment.text).slice(0, 5);
+      let newPages: string[];
+      
+      if (isPremium) {
+        // Premium users get story continuation that maintains narrative context
+        const continuationStory = await UniversalContentManager.continueExistingStory(
+          story,
+          userInfo,
+          currentDifficulty,
+          { isPremium, userId: userInfo?.name || 'guest', maxSessions: 100 }
+        );
+        newPages = continuationStory.segments.map(segment => segment.text);
+      } else {
+        // Free users get entirely new stories (no context maintained)
+        const storyResult = await UniversalContentManager.generateStory(
+          userInfo, 
+          currentDifficulty,
+          { isPremium, userId: userInfo?.name || 'guest', maxSessions: 100 }
+        );
+        newPages = storyResult.story.segments.map(segment => segment.text).slice(0, 5);
+      }
       
       // Add new pages and update word count
       setStory(prev => [...prev, ...newPages]);
