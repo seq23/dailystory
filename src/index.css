@@ -299,21 +299,22 @@ All colors MUST be HSL.
     text-align: left !important;
   }
 
-  /* HOMEPAGE: ALWAYS LTR - NO RTL EVER ON HOMEPAGE */
-  [dir="rtl"] .homepage,
-  [dir="rtl"] body:has(.homepage),
-  [dir="rtl"] #root:has(.homepage),
-  [dir="rtl"] main:has(.homepage) {
+  /* HOMEPAGE: Keep layout LTR but allow Arabic text to be centered like English */
+  [dir="rtl"] .homepage header,
+  [dir="rtl"] .homepage nav,
+  [dir="rtl"] .homepage .carousel-container,
+  [dir="rtl"] .homepage .carousel-nav,
+  [dir="rtl"] .homepage .language-picker,
+  [dir="rtl"] .homepage .sign-in-btn {
     direction: ltr !important;
   }
 
-  /* Force ALL homepage content to be LTR */
-  [dir="rtl"] .homepage *,
-  [dir="rtl"] .welcome-hero *,
-  [dir="rtl"] .hero-content *,
-  [dir="rtl"] .carousel-container * {
-    direction: ltr !important;
-    text-align: left !important;
+  /* Center Arabic text on homepage like English */
+  [dir="rtl"] .homepage .hero-content,
+  [dir="rtl"] .homepage .welcome-hero h1,
+  [dir="rtl"] .homepage .welcome-hero h2,
+  [dir="rtl"] .homepage .welcome-hero p {
+    text-align: center !important;
   }
 
   /* Ensure story content stays LTR for English reading */

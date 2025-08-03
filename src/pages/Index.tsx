@@ -2,7 +2,7 @@ import { AuthWrapper } from "@/components/AuthWrapper";
 
 const Index = () => {
   return (
-    <div className="homepage" style={{ direction: 'ltr', textAlign: 'left' }}>
+    <div className="homepage">
       <AuthWrapper />
     </div>
   );
