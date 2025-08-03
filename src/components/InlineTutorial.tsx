@@ -27,16 +27,28 @@ export const InlineTutorial = ({ isActive, onComplete }: InlineTutorialProps) =>
       title: "Reading Timer",
       description: "Click the play button to start your reading timer! Pause anytime you need a break.",
       targetSelector: "#floating-timer",
-      position: { top: "20%", left: "10%", maxWidth: "300px" },
-      arrow: "right"
+      position: { 
+        top: "5%", 
+        left: "50%", 
+        transform: "translateX(-50%)", 
+        maxWidth: "min(90vw, 320px)",
+        padding: "0.5rem" 
+      },
+      arrow: "down"
     },
     {
       id: 2,
       title: "Timer Controls", 
       description: "Use the - button to reduce time by 5 minutes, or the X button to end your session anytime!",
       targetSelector: "#floating-timer",
-      position: { top: "30%", left: "10%", maxWidth: "300px" },
-      arrow: "right"
+      position: { 
+        top: "8%", 
+        left: "50%", 
+        transform: "translateX(-50%)", 
+        maxWidth: "min(90vw, 320px)",
+        padding: "0.5rem" 
+      },
+      arrow: "down"
     },
     {
       id: 3,

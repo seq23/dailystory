@@ -289,6 +289,30 @@ All colors MUST be HSL.
     text-align: right;
     direction: rtl;
   }
+
+  /* CRITICAL RTL FIXES: Keep navigation buttons LTR even in RTL languages */
+  [dir="rtl"] .story-navigation,
+  [dir="rtl"] .reading-level-controls,
+  [dir="rtl"] .story-navigation button,
+  [dir="rtl"] .reading-level-controls button {
+    direction: ltr !important;
+    text-align: left !important;
+  }
+
+  /* Keep homepage navigation elements LTR to prevent layout breaking */
+  [dir="rtl"] .language-picker,
+  [dir="rtl"] .sign-in-btn,
+  [dir="rtl"] .carousel-nav {
+    direction: ltr !important;
+    text-align: left !important;
+  }
+
+  /* Ensure story content stays LTR for English reading */
+  [dir="rtl"] .story-content,
+  [dir="rtl"] #story-content {
+    direction: ltr !important;
+    text-align: left !important;
+  }
 }
 
 /* Custom animations for add pages alert */

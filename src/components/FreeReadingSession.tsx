@@ -1095,9 +1095,25 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                           </div>
                           
                           <div className="text-center">
-                            <span className="text-sm font-bold text-gray-700 bg-gradient-to-r from-purple-100 to-pink-100 px-3 py-1 rounded-full border border-purple-200">
-                              📚 {t("storyDisplay.readingLevel")} {getDifficultyIndex() + 1}
-                            </span>
+                            <div className="flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl border border-purple-200 shadow-sm">
+                              <span className="text-sm font-bold text-gray-700">
+                                📚 {t("storyDisplay.readingLevel")} {getDifficultyIndex() + 1}
+                              </span>
+                              {/* Visual Reading Level Indicators */}
+                              <div className="flex gap-1 ml-2">
+                                {Array.from({ length: 4 }, (_, i) => (
+                                  <div
+                                    key={i}
+                                    className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                                      i <= getDifficultyIndex() 
+                                        ? 'bg-primary shadow-sm scale-110' 
+                                        : 'bg-muted border border-muted-foreground/30'
+                                    }`}
+                                    title={`Level ${i + 1} ${i <= getDifficultyIndex() ? '(Current)' : ''}`}
+                                  />
+                                ))}
+                              </div>
+                            </div>
                           </div>
                           
                           <div className="relative group">
