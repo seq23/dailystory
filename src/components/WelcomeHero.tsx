@@ -90,17 +90,35 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
               </div>
             </div>
 
-            {/* Sign In Button - Clear and Descriptive */}
+            {/* Premium Sign In Button - Clear with Tooltip */}
             <div className="flex-shrink-0">
               {onSignIn && (
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={onSignIn}
-                    className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-purple-300/50 text-white hover:bg-purple-400/30 text-xs font-semibold shadow-lg px-2 py-1 h-8"
-                  >
-                    <span className="text-xs">Sign In</span>
-                  </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={onSignIn}
+                        className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-purple-300/50 text-white hover:bg-purple-400/30 text-xs font-semibold shadow-lg px-2 py-1 h-8 touch-target"
+                      >
+                        <Crown className="w-3 h-3 text-yellow-300 flex-shrink-0" />
+                        <span className="ml-1">Sign In</span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent className="bg-white text-gray-900 border border-gray-200 shadow-lg mobile-scroll">
+                      <div className="p-2">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Crown className="w-4 h-4 text-purple-600" />
+                          <span className="font-medium text-sm">Premium Access</span>
+                        </div>
+                        <p className="text-xs text-gray-600">
+                          {t("welcomeHero.signInTooltip", "Sign in or create account for unlimited stories, AI images & premium features!")}
+                        </p>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               )}
             </div>
           </div>
