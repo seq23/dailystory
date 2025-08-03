@@ -73,6 +73,7 @@ export class ConsolidatedStoryGenerator {
 
     try {
       console.log(`🎯 Starting consolidated story generation for ${userInfo.name} (${difficulty} level)`);
+      console.log(`📊 Using word count standards: ${difficulty} = 3-8 words for easy, 8-25 for medium, etc.`);
 
       // Phase 9: Ensure proper name capitalization throughout the process
       const processedUserInfo = {

@@ -1149,20 +1149,26 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                           {/* Apply reading level configuration with proper responsive design */}
                           {(() => {
                             // Use difficulty-based font sizing with proper hierarchy (no overflow)
-                            const getFontSizeForDifficulty = (difficulty: string) => {
-                              switch (difficulty) {
-                                case 'easy': 
-                                  return 'text-2xl sm:text-3xl md:text-4xl'; // Large for youngest kids, fits screen
-                                case 'medium': 
-                                  return 'text-xl sm:text-2xl md:text-3xl'; // Smaller than easy
-                                case 'hard': 
-                                  return 'text-lg sm:text-xl md:text-2xl'; // Smaller than medium
-                                case 'expert': 
-                                  return 'text-base sm:text-lg md:text-xl'; // Smallest for advanced readers
-                                default: 
-                                  return 'text-2xl sm:text-3xl md:text-4xl';
-                              }
-                            };
+                             const getFontSizeForDifficulty = (difficulty: string) => {
+                               console.log('FreeReadingSession: Getting font size for difficulty:', difficulty);
+                               switch (difficulty) {
+                                 case 'easy': 
+                                   console.log('FreeReadingSession: Using big text for Level 1 (young children)');
+                                   return 'text-2xl sm:text-3xl'; // Big for young children, responsive
+                                 case 'medium': 
+                                   console.log('FreeReadingSession: Using medium text for Level 2');
+                                   return 'text-xl sm:text-2xl'; // A little smaller than level 1
+                                 case 'hard': 
+                                   console.log('FreeReadingSession: Using normal text for Level 3');
+                                   return 'text-lg sm:text-xl'; // Normal size, same as expert
+                                 case 'expert': 
+                                   console.log('FreeReadingSession: Using normal text for Level 4');
+                                   return 'text-lg sm:text-xl'; // Normal size, same as hard
+                                 default: 
+                                   console.log('FreeReadingSession: Default case - using Level 1 fonts');
+                                   return 'text-2xl sm:text-3xl';
+                               }
+                             };
                             
                             const config = { 
                               fontSize: getFontSizeForDifficulty(currentDifficulty), 
