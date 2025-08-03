@@ -1016,9 +1016,14 @@ export const InteractiveWord = ({
    );
 };
 
-// Add mobile-specific optimizations for native apps with enhanced translation debugging
+// Enhanced Mobile-Optimized InteractiveWord with dedicated TTS windows
 const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
   const { t, i18n } = useTranslation();
+  const { toast } = useToast();
+  const [showMobileTTS, setShowMobileTTS] = useState(false);
+  const [isPlayingMobile, setIsPlayingMobile] = useState(false);
+  const [mobileWordData, setMobileWordData] = useState<any>(null);
+  const [isLoadingMobile, setIsLoadingMobile] = useState(false);
   
   // Detect if we're running in Capacitor (native mobile app)
   const isNativeApp = typeof window !== 'undefined' && 
@@ -1030,23 +1035,215 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
      navigator.maxTouchPoints > 0 || 
      window.innerWidth <= 768);
 
-  // SIMPLIFIED: Just pass through to main component which has all enhanced functionality
+  // Get voice based on user avatar and difficulty level
+  const getVoiceForUser = () => {
+    if (!props.userInfo) return "EXAVITQu4vr4xnSDxMaL"; // Default Sarah
+    
+    const isGirl = props.userInfo.avatar?.type === 'girl';
+    
+    switch (props.difficulty) {
+      case 'easy':
+        return isGirl ? "EXAVITQu4vr4xnSDxMaL" : "TX3LPaxmHKxFdv7VOQHJ"; // Sarah or Liam
+      case 'medium':
+        return isGirl ? "XB0fDUnXU5powFXDhCwa" : "N2lVS1w4EtoT3dr4eOWO"; // Charlotte or Callum
+      case 'hard':
+        return isGirl ? "9BWtsMINqrJLrRacOk9x" : "CwhRBWXzGAHq8TQ4Fs17"; // Aria or Roger
+      case 'expert':
+        return isGirl ? "cgSgspJ2msm6clMCkdW9" : "onwK4e9ZLuTAKqWW03F9"; // Jessica or Daniel
+      default:
+        return isGirl ? "EXAVITQu4vr4xnSDxMaL" : "TX3LPaxmHKxFdv7VOQHJ"; // Sarah or Liam
+    }
+  };
+
+  // Mobile-optimized TTS pronunciation
+  const handleMobilePronounce = async () => {
+    if (isPlayingMobile) return;
+    
+    setIsPlayingMobile(true);
+    
+    try {
+      const voiceId = getVoiceForUser();
+      const response = await supabase.functions.invoke('elevenlabs-tts', {
+        body: {
+          text: props.word,
+          voiceId: voiceId,
+          modelId: 'eleven_turbo_v2_5'
+        }
+      });
+
+      if (response.error) throw response.error;
+      
+      const audioBlob = await response.data;
+      const audioUrl = URL.createObjectURL(new Blob([audioBlob], { type: 'audio/mpeg' }));
+      const audio = new Audio(audioUrl);
+      
+      // Mobile-specific audio configuration
+      audio.preload = 'metadata';
+      audio.volume = 0.8;
+      
+      audio.onended = () => {
+        setIsPlayingMobile(false);
+        URL.revokeObjectURL(audioUrl);
+      };
+      
+      await audio.play();
+      
+    } catch (error) {
+      console.error('Mobile TTS error:', error);
+      setIsPlayingMobile(false);
+      toast({
+        title: "Audio unavailable",
+        description: "Please try again or enable audio permissions.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Mobile-optimized word explanation with TTS
+  const handleMobileExplain = async () => {
+    if (isLoadingMobile) return;
+    
+    setIsLoadingMobile(true);
+    
+    try {
+      // Get word definition
+      const response = await supabase.functions.invoke('word-dictionary', {
+        body: {
+          word: props.word,
+          targetLanguage: props.userInfo?.nativeLanguage || 'en',
+          context: props.sentenceContext || ''
+        }
+      });
+
+      if (response.error) throw response.error;
+      
+      const wordData = response.data;
+      setMobileWordData(wordData);
+      
+      // Generate TTS for explanation
+      const voiceId = getVoiceForUser();
+      const explanationText = `${props.word}. ${wordData.definition}. Example: ${wordData.sampleSentence}`;
+      
+      const ttsResponse = await supabase.functions.invoke('elevenlabs-tts', {
+        body: {
+          text: explanationText,
+          voiceId: voiceId,
+          modelId: 'eleven_turbo_v2_5'
+        }
+      });
+
+      if (ttsResponse.error) throw ttsResponse.error;
+      
+      const audioBlob = await ttsResponse.data;
+      const audioUrl = URL.createObjectURL(new Blob([audioBlob], { type: 'audio/mpeg' }));
+      const audio = new Audio(audioUrl);
+      
+      audio.preload = 'metadata';
+      audio.volume = 0.8;
+      
+      audio.onended = () => {
+        setIsPlayingMobile(false);
+        URL.revokeObjectURL(audioUrl);
+      };
+      
+      setIsPlayingMobile(true);
+      await audio.play();
+      
+    } catch (error) {
+      console.error('Mobile explanation error:', error);
+      toast({
+        title: "Explanation unavailable", 
+        description: "Please try again later.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoadingMobile(false);
+    }
+  };
+
+  // Enhanced mobile word click handler
+  const handleMobileWordClick = () => {
+    setShowMobileTTS(!showMobileTTS);
+  };
+
   console.log('📱 Mobile Wrapper Active:', {
     word: props.word,
     userNativeLanguage: props.userInfo?.nativeLanguage,
     isMobileDevice,
     isNativeApp,
-    passThrough: 'Enhanced InteractiveWord'
+    passThrough: 'Enhanced Mobile TTS'
   });
 
-  const optimizedProps = {
-    ...props,
-    className: `${props.className || ''} ${
-      isMobileDevice ? 'mobile-optimized touch-manipulation select-none' : ''
-    }`
-  };
+  // If not mobile, use regular component
+  if (!isMobileDevice) {
+    return <InteractiveWord {...props} />;
+  }
 
-  return <InteractiveWord {...optimizedProps} />;
+  // Mobile-optimized rendering with dedicated TTS windows
+  return (
+    <span className="relative inline-block">
+      <span 
+        className={`underline decoration-dotted cursor-pointer touch-manipulation ${props.className || ''} ${
+          isPlayingMobile ? 'opacity-70' : ''
+        }`}
+        onClick={handleMobileWordClick}
+        style={{
+          WebkitTapHighlightColor: 'transparent',
+          userSelect: 'none'
+        }}
+      >
+        {props.word}
+      </span>
+      
+      {/* Mobile TTS Popup Window */}
+      {showMobileTTS && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-[99999] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full mx-4 p-6">
+            <div className="text-center mb-6">
+              <h3 className="text-2xl font-bold text-gray-800 mb-2">{props.word}</h3>
+              {mobileWordData && (
+                <div className="text-sm text-gray-600">
+                  <p className="mb-2">{mobileWordData.definition}</p>
+                  {mobileWordData.sampleSentence && (
+                    <p className="italic">"{mobileWordData.sampleSentence}"</p>
+                  )}
+                </div>
+              )}
+            </div>
+            
+            <div className="grid grid-cols-2 gap-3 mb-6">
+              <button
+                onClick={handleMobilePronounce}
+                disabled={isPlayingMobile}
+                className="flex flex-col items-center justify-center gap-2 bg-blue-50 hover:bg-blue-100 active:bg-blue-200 border-2 border-blue-200 p-4 rounded-xl transition-colors touch-manipulation min-h-[80px] font-semibold text-blue-700"
+              >
+                <Volume2 className="w-6 h-6" />
+                <span className="text-sm">Hear It</span>
+              </button>
+              
+              <button
+                onClick={handleMobileExplain}
+                disabled={isLoadingMobile || isPlayingMobile}
+                className="flex flex-col items-center justify-center gap-2 bg-green-50 hover:bg-green-100 active:bg-green-200 border-2 border-green-200 p-4 rounded-xl transition-colors touch-manipulation min-h-[80px] font-semibold text-green-700"
+              >
+                <HelpCircle className="w-6 h-6" />
+                <span className="text-sm">
+                  {isLoadingMobile ? "Loading..." : "Explain"}
+                </span>
+              </button>
+            </div>
+            
+            <button
+              onClick={() => setShowMobileTTS(false)}
+              className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 rounded-xl transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+    </span>
+  );
 };
 
 export { MobileOptimizedInteractiveWord };
