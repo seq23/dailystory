@@ -215,9 +215,9 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
           <div className="max-w-4xl mx-auto">
             {/* Hero Carousel */}
             <div className="mb-6 md:mb-8 relative">
-              <Carousel setApi={setApi} className="w-full max-w-3xl mx-auto">
-                <CarouselContent>
-                  <CarouselItem>
+              <Carousel setApi={setApi} className="w-full max-w-3xl mx-auto carousel-component homepage-carousel">
+                <CarouselContent className="carousel-content">
+                  <CarouselItem className="carousel-item">
                     <div className="relative">
                       <img 
                         src={carouselImage1} 
@@ -225,14 +225,14 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                         className="w-full h-48 sm:h-64 md:h-80 lg:h-96 object-cover rounded-2xl md:rounded-3xl shadow-glow border-2 md:border-4 border-white/20"
                       />
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent rounded-b-2xl md:rounded-b-3xl p-3 md:p-4">
-                        <p className="text-white font-inter font-medium text-xs sm:text-sm md:text-base">
+                        <p className="text-white font-inter font-medium text-xs sm:text-sm md:text-base carousel-text">
                           {t("welcomeHero.carousel.item1")}
                         </p>
                       </div>
                     </div>
                   </CarouselItem>
                   
-                  <CarouselItem>
+                  <CarouselItem className="carousel-item">
                     <div className="relative">
                       <img 
                         src={carouselImage2} 
@@ -240,14 +240,14 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                         className="w-full h-48 sm:h-64 md:h-80 lg:h-96 object-cover rounded-2xl md:rounded-3xl shadow-glow border-2 md:border-4 border-white/20"
                       />
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent rounded-b-2xl md:rounded-b-3xl p-3 md:p-4">
-                        <p className="text-white font-inter font-medium text-xs sm:text-sm md:text-base">
+                        <p className="text-white font-inter font-medium text-xs sm:text-sm md:text-base carousel-text">
                           {t("welcomeHero.carousel.item2")}
                         </p>
                       </div>
                     </div>
                   </CarouselItem>
                   
-                  <CarouselItem>
+                  <CarouselItem className="carousel-item">
                     <div className="relative">
                       <img 
                         src={carouselImage3} 
@@ -255,14 +255,14 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                         className="w-full h-48 sm:h-64 md:h-80 lg:h-96 object-cover rounded-2xl md:rounded-3xl shadow-glow border-2 md:border-4 border-white/20"
                       />
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent rounded-b-2xl md:rounded-b-3xl p-3 md:p-4">
-                        <p className="text-white font-inter font-medium text-xs sm:text-sm md:text-base">
+                        <p className="text-white font-inter font-medium text-xs sm:text-sm md:text-base carousel-text">
                           {t("welcomeHero.carousel.item3")}
                         </p>
                       </div>
                     </div>
                   </CarouselItem>
                   
-                  <CarouselItem>
+                  <CarouselItem className="carousel-item">
                     <div className="relative">
                       <img 
                         src={carouselImage4} 
@@ -270,7 +270,7 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                         className="w-full h-48 sm:h-64 md:h-80 lg:h-96 object-cover rounded-2xl md:rounded-3xl shadow-glow border-2 md:border-4 border-white/20"
                       />
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent rounded-b-2xl md:rounded-b-3xl p-3 md:p-4">
-                        <p className="text-white font-inter font-medium text-xs sm:text-sm md:text-base">
+                        <p className="text-white font-inter font-medium text-xs sm:text-sm md:text-base carousel-text">
                           {t("welcomeHero.carousel.item4")}
                         </p>
                       </div>
@@ -278,8 +278,8 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                   </CarouselItem>
                 </CarouselContent>
                 
-                <CarouselPrevious className="left-2 md:left-4 bg-white/20 border-white/30 text-white hover:bg-white/30 h-10 w-10 md:h-12 md:w-12 touch-target transition-all duration-200" />
-                <CarouselNext className="right-2 md:right-4 bg-white/20 border-white/30 text-white hover:bg-white/30 h-10 w-10 md:h-12 md:w-12 touch-target transition-all duration-200" />
+                <CarouselPrevious className="left-2 md:left-4 bg-white/20 border-white/30 text-white hover:bg-white/30 h-10 w-10 md:h-12 md:w-12 touch-target transition-all duration-200 carousel-nav carousel-buttons" />
+                <CarouselNext className="right-2 md:right-4 bg-white/20 border-white/30 text-white hover:bg-white/30 h-10 w-10 md:h-12 md:w-12 touch-target transition-all duration-200 carousel-nav carousel-buttons" />
               </Carousel>
               
               <div className="absolute -top-2 -right-2 md:-top-4 md:-right-4 animate-bounce-gentle">
