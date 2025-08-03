@@ -562,7 +562,6 @@ export class ConsolidatedStoryGenerator {
       // Remove extra words while keeping meaning
       adjustedPage = adjustedPage
         .replace(/\s+(very|really|quite|so|extremely|incredibly)\s+/gi, ' ')
-        .replace(/\s+and\s+[^.]*$/, '.')
         .replace(/\s*,\s*[^,]*$/, '.');
     }
     
