@@ -268,13 +268,15 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
     const margin = isMobile ? 20 : isTablet ? 25 : 40;
     const clearance = isMobile ? 120 : isTablet ? 140 : 160; // Extra space to avoid covering targets
 
-    // SPECIAL HANDLING FOR TIMER STEP - Timer is positioned at 35%, place tutorial card in bottom area
+    // SPECIAL HANDLING FOR TIMER STEP - Timer is positioned at 20%, place tutorial card in bottom area
     if (target === "timer-display") {
-      console.log('TutorialOverlay: Timer positioning', { isMobile, isTablet });
+      console.log('TutorialOverlay: Timer positioning', { isMobile, isTablet, viewportHeight, margin });
       
       // For the pause button tutorial specifically, position the tooltip higher to avoid cutoff
       const isPauseButtonStep = document.querySelector('[data-state="open"]'); // Tooltip is open during pause button demo
       const adjustedBottomMargin = isPauseButtonStep ? 140 : 60; // More space when pause button tooltip is showing
+      
+      console.log('Timer positioning debug:', { isPauseButtonStep, adjustedBottomMargin });
       
       if (isMobile) {
         const positioning = {
@@ -288,26 +290,28 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
         console.log('Mobile timer positioning:', positioning);
         return positioning;
       } else if (isTablet) {
+        const bottomValue = margin + adjustedBottomMargin + 40;
         const positioning = {
-          bottom: `${margin + adjustedBottomMargin + 40}px`, // Bottom positioning on tablet below timer
+          bottom: `${bottomValue}px`, // Bottom positioning on tablet below timer
           left: `${margin}px`,
           right: `${margin}px`,
           top: "auto",
           transform: "none",
           maxWidth: `${tooltipWidth}px`
         };
-        console.log('Tablet timer positioning:', positioning);
+        console.log('Tablet timer positioning with bottom value:', bottomValue, positioning);
         return positioning;
       } else {
+        const bottomValue = margin + adjustedBottomMargin + 60;
         const positioning = {
-          bottom: `${margin + adjustedBottomMargin + 60}px`, // Bottom positioning on desktop below timer
+          bottom: `${bottomValue}px`, // Bottom positioning on desktop below timer
           left: "50%",
           right: "auto",
           top: "auto",
           transform: "translateX(-50%)",
           maxWidth: `${tooltipWidth}px`
         };
-        console.log('Desktop timer positioning:', positioning);
+        console.log('Desktop timer positioning with bottom value:', bottomValue, positioning);
         return positioning;
       }
     }
