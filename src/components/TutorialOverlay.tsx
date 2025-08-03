@@ -268,34 +268,37 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
     const margin = isMobile ? 20 : isTablet ? 25 : 40;
     const clearance = isMobile ? 120 : isTablet ? 140 : 160; // Extra space to avoid covering targets
 
-    // SPECIAL HANDLING FOR TIMER STEP - Avoid tutorial timer in top middle
+    // SPECIAL HANDLING FOR TIMER STEP - Avoid tutorial timer in center
     if (target === "timer-display") {
-      // Tutorial timer is in top middle, place tutorial card at bottom or side
+      // Tutorial timer is centered, place tutorial card to avoid overlap
       if (isMobile) {
         return {
-          bottom: `${margin + 100}px`, // Bottom positioning to avoid top middle timer
+          bottom: `${Math.max(margin + 40, 120)}px`, // Ensure enough space above keyboard/bottom elements
           left: `${margin}px`,
           right: `${margin}px`,
           top: "auto",
           transform: "none",
-          maxWidth: "90vw", // Use viewport width for mobile
-          width: "calc(100vw - 40px)" // Full width minus margins
+          maxWidth: "90vw",
+          width: "calc(100vw - 40px)",
+          marginBottom: `max(${margin}px, env(safe-area-inset-bottom))`
         };
       } else if (isTablet) {
         return {
-          top: "50%",
-          left: `${margin}px`, // Left side to avoid top middle timer
-          right: "auto",
-          transform: "translateY(-50%)",
+          bottom: `${margin + 60}px`, // Bottom positioning for tablet too
+          left: `${margin}px`,
+          right: `${margin}px`,
+          top: "auto",
+          transform: "none",
           maxWidth: `${tooltipWidth}px`,
-          width: `${tooltipWidth}px`
+          width: "auto",
+          marginBottom: `max(${margin}px, env(safe-area-inset-bottom))`
         };
       } else {
         return {
-          top: "50%",
-          left: `${margin + 40}px`, // Left side to avoid top middle timer
+          top: "20%", // Top positioning for desktop to avoid centered timer
+          left: `${margin + 40}px`,
           right: "auto",
-          transform: "translateY(-50%)",
+          transform: "none",
           maxWidth: `${tooltipWidth}px`,
           width: `${tooltipWidth}px`
         };
@@ -568,15 +571,24 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
       </div>
 
       {/* Mobile Tutorial Card */}
-      <div className={`fixed z-50 transition-all duration-300 ${isAnimating ? 'opacity-100 scale-100' : 'opacity-0 scale-95'} sm:hidden ${
-        step.target === 'timer-display' ? 'bottom-24 left-4 right-4 max-w-none' : 
-        step.target === 'reading-level-controls' ? 'bottom-24 left-4 right-4 max-w-none' :
-        'top-20 left-4 right-4 max-w-none'
-      }`}>
-        <Card className="w-full bg-white dark:bg-gray-900 shadow-xl border-2 border-primary/30 rounded-2xl overflow-hidden">
+      <div 
+        className={`fixed z-50 transition-all duration-300 ${isAnimating ? 'opacity-100 scale-100' : 'opacity-0 scale-95'} sm:hidden`}
+        style={{
+          ...tooltipStyle,
+          zIndex: 60
+        }}
+      >
+        <Card 
+          className="bg-white dark:bg-gray-900 shadow-xl border-2 border-primary/30 rounded-2xl overflow-hidden"
+          style={{
+            maxWidth: tooltipStyle.maxWidth || 'calc(100vw - 40px)',
+            width: tooltipStyle.width || 'auto',
+            margin: step.target === "timer-display" ? '0 1rem' : '0'
+          }}
+        >
           <CardContent className="p-0">
             {/* Mobile Header */}
-            <div className="bg-gradient-primary text-white p-4 relative overflow-hidden">
+            <div className="bg-gradient-primary text-white p-3 sm:p-4 relative overflow-hidden">
               <div className="relative z-10 flex items-center justify-between">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <div className="p-2 bg-white/20 rounded-full flex-shrink-0">
@@ -606,7 +618,7 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
             </div>
 
             {/* Mobile Content */}
-            <div className="p-4">
+            <div className="p-3 sm:p-4 pb-safe">
               <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed mb-4 break-words">
                 {step.description}
               </p>
@@ -630,8 +642,10 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
       </div>
 
       {/* Mobile Navigation - Bottom Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 sm:hidden">
-        <div className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-4 py-3 safe-area-bottom">
+      <div className={`fixed left-0 right-0 z-50 sm:hidden ${
+        step.target === "timer-display" ? 'bottom-20' : 'bottom-0'
+      }`}>
+        <div className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-4 py-3 pb-safe">
           <div className="flex justify-between items-center gap-2">
             <Button
               variant="outline"
