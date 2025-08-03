@@ -1417,14 +1417,20 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
       let explanationText;
       const userLanguage = props.userInfo?.nativeLanguage || 'en';
       
+      console.log('📚 Mobile Explain: User language detected:', userLanguage);
+      console.log('📚 Mobile Explain: User info:', props.userInfo);
+      
       if (userLanguage === 'en') {
         // English explanation (current format)
         explanationText = wordData.definition 
           ? `${props.word}. ${wordData.definition}.${wordData.sampleSentence ? ` Example: ${wordData.sampleSentence}` : ''}`
           : `${props.word} is a word.`;
+        console.log('📚 Mobile Explain: Using English explanation');
       } else {
         // For non-English users, provide translation-based explanation
+        console.log('📚 Mobile Explain: Attempting translation to:', userLanguage);
         explanationText = await generateNativeLanguageExplanation(props.word, wordData, userLanguage);
+        console.log('📚 Mobile Explain: Translated explanation:', explanationText);
       }
       
       console.log('📚 Mobile Explain: TTS text:', explanationText.substring(0, 100) + '...');
