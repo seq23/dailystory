@@ -90,7 +90,7 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
               </div>
             </div>
 
-            {/* Sign In Button - Flexible */}
+            {/* Sign In Button - Clear and Descriptive */}
             <div className="flex-shrink-0">
               {onSignIn && (
                   <Button 
@@ -99,8 +99,7 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                     onClick={onSignIn}
                     className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-purple-300/50 text-white hover:bg-purple-400/30 text-xs font-semibold shadow-lg px-2 py-1 h-8"
                   >
-                    <Crown className="w-3 h-3 flex-shrink-0" />
-                    <span className="hidden xs:inline ml-1">{t("welcomeHero.signIn")}</span>
+                    <span className="text-xs">Sign In</span>
                   </Button>
               )}
             </div>
