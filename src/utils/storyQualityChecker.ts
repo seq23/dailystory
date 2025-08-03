@@ -101,10 +101,10 @@ export class StoryQualityChecker {
   private static checkReadabilityLevel(pages: string[], difficulty: string): QualityIssue[] {
     const issues: QualityIssue[] = [];
     const expectedWordCounts = {
-      easy: { min: 3, max: 8 },
-      medium: { min: 8, max: 25 },
-      hard: { min: 20, max: 45 },
-      expert: { min: 35, max: 80 }
+      easy: { min: 15, max: 35 },
+      medium: { min: 25, max: 50 },
+      hard: { min: 40, max: 70 },
+      expert: { min: 60, max: 100 }
     };
     
     const expected = expectedWordCounts[difficulty] || expectedWordCounts.medium;

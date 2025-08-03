@@ -8,6 +8,7 @@ import { NameFormatter } from "@/utils/nameFormatter";
 import { AntiRepetitionSystem } from "@/utils/antiRepetitionSystem";
 import { TemplateVariableProcessor } from "@/utils/templateVariableProcessor";
 import { APP_CONFIG } from "@/constants/app";
+import { runComprehensiveQualityVerification } from "@/utils/runComprehensiveQualityVerification";
 import { getEnhancedTemplate } from "@/constants/enhancedStoryTemplates";
 import { UserInputDistributor } from "@/services/userInputDistributor";
 import { LanguagePreferenceService } from "./languagePreferenceService";
@@ -71,6 +72,8 @@ export class ConsolidatedStoryGenerator {
     }
 
     try {
+      console.log(`🎯 Starting consolidated story generation for ${userInfo.name} (${difficulty} level)`);
+
       // Phase 9: Ensure proper name capitalization throughout the process
       const processedUserInfo = {
         ...userInfo,
@@ -466,10 +469,10 @@ export class ConsolidatedStoryGenerator {
     adjustment: 'expand' | 'reduce'
   ): string {
     const wordCounts = {
-      easy: { min: 3, max: 8 },
-      medium: { min: 8, max: 25 },
-      hard: { min: 20, max: 45 },
-      expert: { min: 35, max: 80 }
+      easy: { min: 15, max: 35 },
+      medium: { min: 25, max: 50 },
+      hard: { min: 40, max: 70 },
+      expert: { min: 60, max: 100 }
     };
 
     const target = wordCounts[difficulty] || wordCounts.medium;
