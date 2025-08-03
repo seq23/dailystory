@@ -1326,7 +1326,7 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
         return;
       }
       
-      // CRITICAL FIX: Handle TTS audio properly - ElevenLabs returns audio buffer
+      // CRITICAL FIX: Handle TTS audio properly - ElevenLabs returns raw audio response
       if (!ttsResponse.data) {
         console.warn('No TTS audio data received, skipping audio');
         setIsLoadingMobile(false);
@@ -1335,16 +1335,22 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
       
       console.log('Mobile Explain: TTS response received, creating audio');
       
-      // Convert ArrayBuffer to Blob (ElevenLabs returns audio/mpeg data)
+      // Convert the response data directly to blob (ElevenLabs returns audio buffer)
       const audioBlob = new Blob([ttsResponse.data], { type: 'audio/mpeg' });
       const audioUrl = URL.createObjectURL(audioBlob);
       
-      console.log('Mobile Explain: Creating audio element for playback');
+      console.log('Mobile Explain: Audio blob created, setting up audio element');
       
       const audio = new Audio();
       audio.src = audioUrl;
       audio.preload = 'auto';
       audio.volume = 0.9;
+      
+      // Mobile-specific audio handling like ElevenLabsAudio component
+      await new Promise((resolve) => {
+        audio.addEventListener('canplaythrough', resolve, { once: true });
+        audio.load();
+      });
       
       setIsPlayingMobile(true);
       console.log('Mobile Explain: Starting TTS playback');
