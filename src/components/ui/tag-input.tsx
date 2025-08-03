@@ -48,11 +48,11 @@ export const TagInput = ({ value, onChange, placeholder, className, onBlur }: Ta
 
   return (
     <div className={cn(
-      "min-h-[80px] sm:min-h-[100px] p-3 sm:p-4 rounded-xl sm:rounded-2xl border-2 border-primary/20 focus-within:border-primary/50 bg-background touch-target",
+      "min-h-[100px] sm:min-h-[120px] p-4 sm:p-5 rounded-xl sm:rounded-2xl border-2 border-primary/20 focus-within:border-primary/50 bg-background touch-target",
       className
     )}>
       {/* Display existing items as tags */}
-      <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-2">
+      <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3">
         {items.map((item, index) => (
           <div
             key={index}
@@ -70,26 +70,36 @@ export const TagInput = ({ value, onChange, placeholder, className, onBlur }: Ta
         ))}
       </div>
       
-      {/* Input for new items */}
-      <input
-        type="text"
-        value={currentInput}
-        onChange={(e) => setCurrentInput(e.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder={items.length === 0 ? placeholder : "Type another item..."}
-        className="w-full bg-transparent border-none outline-none text-base sm:text-lg placeholder:text-muted-foreground touch-target"
-        onBlur={() => {
-          if (currentInput.trim()) {
-            addItem(currentInput);
-          }
-          // Trigger blur processing for complete value
-          if (onBlur) {
-            onBlur(value);
-          }
-        }}
-      />
+      {/* Input for new items with better placeholder handling */}
+      <div className="space-y-2">
+        <input
+          type="text"
+          value={currentInput}
+          onChange={(e) => setCurrentInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={items.length === 0 ? "" : "Type another item..."}
+          className="w-full bg-transparent border-none outline-none text-base sm:text-lg placeholder:text-muted-foreground touch-target"
+          onBlur={() => {
+            if (currentInput.trim()) {
+              addItem(currentInput);
+            }
+            // Trigger blur processing for complete value
+            if (onBlur) {
+              onBlur(value);
+            }
+          }}
+        />
+        
+        {/* Show placeholder suggestions when empty */}
+        {items.length === 0 && placeholder && (
+          <div className="text-sm text-muted-foreground/80 leading-relaxed break-words">
+            <span className="font-medium">Examples: </span>
+            <span className="italic">{placeholder}</span>
+          </div>
+        )}
+      </div>
       
-      <div className="text-xs text-muted-foreground mt-2">
+      <div className="text-xs text-muted-foreground mt-3 opacity-75">
         Press Enter to add each item, or tap/click after typing
       </div>
     </div>

@@ -586,7 +586,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                       value={formData.favoriteAnimal}
                       onChange={(value) => handleInputChange("favoriteAnimal", value)}
                       placeholder={t("userInfoForm.fields.favoriteAnimal.placeholder", "dog, cat, lion, dolphin...")}
-                      className={`multilingual-input text-base md:text-lg min-h-[80px] md:min-h-[100px] rounded-xl md:rounded-2xl border-2 border-primary/20`}
+                      className="multilingual-input"
                     />
                     {translationLoading.favoriteAnimal && (
                       <div className="absolute right-3 top-3">
@@ -623,7 +623,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                       value={formData.favoriteFood}
                       onChange={(value) => handleInputChange("favoriteFood", value)}
                       placeholder={t("userInfoForm.fields.favoriteFood.placeholder", "pizza, ice cream, apples, cookies...")}
-                      className={`multilingual-input text-base md:text-lg min-h-[80px] md:min-h-[100px] rounded-xl md:rounded-2xl border-2 border-primary/20`}
+                      className="multilingual-input"
                     />
                     {translationLoading.favoriteFood && (
                       <div className="absolute right-3 top-3">
@@ -660,7 +660,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                       value={formData.hobbies}
                       onChange={(value) => handleInputChange("hobbies", value)}
                       placeholder={t("userInfoForm.fields.hobbies.placeholder", "soccer, drawing, dancing, video games...")}
-                      className={`multilingual-input text-base md:text-lg min-h-[80px] md:min-h-[100px] rounded-xl md:rounded-2xl border-2 border-primary/20`}
+                      className="multilingual-input"
                     />
                     {translationLoading.hobbies && (
                       <div className="absolute right-3 top-3">
@@ -705,7 +705,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                 value={formData.specialRequest}
                 onChange={(value) => handleInputChange("specialRequest", value)}
                 placeholder={t("userInfoForm.fields.specialRequest.placeholder")}
-                className="text-base md:text-lg min-h-[80px] md:min-h-[100px]"
+                className="multilingual-input"
               />
             </div>
           </div>
