@@ -300,7 +300,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                 className="flex items-center gap-2"
               >
                 <ChevronRight className="w-4 h-4 rotate-180" />
-                {t('userInfoForm.back', 'Back')}
+                {t('userInfoForm.buttons.back', 'Back')}
               </MobileOptimizedButton>
               
             </div>
