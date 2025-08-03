@@ -12,7 +12,7 @@ import { AvatarPicker } from "@/components/ui/avatar-picker";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { MobileTooltip } from "@/components/MobileTooltip";
 import { ChevronRight, User, GraduationCap, Heart, Star, Globe, Sparkles, AlertCircle, ArrowRightLeft, CheckCircle, Loader2 } from "lucide-react";
-import LanguageSwitcher from './LanguageSwitcher';
+
 import { ContentSecurity, SecurityLogger } from "@/utils/security";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -302,7 +302,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                 <ChevronRight className="w-4 h-4 rotate-180" />
                 {t('userInfoForm.back', 'Back')}
               </MobileOptimizedButton>
-              <LanguageSwitcher />
+              
             </div>
             <div className="flex justify-center mb-4 md:mb-6">
               <div className="relative p-4 md:p-6 bg-gradient-primary rounded-full text-white shadow-glow">
