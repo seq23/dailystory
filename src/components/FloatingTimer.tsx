@@ -169,11 +169,11 @@ export const FloatingTimer = ({
         id="floating-timer" 
         style={isTutorialTimerStep ? {
           // Force center positioning during tutorial with high specificity
-          top: '50% !important',
-          left: '50% !important',
-          bottom: 'auto !important',
-          right: 'auto !important',
-          transform: 'translate(-50%, -50%) !important',
+          top: '50%',
+          left: '50%',
+          bottom: 'auto',
+          right: 'auto',
+          transform: 'translate(-50%, -50%)',
           zIndex: 40
         } : { 
           // Normal bottom-left positioning
@@ -184,6 +184,7 @@ export const FloatingTimer = ({
           transform: 'none'
         }}
       >
+        
         
         {/* Main Timer Circle - Professional & Larger */}
         <div className="relative">
