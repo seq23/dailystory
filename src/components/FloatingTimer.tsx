@@ -165,15 +165,23 @@ export const FloatingTimer = ({
       <TooltipProvider>
       {/* Floating Timer Container - Mobile optimized with tutorial positioning */}
       <div 
-        className={`fixed z-30 flex flex-col items-center gap-3 sm:gap-4 md:gap-6 ${
-          isTutorialTimerStep 
-            ? 'top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2' // Centered during tutorial
-            : 'bottom-6 left-6 sm:left-8' // Normal position
-        }`}
+        className={`fixed z-30 flex flex-col items-center gap-3 sm:gap-4 md:gap-6`}
         id="floating-timer" 
-        style={isTutorialTimerStep ? {} : { 
+        style={isTutorialTimerStep ? {
+          // Force center positioning during tutorial with high specificity
+          top: '50% !important',
+          left: '50% !important',
+          bottom: 'auto !important',
+          right: 'auto !important',
+          transform: 'translate(-50%, -50%) !important',
+          zIndex: 40
+        } : { 
+          // Normal bottom-left positioning
+          bottom: '1.5rem',
+          left: '1.5rem',
           marginLeft: 'max(1rem, env(safe-area-inset-left))', 
-          marginBottom: 'max(1rem, env(safe-area-inset-bottom))' 
+          marginBottom: 'max(1rem, env(safe-area-inset-bottom))',
+          transform: 'none'
         }}
       >
         
