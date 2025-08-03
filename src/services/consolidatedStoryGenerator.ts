@@ -469,10 +469,10 @@ export class ConsolidatedStoryGenerator {
     adjustment: 'expand' | 'reduce'
   ): string {
     const wordCounts = {
-      easy: { min: 15, max: 35 },
-      medium: { min: 25, max: 50 },
-      hard: { min: 40, max: 70 },
-      expert: { min: 60, max: 100 }
+      easy: { min: 3, max: 8 },
+      medium: { min: 8, max: 25 },
+      hard: { min: 20, max: 45 },
+      expert: { min: 35, max: 80 }
     };
 
     const target = wordCounts[difficulty] || wordCounts.medium;

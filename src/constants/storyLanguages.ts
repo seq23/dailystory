@@ -9,44 +9,44 @@ export const STORY_LANGUAGES: Record<string, LanguageStoryConfig> = {
     enabled: true,
     templateSets: {
       easy: [
-        "{name} wakes up on a beautiful sunny morning and decides to explore the colorful garden outside where wonderful adventures await.",
-        "{name} discovers a magical {object} hidden beneath the big oak tree and realizes it has special powers that make everything sparkle.",
-        "The friendly {character} approaches {name} with a warm smile and invites them to join in a fun game of hide and seek.",
-        "{name} loves spending time with the amazing {object} because it brings so much joy and happiness to every single day.",
-        "They see a wonderful {character} dancing merrily in the meadow and decide to learn the special steps together with great enthusiasm.",
-        "{name} helps the kind {character} by sharing toys and snacks, creating a beautiful friendship that will last for many years to come.",
-        "Everyone plays together happily in the sunshine, laughing and singing songs while enjoying the most wonderful day of the entire week.",
-        "They become the very best friends forever, promising to always help each other and share many more exciting adventures in the future."
+        "{name} plays outside.",
+        "{name} finds a {object}.",
+        "The {character} is happy.",
+        "{name} loves {object}.",
+        "They see a {character}.",
+        "{name} helps the {character}.",
+        "Everyone plays together.",
+        "They are best friends."
       ],
       medium: [
-        "In a {setting} far away from the bustling city, there lived a very curious and adventurous {character} named {name} who loved exploring new places every day.",
-        "{name} had always wondered about the mysterious and enchanting {object} that appeared magically every {time} when the stars began to twinkle in the dark sky above.",
-        "One bright and sunny day, {name} decided to investigate carefully and discover the amazing secret of the {object} that had puzzled everyone for many years.",
-        "The exciting journey led {name} through beautiful {places} where {name} met many helpful and kind {characters} who shared their wisdom and knowledge.",
-        "Each wise {character} taught {name} something very important and valuable about {theme}, helping to understand the deeper meaning of life and friendship.",
-        "Together, they solved difficult puzzles and overcame challenging obstacles using special {objects} and their combined intelligence, creativity, and determination to succeed.",
-        "Finally, after many adventures and discoveries, {name} understood that the real treasure was not gold or jewels, but the {theme} found along the way.",
-        "With new friends and valuable wisdom gained from the journey, {name} returned home safely to share the wonderful discoveries with family and loved ones."
+        "In a {setting} far away, there lived a curious {character} named {name}.",
+        "{name} had always wondered about the mysterious {object} that appeared every {time}.",
+        "One day, {name} decided to investigate and discover the secret of the {object}.",
+        "The journey led {name} through {places} where {name} met helpful {characters}.",
+        "Each {character} taught {name} something important about {theme}.",
+        "Together, they solved puzzles and overcame challenges using {objects}.",
+        "Finally, {name} understood that the real treasure was the {theme} found along the way.",
+        "With new friends and wisdom, {name} returned home to share the wonderful discoveries."
       ],
       hard: [
-        "Long ago, in the magnificent and mystical {setting} where ancient magic still flows through every stone and tree, an extraordinary {character} named {name} embarked on a dangerous but important quest to save their homeland.",
-        "The brave {character} possessed a unique and powerful ability to {action} whenever the special {condition} occurred during the most challenging moments, making them the perfect hero for this important mission.",
-        "This incredible gift became absolutely crucial when the peaceful {setting} faced a terrible and threatening crisis involving the dangerous {problem} that could destroy everything they held dear and sacred.",
-        "{name} gathered a diverse and skilled group of {characters} from different lands, each contributing their special {skills}, knowledge, and experience to help solve this enormous challenge.",
-        "Their perilous adventure took them through treacherous and mysterious {places} where they encountered frightening {obstacles}, solved complex riddles, and faced their deepest fears with courage and determination.",
-        "Using magical {objects} and their combined wisdom, intelligence, and teamwork, they carefully devised an ingenious and clever plan to {solution} and restore peace to their beloved homeland.",
-        "The final resolution required great sacrifice, tremendous courage, and unwavering faith, ultimately demonstrating the incredible power of {moral_lesson} and the strength found in working together as one united team.",
-        "Their remarkable success restored harmony and joy to the {setting} and inspired future generations to always believe in themselves and the power of friendship, kindness, and perseverance."
+        "Long ago, in the {setting}, an extraordinary {character} named {name} embarked on a quest.",
+        "The {character} possessed a unique ability to {action} whenever {condition} occurred.",
+        "This gift became crucial when the {setting} faced a terrible crisis involving {problem}.",
+        "{name} gathered a diverse group of {characters}, each contributing their special {skills}.",
+        "Their adventure took them through treacherous {places} where they encountered {obstacles}.",
+        "Using {objects} and their combined wisdom, they devised an ingenious plan to {solution}.",
+        "The resolution required great sacrifice and demonstrated the power of {moral_lesson}.",
+        "Their success restored harmony to the {setting} and inspired future generations."
       ],
       expert: [
-        "In an era where the ancient and sophisticated {setting} was governed by complex laws of {principle} that had been established over countless centuries, {name} emerged as an unlikely but destined {role} who would change the course of history forever.",
-        "The brilliant {character} discovered that the enigmatic {mysterious_element} held the key to understanding the profound {complex_concept} that had puzzled scholars, philosophers, and scientists for generations of intellectual pursuit and research.",
-        "This groundbreaking revelation challenged everything the inhabitants of {setting} had believed about {belief_system}, forcing them to question their fundamental assumptions, values, and understanding of reality itself and their place within the universe.",
-        "As {name} delved deeper into the intricate mysteries using advanced research methods and careful analysis, {pronoun} uncovered a complex conspiracy involving powerful {antagonists} who sought to control knowledge and manipulate truth for their own selfish purposes.",
-        "The shocking truth demanded that {name} choose between {difficult_choice_1} and {difficult_choice_2}, knowing that either decision would have far-reaching consequences that could affect the lives of countless innocent people and future generations.",
-        "With the fate of {setting} hanging precariously in the balance, {name} utilized sophisticated {advanced_tools} and innovative thinking to {complex_action}, combining science, wisdom, and intuition in unprecedented ways to find a solution.",
-        "The climactic confrontation revealed that {profound_truth} was the ultimate resolution, demonstrating that knowledge, compassion, and understanding are more powerful than force, deception, or the pursuit of personal gain at others' expense.",
-        "Through remarkable courage, hard-earned wisdom, and significant {character_growth}, {name} transformed not only {setting} but also achieved profound {self_discovery}, inspiring others to seek truth, embrace change, and work together for the greater good."
+        "In an era where {setting} was governed by ancient laws of {principle}, {name} emerged as an unlikely {role}.",
+        "The {character} discovered that {mysterious_element} held the key to understanding {complex_concept}.",
+        "This revelation challenged everything the inhabitants of {setting} had believed about {belief_system}.",
+        "As {name} delved deeper into the mysteries, {pronoun} uncovered a conspiracy involving {antagonists}.",
+        "The truth demanded that {name} choose between {difficult_choice_1} and {difficult_choice_2}.",
+        "With the fate of {setting} hanging in the balance, {name} utilized {advanced_tools} to {complex_action}.",
+        "The climactic confrontation revealed that {profound_truth} was the ultimate resolution.",
+        "Through courage, wisdom, and {character_growth}, {name} transformed not only {setting} but {self_discovery}."
       ]
     },
     culturalAdaptations: {
