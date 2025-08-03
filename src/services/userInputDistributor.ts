@@ -460,13 +460,13 @@ export class UserInputDistributor {
   }
 
   /**
-   * Get random skill based on difficulty
+   * Get random skill based on difficulty - age-appropriate vocabulary
    */
   private static getRandomSkill(difficulty: DifficultyLevel): string {
     const skills = {
-      easy: ['kindness', 'sharing', 'helping'],
-      medium: ['courage', 'wisdom', 'friendship'],
-      hard: ['bravery', 'intelligence', 'creativity'],
+      easy: ['being nice', 'sharing', 'helping'],
+      medium: ['being brave', 'being smart', 'being kind'],
+      hard: ['courage', 'wisdom', 'creativity'],
       expert: ['leadership', 'determination', 'innovation']
     };
     
@@ -516,14 +516,14 @@ export class UserInputDistributor {
   }
 
   /**
-   * Get contextual action based on difficulty and progress
+   * Get contextual action based on difficulty and progress - age-appropriate vocabulary
    */
   private static getContextualAction(context: DistributionContext): string {
     const actions = {
       easy: ['plays', 'walks', 'runs', 'sits', 'eats', 'sleeps'],
-      medium: ['explores', 'discovers', 'helps', 'learns', 'creates'],
-      hard: ['investigates', 'solves', 'overcomes', 'masters'],
-      expert: ['transcends', 'realizes', 'transforms', 'achieves']
+      medium: ['looks', 'finds', 'helps', 'learns', 'makes'],
+      hard: ['explores', 'discovers', 'solves', 'creates', 'masters'],
+      expert: ['investigates', 'transcends', 'realizes', 'transforms', 'achieves']
     };
     
     const options = actions[context.difficulty] || actions.easy;

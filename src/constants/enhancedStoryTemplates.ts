@@ -59,31 +59,31 @@ export const ENHANCED_STORY_TEMPLATES = {
   ],
   
   medium: [
-    // Template set 1: Magical adventure (5-9 words per page - complete thoughts)
+    // Template set 1: Simple adventure (5-9 words per page - age-appropriate vocabulary)
     [
-      "{name} discovers a magical {setting} today",
-      "A wise {animal} lives there happily",
+      "{name} finds a special {setting} today",
+      "A nice {animal} lives there happily",
       "The {animal} can talk to {name}",
-      "It tells {name} some secret words",
-      "A hidden {object} waits for discovery",
-      "It has very special magical powers",
-      "{name} must find it very quickly",
-      "They search through the {color} forest",
-      "Together they overcome all the challenges",
-      "This magical adventure teaches {name} about friendship"
+      "It tells {name} some fun stories",
+      "A pretty {object} waits for them",
+      "It has some special magic powers",
+      "{name} must find it very soon",
+      "They look through the big forest",
+      "Together they help solve the problem",
+      "This fun trip teaches {name} about friendship"
     ],
     
-    // Template set 2: Problem solving (5-9 words per page - complete thoughts)
+    // Template set 2: Problem solving (5-9 words per page - simple vocabulary)
     [
-      "The {setting} has a very big problem",
-      "All the {primary_animal}s are missing their {primary_food}",
-      "{name} decides to help them right away",
+      "The {setting} has a big problem today",
+      "All the {primary_animal}s lost their {primary_food}",
+      "{name} wants to help them right away",
       "{pronoun} meets a very helpful {secondary_animal}",
-      "They work together as a great team",
+      "They work together as a good team",
       "The {secondary_animal} shows {name} a secret path",
-      "They find where the {primary_food} is hidden",
-      "A mischievous {friend_animal} took it for fun",
-      "{name} explains why sharing is very important",
+      "They find where the {primary_food} is hiding",
+      "A silly {friend_animal} took it for fun",
+      "{name} tells why sharing is very important",
       "Everyone learns the lesson and becomes friends"
     ]
   ],
