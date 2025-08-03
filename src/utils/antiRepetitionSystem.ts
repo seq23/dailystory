@@ -14,11 +14,12 @@ export class AntiRepetitionSystem {
     if (this.isInitialized) return;
     
     try {
+      console.log('🚀 Initializing Anti-Repetition System with persistent storage...');
       this.persistentSignatures = await PersistentAntiRepetitionService.loadContentSignatures();
       this.isInitialized = true;
-      console.log(`Loaded ${this.persistentSignatures.size} content signatures from database`);
+      console.log(`✅ Anti-Repetition System initialized with ${this.persistentSignatures.size} persistent signatures`);
     } catch (error) {
-      console.error('Error initializing anti-repetition system:', error);
+      console.error('❌ Error initializing anti-repetition system:', error);
       this.isInitialized = true; // Mark as initialized even on error to prevent repeated attempts
     }
   }

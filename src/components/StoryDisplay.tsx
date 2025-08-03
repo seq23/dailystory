@@ -661,8 +661,8 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
         );
         newPages = continuationStory.segments.map(segment => segment.text);
       } else {
-        // Free users get entirely new stories (no context maintained)
-        const storyResult = await UniversalContentManager.generateStory(
+        // Free users get new stories with anti-repetition preservation (not entirely new)
+        const storyResult = await UniversalContentManager.generateNewStoryWithAntiRepetition(
           userInfo, 
           currentDifficulty,
           { isPremium, userId: userInfo?.name || 'guest', maxSessions: 100 }

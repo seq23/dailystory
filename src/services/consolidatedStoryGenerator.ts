@@ -46,11 +46,12 @@ export class ConsolidatedStoryGenerator {
     
     const fullConfig: ConsolidatedStoryConfig = {
       pageCount: APP_CONFIG.DEFAULT_PAGE_COUNT,
-      language: 'en',
       useSmartParsing: true,
       antiRepetition: true,
       culturalAdaptation: true,
-      ...config
+      ...config,
+      // ALWAYS override language to English regardless of user's native language
+      language: 'en'
     };
 
     console.log('🎯 Consolidated Story Generation Starting', {
