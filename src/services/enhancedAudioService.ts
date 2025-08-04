@@ -174,21 +174,36 @@ export class EnhancedAudioService {
         console.log(`🔤 Playing syllable ${i + 1}/${syllables.length}: "${syllables[i]}"`);
         
         try {
-          await this.playText({
-            text: syllables[i],
-            difficulty: 'easy',
-            userInfo,
-            isPremium: false, // Syllable breakdown now available to all users
-            enableHighlighting: false
+          // Wait for each syllable to complete before continuing
+          await new Promise<void>((resolve, reject) => {
+            this.playText({
+              text: syllables[i],
+              difficulty: 'easy',
+              userInfo,
+              isPremium: false, // Syllable breakdown now available to all users
+              enableHighlighting: false
+            }).then(() => {
+              // Wait for audio to actually finish playing
+              const checkAudioFinished = () => {
+                if (!this.isPlaying) {
+                  console.log(`✅ Syllable "${syllables[i]}" finished playing`);
+                  resolve();
+                } else {
+                  setTimeout(checkAudioFinished, 100);
+                }
+              };
+              checkAudioFinished();
+            }).catch(reject);
           });
 
           // Longer pause between syllables for clarity
           if (i < syllables.length - 1) {
-            await this.delay(800); // Increased from 400ms to 800ms
+            console.log(`⏸️ Pausing 1200ms before next syllable...`);
+            await this.delay(1200); // Increased from 800ms to 1200ms for clearer separation
           }
         } catch (syllableError) {
           console.error(`❌ Error playing syllable "${syllables[i]}":`, syllableError);
-          // Try to continue with remaining syllables, but log the failure
+          // Continue with remaining syllables instead of stopping completely
           continue;
         }
       }
@@ -388,14 +403,14 @@ export class EnhancedAudioService {
     this.totalWords = wordsWithIndices.length;
     this.currentWordIndex = 0;
     
-    // More accurate timing calculation based on actual reading speed
+    // Faster, more responsive timing calculation
     const calculateWordInterval = (word: string, index: number): number => {
-      const baseInterval = 700; // Base 700ms per word for clear reading
+      const baseInterval = 350; // Reduced from 700ms to 350ms for faster highlighting
       const speedAdjustment = 1 / speed; // Adjust for playback speed
       const hasPunctuation = /[.!?]/.test(word);
-      const pauseAfterPunctuation = hasPunctuation ? 400 : 0;
+      const pauseAfterPunctuation = hasPunctuation ? 200 : 0; // Reduced pause
       const wordLength = word.length;
-      const lengthAdjustment = wordLength > 6 ? 100 : 0; // Extra time for long words
+      const lengthAdjustment = wordLength > 6 ? 50 : 0; // Reduced extra time for long words
       
       return (baseInterval * speedAdjustment) + pauseAfterPunctuation + lengthAdjustment;
     };
@@ -403,7 +418,7 @@ export class EnhancedAudioService {
     const highlightNext = () => {
       if (this.currentWordIndex < wordsWithIndices.length && this.isPlaying) {
         const currentItem = wordsWithIndices[this.currentWordIndex];
-        const wordOnlyIndex = this.currentWordIndex; // Use sequential word index, not original text index
+        const wordOnlyIndex = this.currentWordIndex; // Use sequential word index for consistency
         console.log(`🎯 Highlighting word ${this.currentWordIndex + 1}/${this.totalWords}: "${currentItem.word}" (word-only index: ${wordOnlyIndex})`);
         
         onWordHighlight(wordOnlyIndex);
@@ -415,8 +430,8 @@ export class EnhancedAudioService {
       }
     };
 
-    // Start highlighting immediately with reduced initial delay
-    this.highlightTimeout = setTimeout(highlightNext, 200);
+    // Start highlighting immediately with minimal delay
+    this.highlightTimeout = setTimeout(highlightNext, 100);
   }
 
   private clearHighlighting(): void {
@@ -424,12 +439,14 @@ export class EnhancedAudioService {
       clearTimeout(this.highlightTimeout);
       this.highlightTimeout = null;
     }
+    this.currentWordIndex = 0;
+    this.totalWords = 0;
   }
 
   private breakIntoSyllables(word: string): string[] {
     const cleanWord = word.replace(/[.,!?;:'"()]/g, '').toLowerCase();
     
-    // Dictionary of known difficult words
+    // Expanded dictionary of known difficult words with complete syllable breakdowns
     const knownSyllables: Record<string, string[]> = {
       'flowers': ['flow', 'ers'],
       'wonderful': ['won', 'der', 'ful'],
@@ -440,7 +457,27 @@ export class EnhancedAudioService {
       'important': ['im', 'por', 'tant'],
       'adventure': ['ad', 'ven', 'ture'],
       'character': ['char', 'ac', 'ter'],
-      'favorite': ['fa', 'vor', 'ite']
+      'favorite': ['fa', 'vor', 'ite'],
+      'birthday': ['birth', 'day'],
+      'elephant': ['el', 'e', 'phant'],
+      'butterfly': ['but', 'ter', 'fly'],
+      'chocolate': ['choc', 'o', 'late'],
+      'playground': ['play', 'ground'],
+      'umbrella': ['um', 'brel', 'la'],
+      'telephone': ['tel', 'e', 'phone'],
+      'computer': ['com', 'pu', 'ter'],
+      'tomorrow': ['to', 'mor', 'row'],
+      'yesterday': ['yes', 'ter', 'day'],
+      'picture': ['pic', 'ture'],
+      'special': ['spe', 'cial'],
+      'surprise': ['sur', 'prise'],
+      'library': ['li', 'brar', 'y'],
+      'hospital': ['hos', 'pi', 'tal'],
+      'vacation': ['va', 'ca', 'tion'],
+      'dinosaur': ['di', 'no', 'saur'],
+      'rainbow': ['rain', 'bow'],
+      'sandwich': ['sand', 'wich'],
+      'family': ['fam', 'i', 'ly']
     };
     
     // Check dictionary first

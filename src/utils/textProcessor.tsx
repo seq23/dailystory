@@ -13,6 +13,11 @@ export const processTextForPhonetics = (
   // Split text by spaces but preserve punctuation attached to words
   const words = text.split(/(\s+)/);
   
+  // Create array of only actual words (not whitespace) with their indices
+  const wordOnlyArray = words
+    .map((word, originalIndex) => ({ word, originalIndex }))
+    .filter(item => item.word.trim().length > 0);
+  
   return words.map((word, index) => {
     // If it's just whitespace, return as is
     if (/^\s+$/.test(word)) {
@@ -24,15 +29,15 @@ export const processTextForPhonetics = (
       return null;
     }
 
-    // Calculate word-only index for highlighting (skip whitespace)
-    const wordsBeforeThis = words.slice(0, index).filter(w => w.trim().length > 0).length;
-    const isHighlighted = highlightedWordIndex === wordsBeforeThis;
+    // Find the word-only index for this word
+    const wordOnlyIndex = wordOnlyArray.findIndex(item => item.originalIndex === index);
+    const isHighlighted = highlightedWordIndex === wordOnlyIndex;
     
     return (
       <MobileOptimizedInteractiveWord 
         key={index} 
         word={word} 
-        className={`${className} ${isHighlighted ? 'bg-yellow-200 animate-pulse' : ''} word-index-${index}`}
+        className={`${className} ${isHighlighted ? 'bg-yellow-200 dark:bg-yellow-800 animate-pulse transition-all duration-300' : ''} word-index-${index}`}
         difficulty={difficulty}
         userInfo={userInfo}
         isPremium={isPremium}

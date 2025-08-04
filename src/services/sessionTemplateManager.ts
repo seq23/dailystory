@@ -56,15 +56,17 @@ export class SessionTemplateManager {
 
   /**
    * Get next template from the intelligent rotation system
+   * Enhanced for 40+ template pools
    */
   static getNextTemplate(
     templatePool: string[],
     difficulty: DifficultyLevel
-  ): { template: string; isRepeating: boolean } {
+  ): { template: string; isRepeating: boolean; templateIndex: number } {
     let state = this.getSessionState();
     
     // Initialize or reset if needed
-    if (!state || state.currentShuffle.length === 0) {
+    if (!state || state.currentShuffle.length === 0 || state.currentShuffle.length !== templatePool.length) {
+      console.log(`🔄 SessionTemplateManager: Initializing with ${templatePool.length} templates`);
       state = {
         usedTemplates: new Set(),
         currentShuffle: this.shuffleArray(templatePool),
@@ -75,8 +77,20 @@ export class SessionTemplateManager {
 
     // Check if we've exhausted current shuffle
     if (state.shuffleIndex >= state.currentShuffle.length) {
-      // Reshuffle for next cycle
-      state.currentShuffle = this.shuffleArray(templatePool);
+      console.log(`🔄 SessionTemplateManager: Completed cycle of ${state.currentShuffle.length} templates, reshuffling...`);
+      
+      // Create category-aware reshuffle to prevent similar themes back-to-back
+      const lastTemplate = state.currentShuffle[state.currentShuffle.length - 1];
+      let newShuffle = this.shuffleArray(templatePool);
+      
+      // If the last template from previous cycle is similar to first in new cycle, reshuffle
+      let attempts = 0;
+      while (attempts < 5 && this.areTemplatesSimilar(lastTemplate, newShuffle[0])) {
+        newShuffle = this.shuffleArray(templatePool);
+        attempts++;
+      }
+      
+      state.currentShuffle = newShuffle;
       state.shuffleIndex = 0;
       
       // Mark that we're now repeating
@@ -87,15 +101,21 @@ export class SessionTemplateManager {
       
       this.saveSessionState(state);
       
+      const templateIndex = templatePool.indexOf(state.currentShuffle[0]);
+      
+      console.log(`✅ SessionTemplateManager: Starting new cycle with template ${templateIndex + 1}/${templatePool.length}`);
+      
       return {
         template: state.currentShuffle[0],
-        isRepeating
+        isRepeating,
+        templateIndex
       };
     }
 
     // Get next template from current shuffle
     const template = state.currentShuffle[state.shuffleIndex];
     const isRepeating = state.usedTemplates.has(template);
+    const templateIndex = templatePool.indexOf(template);
     
     // Update state
     state.usedTemplates.add(template);
@@ -103,7 +123,45 @@ export class SessionTemplateManager {
     
     this.saveSessionState(state);
     
-    return { template, isRepeating };
+    console.log(`📖 SessionTemplateManager: Selected template ${templateIndex + 1}/${templatePool.length} (${state.shuffleIndex}/${state.currentShuffle.length} in cycle)`);
+    
+    return { template, isRepeating, templateIndex };
+  }
+
+  /**
+   * Check if two templates have similar themes to avoid repetitive content
+   */
+  private static areTemplatesSimilar(template1: string, template2: string): boolean {
+    if (!template1 || !template2) return false;
+    
+    // Extract first few words to identify theme
+    const getTheme = (template: string) => {
+      const sentences = template.split('.');
+      if (sentences.length === 0) return '';
+      const firstSentence = sentences[0].toLowerCase();
+      const words = firstSentence.split(' ');
+      return words.slice(0, 3).join(' '); // First 3 words indicate theme
+    };
+    
+    const theme1 = getTheme(template1);
+    const theme2 = getTheme(template2);
+    
+    // Check for similar starting patterns
+    const similarPatterns = [
+      ['i see', 'i look'],
+      ['i play', 'i have'],
+      ['we go', 'we see'],
+      ['mom and', 'dad and'],
+      ['the cat', 'the dog', 'the bird']
+    ];
+    
+    for (const patterns of similarPatterns) {
+      if (patterns.some(p => theme1.includes(p)) && patterns.some(p => theme2.includes(p))) {
+        return true;
+      }
+    }
+    
+    return false;
   }
 
   /**
