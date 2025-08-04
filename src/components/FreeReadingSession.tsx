@@ -1050,7 +1050,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                       <span>
                         {t("freeReadingSession.navigation.pageInfo", "Page {current} / {total}").replace("{current}", (currentPage + 1).toString()).replace("{total}", story.length.toString())}
                       </span>
-                      <span className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-2 py-1 rounded-full text-xs font-bold">
+                      <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs font-medium">
                         🎁 {t("freeReadingSession.freeTrial")}
                       </span>
                     </p>
