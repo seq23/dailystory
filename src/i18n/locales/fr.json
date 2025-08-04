@@ -578,5 +578,33 @@
   "userForm": {
     "translating": "Traduction en cours...",
     "back": "Retour"
+  },
+  "feedback": {
+    "tooltip": "Envoyer des commentaires sur votre expérience",
+    "title": "Envoyer des Commentaires",
+    "ratingLabel": "Comment évalueriez-vous votre expérience ?",
+    "categoryLabel": "Catégorie",
+    "categoryPlaceholder": "De quoi s'agit-il ?",
+    "messageLabel": "Vos commentaires",
+    "messagePlaceholder": "Dites-nous ce que vous pensez...",
+    "categories": {
+      "bug": "Rapport de Bug",
+      "feature": "Demande de Fonctionnalité",
+      "content": "Contenu d'Histoire",
+      "usability": "Expérience Utilisateur",
+      "performance": "Performance",
+      "other": "Autre"
+    },
+    "buttons": {
+      "cancel": "Annuler",
+      "submit": "Envoyer les Commentaires",
+      "submitting": "Envoi en cours..."
+    },
+    "messages": {
+      "success": "Commentaires envoyés !",
+      "successDescription": "Merci pour vos commentaires. Nous les apprécions !",
+      "error": "Erreur",
+      "errorDescription": "Échec de l'envoi des commentaires. Veuillez réessayer."
+    }
   }
 }

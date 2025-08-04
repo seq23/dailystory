@@ -531,5 +531,33 @@
   "userForm": {
     "translating": "翻译中...",
     "back": "返回"
+  },
+  "feedback": {
+    "tooltip": "发送关于您体验的反馈",
+    "title": "发送反馈",
+    "ratingLabel": "您如何评价您的体验？",
+    "categoryLabel": "类别",
+    "categoryPlaceholder": "这是关于什么的？",
+    "messageLabel": "您的反馈",
+    "messagePlaceholder": "告诉我们您的想法...",
+    "categories": {
+      "bug": "错误报告",
+      "feature": "功能请求",
+      "content": "故事内容",
+      "usability": "用户体验",
+      "performance": "性能",
+      "other": "其他"
+    },
+    "buttons": {
+      "cancel": "取消",
+      "submit": "提交反馈",
+      "submitting": "提交中..."
+    },
+    "messages": {
+      "success": "反馈已提交！",
+      "successDescription": "感谢您的反馈。我们很感激！",
+      "error": "错误",
+      "errorDescription": "提交反馈失败。请重试。"
+    }
   }
 }

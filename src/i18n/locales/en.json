@@ -641,5 +641,33 @@
   "userForm": {
     "translating": "Translating...",
     "back": "Back"
+  },
+  "feedback": {
+    "tooltip": "Send feedback about your experience",
+    "title": "Send Feedback",
+    "ratingLabel": "How would you rate your experience?",
+    "categoryLabel": "Category",
+    "categoryPlaceholder": "What is this about?",
+    "messageLabel": "Your feedback",
+    "messagePlaceholder": "Tell us what you think...",
+    "categories": {
+      "bug": "Bug Report",
+      "feature": "Feature Request",
+      "content": "Story Content",
+      "usability": "User Experience", 
+      "performance": "Performance",
+      "other": "Other"
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "submit": "Submit Feedback",
+      "submitting": "Submitting..."
+    },
+    "messages": {
+      "success": "Feedback submitted!",
+      "successDescription": "Thank you for your feedback. We appreciate it!",
+      "error": "Error",
+      "errorDescription": "Failed to submit feedback. Please try again."
+    }
   }
 }

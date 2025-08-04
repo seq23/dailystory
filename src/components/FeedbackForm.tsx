@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslation } from "react-i18next";
 import * as z from "zod";
 import { Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ interface FeedbackFormProps {
 }
 
 export function FeedbackForm({ onClose }: FeedbackFormProps) {
+  const { t } = useTranslation();
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -54,16 +56,16 @@ export function FeedbackForm({ onClose }: FeedbackFormProps) {
       if (error) throw error;
 
       toast({
-        title: "Feedback submitted!",
-        description: "Thank you for your feedback. We appreciate it!",
+        title: t("feedback.messages.success"),
+        description: t("feedback.messages.successDescription"),
       });
       
       onClose();
     } catch (error) {
       console.error("Error submitting feedback:", error);
       toast({
-        title: "Error",
-        description: "Failed to submit feedback. Please try again.",
+        title: t("feedback.messages.error"),
+        description: t("feedback.messages.errorDescription"),
         variant: "destructive",
       });
     } finally {
@@ -84,7 +86,7 @@ export function FeedbackForm({ onClose }: FeedbackFormProps) {
           name="rating"
           render={() => (
             <FormItem>
-              <FormLabel>How would you rate your experience?</FormLabel>
+              <FormLabel>{t("feedback.ratingLabel")}</FormLabel>
               <FormControl>
                 <div className="flex gap-1">
                   {[1, 2, 3, 4, 5].map((value) => (
@@ -117,20 +119,20 @@ export function FeedbackForm({ onClose }: FeedbackFormProps) {
           name="category"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Category</FormLabel>
+              <FormLabel>{t("feedback.categoryLabel")}</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="What is this about?" />
+                    <SelectValue placeholder={t("feedback.categoryPlaceholder")} />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="bug">Bug Report</SelectItem>
-                  <SelectItem value="feature">Feature Request</SelectItem>
-                  <SelectItem value="content">Story Content</SelectItem>
-                  <SelectItem value="usability">User Experience</SelectItem>
-                  <SelectItem value="performance">Performance</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
+                  <SelectItem value="bug">{t("feedback.categories.bug")}</SelectItem>
+                  <SelectItem value="feature">{t("feedback.categories.feature")}</SelectItem>
+                  <SelectItem value="content">{t("feedback.categories.content")}</SelectItem>
+                  <SelectItem value="usability">{t("feedback.categories.usability")}</SelectItem>
+                  <SelectItem value="performance">{t("feedback.categories.performance")}</SelectItem>
+                  <SelectItem value="other">{t("feedback.categories.other")}</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -143,10 +145,10 @@ export function FeedbackForm({ onClose }: FeedbackFormProps) {
           name="message"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Your feedback</FormLabel>
+              <FormLabel>{t("feedback.messageLabel")}</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Tell us what you think..."
+                  placeholder={t("feedback.messagePlaceholder")}
                   className="min-h-[100px]"
                   {...field}
                 />
@@ -158,10 +160,10 @@ export function FeedbackForm({ onClose }: FeedbackFormProps) {
 
         <div className="flex gap-3 justify-end">
           <Button variant="outline" onClick={onClose} type="button">
-            Cancel
+            {t("feedback.buttons.cancel")}
           </Button>
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Submitting..." : "Submit Feedback"}
+            {isSubmitting ? t("feedback.buttons.submitting") : t("feedback.buttons.submit")}
           </Button>
         </div>
       </form>

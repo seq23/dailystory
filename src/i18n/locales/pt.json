@@ -731,5 +731,33 @@
   "userForm": {
     "translating": "Traduzindo...",
     "back": "Voltar"
+  },
+  "feedback": {
+    "tooltip": "Envie feedback sobre sua experiência",
+    "title": "Enviar Feedback",
+    "ratingLabel": "Como você avaliaria sua experiência?",
+    "categoryLabel": "Categoria",
+    "categoryPlaceholder": "Sobre o que é?",
+    "messageLabel": "Seu feedback",
+    "messagePlaceholder": "Nos conte o que você pensa...",
+    "categories": {
+      "bug": "Relatório de Bug",
+      "feature": "Solicitação de Recurso",
+      "content": "Conteúdo da História",
+      "usability": "Experiência do Usuário",
+      "performance": "Desempenho",
+      "other": "Outro"
+    },
+    "buttons": {
+      "cancel": "Cancelar",
+      "submit": "Enviar Feedback",
+      "submitting": "Enviando..."
+    },
+    "messages": {
+      "success": "Feedback enviado!",
+      "successDescription": "Obrigado pelo seu feedback. Nós apreciamos!",
+      "error": "Erro",
+      "errorDescription": "Falha ao enviar feedback. Tente novamente."
+    }
   }
 }

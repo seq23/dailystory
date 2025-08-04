@@ -531,5 +531,33 @@
   "userForm": {
     "translating": "अनुवाद कर रहे हैं...",
     "back": "वापस"
+  },
+  "feedback": {
+    "tooltip": "अपने अनुभव के बारे में फीडबैक भेजें",
+    "title": "फीडबैक भेजें",
+    "ratingLabel": "आप अपने अनुभव को कैसे रेट करेंगे?",
+    "categoryLabel": "श्रेणी",
+    "categoryPlaceholder": "यह किस बारे में है?",
+    "messageLabel": "आपका फीडबैक",
+    "messagePlaceholder": "हमें बताएं कि आप क्या सोचते हैं...",
+    "categories": {
+      "bug": "बग रिपोर्ट",
+      "feature": "फीचर रिक्वेस्ट",
+      "content": "कहानी सामग्री",
+      "usability": "उपयोगकर्ता अनुभव",
+      "performance": "प्रदर्शन",
+      "other": "अन्य"
+    },
+    "buttons": {
+      "cancel": "रद्द करें",
+      "submit": "फीडबैक भेजें",
+      "submitting": "भेज रहे हैं..."
+    },
+    "messages": {
+      "success": "फीडबैक भेजा गया!",
+      "successDescription": "आपके फीडबैक के लिए धन्यवाद। हम इसकी सराहना करते हैं!",
+      "error": "त्रुटि",
+      "errorDescription": "फीडबैक भेजने में असफल। कृपया फिर से कोशिश करें।"
+    }
   }
 }
