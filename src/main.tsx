@@ -4,6 +4,10 @@ import App from './App.tsx'
 import './index.css'
 import './i18n/config'
 
+// Import validation tests
+import './utils/runDifficultyValidation';
+import './utils/wordCountVerification';
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <App />
