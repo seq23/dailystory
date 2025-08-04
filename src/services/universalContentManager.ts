@@ -1,5 +1,5 @@
 import { UserInfo, Story, DifficultyLevel } from "@/types";
-import { getDifficultyAppropriateTemplate, validateDifficultyCompliance } from "@/constants/difficultyAppropriateTemplates";
+import { DIFFICULTY_APPROPRIATE_TEMPLATES, validateDifficultyCompliance } from "@/constants/difficultyAppropriateTemplates";
 import { validateLevel1Sentence } from "@/constants/level1Vocabulary";
 import { APP_CONFIG } from "@/constants/app";
 
@@ -103,7 +103,6 @@ export class UniversalContentManager {
     const pages: string[] = [];
     
     // Get ALL template arrays for this difficulty level
-    const { DIFFICULTY_APPROPRIATE_TEMPLATES } = await import('@/constants/difficultyAppropriateTemplates');
     const allTemplateArrays = DIFFICULTY_APPROPRIATE_TEMPLATES[difficulty];
     
     // Flatten all templates into one big pool for maximum variety
