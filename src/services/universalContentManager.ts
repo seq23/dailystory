@@ -952,32 +952,62 @@ export class UniversalContentManager {
     authorVoice: any,
     config: ContentManagerConfig
   ): Promise<string> {
-    // Create a longer narrative arc for sentence-based splitting
+    // Initialize user input distributor
+    const { UserInputDistributor } = await import('./userInputDistributor');
+    await UserInputDistributor.initialize(userInfo);
+    
+    // Get template variables with user inputs
+    const context = { 
+      pageIndex: 0, 
+      totalPages: 8, 
+      difficulty, 
+      usedInputs: new Set<string>()
+    };
+    const templateVars = UserInputDistributor.getTemplateVariables(userInfo, context);
+    
+    // Helper function to apply template variables
+    const applyTemplateVars = (text: string, pageIndex: number): string => {
+      const pageContext = { ...context, pageIndex, usedInputs: new Set<string>() };
+      const vars = UserInputDistributor.getTemplateVariables(userInfo, pageContext);
+      
+      let result = text;
+      Object.entries(vars).forEach(([key, value]) => {
+        result = result.replace(new RegExp(key.replace(/[{}]/g, '\\$&'), 'g'), value);
+      });
+      return result;
+    };
+    
+    // Create a longer narrative arc for sentence-based splitting with user inputs
     const storyArcs = {
       easy: [
-        `${characters.main.name} wakes up and feels happy. Today is a special day for adventures.`,
-        `${characters.main.name} goes outside and sees ${characters.animals[0]?.name || 'a friendly animal'}. They want to play together.`,
-        `They run and jump and laugh. ${characters.main.name} likes this new friend very much.`,
-        `The friend shows ${characters.main.name} a secret place. It is full of fun things to do.`,
-        `They play games and share snacks. ${characters.main.name} learns that sharing is nice.`,
-        `When it gets dark, they say goodbye. ${characters.main.name} feels very happy and tired.`,
-        `${characters.main.name} goes home and tells everyone about the fun day. Everyone smiles.`,
-        `That night, ${characters.main.name} dreams about more adventures. Tomorrow will be fun too.`
+        `{name} wakes up and feels happy. Today is a special day for adventures.`,
+        `{name} goes outside and sees a friendly {animal}. They want to play together.`,
+        `They run and jump and laugh. {name} likes this {color} {animal} very much.`,
+        `The {animal} shows {name} a secret place. It is full of fun things to do.`,
+        `They play games and share {food}. {name} learns that sharing is nice.`,
+        `When it gets dark, they say goodbye. {name} feels very happy and tired.`,
+        `{name} goes home and tells everyone about the fun day. Everyone smiles.`,
+        `That night, {name} dreams about more adventures with the {animal}. Tomorrow will be fun too.`
       ],
       medium: [
-        `${characters.main.name} discovered something magical in the garden behind their house.`,
-        `A tiny door glowed softly between the flower roots, and curious sounds came from inside.`,
-        `${characters.animals[0]?.name || 'A wise creature'} appeared and explained that the door led to a world of wonder.`,
+        `{name} discovered something magical in the garden behind their house.`,
+        `A tiny {color} door glowed softly between the flower roots, and curious sounds came from inside.`,
+        `A wise {animal} appeared and explained that the door led to a world of wonder.`,
         `Together they stepped through and found themselves in a land where music filled the air.`,
-        `The trees sang gentle melodies, and the flowers danced to the rhythm of the wind.`,
-        `${characters.main.name} learned that kindness and friendship could make the music even more beautiful.`,
-        `They helped solve a problem for the singing trees and were rewarded with a special gift.`,
-        `When it was time to leave, ${characters.main.name} promised to visit again and share the magic with others.`
+        `The trees sang gentle melodies, and the {color} flowers danced to the rhythm of the wind.`,
+        `{name} learned that kindness and friendship could make the music even more beautiful.`,
+        `They helped solve a problem for the singing trees and were rewarded with magical {food}.`,
+        `When it was time to leave, {name} promised to visit the {animal} again and share the magic with others.`
       ]
     };
 
     const arc = storyArcs[difficulty] || storyArcs.easy;
-    const fullContent = arc.join(' ');
+    
+    // Apply template variables to each segment
+    const processedSegments = arc.map((segment, index) => applyTemplateVars(segment, index));
+    const fullContent = processedSegments.join(' ');
+    
+    console.log(`📝 Generated story with user inputs: ${templateVars['{animal}']}, ${templateVars['{color}']}, ${templateVars['{food}']}`);
     
     // Apply story style to the full narrative
     return applyAuthorVoice(fullContent, authorVoice, 'opening');
