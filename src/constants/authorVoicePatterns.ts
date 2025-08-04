@@ -1,4 +1,4 @@
-// Author Voice Patterns - Authentic children's literature voices mapped by age groups
+// Story Voice Patterns - Different narrative styles mapped by age groups
 import type { DifficultyLevel, UserInfo } from "@/types";
 
 export interface AuthorVoice {
@@ -14,8 +14,8 @@ export interface AuthorVoice {
 }
 
 export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
-  ericCarle: {
-    name: "Eric Carle Style",
+  redPattern: {
+    name: "Nature Discovery Style",
     description: "Simple repetitive patterns with nature themes and growth",
     ageRange: "3-6",
     patterns: {
@@ -41,8 +41,8 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
     characteristics: ["simple repetition", "nature themes", "transformation", "growth"]
   },
 
-  moWillems: {
-    name: "Mo Willems Style", 
+  bluePattern: {
+    name: "Friendship Adventure Style", 
     description: "Emotional honesty with simple dialogue and friendship",
     ageRange: "3-7",
     patterns: {
@@ -68,8 +68,8 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
     characteristics: ["emotional honesty", "friendship", "simple dialogue", "problem solving"]
   },
 
-  drSeuss: {
-    name: "Dr. Seuss Style",
+  greenPattern: {
+    name: "Playful Rhythm Style",
     description: "Rhythmic patterns with playful language and wordplay",
     ageRange: "3-8", 
     patterns: {
@@ -95,8 +95,8 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
     characteristics: ["rhythm", "rhyme", "wordplay", "exuberance"]
   },
 
-  margaretWiseBrown: {
-    name: "Margaret Wise Brown Style",
+  yellowPattern: {
+    name: "Gentle Bedtime Style",
     description: "Gentle, soothing rhythms with everyday magic",
     ageRange: "2-6",
     patterns: {
@@ -122,8 +122,8 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
     characteristics: ["gentle rhythm", "bedtime comfort", "simple beauty", "peaceful endings"]
   },
 
-  sandraBoynton: {
-    name: "Sandra Boynton Style",
+  orangePattern: {
+    name: "Silly Animal Style",
     description: "Silly, bouncy rhythms with animal characters",
     ageRange: "2-5",
     patterns: {
@@ -149,8 +149,8 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
     characteristics: ["silly", "bouncy", "animals", "humor"]
   },
 
-  lauraNumeroff: {
-    name: "Laura Numeroff Style",
+  purplePattern: {
+    name: "Cause & Effect Style",
     description: "Cause-and-effect chains with circular storytelling",
     ageRange: "3-7",
     patterns: {
@@ -176,8 +176,8 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
     characteristics: ["cause and effect", "circular narratives", "predictable patterns", "humor"]
   },
 
-  kevinHenkes: {
-    name: "Kevin Henkes Style",
+  silverPattern: {
+    name: "Growing Up Style",
     description: "Gentle emotional stories about growing up",
     ageRange: "4-8",
     patterns: {
@@ -203,8 +203,8 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
     characteristics: ["gentle emotion", "growing up", "reassurance", "quiet wisdom"]
   },
 
-  beverlyCleary: {
-    name: "Beverly Cleary Style",
+  goldPattern: {
+    name: "Adventure Life Style",
     description: "Realistic childhood adventures with humor",
     ageRange: "7-12",
     patterns: {
@@ -231,33 +231,33 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
   }
 };
 
-// Age-based author mapping
+// Age-based style mapping
 export const AGE_AUTHOR_MAPPING: Record<string, string[]> = {
-  "2-3": ["margaretWiseBrown", "sandraBoynton"],
-  "3-4": ["ericCarle", "moWillems", "sandraBoynton"],
-  "4-5": ["ericCarle", "moWillems", "drSeuss", "lauraNumeroff"],
-  "5-6": ["drSeuss", "moWillems", "lauraNumeroff", "kevinHenkes"],
-  "6-7": ["drSeuss", "lauraNumeroff", "kevinHenkes"],
-  "7-8": ["kevinHenkes", "beverlyCleary"],
-  "8-12": ["beverlyCleary"],
-  "12+": ["beverlyCleary"]
+  "2-3": ["yellowPattern", "orangePattern"],
+  "3-4": ["redPattern", "bluePattern", "orangePattern"],
+  "4-5": ["redPattern", "bluePattern", "greenPattern", "purplePattern"],
+  "5-6": ["greenPattern", "bluePattern", "purplePattern", "silverPattern"],
+  "6-7": ["greenPattern", "purplePattern", "silverPattern"],
+  "7-8": ["silverPattern", "goldPattern"],
+  "8-12": ["goldPattern"],
+  "12+": ["goldPattern"]
 };
 
 export const DIFFICULTY_VOICE_MAPPING: Record<DifficultyLevel, string[]> = {
-  beginner: ["ericCarle", "margaretWiseBrown", "sandraBoynton"],
-  easy: ["ericCarle", "margaretWiseBrown", "sandraBoynton"],
-  medium: ["moWillems", "drSeuss", "lauraNumeroff"],
-  hard: ["kevinHenkes", "lauraNumeroff", "moWillems"],
-  expert: ["beverlyCleary", "kevinHenkes"]
+  beginner: ["redPattern", "yellowPattern", "orangePattern"],
+  easy: ["redPattern", "yellowPattern", "orangePattern"],
+  medium: ["bluePattern", "greenPattern", "purplePattern"],
+  hard: ["silverPattern", "purplePattern", "bluePattern"],
+  expert: ["goldPattern", "silverPattern"]
 };
 
 /**
- * Get appropriate author voice for user age and difficulty level
+ * Get appropriate story style for user age and difficulty level
  */
 export function getAuthorVoiceForUser(userInfo: UserInfo, difficulty: DifficultyLevel): AuthorVoice {
   const age = userInfo.age;
   
-  // Find age-appropriate authors
+  // Find age-appropriate patterns
   let ageAppropriateAuthors: string[] = [];
   
   if (age <= 3) ageAppropriateAuthors = AGE_AUTHOR_MAPPING["2-3"];
@@ -269,10 +269,10 @@ export function getAuthorVoiceForUser(userInfo: UserInfo, difficulty: Difficulty
   else if (age <= 12) ageAppropriateAuthors = AGE_AUTHOR_MAPPING["8-12"];
   else ageAppropriateAuthors = AGE_AUTHOR_MAPPING["12+"];
   
-  // Get difficulty-appropriate authors
+  // Get difficulty-appropriate patterns
   const difficultyAuthors = DIFFICULTY_VOICE_MAPPING[difficulty];
   
-  // Find intersection of age-appropriate and difficulty-appropriate authors
+  // Find intersection of age-appropriate and difficulty-appropriate patterns
   const appropriateAuthors = ageAppropriateAuthors.filter(author => 
     difficultyAuthors.includes(author)
   );
@@ -280,14 +280,14 @@ export function getAuthorVoiceForUser(userInfo: UserInfo, difficulty: Difficulty
   // If no intersection, prioritize age-appropriateness
   const finalAuthors = appropriateAuthors.length > 0 ? appropriateAuthors : ageAppropriateAuthors;
   
-  // Select random author from appropriate list
+  // Select random pattern from appropriate list
   const selectedAuthor = finalAuthors[Math.floor(Math.random() * finalAuthors.length)];
   
   return AUTHOR_VOICES[selectedAuthor];
 }
 
 /**
- * Get appropriate author voice for difficulty level (backward compatibility)
+ * Get appropriate story style for difficulty level (backward compatibility)
  */
 export function getAuthorVoiceForDifficulty(difficulty: DifficultyLevel): AuthorVoice {
   const availableVoices = DIFFICULTY_VOICE_MAPPING[difficulty];
@@ -296,7 +296,7 @@ export function getAuthorVoiceForDifficulty(difficulty: DifficultyLevel): Author
 }
 
 /**
- * Apply author voice characteristics to content naturally
+ * Apply story style characteristics to content naturally
  */
 export function applyAuthorVoice(
   content: string,
@@ -329,7 +329,7 @@ export function applyAuthorVoice(
 }
 
 /**
- * Check if content already has author voice styling
+ * Check if content already has story style styling
  */
 function isAlreadyStyledContent(content: string, voice: AuthorVoice): boolean {
   const voiceIndicators = [

@@ -240,9 +240,9 @@ export class UniversalContentManager {
       const { UserInputDistributor } = await import('./userInputDistributor');
       UserInputDistributor.initialize(userInfo);
       
-      // Select age-appropriate author voice
+      // Select age-appropriate story style
       const authorVoice = getAuthorVoiceForUser(userInfo, difficulty);
-      console.log(`✍️ Selected author voice: ${authorVoice.name} for age ${userInfo.age}`);
+      console.log(`✍️ Selected story style for age ${userInfo.age}`);
       
       // Generate or retrieve character pool for this user
       const characters = CharacterPoolManager.generateCharacterPool(userInfo, difficulty);
@@ -319,9 +319,9 @@ export class UniversalContentManager {
       UserInputDistributor.initialize(userInfo);
       console.log(`📝 Initialized vocabulary-enhanced input system for user inputs`);
       
-      // Select age-appropriate author voice
+      // Select age-appropriate story style
       const authorVoice = getAuthorVoiceForUser(userInfo, difficulty);
-      console.log(`✍️ Selected author voice: ${authorVoice.name} for age ${userInfo.age}`);
+      console.log(`✍️ Selected story style for age ${userInfo.age}`);
       
       // Generate or retrieve character pool for this user
       const characters = CharacterPoolManager.generateCharacterPool(userInfo, difficulty);
@@ -358,11 +358,11 @@ export class UniversalContentManager {
         
         let processedPage = CharacterDrivenStoryArc.getPageContent(storyContext, enhancedVariables);
         
-        // Apply author voice patterns
+        // Apply story style patterns
         const position = i === 0 ? 'opening' : (i >= pageCount - 2 ? 'closing' : 'transition');
         processedPage = applyAuthorVoice(processedPage, authorVoice, position);
         
-        console.log(`🔍 DEBUG: Page ${i + 1} after author voice (${authorVoice.name}):`, processedPage);
+        console.log(`🔍 DEBUG: Page ${i + 1} after story styling`);
         
         // Ensure children's book flow
         if (i > 0) {
@@ -979,7 +979,7 @@ export class UniversalContentManager {
     const arc = storyArcs[difficulty] || storyArcs.easy;
     const fullContent = arc.join(' ');
     
-    // Apply author voice to the full narrative
+    // Apply story style to the full narrative
     return applyAuthorVoice(fullContent, authorVoice, 'opening');
   }
 
