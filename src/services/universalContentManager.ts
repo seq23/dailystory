@@ -1,30 +1,13 @@
 import { UserInfo, Story, DifficultyLevel } from "@/types";
-import { SupportedLanguage } from "@/types/multilingual";
-import { SmartInputParser } from "./smartInputParser";
-import { ConsolidatedStoryGenerator } from "./consolidatedStoryGenerator";
-import { PremiumStoryService } from "./premiumStoryService";
-import { FreeUserStoryService } from "./freeUserStoryService";
-import { AntiRepetitionSystem } from "@/utils/antiRepetitionSystem";
-import { EnhancedAntiRepetitionEngine } from "./enhancedAntiRepetitionEngine";
-import { IntelligentTemplateSelector } from "./intelligentTemplateSelector";
-import { LanguagePreferenceService } from "./languagePreferenceService";
-import { EnhancedSessionManager } from "./enhancedSessionManager";
+import { getDifficultyAppropriateTemplate, validateDifficultyCompliance } from "@/constants/difficultyAppropriateTemplates";
+import { validateLevel1Sentence } from "@/constants/level1Vocabulary";
+import { APP_CONFIG } from "@/constants/app";
 
 export interface ContentManagerConfig {
   isPremium: boolean;
   userId?: string;
   maxSessions?: number;
   preserveAntiRepetition?: boolean;
-}
-
-export interface ProcessedUserData {
-  originalUserInfo: UserInfo;
-  processedUserInfo: UserInfo;
-  translationReport: {
-    fieldsTranslated: string[];
-    totalTranslations: number;
-    averageConfidence: number;
-  };
 }
 
 export interface StoryGenerationResult {
@@ -36,528 +19,232 @@ export interface StoryGenerationResult {
     remainingSessions: number;
     isUnlimited: boolean;
   };
-  robustSystemMetrics?: {
-    tier: 'free' | 'premium';
-    templatesAvailable: number;
-    antiRepetitionChecks: number;
-    variationsGenerated: number;
-  };
 }
 
 export class UniversalContentManager {
+  private static usedTemplates = new Set<string>();
   
-  // Main orchestration method: Translation → Processing → Story Generation
+  /**
+   * CLEAN, SIMPLE STORY GENERATION - No more 963-line monsters!
+   */
   static async generateStory(
     userInfo: UserInfo,
     difficulty: DifficultyLevel,
     config: ContentManagerConfig
   ): Promise<StoryGenerationResult> {
-    console.log('🚀 Universal Content Manager: Starting ENHANCED story generation pipeline');
+    console.log('🚀 Simple Story Generation Starting...');
     
-    // Validate language configuration before proceeding
-    const languageValidation = LanguagePreferenceService.validateLanguageConfiguration(userInfo, config.isPremium);
-    if (!languageValidation.isValid) {
-      console.warn('Language configuration issues:', languageValidation.issues);
-    }
-
-    const languageConfig = LanguagePreferenceService.getLanguageConfig(userInfo, config.isPremium);
-    console.log('🌐 Language Configuration:', languageConfig);
-    
-    // Enhanced session management - check if user can generate new story
-    const sessionCheck = await EnhancedSessionManager.canGenerateNewStory(
-      userInfo,
-      difficulty,
-      config.isPremium
-    );
-    
-    if (!sessionCheck.canGenerate) {
-      throw new Error(sessionCheck.reason || 'Cannot generate new story at this time');
-    }
-    
-    console.log('✅ Session check passed:', sessionCheck.sessionInfo);
-    
-    try {
-      // Step 1: Process all user inputs through intelligent processing (Translation + Spelling + Grammar)
-      const processedData = await this.processAllUserInputs(userInfo);
-      
-      console.log('✨ Translation Report:', processedData.translationReport);
-      
-      // Step 2: Route to appropriate service based on premium status
-      if (config.isPremium) {
-        return await this.handlePremiumUser(processedData, difficulty, config, sessionCheck.sessionInfo);
-      } else {
-        return await this.handleFreeUser(processedData, difficulty, config, sessionCheck.sessionInfo);
-      }
-      
-    } catch (error) {
-      console.error('Universal Content Manager error:', error);
-      
-      // Graceful fallback - generate basic story with original inputs
-      const fallbackStory = await this.generateFallbackStory(userInfo, difficulty);
-      
-      return {
-        story: fallbackStory,
-        isNewStory: true,
-        isContinuation: false,
-        sessionInfo: sessionCheck?.sessionInfo || {
-          sessionNumber: 1,
-          remainingSessions: config.isPremium ? -1 : 99,
-          isUnlimited: config.isPremium
-        }
-      };
-    }
-  }
-  
-  // Handle premium user story generation with enhanced session management
-  private static async handlePremiumUser(
-    processedData: ProcessedUserData,
-    difficulty: DifficultyLevel,
-    config: ContentManagerConfig,
-    sessionInfo: any
-  ): Promise<StoryGenerationResult> {
-    
-    console.log('👑 Processing premium user with enhanced features...');
-    
-    // Generate story using processed inputs
-    const story = await this.generateNewStory(processedData.processedUserInfo, difficulty, config);
+    const story = await this.generateSimpleStory(userInfo, difficulty, 10);
     
     return {
       story,
       isNewStory: true,
       isContinuation: false,
-      sessionInfo: sessionInfo || {
+      sessionInfo: {
         sessionNumber: 1,
-        remainingSessions: -1, // Unlimited
-        isUnlimited: true
+        remainingSessions: config.isPremium ? -1 : 99,
+        isUnlimited: config.isPremium
       }
-    };
-  }
-  
-  // Handle free user story generation with enhanced session management  
-  private static async handleFreeUser(
-    processedData: ProcessedUserData,
-    difficulty: DifficultyLevel,
-    config: ContentManagerConfig,
-    sessionInfo: any
-  ): Promise<StoryGenerationResult> {
-    
-    console.log('🆓 Processing free user with enhanced session management...');
-    
-    try {
-      // Use FreeUserStoryService for proper session management and caching
-      const result = await FreeUserStoryService.generateStoryWithCaching(
-        processedData.processedUserInfo,
-        difficulty,
-        { translationContext: processedData.translationReport, userId: config.userId }
-      );
-      
-      return {
-        story: result.story,
-        isNewStory: !result.isCachedResult,
-        isContinuation: false,
-        sessionInfo: sessionInfo || {
-          sessionNumber: result.sessionInfo?.currentSession || 1,
-          remainingSessions: Math.max(0, 100 - (result.sessionInfo?.currentSession || 1)),
-          isUnlimited: false
-        }
-      };
-      
-    } catch (error) {
-      console.error('FreeUserStoryService failed, falling back to basic generation:', error);
-      
-      // Fallback to basic story generation
-      const story = await this.generateNewStory(processedData.processedUserInfo, difficulty, config);
-      
-      return {
-        story,
-        isNewStory: true,
-        isContinuation: false,
-        sessionInfo: {
-          sessionNumber: 1,
-          remainingSessions: 99,
-          isUnlimited: false
-        }
-      };
-    }
-  }
-  
-  // Process all user input fields through the smart input parser
-  private static async processAllUserInputs(userInfo: UserInfo): Promise<ProcessedUserData> {
-    const fieldsToProcess = [
-      'name',
-      'favoriteAnimal', 
-      'favoriteFood',
-      'hobbies',
-      'specialRequest'
-    ];
-    
-    const processedUserInfo = { ...userInfo };
-    const translationReport = {
-      fieldsTranslated: [] as string[],
-      totalTranslations: 0,
-      averageConfidence: 0
-    };
-    
-    let totalConfidence = 0;
-    let translationCount = 0;
-    
-    // Collect all input tags for batch processing
-    const allTags: string[] = [];
-    fieldsToProcess.forEach(field => {
-      const value = userInfo[field as keyof UserInfo] as string;
-      if (value && typeof value === 'string') {
-        allTags.push(...value.split(',').map(s => s.trim()).filter(Boolean));
-      }
-    });
-    
-    if (allTags.length > 0) {
-      try {
-        // Use SmartInputParser for processing
-        const parsed = await SmartInputParser.parseTaggedInput(allTags, userInfo, true);
-        
-        // Apply corrections back to user info fields
-        for (const field of fieldsToProcess) {
-          const originalValue = userInfo[field as keyof UserInfo] as string;
-          if (!originalValue || typeof originalValue !== 'string') continue;
-          
-          // Process each tag in the field
-          const fieldTags = originalValue.split(',').map(s => s.trim()).filter(Boolean);
-          const processedTags = fieldTags.map(tag => {
-            const parsedTag = parsed.parsedTags.find(pt => pt.original.toLowerCase() === tag.toLowerCase());
-            return parsedTag ? parsedTag.corrected : tag;
-          });
-          
-          (processedUserInfo as any)[field] = processedTags.join(', ');
-          
-          // Track processing metrics
-          const hasCorrections = fieldTags.some(tag => 
-            parsed.parsedTags.some(pt => pt.original.toLowerCase() === tag.toLowerCase() && pt.original !== pt.corrected)
-          );
-          
-          if (hasCorrections) {
-            translationReport.fieldsTranslated.push(field);
-            translationReport.totalTranslations++;
-            totalConfidence += 0.9; // High confidence for spelling corrections
-            translationCount++;
-          }
-          
-          console.log(`Processed ${field}: "${originalValue}" → "${(processedUserInfo as any)[field]}"`);
-        }
-        
-      } catch (error) {
-        console.error('SmartInputParser failed:', error);
-        // Keep original values on error
-      }
-    }
-    
-    // Calculate average confidence
-    if (translationCount > 0) {
-      translationReport.averageConfidence = totalConfidence / translationCount;
-    }
-    
-    return {
-      originalUserInfo: userInfo,
-      processedUserInfo,
-      translationReport
-    };
-  }
-  
-  // Generate a new story with processed inputs
-  private static async generateNewStory(
-    userInfo: UserInfo,
-    difficulty: DifficultyLevel,
-    config: ContentManagerConfig
-  ): Promise<Story> {
-    
-    // Get language configuration for story generation
-    const languageConfig = LanguagePreferenceService.getLanguageConfig(userInfo, config.isPremium);
-    
-    // Generate the story using consolidated generator with clean English inputs
-    const storyResult = await ConsolidatedStoryGenerator.generateStory(userInfo, difficulty, {
-      pageCount: 10, // Premium users get 10 pages
-      language: languageConfig.storyLanguage,
-      useSmartParsing: true,
-      antiRepetition: true,
-      culturalAdaptation: true
-    });
-    
-    const story: Story = {
-      id: crypto.randomUUID(),
-      title: this.generateStoryTitle(userInfo, difficulty),
-      segments: storyResult.story.segments.map((segment, index) => ({
-        text: segment.text,
-        illustration: `/api/illustrations/story-${index + 1}.jpg`
-      })),
-      difficulty,
-      estimatedReadingTime: storyResult.story.estimatedReadingTime,
-      wordCount: storyResult.story.wordCount
-    };
-    
-    return story;
-  }
-  
-  // Generate appropriate story title
-  private static generateStoryTitle(userInfo: UserInfo, difficulty: DifficultyLevel): string {
-    const templates = {
-      easy: [`${userInfo.name} and the ${userInfo.favoriteAnimal}`, `${userInfo.name}'s Day`],
-      medium: [`${userInfo.name}'s Adventure`, `The Mystery of ${userInfo.favoriteAnimal}`],
-      hard: [`${userInfo.name} and the Quest for ${userInfo.favoriteFood}`, `The Chronicles of ${userInfo.name}`],
-      expert: [`${userInfo.name}: The Journey Begins`, `Tales from ${userInfo.name}'s World`]
-    };
-    
-    const titleOptions = templates[difficulty] || templates.easy;
-    return titleOptions[Math.floor(Math.random() * titleOptions.length)];
-  }
-  
-  // Fallback story generation with anti-repetition tracking
-  private static async generateFallbackStory(userInfo: UserInfo, difficulty: DifficultyLevel): Promise<Story> {
-    const simpleStory = `Once upon a time, there was a child named ${userInfo.name}. 
-    ${userInfo.name} loved ${userInfo.favoriteAnimal}s and ${userInfo.favoriteFood}. 
-    One day, ${userInfo.name} went on a wonderful adventure. 
-    The end.`;
-    
-    // Add to anti-repetition system even for fallback
-    try {
-      await AntiRepetitionSystem.addContent(simpleStory);
-    } catch (error) {
-      console.error('Error adding fallback story to anti-repetition:', error);
-    }
-    
-    return {
-      id: crypto.randomUUID(),
-      title: `${userInfo.name}'s Simple Story`,
-      segments: [{
-        text: simpleStory,
-        illustration: '/api/illustrations/fallback.jpg'
-      }],
-      difficulty,
-      estimatedReadingTime: 1,
-      wordCount: simpleStory.split(' ').length
     };
   }
 
   /**
-   * Generates a new story for free users while preserving anti-repetition cache
+   * Generate new story with anti-repetition (for free users)
    */
   static async generateNewStoryWithAntiRepetition(
     userInfo: UserInfo,
     difficulty: DifficultyLevel,
     config: ContentManagerConfig
   ): Promise<StoryGenerationResult> {
-    console.log('🔄 Generating new story for free user with anti-repetition preservation');
-    console.log('📊 DEBUGGING: Using updated word count standards (easy: 3-8, medium: 8-25, etc.)');
-    console.log('🎯 User info received:', userInfo);
+    console.log('🔄 Generating new story with template variety...');
     
-    try {
-      // CRITICAL FIX: Clear template caches to enable smart template selection
-      const { ConsolidatedStoryGenerator } = await import('./consolidatedStoryGenerator');
-      ConsolidatedStoryGenerator.clearCaches();
-      console.log('🔧 Cleared template caches for new story generation');
-      
-      // Process user inputs for translation/correction
-      const processedData = await this.processAllUserInputs(userInfo);
-      
-      // Generate a NEW story (not continuation) with fresh template selection
-      const storyResult = await ConsolidatedStoryGenerator.generateStory(
-        processedData.processedUserInfo,
-        difficulty,
-        {
-          pageCount: 10, // FIXED: Request 10 pages instead of 5
-          language: LanguagePreferenceService.getStoryLanguage(processedData.processedUserInfo, false), // Free users always get English
-          useSmartParsing: true,
-          antiRepetition: true,
-          culturalAdaptation: true,
-          preserveAntiRepetition: false // CRITICAL FIX: Don't preserve anti-repetition to enable fresh template selection
-        }
-      );
-
-      // Enhanced validation: ensure we have exactly 10 pages with quality content
-      const story = this.validateAndEnsureCompleteness(storyResult.story, userInfo, difficulty);
-
-      return {
-        story,
-        isNewStory: true,
-        isContinuation: false,
-        sessionInfo: {
-          sessionNumber: 1,
-          remainingSessions: 99,
-          isUnlimited: false
-        }
-      };
-    } catch (error) {
-      console.error('Error generating new story with anti-repetition:', error);
-      const fallbackStory = await this.generateFallbackStory(userInfo, difficulty);
-      return {
-        story: fallbackStory,
-        isNewStory: true,
-        isContinuation: false,
-        sessionInfo: {
-          sessionNumber: 1,
-          remainingSessions: 99,
-          isUnlimited: false
-        }
-      };
-    }
-  }
-
-  /**
-   * Validates story completeness and fills gaps with contextual content
-   */
-  private static validateAndEnsureCompleteness(
-    story: Story,
-    userInfo: UserInfo,
-    difficulty: DifficultyLevel
-  ): Story {
-    const targetPages = 10;
-    let segments = [...story.segments];
+    // Clear template tracking for fresh selection
+    this.usedTemplates.clear();
     
-    console.log(`Story validation: received ${segments.length} pages, target: ${targetPages}`);
-    
-    // If we have fewer than target pages, generate contextual continuation content
-    if (segments.length < targetPages) {
-      const missingPages = targetPages - segments.length;
-      console.log(`Generating ${missingPages} contextual continuation pages...`);
-      
-      // Create contextual continuation templates based on difficulty
-      const continuationTemplates = this.getContinuationTemplates(difficulty);
-      
-      for (let i = 0; i < missingPages; i++) {
-        const templateIndex = i % continuationTemplates.length;
-        let continuationText = continuationTemplates[templateIndex];
-        
-        // Replace placeholders with user-specific content
-        continuationText = continuationText
-          .replace(/{name}/g, userInfo.name)
-          .replace(/{animal}/g, userInfo.favoriteAnimal || 'animal')
-          .replace(/{hobby}/g, userInfo.hobbies || 'adventure')
-          .replace(/{food}/g, userInfo.favoriteFood || 'treats')
-          .replace(/{color}/g, userInfo.favoriteColor || 'bright');
-        
-        segments.push({
-          text: continuationText,
-          illustration: undefined,
-          audioUrl: undefined
-        });
-      }
-    }
-    
-    // If we have too many pages, trim to target
-    if (segments.length > targetPages) {
-      segments = segments.slice(0, targetPages);
-    }
+    const story = await this.generateSimpleStory(userInfo, difficulty, 10);
     
     return {
-      ...story,
-      segments,
-      wordCount: segments.reduce((count, segment) => 
-        count + segment.text.split(' ').filter(word => word.trim()).length, 0
-      )
+      story,
+      isNewStory: true,
+      isContinuation: false,
+      sessionInfo: {
+        sessionNumber: 1,
+        remainingSessions: 99,
+        isUnlimited: false
+      }
     };
   }
 
   /**
-   * Get contextual continuation templates based on difficulty
+   * Continue existing story (for premium users)
    */
-  private static getContinuationTemplates(difficulty: DifficultyLevel): string[] {
-    const templates = {
-      easy: [
-        "{name} finds a new {color} {animal} friend.",
-        "The {animal} shows {name} a secret place.",
-        "{name} learns something new about {hobby}.",
-        "They discover a magical {food} tree.",
-        "The adventure becomes even more exciting!",
-        "{name} helps the {animal} solve a puzzle.",
-        "Together they explore the wonderful world.",
-        "The {color} sky makes everything beautiful."
-      ],
-      medium: [
-        "{name} discovers an ancient mystery about the {animal}.",
-        "The {hobby} skills help {name} overcome a new challenge.",
-        "A wise elder teaches {name} about {color} magic.",
-        "The journey leads to a hidden {food} sanctuary.",
-        "{name} must choose between two important paths.",
-        "The {animal} reveals a special talent.",
-        "New friends join {name} on the adventure.",
-        "The story reaches an exciting turning point."
-      ],
-      hard: [
-        "{name} uncovers the deeper meaning behind the {animal}'s behavior.",
-        "The mastery of {hobby} becomes crucial for the quest.",
-        "An unexpected alliance changes everything for {name}.",
-        "The {color} crystal holds the key to the mystery.",
-        "{name} faces a moral dilemma about {food} distribution.",
-        "The {animal} community depends on {name}'s decision.",
-        "Ancient wisdom guides {name} through uncertainty.",
-        "The adventure reveals {name}'s true potential."
-      ],
-      expert: [
-        "{name} contemplates the philosophical implications of the {animal}'s existence.",
-        "The pursuit of {hobby} leads to profound self-discovery.",
-        "Existential questions about {color} perception arise.",
-        "The {food} becomes a metaphor for life's abundance.",
-        "{name} grapples with complex ethical considerations.",
-        "The {animal}'s wisdom transcends ordinary understanding.",
-        "Universal truths emerge through {name}'s journey.",
-        "The narrative reaches transcendent dimensions."
-      ]
-    };
-    
-    return templates[difficulty] || templates.easy;
-  }
-
-  // Continue existing story for premium users
   static async continueExistingStory(
     currentStory: string[],
     userInfo: UserInfo,
     difficulty: DifficultyLevel,
     config: ContentManagerConfig
   ): Promise<Story> {
-    console.log('🔄 Continuing existing story for premium user...');
+    console.log('🔄 Continuing story...');
     
-    try {
-      // CRITICAL FIX: Clear template caches to prevent repetition in continuation
-      const { ConsolidatedStoryGenerator } = await import('./consolidatedStoryGenerator');
-      ConsolidatedStoryGenerator.clearCaches();
-      console.log('🔧 Cleared template caches for story continuation');
+    // Generate 5 additional pages
+    const continuationStory = await this.generateSimpleStory(userInfo, difficulty, 5);
+    
+    return continuationStory;
+  }
+
+  /**
+   * CORE SIMPLE STORY GENERATION - Fast, reliable, predictable
+   */
+  private static async generateSimpleStory(
+    userInfo: UserInfo,
+    difficulty: DifficultyLevel,
+    pageCount: number
+  ): Promise<Story> {
+    const pages: string[] = [];
+    
+    // Get difficulty-appropriate templates
+    const templateArray = getDifficultyAppropriateTemplate(difficulty);
+    console.log(`📚 Using ${templateArray.length} templates for ${difficulty} level`);
+    
+    // Generate pages
+    for (let i = 0; i < pageCount; i++) {
+      // Simple template rotation with variety
+      const templateIndex = i % templateArray.length;
+      let template = templateArray[templateIndex];
       
-      // Get the last few pages for context
-      const lastPages = currentStory.slice(-3).join(' ');
-      const contextualUserInfo = {
-        ...userInfo,
-        specialRequest: `Continue this story: ${lastPages}. Add 5 new pages that follow naturally from where the story left off.`
-      };
+      // Replace placeholders with user data
+      const processedPage = this.processTemplate(template, userInfo);
       
-      // Generate continuation using consolidated generator
-      // CRITICAL FIX: Don't preserve anti-repetition to enable fresh template selection
-      const continuationConfig = {
-        pageCount: 5,
-        language: LanguagePreferenceService.getStoryLanguage(userInfo, true), // Premium users can use their preference
-        useSmartParsing: true,
-        antiRepetition: true,
-        culturalAdaptation: true,
-        preserveAntiRepetition: false // CRITICAL FIX: Enable fresh template selection
-      };
+      // Validate word count for difficulty
+      const validation = validateDifficultyCompliance(processedPage, difficulty);
+      if (!validation.isValid) {
+        console.log(`⚠️ Page ${i + 1} word count (${validation.wordCount}) outside range, using fallback`);
+        const fallback = this.generateFallbackPage(userInfo, difficulty, i);
+        pages.push(fallback);
+      } else {
+        // For easy difficulty, validate Level 1 vocabulary
+        if (difficulty === 'easy') {
+          const level1Check = validateLevel1Sentence(processedPage);
+          if (!level1Check.isValid) {
+            console.log(`⚠️ Page ${i + 1} has non-Level 1 words, using Level 1 fallback`);
+            const fallback = this.generateLevel1Fallback(userInfo, i);
+            pages.push(fallback);
+          } else {
+            pages.push(processedPage);
+          }
+        } else {
+          pages.push(processedPage);
+        }
+      }
       
-      const storyResult = await ConsolidatedStoryGenerator.generateStory(contextualUserInfo, difficulty, continuationConfig);
-      
-      const story: Story = {
-        id: crypto.randomUUID(),
-        title: this.generateStoryTitle(userInfo, difficulty),
-        segments: storyResult.story.segments.map((segment, index) => ({
-          text: segment.text,
-          illustration: `/api/illustrations/story-${index + 1}.jpg`
-        })),
-        difficulty,
-        estimatedReadingTime: storyResult.story.estimatedReadingTime,
-        wordCount: storyResult.story.wordCount
-      };
-      
-      return story;
-      
-    } catch (error) {
-      console.error('Story continuation failed:', error);
-      // Fallback to basic continuation
-      return await this.generateFallbackStory(userInfo, difficulty);
+      console.log(`✅ Page ${i + 1}: "${pages[pages.length - 1]}" (${pages[pages.length - 1].split(' ').length} words)`);
     }
+
+    // Create story object
+    const story: Story = {
+      id: crypto.randomUUID(),
+      title: this.generateStoryTitle(userInfo, difficulty),
+      segments: pages.map(text => ({
+        text,
+        illustration: undefined,
+        audioUrl: undefined
+      })),
+      difficulty,
+      estimatedReadingTime: Math.max(1, Math.ceil(pages.length / 3)),
+      wordCount: pages.join(' ').split(' ').filter(word => word.trim()).length
+    };
+
+    console.log(`✅ Generated ${difficulty} story with ${story.segments.length} pages (${story.wordCount} total words)`);
+    return story;
+  }
+
+  /**
+   * Process template with user data
+   */
+  private static processTemplate(template: string, userInfo: UserInfo): string {
+    return template
+      .replace(/{name}/g, userInfo.name)
+      .replace(/{animal}/g, userInfo.favoriteAnimal || 'cat')
+      .replace(/{color}/g, userInfo.favoriteColor || 'blue')
+      .replace(/{food}/g, userInfo.favoriteFood || 'pizza')
+      .replace(/{hobby}/g, userInfo.hobbies || 'reading')
+      .replace(/{object}/g, 'treasure')
+      .replace(/{setting}/g, 'forest')
+      .replace(/{pronoun}/g, 'they')
+      .replace(/{pronoun_possessive}/g, 'their');
+  }
+
+  /**
+   * Generate fallback page when template fails validation
+   */
+  private static generateFallbackPage(userInfo: UserInfo, difficulty: DifficultyLevel, pageIndex: number): string {
+    const fallbacks = {
+      easy: [
+        `${userInfo.name} has fun.`,
+        `The ${userInfo.favoriteAnimal} plays.`,
+        `${userInfo.name} is happy.`,
+        `They play together.`,
+        `The day is good.`
+      ],
+      medium: [
+        `${userInfo.name} explores the magical garden.`,
+        `The ${userInfo.favoriteAnimal} shows ${userInfo.name} something special.`,
+        `They discover a hidden treasure together.`,
+        `${userInfo.name} learns about friendship and kindness.`,
+        `The adventure brings joy to everyone.`
+      ],
+      hard: [
+        `${userInfo.name} embarked on an extraordinary journey through the mysterious forest.`,
+        `The wise ${userInfo.favoriteAnimal} shared ancient secrets about courage and determination.`,
+        `Through teamwork and understanding, they overcame every challenge that appeared.`,
+        `${userInfo.name} discovered that true strength comes from helping others.`,
+        `This remarkable adventure changed ${userInfo.name} into a confident hero.`
+      ],
+      expert: [
+        `${userInfo.name} contemplated the profound mysteries surrounding the ancient ${userInfo.favoriteAnimal} civilization.`,
+        `Through systematic observation and careful analysis, ${userInfo.name} developed innovative solutions to complex challenges.`,
+        `The collaborative partnership demonstrated the transformative power of interspecies communication and understanding.`,
+        `${userInfo.name} established groundbreaking research that would benefit future generations of explorers.`,
+        `This extraordinary experience fundamentally changed ${userInfo.name}'s understanding of the interconnected nature of all existence.`
+      ]
+    };
+
+    const difficultyFallbacks = fallbacks[difficulty];
+    return difficultyFallbacks[pageIndex % difficultyFallbacks.length];
+  }
+
+  /**
+   * Generate Level 1 vocabulary fallback for easy difficulty
+   */
+  private static generateLevel1Fallback(userInfo: UserInfo, pageIndex: number): string {
+    const level1Fallbacks = [
+      `${userInfo.name} sees a ${userInfo.favoriteAnimal}.`,
+      `The ${userInfo.favoriteAnimal} is big.`,
+      `${userInfo.name} likes the ${userInfo.favoriteAnimal}.`,
+      `They play ball.`,
+      `${userInfo.name} runs fast.`,
+      `The ${userInfo.favoriteAnimal} runs too.`,
+      `They sit down.`,
+      `${userInfo.name} eats ${userInfo.favoriteFood}.`,
+      `The day is fun.`,
+      `${userInfo.name} goes home.`
+    ];
+
+    return level1Fallbacks[pageIndex % level1Fallbacks.length];
+  }
+
+  /**
+   * Generate story title
+   */
+  private static generateStoryTitle(userInfo: UserInfo, difficulty: DifficultyLevel): string {
+    const templates = {
+      easy: [`${userInfo.name} and ${userInfo.favoriteAnimal}`, `${userInfo.name}'s Day`],
+      medium: [`${userInfo.name}'s Adventure`, `The Magic ${userInfo.favoriteAnimal}`],
+      hard: [`${userInfo.name} and the Quest`, `The Chronicles of ${userInfo.name}`],
+      expert: [`${userInfo.name}: The Journey`, `Tales of ${userInfo.name}`]
+    };
+
+    const titleOptions = templates[difficulty] || templates.easy;
+    return titleOptions[Math.floor(Math.random() * titleOptions.length)];
   }
 }
