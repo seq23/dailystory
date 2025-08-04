@@ -48,7 +48,6 @@ export class ConsolidatedStoryGenerator {
     config: Partial<ConsolidatedStoryConfig> = {}
   ): Promise<StoryGenerationResult> {
     const startTime = Date.now();
-    
     // Get language configuration using the new service
     // CRITICAL: Determine if user is premium to enforce language restrictions
     const { SubscriptionManager } = await import('./subscriptionManager');
@@ -56,6 +55,18 @@ export class ConsolidatedStoryGenerator {
     console.log(`🔒 User premium status: ${isPremium ? 'PREMIUM' : 'FREE'}`);
     
     const languageConfig = LanguagePreferenceService.getLanguageConfig(userInfo, isPremium);
+    
+    // CRITICAL: Validate language configuration for cross-device compatibility
+    const languageValidation = LanguagePreferenceService.validateLanguageConfiguration(userInfo, isPremium);
+    if (!languageValidation.isValid) {
+      console.warn('⚠️ Language configuration issues:', languageValidation.issues);
+    }
+    
+    // CRITICAL: Validate cross-device compatibility
+    const deviceValidation = LanguagePreferenceService.validateCrossDeviceCompatibility(userInfo, isPremium);
+    if (!deviceValidation.isValid) {
+      console.warn('⚠️ Cross-device compatibility issues:', deviceValidation.deviceChecks);
+    }
     
     const fullConfig: ConsolidatedStoryConfig = {
       pageCount: APP_CONFIG.DEFAULT_PAGE_COUNT,
@@ -74,9 +85,10 @@ export class ConsolidatedStoryGenerator {
     });
 
     // Phase 8: Initialize anti-repetition system and clear cache for new story (unless preserving for continuation)
-    await AntiRepetitionSystem.initialize();
+    // Optimized for mobile: only initialize if not already done
     if (!fullConfig.preserveAntiRepetition) {
-      AntiRepetitionSystem.clearCache(true); // Preserve persistent signatures
+      await AntiRepetitionSystem.initialize();
+      AntiRepetitionSystem.clearCache(true); // Preserve persistent signatures for mobile efficiency
     }
 
     try {
@@ -110,26 +122,38 @@ export class ConsolidatedStoryGenerator {
       // Phase 1 & 5: Generate story pages using language-appropriate templates
       await UserInputDistributor.initialize(processedUserInfo);
       
-      // CRITICAL FIX: Use language-specific templates instead of English-only enhanced templates
+      // CRITICAL FIX: Use proper template source - enhanced templates for better variety
       const storyLanguage = fullConfig.language;
       console.log(`🌍 Using story language: ${storyLanguage} for ${difficulty} difficulty`);
       
-      const languageTemplates = getLanguageTemplates(storyLanguage, difficulty);
+      // Use enhanced templates which have more variety and prevent repetition
+      const enhancedTemplates = getEnhancedTemplate(difficulty);
+      let activeTemplates: string[] = [];
       
-      if (!languageTemplates.length) {
-        console.warn(`No templates available for ${storyLanguage}/${difficulty}, using English fallback`);
+      // If enhanced templates are available, use them; otherwise fallback to language-specific templates
+      if (enhancedTemplates && enhancedTemplates.length > 0) {
+        activeTemplates = enhancedTemplates;
+        console.log(`✅ Using enhanced templates: ${activeTemplates.length} templates for ${difficulty}`);
+      } else {
+        // Fallback to language-specific templates
+        activeTemplates = getLanguageTemplates(storyLanguage, difficulty);
+        console.log(`⚠️ Fallback to language templates: ${activeTemplates.length} templates for ${storyLanguage}/${difficulty}`);
+      }
+      
+      if (!activeTemplates.length) {
+        console.error(`❌ No templates available for ${storyLanguage}/${difficulty}, using English fallback`);
         const fallbackTemplates = getLanguageTemplates('en', difficulty);
         if (!fallbackTemplates.length) {
-          console.error(`No fallback templates available, using story generator fallback`);
+          console.error(`❌ No fallback templates available, using story generator fallback`);
           return this.generateFallbackStoryResult(processedUserInfo, difficulty, startTime);
         }
+        activeTemplates = fallbackTemplates;
       }
 
       const pages: string[] = [];
       const extractedElements = SmartInputParser.extractStoryElements(parsedElements);
       
-      // Phase 3: Enhanced element distribution and selection with language-appropriate templates
-      const activeTemplates = languageTemplates.length > 0 ? languageTemplates : getLanguageTemplates('en', difficulty);
+      // Phase 3: Enhanced element distribution and selection with proper template source
       const totalPages = fullConfig.pageCount; // Generate exactly the requested number of pages
       console.log(`🎯 Generating ${totalPages} pages using ${activeTemplates.length} template pages for language: ${storyLanguage}`);
       
@@ -569,14 +593,18 @@ export class ConsolidatedStoryGenerator {
   }
 
   /**
-   * Clears template tracking caches
+   * Clears template tracking caches - optimized for mobile performance
    */
   static clearCaches(): void {
     this.usedTemplates.clear();
     this.usedCombinations.clear();
     this.templateHistory.clear();
     this.pageTemplateTracker.clear();
-    console.log('✅ Template caches cleared');
+    
+    // Clear anti-repetition system cache as well
+    AntiRepetitionSystem.clearCache(true); // Preserve persistent for mobile battery efficiency
+    
+    console.log('✅ Template and anti-repetition caches cleared');
   }
 
   /**
