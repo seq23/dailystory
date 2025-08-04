@@ -20,8 +20,11 @@ export const useHybridStoryGeneration = (
   const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
+    console.log('🔍 Hybrid hook called:', { isPremium, templateStoryLength: templateStory.length, firstPage: templateStory[0]?.substring(0, 50) });
+    
     // Only generate AI story for premium users with a valid template
     if (!isPremium || !templateStory.length || templateStory[0]?.includes('Creating')) {
+      console.log('🚫 Skipping AI generation:', { isPremium, hasTemplate: !!templateStory.length, isLoading: templateStory[0]?.includes('Creating') });
       return;
     }
 

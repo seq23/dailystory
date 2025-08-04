@@ -373,6 +373,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
 
   // Smoothly transition to AI story when ready (premium only)
   useEffect(() => {
+    console.log('🔄 Transition check:', { isPremium, isAiReady, hasAiStory: !!aiStory, aiStoryLength: aiStory?.length });
     if (isPremium && isAiReady && aiStory && aiStory.length > 0) {
       console.log('🎭 Transitioning to AI-enhanced story...');
       setStory(aiStory);
