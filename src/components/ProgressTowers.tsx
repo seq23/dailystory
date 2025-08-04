@@ -22,7 +22,7 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
 }) => {
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === 'ar';
-  const [isExpanded, setIsExpanded] = useState(true); // Start expanded for debugging
+  const [isExpanded, setIsExpanded] = useState(false);
   const [autoCollapseTimer, setAutoCollapseTimer] = useState<NodeJS.Timeout | null>(null);
 
   const { userStats } = useGamification({
@@ -83,40 +83,37 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
   return (
     <div 
       className={cn(
-        "fixed top-4 right-4 z-50 transition-all duration-300 ease-out bg-red-500 p-4 border-4 border-blue-500",
-        "w-56", // Always expanded for debugging
+        "fixed top-1/2 transform -translate-y-1/2 z-40 transition-all duration-300 ease-out",
+        isRTL ? "left-0" : "right-0",
+        isExpanded 
+          ? (isRTL ? "translate-x-0" : "translate-x-0")
+          : (isRTL ? "-translate-x-[50px]" : "translate-x-[50px]"), // Less translation to keep toggle visible
         className
       )}
-      style={{ 
-        backgroundColor: 'red', 
-        border: '4px solid blue',
-        zIndex: 9999,
-        position: 'fixed',
-        top: '20px',
-        right: '20px'
-      }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div className="bg-white p-4 rounded">
-        <div className="text-black text-lg font-bold">DEBUG: Progress Towers</div>
-        <div className="text-black">Expanded: {isExpanded ? 'Yes' : 'No'}</div>
-        <div className="text-black">Words: {totalWordsRead}</div>
+      <div className={cn(
+        "bg-white/95 backdrop-blur-sm shadow-xl rounded-lg border border-gray-200",
+        "transition-all duration-300 ease-out",
+        isExpanded ? "w-56 p-4" : "w-16 p-3",
+        isRTL && "mr-2"
+      )}>
         
         {/* Toggle Button */}
         <button
           onClick={handleToggle}
           className={cn(
-            "absolute top-3 flex items-center justify-center w-10 h-10 sm:w-8 sm:h-8 bg-primary/20 hover:bg-primary/30 rounded-full transition-all duration-200 shadow-lg",
-            isRTL ? "right-2" : "left-2",
+            "absolute top-3 flex items-center justify-center w-10 h-10 bg-primary/20 hover:bg-primary/30 rounded-full transition-all duration-200 shadow-lg border border-primary/30",
+            isRTL ? "right-3" : "left-3",
             !isExpanded && "opacity-90 hover:opacity-100 animate-pulse"
           )}
           aria-label={isExpanded ? t('progressTowers.collapse') : t('progressTowers.expand')}
         >
           {isExpanded ? (
-            isRTL ? <ChevronLeft className="w-5 h-5 sm:w-4 sm:h-4" /> : <ChevronRight className="w-5 h-5 sm:w-4 sm:h-4" />
+            isRTL ? <ChevronLeft className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />
           ) : (
-            isRTL ? <ChevronRight className="w-5 h-5 sm:w-4 sm:h-4" /> : <ChevronLeft className="w-5 h-5 sm:w-4 sm:h-4" />
+            isRTL ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />
           )}
         </button>
 
@@ -129,7 +126,7 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
           {isExpanded ? (
             <>
               {/* Title */}
-              <div className="text-center mb-4 mt-8">
+              <div className="text-center mb-4 mt-12">
                 <h3 className="text-sm font-bold text-gray-800 mb-1">
                   {t('progressTowers.title', 'Reading Progress')}
                 </h3>
@@ -174,7 +171,7 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
             </>
           ) : (
             /* Collapsed Icons */
-            <div className="flex flex-col items-center gap-2 mt-8">
+            <div className="flex flex-col items-center gap-2 mt-12">
               <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
                 <BookOpen className="w-3 h-3 text-white" />
               </div>
