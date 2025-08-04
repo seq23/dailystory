@@ -1046,8 +1046,13 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                     <h1 className="text-lg sm:text-xl font-bold text-gray-800">
                       {t("freeReadingSession.session.title", "{name}'s Reading Adventure").replace("{name}", userInfo.name)}
                     </h1>
-                    <p className="text-sm text-gray-600">
-                      {t("freeReadingSession.navigation.pageInfo", "{current} / {total}").replace("{current}", (currentPage + 1).toString()).replace("{total}", story.length.toString())}
+                    <p className="text-sm text-gray-600 flex items-center gap-2">
+                      <span>
+                        {t("freeReadingSession.navigation.pageInfo", "Page {current} / {total}").replace("{current}", (currentPage + 1).toString()).replace("{total}", story.length.toString())}
+                      </span>
+                      <span className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-2 py-1 rounded-full text-xs font-bold">
+                        🎁 {t("freeReadingSession.freeTrial")}
+                      </span>
                     </p>
                   </div>
                 </div>
@@ -1253,9 +1258,6 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                             <span className="text-xs sm:text-sm font-medium text-gray-600 whitespace-nowrap">
                               {t("freeReadingSession.navigation.pageInfo", "Page {current} / {total}").replace("{current}", (currentPage + 1).toString()).replace("{total}", story.length.toString())}
                             </span>
-                            <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                              🎁 {t("freeReadingSession.freeTrial")}
-                            </div>
                           </div>
                           <div className="relative group">
                             <MobileOptimizedButton
