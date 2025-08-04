@@ -506,6 +506,11 @@ export class UniversalContentManager {
     console.log('🔄 Continuing existing story for premium user...');
     
     try {
+      // CRITICAL FIX: Clear template caches to prevent repetition in continuation
+      const { ConsolidatedStoryGenerator } = await import('./consolidatedStoryGenerator');
+      ConsolidatedStoryGenerator.clearCaches();
+      console.log('🔧 Cleared template caches for story continuation');
+      
       // Get the last few pages for context
       const lastPages = currentStory.slice(-3).join(' ');
       const contextualUserInfo = {
@@ -514,14 +519,14 @@ export class UniversalContentManager {
       };
       
       // Generate continuation using consolidated generator
-      // Create a special configuration that preserves anti-repetition state
+      // CRITICAL FIX: Don't preserve anti-repetition to enable fresh template selection
       const continuationConfig = {
         pageCount: 5,
         language: LanguagePreferenceService.getStoryLanguage(userInfo, true), // Premium users can use their preference
         useSmartParsing: true,
         antiRepetition: true,
         culturalAdaptation: true,
-        preserveAntiRepetition: true // Special flag for continuation
+        preserveAntiRepetition: false // CRITICAL FIX: Enable fresh template selection
       };
       
       const storyResult = await ConsolidatedStoryGenerator.generateStory(contextualUserInfo, difficulty, continuationConfig);
