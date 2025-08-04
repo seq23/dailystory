@@ -2,6 +2,8 @@
 let globalAddVocabularyWord: (() => void) | null = null;
 
 export const setupGamificationGlobals = (addVocabularyWord: () => void, enablePersistence: boolean = true) => {
+  console.log('🎮 SETUP GAMIFICATION GLOBALS CALLED!', { enablePersistence });
+  
   // Store the function globally for InteractiveWord component
   globalAddVocabularyWord = addVocabularyWord;
   (window as any).addVocabularyWord = addVocabularyWord;

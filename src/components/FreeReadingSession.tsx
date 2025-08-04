@@ -61,6 +61,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   onSessionEnded,
   isPremium = false,
 }) => {
+  console.log('🎮 FreeReadingSession: Component initializing...', { userInfo: !!userInfo, isPremium });
   const { toast } = useToast();
   const { t } = useTranslation();
 
@@ -212,9 +213,14 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
 
   // Setup gamification globals on mount (no persistence for free trial)
   useEffect(() => {
-    console.log('🎮 Setting up gamification globals for free trial session...');
+    console.log('🎮 FreeReadingSession: Component mounted, setting up gamification globals...');
+    console.log('🎮 FreeReadingSession: addVocabularyWord function available:', !!addVocabularyWord);
     setupGamificationGlobals(addVocabularyWord, false);
-    return () => cleanupGamificationGlobals();
+    console.log('🎮 FreeReadingSession: Gamification globals setup complete');
+    return () => {
+      console.log('🎮 FreeReadingSession: Cleaning up gamification globals');
+      cleanupGamificationGlobals();
+    };
   }, [addVocabularyWord]);
 
   // Generate story on component mount - show immediate fallback then upgrade
