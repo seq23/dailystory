@@ -385,7 +385,12 @@ export const InteractiveWord = ({
     
     // Track vocabulary word IMMEDIATELY when user clicks explain
     console.log('🎯 Tracking vocabulary word:', word);
-    addVocabularyWord();
+    try {
+      addVocabularyWord();
+      console.log('✅ Vocabulary word tracked successfully');
+    } catch (error) {
+      console.error('❌ Failed to track vocabulary word:', error);
+    }
     
     setIsLoadingWordData(true);
     setIsPlaying(true);

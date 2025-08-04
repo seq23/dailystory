@@ -165,8 +165,19 @@ export const useGamification = (options: UseGamificationOptions = {}) => {
   }, [updateActivity]);
 
   const addVocabularyWord = useCallback(() => {
-    updateActivity({ vocabularyLearned: 1 });
-  }, [updateActivity]);
+    console.log('🎯 addVocabularyWord called - updating stats');
+    setUserStats(prev => {
+      const newStats = {
+        ...prev,
+        vocabularyWordsLearned: prev.vocabularyWordsLearned + 1
+      };
+      console.log('📊 Vocabulary updated:', {
+        before: prev.vocabularyWordsLearned,
+        after: newStats.vocabularyWordsLearned
+      });
+      return newStats;
+    });
+  }, []);
 
   const getNextAchievement = useCallback(() => {
     if (newAchievements.length > 0) {

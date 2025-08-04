@@ -170,36 +170,20 @@ export class EnhancedAudioService {
       
       console.log(`🔤 Playing phonetic breakdown for "${word}":`, syllables);
       
+      // Stop any existing audio first
+      this.stopAudio();
+      
       for (let i = 0; i < syllables.length; i++) {
         console.log(`🔤 Playing syllable ${i + 1}/${syllables.length}: "${syllables[i]}"`);
         
         try {
-          // Wait for each syllable to complete before continuing
-          await new Promise<void>((resolve, reject) => {
-            this.playText({
-              text: syllables[i],
-              difficulty: 'easy',
-              userInfo,
-              isPremium: false, // Syllable breakdown now available to all users
-              enableHighlighting: false
-            }).then(() => {
-              // Wait for audio to actually finish playing
-              const checkAudioFinished = () => {
-                if (!this.isPlaying) {
-                  console.log(`✅ Syllable "${syllables[i]}" finished playing`);
-                  resolve();
-                } else {
-                  setTimeout(checkAudioFinished, 100);
-                }
-              };
-              checkAudioFinished();
-            }).catch(reject);
-          });
+          // Use direct browser speech for phonetic breakdown to avoid conflicts
+          await this.playPhoneticSyllable(syllables[i], userInfo);
 
           // Longer pause between syllables for clarity
           if (i < syllables.length - 1) {
             console.log(`⏸️ Pausing 1200ms before next syllable...`);
-            await this.delay(1200); // Increased from 800ms to 1200ms for clearer separation
+            await this.delay(1200); // Increased pause for clearer separation
           }
         } catch (syllableError) {
           console.error(`❌ Error playing syllable "${syllables[i]}":`, syllableError);
@@ -220,6 +204,55 @@ export class EnhancedAudioService {
         enableHighlighting: false
       });
     }
+  }
+
+  /**
+   * Play a single syllable using browser speech synthesis for reliability
+   */
+  private async playPhoneticSyllable(syllable: string, userInfo: UserInfo): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      if ('speechSynthesis' in window) {
+        try {
+          // Cancel any existing speech
+          speechSynthesis.cancel();
+          
+          const utterance = new SpeechSynthesisUtterance(syllable);
+          utterance.rate = 0.7; // Slower for clear pronunciation
+          utterance.pitch = 1.0;
+          utterance.volume = 1.0;
+          utterance.lang = 'en';
+          
+          // Find an English voice
+          const voices = speechSynthesis.getVoices();
+          const englishVoice = voices.find(voice => 
+            voice.lang.toLowerCase().startsWith('en')
+          );
+          
+          if (englishVoice) {
+            utterance.voice = englishVoice;
+          }
+          
+          utterance.onend = () => {
+            console.log(`✅ Syllable "${syllable}" finished playing`);
+            resolve();
+          };
+          
+          utterance.onerror = (e) => {
+            console.error(`❌ Error playing syllable "${syllable}":`, e);
+            reject(e);
+          };
+          
+          speechSynthesis.speak(utterance);
+          console.log(`🗣️ Started playing syllable: "${syllable}"`);
+        } catch (error) {
+          console.error(`❌ Failed to create utterance for "${syllable}":`, error);
+          reject(error);
+        }
+      } else {
+        console.error('❌ Speech synthesis not available');
+        reject(new Error('Speech synthesis not available'));
+      }
+    });
   }
 
   // === Voice Command Methods (Premium) ===
