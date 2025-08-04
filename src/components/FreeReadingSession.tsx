@@ -489,11 +489,11 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
             
             // Better contextual fallback for difficulty changes
             const difficultyFallbacks = [
-              `${userInfo.name} adapts to the new ${newDifficulty} challenge.`,
-              `The ${newDifficulty} adventure reveals new possibilities.`,
-              `${userInfo.name} discovers hidden strengths at this level.`,
-              `The story grows more ${direction === 'harder' ? 'complex' : 'accessible'} and engaging.`,
-              `${userInfo.name} meets the ${newDifficulty} challenge with confidence.`
+              `${userInfo.name} continues the exciting adventure ahead.`,
+              `New mysteries await ${userInfo.name} to discover today.`,
+              `${userInfo.name} feels ready for whatever comes next.`,
+              `The magical journey brings wonderful surprises now.`,
+              `${userInfo.name} explores with curiosity and brave heart.`
             ];
             
             for (let i = 0; i < additionalPages; i++) {

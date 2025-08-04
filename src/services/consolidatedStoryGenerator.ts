@@ -157,10 +157,12 @@ export class ConsolidatedStoryGenerator {
       
       for (let i = 0; i < totalPages; i++) {
         // CRITICAL FIX: Use difficulty-appropriate templates that enforce proper word counts
-        const templateResult = getDifficultyAppropriateTemplate(difficulty);
-        let template = templateResult.join(' '); // Convert array to string
+        // Get individual page template, not the entire array
+        const templateArray = getDifficultyAppropriateTemplate(difficulty);
+        let template = templateArray[i % templateArray.length]; // Select individual page template
         
-        console.log(`📝 Page ${i + 1}: Selected ${difficulty} template with appropriate word count`);
+        console.log(`📝 Page ${i + 1}: Selected ${difficulty} template (${i % templateArray.length + 1}/${templateArray.length})`);
+        
         
         // Enhanced anti-repetition check using new engine
         const antiRepetitionConfig = {
@@ -875,38 +877,85 @@ export class ConsolidatedStoryGenerator {
     const color = userInfo.favoriteColor || 'blue';
     const food = userInfo.favoriteFood || 'pizza';
     
+    // Enhanced templates with better variety to prevent repetition
     const templates = {
       easy: [
         `${name} sees a ${animal}.`,
         `The ${animal} is ${color}.`,
         `${name} likes the ${animal}.`,
         `They play together.`,
-        `${name} feels happy.`
+        `${name} feels happy.`,
+        `The ${animal} runs fast.`,
+        `${name} goes outside.`,
+        `They find a ball.`,
+        `${name} throws the ball.`,
+        `The ${animal} catches it.`,
+        `They sit down.`,
+        `${name} pets the ${animal}.`,
+        `The sun is warm.`,
+        `${name} smiles big.`,
+        `They rest together.`,
+        `${name} says goodbye.`,
+        `The ${animal} waves.`,
+        `${name} walks home.`,
+        `The day was fun.`,
+        `${name} dreams tonight.`
       ],
       medium: [
         `${name} discovers a magical ${color} ${animal} in the garden.`,
         `The friendly ${animal} shows ${name} a secret hiding place.`,
         `Together they share delicious ${food} under the bright sun.`,
         `${name} learns important lessons about friendship and kindness.`,
-        `The wonderful adventure brings joy to both new friends.`
+        `The wonderful adventure brings joy to both new friends.`,
+        `${name} finds a mysterious map hidden behind the old tree.`,
+        `The ${animal} leads ${name} through a magical forest path.`,
+        `They encounter other friendly creatures who offer helpful advice.`,
+        `${name} solves a puzzle using cleverness and creative thinking.`,
+        `The ${animal} teaches ${name} how to communicate with nature.`,
+        `Together they help a lost butterfly find its way home.`,
+        `${name} discovers hidden talents through this exciting journey.`,
+        `The adventure reveals the importance of courage and determination.`,
+        `${name} and the ${animal} celebrate their successful mission together.`,
+        `They promise to meet again for more amazing adventures.`
       ],
       hard: [
         `${name} embarked on an extraordinary journey to find the legendary ${color} ${animal}.`,
         `Along the winding path, ${name} encountered various challenges that tested courage and determination.`,
         `The wise ${animal} shared ancient wisdom about the importance of perseverance and compassion.`,
         `Through teamwork and understanding, ${name} and the ${animal} overcame every obstacle together.`,
-        `This remarkable adventure transformed ${name} into a confident and caring individual.`
+        `This remarkable adventure transformed ${name} into a confident and caring individual.`,
+        `${name} discovered an ancient library containing forgotten stories and magical knowledge.`,
+        `The mystical ${animal} guardian explained the history of this sacred place.`,
+        `Each book revealed different perspectives on solving complex problems facing the world.`,
+        `${name} learned to combine traditional wisdom with innovative thinking to find solutions.`,
+        `The ${animal} demonstrated how cooperation between different species creates lasting harmony.`,
+        `Together they developed strategies to protect the environment and help other creatures.`,
+        `${name} realized that true leadership comes from serving others and making positive changes.`,
+        `The adventure taught valuable lessons about responsibility and the power of determination.`,
+        `Through this experience, ${name} gained confidence to face any future challenges.`,
+        `The bond formed with the ${animal} became a lifelong friendship built on trust.`
       ],
       expert: [
         `${name} meticulously planned an expedition to investigate the mysterious phenomena surrounding the ${color} ${animal}.`,
         `The comprehensive research revealed fascinating interconnections between the ${animal}'s behavior and environmental factors.`,
         `Through systematic observation and careful analysis, ${name} developed innovative solutions to complex ecological challenges.`,
         `The collaborative partnership with the ${animal} demonstrated the profound impact of interspecies communication and cooperation.`,
-        `This transformative experience fundamentally changed ${name}'s understanding of the delicate balance within natural ecosystems.`
+        `This transformative experience fundamentally changed ${name}'s understanding of the delicate balance within natural ecosystems.`,
+        `${name} initiated a groundbreaking research project to study advanced communication patterns among different animal species.`,
+        `The interdisciplinary approach combined behavioral psychology, environmental science, and innovative technology to gather comprehensive data.`,
+        `Working alongside the remarkable ${animal}, ${name} developed revolutionary methods for understanding complex social dynamics in nature.`,
+        `The findings challenged conventional scientific theories and opened new pathways for environmental conservation and sustainability.`,
+        `${name} established an international network of researchers dedicated to advancing cross-species understanding and collaboration.`,
+        `The project's success led to the development of innovative educational programs that inspire future generations of scientists.`,
+        `Through this work, ${name} discovered that meaningful progress requires both rigorous scientific methodology and genuine empathy.`,
+        `The ${animal} became a co-researcher, contributing unique insights that revolutionized the field of animal behavior studies.`,
+        `${name} authored influential publications that transformed how the scientific community approaches environmental research and conservation.`,
+        `This extraordinary collaboration demonstrated the unlimited potential that emerges when humans and animals work together.`
       ]
     };
     
     const difficultyTemplates = templates[difficulty];
+    // Use modulo to cycle through templates, but with enough variety to prevent immediate repetition
     const templateIndex = pageIndex % difficultyTemplates.length;
     return difficultyTemplates[templateIndex];
   }
