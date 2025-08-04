@@ -7,6 +7,19 @@ import { VocabularyLevelClassifier } from "@/utils/vocabularyLevelClassifier";
 import { StoryQualityChecker } from "@/utils/storyQualityChecker";
 import { APP_CONFIG } from "@/constants/app";
 
+// Custom error for free trial page limits
+export class FreeTrialPageLimitError extends Error {
+  constructor(
+    message: string, 
+    public currentPages: number, 
+    public maxPages: number,
+    public upgradeMessage: string
+  ) {
+    super(message);
+    this.name = 'FreeTrialPageLimitError';
+  }
+}
+
 export interface ContentManagerConfig {
   isPremium: boolean;
   userId?: string;
@@ -116,7 +129,15 @@ export class UniversalContentManager {
     
     if (maxAdditionalPages <= 0) {
       console.warn(`📚 Free trial page limit reached (${currentStory.length}/${maxTotalPages} pages)`);
-      throw new Error(`Page limit reached. Free trial users can have up to ${maxTotalPages} pages total.`);
+      
+      const upgradeMessage = `🚀 Unlock unlimited storytelling! You've reached the ${maxTotalPages}-page free trial limit. Upgrade to Premium for unlimited pages, advanced features, and personalized reading experiences.`;
+      
+      throw new FreeTrialPageLimitError(
+        `Free trial limit reached: ${currentStory.length}/${maxTotalPages} pages`,
+        currentStory.length,
+        maxTotalPages,
+        upgradeMessage
+      );
     }
     
     const additionalPages = maxAdditionalPages;

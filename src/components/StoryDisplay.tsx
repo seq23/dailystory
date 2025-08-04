@@ -10,7 +10,7 @@ import type { UserInfo, SessionStats } from "@/types";
 import type { Achievement } from "@/services/gamificationService";
 import { ElevenLabsAudio } from "@/components/ElevenLabsAudio";
 import { InteractiveAudioReading } from "@/components/InteractiveAudioReading";
-import { UniversalContentManager } from "@/services/universalContentManager";
+import { UniversalContentManager, FreeTrialPageLimitError } from "@/services/universalContentManager";
 import { UnifiedImageService, type EstablishedCharacter } from "@/services/unifiedImageService";
 import { APP_CONFIG } from "@/constants/app";
 import { useToast } from "@/hooks/use-toast";
@@ -301,6 +301,19 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
       } catch (error) {
         console.error('Failed to generate story:', error);
         
+        if (error instanceof FreeTrialPageLimitError) {
+          toast({
+            title: t("sessionEnded.freeTrialLimitReached.title"),
+            description: t("sessionEnded.freeTrialLimitReached.message", { maxPages: error.maxPages }),
+            variant: "default",
+            duration: 8000,
+          });
+          if (onUpgrade) {
+            setTimeout(() => onUpgrade(), 2000);
+          }
+          return;
+        }
+        
         // Enhanced fallback story generation based on user preferences
         const fallbackStory = (() => {
           const name = userInfo.name || 'Alex';
@@ -535,6 +548,19 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
         // Success notification removed - no longer showing new story ready message
       } catch (error) {
         console.error('Failed to generate new story:', error);
+        
+        if (error instanceof FreeTrialPageLimitError) {
+          toast({
+            title: t("sessionEnded.freeTrialLimitReached.title"), 
+            description: t("sessionEnded.freeTrialLimitReached.message", { maxPages: error.maxPages }),
+            variant: "default",
+            duration: 8000,
+          });
+          if (onUpgrade) {
+            setTimeout(() => onUpgrade(), 2000);
+          }
+          return;
+        }
         toast({
           title: "Error",
           description: "Failed to generate new story. Please try again.",
@@ -646,6 +672,25 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
       
     } catch (error) {
       console.error('Failed to change difficulty:', error);
+      
+      if (error instanceof FreeTrialPageLimitError) {
+        toast({
+          title: t("sessionEnded.freeTrialLimitReached.title"),
+          description: t("sessionEnded.freeTrialLimitReached.message", { maxPages: error.maxPages }), 
+          variant: "default",
+          duration: 8000,
+        });
+        if (onUpgrade) {
+          setTimeout(() => onUpgrade(), 2000);
+        }
+        return;
+      }
+      
+      toast({
+        title: "Error",
+        description: "Failed to change difficulty. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -719,11 +764,28 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
       
     } catch (error) {
       console.error('Failed to add more pages:', error);
-      toast({
-        title: "Error",
-        description: "Failed to add more pages. Please try again.",
-        variant: "destructive",
-      });
+      
+      if (error instanceof FreeTrialPageLimitError) {
+        // Show premium upgrade message for page limit
+        toast({
+          title: t("sessionEnded.freeTrialLimitReached.title"),
+          description: t("sessionEnded.freeTrialLimitReached.message", { maxPages: error.maxPages }),
+          variant: "default",
+          duration: 8000, // Show longer for upgrade message
+        });
+        
+        // Optionally trigger premium upgrade flow
+        if (onUpgrade) {
+          setTimeout(() => onUpgrade(), 2000); // Show upgrade modal after toast
+        }
+      } else {
+        // Generic error message
+        toast({
+          title: "Error",
+          description: "Failed to add more pages. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   };
 

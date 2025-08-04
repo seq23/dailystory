@@ -486,6 +486,10 @@
       "extendedLibrary": "Extended story library with more topics",
       "advancedTracking": "Advanced progress tracking & analytics",
       "upgradeToPremium": "Upgrade to Premium"
+    },
+    "freeTrialLimitReached": {
+      "title": "📚 Free Trial Limit Reached",
+      "message": "🚀 Unlock unlimited storytelling! You've reached the {maxPages}-page free trial limit. Upgrade to Premium for unlimited pages, advanced features, and personalized reading experiences."
     }
   },
   "storyDisplay": {
