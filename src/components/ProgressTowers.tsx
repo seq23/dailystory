@@ -89,6 +89,13 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
       vocabulary: vocabularyLearned 
     };
 
+    // Initialize prevValues on first render
+    if (prevValues.words === 0 && prevValues.pages === 0 && prevValues.vocabulary === 0) {
+      prevValuesRef.current = currentValues;
+      console.log('ProgressTowers: Initialized with current values:', currentValues);
+      return;
+    }
+
     console.log('ProgressTowers: Checking for progress changes:', {
       prevValues,
       currentValues,
@@ -102,11 +109,13 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
     const hasVocabIncrease = currentValues.vocabulary > prevValues.vocabulary;
 
     if (hasWordsIncrease || hasPagesIncrease || hasVocabIncrease) {
+      const wordsDiff = currentValues.words - prevValues.words;
+      
       console.log('ProgressTowers: Triggering animations!', {
         hasWordsIncrease,
         hasPagesIncrease, 
         hasVocabIncrease,
-        wordsDiff: currentValues.words - prevValues.words
+        wordsDiff
       });
 
       setHasNewProgress(true);
@@ -124,15 +133,16 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
       // Clear animations after a brief moment
       setTimeout(() => {
         setAnimatingTowers({ words: false, pages: false, vocabulary: false });
-        // Keep the new progress indicator for longer
-        setTimeout(() => setHasNewProgress(false), 3000);
-      }, 1500);
+      }, 2000);
+
+      // Keep the new progress indicator for longer duration
+      setTimeout(() => setHasNewProgress(false), 5000);
 
       // Show celebration for story completion (significant word increase)
-      if (hasWordsIncrease && (currentValues.words - prevValues.words) >= 50) {
+      if (hasWordsIncrease && wordsDiff >= 50) {
         console.log('ProgressTowers: Story completion detected! Showing celebration');
         setCelebration(true);
-        setTimeout(() => setCelebration(false), 3000);
+        setTimeout(() => setCelebration(false), 4000);
       }
     }
 
@@ -176,16 +186,23 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
             "absolute top-3 flex items-center justify-center w-10 h-10 bg-primary/20 hover:bg-primary/30 rounded-full transition-all duration-200 shadow-lg border border-primary/30",
             isRTL ? "right-3" : "left-3",
             !isExpanded && "opacity-90 hover:opacity-100",
-            // Gentle breathing animation when collapsed, more prominent when there's new progress
+            // Enhanced breathing animation when collapsed, super prominent when there's new progress
             !isExpanded && !hasNewProgress && "animate-[pulse_3s_ease-in-out_infinite]",
-            !isExpanded && hasNewProgress && "animate-[pulse_1s_ease-in-out_3] ring-2 ring-primary/50",
-            celebration && "animate-bounce"
+            !isExpanded && hasNewProgress && "animate-[pulse_0.8s_ease-in-out_infinite] ring-4 ring-red-400/60 bg-red-50",
+            celebration && "animate-bounce ring-4 ring-yellow-400/60"
           )}
           aria-label={isExpanded ? t('progressTowers.collapse') : t('progressTowers.expand')}
         >
-          {/* New progress indicator dot */}
+          {/* Enhanced new progress indicator dot */}
           {hasNewProgress && !isExpanded && (
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping" />
+            <>
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full animate-ping" />
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-600 rounded-full" />
+            </>
+          )}
+          {/* Celebration sparkle */}
+          {celebration && (
+            <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-ping" />
           )}
           {isExpanded ? (
             isRTL ? <ChevronLeft className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />
@@ -216,16 +233,29 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
               <div className="grid grid-cols-3 gap-3 justify-items-center relative">
                 {celebration && (
                   <>
-                    {/* Celebration particles */}
-                    <div className="absolute inset-0 pointer-events-none">
-                      {[...Array(6)].map((_, i) => (
+                    {/* Enhanced celebration particles */}
+                    <div className="absolute inset-0 pointer-events-none overflow-visible">
+                      {[...Array(12)].map((_, i) => (
                         <div
                           key={i}
-                          className="absolute w-2 h-2 bg-yellow-400 rounded-full animate-[ping_1s_ease-out_infinite]"
+                          className="absolute w-2 h-2 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full animate-[ping_1.5s_ease-out_infinite]"
                           style={{
-                            left: `${20 + i * 15}%`,
-                            top: `${10 + (i % 2) * 20}%`,
-                            animationDelay: `${i * 0.1}s`
+                            left: `${10 + i * 8}%`,
+                            top: `${5 + (i % 3) * 25}%`,
+                            animationDelay: `${i * 0.15}s`
+                          }}
+                        />
+                      ))}
+                      {/* Sparkle effect */}
+                      {[...Array(6)].map((_, i) => (
+                        <div
+                          key={`sparkle-${i}`}
+                          className="absolute w-1 h-1 bg-white rounded-full animate-pulse"
+                          style={{
+                            left: `${25 + i * 12}%`,
+                            top: `${15 + (i % 2) * 30}%`,
+                            animationDelay: `${i * 0.2}s`,
+                            boxShadow: '0 0 4px #fbbf24'
                           }}
                         />
                       ))}
@@ -235,7 +265,7 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
                 
                 <div className={cn(
                   "transition-all duration-500",
-                  animatingTowers.words && "animate-bounce scale-105"
+                  animatingTowers.words && "animate-bounce scale-110 rotate-1"
                 )}>
                   <ProgressTower
                     value={totalWordsRead}
@@ -243,13 +273,13 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
                     label={t('progressTowers.words')}
                     icon={<BookOpen className="w-4 h-4" />}
                     color="blue"
-                    className={animatingTowers.words ? "ring-2 ring-blue-300 shadow-lg shadow-blue-200" : ""}
+                    className={animatingTowers.words ? "ring-4 ring-blue-300 shadow-2xl shadow-blue-200 glow-blue" : ""}
                   />
                 </div>
                 
                 <div className={cn(
                   "transition-all duration-500",
-                  animatingTowers.pages && "animate-bounce scale-105"
+                  animatingTowers.pages && "animate-bounce scale-110 -rotate-1"
                 )}>
                   <ProgressTower
                     value={totalPagesRead}
@@ -257,13 +287,13 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
                     label={t('progressTowers.pages')}
                     icon={<FileText className="w-4 h-4" />}
                     color="green"
-                    className={animatingTowers.pages ? "ring-2 ring-green-300 shadow-lg shadow-green-200" : ""}
+                    className={animatingTowers.pages ? "ring-4 ring-green-300 shadow-2xl shadow-green-200 glow-green" : ""}
                   />
                 </div>
                 
                 <div className={cn(
                   "transition-all duration-500",
-                  animatingTowers.vocabulary && "animate-bounce scale-105"
+                  animatingTowers.vocabulary && "animate-bounce scale-110 rotate-1"
                 )}>
                   <ProgressTower
                     value={vocabularyLearned}
@@ -271,16 +301,19 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
                     label={t('progressTowers.vocabulary')}
                     icon={<Lightbulb className="w-4 h-4" />}
                     color="gold"
-                    className={animatingTowers.vocabulary ? "ring-2 ring-yellow-300 shadow-lg shadow-yellow-200" : ""}
+                    className={animatingTowers.vocabulary ? "ring-4 ring-yellow-300 shadow-2xl shadow-yellow-200 glow-gold" : ""}
                   />
                 </div>
               </div>
 
-              {/* Milestone Message */}
+              {/* Enhanced Milestone Message */}
               {celebration && (
-                <div className="mt-3 p-2 bg-gradient-to-r from-yellow-100 to-orange-100 rounded-lg text-center animate-fade-in">
-                  <p className="text-xs font-medium text-orange-800">
-                    🎉 {t('progressTowers.storyComplete')}
+                <div className="mt-3 p-3 bg-gradient-to-r from-yellow-100 via-orange-100 to-red-100 rounded-lg text-center animate-[bounce_0.5s_ease-out] border-2 border-yellow-300 shadow-lg">
+                  <p className="text-sm font-bold text-orange-800 animate-pulse">
+                    🎉✨ {t('progressTowers.storyComplete')} ✨🎉
+                  </p>
+                  <p className="text-xs text-orange-600 mt-1">
+                    {t('progressTowers.keepGoing', 'Keep climbing!')}
                   </p>
                 </div>
               )}

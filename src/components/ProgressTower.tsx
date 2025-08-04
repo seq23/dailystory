@@ -53,6 +53,11 @@ export const ProgressTower: React.FC<ProgressTowerProps> = ({
           "w-12 h-32 bg-gray-100 rounded-lg border-2 relative overflow-hidden",
           colorBorders[color]
         )}>
+          {/* Top Label (Max Value) */}
+          <div className="absolute -top-5 left-1/2 transform -translate-x-1/2">
+            <span className="text-xs text-gray-400 font-medium">{maxValue}</span>
+          </div>
+
           {/* Tick Marks */}
           {[...Array(6)].map((_, i) => {
             const tickValue = i * 100;
@@ -90,24 +95,24 @@ export const ProgressTower: React.FC<ProgressTowerProps> = ({
           {/* Celebration Effect */}
           {milestoneAchieved && (
             <div className="absolute inset-0 pointer-events-none">
-              {[...Array(6)].map((_, i) => (
+              {[...Array(8)].map((_, i) => (
                 <div
                   key={i}
-                  className="absolute w-1 h-1 bg-yellow-300 rounded-full animate-ping"
+                  className="absolute w-1.5 h-1.5 bg-yellow-300 rounded-full animate-ping"
                   style={{
-                    left: `${20 + (i * 10)}%`,
-                    top: `${10 + (i * 15)}%`,
-                    animationDelay: `${i * 200}ms`
+                    left: `${15 + (i * 8)}%`,
+                    top: `${8 + (i * 12)}%`,
+                    animationDelay: `${i * 150}ms`
                   }}
                 />
               ))}
             </div>
           )}
-        </div>
 
-        {/* Max Value Label */}
-        <div className="absolute -bottom-5 left-1/2 transform -translate-x-1/2">
-          <span className="text-xs text-gray-400">{maxValue}</span>
+          {/* Bottom Label (Zero) */}
+          <div className="absolute -bottom-5 left-1/2 transform -translate-x-1/2">
+            <span className="text-xs text-gray-400 font-medium">0</span>
+          </div>
         </div>
       </div>
 
