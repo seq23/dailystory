@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { getPhoneticSpelling } from "@/utils/phoneticDictionary";
-import { Volume2, HelpCircle, Languages, BookOpen, Lightbulb, Plus, Crown } from "lucide-react";
+import { Volume2, HelpCircle, Languages, BookOpen, Lightbulb, Plus, Crown, Layers } from "lucide-react";
 import { UnifiedTTSService } from "@/services/unifiedTTSService";
+import { EnhancedAudioService } from "@/services/enhancedAudioService";
 import { useToast } from "@/hooks/use-toast";
 import { contextualPronunciation } from "@/services/contextualPronunciation";
 import { supabase } from "@/integrations/supabase/client";
@@ -87,6 +88,8 @@ export const InteractiveWord = ({
   const [wordData, setWordData] = useState<any>(null);
   const [isLoadingWordData, setIsLoadingWordData] = useState(false);
   const [ttsService, setTtsService] = useState<any>(null);
+  const [enhancedAudioService] = useState(() => new EnhancedAudioService());
+  const [isPlayingPhonetics, setIsPlayingPhonetics] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState<{
     vertical: 'top' | 'bottom';
     horizontal: 'left' | 'center' | 'right';
@@ -1120,6 +1123,8 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
   const [isPlayingMobile, setIsPlayingMobile] = useState(false);
   const [mobileWordData, setMobileWordData] = useState<any>(null);
   const [isLoadingMobile, setIsLoadingMobile] = useState(false);
+  const [enhancedAudioService] = useState(() => new EnhancedAudioService());
+  const [isPlayingPhonetics, setIsPlayingPhonetics] = useState(false);
   
   
   // ENHANCED: Debug and fix translation issues for Arabic, Chinese, Hindi (mobile version)
@@ -1747,6 +1752,36 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
     console.log('📱 Mobile word clicked, new showMobileTTS:', !showMobileTTS);
   };
 
+  // Premium phonetic breakdown handler
+  const handlePhoneticBreakdown = async () => {
+    if (!props.isPremium || !props.userInfo) return;
+    
+    setIsPlayingPhonetics(true);
+    
+    try {
+      await enhancedAudioService.playPhoneticBreakdown({
+        word: props.word,
+        userInfo: props.userInfo,
+        showSyllables: true
+      });
+      
+      toast({
+        title: "Phonetic Breakdown",
+        description: `Playing syllable-by-syllable pronunciation of "${props.word}"`,
+        duration: 3000,
+      });
+    } catch (error) {
+      console.error('Phonetic breakdown error:', error);
+      toast({
+        title: "Error",
+        description: "Could not play phonetic breakdown. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsPlayingPhonetics(false);
+    }
+  };
+
   // Check if this word is a user name - if so, don't make it interactive
   const cleanWord = props.word.replace(/[^\w\s]/g, '').toLowerCase().trim();
   const isUserName = props.userInfo?.name && cleanWord === props.userInfo.name.toLowerCase();
@@ -1825,11 +1860,27 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
                 className="flex flex-col items-center justify-center gap-2 bg-green-50 hover:bg-green-100 active:bg-green-200 border-2 border-green-200 p-4 rounded-xl transition-colors touch-manipulation min-h-[80px] font-semibold text-green-700 disabled:opacity-50"
               >
                 <HelpCircle className="w-6 h-6" />
-                <span className="text-sm">
-                  {isLoadingMobile ? userLanguageT("interactiveWord.loading", "Loading...") : userLanguageT("interactiveWord.explain", "Explain")}
-                </span>
-              </button>
-            </div>
+                 <span className="text-sm">
+                   {isLoadingMobile ? userLanguageT("interactiveWord.loading", "Loading...") : userLanguageT("interactiveWord.explain", "Explain")}
+                 </span>
+               </button>
+             </div>
+             
+             {/* Premium Phonetic Breakdown Button */}
+             {props.isPremium && (
+               <div className="mb-4">
+                 <button
+                   onClick={handlePhoneticBreakdown}
+                   disabled={isPlayingPhonetics}
+                   className="w-full flex items-center justify-center gap-2 bg-purple-50 hover:bg-purple-100 active:bg-purple-200 border-2 border-purple-200 p-3 rounded-xl transition-colors touch-manipulation font-semibold text-purple-700 disabled:opacity-50"
+                 >
+                   <Layers className="w-5 h-5" />
+                   <span className="text-sm">
+                     {isPlayingPhonetics ? "Playing Syllables..." : "Break Down Pronunciation"}
+                   </span>
+                 </button>
+               </div>
+             )}
             
             {/* User type indicator for transparency */}
             <div className="text-center mb-4">

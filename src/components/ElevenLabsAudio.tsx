@@ -3,9 +3,10 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Play, Square, Crown } from "lucide-react";
+import { Play, Square, Crown, Mic } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { EnhancedAudioService } from "@/services/enhancedAudioService";
 import type { UserInfo } from "@/types";
 
 interface ElevenLabsAudioProps {
@@ -16,6 +17,8 @@ interface ElevenLabsAudioProps {
   currentPage?: number;
   totalPages?: number;
   isExtendedPage?: boolean; // True if this page was added beyond the original 10
+  difficulty?: 'easy' | 'medium' | 'hard' | 'expert';
+  onWordHighlight?: (wordIndex: number) => void;
 }
 
 export const ElevenLabsAudio = ({ 
@@ -25,194 +28,124 @@ export const ElevenLabsAudio = ({
   onUpgrade, 
   currentPage = 0, 
   totalPages = 1,
-  isExtendedPage = false 
+  isExtendedPage = false,
+  difficulty = 'easy',
+  onWordHighlight 
 }: ElevenLabsAudioProps) => {
   const { t } = useTranslation();
   const { isMobileOrTablet, isCapacitor } = useIsMobile();
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [playedPages, setPlayedPages] = useState<Set<number>>(new Set()); // Track which pages have been played
-  const [audioInitialized, setAudioInitialized] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [voiceCommandsEnabled, setVoiceCommandsEnabled] = useState(false);
+  const [audioService] = useState(() => new EnhancedAudioService());
   const { toast } = useToast();
 
-  // Free users get 1 audio play per page up to 10 pages, no audio for extended pages
+  // Enhanced audio service handles free limits internally
   const maxFreePages = 10;
-  const hasPlayedCurrentPage = playedPages.has(currentPage);
   const isWithinFreeLimit = currentPage < maxFreePages;
-  const canUseAudio = isPremium || (!hasPlayedCurrentPage && isWithinFreeLimit && !isExtendedPage);
+  const canUseAudio = isPremium || (isWithinFreeLimit && !isExtendedPage);
 
-  // Mobile audio initialization - required for iOS/Android
-  const initializeMobileAudio = async () => {
-    if (audioInitialized || !isMobileOrTablet) return;
-    
-    try {
-      // Create a silent audio element to unlock audio context on mobile
-      const audio = new Audio();
-      audio.preload = 'metadata';
-      // Use a small silent audio data URL to avoid network requests
-      audio.src = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMeBS113+TQeCkELI7L7tmNQAgMW7Dn7adTEw1GnN/y';
-      
-      const playPromise = audio.play();
-      if (playPromise !== undefined) {
-        await playPromise.catch(() => {}); // Ignore errors for silent audio
-      }
-      
-      audio.pause();
-      audio.currentTime = 0;
-      
-      setAudioInitialized(true);
-    } catch (error) {
-      console.log('Mobile audio initialization optional step failed:', error);
-      // Not critical, continue anyway
-      setAudioInitialized(true);
-    }
-  };
-
+  // Enhanced audio playback using new service
   const playAudio = async () => {
     if (!canUseAudio) {
-      // Only show notification when free limit is reached (played all 10 pages)
-      if (playedPages.size >= maxFreePages && !isPremium) {
-        toast({
-          title: "🎵 Free Limit Reached",
-          description: "You've used all 10 free audio plays! Upgrade to Premium for unlimited audio on all pages.",
-          variant: "default",
-          duration: 4000,
-        });
-        onUpgrade?.();
-      }
+      toast({
+        title: "🎵 Free Limit Reached",
+        description: "You've used all 10 free audio plays! Upgrade to Premium for unlimited audio on all pages.",
+        variant: "default",
+        duration: 4000,
+      });
+      onUpgrade?.();
       return;
-    }
-
-    // Initialize mobile audio if needed
-    if (isMobileOrTablet && !audioInitialized) {
-      await initializeMobileAudio();
     }
 
     setIsLoading(true);
     
     try {
-      // Call our Supabase edge function with correct URL
-      const voice = getVoiceForUser(userInfo);
-      const isNativeEnglishSpeaker = userInfo.nativeLanguage === 'en';
-      const model = isNativeEnglishSpeaker ? "eleven_turbo_v2" : "eleven_multilingual_v2";
-      
-      const response = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/elevenlabs-tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text: isPremium ? text.slice(0, 1000) : text.slice(0, 500), // Premium users get longer text
-          voice: voice,
-          model: model
-        })
+      await audioService.playText({
+        text,
+        difficulty,
+        userInfo,
+        isPremium,
+        enableHighlighting: onWordHighlight !== undefined,
+        onWordHighlight,
+        currentPage
       });
-
-      if (!response.ok) throw new Error('Failed to generate audio');
       
-      const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
+      setIsPlaying(true);
+    } catch (error) {
+      console.error('Enhanced audio playback error:', error);
       
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
-      
-      // Enhanced mobile audio handling
-      audioRef.current = new Audio(audioUrl);
-      
-      // Mobile-specific audio configuration
-      if (isMobileOrTablet) {
-        audioRef.current.preload = 'metadata';
-        // Ensure audio is ready for mobile playback
-        await new Promise((resolve) => {
-          if (audioRef.current) {
-            audioRef.current.addEventListener('canplaythrough', resolve, { once: true });
-            audioRef.current.load();
-          }
+      if (error.message.includes('Page already played')) {
+        toast({
+          title: "🎵 Free Limit Reached", 
+          description: "You've used all 10 free audio plays! Upgrade to Premium for unlimited audio on all pages.",
+          variant: "default",
+          duration: 4000,
         });
-      }
-      
-      audioRef.current.onended = () => {
-        setIsPlaying(false);
-        URL.revokeObjectURL(audioUrl);
-      };
-      
-      // Enhanced error handling for mobile
-      audioRef.current.onerror = () => {
-        setIsPlaying(false);
-        URL.revokeObjectURL(audioUrl);
+        onUpgrade?.();
+      } else {
         toast({
           title: "Audio Error",
-          description: isMobileOrTablet ? "Audio playback failed. Please try again or check your device settings." : "Could not play audio. Please try again.",
+          description: isMobileOrTablet ? 
+            "Could not play audio. On mobile devices, ensure sound is enabled and try again." :
+            "Could not play audio. Please try again.",
           variant: "destructive",
         });
-      };
-      
-      await audioRef.current.play();
-      setIsPlaying(true);
-      
-      // Mark page as played (no notification)
-      if (!isPremium) {
-        setPlayedPages(prev => new Set([...prev, currentPage]));
       }
-      
-    } catch (error) {
-      console.error('Audio playback error:', error);
-      toast({
-        title: "Audio Error",
-        description: isMobileOrTablet ? 
-          "Could not play audio. On mobile devices, ensure sound is enabled and try again." :
-          "Could not play audio. Please try again.",
-        variant: "destructive",
-      });
     } finally {
       setIsLoading(false);
     }
   };
 
+
   const stopAudio = () => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      setIsPlaying(false);
+    audioService.stopAudio();
+    setIsPlaying(false);
+  };
+
+  // Premium voice commands toggle
+  const toggleVoiceCommands = () => {
+    if (!isPremium) {
+      onUpgrade?.();
+      return;
+    }
+
+    if (voiceCommandsEnabled) {
+      audioService.stopVoiceCommands();
+      setVoiceCommandsEnabled(false);
+      toast({
+        title: "Voice Commands Disabled",
+        description: "Voice commands are now off",
+        duration: 2000,
+      });
+    } else {
+      audioService.startVoiceCommands();
+      setVoiceCommandsEnabled(true);
+      toast({
+        title: "Voice Commands Enabled", 
+        description: "Try saying 'next page', 'read slower', or 'what does [word] mean?'",
+        duration: 4000,
+      });
     }
   };
 
-  const getVoiceForUser = (userInfo: UserInfo) => {
-    // Select voice based on user preferences and language
-    const age = userInfo.age;
-    const isGirl = userInfo.avatar?.type === 'girl';
-    const isNativeEnglishSpeaker = userInfo.nativeLanguage === 'en';
-    
-    // Use natural voices for native English speakers, multilingual voices for others
-    if (isNativeEnglishSpeaker) {
-      // Most natural English voices for native speakers
-      if (age <= 8) {
-        return isGirl ? "EXAVITQu4vr4xnSDxMaL" : "TX3LPaxmHKxFdv7VOQHJ"; // Sarah or Liam
-      } else if (age <= 12) {
-        return isGirl ? "cgSgspJ2msm6clMCkdW9" : "nPczCjzI2devNBz1zQrb"; // Jessica or Brian (very natural)
-      } else {
-        return isGirl ? "cgSgspJ2msm6clMCkdW9" : "onwK4e9ZLuTAKqWW03F9"; // Jessica or Daniel (most natural)
-      }
-    } else {
-      // Multilingual voices for non-native speakers
-      if (age <= 8) {
-        return isGirl ? "EXAVITQu4vr4xnSDxMaL" : "TX3LPaxmHKxFdv7VOQHJ"; // Sarah or Liam
-      } else if (age <= 12) {
-        return isGirl ? "XB0fDUnXU5powFXDhCwa" : "N2lVS1w4EtoT3dr4eOWO"; // Charlotte or Callum
-      } else {
-        return isGirl ? "9BWtsMINqrJLrRacOk9x" : "CwhRBWXzGAHq8TQ4Fs17"; // Aria or Roger
-      }
-    }
-  };
+  // Audio service status monitoring
+  useEffect(() => {
+    const checkStatus = () => {
+      const status = audioService.getPlaybackStatus();
+      setIsPlaying(status.isPlaying);
+    };
+
+    const interval = setInterval(checkStatus, 1000);
+    return () => clearInterval(interval);
+  }, [audioService]);
 
   useEffect(() => {
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
+      audioService.stopAudio();
+      audioService.stopVoiceCommands();
     };
-  }, []);
+  }, [audioService]);
 
   return (
     <div className="flex items-center gap-2 flex-wrap">
@@ -232,6 +165,19 @@ export const ElevenLabsAudio = ({
         )}
         {isLoading ? t("audioReading.generating", "Generating...") : isPlaying ? t("audioReading.stop", "Stop") : t("audioReading.playAudio", "Play Audio")}
       </Button>
+
+      {/* Premium Voice Commands Button */}
+      {isPremium && (
+        <Button
+          onClick={toggleVoiceCommands}
+          variant={voiceCommandsEnabled ? "default" : "outline"}
+          size={isMobileOrTablet ? "default" : "sm"}
+          className={`gap-2 ${isMobileOrTablet ? 'min-h-[44px] px-4' : ''}`}
+        >
+          <Mic className={`w-4 h-4 ${voiceCommandsEnabled ? 'animate-pulse' : ''}`} />
+          Voice Commands
+        </Button>
+      )}
 
       {!isPremium && (
         <div className="flex items-center gap-2 flex-wrap">
