@@ -85,10 +85,19 @@ export class ConsolidatedStoryGenerator {
     });
 
     // Phase 8: Initialize anti-repetition system and clear cache for new story (unless preserving for continuation)
-    // Optimized for mobile: only initialize if not already done
+    // CRITICAL FIX: Always clear template caches for fresh template selection, even when preserving content anti-repetition
     if (!fullConfig.preserveAntiRepetition) {
       await AntiRepetitionSystem.initialize();
       AntiRepetitionSystem.clearCache(true); // Preserve persistent signatures for mobile efficiency
+      // Always clear template caches to enable smart selection
+      this.clearCaches();
+    } else {
+      // Even when preserving anti-repetition, clear template caches for variety
+      this.usedTemplates.clear();
+      this.usedCombinations.clear();
+      this.templateHistory.clear();
+      this.pageTemplateTracker.clear();
+      console.log('✅ Template caches cleared while preserving content anti-repetition');
     }
 
     try {

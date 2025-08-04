@@ -340,10 +340,15 @@ export class UniversalContentManager {
     console.log('🎯 User info received:', userInfo);
     
     try {
+      // CRITICAL FIX: Clear template caches to enable smart template selection
+      const { ConsolidatedStoryGenerator } = await import('./consolidatedStoryGenerator');
+      ConsolidatedStoryGenerator.clearCaches();
+      console.log('🔧 Cleared template caches for new story generation');
+      
       // Process user inputs for translation/correction
       const processedData = await this.processAllUserInputs(userInfo);
       
-      // Generate a NEW story (not continuation) but preserve anti-repetition state
+      // Generate a NEW story (not continuation) with fresh template selection
       const storyResult = await ConsolidatedStoryGenerator.generateStory(
         processedData.processedUserInfo,
         difficulty,
@@ -353,7 +358,7 @@ export class UniversalContentManager {
           useSmartParsing: true,
           antiRepetition: true,
           culturalAdaptation: true,
-          preserveAntiRepetition: true // IMPORTANT: This preserves the anti-repetition cache
+          preserveAntiRepetition: false // CRITICAL FIX: Don't preserve anti-repetition to enable fresh template selection
         }
       );
 
