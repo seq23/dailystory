@@ -60,8 +60,8 @@ export class UserInputDistributor {
       return selected;
     }
 
-    // If all used, reset and pick again for longer stories
-    if (context.pageIndex > pool.length) {
+    // If all used, reset and pick again - prioritize early distribution for first 10 pages
+    if (context.pageIndex > Math.max(pool.length, 3) || context.pageIndex >= 10) {
       used.clear();
       const selected = pool[Math.floor(Math.random() * pool.length)];
       used.add(selected);
