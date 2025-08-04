@@ -1,5 +1,5 @@
 import { UserInfo, Story, DifficultyLevel } from "@/types";
-import { DIFFICULTY_APPROPRIATE_TEMPLATES, validateDifficultyCompliance } from "@/constants/difficultyAppropriateTemplates";
+import { DIFFICULTY_APPROPRIATE_TEMPLATES, validateDifficultyCompliance, getDifficultyAppropriateTemplate } from "@/constants/difficultyAppropriateTemplates";
 import { getEnhancedTemplatePool } from "@/constants/enhancedTemplates";
 import { SessionTemplateManager } from "@/services/sessionTemplateManager";
 import { validateLevel1Sentence } from "@/constants/level1Vocabulary";
@@ -337,21 +337,25 @@ export class UniversalContentManager {
   }
 
   /**
-   * Generate fallback page content
+   * Generate fallback page content with proper template processing
    */
   private static generateFallbackPage(
     userInfo: UserInfo,
     difficulty: DifficultyLevel,
     pageIndex: number
   ): string {
-    const templates = DIFFICULTY_APPROPRIATE_TEMPLATES[difficulty];
-    if (!templates || templates.length === 0) {
-      return `${userInfo.name || 'Alex'} has an adventure.`;
+    try {
+      // Use the new template processing function that handles variables properly
+      const processedTemplates = getDifficultyAppropriateTemplate(difficulty, 0, userInfo);
+      if (processedTemplates && processedTemplates.length > 0) {
+        return processedTemplates[pageIndex % processedTemplates.length];
+      }
+    } catch (error) {
+      console.warn('Error in generateFallbackPage:', error);
     }
     
-    const template = templates[0]; // Use first template as fallback
-    const page = template[pageIndex % template.length];
-    return this.processTemplate(page, userInfo);
+    // Ultimate fallback with proper name capitalization
+    return `${NameFormatter.capitalize(userInfo.name || 'Alex')} has an adventure.`;
   }
 
   /**

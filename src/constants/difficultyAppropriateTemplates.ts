@@ -1,5 +1,7 @@
 // FIXED: Difficulty-Appropriate Story Templates with Proper Word Count Progression
 // Easy: 3-6 words | Medium: 6-12 words | Hard: 10-18 words | Expert: 15-25 words
+import { NameFormatter } from "@/utils/nameFormatter";
+import type { UserInfo } from "@/types";
 
 export const DIFFICULTY_APPROPRIATE_TEMPLATES = {
   easy: [
@@ -30,18 +32,83 @@ export const DIFFICULTY_APPROPRIATE_TEMPLATES = {
   ]
 };
 
-// Updated template selector that enforces difficulty-appropriate word counts
+// Updated template selector that processes variables and enforces difficulty-appropriate word counts
 export const getDifficultyAppropriateTemplate = (
   difficulty: 'easy' | 'medium' | 'hard' | 'expert',
-  templateIndex?: number
+  templateIndex?: number,
+  userInfo?: UserInfo
 ): string[] => {
   const templates = DIFFICULTY_APPROPRIATE_TEMPLATES[difficulty];
   
+  let selectedTemplate: string[];
   if (templateIndex !== undefined && templateIndex < templates.length) {
-    return templates[templateIndex];
+    selectedTemplate = templates[templateIndex];
+  } else {
+    selectedTemplate = templates[Math.floor(Math.random() * templates.length)];
   }
   
-  return templates[Math.floor(Math.random() * templates.length)];
+  // Process templates to replace variables if userInfo is provided
+  if (userInfo) {
+    return selectedTemplate.map(template => processTemplate(template, userInfo, difficulty));
+  }
+  
+  return selectedTemplate;
+};
+
+// Template processing function that replaces all variables
+const processTemplate = (template: string, userInfo: UserInfo, difficulty: 'easy' | 'medium' | 'hard' | 'expert'): string => {
+  let processed = template;
+  
+  // Replace user placeholders with properly capitalized name
+  processed = processed.replace(/{name}/g, NameFormatter.capitalize(userInfo.name || 'Alex'));
+  processed = processed.replace(/{pronoun}/g, 'they');
+  processed = processed.replace(/{pronoun_possessive}/g, 'their');
+  
+  // Replace story elements with vocabulary appropriate for each difficulty level
+  const animals = difficulty === 'easy' 
+    ? ['cat', 'dog', 'bird', 'fish', 'cow', 'pig', 'duck', 'hen', 'bee', 'bear', 'fox', 'frog']
+    : difficulty === 'medium'
+    ? ['cat', 'rabbit', 'owl', 'deer', 'fox', 'turtle', 'butterfly', 'bird', 'squirrel', 'mouse']
+    : difficulty === 'hard'
+    ? ['wolf', 'eagle', 'panther', 'raven', 'falcon', 'lynx', 'phoenix', 'dragon', 'griffin', 'sphinx']
+    : ['phoenix', 'dragon', 'sphinx', 'leviathan', 'chimera', 'pegasus', 'unicorn', 'basilisk'];
+    
+  const colors = difficulty === 'easy'
+    ? ['red', 'blue', 'green', 'yellow', 'black', 'white', 'pink', 'brown']
+    : difficulty === 'medium'
+    ? ['golden', 'silver', 'emerald', 'sapphire', 'crimson', 'violet', 'amber', 'turquoise']
+    : difficulty === 'hard'
+    ? ['iridescent', 'luminescent', 'opalescent', 'prismatic', 'chromatic', 'incandescent']
+    : ['transcendent', 'ethereal', 'celestial', 'cosmic', 'infinite', 'multidimensional'];
+    
+  const objects = difficulty === 'easy'
+    ? ['ball', 'book', 'toy', 'cake', 'hat', 'cup']
+    : difficulty === 'medium'
+    ? ['key', 'book', 'gem', 'flower', 'stone', 'shell', 'treasure', 'crown']
+    : difficulty === 'hard'
+    ? ['ancient relic', 'mystical artifact', 'enchanted scroll', 'crystal orb', 'magic amulet', 'sacred tome']
+    : ['philosophical codex', 'temporal device', 'consciousness matrix', 'wisdom catalyst', 'enlightenment key'];
+    
+  const foods = difficulty === 'easy'
+    ? ['apple', 'bread', 'milk', 'cake', 'fish', 'meat']
+    : difficulty === 'medium'
+    ? ['berries', 'honey', 'nuts', 'fruits', 'vegetables', 'grain']
+    : difficulty === 'hard'
+    ? ['ambrosia', 'nectar', 'exotic fruits', 'mystical herbs', 'enchanted berries', 'magical essence']
+    : ['ethereal nourishment', 'cosmic energy', 'spiritual sustenance', 'enlightenment food', 'transcendent nutrition'];
+  
+  // Use user preferences when available, otherwise random
+  const animal = userInfo.favoriteAnimal || animals[Math.floor(Math.random() * animals.length)];
+  const color = userInfo.favoriteColor || colors[Math.floor(Math.random() * colors.length)];
+  const object = objects[Math.floor(Math.random() * objects.length)];
+  const food = userInfo.favoriteFood || foods[Math.floor(Math.random() * foods.length)];
+  
+  processed = processed.replace(/{animal}/g, animal);
+  processed = processed.replace(/{color}/g, color);
+  processed = processed.replace(/{object}/g, object);
+  processed = processed.replace(/{food}/g, food);
+  
+  return processed;
 };
 
 // Flexible validation with margin of error to preserve natural story flow
