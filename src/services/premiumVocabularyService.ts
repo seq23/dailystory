@@ -1,8 +1,24 @@
 import type { UserInfo, DifficultyLevel, LanguageCode } from '../types';
-import { VocabularyBucketManager } from './vocabularyBucketManager';
+import { LEVEL_1_VOCABULARY } from '../constants/level1Vocabulary';
+import { LEVEL_2_VOCABULARY } from '../constants/level2Vocabulary';
 import { ThemedSessionManager } from './themedSessionManager';
 import { ProgressiveRevelationSystem } from './progressiveRevelationSystem';
 import { InputEnhancementEngine } from './inputEnhancementEngine';
+
+// Vocabulary bucket management interfaces (consolidated from vocabularyBucketManager)
+interface VocabularyBucket {
+  category: string;
+  words: string[];
+  usedWords: Set<string>;
+  priority: number;
+}
+
+interface UserVocabularyState {
+  level1Buckets: VocabularyBucket[];
+  level2Buckets: VocabularyBucket[];
+  encounterHistory: Map<string, number>;
+  lastSessionBuckets: string[];
+}
 
 interface PremiumVocabularyFeatures {
   personalizedVocabularyTracking: boolean;
@@ -31,10 +47,147 @@ interface PersonalizedVocabularyPath {
 }
 
 export class PremiumVocabularyService {
+  // Consolidated vocabulary bucket management (from vocabularyBucketManager)
+  private static userStates = new Map<string, UserVocabularyState>();
+
+  static initializeUserState(userId: string): void {
+    if (this.userStates.has(userId)) return;
+
+    const level1Buckets: VocabularyBucket[] = Object.entries(LEVEL_1_VOCABULARY).map(([category, words]) => ({
+      category,
+      words: [...words],
+      usedWords: new Set(),
+      priority: 1
+    }));
+
+    const level2Buckets: VocabularyBucket[] = Object.entries(LEVEL_2_VOCABULARY).map(([category, words]) => ({
+      category,
+      words: [...words],
+      usedWords: new Set(),
+      priority: 1
+    }));
+
+    this.userStates.set(userId, {
+      level1Buckets,
+      level2Buckets,
+      encounterHistory: new Map(),
+      lastSessionBuckets: []
+    });
+  }
+
+  static getThemedVocabulary(userId: string, difficulty: DifficultyLevel, sessionCount: number = 1): { theme: string; words: string[]; category: string; } {
+    this.initializeUserState(userId);
+    const userState = this.userStates.get(userId)!;
+
+    const isLevel2 = ['medium', 'hard', 'expert'].includes(difficulty);
+    const buckets = isLevel2 ? userState.level2Buckets : userState.level1Buckets;
+
+    // Avoid recently used categories
+    const availableBuckets = buckets.filter(bucket => 
+      !userState.lastSessionBuckets.includes(bucket.category) &&
+      bucket.words.length > bucket.usedWords.size
+    );
+
+    if (availableBuckets.length === 0) {
+      // Reset if all categories have been used recently
+      userState.lastSessionBuckets = [];
+      const resetBuckets = buckets.filter(bucket => bucket.words.length > bucket.usedWords.size);
+      if (resetBuckets.length === 0) {
+        // Reset all buckets if fully exhausted
+        buckets.forEach(bucket => bucket.usedWords.clear());
+        return this.getThemedVocabulary(userId, difficulty, sessionCount);
+      }
+      availableBuckets.push(...resetBuckets);
+    }
+
+    // Select bucket with highest priority and available words
+    const selectedBucket = availableBuckets.sort((a, b) => b.priority - a.priority)[0];
+    
+    // Get unused words from the bucket
+    const unusedWords = selectedBucket.words.filter(word => !selectedBucket.usedWords.has(word));
+    const wordsToReturn = unusedWords.slice(0, Math.min(8, unusedWords.length));
+
+    // Update last session buckets
+    userState.lastSessionBuckets.push(selectedBucket.category);
+    if (userState.lastSessionBuckets.length > 3) {
+      userState.lastSessionBuckets.shift();
+    }
+
+    return {
+      theme: selectedBucket.category,
+      words: wordsToReturn,
+      category: selectedBucket.category
+    };
+  }
+
+  static markWordsAsUsed(userId: string, words: string[], category: string): void {
+    this.initializeUserState(userId);
+    const userState = this.userStates.get(userId)!;
+
+    // Find the bucket and mark words as used
+    const allBuckets = [...userState.level1Buckets, ...userState.level2Buckets];
+    const bucket = allBuckets.find(b => b.category === category);
+    
+    if (bucket) {
+      words.forEach(word => {
+        bucket.usedWords.add(word);
+        const currentCount = userState.encounterHistory.get(word) || 0;
+        userState.encounterHistory.set(word, currentCount + 1);
+      });
+    }
+  }
+
+  static getWordEncounterCount(userId: string, word: string): number {
+    this.initializeUserState(userId);
+    const userState = this.userStates.get(userId)!;
+    return userState.encounterHistory.get(word) || 0;
+  }
+
+  static resetUserProgress(userId: string): void {
+    this.userStates.delete(userId);
+  }
+
+  static getVocabularyStats(userId: string): {
+    level1Progress: { category: string; used: number; total: number }[];
+    level2Progress: { category: string; used: number; total: number }[];
+    totalWordsEncountered: number;
+    mostPracticedWords: { word: string; count: number }[];
+  } {
+    this.initializeUserState(userId);
+    const userState = this.userStates.get(userId)!;
+
+    const level1Progress = userState.level1Buckets.map(bucket => ({
+      category: bucket.category,
+      used: bucket.usedWords.size,
+      total: bucket.words.length
+    }));
+
+    const level2Progress = userState.level2Buckets.map(bucket => ({
+      category: bucket.category,
+      used: bucket.usedWords.size,
+      total: bucket.words.length
+    }));
+
+    const totalWordsEncountered = userState.encounterHistory.size;
+
+    const mostPracticedWords = Array.from(userState.encounterHistory.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10)
+      .map(([word, count]) => ({ word, count }));
+
+    return {
+      level1Progress,
+      level2Progress,
+      totalWordsEncountered,
+      mostPracticedWords
+    };
+  }
   private static userVocabularyProfiles = new Map<string, VocabularyAnalytics>();
   private static personalizedPaths = new Map<string, PersonalizedVocabularyPath>();
 
   static initializePremiumUser(userInfo: UserInfo): PremiumVocabularyFeatures {
+    // Initialize vocabulary buckets for this user
+    this.initializeUserState(userInfo.name);
     const userId = this.getUserId(userInfo);
     
     // Initialize premium analytics
@@ -299,7 +452,7 @@ export class PremiumVocabularyService {
       return this.generateDefaultReport(userInfo);
     }
 
-    const stats = VocabularyBucketManager.getVocabularyStats(userId);
+    const stats = this.getVocabularyStats(userId);
 
     return {
       weeklyProgress: this.generateWeeklyProgressData(profile),

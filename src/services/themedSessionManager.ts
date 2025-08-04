@@ -1,5 +1,5 @@
 import type { UserInfo, DifficultyLevel } from '../types';
-import { VocabularyBucketManager } from './vocabularyBucketManager';
+import { PremiumVocabularyService } from './premiumVocabularyService';
 import { InputEnhancementEngine } from './inputEnhancementEngine';
 
 interface ThemedSession {
@@ -43,7 +43,7 @@ export class ThemedSessionManager {
     progress.lastSessionDate = new Date();
 
     // Get themed vocabulary for the session
-    const vocabularyData = VocabularyBucketManager.getThemedVocabulary(userId, difficulty, sessionNumber);
+    const vocabularyData = PremiumVocabularyService.getThemedVocabulary(userId, difficulty, sessionNumber);
     
     // Get enhanced inputs
     const enhancedInputs = InputEnhancementEngine.getEnhancedInputsForDifficulty(userInfo, difficulty);
@@ -296,13 +296,13 @@ export class ThemedSessionManager {
     }
 
     // Also mark in vocabulary bucket manager
-    VocabularyBucketManager.markWordsAsUsed(userId, words, 'session');
+    PremiumVocabularyService.markWordsAsUsed(userId, words, 'session');
   }
 
   static resetUserProgress(userInfo: UserInfo): void {
     const userId = this.getUserId(userInfo);
     this.userProgress.delete(userId);
-    VocabularyBucketManager.resetUserProgress(userId);
+    PremiumVocabularyService.resetUserProgress(userId);
   }
 
   // Helper methods for word classification

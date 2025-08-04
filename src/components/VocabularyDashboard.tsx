@@ -5,9 +5,8 @@ import { Button } from './ui/button';
 import { Progress } from './ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Trophy, Target, TrendingUp, BookOpen, Globe, Star } from 'lucide-react';
-import { VocabularyBucketManager } from '../services/vocabularyBucketManager';
-import { ThemedSessionManager } from '../services/themedSessionManager';
 import { PremiumVocabularyService } from '../services/premiumVocabularyService';
+import { ThemedSessionManager } from '../services/themedSessionManager';
 import type { UserInfo, DifficultyLevel } from '../types';
 
 interface VocabularyDashboardProps {
@@ -32,10 +31,10 @@ export const VocabularyDashboard: React.FC<VocabularyDashboardProps> = ({
     const userId = `${userInfo.name}-${userInfo.age}-${userInfo.nativeLanguage}`.toLowerCase();
     
     // Initialize systems
-    VocabularyBucketManager.initializeUserState(userId);
+    PremiumVocabularyService.initializeUserState(userId);
     
     // Load vocabulary statistics
-    const stats = VocabularyBucketManager.getVocabularyStats(userId);
+    const stats = PremiumVocabularyService.getVocabularyStats(userId);
     setVocabularyStats(stats);
 
     // Load session progress

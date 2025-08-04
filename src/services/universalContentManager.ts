@@ -10,7 +10,7 @@ import { FreeTrialPageLimitError, PremiumPageLimitError } from "@/utils/errorHan
 import { NameFormatter } from "@/utils/nameFormatter";
 import { CharacterPoolManager, CharacterPool } from "./characterPoolManager";
 import { CharacterDrivenStoryArc, StoryContext } from "./characterDrivenStoryArc";
-import { StoryTransitionManager, TransitionConfig } from "./storyTransitionManager";
+import { StoryManager, TransitionConfig } from "./storyManager";
 import { getAuthorVoiceForUser, applyAuthorVoice } from "@/constants/authorVoicePatterns";
 
 export interface ContentManagerConfig {
@@ -174,8 +174,7 @@ export class UniversalContentManager {
       
       // Use StoryArcManager for contextual continuation
       try {
-        const { StoryArcManager } = await import('./storyArcManager');
-        let newPage = StoryArcManager.getTemplateByPosition(
+        let newPage = StoryManager.getTemplateByPosition(
           userInfo,
           difficulty,
           pageIndex,
