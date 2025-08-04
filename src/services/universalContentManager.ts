@@ -73,7 +73,7 @@ export class UniversalContentManager {
   ): Promise<Story> {
     console.log(`🚀 Generating new ${difficulty} story with anti-repetition...`);
     
-    const pageCount = this.getPageCountForDifficulty(difficulty);
+    const pageCount = this.getPageCountForDifficulty(difficulty, config.isPremium);
     
     try {
       // Use new author-inspired story generation
@@ -106,7 +106,20 @@ export class UniversalContentManager {
   ): Promise<Story> {
     console.log(`📖 Continuing existing story with ${currentStory.length} pages...`);
     
-    const additionalPages = Math.min(5, this.getPageCountForDifficulty(difficulty));
+    // Free trial: Maximum 90 total pages, default 5 additional pages per continuation
+    const maxTotalPages = config.isPremium ? 200 : 90; // Free trial limit: 90 pages
+    const maxAdditionalPages = Math.min(
+      5, 
+      this.getPageCountForDifficulty(difficulty, config.isPremium),
+      maxTotalPages - currentStory.length
+    );
+    
+    if (maxAdditionalPages <= 0) {
+      console.warn(`📚 Free trial page limit reached (${currentStory.length}/${maxTotalPages} pages)`);
+      throw new Error(`Page limit reached. Free trial users can have up to ${maxTotalPages} pages total.`);
+    }
+    
+    const additionalPages = maxAdditionalPages;
     const continuationPages: string[] = [];
     
     for (let i = 0; i < additionalPages; i++) {
@@ -351,16 +364,25 @@ export class UniversalContentManager {
   }
 
   /**
-   * Get appropriate page count for difficulty level
+   * Get appropriate page count for difficulty level with free trial considerations
    */
-  private static getPageCountForDifficulty(difficulty: DifficultyLevel): number {
-    const pageCounts = {
+  private static getPageCountForDifficulty(
+    difficulty: DifficultyLevel, 
+    isPremium: boolean = false
+  ): number {
+    // Free trial: Standard 10 pages for all levels
+    if (!isPremium) {
+      return 10;
+    }
+    
+    // Premium: Varied page counts by difficulty
+    const premiumPageCounts = {
       easy: 8,
       medium: 10,
       hard: 12,
       expert: 15
     };
     
-    return pageCounts[difficulty] || 10;
+    return premiumPageCounts[difficulty] || 10;
   }
 }
