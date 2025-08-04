@@ -225,12 +225,13 @@ export class Level1Simplifier {
    * Check if a word is in Level 1 vocabulary (simplified check)
    */
   private static isLevel1Word(word: string): boolean {
-    // Import the full Level 1 vocabulary from constants
-    const { isLevel1Word } = require('@/constants/level1Vocabulary');
-    
-    // First try the complete vocabulary
+    // First try the complete vocabulary using dynamic import
     try {
-      return isLevel1Word(word);
+      // Import the vocabulary function directly at runtime
+      const vocabularyModule = require('@/constants/level1Vocabulary');
+      if (vocabularyModule && vocabularyModule.isLevel1Word) {
+        return vocabularyModule.isLevel1Word(word);
+      }
     } catch (error) {
       console.warn('Level 1 vocabulary import failed, using fallback:', error);
     }
