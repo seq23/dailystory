@@ -34,7 +34,13 @@ export class UniversalContentManager {
     difficulty: DifficultyLevel,
     config: ContentManagerConfig
   ): Promise<StoryGenerationResult> {
-    console.log('🚀 Simple Story Generation Starting...');
+    console.log('🚀 Story Generation Starting...');
+    
+    // For free users, clear session template tracking for fresh start
+    if (!config.isPremium) {
+      console.log('🔄 Free user detected - clearing session template tracking for anti-repetition');
+      SessionTemplateManager.clearSession();
+    }
     
     const story = await this.generateSimpleStory(userInfo, difficulty, 10);
     
