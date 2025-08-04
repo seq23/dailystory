@@ -212,6 +212,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
 
   // Setup gamification globals on mount (no persistence for free trial)
   useEffect(() => {
+    console.log('🎮 Setting up gamification globals for free trial session...');
     setupGamificationGlobals(addVocabularyWord, false);
     return () => cleanupGamificationGlobals();
   }, [addVocabularyWord]);

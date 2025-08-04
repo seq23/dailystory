@@ -1806,13 +1806,15 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
 
   // Enhanced mobile word click handler
   const handleMobileWordClick = () => {
-    console.log('📱 Mobile word clicked, current showMobileTTS:', showMobileTTS);
+    console.log('📱 Mobile word clicked for word:', props.word, 'current showMobileTTS:', showMobileTTS);
     setShowMobileTTS(!showMobileTTS);
     console.log('📱 Mobile word clicked, new showMobileTTS:', !showMobileTTS);
   };
 
   // Phonetic breakdown handler - now available to all users
   const handlePhoneticBreakdown = async () => {
+    console.log('🔤 Phonetic breakdown clicked for word:', props.word);
+    
     if (!props.userInfo) return;
     
     setIsPlayingPhonetics(true);
@@ -1824,13 +1826,22 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
         showSyllables: true
       });
       
+      // Track vocabulary learning for all users
+      console.log('🎯 Phonetic: Adding to vocabulary for word:', props.word);
+      if ((window as any).addVocabularyWord) {
+        (window as any).addVocabularyWord();
+        console.log('✅ Phonetic: Vocabulary word added via global function');
+      } else {
+        console.warn('⚠️ Phonetic: Global addVocabularyWord not available');
+      }
+      
       toast({
         title: "Phonetic Breakdown",
         description: `Playing syllable-by-syllable pronunciation of "${props.word}"`,
         duration: 3000,
       });
     } catch (error) {
-      console.error('Phonetic breakdown error:', error);
+      console.error('❌ Phonetic breakdown error:', error);
       toast({
         title: "Error",
         description: "Could not play phonetic breakdown. Please try again.",

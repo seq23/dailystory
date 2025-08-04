@@ -8,7 +8,8 @@ export const setupGamificationGlobals = (addVocabularyWord: () => void, enablePe
   
   console.log('🎮 Gamification globals set up:', {
     addVocabularyWordAvailable: !!addVocabularyWord,
-    enablePersistence
+    enablePersistence,
+    globalFunctionSet: !!(window as any).addVocabularyWord
   });
   
   // Set up global vocabulary collection (if not already set)
