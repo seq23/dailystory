@@ -1,9 +1,10 @@
-// Author Voice Patterns - Natural language patterns inspired by children's literature masters
-import type { DifficultyLevel } from "@/types";
+// Author Voice Patterns - Authentic children's literature voices mapped by age groups
+import type { DifficultyLevel, UserInfo } from "@/types";
 
 export interface AuthorVoice {
   name: string;
   description: string;
+  ageRange: string;
   patterns: {
     openings: string[];
     transitions: string[];
@@ -13,35 +14,145 @@ export interface AuthorVoice {
 }
 
 export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
-  simpleRhythmic: {
-    name: "Simple Rhythmic Style",
-    description: "Simple, rhythmic, nature-focused with repetitive patterns",
+  ericCarle: {
+    name: "Eric Carle Style",
+    description: "Simple repetitive patterns with nature themes and growth",
+    ageRange: "3-6",
     patterns: {
       openings: [
         "In the light of the moon, {name} saw...",
-        "On a sunny morning, {name} found...",
-        "One day, {name} was very...",
-        "The little {animal} was..."
+        "On Monday, {name} ate through one {food}...",
+        "A small {animal} sat on a leaf...",
+        "The very {adjective} {name} was ready..."
       ],
       transitions: [
-        "But {pronoun} was still...",
-        "Then {pronoun} ate...",
-        "The next day...",
-        "On and on {pronoun} went..."
+        "But {pronoun} was still hungry.",
+        "The next day was Sunday again.",
+        "Pop! Out came {name}...",
+        "Now {pronoun} wasn't {adjective} any more."
       ],
       closings: [
-        "And {name} felt much better.",
-        "What a beautiful {animal}!",
+        "And {name} was a beautiful {animal}!",
+        "What a beautiful {animal} {pronoun} had become!",
         "Now {pronoun} was no longer hungry.",
         "The end of a perfect day."
       ]
     },
-    characteristics: ["simple vocabulary", "nature themes", "repetitive structure", "satisfying conclusions"]
+    characteristics: ["simple repetition", "nature themes", "transformation", "growth"]
   },
 
-  causeEffect: {
-    name: "Cause-Effect Style", 
+  moWillems: {
+    name: "Mo Willems Style", 
+    description: "Emotional honesty with simple dialogue and friendship",
+    ageRange: "3-7",
+    patterns: {
+      openings: [
+        "{name} was having a really bad day.",
+        "'I do NOT want to!' said {name}.",
+        "{name} and {friend} were best friends.",
+        "There was a big problem today."
+      ],
+      transitions: [
+        "But then {friend} said something important.",
+        "'Wait!' shouted {name}.",
+        "That was not what {pronoun} expected at all.",
+        "Friends can help each other."
+      ],
+      closings: [
+        "And they both laughed and laughed.",
+        "That is what friends are for.",
+        "Tomorrow would be even better.",
+        "Being different makes friendship special."
+      ]
+    },
+    characteristics: ["emotional honesty", "friendship", "simple dialogue", "problem solving"]
+  },
+
+  drSeuss: {
+    name: "Dr. Seuss Style",
+    description: "Rhythmic patterns with playful language and wordplay",
+    ageRange: "3-8", 
+    patterns: {
+      openings: [
+        "Oh my! Oh me! {name} could not see...",
+        "Here comes {name} running fast...",
+        "Would you like {food} and {object}?",
+        "I do not like them, Sam-I-Am..."
+      ],
+      transitions: [
+        "But wait! What's that? What could it be?",
+        "Then {name} said with a great big grin...",
+        "Round and round and round they go!",
+        "This way, that way, here and there!"
+      ],
+      closings: [
+        "And {name} learned something new that day!",
+        "What a {adjective} day it turned out to be!",
+        "The fun was done, but memories stayed.",
+        "And that is that about that!"
+      ]
+    },
+    characteristics: ["rhythm", "rhyme", "wordplay", "exuberance"]
+  },
+
+  margaretWiseBrown: {
+    name: "Margaret Wise Brown Style",
+    description: "Gentle, soothing rhythms with everyday magic",
+    ageRange: "2-6",
+    patterns: {
+      openings: [
+        "In the great green {setting}, there was...",
+        "Goodnight {object}, goodnight {animal}...",
+        "Once upon a time in a little {setting}...",
+        "There was a little {animal} who loved..."
+      ],
+      transitions: [
+        "And in the {setting} there was...",
+        "Quietly, softly, {name} whispered...",
+        "The moon rose higher and...",
+        "All around the {setting}, things were peaceful."
+      ],
+      closings: [
+        "And they all lived quietly ever after.",
+        "Goodnight stars, goodnight air, goodnight noises everywhere.",
+        "And {name} fell fast asleep.",
+        "Peace filled the {setting} as night came."
+      ]
+    },
+    characteristics: ["gentle rhythm", "bedtime comfort", "simple beauty", "peaceful endings"]
+  },
+
+  sandraBoynton: {
+    name: "Sandra Boynton Style",
+    description: "Silly, bouncy rhythms with animal characters",
+    ageRange: "2-5",
+    patterns: {
+      openings: [
+        "Hippos go berserk! And so does {name}!",
+        "But not {name}. {name} says...",
+        "Moo, baa, la la la! {name} loves to...",
+        "Oh my goodness! Oh my gosh! {name} needs to..."
+      ],
+      transitions: [
+        "But wait! There's more!",
+        "Stomp stomp stomp goes {name}!",
+        "What a {adjective} thing to do!",
+        "Everybody {action}! Even {name}!"
+      ],
+      closings: [
+        "The end! (But not really the end.)",
+        "And {name} was very, very happy.",
+        "What a silly, wonderful day!",
+        "Time for a snack and a nap!"
+      ]
+    },
+    characteristics: ["silly", "bouncy", "animals", "humor"]
+  },
+
+  lauraNumeroff: {
+    name: "Laura Numeroff Style",
     description: "Cause-and-effect chains with circular storytelling",
+    ageRange: "3-7",
     patterns: {
       openings: [
         "If you give {name} a {object}...",
@@ -53,7 +164,7 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
         "That will remind {pronoun} of...",
         "So {pronoun} will want to...",
         "Which means {pronoun} will need...",
-        "Then {pronoun} will probably..."
+        "Then {pronoun} will probably ask for..."
       ],
       closings: [
         "And chances are, {pronoun} will want another {object}.",
@@ -65,68 +176,117 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
     characteristics: ["cause and effect", "circular narratives", "predictable patterns", "humor"]
   },
 
-  gentleSoothing: {
-    name: "Gentle Soothing Style",
-    description: "Gentle, soothing rhythms with everyday magic",
+  kevinHenkes: {
+    name: "Kevin Henkes Style",
+    description: "Gentle emotional stories about growing up",
+    ageRange: "4-8",
     patterns: {
       openings: [
-        "In the great green {setting}...",
-        "Goodnight {object}, goodnight {animal}...",
-        "Once upon a time in a little {setting}...",
-        "There was a little {animal} who..."
+        "{name} was not quite ready for...",
+        "Sometimes {name} felt very small...",
+        "When {name} was little, {pronoun} thought...",
+        "There are days when everything seems..."
       ],
       transitions: [
-        "And in the {setting} there was...",
-        "Quietly, softly, {name} whispered...",
-        "The moon rose higher and...",
-        "All around the {setting}..."
+        "But slowly, things began to change.",
+        "And then {name} had an idea.",
+        "Sometimes the best things happen when...",
+        "That's when {name} realized..."
       ],
       closings: [
-        "And they all lived quietly ever after.",
-        "Goodnight stars, goodnight air, goodnight noises everywhere.",
-        "And {name} fell fast asleep.",
-        "Peace filled the {setting} as night came."
+        "And {name} knew everything would be okay.",
+        "Growing up happens one day at a time.",
+        "Some things are worth waiting for.",
+        "And {name} felt brave and ready."
       ]
     },
-    characteristics: ["quiet rhythm", "bedtime comfort", "simple beauty", "peaceful endings"]
+    characteristics: ["gentle emotion", "growing up", "reassurance", "quiet wisdom"]
   },
 
-  conversational: {
-    name: "Conversational Style",
-    description: "Conversational, emotional, friendship-focused",
+  beverlyCleary: {
+    name: "Beverly Cleary Style",
+    description: "Realistic childhood adventures with humor",
+    ageRange: "7-12",
     patterns: {
       openings: [
-        "{name} was having a really bad day.",
-        "'I do NOT want to!' said {name}.",
-        "{name} and {animal} were best friends.",
-        "There was a big problem today."
+        "{name} had been looking forward to this day...",
+        "It all started when {name} decided to...",
+        "Nobody understood {name} the way...",
+        "Things never went the way {name} planned..."
       ],
       transitions: [
-        "But then {animal} said...",
-        "'Wait!' shouted {name}.",
-        "That was not what {pronoun} expected.",
-        "Friends don't let friends..."
+        "But then something unexpected happened.",
+        "That's when {name} got a brilliant idea.",
+        "Of course, things didn't go smoothly.",
+        "As usual, life was more complicated than..."
       ],
       closings: [
-        "And they both laughed and laughed.",
-        "That is what friends are for.",
-        "Tomorrow would be even better.",
-        "Being different makes friendship special."
+        "And {name} learned that growing up means...",
+        "Sometimes the best adventures are unexpected.",
+        "Life with family is never boring.",
+        "And {name} couldn't wait for tomorrow."
       ]
     },
-    characteristics: ["emotional honesty", "friendship themes", "conversational tone", "problem solving"]
+    characteristics: ["realistic", "family life", "humor", "relatability"]
   }
 };
 
+// Age-based author mapping
+export const AGE_AUTHOR_MAPPING: Record<string, string[]> = {
+  "2-3": ["margaretWiseBrown", "sandraBoynton"],
+  "3-4": ["ericCarle", "moWillems", "sandraBoynton"],
+  "4-5": ["ericCarle", "moWillems", "drSeuss", "lauraNumeroff"],
+  "5-6": ["drSeuss", "moWillems", "lauraNumeroff", "kevinHenkes"],
+  "6-7": ["drSeuss", "lauraNumeroff", "kevinHenkes"],
+  "7-8": ["kevinHenkes", "beverlyCleary"],
+  "8-12": ["beverlyCleary"],
+  "12+": ["beverlyCleary"]
+};
+
 export const DIFFICULTY_VOICE_MAPPING: Record<DifficultyLevel, string[]> = {
-  easy: ["simpleRhythmic", "gentleSoothing"],
-  medium: ["causeEffect", "conversational"],
-  hard: ["conversational", "causeEffect"],
-  expert: ["gentleSoothing", "conversational"]
+  easy: ["ericCarle", "margaretWiseBrown", "sandraBoynton"],
+  medium: ["moWillems", "drSeuss", "lauraNumeroff"],
+  hard: ["kevinHenkes", "lauraNumeroff", "moWillems"],
+  expert: ["beverlyCleary", "kevinHenkes"]
 };
 
 /**
- * Get appropriate author voice for difficulty level
+ * Get appropriate author voice for user age and difficulty level
+ */
+export function getAuthorVoiceForUser(userInfo: UserInfo, difficulty: DifficultyLevel): AuthorVoice {
+  const age = userInfo.age;
+  
+  // Find age-appropriate authors
+  let ageAppropriateAuthors: string[] = [];
+  
+  if (age <= 3) ageAppropriateAuthors = AGE_AUTHOR_MAPPING["2-3"];
+  else if (age <= 4) ageAppropriateAuthors = AGE_AUTHOR_MAPPING["3-4"];
+  else if (age <= 5) ageAppropriateAuthors = AGE_AUTHOR_MAPPING["4-5"];
+  else if (age <= 6) ageAppropriateAuthors = AGE_AUTHOR_MAPPING["5-6"];
+  else if (age <= 7) ageAppropriateAuthors = AGE_AUTHOR_MAPPING["6-7"];
+  else if (age <= 8) ageAppropriateAuthors = AGE_AUTHOR_MAPPING["7-8"];
+  else if (age <= 12) ageAppropriateAuthors = AGE_AUTHOR_MAPPING["8-12"];
+  else ageAppropriateAuthors = AGE_AUTHOR_MAPPING["12+"];
+  
+  // Get difficulty-appropriate authors
+  const difficultyAuthors = DIFFICULTY_VOICE_MAPPING[difficulty];
+  
+  // Find intersection of age-appropriate and difficulty-appropriate authors
+  const appropriateAuthors = ageAppropriateAuthors.filter(author => 
+    difficultyAuthors.includes(author)
+  );
+  
+  // If no intersection, prioritize age-appropriateness
+  const finalAuthors = appropriateAuthors.length > 0 ? appropriateAuthors : ageAppropriateAuthors;
+  
+  // Select random author from appropriate list
+  const selectedAuthor = finalAuthors[Math.floor(Math.random() * finalAuthors.length)];
+  
+  return AUTHOR_VOICES[selectedAuthor];
+}
+
+/**
+ * Get appropriate author voice for difficulty level (backward compatibility)
  */
 export function getAuthorVoiceForDifficulty(difficulty: DifficultyLevel): AuthorVoice {
   const availableVoices = DIFFICULTY_VOICE_MAPPING[difficulty];

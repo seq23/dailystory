@@ -11,6 +11,7 @@ import { NameFormatter } from "@/utils/nameFormatter";
 import { CharacterPoolManager, CharacterPool } from "./characterPoolManager";
 import { CharacterDrivenStoryArc, StoryContext } from "./characterDrivenStoryArc";
 import { StoryTransitionManager, TransitionConfig } from "./storyTransitionManager";
+import { getAuthorVoiceForUser, applyAuthorVoice } from "@/constants/authorVoicePatterns";
 
 export interface ContentManagerConfig {
   isPremium: boolean;
@@ -230,6 +231,10 @@ export class UniversalContentManager {
     console.log(`🎯 Generating ${pageCount}-page ${difficulty} story with character-driven system...`);
     
     try {
+      // Select age-appropriate author voice
+      const authorVoice = getAuthorVoiceForUser(userInfo, difficulty);
+      console.log(`✍️ Selected author voice: ${authorVoice.name} for age ${userInfo.age}`);
+      
       // Generate or retrieve character pool for this user
       const characters = CharacterPoolManager.generateCharacterPool(userInfo, difficulty);
       console.log(`🎭 Generated character pool:`, {
@@ -255,7 +260,12 @@ export class UniversalContentManager {
         };
         
         let processedPage = CharacterDrivenStoryArc.getPageContent(storyContext);
-        console.log(`🔍 DEBUG: Page ${i + 1} after CharacterDrivenStoryArc:`, processedPage);
+        
+        // Apply author voice patterns
+        const position = i === 0 ? 'opening' : (i >= pageCount - 2 ? 'closing' : 'transition');
+        processedPage = applyAuthorVoice(processedPage, authorVoice, position);
+        
+        console.log(`🔍 DEBUG: Page ${i + 1} after author voice (${authorVoice.name}):`, processedPage);
         
         // Ensure children's book flow
         if (i > 0) {
