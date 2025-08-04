@@ -253,11 +253,16 @@ export class UniversalContentManager {
       const { MultilingualVocabularySimplifier } = await import('./multilingualVocabularySimplifier');
       const targetLevel = difficulty === 'easy' ? 1 : 2;
       
+      // Ensure language compatibility - free users get English only
+      const languageCompatibleUserInfo = !config.isPremium ? 
+        { ...userInfo, nativeLanguage: 'en' as const, storyLanguagePreference: 'en' as const } : 
+        userInfo;
+      
       const simplificationResult = MultilingualVocabularySimplifier.simplifyForLevel(
         fullStoryContent, 
         targetLevel,
         userName, 
-        userInfo, 
+        languageCompatibleUserInfo, 
         config.isPremium
       );
       
@@ -290,6 +295,7 @@ export class UniversalContentManager {
       
     } catch (error) {
       console.error('Error generating sentence-based story:', error);
+      // Ensure fallback works for all users
       return this.generateFallbackStory(userInfo, difficulty, pageCount);
     }
   }
@@ -941,14 +947,20 @@ export class UniversalContentManager {
    * Split text into complete sentences using sentence boundary detection
    */
   private static splitIntoSentences(text: string): string[] {
-    // Simple sentence boundary detection
+    // Enhanced sentence boundary detection that handles multiple languages
     const sentences = text
-      .split(/[.!?]+/)
+      .split(/[.!?]+\s+/)
       .map(s => s.trim())
       .filter(s => s.length > 0)
-      .map(s => s + '.');
+      .map(s => {
+        // Add proper punctuation if missing
+        if (!s.match(/[.!?]$/)) {
+          return s + '.';
+        }
+        return s;
+      });
     
-    return sentences;
+    return sentences.length > 0 ? sentences : [text]; // Fallback to original text if no sentences found
   }
 
   /**
@@ -961,9 +973,23 @@ export class UniversalContentManager {
   ): string[] {
     const pages: string[] = [];
     
+    // Ensure we have at least one sentence
+    if (sentences.length === 0) {
+      console.warn('No sentences found, using fallback content');
+      const fallbackContent = difficulty === 'easy' ? 
+        'Hello! This is a story for you.' : 
+        'Welcome to this wonderful adventure story.';
+      return [fallbackContent];
+    }
+    
     // For easy/medium, aim for one sentence per page
     for (let i = 0; i < Math.min(sentences.length, targetPageCount); i++) {
       const sentence = sentences[i];
+      
+      // Skip empty sentences
+      if (!sentence || sentence.trim().length === 0) {
+        continue;
+      }
       
       // Validate word count for sentence-based pages
       const wordValidation = validateDifficultyCompliance(sentence, difficulty, false);
@@ -981,11 +1007,24 @@ export class UniversalContentManager {
       }
     }
     
-    // If we have fewer sentences than target pages, pad with simpler content
-    while (pages.length < targetPageCount && pages.length < sentences.length) {
-      const nextSentence = sentences[pages.length];
-      if (nextSentence) {
-        pages.push(nextSentence);
+    // If we have fewer pages than target, use remaining sentences or generate simple ones
+    while (pages.length < targetPageCount) {
+      if (pages.length < sentences.length) {
+        const nextSentence = sentences[pages.length];
+        if (nextSentence && nextSentence.trim().length > 0) {
+          pages.push(nextSentence);
+        }
+      } else {
+        // Generate simple fallback content if we run out of sentences
+        const fallbackSentences = [
+          'The story continues.',
+          'What happens next?',
+          'The adventure goes on.',
+          'Everyone is happy.',
+          'The end is near.'
+        ];
+        const fallbackIndex = (pages.length - sentences.length) % fallbackSentences.length;
+        pages.push(fallbackSentences[fallbackIndex]);
       }
     }
     
@@ -996,21 +1035,26 @@ export class UniversalContentManager {
    * Shorten a sentence that's too long for the difficulty level
    */
   private static shortenSentence(sentence: string, difficulty: DifficultyLevel): string {
-    // Simple sentence shortening strategies
+    // Simple sentence shortening strategies that work across languages
     const maxWords = difficulty === 'easy' ? 12 : 20;
-    const words = sentence.split(' ');
+    const words = sentence.split(' ').filter(w => w.trim().length > 0);
     
     if (words.length <= maxWords) {
       return sentence;
     }
     
-    // Remove unnecessary words and conjunctions
+    // Strategy 1: Remove everything after first comma
+    const beforeComma = sentence.split(',')[0];
+    if (beforeComma.split(' ').length <= maxWords && beforeComma.length > 0) {
+      return beforeComma.endsWith('.') ? beforeComma : beforeComma + '.';
+    }
+    
+    // Strategy 2: Take first maxWords and ensure proper ending
     const shortened = words
       .slice(0, maxWords - 1)
-      .join(' ')
-      .replace(/,.*$/, '') // Remove everything after first comma
-      + '.';
+      .join(' ');
     
-    return shortened;
+    // Ensure it ends properly
+    return shortened.endsWith('.') ? shortened : shortened + '.';
   }
 }
