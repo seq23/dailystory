@@ -232,6 +232,11 @@ export class UniversalContentManager {
     console.log(`🎯 Generating ${pageCount}-page ${difficulty} story with character-driven system...`);
     
     try {
+      // Initialize vocabulary-enhanced input system
+      const { UserInputDistributor } = await import('./userInputDistributor');
+      UserInputDistributor.initialize(userInfo);
+      console.log(`📝 Initialized vocabulary-enhanced input system for user inputs`);
+      
       // Select age-appropriate author voice
       const authorVoice = getAuthorVoiceForUser(userInfo, difficulty);
       console.log(`✍️ Selected author voice: ${authorVoice.name} for age ${userInfo.age}`);
@@ -260,7 +265,16 @@ export class UniversalContentManager {
           difficulty
         };
         
-        let processedPage = CharacterDrivenStoryArc.getPageContent(storyContext);
+        // Get enhanced template variables from user inputs
+        const distributionContext = {
+          pageIndex: i,
+          totalPages: pageCount,
+          difficulty,
+          usedInputs: new Set<string>()
+        };
+        const enhancedVariables = UserInputDistributor.getTemplateVariables(userInfo, distributionContext);
+        
+        let processedPage = CharacterDrivenStoryArc.getPageContent(storyContext, enhancedVariables);
         
         // Apply author voice patterns
         const position = i === 0 ? 'opening' : (i >= pageCount - 2 ? 'closing' : 'transition');

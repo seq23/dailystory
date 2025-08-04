@@ -62,14 +62,14 @@ export class CharacterDrivenStoryArc {
     };
   }
 
-  static getPageContent(context: StoryContext): string {
+  static getPageContent(context: StoryContext, enhancedVariables?: any): string {
     const storyArc = this.generateStoryArc(context);
     const position = this.determineStoryPosition(context.currentPage, context.totalPages);
     
     const templates = storyArc[position];
     const templateIndex = this.getTemplateIndex(context.currentPage, templates.length, position);
     
-    return this.processTemplate(templates[templateIndex], context);
+    return this.processTemplate(templates[templateIndex], context, enhancedVariables);
   }
 
   private static selectStoryTheme(difficulty: DifficultyLevel, userInfo: UserInfo): string {
@@ -196,7 +196,7 @@ export class CharacterDrivenStoryArc {
     return (currentPage - 1) % templatesLength;
   }
 
-  private static processTemplate(template: string, context: StoryContext): string {
+  private static processTemplate(template: string, context: StoryContext, enhancedVariables?: any): string {
     let processed = template;
     
     // Replace character placeholders
@@ -206,11 +206,23 @@ export class CharacterDrivenStoryArc {
     processed = processed.replace(/\{animal\}/g, context.characters.animals[0]?.name || 'animal friend');
     processed = processed.replace(/\{helper\}/g, context.characters.helpers[0]?.name || 'helper');
     
-    // Replace user info placeholders
+    // Replace user info placeholders (basic)
     processed = processed.replace(/\{favoriteAnimal\}/g, context.userInfo.favoriteAnimal);
     processed = processed.replace(/\{favoriteColor\}/g, context.userInfo.favoriteColor);
     processed = processed.replace(/\{favoriteFood\}/g, context.userInfo.favoriteFood);
     processed = processed.replace(/\{hobbies\}/g, context.userInfo.hobbies);
+    
+    // Apply enhanced vocabulary variables if available
+    if (enhancedVariables) {
+      Object.entries(enhancedVariables).forEach(([key, value]) => {
+        if (typeof value === 'string' && key !== 'name') {
+          const regex = new RegExp(`\\{${key}\\}`, 'g');
+          processed = processed.replace(regex, value);
+        }
+      });
+      
+      console.log(`🔧 Applied enhanced vocabulary variables to template:`, Object.keys(enhancedVariables));
+    }
     
     return processed;
   }
