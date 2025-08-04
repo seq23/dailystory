@@ -9,6 +9,7 @@ import { AntiRepetitionSystem } from "@/utils/antiRepetitionSystem";
 import { EnhancedAntiRepetitionEngine } from "@/services/enhancedAntiRepetitionEngine";
 import { IntelligentTemplateSelector } from "@/services/intelligentTemplateSelector";
 import { getRobustTemplate } from "@/constants/robustStoryTemplates";
+import { getDifficultyAppropriateTemplate, validateDifficultyCompliance } from "@/constants/difficultyAppropriateTemplates";
 import { TemplateVariableProcessor } from "@/utils/templateVariableProcessor";
 import { UserInputDistributor } from "@/services/userInputDistributor";
 import { LanguagePreferenceService } from "./languagePreferenceService";
@@ -155,11 +156,11 @@ export class ConsolidatedStoryGenerator {
       console.log(`🎯 Generating ${totalPages} pages using ROBUST ${tier} tier system`);
       
       for (let i = 0; i < totalPages; i++) {
-        // REVOLUTIONARY: Use intelligent template selector
-        const templateResult = IntelligentTemplateSelector.selectTemplate(templateConfig);
-        let template = templateResult.template.join('\n'); // Convert array to string
+        // CRITICAL FIX: Use difficulty-appropriate templates that enforce proper word counts
+        const templateResult = getDifficultyAppropriateTemplate(difficulty);
+        let template = templateResult.join(' '); // Convert array to string
         
-        console.log(`📝 Page ${i + 1}: Selected ${templateResult.isAIGenerated ? 'AI-generated' : 'curated'} template (ID: ${templateResult.templateId})`);
+        console.log(`📝 Page ${i + 1}: Selected ${difficulty} template with appropriate word count`);
         
         // Enhanced anti-repetition check using new engine
         const antiRepetitionConfig = {
@@ -180,7 +181,14 @@ export class ConsolidatedStoryGenerator {
         
         let processedPage = await TemplateVariableProcessor.processTemplate(template, variableContext);
         
-        // Phase 8: REVOLUTIONARY Enhanced anti-repetition system checks
+        // CRITICAL: Validate content matches difficulty expectations  
+        const difficultyValidation = validateDifficultyCompliance(processedPage, difficulty);
+        if (!difficultyValidation.isValid) {
+          console.log(`⚠️ Page ${i + 1}: Word count ${difficultyValidation.wordCount} outside ${difficulty} range (${difficultyValidation.expectedRange.min}-${difficultyValidation.expectedRange.max})`);
+          processedPage = this.generateDifficultyAppropriateContent(processedUserInfo, i, totalPages, difficulty);
+        }
+        
+        // Phase 8: Enhanced anti-repetition system checks
         if (fullConfig.antiRepetition) {
           const repetitionCheck = await EnhancedAntiRepetitionEngine.checkContentRepetition(
             processedPage,
@@ -192,38 +200,9 @@ export class ConsolidatedStoryGenerator {
           if (repetitionCheck.isDuplicate) {
             console.log(`🚫 Page ${i + 1}: ${repetitionCheck.reason} (similarity: ${(repetitionCheck.similarity * 100).toFixed(1)}%)`);
             
-            if (repetitionCheck.suggestion) {
-              console.log(`💡 Suggestion: ${repetitionCheck.suggestion}`);
-            }
-            
-            // Generate better contextual replacement
-            if (tier === 'premium') {
-              // Premium users get AI-powered variations
-              console.log(`🤖 Generating premium variation for page ${i + 1}`);
-              const premiumVariation = IntelligentTemplateSelector.selectTemplate({
-                ...templateConfig,
-                sessionId: `${templateConfig.sessionId}_variation_${i}`
-              });
-              processedPage = await TemplateVariableProcessor.processTemplate(
-                premiumVariation.template.join('\n'), 
-                variableContext
-              );
-            } else {
-              // Free users get enhanced fallbacks
-              console.log(`🔧 Generating enhanced fallback for page ${i + 1}`);
-              processedPage = this.generateContextualFallback(processedUserInfo, i, totalPages);
-            }
-            
-            // Re-check the variation to ensure it's acceptable
-            const recheckResult = await EnhancedAntiRepetitionEngine.checkContentRepetition(
-              processedPage,
-              antiRepetitionConfig,
-              difficulty
-            );
-            
-            if (!recheckResult.isDuplicate) {
-              console.log(`✅ Page ${i + 1}: Variation accepted - ${recheckResult.reason}`);
-            }
+            // Generate difficulty-appropriate replacement
+            processedPage = this.generateDifficultyAppropriateContent(processedUserInfo, i, totalPages, difficulty);
+            console.log(`🔧 Generated ${difficulty}-appropriate replacement for page ${i + 1}`);
           } else {
             console.log(`✅ Page ${i + 1}: ${repetitionCheck.reason}`);
           }
@@ -235,18 +214,31 @@ export class ConsolidatedStoryGenerator {
         pages.push(processedPage);
       }
 
-      // Phase 2: Light grammar validation and Level 1 vocabulary check
+      // Phase 2: Difficulty-appropriate grammar validation and vocabulary check
       console.log(`🔍 Pre-grammar validation pages:`, pages);
       let improvedPages = pages.map(page => this.lightGrammarValidation(page));
       
-      // CRITICAL: Level 1 vocabulary validation for easy difficulty
+      // CRITICAL FIX: Only apply Level 1 vocabulary validation to EASY difficulty
+      // Other difficulties should use age-appropriate vocabulary
       if (difficulty === 'easy') {
         improvedPages = improvedPages.map((page, index) => {
           const validation = validateLevel1Sentence(page);
           if (!validation.isValid) {
             console.log(`⚠️ Page ${index + 1} contains non-Level 1 words:`, validation.invalidWords);
             console.log(`🔧 Replacing with Level 1 fallback for page ${index + 1}`);
-            return this.generateContextualFallback(processedUserInfo, index, pages.length);
+            return this.generateDifficultyAppropriateContent(processedUserInfo, index, pages.length, 'easy');
+          }
+          return page;
+        });
+      } else {
+        // For medium, hard, expert - ensure content matches difficulty expectations
+        improvedPages = improvedPages.map((page, index) => {
+          const wordCount = page.split(/\s+/).filter(w => w.trim()).length;
+          const expectedRange = this.getWordCountRange(difficulty);
+          
+          if (wordCount < expectedRange.min || wordCount > expectedRange.max) {
+            console.log(`⚠️ Page ${index + 1} word count (${wordCount}) outside ${difficulty} range (${expectedRange.min}-${expectedRange.max})`);
+            return this.generateDifficultyAppropriateContent(processedUserInfo, index, pages.length, difficulty);
           }
           return page;
         });
@@ -854,6 +846,69 @@ export class ConsolidatedStoryGenerator {
     
     console.log(`✅ Adjusted: "${adjustedPage}"`);
     return adjustedPage;
+  }
+
+  /**
+   * Get word count range for each difficulty level
+   */
+  private static getWordCountRange(difficulty: DifficultyLevel): { min: number; max: number } {
+    const ranges = {
+      easy: { min: 3, max: 6 },      // Level 1: 3-6 words per page
+      medium: { min: 6, max: 12 },   // Level 2: 6-12 words per page  
+      hard: { min: 10, max: 18 },    // Level 3: 10-18 words per page
+      expert: { min: 15, max: 25 }   // Level 4: 15-25 words per page
+    };
+    return ranges[difficulty];
+  }
+
+  /**
+   * Generate difficulty-appropriate content that matches reading level expectations
+   */
+  private static generateDifficultyAppropriateContent(
+    userInfo: UserInfo, 
+    pageIndex: number, 
+    totalPages: number, 
+    difficulty: DifficultyLevel
+  ): string {
+    const name = userInfo.name || 'Alex';
+    const animal = userInfo.favoriteAnimal || 'cat';
+    const color = userInfo.favoriteColor || 'blue';
+    const food = userInfo.favoriteFood || 'pizza';
+    
+    const templates = {
+      easy: [
+        `${name} sees a ${animal}.`,
+        `The ${animal} is ${color}.`,
+        `${name} likes the ${animal}.`,
+        `They play together.`,
+        `${name} feels happy.`
+      ],
+      medium: [
+        `${name} discovers a magical ${color} ${animal} in the garden.`,
+        `The friendly ${animal} shows ${name} a secret hiding place.`,
+        `Together they share delicious ${food} under the bright sun.`,
+        `${name} learns important lessons about friendship and kindness.`,
+        `The wonderful adventure brings joy to both new friends.`
+      ],
+      hard: [
+        `${name} embarked on an extraordinary journey to find the legendary ${color} ${animal}.`,
+        `Along the winding path, ${name} encountered various challenges that tested courage and determination.`,
+        `The wise ${animal} shared ancient wisdom about the importance of perseverance and compassion.`,
+        `Through teamwork and understanding, ${name} and the ${animal} overcame every obstacle together.`,
+        `This remarkable adventure transformed ${name} into a confident and caring individual.`
+      ],
+      expert: [
+        `${name} meticulously planned an expedition to investigate the mysterious phenomena surrounding the ${color} ${animal}.`,
+        `The comprehensive research revealed fascinating interconnections between the ${animal}'s behavior and environmental factors.`,
+        `Through systematic observation and careful analysis, ${name} developed innovative solutions to complex ecological challenges.`,
+        `The collaborative partnership with the ${animal} demonstrated the profound impact of interspecies communication and cooperation.`,
+        `This transformative experience fundamentally changed ${name}'s understanding of the delicate balance within natural ecosystems.`
+      ]
+    };
+    
+    const difficultyTemplates = templates[difficulty];
+    const templateIndex = pageIndex % difficultyTemplates.length;
+    return difficultyTemplates[templateIndex];
   }
 
 }
