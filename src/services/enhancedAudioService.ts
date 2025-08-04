@@ -63,8 +63,8 @@ export class EnhancedAudioService {
       throw new Error('Page already played - upgrade for unlimited audio');
     }
 
-    // Get adaptive speed based on difficulty
-    const speed = this.getSpeedForDifficulty(difficulty);
+    // Get adaptive speed based on difficulty and user language
+    const speed = this.getSpeedForDifficulty(difficulty, userInfo);
     
     // Get appropriate voice
     const voice = this.getVoiceForUser(userInfo, characterType, isPremium);
@@ -129,33 +129,56 @@ export class EnhancedAudioService {
   async playPhoneticBreakdown(options: PhoneticsOptions): Promise<void> {
     const { word, userInfo, showSyllables = true, playbackSpeed = phoneticSettings.playbackSpeed } = options;
     
-    if (!showSyllables) {
-      // Simple word pronunciation - now available to all users
+    try {
+      if (!showSyllables) {
+        // Simple word pronunciation - now available to all users
+        return this.playText({
+          text: word,
+          difficulty: 'easy',
+          userInfo,
+          isPremium: false, // Phonetics now available to all users
+          enableHighlighting: false
+        });
+      }
+
+      // Break word into syllables and play each with pauses - now available to all users
+      const syllables = this.breakIntoSyllables(word);
+      
+      console.log(`🔤 Playing phonetic breakdown for "${word}":`, syllables);
+      
+      for (let i = 0; i < syllables.length; i++) {
+        console.log(`🔤 Playing syllable ${i + 1}/${syllables.length}: "${syllables[i]}"`);
+        
+        try {
+          await this.playText({
+            text: syllables[i],
+            difficulty: 'easy',
+            userInfo,
+            isPremium: false, // Syllable breakdown now available to all users
+            enableHighlighting: false
+          });
+
+          // Pause between syllables
+          if (i < syllables.length - 1) {
+            await this.delay(phoneticSettings.pauseBetweenSyllables);
+          }
+        } catch (syllableError) {
+          console.error(`Error playing syllable "${syllables[i]}":`, syllableError);
+          // Continue with next syllable even if one fails
+        }
+      }
+      
+      console.log(`✅ Phonetic breakdown completed for "${word}"`);
+    } catch (error) {
+      console.error('Phonetic breakdown failed:', error);
+      // Fallback to simple pronunciation
       return this.playText({
         text: word,
         difficulty: 'easy',
         userInfo,
-        isPremium: false, // Phonetics now available to all users
+        isPremium: false,
         enableHighlighting: false
       });
-    }
-
-    // Break word into syllables and play each with pauses - now available to all users
-    const syllables = this.breakIntoSyllables(word);
-    
-    for (let i = 0; i < syllables.length; i++) {
-      await this.playText({
-        text: syllables[i],
-        difficulty: 'easy',
-        userInfo,
-        isPremium: false, // Syllable breakdown now available to all users
-        enableHighlighting: false
-      });
-
-      // Pause between syllables
-      if (i < syllables.length - 1) {
-        await this.delay(phoneticSettings.pauseBetweenSyllables);
-      }
     }
   }
 
@@ -234,8 +257,15 @@ export class EnhancedAudioService {
 
   // === Private Helper Methods ===
 
-  private getSpeedForDifficulty(difficulty: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert'): number {
-    return this.config.speedByDifficulty[difficulty];
+  private getSpeedForDifficulty(difficulty: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert', userInfo?: UserInfo): number {
+    const baseSpeed = this.config.speedByDifficulty[difficulty];
+    
+    // Adjust speed based on user's native language
+    if (userInfo?.nativeLanguage === 'en') {
+      return baseSpeed * 0.7; // Slower for English native speakers
+    } else {
+      return baseSpeed * 0.6; // Even slower for non-native speakers
+    }
   }
 
   private shouldEnableHighlighting(difficulty: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert'): boolean {
@@ -318,22 +348,36 @@ export class EnhancedAudioService {
 
   private startWordHighlighting(text: string, speed: number, onWordHighlight: (wordIndex: number) => void): void {
     const words = text.split(/(\s+)/).filter(word => word.trim().length > 0);
-    // Improved timing: estimate 150 words per minute at normal speed, adjusted by speed
-    const baseWordsPerMinute = 150;
-    const wordsPerSecond = (baseWordsPerMinute * speed) / 60;
-    const wordInterval = 1000 / wordsPerSecond;
+    
+    // More accurate timing calculation based on actual reading speed
+    // Account for pause after punctuation and word length
+    const calculateWordInterval = (word: string, index: number): number => {
+      const baseInterval = 600; // Base 600ms per word for slow reading
+      const speedAdjustment = 1 / speed; // Adjust for playback speed
+      const hasPunctuation = /[.!?]/.test(word);
+      const pauseAfterPunctuation = hasPunctuation ? 300 : 0;
+      
+      return (baseInterval * speedAdjustment) + pauseAfterPunctuation;
+    };
 
     let wordIndex = 0;
+    let cumulativeDelay = 200; // Start after 200ms
 
     const highlightNext = () => {
       if (wordIndex < words.length && this.isPlaying) {
         onWordHighlight(wordIndex);
+        const currentWord = words[wordIndex];
+        const nextInterval = calculateWordInterval(currentWord, wordIndex);
+        
         wordIndex++;
-        this.highlightTimeout = setTimeout(highlightNext, wordInterval);
+        cumulativeDelay += nextInterval;
+        
+        this.highlightTimeout = setTimeout(highlightNext, nextInterval);
       }
     };
 
-    highlightNext();
+    // Start highlighting after initial delay
+    this.highlightTimeout = setTimeout(highlightNext, 200);
   }
 
   private clearHighlighting(): void {
@@ -344,28 +388,36 @@ export class EnhancedAudioService {
   }
 
   private breakIntoSyllables(word: string): string[] {
-    // Simple syllable breaking - can be enhanced with more sophisticated logic
+    // Enhanced syllable breaking algorithm
     const vowels = 'aeiouyAEIOUY';
+    const consonants = 'bcdfghjklmnpqrstvwxzBCDFGHJKLMNPQRSTVWXZ';
+    
+    // Clean the word first
+    const cleanWord = word.replace(/[^a-zA-Z]/g, '');
+    if (cleanWord.length <= 2) {
+      return [cleanWord]; // Don't break very short words
+    }
+    
     const syllables: string[] = [];
     let currentSyllable = '';
     
-    for (let i = 0; i < word.length; i++) {
-      const char = word[i];
+    for (let i = 0; i < cleanWord.length; i++) {
+      const char = cleanWord[i];
+      const nextChar = cleanWord[i + 1];
+      const nextNextChar = cleanWord[i + 2];
+      
       currentSyllable += char;
       
-      if (vowels.includes(char) && i < word.length - 1) {
-        // Look ahead for consonant pattern
-        let nextVowelIndex = -1;
-        for (let j = i + 1; j < word.length; j++) {
-          if (vowels.includes(word[j])) {
-            nextVowelIndex = j;
-            break;
-          }
+      // If current char is a vowel and we're not at the end
+      if (vowels.includes(char) && i < cleanWord.length - 1) {
+        // Look ahead pattern: VCV -> V-CV (divide after first vowel)
+        if (nextChar && consonants.includes(nextChar) && nextNextChar && vowels.includes(nextNextChar)) {
+          syllables.push(currentSyllable);
+          currentSyllable = '';
         }
-        
-        if (nextVowelIndex > i + 1) {
-          // Add one consonant to current syllable
-          currentSyllable += word[i + 1];
+        // Look ahead pattern: VCCV -> VC-CV (divide between consonants)
+        else if (nextChar && consonants.includes(nextChar) && nextNextChar && consonants.includes(nextNextChar)) {
+          currentSyllable += nextChar;
           syllables.push(currentSyllable);
           currentSyllable = '';
           i++; // Skip the consonant we just added
@@ -373,11 +425,13 @@ export class EnhancedAudioService {
       }
     }
     
+    // Add any remaining characters
     if (currentSyllable) {
       syllables.push(currentSyllable);
     }
     
-    return syllables.length > 0 ? syllables : [word];
+    // Fallback: if no syllables created or only one, return word as is
+    return syllables.length > 1 ? syllables : [cleanWord];
   }
 
   private getCacheKey(text: string, voice: string, speed: number): string {

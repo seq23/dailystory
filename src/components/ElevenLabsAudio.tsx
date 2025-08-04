@@ -38,23 +38,25 @@ export const ElevenLabsAudio = ({
   const [isLoading, setIsLoading] = useState(false);
   const [voiceCommandsEnabled, setVoiceCommandsEnabled] = useState(false);
   const [audioService] = useState(() => new EnhancedAudioService());
+  const [hasPlayedThisPage, setHasPlayedThisPage] = useState(false);
   const { toast } = useToast();
 
   // Enhanced audio service handles free limits internally
   const maxFreePages = 10;
   const isWithinFreeLimit = currentPage < maxFreePages;
-  const canUseAudio = isPremium || (isWithinFreeLimit && !isExtendedPage);
+  const isAfterFreeLimit = currentPage >= maxFreePages;
+  const canUseAudio = isPremium || isWithinFreeLimit;
+  const shouldShowCrown = !isPremium && (hasPlayedThisPage || isAfterFreeLimit);
 
   // Enhanced audio playback using new service
   const playAudio = async () => {
-    if (!canUseAudio) {
-      toast({
-        title: "🎵 Free Limit Reached",
-        description: "You've used all 10 free audio plays! Upgrade to Premium for unlimited audio on all pages.",
-        variant: "default",
-        duration: 4000,
-      });
-      onUpgrade?.();
+    if (!isPremium && isAfterFreeLimit) {
+      // Don't play, just show upgrade UI
+      return;
+    }
+
+    if (!isPremium && hasPlayedThisPage) {
+      // Don't play second time on same page for free users
       return;
     }
 
@@ -72,26 +74,21 @@ export const ElevenLabsAudio = ({
       });
       
       setIsPlaying(true);
+      
+      // Mark page as played for free users
+      if (!isPremium) {
+        setHasPlayedThisPage(true);
+      }
     } catch (error) {
       console.error('Enhanced audio playback error:', error);
       
-      if (error.message.includes('Page already played')) {
-        toast({
-          title: "🎵 Free Limit Reached", 
-          description: "You've used all 10 free audio plays! Upgrade to Premium for unlimited audio on all pages.",
-          variant: "default",
-          duration: 4000,
-        });
-        // Remove automatic upgrade redirect - just show tooltip warning
-      } else {
-        toast({
-          title: "Audio Error",
-          description: isMobileOrTablet ? 
-            "Could not play audio. On mobile devices, ensure sound is enabled and try again." :
-            "Could not play audio. Please try again.",
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Audio Error",
+        description: isMobileOrTablet ? 
+          "Could not play audio. On mobile devices, ensure sound is enabled and try again." :
+          "Could not play audio. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -129,6 +126,11 @@ export const ElevenLabsAudio = ({
     }
   };
 
+  // Reset page play tracking when moving to a new page
+  useEffect(() => {
+    setHasPlayedThisPage(false);
+  }, [currentPage]);
+
   // Audio service status monitoring
   useEffect(() => {
     const checkStatus = () => {
@@ -149,22 +151,27 @@ export const ElevenLabsAudio = ({
 
   return (
     <div className="flex items-center gap-2 flex-wrap">
-      <Button
-        onClick={isPlaying ? stopAudio : playAudio}
-        disabled={isLoading || (!canUseAudio && !isPremium)}
-        variant="outline"
-        size={isMobileOrTablet ? "default" : "sm"}
-        className={`gap-2 ${isMobileOrTablet ? 'min-h-[44px] px-4' : ''}`} // iOS/Android touch target size
-      >
-        {isLoading ? (
-          <div className="w-4 h-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-        ) : isPlaying ? (
-          <Square className="w-4 h-4" />
-        ) : (
-          <Play className="w-4 h-4" />
+      <div className="relative">
+        <Button
+          onClick={isPlaying ? stopAudio : playAudio}
+          disabled={isLoading || shouldShowCrown}
+          variant="outline"
+          size={isMobileOrTablet ? "default" : "sm"}
+          className={`gap-2 ${isMobileOrTablet ? 'min-h-[44px] px-4' : ''} ${shouldShowCrown ? 'opacity-50' : ''}`} // iOS/Android touch target size
+        >
+          {isLoading ? (
+            <div className="w-4 h-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          ) : isPlaying ? (
+            <Square className="w-4 h-4" />
+          ) : (
+            <Play className="w-4 h-4" />
+          )}
+          {isLoading ? t("audioReading.generating", "Generating...") : isPlaying ? t("audioReading.stop", "Stop") : t("audioReading.playAudio", "Play Audio")}
+        </Button>
+        {shouldShowCrown && (
+          <Crown className="w-4 h-4 absolute -top-1 -right-1 text-yellow-500" />
         )}
-        {isLoading ? t("audioReading.generating", "Generating...") : isPlaying ? t("audioReading.stop", "Stop") : t("audioReading.playAudio", "Play Audio")}
-      </Button>
+      </div>
 
       {/* Premium Voice Commands Button */}
       {isPremium && (
@@ -179,28 +186,29 @@ export const ElevenLabsAudio = ({
         </Button>
       )}
 
-      {!isPremium && (
-        <div className="flex items-center gap-2 flex-wrap">
-          {!canUseAudio && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    onClick={onUpgrade} 
-                    variant="outline" 
-                    size={isMobileOrTablet ? "default" : "sm"}
-                    className={isMobileOrTablet ? 'min-h-[44px] px-4' : ''}
-                  >
-                    {t("audioReading.upgrade", "Upgrade")}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{t("audioReading.upgradeTooltip", "Upgrade to Premium for unlimited audio plays")}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
-        </div>
+      {!isPremium && shouldShowCrown && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                onClick={onUpgrade} 
+                variant="outline" 
+                size={isMobileOrTablet ? "default" : "sm"}
+                className={isMobileOrTablet ? 'min-h-[44px] px-4' : ''}
+              >
+                {t("audioReading.upgrade", "Upgrade")}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>
+                {isAfterFreeLimit 
+                  ? "More than 10 audio plays require Premium upgrade" 
+                  : "Upgrade to Premium for unlimited audio plays per page"
+                }
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       )}
     </div>
   );
