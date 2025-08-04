@@ -83,22 +83,25 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
   return (
     <div 
       className={cn(
-        "fixed top-1/2 transform -translate-y-1/2 z-40 transition-all duration-300 ease-out",
-        isRTL ? "left-0" : "right-0",
-        isExpanded 
-          ? (isRTL ? "translate-x-0" : "translate-x-0")
-          : (isRTL ? "-translate-x-[120px] sm:-translate-x-[140px]" : "translate-x-[120px] sm:translate-x-[140px]"),
+        "fixed top-4 right-4 z-50 transition-all duration-300 ease-out bg-red-500 p-4 border-4 border-blue-500",
+        "w-56", // Always expanded for debugging
         className
       )}
+      style={{ 
+        backgroundColor: 'red', 
+        border: '4px solid blue',
+        zIndex: 9999,
+        position: 'fixed',
+        top: '20px',
+        right: '20px'
+      }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div className={cn(
-        "bg-white/95 backdrop-blur-sm shadow-xl rounded-lg border border-gray-200",
-        "transition-all duration-300 ease-out",
-        isExpanded ? "w-56 p-4" : "w-14 p-3 sm:w-12 sm:p-2",
-        isRTL && "mr-2"
-      )}>
+      <div className="bg-white p-4 rounded">
+        <div className="text-black text-lg font-bold">DEBUG: Progress Towers</div>
+        <div className="text-black">Expanded: {isExpanded ? 'Yes' : 'No'}</div>
+        <div className="text-black">Words: {totalWordsRead}</div>
         
         {/* Toggle Button */}
         <button
