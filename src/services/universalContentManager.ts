@@ -179,6 +179,8 @@ export class UniversalContentManager {
       .replace(/{hobby}/g, userInfo.hobbies || 'reading')
       .replace(/{object}/g, 'treasure')
       .replace(/{setting}/g, 'forest')
+      .replace(/{antagonist}/g, 'shadow creatures')
+      .replace(/{skill}/g, 'magical')
       .replace(/{pronoun}/g, 'they')
       .replace(/{pronoun_possessive}/g, 'their');
   }
