@@ -677,6 +677,7 @@
     "pages": "Pages Completed", 
     "vocabulary": "Words Learned",
     "milestone": "Great progress!",
+    "storyComplete": "Story completed!",
     "expand": "View Progress",
     "collapse": "Hide Progress"
   }

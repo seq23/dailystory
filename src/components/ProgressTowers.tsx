@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ProgressTower } from './ProgressTower';
 import { useGamification } from '@/hooks/useGamification';
 import { BookOpen, FileText, Lightbulb, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -11,6 +11,7 @@ interface ProgressTowersProps {
   currentWordsRead?: number;
   currentPagesRead?: number;
   className?: string;
+  onProgressUpdate?: (type: 'words' | 'pages' | 'vocabulary', value: number) => void;
 }
 
 export const ProgressTowers: React.FC<ProgressTowersProps> = ({
@@ -18,12 +19,21 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
   userType = 'premium',
   currentWordsRead = 0,
   currentPagesRead = 0,
-  className
+  className,
+  onProgressUpdate
 }) => {
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === 'ar';
   const [isExpanded, setIsExpanded] = useState(false);
   const [autoCollapseTimer, setAutoCollapseTimer] = useState<NodeJS.Timeout | null>(null);
+  const [animatingTowers, setAnimatingTowers] = useState<{words: boolean, pages: boolean, vocabulary: boolean}>({
+    words: false,
+    pages: false,
+    vocabulary: false
+  });
+  const [celebration, setCelebration] = useState(false);
+  const [hasNewProgress, setHasNewProgress] = useState(false);
+  const prevValuesRef = useRef({ words: 0, pages: 0, vocabulary: 0 });
 
   const { userStats } = useGamification({
     userId,
@@ -70,6 +80,48 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
   const totalPagesRead = Math.floor(totalWordsRead / 200) + currentPagesRead; // Estimate pages from words
   const vocabularyLearned = userStats.vocabularyWordsLearned;
 
+  // Detect progress changes and trigger animations
+  useEffect(() => {
+    const prevValues = prevValuesRef.current;
+    const currentValues = { 
+      words: totalWordsRead, 
+      pages: totalPagesRead, 
+      vocabulary: vocabularyLearned 
+    };
+
+    // Check for increases in each tower
+    const hasWordsIncrease = currentValues.words > prevValues.words;
+    const hasPagesIncrease = currentValues.pages > prevValues.pages;
+    const hasVocabIncrease = currentValues.vocabulary > prevValues.vocabulary;
+
+    if (hasWordsIncrease || hasPagesIncrease || hasVocabIncrease) {
+      setHasNewProgress(true);
+      setAnimatingTowers({
+        words: hasWordsIncrease,
+        pages: hasPagesIncrease,
+        vocabulary: hasVocabIncrease
+      });
+
+      // Call progress update callback
+      if (hasWordsIncrease) onProgressUpdate?.('words', currentValues.words);
+      if (hasPagesIncrease) onProgressUpdate?.('pages', currentValues.pages);
+      if (hasVocabIncrease) onProgressUpdate?.('vocabulary', currentValues.vocabulary);
+
+      // Clear animations after a brief moment
+      setTimeout(() => {
+        setAnimatingTowers({ words: false, pages: false, vocabulary: false });
+      }, 1500);
+
+      // Show celebration for story completion (significant word increase)
+      if (hasWordsIncrease && (currentValues.words - prevValues.words) >= 100) {
+        setCelebration(true);
+        setTimeout(() => setCelebration(false), 3000);
+      }
+    }
+
+    prevValuesRef.current = currentValues;
+  }, [totalWordsRead, totalPagesRead, vocabularyLearned, onProgressUpdate]);
+
   console.log('ProgressTowers component rendering...', { 
     isExpanded, 
     totalWordsRead, 
@@ -106,10 +158,18 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
           className={cn(
             "absolute top-3 flex items-center justify-center w-10 h-10 bg-primary/20 hover:bg-primary/30 rounded-full transition-all duration-200 shadow-lg border border-primary/30",
             isRTL ? "right-3" : "left-3",
-            !isExpanded && "opacity-90 hover:opacity-100 animate-pulse"
+            !isExpanded && "opacity-90 hover:opacity-100",
+            // Gentle breathing animation when collapsed, more prominent when there's new progress
+            !isExpanded && !hasNewProgress && "animate-[pulse_3s_ease-in-out_infinite]",
+            !isExpanded && hasNewProgress && "animate-[pulse_1s_ease-in-out_3] ring-2 ring-primary/50",
+            celebration && "animate-bounce"
           )}
           aria-label={isExpanded ? t('progressTowers.collapse') : t('progressTowers.expand')}
         >
+          {/* New progress indicator dot */}
+          {hasNewProgress && !isExpanded && (
+            <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping" />
+          )}
           {isExpanded ? (
             isRTL ? <ChevronLeft className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />
           ) : (
@@ -136,35 +196,82 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
               </div>
 
               {/* Progress Towers Grid */}
-              <div className="grid grid-cols-3 gap-3 justify-items-center">
-                <ProgressTower
-                  value={totalWordsRead}
-                  maxValue={500}
-                  label={t('progressTowers.words')}
-                  icon={<BookOpen className="w-4 h-4" />}
-                  color="blue"
-                />
-                <ProgressTower
-                  value={totalPagesRead}
-                  maxValue={500}
-                  label={t('progressTowers.pages')}
-                  icon={<FileText className="w-4 h-4" />}
-                  color="green"
-                />
-                <ProgressTower
-                  value={vocabularyLearned}
-                  maxValue={500}
-                  label={t('progressTowers.vocabulary')}
-                  icon={<Lightbulb className="w-4 h-4" />}
-                  color="gold"
-                />
+              <div className="grid grid-cols-3 gap-3 justify-items-center relative">
+                {celebration && (
+                  <>
+                    {/* Celebration particles */}
+                    <div className="absolute inset-0 pointer-events-none">
+                      {[...Array(6)].map((_, i) => (
+                        <div
+                          key={i}
+                          className="absolute w-2 h-2 bg-yellow-400 rounded-full animate-[ping_1s_ease-out_infinite]"
+                          style={{
+                            left: `${20 + i * 15}%`,
+                            top: `${10 + (i % 2) * 20}%`,
+                            animationDelay: `${i * 0.1}s`
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
+                
+                <div className={cn(
+                  "transition-all duration-500",
+                  animatingTowers.words && "animate-bounce scale-105"
+                )}>
+                  <ProgressTower
+                    value={totalWordsRead}
+                    maxValue={500}
+                    label={t('progressTowers.words')}
+                    icon={<BookOpen className="w-4 h-4" />}
+                    color="blue"
+                    className={animatingTowers.words ? "ring-2 ring-blue-300 shadow-lg shadow-blue-200" : ""}
+                  />
+                </div>
+                
+                <div className={cn(
+                  "transition-all duration-500",
+                  animatingTowers.pages && "animate-bounce scale-105"
+                )}>
+                  <ProgressTower
+                    value={totalPagesRead}
+                    maxValue={500}
+                    label={t('progressTowers.pages')}
+                    icon={<FileText className="w-4 h-4" />}
+                    color="green"
+                    className={animatingTowers.pages ? "ring-2 ring-green-300 shadow-lg shadow-green-200" : ""}
+                  />
+                </div>
+                
+                <div className={cn(
+                  "transition-all duration-500",
+                  animatingTowers.vocabulary && "animate-bounce scale-105"
+                )}>
+                  <ProgressTower
+                    value={vocabularyLearned}
+                    maxValue={500}
+                    label={t('progressTowers.vocabulary')}
+                    icon={<Lightbulb className="w-4 h-4" />}
+                    color="gold"
+                    className={animatingTowers.vocabulary ? "ring-2 ring-yellow-300 shadow-lg shadow-yellow-200" : ""}
+                  />
+                </div>
               </div>
 
               {/* Milestone Message */}
-              {(totalWordsRead > 0 && totalWordsRead % 50 === 0) && (
-                <div className="mt-3 p-2 bg-gradient-to-r from-yellow-100 to-orange-100 rounded-lg text-center">
+              {celebration && (
+                <div className="mt-3 p-2 bg-gradient-to-r from-yellow-100 to-orange-100 rounded-lg text-center animate-fade-in">
                   <p className="text-xs font-medium text-orange-800">
-                    🎉 {t('progressTowers.milestone')}
+                    🎉 {t('progressTowers.storyComplete')}
+                  </p>
+                </div>
+              )}
+              
+              {(totalWordsRead > 0 && totalWordsRead % 100 === 0) && !celebration && (
+                <div className="mt-3 p-2 bg-gradient-to-r from-blue-100 to-purple-100 rounded-lg text-center">
+                  <p className="text-xs font-medium text-purple-800">
+                    ⭐ {t('progressTowers.milestone')}
                   </p>
                 </div>
               )}
@@ -172,13 +279,22 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
           ) : (
             /* Collapsed Icons */
             <div className="flex flex-col items-center gap-2 mt-12">
-              <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+              <div className={cn(
+                "w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center transition-all duration-300",
+                animatingTowers.words && "animate-pulse ring-2 ring-blue-300"
+              )}>
                 <BookOpen className="w-3 h-3 text-white" />
               </div>
-              <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+              <div className={cn(
+                "w-6 h-6 bg-green-500 rounded-full flex items-center justify-center transition-all duration-300",
+                animatingTowers.pages && "animate-pulse ring-2 ring-green-300"
+              )}>
                 <FileText className="w-3 h-3 text-white" />
               </div>
-              <div className="w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center">
+              <div className={cn(
+                "w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center transition-all duration-300",
+                animatingTowers.vocabulary && "animate-pulse ring-2 ring-yellow-300"
+              )}>
                 <Lightbulb className="w-3 h-3 text-white" />
               </div>
             </div>

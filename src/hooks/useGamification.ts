@@ -112,20 +112,23 @@ export const useGamification = (options: UseGamificationOptions = {}) => {
         });
       }
 
-      // Handle new achievements
+      // Handle new achievements - only show toast for major achievements
       if (unlockedAchievements.length > 0) {
         setNewAchievements(prev => [...prev, ...unlockedAchievements]);
         unlockedAchievements.forEach(achievement => {
           onAchievementUnlocked?.(achievement);
-          toast({
-            title: `🏆 ${t('gamification.achievements.unlocked')}`,
-            description: `${achievement.title} - ${achievement.description}`,
-            duration: 4000,
-          });
+          // Only show toast for milestone achievements, not routine progress
+          if (achievement.category === 'special' || achievement.points >= 100) {
+            toast({
+              title: `🏆 ${t('gamification.achievements.unlocked')}`,
+              description: `${achievement.title} - ${achievement.description}`,
+              duration: 4000,
+            });
+          }
         });
       }
 
-      // Handle streak milestones
+      // Handle streak milestones - only weekly streaks get toasts
       if (updatedStreak.currentStreak > prevStats.streak.currentStreak) {
         const streak = updatedStreak.currentStreak;
         if (streak % 7 === 0 && streak > 0) {
