@@ -1,5 +1,6 @@
 // Story Arc Manager - Provides narrative structure for children's book patterns
 import type { DifficultyLevel, UserInfo } from "@/types";
+import { NameFormatter } from "@/utils/nameFormatter";
 
 export interface StoryArc {
   setup: string[];
@@ -150,11 +151,11 @@ export class StoryArcManager {
   /**
    * Process template with user information
    */
-  private static processTemplate(template: string, userInfo: UserInfo, difficulty: DifficultyLevel): string {
+  static processTemplate(template: string, userInfo: UserInfo, difficulty: DifficultyLevel): string {
     let processed = template;
     
-    // Replace user placeholders
-    processed = processed.replace(/{name}/g, userInfo.name || 'Alex');
+    // Replace user placeholders with properly capitalized name
+    processed = processed.replace(/{name}/g, NameFormatter.capitalize(userInfo.name || 'Alex'));
     processed = processed.replace(/{pronoun}/g, 'they');
     processed = processed.replace(/{pronoun_possessive}/g, 'their');
     

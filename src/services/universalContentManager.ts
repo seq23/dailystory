@@ -7,6 +7,7 @@ import { VocabularyLevelClassifier } from "@/utils/vocabularyLevelClassifier";
 import { StoryQualityChecker } from "@/utils/storyQualityChecker";
 import { APP_CONFIG } from "@/constants/app";
 import { FreeTrialPageLimitError, PremiumPageLimitError } from "@/utils/errorHandling";
+import { NameFormatter } from "@/utils/nameFormatter";
 
 export interface ContentManagerConfig {
   isPremium: boolean;
@@ -172,7 +173,7 @@ export class UniversalContentManager {
     
     return {
       id: crypto.randomUUID(),
-      title: `${userInfo.name || 'Alex'}'s Adventure (Continued)`,
+      title: `${NameFormatter.capitalize(userInfo.name || 'Alex')}'s Adventure (Continued)`,
       segments: combinedPages.map(text => ({
         text,
         illustration: undefined,
@@ -218,15 +219,15 @@ export class UniversalContentManager {
           );
         }
         
-        // Validate against difficulty-appropriate requirements
+        // Validate against difficulty-appropriate requirements AFTER template processing
         if (difficulty === 'easy') {
-          const validation = validateLevel1Sentence(processedPage, userInfo.name);
+          const validation = validateLevel1Sentence(processedPage, NameFormatter.capitalize(userInfo.name || 'Alex'));
           if (!validation.isValid) {
             console.warn(`⚠️ Page ${i + 1} failed L1 validation, using fallback`);
             processedPage = this.generateLevel1Fallback(userInfo, i);
           }
         } else {
-          // Validate word count for other difficulty levels
+          // Validate word count for other difficulty levels AFTER template processing
           const wordValidation = validateDifficultyCompliance(processedPage, difficulty);
           if (!wordValidation.isValid) {
             console.warn(`⚠️ Page ${i + 1} word count (${wordValidation.wordCount}) outside range ${wordValidation.expectedRange.min}-${wordValidation.expectedRange.max} for ${difficulty}`);
@@ -304,7 +305,7 @@ export class UniversalContentManager {
   ): Story {
     return {
       id: crypto.randomUUID(),
-      title: `${userInfo.name || 'Alex'}'s Adventure`,
+      title: `${NameFormatter.capitalize(userInfo.name || 'Alex')}'s Adventure`,
       segments: Array.from({ length: pageCount }, (_, i) => ({
         text: this.generateFallbackPage(userInfo, difficulty, i),
         illustration: undefined,
@@ -317,13 +318,11 @@ export class UniversalContentManager {
   }
 
   /**
-   * Process template with user data - now uses StoryArcManager for vocabulary selection
+   * Process template with user data - basic fallback processing only
    */
   private static processTemplate(template: string, userInfo: UserInfo): string {
-    // Let StoryArcManager handle the vocabulary replacement which already 
-    // has difficulty-appropriate word lists built in
     return template
-      .replace(/{name}/g, userInfo.name || 'Alex')
+      .replace(/{name}/g, NameFormatter.capitalize(userInfo.name || 'Alex'))
       .replace(/{pronoun}/g, 'they')
       .replace(/{pronoun_possessive}/g, 'their')
       .replace(/{hobby}/g, userInfo.hobbies || 'playing')
@@ -351,7 +350,7 @@ export class UniversalContentManager {
   }
 
   /**
-   * Generate Level 1 vocabulary fallback
+   * Generate Level 1 vocabulary fallback using StoryArcManager for proper template processing
    */
   private static generateLevel1Fallback(userInfo: UserInfo, pageIndex: number): string {
     const level1Templates = [
@@ -367,8 +366,18 @@ export class UniversalContentManager {
       "What a fun day!"
     ];
     
-    const template = level1Templates[pageIndex % level1Templates.length];
-    return this.processTemplate(template, userInfo);
+    // Use different templates to avoid repetition
+    const templateIndex = pageIndex % level1Templates.length;
+    const template = level1Templates[templateIndex];
+    
+    // Use StoryArcManager to properly process all template variables
+    const { StoryArcManager } = require('./storyArcManager');
+    const mockUserInfo = { ...userInfo, name: NameFormatter.capitalize(userInfo.name || 'Alex') };
+    return StoryArcManager.processTemplate ? 
+      StoryArcManager.processTemplate(template, mockUserInfo, 'easy') :
+      template.replace(/{name}/g, mockUserInfo.name)
+             .replace(/{animal}/g, ['cat', 'dog', 'bird', 'fish', 'bear'][pageIndex % 5])
+             .replace(/{color}/g, ['red', 'blue', 'green', 'yellow', 'brown'][pageIndex % 5]);
   }
 
   /**
