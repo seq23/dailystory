@@ -165,12 +165,19 @@ export class UniversalContentManager {
           );
         }
         
-        // Validate against Level 1 vocabulary if needed
+        // Validate against difficulty-appropriate requirements
         if (difficulty === 'easy') {
           const validation = validateLevel1Sentence(processedPage, userInfo.name);
           if (!validation.isValid) {
             console.warn(`⚠️ Page ${i + 1} failed L1 validation, using fallback`);
             processedPage = this.generateLevel1Fallback(userInfo, i);
+          }
+        } else {
+          // Validate word count for other difficulty levels
+          const wordValidation = validateDifficultyCompliance(processedPage, difficulty);
+          if (!wordValidation.isValid) {
+            console.warn(`⚠️ Page ${i + 1} word count (${wordValidation.wordCount}) outside range ${wordValidation.expectedRange.min}-${wordValidation.expectedRange.max} for ${difficulty}`);
+            processedPage = this.generateFallbackPage(userInfo, difficulty, i);
           }
         }
         
@@ -257,28 +264,19 @@ export class UniversalContentManager {
   }
 
   /**
-   * Process template with user data
+   * Process template with user data - now uses StoryArcManager for vocabulary selection
    */
   private static processTemplate(template: string, userInfo: UserInfo): string {
-    // Use Level 1 vocabulary defaults for simple words
-    const level1Animals = ['cat', 'dog', 'bird', 'fish', 'cow', 'pig', 'duck', 'hen', 'bee', 'bear', 'fox', 'frog'];
-    const level1Colors = ['red', 'blue', 'green', 'yellow', 'black', 'white', 'pink', 'brown'];
-    const level1Foods = ['apple', 'cake', 'milk', 'bread', 'cookie'];
-    const level1Objects = ['ball', 'book', 'toy', 'cup', 'hat'];
-    const level1Settings = ['home', 'park', 'yard', 'farm', 'zoo'];
-    
+    // Let StoryArcManager handle the vocabulary replacement which already 
+    // has difficulty-appropriate word lists built in
     return template
       .replace(/{name}/g, userInfo.name || 'Alex')
-      .replace(/{animal}/g, userInfo.favoriteAnimal || level1Animals[Math.floor(Math.random() * level1Animals.length)])
-      .replace(/{color}/g, userInfo.favoriteColor || level1Colors[Math.floor(Math.random() * level1Colors.length)])
-      .replace(/{food}/g, userInfo.favoriteFood || level1Foods[Math.floor(Math.random() * level1Foods.length)])
-      .replace(/{hobby}/g, userInfo.hobbies || 'playing')
-      .replace(/{object}/g, level1Objects[Math.floor(Math.random() * level1Objects.length)])
-      .replace(/{setting}/g, level1Settings[Math.floor(Math.random() * level1Settings.length)])
-      .replace(/{antagonist}/g, 'big dogs')
-      .replace(/{skill}/g, 'fun')
       .replace(/{pronoun}/g, 'they')
-      .replace(/{pronoun_possessive}/g, 'their');
+      .replace(/{pronoun_possessive}/g, 'their')
+      .replace(/{hobby}/g, userInfo.hobbies || 'playing')
+      .replace(/{food}/g, userInfo.favoriteFood || 'food')
+      .replace(/{antagonist}/g, 'shadow creatures')
+      .replace(/{skill}/g, 'special');
   }
 
   /**
