@@ -182,13 +182,14 @@ export class EnhancedAudioService {
             enableHighlighting: false
           });
 
-          // Pause between syllables
+          // Longer pause between syllables for clarity
           if (i < syllables.length - 1) {
-            await this.delay(phoneticSettings.pauseBetweenSyllables);
+            await this.delay(800); // Increased from 400ms to 800ms
           }
         } catch (syllableError) {
-          console.error(`Error playing syllable "${syllables[i]}":`, syllableError);
-          // Continue with next syllable even if one fails
+          console.error(`❌ Error playing syllable "${syllables[i]}":`, syllableError);
+          // Try to continue with remaining syllables, but log the failure
+          continue;
         }
       }
       
@@ -289,11 +290,15 @@ export class EnhancedAudioService {
     const baseSpeed = this.config.speedByDifficulty[difficulty];
     
     // Adjust speed based on user's native language
+    let finalSpeed: number;
     if (userInfo?.nativeLanguage === 'en') {
-      return baseSpeed * 0.7; // Slower for English native speakers
+      finalSpeed = baseSpeed * 0.7; // Slower for English native speakers
     } else {
-      return baseSpeed * 0.6; // Even slower for non-native speakers
+      finalSpeed = baseSpeed * 0.6; // Even slower for non-native speakers
     }
+    
+    console.log(`🎵 Audio speed for ${difficulty} (${userInfo?.nativeLanguage}): ${finalSpeed}`);
+    return finalSpeed;
   }
 
   private shouldEnableHighlighting(difficulty: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert'): boolean {
@@ -398,7 +403,10 @@ export class EnhancedAudioService {
     const highlightNext = () => {
       if (this.currentWordIndex < wordsWithIndices.length && this.isPlaying) {
         const currentItem = wordsWithIndices[this.currentWordIndex];
-        onWordHighlight(currentItem.originalIndex);
+        const wordOnlyIndex = this.currentWordIndex; // Use sequential word index, not original text index
+        console.log(`🎯 Highlighting word ${this.currentWordIndex + 1}/${this.totalWords}: "${currentItem.word}" (word-only index: ${wordOnlyIndex})`);
+        
+        onWordHighlight(wordOnlyIndex);
         
         const nextInterval = calculateWordInterval(currentItem.word, this.currentWordIndex);
         this.currentWordIndex++;
@@ -407,8 +415,8 @@ export class EnhancedAudioService {
       }
     };
 
-    // Start highlighting after initial delay to sync with audio
-    this.highlightTimeout = setTimeout(highlightNext, 300);
+    // Start highlighting immediately with reduced initial delay
+    this.highlightTimeout = setTimeout(highlightNext, 200);
   }
 
   private clearHighlighting(): void {
@@ -419,39 +427,67 @@ export class EnhancedAudioService {
   }
 
   private breakIntoSyllables(word: string): string[] {
-    // Enhanced syllable breaking algorithm
-    const vowels = 'aeiouyAEIOUY';
-    const consonants = 'bcdfghjklmnpqrstvwxzBCDFGHJKLMNPQRSTVWXZ';
+    const cleanWord = word.replace(/[.,!?;:'"()]/g, '').toLowerCase();
     
-    // Clean the word first
-    const cleanWord = word.replace(/[^a-zA-Z]/g, '');
-    if (cleanWord.length <= 2) {
-      return [cleanWord]; // Don't break very short words
+    // Dictionary of known difficult words
+    const knownSyllables: Record<string, string[]> = {
+      'flowers': ['flow', 'ers'],
+      'wonderful': ['won', 'der', 'ful'],
+      'beautiful': ['beau', 'ti', 'ful'],
+      'together': ['to', 'geth', 'er'],
+      'remember': ['re', 'mem', 'ber'],
+      'different': ['dif', 'fer', 'ent'],
+      'important': ['im', 'por', 'tant'],
+      'adventure': ['ad', 'ven', 'ture'],
+      'character': ['char', 'ac', 'ter'],
+      'favorite': ['fa', 'vor', 'ite']
+    };
+    
+    // Check dictionary first
+    if (knownSyllables[cleanWord]) {
+      console.log(`📚 Using dictionary syllables for "${cleanWord}":`, knownSyllables[cleanWord]);
+      return knownSyllables[cleanWord];
     }
     
+    // Simple vowel-based splitting for unknown words
+    const vowels = 'aeiouy';
     const syllables: string[] = [];
     let currentSyllable = '';
     
     for (let i = 0; i < cleanWord.length; i++) {
       const char = cleanWord[i];
-      const nextChar = cleanWord[i + 1];
-      const nextNextChar = cleanWord[i + 2];
-      
       currentSyllable += char;
       
-      // If current char is a vowel and we're not at the end
-      if (vowels.includes(char) && i < cleanWord.length - 1) {
-        // Look ahead pattern: VCV -> V-CV (divide after first vowel)
-        if (nextChar && consonants.includes(nextChar) && nextNextChar && vowels.includes(nextNextChar)) {
+      // If we hit a vowel, look for a good break point
+      if (vowels.includes(char)) {
+        // If this is the end, add the syllable
+        if (i === cleanWord.length - 1) {
           syllables.push(currentSyllable);
-          currentSyllable = '';
+          break;
         }
-        // Look ahead pattern: VCCV -> VC-CV (divide between consonants)
-        else if (nextChar && consonants.includes(nextChar) && nextNextChar && consonants.includes(nextNextChar)) {
-          currentSyllable += nextChar;
-          syllables.push(currentSyllable);
-          currentSyllable = '';
-          i++; // Skip the consonant we just added
+        
+        // Look ahead for consonant-vowel pattern
+        let j = i + 1;
+        while (j < cleanWord.length && !vowels.includes(cleanWord[j])) {
+          j++;
+        }
+        
+        // If we found another vowel, split appropriately
+        if (j < cleanWord.length) {
+          const consonantCount = j - i - 1;
+          if (consonantCount === 1) {
+            // Single consonant: take it with us
+            currentSyllable += cleanWord[i + 1];
+            syllables.push(currentSyllable);
+            currentSyllable = '';
+            i++; // Skip the consonant
+          } else if (consonantCount > 1) {
+            // Multiple consonants: split after first
+            currentSyllable += cleanWord[i + 1];
+            syllables.push(currentSyllable);
+            currentSyllable = '';
+            i++; // Skip first consonant
+          }
         }
       }
     }
@@ -461,18 +497,13 @@ export class EnhancedAudioService {
       syllables.push(currentSyllable);
     }
     
-    // Enhanced fallback logic
-    if (syllables.length === 0) {
-      return [cleanWord]; // Return whole word if no syllables found
+    // Fallback: if breaking failed, return whole word
+    if (syllables.length === 0 || syllables.join('') !== cleanWord) {
+      console.log(`📝 Syllable breaking failed for "${cleanWord}", using whole word`);
+      return [cleanWord];
     }
     
-    // Quality check: ensure syllables reconstruct the original word
-    const reconstructed = syllables.join('');
-    if (reconstructed.toLowerCase() !== cleanWord.toLowerCase()) {
-      console.warn(`⚠️ Syllable reconstruction mismatch: "${reconstructed}" vs "${cleanWord}"`);
-      return [cleanWord]; // Return whole word if syllables don't match
-    }
-    
+    console.log(`📝 Syllables for "${cleanWord}":`, syllables);
     return syllables;
   }
 

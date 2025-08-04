@@ -26,7 +26,7 @@ export const processTextForPhonetics = (
 
     // Calculate word-only index for highlighting (skip whitespace)
     const wordsBeforeThis = words.slice(0, index).filter(w => w.trim().length > 0).length;
-    const isHighlighted = highlightedWordIndex === index;
+    const isHighlighted = highlightedWordIndex === wordsBeforeThis;
     
     return (
       <MobileOptimizedInteractiveWord 

@@ -382,6 +382,10 @@ export const InteractiveWord = ({
       userInfo
     });
     
+    // Track vocabulary word IMMEDIATELY when user clicks explain
+    console.log('🎯 Tracking vocabulary word:', word);
+    addVocabularyWord();
+    
     setIsLoadingWordData(true);
     setIsPlaying(true);
     
@@ -473,10 +477,6 @@ export const InteractiveWord = ({
          console.warn('ElevenLabs failed, using browser speech fallback:', error);
          fallbackToBrowserSpeech();
        }
-       
-       // Track vocabulary word after successful explanation
-       addVocabularyWord();
-       console.log('✅ Vocabulary word tracked successfully');
        
        function fallbackToBrowserSpeech() {
         if ('speechSynthesis' in window) {
