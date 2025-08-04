@@ -180,9 +180,19 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
         isExpanded ? "w-56 p-4" : "w-16 p-3",
         isRTL && "mr-2",
         // Enhanced edge glow pulse when new progress is detected
-        hasNewProgress && !isExpanded && "animate-edgeGlowPulse"
+        // Remove glow pulse - sparkles will handle the visual feedback
       )}>
         
+        {/* Sparkle Trail Animation */}
+        {hasNewProgress && !isExpanded && (
+          <div className="absolute inset-0 pointer-events-none overflow-visible">
+            <div className="absolute left-2 top-1/2 w-3 h-3 text-blue-400 animate-sparkleTrail1 text-lg">✨</div>
+            <div className="absolute left-2 top-1/2 w-3 h-3 text-green-400 animate-sparkleTrail2 text-lg">⭐</div>
+            <div className="absolute left-2 top-1/2 w-3 h-3 text-yellow-400 animate-sparkleTrail3 text-lg">💫</div>
+            <div className="absolute left-2 top-1/2 w-3 h-3 text-purple-400 animate-sparkleTrail4 text-lg">✨</div>
+          </div>
+        )}
+
         {/* Toggle Button */}
         <button
           onClick={handleToggle}
@@ -190,20 +200,12 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
             "absolute top-3 flex items-center justify-center w-10 h-10 bg-primary/20 hover:bg-primary/30 rounded-full transition-all duration-200 shadow-lg border border-primary/30",
             isRTL ? "right-3" : "left-3",
             !isExpanded && "opacity-90 hover:opacity-100",
-            // Enhanced breathing animation when collapsed, super prominent when there's new progress
+            // Enhanced breathing animation when collapsed
             !isExpanded && !hasNewProgress && "animate-[pulse_3s_ease-in-out_infinite]",
-            !isExpanded && hasNewProgress && "animate-[pulse_0.8s_ease-in-out_infinite] ring-4 ring-red-400/60 bg-red-50",
             celebration && "animate-bounce ring-4 ring-yellow-400/60"
           )}
           aria-label={isExpanded ? t('progressTowers.collapse') : t('progressTowers.expand')}
         >
-          {/* Enhanced new progress indicator dot */}
-          {hasNewProgress && !isExpanded && (
-            <>
-              <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full animate-ping" />
-              <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-600 rounded-full" />
-            </>
-          )}
           {/* Celebration sparkle */}
           {celebration && (
             <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-ping" />
