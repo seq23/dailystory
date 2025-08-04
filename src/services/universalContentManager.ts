@@ -1011,14 +1011,19 @@ export class UniversalContentManager {
     difficulty: DifficultyLevel, 
     isPremium: boolean = false
   ): number {
-    // Free trial: Standard 10 pages for all levels
+    // Level 0 should be very short - max 8 pages
+    if (difficulty === 'beginner') {
+      return isPremium ? 8 : 6;
+    }
+    
+    // Free trial: Standard 10 pages for other levels
     if (!isPremium) {
       return 10;
     }
     
     // Premium: Varied page counts by difficulty
     const premiumPageCounts = {
-      beginner: 6,  // Shorter for pre-readers
+      beginner: 8,  // Already handled above
       easy: 8,
       medium: 10,
       hard: 12,
