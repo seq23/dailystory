@@ -43,7 +43,7 @@ export const useHybridStoryGeneration = (
         if (error) throw error;
 
         if (data?.story) {
-          const aiPages = data.story.split('\\n\\n').filter((page: string) => page.trim());
+          const aiPages = data.story.split('\n\n').filter((page: string) => page.trim());
           console.log('✨ AI story ready, transitioning from template...');
           setAiStory(aiPages);
           setIsAiReady(true);
