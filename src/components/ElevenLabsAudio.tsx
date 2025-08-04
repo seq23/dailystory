@@ -82,7 +82,7 @@ export const ElevenLabsAudio = ({
           variant: "default",
           duration: 4000,
         });
-        onUpgrade?.();
+        // Remove automatic upgrade redirect - just show tooltip warning
       } else {
         toast({
           title: "Audio Error",

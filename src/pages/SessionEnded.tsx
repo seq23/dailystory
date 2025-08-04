@@ -1,7 +1,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Home, BookOpen, Clock, TrendingUp, Target, BookText, Crown, Sparkles, Star } from "lucide-react";
+import { Home, BookOpen, Clock, TrendingUp, Target, BookText, Crown, Sparkles, Star, Volume2 } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
@@ -186,19 +186,23 @@ const SessionEnded = ({ onHome, onNewStory, isPremium = false, onUpgrade }: Sess
               <div className="space-y-2 text-sm text-amber-600">
                  <div className="flex items-center gap-2">
                    <Star className="w-4 h-4" />
-                   <span>{t("sessionEnded.premiumBenefits.unlimitedSessions", "Unlimited reading sessions")}</span>
+                   <span>AI-personalized stories created just for you</span>
                  </div>
                  <div className="flex items-center gap-2">
-                   <Sparkles className="w-4 h-4" />
-                   <span>{t("sessionEnded.premiumBenefits.customDifficulty", "Custom story difficulty adjustment")}</span>
+                   <Volume2 className="w-4 h-4" />
+                   <span>Voice personalization & voice commands</span>
                  </div>
                  <div className="flex items-center gap-2">
                    <BookOpen className="w-4 h-4" />
-                   <span>{t("sessionEnded.premiumBenefits.extendedLibrary", "Extended story library with more topics")}</span>
+                   <span>Reading assessment with pronunciation feedback</span>
+                 </div>
+                 <div className="flex items-center gap-2">
+                   <Sparkles className="w-4 h-4" />
+                   <span>Unlimited audio plays & advanced learning analytics</span>
                  </div>
                  <div className="flex items-center gap-2">
                    <TrendingUp className="w-4 h-4" />
-                   <span>{t("sessionEnded.premiumBenefits.advancedTracking", "Advanced progress tracking & analytics")}</span>
+                   <span>Extended story library & premium gamification</span>
                  </div>
               </div>
               {onUpgrade && (

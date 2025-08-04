@@ -318,8 +318,10 @@ export class EnhancedAudioService {
 
   private startWordHighlighting(text: string, speed: number, onWordHighlight: (wordIndex: number) => void): void {
     const words = text.split(/(\s+)/).filter(word => word.trim().length > 0);
-    const wordsPerSecond = words.length / (text.length * 0.1); // Rough estimate
-    const wordInterval = (1000 / wordsPerSecond) / speed;
+    // Improved timing: estimate 150 words per minute at normal speed, adjusted by speed
+    const baseWordsPerMinute = 150;
+    const wordsPerSecond = (baseWordsPerMinute * speed) / 60;
+    const wordInterval = 1000 / wordsPerSecond;
 
     let wordIndex = 0;
 

@@ -99,7 +99,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
       setFormData(prev => ({ ...prev, [field]: sanitizedValue }));
 
       // Handle real-time translation for specific fields
-      if (['favoriteAnimal', 'favoriteFood', 'favoriteColor', 'hobbies'].includes(field as string) && sanitizedValue.trim()) {
+      if (['favoriteAnimal', 'favoriteFood', 'favoriteColor', 'hobbies', 'specialRequest'].includes(field as string) && sanitizedValue.trim()) {
         // Show loading state for translation
         setTranslationLoading(prev => ({ ...prev, [field as string]: true }));
         
@@ -725,12 +725,31 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                 {t("userInfoForm.fields.specialRequest.label")}
                 <span className="text-xs md:text-sm text-muted-foreground ml-2">{t("userInfoForm.fields.specialRequest.optional")}</span>
               </Label>
-              <TagInput
-                value={formData.specialRequest}
-                onChange={(value) => handleInputChange("specialRequest", value)}
-                placeholder={t("userInfoForm.fields.specialRequest.placeholder")}
-                className="multilingual-input"
-              />
+              <div className="relative">
+                <TagInput
+                  value={formData.specialRequest}
+                  onChange={(value) => handleInputChange("specialRequest", value)}
+                  placeholder={t("userInfoForm.fields.specialRequest.placeholder")}
+                  className="multilingual-input"
+                />
+                {translationLoading.specialRequest && (
+                  <div className="absolute right-3 top-3">
+                    <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                  </div>
+                )}
+              </div>
+              {translationLoading.specialRequest && (
+                <div className="translation-feedback">
+                  <Loader2 className="w-3 h-3 animate-spin inline mr-1" />
+                  {t('userForm.translating', 'Translating...')}
+                </div>
+              )}
+              {translations.specialRequest && !translationLoading.specialRequest && (
+                <div className="translation-feedback">
+                  <Globe className="w-3 h-3 inline mr-1" />
+                  {translations.specialRequest}
+                </div>
+              )}
             </div>
           </div>
         </div>

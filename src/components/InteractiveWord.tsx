@@ -9,6 +9,7 @@ import { contextualPronunciation } from "@/services/contextualPronunciation";
 import { supabase } from "@/integrations/supabase/client";
 import { VocabularyLevelClassifier } from "@/utils/vocabularyLevelClassifier";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useGamification } from "@/hooks/useGamification";
 import type { UserInfo } from "@/types";
 
 interface InteractiveWordProps {
@@ -19,6 +20,7 @@ interface InteractiveWordProps {
   isPremium?: boolean;
   sentenceContext?: string;
   onClick?: () => void; // Add explicit onClick for better touch handling
+  userId?: string; // Add userId for gamification tracking
 }
 
 export const InteractiveWord = ({ 
@@ -28,11 +30,17 @@ export const InteractiveWord = ({
   userInfo,
   isPremium = false,
   sentenceContext = "",
-  onClick
+  onClick,
+  userId
 }: InteractiveWordProps) => {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const { isMobileOrTablet, isCapacitor } = useIsMobile();
+  const { addVocabularyWord } = useGamification({
+    userId,
+    userType: isPremium ? 'premium' : 'free',
+    enablePersistence: isPremium
+  });
   
   // ENHANCED: Debug and fix translation issues for Arabic, Chinese, Hindi
   const userLanguageT = useCallback((key: string, fallback: string) => {
@@ -868,10 +876,8 @@ export const InteractiveWord = ({
       (window as any).addToVocabulary(vocabularyWord);
     }
 
-    // Track for gamification
-    if ((window as any).addVocabularyWord) {
-      (window as any).addVocabularyWord();
-    }
+    // Track for gamification - use the hook directly
+    addVocabularyWord();
 
     toast({
       title: "Word Saved! 📝",
@@ -1125,6 +1131,11 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
   const [isLoadingMobile, setIsLoadingMobile] = useState(false);
   const [enhancedAudioService] = useState(() => new EnhancedAudioService());
   const [isPlayingPhonetics, setIsPlayingPhonetics] = useState(false);
+  const { addVocabularyWord } = useGamification({
+    userId: props.userId,
+    userType: props.isPremium ? 'premium' : 'free',
+    enablePersistence: props.isPremium
+  });
   
   
   // ENHANCED: Debug and fix translation issues for Arabic, Chinese, Hindi (mobile version)
@@ -1866,19 +1877,44 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
                </button>
              </div>
              
-             {/* Premium Phonetic Breakdown Button */}
-              <div className="mb-4">
-                <button
-                  onClick={handlePhoneticBreakdown}
-                  disabled={isPlayingPhonetics}
-                  className="w-full flex items-center justify-center gap-2 bg-purple-50 hover:bg-purple-100 active:bg-purple-200 border-2 border-purple-200 p-3 rounded-xl transition-colors touch-manipulation font-semibold text-purple-700 disabled:opacity-50"
-                >
-                  <Layers className="w-5 h-5" />
-                  <span className="text-sm">
-                    {isPlayingPhonetics ? "Playing Syllables..." : "Break Down Pronunciation"}
-                  </span>
-                </button>
-              </div>
+              {/* Premium Phonetic Breakdown Button */}
+               <div className="mb-4">
+                 <button
+                   onClick={handlePhoneticBreakdown}
+                   disabled={isPlayingPhonetics}
+                   className="w-full flex items-center justify-center gap-2 bg-purple-50 hover:bg-purple-100 active:bg-purple-200 border-2 border-purple-200 p-3 rounded-xl transition-colors touch-manipulation font-semibold text-purple-700 disabled:opacity-50"
+                 >
+                   <Layers className="w-5 h-5" />
+                   <span className="text-sm">
+                     {isPlayingPhonetics ? "Playing Syllables..." : "Break Down Pronunciation"}
+                   </span>
+                 </button>
+               </div>
+
+               {/* Save Word Button for Premium Users */}
+               {props.isPremium && (
+                 <div className="mb-4">
+                   <button
+                     onClick={() => {
+                       const cleanWord = props.word.replace(/[.,!?;:'"()]/g, '');
+                       if (cleanWord.length >= 2) {
+                         addVocabularyWord();
+                         toast({
+                           title: "Word Saved! 📝",
+                           description: `"${cleanWord}" has been added to your vocabulary collection.`,
+                           duration: 3000,
+                         });
+                       }
+                     }}
+                     className="w-full flex items-center justify-center gap-2 bg-yellow-50 hover:bg-yellow-100 active:bg-yellow-200 border-2 border-yellow-200 p-3 rounded-xl transition-colors touch-manipulation font-semibold text-yellow-700"
+                   >
+                     <Plus className="w-5 h-5" />
+                     <span className="text-sm">
+                       {userLanguageT("interactiveWord.addToVocabulary", "Save Word")}
+                     </span>
+                   </button>
+                 </div>
+               )}
             
             {/* User type indicator for transparency */}
             <div className="text-center mb-4">

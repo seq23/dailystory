@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
-import { Check, Star, Zap, ArrowLeft, X } from "lucide-react";
+import { Check, Star, Zap, ArrowLeft, X, Volume2, BookOpen } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { UserInfo } from "@/types";
 
@@ -267,6 +267,14 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
                         <Zap className="w-4 h-4 text-blue-500" />
                         {t("loginScreen.plans.monthly.features.aiFeatures")}
                       </li>
+                      <li className="flex items-center gap-2">
+                        <Volume2 className="w-4 h-4 text-purple-500" />
+                        Voice personalization & commands
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <BookOpen className="w-4 h-4 text-green-500" />
+                        Reading assessment & feedback
+                      </li>
                     </ul>
                   </CardContent>
                 </Card>
@@ -300,6 +308,14 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
                       <li className="flex items-center gap-2">
                         <Zap className="w-4 h-4 text-blue-500" />
                         {t("loginScreen.plans.annual.features.aiFeatures")}
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Volume2 className="w-4 h-4 text-purple-500" />
+                        Voice personalization & commands
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <BookOpen className="w-4 h-4 text-green-500" />
+                        Reading assessment & feedback
                       </li>
                     </ul>
                   </CardContent>
