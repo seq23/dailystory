@@ -45,8 +45,8 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
     hobbies: "",
     favoriteFood: "",
     specialRequest: "",
-    difficultyLevel: "easy",
-    readingAbility: "easy"
+    difficultyLevel: "beginner",
+    readingAbility: "beginner"
   });
 
   const [showValidationErrors, setShowValidationErrors] = useState(false);
@@ -508,6 +508,12 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                     <SelectValue placeholder={t("userInfoForm.fields.readingAbility.placeholder")} />
                   </SelectTrigger>
                   <SelectContent className="bg-white dark:bg-gray-800 border-2 border-primary/20 rounded-xl md:rounded-2xl shadow-lg z-50">
+                    <SelectItem value="beginner" className="text-sm md:text-lg p-2 md:p-3 hover:bg-primary/10">
+                      <div className="flex flex-col items-start text-left">
+                        <span className="font-semibold text-blue-600">{t("userInfoForm.fields.readingAbility.levels.beginner.title")}</span>
+                        <span className="text-xs text-muted-foreground hidden sm:block">{t("userInfoForm.fields.readingAbility.levels.beginner.description")}</span>
+                      </div>
+                    </SelectItem>
                     <SelectItem value="easy" className="text-sm md:text-lg p-2 md:p-3 hover:bg-primary/10">
                       <div className="flex flex-col items-start text-left">
                         <span className="font-semibold text-green-600">{t("userInfoForm.fields.readingAbility.levels.easy.title")}</span>
