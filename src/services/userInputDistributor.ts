@@ -41,7 +41,7 @@ export class UserInputDistributor {
   }
 
   /**
-   * Get next available element from a category, ensuring variety
+   * Get next available element from a category, ensuring variety and early distribution
    */
   static getNextElement(category: string, context: DistributionContext): string {
     const pool = this.userElementsPool.get(category) || [];
@@ -51,17 +51,38 @@ export class UserInputDistributor {
       return this.getDefaultElement(category);
     }
 
-    // Find unused elements first
+    // For first 10 pages, prioritize using all user elements early
+    if (context.pageIndex < 10) {
+      // Find unused elements first
+      const unused = pool.filter(item => !used.has(item));
+      
+      if (unused.length > 0) {
+        const selected = unused[Math.floor(Math.random() * unused.length)];
+        used.add(selected);
+        console.log(`🎯 Page ${context.pageIndex}: Using ${category} "${selected}" (${used.size}/${pool.length} used)`);
+        return selected;
+      }
+
+      // If all used within first 10 pages, reset to encourage re-use
+      if (used.size >= pool.length) {
+        used.clear();
+        const selected = pool[Math.floor(Math.random() * pool.length)];
+        used.add(selected);
+        console.log(`🔄 Page ${context.pageIndex}: Reset ${category}, using "${selected}"`);
+        return selected;
+      }
+    }
+
+    // After page 10, use standard distribution logic
     const unused = pool.filter(item => !used.has(item));
-    
     if (unused.length > 0) {
       const selected = unused[Math.floor(Math.random() * unused.length)];
       used.add(selected);
       return selected;
     }
 
-    // If all used, reset and pick again - prioritize early distribution for first 10 pages
-    if (context.pageIndex > Math.max(pool.length, 3) || context.pageIndex >= 10) {
+    // Reset if all elements have been used
+    if (used.size >= pool.length) {
       used.clear();
       const selected = pool[Math.floor(Math.random() * pool.length)];
       used.add(selected);
