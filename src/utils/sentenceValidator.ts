@@ -9,6 +9,7 @@ export interface SentenceValidationResult {
 
 export class SentenceValidator {
   private static readonly WORD_LIMITS: Record<DifficultyLevel, number> = {
+    beginner: 6,   // PreK-K, ESL Beginner: 1-6 words per sentence
     easy: 12,      // K-1, ESL Beginner: 8-12 words per sentence
     medium: 18,    // Grades 2-3, ESL Intermediate: 12-18 words per sentence
     hard: 25,      // Grades 4-5, ESL Advanced: 18-25 words per sentence

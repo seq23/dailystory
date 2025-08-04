@@ -4,6 +4,14 @@ import { NameFormatter } from "@/utils/nameFormatter";
 import type { UserInfo } from "@/types";
 
 export const DIFFICULTY_APPROPRIATE_TEMPLATES = {
+  beginner: [
+    // 1-6 words per page - Level 0 vocabulary only (ages 3-5)
+    ["{name} sees a {animal}.", "The {animal} is {color}.", "{name} likes it.", "They are friends."],
+    ["{name} goes out.", "A {animal} comes.", "It wants to play.", "{name} plays too."],
+    ["{name} finds a {object}.", "The {object} is {color}.", "{name} picks it up.", "Very nice {object}!"],
+    ["{name} helps {animal}.", "The {animal} is sad.", "{name} gives it {food}.", "Now it is happy."]
+  ],
+  
   easy: [
     // 3-6 words per page - Level 1 vocabulary only
     ["{name} sees a {animal}.", "The {animal} is {color}.", "{name} says hello.", "They play ball.", "The {animal} runs fast.", "{name} runs too.", "They have fun.", "{name} likes the {animal}.", "They are friends.", "{name} is happy."],
@@ -34,7 +42,7 @@ export const DIFFICULTY_APPROPRIATE_TEMPLATES = {
 
 // Updated template selector that processes variables and enforces difficulty-appropriate word counts
 export const getDifficultyAppropriateTemplate = (
-  difficulty: 'easy' | 'medium' | 'hard' | 'expert',
+  difficulty: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert',
   templateIndex?: number,
   userInfo?: UserInfo
 ): string[] => {
@@ -56,7 +64,7 @@ export const getDifficultyAppropriateTemplate = (
 };
 
 // Template processing function that replaces all variables
-const processTemplate = (template: string, userInfo: UserInfo, difficulty: 'easy' | 'medium' | 'hard' | 'expert'): string => {
+const processTemplate = (template: string, userInfo: UserInfo, difficulty: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert'): string => {
   let processed = template;
   
   // Replace user placeholders with properly capitalized name
@@ -65,7 +73,9 @@ const processTemplate = (template: string, userInfo: UserInfo, difficulty: 'easy
   processed = processed.replace(/{pronoun_possessive}/g, 'their');
   
   // Replace story elements with vocabulary appropriate for each difficulty level
-  const animals = difficulty === 'easy' 
+  const animals = difficulty === 'beginner'
+    ? ['cat', 'dog', 'bird', 'fish', 'cow', 'pig', 'duck', 'bee', 'bear', 'frog']
+    : difficulty === 'easy'
     ? ['cat', 'dog', 'bird', 'fish', 'cow', 'pig', 'duck', 'hen', 'bee', 'bear', 'fox', 'frog']
     : difficulty === 'medium'
     ? ['cat', 'rabbit', 'owl', 'deer', 'fox', 'turtle', 'butterfly', 'bird', 'squirrel', 'mouse']
@@ -73,7 +83,9 @@ const processTemplate = (template: string, userInfo: UserInfo, difficulty: 'easy
     ? ['wolf', 'eagle', 'panther', 'raven', 'falcon', 'lynx', 'phoenix', 'dragon', 'griffin', 'sphinx']
     : ['phoenix', 'dragon', 'sphinx', 'leviathan', 'chimera', 'pegasus', 'unicorn', 'basilisk'];
     
-  const colors = difficulty === 'easy'
+  const colors = difficulty === 'beginner'
+    ? ['red', 'blue', 'green', 'yellow']
+    : difficulty === 'easy'
     ? ['red', 'blue', 'green', 'yellow', 'black', 'white', 'pink', 'brown']
     : difficulty === 'medium'
     ? ['golden', 'silver', 'emerald', 'sapphire', 'crimson', 'violet', 'amber', 'turquoise']
@@ -81,7 +93,9 @@ const processTemplate = (template: string, userInfo: UserInfo, difficulty: 'easy
     ? ['iridescent', 'luminescent', 'opalescent', 'prismatic', 'chromatic', 'incandescent']
     : ['transcendent', 'ethereal', 'celestial', 'cosmic', 'infinite', 'multidimensional'];
     
-  const objects = difficulty === 'easy'
+  const objects = difficulty === 'beginner'
+    ? ['ball', 'toy', 'book', 'car', 'cup', 'hat']
+    : difficulty === 'easy'
     ? ['ball', 'book', 'toy', 'cake', 'hat', 'cup']
     : difficulty === 'medium'
     ? ['key', 'book', 'gem', 'flower', 'stone', 'shell', 'treasure', 'crown']
@@ -89,7 +103,9 @@ const processTemplate = (template: string, userInfo: UserInfo, difficulty: 'easy
     ? ['ancient relic', 'mystical artifact', 'enchanted scroll', 'crystal orb', 'magic amulet', 'sacred tome']
     : ['philosophical codex', 'temporal device', 'consciousness matrix', 'wisdom catalyst', 'enlightenment key'];
     
-  const foods = difficulty === 'easy'
+  const foods = difficulty === 'beginner'
+    ? ['apple', 'milk', 'cake', 'food']
+    : difficulty === 'easy'
     ? ['apple', 'bread', 'milk', 'cake', 'fish', 'meat']
     : difficulty === 'medium'
     ? ['berries', 'honey', 'nuts', 'fruits', 'vegetables', 'grain']
@@ -114,7 +130,7 @@ const processTemplate = (template: string, userInfo: UserInfo, difficulty: 'easy
 // Flexible validation with margin of error to preserve natural story flow
 export const validateDifficultyCompliance = (
   content: string,
-  difficulty: 'easy' | 'medium' | 'hard' | 'expert',
+  difficulty: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert',
   strictMode: boolean = false
 ): { 
   isValid: boolean; 
@@ -127,14 +143,16 @@ export const validateDifficultyCompliance = (
   
   // Ideal ranges for each difficulty level
   const idealRanges = {
+    beginner: { min: 1, max: 6 },
     easy: { min: 3, max: 6 },
     medium: { min: 6, max: 12 },
     hard: { min: 10, max: 18 },
     expert: { min: 15, max: 25 }
   };
 
-  // Flexible ranges - sentence-based for levels 1-2, no limits for levels 3-4
+  // Flexible ranges - sentence-based for levels 0-2, no limits for levels 3-4
   const flexibleRanges = {
+    beginner: { min: 1, max: 6 },  // Strict for pre-readers - no flexibility
     easy: { min: 2, max: 12 },     // Expanded for complete sentences
     medium: { min: 4, max: 20 },   // Expanded for complete sentences  
     hard: { min: 0, max: 9999 },   // No validation - allow natural page breaks
@@ -153,7 +171,7 @@ export const validateDifficultyCompliance = (
     isValid = wordCount >= idealRange.min && wordCount <= idealRange.max;
     zone = isValid ? 'green' : 'red';
   } else {
-    // Flexible mode: tiered validation (sentence-based for easy/medium, no validation for hard/expert)
+    // Flexible mode: tiered validation (sentence-based for beginner/easy/medium, no validation for hard/expert)
     if (difficulty === 'hard' || difficulty === 'expert') {
       // No word count validation for advanced levels
       zone = 'green';

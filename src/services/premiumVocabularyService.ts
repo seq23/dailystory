@@ -660,6 +660,7 @@ export class PremiumVocabularyService {
 
   private static getLevelAppropriateWords(level: DifficultyLevel, userInfo: UserInfo): string[] {
     const levelWords: Record<DifficultyLevel, string[]> = {
+      'beginner': ['cat', 'dog', 'red', 'blue', 'ball', 'toy'],
       'easy': ['sun', 'moon', 'tree', 'flower', 'bird'],
       'medium': ['adventure', 'friendship', 'explore', 'discover', 'magical'],
       'hard': ['mysterious', 'extraordinary', 'fascinating', 'remarkable', 'incredible'],

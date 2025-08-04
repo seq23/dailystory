@@ -244,6 +244,7 @@ export const AGE_AUTHOR_MAPPING: Record<string, string[]> = {
 };
 
 export const DIFFICULTY_VOICE_MAPPING: Record<DifficultyLevel, string[]> = {
+  beginner: ["ericCarle", "margaretWiseBrown", "sandraBoynton"],
   easy: ["ericCarle", "margaretWiseBrown", "sandraBoynton"],
   medium: ["moWillems", "drSeuss", "lauraNumeroff"],
   hard: ["kevinHenkes", "lauraNumeroff", "moWillems"],

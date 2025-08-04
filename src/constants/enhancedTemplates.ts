@@ -37,6 +37,18 @@ const ACTIONS = {
 
 // Enhanced template variations for each difficulty
 export const ENHANCED_TEMPLATES: Record<DifficultyLevel, TemplateVariation[]> = {
+  beginner: [
+    // Ultra-simple patterns for ages 3-5
+    { base: "{name} sees a {animal}.", characters: CHARACTERS.animals },
+    { base: "The {animal} is {color}.", characters: CHARACTERS.animals },
+    { base: "{name} likes the {animal}." },
+    { base: "They play together." },
+    { base: "{name} gives {food}.", objects: ['apple', 'milk', 'cake', 'food'] },
+    { base: "Good friends together." },
+    { base: "{name} is happy." },
+    { base: "The {animal} runs.", characters: CHARACTERS.animals },
+    { base: "Fun day today." }
+  ],
   easy: [
     // Simple, repetitive, nature-focused patterns
     { base: "{name} sees a little {animal}.", characters: CHARACTERS.animals },

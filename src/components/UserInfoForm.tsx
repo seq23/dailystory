@@ -216,7 +216,7 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
     }
 
     // Use the selected reading ability, or fall back to age-based difficulty
-    const difficulty = formData.readingAbility || (formData.age <= 6 ? "easy" : formData.age <= 9 ? "medium" : formData.age <= 12 ? "hard" : "expert");
+    const difficulty = formData.readingAbility || (formData.age <= 5 ? "beginner" : formData.age <= 8 ? "easy" : formData.age <= 11 ? "medium" : formData.age <= 13 ? "hard" : "expert");
     
     SecurityLogger.log('form_submission_success', {
       difficultyLevel: difficulty,

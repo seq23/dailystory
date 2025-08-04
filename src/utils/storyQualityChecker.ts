@@ -14,7 +14,7 @@ export class StoryQualityChecker {
   /**
    * Comprehensive quality check for story pages
    */
-  static checkStoryQuality(pages: string[], difficulty: 'easy' | 'medium' | 'hard' | 'expert'): {
+  static checkStoryQuality(pages: string[], difficulty: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert'): {
     isValid: boolean;
     issues: QualityIssue[];
     score: number;
@@ -168,12 +168,13 @@ export class StoryQualityChecker {
   /**
    * Check if content is appropriate for the reading level
    */
-  private static checkReadabilityLevel(pages: string[], difficulty: string): QualityIssue[] {
+  private static checkReadabilityLevel(pages: string[], difficulty: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert'): QualityIssue[] {
     const issues: QualityIssue[] = [];
     
     // Ideal word count ranges (what we aim for)
     const idealWordCounts = {
-      easy: { min: 3, max: 6 },    // Ages 3-5: Complete simple sentences for TTS
+      beginner: { min: 1, max: 6 }, // Ages 3-5: Ultra-simple pre-reading vocabulary
+      easy: { min: 3, max: 6 },    // Ages 6-8: Complete simple sentences for TTS
       medium: { min: 6, max: 12 }, // Ages 5-7: Slightly longer sentences  
       hard: { min: 10, max: 18 },  // Ages 7-9: More complex sentences
       expert: { min: 15, max: 25 } // Ages 9-11+: Advanced vocabulary and complexity
@@ -181,14 +182,15 @@ export class StoryQualityChecker {
     
     // Flexible ranges with margin of error for natural flow
     const flexibleWordCounts = {
+      beginner: { min: 1, max: 6 }, // Strict for pre-readers - no flexibility
       easy: { min: 2, max: 8 },     // 25% margin of error
       medium: { min: 4, max: 15 },   // 25% margin of error
       hard: { min: 8, max: 22 },     // 25% margin of error  
       expert: { min: 12, max: 30 }   // 25% margin of error
     };
     
-    const ideal = idealWordCounts[difficulty] || idealWordCounts.medium;
-    const flexible = flexibleWordCounts[difficulty] || flexibleWordCounts.medium;
+    const ideal = idealWordCounts[difficulty] || idealWordCounts.easy;
+    const flexible = flexibleWordCounts[difficulty] || flexibleWordCounts.easy;
     
     pages.forEach((page, index) => {
       const wordCount = page.split(/\s+/).length;

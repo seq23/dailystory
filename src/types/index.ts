@@ -1,6 +1,6 @@
 // Central type definitions for the Time2Read application
 
-export type DifficultyLevel = "easy" | "medium" | "hard" | "expert";
+export type DifficultyLevel = "beginner" | "easy" | "medium" | "hard" | "expert";
 export type LanguageCode = "en" | "ar" | "es" | "zh" | "hi" | "pt" | "fr";
 export type LearningGoal = "improve-english-reading" | "learn-english-language" | "both";
 export type SkinTone = "pale" | "light" | "medium" | "olive" | "dark";

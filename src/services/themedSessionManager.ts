@@ -90,6 +90,10 @@ export class ThemedSessionManager {
   private static getThemeTemplates(category: string, difficulty: DifficultyLevel): string[] {
     const templateMap: Record<string, Record<DifficultyLevel, string[]>> = {
       'animals': {
+        'beginner': [
+          "{name} sees a {animal}. The {animal} is {color}. {name} likes the {animal}. They are friends.",
+          "{name} finds a {animal}. The {animal} wants {food}. {name} gives {food}. {animal} is happy."
+        ],
         'easy': [
           "{name} goes to see the {animals}. The {color} {animal} says hello. {name} likes to {action} with {animal} friends. They all {action} together in the {place}.",
           "{name} meets a {color} {animal}. The {animal} wants to {action}. {name} helps the {animal} {action}. They become good friends.",
@@ -109,6 +113,10 @@ export class ThemedSessionManager {
         ]
       },
       'colors': {
+        'beginner': [
+          "{name} sees {color} things. {color} is nice. {name} likes {color}. Good {color} day.",
+          "{name} finds {color} toy. The toy is very {color}. {name} plays with it. Fun {color} toy."
+        ],
         'easy': [
           "{name} loves the color {color}. Everything {color} makes {name} happy. {name} finds {color} {objects} everywhere. The {color} {object} is very special.",
           "{name} paints with {color} paint. The {color} picture shows a {animal}. {name} likes to {action} with {color} things.",
@@ -129,6 +137,10 @@ export class ThemedSessionManager {
       },
       // Add more categories...
       'emotions': {
+        'beginner': [
+          "{name} is happy today. Happy is good. {name} likes being happy. Good happy day.",
+          "{name} feels sad sometimes. When sad, {name} gets help. Mom helps {name}. Better now."
+        ],
         'easy': [
           "{name} feels {emotion} today. When {name} is {emotion}, {name} likes to {action}. {name}'s {color} {object} helps {name} feel better.",
           "{name} sees a {emotion} {animal}. {name} wants to help the {animal} feel {positive_emotion}. They {action} together and both feel {happy_emotion}."
@@ -158,6 +170,10 @@ export class ThemedSessionManager {
 
   private static getGeneralTemplates(difficulty: DifficultyLevel): string[] {
     const generalTemplates: Record<DifficultyLevel, string[]> = {
+      'beginner': [
+        "{name} goes outside today. {name} sees a {animal}. {name} likes the {animal}. Good day together.",
+        "{name} finds a {object}. The {object} is {color}. {name} likes it. Fun time today."
+      ],
       'easy': [
         "{name} goes on an adventure. {name} meets a {color} {animal}. They {action} together and have fun.",
         "{name} finds a special {object}. The {color} {object} helps {name} {action}. {name} is very {emotion}."

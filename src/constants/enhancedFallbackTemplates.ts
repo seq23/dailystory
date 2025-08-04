@@ -20,6 +20,35 @@ export interface EnhancedFallbackTemplate {
  * Rich fallback templates that follow the same story arc patterns as the main system
  */
 export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallbackTemplate[]> = {
+  beginner: [
+    {
+      setup: [
+        "{name} sees a {animal}.",
+        "The {animal} is {color}.",
+        "{name} likes it."
+      ],
+      development: [
+        "They play together.",
+        "{name} gives it {food}.",
+        "The {animal} is happy."
+      ],
+      climax: [
+        "{name} helps the {animal}.",
+        "They are friends.",
+        "Good friends together."
+      ],
+      resolution: [
+        "{name} is happy.",
+        "The {animal} is happy.",
+        "Fun day today."
+      ],
+      contextualContinuations: [
+        "{name} says bye.",
+        "See you soon.",
+        "Good friends always."
+      ]
+    }
+  ],
   easy: [
     {
       setup: [

@@ -102,8 +102,8 @@ export class UniversalContentManager {
       const pageCount = this.getPageCountForDifficulty(difficulty, config.isPremium);
     
     try {
-      // Use sentence-based generation for easy/medium, regular for hard/expert
-      const story = (difficulty === 'easy' || difficulty === 'medium') 
+      // Use sentence-based generation for beginner/easy/medium, regular for hard/expert  
+      const story = (difficulty === 'beginner' || difficulty === 'easy' || difficulty === 'medium')
         ? await this.generateSentenceBasedStory(userInfo, difficulty, pageCount, config)
         : await this.generateSimpleStory(userInfo, difficulty, pageCount, config);
       

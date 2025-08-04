@@ -222,6 +222,7 @@ ${message.encouragement}
 
   static getDifficultyProgression(): { [key in DifficultyLevel]: DifficultyLevel | null } {
     return {
+      'beginner': 'easy',
       'easy': 'medium',
       'medium': 'hard', 
       'hard': 'expert',
