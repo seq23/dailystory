@@ -532,5 +532,33 @@
   "userForm": {
     "translating": "ترجمة...",
     "back": "عودة"
+  },
+  "feedback": {
+    "tooltip": "أرسل تعليقات حول تجربتك",
+    "title": "إرسال تعليقات",
+    "ratingLabel": "كيف تقيم تجربتك؟",
+    "categoryLabel": "الفئة",
+    "categoryPlaceholder": "ما هو موضوع التعليق؟",
+    "messageLabel": "تعليقك",
+    "messagePlaceholder": "أخبرنا برأيك...",
+    "categories": {
+      "bug": "تقرير خطأ",
+      "feature": "طلب ميزة",
+      "content": "محتوى القصة",
+      "usability": "تجربة المستخدم",
+      "performance": "الأداء",
+      "other": "أخرى"
+    },
+    "buttons": {
+      "cancel": "إلغاء",
+      "submit": "إرسال التعليق",
+      "submitting": "جاري الإرسال..."
+    },
+    "messages": {
+      "success": "تم إرسال التعليق!",
+      "successDescription": "شكراً لك على تعليقك. نحن نقدر ذلك!",
+      "error": "خطأ",
+      "errorDescription": "فشل في إرسال التعليق. يرجى المحاولة مرة أخرى."
+    }
   }
 }
