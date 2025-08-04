@@ -1373,6 +1373,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
               console.log('Tutorial completed - timer auto-started at 20:59');
             }}
             onStepChange={setCurrentTutorialStep}
+            sessionStartTime={sessionStartTime}
           />
 
           {/* Achievement Notification */}

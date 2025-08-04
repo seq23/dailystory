@@ -18,12 +18,14 @@ interface TutorialOverlayProps {
   onSkip: () => void;
   onStartTimer?: () => void;
   onStepChange?: (step: number) => void;
+  sessionStartTime?: Date | null;
 }
 
-export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, onStepChange }: TutorialOverlayProps) => {
+export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, onStepChange, sessionStartTime }: TutorialOverlayProps) => {
   const { t, i18n } = useTranslation();
   const [currentStep, setCurrentStep] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isPulseActive, setIsPulseActive] = useState(true);
 
   // Notify parent about step changes
   useEffect(() => {
@@ -66,6 +68,13 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
       description: t("tutorial.difficulty.description", "Make the story easier or harder instantly! Up arrow makes it harder, down arrow makes it easier to match your reading level."),
       icon: TrendingUp,
       position: "bottom"
+    },
+    {
+      target: "progress-towers-container",
+      title: t("tutorial.progressTowers.title", "🏗️ Progress Towers"),
+      description: t("tutorial.progressTowers.description", "Watch your reading progress grow! These towers show your words read, pages completed, and vocabulary learned. Click to expand and see detailed stats."),
+      icon: TrendingUp,
+      position: "right"
     }
   ];
 
@@ -77,10 +86,15 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
     const targetElement = document.querySelector(`#${step.target}, .${step.target}`);
     
     if (targetElement) {
-      // Add pulsing animation classes
-      targetElement.classList.add(
+      // Calculate if we should pulse (only for Progress Towers on step 6 AND within first 5 seconds)
+      const shouldPulse = step.target === "progress-towers-container" && 
+                         currentStep === 5 && 
+                         sessionStartTime && 
+                         (Date.now() - sessionStartTime.getTime()) < 5000;
+
+      // Add highlighting classes
+      const highlightClasses = [
         'tutorial-highlight',
-        'animate-pulse',
         'ring-4',
         'ring-yellow-400/50',
         'ring-offset-2',
@@ -90,7 +104,22 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
         'shadow-yellow-400/30',
         'z-50',
         'relative'
-      );
+      ];
+
+      // Add pulse only if conditions are met
+      if (shouldPulse) {
+        highlightClasses.push('animate-pulse');
+        
+        // Stop pulse after 5 seconds
+        const pulseTimeout = setTimeout(() => {
+          targetElement.classList.remove('animate-pulse');
+          setIsPulseActive(false);
+        }, 5000);
+
+        return () => clearTimeout(pulseTimeout);
+      }
+
+      targetElement.classList.add(...highlightClasses);
 
       // Add shake animation
       (targetElement as HTMLElement).style.animation = 'shake 1s ease-in-out infinite, pulse 2s ease-in-out infinite';
@@ -130,19 +159,34 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
         (targetElement as HTMLElement).style.transition = 'all 0.3s ease-out';
         (targetElement as HTMLElement).style.zIndex = '60';
         
-        // Also highlight the parent container
-        const parentContainer = targetElement.closest('.flex.flex-col.items-center.gap-2');
-        if (parentContainer) {
-          parentContainer.classList.add(
-            'ring-4',
-            'ring-yellow-300/50',
-            'rounded-xl',
-            'bg-yellow-50/50',
-            'p-4'
+          // Also highlight the parent container
+          const parentContainer = targetElement.closest('.flex.flex-col.items-center.gap-2');
+          if (parentContainer) {
+            parentContainer.classList.add(
+              'ring-4',
+              'ring-yellow-300/50',
+              'rounded-xl',
+              'bg-yellow-50/50',
+              'p-4'
+            );
+          }
+        }
+
+        // ENHANCED HIGHLIGHTING FOR PROGRESS TOWERS - Make it prominent on step 6
+        if (step.target === "progress-towers-container") {
+          targetElement.classList.add(
+            'scale-110',
+            'ring-8',
+            'ring-yellow-400/80',
+            'ring-offset-4',
+            'bg-yellow-100/20',
+            'border-yellow-400'
           );
+          (targetElement as HTMLElement).style.transform = 'scale(1.1)';
+          (targetElement as HTMLElement).style.transition = 'all 0.3s ease-out';
+          (targetElement as HTMLElement).style.zIndex = '60';
         }
       }
-    }
 
     return () => {
       if (targetElement) {
@@ -206,6 +250,21 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
               'p-4'
             );
           }
+        }
+
+        // Clean up progress towers special styling
+        if (step.target === "progress-towers-container") {
+          targetElement.classList.remove(
+            'scale-110',
+            'ring-8',
+            'ring-yellow-400/80',
+            'ring-offset-4',
+            'bg-yellow-100/20',
+            'border-yellow-400'
+          );
+          (targetElement as HTMLElement).style.transform = '';
+          (targetElement as HTMLElement).style.transition = '';
+          (targetElement as HTMLElement).style.zIndex = '';
         }
       }
     };
@@ -342,6 +401,27 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
           bottom: `${margin + 40}px`, // Bottom positioning for tablet/desktop too
           left: `${Math.max(margin, Math.min(rect.left + rect.width/2 - tooltipWidth/2, viewportWidth - tooltipWidth - margin))}px`,
           top: "auto",
+          transform: "none",
+          maxWidth: `${tooltipWidth}px`
+        };
+      }
+    }
+
+    // SPECIAL HANDLING FOR PROGRESS TOWERS - Position to the left of the towers (they're on right edge)
+    if (target === "progress-towers-container") {
+      if (isMobile) {
+        return {
+          bottom: `${margin + 60}px`, // Bottom positioning for mobile
+          left: `${margin}px`,
+          right: `${margin}px`,
+          top: "auto",
+          transform: "none",
+          maxWidth: `${tooltipWidth}px`
+        };
+      } else {
+        return {
+          top: `${Math.max(margin, Math.min(rect.top + rect.height/2 - tooltipHeight/2, viewportHeight - tooltipHeight - margin))}px`,
+          left: `${Math.max(margin, rect.left - tooltipWidth - 40)}px`, // Position to the left of towers
           transform: "none",
           maxWidth: `${tooltipWidth}px`
         };
