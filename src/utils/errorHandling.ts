@@ -12,6 +12,30 @@ export enum ErrorType {
   UNKNOWN = 'unknown'
 }
 
+// Page limit error classes
+export class FreeTrialPageLimitError extends Error {
+  constructor(
+    message: string, 
+    public currentPages: number, 
+    public maxPages: number,
+    public upgradeMessage: string
+  ) {
+    super(message);
+    this.name = 'FreeTrialPageLimitError';
+  }
+}
+
+export class PremiumPageLimitError extends Error {
+  constructor(
+    message: string, 
+    public currentPages: number, 
+    public maxPages: number
+  ) {
+    super(message);
+    this.name = 'PremiumPageLimitError';
+  }
+}
+
 export interface AppError {
   type: ErrorType;
   message: string;

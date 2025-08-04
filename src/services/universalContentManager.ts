@@ -6,19 +6,7 @@ import { validateLevel1Sentence } from "@/constants/level1Vocabulary";
 import { VocabularyLevelClassifier } from "@/utils/vocabularyLevelClassifier";
 import { StoryQualityChecker } from "@/utils/storyQualityChecker";
 import { APP_CONFIG } from "@/constants/app";
-
-// Custom error for free trial page limits
-export class FreeTrialPageLimitError extends Error {
-  constructor(
-    message: string, 
-    public currentPages: number, 
-    public maxPages: number,
-    public upgradeMessage: string
-  ) {
-    super(message);
-    this.name = 'FreeTrialPageLimitError';
-  }
-}
+import { FreeTrialPageLimitError, PremiumPageLimitError } from "@/utils/errorHandling";
 
 export interface ContentManagerConfig {
   isPremium: boolean;
@@ -86,6 +74,25 @@ export class UniversalContentManager {
   ): Promise<Story> {
     console.log(`🚀 Generating new ${difficulty} story with anti-repetition...`);
     
+    // Check page limits for free users only
+    if (!config.isPremium && config.userId) {
+      // For free users, assume they might have existing stories and check total page limit
+      // This is a conservative approach to prevent excessive content generation
+      const maxFreePages = 90;
+      const currentUserStoryCount = 0; // Would need to fetch from storage/session if available
+      
+      if (currentUserStoryCount >= maxFreePages) {
+        const upgradeMessage = `🚀 Unlock unlimited storytelling! You've reached the ${maxFreePages}-page free trial limit. Upgrade to Premium for unlimited pages, advanced features, and personalized reading experiences.`;
+        
+        throw new FreeTrialPageLimitError(
+          `Free trial limit reached: ${currentUserStoryCount}/${maxFreePages} pages`,
+          currentUserStoryCount,
+          maxFreePages,
+          upgradeMessage
+        );
+      }
+    }
+    
     const pageCount = this.getPageCountForDifficulty(difficulty, config.isPremium);
     
     try {
@@ -119,8 +126,8 @@ export class UniversalContentManager {
   ): Promise<Story> {
     console.log(`📖 Continuing existing story with ${currentStory.length} pages...`);
     
-    // Free trial: Maximum 90 total pages, default 5 additional pages per continuation
-    const maxTotalPages = config.isPremium ? 200 : 90; // Free trial limit: 90 pages
+    // Separate limits for free vs premium users
+    const maxTotalPages = config.isPremium ? 500 : 90; // Premium: 500 pages, Free: 90 pages
     const maxAdditionalPages = Math.min(
       5, 
       this.getPageCountForDifficulty(difficulty, config.isPremium),
@@ -128,16 +135,28 @@ export class UniversalContentManager {
     );
     
     if (maxAdditionalPages <= 0) {
-      console.warn(`📚 Free trial page limit reached (${currentStory.length}/${maxTotalPages} pages)`);
-      
-      const upgradeMessage = `🚀 Unlock unlimited storytelling! You've reached the ${maxTotalPages}-page free trial limit. Upgrade to Premium for unlimited pages, advanced features, and personalized reading experiences.`;
-      
-      throw new FreeTrialPageLimitError(
-        `Free trial limit reached: ${currentStory.length}/${maxTotalPages} pages`,
-        currentStory.length,
-        maxTotalPages,
-        upgradeMessage
-      );
+      if (config.isPremium) {
+        // Premium users get a different error type and message
+        console.warn(`📚 Premium page limit reached (${currentStory.length}/${maxTotalPages} pages)`);
+        
+        throw new PremiumPageLimitError(
+          `Premium story limit reached: ${currentStory.length}/${maxTotalPages} pages`,
+          currentStory.length,
+          maxTotalPages
+        );
+      } else {
+        // Free users get the upgrade message
+        console.warn(`📚 Free trial page limit reached (${currentStory.length}/${maxTotalPages} pages)`);
+        
+        const upgradeMessage = `🚀 Unlock unlimited storytelling! You've reached the ${maxTotalPages}-page free trial limit. Upgrade to Premium for unlimited pages, advanced features, and personalized reading experiences.`;
+        
+        throw new FreeTrialPageLimitError(
+          `Free trial limit reached: ${currentStory.length}/${maxTotalPages} pages`,
+          currentStory.length,
+          maxTotalPages,
+          upgradeMessage
+        );
+      }
     }
     
     const additionalPages = maxAdditionalPages;

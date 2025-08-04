@@ -10,6 +10,7 @@ import { InteractiveAudioReading } from "@/components/InteractiveAudioReading";
 import { ElevenLabsAudio } from "@/components/ElevenLabsAudio";
 import { UniversalContentManager } from "@/services/universalContentManager";
 import { UnifiedImageService, type EstablishedCharacter } from "@/services/unifiedImageService";
+import { FreeTrialPageLimitError } from "@/utils/errorHandling";
 
 import { APP_CONFIG } from "@/constants/app";
 import { useToast } from "@/hooks/use-toast";
@@ -672,6 +673,26 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
       });
     } catch (error) {
       console.error('Failed to add more pages:', error);
+      
+      // Handle page limit errors
+      if (error instanceof FreeTrialPageLimitError) {
+        toast({
+          title: "Free Trial Limit Reached",
+          description: error.upgradeMessage,
+          duration: 5000,
+        });
+        
+        // Show upgrade option
+        setTimeout(() => {
+          onUpgrade();
+        }, 2000);
+      } else {
+        toast({
+          title: "Error",
+          description: "Unable to add more pages. Please try again.",
+          duration: 3000,
+        });
+      }
     }
   };
 
