@@ -692,7 +692,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
           currentDifficulty,
           { isPremium, userId: userInfo?.name || 'guest', maxSessions: 100 }
         );
-        newPages = storyResult.story.segments.map(segment => segment.text).slice(0, 5);
+        newPages = storyResult.segments.map(segment => segment.text).slice(0, 5);
       }
       
       // Add new pages and update word count

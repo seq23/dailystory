@@ -291,13 +291,13 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
             { isPremium: false, userId: userInfo.name }
           );
           const generatedStory = { 
-            pages: storyResult.story.segments.map(s => s.text), 
+            pages: storyResult.segments.map(s => s.text), 
             config: { readingLevel: currentDifficulty }, 
             images: [], 
-            wordCount: storyResult.story.wordCount, 
-            title: storyResult.story.title, 
+            wordCount: storyResult.wordCount, 
+            title: storyResult.title, 
             theme: 'adventure', 
-            readingLevel: currentDifficulty 
+            readingLevel: currentDifficulty
           };
           setStoryImages(generatedStory.images || []);
           
@@ -475,10 +475,10 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
           { isPremium: false, userId: userInfo.name }
         );
         const updatedStory = { 
-          pages: storyResult.story.segments.map(s => s.text), 
+          pages: storyResult.segments.map(s => s.text), 
           config: { readingLevel: newDifficulty }, 
           images: [], 
-          wordCount: storyResult.story.wordCount 
+          wordCount: storyResult.wordCount
         };
         
         // Ensure exact same page count (no change in navigation)
@@ -595,7 +595,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
         currentDifficulty as 'easy' | 'medium' | 'hard' | 'expert',
         { isPremium: false, userId: userInfo.name }
       );
-      const newPages = storyResult.story.segments.map(s => s.text).slice(0, 5);
+      const newPages = storyResult.segments.map(s => s.text).slice(0, 5);
       
       // Add new pages and generate images for them
       const startPageIndex = story.length;
