@@ -49,6 +49,7 @@ interface FreeReadingSessionProps {
   onHome?: () => void;
   onNewStory?: () => void;
   onSessionEnded?: (stats: any) => void;
+  isPremium?: boolean;
 }
 
 export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
@@ -58,6 +59,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   onHome,
   onNewStory,
   onSessionEnded,
+  isPremium = false,
 }) => {
   const { toast } = useToast();
   const { t } = useTranslation();
@@ -1378,15 +1380,15 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
       )}
       </div>
       
-      {/* Progress Towers - Only show during active reading session */}
-      {sessionStarted && !sessionEnded && !showProgressReport && (
+      {/* Progress Towers - Show during active session for free users, always for premium users */}
+      {(sessionStarted && !sessionEnded && !showProgressReport) || isPremium ? (
         <ProgressTowers
           userId={userInfo.name}
-          userType="free"
+          userType={isPremium ? "premium" : "free"}
           currentWordsRead={calculateActualWordsRead()}
           currentPagesRead={currentPage + 1}
         />
-      )}
+      ) : null}
     </>
   );
 };
