@@ -347,13 +347,16 @@ export class UniversalContentManager {
           processedPage = this.enhanceWithProgressiveComplexity(processedPage, userInfo, config.isPremium);
         }
         
-        // Final validation for non-expert levels
+        // Final validation for non-expert levels - USE FLEXIBLE VALIDATION
         if (difficulty !== 'expert') {
           // Validate word count for other difficulty levels AFTER template processing
-          const wordValidation = validateDifficultyCompliance(processedPage, difficulty);
-          if (!wordValidation.isValid) {
-            console.warn(`⚠️ Page ${i + 1} word count (${wordValidation.wordCount}) outside range ${wordValidation.expectedRange.min}-${wordValidation.expectedRange.max} for ${difficulty}`);
+          const wordValidation = validateDifficultyCompliance(processedPage, difficulty, false); // false = flexible mode
+          if (!wordValidation.isValid && wordValidation.zone === 'red') {
+            // Only fallback for 'red' zone (severely outside range), not 'yellow' zone
+            console.warn(`⚠️ Page ${i + 1} word count (${wordValidation.wordCount}) severely outside acceptable range for ${difficulty} - using fallback`);
             processedPage = this.generateFallbackPage(userInfo, difficulty, i, pages);
+          } else if (wordValidation.zone === 'yellow') {
+            console.log(`💛 Page ${i + 1} word count (${wordValidation.wordCount}) acceptable with margin for ${difficulty} - keeping original`);
           }
         }
         
