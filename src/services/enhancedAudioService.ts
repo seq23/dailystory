@@ -491,7 +491,9 @@ export class EnhancedAudioService {
     
     // Enhanced dictionary with proper phonetic pronunciations (not spelling-based)
     const knownSyllables: Record<string, string[]> = {
+      // Common Level 0-2 words
       'family': ['fam', 'uh', 'lee'],
+      'magical': ['maj', 'ih', 'kul'],
       'flowers': ['flow', 'ers'],
       'wonderful': ['wun', 'der', 'ful'],
       'beautiful': ['beau', 'tih', 'ful'],
@@ -532,7 +534,55 @@ export class EnhancedAudioService {
       'purple': ['pur', 'pul'],
       'circle': ['ser', 'kul'],
       'triangle': ['try', 'ang', 'gul'],
-      'rectangle': ['rek', 'tang', 'gul']
+      'rectangle': ['rek', 'tang', 'gul'],
+      'typical': ['tip', 'ih', 'kul'],
+      'physical': ['fiz', 'ih', 'kul'],
+      'logical': ['loj', 'ih', 'kul'],
+      'musical': ['mew', 'zih', 'kul'],
+      'tropical': ['trop', 'ih', 'kul'],
+      'practical': ['prak', 'tih', 'kul'],
+      'historical': ['his', 'tor', 'ih', 'kul'],
+      'fantastic': ['fan', 'tas', 'tik'],
+      'dramatic': ['druh', 'mat', 'ik'],
+      'automatic': ['aw', 'tuh', 'mat', 'ik'],
+      'celebrate': ['sel', 'uh', 'brate'],
+      'magazine': ['mag', 'uh', 'zeen'],
+      'valentine': ['val', 'en', 'tine'],
+      'medicine': ['med', 'ih', 'sin'],
+      'exercise': ['ek', 'ser', 'size'],
+      'recognize': ['rek', 'ug', 'nize'],
+      'apologize': ['uh', 'pol', 'uh', 'jize'],
+      'organize': ['or', 'guh', 'nize'],
+      'realize': ['ree', 'uh', 'lize'],
+      'promise': ['prom', 'is'],
+      'because': ['bih', 'koz'],
+      'around': ['uh', 'round'],
+      'about': ['uh', 'bout'],
+      'another': ['uh', 'nuth', 'er'],
+      'mother': ['muth', 'er'],
+      'father': ['fah', 'ther'],
+      'brother': ['bruth', 'er'],
+      'sister': ['sis', 'ter'],
+      'daughter': ['daw', 'ter'],
+      'teacher': ['tee', 'cher'],
+      'student': ['stew', 'dent'],
+      'kitchen': ['kich', 'en'],
+      'bathroom': ['bath', 'room'],
+      'bedroom': ['bed', 'room'],
+      'living': ['liv', 'ing'],
+      'dining': ['dy', 'ning'],
+      'garden': ['gar', 'den'],
+      'window': ['win', 'doh'],
+      'morning': ['mor', 'ning'],
+      'evening': ['eve', 'ning'],
+      'afternoon': ['af', 'ter', 'noon'],
+      'everything': ['ev', 'ree', 'thing'],
+      'something': ['sum', 'thing'],
+      'nothing': ['nuth', 'ing'],
+      'anything': ['en', 'ee', 'thing'],
+      'everyone': ['ev', 'ree', 'wun'],
+      'someone': ['sum', 'wun'],
+      'anyone': ['en', 'ee', 'wun']
     };
     
     // Check dictionary first
@@ -546,38 +596,49 @@ export class EnhancedAudioService {
     const syllables: string[] = [];
     let currentSyllable = '';
     
-    // Special handling for common patterns
-    const phonetifyWord = (word: string): string[] => {
-      // Handle common endings that should sound different
-      word = word.replace(/ily$/, 'ih-lee');
-      word = word.replace(/ly$/, 'lee');
-      word = word.replace(/le$/, 'ul');
-      word = word.replace(/tion$/, 'shun');
-      word = word.replace(/sion$/, 'zhun');
-      word = word.replace(/ous$/, 'us');
-      word = word.replace(/ful$/, 'ful');
-      word = word.replace(/ing$/, 'ing');
-      word = word.replace(/ed$/, 'd');
-      word = word.replace(/er$/, 'er');
-      word = word.replace(/est$/, 'est');
+    // Advanced phonetic patterns for better pronunciation
+    const applyPhoneticRules = (word: string): string => {
+      // Handle silent letters and common patterns first
+      word = word.replace(/\bcal\b/g, 'kul'); // -cal endings like "magical"
+      word = word.replace(/ical\b/g, 'ih-kul'); // -ical endings 
+      word = word.replace(/\btion\b/g, 'shun'); // -tion endings
+      word = word.replace(/\bsion\b/g, 'zhun'); // -sion endings
+      word = word.replace(/\bage\b/g, 'ij'); // -age endings
+      word = word.replace(/\bough\b/g, 'uf'); // -ough endings like "rough"
+      word = word.replace(/\baugh\b/g, 'af'); // -augh endings like "laugh"
+      word = word.replace(/\beigh\b/g, 'ay'); // -eigh endings like "eight"
+      word = word.replace(/\bight\b/g, 'ite'); // -ight endings like "light"
+      word = word.replace(/\bould\b/g, 'ood'); // -ould endings like "could"
       
-      // Handle common letter combinations
+      // Handle consonant clusters and digraphs
       word = word.replace(/ch/g, 'ch');
-      word = word.replace(/sh/g, 'sh');
+      word = word.replace(/sh/g, 'sh'); 
       word = word.replace(/th/g, 'th');
       word = word.replace(/ph/g, 'f');
-      word = word.replace(/gh/g, '');
+      word = word.replace(/gh/g, ''); // Usually silent
       word = word.replace(/ck/g, 'k');
+      word = word.replace(/qu/g, 'kw');
       
-      // Split on hyphens we added
-      return word.split('-');
+      // Handle vowel combinations
+      word = word.replace(/ee/g, 'ee');
+      word = word.replace(/ea/g, 'ee');
+      word = word.replace(/oo/g, 'oo');
+      word = word.replace(/ou/g, 'ow');
+      word = word.replace(/ow/g, 'ow');
+      word = word.replace(/ai/g, 'ay');
+      word = word.replace(/ay/g, 'ay');
+      
+      return word;
     };
     
-    const phoneticSyllables = phonetifyWord(cleanWord);
+    // Apply phonetic rules
+    const phoneticWord = applyPhoneticRules(cleanWord);
     
-    if (phoneticSyllables.length > 1) {
-      console.log(`📚 Using phonetic algorithm for "${cleanWord}":`, phoneticSyllables);
-      return phoneticSyllables;
+    // If we have hyphens from our rules, split on them
+    if (phoneticWord.includes('-')) {
+      const result = phoneticWord.split('-').filter(s => s.length > 0);
+      console.log(`📚 Using phonetic rules for "${cleanWord}":`, result);
+      return result;
     }
     
     // Fallback to simple vowel-based splitting
