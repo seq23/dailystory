@@ -163,10 +163,41 @@ export class UniversalContentManager {
     const additionalPages = maxAdditionalPages;
     const continuationPages: string[] = [];
     
+    // Generate pages with anti-repetition and story context awareness
     for (let i = 0; i < additionalPages; i++) {
       const pageIndex = currentStory.length + i;
-      const newPage = this.generateFallbackPage(userInfo, difficulty, pageIndex);
-      continuationPages.push(newPage);
+      const totalPagesIncludingNew = currentStory.length + additionalPages;
+      
+      // Use StoryArcManager for contextual continuation
+      try {
+        const { StoryArcManager } = await import('./storyArcManager');
+        let newPage = StoryArcManager.getTemplateByPosition(
+          userInfo,
+          difficulty,
+          pageIndex,
+          totalPagesIncludingNew
+        );
+        
+        // Ensure narrative flow from the last existing page
+        if (i === 0 && currentStory.length > 0) {
+          const lastPage = currentStory[currentStory.length - 1];
+          newPage = this.ensureChildrensBookFlow(lastPage, newPage, difficulty);
+        }
+        
+        // Check for repetition against existing story
+        if (this.isContentTooSimilar(newPage, currentStory)) {
+          // Generate alternative using different template approach
+          newPage = this.generateAlternativePage(userInfo, difficulty, pageIndex, currentStory);
+        }
+        
+        continuationPages.push(newPage);
+        console.log(`✅ Continuation page ${i + 1}: "${newPage}"`);
+        
+      } catch (error) {
+        console.warn(`Error generating continuation page ${i + 1}, using fallback:`, error);
+        const fallbackPage = this.generateFallbackPage(userInfo, difficulty, pageIndex);
+        continuationPages.push(fallbackPage);
+      }
     }
     
     const combinedPages = [...currentStory, ...continuationPages];
@@ -356,6 +387,68 @@ export class UniversalContentManager {
     
     // Ultimate fallback with proper name capitalization
     return `${NameFormatter.capitalize(userInfo.name || 'Alex')} has an adventure.`;
+  }
+
+  /**
+   * Check if new content is too similar to existing story
+   */
+  private static isContentTooSimilar(newContent: string, existingStory: string[]): boolean {
+    const newWords = newContent.toLowerCase().split(/\s+/);
+    const existingText = existingStory.join(' ').toLowerCase();
+    
+    // Check if more than 60% of words already exist in story
+    const matchCount = newWords.filter(word => 
+      word.length > 2 && existingText.includes(word)
+    ).length;
+    
+    return matchCount / newWords.length > 0.6;
+  }
+
+  /**
+   * Generate alternative page when repetition is detected
+   */
+  private static generateAlternativePage(
+    userInfo: UserInfo, 
+    difficulty: DifficultyLevel, 
+    pageIndex: number,
+    existingStory: string[]
+  ): string {
+    // Use different template variations to avoid repetition
+    const alternativeTemplates = {
+      easy: [
+        "Then {name} sees something new.",
+        "Next, {name} finds a surprise.",
+        "Soon, {name} meets a friend.",
+        "After that, {name} learns something.",
+        "Then {name} has more fun."
+      ],
+      medium: [
+        "As the adventure continues, {name} discovers something unexpected.",
+        "Meanwhile, {name} encounters a new challenge to overcome.",
+        "Before long, {name} finds a helpful companion along the way.",
+        "Eventually, {name} learns an important lesson about friendship.",
+        "As time passes, {name} grows braver and more confident."
+      ],
+      hard: [
+        "The journey takes an unexpected turn when {name} encounters something remarkable.",
+        "Through perseverance and wisdom, {name} overcomes the next obstacle with grace.",
+        "As the story unfolds, {name} demonstrates courage in the face of uncertainty.",
+        "With each challenge, {name} grows stronger and more determined than before.",
+        "The adventure reaches a new chapter as {name} embraces the unknown ahead."
+      ],
+      expert: [
+        "The narrative complexity deepens as {name} confronts philosophical questions about existence and purpose.",
+        "Through introspective dialogue with inner wisdom, {name} transcends previous limitations and assumptions.",
+        "The intellectual journey continues as {name} synthesizes multiple perspectives into unified understanding.",
+        "With growing consciousness, {name} recognizes the interconnectedness of all experiences and beings.",
+        "As enlightenment approaches, {name} embodies the principles of compassion and universal knowledge."
+      ]
+    };
+    
+    const templates = alternativeTemplates[difficulty] || alternativeTemplates.medium;
+    const template = templates[pageIndex % templates.length];
+    
+    return template.replace(/{name}/g, NameFormatter.capitalize(userInfo.name || 'Alex'));
   }
 
   /**

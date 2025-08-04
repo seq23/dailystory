@@ -590,13 +590,19 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     try {
       console.log('Maintaining character consistency for page extension:', establishedCharacter.userName);
 
-      // Generate new pages using Universal Content Manager with anti-repetition preservation
-      const storyResult = await UniversalContentManager.generateNewStoryWithAntiRepetition(
+      // Use proper story continuation instead of generating new story
+      const currentStoryPages = story.map(page => page);
+      const continuationStory = await UniversalContentManager.continueExistingStory(
+        currentStoryPages,
         userInfo, 
         currentDifficulty as 'easy' | 'medium' | 'hard' | 'expert',
         { isPremium: false, userId: userInfo.name }
       );
-      const newPages = storyResult.segments.map(s => s.text).slice(0, 5);
+      
+      // Extract only the new pages (continuation adds to existing story)
+      const existingPageCount = story.length;
+      const allPages = continuationStory.segments.map(s => s.text);
+      const newPages = allPages.slice(existingPageCount);
       
       // Add new pages and generate images for them
       const startPageIndex = story.length;
