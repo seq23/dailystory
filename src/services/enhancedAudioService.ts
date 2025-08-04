@@ -489,38 +489,50 @@ export class EnhancedAudioService {
   private breakIntoSyllables(word: string): string[] {
     const cleanWord = word.replace(/[.,!?;:'"()]/g, '').toLowerCase();
     
-    // Expanded dictionary of known difficult words with complete syllable breakdowns
+    // Enhanced dictionary with proper phonetic pronunciations (not spelling-based)
     const knownSyllables: Record<string, string[]> = {
+      'family': ['fam', 'uh', 'lee'],
       'flowers': ['flow', 'ers'],
-      'wonderful': ['won', 'der', 'ful'],
-      'beautiful': ['beau', 'ti', 'ful'],
-      'together': ['to', 'geth', 'er'],
-      'remember': ['re', 'mem', 'ber'],
-      'different': ['dif', 'fer', 'ent'],
+      'wonderful': ['wun', 'der', 'ful'],
+      'beautiful': ['beau', 'tih', 'ful'],
+      'together': ['tuh', 'geth', 'er'],
+      'remember': ['rih', 'mem', 'ber'],
+      'different': ['dif', 'er', 'ent'],
       'important': ['im', 'por', 'tant'],
-      'adventure': ['ad', 'ven', 'ture'],
-      'character': ['char', 'ac', 'ter'],
-      'favorite': ['fa', 'vor', 'ite'],
+      'adventure': ['ad', 'ven', 'cher'],
+      'character': ['kar', 'ik', 'ter'],
+      'favorite': ['fay', 'vor', 'it'],
       'birthday': ['birth', 'day'],
-      'elephant': ['el', 'e', 'phant'],
-      'butterfly': ['but', 'ter', 'fly'],
-      'chocolate': ['choc', 'o', 'late'],
+      'elephant': ['el', 'uh', 'fant'],
+      'butterfly': ['but', 'er', 'fly'],
+      'chocolate': ['chok', 'uh', 'lit'],
       'playground': ['play', 'ground'],
-      'umbrella': ['um', 'brel', 'la'],
-      'telephone': ['tel', 'e', 'phone'],
-      'computer': ['com', 'pu', 'ter'],
-      'tomorrow': ['to', 'mor', 'row'],
+      'umbrella': ['um', 'brel', 'uh'],
+      'telephone': ['tel', 'uh', 'fone'],
+      'computer': ['kom', 'pew', 'ter'],
+      'tomorrow': ['tuh', 'mor', 'oh'],
       'yesterday': ['yes', 'ter', 'day'],
-      'picture': ['pic', 'ture'],
-      'special': ['spe', 'cial'],
-      'surprise': ['sur', 'prise'],
-      'library': ['li', 'brar', 'y'],
-      'hospital': ['hos', 'pi', 'tal'],
-      'vacation': ['va', 'ca', 'tion'],
-      'dinosaur': ['di', 'no', 'saur'],
+      'picture': ['pik', 'cher'],
+      'special': ['spesh', 'al'],
+      'surprise': ['ser', 'prize'],
+      'library': ['ly', 'brer', 'ee'],
+      'hospital': ['hos', 'pih', 'tal'],
+      'vacation': ['vay', 'kay', 'shun'],
+      'dinosaur': ['dy', 'nuh', 'sor'],
       'rainbow': ['rain', 'bow'],
       'sandwich': ['sand', 'wich'],
-      'family': ['fam', 'i', 'ly']
+      'animal': ['an', 'ih', 'mal'],
+      'people': ['pee', 'pul'],
+      'water': ['wah', 'ter'],
+      'little': ['lit', 'ul'],
+      'happy': ['hap', 'ee'],
+      'pretty': ['prit', 'ee'],
+      'yellow': ['yel', 'oh'],
+      'orange': ['or', 'inj'],
+      'purple': ['pur', 'pul'],
+      'circle': ['ser', 'kul'],
+      'triangle': ['try', 'ang', 'gul'],
+      'rectangle': ['rek', 'tang', 'gul']
     };
     
     // Check dictionary first
@@ -529,11 +541,46 @@ export class EnhancedAudioService {
       return knownSyllables[cleanWord];
     }
     
-    // Simple vowel-based splitting for unknown words
+    // Enhanced phonetic algorithm for unknown words
     const vowels = 'aeiouy';
     const syllables: string[] = [];
     let currentSyllable = '';
     
+    // Special handling for common patterns
+    const phonetifyWord = (word: string): string[] => {
+      // Handle common endings that should sound different
+      word = word.replace(/ily$/, 'ih-lee');
+      word = word.replace(/ly$/, 'lee');
+      word = word.replace(/le$/, 'ul');
+      word = word.replace(/tion$/, 'shun');
+      word = word.replace(/sion$/, 'zhun');
+      word = word.replace(/ous$/, 'us');
+      word = word.replace(/ful$/, 'ful');
+      word = word.replace(/ing$/, 'ing');
+      word = word.replace(/ed$/, 'd');
+      word = word.replace(/er$/, 'er');
+      word = word.replace(/est$/, 'est');
+      
+      // Handle common letter combinations
+      word = word.replace(/ch/g, 'ch');
+      word = word.replace(/sh/g, 'sh');
+      word = word.replace(/th/g, 'th');
+      word = word.replace(/ph/g, 'f');
+      word = word.replace(/gh/g, '');
+      word = word.replace(/ck/g, 'k');
+      
+      // Split on hyphens we added
+      return word.split('-');
+    };
+    
+    const phoneticSyllables = phonetifyWord(cleanWord);
+    
+    if (phoneticSyllables.length > 1) {
+      console.log(`📚 Using phonetic algorithm for "${cleanWord}":`, phoneticSyllables);
+      return phoneticSyllables;
+    }
+    
+    // Fallback to simple vowel-based splitting
     for (let i = 0; i < cleanWord.length; i++) {
       const char = cleanWord[i];
       currentSyllable += char;
