@@ -103,7 +103,7 @@ export class UniversalContentManager {
     
     try {
       // Use new author-inspired story generation
-      const story = await this.generateSimpleStory(userInfo, difficulty, pageCount);
+      const story = await this.generateSimpleStory(userInfo, difficulty, pageCount, config);
       
       // Quality validation with children's book standards
       const storyPages = story.segments.map(segment => segment.text);
@@ -226,7 +226,8 @@ export class UniversalContentManager {
   private static async generateSimpleStory(
     userInfo: UserInfo,
     difficulty: DifficultyLevel,
-    pageCount: number
+    pageCount: number,
+    config: ContentManagerConfig
   ): Promise<Story> {
     console.log(`🎯 Generating ${pageCount}-page ${difficulty} story with character-driven system...`);
     
@@ -278,12 +279,18 @@ export class UniversalContentManager {
         
         // Validate against difficulty-appropriate requirements AFTER template processing
         if (difficulty === 'easy') {
-          // Use cascading simplification instead of binary validation
+          // Use multilingual cascading simplification that handles user permissions
           const userName = NameFormatter.capitalize(userInfo.name || 'Alex');
-          const simplificationResult = Level1Simplifier.simplifyForLevel1(processedPage, userName);
+          const { MultilingualLevel1Simplifier } = await import('./multilingualLevel1Simplifier');
+          const simplificationResult = MultilingualLevel1Simplifier.simplifyForLevel1(
+            processedPage, 
+            userName, 
+            userInfo, 
+            config.isPremium
+          );
           
           if (simplificationResult.wasSimplified) {
-            console.log(`🔄 Page ${i + 1} simplified using ${simplificationResult.strategyUsed}: "${simplificationResult.text}"`);
+            console.log(`🔄 Page ${i + 1} simplified using ${simplificationResult.strategyUsed} (${simplificationResult.userType} user, ${simplificationResult.language}): "${simplificationResult.text}"`);
             processedPage = simplificationResult.text;
           } else if (simplificationResult.strategyUsed === 'none' && simplificationResult.originalInvalidWords?.length > 0) {
             console.warn(`⚠️ Page ${i + 1} failed all simplification strategies, using fallback. Invalid words: ${simplificationResult.originalInvalidWords.join(', ')}`);
