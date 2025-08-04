@@ -359,8 +359,9 @@
     "step": "Tutorial",
     "of": "of",
     "previous": "Previous",
-    "skip": "Skip Tutorial",
+    "skip": "Skip Tutorial", 
     "next": "Next",
+    "finish": "Finish",
     "startReading": "Start Reading!"
   },
   "readingTutorial": {
