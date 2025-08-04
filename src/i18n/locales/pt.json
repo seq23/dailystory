@@ -194,6 +194,10 @@
         "label": "Que nível de leitura é adequado para você?",
         "placeholder": "Escolha seu nível de leitura",
         "levels": {
+          "beginner": {
+            "title": "Pré-leitor (3-5 anos)",
+            "description": "Aprendendo letras e sons"
+          },
           "easy": {
             "title": "Leitura Fácil",
             "description": "(K-1ª série: Palavras simples e frases curtas)"

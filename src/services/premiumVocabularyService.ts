@@ -511,12 +511,12 @@ export class PremiumVocabularyService {
 
     if (masteryRatio > 0.8 && strugglingRatio < 0.2) {
       // User is excelling, consider increasing difficulty
-      const levels: DifficultyLevel[] = ['easy', 'medium', 'hard', 'expert'];
+      const levels: DifficultyLevel[] = ['beginner', 'easy', 'medium', 'hard', 'expert'];
       const currentIndex = levels.indexOf(currentLevel);
       return currentIndex < levels.length - 1 ? levels[currentIndex + 1] : currentLevel;
     } else if (masteryRatio < 0.5 || strugglingRatio > 0.4) {
       // User is struggling, consider decreasing difficulty
-      const levels: DifficultyLevel[] = ['easy', 'medium', 'hard', 'expert'];
+      const levels: DifficultyLevel[] = ['beginner', 'easy', 'medium', 'hard', 'expert'];
       const currentIndex = levels.indexOf(currentLevel);
       return currentIndex > 0 ? levels[currentIndex - 1] : currentLevel;
     }

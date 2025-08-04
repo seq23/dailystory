@@ -217,6 +217,10 @@
         "label": "À quel point lisez-vous bien ?",
         "placeholder": "Sélectionnez votre niveau de lecture",
         "levels": {
+          "beginner": {
+            "title": "Pré-lecteur (3-5 ans)",
+            "description": "Apprendre les lettres et sons"
+          },
           "easy": {
             "title": "Je commence à lire",
             "description": "Mots simples et phrases courtes"

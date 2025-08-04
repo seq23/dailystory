@@ -180,6 +180,10 @@
         "label": "什么阅读水平适合你？",
         "placeholder": "选择你的阅读水平",
         "levels": {
+          "beginner": {
+            "title": "识字前 (3-5岁)",
+            "description": "学习字母和发音"
+          },
           "easy": {
             "title": "简单阅读",
             "description": "(K-1年级：简单单词和短句)"

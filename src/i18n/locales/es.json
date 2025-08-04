@@ -217,6 +217,10 @@
         "label": "¿Qué tan bien lees?",
         "placeholder": "Selecciona tu nivel de lectura",
         "levels": {
+          "beginner": {
+            "title": "Pre-lector (3-5 años)",
+            "description": "Aprendiendo letras y sonidos"
+          },
           "easy": {
             "title": "Estoy empezando a leer",
             "description": "Palabras simples y oraciones cortas"
