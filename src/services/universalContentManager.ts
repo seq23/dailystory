@@ -112,8 +112,13 @@ export class UniversalContentManager {
       const pageCount = this.getPageCountForDifficulty(difficulty, config.isPremium);
     
     try {
-      // Use sentence-based generation for beginner/easy/medium, regular for hard/expert  
-      const story = (difficulty === 'beginner' || difficulty === 'easy' || difficulty === 'medium')
+      // Level 0 (beginner) uses dedicated ultra-simple templates
+      if (difficulty === 'beginner') {
+        return await this.generateLevel0Story(userInfo, pageCount);
+      }
+      
+      // Use sentence-based generation for easy/medium, regular for hard/expert  
+      const story = (difficulty === 'easy' || difficulty === 'medium')
         ? await this.generateSentenceBasedStory(userInfo, difficulty, pageCount, config)
         : await this.generateSimpleStory(userInfo, difficulty, pageCount, config);
       
@@ -926,6 +931,33 @@ export class UniversalContentManager {
     
     // Return enhanced text (in full implementation, would apply vocabulary substitutions)
     return enhancedText;
+  }
+
+  /**
+   * Generate Level 0 story using ultra-simple templates
+   */
+  private static async generateLevel0Story(
+    userInfo: UserInfo,
+    pageCount: number
+  ): Promise<Story> {
+    console.log('📚 Generating Level 0 story with ultra-simple 4-6 word sentences');
+    
+    const generatedContent = await this.generateLevel0Content(pageCount, userInfo);
+    
+    return {
+      id: crypto.randomUUID(),
+      title: `${NameFormatter.capitalize(userInfo.name || 'Alex')}'s Story`,
+      segments: generatedContent.map(content => ({
+        text: content.content,
+        illustration: undefined,
+        audioUrl: undefined
+      })),
+      difficulty: 'beginner',
+      estimatedReadingTime: Math.max(1, Math.ceil(generatedContent.length / 6)), // Slower for Level 0
+      wordCount: generatedContent.reduce((sum, content) => 
+        sum + content.content.split(' ').length, 0
+      )
+    };
   }
 
   /**
