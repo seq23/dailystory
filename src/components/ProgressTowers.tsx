@@ -22,7 +22,7 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
 }) => {
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === 'ar';
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true); // Start expanded for debugging
   const [autoCollapseTimer, setAutoCollapseTimer] = useState<NodeJS.Timeout | null>(null);
 
   const { userStats } = useGamification({
@@ -69,6 +69,16 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
   const totalWordsRead = userStats.totalWordsRead + currentWordsRead;
   const totalPagesRead = Math.floor(totalWordsRead / 200) + currentPagesRead; // Estimate pages from words
   const vocabularyLearned = userStats.vocabularyWordsLearned;
+
+  console.log('ProgressTowers component rendering...', { 
+    isExpanded, 
+    totalWordsRead, 
+    totalPagesRead, 
+    vocabularyLearned,
+    userType,
+    userId,
+    'Component should be visible': true
+  });
 
   return (
     <div 
