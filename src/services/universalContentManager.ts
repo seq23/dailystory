@@ -167,7 +167,7 @@ export class UniversalContentManager {
         
         // Validate against Level 1 vocabulary if needed
         if (difficulty === 'easy') {
-          const validation = validateLevel1Sentence(processedPage);
+          const validation = validateLevel1Sentence(processedPage, userInfo.name);
           if (!validation.isValid) {
             console.warn(`⚠️ Page ${i + 1} failed L1 validation, using fallback`);
             processedPage = this.generateLevel1Fallback(userInfo, i);

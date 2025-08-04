@@ -44,13 +44,20 @@ export function isLevel1Word(word: string): boolean {
   return LEVEL_1_VOCABULARY.has(word.toLowerCase());
 }
 
-export function validateLevel1Sentence(sentence: string): { isValid: boolean; invalidWords: string[] } {
+export function validateLevel1Sentence(sentence: string, userName?: string): { isValid: boolean; invalidWords: string[] } {
   const words = sentence.toLowerCase()
     .replace(/[^\w\s]/g, '') // Remove punctuation
     .split(/\s+/)
     .filter(word => word.length > 0);
   
-  const invalidWords = words.filter(word => !LEVEL_1_VOCABULARY.has(word));
+  const userNameLower = userName?.toLowerCase();
+  const invalidWords = words.filter(word => {
+    // Always allow the user's name
+    if (userNameLower && word === userNameLower) {
+      return false;
+    }
+    return !LEVEL_1_VOCABULARY.has(word);
+  });
   
   return {
     isValid: invalidWords.length === 0,
