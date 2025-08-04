@@ -48,10 +48,10 @@ export interface AudioSettings {
 
 export const defaultAudioConfig: AudioSettings = {
   speedByDifficulty: {
-    easy: 0.6,    // Slowest for Level 1
-    medium: 0.8,  // Slower for Level 2
+    easy: 0.7,    // Slow for Level 1
+    medium: 0.9,  // Moderate for Level 2
     hard: 1.0,    // Normal for Level 3
-    expert: 1.0,  // Normal for Level 4
+    expert: 1.2,  // Faster for Level 4
   },
   
   highlighting: {

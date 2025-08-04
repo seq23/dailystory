@@ -4,6 +4,7 @@
 import { defaultAudioConfig, voiceCommands, characterVoices, phoneticSettings } from '@/config/audioConfig';
 import type { AudioSettings } from '@/config/audioConfig';
 import type { UserInfo } from '@/types';
+import { MobileAudioManager } from '@/services/mobileAudioManager';
 
 export interface AudioPlaybackOptions {
   text: string;
@@ -38,9 +39,13 @@ export class EnhancedAudioService {
   private highlightTimeout: NodeJS.Timeout | null = null;
   private speechRecognition: any = null;
   private playedPages = new Set<number>();
+  private mobileAudioManager: MobileAudioManager;
+  private currentWordIndex = 0;
+  private totalWords = 0;
 
   constructor(customConfig?: Partial<AudioSettings>) {
     this.config = { ...defaultAudioConfig, ...customConfig };
+    this.mobileAudioManager = MobileAudioManager.getInstance();
     this.initializeSpeechRecognition();
   }
 
@@ -91,24 +96,43 @@ export class EnhancedAudioService {
         }
       }
 
-      // Create and configure audio element
-      this.currentAudio = new Audio(audioUrl);
-      this.currentAudio.playbackRate = speed;
+      // Use mobile audio manager for enhanced mobile support
+      if (this.isMobile()) {
+        const response = await fetch(audioUrl);
+        const audioBlob = await response.blob();
+        
+        await this.mobileAudioManager.playAudioBlob(audioBlob, {
+          onEnded: () => {
+            this.isPlaying = false;
+            this.clearHighlighting();
+          },
+          onError: (error) => {
+            this.isPlaying = false;
+            this.fallbackToBrowserSpeech(processedText, speed);
+          }
+        });
+        
+        this.isPlaying = true;
+      } else {
+        // Desktop playback
+        this.currentAudio = new Audio(audioUrl);
+        this.currentAudio.playbackRate = speed;
 
-      // Set up event handlers
-      this.currentAudio.onended = () => {
-        this.isPlaying = false;
-        this.clearHighlighting();
-      };
+        // Set up event handlers
+        this.currentAudio.onended = () => {
+          this.isPlaying = false;
+          this.clearHighlighting();
+        };
 
-      this.currentAudio.onerror = () => {
-        this.isPlaying = false;
-        this.fallbackToBrowserSpeech(processedText, speed);
-      };
+        this.currentAudio.onerror = () => {
+          this.isPlaying = false;
+          this.fallbackToBrowserSpeech(processedText, speed);
+        };
 
-      // Start playback
-      await this.currentAudio.play();
-      this.isPlaying = true;
+        // Start playback
+        await this.currentAudio.play();
+        this.isPlaying = true;
+      }
 
       // Mark page as played for free users
       if (!isPremium) {
@@ -237,6 +261,10 @@ export class EnhancedAudioService {
       this.currentAudio.pause();
       this.currentAudio = null;
     }
+    
+    // Also stop mobile audio manager
+    this.mobileAudioManager.stopAudio();
+    
     this.isPlaying = false;
     this.clearHighlighting();
   }
@@ -347,37 +375,40 @@ export class EnhancedAudioService {
   }
 
   private startWordHighlighting(text: string, speed: number, onWordHighlight: (wordIndex: number) => void): void {
-    const words = text.split(/(\s+)/).filter(word => word.trim().length > 0);
+    // Split text consistently with textProcessor
+    const words = text.split(/(\s+)/);
+    const wordsWithIndices = words.map((word, index) => ({ word, originalIndex: index }))
+      .filter(item => item.word.trim().length > 0);
+    
+    this.totalWords = wordsWithIndices.length;
+    this.currentWordIndex = 0;
     
     // More accurate timing calculation based on actual reading speed
-    // Account for pause after punctuation and word length
     const calculateWordInterval = (word: string, index: number): number => {
-      const baseInterval = 600; // Base 600ms per word for slow reading
+      const baseInterval = 700; // Base 700ms per word for clear reading
       const speedAdjustment = 1 / speed; // Adjust for playback speed
       const hasPunctuation = /[.!?]/.test(word);
-      const pauseAfterPunctuation = hasPunctuation ? 300 : 0;
+      const pauseAfterPunctuation = hasPunctuation ? 400 : 0;
+      const wordLength = word.length;
+      const lengthAdjustment = wordLength > 6 ? 100 : 0; // Extra time for long words
       
-      return (baseInterval * speedAdjustment) + pauseAfterPunctuation;
+      return (baseInterval * speedAdjustment) + pauseAfterPunctuation + lengthAdjustment;
     };
 
-    let wordIndex = 0;
-    let cumulativeDelay = 200; // Start after 200ms
-
     const highlightNext = () => {
-      if (wordIndex < words.length && this.isPlaying) {
-        onWordHighlight(wordIndex);
-        const currentWord = words[wordIndex];
-        const nextInterval = calculateWordInterval(currentWord, wordIndex);
+      if (this.currentWordIndex < wordsWithIndices.length && this.isPlaying) {
+        const currentItem = wordsWithIndices[this.currentWordIndex];
+        onWordHighlight(currentItem.originalIndex);
         
-        wordIndex++;
-        cumulativeDelay += nextInterval;
+        const nextInterval = calculateWordInterval(currentItem.word, this.currentWordIndex);
+        this.currentWordIndex++;
         
         this.highlightTimeout = setTimeout(highlightNext, nextInterval);
       }
     };
 
-    // Start highlighting after initial delay
-    this.highlightTimeout = setTimeout(highlightNext, 200);
+    // Start highlighting after initial delay to sync with audio
+    this.highlightTimeout = setTimeout(highlightNext, 300);
   }
 
   private clearHighlighting(): void {
@@ -430,8 +461,19 @@ export class EnhancedAudioService {
       syllables.push(currentSyllable);
     }
     
-    // Fallback: if no syllables created or only one, return word as is
-    return syllables.length > 1 ? syllables : [cleanWord];
+    // Enhanced fallback logic
+    if (syllables.length === 0) {
+      return [cleanWord]; // Return whole word if no syllables found
+    }
+    
+    // Quality check: ensure syllables reconstruct the original word
+    const reconstructed = syllables.join('');
+    if (reconstructed.toLowerCase() !== cleanWord.toLowerCase()) {
+      console.warn(`⚠️ Syllable reconstruction mismatch: "${reconstructed}" vs "${cleanWord}"`);
+      return [cleanWord]; // Return whole word if syllables don't match
+    }
+    
+    return syllables;
   }
 
   private getCacheKey(text: string, voice: string, speed: number): string {
@@ -471,7 +513,11 @@ export class EnhancedAudioService {
     this.playedPages.clear();
   }
 
-  updateConfig(newConfig: Partial<AudioSettings>): void {
-    this.config = { ...this.config, ...newConfig };
-  }
-}
+   updateConfig(newConfig: Partial<AudioSettings>): void {
+     this.config = { ...this.config, ...newConfig };
+   }
+
+   private isMobile(): boolean {
+     return /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+   }
+ }

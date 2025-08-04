@@ -48,6 +48,14 @@ export const ElevenLabsAudio = ({
   const canUseAudio = isPremium || isWithinFreeLimit;
   const shouldShowCrown = !isPremium && (hasPlayedThisPage || isAfterFreeLimit);
 
+  // Mobile audio initialization
+  useEffect(() => {
+    if (isMobileOrTablet) {
+      // Initialize mobile audio on component mount
+      audioService.getPlaybackStatus(); // This will trigger mobile audio initialization
+    }
+  }, [audioService, isMobileOrTablet]);
+
   // Enhanced audio playback using new service
   const playAudio = async () => {
     if (!isPremium && isAfterFreeLimit) {

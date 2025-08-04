@@ -1225,10 +1225,12 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                                 <div className="max-h-[400px] overflow-y-auto px-2">
                                    {processTextForPhonetics(
                                      currentStory, 
-                                     `word-${wordHighlightIndex}`, 
+                                     "", 
                                      currentDifficulty as "easy" | "medium" | "hard" | "expert",
                                      userInfo,
-                                     false // Free users are not premium
+                                     false, // Free users are not premium
+                                     userInfo?.name || '',
+                                     wordHighlightIndex
                                    )}
                                 </div>
                               </div>

@@ -122,6 +122,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
   const [canAddMorePages, setCanAddMorePages] = useState(true);
   const [pagesAdded, setPagesAdded] = useState(0);
   const [hasShownCompletionToast, setHasShownCompletionToast] = useState(false);
+  const [highlightedWordIndex, setHighlightedWordIndex] = useState<number | undefined>(undefined);
 
   // Character consistency - store original character details  
   const [establishedCharacter, setEstablishedCharacter] = useState<EstablishedCharacter | null>(null);
@@ -1090,7 +1091,9 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                                   "",
                                   currentDifficulty,
                                   userInfo,
-                                  isPremium
+                                  isPremium,
+                                  userInfo?.name || '',
+                                  highlightedWordIndex
                                 ) : 
                                 <span className="select-text">{currentStory}</span>
                               }

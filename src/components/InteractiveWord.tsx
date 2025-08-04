@@ -465,16 +465,20 @@ export const InteractiveWord = ({
             fallbackToBrowserSpeech();
           };
           
-          await audio.play();
-        } else {
-          throw new Error('ElevenLabs TTS failed');
-        }
-      } catch (error) {
-        console.warn('ElevenLabs failed, using browser speech fallback:', error);
-        fallbackToBrowserSpeech();
-      }
-      
-      function fallbackToBrowserSpeech() {
+           await audio.play();
+         } else {
+           throw new Error('ElevenLabs TTS failed');
+         }
+       } catch (error) {
+         console.warn('ElevenLabs failed, using browser speech fallback:', error);
+         fallbackToBrowserSpeech();
+       }
+       
+       // Track vocabulary word after successful explanation
+       addVocabularyWord();
+       console.log('✅ Vocabulary word tracked successfully');
+       
+       function fallbackToBrowserSpeech() {
         if ('speechSynthesis' in window) {
           try {
             const utterance = new SpeechSynthesisUtterance(definitionToSpeak);

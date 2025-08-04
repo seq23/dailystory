@@ -7,7 +7,8 @@ export const processTextForPhonetics = (
   difficulty: "beginner" | "easy" | "medium" | "hard" | "expert" = "easy",
   userInfo?: any, // Add userInfo parameter
   isPremium?: boolean, // Add isPremium parameter
-  userId?: string // Add userId parameter
+  userId?: string, // Add userId parameter
+  highlightedWordIndex?: number // Add highlighted word index
 ): React.ReactNode[] => {
   // Split text by spaces but preserve punctuation attached to words
   const words = text.split(/(\s+)/);
@@ -22,16 +23,16 @@ export const processTextForPhonetics = (
     if (!word.trim()) {
       return null;
     }
+
+    // Calculate word-only index for highlighting (skip whitespace)
+    const wordsBeforeThis = words.slice(0, index).filter(w => w.trim().length > 0).length;
+    const isHighlighted = highlightedWordIndex === index;
     
     return (
       <MobileOptimizedInteractiveWord 
         key={index} 
         word={word} 
-        className={`${className} ${
-          className.includes(`word-${index}`) 
-            ? 'bg-yellow-200 animate-pulse' 
-            : ''
-        }`}
+        className={`${className} ${isHighlighted ? 'bg-yellow-200 animate-pulse' : ''} word-index-${index}`}
         difficulty={difficulty}
         userInfo={userInfo}
         isPremium={isPremium}
