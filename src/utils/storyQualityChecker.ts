@@ -91,8 +91,78 @@ export class StoryQualityChecker {
         });
       }
     }
+
+    // Check narrative flow
+    const narrativeIssues = this.checkNarrativeFlow(pages);
+    issues.push(...narrativeIssues);
     
     return issues;
+  }
+
+  /**
+   * Check for proper narrative flow and children's book patterns
+   */
+  private static checkNarrativeFlow(pages: string[]): QualityIssue[] {
+    const issues: QualityIssue[] = [];
+    
+    // Check for story arc progression
+    const hasSetup = pages.slice(0, Math.ceil(pages.length * 0.3));
+    const hasDevelopment = pages.slice(Math.ceil(pages.length * 0.3), Math.ceil(pages.length * 0.8));
+    const hasResolution = pages.slice(Math.ceil(pages.length * 0.8));
+    
+    // Check for character consistency throughout story
+    const allCharacters = new Set<string>();
+    pages.forEach(page => {
+      const characters = this.extractCharacterNames(page);
+      characters.forEach(char => allCharacters.add(char));
+    });
+    
+    if (allCharacters.size === 0) {
+      issues.push({
+        type: 'flow',
+        severity: 'warning',
+        message: 'Story lacks clear character development',
+        suggestion: 'Ensure main character is consistently present and referenced'
+      });
+    }
+    
+    // Check for children's book patterns (predictability, repetition)
+    const hasRepetitiveStructure = this.hasChildrensBookPattern(pages);
+    if (!hasRepetitiveStructure) {
+      issues.push({
+        type: 'flow',
+        severity: 'info',
+        message: 'Story could benefit from more predictable children\'s book patterns',
+        suggestion: 'Consider adding repetitive phrases or structures that children enjoy'
+      });
+    }
+    
+    return issues;
+  }
+
+  /**
+   * Check if story follows children's book patterns
+   */
+  private static hasChildrensBookPattern(pages: string[]): boolean {
+    // Look for repetitive patterns children love
+    const patterns = [];
+    
+    pages.forEach(page => {
+      // Extract sentence structure patterns
+      const words = page.toLowerCase().split(/\s+/);
+      if (words.length > 0) {
+        patterns.push(words[0]); // First word of each page
+      }
+    });
+    
+    // Check if there's some repetitive structure
+    const patternCounts: Record<string, number> = {};
+    patterns.forEach(pattern => {
+      patternCounts[pattern] = (patternCounts[pattern] || 0) + 1;
+    });
+    
+    // Good children's books often have some repetitive elements
+    return Object.values(patternCounts).some(count => count >= 2);
   }
   
   /**

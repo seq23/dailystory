@@ -3,6 +3,8 @@ import { DIFFICULTY_APPROPRIATE_TEMPLATES, validateDifficultyCompliance } from "
 import { getEnhancedTemplatePool } from "@/constants/enhancedTemplates";
 import { SessionTemplateManager } from "@/services/sessionTemplateManager";
 import { validateLevel1Sentence } from "@/constants/level1Vocabulary";
+import { VocabularyLevelClassifier } from "@/utils/vocabularyLevelClassifier";
+import { StoryQualityChecker } from "@/utils/storyQualityChecker";
 import { APP_CONFIG } from "@/constants/app";
 
 export interface ContentManagerConfig {
@@ -111,76 +113,126 @@ export class UniversalContentManager {
     difficulty: DifficultyLevel,
     pageCount: number
   ): Promise<Story> {
-    const pages: string[] = [];
+    console.log(`🎯 Generating ${pageCount}-page ${difficulty} story with author-inspired patterns...`);
     
-    // Use enhanced template pool for better variety
-    const enhancedTemplatePool = getEnhancedTemplatePool(difficulty, userInfo);
-    console.log(`🎨 Enhanced template pool: ${enhancedTemplatePool.length} unique templates for ${difficulty}`);
-    
-    // Get session stats for tracking
-    const sessionStats = SessionTemplateManager.getSessionStats();
-    console.log(`📊 Session stats: ${sessionStats.templatesUsed} templates used, repeating: ${sessionStats.isRepeating}`);
-    
-    // Generate pages with intelligent anti-repetition
-    for (let i = 0; i < pageCount; i++) {
-      // Get next template using intelligent rotation
-      const { template: rawTemplate, isRepeating } = SessionTemplateManager.getNextTemplate(
-        enhancedTemplatePool,
-        difficulty
-      );
+    try {
+      const { StoryArcManager } = await import('./storyArcManager');
+      const { getAuthorVoiceForDifficulty } = await import('../constants/authorVoicePatterns');
+      const authorVoice = getAuthorVoiceForDifficulty(difficulty);
+      const pages: string[] = [];
       
-      if (isRepeating && i < 50) {
-        console.log(`🔄 Repetition detected at page ${i + 1}, but within acceptable range`);
-      } else if (isRepeating) {
-        console.log(`⚠️ Template repetition starting at page ${i + 1} - consider upgrade prompt`);
-      }
-      
-      console.log(`📝 Page ${i + 1}: Using ${isRepeating ? 'repeated' : 'fresh'} template`);
-      
-      // Replace placeholders with user data
-      const processedPage = this.processTemplate(rawTemplate, userInfo);
-      
-      // Validate word count for difficulty
-      const validation = validateDifficultyCompliance(processedPage, difficulty);
-      if (!validation.isValid) {
-        console.log(`⚠️ Page ${i + 1} word count (${validation.wordCount}) outside range, using fallback`);
-        const fallback = this.generateFallbackPage(userInfo, difficulty, i);
-        pages.push(fallback);
-      } else {
-        // For easy difficulty, validate Level 1 vocabulary
-        if (difficulty === 'easy') {
-          const level1Check = validateLevel1Sentence(processedPage);
-          if (!level1Check.isValid) {
-            console.log(`⚠️ Page ${i + 1} has non-Level 1 words, using Level 1 fallback`);
-            const fallback = this.generateLevel1Fallback(userInfo, i);
-            pages.push(fallback);
-          } else {
-            pages.push(processedPage);
-          }
-        } else {
-          pages.push(processedPage);
+      // Generate pages using story arc structure
+      for (let i = 0; i < pageCount; i++) {
+        let processedPage = StoryArcManager.getTemplateByPosition(
+          userInfo,
+          difficulty,
+          i,
+          pageCount
+        );
+        
+        // Apply author voice characteristics
+        const position = i === 0 ? 'opening' : 
+                        i === pageCount - 1 ? 'closing' : 'transition';
+        
+        // Ensure children's book flow
+        if (i > 0) {
+          processedPage = this.ensureChildrensBookFlow(
+            pages[i - 1],
+            processedPage,
+            difficulty
+          );
         }
+        
+        // Validate against Level 1 vocabulary if needed
+        if (difficulty === 'easy') {
+          const validation = VocabularyLevelClassifier.validateLevel1Page(processedPage);
+          if (!validation.isValid) {
+            console.warn(`⚠️ Page ${i + 1} failed L1 validation, using fallback`);
+            processedPage = this.generateLevel1Fallback(userInfo, i);
+          }
+        }
+        
+        pages.push(processedPage);
+        console.log(`✅ Page ${i + 1}: "${processedPage}" (${processedPage.split(' ').length} words)`);
       }
       
-      console.log(`✅ Page ${i + 1}: "${pages[pages.length - 1]}" (${pages[pages.length - 1].split(' ').length} words)`);
-    }
+      // Quality check for children's book patterns
+      const qualityCheck = StoryQualityChecker.checkStoryQuality(pages, difficulty);
+      if (qualityCheck.score < 70) {
+        console.warn(`⚠️ Story quality score: ${qualityCheck.score}. Issues:`, qualityCheck.issues);
+      }
 
-    // Create story object
-    const story: Story = {
+      // Create story object
+      const story: Story = {
+        id: crypto.randomUUID(),
+        title: this.generateStoryTitle(userInfo, difficulty),
+        segments: pages.map(text => ({
+          text,
+          illustration: undefined,
+          audioUrl: undefined
+        })),
+        difficulty,
+        estimatedReadingTime: Math.max(1, Math.ceil(pages.length / 3)),
+        wordCount: pages.join(' ').split(' ').filter(word => word.trim()).length
+      };
+
+      console.log(`✅ Generated story with ${story.segments.length} pages (Quality: ${qualityCheck.score})`);
+      return story;
+      
+    } catch (error) {
+      console.error('Error generating author-inspired story:', error);
+      return this.generateFallbackStory(userInfo, difficulty, pageCount);
+    }
+  }
+  }
+
+  /**
+   * Ensure natural flow between pages using children's book patterns
+   */
+  private static ensureChildrensBookFlow(
+    previousPage: string,
+    currentPage: string,
+    difficulty: DifficultyLevel
+  ): string {
+    // Add transitional elements for better flow
+    const transitions = {
+      easy: ["Then", "Next", "After that", "Soon"],
+      medium: ["Meanwhile", "Later that day", "Suddenly", "As it happened"],
+      hard: ["In the meantime", "Before long", "Eventually", "As the story continues"],
+      expert: ["Subsequently", "In due course", "As fate would have it", "In the fullness of time"]
+    };
+    
+    const transitionWords = transitions[difficulty] || transitions.medium;
+    
+    // Check if current page needs a transition
+    if (!currentPage.match(/^(Then|Next|After|Meanwhile|Later|Soon|Before|Eventually|Subsequently|In|As)/)) {
+      const transition = transitionWords[Math.floor(Math.random() * transitionWords.length)];
+      return `${transition}, ${currentPage.toLowerCase()}`;
+    }
+    
+    return currentPage;
+  }
+
+  /**
+   * Generate fallback story with basic templates
+   */
+  private static generateFallbackStory(
+    userInfo: UserInfo,
+    difficulty: DifficultyLevel,
+    pageCount: number
+  ): Story {
+    return {
       id: crypto.randomUUID(),
-      title: this.generateStoryTitle(userInfo, difficulty),
-      segments: pages.map(text => ({
-        text,
+      title: `${userInfo.name || 'Alex'}'s Adventure`,
+      segments: Array.from({ length: pageCount }, (_, i) => ({
+        text: this.generateFallbackPage(userInfo, difficulty, i),
         illustration: undefined,
         audioUrl: undefined
       })),
       difficulty,
-      estimatedReadingTime: Math.max(1, Math.ceil(pages.length / 3)),
-      wordCount: pages.join(' ').split(' ').filter(word => word.trim()).length
+      estimatedReadingTime: Math.max(1, Math.ceil(pageCount / 3)),
+      wordCount: pageCount * 8 // Estimate
     };
-
-    console.log(`✅ Generated ${difficulty} story with ${story.segments.length} pages (${story.wordCount} total words)`);
-    return story;
   }
 
   /**
