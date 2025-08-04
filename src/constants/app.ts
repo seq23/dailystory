@@ -45,5 +45,5 @@ export const GRADE_LEVELS = [
 ] as const;
 
 export const DIFFICULTY_LEVELS = [
-  'easy', 'medium', 'hard', 'expert'
+  'beginner', 'easy', 'medium', 'hard', 'expert'
 ] as const;
