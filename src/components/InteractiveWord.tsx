@@ -1752,9 +1752,9 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
     console.log('📱 Mobile word clicked, new showMobileTTS:', !showMobileTTS);
   };
 
-  // Premium phonetic breakdown handler
+  // Phonetic breakdown handler - now available to all users
   const handlePhoneticBreakdown = async () => {
-    if (!props.isPremium || !props.userInfo) return;
+    if (!props.userInfo) return;
     
     setIsPlayingPhonetics(true);
     
@@ -1867,20 +1867,18 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
              </div>
              
              {/* Premium Phonetic Breakdown Button */}
-             {props.isPremium && (
-               <div className="mb-4">
-                 <button
-                   onClick={handlePhoneticBreakdown}
-                   disabled={isPlayingPhonetics}
-                   className="w-full flex items-center justify-center gap-2 bg-purple-50 hover:bg-purple-100 active:bg-purple-200 border-2 border-purple-200 p-3 rounded-xl transition-colors touch-manipulation font-semibold text-purple-700 disabled:opacity-50"
-                 >
-                   <Layers className="w-5 h-5" />
-                   <span className="text-sm">
-                     {isPlayingPhonetics ? "Playing Syllables..." : "Break Down Pronunciation"}
-                   </span>
-                 </button>
-               </div>
-             )}
+              <div className="mb-4">
+                <button
+                  onClick={handlePhoneticBreakdown}
+                  disabled={isPlayingPhonetics}
+                  className="w-full flex items-center justify-center gap-2 bg-purple-50 hover:bg-purple-100 active:bg-purple-200 border-2 border-purple-200 p-3 rounded-xl transition-colors touch-manipulation font-semibold text-purple-700 disabled:opacity-50"
+                >
+                  <Layers className="w-5 h-5" />
+                  <span className="text-sm">
+                    {isPlayingPhonetics ? "Playing Syllables..." : "Break Down Pronunciation"}
+                  </span>
+                </button>
+              </div>
             
             {/* User type indicator for transparency */}
             <div className="text-center mb-4">

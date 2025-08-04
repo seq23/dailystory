@@ -124,6 +124,18 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   // Handle story completion toast to avoid React warning - only trigger once per completion
   const [hasShownCompletionToast, setHasShownCompletionToast] = useState(false);
   
+  // Word highlighting for audio
+  const [wordHighlightIndex, setWordHighlightIndex] = useState<number>(-1);
+  
+  // Mobile specific state
+  const isMobile = useIsMobile();
+  
+  // Word highlighting callback for audio
+  const handleWordHighlight = (wordIndex: number) => {
+    setWordHighlightIndex(wordIndex);
+    console.log('Highlighting word index:', wordIndex);
+  };
+  
   // Utility function to calculate real-time word count from current story
   const calculateActualWordsRead = () => {
     const storyText = story.join(' ');
@@ -1210,13 +1222,13 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                             return (
                               <div className={`story-text ${config.fontSize} ${config.lineHeight} ${config.spacing} font-bold text-gray-800 max-w-full break-words hyphens-auto leading-relaxed overflow-hidden`} dir="ltr" style={{ textAlign: 'left' }}>
                                 <div className="max-h-[400px] overflow-y-auto px-2">
-                                  {processTextForPhonetics(
-                                    currentStory, 
-                                    "", 
-                                    currentDifficulty as "easy" | "medium" | "hard" | "expert",
-                                    userInfo,
-                                    false // Free users are not premium
-                                  )}
+                                   {processTextForPhonetics(
+                                     currentStory, 
+                                     `word-${wordHighlightIndex}`, 
+                                     currentDifficulty as "easy" | "medium" | "hard" | "expert",
+                                     userInfo,
+                                     false // Free users are not premium
+                                   )}
                                 </div>
                               </div>
                             );
@@ -1228,15 +1240,16 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                     {/* Audio Controls Section - Using ElevenLabs TTS */}
                     {sessionStarted && (
                       <div className="flex-shrink-0 p-3 sm:p-4 lg:p-6 border-t border-gray-100 audio-controls">
-                        <ElevenLabsAudio 
-                          text={currentStory}
-                          userInfo={userInfo}
-                          isPremium={false} // Free users are not premium
-                          onUpgrade={onUpgrade}
-                          currentPage={currentPage}
-                          totalPages={story.length}
-                          isExtendedPage={story.length > 10 && currentPage >= 10} // Extended pages beyond original 10
-                        />
+                         <ElevenLabsAudio 
+                           text={currentStory}
+                           userInfo={userInfo}
+                           isPremium={false} // Free users are not premium
+                           onUpgrade={onUpgrade}
+                           currentPage={currentPage}
+                           totalPages={story.length}
+                           isExtendedPage={story.length > 10 && currentPage >= 10} // Extended pages beyond original 10
+                           onWordHighlight={handleWordHighlight}
+                         />
                       </div>
                     )}
 

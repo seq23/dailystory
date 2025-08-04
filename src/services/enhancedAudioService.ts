@@ -130,17 +130,17 @@ export class EnhancedAudioService {
     const { word, userInfo, showSyllables = true, playbackSpeed = phoneticSettings.playbackSpeed } = options;
     
     if (!showSyllables) {
-      // Simple word pronunciation
+      // Simple word pronunciation - now available to all users
       return this.playText({
         text: word,
         difficulty: 'easy',
         userInfo,
-        isPremium: true, // Phonetics is premium feature
+        isPremium: false, // Phonetics now available to all users
         enableHighlighting: false
       });
     }
 
-    // Break word into syllables and play each with pauses
+    // Break word into syllables and play each with pauses - now available to all users
     const syllables = this.breakIntoSyllables(word);
     
     for (let i = 0; i < syllables.length; i++) {
@@ -148,7 +148,7 @@ export class EnhancedAudioService {
         text: syllables[i],
         difficulty: 'easy',
         userInfo,
-        isPremium: true,
+        isPremium: false, // Syllable breakdown now available to all users
         enableHighlighting: false
       });
 
