@@ -1,0 +1,170 @@
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Star } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+
+const feedbackSchema = z.object({
+  rating: z.number().min(1).max(5),
+  category: z.string().min(1, "Please select a category"),
+  message: z.string().min(1, "Please enter your feedback"),
+});
+
+type FeedbackFormData = z.infer<typeof feedbackSchema>;
+
+interface FeedbackFormProps {
+  onClose: () => void;
+}
+
+export function FeedbackForm({ onClose }: FeedbackFormProps) {
+  const [rating, setRating] = useState(0);
+  const [hoveredRating, setHoveredRating] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const form = useForm<FeedbackFormData>({
+    resolver: zodResolver(feedbackSchema),
+    defaultValues: {
+      rating: 0,
+      category: "",
+      message: "",
+    },
+  });
+
+  const onSubmit = async (data: FeedbackFormData) => {
+    setIsSubmitting(true);
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      const { error } = await supabase.from("feedback").insert({
+        user_id: user?.id || null,
+        rating: data.rating,
+        category: data.category,
+        message: data.message,
+        page_url: window.location.href,
+        user_agent: navigator.userAgent,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Feedback submitted!",
+        description: "Thank you for your feedback. We appreciate it!",
+      });
+      
+      onClose();
+    } catch (error) {
+      console.error("Error submitting feedback:", error);
+      toast({
+        title: "Error",
+        description: "Failed to submit feedback. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleRatingClick = (value: number) => {
+    setRating(value);
+    form.setValue("rating", value);
+  };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <FormField
+          control={form.control}
+          name="rating"
+          render={() => (
+            <FormItem>
+              <FormLabel>How would you rate your experience?</FormLabel>
+              <FormControl>
+                <div className="flex gap-1">
+                  {[1, 2, 3, 4, 5].map((value) => (
+                    <button
+                      key={value}
+                      type="button"
+                      className="focus:outline-none focus:ring-2 focus:ring-primary rounded"
+                      onMouseEnter={() => setHoveredRating(value)}
+                      onMouseLeave={() => setHoveredRating(0)}
+                      onClick={() => handleRatingClick(value)}
+                    >
+                      <Star
+                        className={`w-8 h-8 transition-colors ${
+                          value <= (hoveredRating || rating)
+                            ? "fill-primary text-primary"
+                            : "text-muted-foreground"
+                        }`}
+                      />
+                    </button>
+                  ))}
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="category"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Category</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="What is this about?" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="bug">Bug Report</SelectItem>
+                  <SelectItem value="feature">Feature Request</SelectItem>
+                  <SelectItem value="content">Story Content</SelectItem>
+                  <SelectItem value="usability">User Experience</SelectItem>
+                  <SelectItem value="performance">Performance</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="message"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Your feedback</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Tell us what you think..."
+                  className="min-h-[100px]"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="flex gap-3 justify-end">
+          <Button variant="outline" onClick={onClose} type="button">
+            Cancel
+          </Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Submitting..." : "Submit Feedback"}
+          </Button>
+        </div>
+      </form>
+    </Form>
+  );
+}
