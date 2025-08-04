@@ -31,7 +31,7 @@ export const processTextForPhonetics = (
 
     // Find the word-only index for this word
     const wordOnlyIndex = wordOnlyArray.findIndex(item => item.originalIndex === index);
-    const isHighlighted = highlightedWordIndex === wordOnlyIndex;
+    const isHighlighted = highlightedWordIndex !== undefined && highlightedWordIndex !== -1 && highlightedWordIndex === wordOnlyIndex;
     
     return (
       <MobileOptimizedInteractiveWord 

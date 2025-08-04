@@ -283,6 +283,8 @@ export class EnhancedAudioService {
     
     this.isPlaying = false;
     this.clearHighlighting();
+    
+    console.log('🛑 Audio stopped and highlighting cleared');
   }
 
   adjustSpeed(newSpeed: number): void {
@@ -429,6 +431,11 @@ export class EnhancedAudioService {
         this.currentWordIndex++;
         
         this.highlightTimeout = setTimeout(highlightNext, nextInterval);
+      } else {
+        // Highlighting completed - clear all highlights
+        console.log('🎯 Highlighting sequence completed, clearing highlights');
+        onWordHighlight(-1); // Signal to clear all highlights
+        this.clearHighlighting();
       }
     };
 
@@ -443,6 +450,7 @@ export class EnhancedAudioService {
     }
     this.currentWordIndex = 0;
     this.totalWords = 0;
+    console.log('🧹 Highlighting cleared and reset');
   }
 
   private breakIntoSyllables(word: string): string[] {
