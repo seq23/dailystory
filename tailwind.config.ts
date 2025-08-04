@@ -188,6 +188,34 @@ export default {
 						transform: 'scale(1)',
 						opacity: '1'
 					}
+				},
+				'edgeBounce': {
+					'0%': {
+						transform: 'scale(1) rotate(0deg)'
+					},
+					'25%': {
+						transform: 'scale(1.15) rotate(2deg)'
+					},
+					'50%': {
+						transform: 'scale(1.1) rotate(-1deg)'
+					},
+					'75%': {
+						transform: 'scale(1.05) rotate(1deg)'
+					},
+					'100%': {
+						transform: 'scale(1) rotate(0deg)'
+					}
+				},
+				'edgeGlowPulse': {
+					'0%': {
+						boxShadow: '0 0 20px hsl(var(--primary) / 0.3), 0 0 40px hsl(var(--primary) / 0.2), 0 0 60px hsl(var(--primary) / 0.1)'
+					},
+					'50%': {
+						boxShadow: '0 0 30px hsl(var(--primary) / 0.5), 0 0 60px hsl(var(--primary) / 0.4), 0 0 100px hsl(var(--primary) / 0.3)'
+					},
+					'100%': {
+						boxShadow: '0 0 20px hsl(var(--primary) / 0.3), 0 0 40px hsl(var(--primary) / 0.2), 0 0 60px hsl(var(--primary) / 0.1)'
+					}
 				}
 			},
 			animation: {
@@ -199,7 +227,9 @@ export default {
 				'shake-hard': 'shake-hard 0.8s ease-in-out infinite',
 				'flash': 'flash 1s ease-in-out infinite',
 				'celebration': 'celebration 1.5s ease-out forwards',
-				'scale-in': 'scale-in 0.3s ease-out'
+				'scale-in': 'scale-in 0.3s ease-out',
+				'edgeBounce': 'edgeBounce 0.6s ease-out',
+				'edgeGlowPulse': 'edgeGlowPulse 2s ease-in-out 3'
 			}
 		}
 	},

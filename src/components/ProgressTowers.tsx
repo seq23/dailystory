@@ -167,6 +167,8 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
         isExpanded 
           ? (isRTL ? "translate-x-0" : "translate-x-0")
           : (isRTL ? "-translate-x-[50px]" : "translate-x-[50px]"), // Less translation to keep toggle visible
+        // Enhanced edge bounce animation when new progress is detected
+        hasNewProgress && !isExpanded && "animate-[edgeBounce_0.6s_ease-out]",
         className
       )}
       onMouseEnter={handleMouseEnter}
@@ -176,7 +178,12 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
         "bg-white/95 backdrop-blur-sm shadow-xl rounded-lg border border-gray-200",
         "transition-all duration-300 ease-out",
         isExpanded ? "w-56 p-4" : "w-16 p-3",
-        isRTL && "mr-2"
+        isRTL && "mr-2",
+        // Enhanced edge glow pulse when new progress is detected
+        hasNewProgress && !isExpanded && [
+          "animate-[edgeGlowPulse_2s_ease-in-out_3]",
+          "shadow-[0_0_20px_hsl(var(--primary)/0.3),0_0_40px_hsl(var(--primary)/0.2),0_0_60px_hsl(var(--primary)/0.1)]"
+        ]
       )}>
         
         {/* Toggle Button */}
