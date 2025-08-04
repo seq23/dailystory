@@ -425,10 +425,10 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
 
               <div className="space-y-2">
                 <Label htmlFor="nativeLanguage" className="text-base md:text-lg font-semibold text-foreground">
-                  {t("userInfoForm.fields.nativeLanguage.label")}
+                  {t("userInfoForm.fields.nativeLanguage.label")} <span className="text-red-500">*</span>
                 </Label>
                 <Select value={formData.nativeLanguage} onValueChange={handleLanguageChange}>
-                  <SelectTrigger className="text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-primary/20">
+                  <SelectTrigger className={`text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 ${showValidationErrors && !formData.nativeLanguage ? 'border-red-300 bg-red-50' : 'border-primary/20'}`}>
                     <SelectValue placeholder={t("userInfoForm.fields.nativeLanguage.placeholder")} />
                   </SelectTrigger>
                   <SelectContent>
