@@ -44,26 +44,66 @@ export const getDifficultyAppropriateTemplate = (
   return templates[Math.floor(Math.random() * templates.length)];
 };
 
-// Validate that content matches difficulty expectations
+// Flexible validation with margin of error to preserve natural story flow
 export const validateDifficultyCompliance = (
   content: string,
-  difficulty: 'easy' | 'medium' | 'hard' | 'expert'
-): { isValid: boolean; wordCount: number; expectedRange: { min: number; max: number } } => {
+  difficulty: 'easy' | 'medium' | 'hard' | 'expert',
+  strictMode: boolean = false
+): { 
+  isValid: boolean; 
+  wordCount: number; 
+  expectedRange: { min: number; max: number };
+  zone: 'green' | 'yellow' | 'red';
+  marginOfError?: { min: number; max: number };
+} => {
   const wordCount = content.split(/\s+/).filter(w => w.trim()).length;
   
-  const ranges = {
+  // Ideal ranges for each difficulty level
+  const idealRanges = {
     easy: { min: 3, max: 6 },
     medium: { min: 6, max: 12 },
     hard: { min: 10, max: 18 },
     expert: { min: 15, max: 25 }
   };
+
+  // Flexible ranges with 25% margin of error for natural flow
+  const flexibleRanges = {
+    easy: { min: 2, max: 8 },     // 25% margin: 3±1, 6±2
+    medium: { min: 4, max: 15 },   // 25% margin: 6±2, 12±3  
+    hard: { min: 8, max: 22 },     // 25% margin: 10±2, 18±4
+    expert: { min: 12, max: 30 }   // 25% margin: 15±3, 25±5
+  };
   
-  const expectedRange = ranges[difficulty];
-  const isValid = wordCount >= expectedRange.min && wordCount <= expectedRange.max;
+  const idealRange = idealRanges[difficulty];
+  const flexibleRange = flexibleRanges[difficulty];
+  
+  // Determine validation zone
+  let zone: 'green' | 'yellow' | 'red';
+  let isValid: boolean;
+  
+  if (strictMode) {
+    // Strict mode: only ideal range is valid
+    isValid = wordCount >= idealRange.min && wordCount <= idealRange.max;
+    zone = isValid ? 'green' : 'red';
+  } else {
+    // Flexible mode: tiered validation
+    if (wordCount >= idealRange.min && wordCount <= idealRange.max) {
+      zone = 'green';  // Perfect - within ideal range
+      isValid = true;
+    } else if (wordCount >= flexibleRange.min && wordCount <= flexibleRange.max) {
+      zone = 'yellow'; // Acceptable with margin of error
+      isValid = true;  // Still valid, just not ideal
+    } else {
+      zone = 'red';    // Too far outside acceptable range
+      isValid = false;
+    }
+  }
   
   return {
     isValid,
     wordCount,
-    expectedRange
+    expectedRange: idealRange,
+    zone,
+    marginOfError: strictMode ? undefined : flexibleRange
   };
 };

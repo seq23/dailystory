@@ -170,36 +170,54 @@ export class StoryQualityChecker {
    */
   private static checkReadabilityLevel(pages: string[], difficulty: string): QualityIssue[] {
     const issues: QualityIssue[] = [];
-    // Updated TTS-optimized word count standards - ensuring complete thoughts
-    const expectedWordCounts = {
+    
+    // Ideal word count ranges (what we aim for)
+    const idealWordCounts = {
       easy: { min: 3, max: 6 },    // Ages 3-5: Complete simple sentences for TTS
-      medium: { min: 5, max: 9 },  // Ages 5-7: Slightly longer sentences
-      hard: { min: 7, max: 13 },   // Ages 7-9: More complex sentences
-      expert: { min: 9, max: 16 }  // Ages 9-11+: Advanced vocabulary and complexity
+      medium: { min: 6, max: 12 }, // Ages 5-7: Slightly longer sentences  
+      hard: { min: 10, max: 18 },  // Ages 7-9: More complex sentences
+      expert: { min: 15, max: 25 } // Ages 9-11+: Advanced vocabulary and complexity
     };
     
-    const expected = expectedWordCounts[difficulty] || expectedWordCounts.medium;
+    // Flexible ranges with margin of error for natural flow
+    const flexibleWordCounts = {
+      easy: { min: 2, max: 8 },     // 25% margin of error
+      medium: { min: 4, max: 15 },   // 25% margin of error
+      hard: { min: 8, max: 22 },     // 25% margin of error  
+      expert: { min: 12, max: 30 }   // 25% margin of error
+    };
+    
+    const ideal = idealWordCounts[difficulty] || idealWordCounts.medium;
+    const flexible = flexibleWordCounts[difficulty] || flexibleWordCounts.medium;
     
     pages.forEach((page, index) => {
       const wordCount = page.split(/\s+/).length;
       
-      if (wordCount < expected.min) {
+      // Only flag as problematic if outside flexible range
+      if (wordCount < flexible.min) {
         issues.push({
           type: 'readability',
           severity: 'warning',
-          message: `Page ${index + 1} has only ${wordCount} words (expected ${expected.min}-${expected.max} for ${difficulty} level)`,
+          message: `Page ${index + 1} has only ${wordCount} words (too short for ${difficulty} level, minimum ${flexible.min})`,
           pageIndex: index + 1,
           suggestion: 'Add more content appropriate for the reading level'
         });
-      }
-      
-      if (wordCount > expected.max) {
+      } else if (wordCount > flexible.max) {
         issues.push({
-          type: 'readability',
+          type: 'readability', 
           severity: 'warning',
-          message: `Page ${index + 1} has ${wordCount} words (expected ${expected.min}-${expected.max} for ${difficulty} level)`,
+          message: `Page ${index + 1} has ${wordCount} words (too long for ${difficulty} level, maximum ${flexible.max})`,
           pageIndex: index + 1,
           suggestion: 'Consider breaking into multiple pages or simplifying'
+        });
+      } else if (wordCount < ideal.min || wordCount > ideal.max) {
+        // Within flexible range but outside ideal - minor issue
+        issues.push({
+          type: 'readability',
+          severity: 'info', // Reduced severity for natural flow
+          message: `Page ${index + 1} has ${wordCount} words (acceptable but outside ideal ${ideal.min}-${ideal.max} range)`,
+          pageIndex: index + 1,
+          suggestion: 'Consider minor adjustments for optimal reading level'
         });
       }
     });
