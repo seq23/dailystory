@@ -9,7 +9,7 @@ import { contextualPronunciation } from "@/services/contextualPronunciation";
 import { supabase } from "@/integrations/supabase/client";
 import { VocabularyLevelClassifier } from "@/utils/vocabularyLevelClassifier";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useGamification } from "@/hooks/useGamification";
+import { getGlobalAddVocabularyWord } from "@/utils/gamificationGlobals";
 import type { UserInfo } from "@/types";
 
 interface InteractiveWordProps {
@@ -36,11 +36,12 @@ export const InteractiveWord = ({
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const { isMobileOrTablet, isCapacitor } = useIsMobile();
-  const { addVocabularyWord } = useGamification({
-    userId,
-    userType: isPremium ? 'premium' : 'free',
-    enablePersistence: isPremium
-  });
+  // Use global gamification system instead of local hook
+  const getAddVocabularyWord = () => {
+    return getGlobalAddVocabularyWord() || (() => {
+      console.warn('⚠️ Global addVocabularyWord not available - gamification may not be set up');
+    });
+  };
   
   // ENHANCED: Debug and fix translation issues for Arabic, Chinese, Hindi
   const userLanguageT = useCallback((key: string, fallback: string) => {
@@ -383,9 +384,10 @@ export const InteractiveWord = ({
       userInfo
     });
     
-    // Track vocabulary word IMMEDIATELY when user clicks explain
+    // Track vocabulary word IMMEDIATELY when user clicks explain using global system
     console.log('🎯 Tracking vocabulary word:', word);
     try {
+      const addVocabularyWord = getAddVocabularyWord();
       addVocabularyWord();
       console.log('✅ Vocabulary word tracked successfully');
     } catch (error) {
@@ -886,7 +888,8 @@ export const InteractiveWord = ({
       (window as any).addToVocabulary(vocabularyWord);
     }
 
-    // Track for gamification - use the hook directly
+    // Track for gamification - use global system
+    const addVocabularyWord = getAddVocabularyWord();
     addVocabularyWord();
 
     toast({
@@ -1141,11 +1144,12 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
   const [isLoadingMobile, setIsLoadingMobile] = useState(false);
   const [enhancedAudioService] = useState(() => new EnhancedAudioService());
   const [isPlayingPhonetics, setIsPlayingPhonetics] = useState(false);
-  const { addVocabularyWord } = useGamification({
-    userId: props.userId,
-    userType: props.isPremium ? 'premium' : 'free',
-    enablePersistence: props.isPremium
-  });
+  // Use global gamification system instead of local hook for mobile
+  const getAddVocabularyWordMobile = () => {
+    return getGlobalAddVocabularyWord() || (() => {
+      console.warn('⚠️ Global addVocabularyWord not available - gamification may not be set up');
+    });
+  };
   
   
   // ENHANCED: Debug and fix translation issues for Arabic, Chinese, Hindi (mobile version)
@@ -1907,9 +1911,10 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
                    <button
                      onClick={() => {
                        const cleanWord = props.word.replace(/[.,!?;:'"()]/g, '');
-                       if (cleanWord.length >= 2) {
-                         addVocabularyWord();
-                         toast({
+                        if (cleanWord.length >= 2) {
+                          const addVocabularyWord = getAddVocabularyWordMobile();
+                          addVocabularyWord();
+                          toast({
                            title: "Word Saved! 📝",
                            description: `"${cleanWord}" has been added to your vocabulary collection.`,
                            duration: 3000,
