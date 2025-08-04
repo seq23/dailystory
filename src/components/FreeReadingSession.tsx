@@ -1405,6 +1405,12 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
           userType={isPremium ? "premium" : "free"}
           currentWordsRead={calculateActualWordsRead()}
           currentPagesRead={currentPage + 1}
+          shouldPulse={
+            tutorialActive && 
+            currentTutorialStep === 5 && // Step 6 (0-indexed)
+            sessionStartTime &&
+            Date.now() - sessionStartTime.getTime() < 5000 // First 5 seconds
+          }
         />
       ) : null}
     </>

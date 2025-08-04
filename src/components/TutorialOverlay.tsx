@@ -407,13 +407,13 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
       }
     }
 
-    // SPECIAL HANDLING FOR PROGRESS TOWERS - Position to the left of the towers (they're on right edge)
+    // SPECIAL HANDLING FOR PROGRESS TOWERS - Position well to the left to avoid covering the button
     if (target === "progress-towers-container") {
       if (isMobile) {
         return {
           bottom: `${margin + 60}px`, // Bottom positioning for mobile
           left: `${margin}px`,
-          right: `${margin}px`,
+          right: `${margin + 80}px`, // Extra margin to avoid the collapsed button
           top: "auto",
           transform: "none",
           maxWidth: `${tooltipWidth}px`

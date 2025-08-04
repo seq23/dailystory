@@ -11,6 +11,7 @@ interface ProgressTowersProps {
   currentWordsRead?: number;
   currentPagesRead?: number;
   className?: string;
+  shouldPulse?: boolean;
   onProgressUpdate?: (type: 'words' | 'pages' | 'vocabulary', value: number) => void;
 }
 
@@ -20,6 +21,7 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
   currentWordsRead = 0,
   currentPagesRead = 0,
   className,
+  shouldPulse = false,
   onProgressUpdate
 }) => {
   const { t, i18n } = useTranslation();
@@ -200,8 +202,8 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
             "absolute top-3 flex items-center justify-center w-10 h-10 bg-primary/20 hover:bg-primary/30 rounded-full transition-all duration-200 shadow-lg border border-primary/30",
             isRTL ? "right-3" : "left-3",
             !isExpanded && "opacity-90 hover:opacity-100",
-            // Enhanced breathing animation when collapsed
-            !isExpanded && !hasNewProgress && "animate-[pulse_3s_ease-in-out_infinite]",
+            // Only pulse when shouldPulse prop is true and component is collapsed
+            shouldPulse && !isExpanded && "animate-[pulse_3s_ease-in-out_infinite]",
             celebration && "animate-bounce ring-4 ring-yellow-400/60"
           )}
           aria-label={isExpanded ? t('progressTowers.collapse') : t('progressTowers.expand')}
