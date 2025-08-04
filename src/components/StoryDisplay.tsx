@@ -104,7 +104,8 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
   const { templateStory, aiStory, isAiReady, isGenerating } = useHybridStoryGeneration(
     userInfo,
     currentDifficulty,
-    isPremium ? story : []
+    story,
+    isPremium
   );
   
   // Session state

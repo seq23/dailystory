@@ -12,7 +12,8 @@ interface HybridStoryResult {
 export const useHybridStoryGeneration = (
   userInfo: UserInfo,
   difficulty: 'easy' | 'medium' | 'hard' | 'expert',
-  templateStory: string[]
+  templateStory: string[],
+  isPremium: boolean = false
 ): HybridStoryResult => {
   const [aiStory, setAiStory] = useState<string[] | null>(null);
   const [isAiReady, setIsAiReady] = useState(false);
@@ -20,7 +21,7 @@ export const useHybridStoryGeneration = (
 
   useEffect(() => {
     // Only generate AI story for premium users with a valid template
-    if (!templateStory.length || templateStory[0]?.includes('Creating')) {
+    if (!isPremium || !templateStory.length || templateStory[0]?.includes('Creating')) {
       return;
     }
 
@@ -31,12 +32,20 @@ export const useHybridStoryGeneration = (
 
         const { data, error } = await supabase.functions.invoke('generate-adaptive-story', {
           body: {
-            userInfo,
-            difficulty,
             readingLevel: difficulty,
-            theme: (userInfo as any).favoriteTheme || 'adventure',
             authorStyle: 'adaptive',
-            pageCount: templateStory.length
+            theme: (userInfo as any).favoriteTheme || 'adventure',
+            interests: [userInfo.favoriteAnimal, userInfo.favoriteColor].filter(Boolean),
+            config: {
+              userName: userInfo.name,
+              age: userInfo.age,
+              gradeLevel: userInfo.gradeLevel,
+              favoriteColor: userInfo.favoriteColor,
+              favoriteAnimal: userInfo.favoriteAnimal,
+              favoriteFood: (userInfo as any).favoriteFood,
+              hobbies: (userInfo as any).hobbies,
+              avatar: userInfo.avatar
+            }
           }
         });
 
@@ -59,7 +68,7 @@ export const useHybridStoryGeneration = (
     // Start AI generation in background after a brief delay
     const timer = setTimeout(generateAiStory, 100);
     return () => clearTimeout(timer);
-  }, [userInfo, difficulty, templateStory]);
+  }, [userInfo, difficulty, templateStory, isPremium]);
 
   return {
     templateStory,
