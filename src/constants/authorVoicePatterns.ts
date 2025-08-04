@@ -295,23 +295,128 @@ export function getAuthorVoiceForDifficulty(difficulty: DifficultyLevel): Author
 }
 
 /**
- * Apply author voice pattern to content
+ * Apply author voice characteristics to content naturally
  */
 export function applyAuthorVoice(
   content: string,
   voice: AuthorVoice,
   position: 'opening' | 'transition' | 'closing'
 ): string {
+  // If content is already author-voice styled or very short, return as is
+  if (content.length < 20 || isAlreadyStyledContent(content, voice)) {
+    return content;
+  }
+
   const patterns = voice.patterns[position + 's' as keyof typeof voice.patterns];
   const pattern = patterns[Math.floor(Math.random() * patterns.length)];
   
-  // Blend pattern with content while maintaining natural flow
-  if (position === 'opening') {
-    return pattern + " " + content;
-  } else if (position === 'closing') {
-    return content + " " + pattern;
-  } else {
-    // For transitions, weave pattern into content
-    return content.replace(/\. /, '. ' + pattern + ' ');
+  // Extract variables from content for pattern substitution
+  const variables = extractContentVariables(content);
+  const styledPattern = substitutePatternVariables(pattern, variables);
+  
+  // Apply voice characteristics naturally based on position
+  switch (position) {
+    case 'opening':
+      return enhanceOpeningWithVoice(content, styledPattern, voice);
+    case 'closing':
+      return enhanceClosingWithVoice(content, styledPattern, voice);
+    case 'transition':
+      return enhanceTransitionWithVoice(content, styledPattern, voice);
+    default:
+      return content;
   }
+}
+
+/**
+ * Check if content already has author voice styling
+ */
+function isAlreadyStyledContent(content: string, voice: AuthorVoice): boolean {
+  const voiceIndicators = [
+    ...voice.patterns.openings,
+    ...voice.patterns.transitions, 
+    ...voice.patterns.closings
+  ].flatMap(pattern => pattern.split(' ').filter(word => 
+    !word.includes('{') && word.length > 3
+  ));
+  
+  return voiceIndicators.some(indicator => 
+    content.toLowerCase().includes(indicator.toLowerCase())
+  );
+}
+
+/**
+ * Extract variables from existing content
+ */
+function extractContentVariables(content: string): Record<string, string> {
+  // Simple extraction - can be enhanced based on content analysis
+  const variables: Record<string, string> = {};
+  
+  // Extract potential names (capitalized words not at sentence start)
+  const nameMatch = content.match(/\b[A-Z][a-z]+\b/g);
+  if (nameMatch) variables.name = nameMatch[0];
+  
+  // Extract basic descriptors
+  if (content.includes('beautiful')) variables.adjective = 'beautiful';
+  if (content.includes('little')) variables.adjective = 'little';
+  if (content.includes('big')) variables.adjective = 'big';
+  
+  return variables;
+}
+
+/**
+ * Substitute pattern variables with extracted content
+ */
+function substitutePatternVariables(pattern: string, variables: Record<string, string>): string {
+  let result = pattern;
+  
+  Object.entries(variables).forEach(([key, value]) => {
+    result = result.replace(new RegExp(`\\{${key}\\}`, 'g'), value);
+  });
+  
+  // Remove unsubstituted variables to keep pattern clean
+  result = result.replace(/\{[^}]+\}/g, '');
+  
+  return result.trim();
+}
+
+/**
+ * Enhance opening with voice characteristics
+ */
+function enhanceOpeningWithVoice(content: string, pattern: string, voice: AuthorVoice): string {
+  // For openings, replace the first sentence if pattern is meaningful
+  if (pattern.length > 10 && !pattern.includes('{}')) {
+    const sentences = content.split('. ');
+    sentences[0] = pattern;
+    return sentences.join('. ');
+  }
+  return content;
+}
+
+/**
+ * Enhance closing with voice characteristics  
+ */
+function enhanceClosingWithVoice(content: string, pattern: string, voice: AuthorVoice): string {
+  // For closings, replace the last sentence if pattern is meaningful
+  if (pattern.length > 10 && !pattern.includes('{}')) {
+    const sentences = content.split('. ');
+    sentences[sentences.length - 1] = pattern;
+    return sentences.join('. ');
+  }
+  return content;
+}
+
+/**
+ * Enhance transition with voice characteristics
+ */
+function enhanceTransitionWithVoice(content: string, pattern: string, voice: AuthorVoice): string {
+  // For transitions, enhance the middle part if pattern is meaningful
+  if (pattern.length > 10 && !pattern.includes('{}')) {
+    const sentences = content.split('. ');
+    if (sentences.length > 2) {
+      const midIndex = Math.floor(sentences.length / 2);
+      sentences[midIndex] = pattern + '. ' + sentences[midIndex];
+      return sentences.join('. ');
+    }
+  }
+  return content;
 }
