@@ -92,7 +92,8 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   const [currentPage, setCurrentPage] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [sessionStarted, setSessionStarted] = useState(false);
-  const [currentDifficulty, setCurrentDifficulty] = useState<'easy' | 'medium' | 'hard' | 'expert'>(
+  const [currentDifficulty, setCurrentDifficulty] = useState<'beginner' | 'easy' | 'medium' | 'hard' | 'expert'>(
+    userInfo.readingAbility === 'beginner' ? 'beginner' :
     userInfo.readingAbility === 'easy' ? 'easy' :
     userInfo.readingAbility === 'medium' ? 'medium' :
     userInfo.readingAbility === 'hard' ? 'hard' : 'expert'
@@ -198,7 +199,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   const userAvatarImage = getAvatarImage(userInfo?.avatar);
 
   // Difficulty level mappings - 4 levels but only 2 buttons
-  const difficultyLevels = ['easy', 'medium', 'hard', 'expert'] as const;
+  const difficultyLevels = ['beginner', 'easy', 'medium', 'hard', 'expert'] as const;
   
   const getDifficultyIndex = () => {
     return difficultyLevels.indexOf(currentDifficulty);
@@ -296,7 +297,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
           
           const storyResult = await UniversalContentManager.generateNewStoryWithAntiRepetition(
             userInfo, 
-            currentDifficulty as 'easy' | 'medium' | 'hard' | 'expert',
+            currentDifficulty,
             { isPremium: false, userId: userInfo.name }
           );
           const generatedStory = { 

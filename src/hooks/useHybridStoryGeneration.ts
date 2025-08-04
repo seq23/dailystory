@@ -11,7 +11,7 @@ interface HybridStoryResult {
 
 export const useHybridStoryGeneration = (
   userInfo: UserInfo,
-  difficulty: 'easy' | 'medium' | 'hard' | 'expert',
+  difficulty: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert',
   templateStory: string[],
   isPremium: boolean = false
 ): HybridStoryResult => {

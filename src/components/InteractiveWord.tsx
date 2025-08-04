@@ -14,7 +14,7 @@ import type { UserInfo } from "@/types";
 interface InteractiveWordProps {
   word: string;
   className?: string;
-  difficulty?: "easy" | "medium" | "hard" | "expert";
+  difficulty?: "beginner" | "easy" | "medium" | "hard" | "expert";
   userInfo?: UserInfo;
   isPremium?: boolean;
   sentenceContext?: string;

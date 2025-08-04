@@ -91,14 +91,13 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
   const [storyImages, setStoryImages] = useState<Array<{url?: string, prompt: string}>>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [currentDifficulty, setCurrentDifficulty] = useState<'easy' | 'medium' | 'hard' | 'expert'>(() => {
+  const [currentDifficulty, setCurrentDifficulty] = useState<'beginner' | 'easy' | 'medium' | 'hard' | 'expert'>(() => {
     // Initialize difficulty from userInfo
     const readingLevel = userInfo.readingLevel || (userInfo as any).difficultyLevel || userInfo.readingAbility || 'easy';
-    return (readingLevel === 'beginner' ? 'easy' :
-            readingLevel === 'elementary' ? 'medium' :
+    return (readingLevel === 'elementary' ? 'medium' :
             readingLevel === 'intermediate' ? 'hard' : 
             readingLevel === 'advanced' ? 'expert' : 
-            readingLevel) as 'easy' | 'medium' | 'hard' | 'expert';
+            readingLevel) as 'beginner' | 'easy' | 'medium' | 'hard' | 'expert';
   });
   
   // Hybrid story generation for premium users
@@ -169,7 +168,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
   const userAvatarImage = getAvatarImage(userInfo?.avatar);
   
   // Difficulty level mappings - 4 levels but only 2 buttons
-  const difficultyLevels = ['easy', 'medium', 'hard', 'expert'] as const;
+  const difficultyLevels = ['beginner', 'easy', 'medium', 'hard', 'expert'] as const;
   
   const getDifficultyIndex = () => {
     return difficultyLevels.indexOf(currentDifficulty);

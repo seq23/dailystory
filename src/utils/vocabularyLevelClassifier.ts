@@ -33,7 +33,7 @@ export class VocabularyLevelClassifier {
   /**
    * Determine if a word should be highlighted based on difficulty level
    */
-  static getWordDifficulty(word: string, userLevel: 'easy' | 'medium' | 'hard' | 'expert'): WordDifficultyLevel {
+  static getWordDifficulty(word: string, userLevel: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert'): WordDifficultyLevel {
     const cleanWord = word.toLowerCase().replace(/[.,!?;:'"()]/g, '');
     
     // Determine word's inherent level
@@ -111,8 +111,12 @@ export class VocabularyLevelClassifier {
    * Determine if word should be highlighted based on user's reading level
    * Enhanced for smoother progression between levels
    */
-  private static shouldHighlightWord(wordLevel: number, userLevel: 'easy' | 'medium' | 'hard' | 'expert'): boolean {
+  private static shouldHighlightWord(wordLevel: number, userLevel: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert'): boolean {
     switch (userLevel) {
+      case 'beginner':
+        // For pre-readers, no highlighting - everything is new
+        return false;
+        
       case 'easy':
         // Highlight level 2+ words (challenging but not overwhelming)
         return wordLevel >= 2;
@@ -131,7 +135,8 @@ export class VocabularyLevelClassifier {
         return wordLevel >= 5;
         
       default:
-        return wordLevel >= 2;
+        // For beginner level or unknown, minimal highlighting
+        return wordLevel >= 3;
     }
   }
   
@@ -157,12 +162,19 @@ export class VocabularyLevelClassifier {
    * Get recommended vocabulary complexity for reading level
    * Enhanced for progressive difficulty stepping
    */
-  static getRecommendedComplexity(userLevel: 'easy' | 'medium' | 'hard' | 'expert'): {
+  static getRecommendedComplexity(userLevel: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert'): {
     primary: number[];
     secondary: number[];
     avoid: number[];
   } {
     switch (userLevel) {
+      case 'beginner':
+        return {
+          primary: [1], // Ultra-simple sight words only (95%+)
+          secondary: [], // No secondary words
+          avoid: [2, 3, 4, 5] // Avoid everything above level 1
+        };
+        
       case 'easy':
         return {
           primary: [1], // Mostly sight words (85-90%)
@@ -205,7 +217,7 @@ export class VocabularyLevelClassifier {
    */
   static validateVocabularyDistribution(
     words: string[], 
-    userLevel: 'easy' | 'medium' | 'hard' | 'expert'
+    userLevel: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert'
   ): {
     isValid: boolean;
     issues: string[];
@@ -230,6 +242,12 @@ export class VocabularyLevelClassifier {
     
     // Validate based on reading level
     switch (userLevel) {
+      case 'beginner':
+        if (level2Plus > 0.05) {
+          issues.push(`Too many level 2+ words (${(level2Plus * 100).toFixed(1)}%) for beginner pre-reading`);
+        }
+        break;
+        
       case 'easy':
         if (level2Plus > 0.15) {
           issues.push(`Too many level 2+ words (${(level2Plus * 100).toFixed(1)}%) for easy reading`);

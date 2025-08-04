@@ -4,7 +4,7 @@ import { MobileOptimizedInteractiveWord } from "@/components/InteractiveWord";
 export const processTextForPhonetics = (
   text: string, 
   className: string = "", 
-  difficulty: "easy" | "medium" | "hard" | "expert" = "easy",
+  difficulty: "beginner" | "easy" | "medium" | "hard" | "expert" = "easy",
   userInfo?: any, // Add userInfo parameter
   isPremium?: boolean // Add isPremium parameter
 ): React.ReactNode[] => {
