@@ -225,10 +225,15 @@ export class Level1Simplifier {
    * Check if a word is in Level 1 vocabulary (simplified check)
    */
   private static isLevel1Word(word: string): boolean {
-    // Use dynamic import for better compatibility
-    import('@/constants/level1Vocabulary').then(module => {
-      return module.LEVEL_1_VOCABULARY.has(word.toLowerCase());
-    });
+    // Import the full Level 1 vocabulary from constants
+    const { isLevel1Word } = require('@/constants/level1Vocabulary');
+    
+    // First try the complete vocabulary
+    try {
+      return isLevel1Word(word);
+    } catch (error) {
+      console.warn('Level 1 vocabulary import failed, using fallback:', error);
+    }
     
     // Fallback: inline check for critical words to ensure cross-device compatibility
     const basicLevel1Words = new Set([
@@ -238,7 +243,10 @@ export class Level1Simplifier {
       'red', 'blue', 'green', 'yellow', 'black', 'white', 'pink', 'brown', 'orange', 'purple',
       'ball', 'book', 'box', 'car', 'cup', 'door', 'egg', 'hat', 'home', 'house', 'key', 'milk', 'pan', 'pen', 'pot', 'sun', 'toy', 'tree',
       'big', 'small', 'good', 'bad', 'hot', 'cold', 'old', 'new', 'fast', 'slow', 'happy', 'sad', 'nice', 'pretty', 'fun',
-      'i', 'me', 'my', 'you', 'your', 'we', 'us', 'they', 'them', 'this', 'that', 'here', 'there', 'now', 'yes', 'no'
+      'i', 'me', 'my', 'you', 'your', 'we', 'us', 'they', 'them', 'this', 'that', 'here', 'there', 'now', 'yes', 'no',
+      'mom', 'dad', 'baby', 'boy', 'girl', 'man', 'woman', 'friend', 'teacher', 'child', 'kids', 'family',
+      'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'many', 'few', 'some', 'all',
+      'day', 'night', 'morning', 'today', 'soon', 'late', 'early', 'hello', 'together', 'nicely'
     ]);
     
     return basicLevel1Words.has(word.toLowerCase());
