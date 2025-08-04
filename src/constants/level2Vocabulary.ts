@@ -1,8 +1,9 @@
-// Level 2 vocabulary for 5-7 year olds (expanded sight words and intermediate concepts)
+// Level 2 vocabulary for 2nd-3rd grade students (ages 6-8)
+// Refined vocabulary appropriate for early elementary reading levels
 export const LEVEL_2_VOCABULARY = new Set([
   // All Level 1 words are still valid for Level 2
-  // Extended sight words
-  'about', 'after', 'again', 'before', 'being', 'came', 'did', 'does', 'going', 'had', 'have', 'how', 'just', 'know', 'made', 'make', 'only', 'out', 'over', 'said', 'some', 'time', 'very', 'way', 'well', 'went', 'where', 'who', 'why', 'would', 'your', 'years', 'year', 'old', 'back', 'each', 'every', 'found', 'great', 'much', 'right', 'still', 'such', 'through', 'too', 'until', 'used', 'using', 'water', 'words', 'work', 'world', 'around', 'because', 'between', 'both', 'during', 'even', 'form', 'got', 'hand', 'here', 'however', 'large', 'last', 'left', 'line', 'long', 'never', 'next', 'number', 'part', 'place', 'public', 'same', 'small', 'sound', 'still', 'such', 'tell', 'thing', 'things', 'turned', 'want', 'ways', 'well', 'went', 'while', 'without',
+  // Extended sight words for 2nd-3rd grade
+  'about', 'after', 'again', 'always', 'around', 'because', 'before', 'being', 'both', 'came', 'could', 'did', 'does', 'every', 'found', 'going', 'great', 'had', 'have', 'here', 'how', 'just', 'know', 'large', 'last', 'left', 'line', 'long', 'made', 'make', 'much', 'never', 'next', 'number', 'only', 'other', 'out', 'over', 'place', 'right', 'said', 'same', 'should', 'small', 'some', 'sound', 'still', 'such', 'tell', 'these', 'thing', 'things', 'three', 'through', 'time', 'today', 'together', 'too', 'turned', 'until', 'used', 'using', 'very', 'want', 'water', 'way', 'ways', 'well', 'went', 'were', 'what', 'where', 'which', 'while', 'who', 'why', 'without', 'words', 'work', 'world', 'would', 'write', 'year', 'years', 'your',
 
   // Intermediate animals
   'elephant', 'giraffe', 'zebra', 'monkey', 'rabbit', 'turtle', 'butterfly', 'spider', 'snake', 'whale', 'dolphin', 'shark', 'octopus', 'penguin', 'eagle', 'parrot', 'hamster', 'guinea pig', 'goldfish', 'cricket', 'ladybug', 'dragonfly', 'squirrel', 'raccoon', 'deer', 'wolf', 'coyote', 'beaver', 'otter', 'seal', 'walrus', 'kangaroo', 'koala', 'panda', 'crocodile', 'alligator', 'lizard', 'chameleon', 'iguana',
