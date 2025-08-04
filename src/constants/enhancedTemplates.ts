@@ -38,7 +38,7 @@ const ACTIONS = {
 // Enhanced template variations for each difficulty
 export const ENHANCED_TEMPLATES: Record<DifficultyLevel, TemplateVariation[]> = {
   easy: [
-    // Eric Carle inspired - Simple, repetitive, nature-focused
+    // Simple, repetitive, nature-focused patterns
     { base: "{name} sees a little {animal}.", characters: CHARACTERS.animals },
     { base: "The {animal} is very hungry.", characters: CHARACTERS.animals },
     { base: "{name} gives it some {food}.", },
@@ -46,7 +46,7 @@ export const ENHANCED_TEMPLATES: Record<DifficultyLevel, TemplateVariation[]> = 
     { base: "Now it feels much better.", },
     { base: "{name} and {animal} smile together.", characters: CHARACTERS.animals },
     
-    // Margaret Wise Brown inspired - Gentle, soothing
+    // Gentle, soothing patterns
     { base: "In the quiet {setting}...", settings: SETTINGS.nature },
     { base: "Goodnight little {animal}, goodnight moon.", characters: CHARACTERS.animals },
     { base: "{name} whispers softly now.", },
@@ -62,7 +62,7 @@ export const ENHANCED_TEMPLATES: Record<DifficultyLevel, TemplateVariation[]> = 
   ],
 
   medium: [
-    // Laura Numeroff inspired - Cause and effect chains
+    // Cause and effect chain patterns
     { base: "If you give {name} a {object}, {pronoun} will want more.", objects: OBJECTS.toys },
     { base: "That will remind {name} of the time {pronoun} visited {setting}.", settings: SETTINGS.places },
     { base: "When {pronoun} thinks about {setting}, {pronoun} will want to go.", settings: SETTINGS.places },
@@ -73,7 +73,7 @@ export const ENHANCED_TEMPLATES: Record<DifficultyLevel, TemplateVariation[]> = 
     { base: "That discovery will remind them why friendships matter most.", },
     { base: "And chances are, it will all start again tomorrow.", },
     
-    // Mo Willems inspired - Emotional, conversational
+    // Emotional, conversational patterns
     { base: "{name} was having a really difficult day today.", },
     { base: "'I do NOT want to!' {pronoun} said loudly.", },
     { base: "But then {animal} had a wonderful idea.", characters: CHARACTERS.animals },
@@ -86,7 +86,7 @@ export const ENHANCED_TEMPLATES: Record<DifficultyLevel, TemplateVariation[]> = 
   ],
 
   hard: [
-    // Beverly Cleary inspired - Character-driven with real emotions
+    // Character-driven patterns with real emotions
     { base: "{name} loved living in the friendly neighborhood near {setting} where everyone knew each other.", settings: SETTINGS.places },
     { base: "Sometimes growing up meant facing problems that seemed too big to solve alone.", },
     { base: "When the neighborhood {animal} went missing, everyone was worried and searched everywhere.", characters: CHARACTERS.animals },
@@ -112,7 +112,7 @@ export const ENHANCED_TEMPLATES: Record<DifficultyLevel, TemplateVariation[]> = 
   ],
 
   expert: [
-    // Kate DiCamillo inspired - Rich storytelling with deeper themes
+    // Rich storytelling patterns with deeper themes
     { base: "{name} lived in a world where magical things happened to those who believed deeply enough.", },
     { base: "The old {setting} held stories within its walls, stories that whispered to those who listened carefully.", settings: SETTINGS.magical },
     { base: "On this particular day, when sunlight filtered through ancient windows, everything would change forever.", },

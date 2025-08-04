@@ -13,8 +13,8 @@ export interface AuthorVoice {
 }
 
 export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
-  ericCarle: {
-    name: "Eric Carle Style",
+  simpleRhythmic: {
+    name: "Simple Rhythmic Style",
     description: "Simple, rhythmic, nature-focused with repetitive patterns",
     patterns: {
       openings: [
@@ -39,8 +39,8 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
     characteristics: ["simple vocabulary", "nature themes", "repetitive structure", "satisfying conclusions"]
   },
 
-  lauraNumeroff: {
-    name: "Laura Numeroff Style", 
+  causeEffect: {
+    name: "Cause-Effect Style", 
     description: "Cause-and-effect chains with circular storytelling",
     patterns: {
       openings: [
@@ -65,8 +65,8 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
     characteristics: ["cause and effect", "circular narratives", "predictable patterns", "humor"]
   },
 
-  margaretWiseBrown: {
-    name: "Margaret Wise Brown Style",
+  gentleSoothing: {
+    name: "Gentle Soothing Style",
     description: "Gentle, soothing rhythms with everyday magic",
     patterns: {
       openings: [
@@ -91,8 +91,8 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
     characteristics: ["quiet rhythm", "bedtime comfort", "simple beauty", "peaceful endings"]
   },
 
-  moWillems: {
-    name: "Mo Willems Style",
+  conversational: {
+    name: "Conversational Style",
     description: "Conversational, emotional, friendship-focused",
     patterns: {
       openings: [
@@ -119,10 +119,10 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
 };
 
 export const DIFFICULTY_VOICE_MAPPING: Record<DifficultyLevel, string[]> = {
-  easy: ["ericCarle", "margaretWiseBrown"],
-  medium: ["lauraNumeroff", "moWillems"],
-  hard: ["moWillems", "lauraNumeroff"],
-  expert: ["margaretWiseBrown", "moWillems"]
+  easy: ["simpleRhythmic", "gentleSoothing"],
+  medium: ["causeEffect", "conversational"],
+  hard: ["conversational", "causeEffect"],
+  expert: ["gentleSoothing", "conversational"]
 };
 
 /**
