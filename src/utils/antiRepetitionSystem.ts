@@ -6,6 +6,8 @@ export class AntiRepetitionSystem {
   private static pageContent: string[] = [];
   private static persistentSignatures = new Set<string>();
   private static isInitialized = false;
+  private static usedTemplates = new Map<string, number>(); // Track template usage frequency
+  private static templatePatterns = new Set<string>(); // Track template patterns to avoid repetition
   
   /**
    * Initializes the anti-repetition system with persistent data
@@ -31,9 +33,12 @@ export class AntiRepetitionSystem {
     this.usedSentences.clear();
     this.pageContent = [];
     
+    // Clear template tracking for story continuation
     if (!preservePersistent) {
       this.persistentSignatures.clear();
       this.isInitialized = false;
+      this.usedTemplates.clear();
+      this.templatePatterns.clear();
     }
   }
   
@@ -74,7 +79,7 @@ export class AntiRepetitionSystem {
   }
 
   /**
-   * Synchronous version for backward compatibility
+   * Synchronous version for backward compatibility with template checking
    */
   static isDuplicateSync(content: string, minimumSimilarity: number = 0.5): boolean {
     const normalized = this.normalizeContent(content);
@@ -86,13 +91,26 @@ export class AntiRepetitionSystem {
       return true;
     }
     
-    // Check against session content
+    // Enhanced template pattern detection
+    const templatePattern = this.extractTemplatePattern(content);
+    if (this.templatePatterns.has(templatePattern)) {
+      console.log(`Template pattern duplicate detected: "${templatePattern}"`);
+      return true;
+    }
+    
+    // Check against session content with improved similarity
     for (const existing of this.usedSentences) {
       const similarity = this.calculateSimilarity(normalized, existing);
       if (similarity >= minimumSimilarity) {
         console.log(`Session duplicate detected (sync): "${content}" similar to "${existing}" (${similarity.toFixed(2)})`);
         return true;
       }
+    }
+    
+    // Check for near-identical sentence structure
+    if (this.hasIdenticalStructure(content)) {
+      console.log(`Identical structure detected: "${content}"`);
+      return true;
     }
     
     return false;
@@ -126,7 +144,7 @@ export class AntiRepetitionSystem {
   }
 
   /**
-   * Synchronous version for backward compatibility
+   * Synchronous version for backward compatibility with template tracking
    */
   static addContentSync(content: string): void {
     const normalized = this.normalizeContent(content);
@@ -135,6 +153,10 @@ export class AntiRepetitionSystem {
     // Add to session storage
     this.usedSentences.add(normalized);
     this.pageContent.push(content);
+    
+    // Track template patterns
+    const templatePattern = this.extractTemplatePattern(content);
+    this.templatePatterns.add(templatePattern);
     
     // Add to in-memory persistent signatures
     this.persistentSignatures.add(contentSignature);
@@ -275,5 +297,63 @@ export class AntiRepetitionSystem {
     }
     
     return sentence;
+  }
+
+  /**
+   * Extracts a template pattern from content to detect structural repetition
+   */
+  private static extractTemplatePattern(content: string): string {
+    // Remove specific details to identify structure
+    return content
+      .toLowerCase()
+      .replace(/\b[A-Z][a-z]+\b/g, 'NAME') // Replace names
+      .replace(/\b(cat|dog|bird|rabbit|bear|fox|lion|elephant|monkey|horse)\b/g, 'ANIMAL') // Replace animals
+      .replace(/\b(red|blue|green|yellow|purple|pink|orange|black|white)\b/g, 'COLOR') // Replace colors
+      .replace(/\b(ball|toy|book|flower|tree|house|car)\b/g, 'OBJECT') // Replace objects
+      .replace(/\d+/g, 'NUMBER') // Replace numbers
+      .replace(/[^\w\s]/g, '') // Remove punctuation
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  /**
+   * Checks if content has identical sentence structure to recent pages
+   */
+  private static hasIdenticalStructure(content: string): boolean {
+    const pattern = this.extractTemplatePattern(content);
+    const recentPages = this.pageContent.slice(-5); // Check last 5 pages
+    
+    for (const page of recentPages) {
+      const pagePattern = this.extractTemplatePattern(page);
+      if (pattern === pagePattern && pattern.length > 10) { // Avoid flagging very short patterns
+        return true;
+      }
+    }
+    
+    return false;
+  }
+
+  /**
+   * Checks if a template has been overused recently
+   */
+  static isTemplateOverused(templateId: string, maxUsage: number = 2): boolean {
+    const usage = this.usedTemplates.get(templateId) || 0;
+    return usage >= maxUsage;
+  }
+
+  /**
+   * Marks a template as used
+   */
+  static markTemplateUsed(templateId: string): void {
+    const currentUsage = this.usedTemplates.get(templateId) || 0;
+    this.usedTemplates.set(templateId, currentUsage + 1);
+    console.log(`Template ${templateId} usage count: ${currentUsage + 1}`);
+  }
+
+  /**
+   * Gets template usage statistics for debugging
+   */
+  static getTemplateStats(): Record<string, number> {
+    return Object.fromEntries(this.usedTemplates);
   }
 }

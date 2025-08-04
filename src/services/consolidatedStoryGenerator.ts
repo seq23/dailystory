@@ -36,6 +36,8 @@ export interface StoryGenerationResult {
 export class ConsolidatedStoryGenerator {
   private static usedTemplates = new Set<string>();
   private static usedCombinations = new Set<string>();
+  private static templateHistory = new Map<string, number>(); // Track template usage frequency
+  private static pageTemplateTracker = new Map<number, string>(); // Track which template was used for each page
 
   /**
    * Main story generation method - consolidates all previous generators with 10-phase improvements
@@ -132,12 +134,20 @@ export class ConsolidatedStoryGenerator {
       console.log(`🎯 Generating ${totalPages} pages using ${activeTemplates.length} template pages for language: ${storyLanguage}`);
       
       for (let i = 0; i < totalPages; i++) {
-        // Use template cycling if we need more pages than templates available
-        let template = activeTemplates[i % activeTemplates.length];
+        // Smart template selection to avoid repetition
+        let template = this.selectSmartTemplate(activeTemplates, i, totalPages, difficulty);
         
-        // Add variation for repeated templates
-        if (i >= activeTemplates.length) {
-          template = this.addTemplateVariation(template, i, processedUserInfo);
+        // Track template usage for this page
+        const templateIndex = activeTemplates.indexOf(template);
+        const templateId = `${difficulty}_${templateIndex}_${storyLanguage}`;
+        this.pageTemplateTracker.set(i, templateId);
+        
+        // Mark template as used in anti-repetition system
+        AntiRepetitionSystem.markTemplateUsed(templateId);
+        
+        // Enhanced template variation system
+        if (this.shouldApplyVariation(template, i, templateId)) {
+          template = this.generateEnhancedTemplateVariation(template, i, processedUserInfo, difficulty);
         }
         
         // Phase 1: Comprehensive template variable processing
@@ -151,13 +161,15 @@ export class ConsolidatedStoryGenerator {
         
         let processedPage = await TemplateVariableProcessor.processTemplate(template, variableContext);
         
-        // Phase 8: Anti-repetition system checks with improved thresholds
+        // Phase 8: Enhanced anti-repetition system checks with template awareness
         if (fullConfig.antiRepetition) {
           const diversityScore = AntiRepetitionSystem.calculateDiversityScore(processedPage);
+          const isDuplicate = AntiRepetitionSystem.isDuplicateSync(processedPage, 0.8);
+          const isTemplateOverused = AntiRepetitionSystem.isTemplateOverused(templateId, 2);
           
-          // More lenient threshold to reduce over-filtering
-          if (diversityScore < 0.5 && AntiRepetitionSystem.isDuplicateSync(processedPage, 0.8)) {
-            console.log(`Page ${i + 1}: Low diversity (${diversityScore.toFixed(2)}), generating variations...`);
+          // Enhanced checks for repetition
+          if (diversityScore < 0.5 || isDuplicate || isTemplateOverused) {
+            console.log(`Page ${i + 1}: Repetition detected - diversity: ${diversityScore.toFixed(2)}, duplicate: ${isDuplicate}, template overused: ${isTemplateOverused}`);
             
             // Generate variations to avoid repetition
             console.log(`🔧 Pre-variation page content:`, processedPage);
@@ -167,7 +179,7 @@ export class ConsolidatedStoryGenerator {
               console.log(`✅ Post-variation page content:`, processedPage);
               console.log(`Page ${i + 1}: Using variation: "${processedPage.substring(0, 50)}..."`);
             } else {
-              // Better contextual fallback
+              // Better contextual fallback with more variety
               processedPage = this.generateContextualFallback(processedUserInfo, i, totalPages);
               console.log(`Page ${i + 1}: Using contextual fallback`);
             }
@@ -394,6 +406,180 @@ export class ConsolidatedStoryGenerator {
   }
 
   /**
+   * Smart template selection to prevent repetition
+   */
+  private static selectSmartTemplate(
+    templates: string[], 
+    pageIndex: number, 
+    totalPages: number, 
+    difficulty: DifficultyLevel
+  ): string {
+    const availableTemplates = [...templates];
+    
+    // For first few pages, use templates in order
+    if (pageIndex < templates.length) {
+      return templates[pageIndex];
+    }
+    
+    // For continuation, avoid recently used templates
+    const recentlyUsed = new Set<number>();
+    const lookbackRange = Math.min(3, templates.length - 1); // Look back 3 pages or templates-1
+    
+    for (let i = Math.max(0, pageIndex - lookbackRange); i < pageIndex; i++) {
+      const usedTemplateId = this.pageTemplateTracker.get(i);
+      if (usedTemplateId) {
+        const templateIndex = parseInt(usedTemplateId.split('_')[1]);
+        recentlyUsed.add(templateIndex);
+      }
+    }
+    
+    // Find templates that haven't been used recently
+    const availableIndices = [];
+    for (let i = 0; i < templates.length; i++) {
+      if (!recentlyUsed.has(i)) {
+        availableIndices.push(i);
+      }
+    }
+    
+    // If all templates were used recently, use least recently used
+    if (availableIndices.length === 0) {
+      console.log(`⚠️ All templates recently used for page ${pageIndex + 1}, using least recent`);
+      return templates[pageIndex % templates.length];
+    }
+    
+    // Select randomly from available templates
+    const selectedIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+    console.log(`✅ Page ${pageIndex + 1}: Selected template ${selectedIndex} (avoided: ${Array.from(recentlyUsed).join(', ')})`);
+    
+    return templates[selectedIndex];
+  }
+
+  /**
+   * Determines if template variation should be applied
+   */
+  private static shouldApplyVariation(
+    template: string, 
+    pageIndex: number, 
+    templateId: string
+  ): boolean {
+    // Always apply variation for repeated template usage
+    const usageCount = this.templateHistory.get(templateId) || 0;
+    this.templateHistory.set(templateId, usageCount + 1);
+    
+    return usageCount > 0; // Apply variation if template has been used before
+  }
+
+  /**
+   * Enhanced template variation system with meaningful changes
+   */
+  private static generateEnhancedTemplateVariation(
+    template: string,
+    pageIndex: number,
+    userInfo: UserInfo,
+    difficulty: DifficultyLevel
+  ): string {
+    const variations = [];
+    
+    // Context-aware variations based on story position
+    const storyPosition = pageIndex < 3 ? 'beginning' : pageIndex > 7 ? 'ending' : 'middle';
+    
+    // Sentence structure variations
+    if (template.includes(' is ')) {
+      variations.push(template.replace(' is ', ' becomes '));
+      variations.push(template.replace(' is ', ' seems '));
+    }
+    
+    if (template.includes(' goes ')) {
+      variations.push(template.replace(' goes ', ' travels '));
+      variations.push(template.replace(' goes ', ' moves '));
+    }
+    
+    if (template.includes(' sees ')) {
+      variations.push(template.replace(' sees ', ' notices '));
+      variations.push(template.replace(' sees ', ' discovers '));
+    }
+    
+    if (template.includes(' runs ')) {
+      variations.push(template.replace(' runs ', ' dashes '));
+      variations.push(template.replace(' runs ', ' hurries '));
+    }
+    
+    // Add contextual elements based on story position
+    if (storyPosition === 'beginning') {
+      if (template.includes('{name}') && !template.toLowerCase().includes('suddenly')) {
+        variations.push(template.replace('{name}', 'Suddenly, {name}'));
+      }
+    } else if (storyPosition === 'middle') {
+      if (template.includes('{name}') && !template.toLowerCase().includes('then')) {
+        variations.push(template.replace('{name}', 'Then {name}'));
+      }
+    } else if (storyPosition === 'ending') {
+      if (template.includes('{name}') && !template.toLowerCase().includes('finally')) {
+        variations.push(template.replace('{name}', 'Finally, {name}'));
+      }
+    }
+    
+    // Difficulty-specific variations
+    if (difficulty === 'easy') {
+      // Keep variations simple for easy level
+      variations.push(template.replace(/^/, 'Now '));
+    } else if (difficulty === 'medium' || difficulty === 'hard') {
+      // More complex variations for higher levels
+      if (!template.toLowerCase().includes('meanwhile')) {
+        variations.push(`Meanwhile, ${template.toLowerCase()}`);
+      }
+    }
+    
+    // Return best variation or original if no good variations
+    const filteredVariations = variations.filter(v => 
+      v !== template && 
+      v.length > 0 && 
+      !v.includes('undefined') &&
+      this.isValidVariation(v, difficulty)
+    );
+    
+    if (filteredVariations.length > 0) {
+      const selected = filteredVariations[Math.floor(Math.random() * filteredVariations.length)];
+      console.log(`🔄 Template variation applied: "${template}" → "${selected}"`);
+      return selected;
+    }
+    
+    return template;
+  }
+
+  /**
+   * Validates if a template variation is appropriate for the difficulty level
+   */
+  private static isValidVariation(variation: string, difficulty: DifficultyLevel): boolean {
+    const wordCount = variation.split(/\s+/).length;
+    
+    // Check word count limits per difficulty
+    switch (difficulty) {
+      case 'easy':
+        return wordCount <= 6; // Keep easy variations short
+      case 'medium':
+        return wordCount <= 12;
+      case 'hard':
+        return wordCount <= 18;
+      case 'expert':
+        return wordCount <= 25;
+      default:
+        return true;
+    }
+  }
+
+  /**
+   * Clears template tracking caches
+   */
+  static clearCaches(): void {
+    this.usedTemplates.clear();
+    this.usedCombinations.clear();
+    this.templateHistory.clear();
+    this.pageTemplateTracker.clear();
+    console.log('✅ Template caches cleared');
+  }
+
+  /**
    * Generates a fallback story result when main generation fails
    */
   private static generateFallbackStoryResult(
@@ -486,10 +672,15 @@ export class ConsolidatedStoryGenerator {
   }
 
   /**
-   * Generates a template identifier for tracking
+   * Gets a template identifier for tracking
    */
-  private static getTemplateIdentifier(difficulty: DifficultyLevel, language: SupportedLanguage): string {
-    return `${language}_${difficulty}_v2`;
+  private static getTemplateIdentifier(
+    difficulty: DifficultyLevel,
+    language: string
+  ): string {
+    const templateCount = this.templateHistory.size;
+    const uniqueTemplates = new Set(Array.from(this.pageTemplateTracker.values())).size;
+    return `${language}_${difficulty}_enhanced_t${templateCount}_u${uniqueTemplates}`;
   }
 
   /**
@@ -617,12 +808,4 @@ export class ConsolidatedStoryGenerator {
     return adjustedPage;
   }
 
-  /**
-   * Clears all caches - useful for testing and new sessions
-   */
-  static clearCaches(): void {
-    this.usedTemplates.clear();
-    this.usedCombinations.clear();
-    AntiRepetitionSystem.clearCache(false); // Clear everything including persistent
-  }
 }
