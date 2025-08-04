@@ -172,7 +172,7 @@ export class UniversalContentManager {
    */
   private static processTemplate(template: string, userInfo: UserInfo): string {
     return template
-      .replace(/{name}/g, userInfo.name)
+      .replace(/{name}/g, userInfo.name || 'Alex')
       .replace(/{animal}/g, userInfo.favoriteAnimal || 'cat')
       .replace(/{color}/g, userInfo.favoriteColor || 'blue')
       .replace(/{food}/g, userInfo.favoriteFood || 'pizza')
@@ -189,34 +189,37 @@ export class UniversalContentManager {
    * Generate fallback page when template fails validation
    */
   private static generateFallbackPage(userInfo: UserInfo, difficulty: DifficultyLevel, pageIndex: number): string {
+    const name = userInfo.name || 'Alex';
+    const animal = userInfo.favoriteAnimal || 'cat';
+    
     const fallbacks = {
       easy: [
-        `${userInfo.name} has fun.`,
-        `The ${userInfo.favoriteAnimal} plays.`,
-        `${userInfo.name} is happy.`,
+        `${name} has fun.`,
+        `The ${animal} plays.`,
+        `${name} is happy.`,
         `They play together.`,
         `The day is good.`
       ],
       medium: [
-        `${userInfo.name} explores the magical garden.`,
-        `The ${userInfo.favoriteAnimal} shows ${userInfo.name} something special.`,
+        `${name} explores the magical garden.`,
+        `The ${animal} shows ${name} something special.`,
         `They discover a hidden treasure together.`,
-        `${userInfo.name} learns about friendship and kindness.`,
+        `${name} learns about friendship and kindness.`,
         `The adventure brings joy to everyone.`
       ],
       hard: [
-        `${userInfo.name} embarked on an extraordinary journey through the mysterious forest.`,
-        `The wise ${userInfo.favoriteAnimal} shared ancient secrets about courage and determination.`,
+        `${name} embarked on an extraordinary journey through the mysterious forest.`,
+        `The wise ${animal} shared ancient secrets about courage and determination.`,
         `Through teamwork and understanding, they overcame every challenge that appeared.`,
-        `${userInfo.name} discovered that true strength comes from helping others.`,
-        `This remarkable adventure changed ${userInfo.name} into a confident hero.`
+        `${name} discovered that true strength comes from helping others.`,
+        `This remarkable adventure changed ${name} into a confident hero.`
       ],
       expert: [
-        `${userInfo.name} contemplated the profound mysteries surrounding the ancient ${userInfo.favoriteAnimal} civilization.`,
-        `Through systematic observation and careful analysis, ${userInfo.name} developed innovative solutions to complex challenges.`,
+        `${name} contemplated the profound mysteries surrounding the ancient ${animal} civilization.`,
+        `Through systematic observation and careful analysis, ${name} developed innovative solutions to complex challenges.`,
         `The collaborative partnership demonstrated the transformative power of interspecies communication and understanding.`,
-        `${userInfo.name} established groundbreaking research that would benefit future generations of explorers.`,
-        `This extraordinary experience fundamentally changed ${userInfo.name}'s understanding of the interconnected nature of all existence.`
+        `${name} established groundbreaking research that would benefit future generations of explorers.`,
+        `This extraordinary experience fundamentally changed ${name}'s understanding of the interconnected nature of all existence.`
       ]
     };
 
@@ -228,17 +231,21 @@ export class UniversalContentManager {
    * Generate Level 1 vocabulary fallback for easy difficulty
    */
   private static generateLevel1Fallback(userInfo: UserInfo, pageIndex: number): string {
+    const name = userInfo.name || 'Alex';
+    const animal = userInfo.favoriteAnimal || 'cat';
+    const food = userInfo.favoriteFood || 'pizza';
+    
     const level1Fallbacks = [
-      `${userInfo.name} sees a ${userInfo.favoriteAnimal}.`,
-      `The ${userInfo.favoriteAnimal} is big.`,
-      `${userInfo.name} likes the ${userInfo.favoriteAnimal}.`,
+      `${name} sees a ${animal}.`,
+      `The ${animal} is big.`,
+      `${name} likes the ${animal}.`,
       `They play ball.`,
-      `${userInfo.name} runs fast.`,
-      `The ${userInfo.favoriteAnimal} runs too.`,
+      `${name} runs fast.`,
+      `The ${animal} runs too.`,
       `They sit down.`,
-      `${userInfo.name} eats ${userInfo.favoriteFood}.`,
+      `${name} eats ${food}.`,
       `The day is fun.`,
-      `${userInfo.name} goes home.`
+      `${name} goes home.`
     ];
 
     return level1Fallbacks[pageIndex % level1Fallbacks.length];
@@ -248,11 +255,14 @@ export class UniversalContentManager {
    * Generate story title
    */
   private static generateStoryTitle(userInfo: UserInfo, difficulty: DifficultyLevel): string {
+    const name = userInfo.name || 'Alex';
+    const animal = userInfo.favoriteAnimal || 'cat';
+    
     const templates = {
-      easy: [`${userInfo.name} and ${userInfo.favoriteAnimal}`, `${userInfo.name}'s Day`],
-      medium: [`${userInfo.name}'s Adventure`, `The Magic ${userInfo.favoriteAnimal}`],
-      hard: [`${userInfo.name} and the Quest`, `The Chronicles of ${userInfo.name}`],
-      expert: [`${userInfo.name}: The Journey`, `Tales of ${userInfo.name}`]
+      easy: [`${name} and ${animal}`, `${name}'s Day`],
+      medium: [`${name}'s Adventure`, `The Magic ${animal}`],
+      hard: [`${name} and the Quest`, `The Chronicles of ${name}`],
+      expert: [`${name}: The Journey`, `Tales of ${name}`]
     };
 
     const titleOptions = templates[difficulty] || templates.easy;
