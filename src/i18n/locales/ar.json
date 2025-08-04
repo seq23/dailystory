@@ -570,6 +570,20 @@
       "errorDescription": "فشل في إرسال التعليق. يرجى المحاولة مرة أخرى."
     }
   },
+  "interactiveWord": {
+    "hearIt": "استمع إليها",
+    "explain": "اشرح",
+    "definition": "التعريف",
+    "translate": "ترجم", 
+    "loading": "جاري التحميل...",
+    "addToVocabulary": "احفظ الكلمة",
+    "etymology": "أصل الكلمة",
+    "phoneticBreakdown": "تفكيك النطق",
+    "playingPhonetics": "تشغيل المقاطع...",
+    "syllables": "مقاطع",
+    "translationError": "الترجمة غير متاحة",
+    "audioUnavailable": "الصوت غير متاح"
+  },
   "progressTowers": {
     "title": "تقدم القراءة",
     "subtitle": "استمر في التسلق!",

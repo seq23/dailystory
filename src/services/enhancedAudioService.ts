@@ -153,9 +153,11 @@ export class EnhancedAudioService {
   async playPhoneticBreakdown(options: PhoneticsOptions): Promise<void> {
     const { word, userInfo, showSyllables = true, playbackSpeed = phoneticSettings.playbackSpeed } = options;
     
+    console.log('🔤 Starting universal phonetic breakdown for:', word, 'User:', userInfo.name, 'Language:', userInfo.nativeLanguage);
+    
     try {
       if (!showSyllables) {
-        // Simple word pronunciation - now available to all users
+        // Simple word pronunciation - available to all users universally
         return this.playText({
           text: word,
           difficulty: 'easy',

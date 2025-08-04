@@ -1106,8 +1106,42 @@ export const InteractiveWord = ({
                 <span className="hidden xs:inline">{userLanguageT("interactiveWord.etymology", "Etymology")}</span>
                 <span className="xs:hidden">Info</span>
               </button>
-            )}
-          </div>
+             )}
+             
+             {/* Universal Phonetic Breakdown Button - Available for ALL users */}
+             <button
+               onClick={async () => {
+                 setIsPlayingPhonetics(true);
+                 try {
+                   await enhancedAudioService.playPhoneticBreakdown({
+                     word: word,
+                     userInfo: userInfo!,
+                     showSyllables: true
+                   });
+                   toast({
+                     title: "Phonetic Breakdown",
+                     description: `Playing syllable-by-syllable pronunciation of "${word}"`,
+                     duration: 3000,
+                   });
+                 } catch (error) {
+                   console.error('Phonetic breakdown error:', error);
+                   toast({
+                     title: "Error",
+                     description: "Could not play phonetic breakdown. Please try again.",
+                     variant: "destructive",
+                   });
+                 } finally {
+                   setIsPlayingPhonetics(false);
+                 }
+               }}
+               disabled={isPlayingPhonetics}
+               className="flex items-center gap-1 text-xs bg-purple-50 hover:bg-purple-100 active:bg-purple-200 border border-purple-200 px-2.5 py-2 rounded-md transition-colors touch-manipulation min-h-[36px] font-medium text-purple-700 shadow-sm disabled:opacity-50"
+             >
+               <Layers className="w-3 h-3" />
+               <span className="hidden xs:inline">{isPlayingPhonetics ? "Playing..." : "Syllables"}</span>
+               <span className="xs:hidden">{isPlayingPhonetics ? "..." : "Syl"}</span>
+             </button>
+           </div>
 
           {/* Dynamic arrow positioning */}
           <div 
@@ -1891,7 +1925,7 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
                </button>
              </div>
              
-              {/* Premium Phonetic Breakdown Button */}
+              {/* Universal Phonetic Breakdown Button - Available for ALL users */}
                <div className="mb-4">
                  <button
                    onClick={handlePhoneticBreakdown}
