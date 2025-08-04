@@ -3,7 +3,7 @@ import { UserInfo, DifficultyLevel } from "@/types";
 import { NameFormatter } from "@/utils/nameFormatter";
 import { SmartInputParser } from "@/services/smartInputParser";
 
-interface DistributionContext {
+export interface DistributionContext {
   pageIndex: number;
   totalPages: number;
   difficulty: DifficultyLevel;
@@ -41,7 +41,7 @@ export class UserInputDistributor {
   }
 
   /**
-   * Get next available element from a category, ensuring variety and GUARANTEED early distribution
+   * Get next available element from a category with context-aware distribution
    */
   static getNextElement(category: string, context: DistributionContext): string {
     const pool = this.userElementsPool.get(category) || [];
@@ -51,56 +51,37 @@ export class UserInputDistributor {
       return this.getDefaultElement(category);
     }
 
-    // GUARANTEE: At least one user input appears in first 3 pages
-    if (context.pageIndex < 3) {
-      // Always prioritize unused elements in early pages
+    // Level 0 (beginner) gets prioritized user input distribution
+    if (context.difficulty === 'beginner') {
       const unused = pool.filter(item => !used.has(item));
       
       if (unused.length > 0) {
-        // For animals category, ALWAYS use the first element (user's exact input) in early pages
-        const selected = category === 'animals' && context.pageIndex === 0 ? 
+        // For Level 0, prioritize exact user input especially for animals
+        const selected = category === 'animals' ? 
           unused[0] : // First animal = user's exact input
           unused[Math.floor(Math.random() * unused.length)];
         used.add(selected);
-        console.log(`🎯 EARLY PAGE ${context.pageIndex + 1}: Using ${category} "${selected}" (${used.size}/${pool.length} used)`);
+        console.log(`📚 Level 0 Page ${context.pageIndex + 1}: Using ${category} "${selected}"`);
         return selected;
       }
     }
 
-    // For pages 4-10, continue prioritizing unused elements
-    if (context.pageIndex < 10) {
-      const unused = pool.filter(item => !used.has(item));
-      
-      if (unused.length > 0) {
-        const selected = unused[Math.floor(Math.random() * unused.length)];
-        used.add(selected);
-        console.log(`🎯 Page ${context.pageIndex + 1}: Using ${category} "${selected}" (${used.size}/${pool.length} used)`);
-        return selected;
-      }
-
-      // If all used within first 10 pages, reset to encourage re-use
-      if (used.size >= pool.length) {
-        used.clear();
-        const selected = pool[Math.floor(Math.random() * pool.length)];
-        used.add(selected);
-        console.log(`🔄 Page ${context.pageIndex + 1}: Reset ${category}, using "${selected}"`);
-        return selected;
-      }
-    }
-
-    // After page 10, use standard distribution logic
+    // Standard distribution for Level 1+ - natural story flow
     const unused = pool.filter(item => !used.has(item));
+    
     if (unused.length > 0) {
       const selected = unused[Math.floor(Math.random() * unused.length)];
       used.add(selected);
+      console.log(`📖 Page ${context.pageIndex + 1}: Using ${category} "${selected}"`);
       return selected;
     }
 
-    // Reset if all elements have been used
+    // Reset if all elements used
     if (used.size >= pool.length) {
       used.clear();
       const selected = pool[Math.floor(Math.random() * pool.length)];
       used.add(selected);
+      console.log(`🔄 Page ${context.pageIndex + 1}: Reset ${category}, using "${selected}"`);
       return selected;
     }
 

@@ -15,6 +15,14 @@ import { CharacterPoolManager, CharacterPool } from "./characterPoolManager";
 import { CharacterDrivenStoryArc, StoryContext } from "./characterDrivenStoryArc";
 import { StoryManager, TransitionConfig } from "./storyManager";
 import { getAuthorVoiceForUser, applyAuthorVoice } from "@/constants/authorVoicePatterns";
+import { getLevel0Template } from "@/constants/level0Templates";
+import { UserInputDistributor, DistributionContext } from "./userInputDistributor";
+
+export interface GeneratedContent {
+  pageNumber: number;
+  content: string;
+  illustration: string;
+}
 
 export interface ContentManagerConfig {
   isPremium: boolean;
@@ -249,7 +257,7 @@ export class UniversalContentManager {
       const characters = CharacterPoolManager.generateCharacterPool(userInfo, difficulty);
       
       // First, generate complete story content (not page-by-page)
-      const fullStoryContent = await this.generateFullStoryContent(userInfo, difficulty, characters, authorVoice, config);
+      const fullStoryContent = await this.generateFullStoryContent(pageCount, userInfo, difficulty, characters, config);
       
       // Apply vocabulary simplification to entire story
       const userName = NameFormatter.capitalize(userInfo.name || 'Alex');
@@ -921,6 +929,50 @@ export class UniversalContentManager {
   }
 
   /**
+   * Generate Level 0 content using pre-defined templates
+   */
+  private static async generateLevel0Content(
+    pageCount: number,
+    userInfo: UserInfo
+  ): Promise<GeneratedContent[]> {
+    console.log('📚 Generating Level 0 story with ultra-simple templates');
+    
+    const { UserInputDistributor } = await import('./userInputDistributor');
+    await UserInputDistributor.initialize(userInfo);
+    
+    const content: GeneratedContent[] = [];
+    
+    // Get a Level 0 template (4-6 words per sentence)
+    const template = getLevel0Template();
+    
+    for (let pageIndex = 0; pageIndex < Math.min(pageCount, template.length); pageIndex++) {
+      const distributionContext = {
+        pageIndex,
+        totalPages: pageCount,
+        difficulty: 'beginner' as DifficultyLevel,
+        usedInputs: new Set<string>()
+      };
+      
+      // Get template variables including user inputs
+      const templateVariables = UserInputDistributor.getTemplateVariables(userInfo, distributionContext);
+      
+      // Apply template variable substitution to Level 0 sentence
+      let pageContent = template[pageIndex];
+      Object.entries(templateVariables).forEach(([key, value]) => {
+        pageContent = pageContent.replace(new RegExp(key.replace(/[{}]/g, '\\$&'), 'g'), value);
+      });
+      
+      content.push({
+        pageNumber: pageIndex + 1,
+        content: pageContent,
+        illustration: `story-illustration-${pageIndex + 1}.jpg`
+      });
+    }
+    
+    return content;
+  }
+
+  /**
    * Get appropriate page count for difficulty level with free trial considerations
    */
   private static getPageCountForDifficulty(
@@ -948,10 +1000,10 @@ export class UniversalContentManager {
    * Generate full story content as coherent narrative
    */
   private static async generateFullStoryContent(
+    pageCount: number,
     userInfo: UserInfo,
     difficulty: DifficultyLevel,
     characters: CharacterPool,
-    authorVoice: any,
     config: ContentManagerConfig
   ): Promise<string> {
     // Initialize user input distributor
@@ -1033,6 +1085,7 @@ export class UniversalContentManager {
     console.log(`📝 Generated story with user inputs: ${templateVars['{animal}']}, ${templateVars['{color}']}, ${templateVars['{food}']}`);
     
     // Apply story style to the full narrative
+    const authorVoice = getAuthorVoiceForUser(userInfo, difficulty);
     return applyAuthorVoice(fullContent, authorVoice, 'opening');
   }
 
