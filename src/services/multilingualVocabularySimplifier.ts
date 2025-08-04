@@ -3,11 +3,12 @@
 
 import { SupportedLanguage } from '@/types/multilingual';
 import { LanguagePreferenceService } from './languagePreferenceService';
+import { validateLevel0Sentence, isLevel0Word } from '@/constants/level0Vocabulary';
 import { validateLevel1Sentence, isLevel1Word } from '@/constants/level1Vocabulary';
 import { validateLevel2Sentence, isLevel2Word } from '@/constants/level2Vocabulary';
 import { validateLevel3Sentence, isLevel3Word } from '@/constants/level3Vocabulary';
 
-export type VocabularyLevel = 1 | 2 | 3;
+export type VocabularyLevel = 0 | 1 | 2 | 3;
 
 export interface VocabularySimplificationResult {
   text: string;
@@ -236,7 +237,8 @@ export class MultilingualVocabularySimplifier {
     let replacedText = text;
     
     // Get appropriate replacement map for the target level
-    const replacementMap = targetLevel === 1 ? this.getLevelFallbackReplacements() :
+    const replacementMap = targetLevel === 0 ? this.getLevel0FallbackReplacements() :
+                          targetLevel === 1 ? this.getLevelFallbackReplacements() :
                           targetLevel === 2 ? this.LEVEL_2_WORD_REPLACEMENTS :
                           this.LEVEL_3_WORD_REPLACEMENTS;
     
@@ -256,7 +258,13 @@ export class MultilingualVocabularySimplifier {
     let restructured = text;
     
     // Level-specific restructuring patterns
-    if (targetLevel === 1) {
+    if (targetLevel === 0) {
+      // Ultra-simple restructuring for Level 0 - just break into smaller sentences
+      restructured = restructured
+        .replace(/\band\s+/g, '. ')
+        .replace(/\bor\s+/g, '. ')
+        .replace(/\bso\s+/g, '. ');
+    } else if (targetLevel === 1) {
       // Very simple restructuring for Level 1
       restructured = restructured
         .replace(/\band\s+/g, '. ')
@@ -295,13 +303,14 @@ export class MultilingualVocabularySimplifier {
     
     // Level-specific story-enhancing words that can be allowed
     const storyEnhancingWords = {
+      0: [], // No story-enhancing words for Level 0 - ultra-strict
       1: ['adventure', 'magical', 'princess', 'dragon', 'castle', 'forest', 'treasure'],
       2: ['mysterious', 'wonderful', 'amazing', 'incredible', 'fantastic', 'adventure', 'journey', 'discovery'],
       3: ['extraordinary', 'magnificent', 'spectacular', 'fascinating', 'remarkable', 'tremendous', 'investigation', 'exploration']
     };
     
     const allowedEnhancingWords = storyEnhancingWords[targetLevel] || [];
-    const maxAllowedInvalidWords = targetLevel === 1 ? 2 : targetLevel === 2 ? 3 : 4;
+    const maxAllowedInvalidWords = targetLevel === 0 ? 0 : targetLevel === 1 ? 2 : targetLevel === 2 ? 3 : 4;
     
     let invalidWordCount = 0;
     const allowedWords: string[] = [];
@@ -329,6 +338,8 @@ export class MultilingualVocabularySimplifier {
    */
   private static validateLevelText(text: string, targetLevel: VocabularyLevel, userName: string): boolean {
     switch (targetLevel) {
+      case 0:
+        return validateLevel0Sentence(text, userName).isValid;
       case 1:
         return validateLevel1Sentence(text, userName).isValid;
       case 2:
@@ -345,6 +356,8 @@ export class MultilingualVocabularySimplifier {
    */
   private static getInvalidWords(text: string, targetLevel: VocabularyLevel, userName: string): string[] {
     switch (targetLevel) {
+      case 0:
+        return validateLevel0Sentence(text, userName).invalidWords;
       case 1:
         return validateLevel1Sentence(text, userName).invalidWords;
       case 2:
@@ -361,6 +374,8 @@ export class MultilingualVocabularySimplifier {
    */
   private static isLevelWord(word: string, targetLevel: VocabularyLevel): boolean {
     switch (targetLevel) {
+      case 0:
+        return isLevel0Word(word);
       case 1:
         return isLevel1Word(word);
       case 2:
@@ -400,6 +415,39 @@ export class MultilingualVocabularySimplifier {
       ['carefully', 'slow'],
       ['quickly', 'fast'],
       ['together', 'with']
+    ]);
+  }
+
+  /**
+   * Get Level 0 fallback replacements for ultra-simple pre-reading
+   */
+  private static getLevel0FallbackReplacements(): Map<string, string> {
+    return new Map([
+      ['beautiful', 'nice'],
+      ['wonderful', 'good'],
+      ['amazing', 'good'],
+      ['fantastic', 'fun'],
+      ['incredible', 'big'],
+      ['enormous', 'big'],
+      ['tiny', 'small'],
+      ['delicious', 'good'],
+      ['frightening', 'bad'],
+      ['discovered', 'found'],
+      ['journey', 'go'],
+      ['adventure', 'fun'],
+      ['mysterious', 'funny'],
+      ['dangerous', 'bad'],
+      ['peaceful', 'nice'],
+      ['important', 'big'],
+      ['different', 'new'],
+      ['remember', 'know'],
+      ['favorite', 'best'],
+      ['suddenly', 'fast'],
+      ['carefully', 'slow'],
+      ['quickly', 'fast'],
+      ['together', 'with'],
+      ['hello', 'hi'],
+      ['goodbye', 'bye']
     ]);
   }
 

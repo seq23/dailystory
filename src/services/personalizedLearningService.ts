@@ -6,7 +6,7 @@ export interface LearningChallenge {
   type: "vocabulary" | "comprehension" | "phonics" | "fluency" | "writing";
   title: string;
   description: string;
-  difficulty: "easy" | "medium" | "hard" | "expert";
+  difficulty: "beginner" | "easy" | "medium" | "hard" | "expert";
   targetAudience: "native" | "esl" | "both";
   estimatedMinutes: number;
   requiredLevel: number;
@@ -22,7 +22,7 @@ export interface LearningPath {
   name: string;
   description: string;
   targetAudience: "native" | "esl" | "both";
-  difficulty: "easy" | "medium" | "hard" | "expert";
+  difficulty: "beginner" | "easy" | "medium" | "hard" | "expert";
   challenges: LearningChallenge[];
   totalEstimatedHours: number;
   prerequisites?: string[];
@@ -34,7 +34,7 @@ export interface VocabularyGame {
   words: Array<{
     word: string;
     definition: string;
-    difficulty: "easy" | "medium" | "hard" | "expert";
+    difficulty: "beginner" | "easy" | "medium" | "hard" | "expert";
     context: string;
   }>;
   timeLimit?: number;
@@ -50,7 +50,7 @@ export interface ComprehensionQuiz {
     correctAnswer: number;
     explanation: string;
   }>;
-  difficulty: "easy" | "medium" | "hard" | "expert";
+  difficulty: "beginner" | "easy" | "medium" | "hard" | "expert";
   targetAudience: "native" | "esl" | "both";
 }
 
@@ -76,7 +76,7 @@ export class PersonalizedLearningService {
     };
   }
 
-  private static determineUserLevel(userInfo: UserInfo, progress: ReadingProgress): "easy" | "medium" | "hard" | "expert" {
+  private static determineUserLevel(userInfo: UserInfo, progress: ReadingProgress): "beginner" | "easy" | "medium" | "hard" | "expert" {
     const age = userInfo.age || 8;
     const readingAbility = userInfo.readingAbility;
     const storiesCompleted = progress.storiesCompleted;
@@ -85,12 +85,14 @@ export class PersonalizedLearningService {
     const isESLLearner = userInfo.nativeLanguage !== 'en';
     
     if (isESLLearner) {
+      if (age < 6 || readingAbility === "beginner" || storiesCompleted < 1) return "beginner";
       if (age < 8 || readingAbility === "easy" || storiesCompleted < 3) return "easy";
       if (age < 12 || readingAbility === "medium" || storiesCompleted < 8) return "medium";
       if (age < 16 || readingAbility === "hard" || storiesCompleted < 15) return "hard";
       return "expert";
     } else {
-      if (age < 6 || readingAbility === "easy" || storiesCompleted < 5) return "easy";
+      if (age < 6 || readingAbility === "beginner" || storiesCompleted < 2) return "beginner";
+      if (age < 8 || readingAbility === "easy" || storiesCompleted < 5) return "easy";
       if (age < 10 || readingAbility === "medium" || storiesCompleted < 12) return "medium";
       if (age < 14 || readingAbility === "hard" || storiesCompleted < 20) return "hard";
       return "expert";
@@ -105,8 +107,10 @@ export class PersonalizedLearningService {
     }
   }
 
-  private static getPrerequisites(level: "easy" | "medium" | "hard" | "expert"): string[] {
+  private static getPrerequisites(level: "beginner" | "easy" | "medium" | "hard" | "expert"): string[] {
     switch (level) {
+      case "beginner":
+        return ["Alphabet recognition", "Letter sounds"];
       case "easy":
         return ["Basic letter recognition", "Simple word recognition"];
       case "medium":
@@ -123,7 +127,7 @@ export class PersonalizedLearningService {
   private static generateChallenges(
     userInfo: UserInfo, 
     progress: ReadingProgress, 
-    level: "easy" | "medium" | "hard" | "expert",
+    level: "beginner" | "easy" | "medium" | "hard" | "expert",
     targetAudience: "native" | "esl" | "both"
   ): LearningChallenge[] {
     const challenges: LearningChallenge[] = [];
@@ -135,7 +139,7 @@ export class PersonalizedLearningService {
     challenges.push(this.createComprehensionChallenge(userInfo, level, targetAudience));
     
     // Phonics challenges (especially important for ESL learners)
-    if (targetAudience === "esl" || level === "easy") {
+    if (targetAudience === "esl" || level === "beginner" || level === "easy") {
       challenges.push(this.createPhonicsChallenge(userInfo, level, targetAudience));
     }
     
@@ -152,7 +156,7 @@ export class PersonalizedLearningService {
 
   private static createVocabularyChallenge(
     userInfo: UserInfo, 
-    level: "easy" | "medium" | "hard" | "expert",
+    level: "beginner" | "easy" | "medium" | "hard" | "expert",
     targetAudience: "native" | "esl" | "both"
   ): LearningChallenge {
     const vocabularyWords = this.getVocabularyWords(level, targetAudience, userInfo);
@@ -179,7 +183,7 @@ export class PersonalizedLearningService {
 
   private static createComprehensionChallenge(
     userInfo: UserInfo, 
-    level: "easy" | "medium" | "hard" | "expert",
+    level: "beginner" | "easy" | "medium" | "hard" | "expert",
     targetAudience: "native" | "esl" | "both"
   ): LearningChallenge {
     return {
@@ -204,7 +208,7 @@ export class PersonalizedLearningService {
 
   private static createPhonicsChallenge(
     userInfo: UserInfo, 
-    level: "easy" | "medium" | "hard" | "expert",
+    level: "beginner" | "easy" | "medium" | "hard" | "expert",
     targetAudience: "native" | "esl" | "both"
   ): LearningChallenge {
     return {
@@ -229,7 +233,7 @@ export class PersonalizedLearningService {
 
   private static createFluencyChallenge(
     userInfo: UserInfo, 
-    level: "easy" | "medium" | "hard" | "expert",
+    level: "beginner" | "easy" | "medium" | "hard" | "expert",
     targetAudience: "native" | "esl" | "both"
   ): LearningChallenge {
     return {
@@ -254,7 +258,7 @@ export class PersonalizedLearningService {
 
   private static createWritingChallenge(
     userInfo: UserInfo, 
-    level: "easy" | "medium" | "hard" | "expert",
+    level: "beginner" | "easy" | "medium" | "hard" | "expert",
     targetAudience: "native" | "esl" | "both"
   ): LearningChallenge {
     return {
@@ -279,8 +283,9 @@ export class PersonalizedLearningService {
   }
 
   // Helper methods
-  private static getLevelNumber(level: "easy" | "medium" | "hard" | "expert"): number {
+  private static getLevelNumber(level: "beginner" | "easy" | "medium" | "hard" | "expert"): number {
     switch (level) {
+      case "beginner": return 0;
       case "easy": return 1;
       case "medium": return 2;
       case "hard": return 3;
@@ -290,11 +295,12 @@ export class PersonalizedLearningService {
   }
 
   private static getVocabularyWords(
-    level: "easy" | "medium" | "hard" | "expert",
+    level: "beginner" | "easy" | "medium" | "hard" | "expert",
     targetAudience: "native" | "esl" | "both",
     userInfo: UserInfo
   ) {
     const baseWords = {
+      beginner: ["cat", "dog", "see", "go", "play", "ball", "fun", "toy"],
       easy: ["happy", "friend", "color", "animal", "home", "family", "play", "learn"],
       medium: ["adventure", "mystery", "courage", "discover", "magical", "wisdom", "journey", "treasure"],
       hard: ["perseverance", "determination", "extraordinary", "magnificent", "mysterious", "resilience", "empathy", "civilization"],
@@ -310,11 +316,12 @@ export class PersonalizedLearningService {
       personalizedWords.push(...this.getAnimalRelatedWords(userInfo.favoriteAnimal, level));
     }
 
-    return [...baseWords[level], ...personalizedWords].slice(0, level === "easy" ? 8 : level === "medium" ? 10 : 12);
+    return [...baseWords[level], ...personalizedWords].slice(0, level === "beginner" ? 6 : level === "easy" ? 8 : level === "medium" ? 10 : 12);
   }
 
-  private static getHobbyRelatedWords(hobby: string, level: "easy" | "medium" | "hard" | "expert"): string[] {
+  private static getHobbyRelatedWords(hobby: string, level: "beginner" | "easy" | "medium" | "hard" | "expert"): string[] {
     const hobbyWords = {
+      beginner: ["fun", "play", "go"],
       easy: ["fun", "game", "sport", "art", "music"],
       medium: ["creative", "athletic", "artistic", "musical", "skillful"],
       hard: ["recreational", "competitive", "expressive", "therapeutic", "disciplined"],
@@ -323,8 +330,9 @@ export class PersonalizedLearningService {
     return hobbyWords[level] || [];
   }
 
-  private static getAnimalRelatedWords(animal: string, level: "easy" | "medium" | "hard" | "expert"): string[] {
+  private static getAnimalRelatedWords(animal: string, level: "beginner" | "easy" | "medium" | "hard" | "expert"): string[] {
     const animalWords = {
+      beginner: ["pet", "big", "small"],
       easy: ["pet", "wild", "cute", "big", "small"],
       medium: ["habitat", "species", "behavior", "instinct", "ecosystem"],
       hard: ["biodiversity", "conservation", "adaptation", "evolution", "predatory"],
@@ -333,8 +341,9 @@ export class PersonalizedLearningService {
     return animalWords[level] || [];
   }
 
-  private static getPhonicsPatterns(level: "easy" | "medium" | "hard" | "expert"): string[] {
+  private static getPhonicsPatterns(level: "beginner" | "easy" | "medium" | "hard" | "expert"): string[] {
     switch (level) {
+      case "beginner": return ["a", "i", "o"]; // Just vowels for pre-readers
       case "easy": return ["at", "an", "it", "in", "op", "ot"];
       case "medium": return ["ch", "sh", "th", "ng", "ck", "qu"];
       case "hard": return ["tion", "sion", "ough", "ight", "eigh"];
@@ -343,8 +352,9 @@ export class PersonalizedLearningService {
     }
   }
 
-  private static getPhonicsWords(level: "easy" | "medium" | "hard" | "expert", targetAudience: "native" | "esl" | "both"): string[] {
+  private static getPhonicsWords(level: "beginner" | "easy" | "medium" | "hard" | "expert", targetAudience: "native" | "esl" | "both"): string[] {
     const words = {
+      beginner: ["a", "i", "go", "me", "we"], // Ultra-simple for pre-readers
       easy: ["cat", "bat", "hat", "sit", "hit", "top", "hop"],
       medium: ["chair", "ship", "think", "bring", "duck", "quick"],
       hard: ["action", "mission", "through", "light", "eight"],
@@ -353,12 +363,13 @@ export class PersonalizedLearningService {
     return words[level] || [];
   }
 
-  private static getFluencyPassages(level: "easy" | "medium" | "hard" | "expert", targetAudience: "native" | "esl" | "both"): string[] {
+  private static getFluencyPassages(level: "beginner" | "easy" | "medium" | "hard" | "expert", targetAudience: "native" | "esl" | "both"): string[] {
     return [`Sample passage for ${level} level fluency practice.`];
   }
 
-  private static getTargetWPM(level: "easy" | "medium" | "hard" | "expert", targetAudience: "native" | "esl" | "both"): number {
+  private static getTargetWPM(level: "beginner" | "easy" | "medium" | "hard" | "expert", targetAudience: "native" | "esl" | "both"): number {
     const baseWPM = {
+      beginner: 10, // Very slow for pre-readers
       easy: 60,
       medium: 80,
       hard: 120,
@@ -369,8 +380,12 @@ export class PersonalizedLearningService {
     return targetAudience === "esl" ? Math.floor(baseWPM[level] * 0.8) : baseWPM[level];
   }
 
-  private static getWritingPrompts(level: "easy" | "medium" | "hard" | "expert", userInfo: UserInfo): string[] {
+  private static getWritingPrompts(level: "beginner" | "easy" | "medium" | "hard" | "expert", userInfo: UserInfo): string[] {
     const prompts = {
+      beginner: [
+        `Draw your ${userInfo.favoriteAnimal || "pet"}`,
+        `Show me your toy`
+      ],
       easy: [
         `Write about your favorite ${userInfo.favoriteAnimal || "animal"}`,
         `Describe a perfect day`,
@@ -396,12 +411,12 @@ export class PersonalizedLearningService {
     return prompts[level] || [];
   }
 
-  private static getRequiredVocabulary(level: "easy" | "medium" | "hard" | "expert"): string[] {
+  private static getRequiredVocabulary(level: "beginner" | "easy" | "medium" | "hard" | "expert"): string[] {
     return this.getVocabularyWords(level, "both", {} as UserInfo).slice(0, 5);
   }
 
   // Generate vocabulary game based on user progress
-  static generateVocabularyGame(userInfo: UserInfo, difficulty: "easy" | "medium" | "hard" | "expert"): VocabularyGame {
+  static generateVocabularyGame(userInfo: UserInfo, difficulty: "beginner" | "easy" | "medium" | "hard" | "expert"): VocabularyGame {
     const words = this.getVocabularyWords(difficulty, userInfo.nativeLanguage !== 'en' ? "esl" : "native", userInfo);
     
     return {
@@ -413,13 +428,13 @@ export class PersonalizedLearningService {
         difficulty,
         context: `Example sentence with ${word}.`
       })),
-      timeLimit: difficulty === "easy" ? 120 : difficulty === "medium" ? 90 : 60,
+      timeLimit: difficulty === "beginner" ? 180 : difficulty === "easy" ? 120 : difficulty === "medium" ? 90 : 60,
       targetScore: Math.floor(words.length * 0.8)
     };
   }
 
   // Generate comprehension quiz based on a story
-  static generateComprehensionQuiz(storyContent: string[], userInfo: UserInfo, difficulty: "easy" | "medium" | "hard" | "expert"): ComprehensionQuiz {
+  static generateComprehensionQuiz(storyContent: string[], userInfo: UserInfo, difficulty: "beginner" | "easy" | "medium" | "hard" | "expert"): ComprehensionQuiz {
     const storyExcerpt = storyContent.slice(0, 3).join(" ");
     
     const questions = [

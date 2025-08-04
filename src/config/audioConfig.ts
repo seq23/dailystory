@@ -12,7 +12,7 @@ export interface AudioSettings {
   
   // Word highlighting settings
   highlighting: {
-    enabledForLevels: ('easy' | 'medium' | 'hard' | 'expert')[];
+    enabledForLevels: ('beginner' | 'easy' | 'medium' | 'hard' | 'expert')[];
     highlightDuration: number; // milliseconds per word
     highlightClass: string;
   };

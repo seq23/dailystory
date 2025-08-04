@@ -3,7 +3,9 @@ import { DIFFICULTY_APPROPRIATE_TEMPLATES, validateDifficultyCompliance, getDiff
 import { getEnhancedTemplatePool } from "@/constants/enhancedTemplates";
 import { SessionTemplateManager } from "@/services/sessionTemplateManager";
 import { validateLevel1Sentence } from "@/constants/level1Vocabulary";
+import { validateLevel0Sentence } from "@/constants/level0Vocabulary";
 import { Level1Simplifier } from "./level1Simplifier";
+import { Level0Simplifier } from "./level0Simplifier";
 import { VocabularyLevelClassifier } from "@/utils/vocabularyLevelClassifier";
 import { StoryQualityChecker } from "@/utils/storyQualityChecker";
 import { APP_CONFIG } from "@/constants/app";
@@ -251,7 +253,7 @@ export class UniversalContentManager {
       // Apply vocabulary simplification to entire story
       const userName = NameFormatter.capitalize(userInfo.name || 'Alex');
       const { MultilingualVocabularySimplifier } = await import('./multilingualVocabularySimplifier');
-      const targetLevel = difficulty === 'easy' ? 1 : 2;
+      const targetLevel = difficulty === 'beginner' ? 0 : difficulty === 'easy' ? 1 : 2;
       
       // Ensure language compatibility - free users get English only
       const languageCompatibleUserInfo = !config.isPremium ? 
@@ -374,7 +376,18 @@ export class UniversalContentManager {
         // Apply vocabulary simplification based on difficulty level
         const userName = NameFormatter.capitalize(userInfo.name || 'Alex');
         
-        if (difficulty === 'easy') {
+        if (difficulty === 'beginner') {
+          // Level 0 vocabulary (ages 3-5) - Ultra-simple pre-reading
+          const simplificationResult = Level0Simplifier.simplifyForLevel0(processedPage, userName);
+          
+          if (simplificationResult.wasSimplified) {
+            console.log(`🔄 Page ${i + 1} simplified to Level 0 using ${simplificationResult.strategy}: "${simplificationResult.simplifiedText}"`);
+            processedPage = simplificationResult.simplifiedText;
+          } else if (simplificationResult.strategy === 'none' && simplificationResult.originalInvalidWords?.length > 0) {
+            console.warn(`⚠️ Page ${i + 1} failed all Level 0 simplification strategies, using fallback. Invalid words: ${simplificationResult.originalInvalidWords.join(', ')}`);
+            processedPage = this.generateLevel0Fallback(userInfo, i);
+          }
+        } else if (difficulty === 'easy') {
           // Level 1 vocabulary (ages 3-5)
           const { MultilingualVocabularySimplifier } = await import('./multilingualVocabularySimplifier');
           const simplificationResult = MultilingualVocabularySimplifier.simplifyForLevel(
@@ -427,8 +440,8 @@ export class UniversalContentManager {
           processedPage = this.enhanceWithProgressiveComplexity(processedPage, userInfo, config.isPremium);
         }
         
-        // Final validation - only for easy/medium levels (sentence-based)
-        if (difficulty === 'easy' || difficulty === 'medium') {
+        // Final validation - only for beginner/easy/medium levels (sentence-based)
+        if (difficulty === 'beginner' || difficulty === 'easy' || difficulty === 'medium') {
           // Validate word count for sentence-based levels AFTER template processing
           const wordValidation = validateDifficultyCompliance(processedPage, difficulty, false); // false = flexible mode
           if (!wordValidation.isValid && wordValidation.zone === 'red') {
@@ -484,6 +497,7 @@ export class UniversalContentManager {
   ): string {
     // Add transitional elements for better flow
     const transitions = {
+      beginner: ["Then", "Next"], // Ultra-simple for pre-readers
       easy: ["Then", "Next", "After that", "Soon"],
       medium: ["Meanwhile", "Later that day", "Suddenly", "As it happened"],
       hard: ["In the meantime", "Before long", "Eventually", "As the story continues"],
@@ -741,6 +755,31 @@ export class UniversalContentManager {
 
 
   /**
+   * Generate Level 0 vocabulary fallback for ultra-simple pre-reading (ages 3-5)
+   */
+  private static generateLevel0Fallback(userInfo: UserInfo, pageIndex: number): string {
+    const level0Templates = [
+      "{name} sees a cat.",
+      "{name} likes it.",
+      "The cat is red.",
+      "{name} says hello.",
+      "They play together.",
+      "The cat runs fast.",
+      "{name} runs too.",
+      "Good friends today.",
+      "{name} is happy.",
+      "Fun time!"
+    ];
+    
+    // Use different templates to avoid repetition
+    const templateIndex = pageIndex % level0Templates.length;
+    const template = level0Templates[templateIndex];
+    
+    // Simple processing - only replace name and basic words
+    return template.replace(/{name}/g, NameFormatter.capitalize(userInfo.name || 'Alex'));
+  }
+
+  /**
    * Generate Level 1 vocabulary fallback using StoryArcManager for proper template processing
    */
   private static generateLevel1Fallback(userInfo: UserInfo, pageIndex: number): string {
@@ -893,6 +932,7 @@ export class UniversalContentManager {
     
     // Premium: Varied page counts by difficulty
     const premiumPageCounts = {
+      beginner: 6,  // Shorter for pre-readers
       easy: 8,
       medium: 10,
       hard: 12,
