@@ -41,7 +41,7 @@ export class UserInputDistributor {
   }
 
   /**
-   * Get next available element from a category, ensuring variety and early distribution
+   * Get next available element from a category, ensuring variety and GUARANTEED early distribution
    */
   static getNextElement(category: string, context: DistributionContext): string {
     const pool = this.userElementsPool.get(category) || [];
@@ -51,15 +51,30 @@ export class UserInputDistributor {
       return this.getDefaultElement(category);
     }
 
-    // For first 10 pages, prioritize using all user elements early
+    // GUARANTEE: At least one user input appears in first 3 pages
+    if (context.pageIndex < 3) {
+      // Always prioritize unused elements in early pages
+      const unused = pool.filter(item => !used.has(item));
+      
+      if (unused.length > 0) {
+        // For animals category, ALWAYS use the first element (user's exact input) in early pages
+        const selected = category === 'animals' && context.pageIndex === 0 ? 
+          unused[0] : // First animal = user's exact input
+          unused[Math.floor(Math.random() * unused.length)];
+        used.add(selected);
+        console.log(`🎯 EARLY PAGE ${context.pageIndex + 1}: Using ${category} "${selected}" (${used.size}/${pool.length} used)`);
+        return selected;
+      }
+    }
+
+    // For pages 4-10, continue prioritizing unused elements
     if (context.pageIndex < 10) {
-      // Find unused elements first
       const unused = pool.filter(item => !used.has(item));
       
       if (unused.length > 0) {
         const selected = unused[Math.floor(Math.random() * unused.length)];
         used.add(selected);
-        console.log(`🎯 Page ${context.pageIndex}: Using ${category} "${selected}" (${used.size}/${pool.length} used)`);
+        console.log(`🎯 Page ${context.pageIndex + 1}: Using ${category} "${selected}" (${used.size}/${pool.length} used)`);
         return selected;
       }
 
@@ -68,7 +83,7 @@ export class UserInputDistributor {
         used.clear();
         const selected = pool[Math.floor(Math.random() * pool.length)];
         used.add(selected);
-        console.log(`🔄 Page ${context.pageIndex}: Reset ${category}, using "${selected}"`);
+        console.log(`🔄 Page ${context.pageIndex + 1}: Reset ${category}, using "${selected}"`);
         return selected;
       }
     }
@@ -164,34 +179,34 @@ export class UserInputDistributor {
   }
 
   /**
-   * Extract animals from user input with intelligent multi-tag parsing
+   * Extract animals from user input with intelligent multi-tag parsing - PRIORITIZE EXACT USER INPUT
    */
   private static async extractAnimals(userInfo: UserInfo): Promise<string[]> {
     const animals = new Set<string>();
     
-    // Parse favorite animal input using SmartInputParser
+    // PRIORITY: User's exact favorite animal input comes first
     if (userInfo.favoriteAnimal) {
+      const exactInput = userInfo.favoriteAnimal.toLowerCase().trim();
+      console.log(`🎯 Adding user's exact animal input: "${exactInput}"`);
+      animals.add(exactInput); // Add exact input FIRST
+      
       try {
         const animalTags = userInfo.favoriteAnimal.split(/[,\s]+/).filter(tag => tag.trim().length > 0);
         if (animalTags.length > 1) {
-          // Multiple animals detected - use smart parsing
+          // Multiple animals detected - use smart parsing for additional variety
           const parseResult = await SmartInputParser.parseTaggedInput(animalTags, userInfo);
           parseResult.parsedTags.forEach(tag => {
             if (tag.category === 'animal' || this.isAnimalWord(tag.corrected)) {
               animals.add(tag.corrected.toLowerCase());
             }
           });
-        } else {
-          // Single animal
-          animals.add(userInfo.favoriteAnimal.toLowerCase().trim());
         }
       } catch (error) {
-        console.warn('Smart parsing failed, using fallback:', error);
-        animals.add(userInfo.favoriteAnimal.toLowerCase().trim());
+        console.warn('Smart parsing failed, but exact input already added:', error);
       }
     }
     
-    // Extract from hobbies/interests with parsing
+    // Extract from hobbies/interests for additional variety (secondary priority)
     if (userInfo.hobbies) {
       const hobbyTags = userInfo.hobbies.split(/[,\s]+/).filter(tag => tag.trim().length > 0);
       hobbyTags.forEach(tag => {
@@ -201,18 +216,19 @@ export class UserInputDistributor {
       });
     }
     
-    // Ensure we have at least 2-3 animals for variety
+    // Add fallback animals only if needed, maintaining exact input priority
     const animalList = Array.from(animals);
     if (animalList.length < 2) {
       const defaults = ['dog', 'cat', 'bird'];
       defaults.forEach(animal => {
-        if (!animalList.includes(animal)) {
+        if (!animalList.includes(animal) && animalList.length < 4) {
           animalList.push(animal);
         }
       });
     }
     
-    return animalList.slice(0, 4); // Max 4 for manageability
+    console.log(`🐾 Final animal pool:`, animalList);
+    return animalList.slice(0, 4); // Max 4 for manageability, with user input prioritized
   }
 
   /**

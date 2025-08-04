@@ -238,7 +238,8 @@ export class UniversalContentManager {
     try {
       // Initialize vocabulary-enhanced input system
       const { UserInputDistributor } = await import('./userInputDistributor');
-      UserInputDistributor.initialize(userInfo);
+      UserInputDistributor.reset(); // Reset tracking for new story
+      await UserInputDistributor.initialize(userInfo);
       
       // Select age-appropriate story style
       const authorVoice = getAuthorVoiceForUser(userInfo, difficulty);
@@ -316,7 +317,8 @@ export class UniversalContentManager {
     try {
       // Initialize vocabulary-enhanced input system
       const { UserInputDistributor } = await import('./userInputDistributor');
-      UserInputDistributor.initialize(userInfo);
+      UserInputDistributor.reset(); // Reset tracking for new story
+      await UserInputDistributor.initialize(userInfo);
       console.log(`📝 Initialized vocabulary-enhanced input system for user inputs`);
       
       // Select age-appropriate story style
@@ -954,6 +956,7 @@ export class UniversalContentManager {
   ): Promise<string> {
     // Initialize user input distributor
     const { UserInputDistributor } = await import('./userInputDistributor');
+    UserInputDistributor.reset(); // Reset tracking for new story
     await UserInputDistributor.initialize(userInfo);
     
     // Get template variables with user inputs
@@ -977,31 +980,51 @@ export class UniversalContentManager {
       return result;
     };
     
-    // Create a longer narrative arc for sentence-based splitting with user inputs
-    const storyArcs = {
-      easy: [
-        `{name} wakes up and feels happy. Today is a special day for adventures.`,
-        `{name} goes outside and sees a friendly {animal}. They want to play together.`,
-        `They run and jump and laugh. {name} likes this {color} {animal} very much.`,
-        `The {animal} shows {name} a secret place. It is full of fun things to do.`,
-        `They play games and share {food}. {name} learns that sharing is nice.`,
-        `When it gets dark, they say goodbye. {name} feels very happy and tired.`,
-        `{name} goes home and tells everyone about the fun day. Everyone smiles.`,
-        `That night, {name} dreams about more adventures with the {animal}. Tomorrow will be fun too.`
-      ],
-      medium: [
-        `{name} discovered something magical in the garden behind their house.`,
-        `A tiny {color} door glowed softly between the flower roots, and curious sounds came from inside.`,
-        `A wise {animal} appeared and explained that the door led to a world of wonder.`,
-        `Together they stepped through and found themselves in a land where music filled the air.`,
-        `The trees sang gentle melodies, and the {color} flowers danced to the rhythm of the wind.`,
-        `{name} learned that kindness and friendship could make the music even more beautiful.`,
-        `They helped solve a problem for the singing trees and were rewarded with magical {food}.`,
-        `When it was time to leave, {name} promised to visit the {animal} again and share the magic with others.`
-      ]
+    // Create dynamic narrative arcs that guarantee user input usage with intelligent distribution
+    const generateUserInputAwareArc = (difficulty: DifficultyLevel): string[] => {
+      // Get user inputs from templateVars to ensure they're used
+      const userName = templateVars['{name}'];
+      const userAnimal = templateVars['{animal}'] || templateVars['{primary_animal}'];
+      const userColor = templateVars['{color}'] || templateVars['{primary_color}'];
+      const userFood = templateVars['{food}'] || templateVars['{primary_food}'];
+      const userActivity = templateVars['{favorite_activity}'] || templateVars['{hobby}'];
+      
+      console.log(`🎯 Using user inputs in story: ${userAnimal}, ${userColor}, ${userFood}, ${userActivity}`);
+      
+      if (difficulty === 'easy') {
+        return [
+          `{name} wakes up and feels happy. Today is a special day for adventures.`,
+          `{name} goes outside and sees a friendly {animal}. They want to play together.`,
+          `They run and jump and laugh. {name} likes this {color} {animal} very much.`,
+          `The {animal} shows {name} a secret place. It is full of {color} things.`,
+          `They play games and share {food}. {name} learns that sharing is nice.`,
+          `{name} enjoys {favorite_activity} with the {animal}. They have so much fun together.`,
+          `When it gets dark, they say goodbye. {name} feels very happy and tired.`,
+          `That night, {name} dreams about more adventures with the {animal}. Tomorrow will be fun too.`
+        ];
+      } else if (difficulty === 'medium') {
+        return [
+          `{name} discovered something magical in the garden behind their house.`,
+          `A tiny {color} door glowed softly between the flower roots, and curious sounds came from inside.`,
+          `A wise {animal} appeared and explained that the door led to a world of wonder.`,
+          `Together they stepped through and found themselves in a land where {favorite_activity} was everywhere.`,
+          `The trees sang gentle melodies, and the {color} flowers danced to the rhythm of the wind.`,
+          `{name} learned that kindness and friendship could make the magic even more beautiful.`,
+          `They helped solve a problem for the singing trees and were rewarded with magical {food}.`,
+          `When it was time to leave, {name} promised to visit the {animal} again and share the magic with others.`
+        ];
+      } else {
+        // Fallback for other difficulties
+        return [
+          `{name} begins an extraordinary journey with their companion {animal}.`,
+          `Together they explore a world painted in brilliant shades of {color}.`,
+          `They discover that {favorite_activity} holds the key to unlocking ancient mysteries.`,
+          `Through challenges and triumphs, they learn the true value of friendship and {food} shared in kindness.`
+        ];
+      }
     };
 
-    const arc = storyArcs[difficulty] || storyArcs.easy;
+    const arc = generateUserInputAwareArc(difficulty);
     
     // Apply template variables to each segment
     const processedSegments = arc.map((segment, index) => applyTemplateVars(segment, index));
