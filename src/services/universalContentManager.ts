@@ -61,7 +61,6 @@ export class UniversalContentManager {
     console.log('🔄 Generating new story with template variety...');
     
     // Clear session template tracking for fresh start
-    const { SessionTemplateManager } = await import("@/services/sessionTemplateManager");
     SessionTemplateManager.clearSession();
     
     // Clear legacy template tracking
