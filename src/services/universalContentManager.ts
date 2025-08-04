@@ -8,6 +8,9 @@ import { StoryQualityChecker } from "@/utils/storyQualityChecker";
 import { APP_CONFIG } from "@/constants/app";
 import { FreeTrialPageLimitError, PremiumPageLimitError } from "@/utils/errorHandling";
 import { NameFormatter } from "@/utils/nameFormatter";
+import { CharacterPoolManager, CharacterPool } from "./characterPoolManager";
+import { CharacterDrivenStoryArc, StoryContext } from "./characterDrivenStoryArc";
+import { StoryTransitionManager, TransitionConfig } from "./storyTransitionManager";
 
 export interface ContentManagerConfig {
   isPremium: boolean;
@@ -217,34 +220,42 @@ export class UniversalContentManager {
   }
 
   /**
-   * Core story generation logic with author-inspired patterns and narrative flow
+   * Core story generation logic with character-driven narrative system
    */
   private static async generateSimpleStory(
     userInfo: UserInfo,
     difficulty: DifficultyLevel,
     pageCount: number
   ): Promise<Story> {
-    console.log(`🎯 Generating ${pageCount}-page ${difficulty} story with author-inspired patterns...`);
+    console.log(`🎯 Generating ${pageCount}-page ${difficulty} story with character-driven system...`);
     
     try {
-      const { StoryArcManager } = await import('./storyArcManager');
-      const { getAuthorVoiceForDifficulty } = await import('../constants/authorVoicePatterns');
-      const authorVoice = getAuthorVoiceForDifficulty(difficulty);
+      // Generate or retrieve character pool for this user
+      const characters = CharacterPoolManager.generateCharacterPool(userInfo, difficulty);
+      console.log(`🎭 Generated character pool:`, {
+        main: characters.main.name,
+        family: characters.family.map(c => c.name),
+        friends: characters.friends.map(c => c.name),
+        animals: characters.animals.map(c => c.name),
+        helpers: characters.helpers.map(c => c.name)
+      });
+      
       const pages: string[] = [];
       
-      // Generate pages using story arc structure
-      console.log('🔍 DEBUG: Starting story generation with userInfo:', JSON.stringify(userInfo, null, 2));
-      console.log('🔍 DEBUG: Difficulty:', difficulty, 'PageCount:', pageCount);
-      
+      // Generate pages using character-driven story arc
       for (let i = 0; i < pageCount; i++) {
         console.log(`🔍 DEBUG: Generating page ${i + 1}/${pageCount}`);
-        let processedPage = StoryArcManager.getTemplateByPosition(
+        
+        const storyContext: StoryContext = {
+          currentPage: i,
+          totalPages: pageCount,
+          characters,
           userInfo,
-          difficulty,
-          i,
-          pageCount
-        );
-        console.log(`🔍 DEBUG: Page ${i + 1} after StoryArcManager:`, processedPage);
+          difficulty
+        };
+        
+        let processedPage = CharacterDrivenStoryArc.getPageContent(storyContext);
+        console.log(`🔍 DEBUG: Page ${i + 1} after CharacterDrivenStoryArc:`, processedPage);
         
         // Ensure children's book flow
         if (i > 0) {
@@ -284,7 +295,7 @@ export class UniversalContentManager {
       // Create story object
       const story: Story = {
         id: crypto.randomUUID(),
-        title: this.generateStoryTitle(userInfo, difficulty),
+        title: this.generateCharacterDrivenTitle(userInfo, difficulty, characters),
         segments: pages.map(text => ({
           text,
           illustration: undefined,
@@ -295,11 +306,11 @@ export class UniversalContentManager {
         wordCount: pages.join(' ').split(' ').filter(word => word.trim()).length
       };
 
-      console.log(`✅ Generated story with ${story.segments.length} pages (Quality: ${qualityCheck.score})`);
+      console.log(`✅ Generated character-driven story with ${story.segments.length} pages (Quality: ${qualityCheck.score})`);
       return story;
       
     } catch (error) {
-      console.error('Error generating author-inspired story:', error);
+      console.error('Error generating character-driven story:', error);
       return this.generateFallbackStory(userInfo, difficulty, pageCount);
     }
   }
@@ -494,6 +505,37 @@ export class UniversalContentManager {
     const templates = titleTemplates[difficulty] || titleTemplates.medium;
     const template = templates[Math.floor(Math.random() * templates.length)];
     return this.processTemplate(template, userInfo);
+  }
+
+  /**
+   * Generate character-driven story title
+   */
+  private static generateCharacterDrivenTitle(userInfo: UserInfo, difficulty: DifficultyLevel, characters: CharacterPool): string {
+    const titleTemplates = {
+      easy: [
+        `${characters.main.name} and ${characters.animals[0]?.name || 'Friends'}`,
+        `${characters.main.name}'s Fun Day`,
+        `The Adventures of ${characters.main.name} and ${characters.family[0]?.name || 'Family'}`
+      ],
+      medium: [
+        `${characters.main.name} and the Mystery of ${characters.animals[0]?.name || 'the Lost Treasure'}`,
+        `${characters.main.name}, ${characters.friends[0]?.name || 'A Friend'}, and the Magical Quest`,
+        `The Secret Adventure of ${characters.main.name}`
+      ],
+      hard: [
+        `${characters.main.name}: The Hero's Journey`,
+        `${characters.main.name} and the Challenge of Leadership`,
+        `Chronicles of ${characters.main.name} and the Community`
+      ],
+      expert: [
+        `${characters.main.name}: A Tale of Wisdom and Growth`,
+        `The Extraordinary Transformation of ${characters.main.name}`,
+        `${characters.main.name} and the Quest for Understanding`
+      ]
+    };
+    
+    const templates = titleTemplates[difficulty] || titleTemplates.medium;
+    return templates[Math.floor(Math.random() * templates.length)];
   }
 
   /**
