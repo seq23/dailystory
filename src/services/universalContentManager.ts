@@ -102,15 +102,25 @@ export class UniversalContentManager {
   ): Promise<Story> {
     const pages: string[] = [];
     
-    // Get difficulty-appropriate templates
-    const templateArray = getDifficultyAppropriateTemplate(difficulty);
-    console.log(`📚 Using ${templateArray.length} templates for ${difficulty} level`);
+    // Get ALL template arrays for this difficulty level
+    const { DIFFICULTY_APPROPRIATE_TEMPLATES } = await import('@/constants/difficultyAppropriateTemplates');
+    const allTemplateArrays = DIFFICULTY_APPROPRIATE_TEMPLATES[difficulty];
     
-    // Generate pages
+    // Flatten all templates into one big pool for maximum variety
+    const allTemplates: string[] = [];
+    allTemplateArrays.forEach(templateArray => {
+      allTemplates.push(...templateArray);
+    });
+    
+    console.log(`📚 Using ${allTemplates.length} total templates for ${difficulty} level (${allTemplateArrays.length} template arrays)`);
+    
+    // Generate pages with maximum variety
     for (let i = 0; i < pageCount; i++) {
-      // Simple template rotation with variety
-      const templateIndex = i % templateArray.length;
-      let template = templateArray[templateIndex];
+      // Use modulo to cycle through ALL available templates
+      const templateIndex = i % allTemplates.length;
+      let template = allTemplates[templateIndex];
+      
+      console.log(`📝 Page ${i + 1}: Using template ${templateIndex + 1}/${allTemplates.length}`);
       
       // Replace placeholders with user data
       const processedPage = this.processTemplate(template, userInfo);
