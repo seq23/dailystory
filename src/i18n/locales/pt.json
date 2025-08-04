@@ -425,6 +425,10 @@
       "title": "🎯 Nível de Leitura",
       "description": "Torne a história mais fácil ou mais difícil instantaneamente! Seta para cima torna mais difícil, seta para baixo torna mais fácil para combinar com seu nível de leitura."
     },
+    "progressTowers": {
+      "title": "📊 Torres de Progresso",
+      "description": "Acompanhe suas conquistas de leitura! Veja suas torres crescerem enquanto você lê palavras, completa páginas e aprende novo vocabulário. Clique para expandir e ver seu progresso detalhado!"
+    },
     "step": "Tutorial",
     "of": "de",
     "previous": "Anterior",

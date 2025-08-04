@@ -352,6 +352,10 @@
       "title": "🎯 Reading Level",
       "description": "Make the story easier or harder instantly! Up arrow makes it harder, down arrow makes it easier to match your reading level."
     },
+    "progressTowers": {
+      "title": "📊 Progress Towers",
+      "description": "Track your reading achievements! Watch your towers grow as you read words, complete pages, and learn new vocabulary. Click to expand and see your detailed progress!"
+    },
     "step": "Tutorial",
     "of": "of",
     "previous": "Previous",

@@ -348,6 +348,10 @@
       "title": "🎯 Niveau de Lecture",
       "description": "Rendez l'histoire plus facile ou plus difficile instantanément ! La flèche vers le haut la rend plus difficile, la flèche vers le bas la rend plus facile pour correspondre à votre niveau de lectur."
     },
+    "progressTowers": {
+      "title": "📊 Tours de Progrès",
+      "description": "Suivez vos réussites en lecture ! Regardez vos tours grandir pendant que vous lisez des mots, complétez des pages et apprenez du nouveau vocabulaire. Cliquez pour développer et voir votre progrès détaillé !"
+    },
     "step": "Tutoriel",
     "of": "sur",
     "previous": "Précédent",

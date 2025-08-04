@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, ChevronLeft, ChevronUp, ChevronDown, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface InlineTutorialProps {
   isActive: boolean;
@@ -8,6 +9,7 @@ interface InlineTutorialProps {
 }
 
 export const InlineTutorial = ({ isActive, onComplete }: InlineTutorialProps) => {
+  const { t } = useTranslation();
   const [currentStep, setCurrentStep] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -24,8 +26,8 @@ export const InlineTutorial = ({ isActive, onComplete }: InlineTutorialProps) =>
   const tutorialSteps = [
     {
       id: 1,
-      title: "Reading Timer",
-      description: "Click the play button to start your reading timer! Pause anytime you need a break.",
+      title: t('tutorial.readingTimer.title'),
+      description: t('tutorial.readingTimer.description'),
       targetSelector: "#floating-timer",
       position: { 
         top: "5%", 
@@ -38,8 +40,8 @@ export const InlineTutorial = ({ isActive, onComplete }: InlineTutorialProps) =>
     },
     {
       id: 2,
-      title: "Timer Controls", 
-      description: "Use the - button to reduce time by 5 minutes, or the X button to end your session anytime!",
+      title: t('tutorial.pageNavigation.title'),
+      description: t('tutorial.pageNavigation.description'),
       targetSelector: "#floating-timer",
       position: { 
         top: "8%", 
@@ -52,35 +54,41 @@ export const InlineTutorial = ({ isActive, onComplete }: InlineTutorialProps) =>
     },
     {
       id: 3,
-      title: "Story Navigation",
-      description: "Navigate through your story pages using these arrow buttons. Go back or forward at your own pace!",
+      title: t('tutorial.audioReading.title'),
+      description: t('tutorial.audioReading.description'),
       targetSelector: ".story-navigation",
       position: { bottom: "20%", left: "50%", transform: "translateX(-50%)", maxWidth: "300px" },
       arrow: "up"
     },
     {
       id: 4,
-      title: "Add More Pages",
-      description: "Want more story? Click the + button to automatically add 5 more pages to continue your adventure!",
+      title: t('tutorial.addMorePages.title'),
+      description: t('tutorial.addMorePages.description'),
       targetSelector: ".story-navigation",
       position: { bottom: "25%", left: "50%", transform: "translateX(-50%)", maxWidth: "300px" },
       arrow: "up"
     },
     {
       id: 5,
-      title: "Read Aloud",
-      description: "Listen to your story! Click play to hear it read aloud and adjust the speed with the controls.",
+      title: t('tutorial.difficulty.title'),
+      description: t('tutorial.difficulty.description'),
       targetSelector: ".audio-controls",
       position: { top: "60%", right: "10%", maxWidth: "300px" },
       arrow: "left"
     },
     {
       id: 6,
-      title: "Reading Levels",
-      description: "Adjust difficulty! Use 'Easier' or 'Harder' buttons to match your reading level perfectly.",
-      targetSelector: ".reading-level-controls",
-      position: { top: "10%", left: "50%", transform: "translateX(-50%)", maxWidth: "300px" },
-      arrow: "down"
+      title: t('tutorial.progressTowers.title'),
+      description: t('tutorial.progressTowers.description'),
+      targetSelector: ".progress-towers-container",
+      position: { 
+        top: "50%", 
+        right: "18%", 
+        transform: "translateY(-50%)", 
+        maxWidth: "min(90vw, 320px)",
+        padding: "0.5rem" 
+      },
+      arrow: "right"
     }
   ];
 

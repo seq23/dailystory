@@ -348,6 +348,10 @@
       "title": "🎯 Nivel de Lectura",
       "description": "¡Haz el cuento más fácil o más difícil al instante! La flecha hacia arriba lo hace más difícil, la flecha hacia abajo lo hace más fácil para que coincida con tu nivel de lectura."
     },
+    "progressTowers": {
+      "title": "📊 Torres de Progreso",
+      "description": "¡Rastrea tus logros de lectura! Mira crecer tus torres mientras lees palabras, completas páginas y aprendes nuevo vocabulario. ¡Haz clic para expandir y ver tu progreso detallado!"
+    },
     "step": "Tutorial",
     "of": "de",
     "previous": "Anterior",

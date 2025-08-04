@@ -175,7 +175,7 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
       onMouseLeave={handleMouseLeave}
     >
       <div className={cn(
-        "bg-white/95 backdrop-blur-sm shadow-xl rounded-lg border border-gray-200",
+        "bg-white/95 backdrop-blur-sm shadow-xl rounded-lg border border-gray-200 progress-towers-container",
         "transition-all duration-300 ease-out",
         isExpanded ? "w-56 p-4" : "w-16 p-3",
         isRTL && "mr-2",
