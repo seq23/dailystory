@@ -166,7 +166,7 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
         isRTL ? "left-0" : "right-0",
         isExpanded 
           ? (isRTL ? "translate-x-0" : "translate-x-0")
-          : (isRTL ? "-translate-x-[50px]" : "translate-x-[50px]"), // Less translation to keep toggle visible
+          : (isRTL ? "translate-x-0" : "translate-x-0"), // Keep visible on screen edge
         // Enhanced edge bounce animation when new progress is detected
         hasNewProgress && !isExpanded && "animate-edgeBounce",
         className
