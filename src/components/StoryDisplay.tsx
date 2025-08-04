@@ -403,6 +403,11 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
         readingSpeed: Math.round((actualWordsRead / (timeSpent / 60)) || 0)
       });
     }
+
+    // Clear session template tracking when session ends
+    import("@/services/sessionTemplateManager").then(({ SessionTemplateManager }) => {
+      SessionTemplateManager.clearSession();
+    });
     
     onSessionEnded(sessionStats);
   };

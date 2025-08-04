@@ -1,5 +1,7 @@
 import { UserInfo, Story, DifficultyLevel } from "@/types";
 import { DIFFICULTY_APPROPRIATE_TEMPLATES, validateDifficultyCompliance } from "@/constants/difficultyAppropriateTemplates";
+import { getEnhancedTemplatePool } from "@/constants/enhancedTemplates";
+import { SessionTemplateManager } from "@/services/sessionTemplateManager";
 import { validateLevel1Sentence } from "@/constants/level1Vocabulary";
 import { APP_CONFIG } from "@/constants/app";
 
@@ -58,7 +60,11 @@ export class UniversalContentManager {
   ): Promise<StoryGenerationResult> {
     console.log('🔄 Generating new story with template variety...');
     
-    // Clear template tracking for fresh selection
+    // Clear session template tracking for fresh start
+    const { SessionTemplateManager } = await import("@/services/sessionTemplateManager");
+    SessionTemplateManager.clearSession();
+    
+    // Clear legacy template tracking
     this.usedTemplates.clear();
     
     const story = await this.generateSimpleStory(userInfo, difficulty, 10);
@@ -93,7 +99,7 @@ export class UniversalContentManager {
   }
 
   /**
-   * CORE SIMPLE STORY GENERATION - Fast, reliable, predictable
+   * ENHANCED STORY GENERATION with Anti-Repetition for Free Users
    */
   private static async generateSimpleStory(
     userInfo: UserInfo,
@@ -102,27 +108,32 @@ export class UniversalContentManager {
   ): Promise<Story> {
     const pages: string[] = [];
     
-    // Get ALL template arrays for this difficulty level
-    const allTemplateArrays = DIFFICULTY_APPROPRIATE_TEMPLATES[difficulty];
+    // Use enhanced template pool for better variety
+    const enhancedTemplatePool = getEnhancedTemplatePool(difficulty, userInfo);
+    console.log(`🎨 Enhanced template pool: ${enhancedTemplatePool.length} unique templates for ${difficulty}`);
     
-    // Flatten all templates into one big pool for maximum variety
-    const allTemplates: string[] = [];
-    allTemplateArrays.forEach(templateArray => {
-      allTemplates.push(...templateArray);
-    });
+    // Get session stats for tracking
+    const sessionStats = SessionTemplateManager.getSessionStats();
+    console.log(`📊 Session stats: ${sessionStats.templatesUsed} templates used, repeating: ${sessionStats.isRepeating}`);
     
-    console.log(`📚 Using ${allTemplates.length} total templates for ${difficulty} level (${allTemplateArrays.length} template arrays)`);
-    
-    // Generate pages with maximum variety
+    // Generate pages with intelligent anti-repetition
     for (let i = 0; i < pageCount; i++) {
-      // Use modulo to cycle through ALL available templates
-      const templateIndex = i % allTemplates.length;
-      let template = allTemplates[templateIndex];
+      // Get next template using intelligent rotation
+      const { template: rawTemplate, isRepeating } = SessionTemplateManager.getNextTemplate(
+        enhancedTemplatePool,
+        difficulty
+      );
       
-      console.log(`📝 Page ${i + 1}: Using template ${templateIndex + 1}/${allTemplates.length}`);
+      if (isRepeating && i < 50) {
+        console.log(`🔄 Repetition detected at page ${i + 1}, but within acceptable range`);
+      } else if (isRepeating) {
+        console.log(`⚠️ Template repetition starting at page ${i + 1} - consider upgrade prompt`);
+      }
+      
+      console.log(`📝 Page ${i + 1}: Using ${isRepeating ? 'repeated' : 'fresh'} template`);
       
       // Replace placeholders with user data
-      const processedPage = this.processTemplate(template, userInfo);
+      const processedPage = this.processTemplate(rawTemplate, userInfo);
       
       // Validate word count for difficulty
       const validation = validateDifficultyCompliance(processedPage, difficulty);

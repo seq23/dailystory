@@ -800,6 +800,11 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
       storyCompleted: currentPage >= story.length - 1,
       readingSpeed: Math.round((actualWordsRead / (timeSpent / 60)) || 0)
     });
+
+    // Clear session template tracking when session ends
+    import("@/services/sessionTemplateManager").then(({ SessionTemplateManager }) => {
+      SessionTemplateManager.clearSession();
+    });
     
     startCelebration();
   };
