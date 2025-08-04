@@ -20,6 +20,7 @@ import { TutorialOverlay } from "@/components/TutorialOverlay";
 import { FloatingTimer } from "@/components/FloatingTimer";
 import { useGamification } from "@/hooks/useGamification";
 import { AchievementNotification } from "@/components/AchievementNotification";
+import { ProgressTowers } from "@/components/ProgressTowers";
 import { setupGamificationGlobals, cleanupGamificationGlobals } from "@/utils/gamificationGlobals";
 
 // Import avatar assets
@@ -910,17 +911,6 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
           />
         )}
 
-      {/* Free Trial Badge - Moved to bottom right to avoid timer overlap */}
-      {!sessionEnded && (
-        <div className="fixed bottom-6 right-6 z-40">
-          <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-4 py-2 rounded-full shadow-xl border-2 border-white">
-            <div className="flex items-center gap-2 animate-bounce">
-              <Sparkles className="w-4 h-4" />
-              <span className="text-sm font-bold">{t("freeReadingSession.freeTrial")}</span>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Celebration Overlay */}
       {showCelebration && (
@@ -1259,9 +1249,14 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                         </MobileOptimizedButton>
                         
                         <div className="flex flex-col items-center gap-1 px-2">
-                          <span className="text-xs sm:text-sm font-medium text-gray-600 whitespace-nowrap">
-                            {currentPage + 1} / {story.length}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs sm:text-sm font-medium text-gray-600 whitespace-nowrap">
+                              {t("freeReadingSession.navigation.pageInfo", "Page {current} / {total}").replace("{current}", (currentPage + 1).toString()).replace("{total}", story.length.toString())}
+                            </span>
+                            <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                              🎁 {t("freeReadingSession.freeTrial")}
+                            </div>
+                          </div>
                           <div className="relative group">
                             <MobileOptimizedButton
                               id="add-pages-button"
@@ -1380,6 +1375,16 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
         </>
       )}
       </div>
+      
+      {/* Progress Towers - Only show during active reading session */}
+      {sessionStarted && !sessionEnded && !showProgressReport && (
+        <ProgressTowers
+          userId={userInfo.name}
+          userType="free"
+          currentWordsRead={calculateActualWordsRead()}
+          currentPagesRead={currentPage + 1}
+        />
+      )}
     </>
   );
 };

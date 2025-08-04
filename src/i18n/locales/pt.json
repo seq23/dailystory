@@ -759,5 +759,15 @@
       "error": "Erro",
       "errorDescription": "Falha ao enviar feedback. Tente novamente."
     }
+  },
+  "progressTowers": {
+    "title": "Progresso de Leitura",
+    "subtitle": "Continue subindo!",
+    "words": "Palavras Lidas",
+    "pages": "Páginas Completadas",
+    "vocabulary": "Palavras Aprendidas",
+    "milestone": "Ótimo progresso!",
+    "expand": "Ver Progresso",
+    "collapse": "Ocultar Progresso"
   }
 }

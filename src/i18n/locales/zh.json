@@ -559,5 +559,15 @@
       "error": "错误",
       "errorDescription": "提交反馈失败。请重试。"
     }
+  },
+  "progressTowers": {
+    "title": "阅读进度",
+    "subtitle": "继续攀登！",
+    "words": "已读单词",
+    "pages": "已完成页面",
+    "vocabulary": "已学词汇",
+    "milestone": "进步很棒！",
+    "expand": "查看进度",
+    "collapse": "隐藏进度"
   }
 }

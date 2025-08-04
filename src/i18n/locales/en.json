@@ -669,5 +669,15 @@
       "error": "Error",
       "errorDescription": "Failed to submit feedback. Please try again."
     }
+  },
+  "progressTowers": {
+    "title": "Reading Progress",
+    "subtitle": "Keep climbing!",
+    "words": "Words Read",
+    "pages": "Pages Completed", 
+    "vocabulary": "Words Learned",
+    "milestone": "Great progress!",
+    "expand": "View Progress",
+    "collapse": "Hide Progress"
   }
 }

@@ -606,5 +606,15 @@
       "error": "Error",
       "errorDescription": "Error al enviar comentarios. Por favor, inténtalo de nuevo."
     }
+  },
+  "progressTowers": {
+    "title": "Progreso de Lectura",
+    "subtitle": "¡Sigue escalando!",
+    "words": "Palabras Leídas",
+    "pages": "Páginas Completadas",
+    "vocabulary": "Palabras Aprendidas",
+    "milestone": "¡Gran progreso!",
+    "expand": "Ver Progreso",
+    "collapse": "Ocultar Progreso"
   }
 }

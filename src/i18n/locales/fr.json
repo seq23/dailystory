@@ -606,5 +606,15 @@
       "error": "Erreur",
       "errorDescription": "Échec de l'envoi des commentaires. Veuillez réessayer."
     }
+  },
+  "progressTowers": {
+    "title": "Progrès de Lecture",
+    "subtitle": "Continuez à grimper !",
+    "words": "Mots Lus",
+    "pages": "Pages Complétées",
+    "vocabulary": "Mots Appris",
+    "milestone": "Excellent progrès !",
+    "expand": "Voir le Progrès",
+    "collapse": "Masquer le Progrès"
   }
 }
