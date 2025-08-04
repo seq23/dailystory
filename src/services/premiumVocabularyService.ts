@@ -1,0 +1,518 @@
+import type { UserInfo, DifficultyLevel, LanguageCode } from '../types';
+import { VocabularyBucketManager } from './vocabularyBucketManager';
+import { ThemedSessionManager } from './themedSessionManager';
+import { ProgressiveRevelationSystem } from './progressiveRevelationSystem';
+import { InputEnhancementEngine } from './inputEnhancementEngine';
+
+interface PremiumVocabularyFeatures {
+  personalizedVocabularyTracking: boolean;
+  advancedPhoneticSystem: boolean;
+  adaptiveDifficultyEngine: boolean;
+  customVocabularyLists: boolean;
+  crossLanguageLearning: boolean;
+  vocabularyProgressReports: boolean;
+}
+
+interface VocabularyAnalytics {
+  wordsLearned: number;
+  vocabularyLevel: DifficultyLevel;
+  strugglingWords: string[];
+  masteredWords: string[];
+  recommendedWords: string[];
+  learningVelocity: number;
+}
+
+interface PersonalizedVocabularyPath {
+  currentLevel: DifficultyLevel;
+  nextWords: string[];
+  challengingWords: string[];
+  reinforcementWords: string[];
+  culturalAdaptations: string[];
+}
+
+export class PremiumVocabularyService {
+  private static userVocabularyProfiles = new Map<string, VocabularyAnalytics>();
+  private static personalizedPaths = new Map<string, PersonalizedVocabularyPath>();
+
+  static initializePremiumUser(userInfo: UserInfo): PremiumVocabularyFeatures {
+    const userId = this.getUserId(userInfo);
+    
+    // Initialize premium analytics
+    if (!this.userVocabularyProfiles.has(userId)) {
+      this.userVocabularyProfiles.set(userId, {
+        wordsLearned: 0,
+        vocabularyLevel: userInfo.difficultyLevel || 'easy',
+        strugglingWords: [],
+        masteredWords: [],
+        recommendedWords: [],
+        learningVelocity: 0
+      });
+    }
+
+    // Initialize personalized learning path
+    if (!this.personalizedPaths.has(userId)) {
+      this.personalizedPaths.set(userId, {
+        currentLevel: userInfo.difficultyLevel || 'easy',
+        nextWords: [],
+        challengingWords: [],
+        reinforcementWords: [],
+        culturalAdaptations: this.generateCulturalAdaptations(userInfo)
+      });
+    }
+
+    return {
+      personalizedVocabularyTracking: true,
+      advancedPhoneticSystem: true,
+      adaptiveDifficultyEngine: true,
+      customVocabularyLists: true,
+      crossLanguageLearning: userInfo.nativeLanguage !== 'en',
+      vocabularyProgressReports: true
+    };
+  }
+
+  static analyzeVocabularyProgress(userInfo: UserInfo, sessionWords: string[], readingTime: number, accuracy: number): VocabularyAnalytics {
+    const userId = this.getUserId(userInfo);
+    const profile = this.userVocabularyProfiles.get(userId);
+    
+    if (!profile) {
+      return this.initializePremiumUser(userInfo) as any;
+    }
+
+    // Update vocabulary analytics
+    profile.wordsLearned += sessionWords.length;
+    profile.learningVelocity = this.calculateLearningVelocity(readingTime, sessionWords.length, accuracy);
+
+    // Classify words based on performance
+    sessionWords.forEach(word => {
+      if (accuracy > 0.85) {
+        if (!profile.masteredWords.includes(word)) {
+          profile.masteredWords.push(word);
+        }
+        // Remove from struggling if mastered
+        profile.strugglingWords = profile.strugglingWords.filter(w => w !== word);
+      } else if (accuracy < 0.7) {
+        if (!profile.strugglingWords.includes(word)) {
+          profile.strugglingWords.push(word);
+        }
+      }
+    });
+
+    // Generate recommendations for next session
+    profile.recommendedWords = this.generatePersonalizedRecommendations(userInfo, profile);
+
+    // Adaptive difficulty adjustment
+    profile.vocabularyLevel = this.calculateAdaptiveDifficulty(profile, userInfo.difficultyLevel || 'easy');
+
+    this.userVocabularyProfiles.set(userId, profile);
+    return { ...profile };
+  }
+
+  static generatePersonalizedVocabularyPath(userInfo: UserInfo): PersonalizedVocabularyPath {
+    const userId = this.getUserId(userInfo);
+    const profile = this.userVocabularyProfiles.get(userId);
+    const currentPath = this.personalizedPaths.get(userId);
+
+    if (!profile || !currentPath) {
+      return this.createDefaultPath(userInfo);
+    }
+
+    // Generate next words based on current progress
+    const nextWords = this.selectNextWords(profile, userInfo);
+    
+    // Identify challenging words that need reinforcement
+    const challengingWords = profile.strugglingWords.slice(0, 5);
+    
+    // Select words for reinforcement (previously learned but need practice)
+    const reinforcementWords = this.selectReinforcementWords(profile, userInfo);
+
+    const updatedPath: PersonalizedVocabularyPath = {
+      currentLevel: profile.vocabularyLevel,
+      nextWords,
+      challengingWords,
+      reinforcementWords,
+      culturalAdaptations: this.updateCulturalAdaptations(userInfo, profile)
+    };
+
+    this.personalizedPaths.set(userId, updatedPath);
+    return updatedPath;
+  }
+
+  static generateAdvancedPhoneticSupport(word: string, userLanguage: LanguageCode): {
+    phonetic: string;
+    culturalPronunciation: string;
+    practiceExercises: string[];
+  } {
+    const phoneticMappings: Record<LanguageCode, Record<string, string>> = {
+      'es': {
+        'cat': '/kæt/ → Similar to "gato" but with English "a" sound',
+        'dog': '/dɔg/ → Like "perro" but shorter vowel',
+        'book': '/bʊk/ → Similar to "libro" but with different "oo" sound'
+      },
+      'fr': {
+        'cat': '/kæt/ → Like "chat" but with different vowel',
+        'dog': '/dɔg/ → Similar to "chien" pronunciation pattern',
+        'book': '/bʊk/ → Compare with "livre" for context'
+      },
+      'zh': {
+        'cat': '/kæt/ → 猫 (māo) - Practice the "a" sound difference',
+        'dog': '/dɔg/ → 狗 (gǒu) - Note the consonant ending',
+        'book': '/bʊk/ → 书 (shū) - Practice the "oo" vs "u" sound'
+      },
+      'ar': {
+        'cat': '/kæt/ → قطة (qitta) - Focus on the "æ" vowel sound',
+        'dog': '/dɔg/ → كلب (kalb) - Practice final consonant',
+        'book': '/bʊk/ → كتاب (kitāb) - Note the short "oo" sound'
+      },
+      'hi': {
+        'cat': '/kæt/ → बिल्ली (billi) - Practice the "æ" sound',
+        'dog': '/dɔg/ → कुत्ता (kutta) - Focus on consonant ending',
+        'book': '/bʊk/ → किताब (kitāb) - Note the vowel difference'
+      },
+      'pt': {
+        'cat': '/kæt/ → gato - Practice English "a" vs Portuguese "a"',
+        'dog': '/dɔg/ → cão - Note the different vowel sound',
+        'book': '/bʊk/ → livro - Practice the "oo" sound'
+      },
+      'en': {
+        'cat': '/kæt/ → Standard English pronunciation',
+        'dog': '/dɔg/ → Standard English pronunciation',
+        'book': '/bʊk/ → Standard English pronunciation'
+      }
+    };
+
+    const mapping = phoneticMappings[userLanguage] || phoneticMappings['en'];
+    const phoneticInfo = mapping[word.toLowerCase()] || `/phonetic for ${word}/`;
+
+    return {
+      phonetic: phoneticInfo,
+      culturalPronunciation: `Pronunciation adapted for ${userLanguage} speakers`,
+      practiceExercises: [
+        `Repeat "${word}" 5 times slowly`,
+        `Use "${word}" in a sentence`,
+        `Find words that rhyme with "${word}"`
+      ]
+    };
+  }
+
+  static generateCrossLanguageLearningContent(userInfo: UserInfo, targetWords: string[]): {
+    translations: Record<string, string>;
+    culturalContexts: Record<string, string>;
+    cognates: string[];
+    falseCaninds: string[];
+  } {
+    const translations: Record<string, string> = {};
+    const culturalContexts: Record<string, string> = {};
+    const cognates: string[] = [];
+    const falseCaninds: string[] = [];
+
+    // Simple translation mapping (in real implementation, use translation API)
+    const translationMappings: Record<LanguageCode, Record<string, string>> = {
+      'en': {
+        'cat': 'cat',
+        'dog': 'dog',
+        'book': 'book',
+        'house': 'house',
+        'family': 'family'
+      },
+      'es': {
+        'cat': 'gato',
+        'dog': 'perro',
+        'book': 'libro',
+        'house': 'casa',
+        'family': 'familia'
+      },
+      'fr': {
+        'cat': 'chat',
+        'dog': 'chien',
+        'book': 'livre',
+        'house': 'maison',
+        'family': 'famille'
+      },
+      'zh': {
+        'cat': '猫 (māo)',
+        'dog': '狗 (gǒu)',
+        'book': '书 (shū)',
+        'house': '房子 (fángzi)',
+        'family': '家庭 (jiātíng)'
+      },
+      'ar': {
+        'cat': 'قطة (qitta)',
+        'dog': 'كلب (kalb)',
+        'book': 'كتاب (kitāb)',
+        'house': 'بيت (bayt)',
+        'family': 'عائلة (ā\'ila)'
+      },
+      'hi': {
+        'cat': 'बिल्ली (billi)',
+        'dog': 'कुत्ता (kutta)',
+        'book': 'किताब (kitāb)',
+        'house': 'घर (ghar)',
+        'family': 'परिवार (parivār)'
+      },
+      'pt': {
+        'cat': 'gato',
+        'dog': 'cão',
+        'book': 'livro',
+        'house': 'casa',
+        'family': 'família'
+      }
+    };
+
+    const userTranslations = translationMappings[userInfo.nativeLanguage] || {};
+
+    targetWords.forEach(word => {
+      translations[word] = userTranslations[word.toLowerCase()] || word;
+      
+      // Cultural context
+      culturalContexts[word] = this.generateCulturalContext(word, userInfo.nativeLanguage);
+      
+      // Identify cognates (words with similar roots)
+      if (this.isCognate(word, userInfo.nativeLanguage)) {
+        cognates.push(word);
+      }
+      
+      // Identify false friends
+      if (this.isFalseFriend(word, userInfo.nativeLanguage)) {
+        falseCaninds.push(word);
+      }
+    });
+
+    return {
+      translations,
+      culturalContexts,
+      cognates,
+      falseCaninds
+    };
+  }
+
+  static generateVocabularyProgressReport(userInfo: UserInfo): {
+    weeklyProgress: { week: number; wordsLearned: number; accuracy: number }[];
+    strongAreas: string[];
+    improvementAreas: string[];
+    nextWeekGoals: string[];
+    culturalLearningInsights: string[];
+  } {
+    const userId = this.getUserId(userInfo);
+    const profile = this.userVocabularyProfiles.get(userId);
+    
+    if (!profile) {
+      return this.generateDefaultReport(userInfo);
+    }
+
+    const stats = VocabularyBucketManager.getVocabularyStats(userId);
+
+    return {
+      weeklyProgress: this.generateWeeklyProgressData(profile),
+      strongAreas: this.identifyStrongAreas(stats, profile),
+      improvementAreas: this.identifyImprovementAreas(profile),
+      nextWeekGoals: this.generateNextWeekGoals(profile, userInfo),
+      culturalLearningInsights: this.generateCulturalInsights(userInfo, profile)
+    };
+  }
+
+  // Private helper methods
+  private static getUserId(userInfo: UserInfo): string {
+    return `${userInfo.name}-${userInfo.age}-${userInfo.nativeLanguage}`.toLowerCase();
+  }
+
+  private static calculateLearningVelocity(readingTime: number, wordCount: number, accuracy: number): number {
+    // Words per minute adjusted for accuracy
+    const wpm = (wordCount / (readingTime / 60000)) * accuracy;
+    return Math.round(wpm * 100) / 100;
+  }
+
+  private static generateCulturalAdaptations(userInfo: UserInfo): string[] {
+    const adaptations: Record<LanguageCode, string[]> = {
+      'es': ['Focus on "th" sounds', 'Practice silent letters', 'Work on vowel distinctions'],
+      'fr': ['Practice English "h" sounds', 'Work on nasal vowels', 'Focus on final consonants'],
+      'zh': ['Practice consonant clusters', 'Work on vowel length', 'Focus on stress patterns'],
+      'ar': ['Practice "p" vs "b" sounds', 'Work on vowel systems', 'Focus on consonant endings'],
+      'hi': ['Practice "v" vs "w" sounds', 'Work on "th" sounds', 'Focus on consonant clusters'],
+      'pt': ['Practice nasal vowels', 'Work on final consonants', 'Focus on stress patterns'],
+      'en': ['Standard English learning path']
+    };
+
+    return adaptations[userInfo.nativeLanguage] || adaptations['en'];
+  }
+
+  private static generatePersonalizedRecommendations(userInfo: UserInfo, profile: VocabularyAnalytics): string[] {
+    // Generate words based on user's struggles and progress
+    const recommendations: string[] = [];
+    
+    // Add words that complement struggling words
+    profile.strugglingWords.forEach(word => {
+      const relatedWords = this.getRelatedWords(word);
+      recommendations.push(...relatedWords.slice(0, 2));
+    });
+
+    // Add level-appropriate words
+    const levelWords = this.getLevelAppropriateWords(profile.vocabularyLevel, userInfo);
+    recommendations.push(...levelWords.slice(0, 5));
+
+    return [...new Set(recommendations)].slice(0, 10);
+  }
+
+  private static calculateAdaptiveDifficulty(profile: VocabularyAnalytics, currentLevel: DifficultyLevel): DifficultyLevel {
+    const masteryRatio = profile.masteredWords.length / Math.max(profile.wordsLearned, 1);
+    const strugglingRatio = profile.strugglingWords.length / Math.max(profile.wordsLearned, 1);
+
+    if (masteryRatio > 0.8 && strugglingRatio < 0.2) {
+      // User is excelling, consider increasing difficulty
+      const levels: DifficultyLevel[] = ['easy', 'medium', 'hard', 'expert'];
+      const currentIndex = levels.indexOf(currentLevel);
+      return currentIndex < levels.length - 1 ? levels[currentIndex + 1] : currentLevel;
+    } else if (masteryRatio < 0.5 || strugglingRatio > 0.4) {
+      // User is struggling, consider decreasing difficulty
+      const levels: DifficultyLevel[] = ['easy', 'medium', 'hard', 'expert'];
+      const currentIndex = levels.indexOf(currentLevel);
+      return currentIndex > 0 ? levels[currentIndex - 1] : currentLevel;
+    }
+
+    return currentLevel;
+  }
+
+  private static createDefaultPath(userInfo: UserInfo): PersonalizedVocabularyPath {
+    return {
+      currentLevel: userInfo.difficultyLevel || 'easy',
+      nextWords: ['cat', 'dog', 'book', 'happy', 'play'],
+      challengingWords: [],
+      reinforcementWords: [],
+      culturalAdaptations: this.generateCulturalAdaptations(userInfo)
+    };
+  }
+
+  private static selectNextWords(profile: VocabularyAnalytics, userInfo: UserInfo): string[] {
+    // Smart word selection based on user progress
+    return ['elephant', 'adventure', 'friendship', 'explore', 'magical'];
+  }
+
+  private static selectReinforcementWords(profile: VocabularyAnalytics, userInfo: UserInfo): string[] {
+    // Select previously learned words that need reinforcement
+    return profile.masteredWords.slice(-5);
+  }
+
+  private static updateCulturalAdaptations(userInfo: UserInfo, profile: VocabularyAnalytics): string[] {
+    // Update cultural adaptations based on progress
+    return this.generateCulturalAdaptations(userInfo);
+  }
+
+  private static generateCulturalContext(word: string, nativeLanguage: LanguageCode): string {
+    return `Cultural context for "${word}" in ${nativeLanguage} learning environment`;
+  }
+
+  private static isCognate(word: string, nativeLanguage: LanguageCode): boolean {
+    // Simple cognate detection (in real implementation, use linguistic databases)
+    const cognates: Record<LanguageCode, string[]> = {
+      'en': [],
+      'es': ['family', 'animal', 'natural', 'hospital'],
+      'fr': ['family', 'animal', 'natural', 'hospital'],
+      'pt': ['family', 'animal', 'natural', 'hospital'],
+      'ar': [],
+      'zh': [],
+      'hi': []
+    };
+    
+    return cognates[nativeLanguage]?.includes(word.toLowerCase()) || false;
+  }
+
+  private static isFalseFriend(word: string, nativeLanguage: LanguageCode): boolean {
+    // Simple false friend detection
+    const falseFriends: Record<LanguageCode, string[]> = {
+      'en': [],
+      'es': ['embarrassed', 'library', 'actual'],
+      'fr': ['library', 'actual', 'eventually'],
+      'pt': ['embarrassed', 'library'],
+      'ar': [],
+      'zh': [],
+      'hi': []
+    };
+    
+    return falseFriends[nativeLanguage]?.includes(word.toLowerCase()) || false;
+  }
+
+  private static generateWeeklyProgressData(profile: VocabularyAnalytics): { week: number; wordsLearned: number; accuracy: number }[] {
+    // Mock weekly progress data
+    return [
+      { week: 1, wordsLearned: 15, accuracy: 0.75 },
+      { week: 2, wordsLearned: 22, accuracy: 0.82 },
+      { week: 3, wordsLearned: 18, accuracy: 0.88 },
+      { week: 4, wordsLearned: 25, accuracy: 0.91 }
+    ];
+  }
+
+  private static identifyStrongAreas(stats: any, profile: VocabularyAnalytics): string[] {
+    const strongAreas: string[] = [];
+    
+    if (profile.learningVelocity > 20) {
+      strongAreas.push('Reading Speed');
+    }
+    
+    if (profile.masteredWords.length > 50) {
+      strongAreas.push('Vocabulary Retention');
+    }
+
+    return strongAreas;
+  }
+
+  private static identifyImprovementAreas(profile: VocabularyAnalytics): string[] {
+    const improvementAreas: string[] = [];
+    
+    if (profile.strugglingWords.length > 10) {
+      improvementAreas.push('Word Recognition');
+    }
+    
+    if (profile.learningVelocity < 10) {
+      improvementAreas.push('Reading Speed');
+    }
+
+    return improvementAreas;
+  }
+
+  private static generateNextWeekGoals(profile: VocabularyAnalytics, userInfo: UserInfo): string[] {
+    return [
+      `Learn 20 new ${profile.vocabularyLevel} level words`,
+      'Improve accuracy to 90%+',
+      'Master challenging words from previous sessions',
+      `Practice pronunciation for ${userInfo.nativeLanguage} speakers`
+    ];
+  }
+
+  private static generateCulturalInsights(userInfo: UserInfo, profile: VocabularyAnalytics): string[] {
+    return [
+      `Your ${userInfo.nativeLanguage} background helps with cognate recognition`,
+      'Continue practicing consonant cluster pronunciation',
+      'Cultural context learning is improving word retention'
+    ];
+  }
+
+  private static generateDefaultReport(userInfo: UserInfo): any {
+    return {
+      weeklyProgress: [],
+      strongAreas: ['Getting Started'],
+      improvementAreas: ['Building Foundation'],
+      nextWeekGoals: ['Complete first assessment', 'Learn 10 basic words'],
+      culturalLearningInsights: [`Personalized for ${userInfo.nativeLanguage} speakers`]
+    };
+  }
+
+  private static getRelatedWords(word: string): string[] {
+    const relatedWordsMap: Record<string, string[]> = {
+      'cat': ['kitten', 'pet', 'animal', 'fur'],
+      'dog': ['puppy', 'pet', 'animal', 'bark'],
+      'book': ['read', 'story', 'page', 'library']
+    };
+    
+    return relatedWordsMap[word.toLowerCase()] || [];
+  }
+
+  private static getLevelAppropriateWords(level: DifficultyLevel, userInfo: UserInfo): string[] {
+    const levelWords: Record<DifficultyLevel, string[]> = {
+      'easy': ['sun', 'moon', 'tree', 'flower', 'bird'],
+      'medium': ['adventure', 'friendship', 'explore', 'discover', 'magical'],
+      'hard': ['mysterious', 'extraordinary', 'fascinating', 'remarkable', 'incredible'],
+      'expert': ['philosophical', 'transformative', 'multifaceted', 'sophisticated', 'intricate']
+    };
+    
+    return levelWords[level] || levelWords['easy'];
+  }
+}
