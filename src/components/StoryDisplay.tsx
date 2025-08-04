@@ -14,6 +14,7 @@ import { UniversalContentManager } from "@/services/universalContentManager";
 import { UnifiedImageService, type EstablishedCharacter } from "@/services/unifiedImageService";
 import { APP_CONFIG } from "@/constants/app";
 import { useToast } from "@/hooks/use-toast";
+import { useHybridStoryGeneration } from "@/hooks/useHybridStoryGeneration";
 import { TutorialOverlay } from "@/components/TutorialOverlay";
 import { FloatingTimer } from "@/components/FloatingTimer";
 import { useGamification } from "@/hooks/useGamification";
@@ -98,6 +99,13 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
             readingLevel === 'advanced' ? 'expert' : 
             readingLevel) as 'easy' | 'medium' | 'hard' | 'expert';
   });
+  
+  // Hybrid story generation for premium users
+  const { templateStory, aiStory, isAiReady, isGenerating } = useHybridStoryGeneration(
+    userInfo,
+    currentDifficulty,
+    isPremium ? story : []
+  );
   
   // Session state
   const [timeRemaining, setTimeRemaining] = useState(APP_CONFIG.FREE_SESSION_DURATION);
@@ -361,6 +369,14 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
     // Start story generation immediately but don't block UI
     generateStory();
   }, []); // No dependencies - generate story only once on mount
+
+  // Smoothly transition to AI story when ready (premium only)
+  useEffect(() => {
+    if (isPremium && isAiReady && aiStory && aiStory.length > 0) {
+      console.log('🎭 Transitioning to AI-enhanced story...');
+      setStory(aiStory);
+    }
+  }, [isPremium, isAiReady, aiStory]);
 
   // Timer countdown (with pause support)
   useEffect(() => {
