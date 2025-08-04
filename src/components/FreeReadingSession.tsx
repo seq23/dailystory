@@ -139,17 +139,10 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   
   useEffect(() => {
     if (storyCompleted && !sessionEnded && !hasShownCompletionToast) {
-      // Calculate actual words read for the completion toast
-      const actualWordsRead = calculateActualWordsRead();
-      
-      toast({
-        title: t("storyDisplay.storyCompletedToast.title"),
-        description: t("storyDisplay.storyCompletedToast.descriptionWords", { wordsRead: actualWordsRead }),
-        duration: 2000,
-      });
+      console.log('FreeReadingSession: Story completed, but skipping toast (Progress Towers will show feedback)');
       setHasShownCompletionToast(true);
     }
-  }, [storyCompleted, sessionEnded, hasShownCompletionToast, toast, t]);
+  }, [storyCompleted, sessionEnded, hasShownCompletionToast]);
 
   // Fallback illustrations
   const illustrations = [illustration1, illustration2, illustration3, illustration4, illustration5];
@@ -825,6 +818,13 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
       readingSpeed: Math.round((actualWordsRead / (timeSpent / 60)) || 0)
     });
 
+    console.log('FreeReadingSession: Recorded session with progress:', {
+      actualWordsRead,
+      timeSpent,
+      pagesRead: currentPage + 1,
+      storyCompleted: currentPage >= story.length - 1
+    });
+
     // Clear session template tracking when session ends
     import("@/services/sessionTemplateManager").then(({ SessionTemplateManager }) => {
       SessionTemplateManager.clearSession();
@@ -1330,6 +1330,13 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                                 pagesRead: nextPage + 1,
                                 storyCompleted: true,
                                 readingSpeed: Math.round((actualWordsRead / (timeSpent / 60)) || 0)
+                              });
+
+                              console.log('FreeReadingSession: Story completed! Recorded session:', {
+                                actualWordsRead,
+                                timeSpent,
+                                pagesRead: nextPage + 1,
+                                storyCompleted: true
                               });
                               
                               // Story completed - toast will be shown by useEffect

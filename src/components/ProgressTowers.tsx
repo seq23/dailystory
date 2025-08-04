@@ -89,12 +89,26 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
       vocabulary: vocabularyLearned 
     };
 
+    console.log('ProgressTowers: Checking for progress changes:', {
+      prevValues,
+      currentValues,
+      currentWordsRead,
+      userStats: { totalWordsRead: userStats.totalWordsRead, vocabularyWordsLearned: userStats.vocabularyWordsLearned }
+    });
+
     // Check for increases in each tower
     const hasWordsIncrease = currentValues.words > prevValues.words;
     const hasPagesIncrease = currentValues.pages > prevValues.pages;
     const hasVocabIncrease = currentValues.vocabulary > prevValues.vocabulary;
 
     if (hasWordsIncrease || hasPagesIncrease || hasVocabIncrease) {
+      console.log('ProgressTowers: Triggering animations!', {
+        hasWordsIncrease,
+        hasPagesIncrease, 
+        hasVocabIncrease,
+        wordsDiff: currentValues.words - prevValues.words
+      });
+
       setHasNewProgress(true);
       setAnimatingTowers({
         words: hasWordsIncrease,
@@ -110,10 +124,13 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
       // Clear animations after a brief moment
       setTimeout(() => {
         setAnimatingTowers({ words: false, pages: false, vocabulary: false });
+        // Keep the new progress indicator for longer
+        setTimeout(() => setHasNewProgress(false), 3000);
       }, 1500);
 
       // Show celebration for story completion (significant word increase)
-      if (hasWordsIncrease && (currentValues.words - prevValues.words) >= 100) {
+      if (hasWordsIncrease && (currentValues.words - prevValues.words) >= 50) {
+        console.log('ProgressTowers: Story completion detected! Showing celebration');
         setCelebration(true);
         setTimeout(() => setCelebration(false), 3000);
       }

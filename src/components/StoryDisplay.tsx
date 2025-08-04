@@ -1220,14 +1220,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                               timeSpent: Math.round(timeSpent / 60)
                             });
                             
-                            toast({
-                              title: t("storyDisplay.storyCompletedToast.title"),
-                              description: t("storyDisplay.storyCompletedToast.descriptionWordsTime", { 
-                                wordsRead: actualWordsRead, 
-                                minutes: Math.round(timeSpent / 60) 
-                              }),
-                              duration: 2000,
-                            });
+                            console.log('StoryDisplay: Story completed, but skipping toast (Progress Towers will show feedback)');
                             setHasShownCompletionToast(true);
                           }
                         } else {
