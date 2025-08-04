@@ -134,31 +134,32 @@ export const InteractiveWord = ({
   const shouldHighlight = wordDifficulty.shouldHighlight;
   const wordComplexity = wordDifficulty.complexity;
 
-  // Enhanced voice selection for natural pronunciation - consistent with other components
+  // Enhanced voice selection for natural pronunciation - friendly female voices
   const getVoiceForUser = (userInfo?: UserInfo) => {
-    if (!userInfo) return "cgSgspJ2msm6clMCkdW9"; // Default Jessica voice (natural)
+    if (!userInfo) return "cgSgspJ2msm6clMCkdW9"; // Default Jessica voice (very natural and friendly)
     
     const age = userInfo.age;
     const isGirl = userInfo.avatar?.type === 'girl';
     const isNativeEnglishSpeaker = userInfo.nativeLanguage === 'en';
     
+    // Prioritize friendly, natural female voices for better user experience
     if (!isNativeEnglishSpeaker) {
-      // Use multilingual voices for non-native speakers
+      // Use clear, friendly multilingual voices for non-native speakers
       if (age <= 8) {
-        return isGirl ? "EXAVITQu4vr4xnSDxMaL" : "TX3LPaxmHKxFdv7VOQHJ"; // Sarah or Liam
+        return "EXAVITQu4vr4xnSDxMaL"; // Sarah - warm and clear for children
       } else if (age <= 12) {
-        return isGirl ? "XB0fDUnXU5powFXDhCwa" : "N2lVS1w4EtoT3dr4eOWO"; // Charlotte or Callum
+        return "XB0fDUnXU5powFXDhCwa"; // Charlotte - clear and friendly
       } else {
-        return isGirl ? "9BWtsMINqrJLrRacOk9x" : "CwhRBWXzGAHq8TQ4Fs17"; // Aria or Roger
+        return "9BWtsMINqrJLrRacOk9x"; // Aria - sophisticated and clear
       }
     } else {
-      // Use most natural voices for native English speakers
+      // Use most natural, friendly voices for native English speakers
       if (age <= 8) {
-        return isGirl ? "EXAVITQu4vr4xnSDxMaL" : "TX3LPaxmHKxFdv7VOQHJ"; // Sarah or Liam
+        return "EXAVITQu4vr4xnSDxMaL"; // Sarah - perfect for young children
       } else if (age <= 12) {
-        return isGirl ? "cgSgspJ2msm6clMCkdW9" : "nPczCjzI2devNBz1zQrb"; // Jessica or Brian (very natural)
+        return "cgSgspJ2msm6clMCkdW9"; // Jessica - very natural and friendly
       } else {
-        return isGirl ? "cgSgspJ2msm6clMCkdW9" : "onwK4e9ZLuTAKqWW03F9"; // Jessica or Daniel (most natural)
+        return isGirl ? "cgSgspJ2msm6clMCkdW9" : "XB0fDUnXU5powFXDhCwa"; // Jessica or Charlotte - both very natural
       }
     }
   };

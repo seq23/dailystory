@@ -326,26 +326,28 @@ export class EnhancedAudioService {
       return characterVoices[characterType as keyof typeof characterVoices] || characterVoices.narrator;
     }
 
-    // Standard voice selection logic
+    // Enhanced voice selection logic with friendly female voices as default
     const age = userInfo.age;
     const isGirl = userInfo.avatar?.type === 'girl';
     const isNativeEnglishSpeaker = userInfo.nativeLanguage === 'en';
     
+    // Default to friendly female voices for better user experience
     if (isNativeEnglishSpeaker) {
       if (age <= 8) {
-        return isGirl ? "EXAVITQu4vr4xnSDxMaL" : "TX3LPaxmHKxFdv7VOQHJ";
+        return isGirl ? "EXAVITQu4vr4xnSDxMaL" : "EXAVITQu4vr4xnSDxMaL"; // Sarah - warm, friendly for children
       } else if (age <= 12) {
-        return isGirl ? "cgSgspJ2msm6clMCkdW9" : "nPczCjzI2devNBz1zQrb";
+        return isGirl ? "cgSgspJ2msm6clMCkdW9" : "cgSgspJ2msm6clMCkdW9"; // Jessica - very natural and friendly
       } else {
-        return isGirl ? "cgSgspJ2msm6clMCkdW9" : "onwK4e9ZLuTAKqWW03F9";
+        return isGirl ? "cgSgspJ2msm6clMCkdW9" : "XB0fDUnXU5powFXDhCwa"; // Jessica or Charlotte - natural, friendly voices
       }
     } else {
+      // For non-native speakers, use clear, friendly multilingual voices
       if (age <= 8) {
-        return isGirl ? "EXAVITQu4vr4xnSDxMaL" : "TX3LPaxmHKxFdv7VOQHJ";
+        return isGirl ? "EXAVITQu4vr4xnSDxMaL" : "EXAVITQu4vr4xnSDxMaL"; // Sarah for clear pronunciation
       } else if (age <= 12) {
-        return isGirl ? "XB0fDUnXU5powFXDhCwa" : "N2lVS1w4EtoT3dr4eOWO";
+        return isGirl ? "XB0fDUnXU5powFXDhCwa" : "XB0fDUnXU5powFXDhCwa"; // Charlotte - clear and friendly
       } else {
-        return isGirl ? "9BWtsMINqrJLrRacOk9x" : "CwhRBWXzGAHq8TQ4Fs17";
+        return isGirl ? "9BWtsMINqrJLrRacOk9x" : "9BWtsMINqrJLrRacOk9x"; // Aria - sophisticated and clear
       }
     }
   }
@@ -403,14 +405,14 @@ export class EnhancedAudioService {
     this.totalWords = wordsWithIndices.length;
     this.currentWordIndex = 0;
     
-    // Faster, more responsive timing calculation
+    // Much faster, more responsive timing calculation
     const calculateWordInterval = (word: string, index: number): number => {
-      const baseInterval = 350; // Reduced from 700ms to 350ms for faster highlighting
+      const baseInterval = 250; // Reduced from 350ms to 250ms for much faster highlighting
       const speedAdjustment = 1 / speed; // Adjust for playback speed
       const hasPunctuation = /[.!?]/.test(word);
-      const pauseAfterPunctuation = hasPunctuation ? 200 : 0; // Reduced pause
+      const pauseAfterPunctuation = hasPunctuation ? 150 : 0; // Reduced pause
       const wordLength = word.length;
-      const lengthAdjustment = wordLength > 6 ? 50 : 0; // Reduced extra time for long words
+      const lengthAdjustment = wordLength > 6 ? 25 : 0; // Minimal extra time for long words
       
       return (baseInterval * speedAdjustment) + pauseAfterPunctuation + lengthAdjustment;
     };
@@ -431,7 +433,7 @@ export class EnhancedAudioService {
     };
 
     // Start highlighting immediately with minimal delay
-    this.highlightTimeout = setTimeout(highlightNext, 100);
+    this.highlightTimeout = setTimeout(highlightNext, 50);
   }
 
   private clearHighlighting(): void {
