@@ -3,6 +3,7 @@ import { DIFFICULTY_APPROPRIATE_TEMPLATES, validateDifficultyCompliance, getDiff
 import { getEnhancedTemplatePool } from "@/constants/enhancedTemplates";
 import { SessionTemplateManager } from "@/services/sessionTemplateManager";
 import { validateLevel1Sentence } from "@/constants/level1Vocabulary";
+import { Level1Simplifier } from "./level1Simplifier";
 import { VocabularyLevelClassifier } from "@/utils/vocabularyLevelClassifier";
 import { StoryQualityChecker } from "@/utils/storyQualityChecker";
 import { APP_CONFIG } from "@/constants/app";
@@ -277,9 +278,15 @@ export class UniversalContentManager {
         
         // Validate against difficulty-appropriate requirements AFTER template processing
         if (difficulty === 'easy') {
-          const validation = validateLevel1Sentence(processedPage, NameFormatter.capitalize(userInfo.name || 'Alex'));
-          if (!validation.isValid) {
-            console.warn(`⚠️ Page ${i + 1} failed L1 validation, using fallback`);
+          // Use cascading simplification instead of binary validation
+          const userName = NameFormatter.capitalize(userInfo.name || 'Alex');
+          const simplificationResult = Level1Simplifier.simplifyForLevel1(processedPage, userName);
+          
+          if (simplificationResult.wasSimplified) {
+            console.log(`🔄 Page ${i + 1} simplified using ${simplificationResult.strategyUsed}: "${simplificationResult.text}"`);
+            processedPage = simplificationResult.text;
+          } else if (simplificationResult.strategyUsed === 'none' && simplificationResult.originalInvalidWords?.length > 0) {
+            console.warn(`⚠️ Page ${i + 1} failed all simplification strategies, using fallback. Invalid words: ${simplificationResult.originalInvalidWords.join(', ')}`);
             processedPage = this.generateLevel1Fallback(userInfo, i);
           }
         } else {
