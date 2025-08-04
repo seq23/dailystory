@@ -18,13 +18,20 @@ export class StoryArcManager {
     pageIndex: number,
     totalPages: number
   ): string {
+    console.log('🔍 DEBUG StoryArcManager: userInfo received:', JSON.stringify(userInfo, null, 2));
+    console.log('🔍 DEBUG StoryArcManager: difficulty:', difficulty, 'pageIndex:', pageIndex, 'totalPages:', totalPages);
+    
     const position = this.getStoryPosition(pageIndex, totalPages);
     const templates = this.getArcTemplates(difficulty);
     
     const positionTemplates = templates[position];
     const selectedTemplate = positionTemplates[Math.floor(Math.random() * positionTemplates.length)];
+    console.log('🔍 DEBUG StoryArcManager: selected template before processing:', selectedTemplate);
     
-    return this.processTemplate(selectedTemplate, userInfo, difficulty);
+    const result = this.processTemplate(selectedTemplate, userInfo, difficulty);
+    console.log('🔍 DEBUG StoryArcManager: final processed result:', result);
+    
+    return result;
   }
 
   /**
@@ -152,12 +159,17 @@ export class StoryArcManager {
    * Process template with user information
    */
   static processTemplate(template: string, userInfo: UserInfo, difficulty: DifficultyLevel): string {
+    console.log('🔍 DEBUG processTemplate: Input template:', template);
+    console.log('🔍 DEBUG processTemplate: UserInfo:', JSON.stringify(userInfo, null, 2));
+    console.log('🔍 DEBUG processTemplate: Difficulty:', difficulty);
+    
     let processed = template;
     
     // Replace user placeholders with properly capitalized name
     processed = processed.replace(/{name}/g, NameFormatter.capitalize(userInfo.name || 'Alex'));
     processed = processed.replace(/{pronoun}/g, 'they');
     processed = processed.replace(/{pronoun_possessive}/g, 'their');
+    console.log('🔍 DEBUG processTemplate: After name/pronoun replacement:', processed);
     
     // Replace story elements with vocabulary appropriate for each difficulty level
     const animals = difficulty === 'easy' 

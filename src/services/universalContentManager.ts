@@ -202,13 +202,18 @@ export class UniversalContentManager {
       const pages: string[] = [];
       
       // Generate pages using story arc structure
+      console.log('🔍 DEBUG: Starting story generation with userInfo:', JSON.stringify(userInfo, null, 2));
+      console.log('🔍 DEBUG: Difficulty:', difficulty, 'PageCount:', pageCount);
+      
       for (let i = 0; i < pageCount; i++) {
+        console.log(`🔍 DEBUG: Generating page ${i + 1}/${pageCount}`);
         let processedPage = StoryArcManager.getTemplateByPosition(
           userInfo,
           difficulty,
           i,
           pageCount
         );
+        console.log(`🔍 DEBUG: Page ${i + 1} after StoryArcManager:`, processedPage);
         
         // Ensure children's book flow
         if (i > 0) {
