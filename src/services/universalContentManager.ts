@@ -99,11 +99,13 @@ export class UniversalContentManager {
       }
     }
     
-    const pageCount = this.getPageCountForDifficulty(difficulty, config.isPremium);
+      const pageCount = this.getPageCountForDifficulty(difficulty, config.isPremium);
     
     try {
-      // Use new author-inspired story generation
-      const story = await this.generateSimpleStory(userInfo, difficulty, pageCount, config);
+      // Use sentence-based generation for easy/medium, regular for hard/expert
+      const story = (difficulty === 'easy' || difficulty === 'medium') 
+        ? await this.generateSentenceBasedStory(userInfo, difficulty, pageCount, config)
+        : await this.generateSimpleStory(userInfo, difficulty, pageCount, config);
       
       // Quality validation with children's book standards
       const storyPages = story.segments.map(segment => segment.text);
@@ -218,6 +220,78 @@ export class UniversalContentManager {
       estimatedReadingTime: Math.max(1, Math.ceil(combinedPages.length / 3)),
       wordCount: combinedPages.join(' ').split(' ').filter(word => word.trim()).length
     };
+  }
+
+  /**
+   * Generate sentence-based story for easy/medium levels (one complete sentence per page)
+   */
+  private static async generateSentenceBasedStory(
+    userInfo: UserInfo,
+    difficulty: DifficultyLevel,
+    pageCount: number,
+    config: ContentManagerConfig
+  ): Promise<Story> {
+    console.log(`📖 Generating sentence-based ${difficulty} story with ${pageCount} pages...`);
+    
+    try {
+      // Initialize vocabulary-enhanced input system
+      const { UserInputDistributor } = await import('./userInputDistributor');
+      UserInputDistributor.initialize(userInfo);
+      
+      // Select age-appropriate author voice
+      const authorVoice = getAuthorVoiceForUser(userInfo, difficulty);
+      console.log(`✍️ Selected author voice: ${authorVoice.name} for age ${userInfo.age}`);
+      
+      // Generate or retrieve character pool for this user
+      const characters = CharacterPoolManager.generateCharacterPool(userInfo, difficulty);
+      
+      // First, generate complete story content (not page-by-page)
+      const fullStoryContent = await this.generateFullStoryContent(userInfo, difficulty, characters, authorVoice, config);
+      
+      // Apply vocabulary simplification to entire story
+      const userName = NameFormatter.capitalize(userInfo.name || 'Alex');
+      const { MultilingualVocabularySimplifier } = await import('./multilingualVocabularySimplifier');
+      const targetLevel = difficulty === 'easy' ? 1 : 2;
+      
+      const simplificationResult = MultilingualVocabularySimplifier.simplifyForLevel(
+        fullStoryContent, 
+        targetLevel,
+        userName, 
+        userInfo, 
+        config.isPremium
+      );
+      
+      const simplifiedContent = simplificationResult.wasSimplified ? simplificationResult.text : fullStoryContent;
+      console.log(`🔄 Story simplified using ${simplificationResult.strategyUsed} (${simplificationResult.userType} user)`);
+      
+      // Split into sentences using sentence boundary detection
+      const sentences = this.splitIntoSentences(simplifiedContent);
+      console.log(`📝 Split story into ${sentences.length} sentences`);
+      
+      // Distribute sentences to pages (one complete sentence per page)
+      const pages = this.distributeSentencesToPages(sentences, pageCount, difficulty);
+      
+      // Create story object
+      const story: Story = {
+        id: crypto.randomUUID(),
+        title: this.generateCharacterDrivenTitle(userInfo, difficulty, characters),
+        segments: pages.map(text => ({
+          text,
+          illustration: undefined,
+          audioUrl: undefined
+        })),
+        difficulty,
+        estimatedReadingTime: Math.max(1, Math.ceil(pages.length / 3)),
+        wordCount: pages.join(' ').split(' ').filter(word => word.trim()).length
+      };
+
+      console.log(`✅ Generated sentence-based story with ${story.segments.length} pages`);
+      return story;
+      
+    } catch (error) {
+      console.error('Error generating sentence-based story:', error);
+      return this.generateFallbackStory(userInfo, difficulty, pageCount);
+    }
   }
 
   /**
@@ -347,9 +421,9 @@ export class UniversalContentManager {
           processedPage = this.enhanceWithProgressiveComplexity(processedPage, userInfo, config.isPremium);
         }
         
-        // Final validation for non-expert levels - USE FLEXIBLE VALIDATION
-        if (difficulty !== 'expert') {
-          // Validate word count for other difficulty levels AFTER template processing
+        // Final validation - only for easy/medium levels (sentence-based)
+        if (difficulty === 'easy' || difficulty === 'medium') {
+          // Validate word count for sentence-based levels AFTER template processing
           const wordValidation = validateDifficultyCompliance(processedPage, difficulty, false); // false = flexible mode
           if (!wordValidation.isValid && wordValidation.zone === 'red') {
             // Only fallback for 'red' zone (severely outside range), not 'yellow' zone
@@ -359,6 +433,7 @@ export class UniversalContentManager {
             console.log(`💛 Page ${i + 1} word count (${wordValidation.wordCount}) acceptable with margin for ${difficulty} - keeping original`);
           }
         }
+        // No validation for hard/expert levels - allow natural page breaks
         
         pages.push(processedPage);
         console.log(`✅ Page ${i + 1}: "${processedPage}" (${processedPage.split(' ').length} words)`);
@@ -819,5 +894,123 @@ export class UniversalContentManager {
     };
     
     return premiumPageCounts[difficulty] || 10;
+  }
+
+  /**
+   * Generate full story content as coherent narrative
+   */
+  private static async generateFullStoryContent(
+    userInfo: UserInfo,
+    difficulty: DifficultyLevel,
+    characters: CharacterPool,
+    authorVoice: any,
+    config: ContentManagerConfig
+  ): Promise<string> {
+    // Create a longer narrative arc for sentence-based splitting
+    const storyArcs = {
+      easy: [
+        `${characters.main.name} wakes up and feels happy. Today is a special day for adventures.`,
+        `${characters.main.name} goes outside and sees ${characters.animals[0]?.name || 'a friendly animal'}. They want to play together.`,
+        `They run and jump and laugh. ${characters.main.name} likes this new friend very much.`,
+        `The friend shows ${characters.main.name} a secret place. It is full of fun things to do.`,
+        `They play games and share snacks. ${characters.main.name} learns that sharing is nice.`,
+        `When it gets dark, they say goodbye. ${characters.main.name} feels very happy and tired.`,
+        `${characters.main.name} goes home and tells everyone about the fun day. Everyone smiles.`,
+        `That night, ${characters.main.name} dreams about more adventures. Tomorrow will be fun too.`
+      ],
+      medium: [
+        `${characters.main.name} discovered something magical in the garden behind their house.`,
+        `A tiny door glowed softly between the flower roots, and curious sounds came from inside.`,
+        `${characters.animals[0]?.name || 'A wise creature'} appeared and explained that the door led to a world of wonder.`,
+        `Together they stepped through and found themselves in a land where music filled the air.`,
+        `The trees sang gentle melodies, and the flowers danced to the rhythm of the wind.`,
+        `${characters.main.name} learned that kindness and friendship could make the music even more beautiful.`,
+        `They helped solve a problem for the singing trees and were rewarded with a special gift.`,
+        `When it was time to leave, ${characters.main.name} promised to visit again and share the magic with others.`
+      ]
+    };
+
+    const arc = storyArcs[difficulty] || storyArcs.easy;
+    const fullContent = arc.join(' ');
+    
+    // Apply author voice to the full narrative
+    return applyAuthorVoice(fullContent, authorVoice, 'opening');
+  }
+
+  /**
+   * Split text into complete sentences using sentence boundary detection
+   */
+  private static splitIntoSentences(text: string): string[] {
+    // Simple sentence boundary detection
+    const sentences = text
+      .split(/[.!?]+/)
+      .map(s => s.trim())
+      .filter(s => s.length > 0)
+      .map(s => s + '.');
+    
+    return sentences;
+  }
+
+  /**
+   * Distribute sentences to pages ensuring one complete sentence per page
+   */
+  private static distributeSentencesToPages(
+    sentences: string[],
+    targetPageCount: number,
+    difficulty: DifficultyLevel
+  ): string[] {
+    const pages: string[] = [];
+    
+    // For easy/medium, aim for one sentence per page
+    for (let i = 0; i < Math.min(sentences.length, targetPageCount); i++) {
+      const sentence = sentences[i];
+      
+      // Validate word count for sentence-based pages
+      const wordValidation = validateDifficultyCompliance(sentence, difficulty, false);
+      
+      if (wordValidation.zone === 'red') {
+        // If sentence is too long, try to shorten it
+        const shortenedSentence = this.shortenSentence(sentence, difficulty);
+        pages.push(shortenedSentence);
+        console.log(`📏 Shortened sentence: "${shortenedSentence}"`);
+      } else {
+        pages.push(sentence);
+        if (wordValidation.zone === 'yellow') {
+          console.log(`💛 Sentence acceptable with margin: "${sentence}" (${wordValidation.wordCount} words)`);
+        }
+      }
+    }
+    
+    // If we have fewer sentences than target pages, pad with simpler content
+    while (pages.length < targetPageCount && pages.length < sentences.length) {
+      const nextSentence = sentences[pages.length];
+      if (nextSentence) {
+        pages.push(nextSentence);
+      }
+    }
+    
+    return pages;
+  }
+
+  /**
+   * Shorten a sentence that's too long for the difficulty level
+   */
+  private static shortenSentence(sentence: string, difficulty: DifficultyLevel): string {
+    // Simple sentence shortening strategies
+    const maxWords = difficulty === 'easy' ? 12 : 20;
+    const words = sentence.split(' ');
+    
+    if (words.length <= maxWords) {
+      return sentence;
+    }
+    
+    // Remove unnecessary words and conjunctions
+    const shortened = words
+      .slice(0, maxWords - 1)
+      .join(' ')
+      .replace(/,.*$/, '') // Remove everything after first comma
+      + '.';
+    
+    return shortened;
   }
 }

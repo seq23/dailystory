@@ -133,12 +133,12 @@ export const validateDifficultyCompliance = (
     expert: { min: 15, max: 25 }
   };
 
-  // Flexible ranges with 25% margin of error for natural flow
+  // Flexible ranges - sentence-based for levels 1-2, no limits for levels 3-4
   const flexibleRanges = {
-    easy: { min: 2, max: 8 },     // 25% margin: 3±1, 6±2
-    medium: { min: 4, max: 15 },   // 25% margin: 6±2, 12±3  
-    hard: { min: 8, max: 22 },     // 25% margin: 10±2, 18±4
-    expert: { min: 12, max: 30 }   // 25% margin: 15±3, 25±5
+    easy: { min: 2, max: 12 },     // Expanded for complete sentences
+    medium: { min: 4, max: 20 },   // Expanded for complete sentences  
+    hard: { min: 0, max: 9999 },   // No validation - allow natural page breaks
+    expert: { min: 0, max: 9999 }  // No validation - allow natural page breaks
   };
   
   const idealRange = idealRanges[difficulty];
@@ -153,8 +153,12 @@ export const validateDifficultyCompliance = (
     isValid = wordCount >= idealRange.min && wordCount <= idealRange.max;
     zone = isValid ? 'green' : 'red';
   } else {
-    // Flexible mode: tiered validation
-    if (wordCount >= idealRange.min && wordCount <= idealRange.max) {
+    // Flexible mode: tiered validation (sentence-based for easy/medium, no validation for hard/expert)
+    if (difficulty === 'hard' || difficulty === 'expert') {
+      // No word count validation for advanced levels
+      zone = 'green';
+      isValid = true;
+    } else if (wordCount >= idealRange.min && wordCount <= idealRange.max) {
       zone = 'green';  // Perfect - within ideal range
       isValid = true;
     } else if (wordCount >= flexibleRange.min && wordCount <= flexibleRange.max) {
