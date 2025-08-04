@@ -4,7 +4,7 @@ export const LEVEL_1_VOCABULARY = new Set([
   'a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from', 'has', 'he', 'in', 'is', 'it', 'its', 'of', 'on', 'that', 'the', 'to', 'was', 'were', 'will', 'with',
   
   // Simple verbs (present tense)
-  'go', 'goes', 'see', 'sees', 'run', 'runs', 'play', 'plays', 'eat', 'eats', 'get', 'gets', 'give', 'gives', 'look', 'looks', 'find', 'finds', 'help', 'helps', 'come', 'comes', 'want', 'wants', 'like', 'likes', 'make', 'makes', 'take', 'takes', 'walk', 'walks', 'jump', 'jumps', 'sit', 'sits', 'put', 'puts', 'stop', 'stops', 'call', 'calls', 'show', 'shows', 'open', 'opens', 'close', 'closes', 'ask', 'asks', 'tell', 'tells', 'know', 'knows', 'say', 'says', 'think', 'thinks', 'feel', 'feels', 'hear', 'hears', 'hold', 'holds', 'keep', 'keeps', 'let', 'lets', 'live', 'lives', 'love', 'loves', 'move', 'moves', 'need', 'needs', 'pull', 'pulls', 'push', 'pushes', 'read', 'reads', 'sleep', 'sleeps', 'stand', 'stands', 'start', 'starts', 'try', 'tries', 'turn', 'turns', 'use', 'uses', 'wait', 'waits', 'work', 'works', 'write', 'writes',
+  'go', 'goes', 'see', 'sees', 'run', 'runs', 'play', 'plays', 'eat', 'eats', 'get', 'gets', 'give', 'gives', 'look', 'looks', 'find', 'finds', 'help', 'helps', 'come', 'comes', 'want', 'wants', 'like', 'likes', 'make', 'makes', 'take', 'takes', 'walk', 'walks', 'jump', 'jumps', 'sit', 'sits', 'put', 'puts', 'stop', 'stops', 'call', 'calls', 'show', 'shows', 'open', 'opens', 'close', 'closes', 'ask', 'asks', 'tell', 'tells', 'know', 'knows', 'say', 'says', 'think', 'thinks', 'feel', 'feels', 'hear', 'hears', 'hold', 'holds', 'keep', 'keeps', 'let', 'lets', 'live', 'lives', 'love', 'loves', 'move', 'moves', 'need', 'needs', 'pull', 'pulls', 'push', 'pushes', 'read', 'reads', 'sleep', 'sleeps', 'stand', 'stands', 'start', 'starts', 'try', 'tries', 'turn', 'turns', 'use', 'uses', 'wait', 'waits', 'work', 'works', 'write', 'writes', 'pick', 'picks',
   
   // Simple animals
   'cat', 'dog', 'bird', 'fish', 'cow', 'pig', 'duck', 'hen', 'bee', 'bug', 'bear', 'fox', 'frog', 'mouse', 'horse', 'lion', 'tiger', 'sheep', 'goat', 'owl', 'bat', 'ant', 'fly',
@@ -19,7 +19,7 @@ export const LEVEL_1_VOCABULARY = new Set([
   'apple', 'banana', 'bread', 'cake', 'cheese', 'cookie', 'fish', 'food', 'ice', 'meat', 'milk', 'pie', 'rice', 'soup', 'tea', 'water',
   
   // Simple people and family
-  'mom', 'dad', 'baby', 'boy', 'girl', 'man', 'woman', 'friend', 'teacher', 'child', 'kids', 'family',
+  'mom', 'dad', 'baby', 'boy', 'girl', 'man', 'woman', 'friend', 'friends', 'teacher', 'child', 'kids', 'family',
   
   // Simple places
   'home', 'house', 'room', 'yard', 'park', 'school', 'store', 'farm', 'zoo', 'beach', 'forest', 'garden',
@@ -31,13 +31,13 @@ export const LEVEL_1_VOCABULARY = new Set([
   'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'many', 'few', 'some', 'all', 'more', 'less', 'first', 'last',
   
   // Simple pronouns and basic grammar
-  'i', 'me', 'my', 'you', 'your', 'he', 'him', 'his', 'she', 'her', 'it', 'its', 'we', 'us', 'our', 'they', 'them', 'their', 'this', 'that', 'here', 'there', 'now', 'then', 'yes', 'no', 'not', 'can', 'could', 'may', 'might', 'will', 'would', 'should',
+  'i', 'me', 'my', 'you', 'your', 'he', 'him', 'his', 'she', 'her', 'it', 'its', 'we', 'us', 'our', 'they', 'them', 'their', 'this', 'that', 'here', 'there', 'now', 'then', 'yes', 'no', 'not', 'can', 'could', 'may', 'might', 'will', 'would', 'should', 'what', 'very',
   
   // Simple time words
   'day', 'night', 'morning', 'today', 'now', 'soon', 'late', 'early',
   
   // Simple connecting words (minimal)
-  'and', 'but', 'or', 'so', 'if', 'when', 'then', 'too', 'also'
+  'and', 'but', 'or', 'so', 'if', 'when', 'then', 'too', 'also', 'hello', 'together', 'nicely'
 ]);
 
 export function isLevel1Word(word: string): boolean {
