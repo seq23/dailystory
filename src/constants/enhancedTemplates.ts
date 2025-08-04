@@ -245,39 +245,39 @@ export function generateTemplateVariations(
   baseTemplates: TemplateVariation[],
   userInfo: UserInfo
 ): string[] {
-  const variations: string[] = [];
+  const variations = new Set<string>(); // Use Set to prevent duplicates
   
   baseTemplates.forEach(template => {
     // Base template
-    variations.push(template.base);
+    variations.add(template.base);
     
     // Generate variations based on available options
     if (template.characters) {
       template.characters.forEach(character => {
-        variations.push(template.base.replace(/{animal}/g, character));
+        variations.add(template.base.replace(/{animal}/g, character));
       });
     }
     
     if (template.settings) {
       template.settings.forEach(setting => {
-        variations.push(template.base.replace(/{setting}/g, setting));
+        variations.add(template.base.replace(/{setting}/g, setting));
       });
     }
     
     if (template.objects) {
       template.objects.forEach(object => {
-        variations.push(template.base.replace(/{object}/g, object));
+        variations.add(template.base.replace(/{object}/g, object));
       });
     }
     
     if (template.actions) {
       template.actions.forEach(action => {
-        variations.push(template.base.replace(/{action}/g, action));
+        variations.add(template.base.replace(/{action}/g, action));
       });
     }
   });
   
-  return variations;
+  return Array.from(variations);
 }
 
 /**
