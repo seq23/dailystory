@@ -72,7 +72,7 @@ export interface VocabularyWord {
   practiceCount: number;
   masteryLevel: number; // 0-100
   sentenceContext: string;
-  difficulty: 'easy' | 'medium' | 'hard' | 'expert';
+  difficulty: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert';
 }
 
 export class ProgressTrackingService {

@@ -7,7 +7,7 @@ import type { UserInfo } from '@/types';
 
 export interface AudioPlaybackOptions {
   text: string;
-  difficulty: 'easy' | 'medium' | 'hard' | 'expert';
+  difficulty: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert';
   userInfo: UserInfo;
   isPremium?: boolean;
   enableHighlighting?: boolean;
@@ -234,11 +234,11 @@ export class EnhancedAudioService {
 
   // === Private Helper Methods ===
 
-  private getSpeedForDifficulty(difficulty: 'easy' | 'medium' | 'hard' | 'expert'): number {
+  private getSpeedForDifficulty(difficulty: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert'): number {
     return this.config.speedByDifficulty[difficulty];
   }
 
-  private shouldEnableHighlighting(difficulty: 'easy' | 'medium' | 'hard' | 'expert'): boolean {
+  private shouldEnableHighlighting(difficulty: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert'): boolean {
     return this.config.highlighting.enabledForLevels.includes(difficulty);
   }
 

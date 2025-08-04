@@ -17,7 +17,7 @@ interface ElevenLabsAudioProps {
   currentPage?: number;
   totalPages?: number;
   isExtendedPage?: boolean; // True if this page was added beyond the original 10
-  difficulty?: 'easy' | 'medium' | 'hard' | 'expert';
+  difficulty?: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert';
   onWordHighlight?: (wordIndex: number) => void;
 }
 
