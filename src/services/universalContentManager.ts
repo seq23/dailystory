@@ -967,44 +967,41 @@ export class UniversalContentManager {
     pageCount: number,
     userInfo: UserInfo
   ): Promise<GeneratedContent[]> {
-    console.log('📚 Generating Level 0 story with ultra-simple templates');
+    console.log('📚 Generating Level 0 story with dedicated Level0StoryProcessor');
     
-    const { UserInputDistributor } = await import('./userInputDistributor');
-    await UserInputDistributor.initialize(userInfo);
+    // Use our dedicated Level 0 processor instead of UserInputDistributor
+    const { Level0StoryProcessor } = await import('./level0StoryProcessor');
+    const storyResult = Level0StoryProcessor.generateStory(userInfo);
     
-    const content: GeneratedContent[] = [];
+    console.log('📖 Level0StoryProcessor result:', {
+      templateIndex: storyResult.templateIndex,
+      isValid: storyResult.isValid,
+      isRepeating: storyResult.isRepeating,
+      pageCount: storyResult.content.length,
+      validationErrors: storyResult.validationErrors
+    });
     
-    // Get a Level 0 template (4-6 words per sentence)
-    const template = getLevel0Template();
-    
-    for (let pageIndex = 0; pageIndex < pageCount; pageIndex++) {
-      const distributionContext = {
-        pageIndex,
-        totalPages: pageCount,
-        difficulty: 'beginner' as DifficultyLevel,
-        usedInputs: new Set<string>()
-      };
-      
-      // Get template variables including user inputs
-      const templateVariables = UserInputDistributor.getTemplateVariables(userInfo, distributionContext);
-      
-      // Cycle through templates if we need more pages than available templates
-      const templateIndex = pageIndex % template.length;
-      
-      // Apply template variable substitution to Level 0 sentence
-      let pageContent = template[templateIndex];
-      Object.entries(templateVariables).forEach(([key, value]) => {
-        pageContent = pageContent.replace(new RegExp(key.replace(/[{}]/g, '\\$&'), 'g'), value);
-      });
-      
-      content.push({
-        pageNumber: pageIndex + 1,
-        content: pageContent,
-        illustration: `story-illustration-${pageIndex + 1}.jpg`
-      });
+    if (!storyResult.isValid) {
+      console.warn('⚠️ Level 0 story validation failed:', storyResult.validationErrors);
     }
     
-    return content;
+    // Convert the story content to GeneratedContent format
+    const generatedContent: GeneratedContent[] = storyResult.content.map((page, index) => ({
+      pageNumber: index + 1,
+      content: page,
+      illustration: `story-illustration-${(index % 44) + 1}.jpg` // Cycle through available illustrations
+    }));
+    
+    console.log('✅ Level 0 content generated successfully:', {
+      pages: generatedContent.length,
+      totalWords: generatedContent.reduce((sum, page) => sum + page.content.split(/\s+/).length, 0),
+      averageWordsPerPage: Math.round(generatedContent.reduce((sum, page) => sum + page.content.split(/\s+/).length, 0) / generatedContent.length),
+      templateIndex: storyResult.templateIndex,
+      isValid: storyResult.isValid,
+      isRepeating: storyResult.isRepeating
+    });
+    
+    return generatedContent;
   }
 
   /**
