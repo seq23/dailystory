@@ -73,11 +73,11 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
   return (
     <div 
       className={cn(
-        "fixed top-1/2 transform -translate-y-1/2 z-30 transition-all duration-300 ease-out",
+        "fixed top-1/2 transform -translate-y-1/2 z-40 transition-all duration-300 ease-out",
         isRTL ? "left-0" : "right-0",
         isExpanded 
           ? (isRTL ? "translate-x-0" : "translate-x-0")
-          : (isRTL ? "-translate-x-[170px]" : "translate-x-[170px]"),
+          : (isRTL ? "-translate-x-[120px] sm:-translate-x-[140px]" : "translate-x-[120px] sm:translate-x-[140px]"),
         className
       )}
       onMouseEnter={handleMouseEnter}
@@ -86,7 +86,7 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
       <div className={cn(
         "bg-white/95 backdrop-blur-sm shadow-xl rounded-lg border border-gray-200",
         "transition-all duration-300 ease-out",
-        isExpanded ? "w-56 p-4" : "w-12 p-2",
+        isExpanded ? "w-56 p-4" : "w-14 p-3 sm:w-12 sm:p-2",
         isRTL && "mr-2"
       )}>
         
@@ -94,16 +94,16 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
         <button
           onClick={handleToggle}
           className={cn(
-            "absolute top-4 flex items-center justify-center w-8 h-8 bg-primary/10 hover:bg-primary/20 rounded-full transition-colors",
+            "absolute top-3 flex items-center justify-center w-10 h-10 sm:w-8 sm:h-8 bg-primary/20 hover:bg-primary/30 rounded-full transition-all duration-200 shadow-lg",
             isRTL ? "right-2" : "left-2",
-            !isExpanded && "opacity-70 hover:opacity-100"
+            !isExpanded && "opacity-90 hover:opacity-100 animate-pulse"
           )}
           aria-label={isExpanded ? t('progressTowers.collapse') : t('progressTowers.expand')}
         >
           {isExpanded ? (
-            isRTL ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />
+            isRTL ? <ChevronLeft className="w-5 h-5 sm:w-4 sm:h-4" /> : <ChevronRight className="w-5 h-5 sm:w-4 sm:h-4" />
           ) : (
-            isRTL ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />
+            isRTL ? <ChevronRight className="w-5 h-5 sm:w-4 sm:h-4" /> : <ChevronLeft className="w-5 h-5 sm:w-4 sm:h-4" />
           )}
         </button>
 
