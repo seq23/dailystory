@@ -440,7 +440,7 @@ export class UniversalContentManager {
   }
 
   /**
-   * Generate fallback page content using story context when possible
+   * Enhanced fallback system with graduated fallback strategy
    */
   private static generateFallbackPage(
     userInfo: UserInfo,
@@ -449,44 +449,181 @@ export class UniversalContentManager {
     existingStory?: string[]
   ): string {
     try {
-      // If we have existing story context, generate contextually appropriate fallback
-      if (existingStory && existingStory.length > 0) {
-        const lastPage = existingStory[existingStory.length - 1];
-        
-        // Simple continuation based on difficulty level
-        const transitions = {
-          easy: ["Then", "Next", "After that"],
-          medium: ["Meanwhile", "Later", "Soon"],
-          hard: ["Eventually", "Before long", "As it happened"],
-          expert: ["Subsequently", "In due course", "As fate would have it"]
-        };
-        
-        const transition = transitions[difficulty][Math.floor(Math.random() * transitions[difficulty].length)];
-        const name = NameFormatter.capitalize(userInfo.name || 'Alex');
-        
-        // Generate simple context-aware continuation
-        const continuations = {
-          easy: [`${transition}, ${name} sees more.`, `${transition}, ${name} plays again.`, `${transition}, ${name} finds fun.`],
-          medium: [`${transition}, ${name} discovers something new.`, `${transition}, ${name} meets a helpful friend.`, `${transition}, ${name} learns something important.`],
-          hard: [`${transition}, ${name} faces a new challenge with courage.`, `${transition}, ${name} uses wisdom to solve the problem.`, `${transition}, ${name} grows stronger from the experience.`],
-          expert: [`${transition}, ${name} contemplates the deeper meaning of the journey.`, `${transition}, ${name} synthesizes the lessons learned into practical wisdom.`, `${transition}, ${name} embraces the complexity of the adventure ahead.`]
-        };
-        
-        const options = continuations[difficulty];
-        return options[Math.floor(Math.random() * options.length)];
+      // Tier 1: Enhanced template-based fallback with character-driven content
+      const enhancedFallback = this.generateEnhancedFallback(userInfo, difficulty, pageIndex, existingStory);
+      if (enhancedFallback) {
+        // Validate quality of enhanced fallback
+        const qualityCheck = this.validateFallbackQuality(enhancedFallback, difficulty);
+        if (qualityCheck.isValid) {
+          console.log('✅ Using enhanced fallback template');
+          return enhancedFallback;
+        }
       }
       
-      // If no story context, use standard template
+      // Tier 2: Context-aware continuation fallback
+      if (existingStory && existingStory.length > 0) {
+        const contextualFallback = this.generateContextualFallback(userInfo, difficulty, existingStory);
+        const qualityCheck = this.validateFallbackQuality(contextualFallback, difficulty);
+        if (qualityCheck.isValid) {
+          console.log('⚠️ Using contextual fallback');
+          return contextualFallback;
+        }
+      }
+      
+      // Tier 3: Basic template fallback
+      const basicFallback = this.generateBasicTemplateFallback(userInfo, difficulty, pageIndex);
+      if (basicFallback) {
+        console.log('⚠️ Using basic template fallback');
+        return basicFallback;
+      }
+      
+    } catch (error) {
+      console.warn('Error in graduated fallback system:', error);
+    }
+    
+    // Ultimate fallback with proper name capitalization
+    console.warn('🚨 Using ultimate fallback - all other methods failed');
+    return `${NameFormatter.capitalize(userInfo.name || 'Alex')} has an adventure.`;
+  }
+
+  /**
+   * Generate enhanced fallback using character-driven story arcs
+   */
+  private static generateEnhancedFallback(
+    userInfo: UserInfo,
+    difficulty: DifficultyLevel,
+    pageIndex: number,
+    existingStory?: string[]
+  ): string | null {
+    try {
+      const { EnhancedFallbackManager } = require('@/constants/enhancedFallbackTemplates');
+      return EnhancedFallbackManager.getFallbackTemplate(difficulty, userInfo, pageIndex, existingStory);
+    } catch (error) {
+      console.warn('Enhanced fallback failed:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Generate contextual continuation based on existing story
+   */
+  private static generateContextualFallback(
+    userInfo: UserInfo,
+    difficulty: DifficultyLevel,
+    existingStory: string[]
+  ): string {
+    const transitions = {
+      easy: ["Then", "Next", "After that"],
+      medium: ["Meanwhile", "Later", "Soon"],
+      hard: ["Eventually", "Before long", "As it happened"],
+      expert: ["Subsequently", "In due course", "As fate would have it"]
+    };
+    
+    const transition = transitions[difficulty][Math.floor(Math.random() * transitions[difficulty].length)];
+    const name = NameFormatter.capitalize(userInfo.name || 'Alex');
+    
+    // Analyze story context for better continuation
+    const lastPage = existingStory[existingStory.length - 1].toLowerCase();
+    const storyThemes = this.extractStoryThemes(existingStory);
+    
+    // Generate theme-aware continuations
+    const continuations = {
+      easy: [
+        `${transition}, ${name} sees something new.`,
+        `${transition}, ${name} tries again.`,
+        `${transition}, ${name} finds more fun.`
+      ],
+      medium: [
+        `${transition}, ${name} discovers another clue.`,
+        `${transition}, ${name} meets someone helpful.`,
+        `${transition}, ${name} learns something important.`
+      ],
+      hard: [
+        `${transition}, ${name} faces the next challenge with renewed courage.`,
+        `${transition}, ${name} applies the wisdom gained from previous experiences.`,
+        `${transition}, ${name} grows stronger through this new obstacle.`
+      ],
+      expert: [
+        `${transition}, ${name} contemplates the interconnected nature of these experiences.`,
+        `${transition}, ${name} synthesizes the deeper patterns emerging from this journey.`,
+        `${transition}, ${name} embraces the paradoxical nature of growth and understanding.`
+      ]
+    };
+    
+    const options = continuations[difficulty];
+    return options[Math.floor(Math.random() * options.length)];
+  }
+
+  /**
+   * Generate basic template fallback
+   */
+  private static generateBasicTemplateFallback(
+    userInfo: UserInfo,
+    difficulty: DifficultyLevel,
+    pageIndex: number
+  ): string | null {
+    try {
       const processedTemplates = getDifficultyAppropriateTemplate(difficulty, 0, userInfo);
       if (processedTemplates && processedTemplates.length > 0) {
         return processedTemplates[pageIndex % processedTemplates.length];
       }
     } catch (error) {
-      console.warn('Error in generateFallbackPage:', error);
+      console.warn('Basic template fallback failed:', error);
+    }
+    return null;
+  }
+
+  /**
+   * Extract story themes from existing content for contextual fallbacks
+   */
+  private static extractStoryThemes(existingStory: string[]): string[] {
+    const storyText = existingStory.join(' ').toLowerCase();
+    const themes = [];
+    
+    // Common theme keywords
+    if (storyText.includes('friend') || storyText.includes('together')) themes.push('friendship');
+    if (storyText.includes('help') || storyText.includes('save')) themes.push('helping');
+    if (storyText.includes('magic') || storyText.includes('glow')) themes.push('magic');
+    if (storyText.includes('learn') || storyText.includes('discover')) themes.push('learning');
+    if (storyText.includes('brave') || storyText.includes('courage')) themes.push('courage');
+    
+    return themes;
+  }
+
+  /**
+   * Validate fallback content quality
+   */
+  private static validateFallbackQuality(content: string, difficulty: DifficultyLevel): { isValid: boolean; issues: string[] } {
+    const issues = [];
+    
+    // Check word count
+    const wordCount = content.split(/\s+/).length;
+    const expectedRanges = {
+      easy: { min: 2, max: 8 },
+      medium: { min: 4, max: 15 },
+      hard: { min: 8, max: 22 },
+      expert: { min: 12, max: 30 }
+    };
+    
+    const range = expectedRanges[difficulty];
+    if (wordCount < range.min || wordCount > range.max) {
+      issues.push(`Word count ${wordCount} outside range ${range.min}-${range.max}`);
     }
     
-    // Ultimate fallback with proper name capitalization
-    return `${NameFormatter.capitalize(userInfo.name || 'Alex')} has an adventure.`;
+    // Check for proper name capitalization
+    if (!content.match(/^[A-Z]/)) {
+      issues.push('Missing proper capitalization');
+    }
+    
+    // Check for complete sentence
+    if (!content.trim().endsWith('.') && !content.trim().endsWith('!') && !content.trim().endsWith('?')) {
+      issues.push('Incomplete sentence structure');
+    }
+    
+    return {
+      isValid: issues.length === 0,
+      issues
+    };
   }
 
   /**

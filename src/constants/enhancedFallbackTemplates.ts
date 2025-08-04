@@ -1,0 +1,405 @@
+/**
+ * Enhanced Fallback Templates System
+ * Uses character-driven story arcs and context-aware generation for high-quality fallbacks
+ */
+
+import { UserInfo, DifficultyLevel } from "@/types";
+import { NameFormatter } from "@/utils/nameFormatter";
+import { CharacterDrivenStoryArc, StoryContext } from "@/services/characterDrivenStoryArc";
+import { CharacterPoolManager } from "@/services/characterPoolManager";
+
+export interface EnhancedFallbackTemplate {
+  setup: string[];
+  development: string[];
+  climax: string[];
+  resolution: string[];
+  contextualContinuations: string[];
+}
+
+/**
+ * Rich fallback templates that follow the same story arc patterns as the main system
+ */
+export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallbackTemplate[]> = {
+  easy: [
+    {
+      setup: [
+        "{name} goes to the park today.",
+        "{name} sees a {animal} there.",
+        "The {animal} looks friendly and nice."
+      ],
+      development: [
+        "{name} says hello to the {animal}.",
+        "The {animal} wants to play together.",
+        "They play with a {color} ball."
+      ],
+      climax: [
+        "The ball rolls away fast.",
+        "{name} and {animal} run after it.",
+        "They work together to get it."
+      ],
+      resolution: [
+        "They get the ball back together.",
+        "{name} and {animal} are happy.",
+        "They are good friends now."
+      ],
+      contextualContinuations: [
+        "Then {name} sees something new.",
+        "Next, {name} tries something different.",
+        "After that, {name} finds more fun."
+      ]
+    },
+    {
+      setup: [
+        "{name} finds a {object} outside.",
+        "It is very {color} and pretty.",
+        "{name} picks it up carefully."
+      ],
+      development: [
+        "A {animal} comes over to see.",
+        "The {animal} wants to help {name}.",
+        "They look at the {object} together."
+      ],
+      climax: [
+        "The {object} starts to glow bright.",
+        "It makes a soft, happy sound.",
+        "{name} and {animal} are surprised."
+      ],
+      resolution: [
+        "The {object} brings them good luck.",
+        "{name} shares it with {animal}.",
+        "They both feel very happy."
+      ],
+      contextualContinuations: [
+        "Then {name} discovers more magic.",
+        "Next, they find another surprise.",
+        "After that, more friends come."
+      ]
+    }
+  ],
+
+  medium: [
+    {
+      setup: [
+        "{name} discovers a mysterious path in the forest.",
+        "The path is covered with sparkling {color} stones.",
+        "A wise {animal} appears to guide the way."
+      ],
+      development: [
+        "The {animal} leads {name} to a hidden grove.",
+        "In the center grows a magnificent {object} tree.",
+        "The tree seems to whisper secrets of nature."
+      ],
+      climax: [
+        "Suddenly, the tree begins to lose its magical glow.",
+        "{name} realizes the tree needs their help urgently.",
+        "Working with {animal}, they search for the solution."
+      ],
+      resolution: [
+        "{name} learns that caring for nature heals everything.",
+        "The tree regains its beautiful, vibrant glow completely.",
+        "The forest celebrates their act of kindness and wisdom."
+      ],
+      contextualContinuations: [
+        "Meanwhile, {name} notices other magical elements nearby.",
+        "Soon after, they discover another challenge to solve.",
+        "Before long, {name} finds new wisdom to apply."
+      ]
+    },
+    {
+      setup: [
+        "{name} receives an invitation to a special celebration.",
+        "The invitation is written in shimmering {color} ink.",
+        "A clever {animal} messenger delivered it personally."
+      ],
+      development: [
+        "At the celebration, {name} meets many interesting friends.",
+        "Everyone shares their unique talents and special gifts.",
+        "The {animal} teaches {name} an important traditional dance."
+      ],
+      climax: [
+        "When it's {name}'s turn to share something special,",
+        "they feel nervous and unsure of their abilities.",
+        "The supportive friends encourage {name} to try anyway."
+      ],
+      resolution: [
+        "{name} discovers their own unique talent for bringing joy.",
+        "Everyone appreciates {name}'s authentic contribution to the celebration.",
+        "The experience teaches them about confidence and community belonging."
+      ],
+      contextualContinuations: [
+        "Later that evening, {name} reflects on lessons learned.",
+        "Eventually, they decide to organize their own celebration.",
+        "As time passes, {name} becomes known for their kindness."
+      ]
+    }
+  ],
+
+  hard: [
+    {
+      setup: [
+        "{name} lived in a peaceful village where everyone worked together harmoniously.",
+        "One morning, they noticed that the village's ancient {object} had stopped glowing mysteriously.",
+        "The wise elder {animal} explained that this meant trouble was approaching the community."
+      ],
+      development: [
+        "{name} volunteered to journey to the distant mountains to seek the legendary solution.",
+        "Along the dangerous path, they encountered various challenges that tested their courage and determination.",
+        "A helpful {animal} companion joined the quest, bringing valuable knowledge about the ancient mysteries."
+      ],
+      climax: [
+        "At the mountain's peak, {name} discovered that the solution required a significant personal sacrifice.",
+        "They had to choose between their own dreams and the welfare of their community.",
+        "With great courage, {name} made the difficult choice to put others before themselves."
+      ],
+      resolution: [
+        "Their selfless decision restored the {object}'s power and saved the entire village community.",
+        "{name} learned that true leadership means serving others with wisdom and compassion.",
+        "The village thrived, and {name} became known for their character and moral strength."
+      ],
+      contextualContinuations: [
+        "Subsequently, {name} faced new challenges with increased confidence and wisdom.",
+        "In time, other villages sought {name}'s guidance for their own difficulties.",
+        "Eventually, {name} established a school to teach others about courage and service."
+      ]
+    }
+  ],
+
+  expert: [
+    {
+      setup: [
+        "{name} began questioning the fundamental principles that governed their society and personal beliefs.",
+        "These philosophical inquiries led to deep conversations with the enlightened {animal} who served as mentor.",
+        "Together they explored complex concepts of justice, truth, and the nature of human existence."
+      ],
+      development: [
+        "Through rigorous intellectual discourse and careful observation, {name} examined various worldviews and perspectives.",
+        "The journey of understanding revealed contradictions between idealistic theories and practical realities of life.",
+        "Each new insight brought both clarity and additional questions about the complexities of ethical living."
+      ],
+      climax: [
+        "{name} faced a profound moral dilemma that challenged everything they believed about right and wrong.",
+        "The decision required integrating philosophical understanding with practical wisdom and compassionate action.",
+        "No simple answer existed, forcing {name} to synthesize multiple viewpoints into a coherent personal philosophy."
+      ],
+      resolution: [
+        "Through thoughtful reflection and dialogue, {name} developed a nuanced understanding of ethical complexity.",
+        "They learned that wisdom comes from embracing paradox while maintaining commitment to truth and justice.",
+        "This intellectual and spiritual growth transformed {name} into a bridge between different ways of thinking."
+      ],
+      contextualContinuations: [
+        "Consequently, {name} began teaching others how to navigate complex moral landscapes with integrity.",
+        "In subsequent years, they developed frameworks for understanding and resolving ethical conflicts.",
+        "Ultimately, {name} became known for their ability to find common ground among diverse perspectives."
+      ]
+    }
+  ]
+};
+
+/**
+ * Enhanced fallback template selector with session management
+ */
+export class EnhancedFallbackManager {
+  private static usedTemplates: Map<string, Set<number>> = new Map();
+
+  /**
+   * Get an enhanced fallback template for the given difficulty and context
+   */
+  static getFallbackTemplate(
+    difficulty: DifficultyLevel,
+    userInfo: UserInfo,
+    pageIndex: number,
+    existingStory?: string[]
+  ): string {
+    const sessionKey = `${difficulty}-${userInfo.name || 'guest'}`;
+    
+    // Get available templates for this difficulty
+    const templates = ENHANCED_FALLBACK_TEMPLATES[difficulty];
+    
+    if (!templates || templates.length === 0) {
+      return this.getBasicFallback(difficulty, userInfo, pageIndex);
+    }
+
+    // Track used templates to avoid repetition
+    if (!this.usedTemplates.has(sessionKey)) {
+      this.usedTemplates.set(sessionKey, new Set());
+    }
+    
+    const usedSet = this.usedTemplates.get(sessionKey)!;
+    
+    // Find an unused template, or reset if all used
+    let templateIndex = 0;
+    if (usedSet.size >= templates.length) {
+      usedSet.clear(); // Reset for variety
+    }
+    
+    // Select template that hasn't been used recently
+    for (let i = 0; i < templates.length; i++) {
+      if (!usedSet.has(i)) {
+        templateIndex = i;
+        break;
+      }
+    }
+    
+    usedSet.add(templateIndex);
+    const selectedTemplate = templates[templateIndex];
+
+    // Generate context-aware fallback using story arc structure
+    return this.generateContextAwareFallback(
+      selectedTemplate,
+      difficulty,
+      userInfo,
+      pageIndex,
+      existingStory
+    );
+  }
+
+  /**
+   * Generate context-aware fallback content
+   */
+  private static generateContextAwareFallback(
+    template: EnhancedFallbackTemplate,
+    difficulty: DifficultyLevel,
+    userInfo: UserInfo,
+    pageIndex: number,
+    existingStory?: string[]
+  ): string {
+    // If we have existing story context, use continuation patterns
+    if (existingStory && existingStory.length > 0) {
+      const continuations = template.contextualContinuations;
+      const continuationIndex = pageIndex % continuations.length;
+      return this.processTemplate(continuations[continuationIndex], userInfo, difficulty);
+    }
+
+    // Generate character-driven content using the enhanced template
+    const characters = CharacterPoolManager.generateCharacterPool(userInfo, difficulty);
+    const context: StoryContext = {
+      currentPage: pageIndex,
+      totalPages: 10, // Default assumption
+      characters,
+      userInfo,
+      difficulty
+    };
+
+    // Determine which part of the story arc to use
+    const position = this.determineStoryPosition(pageIndex, 10);
+    const arcTemplates = template[position];
+    
+    const templateIndex = pageIndex % arcTemplates.length;
+    const selectedTemplate = arcTemplates[templateIndex];
+
+    return this.processTemplate(selectedTemplate, userInfo, difficulty);
+  }
+
+  /**
+   * Determine story position based on page index
+   */
+  private static determineStoryPosition(currentPage: number, totalPages: number): keyof EnhancedFallbackTemplate {
+    const progress = currentPage / (totalPages - 1);
+    
+    if (progress <= 0.25) return 'setup';
+    if (progress <= 0.7) return 'development';
+    if (progress <= 0.9) return 'climax';
+    return 'resolution';
+  }
+
+  /**
+   * Process template with variable substitution
+   */
+  private static processTemplate(
+    template: string,
+    userInfo: UserInfo,
+    difficulty: DifficultyLevel
+  ): string {
+    let processed = template;
+    
+    // Replace user placeholders
+    processed = processed.replace(/{name}/g, NameFormatter.capitalize(userInfo.name || 'Alex'));
+    
+    // Get difficulty-appropriate vocabulary
+    const vocabulary = this.getDifficultyVocabulary(difficulty);
+    
+    // Replace story elements
+    processed = processed.replace(/{animal}/g, 
+      userInfo.favoriteAnimal || vocabulary.animals[Math.floor(Math.random() * vocabulary.animals.length)]);
+    processed = processed.replace(/{color}/g, 
+      userInfo.favoriteColor || vocabulary.colors[Math.floor(Math.random() * vocabulary.colors.length)]);
+    processed = processed.replace(/{object}/g, 
+      vocabulary.objects[Math.floor(Math.random() * vocabulary.objects.length)]);
+    
+    return processed;
+  }
+
+  /**
+   * Get vocabulary appropriate for difficulty level
+   */
+  private static getDifficultyVocabulary(difficulty: DifficultyLevel) {
+    const vocabularies = {
+      easy: {
+        animals: ['cat', 'dog', 'bird', 'fish', 'bear', 'frog'],
+        colors: ['red', 'blue', 'green', 'yellow', 'pink', 'brown'],
+        objects: ['ball', 'book', 'toy', 'flower', 'stone', 'shell']
+      },
+      medium: {
+        animals: ['rabbit', 'owl', 'deer', 'fox', 'turtle', 'butterfly'],
+        colors: ['golden', 'silver', 'emerald', 'sapphire', 'crimson', 'violet'],
+        objects: ['treasure', 'crystal', 'scroll', 'compass', 'lantern', 'map']
+      },
+      hard: {
+        animals: ['wolf', 'eagle', 'panther', 'raven', 'falcon', 'phoenix'],
+        colors: ['iridescent', 'luminescent', 'opalescent', 'chromatic'],
+        objects: ['artifact', 'relic', 'talisman', 'codex', 'grimoire', 'medallion']
+      },
+      expert: {
+        animals: ['phoenix', 'dragon', 'sphinx', 'pegasus', 'leviathan'],
+        colors: ['transcendent', 'ethereal', 'celestial', 'cosmic', 'infinite'],
+        objects: ['paradigm', 'synthesis', 'manifestation', 'consciousness', 'enlightenment']
+      }
+    };
+    
+    return vocabularies[difficulty];
+  }
+
+  /**
+   * Basic fallback for extreme error conditions
+   */
+  private static getBasicFallback(
+    difficulty: DifficultyLevel,
+    userInfo: UserInfo,
+    pageIndex: number
+  ): string {
+    const name = NameFormatter.capitalize(userInfo.name || 'Alex');
+    
+    const basicFallbacks = {
+      easy: [
+        `${name} has fun today.`,
+        `${name} plays outside.`,
+        `${name} feels happy.`
+      ],
+      medium: [
+        `${name} discovers something wonderful.`,
+        `${name} learns something new today.`,
+        `${name} makes a good friend.`
+      ],
+      hard: [
+        `${name} faces a challenge with courage and determination.`,
+        `${name} learns valuable lessons about perseverance and growth.`,
+        `${name} discovers inner strength through this experience.`
+      ],
+      expert: [
+        `${name} contemplates the deeper meaning of this experience and its implications.`,
+        `${name} synthesizes new understanding from the complex challenges they have encountered.`,
+        `${name} develops a more nuanced perspective on life's fundamental questions.`
+      ]
+    };
+    
+    const fallbacks = basicFallbacks[difficulty];
+    return fallbacks[pageIndex % fallbacks.length];
+  }
+
+  /**
+   * Clear session data for testing or reset
+   */
+  static clearSession(): void {
+    this.usedTemplates.clear();
+  }
+}
