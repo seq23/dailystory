@@ -977,7 +977,7 @@ export class UniversalContentManager {
     // Get a Level 0 template (4-6 words per sentence)
     const template = getLevel0Template();
     
-    for (let pageIndex = 0; pageIndex < Math.min(pageCount, template.length); pageIndex++) {
+    for (let pageIndex = 0; pageIndex < pageCount; pageIndex++) {
       const distributionContext = {
         pageIndex,
         totalPages: pageCount,
@@ -988,8 +988,11 @@ export class UniversalContentManager {
       // Get template variables including user inputs
       const templateVariables = UserInputDistributor.getTemplateVariables(userInfo, distributionContext);
       
+      // Cycle through templates if we need more pages than available templates
+      const templateIndex = pageIndex % template.length;
+      
       // Apply template variable substitution to Level 0 sentence
-      let pageContent = template[pageIndex];
+      let pageContent = template[templateIndex];
       Object.entries(templateVariables).forEach(([key, value]) => {
         pageContent = pageContent.replace(new RegExp(key.replace(/[{}]/g, '\\$&'), 'g'), value);
       });
@@ -1011,19 +1014,14 @@ export class UniversalContentManager {
     difficulty: DifficultyLevel, 
     isPremium: boolean = false
   ): number {
-    // Level 0 should be very short - max 8 pages
-    if (difficulty === 'beginner') {
-      return isPremium ? 8 : 6;
-    }
-    
-    // Free trial: Standard 10 pages for other levels
+    // Free trial: Standard 10 pages for all levels
     if (!isPremium) {
       return 10;
     }
     
     // Premium: Varied page counts by difficulty
     const premiumPageCounts = {
-      beginner: 8,  // Already handled above
+      beginner: 6,  // Shorter for pre-readers
       easy: 8,
       medium: 10,
       hard: 12,
