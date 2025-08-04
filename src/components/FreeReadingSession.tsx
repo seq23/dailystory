@@ -1381,7 +1381,17 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
       </div>
       
       {/* Progress Towers - Show during active session for free users, always for premium users */}
-      {(sessionStarted && !sessionEnded && !showProgressReport) || isPremium ? (
+      {(() => {
+        const shouldShow = isPremium || (sessionStarted && !sessionEnded && !showProgressReport);
+        console.log('Progress Towers visibility:', { 
+          isPremium, 
+          sessionStarted, 
+          sessionEnded, 
+          showProgressReport, 
+          shouldShow 
+        });
+        return shouldShow;
+      })() ? (
         <ProgressTowers
           userId={userInfo.name}
           userType={isPremium ? "premium" : "free"}
