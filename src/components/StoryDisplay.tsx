@@ -314,7 +314,8 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
               `${name} says hello.`,
               `The ${animal} says hello too.`,
               `They play together.`,
-              `${name} is happy. The end.`
+              `${name} is very happy.`,
+              `What a fun day!`
             ];
           } else if (userInfo.age <= 8) {
             return [

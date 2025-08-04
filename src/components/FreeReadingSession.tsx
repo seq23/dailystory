@@ -317,16 +317,16 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
               console.warn(`Story generator returned ${pages.length} pages, expected ${targetPages}. Adding contextual content...`);
               const additionalPages = targetPages - pages.length;
               
-              // Better contextual fallback content
+              // Better contextual fallback content for Level 1
               const contextualContinuations = [
-                `${userInfo.name} explores a new part of the magical world.`,
-                `A friendly ${userInfo.favoriteAnimal || 'creature'} joins the adventure.`,
-                `${userInfo.name} discovers a hidden talent for ${userInfo.hobbies || 'problem-solving'}.`,
-                `The journey leads to an unexpected surprise.`,
-                `${userInfo.name} helps someone in need along the way.`,
-                `A beautiful ${userInfo.favoriteColor || 'golden'} light guides the path forward.`,
-                `${userInfo.name} learns something important about friendship.`,
-                `The adventure reaches its most exciting moment yet!`
+                `${userInfo.name} plays with the ${userInfo.favoriteAnimal || 'cat'}.`,
+                `A nice ${userInfo.favoriteAnimal || 'dog'} comes to play.`,
+                `${userInfo.name} has fun with ${userInfo.hobbies || 'toys'}.`,
+                `They run and play together.`,
+                `${userInfo.name} helps a friend today.`,
+                `The ${userInfo.favoriteColor || 'blue'} ball is fun.`,
+                `${userInfo.name} likes to play outside.`,
+                `What a good day to play!`
               ];
               
               for (let i = 0; i < additionalPages; i++) {
