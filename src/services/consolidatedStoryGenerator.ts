@@ -6,13 +6,14 @@ import { StoryQualityChecker } from "@/utils/storyQualityChecker";
 import { validateAndFixGrammar, GrammarValidator } from "@/utils/grammarValidator";
 import { NameFormatter } from "@/utils/nameFormatter";
 import { AntiRepetitionSystem } from "@/utils/antiRepetitionSystem";
+import { EnhancedAntiRepetitionEngine } from "@/services/enhancedAntiRepetitionEngine";
+import { IntelligentTemplateSelector } from "@/services/intelligentTemplateSelector";
+import { getRobustTemplate } from "@/constants/robustStoryTemplates";
 import { TemplateVariableProcessor } from "@/utils/templateVariableProcessor";
-import { APP_CONFIG } from "@/constants/app";
-import { runComprehensiveQualityVerification } from "@/utils/runComprehensiveQualityVerification";
-import { getEnhancedTemplate } from "@/constants/enhancedStoryTemplates";
 import { UserInputDistributor } from "@/services/userInputDistributor";
 import { LanguagePreferenceService } from "./languagePreferenceService";
 import { validateLevel1Sentence } from "@/constants/level1Vocabulary";
+import { APP_CONFIG } from "@/constants/app";
 // Generate unique ID utility
 const generateUniqueId = () => Math.random().toString(36).substring(2, 11);
 
@@ -128,60 +129,45 @@ export class ConsolidatedStoryGenerator {
         console.log('📝 Smart Parsing Results:', SmartInputParser.generateProcessingReport(parsingResult));
       }
 
-      // Phase 1 & 5: Generate story pages using language-appropriate templates
+      // Phase 1 & 5: Generate story pages using ROBUST template system
       await UserInputDistributor.initialize(processedUserInfo);
       
-      // CRITICAL FIX: Use proper template source - enhanced templates for better variety
+      // CRITICAL UPDATE: Use robust template system with tier-specific intelligence
       const storyLanguage = fullConfig.language;
-      console.log(`🌍 Using story language: ${storyLanguage} for ${difficulty} difficulty`);
+      const tier: 'free' | 'premium' = isPremium ? 'premium' : 'free';
+      console.log(`🎯 Using ${tier.toUpperCase()} tier robust template system for ${storyLanguage} (${difficulty})`);
       
-      // Use enhanced templates which have more variety and prevent repetition
-      const enhancedTemplates = getEnhancedTemplate(difficulty);
-      let activeTemplates: string[] = [];
+      // Initialize intelligent template selector
+      const templateConfig = {
+        tier,
+        difficulty,
+        lookbackPages: tier === 'premium' ? 10 : 5,
+        cooldownPages: tier === 'premium' ? 15 : 8,
+        userId: processedUserInfo.name || 'anonymous',
+        sessionId: generateUniqueId()
+      };
       
-      // If enhanced templates are available, use them; otherwise fallback to language-specific templates
-      if (enhancedTemplates && enhancedTemplates.length > 0) {
-        activeTemplates = enhancedTemplates;
-        console.log(`✅ Using enhanced templates: ${activeTemplates.length} templates for ${difficulty}`);
-      } else {
-        // Fallback to language-specific templates
-        activeTemplates = getLanguageTemplates(storyLanguage, difficulty);
-        console.log(`⚠️ Fallback to language templates: ${activeTemplates.length} templates for ${storyLanguage}/${difficulty}`);
-      }
-      
-      if (!activeTemplates.length) {
-        console.error(`❌ No templates available for ${storyLanguage}/${difficulty}, using English fallback`);
-        const fallbackTemplates = getLanguageTemplates('en', difficulty);
-        if (!fallbackTemplates.length) {
-          console.error(`❌ No fallback templates available, using story generator fallback`);
-          return this.generateFallbackStoryResult(processedUserInfo, difficulty, startTime);
-        }
-        activeTemplates = fallbackTemplates;
-      }
-
       const pages: string[] = [];
       const extractedElements = SmartInputParser.extractStoryElements(parsedElements);
       
-      // Phase 3: Enhanced element distribution and selection with proper template source
-      const totalPages = fullConfig.pageCount; // Generate exactly the requested number of pages
-      console.log(`🎯 Generating ${totalPages} pages using ${activeTemplates.length} template pages for language: ${storyLanguage}`);
+      // Phase 3: Enhanced element distribution and selection with ROBUST template source
+      const totalPages = fullConfig.pageCount;
+      console.log(`🎯 Generating ${totalPages} pages using ROBUST ${tier} tier system`);
       
       for (let i = 0; i < totalPages; i++) {
-        // Smart template selection to avoid repetition
-        let template = this.selectSmartTemplate(activeTemplates, i, totalPages, difficulty);
+        // REVOLUTIONARY: Use intelligent template selector
+        const templateResult = IntelligentTemplateSelector.selectTemplate(templateConfig);
+        let template = templateResult.template.join('\n'); // Convert array to string
         
-        // Track template usage for this page
-        const templateIndex = activeTemplates.indexOf(template);
-        const templateId = `${difficulty}_${templateIndex}_${storyLanguage}`;
-        this.pageTemplateTracker.set(i, templateId);
+        console.log(`📝 Page ${i + 1}: Selected ${templateResult.isAIGenerated ? 'AI-generated' : 'curated'} template (ID: ${templateResult.templateId})`);
         
-        // Mark template as used in anti-repetition system
-        AntiRepetitionSystem.markTemplateUsed(templateId);
-        
-        // Enhanced template variation system
-        if (this.shouldApplyVariation(template, i, templateId)) {
-          template = this.generateEnhancedTemplateVariation(template, i, processedUserInfo, difficulty);
-        }
+        // Enhanced anti-repetition check using new engine
+        const antiRepetitionConfig = {
+          tier,
+          userId: templateConfig.userId,
+          sessionId: templateConfig.sessionId,
+          preserveContext: fullConfig.preserveAntiRepetition
+        };
         
         // Phase 1: Comprehensive template variable processing
         const variableContext = {
@@ -194,30 +180,55 @@ export class ConsolidatedStoryGenerator {
         
         let processedPage = await TemplateVariableProcessor.processTemplate(template, variableContext);
         
-        // Phase 8: Enhanced anti-repetition system checks with template awareness
+        // Phase 8: REVOLUTIONARY Enhanced anti-repetition system checks
         if (fullConfig.antiRepetition) {
-          const diversityScore = AntiRepetitionSystem.calculateDiversityScore(processedPage);
-          const isDuplicate = AntiRepetitionSystem.isDuplicateSync(processedPage, 0.8);
-          const isTemplateOverused = AntiRepetitionSystem.isTemplateOverused(templateId, 2);
+          const repetitionCheck = await EnhancedAntiRepetitionEngine.checkContentRepetition(
+            processedPage,
+            antiRepetitionConfig,
+            difficulty,
+            { pageIndex: i, totalPages, userInfo: processedUserInfo }
+          );
           
-          // Enhanced checks for repetition
-          if (diversityScore < 0.5 || isDuplicate || isTemplateOverused) {
-            console.log(`Page ${i + 1}: Repetition detected - diversity: ${diversityScore.toFixed(2)}, duplicate: ${isDuplicate}, template overused: ${isTemplateOverused}`);
+          if (repetitionCheck.isDuplicate) {
+            console.log(`🚫 Page ${i + 1}: ${repetitionCheck.reason} (similarity: ${(repetitionCheck.similarity * 100).toFixed(1)}%)`);
             
-            // Generate variations to avoid repetition
-            console.log(`🔧 Pre-variation page content:`, processedPage);
-            const variations = AntiRepetitionSystem.generateVariations(processedPage, extractedElements);
-            if (variations.length > 0) {
-              processedPage = variations[Math.floor(Math.random() * variations.length)];
-              console.log(`✅ Post-variation page content:`, processedPage);
-              console.log(`Page ${i + 1}: Using variation: "${processedPage.substring(0, 50)}..."`);
-            } else {
-              // Better contextual fallback with more variety
-              processedPage = this.generateContextualFallback(processedUserInfo, i, totalPages);
-              console.log(`Page ${i + 1}: Using contextual fallback`);
+            if (repetitionCheck.suggestion) {
+              console.log(`💡 Suggestion: ${repetitionCheck.suggestion}`);
             }
+            
+            // Generate better contextual replacement
+            if (tier === 'premium') {
+              // Premium users get AI-powered variations
+              console.log(`🤖 Generating premium variation for page ${i + 1}`);
+              const premiumVariation = IntelligentTemplateSelector.selectTemplate({
+                ...templateConfig,
+                sessionId: `${templateConfig.sessionId}_variation_${i}`
+              });
+              processedPage = await TemplateVariableProcessor.processTemplate(
+                premiumVariation.template.join('\n'), 
+                variableContext
+              );
+            } else {
+              // Free users get enhanced fallbacks
+              console.log(`🔧 Generating enhanced fallback for page ${i + 1}`);
+              processedPage = this.generateContextualFallback(processedUserInfo, i, totalPages);
+            }
+            
+            // Re-check the variation to ensure it's acceptable
+            const recheckResult = await EnhancedAntiRepetitionEngine.checkContentRepetition(
+              processedPage,
+              antiRepetitionConfig,
+              difficulty
+            );
+            
+            if (!recheckResult.isDuplicate) {
+              console.log(`✅ Page ${i + 1}: Variation accepted - ${recheckResult.reason}`);
+            }
+          } else {
+            console.log(`✅ Page ${i + 1}: ${repetitionCheck.reason}`);
           }
           
+          // Add approved content to tracking (legacy system for compatibility)
           await AntiRepetitionSystem.addContent(processedPage);
         }
         

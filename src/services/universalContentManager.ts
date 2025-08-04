@@ -5,6 +5,8 @@ import { ConsolidatedStoryGenerator } from "./consolidatedStoryGenerator";
 import { PremiumStoryService } from "./premiumStoryService";
 import { FreeUserStoryService } from "./freeUserStoryService";
 import { AntiRepetitionSystem } from "@/utils/antiRepetitionSystem";
+import { EnhancedAntiRepetitionEngine } from "./enhancedAntiRepetitionEngine";
+import { IntelligentTemplateSelector } from "./intelligentTemplateSelector";
 import { LanguagePreferenceService } from "./languagePreferenceService";
 import { EnhancedSessionManager } from "./enhancedSessionManager";
 
@@ -12,6 +14,7 @@ export interface ContentManagerConfig {
   isPremium: boolean;
   userId?: string;
   maxSessions?: number;
+  preserveAntiRepetition?: boolean;
 }
 
 export interface ProcessedUserData {
@@ -32,6 +35,12 @@ export interface StoryGenerationResult {
     sessionNumber: number;
     remainingSessions: number;
     isUnlimited: boolean;
+  };
+  robustSystemMetrics?: {
+    tier: 'free' | 'premium';
+    templatesAvailable: number;
+    antiRepetitionChecks: number;
+    variationsGenerated: number;
   };
 }
 
