@@ -186,8 +186,8 @@ export class UniversalContentManager {
         
         // Check for repetition against existing story
         if (this.isContentTooSimilar(newPage, currentStory)) {
-          // Generate alternative using different template approach
-          newPage = this.generateAlternativePage(userInfo, difficulty, pageIndex, currentStory);
+          // Use context-aware fallback instead of disconnected alternative
+          newPage = this.generateFallbackPage(userInfo, difficulty, pageIndex, currentStory);
         }
         
         continuationPages.push(newPage);
@@ -195,7 +195,7 @@ export class UniversalContentManager {
         
       } catch (error) {
         console.warn(`Error generating continuation page ${i + 1}, using fallback:`, error);
-        const fallbackPage = this.generateFallbackPage(userInfo, difficulty, pageIndex);
+        const fallbackPage = this.generateFallbackPage(userInfo, difficulty, pageIndex, currentStory);
         continuationPages.push(fallbackPage);
       }
     }
@@ -267,7 +267,7 @@ export class UniversalContentManager {
           const wordValidation = validateDifficultyCompliance(processedPage, difficulty);
           if (!wordValidation.isValid) {
             console.warn(`⚠️ Page ${i + 1} word count (${wordValidation.wordCount}) outside range ${wordValidation.expectedRange.min}-${wordValidation.expectedRange.max} for ${difficulty}`);
-            processedPage = this.generateFallbackPage(userInfo, difficulty, i);
+            processedPage = this.generateFallbackPage(userInfo, difficulty, i, pages);
           }
         }
         
@@ -368,15 +368,43 @@ export class UniversalContentManager {
   }
 
   /**
-   * Generate fallback page content with proper template processing
+   * Generate fallback page content using story context when possible
    */
   private static generateFallbackPage(
     userInfo: UserInfo,
     difficulty: DifficultyLevel,
-    pageIndex: number
+    pageIndex: number,
+    existingStory?: string[]
   ): string {
     try {
-      // Use the new template processing function that handles variables properly
+      // If we have existing story context, generate contextually appropriate fallback
+      if (existingStory && existingStory.length > 0) {
+        const lastPage = existingStory[existingStory.length - 1];
+        
+        // Simple continuation based on difficulty level
+        const transitions = {
+          easy: ["Then", "Next", "After that"],
+          medium: ["Meanwhile", "Later", "Soon"],
+          hard: ["Eventually", "Before long", "As it happened"],
+          expert: ["Subsequently", "In due course", "As fate would have it"]
+        };
+        
+        const transition = transitions[difficulty][Math.floor(Math.random() * transitions[difficulty].length)];
+        const name = NameFormatter.capitalize(userInfo.name || 'Alex');
+        
+        // Generate simple context-aware continuation
+        const continuations = {
+          easy: [`${transition}, ${name} sees more.`, `${transition}, ${name} plays again.`, `${transition}, ${name} finds fun.`],
+          medium: [`${transition}, ${name} discovers something new.`, `${transition}, ${name} meets a helpful friend.`, `${transition}, ${name} learns something important.`],
+          hard: [`${transition}, ${name} faces a new challenge with courage.`, `${transition}, ${name} uses wisdom to solve the problem.`, `${transition}, ${name} grows stronger from the experience.`],
+          expert: [`${transition}, ${name} contemplates the deeper meaning of the journey.`, `${transition}, ${name} synthesizes the lessons learned into practical wisdom.`, `${transition}, ${name} embraces the complexity of the adventure ahead.`]
+        };
+        
+        const options = continuations[difficulty];
+        return options[Math.floor(Math.random() * options.length)];
+      }
+      
+      // If no story context, use standard template
       const processedTemplates = getDifficultyAppropriateTemplate(difficulty, 0, userInfo);
       if (processedTemplates && processedTemplates.length > 0) {
         return processedTemplates[pageIndex % processedTemplates.length];
@@ -404,52 +432,6 @@ export class UniversalContentManager {
     return matchCount / newWords.length > 0.6;
   }
 
-  /**
-   * Generate alternative page when repetition is detected
-   */
-  private static generateAlternativePage(
-    userInfo: UserInfo, 
-    difficulty: DifficultyLevel, 
-    pageIndex: number,
-    existingStory: string[]
-  ): string {
-    // Use different template variations to avoid repetition
-    const alternativeTemplates = {
-      easy: [
-        "Then {name} sees something new.",
-        "Next, {name} finds a surprise.",
-        "Soon, {name} meets a friend.",
-        "After that, {name} learns something.",
-        "Then {name} has more fun."
-      ],
-      medium: [
-        "As the adventure continues, {name} discovers something unexpected.",
-        "Meanwhile, {name} encounters a new challenge to overcome.",
-        "Before long, {name} finds a helpful companion along the way.",
-        "Eventually, {name} learns an important lesson about friendship.",
-        "As time passes, {name} grows braver and more confident."
-      ],
-      hard: [
-        "The journey takes an unexpected turn when {name} encounters something remarkable.",
-        "Through perseverance and wisdom, {name} overcomes the next obstacle with grace.",
-        "As the story unfolds, {name} demonstrates courage in the face of uncertainty.",
-        "With each challenge, {name} grows stronger and more determined than before.",
-        "The adventure reaches a new chapter as {name} embraces the unknown ahead."
-      ],
-      expert: [
-        "The narrative complexity deepens as {name} confronts philosophical questions about existence and purpose.",
-        "Through introspective dialogue with inner wisdom, {name} transcends previous limitations and assumptions.",
-        "The intellectual journey continues as {name} synthesizes multiple perspectives into unified understanding.",
-        "With growing consciousness, {name} recognizes the interconnectedness of all experiences and beings.",
-        "As enlightenment approaches, {name} embodies the principles of compassion and universal knowledge."
-      ]
-    };
-    
-    const templates = alternativeTemplates[difficulty] || alternativeTemplates.medium;
-    const template = templates[pageIndex % templates.length];
-    
-    return template.replace(/{name}/g, NameFormatter.capitalize(userInfo.name || 'Alex'));
-  }
 
   /**
    * Generate Level 1 vocabulary fallback using StoryArcManager for proper template processing

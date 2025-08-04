@@ -128,25 +128,25 @@ export class StoryArcManager {
       case 'expert':
         return {
           setup: [
-            "{name} loved learning about how all living things connect in nature.",
-            "Since childhood, {name} had always asked deep questions about life and meaning.",
-            "The learning journey began when {name} met ideas that changed everything.",
-            "Ancient stories told of a wise {animal} who knew special knowledge.",
-            "{name} felt drawn to explore these deeper questions about purpose and reality."
+            "{name} discovered an ancient map hidden in the {setting}.",
+            "The map showed a secret path to a legendary treasure vault.",
+            "A wise {animal} appeared and offered to guide the journey.",
+            "They would need courage to face the challenges ahead.",
+            "{name} felt excited about this incredible adventure opportunity."
           ],
           development: [
-            "The exploration showed that real understanding comes from many different viewpoints and experiences.",
-            "Each new insight built on earlier discoveries, creating a rich understanding.",
-            "Talking with the wise {animal} connected science knowledge with wisdom about life.",
-            "The journey needed an open mind and willingness to think in new ways.",
-            "Through thinking and talking, {name} gained deep appreciation for life's complexity."
+            "The path led through dangerous territory filled with clever puzzles.",
+            "Each challenge required {name} to use intelligence and creativity together.",
+            "The {animal} taught important lessons about perseverance and wisdom.",
+            "They encountered other brave adventurers who became trusted allies.",
+            "Through teamwork and determination, they overcame every obstacle successfully."
           ],
           resolution: [
-            "{name} combined these insights into a life philosophy focused on kindness, wisdom, and helping others.",
-            "The change led to {name} becoming a bridge between different ways of thinking.",
-            "Understanding that knowledge without kindness is incomplete, {name} committed to serving others.",
-            "The relationship with {animal} became a partnership dedicated to sharing wisdom with future generations.",
-            "{name} realized that the greatest discoveries involve recognizing the mystery and beauty of life itself."
+            "{name} discovered the greatest treasure was the knowledge gained along the way.",
+            "The adventure taught valuable lessons about friendship and courage that would last forever.",
+            "They returned home as heroes, ready to help others on similar journeys.",
+            "The bond with {animal} became a lifelong partnership built on mutual respect.",
+            "{name} realized that every ending is actually the beginning of something even greater."
           ]
         };
 
