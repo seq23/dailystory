@@ -671,12 +671,6 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
       setStoryCompleted(false);
       setHasShownCompletionToast(false);
       
-      // Show success toast for adding pages
-      toast({
-        title: t("storyDisplay.addPagesSuccess.title"),
-        description: t("storyDisplay.addPagesSuccess.description"),
-        duration: 2000,
-      });
     } catch (error) {
       console.error('Failed to add more pages:', error);
       

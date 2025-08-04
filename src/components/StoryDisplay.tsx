@@ -756,12 +756,6 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
       setStoryCompleted(false);
       setHasShownCompletionToast(false);
       
-      // Show success message
-      toast({
-        title: t("storyDisplay.addPagesSuccess.title"),
-        description: t("storyDisplay.addPagesSuccess.description"),
-        duration: 2000,
-      });
       
     } catch (error) {
       console.error('Failed to add more pages:', error);
