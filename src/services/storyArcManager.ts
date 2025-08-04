@@ -23,7 +23,7 @@ export class StoryArcManager {
     const positionTemplates = templates[position];
     const selectedTemplate = positionTemplates[Math.floor(Math.random() * positionTemplates.length)];
     
-    return this.processTemplate(selectedTemplate, userInfo);
+    return this.processTemplate(selectedTemplate, userInfo, difficulty);
   }
 
   /**
@@ -45,25 +45,25 @@ export class StoryArcManager {
       case 'easy':
         return {
           setup: [
-            "{name} wakes up happy today.",
             "{name} sees a {animal}.",
-            "{name} wants to play outside.",
-            "{name} finds a {object}.",
-            "The sun is shining bright."
+            "{name} says hello.",
+            "The {animal} is {color}.",
+            "{name} wants to play.",
+            "The sun is hot."
           ],
           development: [
-            "{name} and {animal} play together.",
-            "They find something special here.",
-            "The {animal} shows {name} something.",
-            "They go to the {setting}.",
-            "Something fun happens next."
+            "{name} and {animal} play.",
+            "They run fast.",
+            "The {animal} shows {name} fun.",
+            "They go to the park.",
+            "They play ball."
           ],
           resolution: [
-            "{name} feels very happy now.",
-            "They become best friends today.",
-            "What a wonderful day this.",
-            "{name} smiles at the {animal}.",
-            "Everyone feels good inside now."
+            "{name} feels happy.",
+            "They are good friends.",
+            "What a fun day.",
+            "{name} likes the {animal}.",
+            "They will play more."
           ]
         };
 
@@ -150,7 +150,7 @@ export class StoryArcManager {
   /**
    * Process template with user information
    */
-  private static processTemplate(template: string, userInfo: UserInfo): string {
+  private static processTemplate(template: string, userInfo: UserInfo, difficulty: DifficultyLevel): string {
     let processed = template;
     
     // Replace user placeholders
@@ -158,11 +158,19 @@ export class StoryArcManager {
     processed = processed.replace(/{pronoun}/g, 'they');
     processed = processed.replace(/{pronoun_possessive}/g, 'their');
     
-    // Replace story elements with variety
-    const animals = ['cat', 'rabbit', 'owl', 'deer', 'fox', 'turtle', 'butterfly', 'bird'];
-    const settings = ['forest', 'garden', 'meadow', 'library', 'park', 'village'];
-    const objects = ['key', 'book', 'gem', 'flower', 'stone', 'shell'];
-    const colors = ['golden', 'silver', 'emerald', 'azure', 'crimson', 'violet'];
+    // Replace story elements with variety - use Level 1 vocabulary for easy difficulty
+    const animals = difficulty === 'easy' 
+      ? ['cat', 'dog', 'bird', 'fish', 'cow', 'pig', 'duck', 'hen', 'bee', 'bear', 'fox', 'frog']
+      : ['cat', 'rabbit', 'owl', 'deer', 'fox', 'turtle', 'butterfly', 'bird'];
+    const settings = difficulty === 'easy'
+      ? ['home', 'park', 'yard', 'farm', 'zoo', 'garden']
+      : ['forest', 'garden', 'meadow', 'library', 'park', 'village'];
+    const objects = difficulty === 'easy'
+      ? ['ball', 'book', 'toy', 'cake', 'hat', 'cup']
+      : ['key', 'book', 'gem', 'flower', 'stone', 'shell'];
+    const colors = difficulty === 'easy'
+      ? ['red', 'blue', 'green', 'yellow', 'black', 'white', 'pink', 'brown']
+      : ['golden', 'silver', 'emerald', 'azure', 'crimson', 'violet'];
     
     processed = processed.replace(/{animal}/g, animals[Math.floor(Math.random() * animals.length)]);
     processed = processed.replace(/{setting}/g, settings[Math.floor(Math.random() * settings.length)]);

@@ -260,16 +260,23 @@ export class UniversalContentManager {
    * Process template with user data
    */
   private static processTemplate(template: string, userInfo: UserInfo): string {
+    // Use Level 1 vocabulary defaults for simple words
+    const level1Animals = ['cat', 'dog', 'bird', 'fish', 'cow', 'pig', 'duck', 'hen', 'bee', 'bear', 'fox', 'frog'];
+    const level1Colors = ['red', 'blue', 'green', 'yellow', 'black', 'white', 'pink', 'brown'];
+    const level1Foods = ['apple', 'cake', 'milk', 'bread', 'cookie'];
+    const level1Objects = ['ball', 'book', 'toy', 'cup', 'hat'];
+    const level1Settings = ['home', 'park', 'yard', 'farm', 'zoo'];
+    
     return template
       .replace(/{name}/g, userInfo.name || 'Alex')
-      .replace(/{animal}/g, userInfo.favoriteAnimal || 'cat')
-      .replace(/{color}/g, userInfo.favoriteColor || 'blue')
-      .replace(/{food}/g, userInfo.favoriteFood || 'pizza')
-      .replace(/{hobby}/g, userInfo.hobbies || 'reading')
-      .replace(/{object}/g, 'treasure')
-      .replace(/{setting}/g, 'forest')
-      .replace(/{antagonist}/g, 'shadow creatures')
-      .replace(/{skill}/g, 'magical')
+      .replace(/{animal}/g, userInfo.favoriteAnimal || level1Animals[Math.floor(Math.random() * level1Animals.length)])
+      .replace(/{color}/g, userInfo.favoriteColor || level1Colors[Math.floor(Math.random() * level1Colors.length)])
+      .replace(/{food}/g, userInfo.favoriteFood || level1Foods[Math.floor(Math.random() * level1Foods.length)])
+      .replace(/{hobby}/g, userInfo.hobbies || 'playing')
+      .replace(/{object}/g, level1Objects[Math.floor(Math.random() * level1Objects.length)])
+      .replace(/{setting}/g, level1Settings[Math.floor(Math.random() * level1Settings.length)])
+      .replace(/{antagonist}/g, 'big dogs')
+      .replace(/{skill}/g, 'fun')
       .replace(/{pronoun}/g, 'they')
       .replace(/{pronoun_possessive}/g, 'their');
   }
@@ -297,13 +304,16 @@ export class UniversalContentManager {
    */
   private static generateLevel1Fallback(userInfo: UserInfo, pageIndex: number): string {
     const level1Templates = [
-      "{name} sees a cat.",
-      "{name} runs fast.",
-      "The cat is big.",
-      "{name} plays ball.",
-      "They have fun.",
-      "{name} is happy.",
-      "The end."
+      "{name} sees a {animal}.",
+      "{name} says hello.",
+      "The {animal} is {color}.",
+      "{name} and {animal} play.",
+      "They run very fast.",
+      "They play with a ball.",
+      "{name} likes the {animal}.",
+      "They are good friends.",
+      "{name} feels very happy.",
+      "What a fun day!"
     ];
     
     const template = level1Templates[pageIndex % level1Templates.length];

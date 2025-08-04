@@ -46,8 +46,8 @@ export function isLevel1Word(word: string): boolean {
 
 export function validateLevel1Sentence(sentence: string): { isValid: boolean; invalidWords: string[] } {
   const words = sentence.toLowerCase()
-    .replace(/[^\\w\\s]/g, '') // Remove punctuation
-    .split(/\\s+/)
+    .replace(/[^\w\s]/g, '') // Remove punctuation
+    .split(/\s+/)
     .filter(word => word.length > 0);
   
   const invalidWords = words.filter(word => !LEVEL_1_VOCABULARY.has(word));
