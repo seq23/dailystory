@@ -162,20 +162,19 @@ export class UniversalContentManager {
       
       // Use consistent 5-page continuation for all levels
       if (difficulty === 'beginner') {
-        console.log('🔄 Level 0 Continuation: Using Level0StoryProcessor for consistent quality');
-        const level0Result = await Level0StoryProcessor.generateStory(userInfo);
-        continuationPages = level0Result.content.slice(0, 5);
+        console.log('🔄 Level 0 Continuation: Using dedicated Level0StoryProcessor.continueStory() method');
+        const level0Result = await Level0StoryProcessor.continueStory(userInfo, 5);
+        continuationPages = level0Result.content;
       } else {
-        console.log(`🔄 ${difficulty} Continuation: Using EnhancedTemplateManager for consistent quality`);
-        const result = await EnhancedTemplateManager.generateEnhancedStory({
+        console.log(`🔄 ${difficulty} Continuation: Using dedicated EnhancedTemplateManager.continueStory() method`);
+        const result = await EnhancedTemplateManager.continueStory({
           userInfo,
           difficulty,
           isPremium: config.isPremium,
-          enableExtensions: false // For continuation, we want exactly 5 pages
+          targetPages: 5
         });
         
-        // Ensure exactly 5 pages for continuation
-        continuationPages = result.pages.slice(0, 5);
+        continuationPages = result.pages;
       }
 
       // Combine existing story with continuation (exactly 5 new pages)

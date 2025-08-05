@@ -217,6 +217,87 @@ export class Level0StoryProcessor {
   }
   
   /**
+   * Continue an existing Level 0 story using hierarchical template system
+   * Respects current template exhaustion state and adds exactly 5 pages
+   */
+  static async continueStory(userInfo?: UserInfo, targetPages: number = 5): Promise<Level0StoryResult> {
+    console.log('🔄 Level0StoryProcessor: Continuing Level 0 story with hierarchical system...');
+    
+    return await ErrorHandlingManager.executeWithRecovery(
+      async () => {
+        // Check user subscription status to determine vocabulary tier
+        const isPremium = await SubscriptionManager.isPremiumUser();
+        const userType: UserType = isPremium ? 'premium' : 'free';
+        
+        // Get appropriate language for templates
+        const templateLanguage = MultilingualTemplateManager.getTemplateLanguage(userInfo);
+        
+        console.log(`👤 Level0StoryProcessor (Continuation): User type: ${userType}, language: ${templateLanguage}, target pages: ${targetPages}`);
+        
+        const continuationPages: string[] = [];
+        
+        // Generate exactly the requested number of pages
+        for (let i = 0; i < targetPages; i++) {
+          // Get next template from hierarchical system (respects current state)
+          const selection = HierarchicalSessionTemplateManager.getNextTemplate('beginner', isPremium);
+          const pageResult = await this.processStorySelection(selection, userInfo, userType, isPremium);
+          
+          // Add the first page from this template to continuation
+          if (pageResult.content.length > 0) {
+            continuationPages.push(pageResult.content[0]);
+          } else {
+            // Fallback if template processing fails
+            const emergencyPage = userInfo?.name ? `${userInfo.name} continues the adventure.` : 'The story continues.';
+            continuationPages.push(emergencyPage);
+          }
+        }
+        
+        console.log(`✅ Level0StoryProcessor: Generated ${continuationPages.length} continuation pages using hierarchical system`);
+        
+        return {
+          content: continuationPages,
+          templateIndex: -1, // Not applicable for continuation
+          isValid: true,
+          validationErrors: [],
+          isRepeating: false
+        };
+      },
+      {
+        component: 'Level0StoryProcessor',
+        action: 'continueStory',
+        userInfo,
+        language: userInfo?.storyLanguagePreference || userInfo?.nativeLanguage
+      },
+      async () => {
+        // Emergency fallback for continuation
+        const emergencyContent = Array.from({ length: targetPages }, (_, i) => 
+          userInfo?.name ? `${userInfo.name} sees something new.` : 'Something new happens.'
+        );
+        return {
+          content: emergencyContent,
+          templateIndex: -1,
+          isValid: true,
+          validationErrors: [],
+          isRepeating: true
+        };
+      }
+    ).then(result => {
+      if (result.success && result.data) {
+        return result.data;
+      } else {
+        console.warn('⚠️ Level0StoryProcessor: Using fallback content for continuation due to error:', result.error);
+        return result.fallback || {
+          content: Array.from({ length: targetPages }, () => 'The story continues.'),
+          templateIndex: -1,
+          isValid: true,
+          validationErrors: [],
+          isRepeating: true
+        };
+      }
+    });
+  }
+
+  /**
    * Reset session template rotation
    */
   static resetSession(): void {

@@ -55,6 +55,37 @@ interface EnhancedTemplateResult {
 export class EnhancedTemplateManager {
   // Track used templates per session to avoid repetition
   private static sessionUsedTemplates: Map<GradeLevel, Set<number>> = new Map();
+  
+  /**
+   * Continue an existing story for Levels 1-4 using the same template selection logic as initial generation
+   * Ensures consistency with already-used templates tracking
+   */
+  static async continueStory(options: EnhancedTemplateOptions & { targetPages?: number }): Promise<EnhancedTemplateResult> {
+    const { targetPages = 5, ...generateOptions } = options;
+    
+    console.log(`🔄 EnhancedTemplateManager: Continuing story for ${generateOptions.difficulty} with ${targetPages} pages`);
+    
+    // Generate a new story segment using the same logic but with reduced page count
+    const result = await this.generateEnhancedStory({
+      ...generateOptions,
+      enableExtensions: false // Disable extensions for continuation to get base template content
+    });
+    
+    // Return exactly the requested number of pages
+    const continuationPages = result.pages.slice(0, targetPages);
+    
+    return {
+      ...result,
+      pages: continuationPages,
+      actualPages: continuationPages.length,
+      targetPages,
+      metadata: {
+        ...result.metadata,
+        wasExtended: false,
+        extensionMethod: 'continuation-slice'
+      }
+    };
+  }
   /**
    * Generate enhanced story with grade-based vocabulary and smart extensions
    * Level 0: Minimal processing (name substitution + validation only)
