@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { getPhoneticSpelling } from "@/utils/phoneticDictionary";
+import { PhoneticRulesEngine } from "@/services/phoneticRulesEngine";
 import { Volume2, HelpCircle, Languages, BookOpen, Lightbulb, Plus, Crown, Layers } from "lucide-react";
 import { UnifiedTTSService } from "@/services/unifiedTTSService";
 import { EnhancedAudioService } from "@/services/enhancedAudioService";
@@ -106,7 +106,8 @@ export const InteractiveWord = ({
   }>({ vertical: 'top', horizontal: 'center', offset: 0 });
   const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const wordRef = useRef<HTMLSpanElement>(null);
-  const phoneticSpelling = getPhoneticSpelling(word);
+  const phoneticEngine = PhoneticRulesEngine.getInstance();
+  const phoneticSpelling = phoneticEngine.breakIntoSyllables(word).join('-');
   const { isMobile } = useIsMobile();
 
   useEffect(() => {

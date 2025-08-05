@@ -1,4 +1,4 @@
-import { MobileOptimizedInteractiveWord } from "@/components/InteractiveWord";
+import { MobileOptimizedInteractiveWord } from "@/components/MobileOptimizedInteractiveWord";
 
 // Function to process text and wrap words in InteractiveWord components
 export const processTextForPhonetics = (
