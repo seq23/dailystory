@@ -40,7 +40,7 @@ export const GuestExperience = () => {
   };
 
   const handleUpgrade = () => {
-    setCurrentState("upgrade");
+    setCurrentState("login");
   };
 
   const handleCreateAccount = () => {
