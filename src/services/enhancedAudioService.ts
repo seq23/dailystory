@@ -336,19 +336,21 @@ export class EnhancedAudioService {
   // === Private Helper Methods ===
 
   private getSpeedForDifficulty(difficulty: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert', userInfo?: UserInfo): number {
-    const baseSpeed = this.config.speedByDifficulty[difficulty];
+    const baseSpeed = {
+      beginner: 0.6,
+      easy: 0.85,      // Increased from 0.7 for more natural learning pace
+      medium: 1.0,     // Increased from 0.9 for natural speaking pace
+      hard: 1.0,
+      expert: 1.1
+    }[difficulty];
     
-    // Enhanced speed calculation with proper free user handling
-    let finalSpeed: number;
+    // Less aggressive multipliers for more natural speech
+    const languageMultiplier = userInfo?.nativeLanguage === 'en' ? 0.9 : 0.8;
     
-    // Free users only get English, so always use native English speaker speeds
-    const isNativeEnglishSpeaker = userInfo?.nativeLanguage === 'en' || !userInfo?.nativeLanguage;
+    // Age-appropriate speed adjustment for children
+    const ageMultiplier = userInfo && userInfo.age <= 8 ? 0.85 : 1.0;
     
-    if (isNativeEnglishSpeaker) {
-      finalSpeed = baseSpeed * 0.85; // Optimized from 0.7 to 0.85 for better pacing
-    } else {
-      finalSpeed = baseSpeed * 0.75; // Optimized from 0.6 to 0.75 for non-native speakers
-    }
+    const finalSpeed = Math.max(0.5, Math.min(1.2, baseSpeed * languageMultiplier * ageMultiplier));
     
     console.log(`🎵 Audio speed for ${difficulty} (${userInfo?.nativeLanguage || 'en'}): ${finalSpeed}`);
     return finalSpeed;
@@ -449,14 +451,14 @@ export class EnhancedAudioService {
     this.totalWords = wordsWithIndices.length;
     this.currentWordIndex = 0;
     
-      // Ultra fast timing calculation for perfect sync
+      // Optimized timing calculation for better sync
       const calculateWordInterval = (word: string, index: number): number => {
-        const baseInterval = 120; // Ultra fast base timing for Jessica voice
+        const baseInterval = 200; // Increased from 120ms for better sync
         const speedAdjustment = 1 / speed;
         const hasPunctuation = /[.!?]/.test(word);
-        const pauseAfterPunctuation = hasPunctuation ? 80 : 0;
+        const pauseAfterPunctuation = hasPunctuation ? 100 : 0;
         const wordLength = word.length;
-        const lengthAdjustment = wordLength > 6 ? 10 : 0;
+        const lengthAdjustment = wordLength > 6 ? 15 : 0;
         
         return (baseInterval * speedAdjustment) + pauseAfterPunctuation + lengthAdjustment;
       };
