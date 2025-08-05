@@ -259,29 +259,29 @@ export class EnhancedTemplateManager {
       
       case 2:
         return [
-          "{userName} discovered that trying new things can be exciting and rewarding.",
-          "{userName} realized they were capable of more than they originally thought.",
-          "{userName} looked forward to sharing this experience with family and friends.",
-          "{userName} felt confident and ready to take on new challenges.",
-          "{userName} understood that every experience teaches valuable lessons."
+          "{userName} found something new and fun.",
+          "{userName} thought they could do more than before.",
+          "{userName} wanted to tell friends about this.",
+          "{userName} felt ready to try new things.",
+          "{userName} learned that practice helps you get better."
         ];
       
       case 3:
         return [
-          "{userName} reflected on the significance of this experience and its broader implications.",
-          "{userName} recognized the importance of perseverance and dedication in achieving meaningful goals.",
-          "{userName} appreciated the collaborative efforts that made this achievement possible.",
-          "{userName} contemplated how this experience would influence their future endeavors.",
-          "{userName} acknowledged the valuable mentorship and guidance received throughout the process."
+          "{userName} thought about what this experience meant and how it would help later.",
+          "{userName} understood that working hard and not giving up helps you reach important goals.",
+          "{userName} was grateful for everyone who worked together to make this happen.",
+          "{userName} wondered how this experience would help with future projects.",
+          "{userName} thanked the teachers and helpers who guided them through the process."
         ];
       
       case 4:
         return [
-          "{userName} synthesized the complex insights gained through this multifaceted experience.",
-          "{userName} evaluated the long-term ramifications of their contributions to the field.",
-          "{userName} articulated sophisticated connections between theoretical frameworks and practical applications.",
-          "{userName} demonstrated intellectual maturity through thoughtful analysis and critical evaluation.",
-          "{userName} established themselves as an emerging authority with potential for significant future impact."
+          "{userName} brought together all the different ideas learned from this challenging experience.",
+          "{userName} considered the long-term effects of their hard work and contributions to the project.",
+          "{userName} explained the connections between what they studied in books and how it worked in real life.",
+          "{userName} showed mature thinking through careful analysis and thoughtful evaluation of the results.",
+          "{userName} proved themselves as a skilled student with potential for making important contributions in the future."
         ];
       
       default:

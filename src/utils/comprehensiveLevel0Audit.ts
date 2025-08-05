@@ -136,7 +136,7 @@ export class ComprehensiveLevel0Audit {
   /**
    * Test story generation with audit
    */
-  static async testStoryGeneration(userName: string = 'Sequoia', storyCount: number = 3): Promise<void> {
+  static async testStoryGeneration(userName: string = 'Sequoia', storyCount: number = 3, testLevel: number = 0): Promise<void> {
     console.log(`\n🧪 Testing Level 0 story generation with username "${userName}"...`);
     
     // Import the enhanced template manager
