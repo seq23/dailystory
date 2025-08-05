@@ -3,6 +3,7 @@
 
 import { LEVEL_0_COMPLIANT_TEMPLATES, getLevel0CompliantTemplate } from '@/constants/level0TemplatesCompliant';
 import { LEVEL_0_STRICT_DOLCH_TEMPLATES, getLevel0StrictDolchTemplate, getLevel0StrictDolchTemplateCount } from '@/constants/level0TemplatesFixed';
+import { LEVEL_0_PREMIUM_TEMPLATES, getLevel0PremiumTemplate, getLevel0PremiumTemplateCount } from '@/constants/level0TemplatesPremium';
 import { validateLevel0SentenceByUserType, type UserType } from '@/constants/dolchPrePrimer';
 import { SessionTemplateManager } from '@/services/sessionTemplateManager';
 import { SubscriptionManager } from '@/services/subscriptionManager';
@@ -32,9 +33,9 @@ export class Level0StoryProcessor {
     // Use appropriate templates based on user type
     const templates = userType === 'free' 
       ? LEVEL_0_STRICT_DOLCH_TEMPLATES 
-      : LEVEL_0_COMPLIANT_TEMPLATES;
+      : LEVEL_0_PREMIUM_TEMPLATES;
     
-    console.log(`📚 Level0StoryProcessor: Using ${userType === 'free' ? 'strict Dolch' : 'enhanced'} templates (${templates.length} available)`);
+    console.log(`📚 Level0StoryProcessor: Using ${userType === 'free' ? 'strict Dolch' : 'premium enhanced'} templates (${templates.length} available)`);
     
     // Convert templates to template keys for SessionTemplateManager
     const templateKeys = templates.map((_, index) => `template_${index}`);
@@ -144,7 +145,7 @@ export class Level0StoryProcessor {
     
     const templates = userType === 'free' 
       ? LEVEL_0_STRICT_DOLCH_TEMPLATES 
-      : LEVEL_0_COMPLIANT_TEMPLATES;
+      : LEVEL_0_PREMIUM_TEMPLATES;
     
     const totalTemplates = templates.length;
     const totalPages = templates.reduce((sum, template) => sum + template.length, 0);

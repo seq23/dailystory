@@ -7,6 +7,12 @@ import {
 } from '@/constants/level0TemplatesCompliant';
 
 import { 
+  getLevel0PremiumTemplate, 
+  getLevel0PremiumTemplateCount,
+  getLevel0PremiumExtension 
+} from '@/constants/level0TemplatesPremium';
+
+import { 
   getLevel1Template, 
   getLevel1TemplateCount,
   LEVEL_1_TEMPLATES 
@@ -41,10 +47,15 @@ import { DifficultyLevel } from '@/types';
 // Template retrieval by grade level
 export function getTemplateByGradeLevel(
   gradeLevel: GradeLevel, 
-  templateIndex?: number
+  templateIndex?: number,
+  isPremium?: boolean
 ): string[] {
   switch (gradeLevel) {
-    case 0: return getLevel0CompliantTemplate(templateIndex);
+    case 0: 
+      // Premium users get enhanced vocabulary templates, free users get strict Dolch
+      return isPremium 
+        ? getLevel0PremiumTemplate(templateIndex)
+        : getLevel0CompliantTemplate(templateIndex);
     case 1: return getLevel1Template(templateIndex);
     case 2: return getLevel2Template(templateIndex);
     case 3: return getLevel3Template(templateIndex);
@@ -63,9 +74,13 @@ export function getTemplateByDifficulty(
 }
 
 // Get template count by grade level
-export function getTemplateCountByGradeLevel(gradeLevel: GradeLevel): number {
+export function getTemplateCountByGradeLevel(gradeLevel: GradeLevel, isPremium?: boolean): number {
   switch (gradeLevel) {
-    case 0: return getLevel0CompliantTemplateCount();
+    case 0: 
+      // Premium users have more templates with enhanced vocabulary
+      return isPremium 
+        ? getLevel0PremiumTemplateCount()
+        : getLevel0CompliantTemplateCount();
     case 1: return getLevel1TemplateCount();
     case 2: return getLevel2TemplateCount();
     case 3: return getLevel3TemplateCount();
