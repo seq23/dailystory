@@ -91,14 +91,26 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
       vocabulary: vocabularyLearned 
     };
 
+    console.log('🏗️ Progress tower calculations:', {
+      prevValues,
+      currentValues,
+      currentWordsRead,
+      userStats: { totalWordsRead: userStats.totalWordsRead, vocabularyWordsLearned: userStats.vocabularyWordsLearned },
+      calculations: {
+        totalWordsRead: `${userStats.totalWordsRead} + ${currentWordsRead} = ${totalWordsRead}`,
+        totalPagesRead: `Math.floor(${totalWordsRead} / 200) + ${currentPagesRead} = ${totalPagesRead}`,
+        vocabularyLearned: `${userStats.vocabularyWordsLearned} (direct from userStats)`
+      }
+    });
+
     // Initialize prevValues on first render
     if (prevValues.words === 0 && prevValues.pages === 0 && prevValues.vocabulary === 0) {
       prevValuesRef.current = currentValues;
-      console.log('ProgressTowers: Initialized with current values:', currentValues);
+      console.log('🏗️ ProgressTowers: Initialized with current values:', currentValues);
       return;
     }
 
-    console.log('ProgressTowers: Checking for progress changes:', {
+    console.log('🏗️ ProgressTowers: Checking for progress changes:', {
       prevValues,
       currentValues,
       currentWordsRead,

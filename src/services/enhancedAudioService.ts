@@ -499,7 +499,7 @@ export class EnhancedAudioService {
       'flowers': ['flow', 'ers'],
       'wonderful': ['wun', 'der', 'ful'],
       'beautiful': ['beau', 'tih', 'ful'],
-      'together': ['tuh', 'geth', 'er'],
+      'together': ['toh', 'geh', 'ther'],
       'remember': ['rih', 'mem', 'ber'],
       'different': ['dif', 'er', 'ent'],
       'important': ['im', 'por', 'tant'],
