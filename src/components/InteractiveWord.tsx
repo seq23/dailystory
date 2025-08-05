@@ -36,6 +36,15 @@ export const InteractiveWord = ({
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const { isMobileOrTablet, isCapacitor } = useIsMobile();
+  
+  // Debug environment detection
+  console.log('🖥️ Desktop InteractiveWord rendering:', {
+    word,
+    environment: window.location.href.includes('preview') ? 'preview' : 'console',
+    isMobileOrTablet,
+    isCapacitor,
+    userAgent: navigator.userAgent
+  });
   // Use global gamification system instead of local hook
   const getAddVocabularyWord = () => {
     return getGlobalAddVocabularyWord() || (() => {
@@ -913,17 +922,36 @@ export const InteractiveWord = ({
     <span
       ref={wordRef}
       className={`relative inline-block cursor-pointer touch-manipulation ${className} ${isPlaying ? 'opacity-70' : ''}`}
-      onMouseEnter={!isMobileOrTablet ? handleMouseEnter : undefined}
-      onMouseLeave={!isMobileOrTablet ? handleMouseLeave : undefined}
-      onTouchStart={isMobileOrTablet ? handleMouseEnter : undefined}
-      onTouchEnd={isMobileOrTablet ? () => {
+      // Universal event handling - attach both mouse and touch events regardless of device detection
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onTouchStart={(e) => {
+        console.log('🎯 Touch start on InteractiveWord:', word, 'environment:', window.location.href.includes('preview') ? 'preview' : 'console');
+        handleMouseEnter();
+      }}
+      onTouchEnd={(e) => {
+        console.log('🎯 Touch end on InteractiveWord:', word);
         // Brief delay to allow touch interaction before hiding
         setTimeout(handleMouseLeave, 3000);
-      } : undefined}
-      onClick={onClick}
+      }}
+      onClick={(e) => {
+        console.log('🎯 Click on InteractiveWord:', word, 'environment:', window.location.href.includes('preview') ? 'preview' : 'console');
+        if (onClick) onClick();
+        else handleMouseEnter(); // Fallback to show tooltip
+      }}
+      // Pointer events for modern universal device support
+      onPointerDown={(e) => {
+        console.log('🎯 Pointer down on InteractiveWord:', word, 'pointerType:', e.pointerType);
+        if (e.pointerType === 'touch' || e.pointerType === 'pen') {
+          handleMouseEnter();
+        }
+      }}
       style={{
-        WebkitTapHighlightColor: 'transparent', // Remove mobile tap highlight
-        userSelect: 'none'
+        // Ensure interactions work in all environments
+        userSelect: 'text',
+        pointerEvents: 'auto',
+        touchAction: 'manipulation',
+        WebkitTapHighlightColor: 'transparent'
       }}
     >
       <span className={`underline decoration-dotted hover:decoration-solid transition-all ${getWordIndicatorColor()}`}>
@@ -1839,6 +1867,8 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
     userNativeLanguage: props.userInfo?.nativeLanguage,
     isMobileDevice,
     isNativeApp,
+    environment: window.location.href.includes('preview') ? 'preview' : 'console',
+    userAgent: navigator.userAgent,
     passThrough: 'Enhanced Mobile TTS'
   });
 
@@ -1859,10 +1889,32 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
         className={`underline decoration-dotted cursor-pointer touch-manipulation ${props.className || ''} ${
           isPlayingMobile ? 'opacity-70' : ''
         }`}
-        onClick={handleMobileWordClick}
+        // Universal event handling for mobile component
+        onClick={(e) => {
+          console.log('🎯 Mobile word clicked:', props.word, 'environment:', window.location.href.includes('preview') ? 'preview' : 'console');
+          handleMobileWordClick();
+        }}
+        onTouchStart={(e) => {
+          console.log('🎯 Mobile touch start:', props.word);
+          e.preventDefault();
+        }}
+        onTouchEnd={(e) => {
+          console.log('🎯 Mobile touch end:', props.word);
+          e.preventDefault();
+          handleMobileWordClick();
+        }}
+        // Add pointer events for universal support
+        onPointerDown={(e) => {
+          console.log('🎯 Mobile pointer down:', props.word, 'pointerType:', e.pointerType);
+          if (e.pointerType === 'mouse') {
+            handleMobileWordClick();
+          }
+        }}
         style={{
           WebkitTapHighlightColor: 'transparent',
-          userSelect: 'none'
+          userSelect: 'text',
+          pointerEvents: 'auto',
+          touchAction: 'manipulation'
         }}
       >
         {props.word}
