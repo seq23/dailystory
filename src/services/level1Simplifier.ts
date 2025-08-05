@@ -1,20 +1,26 @@
-// Level 1 Simplification Service
-// Transforms rich content to Level 1 vocabulary using cascading strategies
+// Enhanced Level 1 Simplifier - Updated for New Grade-Based Vocabulary System
+// Uses the new grade-based vocabulary from @/constants/gradeBased
+
+import { 
+  isLevel1Word, 
+  validateLevel1Sentence 
+} from '@/constants/gradeBased/level1Vocabulary';
 
 export interface SimplificationResult {
   text: string;
   wasSimplified: boolean;
   strategyUsed: 'none' | 'word-replacement' | 'sentence-restructuring' | 'context-relaxation';
   originalInvalidWords?: string[];
+  gradeLevel: 1;
 }
 
 export class Level1Simplifier {
-  // Word replacement dictionary focused on common T4 system outputs
+  // Enhanced word replacement dictionary for Level 1 (1st-2nd grade)
   private static readonly WORD_REPLACEMENTS = new Map([
-    // Adventures and actions
+    // Complex words to Level 1 vocabulary
     ['adventure', ['trip', 'walk', 'game']],
     ['discovered', ['found', 'saw', 'got']],
-    ['wonderful', ['good', 'nice', 'pretty']],
+    ['wonderful', ['good', 'nice', 'great']],
     ['amazing', ['great', 'good', 'nice']],
     ['beautiful', ['pretty', 'nice', 'good']],
     ['excellent', ['great', 'good', 'nice']],
@@ -27,10 +33,11 @@ export class Level1Simplifier {
     ['excited', ['happy', 'glad']],
     ['delighted', ['happy', 'glad']],
     ['thrilled', ['happy', 'glad']],
-    ['surprised', ['happy', 'sad']],
-    ['curious', ['wants to know']],
+    ['surprised', ['happy', 'wondered']],
+    ['curious', ['wanted to know']],
     ['worried', ['sad', 'scared']],
-    ['nervous', ['scared', 'sad']],
+    ['nervous', ['scared', 'worried']],
+    ['frightened', ['scared', 'afraid']],
     
     // Actions and verbs
     ['explored', ['looked', 'walked', 'went']],
@@ -38,32 +45,52 @@ export class Level1Simplifier {
     ['observed', ['looked', 'saw', 'watched']],
     ['encountered', ['met', 'saw', 'found']],
     ['approached', ['went to', 'walked to']],
-    ['decided', ['picked', 'wanted']],
+    ['decided', ['picked', 'wanted', 'chose']],
     ['realized', ['saw', 'knew', 'found']],
-    ['remembered', ['knew', 'thought']],
+    ['remembered', ['knew', 'thought about']],
+    ['participated', ['joined', 'helped', 'played']],
+    ['accomplished', ['did', 'finished', 'made']],
     
     // Objects and places
-    ['treasure', ['gift', 'toy', 'gold']],
-    ['mystery', ['game', 'fun', 'puzzle']],
-    ['journey', ['trip', 'walk', 'game']],
-    ['forest', ['trees', 'woods', 'park']],
-    ['mountain', ['hill', 'rock', 'high']],
-    ['castle', ['big house', 'tall house']],
-    ['village', ['town', 'homes', 'place']],
+    ['treasure', ['gold', 'special thing', 'prize']],
+    ['mystery', ['puzzle', 'secret', 'game']],
+    ['journey', ['trip', 'walk', 'travel']],
+    ['forest', ['woods', 'trees', 'park']],
+    ['mountain', ['hill', 'rock', 'high place']],
+    ['castle', ['big house', 'tall building']],
+    ['village', ['town', 'place', 'neighborhood']],
+    ['garden', ['yard', 'place with plants']],
+    ['library', ['place with books']],
     
     // Descriptive words
-    ['enormous', ['big', 'very big']],
-    ['tiny', ['small', 'little']],
-    ['ancient', ['old', 'very old']],
-    ['magical', ['fun', 'special', 'nice']],
-    ['mysterious', ['fun', 'new', 'different']],
-    ['dangerous', ['bad', 'scary']],
-    ['peaceful', ['quiet', 'nice', 'calm']],
-    ['comfortable', ['nice', 'good', 'soft']]
+    ['enormous', ['very big', 'huge']],
+    ['gigantic', ['very big', 'huge']],
+    ['tiny', ['very small', 'little']],
+    ['ancient', ['very old', 'old']],
+    ['modern', ['new', 'today']],
+    ['magical', ['special', 'amazing']],
+    ['mysterious', ['secret', 'strange']],
+    ['dangerous', ['not safe', 'scary']],
+    ['peaceful', ['quiet', 'calm']],
+    ['comfortable', ['nice', 'good', 'cozy']],
+    ['difficult', ['hard', 'not easy']],
+    ['simple', ['easy', 'not hard']],
+    
+    // Academic/complex words
+    ['knowledge', ['what you know']],
+    ['experience', ['what happened']],
+    ['understand', ['know', 'get it']],
+    ['important', ['big', 'special']],
+    ['interesting', ['fun', 'cool']],
+    ['necessary', ['need', 'must have']],
+    ['possible', ['can happen', 'maybe']],
+    ['probably', ['maybe', 'might']],
+    ['definitely', ['for sure', 'yes']],
+    ['especially', ['very', 'most of all']]
   ]);
 
   /**
-   * Main simplification method with cascading strategies
+   * Main simplification method using new grade-based vocabulary
    */
   static simplifyForLevel1(text: string, userName: string): SimplificationResult {
     // Strategy 1: Try direct word replacement
@@ -72,7 +99,8 @@ export class Level1Simplifier {
       return {
         text: wordReplacementResult,
         wasSimplified: wordReplacementResult !== text,
-        strategyUsed: wordReplacementResult !== text ? 'word-replacement' : 'none'
+        strategyUsed: wordReplacementResult !== text ? 'word-replacement' : 'none',
+        gradeLevel: 1
       };
     }
 
@@ -82,7 +110,8 @@ export class Level1Simplifier {
       return {
         text: restructuredResult,
         wasSimplified: true,
-        strategyUsed: 'sentence-restructuring'
+        strategyUsed: 'sentence-restructuring',
+        gradeLevel: 1
       };
     }
 
@@ -93,7 +122,8 @@ export class Level1Simplifier {
         text: relaxedResult.text,
         wasSimplified: true,
         strategyUsed: 'context-relaxation',
-        originalInvalidWords: relaxedResult.allowedWords
+        originalInvalidWords: relaxedResult.allowedWords,
+        gradeLevel: 1
       };
     }
 
@@ -102,7 +132,8 @@ export class Level1Simplifier {
       text: text,
       wasSimplified: false,
       strategyUsed: 'none',
-      originalInvalidWords: this.getInvalidWords(text, userName)
+      originalInvalidWords: this.getInvalidWords(text, userName),
+      gradeLevel: 1
     };
   }
 
@@ -128,7 +159,7 @@ export class Level1Simplifier {
    * Strategy 2: Break complex sentences into simpler ones
    */
   private static restructureSentence(text: string): string {
-    // Break sentences with "and" into separate sentences
+    // Break long sentences with "and" into separate sentences
     if (text.includes(' and ')) {
       const parts = text.split(' and ');
       if (parts.length === 2) {
@@ -150,7 +181,11 @@ export class Level1Simplifier {
       .replace(/As soon as/gi, 'When')
       .replace(/Even though/gi, 'But')
       .replace(/Because of/gi, 'Because')
-      .replace(/All of a sudden/gi, 'Then');
+      .replace(/All of a sudden/gi, 'Then')
+      .replace(/A lot of/gi, 'Many')
+      .replace(/Very much/gi, 'A lot')
+      .replace(/Right now/gi, 'Now')
+      .replace(/Over there/gi, 'There');
   }
 
   /**
@@ -165,14 +200,19 @@ export class Level1Simplifier {
     const userNameLower = userName?.toLowerCase();
     const invalidWords = words.filter(word => {
       if (userNameLower && word === userNameLower) return false;
-      return !this.isLevel1Word(word);
+      return !isLevel1Word(word);
     });
 
-    // Allow up to 2 story-enhancing words
+    // Allow up to 2 story-enhancing words that are appropriate for Level 1
     if (invalidWords.length <= 2) {
-      const storyWords = ['adventure', 'magical', 'treasure', 'forest', 'castle', 'journey'];
+      const storyWords = [
+        'adventure', 'magic', 'treasure', 'forest', 'castle', 'journey',
+        'discover', 'explore', 'wonderful', 'amazing', 'special', 'secret'
+      ];
+      
       const allowedInvalid = invalidWords.filter(word => 
-        storyWords.includes(word) || word.length <= 8 // Short words are usually okay
+        storyWords.includes(word) || 
+        (word.length <= 8 && !word.includes('tion') && !word.includes('sion'))
       );
 
       if (allowedInvalid.length === invalidWords.length) {
@@ -188,68 +228,66 @@ export class Level1Simplifier {
   }
 
   /**
-   * Validate text against Level 1 vocabulary
+   * Validate text against Level 1 vocabulary using new grade-based system
    */
   private static validateLevel1Text(text: string, userName: string): boolean {
-    const words = text.toLowerCase()
-      .replace(/[^\w\s]/g, '')
-      .split(/\s+/)
-      .filter(word => word.length > 0);
-
-    const userNameLower = userName?.toLowerCase();
-    
-    return words.every(word => {
-      if (userNameLower && word === userNameLower) return true;
-      return this.isLevel1Word(word);
-    });
+    const validation = validateLevel1Sentence(text, userName);
+    return validation.isValid;
   }
 
   /**
    * Get list of invalid words for debugging
    */
   private static getInvalidWords(text: string, userName: string): string[] {
-    const words = text.toLowerCase()
-      .replace(/[^\w\s]/g, '')
-      .split(/\s+/)
-      .filter(word => word.length > 0);
-
-    const userNameLower = userName?.toLowerCase();
-    
-    return words.filter(word => {
-      if (userNameLower && word === userNameLower) return false;
-      return !this.isLevel1Word(word);
-    });
+    const validation = validateLevel1Sentence(text, userName);
+    return validation.invalidWords;
   }
 
   /**
-   * Check if a word is in Level 1 vocabulary (simplified check)
+   * Get simplified vocabulary stats
    */
-  private static isLevel1Word(word: string): boolean {
-    // First try the complete vocabulary using dynamic import
-    try {
-      // Import the vocabulary function directly at runtime
-      const vocabularyModule = require('@/constants/level1Vocabulary');
-      if (vocabularyModule && vocabularyModule.isLevel1Word) {
-        return vocabularyModule.isLevel1Word(word);
+  static getVocabularyStats(): {
+    gradeLevel: number;
+    totalWords: number;
+    replacementRules: number;
+  } {
+    return {
+      gradeLevel: 1,
+      totalWords: 120, // Approximate Level 1 vocabulary size
+      replacementRules: this.WORD_REPLACEMENTS.size
+    };
+  }
+
+  /**
+   * Test if simplification is working properly
+   */
+  static testSimplification(testCases: { input: string; expected: string; userName?: string }[]): {
+    passed: number;
+    failed: number;
+    details: Array<{ input: string; output: string; expected: string; passed: boolean }>;
+  } {
+    let passed = 0;
+    let failed = 0;
+    const details: Array<{ input: string; output: string; expected: string; passed: boolean }> = [];
+
+    for (const testCase of testCases) {
+      const result = this.simplifyForLevel1(testCase.input, testCase.userName || 'TestUser');
+      const isPassed = result.text === testCase.expected;
+      
+      if (isPassed) {
+        passed++;
+      } else {
+        failed++;
       }
-    } catch (error) {
-      console.warn('Level 1 vocabulary import failed, using fallback:', error);
+
+      details.push({
+        input: testCase.input,
+        output: result.text,
+        expected: testCase.expected,
+        passed: isPassed
+      });
     }
-    
-    // Fallback: inline check for critical words to ensure cross-device compatibility
-    const basicLevel1Words = new Set([
-      'a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from', 'has', 'he', 'in', 'is', 'it', 'of', 'on', 'that', 'the', 'to', 'was', 'were', 'will', 'with',
-      'go', 'see', 'run', 'play', 'eat', 'get', 'give', 'look', 'find', 'help', 'come', 'want', 'like', 'make', 'take', 'walk', 'jump', 'sit', 'put', 'stop',
-      'cat', 'dog', 'bird', 'fish', 'cow', 'pig', 'duck', 'hen', 'bee', 'bug', 'bear', 'fox', 'frog', 'mouse', 'horse',
-      'red', 'blue', 'green', 'yellow', 'black', 'white', 'pink', 'brown', 'orange', 'purple',
-      'ball', 'book', 'box', 'car', 'cup', 'door', 'egg', 'hat', 'home', 'house', 'key', 'milk', 'pan', 'pen', 'pot', 'sun', 'toy', 'tree',
-      'big', 'small', 'good', 'bad', 'hot', 'cold', 'old', 'new', 'fast', 'slow', 'happy', 'sad', 'nice', 'pretty', 'fun',
-      'i', 'me', 'my', 'you', 'your', 'we', 'us', 'they', 'them', 'this', 'that', 'here', 'there', 'now', 'yes', 'no',
-      'mom', 'dad', 'baby', 'boy', 'girl', 'man', 'woman', 'friend', 'teacher', 'child', 'kids', 'family',
-      'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'many', 'few', 'some', 'all',
-      'day', 'night', 'morning', 'today', 'soon', 'late', 'early', 'hello', 'together', 'nicely'
-    ]);
-    
-    return basicLevel1Words.has(word.toLowerCase());
+
+    return { passed, failed, details };
   }
 }

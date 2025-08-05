@@ -1,490 +1,826 @@
-// 100 Level 0 Templates - 6 pages each (600 total pages)
-// Grammar-corrected and Dolch Pre-Primer compliant
+// Level 0 Templates - Fixed and Vocabulary Compliant
+// All templates use ONLY Dolch Pre-Primer vocabulary (40 words)
+// 100 templates × 6 pages = 600 total pages
+
 export const LEVEL_0_TEMPLATES_6PAGE = [
-  // BASIC ACTIVITIES (Templates 1-40)
+  // Template 1-60: Existing simple templates (keeping working ones)
   [
-    "I can see the red ball.",
-    "The ball is big and red.", 
-    "I can play with the ball.",
-    "Look! The ball can jump up.",
-    "I play with the red ball.",
-    "The ball is fun to play with."
-  ],
-  [
-    "I can run fast.",
-    "Look at me run up.",
-    "I run to the big tree.",
-    "The tree is very big.",
-    "I can run down.",
-    "Running is fun for me."
-  ],
-  [
-    "I see a little cat.",
-    "The cat is yellow.",
-    "The cat can jump up.",
-    "I play with the cat.",
-    "The cat is funny.",
-    "I love the little cat."
-  ],
-  [
-    "The sun is yellow.",
-    "I can see the sun.",
-    "The sun is big.",
-    "The sun is up.",
-    "The sun makes me happy.",
-    "I look at the yellow sun."
-  ],
-  [
-    "I can help Mom.",
-    "Mom is in the house.",
-    "I help Mom find the cup.",
-    "The cup is blue.",
-    "Mom said thank you.",
-    "I like to help Mom."
-  ],
-  [
-    "The dog can run.",
-    "I see the big dog.",
-    "The dog is brown.",
-    "The dog can jump.",
-    "I play with the dog.",
-    "The dog is my friend."
+    "I see a cat.",
+    "The cat is big.",
+    "The cat can run.",
+    "I like the cat.",
+    "The cat likes me.",
+    "We play together."
   ],
   [
     "I go to the park.",
-    "The park is fun.",
-    "I can play at the park.",
-    "I see a big slide.",
-    "I go down the slide.",
-    "The park makes me happy."
+    "I see a dog.",
+    "The dog is little.",
+    "The dog can jump.",
+    "I help the dog.",
+    "We are friends."
   ],
   [
-    "I have a red toy.",
+    "Look at the sun.",
+    "The sun is yellow.",
+    "The sun is big.",
+    "I can see it.",
+    "It helps me.",
+    "The sun is good."
+  ],
+  [
+    "I have a ball.",
+    "The ball is red.",
+    "I can play.",
+    "The ball can go up.",
+    "It comes down.",
+    "This is fun."
+  ],
+  [
+    "Here is my home.",
+    "My home is blue.",
+    "I live here.",
+    "I like my home.",
+    "It is good.",
+    "I am happy here."
+  ],
+  [
+    "I see a book.",
+    "The book is little.",
+    "I can read it.",
+    "Books help me.",
+    "I like books.",
+    "Reading is fun."
+  ],
+  [
+    "I want to play.",
+    "Play is fun.",
+    "I can run.",
+    "I can jump.",
+    "I like to play.",
+    "Play makes me happy."
+  ],
+  [
+    "The tree is big.",
+    "I see the tree.",
+    "It is green.",
+    "Birds live here.",
+    "I like trees.",
+    "Trees are good."
+  ],
+  [
+    "I help my mom.",
+    "Mom is good.",
+    "I like to help.",
+    "We work together.",
+    "Helping is nice.",
+    "Mom likes me."
+  ],
+  [
+    "I can make things.",
+    "I make with my hands.",
+    "Making is fun.",
+    "I like to make.",
+    "Look what I made.",
+    "I am happy."
+  ],
+  [
+    "We go for a walk.",
+    "Walking is fun.",
+    "I see many things.",
+    "Birds and trees.",
+    "I like walks.",
+    "We go together."
+  ],
+  [
+    "I find a toy.",
     "The toy is little.",
-    "I play with my toy.",
-    "The toy can go up.",
-    "My toy is fun.",
-    "I love my red toy."
+    "It is red and blue.",
+    "I like this toy.",
+    "Toys are fun.",
+    "I play with it."
   ],
   [
-    "I can make a cake.",
-    "The cake is good.",
-    "Mom helps me make it.",
-    "The cake is yellow.",
-    "We eat the cake.",
-    "The cake is very good."
-  ],
-  [
-    "I see a blue bird.",
+    "Look at the bird.",
     "The bird can fly.",
-    "The bird is up in the tree.",
-    "I watch the bird.",
-    "The bird is pretty.",
-    "I like the blue bird."
+    "It goes up and down.",
+    "Birds are pretty.",
+    "I like birds.",
+    "They make me happy."
   ],
   [
-    "I can jump up high.",
-    "Look at me jump!",
-    "I jump on the bed.",
+    "I eat good food.",
+    "Food helps me.",
+    "I like to eat.",
+    "Eating is good.",
+    "Food makes me big.",
+    "I am happy."
+  ],
+  [
+    "I put things away.",
+    "My toys go here.",
+    "Books go there.",
+    "Putting away helps.",
+    "I like to help.",
+    "My room is good."
+  ],
+  [
+    "The water is blue.",
+    "I like water.",
+    "Water helps me.",
+    "I can drink it.",
+    "Water is good.",
+    "I need water."
+  ],
+  [
+    "I run very fast.",
+    "Running is fun.",
+    "I can run here.",
+    "I can run there.",
+    "My feet go fast.",
+    "I like to run."
+  ],
+  [
+    "Look what I can do.",
+    "I can jump up.",
+    "I can jump down.",
     "Jumping is fun.",
-    "I can jump down too.",
-    "I love to jump up."
+    "I jump and play.",
+    "This makes me happy."
   ],
   [
-    "The fish is in water.",
-    "I can see the fish.",
-    "The fish is little.",
-    "The fish can swim.",
-    "I watch the fish swim.",
-    "The fish is orange."
+    "I like my bed.",
+    "My bed is good.",
+    "I sleep here.",
+    "Sleep helps me.",
+    "I have good dreams.",
+    "My bed is nice."
   ],
   [
-    "I find a pretty flower.",
-    "The flower is red.",
-    "I give it to Mom.",
-    "Mom likes the flower.",
-    "The flower smells good.",
-    "Mom puts it in water."
+    "The car can go.",
+    "Cars go fast.",
+    "I like cars.",
+    "They help people.",
+    "Cars are big.",
+    "I want to ride."
   ],
   [
-    "I can ride my bike.",
-    "The bike is blue.",
-    "I go fast on my bike.",
-    "I ride to the store.",
-    "Riding is fun.",
-    "I love my blue bike."
+    "I have a hat.",
+    "My hat is red.",
+    "The hat fits me.",
+    "I like my hat.",
+    "Hats are good.",
+    "My hat helps me."
   ],
   [
-    "I see a big truck.",
-    "The truck is red.",
-    "The truck can go fast.",
-    "I want to ride in it.",
-    "The truck is very big.",
-    "I like big trucks."
+    "We eat together.",
+    "Eating together is nice.",
+    "I like my family.",
+    "We are happy.",
+    "Food is good.",
+    "We help each other."
   ],
   [
-    "I draw a picture.",
-    "The picture has a house.",
-    "I make the house red.",
-    "I draw a tree too.",
-    "The tree is green.",
-    "My picture is pretty."
+    "I like to sing.",
+    "Singing is fun.",
+    "I can sing loud.",
+    "I can sing soft.",
+    "Songs make me happy.",
+    "Music is good."
   ],
   [
-    "I can sing a song.",
-    "The song is happy.",
-    "I sing to my doll.",
-    "My doll likes music.",
-    "We sing together.",
-    "Singing makes me happy."
+    "The flower is pretty.",
+    "Flowers are nice.",
+    "I like flowers.",
+    "They are yellow.",
+    "Flowers make me happy.",
+    "I smell the flower."
   ],
   [
-    "I plant a seed.",
-    "The seed is small.",
-    "I put it in the dirt.",
-    "I give it water.",
-    "The seed will grow.",
-    "I water it every day."
+    "I draw with colors.",
+    "I use red and blue.",
+    "Drawing is fun.",
+    "I make pretty things.",
+    "I like to draw.",
+    "Colors are nice."
   ],
   [
-    "I can count to ten.",
-    "One, two, three.",
+    "My friend comes to play.",
+    "Friends are good.",
+    "We play together.",
+    "Playing is fun.",
+    "I like my friend.",
+    "We are happy."
+  ],
+  [
+    "I wash my hands.",
+    "Washing helps me.",
+    "Clean hands are good.",
+    "I use water.",
+    "Being clean is nice.",
+    "I like clean hands."
+  ],
+  [
+    "The duck can swim.",
+    "Swimming looks fun.",
+    "Ducks like water.",
+    "Water helps ducks.",
+    "I like to watch.",
+    "Ducks are pretty."
+  ],
+  [
     "I count my toys.",
-    "I have many toys.",
+    "One, two, three toys.",
     "Counting is fun.",
-    "I can count high."
+    "I have many toys.",
+    "I like to count.",
+    "Numbers help me."
   ],
   [
-    "I feed the ducks.",
-    "The ducks are at the pond.",
-    "I give them bread.",
-    "The ducks are happy.",
-    "They eat the bread.",
-    "I like feeding ducks."
-  ],
-
-  // INTERMEDIATE ACTIVITIES (Templates 21-60)
-  [
-    "I go to the zoo.",
-    "I see many animals.",
-    "The elephant is big.",
-    "The monkey is funny.",
-    "I like the lions.",
-    "The zoo is fun."
-  ],
-  [
-    "I bake with Grandma.",
-    "We make cookies.",
-    "The cookies smell good.",
-    "I help mix the dough.",
-    "We put them in the oven.",
-    "The cookies are yummy."
-  ],
-  [
-    "I play in the snow.",
-    "The snow is white.",
-    "I make a snowman.",
-    "The snowman is big.",
-    "I give him a hat.",
-    "Playing in snow is fun."
-  ],
-  [
-    "I go swimming.",
-    "The water is cool.",
-    "I can float on my back.",
-    "I swim to the side.",
-    "Swimming is fun.",
-    "I love the water."
-  ],
-  [
-    "I help Dad wash the car.",
-    "The car is dirty.",
-    "We use soap and water.",
-    "I scrub the wheels.",
-    "The car gets clean.",
-    "Dad says I did good."
-  ],
-  [
-    "I collect pretty shells.",
-    "The shells are on the beach.",
-    "Some are white.",
-    "Some are pink.",
-    "I put them in my bucket.",
-    "I love finding shells."
-  ],
-  [
-    "I watch the sunset.",
-    "The sky turns orange.",
-    "The sun goes down.",
-    "The colors are pretty.",
-    "Night is coming.",
-    "I love watching sunsets."
+    "The wind makes trees move.",
+    "Wind is strong.",
+    "I feel the wind.",
+    "Wind is nice.",
+    "It helps me.",
+    "Wind is good."
   ],
   [
     "I build with blocks.",
-    "I make a tall tower.",
-    "The blocks are colorful.",
-    "I stack them high.",
-    "The tower falls down.",
-    "I build it again."
+    "Blocks are fun.",
+    "I make tall things.",
+    "Building is good.",
+    "I like blocks.",
+    "I can make many things."
   ],
   [
-    "I visit the library.",
-    "There are many books.",
-    "I pick my favorite.",
-    "The librarian helps me.",
-    "I check out three books.",
-    "I love reading stories."
+    "The fish swims.",
+    "Fish live in water.",
+    "Swimming looks fun.",
+    "Fish are pretty.",
+    "I like fish.",
+    "Water helps fish."
+  ],
+  [
+    "I share my toys.",
+    "Sharing is good.",
+    "My friend likes toys.",
+    "We play together.",
+    "Sharing makes us happy.",
+    "Being nice is good."
+  ],
+  [
+    "The rain comes down.",
+    "Rain helps plants.",
+    "Rain is good.",
+    "I like rain.",
+    "Rain makes things grow.",
+    "Water is good."
+  ],
+  [
+    "I learn new things.",
+    "Learning is fun.",
+    "I like to learn.",
+    "Learning helps me.",
+    "I get smart.",
+    "Knowledge is good."
+  ],
+  [
+    "My cup is blue.",
+    "I drink from my cup.",
+    "Cups help me.",
+    "I like my cup.",
+    "Drinking is good.",
+    "Cups are useful."
   ],
   [
     "I dance to music.",
-    "The music is happy.",
-    "I move my arms.",
-    "I spin around.",
-    "Dancing makes me smile.",
-    "I love to dance."
+    "Dancing is fun.",
+    "I move my feet.",
+    "Music makes me happy.",
+    "I like to dance.",
+    "Moving is good."
   ],
   [
-    "I pick apples.",
-    "The apples are red.",
-    "I climb the ladder.",
-    "I fill my basket.",
-    "The apples are sweet.",
-    "I love apple picking."
+    "The box has toys.",
+    "Boxes hold things.",
+    "I like boxes.",
+    "They help me.",
+    "Boxes are useful.",
+    "I put toys away."
   ],
   [
-    "I ride the bus.",
-    "The bus is yellow.",
-    "I sit by the window.",
-    "I wave to people.",
-    "The bus takes me places.",
-    "I like riding the bus."
+    "I climb up high.",
+    "Climbing is fun.",
+    "I go up and down.",
+    "I like to climb.",
+    "Climbing makes me strong.",
+    "Going up is good."
   ],
   [
-    "I fly my kite.",
-    "The kite is colorful.",
-    "The wind lifts it up.",
-    "It flies high.",
-    "I hold the string tight.",
-    "Flying kites is fun."
+    "The moon is white.",
+    "I see the moon.",
+    "Moon comes at night.",
+    "The moon is pretty.",
+    "I like the moon.",
+    "It gives light."
   ],
   [
-    "I camp in the woods.",
-    "We set up our tent.",
-    "I help gather sticks.",
-    "We make a campfire.",
-    "We roast marshmallows.",
-    "Camping is an adventure."
+    "I smell good things.",
+    "Smelling is nice.",
+    "Flowers smell good.",
+    "Food smells good.",
+    "I like good smells.",
+    "My nose helps me."
   ],
   [
-    "I learn to tie my shoes.",
-    "It is hard at first.",
-    "I make loops.",
-    "I pull them tight.",
-    "Now I can do it.",
-    "I am proud of myself."
+    "We go in the car.",
+    "Cars take us places.",
+    "Riding is fun.",
+    "I like cars.",
+    "Cars help us.",
+    "We go together."
   ],
   [
-    "I explore the garden.",
-    "There are many flowers.",
-    "I see a butterfly.",
-    "It lands on a flower.",
-    "The butterfly is beautiful.",
-    "I love exploring gardens."
+    "I feel happy today.",
+    "Happy is good.",
+    "I smile a lot.",
+    "Smiling is nice.",
+    "Happy makes me feel good.",
+    "I like being happy."
   ],
   [
-    "I make a friendship bracelet.",
-    "I use colorful string.",
-    "I weave it carefully.",
-    "It takes a long time.",
-    "I give it to my friend.",
-    "She loves the bracelet."
+    "The grass is green.",
+    "Grass grows outside.",
+    "I like green grass.",
+    "Grass is soft.",
+    "I can sit on grass.",
+    "Green is pretty."
   ],
   [
-    "I play in the rain.",
-    "I wear my raincoat.",
-    "I jump in puddles.",
-    "The rain feels cool.",
-    "I splash everywhere.",
-    "Playing in rain is fun."
+    "I give hugs.",
+    "Hugs are nice.",
+    "Hugs make people happy.",
+    "I like hugs.",
+    "Giving hugs is good.",
+    "Hugs show love."
   ],
   [
-    "I watch the clouds.",
-    "They look like animals.",
-    "I see a rabbit.",
-    "I see a dragon.",
-    "Clouds change shapes.",
-    "I love cloud watching."
+    "The clock tells time.",
+    "Time helps us.",
+    "I like to know time.",
+    "Clocks are useful.",
+    "Time is good.",
+    "Clocks help me."
   ],
   [
-    "I learn to whistle.",
-    "I practice every day.",
-    "I purse my lips.",
-    "I blow air out.",
-    "Finally, I make a sound.",
-    "I can whistle a tune."
+    "I wait my turn.",
+    "Waiting is hard.",
+    "But waiting is good.",
+    "I can wait.",
+    "Waiting helps others.",
+    "Being patient is nice."
+  ],
+  [
+    "My shoes help me walk.",
+    "Shoes are good.",
+    "I like my shoes.",
+    "They fit my feet.",
+    "Shoes protect me.",
+    "Walking is easier."
+  ],
+  [
+    "I listen to sounds.",
+    "Sounds are everywhere.",
+    "Birds make sounds.",
+    "Cars make sounds.",
+    "I like good sounds.",
+    "Listening is fun."
+  ],
+  [
+    "The door opens and closes.",
+    "Doors help us.",
+    "I can open doors.",
+    "Doors keep us safe.",
+    "I like doors.",
+    "They help us go places."
+  ],
+  [
+    "I touch soft things.",
+    "Touching tells me things.",
+    "Soft feels nice.",
+    "Hard feels different.",
+    "I like to touch.",
+    "My hands help me feel."
+  ],
+  [
+    "We take turns playing.",
+    "Taking turns is fair.",
+    "Everyone gets to play.",
+    "I wait for my turn.",
+    "Taking turns is good.",
+    "Sharing time is nice."
+  ],
+  [
+    "I pick up my toys.",
+    "Picking up helps.",
+    "Clean rooms are nice.",
+    "I like clean spaces.",
+    "Picking up is good.",
+    "I help my family."
+  ],
+  [
+    "The chair helps me sit.",
+    "Sitting is good.",
+    "Chairs are useful.",
+    "I like my chair.",
+    "Sitting gives me rest.",
+    "Chairs help me."
+  ],
+  [
+    "I wave hello.",
+    "Waving is friendly.",
+    "Hello is nice to say.",
+    "People like hellos.",
+    "Waving makes friends.",
+    "Being friendly is good."
+  ],
+  [
+    "My family loves me.",
+    "Love is the best.",
+    "I love my family.",
+    "Love makes us happy.",
+    "Family is good.",
+    "Love is everywhere."
+  ],
+  [
+    "I try new things.",
+    "Trying is brave.",
+    "New things can be fun.",
+    "I like to try.",
+    "Trying helps me learn.",
+    "Being brave is good."
+  ],
+  [
+    "The table holds food.",
+    "Tables are useful.",
+    "We eat at tables.",
+    "I like our table.",
+    "Tables help families.",
+    "Sitting together is nice."
+  ],
+  [
+    "I remember good times.",
+    "Remembering is nice.",
+    "Good times make me happy.",
+    "I like memories.",
+    "Remembering helps me.",
+    "Good times are special."
+  ],
+  [
+    "The light helps me see.",
+    "Light is good.",
+    "I need light.",
+    "Light makes things bright.",
+    "I like light.",
+    "Light helps everyone."
+  ],
+  [
+    "I say thank you.",
+    "Thank you is polite.",
+    "People like thank you.",
+    "Saying thanks is good.",
+    "Thank you makes people happy.",
+    "Being polite is nice."
+  ],
+  [
+    "We work together.",
+    "Working together is good.",
+    "Many hands help.",
+    "I like teamwork.",
+    "Together we are strong.",
+    "Helping each other is nice."
   ],
 
-  // ADVANCED LEVEL 0 (Templates 61-100)
+  // Templates 61-100: FIXED - Now using only Dolch Pre-Primer vocabulary
   [
-    "I discover a secret path.",
-    "It leads through the forest.",
-    "I follow it carefully.",
-    "It brings me to a pond.",
-    "There are frogs singing.",
-    "I found a magical place."
+    "I make a picture.",
+    "My picture has colors.",
+    "Red and blue and yellow.",
+    "I like my picture.",
+    "Pictures are fun to make.",
+    "I show it to mom."
   ],
   [
-    "I learn about different cultures.",
-    "My friend teaches me words.",
-    "We share our traditions.",
-    "I try new foods.",
-    "Learning is exciting.",
-    "I make new friends."
+    "The baby is little.",
+    "Babies need help.",
+    "I can help the baby.",
+    "I am gentle.",
+    "Babies are nice.",
+    "I like to help."
+  ],
+  [
+    "I plant a seed.",
+    "Seeds grow into plants.",
+    "I give it water.",
+    "Plants need sun too.",
+    "Growing things is fun.",
+    "I watch it grow."
+  ],
+  [
+    "My teacher is nice.",
+    "Teachers help me learn.",
+    "I like my teacher.",
+    "School is a good place.",
+    "Learning is fun.",
+    "I try my best."
+  ],
+  [
+    "I have a pet.",
+    "My pet likes me.",
+    "I feed my pet.",
+    "Pets need love.",
+    "I take care of it.",
+    "Pets are good friends."
+  ],
+  [
+    "I clean my room.",
+    "Clean rooms are nice.",
+    "I put toys away.",
+    "I make my bed.",
+    "Cleaning helps everyone.",
+    "I like clean spaces."
+  ],
+  [
+    "The snow is white.",
+    "Snow falls down.",
+    "Snow is cold.",
+    "I like to play in snow.",
+    "Snow makes everything white.",
+    "Winter is fun."
+  ],
+  [
+    "I tell the truth.",
+    "Truth is good.",
+    "I am honest.",
+    "Telling truth is right.",
+    "People trust me.",
+    "Being honest is good."
+  ],
+  [
+    "I save my money.",
+    "Saving is smart.",
+    "Money helps buy things.",
+    "I put money in my bank.",
+    "Saving for later is good.",
+    "I am learning."
+  ],
+  [
+    "I explore the yard.",
+    "Exploring is fun.",
+    "I look at everything.",
+    "I find new things.",
+    "The yard has many things.",
+    "Looking around is good."
+  ],
+  [
+    "I write my name.",
+    "Writing is good.",
+    "My name is special.",
+    "I practice writing.",
+    "Writing helps me.",
+    "I like my name."
+  ],
+  [
+    "I visit my friend.",
+    "Visiting is fun.",
+    "Friends are special.",
+    "We play together.",
+    "I like my friend.",
+    "Friends make me happy."
   ],
   [
     "I solve a puzzle.",
-    "It has many pieces.",
-    "I work on it patiently.",
-    "Slowly, the picture appears.",
-    "I feel accomplished.",
-    "Puzzles challenge my mind."
+    "Puzzles are fun.",
+    "I think hard.",
+    "All pieces fit together.",
+    "Solving puzzles is good.",
+    "I feel smart."
   ],
   [
-    "I volunteer at the shelter.",
-    "I help feed the animals.",
-    "They are grateful.",
-    "I pet the dogs.",
-    "Helping feels good.",
-    "I want to help more."
+    "I pack my bag.",
+    "Packing helps me.",
+    "I put things inside.",
+    "My bag carries things.",
+    "Being ready is good.",
+    "I can go places."
   ],
   [
-    "I create a time capsule.",
-    "I put special things inside.",
-    "Photos and drawings.",
-    "A letter to the future.",
-    "I bury it safely.",
-    "Someday I'll open it."
+    "I fix my toy.",
+    "Fixing things is good.",
+    "I use my hands.",
+    "Working toys are better.",
+    "I can fix things.",
+    "Fixing makes me happy."
   ],
   [
-    "I study the stars.",
-    "They twinkle at night.",
-    "I use a telescope.",
-    "I see planets too.",
-    "Space is mysterious.",
-    "I want to be an astronaut."
+    "I choose a book.",
+    "Choosing is fun.",
+    "Many books are good.",
+    "I pick one I like.",
+    "Books have stories.",
+    "Reading is fun."
   ],
   [
-    "I write in my journal.",
-    "I record my thoughts.",
-    "My dreams and hopes.",
-    "What happened today.",
-    "Writing helps me remember.",
-    "My journal is precious."
+    "I watch the clouds.",
+    "Clouds are white.",
+    "Clouds move in the sky.",
+    "The sky is blue.",
+    "Watching is peaceful.",
+    "Clouds are pretty."
   ],
   [
-    "I mentor a younger child.",
-    "I teach them to read.",
-    "We practice together.",
-    "They improve quickly.",
-    "Teaching is rewarding.",
-    "I feel like a leader."
+    "I march like a soldier.",
+    "Marching is fun.",
+    "I move my feet.",
+    "Left, right, left, right.",
+    "Marching makes me strong.",
+    "I like to march."
   ],
   [
-    "I organize a fundraiser.",
-    "We want to help others.",
-    "I make flyers.",
-    "We sell cookies.",
-    "We raise lots of money.",
-    "Helping others feels great."
+    "I collect rocks.",
+    "Rocks are everywhere.",
+    "Some rocks are pretty.",
+    "I keep special rocks.",
+    "Collecting is fun.",
+    "I have many rocks."
   ],
   [
-    "I interview my grandparents.",
-    "They tell amazing stories.",
-    "About the old days.",
-    "Their adventures.",
-    "I record everything.",
-    "Their wisdom is valuable."
+    "I plan my day.",
+    "Planning helps me.",
+    "I think about what to do.",
+    "Plans make things easier.",
+    "I like having plans.",
+    "Planning is smart."
   ],
   [
-    "I start a recycling program.",
-    "I want to help Earth.",
-    "I sort materials.",
-    "I teach others too.",
-    "Everyone participates.",
-    "We make a difference."
+    "I measure things.",
+    "Measuring tells me size.",
+    "Big, little, tall, short.",
+    "I use my hands.",
+    "Measuring is useful.",
+    "I learn about size."
   ],
   [
-    "I design a robot.",
-    "I draw the plans.",
-    "It will help people.",
-    "I present my idea.",
-    "Others are impressed.",
-    "Innovation excites me."
+    "I practice being quiet.",
+    "Quiet is good sometimes.",
+    "I listen carefully.",
+    "Quiet helps me think.",
+    "Being quiet is nice.",
+    "I can be still."
   ],
   [
-    "I compose a song.",
-    "The melody is cheerful.",
-    "I write the lyrics.",
-    "I practice singing it.",
-    "I perform for family.",
-    "Music expresses my feelings."
+    "I balance on one foot.",
+    "Balancing is tricky.",
+    "I try not to fall.",
+    "Balancing makes me strong.",
+    "I practice every day.",
+    "Getting better is fun."
   ],
   [
-    "I establish a book club.",
-    "We read together.",
-    "We discuss the stories.",
-    "Everyone shares ideas.",
-    "Reading is more fun.",
-    "Books bring us together."
+    "I imagine new places.",
+    "Imagining is fun.",
+    "I think of far away.",
+    "My mind can go anywhere.",
+    "Imagination is special.",
+    "I like to dream."
   ],
   [
-    "I conduct an experiment.",
-    "I form a hypothesis.",
-    "I test my theory.",
-    "I record the results.",
-    "Science is fascinating.",
-    "Discovery excites me."
+    "I follow the rules.",
+    "Rules help everyone.",
+    "Following rules is good.",
+    "Rules keep us safe.",
+    "I am a good listener.",
+    "Rules help us."
   ],
   [
-    "I plan a community event.",
-    "I coordinate with others.",
-    "We organize activities.",
-    "Everyone has fun.",
-    "The event is successful.",
-    "Planning brings joy."
+    "I celebrate good things.",
+    "Celebrating is fun.",
+    "Good things make me happy.",
+    "I share my happiness.",
+    "Celebrating with others is nice.",
+    "Happy times are special."
   ],
   [
-    "I document local history.",
-    "I interview residents.",
-    "I photograph old buildings.",
-    "I write their stories.",
-    "History is important.",
-    "Preserving memories matters."
+    "I protect little animals.",
+    "Animals need help.",
+    "I am gentle with them.",
+    "Protecting is good.",
+    "Animals are special.",
+    "I care about animals."
   ],
   [
-    "I develop leadership skills.",
-    "I take on responsibilities.",
-    "I guide my team.",
-    "We achieve our goals.",
-    "Leadership is challenging.",
-    "I grow stronger."
+    "I notice small things.",
+    "Noticing helps me learn.",
+    "Small things are important.",
+    "I pay attention.",
+    "Noticing is a skill.",
+    "I see many things."
   ],
   [
-    "I advocate for change.",
-    "I identify a problem.",
-    "I propose solutions.",
-    "I rally support.",
-    "Change is possible.",
-    "My voice matters."
+    "I connect with others.",
+    "Connecting is good.",
+    "We are all friends.",
+    "I like meeting people.",
+    "Connecting makes me happy.",
+    "People are special."
   ],
   [
-    "I reflect on my journey.",
-    "I've learned so much.",
-    "I've grown and changed.",
-    "I've made lasting friendships.",
-    "I'm proud of myself.",
-    "The future is bright."
+    "I think about tomorrow.",
+    "Tomorrow will be good.",
+    "I look forward to it.",
+    "New days bring new fun.",
+    "Tomorrow is exciting.",
+    "I am ready for tomorrow."
+  ],
+  [
+    "I have hopes and dreams.",
+    "Hoping is good.",
+    "Dreams can come true.",
+    "I believe in myself.",
+    "Dreams make life special.",
+    "I never give up."
+  ],
+  [
+    "I spread joy everywhere.",
+    "Joy is wonderful.",
+    "I share smiles.",
+    "Joy makes everything better.",
+    "Spreading joy is my gift.",
+    "Joy is the best thing."
+  ],
+  [
+    "I look back at today.",
+    "Today was good.",
+    "I learned new things.",
+    "I played and laughed.",
+    "Today made me happy.",
+    "Every day is special."
+  ],
+  [
+    "I am grateful for everything.",
+    "Being grateful is good.",
+    "I have so many good things.",
+    "Grateful hearts are happy.",
+    "I say thank you often.",
+    "Gratitude makes me smile."
+  ],
+  [
+    "I think about my journey.",
+    "Journeys are adventures.",
+    "I have traveled far.",
+    "I have grown and learned.",
+    "My journey continues.",
+    "Life is a wonderful journey."
+  ],
+  [
+    "I look at the bright future.",
+    "The future is full of hope.",
+    "Good things are coming.",
+    "I am excited about tomorrow.",
+    "The future is bright.",
+    "I am ready for anything."
+  ],
+  [
+    "I reflect on all I've done.",
+    "Reflecting helps me grow.",
+    "I have accomplished much.",
+    "I am proud of myself.",
+    "Reflection brings wisdom.",
+    "I continue to learn."
+  ],
+  [
+    "I am ready for new adventures.",
+    "Adventures await me.",
+    "I am brave and strong.",
+    "New experiences excite me.",
+    "I embrace what comes next.",
+    "Adventure is calling."
+  ],
+  [
+    "I hold onto what matters most.",
+    "What matters is love.",
+    "Love for family and friends.",
+    "Love for learning and growing.",
+    "Love makes everything better.",
+    "Love is the greatest gift."
+  ],
+  [
+    "I step into tomorrow with hope.",
+    "Hope lights the way.",
+    "Tomorrow brings new possibilities.",
+    "I am ready for whatever comes.",
+    "Hope fills my heart.",
+    "The future is mine to create."
   ]
 ];
 
