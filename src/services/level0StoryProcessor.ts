@@ -240,15 +240,33 @@ export class Level0StoryProcessor {
         for (let i = 0; i < targetPages; i++) {
           // Get next template from hierarchical system (respects current state)
           const selection = HierarchicalSessionTemplateManager.getNextTemplate('beginner', isPremium);
-          const pageResult = await this.processStorySelection(selection, userInfo, userType, isPremium);
           
-          // Add the first page from this template to continuation
-          if (pageResult.content.length > 0) {
-            continuationPages.push(pageResult.content[0]);
+          if (selection.phase === 'fallback' || !selection.template || (Array.isArray(selection.template) && selection.template.length === 0)) {
+            // Use fallback content generation
+            try {
+              const fallbackContent = await Level0Simplifier.generateSimplifiedStory(userInfo);
+              if (fallbackContent.pages.length > 0) {
+                continuationPages.push(fallbackContent.pages[0]);
+              } else {
+                const emergencyPage = userInfo?.name ? `${userInfo.name} continues the adventure.` : 'The story continues.';
+                continuationPages.push(emergencyPage);
+              }
+            } catch (error) {
+              const emergencyPage = userInfo?.name ? `${userInfo.name} continues the adventure.` : 'The story continues.';
+              continuationPages.push(emergencyPage);
+            }
           } else {
-            // Fallback if template processing fails
-            const emergencyPage = userInfo?.name ? `${userInfo.name} continues the adventure.` : 'The story continues.';
-            continuationPages.push(emergencyPage);
+            // Process the template selection to get a single page
+            const pageResult = await this.processStorySelection(selection, userInfo, userType, isPremium);
+            
+            // Add the first page from this template to continuation
+            if (pageResult.content.length > 0) {
+              continuationPages.push(pageResult.content[0]);
+            } else {
+              // Fallback if template processing fails
+              const emergencyPage = userInfo?.name ? `${userInfo.name} continues the adventure.` : 'The story continues.';
+              continuationPages.push(emergencyPage);
+            }
           }
         }
         
