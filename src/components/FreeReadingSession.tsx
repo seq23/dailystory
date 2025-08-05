@@ -666,16 +666,8 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     const isOnLastPage = currentPage === story.length - 1;
     if (isLoading || !establishedCharacter || !isOnLastPage) return;
     
-    // Check if we've reached the 90-page limit
-    const currentPageInfo = SessionPageTracker.getPageInfo();
-    if (currentPageInfo.hasReachedLimit) {
-      toast({
-        title: "Free Trial Limit Reached",
-        description: `You've reached the 90-page free trial limit. Upgrade to premium for unlimited reading!`,
-        variant: "destructive"
-      });
-      return;
-    }
+    setIsLoading(true);
+    console.log('🔄 Adding more pages to story...');
     
     try {
       console.log('Maintaining character consistency for page extension:', establishedCharacter.userName);
@@ -685,7 +677,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
       const continuationStory = await UniversalContentManager.continueExistingStory(
         currentStoryPages,
         userInfo, 
-        currentDifficulty as 'easy' | 'medium' | 'hard' | 'expert',
+        currentDifficulty,
         { isPremium: false, userId: userInfo.name }
       );
       
@@ -693,6 +685,18 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
       const existingPageCount = story.length;
       const allPages = continuationStory.segments.map(s => s.text);
       const newPages = allPages.slice(existingPageCount);
+      
+      // Check if we'd exceed the 90-page limit
+      const currentPageInfo = SessionPageTracker.getPageInfo();
+      if (currentPageInfo.pagesViewed + newPages.length > currentPageInfo.maxPages) {
+        toast({
+          title: "Free Trial Limit Reached",
+          description: `You've reached the 90-page free trial limit. Upgrade to premium for unlimited reading!`,
+          variant: "destructive"
+        });
+        setIsLoading(false);
+        return;
+      }
       
       // Add new pages and generate images for them
       const startPageIndex = story.length;
@@ -765,6 +769,14 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
       setStoryCompleted(false);
       setHasShownCompletionToast(false);
       
+      setIsLoading(false);
+      
+      toast({
+        title: "Pages Added!",
+        description: `Added ${newPages.length} new pages to your story`,
+        duration: 2000,
+      });
+      
     } catch (error) {
       console.error('Failed to add more pages:', error);
       
@@ -787,6 +799,8 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
           duration: 3000,
         });
       }
+      
+      setIsLoading(false);
     }
   };
 

@@ -8,6 +8,7 @@ import { Level0StoryProcessor } from "@/services/level0StoryProcessor";
 import { NameFormatter } from "@/utils/nameFormatter";
 import { getTemplateByGradeLevel } from "@/constants/gradeBased/unifiedTemplateSystem";
 import { SessionPageTracker } from "./sessionPageTracker";
+import { StoryContinuationManager } from "./storyContinuationManager";
 
 // Define custom error classes
 class StoryGenerationError extends Error {
@@ -147,9 +148,58 @@ export class UniversalContentManager {
     difficulty: DifficultyLevel,
     config: ContentManagerConfig
   ): Promise<Story> {
-    // For now, just generate a new story - continuation logic can be added later
-    const result = await this.generateStory(userInfo, difficulty, config);
-    return result.story;
+    console.log(`🔄 Continuing existing story for ${userInfo.name} at ${difficulty} level`);
+    
+    try {
+      // Build story context from current story
+      const storyContext = {
+        characters: [userInfo.name],
+        setting: currentStory.length > 0 ? "the same place as before" : "a magical place",
+        theme: "adventure",
+        lastEvents: currentStory.slice(-2).join(' '), // Last 2 pages for context
+        storyTone: "cheerful",
+        vocabulary: []
+      };
+
+      // Generate continuation based on difficulty level
+      let continuation: Story;
+      if (difficulty === 'beginner') {
+        continuation = await StoryContinuationManager.generateLevel0Continuation(storyContext, userInfo, config);
+      } else if (difficulty === 'easy') {
+        continuation = await StoryContinuationManager.generateLevel1Continuation(storyContext, userInfo, config);
+      } else if (difficulty === 'medium') {
+        continuation = await StoryContinuationManager.generateLevel2Continuation(storyContext, userInfo, config);
+      } else if (difficulty === 'hard') {
+        continuation = await StoryContinuationManager.generateLevel3Continuation(storyContext, userInfo, config);
+      } else if (difficulty === 'expert') {
+        continuation = await StoryContinuationManager.generateLevel4Continuation(storyContext, userInfo, config);
+      } else {
+        // Fallback to Level 0 for unknown difficulties
+        continuation = await StoryContinuationManager.generateLevel0Continuation(storyContext, userInfo, config);
+      }
+
+      // Combine existing story with continuation
+      const combinedSegments = [
+        ...currentStory.map(text => ({ text, illustration: undefined, audioUrl: undefined })),
+        ...continuation.segments
+      ];
+
+      return {
+        id: continuation.id,
+        title: continuation.title,
+        segments: combinedSegments,
+        difficulty: difficulty,
+        estimatedReadingTime: Math.ceil(combinedSegments.length / 4),
+        wordCount: combinedSegments.reduce((count, segment) => 
+          count + segment.text.split(' ').filter(word => word.trim()).length, 0
+        )
+      };
+    } catch (error) {
+      console.error('Story continuation failed, falling back to new story:', error);
+      // Fallback to generating a new story
+      const result = await this.generateStory(userInfo, difficulty, config);
+      return result.story;
+    }
   }
 
   private static async generateLevel0Story(
