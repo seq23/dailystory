@@ -25,40 +25,44 @@ export class AudioSyncService {
   private isPlaying = false;
   private progressInterval: NodeJS.Timeout | null = null;
   private syncTimeouts: NodeJS.Timeout[] = [];
+  private onStateChange?: (isPlaying: boolean) => void; // Add state change callback
   
-  // Voice-specific timing profiles calibrated for much faster sync
+  // Extremely fast timing profiles calibrated for perfect sync
   private readonly voiceProfiles: Record<string, VoiceTimingProfile> = {
-    // Jessica - naturally paced, friendly voice (much faster timing)
+    // Jessica - naturally paced, friendly voice (ultra fast timing)
     'cgSgspJ2msm6clMCkdW9': {
-      baseWordInterval: 150,
+      baseWordInterval: 120,
       speedMultiplier: 1.0,
-      pauseMultiplier: 1.2
+      pauseMultiplier: 1.1
     },
-    // Sarah - clear, slightly slower for young users (faster timing)
+    // Sarah - clear, slightly slower for young users (ultra fast timing)
     'EXAVITQu4vr4xnSDxMaL': {
-      baseWordInterval: 170,
+      baseWordInterval: 130,
       speedMultiplier: 0.95,
-      pauseMultiplier: 1.3
+      pauseMultiplier: 1.2
     },
-    // Charlotte - balanced pace (faster timing)
+    // Charlotte - balanced pace (ultra fast timing)
     'XB0fDUnXU5powFXDhCwa': {
-      baseWordInterval: 160,
+      baseWordInterval: 125,
       speedMultiplier: 1.0,
-      pauseMultiplier: 1.2
+      pauseMultiplier: 1.1
     },
-    // Default profile for other voices (faster timing)
+    // Default profile for other voices (ultra fast timing)
     'default': {
-      baseWordInterval: 155,
+      baseWordInterval: 125,
       speedMultiplier: 1.0,
-      pauseMultiplier: 1.2
+      pauseMultiplier: 1.1
     }
   };
 
   /**
    * Play text with synchronized word highlighting
    */
-  async playText(options: AudioSyncOptions): Promise<void> {
-    const { text, voice, model, speed, onWordHighlight, onSyncError } = options;
+  async playText(options: AudioSyncOptions & { onStateChange?: (isPlaying: boolean) => void }): Promise<void> {
+    const { text, voice, model, speed, onWordHighlight, onSyncError, onStateChange } = options;
+    
+    // Store state change callback
+    this.onStateChange = onStateChange;
     
     // Stop any existing playback
     this.stopAudio();
@@ -111,12 +115,15 @@ export class AudioSyncService {
       // Start playback
       await this.audio.play();
       this.isPlaying = true;
+      this.onStateChange?.(true); // Notify state change
       
       // Start real-time progress tracking
       this.startProgressTracking(voice, speed, onWordHighlight);
       
     } catch (error) {
       console.error('Audio sync service error:', error);
+      this.isPlaying = false;
+      this.onStateChange?.(false); // Notify state change
       onSyncError?.();
       throw error;
     }
@@ -136,11 +143,15 @@ export class AudioSyncService {
     this.audio.onended = () => {
       console.log('🏁 Audio playback ended, clearing highlights');
       onWordHighlight?.(-1); // Clear highlighting immediately
+      this.isPlaying = false;
+      this.onStateChange?.(false); // Notify state change
       this.stopAudio();
     };
 
     this.audio.onerror = () => {
       console.error('Audio playback error');
+      this.isPlaying = false;
+      this.onStateChange?.(false); // Notify state change
       onSyncError?.();
       this.stopAudio();
     };
@@ -286,8 +297,14 @@ export class AudioSyncService {
    * Stop audio and clear all highlighting
    */
   stopAudio(): void {
+    const wasPlaying = this.isPlaying;
     this.isPlaying = false;
     this.currentWordIndex = -1;
+    
+    // Notify state change if we were playing
+    if (wasPlaying) {
+      this.onStateChange?.(false);
+    }
     
     // Clear progress tracking
     if (this.progressInterval) {

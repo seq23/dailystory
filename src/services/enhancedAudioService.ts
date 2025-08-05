@@ -101,6 +101,11 @@ export class EnhancedAudioService {
         model,
         speed,
         onWordHighlight: enableHighlighting ? onWordHighlight : undefined,
+        onStateChange: (isPlaying: boolean) => {
+          // Critical: Sync state immediately when audioSyncService changes
+          console.log(`🔄 AudioSync state change: ${this.isPlaying} → ${isPlaying}`);
+          this.isPlaying = isPlaying;
+        },
         onSyncError: () => {
           console.log('🔄 Audio sync error, falling back to browser speech');
           this.isPlaying = false; // Reset state on error
@@ -108,24 +113,13 @@ export class EnhancedAudioService {
         }
       });
 
-      // Critical: Sync state between services
+      // Mark page as played for free users
+      if (!isPremium) {
+        this.playedPages.add(currentPage);
+      }
+
       this.isPlaying = true;
-      
-      // Monitor audioSyncService status and sync with our state
-      const statusMonitor = setInterval(() => {
-        const syncStatus = audioSyncService.getPlaybackStatus();
-        this.isPlaying = syncStatus.isPlaying;
-        
-        // If sync service stopped, we should stop too
-        if (!syncStatus.isPlaying && this.isPlaying) {
-          console.log('🔄 Sync service stopped, updating enhanced service state');
-          this.isPlaying = false;
-          clearInterval(statusMonitor);
-        }
-      }, 250);
-      
-      // Clear monitor after reasonable time or when we stop
-      setTimeout(() => clearInterval(statusMonitor), 30000);
+      console.log(`🎵 Enhanced audio playback started for difficulty: ${difficulty}, speed: ${speed}x`);
       
     } catch (error) {
       console.error('Enhanced audio playback failed:', error);
@@ -455,14 +449,14 @@ export class EnhancedAudioService {
     this.totalWords = wordsWithIndices.length;
     this.currentWordIndex = 0;
     
-      // Much faster timing calculation for accurate sync
+      // Ultra fast timing calculation for perfect sync
       const calculateWordInterval = (word: string, index: number): number => {
-        const baseInterval = 150; // Much faster base timing for Jessica voice
+        const baseInterval = 120; // Ultra fast base timing for Jessica voice
         const speedAdjustment = 1 / speed;
         const hasPunctuation = /[.!?]/.test(word);
-        const pauseAfterPunctuation = hasPunctuation ? 100 : 0;
+        const pauseAfterPunctuation = hasPunctuation ? 80 : 0;
         const wordLength = word.length;
-        const lengthAdjustment = wordLength > 6 ? 15 : 0;
+        const lengthAdjustment = wordLength > 6 ? 10 : 0;
         
         return (baseInterval * speedAdjustment) + pauseAfterPunctuation + lengthAdjustment;
       };
