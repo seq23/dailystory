@@ -164,7 +164,27 @@ export class UniversalContentManager {
       // Generate continuation based on difficulty level
       let continuation: Story;
       if (difficulty === 'beginner') {
-        continuation = await StoryContinuationManager.generateLevel0Continuation(storyContext, userInfo, config);
+        // Use the same Level0StoryProcessor system as initial generation
+        const level0Result = await Level0StoryProcessor.generateStory(userInfo);
+        
+        // Convert Level0StoryResult to Story format
+        const continuationPages = level0Result.content.slice(0, 5); // Ensure exactly 5 pages
+        const segments = continuationPages.map(text => ({
+          text,
+          illustration: undefined,
+          audioUrl: undefined
+        }));
+        
+        continuation = {
+          id: `story-${Date.now()}`,
+          title: `${userInfo.name}'s Adventure Continues`,
+          segments,
+          difficulty: 'beginner',
+          estimatedReadingTime: 5,
+          wordCount: segments.reduce((count, segment) => 
+            count + segment.text.split(' ').filter(word => word.trim()).length, 0
+          )
+        };
       } else if (difficulty === 'easy') {
         continuation = await StoryContinuationManager.generateLevel1Continuation(storyContext, userInfo, config);
       } else if (difficulty === 'medium') {
