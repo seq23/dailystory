@@ -26,31 +26,31 @@ export class AudioSyncService {
   private progressInterval: NodeJS.Timeout | null = null;
   private syncTimeouts: NodeJS.Timeout[] = [];
   
-  // Voice-specific timing profiles calibrated for accurate sync
+  // Voice-specific timing profiles calibrated for much faster sync
   private readonly voiceProfiles: Record<string, VoiceTimingProfile> = {
-    // Jessica - naturally paced, friendly voice (recalibrated)
+    // Jessica - naturally paced, friendly voice (much faster timing)
     'cgSgspJ2msm6clMCkdW9': {
-      baseWordInterval: 200,
+      baseWordInterval: 150,
       speedMultiplier: 1.0,
-      pauseMultiplier: 1.3
+      pauseMultiplier: 1.2
     },
-    // Sarah - clear, slightly slower for young users (recalibrated)
+    // Sarah - clear, slightly slower for young users (faster timing)
     'EXAVITQu4vr4xnSDxMaL': {
-      baseWordInterval: 220,
+      baseWordInterval: 170,
       speedMultiplier: 0.95,
-      pauseMultiplier: 1.4
+      pauseMultiplier: 1.3
     },
-    // Charlotte - balanced pace (recalibrated)
+    // Charlotte - balanced pace (faster timing)
     'XB0fDUnXU5powFXDhCwa': {
-      baseWordInterval: 210,
+      baseWordInterval: 160,
       speedMultiplier: 1.0,
-      pauseMultiplier: 1.3
+      pauseMultiplier: 1.2
     },
-    // Default profile for other voices (recalibrated)
+    // Default profile for other voices (faster timing)
     'default': {
-      baseWordInterval: 205,
+      baseWordInterval: 155,
       speedMultiplier: 1.0,
-      pauseMultiplier: 1.3
+      pauseMultiplier: 1.2
     }
   };
 

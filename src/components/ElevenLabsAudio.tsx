@@ -142,16 +142,19 @@ export const ElevenLabsAudio = ({
     setHasPlayedThisPage(false);
   }, [currentPage]);
 
-  // Audio service status monitoring
+  // Enhanced audio service status monitoring with better frequency
   useEffect(() => {
     const checkStatus = () => {
       const status = audioService.getPlaybackStatus();
-      setIsPlaying(status.isPlaying);
+      if (status.isPlaying !== isPlaying) {
+        console.log(`🔄 Audio state sync: ${isPlaying} → ${status.isPlaying}`);
+        setIsPlaying(status.isPlaying);
+      }
     };
 
-    const interval = setInterval(checkStatus, 1000);
+    const interval = setInterval(checkStatus, 500); // Check more frequently
     return () => clearInterval(interval);
-  }, [audioService]);
+  }, [audioService, isPlaying]);
 
   useEffect(() => {
     return () => {

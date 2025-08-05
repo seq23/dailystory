@@ -103,17 +103,29 @@ export class EnhancedAudioService {
         onWordHighlight: enableHighlighting ? onWordHighlight : undefined,
         onSyncError: () => {
           console.log('🔄 Audio sync error, falling back to browser speech');
+          this.isPlaying = false; // Reset state on error
           this.fallbackToBrowserSpeech(processedText, userInfo, onWordHighlight);
         }
       });
 
-      // Mark page as played for free users
-      if (!isPremium) {
-        this.playedPages.add(currentPage);
-      }
-
+      // Critical: Sync state between services
       this.isPlaying = true;
-      console.log(`🎵 Enhanced audio playback started for difficulty: ${difficulty}, speed: ${speed}x`);
+      
+      // Monitor audioSyncService status and sync with our state
+      const statusMonitor = setInterval(() => {
+        const syncStatus = audioSyncService.getPlaybackStatus();
+        this.isPlaying = syncStatus.isPlaying;
+        
+        // If sync service stopped, we should stop too
+        if (!syncStatus.isPlaying && this.isPlaying) {
+          console.log('🔄 Sync service stopped, updating enhanced service state');
+          this.isPlaying = false;
+          clearInterval(statusMonitor);
+        }
+      }, 250);
+      
+      // Clear monitor after reasonable time or when we stop
+      setTimeout(() => clearInterval(statusMonitor), 30000);
       
     } catch (error) {
       console.error('Enhanced audio playback failed:', error);
@@ -306,6 +318,7 @@ export class EnhancedAudioService {
       speechSynthesis.cancel();
     }
     
+    // Critical: Always reset our state immediately
     this.isPlaying = false;
     this.clearHighlighting();
     
@@ -442,14 +455,14 @@ export class EnhancedAudioService {
     this.totalWords = wordsWithIndices.length;
     this.currentWordIndex = 0;
     
-      // Recalibrated timing calculation for accurate sync
+      // Much faster timing calculation for accurate sync
       const calculateWordInterval = (word: string, index: number): number => {
-        const baseInterval = 200; // Recalibrated base timing for Jessica voice
+        const baseInterval = 150; // Much faster base timing for Jessica voice
         const speedAdjustment = 1 / speed;
         const hasPunctuation = /[.!?]/.test(word);
-        const pauseAfterPunctuation = hasPunctuation ? 150 : 0;
+        const pauseAfterPunctuation = hasPunctuation ? 100 : 0;
         const wordLength = word.length;
-        const lengthAdjustment = wordLength > 6 ? 20 : 0;
+        const lengthAdjustment = wordLength > 6 ? 15 : 0;
         
         return (baseInterval * speedAdjustment) + pauseAfterPunctuation + lengthAdjustment;
       };
