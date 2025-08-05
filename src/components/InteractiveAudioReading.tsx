@@ -189,12 +189,20 @@ export const InteractiveAudioReading = ({
     const highlightNext = () => {
       if (index < words.length && isPlaying) {
         setCurrentWordIndex(index);
+        console.log(`🎯 InteractiveAudio: Highlighting word ${index}: "${words[index]}"`);
         onWordHighlight?.(index);
         index++;
-        timeoutRef.current = setTimeout(highlightNext, interval);
+        
+        // Calculate dynamic interval based on word complexity
+        const word = words[index - 1] || '';
+        const wordInterval = interval * (word.length > 6 ? 1.2 : 1.0); // Longer pause for longer words
+        const punctuationPause = /[.!?]$/.test(word) ? 200 : 0; // Extra pause after sentences
+        
+        timeoutRef.current = setTimeout(highlightNext, wordInterval + punctuationPause);
       } else {
         setCurrentWordIndex(-1);
         setIsPlaying(false);
+        console.log('🎯 InteractiveAudio: Highlighting sequence completed');
       }
     };
     

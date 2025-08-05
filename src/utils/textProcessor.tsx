@@ -35,9 +35,9 @@ export const processTextForPhonetics = (
     
     return (
       <MobileOptimizedInteractiveWord 
-        key={index} 
+        key={`${index}-${word}`} 
         word={word} 
-        className={`${className} ${isHighlighted ? 'bg-yellow-200 dark:bg-yellow-800 animate-pulse transition-all duration-300' : ''} word-index-${index}`}
+        className={`${className} ${isHighlighted ? 'bg-yellow-200/80 dark:bg-yellow-800/60 animate-pulse transition-all duration-500 shadow-md rounded-sm' : 'transition-all duration-300'} word-index-${index}`}
         difficulty={difficulty}
         userInfo={userInfo}
         isPremium={isPremium}

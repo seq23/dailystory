@@ -77,7 +77,10 @@ export const ElevenLabsAudio = ({
         userInfo,
         isPremium,
         enableHighlighting: onWordHighlight !== undefined,
-        onWordHighlight,
+        onWordHighlight: (wordIndex: number) => {
+          console.log(`🎯 ElevenLabs: Highlighting word ${wordIndex}`);
+          onWordHighlight?.(wordIndex);
+        },
         currentPage
       });
       
