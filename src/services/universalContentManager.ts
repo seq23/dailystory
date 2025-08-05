@@ -17,6 +17,7 @@ import { StoryManager, TransitionConfig } from "./storyManager";
 import { getAuthorVoiceForUser, applyAuthorVoice } from "@/constants/authorVoicePatterns";
 import { getLevel0Template } from "@/constants/level0Templates";
 import { UserInputDistributor, DistributionContext } from "./userInputDistributor";
+import { ComprehensiveTemplateManager } from './comprehensiveTemplateManager';
 
 export interface GeneratedContent {
   pageNumber: number;
@@ -48,24 +49,57 @@ export class UniversalContentManager {
 
   /**
    * Generate story with comprehensive anti-repetition and quality validation
+   * Now uses the new 100-template system while preserving all existing systems
    */
   static async generateStory(
     userInfo: UserInfo,
     difficulty: DifficultyLevel,
     config: ContentManagerConfig
   ): Promise<StoryGenerationResult> {
-    console.log(`🎯 Starting story generation for ${difficulty} level...`);
+    console.log(`🎯 Starting story generation for ${difficulty} level with comprehensive templates...`);
     
-    // Handle free user session reset logic
-    const shouldResetFreeUserSession = !config.isPremium && config.userId;
-    if (shouldResetFreeUserSession) {
-      const sessionStats = SessionTemplateManager.getSessionStats();
-      if (sessionStats.isRepeating && Math.random() < 0.3) {
-        console.log('🔄 Resetting free user session to reduce repetition');
-        // SessionTemplateManager.reset(); // Method may not exist - remove or implement safely
+    // Try comprehensive template system first (fast, guaranteed quality)
+    try {
+      const templateResult = await ComprehensiveTemplateManager.generateStory({
+        userInfo,
+        difficulty,
+        useCharacterPool: true,
+        enhanceWithAI: config.isPremium,
+        isPremium: config.isPremium
+      });
+      
+      if (templateResult.isValid) {
+        console.log(`✅ Generated story using comprehensive template system (${templateResult.metadata.processingTime.toFixed(2)}ms)`);
+        
+        const story: Story = {
+          id: crypto.randomUUID(),
+          title: `${NameFormatter.capitalize(userInfo.name || 'Alex')}'s Adventure`,
+          segments: templateResult.pages.map(text => ({
+            text,
+            illustration: undefined,
+            audioUrl: undefined
+          })),
+          difficulty,
+          estimatedReadingTime: Math.max(1, Math.ceil(templateResult.pages.length / 3)),
+          wordCount: templateResult.pages.join(' ').split(' ').filter(word => word.trim()).length
+        };
+        
+        return {
+          story,
+          isNewStory: true,
+          isContinuation: false,
+          sessionInfo: {
+            sessionNumber: 1,
+            remainingSessions: config.isPremium ? -1 : Math.max(0, (config.maxSessions || 5) - 1),
+            isUnlimited: config.isPremium
+          }
+        };
       }
+    } catch (error) {
+      console.warn('Comprehensive template system failed, falling back to existing system:', error);
     }
-
+    
+    // Fallback to existing system if templates fail
     const story = await this.generateNewStoryWithAntiRepetition(userInfo, difficulty, config);
     
     return {
