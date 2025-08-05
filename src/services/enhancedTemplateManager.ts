@@ -75,27 +75,9 @@ export class EnhancedTemplateManager {
     
     console.log(`🎯 EnhancedTemplateManager: Processing ${gradeLevel} content (Level ${gradeLevel === 0 ? '0: minimal' : '1-4: full pipeline'})`);
     
-    // Level 0 gets minimal processing (already handled by Level0StoryProcessor)
+    // Level 0 should never reach this manager - handled by Level0StoryProcessor
     if (gradeLevel === 0) {
-      console.log(`⚡ EnhancedTemplateManager: Level 0 detected - redirecting to Level0StoryProcessor for optimal handling`);
-      
-      // Return basic structure that indicates Level 0 should use its own processor
-      return {
-        pages: [`Level 0 content should use Level0StoryProcessor`],
-        templateIndex: -1,
-        gradeLevel,
-        actualPages: 0,
-        targetPages: 0,
-        isPremium,
-        vocabularyCompliant: true,
-        validationErrors: [],
-        metadata: {
-          difficulty,
-          gradeInfo,
-          wasExtended: false,
-          systemVersion: 'enhanced-unified-v1'
-        }
-      };
+      throw new Error('Level 0 content should be processed by Level0StoryProcessor, not EnhancedTemplateManager');
     }
     
     // Levels 1-4: Full processing pipeline
