@@ -8,8 +8,7 @@ import {
 
 import { 
   getLevel0PremiumTemplate, 
-  getLevel0PremiumTemplateCount,
-  getLevel0PremiumExtension 
+  getLevel0PremiumTemplateCount
 } from '@/constants/level0TemplatesPremium';
 
 import { 

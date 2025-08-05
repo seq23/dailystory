@@ -386,20 +386,4 @@ export function getLevel0PremiumTotalPages(): number {
 }
 
 // Premium extension templates for longer reading sessions
-export const LEVEL_0_PREMIUM_EXTENSIONS = [
-  "I love to learn new words every day.",
-  "Good books have nice stories for me.",
-  "We work together as a happy family.",
-  "This old house has many good things.",
-  "Time with friends makes me very happy.",
-  "Some water is nice to drink today.",
-  "They have books with interesting words.",
-  "New and old toys are fun to play.",
-  "We want to be good to others.",
-  "Love and kindness make life better."
-];
-
-export function getLevel0PremiumExtension(): string {
-  const randomIndex = Math.floor(Math.random() * LEVEL_0_PREMIUM_EXTENSIONS.length);
-  return LEVEL_0_PREMIUM_EXTENSIONS[randomIndex];
-}
+// Extension templates moved to level0ExtensionTemplates.ts to avoid duplication
