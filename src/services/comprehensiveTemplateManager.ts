@@ -4,6 +4,7 @@ import { SessionTemplateManager } from '@/services/sessionTemplateManager';
 import { CharacterPoolManager } from '@/services/characterPoolManager';
 import { TemplateValidationCache } from '@/services/templateValidationCache';
 import { MobileTemplateOptimizer } from '@/services/mobileTemplateOptimizer';
+import { TemplatePerformanceMonitor } from '@/services/templatePerformanceMonitor';
 import { validateLevel0Sentence } from '@/constants/level0Vocabulary';
 import { validateLevel1Sentence } from '@/constants/level1Vocabulary';
 import { validateLevel2Sentence } from '@/constants/level2Vocabulary';
@@ -53,6 +54,12 @@ export class ComprehensiveTemplateManager {
    * Generate story using comprehensive template system + all existing systems
    */
   static async generateStory(options: TemplateGenerationOptions): Promise<TemplateResult> {
+    const performanceStart = TemplatePerformanceMonitor.startOperation('generateStory', {
+      difficulty: options.difficulty,
+      isPremium: options.isPremium,
+      userType: options.userInfo ? 'registered' : 'guest'
+    });
+    
     const startTime = performance.now();
     const systemsUsed: string[] = ['ComprehensiveTemplateManager'];
     
@@ -98,6 +105,14 @@ export class ComprehensiveTemplateManager {
       
       const processingTime = performance.now() - startTime;
       
+      // Record performance metrics
+      TemplatePerformanceMonitor.endOperation('generateStory', performanceStart, {
+        success: true,
+        templateIndex,
+        systemsUsed: systemsUsed.length,
+        optimizations: optimizedTemplate.optimizationApplied.length
+      });
+      
       return {
         pages: finalPages,
         templateIndex,
@@ -115,6 +130,12 @@ export class ComprehensiveTemplateManager {
       
     } catch (error) {
       console.error('Error in ComprehensiveTemplateManager:', error);
+      
+      // Record error in performance monitoring
+      TemplatePerformanceMonitor.endOperation('generateStory', performanceStart, {
+        success: false,
+        error: error.message
+      });
       
       // Fallback to basic template
       const fallbackTemplate = getComprehensiveTemplate('beginner', 0);
