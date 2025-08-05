@@ -256,8 +256,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
             initialDifficulty,
             {
               isPremium,
-              userId: userInfo?.name || 'guest',
-              maxSessions: 100
+              userId: userInfo?.name || 'guest'
             }
           );
         }
@@ -537,8 +536,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
           currentDifficulty,
           {
             isPremium,
-            userId: userInfo?.name || 'guest',
-            maxSessions: 100
+            userId: userInfo?.name || 'guest'
           }
         );
         
@@ -646,8 +644,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
         newDifficulty,
         {
           isPremium,
-          userId: userInfo?.name || 'guest',
-          maxSessions: 100
+          userId: userInfo?.name || 'guest'
         }
       );
       
@@ -799,7 +796,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
           story,
           userInfo,
           currentDifficulty,
-          { isPremium, userId: userInfo?.name || 'guest', maxSessions: 100 }
+          { isPremium, userId: userInfo?.name || 'guest' }
         );
         newPages = continuationStory.segments.map(segment => segment.text);
       } else {
@@ -807,7 +804,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
         const storyResult = await UniversalContentManager.generateNewStoryWithAntiRepetition(
           userInfo, 
           currentDifficulty,
-          { isPremium, userId: userInfo?.name || 'guest', maxSessions: 100 }
+          { isPremium, userId: userInfo?.name || 'guest' }
         );
         newPages = storyResult.segments.map(segment => segment.text).slice(0, 5);
       }
