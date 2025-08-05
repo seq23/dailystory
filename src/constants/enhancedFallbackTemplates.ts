@@ -42,11 +42,7 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
         "The {animal} is happy.",
         "It is a good day."
       ],
-      contextualContinuations: [
-        "{name} says bye.",
-        "See you.",
-        "We are friends."
-      ]
+      contextualContinuations: []
     }
   ],
   easy: [
@@ -71,11 +67,7 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
         "{name} and {animal} are happy.",
         "They are good friends now."
       ],
-      contextualContinuations: [
-        "Then {name} sees something new.",
-        "Next, {name} tries something different.",
-        "After that, {name} finds more fun."
-      ]
+      contextualContinuations: []
     },
     {
       setup: [
@@ -98,11 +90,7 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
         "{name} shares it with {animal}.",
         "They both feel very happy."
       ],
-      contextualContinuations: [
-        "Then {name} discovers more magic.",
-        "Next, they find another surprise.",
-        "After that, more friends come."
-      ]
+      contextualContinuations: []
     }
   ],
 
@@ -128,11 +116,7 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
         "The tree regains its beautiful, vibrant glow completely.",
         "The forest celebrates their act of kindness and wisdom."
       ],
-      contextualContinuations: [
-        "Meanwhile, {name} notices other magical elements nearby.",
-        "Soon after, they discover another challenge to solve.",
-        "Before long, {name} finds new wisdom to apply."
-      ]
+      contextualContinuations: []
     },
     {
       setup: [
@@ -155,11 +139,7 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
         "Everyone appreciates {name}'s authentic contribution to the celebration.",
         "The experience teaches them about confidence and community belonging."
       ],
-      contextualContinuations: [
-        "Later that evening, {name} reflects on lessons learned.",
-        "Eventually, they decide to organize their own celebration.",
-        "As time passes, {name} becomes known for their kindness."
-      ]
+      contextualContinuations: []
     }
   ],
 
@@ -185,11 +165,7 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
         "{name} learned that true leadership means serving others with wisdom and compassion.",
         "The village thrived, and {name} became known for their character and moral strength."
       ],
-      contextualContinuations: [
-        "Subsequently, {name} faced new challenges with increased confidence and wisdom.",
-        "In time, other villages sought {name}'s guidance for their own difficulties.",
-        "Eventually, {name} established a school to teach others about courage and service."
-      ]
+      contextualContinuations: []
     }
   ],
 
@@ -215,11 +191,7 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
         "They learned that wisdom comes from embracing paradox while maintaining commitment to truth and justice.",
         "This intellectual and spiritual growth transformed {name} into a bridge between different ways of thinking."
       ],
-      contextualContinuations: [
-        "Consequently, {name} began teaching others how to navigate complex moral landscapes with integrity.",
-        "In subsequent years, they developed frameworks for understanding and resolving ethical conflicts.",
-        "Ultimately, {name} became known for their ability to find common ground among diverse perspectives."
-      ]
+      contextualContinuations: []
     }
   ]
 };
@@ -292,12 +264,7 @@ export class EnhancedFallbackManager {
     pageIndex: number,
     existingStory?: string[]
   ): string {
-    // If we have existing story context, use continuation patterns
-    if (existingStory && existingStory.length > 0) {
-      const continuations = template.contextualContinuations;
-      const continuationIndex = pageIndex % continuations.length;
-      return this.processTemplate(continuations[continuationIndex], userInfo, difficulty);
-    }
+    // Removed contextualContinuations - trust hierarchical system for content generation
 
     // Generate character-driven content using the enhanced template
     const characters = CharacterPoolManager.generateCharacterPool(userInfo, difficulty);

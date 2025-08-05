@@ -9,6 +9,7 @@ import type { Achievement } from "@/services/gamificationService";
 import { InteractiveAudioReading } from "@/components/InteractiveAudioReading";
 import { ElevenLabsAudio } from "@/components/ElevenLabsAudio";
 import { UniversalContentManager } from "@/services/universalContentManager";
+import { Level0StoryProcessor } from "@/services/level0StoryProcessor";
 import { UnifiedImageService, type EstablishedCharacter } from "@/services/unifiedImageService";
 import { FreeTrialPageLimitError } from "@/utils/errorHandling";
 
@@ -315,17 +316,33 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
         console.log('Story config:', storyConfig);
 
         if (!isCancelled) {
-          // Generate story content using Universal Content Manager with anti-repetition
-          console.log('🚀 FreeReadingSession: About to call UniversalContentManager.generateNewStoryWithAntiRepetition');
-          console.log('📊 FreeReadingSession: Current difficulty:', currentDifficulty);
-          console.log('🎯 FreeReadingSession: User info:', userInfo);
-          console.log('🔍 FreeReadingSession: Current story BEFORE generation:', story.slice(0, 2));
+          // Route Level 0 through hierarchical template system, others through Universal Content Manager
+          let storyResult;
           
-          const storyResult = await UniversalContentManager.generateNewStoryWithAntiRepetition(
-            userInfo, 
-            currentDifficulty,
-            { isPremium: false, userId: userInfo.name }
-          );
+          if (currentDifficulty === 'beginner') {
+            console.log('🚀 FreeReadingSession: Using Level0StoryProcessor for Level 0 (beginner)');
+            console.log('📊 FreeReadingSession: Current difficulty:', currentDifficulty);
+            console.log('🎯 FreeReadingSession: User info:', userInfo);
+            
+            const level0Result = await Level0StoryProcessor.generateStory(userInfo);
+            storyResult = { 
+              segments: level0Result.content.map(text => ({ text })),
+              wordCount: level0Result.content.join(' ').split(' ').length,
+              title: `${userInfo.name}'s Adventure`
+            };
+            console.log('📚 FreeReadingSession: Level 0 story generated via hierarchical system');
+          } else {
+            console.log('🚀 FreeReadingSession: Using UniversalContentManager for Level 1+ difficulties');
+            console.log('📊 FreeReadingSession: Current difficulty:', currentDifficulty);
+            console.log('🎯 FreeReadingSession: User info:', userInfo);
+            console.log('🔍 FreeReadingSession: Current story BEFORE generation:', story.slice(0, 2));
+            
+            storyResult = await UniversalContentManager.generateNewStoryWithAntiRepetition(
+              userInfo, 
+              currentDifficulty,
+              { isPremium: false, userId: userInfo.name }
+            );
+          }
           const generatedStory = { 
             pages: storyResult.segments.map(s => s.text), 
             config: { readingLevel: currentDifficulty }, 
@@ -512,13 +529,26 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
       try {
         if (!establishedCharacter) return;
         
-        // Generate new story at the new difficulty level using Universal Content Manager
+        // Route Level 0 through hierarchical template system, others through Universal Content Manager
         const currentPageCount = story.length;
-        const storyResult = await UniversalContentManager.generateNewStoryWithAntiRepetition(
-          userInfo, 
-          newDifficulty as 'easy' | 'medium' | 'hard' | 'expert',
-          { isPremium: false, userId: userInfo.name }
-        );
+        let storyResult;
+        
+        if (newDifficulty === 'beginner') {
+          console.log('🔄 FreeReadingSession: Difficulty change to Level 0, using Level0StoryProcessor');
+          const level0Result = await Level0StoryProcessor.generateStory(userInfo);
+          storyResult = { 
+            segments: level0Result.content.map(text => ({ text })),
+            wordCount: level0Result.content.join(' ').split(' ').length,
+            title: `${userInfo.name}'s Adventure`
+          };
+        } else {
+          console.log('🔄 FreeReadingSession: Difficulty change to Level 1+, using UniversalContentManager');
+          storyResult = await UniversalContentManager.generateNewStoryWithAntiRepetition(
+            userInfo, 
+            newDifficulty as 'easy' | 'medium' | 'hard' | 'expert',
+            { isPremium: false, userId: userInfo.name }
+          );
+        }
         const updatedStory = { 
           pages: storyResult.segments.map(s => s.text), 
           config: { readingLevel: newDifficulty }, 

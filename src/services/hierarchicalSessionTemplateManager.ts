@@ -185,6 +185,7 @@ export class HierarchicalSessionTemplateManager {
       this.saveSessionState(state);
       
       console.log(`📖 HierarchicalSessionTemplateManager: Selected base template ${templateIndex + 1} (phase: base)`);
+      console.log(`📈 Session analytics: Base ${state.baseTemplatesUsed.size}/${state.currentBaseShuffle.length}, Session age: ${Date.now() - state.sessionStartTime}ms`);
       
       return {
         template,
@@ -218,6 +219,7 @@ export class HierarchicalSessionTemplateManager {
         this.saveSessionState(state);
         
         console.log(`📖 HierarchicalSessionTemplateManager: Selected Level 0 extension template ${templateIndex + 1} (phase: extension, premium: ${isPremium})`);
+        console.log(`📈 Session analytics: Extensions ${state.extensionTemplatesUsed.size}/${state.currentExtensionShuffle.length}, Session age: ${Date.now() - state.sessionStartTime}ms`);
         
         return {
           template,
@@ -228,6 +230,7 @@ export class HierarchicalSessionTemplateManager {
       } else {
         // For levels 1-4, signal that extension should be handled by enhanced template manager
         console.log(`🔄 HierarchicalSessionTemplateManager: Extension phase for level ${gradeLevel} - delegating to enhanced template manager`);
+        console.log(`📈 Final analytics: Total templates used ${state.baseTemplatesUsed.size + state.extensionTemplatesUsed.size}, Session duration: ${Date.now() - state.sessionStartTime}ms`);
         state.currentPhase = 'fallback';
         this.saveSessionState(state);
         
