@@ -79,76 +79,38 @@ export class EnhancedAudioService {
     // Prepare text with length limits
     const maxLength = isPremium ? this.config.quality.maxTextLength.premium : this.config.quality.maxTextLength.free;
     const processedText = text.slice(0, maxLength);
+    const model = userInfo.nativeLanguage === 'en' ? 'eleven_turbo_v2' : 'eleven_multilingual_v2';
 
     try {
       // Stop any currently playing audio
       this.stopAudio();
 
-      // Check cache first
-      const cacheKey = this.getCacheKey(processedText, voice, speed);
-      let audioUrl = this.audioCache.get(cacheKey);
-
-      if (!audioUrl) {
-        // Generate new audio
-        audioUrl = await this.generateAudio(processedText, voice, userInfo, isPremium);
-        
-        // Cache for future use
-        if (this.config.quality.cacheAudio) {
-          this.audioCache.set(cacheKey, audioUrl);
+      // Use enhanced AudioSyncService for better highlighting synchronization
+      const { audioSyncService } = await import('./audioSyncService');
+      
+      await audioSyncService.playText({
+        text: processedText,
+        voice,
+        model,
+        speed,
+        onWordHighlight: enableHighlighting ? onWordHighlight : undefined,
+        onSyncError: () => {
+          console.log('🔄 Audio sync error, falling back to browser speech');
+          this.fallbackToBrowserSpeech(processedText, userInfo, onWordHighlight);
         }
-      }
-
-      // Use mobile audio manager for enhanced mobile support
-      if (this.isMobile()) {
-        const response = await fetch(audioUrl);
-        const audioBlob = await response.blob();
-        
-        await this.mobileAudioManager.playAudioBlob(audioBlob, {
-          onEnded: () => {
-            this.isPlaying = false;
-            this.clearHighlighting();
-          },
-          onError: (error) => {
-            this.isPlaying = false;
-            this.fallbackToBrowserSpeech(processedText, speed);
-          }
-        });
-        
-        this.isPlaying = true;
-      } else {
-        // Desktop playback
-        this.currentAudio = new Audio(audioUrl);
-        this.currentAudio.playbackRate = speed;
-
-        // Set up event handlers
-        this.currentAudio.onended = () => {
-          this.isPlaying = false;
-          this.clearHighlighting();
-        };
-
-        this.currentAudio.onerror = () => {
-          this.isPlaying = false;
-          this.fallbackToBrowserSpeech(processedText, speed);
-        };
-
-        // Start playback
-        await this.currentAudio.play();
-        this.isPlaying = true;
-      }
+      });
 
       // Mark page as played for free users
       if (!isPremium) {
         this.playedPages.add(currentPage);
       }
 
-      // Start word highlighting if enabled
-      if (enableHighlighting && this.shouldEnableHighlighting(difficulty) && onWordHighlight) {
-        this.startWordHighlighting(processedText, speed, onWordHighlight);
-      }
-
+      this.isPlaying = true;
+      console.log(`🎵 Enhanced audio playback started for difficulty: ${difficulty}, speed: ${speed}x`);
+      
     } catch (error) {
       console.error('Enhanced audio playback failed:', error);
-      this.fallbackToBrowserSpeech(processedText, speed);
+      this.fallbackToBrowserSpeech(processedText, userInfo, onWordHighlight);
     }
   }
 
@@ -320,13 +282,17 @@ export class EnhancedAudioService {
   // === Audio Control Methods ===
 
   stopAudio(): void {
-    if (this.currentAudio) {
-      this.currentAudio.pause();
-      this.currentAudio = null;
-    }
-    
-    // Also stop mobile audio manager
-    this.mobileAudioManager.stopAudio();
+    // Stop new sync service if available
+    import('./audioSyncService').then(({ audioSyncService }) => {
+      audioSyncService.stopAudio();
+    }).catch(() => {
+      // Fallback to old method
+      if (this.currentAudio) {
+        this.currentAudio.pause();
+        this.currentAudio = null;
+      }
+      this.mobileAudioManager.stopAudio();
+    });
     
     this.isPlaying = false;
     this.clearHighlighting();
@@ -353,12 +319,12 @@ export class EnhancedAudioService {
   private getSpeedForDifficulty(difficulty: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert', userInfo?: UserInfo): number {
     const baseSpeed = this.config.speedByDifficulty[difficulty];
     
-    // Adjust speed based on user's native language
+    // Adjust speed based on user's native language - optimized values
     let finalSpeed: number;
     if (userInfo?.nativeLanguage === 'en') {
-      finalSpeed = baseSpeed * 0.7; // Slower for English native speakers
+      finalSpeed = baseSpeed * 0.85; // Increased from 0.7 to 0.85
     } else {
-      finalSpeed = baseSpeed * 0.6; // Even slower for non-native speakers
+      finalSpeed = baseSpeed * 0.75; // Increased from 0.6 to 0.75
     }
     
     console.log(`🎵 Audio speed for ${difficulty} (${userInfo?.nativeLanguage}): ${finalSpeed}`);
@@ -375,28 +341,26 @@ export class EnhancedAudioService {
       return characterVoices[characterType as keyof typeof characterVoices] || characterVoices.narrator;
     }
 
-    // Enhanced voice selection logic with friendly female voices as default
+    // Enhanced voice selection with Jessica as primary narrator
     const age = userInfo.age;
     const isGirl = userInfo.avatar?.type === 'girl';
     const isNativeEnglishSpeaker = userInfo.nativeLanguage === 'en';
     
-    // Default to friendly female voices for better user experience
+    // Default to Jessica (cgSgspJ2msm6clMCkdW9) for most cases - friendly, clear, naturally paced
     if (isNativeEnglishSpeaker) {
       if (age <= 8) {
-        return isGirl ? "EXAVITQu4vr4xnSDxMaL" : "EXAVITQu4vr4xnSDxMaL"; // Sarah - warm, friendly for children
-      } else if (age <= 12) {
-        return isGirl ? "cgSgspJ2msm6clMCkdW9" : "cgSgspJ2msm6clMCkdW9"; // Jessica - very natural and friendly
+        return "EXAVITQu4vr4xnSDxMaL"; // Sarah - warm, clear for young children
       } else {
-        return isGirl ? "cgSgspJ2msm6clMCkdW9" : "XB0fDUnXU5powFXDhCwa"; // Jessica or Charlotte - natural, friendly voices
+        return "cgSgspJ2msm6clMCkdW9"; // Jessica - primary narrator voice, naturally paced
       }
     } else {
-      // For non-native speakers, use clear, friendly multilingual voices
+      // For non-native speakers, use clear multilingual voices
       if (age <= 8) {
-        return isGirl ? "EXAVITQu4vr4xnSDxMaL" : "EXAVITQu4vr4xnSDxMaL"; // Sarah for clear pronunciation
+        return "EXAVITQu4vr4xnSDxMaL"; // Sarah for clear pronunciation
       } else if (age <= 12) {
-        return isGirl ? "XB0fDUnXU5powFXDhCwa" : "XB0fDUnXU5powFXDhCwa"; // Charlotte - clear and friendly
+        return "XB0fDUnXU5powFXDhCwa"; // Charlotte - clear and friendly
       } else {
-        return isGirl ? "9BWtsMINqrJLrRacOk9x" : "9BWtsMINqrJLrRacOk9x"; // Aria - sophisticated and clear
+        return "cgSgspJ2msm6clMCkdW9"; // Jessica - works well with multilingual model too
       }
     }
   }
@@ -423,8 +387,9 @@ export class EnhancedAudioService {
     return URL.createObjectURL(audioBlob);
   }
 
-  private fallbackToBrowserSpeech(text: string, speed: number): void {
+  private fallbackToBrowserSpeech(text: string, userInfo: UserInfo, onWordHighlight?: (wordIndex: number) => void): void {
     if ('speechSynthesis' in window) {
+      const speed = this.getSpeedForDifficulty('easy', userInfo);
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.rate = speed;
       utterance.pitch = 1.0;
@@ -442,6 +407,11 @@ export class EnhancedAudioService {
 
       speechSynthesis.speak(utterance);
       this.isPlaying = true;
+      
+      // Start highlighting for fallback speech
+      if (onWordHighlight) {
+        this.startWordHighlighting(text, speed, onWordHighlight);
+      }
     }
   }
 
@@ -454,14 +424,14 @@ export class EnhancedAudioService {
     this.totalWords = wordsWithIndices.length;
     this.currentWordIndex = 0;
     
-    // Much faster, more responsive timing calculation
+    // Optimized timing calculation for better sync
     const calculateWordInterval = (word: string, index: number): number => {
-      const baseInterval = 250; // Reduced from 350ms to 250ms for much faster highlighting
-      const speedAdjustment = 1 / speed; // Adjust for playback speed
+      const baseInterval = 280; // Optimized base timing for Jessica voice
+      const speedAdjustment = 1 / speed;
       const hasPunctuation = /[.!?]/.test(word);
-      const pauseAfterPunctuation = hasPunctuation ? 150 : 0; // Reduced pause
+      const pauseAfterPunctuation = hasPunctuation ? 200 : 0;
       const wordLength = word.length;
-      const lengthAdjustment = wordLength > 6 ? 25 : 0; // Minimal extra time for long words
+      const lengthAdjustment = wordLength > 6 ? 30 : 0;
       
       return (baseInterval * speedAdjustment) + pauseAfterPunctuation + lengthAdjustment;
     };
@@ -469,8 +439,8 @@ export class EnhancedAudioService {
     const highlightNext = () => {
       if (this.currentWordIndex < wordsWithIndices.length && this.isPlaying) {
         const currentItem = wordsWithIndices[this.currentWordIndex];
-        const wordOnlyIndex = this.currentWordIndex; // Use sequential word index for consistency
-        console.log(`🎯 Highlighting word ${this.currentWordIndex + 1}/${this.totalWords}: "${currentItem.word}" (word-only index: ${wordOnlyIndex})`);
+        const wordOnlyIndex = this.currentWordIndex;
+        console.log(`🎯 Highlighting word ${this.currentWordIndex + 1}/${this.totalWords}: "${currentItem.word}" (index: ${wordOnlyIndex})`);
         
         onWordHighlight(wordOnlyIndex);
         
@@ -481,13 +451,13 @@ export class EnhancedAudioService {
       } else {
         // Highlighting completed - clear all highlights
         console.log('🎯 Highlighting sequence completed, clearing highlights');
-        onWordHighlight(-1); // Signal to clear all highlights
+        onWordHighlight(-1);
         this.clearHighlighting();
       }
     };
 
-    // Start highlighting immediately with minimal delay
-    this.highlightTimeout = setTimeout(highlightNext, 50);
+    // Start highlighting with minimal delay
+    this.highlightTimeout = setTimeout(highlightNext, 100);
   }
 
   private clearHighlighting(): void {
@@ -550,11 +520,11 @@ export class EnhancedAudioService {
     this.playedPages.clear();
   }
 
-   updateConfig(newConfig: Partial<AudioSettings>): void {
-     this.config = { ...this.config, ...newConfig };
-   }
+  updateConfig(newConfig: Partial<AudioSettings>): void {
+    this.config = { ...this.config, ...newConfig };
+  }
 
-   private isMobile(): boolean {
-     return /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-   }
- }
+  private isMobile(): boolean {
+    return /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  }
+}
