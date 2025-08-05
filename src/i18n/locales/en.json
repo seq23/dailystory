@@ -222,7 +222,7 @@
         "placeholder": "Select your reading level",
         "levels": {
           "beginner": {
-            "title": "Pre-Reader (Ages 3-5)",
+            "title": "Pre-Reader",
             "description": "Just learning letters and sounds"
           },
           "easy": {
