@@ -4,6 +4,17 @@ import App from './App.tsx'
 import './index.css'
 import './i18n/config'
 
+// Import audit functions for console debugging
+import { finalVerificationAudit } from './utils/finalVerificationAudit';
+import { tripleCheckImplementation } from './utils/tripleCheckAudit';
+
+// Expose audit functions globally for console access
+if (typeof window !== 'undefined') {
+  (window as any).finalVerify = finalVerificationAudit;
+  (window as any).tripleCheck = tripleCheckImplementation;
+  console.log('🔍 Audit functions available: finalVerify(), tripleCheck()');
+}
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <App />

@@ -4,12 +4,12 @@
 // one, play, red, run, said, see, the, three, to, two, up, we, where, yellow, you
 
 export const LEVEL_0_STRICT_DOLCH_TEMPLATES = [
-  // Template 1 - FIXED
+  // Template 1 - TRULY FIXED (using only Dolch words)
   [
-    "I see a cat.",
-    "The cat is big.",
-    "The cat can run.",
-    "I see the cat.",
+    "I see you.",
+    "You are big.",
+    "You can run.",
+    "I see the one.",
     "We play here."
   ],
   
