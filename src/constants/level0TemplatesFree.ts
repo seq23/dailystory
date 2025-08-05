@@ -27,8 +27,8 @@ export const LEVEL_0_FREE_TEMPLATES = [
     "Look here!",
     "I see blue.",
     "Blue is big.",
-    "{userName} finds blue.",
-    "I like blue."
+    "{userName} can see blue.",
+    "I see blue here."
   ],
   
   // Template 4 - Play theme with "I" emphasis
@@ -37,15 +37,15 @@ export const LEVEL_0_FREE_TEMPLATES = [
     "We play here.",
     "I run and jump.",
     "{userName} can play.",
-    "I love to play."
+    "I can play here."
   ],
   
   // Template 5 - Colors with personal connection
   [
     "I see yellow.",
     "Yellow is big.",
-    "{userName} likes yellow.",
-    "I find yellow here.",
+    "{userName} can see yellow.",
+    "I can see yellow here.",
     "Yellow and red!"
   ],
   
@@ -55,7 +55,7 @@ export const LEVEL_0_FREE_TEMPLATES = [
     "Help me!",
     "I help you.",
     "{userName} can help.",
-    "I like to help."
+    "I can help here."
   ],
   
   // Template 7 - Movement with "I" emphasis
@@ -63,7 +63,7 @@ export const LEVEL_0_FREE_TEMPLATES = [
     "I go up.",
     "Look up!",
     "I see up.",
-    "{userName} goes up.",
+    "{userName} can go up.",
     "Up I go!"
   ],
   
@@ -78,10 +78,10 @@ export const LEVEL_0_FREE_TEMPLATES = [
   
   // Template 9 - Finding theme with "I" focus
   [
-    "I find red.",
+    "I can see red.",
     "Look here!",
-    "I can find.",
-    "{userName} finds it.",
+    "I can go.",
+    "{userName} can see it.",
     "I see red."
   ],
   
@@ -90,26 +90,26 @@ export const LEVEL_0_FREE_TEMPLATES = [
     "I make it.",
     "Make it!",
     "I can make.",
-    "{userName} makes big.",
+    "{userName} can make big.",
     "I make little."
   ],
 
   // Template 11 - Looking with variety
   [
-    "I look.",
+    "I can see.",
     "Look here!",
-    "I can look.",
-    "{userName} looks down.",
+    "I can go.",
+    "{userName} can see down.",
     "I see it."
   ],
 
   // Template 12 - Numbers with "I" emphasis
   [
     "I see three.",
-    "Count up!",
-    "I find two.",
+    "Go up!",
+    "I see two.",
     "{userName} has one.",
-    "I like three."
+    "I can see three."
   ],
 
   // Template 13 - Possession with personal touch
@@ -118,15 +118,15 @@ export const LEVEL_0_FREE_TEMPLATES = [
     "My blue!",
     "I see my.",
     "{userName} has little.",
-    "I find my."
+    "I see my red."
   ],
 
   // Template 14 - Negation with "I" focus
   [
     "I can not.",
     "Not here!",
-    "I look not.",
-    "{userName} cannot go.",
+    "I go not.",
+    "{userName} can not go.",
     "I said not."
   ],
 
@@ -135,7 +135,7 @@ export const LEVEL_0_FREE_TEMPLATES = [
     "I come here.",
     "Come play!",
     "I can come.",
-    "{userName} comes up.",
+    "{userName} can come up.",
     "I come to you."
   ],
 
@@ -144,43 +144,43 @@ export const LEVEL_0_FREE_TEMPLATES = [
     "I go down.",
     "Look down!",
     "I see down.",
-    "{userName} goes down.",
-    "Down I look."
+    "{userName} can go down.",
+    "Down I can see."
   ],
 
   // Template 17 - Purpose with personal connection
   [
-    "I do for you.",
+    "I can do for you.",
     "For me!",
-    "I make for.",
-    "{userName} plays for fun.",
-    "I look for you."
+    "I make for you.",
+    "{userName} can play for fun.",
+    "I can see for you."
   ],
 
   // Template 18 - Questions with "I" focus
   [
-    "I ask where.",
+    "I can see where.",
     "Where is?",
-    "I can ask.",
-    "{userName} knows where.",
-    "I find where."
+    "I can go.",
+    "{userName} can see where.",
+    "I see where."
   ],
 
   // Template 19 - Funny with personal touch
   [
     "I am funny.",
     "So funny!",
-    "I look funny.",
+    "I can be funny.",
     "{userName} is funny.",
-    "I play funny."
+    "I can play funny."
   ],
 
-  // Template 20 - Counting with emphasis
+  // Template 20 - Numbers with emphasis
   [
-    "I count one.",
-    "Two here!",
     "I see one.",
-    "{userName} finds two.",
+    "Two here!",
+    "I can see one.",
+    "{userName} can see two.",
     "I have three."
   ]
 ];
