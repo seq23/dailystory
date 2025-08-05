@@ -688,12 +688,13 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
       const allPages = continuationStory.segments.map(s => s.text);
       const newPages = allPages.slice(existingPageCount);
       
-      // Check if we'd exceed the 20-page story limit
-      if (story.length + newPages.length > 20) {
+      // Check session page limit (managed by SessionPageTracker and UniversalContentManager)
+      const currentPageInfo = SessionPageTracker.getPageInfo();
+      if (currentPageInfo.hasReachedLimit) {
         toast({
-          title: "Story Length Limit Reached",
-          description: `This story has reached the 20-page limit. Start a new story to continue reading!`,
-          variant: "destructive"
+          title: "Free Trial Complete! 🎉",
+          description: "You've read 90 pages! Upgrade to premium for unlimited reading adventures.",
+          duration: 5000,
         });
         setIsLoading(false);
         return;
@@ -1171,6 +1172,16 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                         🎁 {t("freeReadingSession.freeTrial")}
                       </span>
                     </p>
+                    
+                    {/* Session Page Progress Indicator */}
+                    <ProgressIndicator 
+                      pagesViewed={pageInfo.pagesViewed}
+                      maxPages={pageInfo.maxPages}
+                      isNearLimit={pageInfo.isNearLimit}
+                      hasReachedLimit={pageInfo.hasReachedLimit}
+                      isPremium={isPremium}
+                      className="mt-2"
+                    />
                     
                   </div>
                 </div>

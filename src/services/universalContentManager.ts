@@ -151,12 +151,14 @@ export class UniversalContentManager {
     try {
       let continuationPages: string[];
       
-      // Check if we're at the 90-page limit
-      if (currentStory.length >= 90) {
-        throw new PremiumPageLimitError(
-          'Story has reached maximum length of 90 pages',
-          currentStory.length,
-          90
+      // Check session page limit using SessionPageTracker
+      const pageInfo = SessionPageTracker.getPageInfo();
+      if (pageInfo.hasReachedLimit) {
+        throw new FreeTrialPageLimitError(
+          `Free trial limit of ${pageInfo.maxPages} pages reached`,
+          pageInfo.pagesViewed,
+          pageInfo.maxPages,
+          'Upgrade to premium for unlimited reading!'
         );
       }
       
