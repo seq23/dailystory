@@ -337,22 +337,25 @@ export class EnhancedAudioService {
 
   private getSpeedForDifficulty(difficulty: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert', userInfo?: UserInfo): number {
     const baseSpeed = {
-      beginner: 0.6,
-      easy: 0.85,      // Increased from 0.7 for more natural learning pace
-      medium: 1.0,     // Increased from 0.9 for natural speaking pace
-      hard: 1.0,
-      expert: 1.1
+      beginner: 0.5,   // Slower for absolute beginners/level 0
+      easy: 0.75,      // Slower for better comprehension
+      medium: 0.95,    // Slightly slower than normal
+      hard: 1.0,       // Normal speed
+      expert: 1.1      // Slightly faster
     }[difficulty];
     
-    // Less aggressive multipliers for more natural speech
-    const languageMultiplier = userInfo?.nativeLanguage === 'en' ? 0.9 : 0.8;
+    // Gentler language multipliers for more natural speech
+    const languageMultiplier = userInfo?.nativeLanguage === 'en' ? 0.95 : 0.85;
     
-    // Age-appropriate speed adjustment for children
-    const ageMultiplier = userInfo && userInfo.age <= 8 ? 0.85 : 1.0;
+    // More gentle age-appropriate speed adjustment
+    const ageMultiplier = userInfo && userInfo.age <= 8 ? 0.9 : 1.0;
     
-    const finalSpeed = Math.max(0.5, Math.min(1.2, baseSpeed * languageMultiplier * ageMultiplier));
+    // Text length speed adjustment (longer texts slightly slower)
+    const textLengthMultiplier = 1.0; // Will be applied in word highlighting logic
     
-    console.log(`🎵 Audio speed for ${difficulty} (${userInfo?.nativeLanguage || 'en'}): ${finalSpeed}`);
+    const finalSpeed = Math.max(0.4, Math.min(1.2, baseSpeed * languageMultiplier * ageMultiplier));
+    
+    console.log(`🎵 Audio speed for ${difficulty} (${userInfo?.nativeLanguage || 'en'}): ${finalSpeed} (base: ${baseSpeed})`);
     return finalSpeed;
   }
 
@@ -451,19 +454,24 @@ export class EnhancedAudioService {
     this.totalWords = wordsWithIndices.length;
     this.currentWordIndex = 0;
     
-      // Re-calibrated timing calculation for perfect sync
+      // Unified timing calculation matching AudioSyncService
       const calculateWordInterval = (word: string, index: number): number => {
-        const baseInterval = 160; // Reduced from 200ms to fix sync lag
+        const baseInterval = 150; // Unified base timing with AudioSyncService
         const speedAdjustment = 1 / speed;
         const hasPunctuation = /[.!?]/.test(word);
-        const pauseAfterPunctuation = hasPunctuation ? 80 : 0;
+        const pauseAfterPunctuation = hasPunctuation ? 70 : 0;
         const wordLength = word.length;
-        const lengthAdjustment = wordLength > 6 ? 12 : 0;
+        const lengthAdjustment = wordLength > 6 ? 10 : 0;
         
-        // Dynamic correction for longer texts (6+ words)
-        const textLengthCorrection = this.totalWords > 6 ? 0.95 : 1.0;
+        // Text length speed adjustment for better following
+        const textLengthCorrection = this.totalWords > 8 ? 0.9 : 
+                                   this.totalWords > 6 ? 0.95 : 1.0;
         
-        return ((baseInterval * speedAdjustment) + pauseAfterPunctuation + lengthAdjustment) * textLengthCorrection;
+        // Last word buffer to ensure completion
+        const isLastWord = index === this.totalWords - 1;
+        const lastWordBuffer = isLastWord ? 50 : 0;
+        
+        return ((baseInterval * speedAdjustment) + pauseAfterPunctuation + lengthAdjustment + lastWordBuffer) * textLengthCorrection;
       };
 
     const highlightNext = () => {
@@ -477,7 +485,19 @@ export class EnhancedAudioService {
         const nextInterval = calculateWordInterval(currentItem.word, this.currentWordIndex);
         this.currentWordIndex++;
         
-        this.highlightTimeout = setTimeout(highlightNext, nextInterval);
+        // Ensure last word gets proper highlighting time
+        if (this.currentWordIndex < wordsWithIndices.length) {
+          this.highlightTimeout = setTimeout(highlightNext, nextInterval);
+        } else {
+          // Last word - add extra buffer time to ensure it's visible
+          console.log(`📍 Last word highlighted, adding completion buffer`);
+          this.highlightTimeout = setTimeout(() => {
+            if (this.isPlaying) {
+              console.log(`🧹 Clearing highlights after completion`);
+              onWordHighlight(-1);
+            }
+          }, Math.max(nextInterval, 800)); // Minimum 800ms for last word
+        }
       } else {
         // Highlighting completed - clear all highlights
         console.log('🎯 Highlighting sequence completed, clearing highlights');

@@ -27,31 +27,31 @@ export class AudioSyncService {
   private syncTimeouts: NodeJS.Timeout[] = [];
   private onStateChange?: (isPlaying: boolean) => void; // Add state change callback
   
-  // Re-calibrated timing profiles for perfect sync
+  // Unified timing profiles for perfect sync and natural learning pace
   private readonly voiceProfiles: Record<string, VoiceTimingProfile> = {
     // Jessica - naturally paced, friendly voice
     'cgSgspJ2msm6clMCkdW9': {
-      baseWordInterval: 160, // Reduced from 200ms to fix sync lag
+      baseWordInterval: 150, // Fine-tuned for perfect sync
       speedMultiplier: 1.0,
-      pauseMultiplier: 1.5   // Balanced for natural rhythm
+      pauseMultiplier: 1.3   // Natural rhythm
     },
     // Sarah - clear, slower for children
     'EXAVITQu4vr4xnSDxMaL': {
-      baseWordInterval: 180, // Reduced from 220ms to fix sync lag
+      baseWordInterval: 170, // Slower for clarity
       speedMultiplier: 0.95,
-      pauseMultiplier: 1.8   // Appropriate pauses for children
+      pauseMultiplier: 1.6   // Longer pauses for children
     },
     // Charlotte - balanced pace
     'XB0fDUnXU5powFXDhCwa': {
-      baseWordInterval: 170, // Reduced from 210ms to fix sync lag
+      baseWordInterval: 155, // Balanced timing
       speedMultiplier: 1.0,
-      pauseMultiplier: 1.4
+      pauseMultiplier: 1.3
     },
     // Default profile for other voices
     'default': {
-      baseWordInterval: 160, // Reduced from 200ms to fix sync lag
+      baseWordInterval: 150, // Consistent base timing
       speedMultiplier: 1.0,
-      pauseMultiplier: 1.4
+      pauseMultiplier: 1.3
     }
   };
 
@@ -172,7 +172,7 @@ export class AudioSyncService {
   }
 
   /**
-   * Start real-time progress tracking for word highlighting
+   * Enhanced progress tracking with buffer time for last word and drift correction
    */
   private startProgressTracking(
     voice: string, 
@@ -184,26 +184,52 @@ export class AudioSyncService {
     const profile = this.voiceProfiles[voice] || this.voiceProfiles['default'];
     let nextWordTime = 0;
     let wordIndex = 0;
+    let lastSyncCheck = 0;
 
     const trackProgress = () => {
       if (!this.audio || !this.isPlaying) return;
 
       const currentTime = this.audio.currentTime * 1000; // Convert to milliseconds
       
+      // Real-time sync monitoring every 500ms
+      if (currentTime - lastSyncCheck > 500 && wordIndex > 0) {
+        const expectedIndex = this.calculateExpectedWordIndex(voice, speed, this.audio.currentTime);
+        if (Math.abs(expectedIndex - wordIndex) > 1) {
+          console.log(`🔄 Real-time sync correction: expected ${expectedIndex}, current ${wordIndex}`);
+          wordIndex = Math.max(0, Math.min(expectedIndex, this.words.length - 1));
+          nextWordTime = currentTime;
+        }
+        lastSyncCheck = currentTime;
+      }
+      
       // Check if it's time for the next word
       if (currentTime >= nextWordTime && wordIndex < this.words.length) {
         this.highlightWord(wordIndex, onWordHighlight);
         
-        // Calculate next word timing
+        // Calculate next word timing with text length adjustment
         const word = this.words[wordIndex];
         const wordDuration = this.calculateWordDuration(word, profile, speed);
-        nextWordTime += wordDuration;
+        
+        // Add buffer time for last word to ensure it gets highlighted
+        if (wordIndex === this.words.length - 1) {
+          const bufferTime = Math.min(500, wordDuration * 0.5);
+          console.log(`📍 Last word buffer: +${bufferTime}ms for "${word}"`);
+          nextWordTime += wordDuration + bufferTime;
+        } else {
+          nextWordTime += wordDuration;
+        }
+        
         wordIndex++;
+      }
+      
+      // Ensure last word stays highlighted until audio ends
+      if (wordIndex >= this.words.length && this.audio.currentTime < this.audio.duration - 0.1) {
+        this.highlightWord(this.words.length - 1, onWordHighlight);
       }
     };
 
-    // Track progress every 100ms for accurate highlighting without excessive drift
-    this.progressInterval = setInterval(trackProgress, 100);
+    // More frequent tracking for better precision
+    this.progressInterval = setInterval(trackProgress, 80);
   }
 
   /**
