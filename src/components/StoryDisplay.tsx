@@ -712,6 +712,17 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
       setShowAddPagesAlert(false);
     }
   }, [currentPage, story.length]);
+
+  // Auto-dismiss tooltip after 2.5 seconds
+  useEffect(() => {
+    if (showAddPagesAlert) {
+      const timer = setTimeout(() => {
+        setShowAddPagesAlert(false);
+      }, 2500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [showAddPagesAlert]);
   
   // Function to add more pages to the story - only when on last page
   const addMorePages = async () => {

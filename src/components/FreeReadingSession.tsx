@@ -471,6 +471,17 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     }
   }, [currentPage, story.length]);
 
+  // Auto-dismiss tooltip after 2.5 seconds
+  useEffect(() => {
+    if (showAddPagesAlert) {
+      const timer = setTimeout(() => {
+        setShowAddPagesAlert(false);
+      }, 2500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [showAddPagesAlert]);
+
   // Function to change difficulty easier/harder - SMOOTH, NO RELOAD
   const changeDifficulty = async (direction: 'easier' | 'harder') => {
     const currentIndex = getDifficultyIndex();
