@@ -2,7 +2,16 @@
 let globalAddVocabularyWord: (() => void) | null = null;
 
 export const setupGamificationGlobals = (addVocabularyWord: () => void, enablePersistence: boolean = true) => {
-  console.log('🎮 SETUP GAMIFICATION GLOBALS CALLED!', { enablePersistence });
+  console.log('🎮 SETUP GAMIFICATION GLOBALS CALLED!', { 
+    enablePersistence,
+    addVocabularyWordType: typeof addVocabularyWord,
+    addVocabularyWordExists: !!addVocabularyWord
+  });
+  
+  if (!addVocabularyWord) {
+    console.error('❌ setupGamificationGlobals: addVocabularyWord is null or undefined!');
+    return;
+  }
   
   // Store the function globally for InteractiveWord component
   globalAddVocabularyWord = addVocabularyWord;
@@ -11,7 +20,16 @@ export const setupGamificationGlobals = (addVocabularyWord: () => void, enablePe
   console.log('🎮 Gamification globals set up:', {
     addVocabularyWordAvailable: !!addVocabularyWord,
     enablePersistence,
-    globalFunctionSet: !!(window as any).addVocabularyWord
+    globalFunctionSet: !!(window as any).addVocabularyWord,
+    windowObjectKeys: Object.keys(window).filter(key => key.includes('add') || key.includes('Vocabulary')),
+    testCallResult: (() => {
+      try {
+        addVocabularyWord();
+        return 'SUCCESS - function called successfully';
+      } catch (error) {
+        return `ERROR - ${error}`;
+      }
+    })()
   });
   
   // Set up global vocabulary collection (if not already set)

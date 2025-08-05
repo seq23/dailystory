@@ -213,22 +213,32 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
 
   // Setup gamification globals on mount (no persistence for free trial)
   useEffect(() => {
-    console.log('🎮 FreeReadingSession: Component mounted, setting up gamification globals...');
+    console.log('🎮 FreeReadingSession: Component mounted, checking gamification setup...');
     console.log('🎮 FreeReadingSession: addVocabularyWord function available:', !!addVocabularyWord);
     console.log('🎮 FreeReadingSession: addVocabularyWord function type:', typeof addVocabularyWord);
+    console.log('🎮 FreeReadingSession: userInfo available:', !!userInfo);
+    console.log('🎮 FreeReadingSession: userInfo name:', userInfo?.name);
     
-    if (addVocabularyWord) {
+    if (addVocabularyWord && userInfo?.name) {
+      console.log('🎮 FreeReadingSession: Setting up gamification globals...');
       setupGamificationGlobals(addVocabularyWord, false);
       console.log('🎮 FreeReadingSession: Gamification globals setup complete');
+      
+      // Test the global function
+      console.log('🎮 FreeReadingSession: Testing global function availability...');
+      console.log('🎮 FreeReadingSession: window.addVocabularyWord available:', !!(window as any).addVocabularyWord);
     } else {
-      console.error('❌ FreeReadingSession: addVocabularyWord function is not available!');
+      console.error('❌ FreeReadingSession: Cannot setup gamification - missing requirements:', {
+        hasAddVocabularyWord: !!addVocabularyWord,
+        hasUserName: !!userInfo?.name
+      });
     }
     
     return () => {
       console.log('🎮 FreeReadingSession: Cleaning up gamification globals');
       cleanupGamificationGlobals();
     };
-  }, [addVocabularyWord]);
+  }, [addVocabularyWord, userInfo?.name]); // Add userInfo.name to deps
 
   // Generate story on component mount - show immediate fallback then upgrade
   useEffect(() => {

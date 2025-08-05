@@ -1835,11 +1835,17 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
       
       // Track vocabulary learning for all users
       console.log('🎯 Phonetic: Adding to vocabulary for word:', props.word);
-      if ((window as any).addVocabularyWord) {
+      console.log('🔤 Phonetic: Checking global addVocabularyWord availability...');
+      console.log('🔤 Phonetic: window.addVocabularyWord exists:', !!(window as any).addVocabularyWord);
+      console.log('🔤 Phonetic: typeof window.addVocabularyWord:', typeof (window as any).addVocabularyWord);
+      
+      if (typeof (window as any).addVocabularyWord === 'function') {
+        console.log('🔤 Phonetic: Calling global addVocabularyWord...');
         (window as any).addVocabularyWord();
         console.log('✅ Phonetic: Vocabulary word added via global function');
       } else {
-        console.warn('⚠️ Phonetic: Global addVocabularyWord not available');
+        console.warn('⚠️ Phonetic: Global addVocabularyWord not available or not a function');
+        console.log('🔤 Phonetic: Available window properties:', Object.keys(window).filter(key => key.includes('Vocabulary') || key.includes('gamification') || key.includes('add')));
       }
       
       toast({
