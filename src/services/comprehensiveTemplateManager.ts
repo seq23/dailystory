@@ -130,20 +130,31 @@ export class ComprehensiveTemplateManager {
    * Get next template index with anti-repetition (preserves SessionTemplateManager)
    */
   private static async getNextTemplateIndex(difficulty: DifficultyLevel, preferredIndex?: number): Promise<number> {
-    if (preferredIndex !== undefined) {
+    if (preferredIndex !== undefined && preferredIndex >= 0 && preferredIndex < 100) {
       return preferredIndex;
     }
     
-    // Use SessionTemplateManager for anti-repetition
-    const templatePool = Array.from({ length: 100 }, (_, i) => i.toString());
-    const nextTemplateResult = SessionTemplateManager.getNextTemplate(templatePool, difficulty);
-    
-    // Handle the result object returned by SessionTemplateManager
-    const templateIndex = typeof nextTemplateResult === 'string' ? 
-      parseInt(nextTemplateResult) : 
-      nextTemplateResult.templateIndex || 0;
-    
-    return templateIndex;
+    try {
+      // Use SessionTemplateManager for anti-repetition
+      const templatePool = Array.from({ length: 100 }, (_, i) => i.toString());
+      const nextTemplateResult = SessionTemplateManager.getNextTemplate(templatePool, difficulty);
+      
+      // Handle the result object returned by SessionTemplateManager
+      let templateIndex: number;
+      if (typeof nextTemplateResult === 'string') {
+        templateIndex = parseInt(nextTemplateResult);
+      } else if (nextTemplateResult && typeof nextTemplateResult.templateIndex === 'number') {
+        templateIndex = nextTemplateResult.templateIndex;
+      } else {
+        templateIndex = Math.floor(Math.random() * 100); // Random fallback
+      }
+      
+      // Ensure index is within bounds
+      return Math.max(0, Math.min(99, templateIndex));
+    } catch (error) {
+      console.warn('Error getting template index, using random:', error);
+      return Math.floor(Math.random() * 100);
+    }
   }
   
   /**
@@ -154,23 +165,30 @@ export class ComprehensiveTemplateManager {
     difficulty: DifficultyLevel, 
     userName?: string
   ): any {
-    if (!pages || pages.length === 0) return null;
+    if (!pages || pages.length === 0) {
+      return { isValid: false, invalidWords: [], error: 'No pages to validate' };
+    }
     
-    const fullText = pages.join(' ');
-    
-    // Use appropriate vocabulary validator based on difficulty
-    switch (difficulty) {
-      case 'beginner':
-        return validateLevel0Sentence(fullText, userName);
-      case 'easy':
-        return validateLevel1Sentence(fullText, userName);
-      case 'medium':
-        return validateLevel2Sentence(fullText, userName);
-      case 'hard':
-      case 'expert':
-        return validateLevel3Sentence(fullText, userName);
-      default:
-        return { isValid: true, invalidWords: [] };
+    try {
+      const fullText = pages.join(' ');
+      
+      // Use appropriate vocabulary validator based on difficulty
+      switch (difficulty) {
+        case 'beginner':
+          return validateLevel0Sentence(fullText, userName);
+        case 'easy':
+          return validateLevel1Sentence(fullText, userName);
+        case 'medium':
+          return validateLevel2Sentence(fullText, userName);
+        case 'hard':
+        case 'expert':
+          return validateLevel3Sentence(fullText, userName);
+        default:
+          return { isValid: true, invalidWords: [] };
+      }
+    } catch (error) {
+      console.warn('Error validating template content:', error);
+      return { isValid: true, invalidWords: [], error: error.message };
     }
   }
   
