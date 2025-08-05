@@ -568,18 +568,19 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
           if (pages.length < currentPageCount) {
             const additionalPages = currentPageCount - pages.length;
             
-            // Better contextual fallback for difficulty changes
-            const difficultyFallbacks = [
-              `${userInfo.name} continues the exciting adventure ahead.`,
-              `New mysteries await ${userInfo.name} to discover today.`,
-              `${userInfo.name} feels ready for whatever comes next.`,
-              `The magical journey brings wonderful surprises now.`,
-              `${userInfo.name} explores with curiosity and brave heart.`
-            ];
-            
-            for (let i = 0; i < additionalPages; i++) {
-              const fallbackIndex = i % difficultyFallbacks.length;
-              pages.push(difficultyFallbacks[fallbackIndex]);
+            // Generate additional pages through Level0StoryProcessor to ensure validation
+            try {
+              const continuationResult = await Level0StoryProcessor.continueStory(userInfo, additionalPages);
+              if (continuationResult.content.length > 0) {
+                pages.push(...continuationResult.content);
+              } else {
+                // If no content generated, just keep existing pages
+                pages = pages.slice(0, currentPageCount);
+              }
+            } catch (error) {
+              console.error('Failed to generate continuation pages:', error);
+              // Keep existing pages without adding invalid content
+              pages = pages.slice(0, currentPageCount);
             }
           } else {
             pages = pages.slice(0, currentPageCount);

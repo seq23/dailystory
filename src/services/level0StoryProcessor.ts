@@ -50,7 +50,7 @@ export class Level0StoryProcessor {
       },
       async () => {
         // Emergency fallback
-        const emergencyContent = ErrorHandlingManager.getEmergencyContent(userInfo);
+        const emergencyContent = await ErrorHandlingManager.getEmergencyContent(userInfo);
         return {
           content: emergencyContent,
           templateIndex: -1,
@@ -65,7 +65,7 @@ export class Level0StoryProcessor {
       } else {
         console.warn('⚠️ Level0StoryProcessor: Using fallback content due to error:', result.error);
         return result.fallback || {
-          content: ErrorHandlingManager.getEmergencyContent(userInfo),
+          content: ['The story continues.'],
           templateIndex: -1,
           isValid: true,
           validationErrors: [],

@@ -224,14 +224,25 @@ export class Level0Simplifier {
   }
 
   private static createUltraSimpleFallback(userName: string): string {
+    // Use only validated Dolch Pre-Primer words
     const templates = [
       `${userName} sees a cat.`,
-      `${userName} plays with dog.`,
-      `${userName} likes the ball.`,
-      `${userName} goes to tree.`,
-      `${userName} is very happy.`
+      `${userName} plays with me.`,
+      `${userName} likes the big ball.`,
+      `${userName} goes to the tree.`,
+      `${userName} is happy.`
     ];
-    return templates[Math.floor(Math.random() * templates.length)];
+    
+    // Validate each template before using
+    for (const template of templates) {
+      const validation = validateLevel0SentenceByUserType(template, 'free', userName);
+      if (validation.isValid) {
+        return template;
+      }
+    }
+    
+    // Final emergency fallback with only the most basic words
+    return `${userName} is here.`;
   }
 
   /**

@@ -109,13 +109,22 @@ export class ErrorHandlingManager {
   }
 
   /**
-   * Get emergency content for critical failures
+   * Get emergency content for critical failures - routes through Level0StoryProcessor for validation
    */
-  static getEmergencyContent(userInfo?: UserInfo): string[] {
-    const userName = userInfo?.name || 'I';
-    const language = MultilingualTemplateManager.getTemplateLanguage(userInfo);
-    
-    return MultilingualTemplateManager.getLanguageFallback(language, userInfo);
+  static async getEmergencyContent(userInfo?: UserInfo): Promise<string[]> {
+    try {
+      // Use Level0StoryProcessor to generate validated content
+      const { Level0StoryProcessor } = await import('./level0StoryProcessor');
+      const result = await Level0StoryProcessor.generateStory(userInfo);
+      return result.content;
+    } catch (error) {
+      console.error('Emergency content generation failed:', error);
+      
+      // Final fallback uses MultilingualTemplateManager which has validation
+      const userName = userInfo?.name || 'I';
+      const language = MultilingualTemplateManager.getTemplateLanguage(userInfo);
+      return MultilingualTemplateManager.getLanguageFallback(language, userInfo);
+    }
   }
 
   /**
