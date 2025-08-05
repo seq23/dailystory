@@ -95,10 +95,10 @@ export class Level0StoryProcessor {
       processedPages = pages.map((page, index) => {
         let processedPage = page;
         
-        // Only basic name substitution for Level 0
+        // Smart name substitution for Level 0 - only replace {userName} markers
         if (userInfo?.name) {
-          processedPage = processedPage.replace(/\bI\b/g, userInfo.name);
-          processedPage = processedPage.replace(/\bme\b/g, userInfo.name);
+          processedPage = processedPage.replace(/\{userName\}/g, userInfo.name);
+          // Keep "I" and "me" unchanged for personal connection
         }
         
         // Quick validation check (base templates should always pass)
@@ -121,8 +121,8 @@ export class Level0StoryProcessor {
         let processedPage = page;
         
         if (userInfo?.name) {
-          processedPage = processedPage.replace(/\bI\b/g, userInfo.name);
-          processedPage = processedPage.replace(/\bme\b/g, userInfo.name);
+          processedPage = processedPage.replace(/\{userName\}/g, userInfo.name);
+          // Keep "I" and "me" unchanged for personal connection
         }
         
         return processedPage;

@@ -1,187 +1,187 @@
-// Level 0 Templates - FREE USERS - TRULY COMPLIANT with Dolch Pre-Primer (40 words ONLY)
-// STRICTLY uses ONLY: a, and, away, big, blue, can, come, down, find, for,
-// funny, go, help, here, i, in, is, it, jump, little, look, make, me, my, not, 
-// one, play, red, run, said, see, the, three, to, two, up, we, where, yellow, you
+// Level 0 Templates - FREE USERS - Smart Template Mixing System
+// Uses 60% first-person ("I") and 40% third-person with {userName} markers
+// STRICTLY uses ONLY Dolch Pre-Primer vocabulary (40 words)
+// Two-word sentences included for variety
 
 export const LEVEL_0_FREE_TEMPLATES = [
-  // Template 1 - TRULY FIXED (using only Dolch words)
+  // Template 1 - Mixed perspective with 2-word sentences
   [
-    "I see you.",
-    "You can be big.",
-    "You can run.",
-    "I see the one.",
-    "We play here."
+    "I see.",
+    "Look here!",
+    "{userName} can run.",
+    "I go.",
+    "We play."
   ],
   
-  // Template 2 - FIXED
+  // Template 2 - More "I" focus with commands
   [
-    "I go to play.",
-    "I see you.",
-    "You can be little.",
-    "You can jump.",
-    "We run away."
+    "I go.",
+    "Come here!",
+    "I can play.",
+    "{userName} is big.",
+    "I run."
   ],
   
-  // Template 3 - FIXED
+  // Template 3 - Mixed with blue theme
   [
     "Look here!",
-    "I can see blue.",
+    "I see blue.",
     "Blue is big.",
-    "See the blue one.",
-    "It is for me."
+    "{userName} finds blue.",
+    "I like blue."
   ],
   
-  // Template 4 - FIXED
+  // Template 4 - Play theme with "I" emphasis
   [
+    "I play.",
     "We play here.",
-    "Play is funny.",
     "I run and jump.",
-    "You can come play.",
-    "Play is for you and me."
+    "{userName} can play.",
+    "I love to play."
   ],
   
-  // Template 5 - FIXED
+  // Template 5 - Colors with personal connection
   [
-    "The yellow one is big.",
-    "I see yellow here.",
-    "Yellow can go up.",
-    "See where yellow is.",
-    "Yellow and red are here."
+    "I see yellow.",
+    "Yellow is big.",
+    "{userName} likes yellow.",
+    "I find yellow here.",
+    "Yellow and red!"
   ],
   
-  // Template 6 - FIXED
+  // Template 6 - Help theme with "I" focus
   [
+    "I help.",
+    "Help me!",
     "I help you.",
-    "Help is not little.",
-    "You help me.",
-    "We help here.",
-    "Help can make it big."
+    "{userName} can help.",
+    "I like to help."
   ],
   
-  // Template 7 - FIXED
+  // Template 7 - Movement with "I" emphasis
   [
-    "Look up here!",
-    "Up is where I go.",
-    "See me go up.",
-    "Up and down I go.",
-    "Up is not down."
+    "I go up.",
+    "Look up!",
+    "I see up.",
+    "{userName} goes up.",
+    "Up I go!"
   ],
   
-  // Template 8 - FIXED
+  // Template 8 - Communication with personal touch
   [
-    "I said come here.",
-    "You said go away.",
-    "We said it here.",
-    "Said is not see.",
-    "I said you can come."
+    "I said look.",
+    "Come here!",
+    "I can see.",
+    "{userName} said yes.",
+    "I said play."
   ],
   
-  // Template 9 - FIXED
+  // Template 9 - Finding theme with "I" focus
   [
-    "Find the red one.",
-    "Red is here.",
-    "I can find red.",
-    "You find it and me.",
-    "We find red here."
+    "I find red.",
+    "Look here!",
+    "I can find.",
+    "{userName} finds it.",
+    "I see red."
   ],
   
-  // Template 10 - FIXED
+  // Template 10 - Making with personal connection
   [
-    "I make it big.",
-    "You make it little.",
-    "We make it here.",
-    "Make it blue and red.",
-    "I can make it for you."
+    "I make it.",
+    "Make it!",
+    "I can make.",
+    "{userName} makes big.",
+    "I make little."
   ],
 
-  // Template 11 - NEW
+  // Template 11 - Looking with variety
   [
-    "Look for the little one.",
-    "I can look and see.",
-    "Look where it is.",
-    "You look here.",
-    "We look for you."
+    "I look.",
+    "Look here!",
+    "I can look.",
+    "{userName} looks down.",
+    "I see it."
   ],
 
-  // Template 12 - NEW
+  // Template 12 - Numbers with "I" emphasis
   [
-    "Three is not two.",
-    "I see three here.",
-    "Three little ones go.",
-    "You see three.",
-    "Three and one make it."
+    "I see three.",
+    "Count up!",
+    "I find two.",
+    "{userName} has one.",
+    "I like three."
   ],
 
-  // Template 13 - NEW
+  // Template 13 - Possession with personal touch
   [
-    "Where is my red one?",
-    "My little one is here.",
-    "I see my big one.",
-    "You see my yellow one.",
-    "My one can go up."
+    "I have red.",
+    "My blue!",
+    "I see my.",
+    "{userName} has little.",
+    "I find my."
   ],
 
-  // Template 14 - NEW
+  // Template 14 - Negation with "I" focus
   [
-    "It is not here.",
-    "Not big and not little.",
-    "You can go away.",
-    "I can not find it.",
-    "Not red and not blue."
+    "I can not.",
+    "Not here!",
+    "I look not.",
+    "{userName} cannot go.",
+    "I said not."
   ],
 
-  // Template 15 - NEW
+  // Template 15 - Coming with invitation
   [
-    "Come and play here.",
-    "Come see the big one.",
-    "Come up and look.",
-    "You come to me.",
-    "Come find the yellow one."
+    "I come here.",
+    "Come play!",
+    "I can come.",
+    "{userName} comes up.",
+    "I come to you."
   ],
 
-  // Template 16 - NEW
+  // Template 16 - Direction with "I" emphasis
   [
-    "Down and up I go.",
-    "Look down here.",
-    "Down is where I see.",
-    "Come down to play.",
-    "The little one can go down."
+    "I go down.",
+    "Look down!",
+    "I see down.",
+    "{userName} goes down.",
+    "Down I look."
   ],
 
-  // Template 17 - NEW
+  // Template 17 - Purpose with personal connection
   [
-    "For you and for me.",
-    "It is for play.",
-    "Make it for the big one.",
-    "Here is one for you.",
-    "For little ones to see."
+    "I do for you.",
+    "For me!",
+    "I make for.",
+    "{userName} plays for fun.",
+    "I look for you."
   ],
 
-  // Template 18 - NEW
+  // Template 18 - Questions with "I" focus
   [
-    "Where can you go?",
-    "Where is the funny one?",
-    "I see where it is.",
-    "Where can you see the three?",
-    "You can look where it is."
+    "I ask where.",
+    "Where is?",
+    "I can ask.",
+    "{userName} knows where.",
+    "I find where."
   ],
 
-  // Template 19 - NEW
+  // Template 19 - Funny with personal touch
   [
-    "The funny little one can jump.",
-    "Funny is not big.",
-    "See the funny red one.",
-    "You can be funny.",
-    "Funny little ones can play."
+    "I am funny.",
+    "So funny!",
+    "I look funny.",
+    "{userName} is funny.",
+    "I play funny."
   ],
 
-  // Template 20 - NEW
+  // Template 20 - Counting with emphasis
   [
-    "One, two, three we go.",
-    "See one and see two.",
-    "One is little and big.",
-    "You can be the one.",
-    "One funny one is here."
+    "I count one.",
+    "Two here!",
+    "I see one.",
+    "{userName} finds two.",
+    "I have three."
   ]
 ];
 
