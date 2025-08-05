@@ -268,20 +268,20 @@ export class EnhancedTemplateManager {
       
       case 3:
         return [
-          "{userName} thought about what this experience meant and how it would help later.",
-          "{userName} understood that working hard and not giving up helps you reach important goals.",
-          "{userName} was grateful for everyone who worked together to make this happen.",
-          "{userName} wondered how this experience would help with future projects.",
-          "{userName} thanked the teachers and helpers who guided them through the process."
+          "{userName} walked through the forest and found a small bird.",
+          "{userName} helped the bird find its way back to its nest.",
+          "{userName} learned that being kind to animals is important.",
+          "{userName} felt good about helping someone in need.",
+          "{userName} promised to always help others when possible."
         ];
       
       case 4:
         return [
-          "{userName} brought together all the different ideas learned from this challenging experience.",
-          "{userName} considered the long-term effects of their hard work and contributions to the project.",
-          "{userName} explained the connections between what they studied in books and how it worked in real life.",
-          "{userName} showed mature thinking through careful analysis and thoughtful evaluation of the results.",
-          "{userName} proved themselves as a skilled student with potential for making important contributions in the future."
+          "{userName} discovered an interesting book about nature in the library.",
+          "{userName} spent hours reading about different animals and plants.",
+          "{userName} shared the knowledge with classmates during science class.",
+          "{userName} decided to start a nature club at school.",
+          "{userName} organized trips to explore the local park and forest."
         ];
       
       default:
@@ -296,9 +296,9 @@ export class EnhancedTemplateManager {
     switch (gradeLevel) {
       case 0: return `${userName} is happy.`;
       case 1: return `${userName} feels good about today.`;
-      case 2: return `${userName} accomplished something important.`;
-      case 3: return `${userName} achieved meaningful success.`;
-      case 4: return `${userName} demonstrated exceptional capability.`;
+      case 2: return `${userName} found something new and fun.`;
+      case 3: return `${userName} learned something important today.`;
+      case 4: return `${userName} discovered an interesting book in the library.`;
       default: return `${userName} is happy.`;
     }
   }

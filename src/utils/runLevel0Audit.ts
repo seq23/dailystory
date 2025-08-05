@@ -37,6 +37,9 @@ export async function runLevel0ComplianceCheck() {
 async function testPremiumStoryGeneration() {
   const { EnhancedTemplateManager } = await import('../services/enhancedTemplateManager');
   
+  // Correct difficulty mapping
+  const difficultyMap = ['beginner', 'easy', 'medium', 'hard', 'expert'];
+  
   for (let level = 0; level <= 4; level++) {
     console.log(`Testing premium stories for Level ${level}...`);
     
@@ -54,7 +57,7 @@ async function testPremiumStoryGeneration() {
             favoriteFood: 'pizza',
             specialRequest: ''
           },
-          difficulty: `level${level}` as any,
+          difficulty: difficultyMap[level] as any,
           isPremium: true,
           enableExtensions: true
         });
