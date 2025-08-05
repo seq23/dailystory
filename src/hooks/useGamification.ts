@@ -102,42 +102,24 @@ export const useGamification = (options: UseGamificationOptions = {}) => {
         userType
       );
 
-      // Handle level up
+      // Handle level up - use modal system only
       if (updatedStats.currentLevel > prevStats.currentLevel) {
         onLevelUp?.(updatedStats.currentLevel);
-        toast({
-          title: `🎉 ${t('gamification.achievements.levelUp')}`,
-          description: t('gamification.achievements.levelUpDescription', { level: updatedStats.currentLevel }),
-          duration: 5000,
-        });
+        // Removed level up toast - use modal system instead
       }
 
-      // Handle new achievements - only show toast for major achievements
+      // Handle new achievements - use modal system only
       if (unlockedAchievements.length > 0) {
         setNewAchievements(prev => [...prev, ...unlockedAchievements]);
         unlockedAchievements.forEach(achievement => {
           onAchievementUnlocked?.(achievement);
-          // Only show toast for milestone achievements, not routine progress
-          if (achievement.category === 'special' || achievement.points >= 100) {
-            toast({
-              title: `🏆 ${t('gamification.achievements.unlocked')}`,
-              description: `${achievement.title} - ${achievement.description}`,
-              duration: 4000,
-            });
-          }
+          // Removed achievement toast - use modal system only
         });
       }
 
-      // Handle streak milestones - only weekly streaks get toasts
+      // Handle streak milestones - use modal system only
       if (updatedStreak.currentStreak > prevStats.streak.currentStreak) {
-        const streak = updatedStreak.currentStreak;
-        if (streak % 7 === 0 && streak > 0) {
-          toast({
-            title: `🔥 ${t('gamification.achievements.streak', { streak })}`,
-            description: t('gamification.achievements.streakDescription', { streak }),
-            duration: 4000,
-          });
-        }
+        // Removed streak toast - use modal system only
       }
 
       return updatedStats;
