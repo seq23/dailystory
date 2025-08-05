@@ -1162,7 +1162,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                     </h1>
                     <p className="text-sm text-gray-600 flex items-center gap-2">
                       <span>
-                        {t("freeReadingSession.navigation.pageInfo", "Page {current} / {total}").replace("{current}", (currentPage + 1).toString()).replace("{total}", story.length.toString())}
+                         {t("freeReadingSession.navigation.pageInfo", "Page {current} / {total}").replace("{current}", (currentPage + 1).toString()).replace("{total}", pageInfo.maxPages.toString())}
                       </span>
                       <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs font-medium">
                         🎁 {t("freeReadingSession.freeTrial")}
@@ -1383,7 +1383,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                         <div className="flex flex-col items-center gap-1 px-2">
                           <div className="flex items-center gap-2">
                             <span className="text-xs sm:text-sm font-medium text-gray-600 whitespace-nowrap">
-                              {t("freeReadingSession.navigation.pageInfo", "Page {current} / {total}").replace("{current}", (currentPage + 1).toString()).replace("{total}", story.length.toString())}
+                              {t("freeReadingSession.navigation.pageInfo", "Page {current} / {total}").replace("{current}", (currentPage + 1).toString()).replace("{total}", pageInfo.maxPages.toString())}
                             </span>
                           </div>
                           <div className="relative group">
