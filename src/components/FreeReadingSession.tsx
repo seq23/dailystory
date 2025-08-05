@@ -1321,7 +1321,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                             
                              {/* Alert Tooltip with X button */}
                              {showAddPagesAlert && (
-                               <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-amber-600 text-white px-2 py-1 rounded text-xs whitespace-nowrap z-50 animate-pulse">
+                               <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-amber-600 text-white px-2 py-1 rounded text-xs whitespace-nowrap z-50 animate-pulse-finite">
                                  <div className="flex items-center gap-2">
                                    <span>{t("storyDisplay.addPagesAlert")}</span>
                                   <button

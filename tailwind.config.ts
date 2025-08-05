@@ -245,6 +245,15 @@ export default {
 						transform: 'translate(-110px, -20px) rotate(-180deg)',
 						opacity: '0'
 					}
+				},
+				'pulse-finite': {
+					'0%, 100%': { opacity: '1' },
+					'30%': { opacity: '0.5' },
+					'45%': { opacity: '1' },
+					'60%': { opacity: '0.5' },
+					'75%': { opacity: '1' },
+					'85%': { opacity: '0.7' },
+					'95%': { opacity: '1' }
 				}
 			},
 			animation: {
@@ -258,6 +267,7 @@ export default {
 				'celebration': 'celebration 1.5s ease-out forwards',
 				'scale-in': 'scale-in 0.3s ease-out',
 				'edgeBounce': 'edgeBounce 0.6s ease-out',
+				'pulse-finite': 'pulse-finite 2.5s ease-in-out',
 				'sparkleTrail1': 'sparkleTrail1 1.5s ease-out',
 				'sparkleTrail2': 'sparkleTrail2 1.5s ease-out 0.2s',
 				'sparkleTrail3': 'sparkleTrail3 1.5s ease-out 0.4s',
