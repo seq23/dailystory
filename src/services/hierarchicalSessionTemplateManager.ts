@@ -153,7 +153,12 @@ export class HierarchicalSessionTemplateManager {
     if (state.currentPhase === 'base' && state.baseShuffleIndex < state.currentBaseShuffle.length) {
       const templateKey = state.currentBaseShuffle[state.baseShuffleIndex];
       const templateIndex = parseInt(templateKey.split('_')[1]);
+      
+      console.log(`🔍 HierarchicalSessionTemplateManager: Loading base template - gradeLevel: ${gradeLevel}, templateIndex: ${templateIndex}, isPremium: ${isPremium}`);
+      
       const template = getTemplateByGradeLevel(gradeLevel, templateIndex, false);
+      
+      console.log(`🔍 HierarchicalSessionTemplateManager: Loaded template:`, template);
       
       const isRepeating = state.baseTemplatesUsed.has(templateKey);
       state.baseTemplatesUsed.add(templateKey);

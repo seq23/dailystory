@@ -25,6 +25,11 @@ export class Level0StoryProcessor {
    */
   static async generateStory(userInfo?: UserInfo): Promise<Level0StoryResult> {
     console.log('🎯 Level0StoryProcessor: Generating new Level 0 story with hierarchical system...');
+    console.log('🔍 Level0StoryProcessor: Received userInfo:', {
+      hasUserInfo: !!userInfo,
+      userName: userInfo?.name || 'MISSING',
+      userInfoKeys: userInfo ? Object.keys(userInfo) : 'NO_USERINFO'
+    });
     
     return await ErrorHandlingManager.executeWithRecovery(
       async () => {
@@ -36,6 +41,10 @@ export class Level0StoryProcessor {
         const templateLanguage = MultilingualTemplateManager.getTemplateLanguage(userInfo);
         
         console.log(`👤 Level0StoryProcessor: User type: ${userType} (vocabulary: ${userType === 'premium' ? '75+ words' : '40 words'}), language: ${templateLanguage}`);
+        console.log(`🔍 Level0StoryProcessor: About to call processStorySelection with userInfo:`, {
+          hasUserInfo: !!userInfo,
+          userName: userInfo?.name || 'MISSING'
+        });
         
         // Get next template using hierarchical system
         const selection = HierarchicalSessionTemplateManager.getNextTemplate('beginner', isPremium);
@@ -49,10 +58,19 @@ export class Level0StoryProcessor {
         language: userInfo?.storyLanguagePreference || userInfo?.nativeLanguage
       },
       async () => {
-        // Emergency fallback
+        // Emergency fallback with proper name substitution
         const emergencyContent = await ErrorHandlingManager.getEmergencyContent(userInfo);
+        const processedEmergencyContent = emergencyContent.map(page => {
+          if (userInfo?.name) {
+            return page.replace(/\{userName\}/g, userInfo.name);
+          }
+          return page;
+        });
+        
+        console.log(`🚨 Level0StoryProcessor: Using emergency fallback content with name substitution:`, processedEmergencyContent);
+        
         return {
-          content: emergencyContent,
+          content: processedEmergencyContent,
           templateIndex: -1,
           isValid: true,
           validationErrors: [],
@@ -81,6 +99,13 @@ export class Level0StoryProcessor {
     userType: UserType = 'free',
     isPremium: boolean = false
   ): Promise<Level0StoryResult> {
+    console.log(`🔍 Level0StoryProcessor: Processing selection with userInfo:`, {
+      hasUserInfo: !!userInfo,
+      userName: userInfo?.name || 'MISSING',
+      phase: selection.phase,
+      templateIndex: selection.templateIndex
+    });
+    
     let processedPages: string[] = [];
     let templateIndex = selection.templateIndex;
     let isValid = true;
@@ -91,14 +116,23 @@ export class Level0StoryProcessor {
       
       // Minimal processing for base templates - they're already pre-validated
       const pages = Array.isArray(selection.template) ? selection.template : [selection.template];
+      console.log(`🔍 Level0StoryProcessor: Raw template pages:`, pages);
       
       processedPages = pages.map((page, index) => {
         let processedPage = page;
+        console.log(`🔍 Level0StoryProcessor: Processing page ${index + 1}: "${page}"`);
         
         // Smart name substitution for Level 0 - only replace {userName} markers
         if (userInfo?.name) {
+          const beforeReplace = processedPage;
           processedPage = processedPage.replace(/\{userName\}/g, userInfo.name);
-          // Keep "I" and "me" unchanged for personal connection
+          if (beforeReplace !== processedPage) {
+            console.log(`✅ Level0StoryProcessor: Replaced {userName} with "${userInfo.name}": "${beforeReplace}" → "${processedPage}"`);
+          } else {
+            console.log(`ℹ️ Level0StoryProcessor: No {userName} found in: "${page}"`);
+          }
+        } else {
+          console.warn(`⚠️ Level0StoryProcessor: No userInfo.name available for replacement. UserInfo:`, userInfo);
         }
         
         // Quick validation check (base templates should always pass)
@@ -108,6 +142,7 @@ export class Level0StoryProcessor {
           return page; // Fallback to original
         }
         
+        console.log(`✅ Level0StoryProcessor: Final processed page ${index + 1}: "${processedPage}"`);
         return processedPage;
       });
       
@@ -116,15 +151,25 @@ export class Level0StoryProcessor {
       
       // Extension templates get same minimal processing as base templates
       const pages = Array.isArray(selection.template) ? selection.template : [selection.template];
+      console.log(`🔍 Level0StoryProcessor: Raw extension template pages:`, pages);
       
       processedPages = pages.map((page, index) => {
         let processedPage = page;
+        console.log(`🔍 Level0StoryProcessor: Processing extension page ${index + 1}: "${page}"`);
         
         if (userInfo?.name) {
+          const beforeReplace = processedPage;
           processedPage = processedPage.replace(/\{userName\}/g, userInfo.name);
-          // Keep "I" and "me" unchanged for personal connection
+          if (beforeReplace !== processedPage) {
+            console.log(`✅ Level0StoryProcessor: Replaced {userName} with "${userInfo.name}": "${beforeReplace}" → "${processedPage}"`);
+          } else {
+            console.log(`ℹ️ Level0StoryProcessor: No {userName} found in: "${page}"`);
+          }
+        } else {
+          console.warn(`⚠️ Level0StoryProcessor: No userInfo.name available for extension replacement. UserInfo:`, userInfo);
         }
         
+        console.log(`✅ Level0StoryProcessor: Final processed extension page ${index + 1}: "${processedPage}"`);
         return processedPage;
       });
       
@@ -257,14 +302,17 @@ export class Level0StoryProcessor {
             }
           } else {
             // Process the template selection to get a single page
+            console.log(`🔍 Level0StoryProcessor (Continuation): Processing selection for page ${i + 1}:`, selection);
             const pageResult = await this.processStorySelection(selection, userInfo, userType, isPremium);
             
             // Add the first page from this template to continuation
             if (pageResult.content.length > 0) {
+              console.log(`✅ Level0StoryProcessor (Continuation): Adding page ${i + 1}: "${pageResult.content[0]}"`);
               continuationPages.push(pageResult.content[0]);
             } else {
               // Fallback if template processing fails
               const emergencyPage = userInfo?.name ? `${userInfo.name} continues the adventure.` : 'The story continues.';
+              console.log(`🚨 Level0StoryProcessor (Continuation): Using emergency page ${i + 1}: "${emergencyPage}"`);
               continuationPages.push(emergencyPage);
             }
           }

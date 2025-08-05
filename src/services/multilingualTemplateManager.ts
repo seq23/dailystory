@@ -43,6 +43,8 @@ export class MultilingualTemplateManager {
   static getLanguageFallback(language: SupportedLanguage, userInfo?: UserInfo): string[] {
     const userName = userInfo?.name || 'Alex';
     
+    console.log(`🔍 MultilingualTemplateManager: Generating fallback for ${language} with userName: "${userName}"`);
+    
     // Generate dynamic, grammatically correct fallback content using validated vocabulary
     const fallbackTemplates = [
       `${userName} goes to the park.`,
@@ -71,6 +73,8 @@ export class MultilingualTemplateManager {
     // Rotate between different template sets to avoid repetition
     const templateSets = [fallbackTemplates, alternativeTemplates, storyTemplates];
     const selectedSet = templateSets[Math.floor(Math.random() * templateSets.length)];
+    
+    console.log(`✅ MultilingualTemplateManager: Selected fallback template set:`, selectedSet);
     
     return selectedSet;
   }
