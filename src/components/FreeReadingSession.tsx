@@ -112,6 +112,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   const [tutorialActive, setTutorialActive] = useState(true);
   const [currentTutorialStep, setCurrentTutorialStep] = useState(0);
   const [showAddPagesAlert, setShowAddPagesAlert] = useState(false);
+  const [showReminderPulse, setShowReminderPulse] = useState(false);
   const [hasShownAddPagesAlert, setHasShownAddPagesAlert] = useState(false);
 
   // Character consistency - store original character details  
@@ -471,16 +472,31 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     }
   }, [currentPage, story.length]);
 
-  // Auto-dismiss tooltip after 2.5 seconds
+  // Auto-dismiss tooltip after 2.5 seconds and start periodic reminders
   useEffect(() => {
     if (showAddPagesAlert) {
-      const timer = setTimeout(() => {
+      const dismissTimer = setTimeout(() => {
         setShowAddPagesAlert(false);
       }, 2500);
 
-      return () => clearTimeout(timer);
+      // Start periodic reminder pulses after tooltip dismisses
+      const reminderTimer = setTimeout(() => {
+        const reminderInterval = setInterval(() => {
+          if (currentPage === story.length - 1) {
+            setShowReminderPulse(true);
+            setTimeout(() => setShowReminderPulse(false), 1000);
+          }
+        }, Math.random() * 2000 + 8000); // 8-10 seconds
+
+        return () => clearInterval(reminderInterval);
+      }, 2500);
+
+      return () => {
+        clearTimeout(dismissTimer);
+        clearTimeout(reminderTimer);
+      };
     }
-  }, [showAddPagesAlert]);
+  }, [showAddPagesAlert, currentPage, story.length]);
 
   // Function to change difficulty easier/harder - SMOOTH, NO RELOAD
   const changeDifficulty = async (direction: 'easier' | 'harder') => {
@@ -1322,6 +1338,8 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                               className={`p-1.5 sm:p-2 transition-all duration-300 ${
                                 showAddPagesAlert && currentPage === story.length - 1
                                   ? 'animate-bounce bg-amber-100 border-amber-400 text-amber-700 shadow-lg ring-2 ring-amber-300' 
+                                  : showReminderPulse && currentPage === story.length - 1
+                                  ? 'animate-glow-pulse'
                                   : currentPage === story.length - 1
                                     ? 'bg-blue-50 hover:bg-blue-100 border-blue-200'
                                     : 'bg-gray-100 border-gray-300 cursor-not-allowed opacity-50'

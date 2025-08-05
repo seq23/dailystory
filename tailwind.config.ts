@@ -254,6 +254,11 @@ export default {
 					'75%': { opacity: '1' },
 					'85%': { opacity: '0.7' },
 					'95%': { opacity: '1' }
+				},
+				'glow-pulse': {
+					'0%': { transform: 'scale(1)', opacity: '1', boxShadow: '0 0 0 0 hsl(var(--primary) / 0.4)' },
+					'50%': { transform: 'scale(1.05)', opacity: '0.9', boxShadow: '0 0 0 8px hsl(var(--primary) / 0.1)' },
+					'100%': { transform: 'scale(1)', opacity: '1', boxShadow: '0 0 0 0 hsl(var(--primary) / 0)' }
 				}
 			},
 			animation: {
@@ -271,7 +276,8 @@ export default {
 				'sparkleTrail1': 'sparkleTrail1 1.5s ease-out',
 				'sparkleTrail2': 'sparkleTrail2 1.5s ease-out 0.2s',
 				'sparkleTrail3': 'sparkleTrail3 1.5s ease-out 0.4s',
-				'sparkleTrail4': 'sparkleTrail4 1.5s ease-out 0.6s'
+				'sparkleTrail4': 'sparkleTrail4 1.5s ease-out 0.6s',
+				'glow-pulse': 'glow-pulse 1s ease-in-out'
 			}
 		}
 	},

@@ -118,6 +118,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
   const [tutorialActive, setTutorialActive] = useState(true);
   const [currentTutorialStep, setCurrentTutorialStep] = useState(0);
   const [showAddPagesAlert, setShowAddPagesAlert] = useState(false);
+  const [showReminderPulse, setShowReminderPulse] = useState(false);
   const [hasShownAddPagesAlert, setHasShownAddPagesAlert] = useState(false);
   const [canAddMorePages, setCanAddMorePages] = useState(true);
   const [pagesAdded, setPagesAdded] = useState(0);
@@ -713,16 +714,31 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
     }
   }, [currentPage, story.length]);
 
-  // Auto-dismiss tooltip after 2.5 seconds
+  // Auto-dismiss tooltip after 2.5 seconds and start periodic reminders
   useEffect(() => {
     if (showAddPagesAlert) {
-      const timer = setTimeout(() => {
+      const dismissTimer = setTimeout(() => {
         setShowAddPagesAlert(false);
       }, 2500);
 
-      return () => clearTimeout(timer);
+      // Start periodic reminder pulses after tooltip dismisses
+      const reminderTimer = setTimeout(() => {
+        const reminderInterval = setInterval(() => {
+          if (currentPage === story.length - 1) {
+            setShowReminderPulse(true);
+            setTimeout(() => setShowReminderPulse(false), 1000);
+          }
+        }, Math.random() * 2000 + 8000); // 8-10 seconds
+
+        return () => clearInterval(reminderInterval);
+      }, 2500);
+
+      return () => {
+        clearTimeout(dismissTimer);
+        clearTimeout(reminderTimer);
+      };
     }
-  }, [showAddPagesAlert]);
+  }, [showAddPagesAlert, currentPage, story.length]);
   
   // Function to add more pages to the story - only when on last page
   const addMorePages = async () => {
@@ -1155,6 +1171,8 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                           className={`p-1.5 sm:p-2 transition-all duration-300 ${
                             showAddPagesAlert && canAddMorePages
                               ? 'animate-bounce bg-amber-100 border-amber-400 text-amber-700 shadow-lg ring-2 ring-amber-300' 
+                              : showReminderPulse && canAddMorePages
+                              ? 'animate-glow-pulse'
                               : canAddMorePages
                               ? 'bg-blue-50 hover:bg-blue-100 border-blue-200'
                               : 'bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed'
