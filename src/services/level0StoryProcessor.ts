@@ -27,7 +27,7 @@ export class Level0StoryProcessor {
     const isPremium = await SubscriptionManager.isPremiumUser();
     const userType: UserType = isPremium ? 'premium' : 'free';
     
-    console.log(`👤 Level0StoryProcessor: User type: ${userType} (vocabulary: ${userType === 'premium' ? '59 words' : '40 words'})`);
+    console.log(`👤 Level0StoryProcessor: User type: ${userType} (vocabulary: ${userType === 'premium' ? '75+ words' : '40 words'})`);
     
     // Use appropriate templates based on user type
     const templates = userType === 'free' 

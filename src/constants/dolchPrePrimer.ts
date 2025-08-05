@@ -46,11 +46,11 @@ export const PREMIUM_LEVEL_0_VOCABULARY = new Set([
   // Include all Dolch Pre-Primer words (40 words)
   ...DOLCH_PRE_PRIMER_VOCABULARY,
   
-  // Fry First 25 additions not in Dolch (high-frequency research-backed)
+  // Fry First 25 additions not already in Dolch (high-frequency research-backed)
   'of', 'to', 'he', 'was', 'that', 'she', 'his', 'her', 'had', 'at', 'but', 'have', 'him', 'with', 'this', 'all', 'from', 'they', 'know', 'want', 'been', 'now', 'were', 'there', 'what',
   
-  // Common Core RF.K.3.C examples (curriculum standard)
-  'do', 'does', 'are', 'my',
+  // Common Core RF.K.3.C examples not already included (curriculum standard)
+  'do', 'does', 'are',
   
   // Head Start Priority Words (early learning standards)
   'some', 'new', 'old', 'get', 'put', 'let', 'sit',
