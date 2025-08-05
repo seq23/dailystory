@@ -12,6 +12,8 @@ import { UniversalContentManager } from "@/services/universalContentManager";
 import { Level0StoryProcessor } from "@/services/level0StoryProcessor";
 import { UnifiedImageService, type EstablishedCharacter } from "@/services/unifiedImageService";
 import { FreeTrialPageLimitError } from "@/utils/errorHandling";
+import { SessionPageTracker } from "@/services/sessionPageTracker";
+import { ProgressIndicator } from "@/components/ui/progress-indicator";
 
 import { APP_CONFIG } from "@/constants/app";
 import { useToast } from "@/hooks/use-toast";
@@ -94,6 +96,9 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   const [currentPage, setCurrentPage] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [sessionStarted, setSessionStarted] = useState(false);
+  
+  // Session page tracking
+  const [pageInfo, setPageInfo] = useState(() => SessionPageTracker.getPageInfo());
   const [currentDifficulty, setCurrentDifficulty] = useState<'beginner' | 'easy' | 'medium' | 'hard' | 'expert'>(
     userInfo.readingAbility === 'beginner' ? 'beginner' :
     userInfo.readingAbility === 'easy' ? 'easy' :
@@ -661,6 +666,17 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     const isOnLastPage = currentPage === story.length - 1;
     if (isLoading || !establishedCharacter || !isOnLastPage) return;
     
+    // Check if we've reached the 90-page limit
+    const currentPageInfo = SessionPageTracker.getPageInfo();
+    if (currentPageInfo.hasReachedLimit) {
+      toast({
+        title: "Free Trial Limit Reached",
+        description: `You've reached the 90-page free trial limit. Upgrade to premium for unlimited reading!`,
+        variant: "destructive"
+      });
+      return;
+    }
+    
     try {
       console.log('Maintaining character consistency for page extension:', establishedCharacter.userName);
 
@@ -681,6 +697,10 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
       // Add new pages and generate images for them
       const startPageIndex = story.length;
       setStory(prev => [...prev, ...newPages]);
+      
+      // Track added pages
+      SessionPageTracker.trackPagesAdded(newPages.length);
+      setPageInfo(SessionPageTracker.getPageInfo());
       
       // Initialize placeholder images
       const placeholderImages = newPages.map((_, i) => ({ 
@@ -1134,6 +1154,16 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                         🎁 {t("freeReadingSession.freeTrial")}
                       </span>
                     </p>
+                    
+                    {/* Session Progress Indicator */}
+                    <ProgressIndicator
+                      pagesViewed={pageInfo.pagesViewed}
+                      maxPages={pageInfo.maxPages}
+                      isNearLimit={pageInfo.isNearLimit}
+                      hasReachedLimit={pageInfo.hasReachedLimit}
+                      isPremium={false}
+                      className="mt-2"
+                    />
                   </div>
                 </div>
                 
@@ -1424,7 +1454,14 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                               
                               // Story completed - toast will be shown by useEffect
                             } else {
-                              setCurrentPage(Math.min(story.length - 1, currentPage + 1));
+                              const nextPage = Math.min(story.length - 1, currentPage + 1);
+                              setCurrentPage(nextPage);
+                              
+                              // Track forward navigation
+                              if (nextPage > currentPage) {
+                                SessionPageTracker.trackPageNavigation(nextPage);
+                                setPageInfo(SessionPageTracker.getPageInfo());
+                              }
                             }
                           }}
                           disabled={currentPage >= story.length - 1}

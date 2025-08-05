@@ -7,6 +7,7 @@ import { StoryQualityChecker } from "@/utils/storyQualityChecker";
 import { Level0StoryProcessor } from "@/services/level0StoryProcessor";
 import { NameFormatter } from "@/utils/nameFormatter";
 import { getTemplateByGradeLevel } from "@/constants/gradeBased/unifiedTemplateSystem";
+import { SessionPageTracker } from "./sessionPageTracker";
 
 // Define custom error classes
 class StoryGenerationError extends Error {
@@ -85,7 +86,18 @@ export class UniversalContentManager {
   ): Promise<StoryGenerationResult> {
     console.log(`🎯 UniversalContentManager: Starting story generation for ${difficulty} level`);
     
-    // Session limit checking is handled at a higher level
+    // Check session page limit for free users
+    if (!config.isPremium) {
+      const pageInfo = SessionPageTracker.getPageInfo();
+      if (pageInfo.hasReachedLimit) {
+        throw new FreeTrialPageLimitError(
+          `Free trial limit of ${pageInfo.maxPages} pages reached`,
+          pageInfo.pagesViewed,
+          pageInfo.maxPages,
+          `You've explored ${pageInfo.maxPages} pages in this session! Upgrade to premium for unlimited reading.`
+        );
+      }
+    }
     
     const pageCount = this.getPageCountForDifficulty(difficulty, config.isPremium);
     
@@ -515,9 +527,9 @@ export class UniversalContentManager {
   }
 
   private static getPageCountForDifficulty(difficulty: DifficultyLevel, isPremium: boolean): number {
-    // Updated page counts - universal 5 pages for free, varied for premium
+    // Updated page counts - 5 pages initial, but session allows up to 90 total pages for free
     if (!isPremium) {
-      return 5; // Universal 5-page free trial
+      return 5; // Start with 5 pages, session tracker manages the 90-page limit
     }
     
     // Premium page counts by level
