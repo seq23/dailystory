@@ -188,7 +188,7 @@ export class EnhancedTemplateManager {
       } else {
         // Fallback: Use extension templates only after all base templates are exhausted
         // Check subscription status - for level 0, free users get strict vocabulary
-        const isPremium = gradeLevel > 0 || (userInfo as any)?.subscription?.plan === 'premium';
+        const isPremium = gradeLevel !== 0 || (userInfo as any)?.subscription?.plan === 'premium';
         const extensionTemplates = this.getExtensionTemplates(gradeLevel, isPremium);
         newPage = this.generateContinuationPage(
           extendedPages[extendedPages.length - 1], 
