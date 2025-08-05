@@ -53,19 +53,19 @@ export class PremiumVocabularyService {
   static initializeUserState(userId: string): void {
     if (this.userStates.has(userId)) return;
 
-    const level1Buckets: VocabularyBucket[] = Object.entries(LEVEL_1_VOCABULARY).map(([category, words]) => ({
-      category,
-      words: [...words],
+    const level1Buckets: VocabularyBucket[] = [{
+      category: 'Level 1 Words',
+      words: [...LEVEL_1_VOCABULARY],
       usedWords: new Set(),
       priority: 1
-    }));
+    }];
 
-    const level2Buckets: VocabularyBucket[] = Object.entries(LEVEL_2_VOCABULARY).map(([category, words]) => ({
-      category,
-      words: [...words],
+    const level2Buckets: VocabularyBucket[] = [{
+      category: 'Level 2 Words', 
+      words: [...LEVEL_2_VOCABULARY],
       usedWords: new Set(),
       priority: 1
-    }));
+    }];
 
     this.userStates.set(userId, {
       level1Buckets,
