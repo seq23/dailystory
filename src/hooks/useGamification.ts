@@ -147,19 +147,23 @@ export const useGamification = (options: UseGamificationOptions = {}) => {
   }, [updateActivity]);
 
   const addVocabularyWord = useCallback(() => {
-    console.log('🎯 addVocabularyWord called - updating stats');
+    console.log('🎯 useGamification: addVocabularyWord called!', {
+      currentVocabCount: userStats.vocabularyWordsLearned,
+      environment: typeof window !== 'undefined' && window.location.href.includes('preview') ? 'preview' : 'console'
+    });
     setUserStats(prev => {
       const newStats = {
         ...prev,
         vocabularyWordsLearned: prev.vocabularyWordsLearned + 1
       };
-      console.log('📊 Vocabulary updated:', {
+      console.log('📊 useGamification: Vocabulary updated:', {
         before: prev.vocabularyWordsLearned,
-        after: newStats.vocabularyWordsLearned
+        after: newStats.vocabularyWordsLearned,
+        environment: typeof window !== 'undefined' && window.location.href.includes('preview') ? 'preview' : 'console'
       });
       return newStats;
     });
-  }, []); // Remove userStats from dependencies to prevent infinite loops
+  }, [userStats.vocabularyWordsLearned]); // Include current count in dependencies for proper tracking
 
   const getNextAchievement = useCallback(() => {
     if (newAchievements.length > 0) {

@@ -5,7 +5,8 @@ export const setupGamificationGlobals = (addVocabularyWord: () => void, enablePe
   console.log('🎮 SETUP GAMIFICATION GLOBALS CALLED!', { 
     enablePersistence,
     addVocabularyWordType: typeof addVocabularyWord,
-    addVocabularyWordExists: !!addVocabularyWord
+    addVocabularyWordExists: !!addVocabularyWord,
+    environment: window.location.href.includes('preview') ? 'preview' : 'console'
   });
   
   if (!addVocabularyWord) {
@@ -13,9 +14,18 @@ export const setupGamificationGlobals = (addVocabularyWord: () => void, enablePe
     return;
   }
   
+  // Wrap the function to add debugging
+  const wrappedAddVocabularyWord = () => {
+    console.log('🎯 VOCABULARY WORD ADDED VIA GLOBAL FUNCTION!', {
+      timestamp: new Date().toISOString(),
+      environment: window.location.href.includes('preview') ? 'preview' : 'console'
+    });
+    return addVocabularyWord();
+  };
+  
   // Store the function globally for InteractiveWord component
-  globalAddVocabularyWord = addVocabularyWord;
-  (window as any).addVocabularyWord = addVocabularyWord;
+  globalAddVocabularyWord = wrappedAddVocabularyWord;
+  (window as any).addVocabularyWord = wrappedAddVocabularyWord;
   
   console.log('🎮 Gamification globals set up:', {
     addVocabularyWordAvailable: !!addVocabularyWord,

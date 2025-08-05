@@ -214,11 +214,12 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
 
   // Setup gamification globals on mount (no persistence for free trial)
   useEffect(() => {
-    console.log('🎮 FreeReadingSession: Component mounted, checking gamification setup...');
-    console.log('🎮 FreeReadingSession: addVocabularyWord function available:', !!addVocabularyWord);
-    console.log('🎮 FreeReadingSession: addVocabularyWord function type:', typeof addVocabularyWord);
-    console.log('🎮 FreeReadingSession: userInfo available:', !!userInfo);
-    console.log('🎮 FreeReadingSession: userInfo name:', userInfo?.name);
+    console.log('🎮 FreeReadingSession: Component mounted, checking gamification setup...', {
+      addVocabularyWordAvailable: !!addVocabularyWord,
+      userInfoName: userInfo?.name,
+      vocabularyWordsLearned: userStats.vocabularyWordsLearned,
+      environment: window.location.href.includes('preview') ? 'preview' : 'console'
+    });
     
     if (addVocabularyWord && userInfo?.name) {
       console.log('🎮 FreeReadingSession: Setting up gamification globals...');
@@ -1481,6 +1482,16 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
             sessionStartTime &&
             Date.now() - sessionStartTime.getTime() < 5000 // First 5 seconds
           }
+          onProgressUpdate={(type, value) => {
+            if (type === 'vocabulary') {
+              console.log('📚 FreeReadingSession: Vocabulary progress updated in ProgressTowers:', {
+                type,
+                value,
+                currentUserStatsVocab: userStats.vocabularyWordsLearned,
+                environment: window.location.href.includes('preview') ? 'preview' : 'console'
+              });
+            }
+          }}
         />
       ) : null}
     </>
