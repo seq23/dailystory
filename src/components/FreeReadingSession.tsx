@@ -120,6 +120,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   const [showAddPagesAlert, setShowAddPagesAlert] = useState(false);
   const [showReminderPulse, setShowReminderPulse] = useState(false);
   const [hasShownAddPagesAlert, setHasShownAddPagesAlert] = useState(false);
+  const [storyMaxPages, setStoryMaxPages] = useState(5); // Track current story's maximum possible pages
 
   // Character consistency - store original character details  
   const [establishedCharacter, setEstablishedCharacter] = useState<EstablishedCharacter | null>(null);
@@ -702,6 +703,9 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
       const startPageIndex = story.length;
       setStory(prev => [...prev, ...newPages]);
       
+      // Update story max pages to reflect the new total possible pages
+      setStoryMaxPages(prev => prev + newPages.length);
+      
       // Track added pages
       SessionPageTracker.trackPagesAdded(newPages.length);
       setPageInfo(SessionPageTracker.getPageInfo());
@@ -1162,7 +1166,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                     </h1>
                     <p className="text-sm text-gray-600 flex items-center gap-2">
                       <span>
-                         {t("freeReadingSession.navigation.pageInfo", "Page {current} / {total}").replace("{current}", (currentPage + 1).toString()).replace("{total}", pageInfo.maxPages.toString())}
+                         {t("freeReadingSession.navigation.pageInfo", "Page {current} / {total}").replace("{current}", (currentPage + 1).toString()).replace("{total}", storyMaxPages.toString())}
                       </span>
                       <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs font-medium">
                         🎁 {t("freeReadingSession.freeTrial")}
@@ -1383,7 +1387,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                         <div className="flex flex-col items-center gap-1 px-2">
                           <div className="flex items-center gap-2">
                             <span className="text-xs sm:text-sm font-medium text-gray-600 whitespace-nowrap">
-                              {t("freeReadingSession.navigation.pageInfo", "Page {current} / {total}").replace("{current}", (currentPage + 1).toString()).replace("{total}", pageInfo.maxPages.toString())}
+                              {t("freeReadingSession.navigation.pageInfo", "Page {current} / {total}").replace("{current}", (currentPage + 1).toString()).replace("{total}", storyMaxPages.toString())}
                             </span>
                           </div>
                           <div className="relative group">
