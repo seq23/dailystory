@@ -1,5 +1,5 @@
 // Level 0 Simplifier for ultra-simple pre-reading vocabulary (ages 3-5)
-import { LEVEL_0_VOCABULARY, isLevel0Word, validateLevel0Sentence } from '@/constants/level0Vocabulary';
+import { validateLevel0SentenceByUserType, FREE_LEVEL_0_VOCABULARY } from '@/constants/dolchPrePrimer';
 
 interface SimplificationResult {
   simplifiedText: string;
@@ -95,7 +95,7 @@ export class Level0Simplifier {
     
     // Strategy 1: Direct word replacement
     const wordReplacementResult = this.attemptWordReplacement(text);
-    const wordValidation = validateLevel0Sentence(wordReplacementResult, userName);
+    const wordValidation = validateLevel0SentenceByUserType(wordReplacementResult, 'free', userName);
     
     if (wordValidation.isValid) {
       console.log(`✅ Level 0 word replacement successful: "${wordReplacementResult}"`);
@@ -108,7 +108,7 @@ export class Level0Simplifier {
 
     // Strategy 2: Ultra-simple sentence restructuring
     const restructuredResult = this.restructureToUltraSimple(text);
-    const restructureValidation = validateLevel0Sentence(restructuredResult, userName);
+    const restructureValidation = validateLevel0SentenceByUserType(restructuredResult, 'free', userName);
     
     if (restructureValidation.isValid) {
       console.log(`✅ Level 0 restructuring successful: "${restructuredResult}"`);
@@ -196,7 +196,7 @@ export class Level0Simplifier {
     const userNameLower = userName?.toLowerCase();
     const invalidWords = words.filter(word => {
       if (userNameLower && word === userNameLower) return false;
-      return !isLevel0Word(word);
+      return !FREE_LEVEL_0_VOCABULARY.has(word.toLowerCase());
     });
 
     // For Level 0, allow maximum 1 "story-enhancing" word
@@ -236,12 +236,12 @@ export class Level0Simplifier {
 
   // Validation helpers
   static validateLevel0Text(text: string, userName: string): boolean {
-    const validation = validateLevel0Sentence(text, userName);
+    const validation = validateLevel0SentenceByUserType(text, 'free', userName);
     return validation.isValid;
   }
 
   static getInvalidWords(text: string, userName: string): string[] {
-    const validation = validateLevel0Sentence(text, userName);
+    const validation = validateLevel0SentenceByUserType(text, 'free', userName);
     return validation.invalidWords;
   }
 }

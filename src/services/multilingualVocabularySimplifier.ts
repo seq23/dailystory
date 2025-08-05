@@ -3,10 +3,10 @@
 
 import { SupportedLanguage } from '@/types/multilingual';
 import { LanguagePreferenceService } from './languagePreferenceService';
-import { validateLevel0Sentence, isLevel0Word } from '@/constants/level0Vocabulary';
-import { validateLevel1Sentence, isLevel1Word } from '@/constants/level1Vocabulary';
-import { validateLevel2Sentence, isLevel2Word } from '@/constants/level2Vocabulary';
-import { validateLevel3Sentence, isLevel3Word } from '@/constants/level3Vocabulary';
+import { validateLevel0SentenceByUserType, FREE_LEVEL_0_VOCABULARY } from '@/constants/dolchPrePrimer';
+import { validateLevel1Sentence, isLevel1Word } from '@/constants/gradeBased/level1Vocabulary';
+import { validateLevel2Sentence, isLevel2Word } from '@/constants/gradeBased/level2Vocabulary';
+import { validateLevel3Sentence, isLevel3Word } from '@/constants/gradeBased/level3Vocabulary';
 
 export type VocabularyLevel = 0 | 1 | 2 | 3;
 
@@ -339,7 +339,7 @@ export class MultilingualVocabularySimplifier {
   private static validateLevelText(text: string, targetLevel: VocabularyLevel, userName: string): boolean {
     switch (targetLevel) {
       case 0:
-        return validateLevel0Sentence(text, userName).isValid;
+        return validateLevel0SentenceByUserType(text, 'free', userName).isValid;
       case 1:
         return validateLevel1Sentence(text, userName).isValid;
       case 2:
@@ -357,7 +357,7 @@ export class MultilingualVocabularySimplifier {
   private static getInvalidWords(text: string, targetLevel: VocabularyLevel, userName: string): string[] {
     switch (targetLevel) {
       case 0:
-        return validateLevel0Sentence(text, userName).invalidWords;
+        return validateLevel0SentenceByUserType(text, 'free', userName).invalidWords;
       case 1:
         return validateLevel1Sentence(text, userName).invalidWords;
       case 2:
@@ -375,7 +375,7 @@ export class MultilingualVocabularySimplifier {
   private static isLevelWord(word: string, targetLevel: VocabularyLevel): boolean {
     switch (targetLevel) {
       case 0:
-        return isLevel0Word(word);
+        return FREE_LEVEL_0_VOCABULARY.has(word.toLowerCase());
       case 1:
         return isLevel1Word(word);
       case 2:

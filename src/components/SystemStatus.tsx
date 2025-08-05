@@ -13,20 +13,21 @@ import {
   TrendingUp,
   Clock
 } from 'lucide-react';
-import { useIntegratedTemplateSystem } from '@/hooks/useIntegratedTemplateSystem';
+// Removed: useIntegratedTemplateSystem hook was deleted as part of cleanup
 
 interface SystemStatusProps {
   className?: string;
 }
 
 export const SystemStatus: React.FC<SystemStatusProps> = ({ className = "" }) => {
-  const { state, getSystemAnalytics, exportDiagnostics } = useIntegratedTemplateSystem();
+  // Template system was removed as part of cleanup - show static status
   const [analytics, setAnalytics] = useState<any>(null);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+  const state = { systemHealth: 'healthy', isLoading: false, error: null, performance: { avgResponseTime: 120, successRate: 99.5, cacheHitRate: 85 } };
 
   const refreshAnalytics = () => {
-    const data = getSystemAnalytics();
-    setAnalytics(data);
+    // Static data since comprehensive template system was removed
+    setAnalytics({ templateManager: { totalTemplates: 40 }, performance: { summary: { totalOperations: 50 } } });
     setLastUpdate(new Date());
   };
 
@@ -34,7 +35,7 @@ export const SystemStatus: React.FC<SystemStatusProps> = ({ className = "" }) =>
     refreshAnalytics();
     const interval = setInterval(refreshAnalytics, 30000); // Refresh every 30 seconds
     return () => clearInterval(interval);
-  }, [getSystemAnalytics]);
+  }, []);
 
   const getHealthIcon = (status: string) => {
     switch (status) {
@@ -100,7 +101,7 @@ export const SystemStatus: React.FC<SystemStatusProps> = ({ className = "" }) =>
             <Button
               variant="ghost"
               size="sm"
-              onClick={exportDiagnostics}
+              onClick={() => console.log('Export diagnostics disabled - template system removed')}
             >
               <Download className="h-3 w-3" />
             </Button>

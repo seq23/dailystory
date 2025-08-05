@@ -15,7 +15,7 @@ import {
 } from '@/constants/gradeBased';
 
 import { EnhancedTemplateManager } from '@/services/enhancedTemplateManager';
-import { ComprehensiveTemplateManager } from '@/services/comprehensiveTemplateManager';
+// Removed: ComprehensiveTemplateManager was deleted as part of cleanup
 import { OptimizedTemplateManager } from '@/services/optimizedTemplateManager';
 
 interface HealthCheckResult {
@@ -86,19 +86,8 @@ export class SystemHealthChecker {
         criticalIssues.push(`❌ EnhancedTemplateManager: ${error.message}`);
       }
       
-      // 4. Test ComprehensiveTemplateManager
-      try {
-        const testResult = await ComprehensiveTemplateManager.generateStory({
-          difficulty: 'easy',
-          isPremium: false
-        });
-        
-        if (!testResult.pages || testResult.pages.length === 0) {
-          criticalIssues.push('❌ ComprehensiveTemplateManager: Story generation failed');
-        }
-      } catch (error) {
-        criticalIssues.push(`❌ ComprehensiveTemplateManager: ${error.message}`);
-      }
+      // 4. Comprehensive template system was removed during cleanup
+      warnings.push('⚠️ ComprehensiveTemplateManager: System removed during cleanup');
       
       // 5. Test OptimizedTemplateManager migration
       try {

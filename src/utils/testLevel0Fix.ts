@@ -1,6 +1,6 @@
 // Test Level 0 vocabulary compliance after fix
 import { LEVEL_0_COMPLIANT_TEMPLATES } from '@/constants/level0TemplatesCompliant';
-import { validateLevel0Sentence } from '@/constants/level0Vocabulary';
+import { validateLevel0SentenceByUserType } from '@/constants/dolchPrePrimer';
 
 export function testLevel0VocabularyCompliance(): { 
   isCompliant: boolean; 
@@ -13,7 +13,7 @@ export function testLevel0VocabularyCompliance(): {
   
   LEVEL_0_COMPLIANT_TEMPLATES.forEach((template, templateIndex) => {
     template.forEach((sentence, pageIndex) => {
-      const validation = validateLevel0Sentence(sentence);
+      const validation = validateLevel0SentenceByUserType(sentence, 'free');
       if (!validation.isValid) {
         violations.push({
           templateIndex,
@@ -57,7 +57,7 @@ red, run, said, see, the, three, to, two, up, we, where, yellow, you
 // Test with problematic sentence from original issue
 export function testProblematicSentence(): boolean {
   const testSentence = "I see pretty flowers.";
-  const validation = validateLevel0Sentence(testSentence);
+  const validation = validateLevel0SentenceByUserType(testSentence, 'free');
   
   console.log('🧪 Testing problematic sentence:', testSentence);
   console.log('📋 Validation result:', validation);

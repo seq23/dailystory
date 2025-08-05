@@ -2,8 +2,8 @@ import { UserInfo, Story, DifficultyLevel } from "@/types";
 import { DIFFICULTY_APPROPRIATE_TEMPLATES, validateDifficultyCompliance, getDifficultyAppropriateTemplate } from "@/constants/difficultyAppropriateTemplates";
 import { getEnhancedTemplatePool } from "@/constants/enhancedTemplates";
 import { SessionTemplateManager } from "@/services/sessionTemplateManager";
-import { validateLevel1Sentence } from "@/constants/level1Vocabulary";
-import { validateLevel0Sentence } from "@/constants/level0Vocabulary";
+import { validateLevel1Sentence } from "@/constants/gradeBased/level1Vocabulary";
+import { validateLevel0SentenceByUserType } from "@/constants/dolchPrePrimer";
 import { Level1Simplifier } from "./level1Simplifier";
 import { Level0Simplifier } from "./level0Simplifier";
 import { VocabularyLevelClassifier } from "@/utils/vocabularyLevelClassifier";
@@ -15,9 +15,8 @@ import { CharacterPoolManager, CharacterPool } from "./characterPoolManager";
 import { CharacterDrivenStoryArc, StoryContext } from "./characterDrivenStoryArc";
 import { StoryManager, TransitionConfig } from "./storyManager";
 import { getAuthorVoiceForUser, applyAuthorVoice } from "@/constants/authorVoicePatterns";
-import { getLevel0Template } from "@/constants/level0Templates";
+import { getLevel0StrictDolchTemplate } from "@/constants/level0TemplatesFixed";
 import { UserInputDistributor, DistributionContext } from "./userInputDistributor";
-import { ComprehensiveTemplateManager } from './comprehensiveTemplateManager';
 
 export interface GeneratedContent {
   pageNumber: number;
@@ -58,46 +57,7 @@ export class UniversalContentManager {
   ): Promise<StoryGenerationResult> {
     console.log(`🎯 Starting story generation for ${difficulty} level with comprehensive templates...`);
     
-    // Try comprehensive template system first (fast, guaranteed quality)
-    try {
-      const templateResult = await ComprehensiveTemplateManager.generateStory({
-        userInfo,
-        difficulty,
-        useCharacterPool: true,
-        enhanceWithAI: config.isPremium,
-        isPremium: config.isPremium
-      });
-      
-      if (templateResult.isValid) {
-        console.log(`✅ Generated story using comprehensive template system (${templateResult.metadata.processingTime.toFixed(2)}ms)`);
-        
-        const story: Story = {
-          id: crypto.randomUUID(),
-          title: `${NameFormatter.capitalize(userInfo.name || 'Alex')}'s Adventure`,
-          segments: templateResult.pages.map(text => ({
-            text,
-            illustration: undefined,
-            audioUrl: undefined
-          })),
-          difficulty,
-          estimatedReadingTime: Math.max(1, Math.ceil(templateResult.pages.length / 3)),
-          wordCount: templateResult.pages.join(' ').split(' ').filter(word => word.trim()).length
-        };
-        
-        return {
-          story,
-          isNewStory: true,
-          isContinuation: false,
-          sessionInfo: {
-            sessionNumber: 1,
-            remainingSessions: config.isPremium ? -1 : Math.max(0, (config.maxSessions || 5) - 1),
-            isUnlimited: config.isPremium
-          }
-        };
-      }
-    } catch (error) {
-      console.warn('Comprehensive template system failed, falling back to existing system:', error);
-    }
+    // Fallback to existing system - comprehensive template system was removed
     
     // Fallback to existing system if templates fail
     const story = await this.generateNewStoryWithAntiRepetition(userInfo, difficulty, config);
