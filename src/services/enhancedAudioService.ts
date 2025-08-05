@@ -451,16 +451,19 @@ export class EnhancedAudioService {
     this.totalWords = wordsWithIndices.length;
     this.currentWordIndex = 0;
     
-      // Optimized timing calculation for better sync
+      // Re-calibrated timing calculation for perfect sync
       const calculateWordInterval = (word: string, index: number): number => {
-        const baseInterval = 200; // Increased from 120ms for better sync
+        const baseInterval = 160; // Reduced from 200ms to fix sync lag
         const speedAdjustment = 1 / speed;
         const hasPunctuation = /[.!?]/.test(word);
-        const pauseAfterPunctuation = hasPunctuation ? 100 : 0;
+        const pauseAfterPunctuation = hasPunctuation ? 80 : 0;
         const wordLength = word.length;
-        const lengthAdjustment = wordLength > 6 ? 15 : 0;
+        const lengthAdjustment = wordLength > 6 ? 12 : 0;
         
-        return (baseInterval * speedAdjustment) + pauseAfterPunctuation + lengthAdjustment;
+        // Dynamic correction for longer texts (6+ words)
+        const textLengthCorrection = this.totalWords > 6 ? 0.95 : 1.0;
+        
+        return ((baseInterval * speedAdjustment) + pauseAfterPunctuation + lengthAdjustment) * textLengthCorrection;
       };
 
     const highlightNext = () => {

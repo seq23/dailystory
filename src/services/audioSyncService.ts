@@ -27,31 +27,31 @@ export class AudioSyncService {
   private syncTimeouts: NodeJS.Timeout[] = [];
   private onStateChange?: (isPlaying: boolean) => void; // Add state change callback
   
-  // Optimized timing profiles for perfect sync and natural speech
+  // Re-calibrated timing profiles for perfect sync
   private readonly voiceProfiles: Record<string, VoiceTimingProfile> = {
     // Jessica - naturally paced, friendly voice
     'cgSgspJ2msm6clMCkdW9': {
-      baseWordInterval: 200, // Increased from 120ms for better sync
+      baseWordInterval: 160, // Reduced from 200ms to fix sync lag
       speedMultiplier: 1.0,
-      pauseMultiplier: 1.8   // Slightly increased for more natural rhythm
+      pauseMultiplier: 1.5   // Balanced for natural rhythm
     },
     // Sarah - clear, slower for children
     'EXAVITQu4vr4xnSDxMaL': {
-      baseWordInterval: 220, // Increased from 130ms for slower, clearer speech
+      baseWordInterval: 180, // Reduced from 220ms to fix sync lag
       speedMultiplier: 0.95,
-      pauseMultiplier: 2.0   // Longer pauses for children
+      pauseMultiplier: 1.8   // Appropriate pauses for children
     },
     // Charlotte - balanced pace
     'XB0fDUnXU5powFXDhCwa': {
-      baseWordInterval: 210, // Increased from 125ms
+      baseWordInterval: 170, // Reduced from 210ms to fix sync lag
       speedMultiplier: 1.0,
-      pauseMultiplier: 1.6
+      pauseMultiplier: 1.4
     },
     // Default profile for other voices
     'default': {
-      baseWordInterval: 200, // Increased from 125ms
+      baseWordInterval: 160, // Reduced from 200ms to fix sync lag
       speedMultiplier: 1.0,
-      pauseMultiplier: 1.6
+      pauseMultiplier: 1.4
     }
   };
 
