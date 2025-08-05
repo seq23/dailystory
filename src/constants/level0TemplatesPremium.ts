@@ -7,19 +7,19 @@ export const LEVEL_0_PREMIUM_TEMPLATES = [
   // Template 1 - Colors and actions with "I" emphasis
   [
     "I see red.",
-    "Blue is pretty!",
+    "Blue is here!",
     "I like yellow.",
     "{userName} has blue.",
-    "Red and blue are pretty."
+    "Red and blue are big."
   ],
   
   // Template 2 - Past experiences with mixed perspective
   [
-    "I was happy.",
-    "He was here!",
-    "I was playing.",
-    "{userName} was at play.",
-    "We were having fun."
+    "I was here.",
+    "He was there!",
+    "I was at play.",
+    "{userName} was with me.",
+    "We were there."
   ],
   
   // Template 3 - Getting and having with "I" focus
@@ -37,16 +37,16 @@ export const LEVEL_0_PREMIUM_TEMPLATES = [
     "Come with me!",
     "I am with you.",
     "{userName} is with her.",
-    "We go with they."
+    "We go with you."
   ],
   
   // Template 5 - Old and new with "I" emphasis
   [
     "I have new red.",
-    "Old is good!",
+    "Old is here!",
     "I like old and new.",
     "{userName} has old blue.",
-    "New yellow is pretty."
+    "New yellow is big."
   ],
   
   // Template 6 - Actions and directions with mixed perspective
@@ -69,7 +69,7 @@ export const LEVEL_0_PREMIUM_TEMPLATES = [
   
   // Template 8 - Location words with mixed perspective
   [
-    "I am at the big.",
+    "I am at the big one.",
     "Look at that!",
     "I see from here.",
     "{userName} is at play.",
@@ -91,7 +91,7 @@ export const LEVEL_0_PREMIUM_TEMPLATES = [
     "Little blue!",
     "I have little yellow.",
     "{userName} has big blue.",
-    "Big and little are good."
+    "Big and little are here."
   ],
   
   // Template 11 - Being and sitting with "I" focus
@@ -134,7 +134,7 @@ export const LEVEL_0_PREMIUM_TEMPLATES = [
   [
     "I will make this red.",
     "Make it blue!",
-    "I can make it pretty.",
+    "I can make it big.",
     "{userName} will make that yellow.",
     "We make and play."
   ],
@@ -144,8 +144,8 @@ export const LEVEL_0_PREMIUM_TEMPLATES = [
     "I am funny.",
     "He is funny!",
     "I can be funny.",
-    "{userName} is very funny.",
-    "Funny is good."
+    "{userName} is funny.",
+    "Funny is here."
   ],
   
   // Template 17 - All and some with "I" emphasis
@@ -154,7 +154,7 @@ export const LEVEL_0_PREMIUM_TEMPLATES = [
     "All blue!",
     "I want some yellow.",
     "{userName} has all that.",
-    "Some and all are good."
+    "Some and all are here."
   ],
   
   // Template 18 - Going places with mixed perspective
