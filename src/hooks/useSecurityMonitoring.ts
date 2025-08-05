@@ -20,9 +20,9 @@ class SecurityMonitor {
       timestamp: Date.now()
     };
 
-    this.events.unshift(event);
-    if (this.events.length > this.maxEvents) {
-      this.events = this.events.slice(0, this.maxEvents);
+    SecurityMonitor.events.unshift(event);
+    if (SecurityMonitor.events.length > SecurityMonitor.maxEvents) {
+      SecurityMonitor.events = SecurityMonitor.events.slice(0, SecurityMonitor.maxEvents);
     }
 
     // Log to console in development
@@ -32,23 +32,23 @@ class SecurityMonitor {
   }
 
   static getEvents(): SecurityEvent[] {
-    return [...this.events];
+    return [...SecurityMonitor.events];
   }
 
   static getCriticalEvents(): SecurityEvent[] {
-    return this.events.filter(event => event.severity === 'critical' || event.severity === 'high');
+    return SecurityMonitor.events.filter(event => event.severity === 'critical' || event.severity === 'high');
   }
 
   static exportEvents(): string {
     return JSON.stringify({
-      events: this.events,
+      events: SecurityMonitor.events,
       exportedAt: new Date().toISOString(),
-      totalEvents: this.events.length
+      totalEvents: SecurityMonitor.events.length
     }, null, 2);
   }
 
   static clearEvents(): void {
-    this.events = [];
+    SecurityMonitor.events = [];
   }
 }
 
