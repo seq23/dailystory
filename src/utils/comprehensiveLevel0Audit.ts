@@ -4,7 +4,7 @@
  */
 
 import { Level0VocabularyAuditor } from './level0VocabularyAuditor';
-import { LEVEL_0_TEMPLATES_FIXED } from '@/constants/level0Templates6PageFixed';
+import { LEVEL_0_COMPLIANT_TEMPLATES } from '@/constants/level0TemplatesCompliant';
 import { ENHANCED_FALLBACK_TEMPLATES } from '@/constants/enhancedFallbackTemplates';
 
 export interface SystemAuditResult {
@@ -29,7 +29,7 @@ export class ComprehensiveLevel0Audit {
 
     // Audit base templates
     const baseTemplateAudit = Level0VocabularyAuditor.auditTemplates(
-      LEVEL_0_TEMPLATES_FIXED,
+      LEVEL_0_COMPLIANT_TEMPLATES,
       'Level 0 Base Templates',
       userName
     );

@@ -2,9 +2,9 @@
 // Integrates all 5 grade levels with 40 templates each (200 total templates, 1000 pages)
 
 import { 
-  getLevel0Template6Page, 
-  getLevel0TemplateCount 
-} from '@/constants/level0Templates6PageFixed';
+  getLevel0CompliantTemplate, 
+  getLevel0CompliantTemplateCount 
+} from '@/constants/level0TemplatesCompliant';
 
 import { 
   getLevel1Template, 
@@ -44,12 +44,12 @@ export function getTemplateByGradeLevel(
   templateIndex?: number
 ): string[] {
   switch (gradeLevel) {
-    case 0: return getLevel0Template6Page(templateIndex);
+    case 0: return getLevel0CompliantTemplate(templateIndex);
     case 1: return getLevel1Template(templateIndex);
     case 2: return getLevel2Template(templateIndex);
     case 3: return getLevel3Template(templateIndex);
     case 4: return getLevel4Template(templateIndex);
-    default: return getLevel0Template6Page(templateIndex);
+    default: return getLevel0CompliantTemplate(templateIndex);
   }
 }
 
@@ -65,12 +65,12 @@ export function getTemplateByDifficulty(
 // Get template count by grade level
 export function getTemplateCountByGradeLevel(gradeLevel: GradeLevel): number {
   switch (gradeLevel) {
-    case 0: return getLevel0TemplateCount();
+    case 0: return getLevel0CompliantTemplateCount();
     case 1: return getLevel1TemplateCount();
     case 2: return getLevel2TemplateCount();
     case 3: return getLevel3TemplateCount();
     case 4: return getLevel4TemplateCount();
-    default: return getLevel0TemplateCount();
+    default: return getLevel0CompliantTemplateCount();
   }
 }
 
@@ -84,16 +84,16 @@ export function getTemplateCountByDifficulty(difficulty: DifficultyLevel): numbe
 export function getAllTemplatesByGradeLevel(gradeLevel: GradeLevel): string[][] {
   switch (gradeLevel) {
     case 0: {
-      const count = getLevel0TemplateCount();
-      return Array.from({ length: count }, (_, i) => getLevel0Template6Page(i));
+      const count = getLevel0CompliantTemplateCount();
+      return Array.from({ length: count }, (_, i) => getLevel0CompliantTemplate(i));
     }
     case 1: return [...LEVEL_1_TEMPLATES];
     case 2: return [...LEVEL_2_TEMPLATES];
     case 3: return [...LEVEL_3_TEMPLATES];
     case 4: return [...LEVEL_4_TEMPLATES];
     default: {
-      const count = getLevel0TemplateCount();
-      return Array.from({ length: count }, (_, i) => getLevel0Template6Page(i));
+      const count = getLevel0CompliantTemplateCount();
+      return Array.from({ length: count }, (_, i) => getLevel0CompliantTemplate(i));
     }
   }
 }

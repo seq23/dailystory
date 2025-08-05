@@ -1,7 +1,7 @@
 // Level 0 Story Processor - Dedicated processor for Level 0 stories
 // Bypasses UserInputDistributor to ensure vocabulary compliance
 
-import { LEVEL_0_TEMPLATES, getLevel0Template } from '@/constants/level0Templates';
+import { LEVEL_0_COMPLIANT_TEMPLATES, getLevel0CompliantTemplate } from '@/constants/level0TemplatesCompliant';
 import { validateLevel0Sentence } from '@/constants/level0Vocabulary';
 import { SessionTemplateManager } from '@/services/sessionTemplateManager';
 import type { UserInfo } from '@/types';
@@ -21,8 +21,8 @@ export class Level0StoryProcessor {
   static generateStory(userInfo?: UserInfo): Level0StoryResult {
     console.log('🎯 Level0StoryProcessor: Generating new Level 0 story...');
     
-    // Convert LEVEL_0_TEMPLATES (array of arrays) to template keys for SessionTemplateManager
-    const templateKeys = LEVEL_0_TEMPLATES.map((_, index) => `template_${index}`);
+    // Convert LEVEL_0_COMPLIANT_TEMPLATES (array of arrays) to template keys for SessionTemplateManager
+    const templateKeys = LEVEL_0_COMPLIANT_TEMPLATES.map((_, index) => `template_${index}`);
     
     // Get next template using intelligent rotation
     const { template: templateKey, isRepeating, templateIndex } = SessionTemplateManager.getNextTemplate(
@@ -31,9 +31,9 @@ export class Level0StoryProcessor {
     );
     
     // Get the actual template content
-    const template = LEVEL_0_TEMPLATES[templateIndex];
+    const template = LEVEL_0_COMPLIANT_TEMPLATES[templateIndex];
     
-    console.log(`📖 Level0StoryProcessor: Selected template ${templateIndex + 1}/${LEVEL_0_TEMPLATES.length}`, {
+    console.log(`📖 Level0StoryProcessor: Selected template ${templateIndex + 1}/${LEVEL_0_COMPLIANT_TEMPLATES.length}`, {
       isRepeating,
       template: template.slice(0, 50) + '...'
     });
@@ -118,8 +118,8 @@ export class Level0StoryProcessor {
     templatesUsed: number;
     isRepeating: boolean;
   } {
-    const totalTemplates = LEVEL_0_TEMPLATES.length;
-    const totalPages = LEVEL_0_TEMPLATES.reduce((sum, template) => sum + template.length, 0);
+    const totalTemplates = LEVEL_0_COMPLIANT_TEMPLATES.length;
+    const totalPages = LEVEL_0_COMPLIANT_TEMPLATES.reduce((sum, template) => sum + template.length, 0);
     const estimatedReadingTime = totalPages * 12; // 12 seconds per page average
     
     const sessionStats = SessionTemplateManager.getSessionStats();

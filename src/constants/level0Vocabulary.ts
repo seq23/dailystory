@@ -1,8 +1,8 @@
 // Level 0 vocabulary for ages 3-5 (ultra-simple pre-reading vocabulary)
 // This is the enhanced version - for strict Dolch Pre-Primer, use dolchPrePrimer.ts
-import { ENHANCED_LEVEL_0_VOCABULARY } from './dolchPrePrimer';
+import { DOLCH_PRE_PRIMER_VOCABULARY } from './dolchPrePrimer';
 
-export const LEVEL_0_VOCABULARY = ENHANCED_LEVEL_0_VOCABULARY;
+export const LEVEL_0_VOCABULARY = DOLCH_PRE_PRIMER_VOCABULARY;
 
 export function isLevel0Word(word: string): boolean {
   return LEVEL_0_VOCABULARY.has(word.toLowerCase());
