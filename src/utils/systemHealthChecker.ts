@@ -16,7 +16,7 @@ import {
 
 import { EnhancedTemplateManager } from '@/services/enhancedTemplateManager';
 // Removed: ComprehensiveTemplateManager was deleted as part of cleanup
-import { OptimizedTemplateManager } from '@/services/optimizedTemplateManager';
+
 
 interface HealthCheckResult {
   isHealthy: boolean;
@@ -89,23 +89,8 @@ export class SystemHealthChecker {
       // 4. Comprehensive template system was removed during cleanup
       warnings.push('⚠️ ComprehensiveTemplateManager: System removed during cleanup');
       
-      // 5. Test OptimizedTemplateManager migration
-      try {
-        const testResult = await OptimizedTemplateManager.generateOptimizedStory({
-          difficulty: 'medium',
-          isPremium: false
-        });
-        
-        if (!testResult.pages || testResult.pages.length === 0) {
-          criticalIssues.push('❌ OptimizedTemplateManager: Migration failed');
-        }
-        
-        if (testResult.metadata.systemVersion !== 'enhanced-unified-v1') {
-          warnings.push('⚠️ OptimizedTemplateManager: System version not updated');
-        }
-      } catch (error) {
-        criticalIssues.push(`❌ OptimizedTemplateManager: ${error.message}`);
-      }
+      // 5. System architecture is now simplified to EnhancedTemplateManager only
+      warnings.push('✅ Architecture: Simplified to EnhancedTemplateManager core engine');
       
       // 6. Check system status
       const systemStatus = getSystemStatus();

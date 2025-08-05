@@ -4,7 +4,7 @@
 import { DifficultyLevel, UserInfo } from '@/types';
 import { validateByMode, VocabularyMode, DOLCH_PRE_PRIMER_VOCABULARY, ENHANCED_LEVEL_0_VOCABULARY } from '@/constants/dolchPrePrimer';
 import { getLevel0FreeTemplate, getLevel0FreeTemplateCount } from '@/constants/level0TemplatesFree';
-import { OptimizedTemplateManager } from './optimizedTemplateManager';
+import { EnhancedTemplateManager } from './enhancedTemplateManager';
 
 interface QualityTestResult {
   testName: string;
@@ -312,7 +312,7 @@ export class TemplateQualityAssurance {
       };
       
       // Test premium page counts
-      const premiumResult = await OptimizedTemplateManager.generateOptimizedStory({
+      const premiumResult = await EnhancedTemplateManager.generateEnhancedStory({
         userInfo: testUserInfo,
         difficulty: 'beginner',
         isPremium: true
@@ -326,7 +326,7 @@ export class TemplateQualityAssurance {
       }
       
       // Test free page counts
-      const freeResult = await OptimizedTemplateManager.generateOptimizedStory({
+      const freeResult = await EnhancedTemplateManager.generateEnhancedStory({
         userInfo: testUserInfo,
         difficulty: 'beginner',
         isPremium: false
@@ -392,7 +392,7 @@ export class TemplateQualityAssurance {
           difficultyLevel: 'beginner'
         };
         
-        const result = await OptimizedTemplateManager.generateOptimizedStory({
+        const result = await EnhancedTemplateManager.generateEnhancedStory({
           userInfo: testUserInfo,
           difficulty: 'beginner',
           isPremium: true,
@@ -466,13 +466,13 @@ export class TemplateQualityAssurance {
           continue;
         }
         
-        const premiumResult = await OptimizedTemplateManager.generateOptimizedStory({
+        const premiumResult = await EnhancedTemplateManager.generateEnhancedStory({
           userInfo: testUserInfo,
           difficulty,
           isPremium: true
         });
         
-        const freeResult = await OptimizedTemplateManager.generateOptimizedStory({
+        const freeResult = await EnhancedTemplateManager.generateEnhancedStory({
           userInfo: testUserInfo,
           difficulty,
           isPremium: false
@@ -541,7 +541,7 @@ export class TemplateQualityAssurance {
       const startTime = performance.now();
       
       for (let i = 0; i < 10; i++) {
-        await OptimizedTemplateManager.generateOptimizedStory({
+        await EnhancedTemplateManager.generateEnhancedStory({
           userInfo: testUserInfo,
           difficulty: 'beginner',
           isPremium: true
