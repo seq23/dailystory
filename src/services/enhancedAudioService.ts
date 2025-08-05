@@ -356,26 +356,22 @@ export class EnhancedAudioService {
   // === Private Helper Methods ===
 
   private getSpeedForDifficulty(difficulty: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert', userInfo?: UserInfo): number {
+    // Standardized speed based on French Level 3 preference (0.85x for all languages)
     const baseSpeed = {
       beginner: 0.5,   // Slower for absolute beginners/level 0
       easy: 0.75,      // Slower for better comprehension
-      medium: 0.95,    // Slightly slower than normal
-      hard: 1.0,       // Normal speed
-      expert: 1.1      // Slightly faster
+      medium: 0.85,    // Perfect French pace - now used for all languages
+      hard: 0.9,       // Slightly faster but still clear
+      expert: 1.0      // Normal speed
     }[difficulty];
     
-    // Gentler language multipliers for more natural speech
-    const languageMultiplier = userInfo?.nativeLanguage === 'en' ? 0.95 : 0.85;
-    
+    // Removed language multipliers - all languages now use the same perfect pace
     // More gentle age-appropriate speed adjustment
     const ageMultiplier = userInfo && userInfo.age <= 8 ? 0.9 : 1.0;
     
-    // Text length speed adjustment (longer texts slightly slower)
-    const textLengthMultiplier = 1.0; // Will be applied in word highlighting logic
+    const finalSpeed = Math.max(0.4, Math.min(1.2, baseSpeed * ageMultiplier));
     
-    const finalSpeed = Math.max(0.4, Math.min(1.2, baseSpeed * languageMultiplier * ageMultiplier));
-    
-    console.log(`🎵 Audio speed for ${difficulty} (${userInfo?.nativeLanguage || 'en'}): ${finalSpeed} (base: ${baseSpeed})`);
+    console.log(`🎵 Standardized audio speed for ${difficulty}: ${finalSpeed} (all languages)`);
     return finalSpeed;
   }
 
@@ -389,33 +385,13 @@ export class EnhancedAudioService {
       return characterVoices[characterType as keyof typeof characterVoices] || characterVoices.narrator;
     }
 
-    // Enhanced voice selection with Jessica as primary narrator
-    const age = userInfo.age;
-    const isGirl = userInfo.avatar?.type === 'girl';
-    const isNativeEnglishSpeaker = userInfo.nativeLanguage === 'en';
-    
-    // Default to Jessica (cgSgspJ2msm6clMCkdW9) for most cases - friendly, clear, naturally paced
-    if (isNativeEnglishSpeaker) {
-      if (age <= 8) {
-        return "EXAVITQu4vr4xnSDxMaL"; // Sarah - warm, clear for young children
-      } else {
-        return "cgSgspJ2msm6clMCkdW9"; // Jessica - primary narrator voice, naturally paced
-      }
-    } else {
-      // For non-native speakers, use clear multilingual voices
-      if (age <= 8) {
-        return "EXAVITQu4vr4xnSDxMaL"; // Sarah for clear pronunciation
-      } else if (age <= 12) {
-        return "XB0fDUnXU5powFXDhCwa"; // Charlotte - clear and friendly
-      } else {
-        return "cgSgspJ2msm6clMCkdW9"; // Jessica - works well with multilingual model too
-      }
-    }
+    // Standardized voice selection - Charlotte for all languages and ages (matches perfect French experience)
+    return "XB0fDUnXU5powFXDhCwa"; // Charlotte - perfect voice and pace for all users
   }
 
   private async generateAudio(text: string, voice: string, userInfo: UserInfo, isPremium: boolean): Promise<string> {
-    const isNativeEnglishSpeaker = userInfo.nativeLanguage === 'en';
-    const model = isNativeEnglishSpeaker ? "eleven_turbo_v2" : "eleven_multilingual_v2";
+    // Use eleven_multilingual_v2 for all languages for consistent timing and quality
+    const model = "eleven_multilingual_v2";
 
     const response = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/elevenlabs-tts', {
       method: 'POST',
@@ -487,14 +463,14 @@ export class EnhancedAudioService {
     this.totalWords = wordsWithIndices.length;
     this.currentWordIndex = 0;
     
-      // Unified timing calculation matching AudioSyncService
+      // Enhanced timing calculation optimized for eleven_multilingual_v2
       const calculateWordInterval = (word: string, index: number): number => {
-        const baseInterval = 150; // Unified base timing with AudioSyncService
+        const baseInterval = 165; // Optimized for eleven_multilingual_v2 (matches AudioSyncService)
         const speedAdjustment = 1 / speed;
         const hasPunctuation = /[.!?]/.test(word);
-        const pauseAfterPunctuation = hasPunctuation ? 70 : 0;
+        const pauseAfterPunctuation = hasPunctuation ? 85 : 0; // Enhanced pause for multilingual model
         const wordLength = word.length;
-        const lengthAdjustment = wordLength > 6 ? 10 : 0;
+        const lengthAdjustment = wordLength > 6 ? 12 : 0; // Slightly longer for complex words
         
         // Text length speed adjustment for better following
         const textLengthCorrection = this.totalWords > 8 ? 0.9 : 
@@ -502,7 +478,7 @@ export class EnhancedAudioService {
         
         // Last word buffer to ensure completion
         const isLastWord = index === this.totalWords - 1;
-        const lastWordBuffer = isLastWord ? 50 : 0;
+        const lastWordBuffer = isLastWord ? 60 : 0; // Longer buffer for multilingual model
         
         return ((baseInterval * speedAdjustment) + pauseAfterPunctuation + lengthAdjustment + lastWordBuffer) * textLengthCorrection;
       };

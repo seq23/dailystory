@@ -27,31 +27,30 @@ export class AudioSyncService {
   private syncTimeouts: NodeJS.Timeout[] = [];
   private onStateChange?: (isPlaying: boolean) => void; // Add state change callback
   
-  // Unified timing profiles for perfect sync and natural learning pace
+  // Enhanced timing profiles optimized for eleven_multilingual_v2 model
   private readonly voiceProfiles: Record<string, VoiceTimingProfile> = {
-    // Jessica - naturally paced, friendly voice
-    'cgSgspJ2msm6clMCkdW9': {
-      baseWordInterval: 150, // Fine-tuned for perfect sync
-      speedMultiplier: 1.0,
-      pauseMultiplier: 1.3   // Natural rhythm
-    },
-    // Sarah - clear, slower for children
-    'EXAVITQu4vr4xnSDxMaL': {
-      baseWordInterval: 170, // Slower for clarity
-      speedMultiplier: 0.95,
-      pauseMultiplier: 1.6   // Longer pauses for children
-    },
-    // Charlotte - balanced pace
+    // Charlotte - primary voice for all users, optimized for eleven_multilingual_v2
     'XB0fDUnXU5powFXDhCwa': {
-      baseWordInterval: 155, // Balanced timing
+      baseWordInterval: 165, // Slightly slower to match multilingual model natural pauses
       speedMultiplier: 1.0,
-      pauseMultiplier: 1.3
+      pauseMultiplier: 1.4   // Enhanced pause for better sync with eleven_multilingual_v2
     },
-    // Default profile for other voices
-    'default': {
-      baseWordInterval: 150, // Consistent base timing
+    // Legacy voice profiles (for fallback scenarios)
+    'cgSgspJ2msm6clMCkdW9': {
+      baseWordInterval: 165, // Unified timing
       speedMultiplier: 1.0,
-      pauseMultiplier: 1.3
+      pauseMultiplier: 1.4
+    },
+    'EXAVITQu4vr4xnSDxMaL': {
+      baseWordInterval: 170, // Slower for children
+      speedMultiplier: 0.95,
+      pauseMultiplier: 1.6
+    },
+    // Default profile optimized for eleven_multilingual_v2
+    'default': {
+      baseWordInterval: 165, // Optimized for multilingual model
+      speedMultiplier: 1.0,
+      pauseMultiplier: 1.4   // Better sync with natural pauses
     }
   };
 
