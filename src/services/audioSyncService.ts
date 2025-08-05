@@ -86,7 +86,15 @@ export class AudioSyncService {
       const audioUrl = URL.createObjectURL(audioBlob);
       
       this.audio = new Audio(audioUrl);
-      this.audio.preload = 'metadata';
+      
+      // Mobile-specific audio setup
+      if (this.isMobile()) {
+        this.audio.preload = 'metadata';
+        this.audio.crossOrigin = 'anonymous';
+        
+        // Mobile audio unlock - crucial for iOS/Android
+        await this.unlockMobileAudio();
+      }
       
       // Wait for metadata to load to get accurate duration
       await new Promise((resolve, reject) => {
@@ -250,6 +258,29 @@ export class AudioSyncService {
   }
 
   /**
+   * Mobile audio unlock - required for iOS/Android
+   */
+  private async unlockMobileAudio(): Promise<void> {
+    if (!this.audio) return;
+    
+    try {
+      // Create a short silent audio to unlock mobile audio context
+      const silentAudio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMeBS113+TQeCkELI7L7tmNQAgMW7Dn7adTEw1GnN/y');
+      silentAudio.volume = 0.01;
+      
+      const playPromise = silentAudio.play();
+      if (playPromise) {
+        await playPromise.catch(() => {}); // Ignore errors
+      }
+      silentAudio.pause();
+      
+      console.log('🔓 Mobile audio unlocked');
+    } catch (error) {
+      console.warn('Mobile audio unlock failed:', error);
+    }
+  }
+
+  /**
    * Stop audio and clear all highlighting
    */
   stopAudio(): void {
@@ -295,6 +326,13 @@ export class AudioSyncService {
       // Better to restart with new speed settings
       console.log(`🎛️ Speed adjustment to ${newSpeed}x requires restart`);
     }
+  }
+
+  /**
+   * Detect mobile device
+   */
+  private isMobile(): boolean {
+    return /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   }
 }
 

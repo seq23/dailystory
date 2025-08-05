@@ -65,6 +65,11 @@ export class EnhancedAudioService {
       characterType = 'narrator'
     } = options;
 
+    // CRITICAL: Free users can only get audio in English
+    if (!isPremium && userInfo.nativeLanguage !== 'en') {
+      throw new Error('Free users can only access audio for English stories. Please upgrade to premium for multilingual audio support.');
+    }
+
     // Check free user limits
     if (!isPremium && this.playedPages.has(currentPage)) {
       throw new Error('Page already played - upgrade for unlimited audio');
@@ -79,7 +84,9 @@ export class EnhancedAudioService {
     // Prepare text with length limits
     const maxLength = isPremium ? this.config.quality.maxTextLength.premium : this.config.quality.maxTextLength.free;
     const processedText = text.slice(0, maxLength);
-    const model = userInfo.nativeLanguage === 'en' ? 'eleven_turbo_v2' : 'eleven_multilingual_v2';
+    
+    // CRITICAL: Free users always get English model, premium users get appropriate model
+    const model = (!isPremium || userInfo.nativeLanguage === 'en') ? 'eleven_turbo_v2' : 'eleven_multilingual_v2';
 
     try {
       // Stop any currently playing audio
@@ -319,15 +326,19 @@ export class EnhancedAudioService {
   private getSpeedForDifficulty(difficulty: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert', userInfo?: UserInfo): number {
     const baseSpeed = this.config.speedByDifficulty[difficulty];
     
-    // Adjust speed based on user's native language - optimized values
+    // Enhanced speed calculation with proper free user handling
     let finalSpeed: number;
-    if (userInfo?.nativeLanguage === 'en') {
-      finalSpeed = baseSpeed * 0.85; // Increased from 0.7 to 0.85
+    
+    // Free users only get English, so always use native English speaker speeds
+    const isNativeEnglishSpeaker = userInfo?.nativeLanguage === 'en' || !userInfo?.nativeLanguage;
+    
+    if (isNativeEnglishSpeaker) {
+      finalSpeed = baseSpeed * 0.85; // Optimized from 0.7 to 0.85 for better pacing
     } else {
-      finalSpeed = baseSpeed * 0.75; // Increased from 0.6 to 0.75
+      finalSpeed = baseSpeed * 0.75; // Optimized from 0.6 to 0.75 for non-native speakers
     }
     
-    console.log(`🎵 Audio speed for ${difficulty} (${userInfo?.nativeLanguage}): ${finalSpeed}`);
+    console.log(`🎵 Audio speed for ${difficulty} (${userInfo?.nativeLanguage || 'en'}): ${finalSpeed}`);
     return finalSpeed;
   }
 
@@ -394,6 +405,8 @@ export class EnhancedAudioService {
       utterance.rate = speed;
       utterance.pitch = 1.0;
       utterance.volume = 1.0;
+      
+      // CRITICAL: Always use English for fallback speech (free users only get English)
       utterance.lang = 'en';
 
       utterance.onend = () => {
