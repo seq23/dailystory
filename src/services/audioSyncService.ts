@@ -26,31 +26,31 @@ export class AudioSyncService {
   private progressInterval: NodeJS.Timeout | null = null;
   private syncTimeouts: NodeJS.Timeout[] = [];
   
-  // Voice-specific timing profiles calibrated for better sync
+  // Voice-specific timing profiles calibrated for accurate sync
   private readonly voiceProfiles: Record<string, VoiceTimingProfile> = {
-    // Jessica - naturally paced, friendly voice
+    // Jessica - naturally paced, friendly voice (recalibrated)
     'cgSgspJ2msm6clMCkdW9': {
-      baseWordInterval: 280,
+      baseWordInterval: 200,
       speedMultiplier: 1.0,
-      pauseMultiplier: 1.5
+      pauseMultiplier: 1.3
     },
-    // Sarah - clear, slightly slower for young users
+    // Sarah - clear, slightly slower for young users (recalibrated)
     'EXAVITQu4vr4xnSDxMaL': {
-      baseWordInterval: 300,
+      baseWordInterval: 220,
       speedMultiplier: 0.95,
-      pauseMultiplier: 1.6
-    },
-    // Charlotte - balanced pace
-    'XB0fDUnXU5powFXDhCwa': {
-      baseWordInterval: 290,
-      speedMultiplier: 1.0,
       pauseMultiplier: 1.4
     },
-    // Default profile for other voices
-    'default': {
-      baseWordInterval: 275,
+    // Charlotte - balanced pace (recalibrated)
+    'XB0fDUnXU5powFXDhCwa': {
+      baseWordInterval: 210,
       speedMultiplier: 1.0,
-      pauseMultiplier: 1.5
+      pauseMultiplier: 1.3
+    },
+    // Default profile for other voices (recalibrated)
+    'default': {
+      baseWordInterval: 205,
+      speedMultiplier: 1.0,
+      pauseMultiplier: 1.3
     }
   };
 
@@ -134,6 +134,8 @@ export class AudioSyncService {
     if (!this.audio) return;
 
     this.audio.onended = () => {
+      console.log('🏁 Audio playback ended, clearing highlights');
+      onWordHighlight?.(-1); // Clear highlighting immediately
       this.stopAudio();
     };
 
@@ -150,8 +152,8 @@ export class AudioSyncService {
       const currentTime = this.audio.currentTime;
       const expectedWordIndex = this.calculateExpectedWordIndex(voice, speed, currentTime);
       
-      // If we're off by more than 2 words, correct the highlighting
-      if (Math.abs(expectedWordIndex - this.currentWordIndex) > 2) {
+      // If we're off by more than 1 word, correct the highlighting
+      if (Math.abs(expectedWordIndex - this.currentWordIndex) > 1) {
         console.log(`🔄 Sync correction: expected ${expectedWordIndex}, current ${this.currentWordIndex}`);
         this.correctHighlighting(expectedWordIndex, onWordHighlight);
       }
@@ -189,8 +191,8 @@ export class AudioSyncService {
       }
     };
 
-    // Track progress every 50ms for smooth highlighting
-    this.progressInterval = setInterval(trackProgress, 50);
+    // Track progress every 100ms for accurate highlighting without excessive drift
+    this.progressInterval = setInterval(trackProgress, 100);
   }
 
   /**
@@ -301,9 +303,18 @@ export class AudioSyncService {
     if (this.audio) {
       this.audio.pause();
       this.audio.currentTime = 0;
-      URL.revokeObjectURL(this.audio.src);
+      try {
+        URL.revokeObjectURL(this.audio.src);
+      } catch (e) {
+        console.warn('Failed to revoke audio URL:', e);
+      }
       this.audio = null;
     }
+    
+    // Clear words array to prevent stale references
+    this.words = [];
+    
+    console.log('🧹 Audio sync service completely cleaned up');
   }
 
   /**

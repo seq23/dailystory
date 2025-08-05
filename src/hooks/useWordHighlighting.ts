@@ -26,8 +26,11 @@ export const useWordHighlighting = (text: string, isAudioPlaying: boolean) => {
     }
   }, [isAudioPlaying, startAudioHighlighting, stopAudioHighlighting]);
 
-  // Cleanup on text change (new page/story)
+  // Enhanced cleanup on text change (new page/story)
   useEffect(() => {
+    // Clear highlighting immediately when text changes
+    clearHighlighting();
+    
     return () => {
       if (cleanupRef.current) {
         cleanupRef.current();

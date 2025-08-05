@@ -301,10 +301,15 @@ export class EnhancedAudioService {
       this.mobileAudioManager.stopAudio();
     });
     
+    // Clear speech synthesis if active
+    if ('speechSynthesis' in window) {
+      speechSynthesis.cancel();
+    }
+    
     this.isPlaying = false;
     this.clearHighlighting();
     
-    console.log('🛑 Audio stopped and highlighting cleared');
+    console.log('🛑 Enhanced audio service completely stopped');
   }
 
   adjustSpeed(newSpeed: number): void {
@@ -437,17 +442,17 @@ export class EnhancedAudioService {
     this.totalWords = wordsWithIndices.length;
     this.currentWordIndex = 0;
     
-    // Optimized timing calculation for better sync
-    const calculateWordInterval = (word: string, index: number): number => {
-      const baseInterval = 280; // Optimized base timing for Jessica voice
-      const speedAdjustment = 1 / speed;
-      const hasPunctuation = /[.!?]/.test(word);
-      const pauseAfterPunctuation = hasPunctuation ? 200 : 0;
-      const wordLength = word.length;
-      const lengthAdjustment = wordLength > 6 ? 30 : 0;
-      
-      return (baseInterval * speedAdjustment) + pauseAfterPunctuation + lengthAdjustment;
-    };
+      // Recalibrated timing calculation for accurate sync
+      const calculateWordInterval = (word: string, index: number): number => {
+        const baseInterval = 200; // Recalibrated base timing for Jessica voice
+        const speedAdjustment = 1 / speed;
+        const hasPunctuation = /[.!?]/.test(word);
+        const pauseAfterPunctuation = hasPunctuation ? 150 : 0;
+        const wordLength = word.length;
+        const lengthAdjustment = wordLength > 6 ? 20 : 0;
+        
+        return (baseInterval * speedAdjustment) + pauseAfterPunctuation + lengthAdjustment;
+      };
 
     const highlightNext = () => {
       if (this.currentWordIndex < wordsWithIndices.length && this.isPlaying) {

@@ -124,6 +124,12 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
   const [pagesAdded, setPagesAdded] = useState(0);
   const [hasShownCompletionToast, setHasShownCompletionToast] = useState(false);
   const [highlightedWordIndex, setHighlightedWordIndex] = useState<number | undefined>(undefined);
+  
+  // Reset highlighting when page changes
+  useEffect(() => {
+    setHighlightedWordIndex(-1);
+    console.log('🔄 Page changed, resetting highlights');
+  }, [currentPage]);
 
   // Character consistency - store original character details  
   const [establishedCharacter, setEstablishedCharacter] = useState<EstablishedCharacter | null>(null);

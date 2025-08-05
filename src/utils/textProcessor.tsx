@@ -33,6 +33,14 @@ export const processTextForPhonetics = (
     const wordOnlyIndex = wordOnlyArray.findIndex(item => item.originalIndex === index);
     const isHighlighted = highlightedWordIndex !== undefined && highlightedWordIndex !== -1 && highlightedWordIndex === wordOnlyIndex;
     
+    // Clear highlighting if index is -1 (cleanup signal)
+    if (highlightedWordIndex === -1) {
+      // Remove any existing highlight classes from all elements
+      document.querySelectorAll('.bg-yellow-200\\/80, .dark\\:bg-yellow-800\\/60, .animate-pulse').forEach(el => {
+        el.classList.remove('bg-yellow-200/80', 'dark:bg-yellow-800/60', 'animate-pulse', 'transition-all', 'duration-500', 'shadow-md', 'rounded-sm');
+      });
+    }
+    
     return (
       <MobileOptimizedInteractiveWord 
         key={`${index}-${word}`} 

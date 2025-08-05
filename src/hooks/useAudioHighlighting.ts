@@ -45,6 +45,9 @@ export const useAudioHighlighting = () => {
     setHighlightedWord(-1);
     setSyncOffset(0);
     setIsAudioPlaying(false);
+    
+    // Force reset highlighting state
+    resetHighlighting();
   };
 
   // Setup cleanup callback when component mounts
