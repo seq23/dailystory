@@ -687,12 +687,11 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
       const allPages = continuationStory.segments.map(s => s.text);
       const newPages = allPages.slice(existingPageCount);
       
-      // Check if we'd exceed the 90-page limit
-      const currentPageInfo = SessionPageTracker.getPageInfo();
-      if (currentPageInfo.pagesViewed + newPages.length > currentPageInfo.maxPages) {
+      // Check if we'd exceed the 20-page story limit
+      if (story.length + newPages.length > 20) {
         toast({
-          title: "Free Trial Limit Reached",
-          description: `You've reached the 90-page free trial limit. Upgrade to premium for unlimited reading!`,
+          title: "Story Length Limit Reached",
+          description: `This story has reached the 20-page limit. Start a new story to continue reading!`,
           variant: "destructive"
         });
         setIsLoading(false);
@@ -706,9 +705,8 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
       // Update story max pages to reflect the new total possible pages
       setStoryMaxPages(prev => prev + newPages.length);
       
-      // Track added pages
+      // Track navigation for analytics only
       SessionPageTracker.trackPagesAdded(newPages.length);
-      setPageInfo(SessionPageTracker.getPageInfo());
       
       // Initialize placeholder images
       const placeholderImages = newPages.map((_, i) => ({ 
@@ -1173,15 +1171,6 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                       </span>
                     </p>
                     
-                    {/* Session Progress Indicator */}
-                    <ProgressIndicator
-                      pagesViewed={pageInfo.pagesViewed}
-                      maxPages={pageInfo.maxPages}
-                      isNearLimit={pageInfo.isNearLimit}
-                      hasReachedLimit={pageInfo.hasReachedLimit}
-                      isPremium={false}
-                      className="mt-2"
-                    />
                   </div>
                 </div>
                 
