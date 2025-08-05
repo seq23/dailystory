@@ -1172,7 +1172,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                             showAddPagesAlert && canAddMorePages
                               ? 'animate-bounce bg-amber-100 border-amber-400 text-amber-700 shadow-lg ring-2 ring-amber-300' 
                               : showReminderPulse && canAddMorePages
-                              ? 'animate-glow-pulse'
+                              ? 'animate-bounce bg-amber-100 border-amber-400 text-amber-700 shadow-lg ring-2 ring-amber-300'
                               : canAddMorePages
                               ? 'bg-blue-50 hover:bg-blue-100 border-blue-200'
                               : 'bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed'

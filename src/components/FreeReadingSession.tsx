@@ -1339,7 +1339,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                                 showAddPagesAlert && currentPage === story.length - 1
                                   ? 'animate-bounce bg-amber-100 border-amber-400 text-amber-700 shadow-lg ring-2 ring-amber-300' 
                                   : showReminderPulse && currentPage === story.length - 1
-                                  ? 'animate-glow-pulse'
+                                  ? 'animate-bounce bg-amber-100 border-amber-400 text-amber-700 shadow-lg ring-2 ring-amber-300'
                                   : currentPage === story.length - 1
                                     ? 'bg-blue-50 hover:bg-blue-100 border-blue-200'
                                     : 'bg-gray-100 border-gray-300 cursor-not-allowed opacity-50'
