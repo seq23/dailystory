@@ -218,7 +218,45 @@ export class EnhancedAudioService {
           // Cancel any existing speech
           speechSynthesis.cancel();
           
-          const utterance = new SpeechSynthesisUtterance(syllable);
+          // Convert syllables to speech-friendly pronunciations
+          const speechFriendlyMap: Record<string, string> = {
+            'geh': 'get',
+            'geth': 'geth',
+            'ther': 'ther',
+            'tuh': 'tuh',
+            'fam': 'fam',
+            'uh': 'uh',
+            'lee': 'lee',
+            'maj': 'madge',
+            'ih': 'ih',
+            'kul': 'cool',
+            'wun': 'wun',
+            'der': 'der',
+            'ful': 'full',
+            'beau': 'bow',
+            'tih': 'tee',
+            'rih': 'ree',
+            'mem': 'mem',
+            'ber': 'ber',
+            'dif': 'diff',
+            'er': 'er',
+            'ent': 'ent',
+            'por': 'pour',
+            'tant': 'tant',
+            'ad': 'add',
+            'ven': 'ven',
+            'cher': 'cher',
+            'kar': 'car',
+            'ik': 'ick',
+            'ter': 'ter',
+            'fay': 'fay',
+            'vor': 'vor',
+            'it': 'it'
+          };
+          
+          const pronunciationText = speechFriendlyMap[syllable] || syllable;
+          
+          const utterance = new SpeechSynthesisUtterance(pronunciationText);
           utterance.rate = 0.7; // Slower for clear pronunciation
           utterance.pitch = 1.0;
           utterance.volume = 1.0;
@@ -235,7 +273,7 @@ export class EnhancedAudioService {
           }
           
           utterance.onend = () => {
-            console.log(`✅ Syllable "${syllable}" finished playing`);
+            console.log(`✅ Syllable "${syllable}" (pronounced as "${pronunciationText}") finished playing`);
             resolve();
           };
           
@@ -245,7 +283,7 @@ export class EnhancedAudioService {
           };
           
           speechSynthesis.speak(utterance);
-          console.log(`🗣️ Started playing syllable: "${syllable}"`);
+          console.log(`🗣️ Started playing syllable: "${syllable}" (pronounced as "${pronunciationText}")`);
         } catch (error) {
           console.error(`❌ Failed to create utterance for "${syllable}":`, error);
           reject(error);
@@ -499,7 +537,7 @@ export class EnhancedAudioService {
       'flowers': ['flow', 'ers'],
       'wonderful': ['wun', 'der', 'ful'],
       'beautiful': ['beau', 'tih', 'ful'],
-      'together': ['toh', 'geh', 'ther'],
+      'together': ['toh', 'get', 'her'],
       'remember': ['rih', 'mem', 'ber'],
       'different': ['dif', 'er', 'ent'],
       'important': ['im', 'por', 'tant'],
