@@ -6,7 +6,7 @@ import {
   GradeLevel, 
   difficultyToGradeLevel 
 } from '@/constants/gradeBased';
-import { unifiedTemplateSystem } from '@/constants/gradeBased/unifiedTemplateSystem';
+import { getTemplateByGradeLevel } from '@/constants/gradeBased/unifiedTemplateSystem';
 import { TemplatePerformanceCache } from './templatePerformanceCache';
 import { TemplatePerformanceMonitor } from './templatePerformanceMonitor';
 
@@ -177,7 +177,9 @@ export class OptimizedTemplateLoader {
     const startTime = performance.now();
     
     try {
-      const templates = unifiedTemplateSystem.getTemplatesForGrade(gradeLevel);
+      // Simulate getting templates for the grade level
+      const templatePages = getTemplateByGradeLevel(gradeLevel, 0);
+      const templates = [{ pages: templatePages, gradeLevel, id: `${gradeLevel}-0` }];
       
       // Optimize template data structure for faster access
       const optimizedTemplates = templates.map((template, index) => ({

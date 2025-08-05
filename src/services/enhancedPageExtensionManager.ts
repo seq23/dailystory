@@ -4,12 +4,15 @@
 import { UserInfo, DifficultyLevel } from '@/types';
 import { 
   GradeLevel, 
-  difficultyToGradeLevel 
+  difficultyToGradeLevel,
+  validateSentence,
+  getVocabularySet,
+  LEVEL_0_VOCABULARY,
+  LEVEL_1_VOCABULARY,
+  LEVEL_2_VOCABULARY,
+  LEVEL_3_VOCABULARY,
+  LEVEL_4_VOCABULARY
 } from '@/constants/gradeBased';
-import { level0Vocabulary } from '@/constants/level0Vocabulary';
-import { level1Vocabulary } from '@/constants/level1Vocabulary';
-import { level2Vocabulary } from '@/constants/level2Vocabulary';
-import { level3Vocabulary } from '@/constants/level3Vocabulary';
 
 export interface ExtensionContext {
   currentPages: string[];
@@ -84,8 +87,7 @@ export class EnhancedPageExtensionManager {
     targetLength: number = 25
   ): string {
     const { characterNames, storyTheme, mainPlotPoints, gradeLevel } = context;
-    const vocabularyMap = { 0: level0Vocabulary, 1: level1Vocabulary, 2: level2Vocabulary, 3: level3Vocabulary, 4: level3Vocabulary };
-    const vocabulary = vocabularyMap[gradeLevel] || level0Vocabulary;
+    const vocabulary = Array.from(getVocabularySet(gradeLevel));
     
     // Ensure we have at least one character name
     const mainCharacter = characterNames[0] || 'Sam';
@@ -185,8 +187,8 @@ export class EnhancedPageExtensionManager {
       const newPage = this.generateContextAwarePage(context, pageNumber);
       
       // Validate vocabulary compliance
-      const isCompliant = validateSentence(newPage, gradeLevel);
-      if (isCompliant) {
+      const validationResult = validateSentence(newPage, gradeLevel);
+      if (validationResult.isValid) {
         newPages.push(newPage);
         // Update context with new vocabulary
         const newWords = newPage.toLowerCase().split(/\s+/);
@@ -200,7 +202,7 @@ export class EnhancedPageExtensionManager {
 
     // Calculate quality metrics
     const continuityScore = this.calculateContinuityScore(pages, newPages, context);
-    const vocabularyCompliant = newPages.every(page => validateSentence(page, gradeLevel));
+    const vocabularyCompliant = newPages.every(page => validateSentence(page, gradeLevel).isValid);
     const storyArcComplete = this.assessStoryCompletion(pages, newPages, context);
 
     return {
@@ -254,7 +256,7 @@ export class EnhancedPageExtensionManager {
     }
 
     // Check vocabulary level consistency
-    const vocabulary = getGradeLevelVocabulary(context.gradeLevel);
+    const vocabulary = Array.from(getVocabularySet(context.gradeLevel));
     const newWords = newText.split(/\s+/).map(w => w.replace(/[.,!?]/g, ''));
     const compliantWords = newWords.filter(word => vocabulary.includes(word.toLowerCase()));
     if (compliantWords.length / newWords.length > 0.8) {
