@@ -134,52 +134,71 @@ export class ComprehensiveLevel0Audit {
   }
 
   /**
-   * Test story generation with audit
+   * Test story generation for a specific level
    */
   static async testStoryGeneration(userName: string = 'Sequoia', storyCount: number = 3, testLevel: number = 0): Promise<void> {
-    console.log(`\n🧪 Testing Level 0 story generation with username "${userName}"...`);
+    console.log(`\n🧪 Testing Level ${testLevel} Story Generation (${storyCount} stories):`);
     
     // Import the enhanced template manager
-    const { EnhancedTemplateManager } = await import('@/services/enhancedTemplateManager');
+    const { EnhancedTemplateManager } = await import('../services/enhancedTemplateManager');
     
-    for (let i = 0; i < storyCount; i++) {
+    // Map test level to difficulty
+    const difficultyMap = ['beginner', 'easy', 'medium', 'hard', 'expert'];
+    const difficulty = difficultyMap[testLevel] as any;
+    
+    for (let i = 1; i <= storyCount; i++) {
+      console.log(`\n--- Story ${i} for Level ${testLevel} ---`);
+      
       try {
-        const story = await EnhancedTemplateManager.generateEnhancedStory({
-          userInfo: {
-            name: userName,
-            age: 4,
-            grade: 'PreK',
+        const result = await EnhancedTemplateManager.generateEnhancedStory({
+          userInfo: { 
+            name: userName, 
+            age: 6 + testLevel, 
+            grade: `${testLevel}st` as any,
             nativeLanguage: 'en',
             learningGoal: 'improve-english-reading',
-            avatar: { type: 'prefer-not-to-answer', skinTone: 'medium' },
+            avatar: { type: 'girl', skinTone: 'medium' },
             favoriteColor: 'blue',
             favoriteAnimal: 'cat',
             hobbies: 'reading',
-            favoriteFood: 'apples',
+            favoriteFood: 'pizza',
             specialRequest: ''
           },
-          difficulty: 'beginner',
-          isPremium: true // Test premium extensions
+          difficulty: difficulty,
+          isPremium: true,
+          enableExtensions: true
         });
-
-        const audit = Level0VocabularyAuditor.auditStoryPages(story.pages, userName);
         
-        console.log(`\n📖 Test Story ${i + 1}:`);
-        console.log(`├─ Pages: ${story.pages.length}`);
-        console.log(`├─ Vocabulary Compliant: ${audit.isCompliant ? '✅' : '❌'}`);
-        console.log(`├─ Compliance: ${audit.compliancePercentage}%`);
-        console.log(`└─ Violations: ${audit.totalViolations}`);
-
-        if (!audit.isCompliant) {
-          console.log('🚨 Violations found:', audit.violations.map(v => v.word).join(', '));
-          console.log('📄 Story content:');
-          story.pages.forEach((page, index) => {
-            console.log(`   Page ${index + 1}: ${page}`);
-          });
+        console.log(`✓ Generated ${result.pages.length} pages`);
+        console.log(`✓ Vocabulary compliant: ${result.vocabularyCompliant}`);
+        if (!result.vocabularyCompliant) {
+          console.warn(`⚠️ Validation errors: ${result.validationErrors.join(', ')}`);
         }
+        
+        // Quick audit each story
+        const audit = Level0VocabularyAuditor.auditStoryPages(result.pages, userName);
+        if (testLevel === 0 && !audit.isCompliant) {
+          console.error(`❌ Level 0 story has vocabulary violations: ${audit.violations.map(v => v.word).join(', ')}`);
+        }
+        
       } catch (error) {
-        console.error(`❌ Error generating test story ${i + 1}:`, error);
+        console.error(`❌ Error generating Level ${testLevel} story ${i}:`, error);
       }
+    }
+    
+    // Test extension templates specifically
+    console.log(`\n🔧 Testing Level ${testLevel} Extension Templates:`);
+    try {
+      const { ExtensionTemplateValidator } = await import('../utils/extensionTemplateValidator');
+      const gradeTest = ExtensionTemplateValidator.testGradeLevel(testLevel as any, userName);
+      console.log(`✓ Extension template compliance: ${gradeTest.isCompliant ? 'PASS' : 'FAIL'}`);
+      if (!gradeTest.isCompliant) {
+        gradeTest.results.filter(r => !r.isValid).forEach(violation => {
+          console.warn(`⚠️ Template violation: "${violation.template}" - Invalid: ${violation.invalidWords.join(', ')}`);
+        });
+      }
+    } catch (error) {
+      console.warn(`⚠️ Could not test extension templates:`, error);
     }
   }
 }
