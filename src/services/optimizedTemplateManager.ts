@@ -1,22 +1,24 @@
-// Optimized Template Manager - Phase 2 & 3 Implementation
-// Handles 6-page templates and premium/free differentiation
+// Enhanced Optimized Template Manager - Migrated to Grade-Based System
+// Now uses the new Enhanced Template Manager as its core engine
 
 import { UserInfo, DifficultyLevel } from '@/types';
-import { getLevel0Template6Page, getLevel0TemplateCount } from '@/constants/level0Templates6Page';
-import { validateByMode, VocabularyMode } from '@/constants/dolchPrePrimer';
-import { SessionTemplateManager } from './sessionTemplateManager';
+import { EnhancedTemplateManager } from './enhancedTemplateManager';
+import { 
+  difficultyToGradeLevel,
+  validateSentence 
+} from '@/constants/gradeBased';
 
 interface OptimizedTemplateOptions {
   userInfo?: UserInfo;
   difficulty: DifficultyLevel;
   isPremium?: boolean;
-  vocabularyMode?: VocabularyMode;
   templateIndex?: number;
 }
 
 interface OptimizedTemplateResult {
   pages: string[];
   templateIndex: number;
+  gradeLevel: number;
   actualPages: number;
   targetPages: number;
   isPremium: boolean;
@@ -24,201 +26,121 @@ interface OptimizedTemplateResult {
   validationErrors: string[];
   metadata: {
     difficulty: DifficultyLevel;
-    vocabularyMode: VocabularyMode;
     wasExtended: boolean;
     extensionMethod?: string;
+    systemVersion: 'enhanced-unified-v1';
   };
 }
 
 export class OptimizedTemplateManager {
-  // Premium page counts by difficulty (Phase 3)
-  private static readonly PREMIUM_PAGE_COUNTS = {
-    'beginner': 6,  // Level 0
-    'easy': 8,
-    'medium': 10,
-    'hard': 12,
-    'expert': 15
-  } as const;
-
-  // Free users get universal 10-page experience
-  private static readonly FREE_PAGE_COUNT = 10;
-
   /**
-   * Generate optimized story with proper page counts and vocabulary compliance
+   * Generate optimized story using Enhanced Template Manager
+   * This is now a wrapper around the new grade-based system
    */
   static async generateOptimizedStory(options: OptimizedTemplateOptions): Promise<OptimizedTemplateResult> {
     const {
       userInfo,
       difficulty,
       isPremium = false,
-      vocabularyMode = 'enhanced-level0',
       templateIndex
     } = options;
 
-    // Phase 3: Determine target page count
-    const targetPages = isPremium 
-      ? this.PREMIUM_PAGE_COUNTS[difficulty]
-      : this.FREE_PAGE_COUNT;
-
-    // Phase 2: Get 6-page template (no dynamic extension needed)
-    let pages: string[];
-    let selectedTemplateIndex: number;
-
-    if (difficulty === 'beginner') {
-      // Use Level 0 system
-      selectedTemplateIndex = templateIndex ?? await this.getNextLevel0TemplateIndex();
-      pages = getLevel0Template6Page(selectedTemplateIndex);
-    } else {
-      // For other levels, we'll need to implement similar 6-page template systems
-      // For now, use Level 0 as fallback (this will be expanded)
-      selectedTemplateIndex = templateIndex ?? await this.getNextLevel0TemplateIndex();
-      pages = getLevel0Template6Page(selectedTemplateIndex);
-    }
-
-    // Handle page count adjustment if needed
-    const actualPages = pages.length;
-    let wasExtended = false;
-    let extensionMethod: string | undefined;
-
-    // If target pages != actual pages, we need to adjust
-    if (targetPages !== actualPages) {
-      if (targetPages > actualPages) {
-        // Extend story intelligently
-        pages = await this.extendStoryPages(pages, targetPages, userInfo, vocabularyMode);
-        wasExtended = true;
-        extensionMethod = 'intelligent-extension';
-      } else {
-        // Truncate to target (less common)
-        pages = pages.slice(0, targetPages);
-        extensionMethod = 'truncation';
-      }
-    }
-
-    // Validate vocabulary compliance
-    const validation = this.validateStoryVocabulary(pages, vocabularyMode, userInfo?.name);
-
-    return {
-      pages,
-      templateIndex: selectedTemplateIndex,
-      actualPages: pages.length,
-      targetPages,
-      isPremium,
-      vocabularyCompliant: validation.isValid,
-      validationErrors: validation.errors,
-      metadata: {
+    try {
+      // Use Enhanced Template Manager as the core engine
+      const enhancedResult = await EnhancedTemplateManager.generateEnhancedStory({
+        userInfo,
         difficulty,
-        vocabularyMode,
-        wasExtended,
-        extensionMethod
-      }
-    };
-  }
+        isPremium,
+        templateIndex,
+        enableExtensions: true
+      });
 
-  /**
-   * Intelligent story extension that maintains vocabulary compliance
-   */
-  private static async extendStoryPages(
-    originalPages: string[], 
-    targetPages: number, 
-    userInfo?: UserInfo,
-    vocabularyMode: VocabularyMode = 'enhanced-level0'
-  ): Promise<string[]> {
-    const pagesToAdd = targetPages - originalPages.length;
-    const extendedPages = [...originalPages];
+      // Convert to OptimizedTemplateResult format for backward compatibility
+      return {
+        pages: enhancedResult.pages,
+        templateIndex: enhancedResult.templateIndex,
+        gradeLevel: enhancedResult.gradeLevel,
+        actualPages: enhancedResult.actualPages,
+        targetPages: enhancedResult.targetPages,
+        isPremium: enhancedResult.isPremium,
+        vocabularyCompliant: enhancedResult.vocabularyCompliant,
+        validationErrors: enhancedResult.validationErrors,
+        metadata: {
+          difficulty,
+          wasExtended: enhancedResult.metadata.wasExtended,
+          extensionMethod: enhancedResult.metadata.extensionMethod,
+          systemVersion: 'enhanced-unified-v1'
+        }
+      };
 
-    // Simple but effective extension strategy
-    for (let i = 0; i < pagesToAdd; i++) {
-      const lastPage = extendedPages[extendedPages.length - 1];
-      const newPage = this.generateContinuationPage(lastPage, userInfo, vocabularyMode);
-      extendedPages.push(newPage);
+    } catch (error) {
+      console.error('Error in OptimizedTemplateManager:', error);
+      
+      // Fallback to basic generation
+      const fallbackResult = await EnhancedTemplateManager.generateEnhancedStory({
+        userInfo: userInfo || { 
+          name: 'Guest', 
+          readingLevel: 'beginner',
+          age: 5,
+          grade: 'K',
+          nativeLanguage: 'en',
+          learningGoal: 'improve-english-reading',
+          avatar: { type: 'prefer-not-to-answer', skinTone: 'medium' },
+          favoriteColor: 'blue',
+          favoriteAnimal: 'cat',
+          hobbies: 'reading',
+          favoriteFood: 'pizza',
+          specialRequest: ''
+        },
+        difficulty: 'beginner',
+        isPremium: false,
+        enableExtensions: false
+      });
+
+      return {
+        pages: fallbackResult.pages,
+        templateIndex: fallbackResult.templateIndex,
+        gradeLevel: fallbackResult.gradeLevel,
+        actualPages: fallbackResult.actualPages,
+        targetPages: fallbackResult.targetPages,
+        isPremium: false,
+        vocabularyCompliant: fallbackResult.vocabularyCompliant,
+        validationErrors: fallbackResult.validationErrors,
+        metadata: {
+          difficulty: 'beginner',
+          wasExtended: false,
+          extensionMethod: 'fallback',
+          systemVersion: 'enhanced-unified-v1'
+        }
+      };
     }
-
-    return extendedPages;
   }
 
   /**
-   * Generate a continuation page that maintains vocabulary compliance
-   */
-  private static generateContinuationPage(
-    lastPage: string, 
-    userInfo?: UserInfo,
-    vocabularyMode: VocabularyMode = 'enhanced-level0'
-  ): string {
-    const userName = userInfo?.name || 'I';
-    
-    // Simple continuation templates that maintain vocabulary compliance
-    const continuationTemplates = [
-      `${userName} had fun today.`,
-      `${userName} learned something new.`,
-      `${userName} smiled and laughed.`,
-      `${userName} wants to play more.`,
-      `${userName} loves this adventure.`,
-      `${userName} will remember this day.`,
-      `${userName} feels very happy.`,
-      `${userName} cannot wait to return.`
-    ];
-
-    const randomTemplate = continuationTemplates[Math.floor(Math.random() * continuationTemplates.length)];
-    
-    // Validate the continuation page
-    const validation = validateByMode(randomTemplate, vocabularyMode, userInfo?.name);
-    
-    if (validation.isValid) {
-      return randomTemplate;
-    }
-    
-    // Fallback to ultra-simple page
-    return `${userName} is happy.`;
-  }
-
-  /**
-   * Validate entire story for vocabulary compliance
-   */
-  private static validateStoryVocabulary(
-    pages: string[], 
-    vocabularyMode: VocabularyMode,
-    userName?: string
-  ): { isValid: boolean; errors: string[] } {
-    const errors: string[] = [];
-    
-    for (let i = 0; i < pages.length; i++) {
-      const validation = validateByMode(pages[i], vocabularyMode, userName);
-      if (!validation.isValid) {
-        errors.push(`Page ${i + 1}: Invalid words - ${validation.invalidWords.join(', ')}`);
-      }
-    }
-
-    return {
-      isValid: errors.length === 0,
-      errors
-    };
-  }
-
-  /**
-   * Get next Level 0 template index with anti-repetition
-   */
-  private static async getNextLevel0TemplateIndex(): Promise<number> {
-    const templateCount = getLevel0TemplateCount();
-    return Math.floor(Math.random() * templateCount); // Simple random for now
-  }
-
-  /**
-   * Get analytics for the optimized template system
+   * Get analytics - now uses Enhanced Template Manager
    */
   static getOptimizedAnalytics() {
+    const enhancedAnalytics = EnhancedTemplateManager.getEnhancedAnalytics();
+    
     return {
-      level0Templates: getLevel0TemplateCount(),
-      totalLevel0Pages: getLevel0TemplateCount() * 6,
-      premiumPageCounts: this.PREMIUM_PAGE_COUNTS,
-      freePageCount: this.FREE_PAGE_COUNT,
-      sessionStats: { templatesUsed: 0, isRepeating: false } // Simplified for now
+      ...enhancedAnalytics,
+      systemVersion: 'enhanced-unified-v1',
+      migratedToGradeBased: true,
+      backwardCompatible: true
     };
   }
 
   /**
-   * Clear session for testing
+   * Clear session - now uses Enhanced Template Manager
    */
   static clearOptimizedSession(): void {
-    // Clear session logic here
+    EnhancedTemplateManager.clearSession();
+  }
+
+  /**
+   * Get system health status
+   */
+  static getSystemHealth() {
+    return EnhancedTemplateManager.getSystemHealth();
   }
 }

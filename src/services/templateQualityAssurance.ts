@@ -396,7 +396,7 @@ export class TemplateQualityAssurance {
           userInfo: testUserInfo,
           difficulty: 'beginner',
           isPremium: true,
-          vocabularyMode: 'strict-dolch' // Test with strict mode
+          templateIndex: undefined // Test with auto-selection
         });
         
         // Check if user name is properly allowed even in strict mode
