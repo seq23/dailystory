@@ -92,42 +92,42 @@ export class EnhancedPageExtensionManager {
     // Ensure we have at least one character name
     const mainCharacter = characterNames[0] || 'Sam';
     
-    // Create continuation templates based on theme and context
+    // Create continuation templates based on theme and context - Level 0 vocabulary only
     const continuationTemplates = {
       adventure: [
-        `${mainCharacter} found something new.`,
-        `They went to a new place.`,
-        `${mainCharacter} saw something big.`,
-        `The adventure was not over yet.`,
-        `${mainCharacter} had to be brave.`
+        `${mainCharacter} can see something.`,
+        `${mainCharacter} can go up.`,
+        `${mainCharacter} can look.`,
+        `${mainCharacter} can run.`,
+        `${mainCharacter} is big.`
       ],
       family: [
-        `${mainCharacter} went home.`,
-        `The family was happy.`,
-        `They all sat together.`,
-        `${mainCharacter} told them about the day.`,
-        `Everyone smiled and laughed.`
+        `${mainCharacter} can go home.`,
+        `${mainCharacter} sees my family.`,
+        `We are together.`,
+        `${mainCharacter} is happy.`,
+        `We can play.`
       ],
       friendship: [
-        `${mainCharacter} met a new friend.`,
-        `They played together.`,
-        `The friends had fun.`,
-        `${mainCharacter} was happy.`,
-        `They wanted to play again.`
+        `${mainCharacter} can see a friend.`,
+        `We can play.`,
+        `${mainCharacter} and me play.`,
+        `${mainCharacter} is happy.`,
+        `We like to play.`
       ],
       animals: [
-        `${mainCharacter} saw the animal again.`,
-        `The animal was friendly.`,
-        `They played together.`,
-        `${mainCharacter} gave it some food.`,
-        `The animal was happy.`
+        `${mainCharacter} can see the cat.`,
+        `The cat is little.`,
+        `${mainCharacter} can play.`,
+        `${mainCharacter} likes the cat.`,
+        `The cat is happy.`
       ],
       school: [
-        `${mainCharacter} learned something new.`,
-        `The teacher was proud.`,
-        `All the kids clapped.`,
-        `${mainCharacter} felt good.`,
-        `School was fun that day.`
+        `${mainCharacter} can go to school.`,
+        `${mainCharacter} can see books.`,
+        `${mainCharacter} can look.`,
+        `${mainCharacter} is happy.`,
+        `School is fun.`
       ]
     };
 
@@ -149,15 +149,17 @@ export class EnhancedPageExtensionManager {
     const compliantWords = words.map(word => {
       const cleanWord = word.replace(/[.,!?]/g, '').toLowerCase();
       if (!vocabulary.includes(cleanWord) && cleanWord.length > 2) {
-        // Find a simpler alternative
+        // Find a simpler alternative using only Dolch Pre-Primer vocabulary
         const simpleAlternatives: { [key: string]: string } = {
-          'adventure': 'trip',
-          'discovered': 'found',
+          'adventure': 'play',
+          'discovered': 'see',
           'enormous': 'big',
-          'beautiful': 'nice',
+          'beautiful': 'pretty',
           'exciting': 'fun',
           'wonderful': 'good',
-          'amazing': 'great'
+          'amazing': 'good',
+          'magical': 'pretty',
+          'explored': 'see'
         };
         return simpleAlternatives[cleanWord] || 'fun';
       }
@@ -194,8 +196,9 @@ export class EnhancedPageExtensionManager {
         const newWords = newPage.toLowerCase().split(/\s+/);
         newWords.forEach(word => context.vocabularyUsed.add(word.replace(/[.,!?]/g, '')));
       } else {
-        // Fallback to simpler page
-        const simplePage = `${context.characterNames[0] || 'Sam'} was happy. The end.`;
+        // Fallback to simpler page using only Dolch Pre-Primer vocabulary
+        const userName = context.characterNames[0] || 'Sam';
+        const simplePage = `${userName} can play. ${userName} is happy.`;
         newPages.push(simplePage);
       }
     }

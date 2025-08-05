@@ -114,6 +114,18 @@ export class EnhancedTemplateManager {
     // Validate vocabulary compliance
     const validation = this.validateStoryVocabulary(pages, gradeLevel, userInfo?.name);
     
+    // Log which type of templates were used (for debugging vocabulary issues)
+    console.log(`🎯 Level ${gradeLevel} Story Generation:`, {
+      totalPages: pages.length,
+      baseTemplatePages: basePageCount,
+      extensionPages: pages.length - basePageCount,
+      userName: userInfo?.name,
+      vocabularyCompliant: validation.isValid,
+      difficulty: options.difficulty,
+      wasExtended: wasExtended,
+      extensionMethod
+    });
+    
     return {
       pages,
       templateIndex: selectedIndex,

@@ -25,27 +25,27 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
       setup: [
         "{name} sees a {animal}.",
         "The {animal} is {color}.",
-        "{name} likes it."
+        "{name} can play."
       ],
       development: [
-        "They play together.",
-        "{name} gives it {food}.",
+        "{name} and {animal} play.",
+        "They run and jump.",
         "The {animal} is happy."
       ],
       climax: [
         "{name} helps the {animal}.",
-        "They are friends.",
-        "Good friends together."
+        "They are good friends.",
+        "They have fun."
       ],
       resolution: [
         "{name} is happy.",
         "The {animal} is happy.",
-        "Fun day today."
+        "It is a good day."
       ],
       contextualContinuations: [
         "{name} says bye.",
-        "See you soon.",
-        "Good friends always."
+        "See you.",
+        "We are friends."
       ]
     }
   ],
@@ -363,6 +363,11 @@ export class EnhancedFallbackManager {
    */
   private static getDifficultyVocabulary(difficulty: DifficultyLevel) {
     const vocabularies = {
+      beginner: {
+        animals: ['cat', 'dog', 'bird', 'fish', 'frog'],
+        colors: ['red', 'blue', 'yellow'],
+        objects: ['ball', 'book', 'toy']
+      },
       easy: {
         animals: ['cat', 'dog', 'bird', 'fish', 'bear', 'frog'],
         colors: ['red', 'blue', 'green', 'yellow', 'pink', 'brown'],
@@ -399,6 +404,11 @@ export class EnhancedFallbackManager {
     const name = NameFormatter.capitalize(userInfo.name || 'Alex');
     
     const basicFallbacks = {
+      beginner: [
+        `${name} can play.`,
+        `${name} is happy.`,
+        `${name} has fun.`
+      ],
       easy: [
         `${name} has fun today.`,
         `${name} plays outside.`,
