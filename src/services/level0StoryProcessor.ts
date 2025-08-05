@@ -6,7 +6,9 @@ import { LEVEL_0_STRICT_DOLCH_TEMPLATES, getLevel0StrictDolchTemplate, getLevel0
 import { LEVEL_0_PREMIUM_TEMPLATES, getLevel0PremiumTemplate, getLevel0PremiumTemplateCount } from '@/constants/level0TemplatesPremium';
 import { validateLevel0SentenceByUserType, type UserType } from '@/constants/dolchPrePrimer';
 import { HierarchicalSessionTemplateManager } from '@/services/hierarchicalSessionTemplateManager';
-import { SubscriptionManager } from '@/services/subscriptionManager';
+import { EnhancedSubscriptionManager as SubscriptionManager } from '@/services/enhancedSubscriptionManager';
+import { MultilingualTemplateManager } from '@/services/multilingualTemplateManager';
+import { ErrorHandlingManager } from '@/services/errorHandlingManager';
 import { Level0Simplifier } from '@/services/level0Simplifier';
 import type { UserInfo } from '@/types';
 
@@ -25,15 +27,61 @@ export class Level0StoryProcessor {
   static async generateStory(userInfo?: UserInfo): Promise<Level0StoryResult> {
     console.log('🎯 Level0StoryProcessor: Generating new Level 0 story with hierarchical system...');
     
-    // Check user subscription status to determine vocabulary tier
-    const isPremium = await SubscriptionManager.isPremiumUser();
-    const userType: UserType = isPremium ? 'premium' : 'free';
-    
-    console.log(`👤 Level0StoryProcessor: User type: ${userType} (vocabulary: ${userType === 'premium' ? '75+ words' : '40 words'})`);
-    
-    // Get next template using hierarchical system
-    const selection = HierarchicalSessionTemplateManager.getNextTemplate('beginner', isPremium);
-    
+    return await ErrorHandlingManager.executeWithRecovery(
+      async () => {
+        // Check user subscription status to determine vocabulary tier
+        const isPremium = await SubscriptionManager.isPremiumUser();
+        const userType: UserType = isPremium ? 'premium' : 'free';
+        
+        // Get appropriate language for templates
+        const templateLanguage = MultilingualTemplateManager.getTemplateLanguage(userInfo);
+        
+        console.log(`👤 Level0StoryProcessor: User type: ${userType} (vocabulary: ${userType === 'premium' ? '75+ words' : '40 words'}), language: ${templateLanguage}`);
+        
+        // Get next template using hierarchical system
+        const selection = HierarchicalSessionTemplateManager.getNextTemplate('beginner', isPremium);
+        
+        return await this.processStorySelection(selection, userInfo, userType, isPremium);
+      },
+      {
+        component: 'Level0StoryProcessor',
+        action: 'generateStory',
+        userInfo,
+        language: userInfo?.storyLanguagePreference || userInfo?.nativeLanguage
+      },
+      async () => {
+        // Emergency fallback
+        const emergencyContent = ErrorHandlingManager.getEmergencyContent(userInfo);
+        return {
+          content: emergencyContent,
+          templateIndex: -1,
+          isValid: true,
+          validationErrors: [],
+          isRepeating: true
+        };
+      }
+    ).then(result => {
+      if (result.success && result.data) {
+        return result.data;
+      } else {
+        console.warn('⚠️ Level0StoryProcessor: Using fallback content due to error:', result.error);
+        return result.fallback || {
+          content: ErrorHandlingManager.getEmergencyContent(userInfo),
+          templateIndex: -1,
+          isValid: true,
+          validationErrors: [],
+          isRepeating: true
+        };
+      }
+    });
+  }
+
+  private static async processStorySelection(
+    selection: any,
+    userInfo?: UserInfo,
+    userType: UserType = 'free',
+    isPremium: boolean = false
+  ): Promise<Level0StoryResult> {
     let processedPages: string[] = [];
     let templateIndex = selection.templateIndex;
     let isValid = true;
@@ -96,14 +144,9 @@ export class Level0StoryProcessor {
       } catch (error) {
         console.error('❌ Level0StoryProcessor: Fallback generation failed, using emergency content');
         
-        // Emergency ultra-simple content
-        processedPages = [
-          `${userInfo?.name || 'I'} see a cat.`,
-          `The cat is big.`,
-          `${userInfo?.name || 'I'} like the cat.`,
-          `We play and run.`,
-          `It is fun to play.`
-        ];
+        // Emergency ultra-simple content with language support
+        const templateLanguage = MultilingualTemplateManager.getTemplateLanguage(userInfo);
+        processedPages = MultilingualTemplateManager.getLanguageFallback(templateLanguage, userInfo);
         templateIndex = -1;
       }
     }

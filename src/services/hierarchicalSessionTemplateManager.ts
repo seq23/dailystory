@@ -3,7 +3,7 @@
 import type { DifficultyLevel } from "@/types";
 import { getTemplateCountByGradeLevel, getTemplateByGradeLevel } from "@/constants/gradeBased/unifiedTemplateSystem";
 import { difficultyToGradeLevel } from "@/constants/gradeBased";
-import { getLevel0Extension, getLevel0ExtensionCount } from "@/constants/gradeBased/level0ExtensionTemplates";
+import { getLevel0Extension, getLevel0ExtensionCount, LEVEL_0_FREE_EXTENSIONS, LEVEL_0_PREMIUM_EXTENSIONS } from "@/constants/gradeBased/level0ExtensionTemplates";
 
 interface HierarchicalTemplateState {
   baseTemplatesUsed: Set<string>;
@@ -27,32 +27,67 @@ interface TemplateSelection {
 // Session storage key
 const HIERARCHICAL_SESSION_KEY = 'time2read_hierarchical_template_session';
 
+// Import mobile session manager for reliable storage
+import { MobileSessionManager } from './mobileSessionManager';
+
 export class HierarchicalSessionTemplateManager {
+  // Memory fallback for when sessionStorage fails
+  private static memoryState: HierarchicalTemplateState | null = null;
+  private static subscriptionCache: { isPremium: boolean; timestamp: number } | null = null;
+  private static readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+  private static getLevel0ExtensionTemplates(isPremium: boolean): string[][] {
+    return isPremium ? LEVEL_0_PREMIUM_EXTENSIONS : LEVEL_0_FREE_EXTENSIONS;
+  }
+
   private static getSessionState(): HierarchicalTemplateState | null {
     try {
-      const stored = sessionStorage.getItem(HIERARCHICAL_SESSION_KEY);
-      if (!stored) return null;
+      const stored = MobileSessionManager.getItem(HIERARCHICAL_SESSION_KEY);
+      if (!stored) return this.memoryState;
       
       const parsed = JSON.parse(stored);
-      return {
-        baseTemplatesUsed: new Set(parsed.baseTemplatesUsed || []),
-        extensionTemplatesUsed: new Set(parsed.extensionTemplatesUsed || []),
-        fallbacksUsed: new Set(parsed.fallbacksUsed || []),
-        currentBaseShuffle: parsed.currentBaseShuffle || [],
-        currentExtensionShuffle: parsed.currentExtensionShuffle || [],
-        baseShuffleIndex: parsed.baseShuffleIndex || 0,
-        extensionShuffleIndex: parsed.extensionShuffleIndex || 0,
-        currentPhase: parsed.currentPhase || 'base',
-        sessionStartTime: parsed.sessionStartTime || Date.now()
+      const state: HierarchicalTemplateState = {
+        baseTemplatesUsed: new Set<string>(parsed.baseTemplatesUsed || []),
+        extensionTemplatesUsed: new Set<string>(parsed.extensionTemplatesUsed || []),
+        fallbacksUsed: new Set<string>(parsed.fallbacksUsed || []),
+        currentBaseShuffle: Array.isArray(parsed.currentBaseShuffle) ? parsed.currentBaseShuffle : [],
+        currentExtensionShuffle: Array.isArray(parsed.currentExtensionShuffle) ? parsed.currentExtensionShuffle : [],
+        baseShuffleIndex: typeof parsed.baseShuffleIndex === 'number' ? parsed.baseShuffleIndex : 0,
+        extensionShuffleIndex: typeof parsed.extensionShuffleIndex === 'number' ? parsed.extensionShuffleIndex : 0,
+        currentPhase: ['base', 'extension', 'fallback'].includes(parsed.currentPhase) ? parsed.currentPhase : 'base',
+        sessionStartTime: typeof parsed.sessionStartTime === 'number' ? parsed.sessionStartTime : Date.now()
       };
-    } catch {
-      return null;
+      
+      // Validate state integrity
+      if (this.validateSessionState(state)) {
+        this.memoryState = state; // Update memory backup
+        return state;
+      } else {
+        console.warn('⚠️ Session state corrupted, resetting...');
+        this.clearSession();
+        return null;
+      }
+    } catch (error) {
+      console.warn('⚠️ SessionStorage failed, using memory fallback:', error);
+      return this.memoryState;
     }
+  }
+
+  private static validateSessionState(state: HierarchicalTemplateState): boolean {
+    return (
+      state.currentPhase &&
+      ['base', 'extension', 'fallback'].includes(state.currentPhase) &&
+      Array.isArray(state.currentBaseShuffle) &&
+      Array.isArray(state.currentExtensionShuffle) &&
+      typeof state.baseShuffleIndex === 'number' &&
+      typeof state.extensionShuffleIndex === 'number' &&
+      typeof state.sessionStartTime === 'number'
+    );
   }
 
   private static saveSessionState(state: HierarchicalTemplateState): void {
     try {
-      sessionStorage.setItem(HIERARCHICAL_SESSION_KEY, JSON.stringify({
+      const serialized = JSON.stringify({
         baseTemplatesUsed: Array.from(state.baseTemplatesUsed),
         extensionTemplatesUsed: Array.from(state.extensionTemplatesUsed),
         fallbacksUsed: Array.from(state.fallbacksUsed),
@@ -62,9 +97,13 @@ export class HierarchicalSessionTemplateManager {
         extensionShuffleIndex: state.extensionShuffleIndex,
         currentPhase: state.currentPhase,
         sessionStartTime: state.sessionStartTime
-      }));
-    } catch {
-      // Session storage failed, continue without persistence
+      });
+      
+      MobileSessionManager.setItem(HIERARCHICAL_SESSION_KEY, serialized);
+      this.memoryState = state; // Always update memory backup
+    } catch (error) {
+      console.warn('⚠️ SessionStorage failed, using memory only:', error);
+      this.memoryState = state; // Keep in memory as fallback
     }
   }
 
@@ -158,10 +197,13 @@ export class HierarchicalSessionTemplateManager {
     // Phase 2: Use extension templates
     if (state.currentPhase === 'extension' && state.extensionShuffleIndex < state.currentExtensionShuffle.length) {
       if (gradeLevel === 0) {
-        // Level 0: Use dedicated extension templates directly
+        // Level 0: Use dedicated extension templates with proper indexing
         const templateKey = state.currentExtensionShuffle[state.extensionShuffleIndex];
         const templateIndex = parseInt(templateKey.split('_')[1]);
-        const template = getLevel0Extension(isPremium);
+        
+        // Get all extension templates and select the specific one by index
+        const extensions = this.getLevel0ExtensionTemplates(isPremium);
+        const template = extensions[templateIndex] || getLevel0Extension(isPremium); // Fallback to random if index fails
         
         const isRepeating = state.extensionTemplatesUsed.has(templateKey);
         state.extensionTemplatesUsed.add(templateKey);
@@ -280,10 +322,14 @@ export class HierarchicalSessionTemplateManager {
    */
   static clearSession(): void {
     try {
-      sessionStorage.removeItem(HIERARCHICAL_SESSION_KEY);
+      MobileSessionManager.removeItem(HIERARCHICAL_SESSION_KEY);
+      this.memoryState = null;
+      this.subscriptionCache = null;
       console.log(`🔄 HierarchicalSessionTemplateManager: Session cleared`);
     } catch {
-      // Session storage not available
+      // Session storage not available, clear memory only
+      this.memoryState = null;
+      this.subscriptionCache = null;
     }
   }
 
