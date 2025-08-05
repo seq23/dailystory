@@ -1109,11 +1109,12 @@ export const InteractiveWord = ({
              )}
              
              {/* Universal Phonetic Breakdown Button - Available for ALL users */}
-             <button
-               onClick={async () => {
-                 setIsPlayingPhonetics(true);
-                 try {
-                   await enhancedAudioService.playPhoneticBreakdown({
+              <button
+                onClick={async () => {
+                  console.log('🔤 DESKTOP PHONETIC BUTTON CLICKED for word:', word);
+                  setIsPlayingPhonetics(true);
+                  try {
+                    await enhancedAudioService.playPhoneticBreakdown({
                      word: word,
                      userInfo: userInfo!,
                      showSyllables: true
@@ -1951,10 +1952,13 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
              
               {/* Universal Phonetic Breakdown Button - Available for ALL users */}
                <div className="mb-4">
-                 <button
-                   onClick={handlePhoneticBreakdown}
-                   disabled={isPlayingPhonetics}
-                   className="w-full flex items-center justify-center gap-2 bg-purple-50 hover:bg-purple-100 active:bg-purple-200 border-2 border-purple-200 p-3 rounded-xl transition-colors touch-manipulation font-semibold text-purple-700 disabled:opacity-50"
+                  <button
+                    onClick={() => {
+                      console.log('🔤 PHONETIC BUTTON CLICKED for word:', props.word);
+                      handlePhoneticBreakdown();
+                    }}
+                    disabled={isPlayingPhonetics}
+                    className="w-full flex items-center justify-center gap-2 bg-purple-50 hover:bg-purple-100 active:bg-purple-200 border-2 border-purple-200 p-3 rounded-xl transition-colors touch-manipulation font-semibold text-purple-700 disabled:opacity-50"
                  >
                    <Layers className="w-5 h-5" />
                    <span className="text-sm">
