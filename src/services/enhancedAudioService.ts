@@ -3,6 +3,8 @@
 
 import { defaultAudioConfig, voiceCommands, characterVoices, phoneticSettings } from '@/config/audioConfig';
 import type { AudioSettings } from '@/config/audioConfig';
+import { contextualPronunciation } from './contextualPronunciation';
+import { phoneticRulesEngine } from './phoneticRulesEngine';
 import type { UserInfo } from '@/types';
 import { MobileAudioManager } from '@/services/mobileAudioManager';
 
@@ -219,42 +221,7 @@ export class EnhancedAudioService {
           speechSynthesis.cancel();
           
           // Convert syllables to speech-friendly pronunciations
-          const speechFriendlyMap: Record<string, string> = {
-            'geh': 'get',
-            'geth': 'geth',
-            'ther': 'ther',
-            'tuh': 'tuh',
-            'fam': 'fam',
-            'uh': 'uh',
-            'lee': 'lee',
-            'maj': 'madge',
-            'ih': 'ih',
-            'kul': 'cool',
-            'wun': 'wun',
-            'der': 'der',
-            'ful': 'full',
-            'beau': 'bow',
-            'tih': 'tee',
-            'rih': 'ree',
-            'mem': 'mem',
-            'ber': 'ber',
-            'dif': 'diff',
-            'er': 'er',
-            'ent': 'ent',
-            'por': 'pour',
-            'tant': 'tant',
-            'ad': 'add',
-            'ven': 'ven',
-            'cher': 'cher',
-            'kar': 'car',
-            'ik': 'ick',
-            'ter': 'ter',
-            'fay': 'fay',
-            'vor': 'vor',
-            'it': 'it'
-          };
-          
-          const pronunciationText = speechFriendlyMap[syllable] || syllable;
+          const pronunciationText = phoneticRulesEngine.getSpeechFriendlyPronunciation(syllable);
           
           const utterance = new SpeechSynthesisUtterance(pronunciationText);
           utterance.rate = 0.7; // Slower for clear pronunciation
@@ -527,211 +494,15 @@ export class EnhancedAudioService {
   }
 
   private breakIntoSyllables(word: string): string[] {
-    const cleanWord = word.replace(/[.,!?;:'"()]/g, '').toLowerCase();
+    console.log(`🔤 Enhanced syllable breaking for "${word}"`);
     
-    // Enhanced dictionary with proper phonetic pronunciations (not spelling-based)
-    const knownSyllables: Record<string, string[]> = {
-      // Common Level 0-2 words
-      'family': ['fam', 'uh', 'lee'],
-      'magical': ['maj', 'ih', 'kul'],
-      'flowers': ['flow', 'ers'],
-      'wonderful': ['wun', 'der', 'ful'],
-      'beautiful': ['beau', 'tih', 'ful'],
-      'together': ['toh', 'get', 'her'],
-      'remember': ['rih', 'mem', 'ber'],
-      'different': ['dif', 'er', 'ent'],
-      'important': ['im', 'por', 'tant'],
-      'adventure': ['ad', 'ven', 'cher'],
-      'character': ['kar', 'ik', 'ter'],
-      'favorite': ['fay', 'vor', 'it'],
-      'birthday': ['birth', 'day'],
-      'elephant': ['el', 'uh', 'fant'],
-      'butterfly': ['but', 'er', 'fly'],
-      'chocolate': ['chok', 'uh', 'lit'],
-      'playground': ['play', 'ground'],
-      'umbrella': ['um', 'brel', 'uh'],
-      'telephone': ['tel', 'uh', 'fone'],
-      'computer': ['kom', 'pew', 'ter'],
-      'tomorrow': ['tuh', 'mor', 'oh'],
-      'yesterday': ['yes', 'ter', 'day'],
-      'picture': ['pik', 'cher'],
-      'special': ['spesh', 'al'],
-      'surprise': ['ser', 'prize'],
-      'library': ['ly', 'brer', 'ee'],
-      'hospital': ['hos', 'pih', 'tal'],
-      'vacation': ['vay', 'kay', 'shun'],
-      'dinosaur': ['dy', 'nuh', 'sor'],
-      'rainbow': ['rain', 'bow'],
-      'sandwich': ['sand', 'wich'],
-      'animal': ['an', 'ih', 'mal'],
-      'people': ['pee', 'pul'],
-      'water': ['wah', 'ter'],
-      'little': ['lit', 'ul'],
-      'happy': ['hap', 'ee'],
-      'pretty': ['prit', 'ee'],
-      'yellow': ['yel', 'oh'],
-      'orange': ['or', 'inj'],
-      'purple': ['pur', 'pul'],
-      'circle': ['ser', 'kul'],
-      'triangle': ['try', 'ang', 'gul'],
-      'rectangle': ['rek', 'tang', 'gul'],
-      'typical': ['tip', 'ih', 'kul'],
-      'physical': ['fiz', 'ih', 'kul'],
-      'logical': ['loj', 'ih', 'kul'],
-      'musical': ['mew', 'zih', 'kul'],
-      'tropical': ['trop', 'ih', 'kul'],
-      'practical': ['prak', 'tih', 'kul'],
-      'historical': ['his', 'tor', 'ih', 'kul'],
-      'fantastic': ['fan', 'tas', 'tik'],
-      'dramatic': ['druh', 'mat', 'ik'],
-      'automatic': ['aw', 'tuh', 'mat', 'ik'],
-      'celebrate': ['sel', 'uh', 'brate'],
-      'magazine': ['mag', 'uh', 'zeen'],
-      'valentine': ['val', 'en', 'tine'],
-      'medicine': ['med', 'ih', 'sin'],
-      'exercise': ['ek', 'ser', 'size'],
-      'recognize': ['rek', 'ug', 'nize'],
-      'apologize': ['uh', 'pol', 'uh', 'jize'],
-      'organize': ['or', 'guh', 'nize'],
-      'realize': ['ree', 'uh', 'lize'],
-      'promise': ['prom', 'is'],
-      'because': ['bih', 'koz'],
-      'around': ['uh', 'round'],
-      'about': ['uh', 'bout'],
-      'another': ['uh', 'nuth', 'er'],
-      'mother': ['muth', 'er'],
-      'father': ['fah', 'ther'],
-      'brother': ['bruth', 'er'],
-      'sister': ['sis', 'ter'],
-      'daughter': ['daw', 'ter'],
-      'teacher': ['tee', 'cher'],
-      'student': ['stew', 'dent'],
-      'kitchen': ['kich', 'en'],
-      'bathroom': ['bath', 'room'],
-      'bedroom': ['bed', 'room'],
-      'living': ['liv', 'ing'],
-      'dining': ['dy', 'ning'],
-      'garden': ['gar', 'den'],
-      'window': ['win', 'doh'],
-      'morning': ['mor', 'ning'],
-      'evening': ['eve', 'ning'],
-      'afternoon': ['af', 'ter', 'noon'],
-      'everything': ['ev', 'ree', 'thing'],
-      'something': ['sum', 'thing'],
-      'nothing': ['nuth', 'ing'],
-      'anything': ['en', 'ee', 'thing'],
-      'everyone': ['ev', 'ree', 'wun'],
-      'someone': ['sum', 'wun'],
-      'anyone': ['en', 'ee', 'wun']
-    };
+    // Use the comprehensive phonetic rules engine
+    const syllables = phoneticRulesEngine.breakIntoSyllables(word);
     
-    // Check dictionary first
-    if (knownSyllables[cleanWord]) {
-      console.log(`📚 Using dictionary syllables for "${cleanWord}":`, knownSyllables[cleanWord]);
-      return knownSyllables[cleanWord];
-    }
+    // Get debug information
+    const debugInfo = phoneticRulesEngine.getDebugInfo(word);
+    console.log(`🎯 Phonetic breakdown debug:`, debugInfo);
     
-    // Enhanced phonetic algorithm for unknown words
-    const vowels = 'aeiouy';
-    const syllables: string[] = [];
-    let currentSyllable = '';
-    
-    // Advanced phonetic patterns for better pronunciation
-    const applyPhoneticRules = (word: string): string => {
-      // Handle silent letters and common patterns first
-      word = word.replace(/\bcal\b/g, 'kul'); // -cal endings like "magical"
-      word = word.replace(/ical\b/g, 'ih-kul'); // -ical endings 
-      word = word.replace(/\btion\b/g, 'shun'); // -tion endings
-      word = word.replace(/\bsion\b/g, 'zhun'); // -sion endings
-      word = word.replace(/\bage\b/g, 'ij'); // -age endings
-      word = word.replace(/\bough\b/g, 'uf'); // -ough endings like "rough"
-      word = word.replace(/\baugh\b/g, 'af'); // -augh endings like "laugh"
-      word = word.replace(/\beigh\b/g, 'ay'); // -eigh endings like "eight"
-      word = word.replace(/\bight\b/g, 'ite'); // -ight endings like "light"
-      word = word.replace(/\bould\b/g, 'ood'); // -ould endings like "could"
-      
-      // Handle consonant clusters and digraphs
-      word = word.replace(/ch/g, 'ch');
-      word = word.replace(/sh/g, 'sh'); 
-      word = word.replace(/th/g, 'th');
-      word = word.replace(/ph/g, 'f');
-      word = word.replace(/gh/g, ''); // Usually silent
-      word = word.replace(/ck/g, 'k');
-      word = word.replace(/qu/g, 'kw');
-      
-      // Handle vowel combinations
-      word = word.replace(/ee/g, 'ee');
-      word = word.replace(/ea/g, 'ee');
-      word = word.replace(/oo/g, 'oo');
-      word = word.replace(/ou/g, 'ow');
-      word = word.replace(/ow/g, 'ow');
-      word = word.replace(/ai/g, 'ay');
-      word = word.replace(/ay/g, 'ay');
-      
-      return word;
-    };
-    
-    // Apply phonetic rules
-    const phoneticWord = applyPhoneticRules(cleanWord);
-    
-    // If we have hyphens from our rules, split on them
-    if (phoneticWord.includes('-')) {
-      const result = phoneticWord.split('-').filter(s => s.length > 0);
-      console.log(`📚 Using phonetic rules for "${cleanWord}":`, result);
-      return result;
-    }
-    
-    // Fallback to simple vowel-based splitting
-    for (let i = 0; i < cleanWord.length; i++) {
-      const char = cleanWord[i];
-      currentSyllable += char;
-      
-      // If we hit a vowel, look for a good break point
-      if (vowels.includes(char)) {
-        // If this is the end, add the syllable
-        if (i === cleanWord.length - 1) {
-          syllables.push(currentSyllable);
-          break;
-        }
-        
-        // Look ahead for consonant-vowel pattern
-        let j = i + 1;
-        while (j < cleanWord.length && !vowels.includes(cleanWord[j])) {
-          j++;
-        }
-        
-        // If we found another vowel, split appropriately
-        if (j < cleanWord.length) {
-          const consonantCount = j - i - 1;
-          if (consonantCount === 1) {
-            // Single consonant: take it with us
-            currentSyllable += cleanWord[i + 1];
-            syllables.push(currentSyllable);
-            currentSyllable = '';
-            i++; // Skip the consonant
-          } else if (consonantCount > 1) {
-            // Multiple consonants: split after first
-            currentSyllable += cleanWord[i + 1];
-            syllables.push(currentSyllable);
-            currentSyllable = '';
-            i++; // Skip first consonant
-          }
-        }
-      }
-    }
-    
-    // Add any remaining characters
-    if (currentSyllable) {
-      syllables.push(currentSyllable);
-    }
-    
-    // Fallback: if breaking failed, return whole word
-    if (syllables.length === 0 || syllables.join('') !== cleanWord) {
-      console.log(`📝 Syllable breaking failed for "${cleanWord}", using whole word`);
-      return [cleanWord];
-    }
-    
-    console.log(`📝 Syllables for "${cleanWord}":`, syllables);
     return syllables;
   }
 
