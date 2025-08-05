@@ -669,12 +669,7 @@ export const InteractiveWord = ({
       };
       const langName = languageNames[userNativeLanguage] || userNativeLanguage;
       
-      // Show status to user
-      toast({
-        title: "Getting Translation...",
-        description: `Looking up "${cleanWord}" in ${langName}`,
-        duration: 2000,
-      });
+      // Removed unnecessary loading toast
       
       // Create a translation request to Supabase function
       const { data, error } = await supabase.functions.invoke('translate-word', {
@@ -695,12 +690,7 @@ export const InteractiveWord = ({
           duration: 5000,
         });
 
-        // Show audio status to user
-        toast({
-          title: "🔊 Playing Audio...",
-          description: "Preparing to speak the translation",
-          duration: 2000,
-        });
+        // Removed unnecessary audio status toast
 
         // Mobile audio requires user interaction - try to create a simple audio element first
         try {
@@ -719,11 +709,7 @@ export const InteractiveWord = ({
         // First try OpenAI TTS
         if (ttsService) {
           try {
-            toast({
-              title: "🎤 High Quality Audio",
-              description: "Using OpenAI voice synthesis...",
-              duration: 2000,
-            });
+            // Removed unnecessary high quality audio status toast
             
             await ttsService.speakText(translationText, {
               voice: 'nova',
@@ -732,11 +718,7 @@ export const InteractiveWord = ({
             
             audioPlayed = true;
             
-            toast({
-              title: "✅ Audio Complete",
-              description: "Translation audio finished playing",
-              duration: 2000,
-            });
+            // Removed unnecessary audio complete toast
             
           } catch (ttsError) {
             toast({
@@ -750,11 +732,7 @@ export const InteractiveWord = ({
         // If OpenAI TTS failed, try browser speech
         if (!audioPlayed && 'speechSynthesis' in window) {
           try {
-            toast({
-              title: "🗣️ Browser Audio",
-              description: "Using device speech synthesis...",
-              duration: 2000,
-            });
+            // Removed unnecessary browser audio status toast
 
             // Cancel any existing speech
             speechSynthesis.cancel();
@@ -788,19 +766,11 @@ export const InteractiveWord = ({
             
             return new Promise<void>((resolve) => {
               utterance.onstart = () => {
-                toast({
-                  title: "🔊 Audio Playing",
-                  description: "Speaking translation now...",
-                  duration: 2000,
-                });
+                // Removed unnecessary audio playing toast
               };
               
               utterance.onend = () => {
-                toast({
-                  title: "✅ Audio Complete",
-                  description: "Translation speech finished",
-                  duration: 2000,
-                });
+                // Removed unnecessary audio complete toast
                 setIsPlaying(false);
                 resolve();
               };
@@ -1118,11 +1088,7 @@ export const InteractiveWord = ({
                      userInfo: userInfo!,
                      showSyllables: true
                    });
-                   toast({
-                     title: "Phonetic Breakdown",
-                     description: `Playing syllable-by-syllable pronunciation of "${word}"`,
-                     duration: 3000,
-                   });
+                    // Removed unnecessary phonetic breakdown status toast
                  } catch (error) {
                    console.error('Phonetic breakdown error:', error);
                    toast({
@@ -1848,11 +1814,7 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
         console.log('🔤 Phonetic: Available window properties:', Object.keys(window).filter(key => key.includes('Vocabulary') || key.includes('gamification') || key.includes('add')));
       }
       
-      toast({
-        title: "Phonetic Breakdown",
-        description: `Playing syllable-by-syllable pronunciation of "${props.word}"`,
-        duration: 3000,
-      });
+      // Removed unnecessary phonetic breakdown status toast
     } catch (error) {
       console.error('❌ Phonetic breakdown error:', error);
       toast({
