@@ -43,29 +43,29 @@ export class MultilingualTemplateManager {
   static getLanguageFallback(language: SupportedLanguage, userInfo?: UserInfo): string[] {
     const userName = userInfo?.name || 'Alex';
     
-    // Generate dynamic, grammatically correct fallback content
+    // Generate dynamic, grammatically correct fallback content using validated vocabulary
     const fallbackTemplates = [
-      `${userName} goes to the park today.`,
-      `The sun is bright and warm.`,
-      `${userName} finds a pretty flower.`,
+      `${userName} goes to the park.`,
+      `The sun is big and yellow.`,
+      `${userName} finds a red flower.`,
       `Birds sing happy songs.`,
-      `${userName} feels very good today.`
+      `${userName} is happy.`
     ];
     
     const alternativeTemplates = [
-      `${userName} plays with a new friend.`,
-      `They laugh and have fun together.`,
-      `${userName} sees many colorful things.`,
-      `The day is full of joy.`,
-      `${userName} loves this special time.`
+      `${userName} plays with a friend.`,
+      `They laugh and have fun.`,
+      `${userName} sees many colors.`,
+      `The day is full of fun.`,
+      `${userName} likes this time.`
     ];
     
     const storyTemplates = [
       `${userName} walks in the garden.`,
-      `The trees are tall and green.`,
-      `${userName} hears nice sounds.`,
+      `The trees are big and green.`,
+      `${userName} hears good sounds.`,
       `Animals play all around.`,
-      `${userName} smiles with happiness.`
+      `${userName} is happy.`
     ];
     
     // Rotate between different template sets to avoid repetition
