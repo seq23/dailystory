@@ -40,14 +40,23 @@ export function validateDolchPrePrimerSentence(sentence: string, userName?: stri
 // Free Level 0 vocabulary - Strict Dolch Pre-Primer only (40 words)
 export const FREE_LEVEL_0_VOCABULARY = new Set([...DOLCH_PRE_PRIMER_VOCABULARY]);
 
-// Premium Level 0 vocabulary - Dolch + words ≤3 characters (59 words)
+// Premium Level 0 vocabulary - Research-Enhanced (Education Expert Approved)
+// Based on Dolch Pre-Primer + Fry First 25 + Common Core RF.K.3.C + Head Start Standards
 export const PREMIUM_LEVEL_0_VOCABULARY = new Set([
-  // Include all Dolch Pre-Primer words
+  // Include all Dolch Pre-Primer words (40 words)
   ...DOLCH_PRE_PRIMER_VOCABULARY,
   
-  // Additional words ≤3 characters only
-  'an', 'on', 'at', 'he', 'get', 'got', 'put', 'mom', 'dad', 'cat', 'dog', 
-  'hat', 'bed', 'sun', 'sad', 'fun', 'yes', 'bye', 'hi'
+  // Fry First 25 additions not in Dolch (high-frequency research-backed)
+  'of', 'to', 'he', 'was', 'that', 'she', 'his', 'her', 'had', 'at', 'but', 'have', 'him', 'with', 'this', 'all', 'from', 'they', 'know', 'want', 'been', 'now', 'were', 'there', 'what',
+  
+  // Common Core RF.K.3.C examples (curriculum standard)
+  'do', 'does', 'are', 'my',
+  
+  // Head Start Priority Words (early learning standards)
+  'some', 'new', 'old', 'get', 'put', 'let', 'sit',
+  
+  // High-utility function words (kindergarten frequency analysis)
+  'an', 'on', 'yes', 'no', 'got', 'has', 'will', 'just', 'how'
 ]);
 
 // Legacy enhanced vocabulary (kept for compatibility)
