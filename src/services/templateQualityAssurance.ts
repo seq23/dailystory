@@ -3,7 +3,7 @@
 
 import { DifficultyLevel, UserInfo } from '@/types';
 import { validateByMode, VocabularyMode, DOLCH_PRE_PRIMER_VOCABULARY, ENHANCED_LEVEL_0_VOCABULARY } from '@/constants/dolchPrePrimer';
-import { getLevel0Template6Page, getLevel0TemplateCount } from '@/constants/level0Templates6Page';
+import { getLevel0Template6Page, getLevel0TemplateCount } from '@/constants/level0Templates6PageFixed';
 import { OptimizedTemplateManager } from './optimizedTemplateManager';
 
 interface QualityTestResult {
@@ -255,10 +255,10 @@ export class TemplateQualityAssurance {
       for (let i = 0; i < Math.min(templateCount, 10); i++) {
         const template = getLevel0Template6Page(i);
         
-        if (template.length === 6) {
+        if (template.length === 5) {
           consistentTemplates++;
         } else {
-          errors.push(`Template ${i} has ${template.length} pages (expected 6)`);
+          errors.push(`Template ${i} has ${template.length} pages (expected 5)`);
         }
       }
       

@@ -4,7 +4,7 @@
 import { 
   getLevel0Template6Page, 
   getLevel0TemplateCount 
-} from '@/constants/level0Templates6Page';
+} from '@/constants/level0Templates6PageFixed';
 
 import { 
   getLevel1Template, 
