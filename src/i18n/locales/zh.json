@@ -378,7 +378,14 @@
     "upgrade": "升级",
     "upgradeTooltip": "升级到高级版以获得无限音频播放",
     "freeAudioUsed": "免费音频已使用",
-    "extendedPagesNeedPremium": "🔒 扩展页面需要高级版"
+    "extendedPagesNeedPremium": "🔒 扩展页面需要高级版",
+    "audioError": "音频错误",
+    "mobileAudioError": "无法播放音频。在移动设备上，请确保声音已启用并重试。",
+    "audioPlayError": "无法播放音频。请重试。",
+    "voiceCommandsDisabled": "语音命令已禁用",
+    "voiceCommandsOff": "语音命令现已关闭",
+    "voiceCommandsEnabled": "语音命令已启用",
+    "voiceCommandsInstructions": "试着说'下一页'、'读慢一点'或'[单词]是什么意思？'"
   },
   "freeReadingSession": {
     "navigation": {

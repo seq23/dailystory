@@ -379,7 +379,14 @@
     "upgrade": "ترقية",
     "upgradeTooltip": "ترقى إلى بريميوم للحصول على تشغيل صوتي غير محدود",
     "freeAudioUsed": "تم استخدام الصوت المجاني",
-    "extendedPagesNeedPremium": "🔒 الصفحات الممتدة تحتاج بريميوم"
+    "extendedPagesNeedPremium": "🔒 الصفحات الممتدة تحتاج بريميوم",
+    "audioError": "خطأ في الصوت",
+    "mobileAudioError": "لا يمكن تشغيل الصوت. على الأجهزة المحمولة، تأكد من تمكين الصوت وحاول مرة أخرى.",
+    "audioPlayError": "لا يمكن تشغيل الصوت. يرجى المحاولة مرة أخرى.",
+    "voiceCommandsDisabled": "تم إيقاف الأوامر الصوتية",
+    "voiceCommandsOff": "الأوامر الصوتية معطلة الآن",
+    "voiceCommandsEnabled": "تم تمكين الأوامر الصوتية",
+    "voiceCommandsInstructions": "جرب قول 'الصفحة التالية' أو 'اقرأ أبطأ' أو 'ما معنى [كلمة]؟'"
   },
   "freeReadingSession": {
     "navigation": {

@@ -378,7 +378,14 @@
     "upgrade": "अपग्रेड करें",
     "upgradeTooltip": "असीमित ऑडियो प्ले के लिए प्रीमियम में अपग्रेड करें",
     "freeAudioUsed": "मुफ्त ऑडियो उपयोग किया गया",
-    "extendedPagesNeedPremium": "🔒 विस्तारित पेजों के लिए प्रीमियम चाहिए"
+    "extendedPagesNeedPremium": "🔒 विस्तारित पेजों के लिए प्रीमियम चाहिए",
+    "audioError": "ऑडियो त्रुटि",
+    "mobileAudioError": "ऑडियो चला नहीं सकते। मोबाइल डिवाइस पर, सुनिश्चित करें कि ध्वनि सक्षम है और फिर से कोशिश करें।",
+    "audioPlayError": "ऑडियो चला नहीं सकते। कृपया फिर से कोशिश करें।",
+    "voiceCommandsDisabled": "वॉयस कमांड अक्षम",
+    "voiceCommandsOff": "वॉयस कमांड अब बंद हैं",
+    "voiceCommandsEnabled": "वॉयस कमांड सक्षम",
+    "voiceCommandsInstructions": "'अगला पेज', 'धीरे पढ़ें', या '[शब्द] का मतलब क्या है?' कहने की कोशिश करें"
   },
   "freeReadingSession": {
     "navigation": {

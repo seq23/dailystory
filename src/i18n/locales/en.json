@@ -476,7 +476,14 @@
     "upgrade": "Upgrade",
     "upgradeTooltip": "Upgrade to Premium for unlimited audio plays",
     "freeAudioUsed": "free audio used",
-    "extendedPagesNeedPremium": "🔒 Extended pages need Premium"
+    "extendedPagesNeedPremium": "🔒 Extended pages need Premium",
+    "audioError": "Audio Error",
+    "mobileAudioError": "Could not play audio. On mobile devices, ensure sound is enabled and try again.",
+    "audioPlayError": "Could not play audio. Please try again.",
+    "voiceCommandsDisabled": "Voice Commands Disabled",
+    "voiceCommandsOff": "Voice commands are now off",
+    "voiceCommandsEnabled": "Voice Commands Enabled",
+    "voiceCommandsInstructions": "Try saying 'next page', 'read slower', or 'what does [word] mean?'"
   },
   "sessionEnded": {
     "completed": "Reading Session Completed!",

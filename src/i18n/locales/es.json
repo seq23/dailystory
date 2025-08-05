@@ -389,7 +389,14 @@
     "upgrade": "Actualizar",
     "upgradeTooltip": "Actualiza a Premium para reproducciones de audio ilimitadas",
     "freeAudioUsed": "audio gratuito usado",
-    "extendedPagesNeedPremium": "🔒 Las páginas extendidas necesitan Premium"
+    "extendedPagesNeedPremium": "🔒 Las páginas extendidas necesitan Premium",
+    "audioError": "Error de Audio",
+    "mobileAudioError": "No se pudo reproducir el audio. En dispositivos móviles, asegúrese de que el sonido esté habilitado e intente nuevamente.",
+    "audioPlayError": "No se pudo reproducir el audio. Por favor, inténtelo de nuevo.",
+    "voiceCommandsDisabled": "Comandos de Voz Deshabilitados",
+    "voiceCommandsOff": "Los comandos de voz están ahora desactivados",
+    "voiceCommandsEnabled": "Comandos de Voz Habilitados",
+    "voiceCommandsInstructions": "Intenta decir 'página siguiente', 'leer más lento', o '¿qué significa [palabra]?'"
   },
   "storyDisplay": {
     "readingLevel": "Nivel de Lectura",

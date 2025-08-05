@@ -389,7 +389,14 @@
     "upgrade": "Mettre à niveau",
     "upgradeTooltip": "Passez à Premium pour des lectures audio illimitées",
     "freeAudioUsed": "audio gratuit utilisé",
-    "extendedPagesNeedPremium": "🔒 Les pages étendues nécessitent Premium"
+    "extendedPagesNeedPremium": "🔒 Les pages étendues nécessitent Premium",
+    "audioError": "Erreur Audio",
+    "mobileAudioError": "Impossible de lire l'audio. Sur les appareils mobiles, assurez-vous que le son est activé et réessayez.",
+    "audioPlayError": "Impossible de lire l'audio. Veuillez réessayer.",
+    "voiceCommandsDisabled": "Commandes Vocales Désactivées",
+    "voiceCommandsOff": "Les commandes vocales sont maintenant désactivées",
+    "voiceCommandsEnabled": "Commandes Vocales Activées",
+    "voiceCommandsInstructions": "Essayez de dire 'page suivante', 'lire plus lentement', ou 'que signifie [mot]?'"
   },
   "storyDisplay": {
     "readingLevel": "Niveau de Lecture",

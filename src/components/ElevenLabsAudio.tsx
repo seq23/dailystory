@@ -94,10 +94,10 @@ export const ElevenLabsAudio = ({
       console.error('Enhanced audio playback error:', error);
       
       toast({
-        title: "Audio Error",
+        title: t("audioReading.audioError", "Audio Error"),
         description: isMobileOrTablet ? 
-          "Could not play audio. On mobile devices, ensure sound is enabled and try again." :
-          "Could not play audio. Please try again.",
+          t("audioReading.mobileAudioError", "Could not play audio. On mobile devices, ensure sound is enabled and try again.") :
+          t("audioReading.audioPlayError", "Could not play audio. Please try again."),
         variant: "destructive",
       });
     } finally {
@@ -122,16 +122,16 @@ export const ElevenLabsAudio = ({
       audioService.stopVoiceCommands();
       setVoiceCommandsEnabled(false);
       toast({
-        title: "Voice Commands Disabled",
-        description: "Voice commands are now off",
+        title: t("audioReading.voiceCommandsDisabled", "Voice Commands Disabled"),
+        description: t("audioReading.voiceCommandsOff", "Voice commands are now off"),
         duration: 2000,
       });
     } else {
       audioService.startVoiceCommands();
       setVoiceCommandsEnabled(true);
       toast({
-        title: "Voice Commands Enabled", 
-        description: "Try saying 'next page', 'read slower', or 'what does [word] mean?'",
+        title: t("audioReading.voiceCommandsEnabled", "Voice Commands Enabled"), 
+        description: t("audioReading.voiceCommandsInstructions", "Try saying 'next page', 'read slower', or 'what does [word] mean?'"),
         duration: 4000,
       });
     }

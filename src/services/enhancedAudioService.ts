@@ -65,10 +65,12 @@ export class EnhancedAudioService {
       characterType = 'narrator'
     } = options;
 
-    // CRITICAL: Free users can only get audio in English
-    if (!isPremium && userInfo.nativeLanguage !== 'en') {
-      throw new Error('Free users can only access audio for English stories. Please upgrade to premium for multilingual audio support.');
-    }
+    // Enhanced multilingual audio support with better error handling
+    const isEnglishSpeaker = userInfo.nativeLanguage === 'en';
+    const supportedLanguages = ['en', 'es', 'fr', 'pt', 'zh', 'hi', 'ar'];
+    const isLanguageSupported = supportedLanguages.includes(userInfo.nativeLanguage || 'en');
+    
+    console.log(`🌍 Audio Language Check: User=${userInfo.nativeLanguage}, Premium=${isPremium}, Supported=${isLanguageSupported}`);
 
     // Check free user limits
     if (!isPremium && this.playedPages.has(currentPage)) {
@@ -85,8 +87,9 @@ export class EnhancedAudioService {
     const maxLength = isPremium ? this.config.quality.maxTextLength.premium : this.config.quality.maxTextLength.free;
     const processedText = text.slice(0, maxLength);
     
-    // CRITICAL: Free users always get English model, premium users get appropriate model
-    const model = (!isPremium || userInfo.nativeLanguage === 'en') ? 'eleven_turbo_v2' : 'eleven_multilingual_v2';
+    // Enhanced model selection with fallback support
+    const model = isEnglishSpeaker ? 'eleven_turbo_v2' : 'eleven_multilingual_v2';
+    console.log(`🎵 Audio Model Selected: ${model} for language: ${userInfo.nativeLanguage}`);
 
     try {
       // Stop any currently playing audio
@@ -106,10 +109,17 @@ export class EnhancedAudioService {
           console.log(`🔄 AudioSync state change: ${this.isPlaying} → ${isPlaying}`);
           this.isPlaying = isPlaying;
         },
-        onSyncError: () => {
-          console.log('🔄 Audio sync error, falling back to browser speech');
+        onSyncError: (error?: any) => {
+          console.log('🔄 Audio sync error, falling back to browser speech', error);
           this.isPlaying = false; // Reset state on error
-          this.fallbackToBrowserSpeech(processedText, userInfo, onWordHighlight);
+          
+          // Enhanced fallback with language support
+          if (!isLanguageSupported && !isPremium) {
+            console.log('❌ Language not supported for free users, using English fallback');
+            this.fallbackToBrowserSpeech(processedText, { ...userInfo, nativeLanguage: 'en' }, onWordHighlight);
+          } else {
+            this.fallbackToBrowserSpeech(processedText, userInfo, onWordHighlight);
+          }
         }
       });
 
@@ -123,7 +133,17 @@ export class EnhancedAudioService {
       
     } catch (error) {
       console.error('Enhanced audio playback failed:', error);
-      this.fallbackToBrowserSpeech(processedText, userInfo, onWordHighlight);
+      
+      // Enhanced error handling with language-specific fallbacks
+      if (!isLanguageSupported && !isPremium) {
+        console.log('🌍 Language not supported for free users, providing English fallback');
+        this.fallbackToBrowserSpeech(processedText, { ...userInfo, nativeLanguage: 'en' }, onWordHighlight);
+      } else if (!isEnglishSpeaker && isPremium) {
+        console.log('🌍 Multilingual audio failed for premium user, trying browser fallback');
+        this.fallbackToBrowserSpeech(processedText, userInfo, onWordHighlight);
+      } else {
+        this.fallbackToBrowserSpeech(processedText, userInfo, onWordHighlight);
+      }
     }
   }
 
@@ -423,8 +443,21 @@ export class EnhancedAudioService {
       utterance.pitch = 1.0;
       utterance.volume = 1.0;
       
-      // CRITICAL: Always use English for fallback speech (free users only get English)
-      utterance.lang = 'en';
+      // Enhanced language selection for browser speech
+      const languageMap: Record<string, string> = {
+        'en': 'en',
+        'es': 'es',
+        'fr': 'fr',
+        'pt': 'pt',
+        'zh': 'zh',
+        'hi': 'hi',
+        'ar': 'ar'
+      };
+      
+      const targetLanguage = languageMap[userInfo.nativeLanguage || 'en'] || 'en';
+      utterance.lang = targetLanguage;
+      
+      console.log(`🗣️ Browser speech fallback using language: ${targetLanguage}`);
 
       utterance.onend = () => {
         this.isPlaying = false;
