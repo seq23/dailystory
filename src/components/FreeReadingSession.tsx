@@ -347,29 +347,12 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
             const targetPages = 10;
             let pages = generatedStory.pages;
             
-            // The story should now come with exactly 10 pages from the improved generator
-            // But add safety check with better fallback content
+            // Trust the enhanced template system to provide exactly the right number of pages
+            // No more hardcoded fallbacks - the hierarchical system handles content generation
             if (pages.length < targetPages) {
-              console.warn(`Story generator returned ${pages.length} pages, expected ${targetPages}. Adding contextual content...`);
-              const additionalPages = targetPages - pages.length;
-              
-              // Better contextual fallback content for Level 1
-              const contextualContinuations = [
-                `${userInfo.name} plays with the ${userInfo.favoriteAnimal || 'cat'}.`,
-                `A nice ${userInfo.favoriteAnimal || 'dog'} comes to play.`,
-                `${userInfo.name} has fun with ${userInfo.hobbies || 'toys'}.`,
-                `They run and play together.`,
-                `${userInfo.name} helps a friend today.`,
-                `The ${userInfo.favoriteColor || 'blue'} ball is fun.`,
-                `${userInfo.name} likes to play outside.`,
-                `What a good day to play!`
-              ];
-              
-              for (let i = 0; i < additionalPages; i++) {
-                const fallbackIndex = i % contextualContinuations.length;
-                pages.push(contextualContinuations[fallbackIndex]);
-              }
+              console.log(`📊 FreeReadingSession: Story generator returned ${pages.length} pages, expected ${targetPages}. Trusting system to handle extensions.`);
             } else if (pages.length > targetPages) {
+              console.log(`📊 FreeReadingSession: Story generator returned ${pages.length} pages, trimming to ${targetPages}.`);
               pages = pages.slice(0, targetPages);
             }
             

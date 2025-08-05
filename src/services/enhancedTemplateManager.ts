@@ -20,6 +20,10 @@ import {
 } from '@/constants/gradeBased/unifiedTemplateSystem';
 
 import { SessionTemplateManager } from './sessionTemplateManager';
+import { HierarchicalSessionTemplateManager } from './hierarchicalSessionTemplateManager';
+import { CharacterDrivenStoryArc } from './characterDrivenStoryArc';
+import { InputEnhancementEngine } from './inputEnhancementEngine';
+import { TemplateQualityAssurance } from './templateQualityAssurance';
 import { LEVEL_0_FREE_EXTENSIONS, LEVEL_0_PREMIUM_EXTENSIONS } from '@/constants/gradeBased/level0ExtensionTemplates';
 
 interface EnhancedTemplateOptions {
@@ -53,6 +57,8 @@ export class EnhancedTemplateManager {
   private static sessionUsedTemplates: Map<GradeLevel, Set<number>> = new Map();
   /**
    * Generate enhanced story with grade-based vocabulary and smart extensions
+   * Level 0: Minimal processing (name substitution + validation only)
+   * Levels 1-4: Full processing pipeline (Character Arc + Author Voice + Quality Assessment)
    */
   static async generateEnhancedStory(options: EnhancedTemplateOptions): Promise<EnhancedTemplateResult> {
     const {
@@ -66,6 +72,34 @@ export class EnhancedTemplateManager {
     // Convert difficulty to grade level
     const gradeLevel = difficultyToGradeLevel(difficulty);
     const gradeInfo = GRADE_LEVEL_INFO[gradeLevel];
+    
+    console.log(`🎯 EnhancedTemplateManager: Processing ${gradeLevel} content (Level ${gradeLevel === 0 ? '0: minimal' : '1-4: full pipeline'})`);
+    
+    // Level 0 gets minimal processing (already handled by Level0StoryProcessor)
+    if (gradeLevel === 0) {
+      console.log(`⚡ EnhancedTemplateManager: Level 0 detected - redirecting to Level0StoryProcessor for optimal handling`);
+      
+      // Return basic structure that indicates Level 0 should use its own processor
+      return {
+        pages: [`Level 0 content should use Level0StoryProcessor`],
+        templateIndex: -1,
+        gradeLevel,
+        actualPages: 0,
+        targetPages: 0,
+        isPremium,
+        vocabularyCompliant: true,
+        validationErrors: [],
+        metadata: {
+          difficulty,
+          gradeInfo,
+          wasExtended: false,
+          systemVersion: 'enhanced-unified-v1'
+        }
+      };
+    }
+    
+    // Levels 1-4: Full processing pipeline
+    console.log(`🚀 EnhancedTemplateManager: Starting full processing pipeline for Level ${gradeLevel}`);
     
     // Determine target page count
     const targetPages = getTargetPageCount(gradeLevel, isPremium);
@@ -86,15 +120,81 @@ export class EnhancedTemplateManager {
     // Track this template as used
     this.sessionUsedTemplates.get(gradeLevel)!.add(selectedIndex);
     
-    // Process template with user name
+    // STEP 1: Process template with user context
     let pages = baseTemplate.map(page => 
       page.replace(/{userName}/g, userInfo?.name || 'I')
     );
+    
+    // STEP 2: Apply Character Arc enhancement (Levels 1-4 only)
+    console.log(`🎭 EnhancedTemplateManager: Applying Character Arc for Level ${gradeLevel}`);
+    try {
+      // Use the InputEnhancementEngine to get enhanced user inputs
+      const enhancedInputs = InputEnhancementEngine.enhanceUserInputs(userInfo || {} as UserInfo);
+      
+      // Process each page with character-driven enhancements
+      pages = pages.map((page, index) => {
+        const context = {
+          currentPage: index + 1,
+          totalPages: pages.length,
+          characters: { main: { name: userInfo?.name || 'I' } } as any,
+          userInfo: userInfo || {} as UserInfo,
+          difficulty,
+          storyTheme: userInfo?.specialRequest || 'adventure'
+        };
+        
+        // Apply character-driven content if needed
+        return CharacterDrivenStoryArc.getPageContent(context, enhancedInputs);
+      });
+    } catch (error) {
+      console.warn(`⚠️ EnhancedTemplateManager: Character Arc enhancement failed:`, error);
+      // Continue with original pages on error
+    }
+    
+    // STEP 3: Apply Author Voice through enhanced inputs (Levels 1-4 only)
+    console.log(`✍️ EnhancedTemplateManager: Applying Author Voice for Level ${gradeLevel}`);
+    try {
+      const enhancedTraits = InputEnhancementEngine.getEnhancedInputsForDifficulty(
+        userInfo || {} as UserInfo,
+        difficulty
+      );
+      
+      // Integrate enhanced traits into story pages
+      pages = pages.map(page => {
+        // Simple integration of character traits into narrative
+        let enhancedPage = page;
+        
+        // Add subtle character trait mentions based on difficulty level
+        if (gradeLevel >= 2 && enhancedTraits.characterTraits.length > 0) {
+          // For higher levels, occasionally mention character traits
+          const shouldEnhance = Math.random() < 0.3; // 30% chance per page
+          if (shouldEnhance) {
+            const trait = enhancedTraits.characterTraits[Math.floor(Math.random() * enhancedTraits.characterTraits.length)];
+            enhancedPage = enhancedPage.replace(/\.$/, `, ${trait}.`);
+          }
+        }
+        
+        return enhancedPage;
+      });
+    } catch (error) {
+      console.warn(`⚠️ EnhancedTemplateManager: Author Voice enhancement failed:`, error);
+    }
     
     // Handle page extensions if needed
     let wasExtended = false;
     let extensionMethod: string | undefined;
     const basePageCount = pages.length;
+    
+    // STEP 4: Apply Quality Assessment (Levels 1-4 only)
+    console.log(`🔍 EnhancedTemplateManager: Applying Quality Assessment for Level ${gradeLevel}`);
+    try {
+      // Basic vocabulary validation using existing system
+      const validation = this.validateStoryVocabulary(pages, gradeLevel, userInfo?.name);
+      if (!validation.isValid) {
+        console.warn(`⚠️ EnhancedTemplateManager: Quality assessment found vocabulary issues:`, validation.errors);
+      }
+    } catch (error) {
+      console.warn(`⚠️ EnhancedTemplateManager: Quality Assessment failed:`, error);
+    }
     
     if (enableExtensions && targetPages > basePageCount) {
       const extensionResult = await this.extendStoryIntelligently(
