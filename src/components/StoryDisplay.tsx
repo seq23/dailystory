@@ -11,6 +11,7 @@ import type { Achievement } from "@/services/gamificationService";
 import { ElevenLabsAudio } from "@/components/ElevenLabsAudio";
 import { InteractiveAudioReading } from "@/components/InteractiveAudioReading";
 import { UniversalContentManager } from "@/services/universalContentManager";
+import { Level0StoryProcessor } from "@/services/level0StoryProcessor";
 import { FreeTrialPageLimitError } from "@/utils/errorHandling";
 import { UnifiedImageService, type EstablishedCharacter } from "@/services/unifiedImageService";
 import { APP_CONFIG } from "@/constants/app";
@@ -206,26 +207,62 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
         setStoryGenerated(true); // Mark as generated to prevent regeneration
         
         const readingLevel = userInfo.readingLevel || (userInfo as any).difficultyLevel || 'easy';
-        const initialDifficulty = (readingLevel === 'beginner' ? 'easy' :
+        const initialDifficulty = (readingLevel === 'beginner' ? 'beginner' :
                                    readingLevel === 'elementary' ? 'medium' :
                                    readingLevel === 'intermediate' ? 'hard' : 
-                                   readingLevel === 'advanced' ? 'expert' : 'easy') as 'easy' | 'medium' | 'hard' | 'expert';
+                                   readingLevel === 'advanced' ? 'expert' : 'easy') as 'beginner' | 'easy' | 'medium' | 'hard' | 'expert';
         setCurrentDifficulty(initialDifficulty);
         
-        // 🌟 Use Universal Content Manager for enhanced story generation with translation
-        console.log('🚀 Starting Enhanced Story Generation with Translation Processing...');
+        // Route Level 0 users (beginner difficulty) to specialized Level0StoryProcessor
+        let storyResult;
+        if (initialDifficulty === 'beginner') {
+          console.log('🎯 Routing Level 0 user to hierarchical template system...');
+          
+          const level0Result = await Level0StoryProcessor.generateStory(userInfo);
+          
+          console.log('✨ Level 0 Story Generated:', {
+            templateIndex: level0Result.templateIndex,
+            isValid: level0Result.isValid
+          });
+          
+          // Convert Level0StoryResult to expected format
+          storyResult = {
+            story: {
+              segments: level0Result.content.map((text, index) => ({
+                text,
+                illustration: '',
+                audioUrl: ''
+              })),
+              id: `level0-${Date.now()}`,
+              title: `${userInfo.name}'s Level 0 Story`,
+              difficulty: 'beginner' as const,
+              estimatedReadingTime: level0Result.content.length * 30,
+              wordCount: level0Result.content.join(' ').split(' ').length
+            },
+            isNewStory: true,
+            isContinuation: false,
+            sessionInfo: {
+              userId: userInfo?.name || 'guest',
+              sessionCount: 1,
+              isPremium
+            }
+          };
+        } else {
+          // 🌟 Use Universal Content Manager for enhanced story generation with translation (Levels 1-4)
+          console.log('🚀 Starting Enhanced Story Generation with Translation Processing...');
+          
+          storyResult = await UniversalContentManager.generateStory(
+            userInfo, 
+            initialDifficulty,
+            {
+              isPremium,
+              userId: userInfo?.name || 'guest',
+              maxSessions: 100
+            }
+          );
+        }
         
-        const storyResult = await UniversalContentManager.generateStory(
-          userInfo, 
-          initialDifficulty,
-          {
-            isPremium,
-            userId: userInfo?.name || 'guest',
-            maxSessions: 100
-          }
-        );
-        
-        console.log('✨ Enhanced Story Generated:', {
+        console.log('✨ Story Generated:', {
           isNewStory: storyResult.isNewStory,
           isContinuation: storyResult.isContinuation,
           sessionInfo: storyResult.sessionInfo
