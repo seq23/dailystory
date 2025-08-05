@@ -360,8 +360,8 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
             console.log('🔍 FreeReadingSession: Story pages sample:', generatedStory.pages.slice(0, 3));
             console.log('📊 FreeReadingSession: Total pages generated:', generatedStory.pages.length);
             
-            // Ensure we have exactly 10 pages
-            const targetPages = 10;
+            // Ensure we have exactly 5 pages for unified free trial experience
+            const targetPages = 5;
             let pages = generatedStory.pages;
             
             // Trust the enhanced template system to provide exactly the right number of pages

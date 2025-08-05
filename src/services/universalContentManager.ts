@@ -1014,27 +1014,27 @@ export class UniversalContentManager {
   }
 
   /**
-   * Get appropriate page count for difficulty level with free trial considerations
+   * Get appropriate page count for difficulty level with unified free trial system
    */
   private static getPageCountForDifficulty(
     difficulty: DifficultyLevel, 
     isPremium: boolean = false
   ): number {
-    // Free trial: Standard 10 pages for all levels
+    // Free trial: Unified 5 pages for all levels (0-4)
     if (!isPremium) {
-      return 10;
+      return 5;
     }
     
-    // Premium: Varied page counts by difficulty
+    // Premium: Enhanced page counts by difficulty
     const premiumPageCounts = {
-      beginner: 6,  // Shorter for pre-readers
-      easy: 8,
-      medium: 10,
-      hard: 12,
-      expert: 15
+      beginner: 5,  // Level 0: 5 pages
+      easy: 5,      // Level 1: 5 pages
+      medium: 10,   // Level 2: 10 pages
+      hard: 10,     // Level 3: 10 pages
+      expert: 15    // Level 4: 15 pages
     };
     
-    return premiumPageCounts[difficulty] || 10;
+    return premiumPageCounts[difficulty] || 5;
   }
 
   /**

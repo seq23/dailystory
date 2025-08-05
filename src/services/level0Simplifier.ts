@@ -238,24 +238,47 @@ export class Level0Simplifier {
    * Generate a simplified story for Level 0 fallback content
    */
   static async generateSimplifiedStory(userInfo?: any): Promise<{ pages: string[] }> {
-    const userName = userInfo?.name || 'I';
+    const userName = userInfo?.name || 'Alex';
     
-    // Ultra-simple Level 0 fallback content using only Dolch Pre-Primer words
-    const simplePages = [
-      `${userName} sees a cat.`,
-      `The cat is big.`,
-      `${userName} likes the cat.`,
-      `We play and run.`,
-      `It is fun to play.`,
-      `${userName} has a ball.`,
-      `The ball is red.`,
-      `We play with the ball.`,
-      `${userName} can jump.`,
-      `Jump is fun to do.`
+    // Dynamic fallback templates with varied themes
+    const adventurePages = [
+      `${userName} goes on a big adventure.`,
+      `The path is long and fun.`,
+      `${userName} meets a nice friend.`,
+      `They play games together.`,
+      `The day is very good.`
     ];
     
+    const naturePages = [
+      `${userName} walks in the park.`,
+      `The trees are big and green.`,
+      `${userName} sees pretty flowers.`,
+      `Birds sing happy songs.`,
+      `${userName} feels very happy.`
+    ];
+    
+    const playPages = [
+      `${userName} plays with toys.`,
+      `The ball is red and round.`,
+      `${userName} can run fast.`,
+      `Running is fun to do.`,
+      `${userName} laughs and smiles.`
+    ];
+    
+    const familyPages = [
+      `${userName} loves family time.`,
+      `We read books together.`,
+      `The stories are very good.`,
+      `${userName} likes to learn.`,
+      `Learning is fun and nice.`
+    ];
+    
+    // Rotate between different themes for variety
+    const pageGroups = [adventurePages, naturePages, playPages, familyPages];
+    const selectedPages = pageGroups[Math.floor(Math.random() * pageGroups.length)];
+    
     // Validate each page to ensure compliance
-    const validPages = simplePages.filter(page => {
+    const validPages = selectedPages.filter(page => {
       const validation = validateLevel0SentenceByUserType(page, 'free', userName);
       return validation.isValid;
     });
@@ -264,16 +287,16 @@ export class Level0Simplifier {
     if (validPages.length < 5) {
       return {
         pages: [
-          `${userName} sees cat.`,
-          `Cat is big.`,
-          `${userName} likes cat.`,
-          `We play.`,
-          `It is fun.`
+          `${userName} goes to play.`,
+          `Playing is very fun.`,
+          `${userName} likes to run.`,
+          `We can jump high.`,
+          `The day is good.`
         ]
       };
     }
     
-    return { pages: validPages.slice(0, 10) };
+    return { pages: validPages.slice(0, 5) };
   }
 
   // Validation helpers

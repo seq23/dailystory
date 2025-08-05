@@ -38,20 +38,41 @@ export class MultilingualTemplateManager {
   }
 
   /**
-   * Get language-appropriate fallback content
+   * Get language-appropriate dynamic fallback content
    */
   static getLanguageFallback(language: SupportedLanguage, userInfo?: UserInfo): string[] {
-    // For now, all fallbacks are in English
-    // This will be expanded when multilingual support is added
-    const userName = userInfo?.name || 'I';
+    const userName = userInfo?.name || 'Alex';
     
-    return [
-      `${userName} see a cat.`,
-      `The cat is big.`,
-      `${userName} like the cat.`,
-      `We play and run.`,
-      `It is fun to play.`
+    // Generate dynamic, grammatically correct fallback content
+    const fallbackTemplates = [
+      `${userName} goes to the park today.`,
+      `The sun is bright and warm.`,
+      `${userName} finds a pretty flower.`,
+      `Birds sing happy songs.`,
+      `${userName} feels very good today.`
     ];
+    
+    const alternativeTemplates = [
+      `${userName} plays with a new friend.`,
+      `They laugh and have fun together.`,
+      `${userName} sees many colorful things.`,
+      `The day is full of joy.`,
+      `${userName} loves this special time.`
+    ];
+    
+    const storyTemplates = [
+      `${userName} walks in the garden.`,
+      `The trees are tall and green.`,
+      `${userName} hears nice sounds.`,
+      `Animals play all around.`,
+      `${userName} smiles with happiness.`
+    ];
+    
+    // Rotate between different template sets to avoid repetition
+    const templateSets = [fallbackTemplates, alternativeTemplates, storyTemplates];
+    const selectedSet = templateSets[Math.floor(Math.random() * templateSets.length)];
+    
+    return selectedSet;
   }
 
   /**
