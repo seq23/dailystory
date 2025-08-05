@@ -1,6 +1,70 @@
 import { useEffect, useCallback } from 'react';
-import { SecurityMonitor, PerformanceMonitor, UserActivityMonitor } from '@/utils/monitoring';
 import { useLocation } from 'react-router-dom';
+
+interface SecurityEvent {
+  type: string;
+  data: any;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  timestamp: number;
+}
+
+class SecurityMonitor {
+  private static events: SecurityEvent[] = [];
+  private static maxEvents = 1000;
+
+  static logEvent(type: string, data: any, severity: 'low' | 'medium' | 'high' | 'critical' = 'low') {
+    const event: SecurityEvent = {
+      type,
+      data,
+      severity,
+      timestamp: Date.now()
+    };
+
+    this.events.unshift(event);
+    if (this.events.length > this.maxEvents) {
+      this.events = this.events.slice(0, this.maxEvents);
+    }
+
+    // Log to console in development
+    if (import.meta.env.DEV) {
+      console.log(`[Security] ${severity.toUpperCase()}: ${type}`, data);
+    }
+  }
+
+  static getEvents(): SecurityEvent[] {
+    return [...this.events];
+  }
+
+  static getCriticalEvents(): SecurityEvent[] {
+    return this.events.filter(event => event.severity === 'critical' || event.severity === 'high');
+  }
+
+  static exportEvents(): string {
+    return JSON.stringify({
+      events: this.events,
+      exportedAt: new Date().toISOString(),
+      totalEvents: this.events.length
+    }, null, 2);
+  }
+
+  static clearEvents(): void {
+    this.events = [];
+  }
+}
+
+class UserActivityMonitor {
+  static trackPageView(path: string) {
+    SecurityMonitor.logEvent('page_view', { path }, 'low');
+  }
+
+  static trackError(error: Error, componentStack?: string) {
+    SecurityMonitor.logEvent('error', { 
+      message: error.message,
+      stack: error.stack,
+      componentStack 
+    }, 'medium');
+  }
+}
 
 export const useSecurityMonitoring = () => {
   const location = useLocation();
@@ -12,108 +76,108 @@ export const useSecurityMonitoring = () => {
 
   // Monitor performance
   useEffect(() => {
-    const observer = new PerformanceObserver((list) => {
-      for (const entry of list.getEntries()) {
-        if (entry.duration > 3000) { // Log slow operations
-          SecurityMonitor.logEvent('performance', 'slow_operation', {
-            name: entry.name,
-            duration: entry.duration,
-            entryType: entry.entryType
-          }, 'medium');
-        }
-      }
-    });
+    if (typeof window !== 'undefined') {
+      const observer = new PerformanceObserver((list) => {
+        list.getEntries().forEach((entry) => {
+          if (entry.duration > 3000) {
+            SecurityMonitor.logEvent('slow_operation', {
+              name: entry.name,
+              duration: entry.duration,
+              type: entry.entryType
+            }, 'medium');
+          }
+        });
+      });
 
-    observer.observe({ entryTypes: ['navigation', 'resource', 'measure'] });
+      observer.observe({ entryTypes: ['navigation', 'resource', 'measure'] });
 
-    return () => observer.disconnect();
+      return () => observer.disconnect();
+    }
   }, []);
 
-  // Monitor for security violations
+  // Monitor CSP violations
   useEffect(() => {
-    const handleSecurityViolation = (event: SecurityPolicyViolationEvent) => {
-      SecurityMonitor.logEvent('security', 'csp_violation', {
+    const handleCSPViolation = (event: SecurityPolicyViolationEvent) => {
+      SecurityMonitor.logEvent('csp_violation', {
         blockedURI: event.blockedURI,
         violatedDirective: event.violatedDirective,
-        originalPolicy: event.originalPolicy
+        effectiveDirective: event.effectiveDirective
       }, 'high');
     };
 
-    document.addEventListener('securitypolicyviolation', handleSecurityViolation);
-
-    return () => {
-      document.removeEventListener('securitypolicyviolation', handleSecurityViolation);
-    };
+    document.addEventListener('securitypolicyviolation', handleCSPViolation);
+    return () => document.removeEventListener('securitypolicyviolation', handleCSPViolation);
   }, []);
 
-  // Monitor for console access attempts
+  // Monitor console access in production
   useEffect(() => {
-    if (process.env.NODE_ENV === 'production') {
+    if (import.meta.env.PROD) {
       const originalConsole = { ...console };
       
-      // Override console methods to detect developer tools usage
-      ['log', 'warn', 'error', 'info', 'debug'].forEach(method => {
-        console[method] = (...args: any[]) => {
-          SecurityMonitor.logEvent('security', 'console_access', {
+      ['log', 'warn', 'error', 'debug'].forEach((method) => {
+        (console as any)[method] = (...args: any[]) => {
+          SecurityMonitor.logEvent('console_access', {
             method,
-            timestamp: Date.now()
+            argsCount: args.length
           }, 'low');
-          return originalConsole[method](...args);
+          
+          (originalConsole as any)[method](...args);
         };
       });
+    }
+  }, []);
+
+  const handleError = useCallback((error: Error, errorInfo?: { componentStack: string }) => {
+    UserActivityMonitor.trackError(error, errorInfo?.componentStack);
+  }, []);
+
+  // Monitor network requests
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const originalFetch = window.fetch;
+      
+      window.fetch = async (...args) => {
+        const startTime = performance.now();
+        const url = args[0]?.toString() || 'unknown';
+        
+        try {
+          const response = await originalFetch(...args);
+          const duration = performance.now() - startTime;
+          
+          SecurityMonitor.logEvent('network_request', {
+            url,
+            method: args[1]?.method || 'GET',
+            status: response.status,
+            duration,
+            success: response.ok
+          }, response.ok ? 'low' : 'medium');
+          
+          return response;
+        } catch (error) {
+          const duration = performance.now() - startTime;
+          
+          SecurityMonitor.logEvent('network_error', {
+            url,
+            method: args[1]?.method || 'GET',
+            duration,
+            error: error instanceof Error ? error.message : 'Unknown error'
+          }, 'high');
+          
+          throw error;
+        }
+      };
 
       return () => {
-        Object.assign(console, originalConsole);
+        window.fetch = originalFetch;
       };
     }
   }, []);
 
-  // Error boundary integration
-  const handleError = useCallback((error: Error, errorInfo: any) => {
-    UserActivityMonitor.trackError(error, errorInfo.componentStack || 'unknown');
-  }, []);
-
-  // Network monitoring
-  useEffect(() => {
-    const originalFetch = window.fetch;
-    
-    window.fetch = async (...args) => {
-      const startTime = performance.now();
-      const url = typeof args[0] === 'string' ? args[0] : (args[0] as Request).url;
-      
-      try {
-        const response = await originalFetch(...args);
-        const duration = performance.now() - startTime;
-        
-        SecurityMonitor.logEvent('security', 'network_request', {
-          url,
-          method: args[1]?.method || 'GET',
-          status: response.status,
-          duration,
-          success: response.ok
-        }, response.ok ? 'low' : 'medium');
-        
-        return response;
-      } catch (error) {
-        SecurityMonitor.logEvent('error', 'network_error', {
-          url,
-          error: error.toString(),
-          duration: performance.now() - startTime
-        }, 'high');
-        throw error;
-      }
-    };
-
-    return () => {
-      window.fetch = originalFetch;
-    };
-  }, []);
-
   return {
     handleError,
-    getSecurityEvents: () => SecurityMonitor.getSecurityEvents(),
-    getCriticalEvents: () => SecurityMonitor.getCriticalEvents(),
-    exportEvents: () => SecurityMonitor.exportEvents(),
-    clearEvents: () => SecurityMonitor.clearEvents()
+    getEvents: SecurityMonitor.getEvents,
+    getCriticalEvents: SecurityMonitor.getCriticalEvents,
+    exportEvents: SecurityMonitor.exportEvents,
+    clearEvents: SecurityMonitor.clearEvents
   };
 };

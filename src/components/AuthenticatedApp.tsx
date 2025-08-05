@@ -10,6 +10,9 @@ import { BookOpen, BarChart3, Settings, LogOut } from "lucide-react";
 import type { UserInfo, Grade, LanguageCode, LearningGoal } from "@/types";
 import { ProgressDashboard } from "@/components/ProgressDashboard";
 import { ParentDashboard } from "@/components/ParentDashboard";
+import { SecurityDashboard } from "@/components/SecurityDashboard";
+import { SystemStatus } from "@/components/SystemStatus";
+import { useSecurityMonitoring } from "@/hooks/useSecurityMonitoring";
 
 interface AuthenticatedAppProps {
   user: User;
@@ -23,6 +26,9 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [isPremium, setIsPremium] = useState(false);
+  
+  // Initialize security monitoring
+  useSecurityMonitoring();
 
   // Check for query parameters on component mount
   useEffect(() => {
@@ -249,6 +255,8 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
           </TabsContent>
         </Tabs>
       </main>
+      <SecurityDashboard />
+      <SystemStatus className="fixed bottom-4 left-4 w-80 max-h-96 overflow-auto z-40" />
     </div>
     </MobileKeyboardHandler>
   );

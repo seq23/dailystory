@@ -3,7 +3,9 @@ import { WelcomeHero } from "@/components/WelcomeHero";
 import { UserInfoForm } from "@/components/UserInfoForm";
 import { FreeReadingSession } from "@/components/FreeReadingSession";
 import { PremiumUpgrade } from "@/components/PremiumUpgrade";
+import { SecurityDashboard } from "@/components/SecurityDashboard";
 import { LoginScreen } from "@/components/LoginScreen";
+import { useSecurityMonitoring } from "@/hooks/useSecurityMonitoring";
 import type { UserInfo } from "@/types";
 
 type GuestState = "welcome" | "form" | "reading" | "upgrade" | "login";
@@ -11,6 +13,9 @@ type GuestState = "welcome" | "form" | "reading" | "upgrade" | "login";
 export const GuestExperience = () => {
   const [currentState, setCurrentState] = useState<GuestState>("welcome");
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  
+  // Initialize security monitoring for guests
+  useSecurityMonitoring();
 
   // Check for query parameters on component mount
   useEffect(() => {
@@ -61,6 +66,7 @@ export const GuestExperience = () => {
       return (
         <div className="animate-fade-in">
           <WelcomeHero onGetStarted={handleGetStarted} onSignIn={handleCreateAccount} />
+          <SecurityDashboard />
         </div>
       );
     
