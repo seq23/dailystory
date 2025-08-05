@@ -1814,12 +1814,19 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
   // Phonetic breakdown handler - now available to all users
   const handlePhoneticBreakdown = async () => {
     console.log('🔤 Phonetic breakdown clicked for word:', props.word);
+    console.log('🔤 UserInfo available:', !!props.userInfo);
+    console.log('🔤 Enhanced audio service available:', !!enhancedAudioService);
     
-    if (!props.userInfo) return;
+    if (!props.userInfo) {
+      console.error('❌ Phonetic: No user info available');
+      return;
+    }
     
     setIsPlayingPhonetics(true);
+    console.log('🔤 Starting phonetic breakdown for:', props.word);
     
     try {
+      console.log('🔤 Calling enhancedAudioService.playPhoneticBreakdown...');
       await enhancedAudioService.playPhoneticBreakdown({
         word: props.word,
         userInfo: props.userInfo,

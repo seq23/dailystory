@@ -166,6 +166,7 @@ export const useGamification = (options: UseGamificationOptions = {}) => {
 
   const addVocabularyWord = useCallback(() => {
     console.log('🎯 addVocabularyWord called - updating stats');
+    console.log('🎯 Current userStats before update:', userStats);
     setUserStats(prev => {
       const newStats = {
         ...prev,
@@ -173,11 +174,13 @@ export const useGamification = (options: UseGamificationOptions = {}) => {
       };
       console.log('📊 Vocabulary updated:', {
         before: prev.vocabularyWordsLearned,
-        after: newStats.vocabularyWordsLearned
+        after: newStats.vocabularyWordsLearned,
+        fullPrevStats: prev,
+        fullNewStats: newStats
       });
       return newStats;
     });
-  }, []);
+  }, [userStats]);
 
   const getNextAchievement = useCallback(() => {
     if (newAchievements.length > 0) {

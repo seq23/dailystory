@@ -943,23 +943,34 @@ export class UniversalContentManager {
   ): Promise<Story> {
     console.log('📚 Level 0: Generating story for beginner level with ultra-simple 4-6 word sentences');
     console.log('📚 Level 0: User info:', { name: userInfo.name, age: userInfo.age, grade: userInfo.grade });
+    console.log('📚 Level 0: Page count requested:', pageCount);
     
-    const generatedContent = await this.generateLevel0Content(pageCount, userInfo);
-    
-    return {
-      id: crypto.randomUUID(),
-      title: `${NameFormatter.capitalize(userInfo.name || 'Alex')}'s Story`,
-      segments: generatedContent.map(content => ({
-        text: content.content,
-        illustration: undefined,
-        audioUrl: undefined
-      })),
-      difficulty: 'beginner',
-      estimatedReadingTime: Math.max(1, Math.ceil(generatedContent.length / 6)), // Slower for Level 0
-      wordCount: generatedContent.reduce((sum, content) => 
-        sum + content.content.split(' ').length, 0
-      )
-    };
+    try {
+      console.log('📚 Level 0: Calling generateLevel0Content...');
+      const generatedContent = await this.generateLevel0Content(pageCount, userInfo);
+      console.log('📚 Level 0: Content generated successfully:', {
+        contentLength: generatedContent?.length,
+        firstPage: generatedContent?.[0]
+      });
+      
+      return {
+        id: crypto.randomUUID(),
+        title: `${NameFormatter.capitalize(userInfo.name || 'Alex')}'s Story`,
+        segments: generatedContent.map(content => ({
+          text: content.content,
+          illustration: undefined,
+          audioUrl: undefined
+        })),
+        difficulty: 'beginner',
+        estimatedReadingTime: Math.max(1, Math.ceil(generatedContent.length / 6)), // Slower for Level 0
+        wordCount: generatedContent.reduce((sum, content) => 
+          sum + content.content.split(' ').length, 0
+        )
+      };
+    } catch (error) {
+      console.error('❌ Level 0: Error generating story:', error);
+      throw error;
+    }
   }
 
   /**

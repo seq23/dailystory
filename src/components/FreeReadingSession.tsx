@@ -215,8 +215,15 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   useEffect(() => {
     console.log('🎮 FreeReadingSession: Component mounted, setting up gamification globals...');
     console.log('🎮 FreeReadingSession: addVocabularyWord function available:', !!addVocabularyWord);
-    setupGamificationGlobals(addVocabularyWord, false);
-    console.log('🎮 FreeReadingSession: Gamification globals setup complete');
+    console.log('🎮 FreeReadingSession: addVocabularyWord function type:', typeof addVocabularyWord);
+    
+    if (addVocabularyWord) {
+      setupGamificationGlobals(addVocabularyWord, false);
+      console.log('🎮 FreeReadingSession: Gamification globals setup complete');
+    } else {
+      console.error('❌ FreeReadingSession: addVocabularyWord function is not available!');
+    }
+    
     return () => {
       console.log('🎮 FreeReadingSession: Cleaning up gamification globals');
       cleanupGamificationGlobals();
