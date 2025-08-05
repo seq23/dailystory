@@ -2,6 +2,8 @@ import type { DifficultyLevel, UserInfo } from '@/types';
 import { getComprehensiveTemplate, processComprehensiveTemplate, getTemplateStats } from '@/constants/comprehensiveTemplates';
 import { SessionTemplateManager } from '@/services/sessionTemplateManager';
 import { CharacterPoolManager } from '@/services/characterPoolManager';
+import { TemplateValidationCache } from '@/services/templateValidationCache';
+import { MobileTemplateOptimizer } from '@/services/mobileTemplateOptimizer';
 import { validateLevel0Sentence } from '@/constants/level0Vocabulary';
 import { validateLevel1Sentence } from '@/constants/level1Vocabulary';
 import { validateLevel2Sentence } from '@/constants/level2Vocabulary';
@@ -72,17 +74,23 @@ export class ComprehensiveTemplateManager {
       // Step 4: Process template with all placeholders (preserves existing processing)
       const processedPages = processComprehensiveTemplate(rawTemplate, options.userInfo, characterPool);
       
-      // Step 5: Validate vocabulary compliance (preserves existing validation)
-      const validation = this.validateTemplateContent(processedPages, options.difficulty, options.userInfo?.name);
+      // Step 5: Validate vocabulary compliance with caching (preserves existing validation)
+      const validation = this.validateTemplateContent(processedPages, options.difficulty, options.userInfo?.name, templateIndex);
       if (validation) {
         systemsUsed.push('VocabularyValidator');
       }
       
-      // Step 6: Get session info for tracking (preserves session management)
+      // Step 6: Mobile optimization (new system integration)
+      const optimizedTemplate = MobileTemplateOptimizer.optimizeTemplate(processedPages, options.difficulty, options.userInfo);
+      if (optimizedTemplate.optimizationApplied.length > 0) {
+        systemsUsed.push('MobileOptimizer');
+      }
+      
+      // Step 7: Get session info for tracking (preserves session management)
       const sessionInfo = SessionTemplateManager.getSessionStats();
       
-      // Step 7: Apply author voice patterns (if needed - preserves AuthorVoice)
-      let finalPages = processedPages;
+      // Step 8: Apply author voice patterns (if needed - preserves AuthorVoice)
+      let finalPages = optimizedTemplate.pages;
       if (options.isPremium) {
         // Author voice patterns can still be applied to enhance templates
         systemsUsed.push('AuthorVoicePatterns');
@@ -127,16 +135,38 @@ export class ComprehensiveTemplateManager {
   }
   
   /**
-   * Get next template index with anti-repetition (preserves SessionTemplateManager)
+   * Get next template index with anti-repetition logic
+   * Enhanced with robust error handling and validation caching
    */
   private static async getNextTemplateIndex(difficulty: DifficultyLevel, preferredIndex?: number): Promise<number> {
     if (preferredIndex !== undefined && preferredIndex >= 0 && preferredIndex < 100) {
+      console.log(`✅ Using preferred template index: ${preferredIndex} for ${difficulty}`);
       return preferredIndex;
     }
     
     try {
-      // Use SessionTemplateManager for anti-repetition
-      const templatePool = Array.from({ length: 100 }, (_, i) => i.toString());
+      // Get actual templates for SessionTemplateManager (better than just indices)
+      const templatePool: string[] = [];
+      for (let i = 0; i < 100; i++) {
+        try {
+          const template = getComprehensiveTemplate(difficulty, i);
+          if (template && template.length > 0) {
+            templatePool.push(template.join(' '));
+          } else {
+            console.warn(`⚠️ Empty template at index ${i} for ${difficulty}`);
+            templatePool.push(`Fallback template ${i + 1}`);
+          }
+        } catch (error) {
+          console.error(`❌ Error loading template ${i} for ${difficulty}:`, error);
+          templatePool.push(`Emergency fallback template ${i + 1}`);
+        }
+      }
+      
+      if (templatePool.length === 0) {
+        throw new Error(`No valid templates could be loaded for difficulty: ${difficulty}`);
+      }
+      
+      // Use SessionTemplateManager for intelligent rotation
       const nextTemplateResult = SessionTemplateManager.getNextTemplate(templatePool, difficulty);
       
       // Handle the result object returned by SessionTemplateManager
@@ -158,37 +188,65 @@ export class ComprehensiveTemplateManager {
   }
   
   /**
-   * Validate template content (preserves all vocabulary validation systems)
+   * Validate template content with caching (preserves all vocabulary validation systems)
    */
   private static validateTemplateContent(
     pages: string[], 
     difficulty: DifficultyLevel, 
-    userName?: string
+    userName?: string,
+    templateIndex?: number
   ): any {
     if (!pages || pages.length === 0) {
       return { isValid: false, invalidWords: [], error: 'No pages to validate' };
     }
     
+    // Check cache first if templateIndex is provided
+    if (templateIndex !== undefined) {
+      const cached = TemplateValidationCache.getCachedValidation(difficulty, templateIndex, userName);
+      if (cached) {
+        return cached;
+      }
+    }
+    
     try {
       const fullText = pages.join(' ');
+      let validation: any;
       
       // Use appropriate vocabulary validator based on difficulty
       switch (difficulty) {
         case 'beginner':
-          return validateLevel0Sentence(fullText, userName);
+          validation = validateLevel0Sentence(fullText, userName);
+          break;
         case 'easy':
-          return validateLevel1Sentence(fullText, userName);
+          validation = validateLevel1Sentence(fullText, userName);
+          break;
         case 'medium':
-          return validateLevel2Sentence(fullText, userName);
+          validation = validateLevel2Sentence(fullText, userName);
+          break;
         case 'hard':
         case 'expert':
-          return validateLevel3Sentence(fullText, userName);
+          validation = validateLevel3Sentence(fullText, userName);
+          break;
         default:
-          return { isValid: true, invalidWords: [] };
+          validation = { isValid: true, invalidWords: [] };
       }
+      
+      // Cache the result if templateIndex is provided
+      if (templateIndex !== undefined && validation) {
+        TemplateValidationCache.setCachedValidation(difficulty, templateIndex, validation, userName);
+      }
+      
+      return validation;
     } catch (error) {
       console.warn('Error validating template content:', error);
-      return { isValid: true, invalidWords: [], error: error.message };
+      const errorResult = { isValid: true, invalidWords: [], error: error.message };
+      
+      // Cache error results too to avoid repeated failures
+      if (templateIndex !== undefined) {
+        TemplateValidationCache.setCachedValidation(difficulty, templateIndex, errorResult, userName);
+      }
+      
+      return errorResult;
     }
   }
   
