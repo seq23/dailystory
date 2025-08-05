@@ -1,5 +1,5 @@
 // Template compliance audit for tiered vocabulary system
-import { LEVEL_0_COMPLIANT_TEMPLATES } from '@/constants/level0TemplatesCompliant';
+import { LEVEL_0_FREE_TEMPLATES } from '@/constants/level0TemplatesFree';
 import { validateLevel0SentenceByUserType } from '@/constants/dolchPrePrimer';
 
 export function auditTemplateCompliance() {
@@ -17,7 +17,7 @@ export function auditTemplateCompliance() {
     premiumInvalidWords: string[];
   }> = [];
   
-  LEVEL_0_COMPLIANT_TEMPLATES.forEach((template, templateIndex) => {
+  LEVEL_0_FREE_TEMPLATES.forEach((template, templateIndex) => {
     template.forEach((sentence, pageIndex) => {
       const freeResult = validateLevel0SentenceByUserType(sentence, 'free');
       const premiumResult = validateLevel0SentenceByUserType(sentence, 'premium');
@@ -39,7 +39,7 @@ export function auditTemplateCompliance() {
     });
   });
   
-  const totalSentences = LEVEL_0_COMPLIANT_TEMPLATES.reduce((sum, template) => sum + template.length, 0);
+  const totalSentences = LEVEL_0_FREE_TEMPLATES.reduce((sum, template) => sum + template.length, 0);
   
   console.log(`📊 Total sentences: ${totalSentences}`);
   console.log(`📊 Free tier failures: ${freeFailures} (${((freeFailures/totalSentences)*100).toFixed(1)}%)`);

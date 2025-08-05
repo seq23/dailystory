@@ -1,8 +1,7 @@
 // Level 0 Story Processor - Dedicated processor for Level 0 stories
 // Uses hierarchical template system with minimal processing
 
-import { LEVEL_0_COMPLIANT_TEMPLATES, getLevel0CompliantTemplate } from '@/constants/level0TemplatesCompliant';
-import { LEVEL_0_STRICT_DOLCH_TEMPLATES, getLevel0StrictDolchTemplate, getLevel0StrictDolchTemplateCount } from '@/constants/level0TemplatesFixed';
+import { LEVEL_0_FREE_TEMPLATES, getLevel0FreeTemplate, getLevel0FreeTemplateCount } from '@/constants/level0TemplatesFree';
 import { LEVEL_0_PREMIUM_TEMPLATES, getLevel0PremiumTemplate, getLevel0PremiumTemplateCount } from '@/constants/level0TemplatesPremium';
 import { validateLevel0SentenceByUserType, type UserType } from '@/constants/dolchPrePrimer';
 import { HierarchicalSessionTemplateManager } from '@/services/hierarchicalSessionTemplateManager';
@@ -199,7 +198,7 @@ export class Level0StoryProcessor {
     const userType: UserType = isPremium ? 'premium' : 'free';
     
     const templates = userType === 'free' 
-      ? LEVEL_0_STRICT_DOLCH_TEMPLATES 
+      ? LEVEL_0_FREE_TEMPLATES 
       : LEVEL_0_PREMIUM_TEMPLATES;
     
     const totalTemplates = templates.length;

@@ -3,7 +3,7 @@
 
 import { DifficultyLevel, UserInfo } from '@/types';
 import { validateByMode, VocabularyMode, DOLCH_PRE_PRIMER_VOCABULARY, ENHANCED_LEVEL_0_VOCABULARY } from '@/constants/dolchPrePrimer';
-import { getLevel0CompliantTemplate, getLevel0CompliantTemplateCount } from '@/constants/level0TemplatesCompliant';
+import { getLevel0FreeTemplate, getLevel0FreeTemplateCount } from '@/constants/level0TemplatesFree';
 import { OptimizedTemplateManager } from './optimizedTemplateManager';
 
 interface QualityTestResult {
@@ -102,12 +102,12 @@ export class TemplateQualityAssurance {
     const maxScore = 100;
     
     try {
-      const templateCount = getLevel0CompliantTemplateCount();
+      const templateCount = getLevel0FreeTemplateCount();
       let validTemplates = 0;
       
       // Test both vocabulary modes
       for (let i = 0; i < Math.min(templateCount, 20); i++) { // Test first 20 templates
-        const template = getLevel0CompliantTemplate(i);
+        const template = getLevel0FreeTemplate(i);
         
         // Test Dolch Pre-Primer compliance
         let dolchValid = true;
@@ -171,9 +171,9 @@ export class TemplateQualityAssurance {
       
       // Test specific grammar patterns
       const testTemplates = [
-        getLevel0CompliantTemplate(0),
-        getLevel0CompliantTemplate(1),
-        getLevel0CompliantTemplate(2)
+        getLevel0FreeTemplate(0),
+        getLevel0FreeTemplate(1),
+        getLevel0FreeTemplate(2)
       ];
       
       for (let t = 0; t < testTemplates.length; t++) {
@@ -239,7 +239,7 @@ export class TemplateQualityAssurance {
     const maxScore = 100;
     
     try {
-      const templateCount = getLevel0CompliantTemplateCount();
+      const templateCount = getLevel0FreeTemplateCount();
       details.push(`📊 Total templates available: ${templateCount}`);
       
       // Test expected template count
@@ -253,7 +253,7 @@ export class TemplateQualityAssurance {
       // Test template structure consistency
       let consistentTemplates = 0;
       for (let i = 0; i < Math.min(templateCount, 10); i++) {
-        const template = getLevel0CompliantTemplate(i);
+        const template = getLevel0FreeTemplate(i);
         
         if (template.length === 5) {
           consistentTemplates++;
@@ -598,7 +598,7 @@ export class TemplateQualityAssurance {
     
     try {
       // Test that pages are optimized for mobile reading
-      const template = getLevel0CompliantTemplate(0);
+      const template = getLevel0FreeTemplate(0);
       
       let mobileOptimized = 0;
       for (const page of template) {
@@ -699,7 +699,7 @@ export class TemplateQualityAssurance {
    * Create summary statistics
    */
   private static createSummary(testResults: QualityTestResult[]): ComprehensiveQualityReport['summary'] {
-    const templateCount = getLevel0CompliantTemplateCount();
+    const templateCount = getLevel0FreeTemplateCount();
     const passedTests = testResults.filter(test => test.passed);
     
     return {
@@ -715,7 +715,7 @@ export class TemplateQualityAssurance {
    * Estimate memory usage (rough calculation)
    */
   private static estimateMemoryUsage(): number {
-    const templateCount = getLevel0CompliantTemplateCount();
+    const templateCount = getLevel0FreeTemplateCount();
     const avgTemplateSize = 6 * 30; // 6 pages * ~30 chars per page
     return templateCount * avgTemplateSize * 2; // Rough estimate in bytes
   }

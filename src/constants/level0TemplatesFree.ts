@@ -1,9 +1,9 @@
-// Level 0 Templates - TRULY COMPLIANT with Dolch Pre-Primer (40 words ONLY)
+// Level 0 Templates - FREE USERS - TRULY COMPLIANT with Dolch Pre-Primer (40 words ONLY)
 // STRICTLY uses ONLY: a, and, away, big, blue, can, come, down, find, for,
 // funny, go, help, here, i, in, is, it, jump, little, look, make, me, my, not, 
 // one, play, red, run, said, see, the, three, to, two, up, we, where, yellow, you
 
-export const LEVEL_0_STRICT_DOLCH_TEMPLATES = [
+export const LEVEL_0_FREE_TEMPLATES = [
   // Template 1 - TRULY FIXED (using only Dolch words)
   [
     "I see you.",
@@ -185,19 +185,19 @@ export const LEVEL_0_STRICT_DOLCH_TEMPLATES = [
   ]
 ];
 
-export function getLevel0StrictDolchTemplate(templateIndex?: number): string[] {
-  if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < LEVEL_0_STRICT_DOLCH_TEMPLATES.length) {
-    return [...LEVEL_0_STRICT_DOLCH_TEMPLATES[templateIndex]];
+export function getLevel0FreeTemplate(templateIndex?: number): string[] {
+  if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < LEVEL_0_FREE_TEMPLATES.length) {
+    return [...LEVEL_0_FREE_TEMPLATES[templateIndex]];
   }
   
-  const randomIndex = Math.floor(Math.random() * LEVEL_0_STRICT_DOLCH_TEMPLATES.length);
-  return [...LEVEL_0_STRICT_DOLCH_TEMPLATES[randomIndex]];
+  const randomIndex = Math.floor(Math.random() * LEVEL_0_FREE_TEMPLATES.length);
+  return [...LEVEL_0_FREE_TEMPLATES[randomIndex]];
 }
 
-export function getLevel0StrictDolchTemplateCount(): number {
-  return LEVEL_0_STRICT_DOLCH_TEMPLATES.length;
+export function getLevel0FreeTemplateCount(): number {
+  return LEVEL_0_FREE_TEMPLATES.length;
 }
 
-export function getLevel0StrictDolchTotalPages(): number {
-  return LEVEL_0_STRICT_DOLCH_TEMPLATES.length * 5;
+export function getLevel0FreeTotalPages(): number {
+  return LEVEL_0_FREE_TEMPLATES.length * 5;
 }

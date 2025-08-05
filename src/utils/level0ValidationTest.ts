@@ -1,5 +1,5 @@
 // Level 0 Implementation Validation Test
-import { LEVEL_0_STRICT_DOLCH_TEMPLATES, getLevel0StrictDolchTemplateCount } from '@/constants/level0TemplatesFixed';
+import { LEVEL_0_FREE_TEMPLATES, getLevel0FreeTemplateCount } from '@/constants/level0TemplatesFree';
 import { validateLevel0SentenceByUserType, DOLCH_PRE_PRIMER_VOCABULARY } from '@/constants/dolchPrePrimer';
 import { ExtensionTemplateValidator } from '@/utils/extensionTemplateValidator';
 
@@ -19,7 +19,7 @@ export function runLevel0ValidationTest(): {
   console.log('🔍 Starting Level 0 Implementation Validation...');
 
   // Test 1: Verify template count
-  const templateCount = getLevel0StrictDolchTemplateCount();
+  const templateCount = getLevel0FreeTemplateCount();
   console.log(`📊 Template count: ${templateCount} (Expected: 20)`);
   
   if (templateCount !== 20) {
@@ -29,7 +29,7 @@ export function runLevel0ValidationTest(): {
   // Test 2: Validate all templates against Dolch Pre-Primer vocabulary
   let vocabularyCompliance = true;
   
-  LEVEL_0_STRICT_DOLCH_TEMPLATES.forEach((template, templateIndex) => {
+  LEVEL_0_FREE_TEMPLATES.forEach((template, templateIndex) => {
     template.forEach((page, pageIndex) => {
       const validation = validateLevel0SentenceByUserType(page, 'free', 'TestUser');
       
@@ -74,7 +74,7 @@ export function runLevel0ValidationTest(): {
 
   // Test 4: Check vocabulary usage distribution
   const usedWords = new Set<string>();
-  LEVEL_0_STRICT_DOLCH_TEMPLATES.forEach(template => {
+  LEVEL_0_FREE_TEMPLATES.forEach(template => {
     template.forEach(page => {
       const words = page.toLowerCase().replace(/[^\w\s]/g, '').split(/\s+/);
       words.forEach(word => {

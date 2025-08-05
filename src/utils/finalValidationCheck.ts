@@ -1,5 +1,5 @@
 // Final Implementation Validation - Complete System Check
-import { LEVEL_0_STRICT_DOLCH_TEMPLATES, getLevel0StrictDolchTemplateCount } from '@/constants/level0TemplatesFixed';
+import { LEVEL_0_FREE_TEMPLATES, getLevel0FreeTemplateCount } from '@/constants/level0TemplatesFree';
 import { DOLCH_PRE_PRIMER_VOCABULARY, validateLevel0SentenceByUserType } from '@/constants/dolchPrePrimer';
 import { ExtensionTemplateValidator } from '@/utils/extensionTemplateValidator';
 
@@ -19,7 +19,7 @@ export function runFinalValidationCheck(): {
 
   // 1. Template Count Check
   const expectedCount = 20;
-  const actualCount = getLevel0StrictDolchTemplateCount();
+  const actualCount = getLevel0FreeTemplateCount();
   const countCorrect = actualCount === expectedCount;
   
   console.log(`📊 Template Count: ${actualCount}/${expectedCount} ${countCorrect ? '✅' : '❌'}`);
@@ -30,7 +30,7 @@ export function runFinalValidationCheck(): {
   let invalidPages = 0;
   const pageViolations: string[] = [];
 
-  LEVEL_0_STRICT_DOLCH_TEMPLATES.forEach((template, templateIndex) => {
+  LEVEL_0_FREE_TEMPLATES.forEach((template, templateIndex) => {
     template.forEach((page, pageIndex) => {
       const words = page.toLowerCase().replace(/[^\w\s]/g, '').split(/\s+/).filter(w => w.length > 0);
       const invalidWords = words.filter(word => !DOLCH_PRE_PRIMER_VOCABULARY.has(word));
@@ -74,7 +74,7 @@ export function runFinalValidationCheck(): {
 
   // 4. Vocabulary Coverage Analysis
   const usedWords = new Set<string>();
-  LEVEL_0_STRICT_DOLCH_TEMPLATES.forEach(template => {
+  LEVEL_0_FREE_TEMPLATES.forEach(template => {
     template.forEach(page => {
       const words = page.toLowerCase().replace(/[^\w\s]/g, '').split(/\s+/);
       words.forEach(word => {

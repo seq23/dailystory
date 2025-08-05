@@ -6,8 +6,7 @@ import {
   getLevel0VocabularyByUserType,
   validateLevel0SentenceByUserType 
 } from '@/constants/dolchPrePrimer';
-import { LEVEL_0_COMPLIANT_TEMPLATES } from '@/constants/level0TemplatesCompliant';
-import { LEVEL_0_STRICT_DOLCH_TEMPLATES } from '@/constants/level0TemplatesFixed';
+import { LEVEL_0_FREE_TEMPLATES } from '@/constants/level0TemplatesFree';
 
 export function tripleCheckImplementation() {
   console.log('🔍 === TRIPLE CHECK AUDIT ===');
@@ -54,7 +53,7 @@ export function tripleCheckImplementation() {
   let strictFailures = 0;
   const strictResults: any[] = [];
   
-  LEVEL_0_STRICT_DOLCH_TEMPLATES.forEach((template, tIndex) => {
+  LEVEL_0_FREE_TEMPLATES.forEach((template, tIndex) => {
     template.forEach((sentence, sIndex) => {
       const result = validateLevel0SentenceByUserType(sentence, 'free');
       if (!result.isValid) {
@@ -64,7 +63,7 @@ export function tripleCheckImplementation() {
     });
   });
   
-  console.log(`📊 Strict Dolch templates: ${LEVEL_0_STRICT_DOLCH_TEMPLATES.length} templates, ${LEVEL_0_STRICT_DOLCH_TEMPLATES.length * 5} sentences`);
+  console.log(`📊 Free templates: ${LEVEL_0_FREE_TEMPLATES.length} templates, ${LEVEL_0_FREE_TEMPLATES.length * 5} sentences`);
   console.log(`✅ Strict compliance: ${strictFailures === 0 ? 'PERFECT' : `${strictFailures} failures`}`);
   
   if (strictResults.length > 0) {
@@ -76,7 +75,7 @@ export function tripleCheckImplementation() {
   let enhancedFailures = 0;
   const enhancedResults: any[] = [];
   
-  LEVEL_0_COMPLIANT_TEMPLATES.forEach((template, tIndex) => {
+  LEVEL_0_FREE_TEMPLATES.forEach((template, tIndex) => {
     template.forEach((sentence, sIndex) => {
       const freeResult = validateLevel0SentenceByUserType(sentence, 'free');
       const premiumResult = validateLevel0SentenceByUserType(sentence, 'premium');
@@ -96,7 +95,7 @@ export function tripleCheckImplementation() {
     });
   });
   
-  console.log(`📊 Enhanced templates: ${LEVEL_0_COMPLIANT_TEMPLATES.length} templates, ${LEVEL_0_COMPLIANT_TEMPLATES.length * 5} sentences`);
+  console.log(`📊 Free templates: ${LEVEL_0_FREE_TEMPLATES.length} templates, ${LEVEL_0_FREE_TEMPLATES.length * 5} sentences`);
   console.log(`✅ Premium compliance: ${enhancedFailures === 0 ? 'PERFECT' : `${enhancedFailures} failures`}`);
   
   if (enhancedResults.length > 0) {

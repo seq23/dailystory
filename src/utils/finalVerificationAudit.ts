@@ -5,7 +5,7 @@ import {
   DOLCH_PRE_PRIMER_VOCABULARY,
   validateLevel0SentenceByUserType 
 } from '@/constants/dolchPrePrimer';
-import { LEVEL_0_STRICT_DOLCH_TEMPLATES } from '@/constants/level0TemplatesFixed';
+import { LEVEL_0_FREE_TEMPLATES } from '@/constants/level0TemplatesFree';
 
 export function finalVerificationAudit() {
   console.log('🔍🔍🔍 === FINAL VERIFICATION AUDIT ===');
@@ -44,7 +44,7 @@ export function finalVerificationAudit() {
   let totalFailures = 0;
   const failures: any[] = [];
   
-  LEVEL_0_STRICT_DOLCH_TEMPLATES.forEach((template, tIndex) => {
+  LEVEL_0_FREE_TEMPLATES.forEach((template, tIndex) => {
     template.forEach((sentence, sIndex) => {
       const result = validateLevel0SentenceByUserType(sentence, 'free');
       if (!result.isValid) {
@@ -59,8 +59,8 @@ export function finalVerificationAudit() {
     });
   });
   
-  console.log(`📊 Strict templates: ${LEVEL_0_STRICT_DOLCH_TEMPLATES.length} templates`);
-  console.log(`📊 Total sentences: ${LEVEL_0_STRICT_DOLCH_TEMPLATES.length * 5}`);
+  console.log(`📊 Free templates: ${LEVEL_0_FREE_TEMPLATES.length} templates`);
+  console.log(`📊 Total sentences: ${LEVEL_0_FREE_TEMPLATES.length * 5}`);
   console.log(`✅ Compliance: ${totalFailures === 0 ? 'PERFECT ✅' : `❌ ${totalFailures} FAILURES`}`);
   
   if (failures.length > 0) {

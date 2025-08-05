@@ -1,5 +1,5 @@
 // Test Level 0 vocabulary compliance after fix
-import { LEVEL_0_COMPLIANT_TEMPLATES } from '@/constants/level0TemplatesCompliant';
+import { LEVEL_0_FREE_TEMPLATES } from '@/constants/level0TemplatesFree';
 import { validateLevel0SentenceByUserType } from '@/constants/dolchPrePrimer';
 
 export function testLevel0VocabularyCompliance(): { 
@@ -11,7 +11,7 @@ export function testLevel0VocabularyCompliance(): {
   
   const violations: Array<{ templateIndex: number; pageIndex: number; sentence: string; invalidWords: string[] }> = [];
   
-  LEVEL_0_COMPLIANT_TEMPLATES.forEach((template, templateIndex) => {
+  LEVEL_0_FREE_TEMPLATES.forEach((template, templateIndex) => {
     template.forEach((sentence, pageIndex) => {
       const validation = validateLevel0SentenceByUserType(sentence, 'free');
       if (!validation.isValid) {
@@ -26,12 +26,12 @@ export function testLevel0VocabularyCompliance(): {
   });
   
   const isCompliant = violations.length === 0;
-  const totalSentences = LEVEL_0_COMPLIANT_TEMPLATES.reduce((sum, template) => sum + template.length, 0);
+  const totalSentences = LEVEL_0_FREE_TEMPLATES.reduce((sum, template) => sum + template.length, 0);
   
   const summary = `
 🎯 LEVEL 0 VOCABULARY COMPLIANCE TEST RESULTS
 =============================================
-📊 Templates tested: ${LEVEL_0_COMPLIANT_TEMPLATES.length}
+📊 Templates tested: ${LEVEL_0_FREE_TEMPLATES.length}
 📊 Total sentences: ${totalSentences}
 📊 Violations found: ${violations.length}
 📊 Compliance status: ${isCompliant ? '✅ COMPLIANT' : '❌ NON-COMPLIANT'}
