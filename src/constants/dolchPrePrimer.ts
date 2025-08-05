@@ -37,20 +37,21 @@ export function validateDolchPrePrimerSentence(sentence: string, userName?: stri
   };
 }
 
-// Enhanced Level 0 vocabulary (80+ words) for more flexible story creation
-export const ENHANCED_LEVEL_0_VOCABULARY = new Set([
+// Free Level 0 vocabulary - Strict Dolch Pre-Primer only (40 words)
+export const FREE_LEVEL_0_VOCABULARY = new Set([...DOLCH_PRE_PRIMER_VOCABULARY]);
+
+// Premium Level 0 vocabulary - Dolch + words ≤3 characters (59 words)
+export const PREMIUM_LEVEL_0_VOCABULARY = new Set([
   // Include all Dolch Pre-Primer words
   ...DOLCH_PRE_PRIMER_VOCABULARY,
   
-  // Additional essential words for story variety
-  'an', 'on', 'at', 'this', 'that', 'he', 'she', 'they', 'with', 'have', 'has',
-  'get', 'got', 'put', 'take', 'give', 'like', 'want', 'need', 'love',
-  'mom', 'dad', 'baby', 'cat', 'dog', 'bird', 'fish', 'bear', 'frog',
-  'ball', 'book', 'toy', 'car', 'cup', 'hat', 'bed', 'home', 'tree', 'sun',
-  'happy', 'sad', 'good', 'nice', 'fun', 'fast', 'slow', 'big', 'small',
-  'apple', 'milk', 'cake', 'food', 'water', 'green', 'orange', 'purple',
-  'hi', 'hello', 'bye', 'yes', 'no', 'please', 'thank', 'thanks'
+  // Additional words ≤3 characters only
+  'an', 'on', 'at', 'he', 'get', 'got', 'put', 'mom', 'dad', 'cat', 'dog', 
+  'hat', 'bed', 'sun', 'sad', 'fun', 'yes', 'bye', 'hi'
 ]);
+
+// Legacy enhanced vocabulary (kept for compatibility)
+export const ENHANCED_LEVEL_0_VOCABULARY = PREMIUM_LEVEL_0_VOCABULARY;
 
 export function validateEnhancedLevel0Sentence(sentence: string, userName?: string): { 
   isValid: boolean; 
@@ -78,7 +79,47 @@ export function validateEnhancedLevel0Sentence(sentence: string, userName?: stri
   };
 }
 
+export type UserType = 'free' | 'premium';
 export type VocabularyMode = 'strict-dolch' | 'enhanced-level0';
+
+// Get appropriate vocabulary set based on user type
+export function getLevel0VocabularyByUserType(userType: UserType): Set<string> {
+  return userType === 'premium' ? PREMIUM_LEVEL_0_VOCABULARY : FREE_LEVEL_0_VOCABULARY;
+}
+
+// Subscription-aware validation function
+export function validateLevel0SentenceByUserType(
+  sentence: string, 
+  userType: UserType, 
+  userName?: string
+): { 
+  isValid: boolean; 
+  invalidWords: string[];
+  isStrictMode: boolean;
+  vocabularySize: number;
+} {
+  const vocabulary = getLevel0VocabularyByUserType(userType);
+  const words = sentence.toLowerCase()
+    .replace(/[^\w\s]/g, '') // Remove punctuation
+    .split(/\s+/)
+    .filter(word => word.length > 0);
+  
+  const userNameLower = userName?.toLowerCase();
+  const invalidWords = words.filter(word => {
+    // Always allow the user's name
+    if (userNameLower && word === userNameLower) {
+      return false;
+    }
+    return !vocabulary.has(word);
+  });
+  
+  return {
+    isValid: invalidWords.length === 0,
+    invalidWords,
+    isStrictMode: userType === 'free',
+    vocabularySize: vocabulary.size
+  };
+}
 
 export function validateByMode(
   sentence: string, 

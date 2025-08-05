@@ -2,8 +2,9 @@
 // Bypasses UserInputDistributor to ensure vocabulary compliance
 
 import { LEVEL_0_COMPLIANT_TEMPLATES, getLevel0CompliantTemplate } from '@/constants/level0TemplatesCompliant';
-import { validateLevel0Sentence } from '@/constants/level0Vocabulary';
+import { validateLevel0SentenceByUserType, type UserType } from '@/constants/dolchPrePrimer';
 import { SessionTemplateManager } from '@/services/sessionTemplateManager';
+import { SubscriptionManager } from '@/services/subscriptionManager';
 import type { UserInfo } from '@/types';
 
 export interface Level0StoryResult {
@@ -18,8 +19,14 @@ export class Level0StoryProcessor {
   /**
    * Generate a Level 0 story using template rotation and strict validation
    */
-  static generateStory(userInfo?: UserInfo): Level0StoryResult {
+  static async generateStory(userInfo?: UserInfo): Promise<Level0StoryResult> {
     console.log('🎯 Level0StoryProcessor: Generating new Level 0 story...');
+    
+    // Check user subscription status to determine vocabulary tier
+    const isPremium = await SubscriptionManager.isPremiumUser();
+    const userType: UserType = isPremium ? 'premium' : 'free';
+    
+    console.log(`👤 Level0StoryProcessor: User type: ${userType} (vocabulary: ${userType === 'premium' ? '59 words' : '40 words'})`);
     
     // Convert LEVEL_0_COMPLIANT_TEMPLATES (array of arrays) to template keys for SessionTemplateManager
     const templateKeys = LEVEL_0_COMPLIANT_TEMPLATES.map((_, index) => `template_${index}`);
@@ -56,8 +63,8 @@ export class Level0StoryProcessor {
         processedPage = processedPage.replace(/\bme\b/g, userInfo.name);
       }
       
-      // Validate the processed page
-      const validation = validateLevel0Sentence(processedPage, userInfo?.name);
+      // Validate the processed page with subscription-aware vocabulary
+      const validation = validateLevel0SentenceByUserType(processedPage, userType, userInfo?.name);
       
       if (!validation.isValid) {
         console.warn(`⚠️ Level0StoryProcessor: Page ${index + 1} validation failed:`, {
@@ -93,12 +100,16 @@ export class Level0StoryProcessor {
   /**
    * Validate an entire story against Level 0 constraints
    */
-  static validateStory(pages: string[], userName?: string): { isValid: boolean; errors: string[] } {
+  static async validateStory(pages: string[], userName?: string): Promise<{ isValid: boolean; errors: string[] }> {
     const errors: string[] = [];
     let isValid = true;
     
+    // Check user subscription status for appropriate vocabulary validation
+    const isPremium = await SubscriptionManager.isPremiumUser();
+    const userType: UserType = isPremium ? 'premium' : 'free';
+    
     pages.forEach((page, index) => {
-      const validation = validateLevel0Sentence(page, userName);
+      const validation = validateLevel0SentenceByUserType(page, userType, userName);
       if (!validation.isValid) {
         errors.push(`Page ${index + 1}: ${validation.invalidWords.join(', ')}`);
         isValid = false;
