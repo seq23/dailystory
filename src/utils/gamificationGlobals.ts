@@ -21,15 +21,7 @@ export const setupGamificationGlobals = (addVocabularyWord: () => void, enablePe
     addVocabularyWordAvailable: !!addVocabularyWord,
     enablePersistence,
     globalFunctionSet: !!(window as any).addVocabularyWord,
-    windowObjectKeys: Object.keys(window).filter(key => key.includes('add') || key.includes('Vocabulary')),
-    testCallResult: (() => {
-      try {
-        addVocabularyWord();
-        return 'SUCCESS - function called successfully';
-      } catch (error) {
-        return `ERROR - ${error}`;
-      }
-    })()
+    windowObjectKeys: Object.keys(window).filter(key => key.includes('add') || key.includes('Vocabulary'))
   });
   
   // Set up global vocabulary collection (if not already set)
