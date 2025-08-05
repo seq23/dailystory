@@ -1,14 +1,7 @@
 import { UserInfo, Story, DifficultyLevel } from "@/types";
-import { validateLevel1Sentence } from "@/constants/gradeBased/level1Vocabulary";
-import { Level1Simplifier } from "./level1Simplifier";
-import { Level0Simplifier } from "./level0Simplifier";
-import { Level3Simplifier } from "./level3Simplifier";
-import { StoryQualityChecker } from "@/utils/storyQualityChecker";
-import { Level0StoryProcessor } from "@/services/level0StoryProcessor";
-import { NameFormatter } from "@/utils/nameFormatter";
-import { getTemplateByGradeLevel } from "@/constants/gradeBased/unifiedTemplateSystem";
 import { SessionPageTracker } from "./sessionPageTracker";
-import { StoryContinuationManager } from "./storyContinuationManager";
+import { EnhancedTemplateManager } from "./enhancedTemplateManager";
+import { Level0StoryProcessor } from "@/services/level0StoryProcessor";
 
 // Define custom error classes
 class StoryGenerationError extends Error {
@@ -100,29 +93,34 @@ export class UniversalContentManager {
       }
     }
     
-    const pageCount = this.getPageCountForDifficulty(difficulty, config.isPremium);
-    
     try {
       let story: Story;
       
-      // Route to appropriate grade-based system
+      // Use EnhancedTemplateManager for all levels except Level 0
       if (difficulty === 'beginner') {
-        console.log('🎯 Level 0 Story Generation: Using grade-based Level 0 system');
-        story = await this.generateLevel0Story(userInfo, pageCount);
-      } else if (difficulty === 'easy') {
-        console.log('🎯 Level 1 Story Generation: Using grade-based Level 1 system');
-        story = await this.generateLevel1Story(userInfo, pageCount, config);
-      } else if (difficulty === 'medium') {
-        console.log('🎯 Level 2 Story Generation: Using grade-based Level 2 system');
-        story = await this.generateLevel2Story(userInfo, pageCount, config);
-      } else if (difficulty === 'hard') {
-        console.log('🎯 Level 3 Story Generation: Using grade-based Level 3 system');
-        story = await this.generateLevel3Story(userInfo, pageCount, config);
-      } else if (difficulty === 'expert') {
-        console.log('🎯 Level 4 Story Generation: Using grade-based Level 4 system');
-        story = await this.generateLevel4Story(userInfo, pageCount, config);
+        console.log('🎯 Level 0 Story Generation: Using specialized Level0StoryProcessor');
+        story = await this.generateLevel0Story(userInfo, config.isPremium);
       } else {
-        throw new Error(`Unsupported difficulty level: ${difficulty}`);
+        console.log(`🎯 ${difficulty} Story Generation: Using EnhancedTemplateManager for consistent quality`);
+        const result = await EnhancedTemplateManager.generateEnhancedStory({
+          userInfo,
+          difficulty,
+          isPremium: config.isPremium,
+          enableExtensions: true
+        });
+        
+        story = {
+          id: crypto.randomUUID(),
+          title: this.generateTitle(difficulty, userInfo),
+          segments: result.pages.map(text => ({
+            text,
+            illustration: undefined,
+            audioUrl: undefined
+          })),
+          difficulty,
+          estimatedReadingTime: Math.max(1, Math.ceil(result.pages.length / 3)),
+          wordCount: result.pages.join(' ').split(' ').filter(word => word.trim()).length
+        };
       }
       
       return { story };
@@ -151,62 +149,44 @@ export class UniversalContentManager {
     console.log(`🔄 Continuing existing story for ${userInfo.name} at ${difficulty} level`);
     
     try {
-      // Build story context from current story
-      const storyContext = {
-        characters: [userInfo.name],
-        setting: currentStory.length > 0 ? "the same place as before" : "a magical place",
-        theme: "adventure",
-        lastEvents: currentStory.slice(-2).join(' '), // Last 2 pages for context
-        storyTone: "cheerful",
-        vocabulary: []
-      };
-
-      // Generate continuation based on difficulty level
-      let continuation: Story;
+      let continuationPages: string[];
+      
+      // Check if we're at the 90-page limit
+      if (currentStory.length >= 90) {
+        throw new PremiumPageLimitError(
+          'Story has reached maximum length of 90 pages',
+          currentStory.length,
+          90
+        );
+      }
+      
+      // Use consistent 5-page continuation for all levels
       if (difficulty === 'beginner') {
-        // Use the same Level0StoryProcessor system as initial generation
+        console.log('🔄 Level 0 Continuation: Using Level0StoryProcessor for consistent quality');
         const level0Result = await Level0StoryProcessor.generateStory(userInfo);
-        
-        // Convert Level0StoryResult to Story format
-        const continuationPages = level0Result.content.slice(0, 5); // Ensure exactly 5 pages
-        const segments = continuationPages.map(text => ({
-          text,
-          illustration: undefined,
-          audioUrl: undefined
-        }));
-        
-        continuation = {
-          id: `story-${Date.now()}`,
-          title: `${userInfo.name}'s Adventure Continues`,
-          segments,
-          difficulty: 'beginner',
-          estimatedReadingTime: 5,
-          wordCount: segments.reduce((count, segment) => 
-            count + segment.text.split(' ').filter(word => word.trim()).length, 0
-          )
-        };
-      } else if (difficulty === 'easy') {
-        continuation = await StoryContinuationManager.generateLevel1Continuation(storyContext, userInfo, config);
-      } else if (difficulty === 'medium') {
-        continuation = await StoryContinuationManager.generateLevel2Continuation(storyContext, userInfo, config);
-      } else if (difficulty === 'hard') {
-        continuation = await StoryContinuationManager.generateLevel3Continuation(storyContext, userInfo, config);
-      } else if (difficulty === 'expert') {
-        continuation = await StoryContinuationManager.generateLevel4Continuation(storyContext, userInfo, config);
+        continuationPages = level0Result.content.slice(0, 5);
       } else {
-        // Fallback to Level 0 for unknown difficulties
-        continuation = await StoryContinuationManager.generateLevel0Continuation(storyContext, userInfo, config);
+        console.log(`🔄 ${difficulty} Continuation: Using EnhancedTemplateManager for consistent quality`);
+        const result = await EnhancedTemplateManager.generateEnhancedStory({
+          userInfo,
+          difficulty,
+          isPremium: config.isPremium,
+          enableExtensions: false // For continuation, we want exactly 5 pages
+        });
+        
+        // Ensure exactly 5 pages for continuation
+        continuationPages = result.pages.slice(0, 5);
       }
 
-      // Combine existing story with continuation
+      // Combine existing story with continuation (exactly 5 new pages)
       const combinedSegments = [
         ...currentStory.map(text => ({ text, illustration: undefined, audioUrl: undefined })),
-        ...continuation.segments
+        ...continuationPages.map(text => ({ text, illustration: undefined, audioUrl: undefined }))
       ];
 
       return {
-        id: continuation.id,
-        title: continuation.title,
+        id: `story-${Date.now()}`,
+        title: `${userInfo.name}'s Adventure Continues`,
         segments: combinedSegments,
         difficulty: difficulty,
         estimatedReadingTime: Math.ceil(combinedSegments.length / 4),
@@ -224,12 +204,15 @@ export class UniversalContentManager {
 
   private static async generateLevel0Story(
     userInfo: UserInfo,
-    pageCount: number,
+    isPremium: boolean
   ): Promise<Story> {
-    console.log(`🎯 Level 0 Story Generation: Commencing ultra-simple story for ${userInfo.name}`);
+    console.log(`🎯 Level 0 Story Generation: Using specialized Level0StoryProcessor for ${userInfo.name}`);
 
     try {
       const result = await Level0StoryProcessor.generateStory(userInfo);
+      
+      // Determine page count based on premium status
+      const pageCount = isPremium ? 25 : 5;
       
       // Convert Level0StoryResult to Story format
       const story: Story = {
@@ -249,218 +232,11 @@ export class UniversalContentManager {
       return story;
     } catch (error) {
       console.error('Level 0 story generation failed:', error);
-      return this.generateLevel0Fallback(userInfo, pageCount);
+      return this.generateLevel0Fallback(userInfo, isPremium ? 25 : 5);
     }
   }
 
-  private static async generateLevel1Story(
-    userInfo: UserInfo,
-    pageCount: number,
-    config: ContentManagerConfig
-  ): Promise<Story> {
-    console.log(`🎯 Level 1 Story Generation: Starting easy story for ${userInfo.name}`);
-
-    try {
-      const gradeLevel = 1;
-      const template = getTemplateByGradeLevel(gradeLevel, undefined, config.isPremium);
-
-      if (!template || template.length === 0) {
-        throw new Error('No Level 1 templates available');
-      }
-
-      const processedPages = template.slice(0, pageCount).map(page => {
-        let processed = page.replace(/{userName}/g, NameFormatter.capitalize(userInfo.name));
-
-        const validation = validateLevel1Sentence(processed, userInfo.name);
-        if (!validation.isValid) {
-          const simplificationResult = Level1Simplifier.simplifyForLevel1(processed, userInfo.name);
-          processed = simplificationResult.text;
-        }
-
-        return processed;
-      });
-
-      while (processedPages.length < pageCount && template.length > 0) {
-        const extraPage = template[processedPages.length % template.length];
-        let processed = extraPage.replace(/{userName}/g, NameFormatter.capitalize(userInfo.name));
-
-        const validation = validateLevel1Sentence(processed, userInfo.name);
-        if (!validation.isValid) {
-          const simplificationResult = Level1Simplifier.simplifyForLevel1(processed, userInfo.name);
-          processed = simplificationResult.text;
-        }
-
-        processedPages.push(processed);
-      }
-
-      const story: Story = {
-        id: crypto.randomUUID(),
-        title: `${userInfo.name}'s First Adventure`,
-        segments: processedPages.map(text => ({
-          text,
-          illustration: undefined,
-          audioUrl: undefined
-        })),
-        difficulty: 'easy',
-        estimatedReadingTime: Math.max(1, Math.ceil(processedPages.length / 3)),
-        wordCount: processedPages.join(' ').split(' ').filter(word => word.trim()).length
-      };
-
-      console.log(`✅ Generated Level 1 story with ${story.segments.length} pages`);
-      return story;
-
-    } catch (error) {
-      console.error('Error generating Level 1 story:', error);
-      return this.generateLevel1Fallback(userInfo, pageCount);
-    }
-  }
-
-  private static async generateLevel2Story(
-    userInfo: UserInfo,
-    pageCount: number,
-    config: ContentManagerConfig
-  ): Promise<Story> {
-    console.log(`🎯 Level 2 Story Generation: Starting medium story for ${userInfo.name}`);
-
-    try {
-      const gradeLevel = 2;
-      const template = getTemplateByGradeLevel(gradeLevel, undefined, config.isPremium);
-
-      if (!template || template.length === 0) {
-        throw new Error('No Level 2 templates available');
-      }
-
-      const processedPages = template.slice(0, pageCount).map(page => {
-        return page.replace(/{userName}/g, NameFormatter.capitalize(userInfo.name));
-      });
-
-      while (processedPages.length < pageCount && template.length > 0) {
-        const extraPage = template[processedPages.length % template.length];
-        processedPages.push(extraPage.replace(/{userName}/g, NameFormatter.capitalize(userInfo.name)));
-      }
-
-      const story: Story = {
-        id: crypto.randomUUID(),
-        title: `${userInfo.name}'s Exciting Day`,
-        segments: processedPages.map(text => ({
-          text,
-          illustration: undefined,
-          audioUrl: undefined
-        })),
-        difficulty: 'medium',
-        estimatedReadingTime: Math.max(2, Math.ceil(processedPages.length / 2)),
-        wordCount: processedPages.join(' ').split(' ').filter(word => word.trim()).length
-      };
-
-      console.log(`✅ Generated Level 2 story with ${story.segments.length} pages`);
-      return story;
-
-    } catch (error) {
-      console.error('Error generating Level 2 story:', error);
-      return this.generateLevel2Fallback(userInfo, pageCount);
-    }
-  }
-
-  private static async generateLevel3Story(
-    userInfo: UserInfo,
-    pageCount: number,
-    config: ContentManagerConfig
-  ): Promise<Story> {
-    console.log(`🎯 Level 3 Story Generation: Advanced content for ${userInfo.name}`);
-    
-    try {
-      const gradeLevel = 3;
-      const template = getTemplateByGradeLevel(gradeLevel, undefined, config.isPremium);
-      
-      if (!template || template.length === 0) {
-        throw new Error('No Level 3 templates available');
-      }
-
-      // Process template with proper variable substitution
-      const processedPages = template.slice(0, pageCount).map(page => {
-        let processed = page.replace(/{userName}/g, NameFormatter.capitalize(userInfo.name));
-        
-        // Apply Level 3 vocabulary compliance and simplification
-        const simplificationResult = Level3Simplifier.simplifyForLevel3(processed, userInfo.name);
-        return simplificationResult.text;
-      });
-
-      // Ensure we have enough pages
-      while (processedPages.length < pageCount && template.length > 0) {
-        const extraPage = template[processedPages.length % template.length];
-        let processed = extraPage.replace(/{userName}/g, NameFormatter.capitalize(userInfo.name));
-        const simplificationResult = Level3Simplifier.simplifyForLevel3(processed, userInfo.name);
-        processedPages.push(simplificationResult.text);
-      }
-
-      const story: Story = {
-        id: crypto.randomUUID(),
-        title: this.generateAdvancedTitle(userInfo),
-        segments: processedPages.map(text => ({
-          text,
-          illustration: undefined,
-          audioUrl: undefined
-        })),
-        difficulty: 'hard',
-        estimatedReadingTime: Math.max(2, Math.ceil(processedPages.length / 2)),
-        wordCount: processedPages.join(' ').split(' ').filter(word => word.trim()).length
-      };
-
-      console.log(`✅ Generated Level 3 story with ${story.segments.length} pages`);
-      return story;
-      
-    } catch (error) {
-      console.error('Error generating Level 3 story:', error);
-      return this.generateLevel3Fallback(userInfo, pageCount);
-    }
-  }
-
-  private static async generateLevel4Story(
-    userInfo: UserInfo,
-    pageCount: number,
-    config: ContentManagerConfig
-  ): Promise<Story> {
-    console.log(`🎯 Level 4 Story Generation: Expert content for ${userInfo.name}`);
-    
-    try {
-      const gradeLevel = 4;
-      const template = getTemplateByGradeLevel(gradeLevel, undefined, config.isPremium);
-      
-      if (!template || template.length === 0) {
-        throw new Error('No Level 4 templates available');
-      }
-
-      const processedPages = template.slice(0, pageCount).map(page => {
-        return page.replace(/{userName}/g, NameFormatter.capitalize(userInfo.name));
-      });
-
-      while (processedPages.length < pageCount && template.length > 0) {
-        const extraPage = template[processedPages.length % template.length];
-        processedPages.push(extraPage.replace(/{userName}/g, NameFormatter.capitalize(userInfo.name)));
-      }
-
-      const story: Story = {
-        id: crypto.randomUUID(),
-        title: this.generateExpertTitle(userInfo),
-        segments: processedPages.map(text => ({
-          text,
-          illustration: undefined,
-          audioUrl: undefined
-        })),
-        difficulty: 'expert',
-        estimatedReadingTime: Math.max(3, Math.ceil(processedPages.length / 2)),
-        wordCount: processedPages.join(' ').split(' ').filter(word => word.trim()).length
-      };
-
-      console.log(`✅ Generated Level 4 story with ${story.segments.length} pages`);
-      return story;
-      
-    } catch (error) {
-      console.error('Error generating Level 4 story:', error);
-      return this.generateLevel4Fallback(userInfo, pageCount);
-    }
-  }
-
+  // Fallback methods for error scenarios
   private static generateLevel0Fallback(userInfo: UserInfo, pageCount: number): Story {
     const fallbackPages = [
       `${userInfo.name} sees a cat.`,
@@ -484,96 +260,15 @@ export class UniversalContentManager {
     };
   }
 
-  private static generateLevel1Fallback(userInfo: UserInfo, pageCount: number): Story {
-    const fallbackPages = [
-      `${userInfo.name} went to the park.`,
-      `It was a sunny day.`,
-      `${userInfo.name} played with friends.`,
-      `They had lots of fun.`,
-      `${userInfo.name} went home happy.`
-    ];
-
-    return {
-      id: crypto.randomUUID(),
-      title: `${userInfo.name}'s Day at the Park`,
-      segments: fallbackPages.slice(0, pageCount).map(text => ({
-        text,
-        illustration: undefined,
-        audioUrl: undefined
-      })),
-      difficulty: 'easy',
-      estimatedReadingTime: Math.max(1, Math.ceil(pageCount / 3)),
-      wordCount: fallbackPages.slice(0, pageCount).join(' ').split(' ').filter(word => word.trim()).length
-    };
-  }
-
-  private static generateLevel2Fallback(userInfo: UserInfo, pageCount: number): Story {
-    const fallbackPages = [
-      `${userInfo.name} visited a museum.`,
-      `There were many interesting exhibits.`,
-      `${userInfo.name} learned about history.`,
-      `A friendly guide shared fascinating stories.`,
-      `${userInfo.name} left with new knowledge.`
-    ];
-
-    return {
-      id: crypto.randomUUID(),
-      title: `${userInfo.name}'s Museum Visit`,
-      segments: fallbackPages.slice(0, pageCount).map(text => ({
-        text,
-        illustration: undefined,
-        audioUrl: undefined
-      })),
-      difficulty: 'medium',
-      estimatedReadingTime: Math.max(2, Math.ceil(pageCount / 2)),
-      wordCount: fallbackPages.slice(0, pageCount).join(' ').split(' ').filter(word => word.trim()).length
-    };
-  }
-
-  private static generateLevel3Fallback(userInfo: UserInfo, pageCount: number): Story {
-    const fallbackPages = [
-      `${userInfo.name} discovered an ancient archaeological site containing mysterious artifacts.`,
-      `The research team uncovered evidence of advanced civilizations that challenged historical understanding.`,
-      `Complex scientific instruments revealed fascinating data about environmental conservation efforts.`,
-      `${userInfo.name} analyzed the sophisticated technology that previous cultures had developed.`,
-      `The expedition concluded with groundbreaking discoveries that would advance scientific knowledge.`
-    ];
-
-    return {
-      id: crypto.randomUUID(),
-      title: `${userInfo.name}'s Archaeological Discovery`,
-      segments: fallbackPages.slice(0, pageCount).map(text => ({
-        text,
-        illustration: undefined,
-        audioUrl: undefined
-      })),
-      difficulty: 'hard',
-      estimatedReadingTime: Math.max(2, Math.ceil(pageCount / 2)),
-      wordCount: fallbackPages.slice(0, pageCount).join(' ').split(' ').filter(word => word.trim()).length
-    };
-  }
-
-  private static generateLevel4Fallback(userInfo: UserInfo, pageCount: number): Story {
-    const fallbackPages = [
-      `${userInfo.name} embarked on an extraordinary intellectual journey exploring philosophical complexities.`,
-      `Sophisticated theoretical frameworks challenged conventional perspectives about consciousness and existence.`,
-      `Advanced interdisciplinary research methodologies revealed profound insights about human nature.`,
-      `${userInfo.name} synthesized complex knowledge from multiple academic disciplines and cultural traditions.`,
-      `The comprehensive analysis culminated in transformative understanding of universal principles.`
-    ];
-
-    return {
-      id: crypto.randomUUID(),
-      title: `${userInfo.name}'s Philosophical Journey`,
-      segments: fallbackPages.slice(0, pageCount).map(text => ({
-        text,
-        illustration: undefined,
-        audioUrl: undefined
-      })),
-      difficulty: 'expert',
-      estimatedReadingTime: Math.max(3, Math.ceil(pageCount / 2)),
-      wordCount: fallbackPages.slice(0, pageCount).join(' ').split(' ').filter(word => word.trim()).length
-    };
+  private static generateTitle(difficulty: DifficultyLevel, userInfo: UserInfo): string {
+    const name = userInfo.name;
+    switch (difficulty) {
+      case 'easy': return `${name}'s First Adventure`;
+      case 'medium': return `${name}'s Exciting Day`;
+      case 'hard': return this.generateAdvancedTitle(userInfo);
+      case 'expert': return this.generateExpertTitle(userInfo);
+      default: return `${name}'s Story`;
+    }
   }
 
   private static generateAdvancedTitle(userInfo: UserInfo): string {
@@ -594,22 +289,5 @@ export class UniversalContentManager {
       `${userInfo.name}'s Theoretical Discovery`
     ];
     return titles[Math.floor(Math.random() * titles.length)];
-  }
-
-  private static getPageCountForDifficulty(difficulty: DifficultyLevel, isPremium: boolean): number {
-    // Updated page counts - 5 pages initial, but session allows up to 90 total pages for free
-    if (!isPremium) {
-      return 5; // Start with 5 pages, session tracker manages the 90-page limit
-    }
-    
-    // Premium page counts by level
-    switch (difficulty) {
-      case 'beginner': return 5;  // Level 0
-      case 'easy': return 5;      // Level 1  
-      case 'medium': return 10;   // Level 2
-      case 'hard': return 10;     // Level 3
-      case 'expert': return 15;   // Level 4
-      default: return 5;
-    }
   }
 }
