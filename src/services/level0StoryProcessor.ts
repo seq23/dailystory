@@ -2,6 +2,7 @@
 // Bypasses UserInputDistributor to ensure vocabulary compliance
 
 import { LEVEL_0_COMPLIANT_TEMPLATES, getLevel0CompliantTemplate } from '@/constants/level0TemplatesCompliant';
+import { LEVEL_0_STRICT_DOLCH_TEMPLATES } from '@/constants/level0TemplatesFixed';
 import { validateLevel0SentenceByUserType, type UserType } from '@/constants/dolchPrePrimer';
 import { SessionTemplateManager } from '@/services/sessionTemplateManager';
 import { SubscriptionManager } from '@/services/subscriptionManager';
@@ -28,8 +29,15 @@ export class Level0StoryProcessor {
     
     console.log(`👤 Level0StoryProcessor: User type: ${userType} (vocabulary: ${userType === 'premium' ? '59 words' : '40 words'})`);
     
-    // Convert LEVEL_0_COMPLIANT_TEMPLATES (array of arrays) to template keys for SessionTemplateManager
-    const templateKeys = LEVEL_0_COMPLIANT_TEMPLATES.map((_, index) => `template_${index}`);
+    // Use appropriate templates based on user type
+    const templates = userType === 'free' 
+      ? LEVEL_0_STRICT_DOLCH_TEMPLATES 
+      : LEVEL_0_COMPLIANT_TEMPLATES;
+    
+    console.log(`📚 Level0StoryProcessor: Using ${userType === 'free' ? 'strict Dolch' : 'enhanced'} templates (${templates.length} available)`);
+    
+    // Convert templates to template keys for SessionTemplateManager
+    const templateKeys = templates.map((_, index) => `template_${index}`);
     
     // Get next template using intelligent rotation
     const { template: templateKey, isRepeating, templateIndex } = SessionTemplateManager.getNextTemplate(
@@ -38,9 +46,10 @@ export class Level0StoryProcessor {
     );
     
     // Get the actual template content
-    const template = LEVEL_0_COMPLIANT_TEMPLATES[templateIndex];
+    const template = templates[templateIndex];
     
-    console.log(`📖 Level0StoryProcessor: Selected template ${templateIndex + 1}/${LEVEL_0_COMPLIANT_TEMPLATES.length}`, {
+    console.log(`📖 Level0StoryProcessor: Selected template ${templateIndex + 1}/${templates.length}`, {
+      userType,
       isRepeating,
       template: template.slice(0, 50) + '...'
     });
