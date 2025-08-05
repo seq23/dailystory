@@ -14,7 +14,9 @@ import {
   getTargetPageCount,
   PREMIUM_PAGE_EXTENSIONS,
   FREE_PAGE_COUNT,
-  getUnifiedTemplateSystemAnalytics
+  getUnifiedTemplateSystemAnalytics,
+  getTemplateByGradeLevel,
+  getTemplateCountByGradeLevel
 } from '@/constants/gradeBased/unifiedTemplateSystem';
 
 import { SessionTemplateManager } from './sessionTemplateManager';
@@ -46,6 +48,8 @@ interface EnhancedTemplateResult {
 }
 
 export class EnhancedTemplateManager {
+  // Track used templates per session to avoid repetition
+  private static sessionUsedTemplates: Map<GradeLevel, Set<number>> = new Map();
   /**
    * Generate enhanced story with grade-based vocabulary and smart extensions
    */
@@ -65,12 +69,21 @@ export class EnhancedTemplateManager {
     // Determine target page count
     const targetPages = getTargetPageCount(gradeLevel, isPremium);
     
-    // Select template with anti-repetition (simplified for now)
+    // Get or initialize used templates for this grade level
+    if (!this.sessionUsedTemplates.has(gradeLevel)) {
+      this.sessionUsedTemplates.set(gradeLevel, new Set());
+    }
+    const usedTemplates = Array.from(this.sessionUsedTemplates.get(gradeLevel)!);
+    
+    // Select template with anti-repetition
     const { templateIndex: selectedIndex, template: baseTemplate } = selectTemplate(
       gradeLevel,
-      [], // Empty used templates for now - can be enhanced later
+      usedTemplates,
       templateIndex
     );
+    
+    // Track this template as used
+    this.sessionUsedTemplates.get(gradeLevel)!.add(selectedIndex);
     
     // Process template with user name
     let pages = baseTemplate.map(page => 
@@ -83,14 +96,16 @@ export class EnhancedTemplateManager {
     const basePageCount = pages.length;
     
     if (enableExtensions && targetPages > basePageCount) {
-      pages = await this.extendStoryIntelligently(
+      const extensionResult = await this.extendStoryIntelligently(
         pages, 
         targetPages, 
         gradeLevel, 
-        userInfo
+        userInfo,
+        selectedIndex
       );
+      pages = extensionResult.pages;
       wasExtended = true;
-      extensionMethod = 'intelligent-grade-based-extension';
+      extensionMethod = extensionResult.method;
     } else if (targetPages < basePageCount) {
       pages = pages.slice(0, targetPages);
       extensionMethod = 'truncation';
@@ -120,32 +135,67 @@ export class EnhancedTemplateManager {
 
   /**
    * Intelligent story extension that maintains grade-level vocabulary
+   * Now prioritizes unused base templates over extension templates
    */
   private static async extendStoryIntelligently(
     originalPages: string[],
     targetPages: number,
     gradeLevel: GradeLevel,
-    userInfo?: UserInfo
-  ): Promise<string[]> {
+    userInfo?: UserInfo,
+    usedTemplateIndex?: number
+  ): Promise<{ pages: string[]; method: string }> {
     const pagesToAdd = targetPages - originalPages.length;
     const extendedPages = [...originalPages];
     const userName = userInfo?.name || 'I';
     
-    // Grade-appropriate extension templates
-    const extensionTemplates = this.getExtensionTemplates(gradeLevel);
+    // Get available base templates (exclude already used one)
+    const totalTemplates = getTemplateCountByGradeLevel(gradeLevel);
+    const usedTemplates = this.sessionUsedTemplates.get(gradeLevel) || new Set();
+    const availableTemplateIndices = Array.from({ length: totalTemplates }, (_, i) => i)
+      .filter(i => !usedTemplates.has(i));
+    
+    let extensionMethod = 'base-template-cycling';
+    let templateIndex = 0;
     
     for (let i = 0; i < pagesToAdd; i++) {
-      const lastPage = extendedPages[extendedPages.length - 1];
-      const newPage = this.generateContinuationPage(
-        lastPage, 
-        gradeLevel, 
-        userName, 
-        extensionTemplates
-      );
+      let newPage: string;
+      
+      // First priority: Use additional base templates
+      if (availableTemplateIndices.length > templateIndex) {
+        const nextTemplateIndex = availableTemplateIndices[templateIndex];
+        const template = getTemplateByGradeLevel(gradeLevel, nextTemplateIndex);
+        
+        // Use a random page from this template, processed with user name
+        const randomPageIndex = Math.floor(Math.random() * template.length);
+        newPage = template[randomPageIndex].replace(/{userName}/g, userName);
+        
+        // Track this template as used
+        this.sessionUsedTemplates.get(gradeLevel)!.add(nextTemplateIndex);
+        templateIndex++;
+      } else {
+        // Fallback: Use extension templates only after all base templates are exhausted
+        const extensionTemplates = this.getExtensionTemplates(gradeLevel);
+        newPage = this.generateContinuationPage(
+          extendedPages[extendedPages.length - 1], 
+          gradeLevel, 
+          userName, 
+          extensionTemplates
+        );
+        extensionMethod = 'extension-templates-fallback';
+      }
+      
+      // Validate vocabulary compliance
+      const validation = validateSentence(newPage, gradeLevel, userName);
+      if (!validation.isValid) {
+        // Use simple fallback if validation fails
+        newPage = this.getSimpleFallback(gradeLevel, userName);
+        extensionMethod = 'simple-fallback';
+      }
+      
       extendedPages.push(newPage);
     }
     
-    return extendedPages;
+    return { pages: extendedPages, method: extensionMethod };
   }
 
   /**
@@ -307,6 +357,8 @@ export class EnhancedTemplateManager {
   static clearSession(): void {
     // Clear session data
     SessionTemplateManager.clearSession();
+    // Clear used templates tracking
+    this.sessionUsedTemplates.clear();
   }
 
   /**
