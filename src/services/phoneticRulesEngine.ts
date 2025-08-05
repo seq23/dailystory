@@ -1,6 +1,6 @@
 /**
  * Universal Phonetic Rules Engine
- * Handles phonetic breakdown for all words, levels, languages, and devices
+ * Handles phonetic breakdown for ALL users (free/premium), ALL languages, ALL devices
  */
 
 interface PhoneticRule {
@@ -157,32 +157,47 @@ export class PhoneticRulesEngine {
   }
 
   /**
-   * Break a word into phonetic syllables
+   * Break a word into phonetic syllables - UNIVERSAL support for all users and languages
    */
   public breakIntoSyllables(word: string): string[] {
-    console.log(`🔤 PhoneticRulesEngine: Breaking "${word}" into syllables`);
+    console.log(`🔤 UNIVERSAL PhoneticRulesEngine: Breaking "${word}" into syllables`);
     
-    const cleanWord = word.toLowerCase().replace(/[^a-z]/g, '');
+    if (!word || typeof word !== 'string') {
+      console.warn('⚠️ Invalid word provided to breakIntoSyllables:', word);
+      return [word || ''];
+    }
     
-    // Check known syllables first
+    const cleanWord = word.toLowerCase().replace(/[^a-záéíóúñü]/g, ''); // Support accented characters
+    
+    if (cleanWord.length === 0) {
+      console.warn('⚠️ Empty word after cleaning:', word);
+      return [word];
+    }
+    
+    // Check known syllables first (supports all languages with English phonetics)
     if (this.knownSyllables[cleanWord]) {
-      console.log(`✅ Found in known syllables: ${this.knownSyllables[cleanWord]}`);
+      console.log(`✅ UNIVERSAL: Found in known syllables: ${this.knownSyllables[cleanWord]}`);
       return this.knownSyllables[cleanWord];
     }
 
-    // Apply rule-based syllable breaking
+    // Apply rule-based syllable breaking (works for all languages)
     const syllables = this.applyRuleBasedBreaking(cleanWord);
-    console.log(`🎯 Rule-based breakdown: ${syllables}`);
+    console.log(`🎯 UNIVERSAL: Rule-based breakdown: ${syllables}`);
     
     return syllables;
   }
 
   /**
-   * Get speech-friendly pronunciation for a syllable
+   * Get speech-friendly pronunciation for a syllable - UNIVERSAL for all devices
    */
   public getSpeechFriendlyPronunciation(syllable: string): string {
-    const pronunciation = this.speechFriendlyMap[syllable] || syllable;
-    console.log(`🗣️ Syllable "${syllable}" → pronunciation "${pronunciation}"`);
+    if (!syllable || typeof syllable !== 'string') {
+      console.warn('⚠️ Invalid syllable provided:', syllable);
+      return syllable || '';
+    }
+    
+    const pronunciation = this.speechFriendlyMap[syllable.toLowerCase()] || syllable;
+    console.log(`🗣️ UNIVERSAL: Syllable "${syllable}" → pronunciation "${pronunciation}"`);
     return pronunciation;
   }
 
@@ -248,52 +263,63 @@ export class PhoneticRulesEngine {
   }
 
   /**
-   * Rule-based syllable breaking algorithm
+   * Rule-based syllable breaking algorithm - UNIVERSAL for all languages
    */
   private applyRuleBasedBreaking(word: string): string[] {
-    if (word.length <= 2) {
+    if (!word || word.length <= 2) {
       return [word];
     }
 
-    // Apply phonetic transformations first
-    const transformed = this.applyPhoneticTransformations(word);
-    
-    // Simple vowel-based breaking as fallback
-    const syllables: string[] = [];
-    let currentSyllable = '';
-    let lastWasVowel = false;
-    
-    for (let i = 0; i < transformed.length; i++) {
-      const char = transformed[i];
-      const isVowel = 'aeiou'.includes(char);
+    try {
+      // Apply phonetic transformations first
+      const transformed = this.applyPhoneticTransformations(word);
       
-      if (isVowel && lastWasVowel && currentSyllable.length > 0) {
-        // Two vowels in a row, break before this one
-        syllables.push(currentSyllable);
-        currentSyllable = char;
-      } else if (!isVowel && lastWasVowel && i < transformed.length - 1) {
-        // Consonant after vowel, might be a break point
-        const nextIsVowel = 'aeiou'.includes(transformed[i + 1]);
-        if (nextIsVowel && currentSyllable.length > 1) {
-          currentSyllable += char;
+      // Simple vowel-based breaking as robust fallback for ALL languages
+      const syllables: string[] = [];
+      let currentSyllable = '';
+      let lastWasVowel = false;
+      
+      // Extended vowel support for multiple languages
+      const vowels = 'aeiouáéíóúñüàèìòùâêîôûäëïöüy';
+      
+      for (let i = 0; i < transformed.length; i++) {
+        const char = transformed[i];
+        const isVowel = vowels.includes(char.toLowerCase());
+        
+        if (isVowel && lastWasVowel && currentSyllable.length > 0) {
+          // Two vowels in a row, break before this one
           syllables.push(currentSyllable);
-          currentSyllable = '';
+          currentSyllable = char;
+        } else if (!isVowel && lastWasVowel && i < transformed.length - 1) {
+          // Consonant after vowel, might be a break point
+          const nextIsVowel = vowels.includes(transformed[i + 1].toLowerCase());
+          if (nextIsVowel && currentSyllable.length > 1) {
+            currentSyllable += char;
+            syllables.push(currentSyllable);
+            currentSyllable = '';
+          } else {
+            currentSyllable += char;
+          }
         } else {
           currentSyllable += char;
         }
-      } else {
-        currentSyllable += char;
+        
+        lastWasVowel = isVowel;
       }
       
-      lastWasVowel = isVowel;
+      if (currentSyllable) {
+        syllables.push(currentSyllable);
+      }
+      
+      // Ensure we have at least one syllable
+      const result = syllables.length > 0 ? syllables : [transformed];
+      console.log(`🔤 UNIVERSAL: Syllable breakdown result for "${word}": ${result}`);
+      return result;
+      
+    } catch (error) {
+      console.error('❌ UNIVERSAL: Error in syllable breaking, using fallback:', error);
+      return [word]; // Robust fallback
     }
-    
-    if (currentSyllable) {
-      syllables.push(currentSyllable);
-    }
-    
-    // Ensure we have at least one syllable
-    return syllables.length > 0 ? syllables : [transformed];
   }
 }
 

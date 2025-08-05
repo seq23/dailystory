@@ -155,11 +155,18 @@ export class EnhancedAudioService {
   async playPhoneticBreakdown(options: PhoneticsOptions): Promise<void> {
     const { word, userInfo, showSyllables = true, playbackSpeed = phoneticSettings.playbackSpeed } = options;
     
-    console.log('🔤 Starting universal phonetic breakdown for:', word, 'User:', userInfo.name, 'Language:', userInfo.nativeLanguage);
+    console.log('🔤 UNIVERSAL PHONETIC: Starting breakdown for:', word, 'User:', userInfo.name, 'Language:', userInfo.nativeLanguage || 'en', 'Device:', this.isMobile() ? 'mobile' : 'desktop');
     
     try {
+      // Validate inputs
+      if (!word || !userInfo) {
+        console.error('❌ UNIVERSAL PHONETIC: Missing required parameters');
+        throw new Error('Word and user info required for phonetic breakdown');
+      }
+
       if (!showSyllables) {
-        // Simple word pronunciation - available to all users universally
+        // Simple word pronunciation - available to ALL users universally
+        console.log('🔤 UNIVERSAL: Playing simple pronunciation');
         return this.playText({
           text: word,
           difficulty: 'easy',
@@ -494,14 +501,14 @@ export class EnhancedAudioService {
   }
 
   private breakIntoSyllables(word: string): string[] {
-    console.log(`🔤 Enhanced syllable breaking for "${word}"`);
+    console.log(`🔤 UNIVERSAL Enhanced: Delegating syllable breaking for "${word}"`);
     
-    // Use the comprehensive phonetic rules engine
+    // Delegate to the comprehensive phonetic rules engine
     const syllables = phoneticRulesEngine.breakIntoSyllables(word);
     
-    // Get debug information
+    // Get debug information for troubleshooting
     const debugInfo = phoneticRulesEngine.getDebugInfo(word);
-    console.log(`🎯 Phonetic breakdown debug:`, debugInfo);
+    console.log(`🎯 UNIVERSAL Debug:`, debugInfo);
     
     return syllables;
   }
