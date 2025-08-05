@@ -20,6 +20,7 @@ import {
 } from '@/constants/gradeBased/unifiedTemplateSystem';
 
 import { SessionTemplateManager } from './sessionTemplateManager';
+import { LEVEL_0_FREE_EXTENSIONS, LEVEL_0_PREMIUM_EXTENSIONS } from '@/constants/gradeBased/level0ExtensionTemplates';
 
 interface EnhancedTemplateOptions {
   userInfo?: UserInfo;
@@ -237,62 +238,35 @@ export class EnhancedTemplateManager {
   }
 
   /**
-   * Get extension templates by grade level with subscription-aware vocabulary
+   * Get extension templates by grade level with universal access for levels 1-4
    */
   private static getExtensionTemplates(gradeLevel: GradeLevel, isPremium: boolean = true): string[] {
     switch (gradeLevel) {
       case 0:
-        return isPremium ? [
-          // PREMIUM: 59 enhanced words
-          "{userName} is happy.",
-          "{userName} had fun today.",
-          "{userName} wants to play more.",
-          "{userName} loves this story.",
-          "{userName} will come back."
-        ] : [
-          // FREE: Only 40 Dolch Pre-Primer words
-          "{userName} can play.",
-          "{userName} said here.",
-          "{userName} go up.",
-          "{userName} see me.",
-          "{userName} run away."
-        ];
+        // Level 0 maintains free vs premium distinction using proper 5-page templates
+        const level0Extensions = isPremium ? LEVEL_0_PREMIUM_EXTENSIONS : LEVEL_0_FREE_EXTENSIONS;
+        const randomTemplate = level0Extensions[Math.floor(Math.random() * level0Extensions.length)];
+        return randomTemplate;
       
       case 1:
-        return [
-          "{userName} learned something new today.",
-          "{userName} feels proud of what they did.",
-          "{userName} wants to tell friends about this.",
-          "{userName} had the best day ever.",
-          "{userName} cannot wait for tomorrow."
-        ];
+        // Universal access - import level 1 extensions
+        const { getLevel1Extension } = require('@/constants/gradeBased/level1ExtensionTemplates');
+        return getLevel1Extension();
       
       case 2:
-        return [
-          "{userName} found something new and fun.",
-          "{userName} thought they could do more than before.",
-          "{userName} wanted to tell friends about this.",
-          "{userName} felt ready to try new things.",
-          "{userName} learned that practice helps you get better."
-        ];
+        // Universal access - import level 2 extensions
+        const { getLevel2Extension } = require('@/constants/gradeBased/level2ExtensionTemplates');
+        return getLevel2Extension();
       
       case 3:
-        return [
-          "{userName} walked through the forest and found a small bird.",
-          "{userName} helped the bird find its way back to its nest.",
-          "{userName} learned that being kind to animals is important.",
-          "{userName} felt good about helping someone in need.",
-          "{userName} promised to always help others when possible."
-        ];
+        // Universal access - import level 3 extensions
+        const { getLevel3Extension } = require('@/constants/gradeBased/level3ExtensionTemplates');
+        return getLevel3Extension();
       
       case 4:
-        return [
-          "{userName} discovered an interesting book about nature in the library.",
-          "{userName} spent hours reading about different animals and plants.",
-          "{userName} shared the knowledge with classmates during science class.",
-          "{userName} decided to start a nature club at school.",
-          "{userName} organized trips to explore the local park and forest."
-        ];
+        // Universal access - import level 4 extensions
+        const { getLevel4Extension } = require('@/constants/gradeBased/level4ExtensionTemplates');
+        return getLevel4Extension();
       
       default:
         return ["{userName} is happy."];
