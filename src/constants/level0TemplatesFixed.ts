@@ -7,7 +7,7 @@ export const LEVEL_0_STRICT_DOLCH_TEMPLATES = [
   // Template 1 - TRULY FIXED (using only Dolch words)
   [
     "I see you.",
-    "You are big.",
+    "You can be big.",
     "You can run.",
     "I see the one.",
     "We play here."
@@ -17,7 +17,7 @@ export const LEVEL_0_STRICT_DOLCH_TEMPLATES = [
   [
     "I go to play.",
     "I see you.",
-    "You are little.",
+    "You can be little.",
     "You can jump.",
     "We run away."
   ],
@@ -108,7 +108,7 @@ export const LEVEL_0_STRICT_DOLCH_TEMPLATES = [
     "Three is not two.",
     "I see three here.",
     "Three little ones go.",
-    "You have three.",
+    "You see three.",
     "Three and one make it."
   ],
 
@@ -117,7 +117,7 @@ export const LEVEL_0_STRICT_DOLCH_TEMPLATES = [
     "Where is my red one?",
     "My little one is here.",
     "I see my big one.",
-    "You have my yellow one.",
+    "You see my yellow one.",
     "My one can go up."
   ],
 
@@ -125,7 +125,7 @@ export const LEVEL_0_STRICT_DOLCH_TEMPLATES = [
   [
     "It is not here.",
     "Not big and not little.",
-    "You are not away.",
+    "You can go away.",
     "I can not find it.",
     "Not red and not blue."
   ],
@@ -145,7 +145,7 @@ export const LEVEL_0_STRICT_DOLCH_TEMPLATES = [
     "Look down here.",
     "Down is where I see.",
     "Come down to play.",
-    "The little one goes down."
+    "The little one can go down."
   ],
 
   // Template 17 - NEW
@@ -162,17 +162,17 @@ export const LEVEL_0_STRICT_DOLCH_TEMPLATES = [
     "Where can you go?",
     "Where is the funny one?",
     "I see where it is.",
-    "Where are the three?",
-    "You know where to look."
+    "Where can you see the three?",
+    "You can look where it is."
   ],
 
   // Template 19 - NEW
   [
-    "The funny little one jumps.",
+    "The funny little one can jump.",
     "Funny is not big.",
     "See the funny red one.",
-    "You are funny.",
-    "Funny ones can play."
+    "You can be funny.",
+    "Funny little ones can play."
   ],
 
   // Template 20 - NEW
@@ -180,7 +180,7 @@ export const LEVEL_0_STRICT_DOLCH_TEMPLATES = [
     "One, two, three we go.",
     "See one and see two.",
     "One is little and big.",
-    "You are the one.",
+    "You can be the one.",
     "One funny one is here."
   ]
 ];
