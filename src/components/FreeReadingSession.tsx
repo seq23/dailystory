@@ -1474,6 +1474,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
           userType={isPremium ? "premium" : "free"}
           currentWordsRead={calculateActualWordsRead()}
           currentPagesRead={currentPage + 1}
+          vocabularyLearned={userStats.vocabularyWordsLearned}
           shouldPulse={
             tutorialActive && 
             currentTutorialStep === 5 && // Step 6 (0-indexed)

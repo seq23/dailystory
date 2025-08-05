@@ -10,6 +10,7 @@ interface ProgressTowersProps {
   userType?: 'free' | 'premium';
   currentWordsRead?: number;
   currentPagesRead?: number;
+  vocabularyLearned?: number;
   className?: string;
   shouldPulse?: boolean;
   onProgressUpdate?: (type: 'words' | 'pages' | 'vocabulary', value: number) => void;
@@ -20,6 +21,7 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
   userType = 'premium',
   currentWordsRead = 0,
   currentPagesRead = 0,
+  vocabularyLearned = 0,
   className,
   shouldPulse = false,
   onProgressUpdate
@@ -80,7 +82,7 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
   // Calculate display values (including current session)
   const totalWordsRead = userStats.totalWordsRead + currentWordsRead;
   const totalPagesRead = Math.floor(totalWordsRead / 200) + currentPagesRead; // Estimate pages from words
-  const vocabularyLearned = userStats.vocabularyWordsLearned;
+  const displayVocabularyLearned = vocabularyLearned || userStats.vocabularyWordsLearned;
 
   // Detect progress changes and trigger animations
   useEffect(() => {
@@ -88,18 +90,19 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
     const currentValues = { 
       words: totalWordsRead, 
       pages: totalPagesRead, 
-      vocabulary: vocabularyLearned 
+      vocabulary: displayVocabularyLearned 
     };
 
     console.log('🏗️ Progress tower calculations:', {
       prevValues,
       currentValues,
       currentWordsRead,
+      vocabularyLearnedProp: vocabularyLearned,
       userStats: { totalWordsRead: userStats.totalWordsRead, vocabularyWordsLearned: userStats.vocabularyWordsLearned },
       calculations: {
         totalWordsRead: `${userStats.totalWordsRead} + ${currentWordsRead} = ${totalWordsRead}`,
         totalPagesRead: `Math.floor(${totalWordsRead} / 200) + ${currentPagesRead} = ${totalPagesRead}`,
-        vocabularyLearned: `${userStats.vocabularyWordsLearned} (direct from userStats)`
+        displayVocabularyLearned: `${vocabularyLearned} || ${userStats.vocabularyWordsLearned} = ${displayVocabularyLearned}`
       }
     });
 
@@ -114,6 +117,7 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
       prevValues,
       currentValues,
       currentWordsRead,
+      vocabularyLearnedProp: vocabularyLearned,
       userStats: { totalWordsRead: userStats.totalWordsRead, vocabularyWordsLearned: userStats.vocabularyWordsLearned }
     });
 
@@ -161,13 +165,14 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
     }
 
     prevValuesRef.current = currentValues;
-  }, [totalWordsRead, totalPagesRead, vocabularyLearned, onProgressUpdate]);
+  }, [totalWordsRead, totalPagesRead, displayVocabularyLearned, onProgressUpdate]);
 
   console.log('ProgressTowers component rendering...', { 
     isExpanded, 
     totalWordsRead, 
     totalPagesRead, 
-    vocabularyLearned,
+    displayVocabularyLearned,
+    vocabularyLearnedProp: vocabularyLearned,
     userType,
     userId,
     'Component should be visible': true
@@ -316,7 +321,7 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
                   animatingTowers.vocabulary && "animate-bounce scale-110 rotate-1"
                 )}>
                   <ProgressTower
-                    value={vocabularyLearned}
+                    value={displayVocabularyLearned}
                     maxValue={500}
                     label={t('progressTowers.vocabulary')}
                     icon={<Lightbulb className="w-4 h-4" />}
