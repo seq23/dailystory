@@ -2,7 +2,7 @@
 // Bypasses UserInputDistributor to ensure vocabulary compliance
 
 import { LEVEL_0_COMPLIANT_TEMPLATES, getLevel0CompliantTemplate } from '@/constants/level0TemplatesCompliant';
-import { LEVEL_0_STRICT_DOLCH_TEMPLATES } from '@/constants/level0TemplatesFixed';
+import { LEVEL_0_STRICT_DOLCH_TEMPLATES, getLevel0StrictDolchTemplate, getLevel0StrictDolchTemplateCount } from '@/constants/level0TemplatesFixed';
 import { validateLevel0SentenceByUserType, type UserType } from '@/constants/dolchPrePrimer';
 import { SessionTemplateManager } from '@/services/sessionTemplateManager';
 import { SubscriptionManager } from '@/services/subscriptionManager';
@@ -131,15 +131,23 @@ export class Level0StoryProcessor {
   /**
    * Get statistics about Level 0 template usage
    */
-  static getTemplateStats(): {
+  static async getTemplateStats(): Promise<{
     totalTemplates: number;
     totalPages: number;
     estimatedReadingTime: number;
     templatesUsed: number;
     isRepeating: boolean;
-  } {
-    const totalTemplates = LEVEL_0_COMPLIANT_TEMPLATES.length;
-    const totalPages = LEVEL_0_COMPLIANT_TEMPLATES.reduce((sum, template) => sum + template.length, 0);
+  }> {
+    // Get current user type to show correct statistics
+    const isPremium = await SubscriptionManager.isPremiumUser();
+    const userType: UserType = isPremium ? 'premium' : 'free';
+    
+    const templates = userType === 'free' 
+      ? LEVEL_0_STRICT_DOLCH_TEMPLATES 
+      : LEVEL_0_COMPLIANT_TEMPLATES;
+    
+    const totalTemplates = templates.length;
+    const totalPages = templates.reduce((sum, template) => sum + template.length, 0);
     const estimatedReadingTime = totalPages * 12; // 12 seconds per page average
     
     const sessionStats = SessionTemplateManager.getSessionStats();

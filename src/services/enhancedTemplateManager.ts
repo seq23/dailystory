@@ -186,7 +186,9 @@ export class EnhancedTemplateManager {
         templateIndex++;
       } else {
         // Fallback: Use extension templates only after all base templates are exhausted
-        const extensionTemplates = this.getExtensionTemplates(gradeLevel);
+        // Check subscription status - for level 0, free users get strict vocabulary
+        const isPremium = gradeLevel > 0 || (userInfo as any)?.subscription?.plan === 'premium';
+        const extensionTemplates = this.getExtensionTemplates(gradeLevel, isPremium);
         newPage = this.generateContinuationPage(
           extendedPages[extendedPages.length - 1], 
           gradeLevel, 
@@ -235,17 +237,25 @@ export class EnhancedTemplateManager {
   }
 
   /**
-   * Get extension templates by grade level
+   * Get extension templates by grade level with subscription-aware vocabulary
    */
-  private static getExtensionTemplates(gradeLevel: GradeLevel): string[] {
+  private static getExtensionTemplates(gradeLevel: GradeLevel, isPremium: boolean = true): string[] {
     switch (gradeLevel) {
       case 0:
-        return [
+        return isPremium ? [
+          // PREMIUM: 59 enhanced words
           "{userName} is happy.",
           "{userName} had fun today.",
           "{userName} wants to play more.",
           "{userName} loves this story.",
           "{userName} will come back."
+        ] : [
+          // FREE: Only 40 Dolch Pre-Primer words
+          "{userName} can play.",
+          "{userName} said here.",
+          "{userName} go up.",
+          "{userName} see me.",
+          "{userName} run away."
         ];
       
       case 1:

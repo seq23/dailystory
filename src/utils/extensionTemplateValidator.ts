@@ -16,7 +16,7 @@ export class ExtensionTemplateValidator {
   /**
    * Test all extension templates for vocabulary compliance
    */
-  static testAllExtensionTemplates(userName: string = 'Sequoia'): {
+  static testAllExtensionTemplates(userName: string = 'Sequoia', userType: 'free' | 'premium' = 'premium'): {
     allCompliant: boolean;
     results: ExtensionTestResult[];
     summary: Record<GradeLevel, { total: number; compliant: number }>;
@@ -32,7 +32,7 @@ export class ExtensionTemplateValidator {
 
     // Test templates for each grade level
     for (let grade = 0; grade <= 4; grade++) {
-      const templates = this.getExtensionTemplates(grade as GradeLevel);
+      const templates = this.getExtensionTemplates(grade as GradeLevel, userType);
       
       templates.forEach((template, index) => {
         // Replace placeholder with actual username
@@ -65,8 +65,8 @@ export class ExtensionTemplateValidator {
   /**
    * Generate detailed report of extension template validation
    */
-  static generateValidationReport(userName: string = 'Sequoia'): string {
-    const testResults = this.testAllExtensionTemplates(userName);
+  static generateValidationReport(userName: string = 'Sequoia', userType: 'free' | 'premium' = 'premium'): string {
+    const testResults = this.testAllExtensionTemplates(userName, userType);
     const report = [
       '🧪 Extension Template Vocabulary Validation Report',
       '=' .repeat(60),
@@ -101,12 +101,20 @@ export class ExtensionTemplateValidator {
   }
 
   /**
-   * Get extension templates by grade level (copied from EnhancedTemplateManager)
+   * Get extension templates by grade level with tiered vocabulary support
    */
-  private static getExtensionTemplates(gradeLevel: GradeLevel): string[] {
+  private static getExtensionTemplates(gradeLevel: GradeLevel, userType: 'free' | 'premium' = 'premium'): string[] {
     switch (gradeLevel) {
       case 0:
-        return [
+        return userType === 'free' ? [
+          // FREE: Only 40 Dolch Pre-Primer words
+          "{userName} can play.",
+          "{userName} said here.",
+          "{userName} go up.",
+          "{userName} see me.",
+          "{userName} run away."
+        ] : [
+          // PREMIUM: 59 enhanced words
           "{userName} is happy.",
           "{userName} had fun today.",
           "{userName} wants to play more.",
@@ -158,13 +166,13 @@ export class ExtensionTemplateValidator {
   /**
    * Test a specific grade level's extension templates
    */
-  static testGradeLevel(gradeLevel: GradeLevel, userName: string = 'Sequoia'): {
+  static testGradeLevel(gradeLevel: GradeLevel, userName: string = 'Sequoia', userType: 'free' | 'premium' = 'premium'): {
     grade: GradeLevel;
     templates: string[];
     results: ExtensionTestResult[];
     isCompliant: boolean;
   } {
-    const templates = this.getExtensionTemplates(gradeLevel);
+    const templates = this.getExtensionTemplates(gradeLevel, userType);
     const results: ExtensionTestResult[] = [];
 
     templates.forEach((template, index) => {

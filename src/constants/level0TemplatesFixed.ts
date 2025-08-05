@@ -92,6 +92,96 @@ export const LEVEL_0_STRICT_DOLCH_TEMPLATES = [
     "We make it here.",
     "Make it blue and red.",
     "I can make it for you."
+  ],
+
+  // Template 11 - NEW
+  [
+    "Look for the little one.",
+    "I can look and see.",
+    "Look where it is.",
+    "You look here.",
+    "We look for you."
+  ],
+
+  // Template 12 - NEW
+  [
+    "Three is not two.",
+    "I see three here.",
+    "Three little ones go.",
+    "You have three.",
+    "Three and one make it."
+  ],
+
+  // Template 13 - NEW
+  [
+    "Where is my red one?",
+    "My little one is here.",
+    "I see my big one.",
+    "You have my yellow one.",
+    "My one can go up."
+  ],
+
+  // Template 14 - NEW
+  [
+    "It is not here.",
+    "Not big and not little.",
+    "You are not away.",
+    "I can not find it.",
+    "Not red and not blue."
+  ],
+
+  // Template 15 - NEW
+  [
+    "Come and play here.",
+    "Come see the big one.",
+    "Come up and look.",
+    "You come to me.",
+    "Come find the yellow one."
+  ],
+
+  // Template 16 - NEW
+  [
+    "Down and up I go.",
+    "Look down here.",
+    "Down is where I see.",
+    "Come down to play.",
+    "The little one goes down."
+  ],
+
+  // Template 17 - NEW
+  [
+    "For you and for me.",
+    "It is for play.",
+    "Make it for the big one.",
+    "Here is one for you.",
+    "For little ones to see."
+  ],
+
+  // Template 18 - NEW
+  [
+    "Where can you go?",
+    "Where is the funny one?",
+    "I see where it is.",
+    "Where are the three?",
+    "You know where to look."
+  ],
+
+  // Template 19 - NEW
+  [
+    "The funny little one jumps.",
+    "Funny is not big.",
+    "See the funny red one.",
+    "You are funny.",
+    "Funny ones can play."
+  ],
+
+  // Template 20 - NEW
+  [
+    "One, two, three we go.",
+    "See one and see two.",
+    "One is little and big.",
+    "You are the one.",
+    "One funny one is here."
   ]
 ];
 
