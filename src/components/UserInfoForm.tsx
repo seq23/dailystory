@@ -81,7 +81,7 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
       const currentValue = formData[field] as string;
       const isDeletion = value.length < currentValue.length;
       
-      // Free user optional field restriction
+      // Free user optional field restriction - only apply to non-premium users
       const optionalFields = ['favoriteAnimal', 'favoriteFood', 'hobbies', 'specialRequest'];
       if (!isPremium && optionalFields.includes(field as string) && value.trim() && !isDeletion) {
         // Check if user already has a different optional field filled
@@ -99,6 +99,9 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
         if (value.trim()) {
           setSelectedOptionalField(field as string);
         }
+      } else if (isPremium && optionalFields.includes(field as string) && value.trim()) {
+        // Premium users can fill all fields without restriction
+        setSelectedOptionalField(null); // Clear any previous restriction tracking
       }
       
       // Sanitize input
