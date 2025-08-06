@@ -265,6 +265,7 @@ export default {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'bounce-gentle': 'bounce-gentle 2s ease-in-out infinite',
+				'bounce-slow': 'bounce-gentle 1.5s ease-in-out infinite',
 				'float': 'float 3s ease-in-out infinite',
 				'wiggle': 'wiggle 0.5s ease-in-out',
 				'shake-hard': 'shake-hard 0.8s ease-in-out infinite',

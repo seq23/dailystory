@@ -76,6 +76,7 @@ export const GuestExperience = () => {
           <UserInfoForm 
             onSubmit={handleFormSubmit} 
             onBack={handleBackToWelcome}
+            isPremium={false}
           />
         </div>
       );

@@ -161,6 +161,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
             <UserInfoForm
               onSubmit={handleProfileUpdate}
               onBack={() => {}}
+              isPremium={isPremium}
             />
           </div>
         </div>
@@ -250,6 +251,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
             <UserInfoForm
               onSubmit={handleProfileUpdate}
               onBack={() => setCurrentView("story")}
+              isPremium={isPremium}
             />
             </div>
           </TabsContent>

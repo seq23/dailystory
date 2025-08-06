@@ -8,6 +8,8 @@ import { useTranslation } from "react-i18next";
 // Missing UI Components
 import { FloatingTimer } from "@/components/FloatingTimer";
 import { TutorialOverlay } from "@/components/TutorialOverlay";
+import { ProgressTowerSimple } from "@/components/ProgressTowerSimple";
+import { GameContextProvider } from "@/components/GameContextProvider";
 
 // Audio and Interactive Components
 import { ElevenLabsAudio } from "@/components/ElevenLabsAudio";
@@ -84,9 +86,19 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   );
   
   // Gamification integration
-  const { updateActivity, recordReadingSession } = useGamification({
+  const {
+    userStats,
+    updateActivity,
+    recordReadingSession,
+    addVocabularyWord,
+    newAchievements,
+    hasNewAchievements,
+    getNextAchievement,
+    clearNewAchievements,
+    resetStats
+  } = useGamification({
     userId: userInfo.name,
-    enablePersistence: true,
+    enablePersistence: isPremium, // Only persist for premium users
     onAchievementUnlocked: (achievement) => {
       console.log('🏆 Achievement unlocked:', achievement.title || achievement.id);
     }
@@ -375,8 +387,13 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   }
 
   return (
-    <ErrorBoundary>
-      <div className="min-h-screen bg-gradient-primary">
+    <GameContextProvider 
+      userId={userInfo.name} 
+      userType={isPremium ? 'premium' : 'free'}
+      userInfo={userInfo}
+    >
+      <ErrorBoundary>
+        <div className="min-h-screen bg-gradient-primary">
         {/* Header with Reading Level Controls */}
         <header className="bg-white/90 backdrop-blur-sm shadow-sm border-b">
           <div className="container mx-auto px-4 py-3">
@@ -487,14 +504,6 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                         </div>
                       )}
                       
-                      <MobileOptimizedButton
-                        onClick={() => setShowVocabularyCollector(true)}
-                        variant="outline"
-                        size="sm"
-                      >
-                        <BookOpen className="w-4 h-4 mr-2" />
-                        Vocabulary
-                      </MobileOptimizedButton>
                     </div>
                   </div>
 
@@ -555,20 +564,6 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         </div>
       </main>
       
-      {/* Floating Timer - Only for Premium */}
-      {isPremium && (
-        <FloatingTimer
-          timeRemaining={timeRemaining}
-          isReading={isTimerRunning}
-          onToggleReading={handleToggleTimer}
-          onReduceTime={handleReduceTime}
-          onEndSession={handleEndSession}
-          onSessionEnded={handleEndSession}
-          showTutorial={showTutorial}
-          tutorialStep={currentTutorialStep}
-        />
-      )}
-
       {/* Tutorial Overlay */}
       <TutorialOverlay
         isVisible={showTutorial}
@@ -586,8 +581,30 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         onClose={() => setShowVocabularyCollector(false)}
         enablePersistence={true}
       />
+        
+      {/* Floating Timer Display - Always Visible */}
+      <FloatingTimer
+        timeRemaining={timeRemaining}
+        isReading={isTimerRunning}
+        onToggleReading={handleToggleTimer}
+        onReduceTime={handleReduceTime}
+        onEndSession={handleEndSession}
+        onSessionEnded={handleEndSession}
+        showTutorial={showTutorial}
+        tutorialStep={currentTutorialStep}
+      />
+      
+      {/* Progress Tower - Replace Vocabulary Button */}
+      <div className="fixed bottom-4 right-4 z-30 w-64">
+        <ProgressTowerSimple 
+          userStats={userStats}
+          isPremium={isPremium}
+          resetOnSession={!isPremium}
+        />
+      </div>
       </div>
     </ErrorBoundary>
+    </GameContextProvider>
   );
 };
 

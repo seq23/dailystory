@@ -87,6 +87,9 @@ All colors MUST be HSL.
     /* Playful animations */
     --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Custom animation timings */
+    --animation-bounce-slow: bounce 1.5s infinite;
 
     --radius: 1rem;
 

@@ -24,9 +24,10 @@ export type { UserInfo } from "@/types";
 interface UserInfoFormProps {
   onSubmit: (userInfo: UserInfo) => void;
   onBack: () => void;
+  isPremium?: boolean;
 }
 
-export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
+export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFormProps) => {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const { isMobileOrTablet } = useIsMobile();
@@ -60,6 +61,9 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
   const [isProcessingInputs, setIsProcessingInputs] = useState(false);
   const [translations, setTranslations] = useState<Record<string, string>>({});
   const [translationLoading, setTranslationLoading] = useState<Record<string, boolean>>({});
+  
+  // Track optional fields for free users (only 1 allowed)
+  const [selectedOptionalField, setSelectedOptionalField] = useState<string | null>(null);
 
   // Enhanced content filtering with grade-aware security and multilingual support
   const contentFilter = (text: string): { hasInappropriateContent: boolean; reason?: string } => {
@@ -76,6 +80,26 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
       // Check if this is a deletion (shorter text) - skip security validation for deletions
       const currentValue = formData[field] as string;
       const isDeletion = value.length < currentValue.length;
+      
+      // Free user optional field restriction
+      const optionalFields = ['favoriteAnimal', 'favoriteFood', 'hobbies', 'specialRequest'];
+      if (!isPremium && optionalFields.includes(field as string) && value.trim() && !isDeletion) {
+        // Check if user already has a different optional field filled
+        const hasOtherOptionalField = optionalFields.some(f => f !== field && formData[f as keyof UserInfo] && String(formData[f as keyof UserInfo]).trim());
+        
+        if (hasOtherOptionalField && selectedOptionalField && selectedOptionalField !== field) {
+          toast({
+            title: "Free Version Limit",
+            description: "Free users can only fill one optional field. Upgrade to premium for unlimited fields!",
+            duration: 3000,
+          });
+          return;
+        }
+        
+        if (value.trim()) {
+          setSelectedOptionalField(field as string);
+        }
+      }
       
       // Sanitize input
       const sanitizedValue = ContentSecurity.sanitizeInput(value);
@@ -573,7 +597,21 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                 <h3 className="text-2xl md:text-3xl font-bold text-foreground">
                   {t("userInfoForm.sections.yourFavorites")}
                 </h3>
+                {!isPremium && (
+                  <div className="ml-auto bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-medium">
+                    Choose 1 field
+                  </div>
+                )}
               </div>
+              
+              {!isPremium && (
+                <Alert className="border-orange-200 bg-orange-50 mb-4">
+                  <AlertCircle className="h-4 w-4 text-orange-600" />
+                  <AlertDescription className="text-orange-700">
+                    <strong>Free Version:</strong> You can fill only one optional field below. Upgrade to premium for unlimited personalization!
+                  </AlertDescription>
+                </Alert>
+              )}
             
             <div className="space-y-3 md:space-y-4">
               <div className="space-y-2">
@@ -616,12 +654,12 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                   side="top"
                 >
                   <div className="relative">
-                    <TagInput
-                      value={formData.favoriteAnimal}
-                      onChange={(value) => handleInputChange("favoriteAnimal", value)}
-                      placeholder={t("userInfoForm.fields.favoriteAnimal.placeholder", "dog, cat, lion, dolphin...")}
-                      className="multilingual-input"
-                    />
+                     <TagInput
+                       value={formData.favoriteAnimal}
+                       onChange={(value) => handleInputChange("favoriteAnimal", value)}
+                       placeholder={t("userInfoForm.fields.favoriteAnimal.placeholder", "dog, cat, lion, dolphin...")}
+                       className={`multilingual-input ${!isPremium && selectedOptionalField && selectedOptionalField !== 'favoriteAnimal' ? 'opacity-50 pointer-events-none' : ''}`}
+                     />
                     {translationLoading.favoriteAnimal && (
                       <div className="absolute right-3 top-3">
                         <Loader2 className="w-4 h-4 text-primary animate-spin" />
@@ -653,12 +691,12 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                   side="top"
                 >
                   <div className="relative">
-                    <TagInput
-                      value={formData.favoriteFood}
-                      onChange={(value) => handleInputChange("favoriteFood", value)}
-                      placeholder={t("userInfoForm.fields.favoriteFood.placeholder", "pizza, ice cream, apples, cookies...")}
-                      className="multilingual-input"
-                    />
+                     <TagInput
+                       value={formData.favoriteFood}
+                       onChange={(value) => handleInputChange("favoriteFood", value)}
+                       placeholder={t("userInfoForm.fields.favoriteFood.placeholder", "pizza, ice cream, apples, cookies...")}
+                       className={`multilingual-input ${!isPremium && selectedOptionalField && selectedOptionalField !== 'favoriteFood' ? 'opacity-50 pointer-events-none' : ''}`}
+                     />
                     {translationLoading.favoriteFood && (
                       <div className="absolute right-3 top-3">
                         <Loader2 className="w-4 h-4 text-primary animate-spin" />
@@ -690,12 +728,12 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                   side="top"
                 >
                   <div className="relative">
-                    <TagInput
-                      value={formData.hobbies}
-                      onChange={(value) => handleInputChange("hobbies", value)}
-                      placeholder={t("userInfoForm.fields.hobbies.placeholder", "soccer, drawing, dancing, video games...")}
-                      className="multilingual-input"
-                    />
+                     <TagInput
+                       value={formData.hobbies}
+                       onChange={(value) => handleInputChange("hobbies", value)}
+                       placeholder={t("userInfoForm.fields.hobbies.placeholder", "soccer, drawing, dancing, video games...")}
+                       className={`multilingual-input ${!isPremium && selectedOptionalField && selectedOptionalField !== 'hobbies' ? 'opacity-50 pointer-events-none' : ''}`}
+                     />
                     {translationLoading.hobbies && (
                       <div className="absolute right-3 top-3">
                         <Loader2 className="w-4 h-4 text-primary animate-spin" />
@@ -736,12 +774,12 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                 <span className="text-xs md:text-sm text-muted-foreground ml-2">{t("userInfoForm.fields.specialRequest.optional")}</span>
               </Label>
               <div className="relative">
-                <TagInput
-                  value={formData.specialRequest}
-                  onChange={(value) => handleInputChange("specialRequest", value)}
-                  placeholder={t("userInfoForm.fields.specialRequest.placeholder")}
-                  className="multilingual-input"
-                />
+                 <TagInput
+                   value={formData.specialRequest}
+                   onChange={(value) => handleInputChange("specialRequest", value)}
+                   placeholder={t("userInfoForm.fields.specialRequest.placeholder")}
+                   className={`multilingual-input ${!isPremium && selectedOptionalField && selectedOptionalField !== 'specialRequest' ? 'opacity-50 pointer-events-none' : ''}`}
+                 />
                 {translationLoading.specialRequest && (
                   <div className="absolute right-3 top-3">
                     <Loader2 className="w-4 h-4 text-primary animate-spin" />

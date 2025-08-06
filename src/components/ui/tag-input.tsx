@@ -100,7 +100,7 @@ export const TagInput = ({ value, onChange, placeholder, className, onBlur }: Ta
       </div>
       
       <div className="text-xs text-muted-foreground mt-3 opacity-75">
-        Press Enter to add each item, or tap/click after typing
+        Press Enter to add each item
       </div>
     </div>
   );

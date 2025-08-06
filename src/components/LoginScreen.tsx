@@ -413,6 +413,17 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
             <p>{t("loginScreen.guarantees.cancelAnytime")}</p>
             <p>{t("loginScreen.guarantees.securePayment")}</p>
           </div>
+          
+          {/* Back to Home Button */}
+          <div className="mt-4 text-center">
+            <button
+              type="button"
+              onClick={() => window.location.href = '/'}
+              className="text-sm text-muted-foreground underline cursor-pointer hover:text-foreground"
+            >
+              {t("loginScreen.closeButton", "Back to Home")}
+            </button>
+          </div>
         </CardContent>
       </Card>
     </div>
