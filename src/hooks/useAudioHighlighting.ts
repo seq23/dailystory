@@ -53,7 +53,7 @@ export const useAudioHighlighting = () => {
   // Setup cleanup callback when component mounts
   useEffect(() => {
     setCleanupCallback(clearHighlighting);
-  }, [setCleanupCallback]);
+  }, []); // Remove setCleanupCallback from dependencies to prevent circular updates
 
   // Audio state management
   const startAudioHighlighting = () => {

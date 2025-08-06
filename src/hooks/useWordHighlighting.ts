@@ -24,7 +24,7 @@ export const useWordHighlighting = (text: string, isAudioPlaying: boolean) => {
     } else {
       stopAudioHighlighting();
     }
-  }, [isAudioPlaying, startAudioHighlighting, stopAudioHighlighting]);
+  }, [isAudioPlaying]); // Remove function dependencies to prevent circular updates
 
   // Enhanced cleanup on text change (new page/story)
   useEffect(() => {
@@ -37,7 +37,7 @@ export const useWordHighlighting = (text: string, isAudioPlaying: boolean) => {
       }
       clearHighlighting();
     };
-  }, [text, clearHighlighting]);
+  }, [text]); // Remove clearHighlighting from dependencies to prevent circular updates
 
   // Enhanced highlight callback with sync monitoring
   const onWordHighlight = (wordIndex: number) => {
