@@ -1,23 +1,23 @@
-// Level 3 Templates (Ages 9-11) - 5th-6th Grade Reading Level
-// 40 unique 5-page templates using appropriate vocabulary for elementary school students
+// Level 3 Templates (Ages 9-11) - 5th-6th Grade Reading Level with Author Voice Integration
+// 40 unique 5-page templates using appropriate vocabulary with Purple, Silver, and Blue voice patterns
 
 export const LEVEL_3_TEMPLATES = [
-  // Template 1: School Science Fair
+  // Template 1: School Science Fair (Purple Pattern - Adventure)
   [
-    "{userName} decides to enter the school science fair with a project about growing plants.",
-    "After some research, {userName} chooses to test which type of water helps plants grow best.",
-    "The experiment uses three plants: one gets tap water, one gets rainwater, and one gets distilled water.",
-    "Every day for two weeks, {userName} measures the plants and writes down the results.",
-    "At the science fair, {userName}'s project wins third place and everyone is impressed with the hard work."
+    "If you give {userName} a science fair opportunity...",
+    "That will remind them of their curiosity about plant growth and different water types.",
+    "So they will want to experiment with tap water, rainwater, and distilled water carefully.",
+    "Which means they will need to measure and record results every single day.",
+    "And chances are, they will want another science project - which will remind them how this all started."
   ],
   
-  // Template 2: School Camping Trip
+  // Template 2: School Camping Trip (Silver Pattern - Growing Up)
   [
-    "{userName} goes on an exciting three-day camping trip with the fifth grade class.",
-    "The students learn how to set up tents, start a campfire safely, and identify different trees.",
-    "At night, they roast marshmallows and tell stories while looking at the stars.",
-    "On the second day, they go on a nature hike and spot deer, rabbits, and many birds.",
-    "Everyone agrees it was the best school trip ever, and {userName} can't wait to go camping again."
+    "{userName} was not quite ready for sleeping outdoors, but adventure was calling.",
+    "But slowly, things began to change as they learned to set up tents and start campfires safely.",
+    "Sometimes the best things happen when you share marshmallows and stories under the stars.",
+    "That's when {userName} realized nature hikes could reveal deer, rabbits, and countless birds.",
+    "And {userName} knew everything would be okay - growing up happens one adventure at a time."
   ],
   
   // Template 3: Community Garden Project

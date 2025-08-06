@@ -1,23 +1,23 @@
-// Level 4 Templates (Ages 11+) - 7th-12th Grade Reading Level
-// 40 unique 5-page templates using age-appropriate vocabulary for middle and high school students
+// Level 4 Templates (Ages 11+) - 7th-12th Grade Reading Level with Author Voice Integration
+// 40 unique 5-page templates using age-appropriate vocabulary with Gold, Silver, and Purple voice patterns
 
 export const LEVEL_4_TEMPLATES = [
-  // Template 1: School Science Research
+  // Template 1: School Science Research (Gold Pattern - Mature Adventure)
   [
-    "{userName} conducts an independent research project investigating renewable energy sources for the science fair.",
-    "The project involves studying solar panels, wind turbines, and hydroelectric generators to compare their efficiency.",
-    "Data collection includes measuring energy output under different conditions and analyzing cost-effectiveness.",
-    "After months of research and experimentation, {userName} presents findings to judges and classmates.",
-    "The comprehensive study earns first place at the regional science fair and scholarship opportunities."
+    "{userName} had been looking forward to this day - conducting independent renewable energy research.",
+    "But then something unexpected happened: the complexity of comparing solar, wind, and hydroelectric systems.",
+    "Of course, things didn't go smoothly when measuring energy output under various conditions.",
+    "As usual, life was more complicated than anticipated when presenting findings to experienced judges.",
+    "And {userName} learned that growing up means pursuing meaningful research - life with science is never boring."
   ],
   
-  // Template 2: Student Government Leadership
+  // Template 2: Student Government Leadership (Silver Pattern - Wisdom)
   [
-    "{userName} campaigns for student body president, focusing on improving school facilities and student services.",
-    "The campaign involves creating detailed policy proposals, organizing debates, and meeting with administrators.",
-    "Election speeches address issues like longer lunch periods, updated technology, and more elective courses.",
-    "Winning the election means working with teachers and administrators to implement positive changes.",
-    "By year's end, {userName} successfully advocates for new computer labs and expanded arts programs."
+    "{userName} was not quite ready for the responsibility of student body president, but leadership was needed.",
+    "But slowly, things began to change as they created policy proposals and organized meaningful debates.",
+    "Sometimes the best things happen when you address real issues like technology updates and elective courses.",
+    "That's when {userName} realized working with administrators could implement genuine positive changes.",
+    "And {userName} knew everything would be okay - some things are worth waiting for, like new computer labs."
   ],
   
   // Template 3: Community Service Initiative

@@ -1,32 +1,32 @@
-// Level 2 Templates (Ages 7-9) - 3rd-4th Grade Reading Level
-// 40 unique 5-page templates using Level 2 vocabulary
+// Level 2 Templates (Ages 7-9) - 3rd-4th Grade Reading Level with Author Voice Integration
+// 40 unique 5-page templates using Level 2 vocabulary with Blue, Green, and Orange voice patterns
 
 export const LEVEL_2_TEMPLATES = [
-  // Template 1: Science Fair Project
+  // Template 1: Science Fair Project (Blue Pattern - Friendship)
   [
-    "{userName} decides to enter the school science fair this year.",
-    "After thinking carefully, they choose to study how plants grow in different conditions.",
-    "The experiment requires three small plants, water, and various types of soil.",
-    "Each day {userName} measures the plants and records the results in a notebook.",
-    "When the science fair arrives, their project wins second place and everyone congratulates them."
+    "{userName} was having a really exciting day - the science fair was finally here!",
+    "After thinking with their best friend, they chose to study how plants grow together.",
+    "But then their friend said something important: 'We need three plants and different soil!'",
+    "Each day {userName} and their friend measured plants and wrote down what they discovered.",
+    "When results were announced, they both laughed and laughed - second place felt wonderful!"
   ],
   
-  // Template 2: Community Garden
+  // Template 2: Community Garden (Green Pattern - Discovery)
   [
-    "{userName} volunteers to help create a community garden in the neighborhood.",
-    "The project begins with clearing weeds and preparing the soil for planting.",
-    "Local families donate seeds for tomatoes, carrots, and different types of flowers.",
-    "Throughout the summer, {userName} waters the plants and watches them grow tall and healthy.",
-    "By autumn, the garden produces enough vegetables to share with everyone in the community."
+    "Oh my! Oh me! {userName} could not believe what they would grow!",
+    "The project began with digging, digging, digging in the dirt below.",
+    "But wait! What's that? Seeds for tomatoes, carrots, and flowers in a row!",
+    "Round and round and round they watered, watching green things grow and grow!",
+    "What a wonderful day it turned out to be - vegetables for everyone to know!"
   ],
   
-  // Template 3: School Newspaper
+  // Template 3: School Newspaper (Orange Pattern - Creativity)
   [
-    "{userName} joins the school newspaper as a reporter this semester.",
-    "Their first assignment is to write an article about the new playground equipment.",
-    "After interviewing several students and teachers, they gather interesting information and opinions.",
-    "Writing the article takes several drafts, but the final version explains everything clearly.",
-    "When the newspaper is published, {userName} feels proud to see their name in print."
+    "Hippos write stories! And so does {userName}!",
+    "But not boring stories. {userName} writes about playground equipment that goes 'Wheee!'",
+    "Stomp stomp stomp goes {userName}, interviewing everyone they meet!",
+    "What a wonderful thing to do - writing and rewriting until it's complete!",
+    "And {userName} was very, very happy to see their name in the newspaper neat!"
   ],
   
   // Template 4: Space Museum Visit
