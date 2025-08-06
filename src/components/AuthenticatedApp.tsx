@@ -3,27 +3,30 @@ import { MobileKeyboardHandler } from "@/components/MobileKeyboardHandler";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { UserInfoForm } from "@/components/UserInfoForm";
-import CleanStoryDisplay from "@/components/CleanStoryDisplay";
-import { MobileOptimizedButton } from "@/components/MobileOptimizedButton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, BarChart3, Settings, LogOut, CreditCard, Crown, Bug } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import type { UserInfo, Grade, LanguageCode, LearningGoal } from "@/types";
+import { PremiumProfileEditor } from "@/components/PremiumProfileEditor";
+import { PremiumMyStoriesView } from "@/components/PremiumMyStoriesView";
+import { PremiumHeader } from "@/components/PremiumHeader";
+import { PremiumSidebar } from "@/components/PremiumSidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { ProgressDashboard } from "@/components/ProgressDashboard";
 import { ParentDashboard } from "@/components/ParentDashboard";
 import { SubscriptionManager } from "@/components/SubscriptionManager";
+import { VocabularyDashboard } from "@/components/VocabularyDashboard";
+import { PremiumStoryLibrary } from "@/components/PremiumStoryLibrary";
 import { SecurityDashboard } from "@/components/SecurityDashboard";
-import { SystemStatus } from "@/components/SystemStatus";
+import { DismissibleSystemStatus } from "@/components/DismissibleSystemStatus";
 import { useSecurityMonitoring } from "@/hooks/useSecurityMonitoring";
+import { BookOpen, CreditCard } from "lucide-react";
+import type { UserInfo, Grade, LanguageCode, LearningGoal, SessionStats } from "@/types";
 
 interface AuthenticatedAppProps {
   user: User;
 }
 
-type AppView = "profile" | "story" | "progress" | "parent" | "subscription";
+type AppView = "stories" | "library" | "progress" | "goals" | "profile" | "parent" | "subscription";
 
 export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
-  const [currentView, setCurrentView] = useState<AppView>("profile");
+  const [currentView, setCurrentView] = useState<AppView>("stories");
   const [userProfile, setUserProfile] = useState<any>(null);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);
@@ -31,6 +34,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
   const [subscriptionTier, setSubscriptionTier] = useState<string | null>(null);
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
   const [devTestMode, setDevTestMode] = useState(false);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
   
   // Initialize security monitoring
   useSecurityMonitoring();
@@ -42,7 +46,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
     
     if (action === 'new-story') {
       // User came from session ended page wanting to start new story
-      setCurrentView("profile");
+      setCurrentView("stories");
       // Clean up the URL
       window.history.replaceState({}, '', '/');
     }
@@ -150,7 +154,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
           specialRequest: (profile as any).special_request || ''
         };
         setUserInfo(userInfoData);
-        setCurrentView("story");
+        setCurrentView("stories");
       }
     } catch (error) {
       console.error('Profile loading error:', error);
@@ -159,7 +163,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
     }
   };
 
-  const handleProfileUpdate = async (info: UserInfo) => {
+  const handleInitialProfileSetup = async (info: UserInfo) => {
     try {
       const birthYear = new Date().getFullYear() - info.age;
       const dateOfBirth = `${birthYear}-01-01`;
@@ -182,7 +186,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
       }
 
       setUserInfo(info);
-      setCurrentView("story");
+      setCurrentView("stories");
     } catch (error) {
       console.error('Profile update error:', error);
     }
@@ -190,6 +194,41 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
+  };
+
+  const handleSessionEnded = (stats: SessionStats) => {
+    // Navigate to SessionEnded page with stats
+    window.location.href = `/session-ended?stats=${encodeURIComponent(JSON.stringify({...stats, isPremium}))}`;
+  };
+
+  const handleProfileUpdate = async (updatedUserInfo: UserInfo) => {
+    try {
+      const birthYear = new Date().getFullYear() - updatedUserInfo.age;
+      const dateOfBirth = `${birthYear}-01-01`;
+
+      const { error } = await supabase
+        .from('profiles')
+        .upsert({
+          user_id: user.id,
+          display_name: updatedUserInfo.name,
+          date_of_birth: dateOfBirth,
+          grade_level: updatedUserInfo.gradeLevel || updatedUserInfo.grade,
+          reading_level: updatedUserInfo.readingLevel,
+          native_language: updatedUserInfo.nativeLanguage,
+          interests: updatedUserInfo.interests || []
+        });
+
+      if (error) {
+        console.error('Error updating profile:', error);
+        throw error;
+      }
+
+      setUserInfo(updatedUserInfo);
+      setIsEditingProfile(false);
+    } catch (error) {
+      console.error('Profile update error:', error);
+      throw error;
+    }
   };
 
   if (loading) {
@@ -213,7 +252,9 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
               <p className="text-gray-600">Let's set up your reading profile</p>
             </div>
             <UserInfoForm
-              onSubmit={handleProfileUpdate}
+              onSubmit={async (info) => {
+                await handleInitialProfileSetup(info);
+              }}
               onBack={() => {}}
               isPremium={isPremium}
             />
@@ -225,146 +266,139 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
 
   return (
     <MobileKeyboardHandler>
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
-      <header className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-3">
-              <BookOpen className="w-8 h-8 text-primary" />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-800">Time2Read</h1>
-                <div className="flex items-center gap-2">
-                  <p className="text-sm text-gray-600">Welcome back, {userInfo.name}!</p>
-                  {isPremium && (
-                    <Badge variant="secondary" className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-none">
-                      <Crown className="w-3 h-3 mr-1" />
-                      {devTestMode ? 'DEV' : subscriptionTier || 'Premium'}
-                    </Badge>
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full bg-gradient-to-br from-blue-50 to-purple-50">
+          <PremiumSidebar
+            currentView={currentView}
+            onViewChange={(view: string) => setCurrentView(view as AppView)}
+            userInfo={userInfo}
+            isPremium={isPremium}
+          />
+          
+          <div className="flex-1 flex flex-col min-w-0">
+            <PremiumHeader
+              userInfo={userInfo}
+              isPremium={isPremium}
+              devTestMode={devTestMode}
+              subscriptionTier={subscriptionTier || undefined}
+              onSignOut={handleSignOut}
+              onToggleDevMode={toggleDevTestMode}
+              onProfileClick={() => setIsEditingProfile(true)}
+            />
+
+            <main className="flex-1 p-6 overflow-auto">
+              {isEditingProfile ? (
+                <PremiumProfileEditor
+                  userInfo={userInfo}
+                  onSave={async (updatedUserInfo) => {
+                    await handleProfileUpdate(updatedUserInfo);
+                  }}
+                  onCancel={() => setIsEditingProfile(false)}
+                />
+              ) : (
+                <>
+                  {currentView === "stories" && (
+                    <PremiumMyStoriesView
+                      userInfo={userInfo}
+                      isPremium={isPremium}
+                      onSessionEnded={handleSessionEnded}
+                    />
                   )}
-                  {devTestMode && (
-                    <Badge variant="outline" className="border-orange-500 text-orange-600">
-                      <Bug className="w-3 h-3 mr-1" />
-                      Test Mode
-                    </Badge>
+
+                  {currentView === "library" && (
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-gradient-primary/20 rounded-full">
+                          <BookOpen className="w-6 h-6 text-primary" />
+                        </div>
+                        <div>
+                          <h1 className="text-2xl font-bold text-foreground">Story Library</h1>
+                          <p className="text-muted-foreground">Manage your saved stories and collections</p>
+                        </div>
+                      </div>
+                      <PremiumStoryLibrary
+                        onLoadStory={(story) => {
+                          // Handle story loading
+                          console.log("Loading story:", story);
+                        }}
+                        onStartNewStory={() => setCurrentView("stories")}
+                      />
+                    </div>
                   )}
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              {/* Developer Test Mode Toggle */}
-              <MobileOptimizedButton 
-                onClick={toggleDevTestMode} 
-                variant={devTestMode ? "default" : "outline"} 
-                size="sm"
-                className="text-xs"
-              >
-                <Bug className="w-3 h-3 mr-1" />
-                Test
-              </MobileOptimizedButton>
-              <MobileOptimizedButton onClick={handleSignOut} variant="outline" size="sm">
-                <LogOut className="w-4 h-4 mr-2" />
-                Sign Out
-              </MobileOptimizedButton>
-            </div>
+
+                  {currentView === "progress" && userInfo && (
+                    <ProgressDashboard
+                      userInfo={userInfo}
+                      isVisible={true}
+                      onClose={() => {}}
+                      isPremium={isPremium}
+                    />
+                  )}
+
+                  {currentView === "goals" && userInfo && (
+                    <VocabularyDashboard
+                      userInfo={userInfo}
+                      isPremium={isPremium}
+                      onStartThemedSession={() => setCurrentView("stories")}
+                      onStartProgressiveSession={() => setCurrentView("stories")}
+                    />
+                  )}
+
+                  {currentView === "profile" && (
+                    <PremiumProfileEditor
+                      userInfo={userInfo}
+                      onSave={async (updatedUserInfo) => {
+                        await handleProfileUpdate(updatedUserInfo);
+                      }}
+                      onCancel={() => setCurrentView("stories")}
+                    />
+                  )}
+
+                  {currentView === "parent" && userInfo && (
+                    <ParentDashboard
+                      userInfo={userInfo}
+                      isVisible={true}
+                      onClose={() => {}}
+                    />
+                  )}
+
+                  {currentView === "subscription" && (
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-gradient-primary/20 rounded-full">
+                          <CreditCard className="w-6 h-6 text-primary" />
+                        </div>
+                        <div>
+                          <h1 className="text-2xl font-bold text-foreground">Premium Features</h1>
+                          <p className="text-muted-foreground">Manage your subscription and features</p>
+                        </div>
+                      </div>
+                      <SubscriptionManager />
+                      {subscriptionEnd && (
+                        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                          <h3 className="font-semibold text-blue-900 mb-2">Subscription Details</h3>
+                          <div className="text-sm text-blue-700">
+                            <p><strong>Status:</strong> {isPremium ? 'Active' : 'Inactive'}</p>
+                            {subscriptionTier && <p><strong>Plan:</strong> {subscriptionTier}</p>}
+                            {subscriptionEnd && (
+                              <p><strong>Next Billing:</strong> {new Date(subscriptionEnd).toLocaleDateString()}</p>
+                            )}
+                            {devTestMode && (
+                              <p className="text-orange-600 font-medium">⚠️ Developer Test Mode Active</p>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+            </main>
           </div>
         </div>
-      </header>
-
-      <main className="container mx-auto px-4 py-6">
-        <Tabs value={currentView} onValueChange={(value) => setCurrentView(value as AppView)}>
-          <TabsList className="grid w-full grid-cols-5 max-w-3xl mx-auto mb-6 mobile-safe-area">
-            <TabsTrigger value="story" className="flex items-center gap-2">
-              <BookOpen className="w-4 h-4" />
-              <span className="hidden sm:inline">Stories</span>
-            </TabsTrigger>
-            <TabsTrigger value="progress" className="flex items-center gap-2">
-              <BarChart3 className="w-4 h-4" />
-              <span className="hidden sm:inline">Progress</span>
-            </TabsTrigger>
-            <TabsTrigger value="parent" className="flex items-center gap-2">
-              <Settings className="w-4 h-4" />
-              <span className="hidden sm:inline">Parent</span>
-            </TabsTrigger>
-            <TabsTrigger value="subscription" className="flex items-center gap-2">
-              <CreditCard className="w-4 h-4" />
-              <span className="hidden sm:inline">Premium</span>
-            </TabsTrigger>
-            <TabsTrigger value="profile" className="flex items-center gap-2">
-              <Settings className="w-4 h-4" />
-              <span className="hidden sm:inline">Profile</span>
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="story">
-            <CleanStoryDisplay
-              userInfo={userInfo}
-              onHome={() => setCurrentView("progress")}
-              onNewStory={() => setCurrentView("profile")}
-              onSessionEnded={(stats) => {
-                // Navigate to SessionEnded page with stats
-                window.location.href = `/session-ended?stats=${encodeURIComponent(JSON.stringify({...stats, isPremium}))}`
-              }}
-              isPremium={isPremium}
-              onUpgrade={() => setCurrentView("progress")}
-            />
-          </TabsContent>
-
-          <TabsContent value="progress">
-            {userInfo && (
-              <ProgressDashboard
-                userInfo={userInfo}
-                isVisible={true}
-                onClose={() => {}}
-                isPremium={isPremium}
-              />
-            )}
-          </TabsContent>
-
-          <TabsContent value="parent">
-            {userInfo && (
-              <ParentDashboard
-                userInfo={userInfo}
-                isVisible={true}
-                onClose={() => {}}
-              />
-            )}
-          </TabsContent>
-
-          <TabsContent value="subscription">
-            <div className="max-w-4xl mx-auto">
-              <SubscriptionManager />
-              {subscriptionEnd && (
-                <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                  <h3 className="font-semibold text-blue-900 mb-2">Subscription Details</h3>
-                  <div className="text-sm text-blue-700">
-                    <p><strong>Status:</strong> {isPremium ? 'Active' : 'Inactive'}</p>
-                    {subscriptionTier && <p><strong>Plan:</strong> {subscriptionTier}</p>}
-                    {subscriptionEnd && (
-                      <p><strong>Next Billing:</strong> {new Date(subscriptionEnd).toLocaleDateString()}</p>
-                    )}
-                    {devTestMode && (
-                      <p className="text-orange-600 font-medium">⚠️ Developer Test Mode Active</p>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="profile">
-            <div className="max-w-2xl mx-auto">
-            <UserInfoForm
-              onSubmit={handleProfileUpdate}
-              onBack={() => setCurrentView("story")}
-              isPremium={isPremium}
-            />
-            </div>
-          </TabsContent>
-        </Tabs>
-      </main>
-      <SecurityDashboard />
-      <SystemStatus className="fixed bottom-4 left-4 w-80 max-h-96 overflow-auto z-40" />
-    </div>
+        <SecurityDashboard />
+        <DismissibleSystemStatus className="fixed bottom-4 left-4 w-80 max-h-96 overflow-auto z-40" />
+      </SidebarProvider>
     </MobileKeyboardHandler>
   );
 };
