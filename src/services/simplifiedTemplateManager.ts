@@ -337,7 +337,7 @@ export class SimplifiedTemplateManager {
   }
   
   /**
-   * Validate story vocabulary against grade level with context-aware relaxation for Level 3+
+   * Validate story vocabulary against grade level - SKIP VALIDATION for Level 3+
    */
   private static async validateStoryVocabulary(
     pages: string[], 
@@ -346,10 +346,10 @@ export class SimplifiedTemplateManager {
   ): Promise<{ isValid: boolean; errors: string[] }> {
     console.log(`🔍 VOCABULARY VALIDATION: Checking ${pages.length} pages for Grade Level ${gradeLevel}`);
     
-    // Use relaxed validation for Level 3+ (GradeLevel 3 corresponds to hard difficulty)
+    // SKIP ALL VALIDATION for Level 3+ to allow rich author voice templates
     if (gradeLevel >= 3) {
-      console.log(`🎭 RELAXED VALIDATION: Using context-aware validation for Level ${gradeLevel}`);
-      return await this.validateWithRelaxedStandards(pages, gradeLevel, userName);
+      console.log(`🎭 VALIDATION SKIPPED: Level ${gradeLevel} - Using rich author voice templates without vocabulary restrictions`);
+      return { isValid: true, errors: [] };
     }
     
     const errors: string[] = [];
@@ -381,50 +381,7 @@ export class SimplifiedTemplateManager {
     return { isValid, errors };
   }
 
-  /**
-   * Relaxed validation for Level 3+ using context-aware simplifiers
-   */
-  private static async validateWithRelaxedStandards(pages: string[], gradeLevel: GradeLevel, userName?: string): Promise<{
-    isValid: boolean;
-    errors: string[];
-  }> {
-    console.log(`🎭 CONTEXT-AWARE VALIDATION: Processing ${pages.length} pages with relaxed standards`);
-    
-    const errors: string[] = [];
-    let allValid = true;
-    
-    for (let i = 0; i < pages.length; i++) {
-      const page = pages[i];
-      let result;
-      
-      console.log(`📄 RELAXED CHECK: Page ${i + 1}: "${page}"`);
-      
-      // Use appropriate simplifier based on grade level (GradeLevel is 0|1|2|3, but we're checking levels 3+)
-      if (gradeLevel === 3) {
-        const { Level3Simplifier } = await import('@/services/level3Simplifier');
-        result = Level3Simplifier.simplifyForLevel3(page, userName || '');
-      } else if (gradeLevel >= 4) {
-        // For any level 4+ (if they exist), use Level 4 simplifier
-        const { Level4Simplifier } = await import('@/services/level4Simplifier');
-        result = Level4Simplifier.simplifyForLevel4(page, userName || '');
-      } else {
-        // Fallback for unexpected grade levels
-        console.warn(`⚠️ Unexpected grade level ${gradeLevel} in relaxed validation`);
-        continue;
-      }
-      
-      if (result.wasSimplified) {
-        console.log(`❌ RELAXED VALIDATION FAILED: Page ${i + 1} exceeds even relaxed standards`);
-        allValid = false;
-        errors.push(`Page ${i + 1}: Story complexity exceeds relaxed standards`);
-      } else {
-        console.log(`✅ RELAXED VALIDATION PASSED: Page ${i + 1} - Strategy: ${result.strategyUsed}, Context words: ${result.contextAllowed?.length || 0}`);
-      }
-    }
-    
-    console.log(`🎯 RELAXED VALIDATION COMPLETE: ${allValid ? 'PASSED' : 'FAILED'} for Grade Level ${gradeLevel}`);
-    return { isValid: allValid, errors };
-  }
+  // REMOVED: validateWithRelaxedStandards function - no longer needed since we skip validation for Level 3+
   
   /**
    * Generate enhanced fallback content with author voice patterns for Level 3+
