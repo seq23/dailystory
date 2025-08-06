@@ -46,8 +46,8 @@ export const useAudioHighlighting = () => {
     setSyncOffset(0);
     setIsAudioPlaying(false);
     
-    // Force reset highlighting state
-    resetHighlighting();
+    // Note: Removed resetHighlighting() call to prevent circular dependency
+    // Page highlighting cleanup is handled by usePageHighlighting hook directly
   };
 
   // Setup cleanup callback when component mounts
