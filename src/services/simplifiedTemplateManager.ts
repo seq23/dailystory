@@ -60,6 +60,9 @@ export class SimplifiedTemplateManager {
     usedExtensions: Set<number>;
     phase: 'base' | 'extensions';
     totalGenerated: number;
+    currentTemplateIndex: number;
+    currentPageIndex: number;
+    currentTemplatePages: string[];
   } {
     try {
       const key = `${this.STORAGE_PREFIX}${difficulty}`;
@@ -71,7 +74,10 @@ export class SimplifiedTemplateManager {
           usedBaseTemplates: new Set(data.usedBaseTemplates || []),
           usedExtensions: new Set(data.usedExtensions || []),
           phase: data.phase || 'base',
-          totalGenerated: data.totalGenerated || 0
+          totalGenerated: data.totalGenerated || 0,
+          currentTemplateIndex: data.currentTemplateIndex || -1,
+          currentPageIndex: data.currentPageIndex || 0,
+          currentTemplatePages: data.currentTemplatePages || []
         };
       }
     } catch (error) {
@@ -83,7 +89,10 @@ export class SimplifiedTemplateManager {
       usedBaseTemplates: new Set(),
       usedExtensions: new Set(),
       phase: 'base',
-      totalGenerated: 0
+      totalGenerated: 0,
+      currentTemplateIndex: -1,
+      currentPageIndex: 0,
+      currentTemplatePages: []
     };
   }
   
@@ -95,6 +104,9 @@ export class SimplifiedTemplateManager {
     usedExtensions: Set<number>;
     phase: 'base' | 'extensions';
     totalGenerated: number;
+    currentTemplateIndex: number;
+    currentPageIndex: number;
+    currentTemplatePages: string[];
   }): void {
     try {
       const key = `${this.STORAGE_PREFIX}${difficulty}`;
@@ -103,6 +115,9 @@ export class SimplifiedTemplateManager {
         usedExtensions: Array.from(data.usedExtensions),
         phase: data.phase,
         totalGenerated: data.totalGenerated,
+        currentTemplateIndex: data.currentTemplateIndex,
+        currentPageIndex: data.currentPageIndex,
+        currentTemplatePages: data.currentTemplatePages,
         lastUpdated: Date.now()
       };
       
@@ -152,6 +167,13 @@ export class SimplifiedTemplateManager {
     let pages = selection.pages;
     let selectedIndex = selection.templateIndex;
     
+    // Store the full template in session for future continuation
+    const sessionData = this.getSessionData(difficulty);
+    sessionData.currentTemplateIndex = selectedIndex;
+    sessionData.currentPageIndex = pages.length; // Mark as fully used
+    sessionData.currentTemplatePages = [...pages];
+    this.saveSessionData(difficulty, sessionData);
+    
     console.log(`✅ SimplifiedTemplateManager: Using ${selection.source} template ${selectedIndex} for ${difficulty}`);
     
     // Simple variable replacement - no complex character enhancement
@@ -198,7 +220,7 @@ export class SimplifiedTemplateManager {
   }
   
   /**
-   * Continue an existing story with simple processing
+   * Continue an existing story with proper template continuation
    */
   static async continueStory(options: SimplifiedTemplateOptions & { targetPages?: number }): Promise<SimplifiedTemplateResult> {
     const { targetPages = 5, ...generateOptions } = options;
@@ -213,30 +235,72 @@ export class SimplifiedTemplateManager {
     });
     
     const gradeLevel = difficultyToGradeLevel(difficulty);
+    const gradeInfo = GRADE_LEVEL_INFO[gradeLevel];
     
     console.log(`🔄 SimplifiedTemplateManager: Continuing story for ${difficulty} with ${targetPages} pages`);
     console.log('📊 SimplifiedTemplateManager: Template usage before continuation:', this.getTemplateAnalytics(difficulty));
     
-    // For simplicity, generate a new story segment
-    const result = await this.generateStory(generateOptions);
+    // Get session data to check current template state
+    const sessionData = this.getSessionData(difficulty);
+    let pages: string[] = [];
+    let templateIndex = sessionData.currentTemplateIndex;
     
-    // Trim or extend to target pages
-    let pages = result.pages;
-    if (pages.length > targetPages) {
-      pages = pages.slice(0, targetPages);
-    } else if (pages.length < targetPages) {
-      // Add simple continuation pages
-      const userName = userInfo?.name || 'I';
-      while (pages.length < targetPages) {
-        pages.push(`${userName} continues the adventure.`);
+    // Continue generating pages until we have targetPages
+    while (pages.length < targetPages) {
+      // Check if we have pages remaining in current template
+      if (sessionData.currentTemplatePages.length > sessionData.currentPageIndex) {
+        // Use remaining pages from current template
+        const remainingPages = sessionData.currentTemplatePages.slice(sessionData.currentPageIndex);
+        const neededPages = Math.min(remainingPages.length, targetPages - pages.length);
+        
+        pages.push(...remainingPages.slice(0, neededPages));
+        sessionData.currentPageIndex += neededPages;
+        
+        console.log(`📄 Used ${neededPages} pages from current template ${templateIndex}, page index now ${sessionData.currentPageIndex}`);
+      } else {
+        // Current template exhausted, get next template
+        const selection = this.selectNextTemplate(difficulty);
+        const newPages = this.processSimpleVariables(selection.pages, userInfo);
+        
+        // Update session with new template
+        sessionData.currentTemplateIndex = selection.templateIndex;
+        sessionData.currentTemplatePages = newPages;
+        sessionData.currentPageIndex = 0;
+        templateIndex = selection.templateIndex;
+        
+        console.log(`🔄 Started new template ${templateIndex} from ${selection.source}`);
+        
+        // Add pages from new template
+        const neededPages = Math.min(newPages.length, targetPages - pages.length);
+        pages.push(...newPages.slice(0, neededPages));
+        sessionData.currentPageIndex = neededPages;
+        
+        console.log(`📄 Used ${neededPages} pages from new template ${templateIndex}`);
       }
     }
     
+    // Save updated session state
+    this.saveSessionData(difficulty, sessionData);
+    
+    // Validate vocabulary compliance
+    const validation = this.validateStoryVocabulary(pages, gradeLevel, userInfo?.name);
+    
+    console.log(`✅ SimplifiedTemplateManager: Generated ${pages.length} continuation pages for ${difficulty}`);
+    
     return {
-      ...result,
       pages,
+      templateIndex,
+      gradeLevel,
       actualPages: pages.length,
-      targetPages
+      targetPages,
+      isPremium,
+      vocabularyCompliant: validation.isValid,
+      validationErrors: validation.errors,
+      metadata: {
+        difficulty,
+        gradeInfo,
+        systemVersion: 'simplified-v1'
+      }
     };
   }
   
@@ -459,13 +523,16 @@ export class SimplifiedTemplateManager {
 
      totalGenerated++;
      
-     // Save updated session data to persistent storage
-     this.saveSessionData(difficulty, {
-       usedBaseTemplates: usedBase,
-       usedExtensions: usedExt,
-       phase,
-       totalGenerated
-     });
+      // Save updated session data to persistent storage
+      this.saveSessionData(difficulty, {
+        usedBaseTemplates: usedBase,
+        usedExtensions: usedExt,
+        phase,
+        totalGenerated,
+        currentTemplateIndex: selectedIndex,
+        currentPageIndex: 0,
+        currentTemplatePages: pages
+      });
      
      console.log(`📈 Template selection complete for ${difficulty}: Index ${selectedIndex}, Source: ${source}, Total generated: ${totalGenerated}`);
     
@@ -493,7 +560,10 @@ export class SimplifiedTemplateManager {
        usedBaseTemplates: new Set<number>(),
        usedExtensions: new Set<number>(),
        phase: 'base' as const,
-       totalGenerated: 0
+       totalGenerated: 0,
+       currentTemplateIndex: -1,
+       currentPageIndex: 0,
+       currentTemplatePages: []
      };
      
      this.saveSessionData(difficulty, resetData);
