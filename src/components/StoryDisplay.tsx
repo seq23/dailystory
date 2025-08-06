@@ -514,7 +514,11 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
         stopLoading();
         setIsLoading(false);
       }
-    };
+    } catch (error) {
+      console.error('Error in generateNewStory:', error);
+      stopLoading();
+      setIsLoading(false);
+    }
   };
 
   // Smoothly transition to AI story when ready (premium only)
