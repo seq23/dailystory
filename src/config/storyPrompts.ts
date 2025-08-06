@@ -31,7 +31,7 @@ STRICT REQUIREMENTS:
 - PRIMARY VOCABULARY: Use Dolch Pre-Primer words as foundation: a, and, away, big, blue, can, come, down, find, for, funny, go, help, here, i, in, is, it, jump, little, look, make, me, my, not, one, play, red, run, said, see, the, three, to, two, up, we, where, yellow, you
 - FLEXIBILITY: Up to 20% of words can be simple alternatives when needed for natural flow
 - EXCEPTION: Always allow user's name and their favorite color/animal/food/hobby
-- Mix user's name naturally with pronouns (he/she/they) throughout story
+- Use name 60% of time, pronouns 40% of time - prioritize name recognition for young readers
 - Every sentence must be joyful and positive
 
 FORMAT: Page 1: [sentence]. Page 2: [sentence]. Page 3: [sentence]. Page 4: [sentence]. Page 5: [sentence].`,
@@ -59,7 +59,7 @@ REQUIREMENTS:
 - Simple sentences with basic conjunctions
 - Use cumulative Dolch vocabulary: Pre-Primer + Primer + 1st Grade words
 - EXCEPTION: Always allow user's name and their interests (colors, animals, foods, hobbies)
-- Use name 50% of time, pronouns 50% of time
+- Use name 50% of time, pronouns 50% of time - balanced mix for developing readers
 - Include gentle adventures and positive problem-solving
 - Focus on friendship, family, and discovery themes
 
@@ -88,7 +88,7 @@ REQUIREMENTS:
 - Complex sentences with descriptive language
 - Use cumulative Dolch vocabulary: Pre-Primer + Primer + 1st Grade + 2nd Grade words
 - EXCEPTION: Always allow user's name and their interests
-- Use name 40% of time, pronouns 60% of time
+- Use name 40% of time, pronouns 60% of time - encourage pronoun fluency
 - Include mild conflicts with positive resolution
 - Focus on character development and emotions
 - Themes: problem-solving, friendship, discovery, creativity
@@ -116,6 +116,7 @@ Create sophisticated stories with:
 - Advanced grammar and rich vocabulary
 - Realistic problems with growth-oriented solutions
 - Complex character relationships
+- Use name 30% of time, pronouns 70% of time - natural reading flow with strategic name placement
 - Meaningful themes and lessons
 Write exactly 10-12 pages, each page should be 4-5 sentences.`,
     userPromptTemplate: `Create a meaningful story for {name} (age {age}). They are passionate about {hobbies} and love {favoriteAnimal} and {favoriteColor}. Their favorite food is {favoriteFood}. Include challenges that lead to personal growth and deep friendships.`,
@@ -138,6 +139,7 @@ Create complex stories with:
 - Sophisticated language and complex themes
 - Nuanced character development
 - Abstract concepts made accessible
+- Use name 25% of time, pronouns 75% of time - sophisticated natural flow with occasional name emphasis
 - Multiple plot layers and rich storytelling
 Write exactly 12-15 pages, each page should be 5-6 sentences.`,
     userPromptTemplate: `Create a sophisticated story for {name} (age {age}). They are deeply interested in {hobbies} and find meaning in {favoriteAnimal} and {favoriteColor}. They appreciate {favoriteFood}. Explore themes of identity, purpose, and complex relationships.`,
