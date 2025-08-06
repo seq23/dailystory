@@ -23,7 +23,6 @@ import { FloatingTimer } from "@/components/FloatingTimer";
 import { useGamification } from "@/hooks/useGamification";
 import { GamificationDashboard } from "@/components/GamificationDashboard";
 import { AuthorVoiceIndicator } from "@/components/AuthorVoiceIndicator";
-import '@/utils/authorVoiceValidation'; // Import for testing
 import { AchievementNotification } from "@/components/AchievementNotification";
 import { setupGamificationGlobals, cleanupGamificationGlobals } from "@/utils/gamificationGlobals";
 import { processTextForPhonetics } from "@/utils/textProcessor";
@@ -993,12 +992,12 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
                         </div>
                       </div>
                       
-                       <div className="text-center flex flex-col gap-2">
-                         <span className="text-sm font-bold text-gray-700 bg-gradient-to-r from-purple-100 to-pink-100 px-3 py-1 rounded-full border border-purple-200">
-                           📚 {t("storyDisplay.readingLevel")} {getDifficultyIndex()}
-                         </span>
-                         <AuthorVoiceIndicator difficulty={currentDifficulty} />
-                       </div>
+                      <div className="text-center flex flex-col gap-2">
+                        <span className="text-sm font-bold text-gray-700 bg-gradient-to-r from-purple-100 to-pink-100 px-3 py-1 rounded-full border border-purple-200">
+                          📚 {t("storyDisplay.readingLevel")} {getDifficultyIndex()}
+                        </span>
+                        <AuthorVoiceIndicator difficulty={currentDifficulty} />
+                      </div>
                       
                       <div className="relative group">
                         <MobileOptimizedButton
