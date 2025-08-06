@@ -140,17 +140,22 @@ export class EnhancedTemplateManager {
       page.replace(/{userName}/g, userInfo?.name || 'I')
     );
     
-    // STEP 2: Generate Character Pool for rich storytelling (Levels 1-4 only)
+    // STEP 2: Generate Robust Character Pool for rich storytelling (Levels 1-4 only)
     console.log(`👥 EnhancedTemplateManager: Generating Character Pool for Level ${gradeLevel}`);
     const characterPool = CharacterPoolManager.generateCharacterPool(userInfo || {} as UserInfo, difficulty);
     
-    // STEP 3: Apply Character Arc enhancement (Levels 1-4 only)
-    console.log(`🎭 EnhancedTemplateManager: Applying Character Arc for Level ${gradeLevel}`);
+    // STEP 3: Get Enhanced User Inputs for deeper story context
+    console.log(`🔧 EnhancedTemplateManager: Processing Enhanced User Inputs for Level ${gradeLevel}`);
+    const enhancedInputs = InputEnhancementEngine.enhanceUserInputs(userInfo || {} as UserInfo);
+    
+    // STEP 4: Select Author Voice for consistent storytelling
+    console.log(`✍️ EnhancedTemplateManager: Selecting Author Voice for Level ${gradeLevel}`);
+    const authorVoice = getAuthorVoiceForUser(userInfo || {} as UserInfo, difficulty);
+    
+    // STEP 5: Apply Character-Driven Story Arc with Complete Context (Levels 1-4 only)
+    console.log(`🎭 EnhancedTemplateManager: Applying Character-Driven Story Arc for Level ${gradeLevel}`);
     try {
-      // Use the InputEnhancementEngine to get enhanced user inputs
-      const enhancedInputs = InputEnhancementEngine.enhanceUserInputs(userInfo || {} as UserInfo);
-      
-      // Process each page with character-driven enhancements using the character pool
+      // Process each page with character-driven enhancements using complete story context
       pages = pages.map((page, index) => {
         const context = {
           currentPage: index + 1,
@@ -158,31 +163,25 @@ export class EnhancedTemplateManager {
           characters: characterPool,
           userInfo: userInfo || {} as UserInfo,
           difficulty,
-          storyTheme: userInfo?.specialRequest || 'adventure'
+          storyTheme: this.determineStoryTheme(userInfo, enhancedInputs, characterPool),
+          currentConflict: this.generateCharacterDrivenConflict(characterPool, index, pages.length)
         };
         
-        // Apply character-driven content with rich character pool
+        // Apply character-driven content with complete story context
         const enhancedPage = CharacterDrivenStoryArc.getPageContent(context, enhancedInputs);
         
-        // Integrate character mentions naturally
-        if (characterPool.family.length > 0 && Math.random() < 0.2) {
-          const familyMember = characterPool.family[Math.floor(Math.random() * characterPool.family.length)];
-          return enhancedPage.replace(/\.$/, ` with ${familyMember.name}.`);
-        }
-        
-        return enhancedPage;
+        // Robust character integration throughout the story
+        return this.integrateCharacterPoolRobustly(enhancedPage, characterPool, context, authorVoice);
       });
     } catch (error) {
       console.warn(`⚠️ EnhancedTemplateManager: Character Arc enhancement failed:`, error);
       // Continue with original pages on error
     }
     
-    // STEP 4: Apply Author Voice through proper voice patterns (Levels 1-4 only)
-    console.log(`✍️ EnhancedTemplateManager: Applying Author Voice for Level ${gradeLevel}`);
+    // STEP 6: Apply Systematic Author Voice across all pages (Levels 1-4 only)
+    console.log(`🎨 EnhancedTemplateManager: Applying Systematic Author Voice for Level ${gradeLevel}`);
     try {
-      const authorVoice = getAuthorVoiceForUser(userInfo || {} as UserInfo, difficulty);
-      
-      // Apply author voice to different parts of the story
+      // Apply consistent author voice to all pages based on story position
       pages = pages.map((page, index) => {
         const isOpening = index === 0;
         const isClosing = index === pages.length - 1;
@@ -192,8 +191,8 @@ export class EnhancedTemplateManager {
           return applyAuthorVoice(page, authorVoice, 'opening');
         } else if (isClosing) {
           return applyAuthorVoice(page, authorVoice, 'closing');
-        } else if (isTransition && Math.random() < 0.4) {
-          // Apply transition voice to some middle pages
+        } else if (isTransition) {
+          // Apply transition voice to ALL middle pages for consistency
           return applyAuthorVoice(page, authorVoice, 'transition');
         }
         
@@ -409,6 +408,150 @@ export class EnhancedTemplateManager {
       case 4: return `${userName} discovered an interesting book in the library.`;
       default: return `${userName} is happy.`;
     }
+  }
+
+  /**
+   * Determine story theme based on user info, enhanced inputs, and character pool
+   */
+  private static determineStoryTheme(
+    userInfo?: UserInfo,
+    enhancedInputs?: any,
+    characterPool?: any
+  ): string {
+    // Use special request if available
+    if (userInfo?.specialRequest && userInfo.specialRequest.trim().length > 0) {
+      return userInfo.specialRequest;
+    }
+    
+    // Use enhanced inputs theme if available
+    if (enhancedInputs?.thematicConnections && enhancedInputs.thematicConnections.length > 0) {
+      return enhancedInputs.thematicConnections[0];
+    }
+    
+    // Use character-driven theme based on main character personality
+    if (characterPool?.main?.personality) {
+      const personality = characterPool.main.personality.toLowerCase();
+      if (personality.includes('brave')) return 'courage and adventure';
+      if (personality.includes('kind')) return 'friendship and kindness';
+      if (personality.includes('creative')) return 'creativity and imagination';
+      if (personality.includes('wise')) return 'learning and discovery';
+    }
+    
+    // Default theme based on user age
+    if (userInfo?.age && userInfo.age <= 6) {
+      return 'friendship and fun';
+    } else if (userInfo?.age && userInfo.age <= 10) {
+      return 'adventure and discovery';
+    }
+    
+    return 'adventure and friendship';
+  }
+
+  /**
+   * Generate character-driven conflict based on character pool and story position
+   */
+  private static generateCharacterDrivenConflict(
+    characterPool: any,
+    pageIndex: number,
+    totalPages: number
+  ): string {
+    const storyPosition = pageIndex / totalPages;
+    const mainCharacter = characterPool?.main?.name || 'the main character';
+    
+    // Early story - setup conflicts
+    if (storyPosition < 0.25) {
+      const conflicts = [
+        `${mainCharacter} discovers something unusual`,
+        `${mainCharacter} meets someone new and interesting`,
+        `${mainCharacter} notices something that needs help`
+      ];
+      return conflicts[Math.floor(Math.random() * conflicts.length)];
+    }
+    
+    // Middle story - development conflicts
+    if (storyPosition < 0.75) {
+      const friend = characterPool?.friends?.[0]?.name || 'a friend';
+      const animal = characterPool?.animals?.[0]?.name || 'an animal companion';
+      const conflicts = [
+        `${mainCharacter} and ${friend} face a challenge together`,
+        `${animal} needs ${mainCharacter}'s help`,
+        `${mainCharacter} must use their special skills`,
+        `${mainCharacter} learns something important from ${characterPool?.family?.[0]?.name || 'family'}`
+      ];
+      return conflicts[Math.floor(Math.random() * conflicts.length)];
+    }
+    
+    // Late story - resolution conflicts
+    const conflicts = [
+      `${mainCharacter} finds the perfect solution`,
+      `${mainCharacter} brings everyone together`,
+      `${mainCharacter} celebrates with all their friends`
+    ];
+    return conflicts[Math.floor(Math.random() * conflicts.length)];
+  }
+
+  /**
+   * Integrate character pool robustly throughout the story
+   */
+  private static integrateCharacterPoolRobustly(
+    page: string,
+    characterPool: any,
+    context: any,
+    authorVoice: any
+  ): string {
+    let enhancedPage = page;
+    const storyPosition = context.currentPage / context.totalPages;
+    
+    // Early pages - introduce main character and family
+    if (storyPosition < 0.3) {
+      if (characterPool.family && characterPool.family.length > 0) {
+        const familyMember = characterPool.family[0];
+        if (!enhancedPage.includes(familyMember.name)) {
+          enhancedPage = enhancedPage.replace(
+            /\./,
+            ` with ${familyMember.name}, who ${familyMember.personality || 'is always supportive'}.`
+          );
+        }
+      }
+    }
+    
+    // Middle pages - introduce friends and animal companions
+    if (storyPosition >= 0.3 && storyPosition < 0.7) {
+      if (characterPool.friends && characterPool.friends.length > 0) {
+        const friend = characterPool.friends[0];
+        if (!enhancedPage.includes(friend.name)) {
+          enhancedPage = enhancedPage.replace(
+            /\./,
+            `. ${friend.name}, ${friend.personality || 'a loyal friend'}, joins the adventure.`
+          );
+        }
+      }
+      
+      if (characterPool.animals && characterPool.animals.length > 0) {
+        const animal = characterPool.animals[0];
+        if (!enhancedPage.includes(animal.name)) {
+          enhancedPage = enhancedPage.replace(
+            /\./,
+            `. ${animal.name} the ${animal.type || 'animal friend'} ${animal.catchphrase || 'helps along the way'}.`
+          );
+        }
+      }
+    }
+    
+    // Later pages - introduce helpers and resolve with all characters
+    if (storyPosition >= 0.7) {
+      if (characterPool.helpers && characterPool.helpers.length > 0) {
+        const helper = characterPool.helpers[0];
+        if (!enhancedPage.includes(helper.name)) {
+          enhancedPage = enhancedPage.replace(
+            /\./,
+            `. ${helper.name} ${helper.personality || 'provides wise guidance'} at just the right moment.`
+          );
+        }
+      }
+    }
+    
+    return enhancedPage;
   }
 
   /**
