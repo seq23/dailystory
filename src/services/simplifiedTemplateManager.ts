@@ -171,17 +171,17 @@ export class SimplifiedTemplateManager {
     let pages = selection.pages;
     let selectedIndex = selection.templateIndex;
     
-    // Store the full template in session for future continuation
-    const sessionData = this.getSessionData(difficulty);
-    sessionData.currentTemplateIndex = selectedIndex;
-    sessionData.currentPageIndex = 1; // Only used 1 page so far
-    sessionData.currentTemplatePages = [...pages];
-    this.saveSessionData(difficulty, sessionData);
-    
     console.log(`✅ SimplifiedTemplateManager: Using ${selection.source} template ${selectedIndex} for ${difficulty}`);
     
     // Simple variable replacement - no complex character enhancement
     pages = this.processSimpleVariables(pages, userInfo);
+    
+    // Store the PROCESSED template in session for future continuation
+    const sessionData = this.getSessionData(difficulty);
+    sessionData.currentTemplateIndex = selectedIndex;
+    sessionData.currentPageIndex = 1; // Only used 1 page so far
+    sessionData.currentTemplatePages = [...pages]; // Store processed pages, not raw template
+    this.saveSessionData(difficulty, sessionData);
     
     // Validate vocabulary compliance
     const validation = this.validateStoryVocabulary(pages, gradeLevel, userInfo?.name);
