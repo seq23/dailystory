@@ -5,7 +5,7 @@ import type { UserInfo } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 import { APP_CONFIG, IMAGE_STYLES, type ImageStyle } from '@/config/appConfig';
 import { ErrorHandler, ErrorType } from '@/utils/errorHandling';
-import { AdvancedStoryAnalyzer, type StoryAnalysis } from './AdvancedStoryAnalyzer';
+import { DirectContentExtractor } from './DirectContentExtractor';
 
 export interface ImageGenerationConfig {
   provider: 'runware' | 'dalle';
@@ -18,7 +18,6 @@ export interface ImageResult {
   url: string;
   success: boolean;
   error?: string;
-  analysis?: StoryAnalysis;
 }
 
 export class SimpleImageService {
@@ -29,8 +28,6 @@ export class SimpleImageService {
     style: 'children-book-illustration'
   };
 
-  // Store previous analysis for continuity
-  private static previousAnalysis: StoryAnalysis | undefined;
 
   static async generateStoryImage(
     storyText: string, 
@@ -42,47 +39,24 @@ export class SimpleImageService {
     const finalConfig = { ...this.DEFAULT_CONFIG, ...config };
     
     try {
-      console.log(`🎨 Enhanced Image: Analyzing story content for page ${pageNumber}/${totalPages}`);
+      console.log(`🎨 Direct Image: Creating image for page ${pageNumber}/${totalPages} - "${storyText}"`);
       
-      // Advanced content analysis
-      const analysis = AdvancedStoryAnalyzer.analyzeStoryContent(
-        storyText, 
-        pageNumber, 
-        totalPages, 
-        this.previousAnalysis
-      );
+      // Extract page content directly 
+      const directPrompt = DirectContentExtractor.createSimplePrompt(storyText, userInfo);
       
-      // Store for next iteration
-      this.previousAnalysis = analysis;
-      
-      console.log(`🎨 Analysis complete:`, {
-        action: analysis.mainAction,
-        setting: analysis.setting.location,
-        mood: analysis.mood,
-        emotions: analysis.emotions,
-        objects: analysis.objects.slice(0, 3)
-      });
-      
-      // Generate enhanced prompt
-      const enhancedPrompt = AdvancedStoryAnalyzer.generateEnhancedPrompt(
-        analysis, 
-        userInfo, 
-        finalConfig.style
-      );
-      
-      const fullPrompt = this.buildFinalPrompt(enhancedPrompt);
+      const negativePrompt = [
+        'scary', 'dark', 'violent', 'inappropriate', 'adult content', 'disturbing',
+        'blurry', 'low quality', 'distorted', 'text', 'words', 'letters'
+      ].join(', ');
       
       const result = finalConfig.provider === 'runware' 
-        ? await this.generateWithRunware(fullPrompt, finalConfig, enhancedPrompt.negativePrompt.join(', '))
-        : await this.generateWithDALLE(fullPrompt, finalConfig);
+        ? await this.generateWithRunware(directPrompt, finalConfig, negativePrompt)
+        : await this.generateWithDALLE(directPrompt, finalConfig);
       
-      return {
-        ...result,
-        analysis
-      };
+      return result;
       
     } catch (error) {
-      console.error('🎨 Enhanced Image: Generation failed:', error);
+      console.error('🎨 Direct Image: Generation failed:', error);
       return {
         url: '',
         success: false,
@@ -91,40 +65,6 @@ export class SimpleImageService {
     }
   }
 
-  private static buildCharacterDescription(userInfo: UserInfo): string {
-    // Simple, consistent character description
-    const age = userInfo.age;
-    const ageGroup = age <= 5 ? 'young child' : age <= 8 ? 'child' : age <= 12 ? 'older child' : 'young person';
-    
-    return `${ageGroup} named ${userInfo.name}, ${userInfo.avatar?.type || 'friendly'} appearance with ${userInfo.avatar?.skinTone || 'warm'} skin tone`;
-  }
-
-  private static buildFinalPrompt(enhancedPrompt: any): string {
-    const { mainPrompt, styleModifiers, compositionHints, colorPalette } = enhancedPrompt;
-    
-    return `${mainPrompt} ${styleModifiers.join(', ')}. ${compositionHints.join(', ')}. Color palette: ${colorPalette.join(', ')}.`;
-  }
-
-  private static extractActions(text: string): string {
-    // Simple action extraction
-    if (text.includes('play')) return 'playing happily';
-    if (text.includes('adventure')) return 'on an adventure';
-    if (text.includes('discover')) return 'discovering something wonderful';
-    if (text.includes('friend')) return 'with friends';
-    if (text.includes('learn')) return 'learning something new';
-    return 'enjoying a peaceful moment';
-  }
-
-  private static extractSetting(text: string): string {
-    // Simple setting extraction
-    if (text.includes('forest') || text.includes('tree')) return 'a magical forest';
-    if (text.includes('garden')) return 'a beautiful garden';
-    if (text.includes('home') || text.includes('house')) return 'a cozy home';
-    if (text.includes('school')) return 'a friendly school';
-    if (text.includes('park')) return 'a sunny park';
-    if (text.includes('beach') || text.includes('ocean')) return 'a peaceful beach';
-    return 'a magical, safe place';
-  }
 
   private static async generateWithRunware(prompt: string, config: ImageGenerationConfig, negativePrompt?: string): Promise<ImageResult> {
     try {
