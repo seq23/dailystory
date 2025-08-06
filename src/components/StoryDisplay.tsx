@@ -24,6 +24,8 @@ import { GamificationDashboard } from "@/components/GamificationDashboard";
 import { AchievementNotification } from "@/components/AchievementNotification";
 import { setupGamificationGlobals, cleanupGamificationGlobals } from "@/utils/gamificationGlobals";
 import { processTextForPhonetics } from "@/utils/textProcessor";
+import { StorySessionCache } from "@/services/storySessionCache";
+import { useStoryLoadingState } from "@/hooks/useStoryLoadingState";
 
 // Import avatar assets
 import avatarBoyPale from "@/assets/avatar-boy-pale.jpg";
@@ -186,25 +188,93 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
   const canDecreaseDifficulty = () => getDifficultyIndex() > 0;
   const canIncreaseDifficulty = () => getDifficultyIndex() < difficultyLevels.length - 1;
 
+  // Handle difficulty changes with debouncing
+  const handleDifficultyChange = (direction: 'increase' | 'decrease') => {
+    const currentIndex = getDifficultyIndex();
+    let newIndex;
+    
+    if (direction === 'increase' && canIncreaseDifficulty()) {
+      newIndex = currentIndex + 1;
+    } else if (direction === 'decrease' && canDecreaseDifficulty()) {
+      newIndex = currentIndex - 1;
+    } else {
+      return; // No change needed
+    }
+    
+    const newDifficulty = difficultyLevels[newIndex];
+    requestDifficultyChange(newDifficulty);
+  };
+
+  // Apply difficulty change when activeDifficulty updates
+  useEffect(() => {
+    if (activeDifficulty && activeDifficulty !== currentDifficulty) {
+      console.log(`🔄 Applying difficulty change: ${currentDifficulty} → ${activeDifficulty}`);
+      setCurrentDifficulty(activeDifficulty);
+      
+      // Clear current story to trigger regeneration
+      setStoryGenerated(false);
+      StorySessionCache.clearCachedSession(userId);
+      
+      // Generate new story with new difficulty
+      generateNewStory();
+    }
+  }, [activeDifficulty, currentDifficulty, userId]);
+
   // Setup gamification globals on mount
   useEffect(() => {
     setupGamificationGlobals(addVocabularyWord, isPremium);
     return () => cleanupGamificationGlobals();
   }, [addVocabularyWord, isPremium]);
 
-  // Story persistence state
-  const [cachedStory, setCachedStory] = useState<string[] | null>(null);
-  const [storyGenerated, setStoryGenerated] = useState(false);
+  // Story loading and caching
+  const {
+    loadingState,
+    startLoading,
+    stopLoading,
+    requestDifficultyChange,
+    activeDifficulty,
+    isPendingChange
+  } = useStoryLoadingState({
+    debounceMs: 1500,
+    loadingMessages: [
+      'Story Loading...',
+      `Creating ${userInfo.name}'s personalized story...`,
+      'Adding your favorite things...',
+      'Almost ready...'
+    ]
+  });
 
-  // Generate story on component mount using Universal Content Manager
+  const [storyGenerated, setStoryGenerated] = useState(false);
+  const userId = userInfo?.name || 'guest';
+
+  // Check for cached story on mount
   useEffect(() => {
-    // Only generate story once per component mount
+    const cachedSession = StorySessionCache.getCachedStorySession(userId);
+    
+    if (cachedSession && !storyGenerated) {
+      console.log('📖 Restoring cached story session');
+      setStory(cachedSession.pages);
+      setStoryImages(cachedSession.images);
+      setCurrentPage(cachedSession.currentPage);
+      setCurrentDifficulty(cachedSession.difficulty);
+      setStoryGenerated(true);
+      setIsLoading(false);
+      return;
+    }
+    
+    // Generate new story if no cache or cache is invalid
+    if (!storyGenerated) {
+      generateNewStory();
+    }
+  }, [userId, storyGenerated]);
+
+  // Generate story function
+  const generateNewStory = async () => {
     if (storyGenerated) return;
     
-    const generateStory = async () => {
-      try {
-        setIsLoading(true);
-        setStoryGenerated(true); // Mark as generated to prevent regeneration
+    try {
+      startLoading();
+      setStoryGenerated(true); // Mark as generated to prevent regeneration
         
         const readingLevel = userInfo.readingLevel || (userInfo as any).difficultyLevel || 'easy';
         const initialDifficulty = (readingLevel === 'beginner' ? 'beginner' :
@@ -269,13 +339,29 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
         
         // Update story state and cache it
         const storyPages = storyResult.story.segments.map(segment => segment.text);
-        setStory(storyPages);
-        setCachedStory(storyPages); // Cache the story to prevent regeneration
-        setStoryImages(storyResult.story.segments.map((segment, index) => ({
+        const storyImagesData = storyResult.story.segments.map((segment, index) => ({
           url: segment.illustration || '',
           prompt: `Illustration for page ${index + 1}`
-        })));
+        }));
+        
+        setStory(storyPages);
+        setStoryImages(storyImagesData);
         setWordsRead(storyResult.story.wordCount);
+        
+        // Cache the story session for navigation persistence
+        StorySessionCache.cacheStorySession(
+          userId,
+          initialDifficulty,
+          storyPages,
+          storyImagesData,
+          0, // Start at page 0
+          {
+            wordCount: storyResult.story.wordCount,
+            sessionStartTime: sessionStartTime.getTime(),
+            timeSpent: 0,
+            isPremium
+          }
+        );
         
         // Establish character consistency for intelligent image generation
         const characterDetails = UnifiedImageService.establishCharacterConsistency(userInfo);
@@ -395,9 +481,29 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
           }
         })();
         
+        const fallbackImages = fallbackStory.map((_, index) => ({
+          url: illustrations[index % illustrations.length],
+          prompt: `Fallback illustration for page ${index + 1}`
+        }));
+        
         setStory(fallbackStory);
-        setCachedStory(fallbackStory); // Cache fallback story too
+        setStoryImages(fallbackImages);
         setWordsRead(fallbackStory.join(' ').split(' ').length);
+        
+        // Cache fallback story too
+        StorySessionCache.cacheStorySession(
+          userId,
+          initialDifficulty,
+          fallbackStory,
+          fallbackImages,
+          0,
+          {
+            wordCount: fallbackStory.join(' ').split(' ').length,
+            sessionStartTime: sessionStartTime.getTime(),
+            timeSpent: 0,
+            isPremium
+          }
+        );
         
         toast({
           title: "📚 Story Ready!",
@@ -405,29 +511,11 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
           duration: 3000,
         });
       } finally {
+        stopLoading();
         setIsLoading(false);
       }
     };
-
-    // Set immediate placeholder content so user sees something right away
-    setStory([
-      `Creating ${userInfo.name}'s personalized story...`,
-      "This will just take a moment!",
-      "We're adding your favorite things to the story.",
-      "Almost ready..."
-    ]);
-    
-    // Set placeholder images immediately
-    setStoryImages([
-      { url: illustrations[0], prompt: "Loading..." },
-      { url: illustrations[1], prompt: "Loading..." },
-      { url: illustrations[2], prompt: "Loading..." },
-      { url: illustrations[3], prompt: "Loading..." }
-    ]);
-
-    // Start story generation immediately but don't block UI
-    generateStory();
-  }, []); // No dependencies - generate story only once on mount
+  };
 
   // Smoothly transition to AI story when ready (premium only)
   useEffect(() => {

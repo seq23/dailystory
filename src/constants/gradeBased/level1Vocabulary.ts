@@ -2,7 +2,6 @@
 // Includes all Level 0 words plus 1st-2nd grade sight words and common vocabulary
 
 import { LEVEL_0_VOCABULARY } from './level0Vocabulary';
-import { GrammarValidator } from '@/utils/grammarValidator';
 
 export const LEVEL_1_VOCABULARY = new Set([
   // Include all Level 0 words
@@ -39,7 +38,6 @@ export function isLevel1Word(word: string): boolean {
 export function validateLevel1Sentence(sentence: string, userName?: string): { 
   isValid: boolean; 
   invalidWords: string[];
-  grammarErrors?: string[];
 } {
   const words = sentence.toLowerCase()
     .replace(/[^\w\s]/g, '') // Remove punctuation
@@ -55,12 +53,8 @@ export function validateLevel1Sentence(sentence: string, userName?: string): {
     return !LEVEL_1_VOCABULARY.has(word);
   });
   
-  // Check grammar
-  const grammarValidation = GrammarValidator.validateStoryText(sentence);
-  
   return {
-    isValid: invalidWords.length === 0 && grammarValidation.isValid,
-    invalidWords,
-    grammarErrors: grammarValidation.errors
+    isValid: invalidWords.length === 0,
+    invalidWords
   };
 }

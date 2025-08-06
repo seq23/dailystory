@@ -24,6 +24,8 @@ import { HierarchicalSessionTemplateManager } from './hierarchicalSessionTemplat
 import { CharacterDrivenStoryArc } from './characterDrivenStoryArc';
 import { InputEnhancementEngine } from './inputEnhancementEngine';
 import { TemplateQualityAssurance } from './templateQualityAssurance';
+import { CharacterPoolManager } from './characterPoolManager';
+import { getAuthorVoiceForUser, applyAuthorVoice } from '@/constants/authorVoicePatterns';
 import { LEVEL_0_FREE_EXTENSIONS, LEVEL_0_PREMIUM_EXTENSIONS } from '@/constants/gradeBased/level0ExtensionTemplates';
 
 interface EnhancedTemplateOptions {
@@ -138,55 +140,64 @@ export class EnhancedTemplateManager {
       page.replace(/{userName}/g, userInfo?.name || 'I')
     );
     
-    // STEP 2: Apply Character Arc enhancement (Levels 1-4 only)
+    // STEP 2: Generate Character Pool for rich storytelling (Levels 1-4 only)
+    console.log(`👥 EnhancedTemplateManager: Generating Character Pool for Level ${gradeLevel}`);
+    const characterPool = CharacterPoolManager.generateCharacterPool(userInfo || {} as UserInfo, difficulty);
+    
+    // STEP 3: Apply Character Arc enhancement (Levels 1-4 only)
     console.log(`🎭 EnhancedTemplateManager: Applying Character Arc for Level ${gradeLevel}`);
     try {
       // Use the InputEnhancementEngine to get enhanced user inputs
       const enhancedInputs = InputEnhancementEngine.enhanceUserInputs(userInfo || {} as UserInfo);
       
-      // Process each page with character-driven enhancements
+      // Process each page with character-driven enhancements using the character pool
       pages = pages.map((page, index) => {
         const context = {
           currentPage: index + 1,
           totalPages: pages.length,
-          characters: { main: { name: userInfo?.name || 'I' } } as any,
+          characters: characterPool,
           userInfo: userInfo || {} as UserInfo,
           difficulty,
           storyTheme: userInfo?.specialRequest || 'adventure'
         };
         
-        // Apply character-driven content if needed
-        return CharacterDrivenStoryArc.getPageContent(context, enhancedInputs);
+        // Apply character-driven content with rich character pool
+        const enhancedPage = CharacterDrivenStoryArc.getPageContent(context, enhancedInputs);
+        
+        // Integrate character mentions naturally
+        if (characterPool.family.length > 0 && Math.random() < 0.2) {
+          const familyMember = characterPool.family[Math.floor(Math.random() * characterPool.family.length)];
+          return enhancedPage.replace(/\.$/, ` with ${familyMember.name}.`);
+        }
+        
+        return enhancedPage;
       });
     } catch (error) {
       console.warn(`⚠️ EnhancedTemplateManager: Character Arc enhancement failed:`, error);
       // Continue with original pages on error
     }
     
-    // STEP 3: Apply Author Voice through enhanced inputs (Levels 1-4 only)
+    // STEP 4: Apply Author Voice through proper voice patterns (Levels 1-4 only)
     console.log(`✍️ EnhancedTemplateManager: Applying Author Voice for Level ${gradeLevel}`);
     try {
-      const enhancedTraits = InputEnhancementEngine.getEnhancedInputsForDifficulty(
-        userInfo || {} as UserInfo,
-        difficulty
-      );
+      const authorVoice = getAuthorVoiceForUser(userInfo || {} as UserInfo, difficulty);
       
-      // Integrate enhanced traits into story pages
-      pages = pages.map(page => {
-        // Simple integration of character traits into narrative
-        let enhancedPage = page;
+      // Apply author voice to different parts of the story
+      pages = pages.map((page, index) => {
+        const isOpening = index === 0;
+        const isClosing = index === pages.length - 1;
+        const isTransition = !isOpening && !isClosing;
         
-        // Add subtle character trait mentions based on difficulty level
-        if (gradeLevel >= 2 && enhancedTraits.characterTraits.length > 0) {
-          // For higher levels, occasionally mention character traits
-          const shouldEnhance = Math.random() < 0.3; // 30% chance per page
-          if (shouldEnhance) {
-            const trait = enhancedTraits.characterTraits[Math.floor(Math.random() * enhancedTraits.characterTraits.length)];
-            enhancedPage = enhancedPage.replace(/\.$/, `, ${trait}.`);
-          }
+        if (isOpening) {
+          return applyAuthorVoice(page, authorVoice, 'opening');
+        } else if (isClosing) {
+          return applyAuthorVoice(page, authorVoice, 'closing');
+        } else if (isTransition && Math.random() < 0.4) {
+          // Apply transition voice to some middle pages
+          return applyAuthorVoice(page, authorVoice, 'transition');
         }
         
-        return enhancedPage;
+        return page;
       });
     } catch (error) {
       console.warn(`⚠️ EnhancedTemplateManager: Author Voice enhancement failed:`, error);

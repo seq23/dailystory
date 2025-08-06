@@ -2,7 +2,6 @@
 // Includes all Level 2 words plus 5th-6th grade vocabulary
 
 import { LEVEL_2_VOCABULARY } from './level2Vocabulary';
-import { GrammarValidator } from '@/utils/grammarValidator';
 
 export const LEVEL_3_VOCABULARY = new Set([
   // Include all Level 2 words
@@ -38,7 +37,6 @@ export function isLevel3Word(word: string): boolean {
 export function validateLevel3Sentence(sentence: string, userName?: string): { 
   isValid: boolean; 
   invalidWords: string[];
-  grammarErrors?: string[];
 } {
   const words = sentence.toLowerCase()
     .replace(/[^\w\s]/g, '') // Remove punctuation
@@ -54,12 +52,8 @@ export function validateLevel3Sentence(sentence: string, userName?: string): {
     return !LEVEL_3_VOCABULARY.has(word);
   });
   
-  // Check grammar
-  const grammarValidation = GrammarValidator.validateStoryText(sentence);
-  
   return {
-    isValid: invalidWords.length === 0 && grammarValidation.isValid,
-    invalidWords,
-    grammarErrors: grammarValidation.errors
+    isValid: invalidWords.length === 0,
+    invalidWords
   };
 }

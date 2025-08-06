@@ -2,7 +2,6 @@
 // Includes all Level 3 words plus advanced vocabulary
 
 import { LEVEL_3_VOCABULARY } from './level3Vocabulary';
-import { GrammarValidator } from '@/utils/grammarValidator';
 
 export const LEVEL_4_VOCABULARY = new Set([
   // Include all Level 3 words
@@ -179,7 +178,6 @@ export function isLevel4Word(word: string): boolean {
 export function validateLevel4Sentence(sentence: string, userName?: string): { 
   isValid: boolean; 
   invalidWords: string[];
-  grammarErrors?: string[];
 } {
   const words = sentence.toLowerCase()
     .replace(/[^\w\s]/g, '') // Remove punctuation
@@ -195,12 +193,8 @@ export function validateLevel4Sentence(sentence: string, userName?: string): {
     return !LEVEL_4_VOCABULARY.has(word);
   });
   
-  // Check grammar
-  const grammarValidation = GrammarValidator.validateStoryText(sentence);
-  
   return {
-    isValid: invalidWords.length === 0 && grammarValidation.isValid,
-    invalidWords,
-    grammarErrors: grammarValidation.errors
+    isValid: invalidWords.length === 0,
+    invalidWords
   };
 }

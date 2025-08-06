@@ -42,6 +42,7 @@ import {
 } from './index';
 
 import { DifficultyLevel } from '@/types';
+import { GrammarValidator } from '@/utils/grammarValidator';
 
 // Template retrieval by grade level
 export function getTemplateByGradeLevel(
@@ -238,6 +239,55 @@ export function getTemplatePreview(
 }
 
 // System status and health check
+// Validate sentence for grammar and vocabulary (used by template system)
+export function validateSentence(sentence: string, gradeLevel: GradeLevel, userName?: string): {
+  isValid: boolean;
+  invalidWords: string[];
+  grammarErrors?: string[];
+} {
+  // Import the appropriate vocabulary validator based on grade level
+  let vocabularyValidation: { isValid: boolean; invalidWords: string[]; grammarErrors?: string[] };
+  
+  switch (gradeLevel) {
+    case 0: {
+      const { validateLevel0Sentence } = require('./level0Vocabulary');
+      vocabularyValidation = validateLevel0Sentence(sentence, userName);
+      break;
+    }
+    case 1: {
+      const { validateLevel1Sentence } = require('./level1Vocabulary');
+      vocabularyValidation = validateLevel1Sentence(sentence, userName);
+      break;
+    }
+    case 2: {
+      const { validateLevel2Sentence } = require('./level2Vocabulary');
+      vocabularyValidation = validateLevel2Sentence(sentence, userName);
+      break;
+    }
+    case 3: {
+      const { validateLevel3Sentence } = require('./level3Vocabulary');
+      vocabularyValidation = validateLevel3Sentence(sentence, userName);
+      break;
+    }
+    case 4: {
+      const { validateLevel4Sentence } = require('./level4Vocabulary');
+      vocabularyValidation = validateLevel4Sentence(sentence, userName);
+      break;
+    }
+    default:
+      vocabularyValidation = { isValid: true, invalidWords: [] };
+  }
+  
+  // Add grammar validation using the GrammarValidator
+  const grammarValidation = GrammarValidator.validateStoryText(sentence);
+  
+  return {
+    isValid: vocabularyValidation.isValid && grammarValidation.isValid,
+    invalidWords: vocabularyValidation.invalidWords,
+    grammarErrors: grammarValidation.errors
+  };
+}
+
 export function getSystemStatus() {
   const analytics = getUnifiedTemplateSystemAnalytics();
   
