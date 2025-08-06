@@ -8,6 +8,7 @@ import { ToleranceBasedValidator } from '@/utils/toleranceBasedValidator';
 import { FlexiblePromptConstraints } from '@/utils/flexiblePromptConstraints';
 import { EnhancedFallbackManager } from '@/constants/enhancedFallbackTemplates';
 import { ErrorHandler } from '@/utils/errorHandling';
+import { DifficultyManager } from '@/services/difficultyManager';
 
 export interface NetflixStoryResult {
   pages: string[];
@@ -24,8 +25,10 @@ export class NetflixStyleStoryService {
     try {
       console.log('🎬 Netflix-Style: Generating complete story for', userInfo.name);
       
-      // Determine difficulty level
-      const difficulty = userInfo.difficultyLevel || calculateDifficultyFromUser(userInfo);
+      // Use DifficultyManager for consistent difficulty calculation
+      const difficultyResult = DifficultyManager.getFinalDifficulty(userInfo);
+      const difficulty = difficultyResult.difficulty;
+      console.log(`🎯 Netflix-Style: Using difficulty ${difficulty} for ${userInfo.name}`);
       
       // Use flexible prompts instead of rigid constraints
       const systemPrompt = FlexiblePromptConstraints.createFlexibleSystemPrompt(difficulty);

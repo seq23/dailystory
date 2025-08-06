@@ -8,6 +8,7 @@ import { ToleranceBasedValidator } from '@/utils/toleranceBasedValidator';
 import { FlexiblePromptConstraints } from '@/utils/flexiblePromptConstraints';
 import { EnhancedFallbackManager } from '@/constants/enhancedFallbackTemplates';
 import { ErrorHandler } from '@/utils/errorHandling';
+import { DifficultyManager } from '@/services/difficultyManager';
 
 export interface LiveGenerationContext {
   userInfo: UserInfo;
@@ -33,7 +34,10 @@ export class LiveGenerationService {
     try {
       console.log('🚀 Live Generation: Starting first page for', userInfo.name);
       
-      const difficulty = userInfo.difficultyLevel || calculateDifficultyFromUser(userInfo);
+      // Use DifficultyManager for consistent difficulty calculation
+      const difficultyResult = DifficultyManager.getFinalDifficulty(userInfo);
+      const difficulty = difficultyResult.difficulty;
+      console.log(`🎯 Live Generation: Using difficulty ${difficulty} for ${userInfo.name}`);
       const constraints = FlexiblePromptConstraints.getFlexibleConstraints(difficulty);
       
       const systemPrompt = `${FlexiblePromptConstraints.createFlexibleSystemPrompt(difficulty)}
@@ -46,7 +50,7 @@ export class LiveGenerationService {
       - Return ONLY the page content, no page numbers or formatting
       - Focus on quality storytelling over exact word counts`;
       
-      const userPrompt = `Create the opening page for ${userInfo.name} (age ${userInfo.age}). They love ${userInfo.favoriteAnimal || 'animals'} and ${userInfo.favoriteColor || 'bright colors'}. Their hobby is ${userInfo.hobbies || 'playing'}. Make it engaging and leave the reader wanting more.`;
+      const userPrompt = `Create the opening page for ${userInfo.name} (age ${userInfo.age}). They love ${userInfo.favoriteAnimal || 'animals'} and ${userInfo.favoriteColor || 'bright colors'}. Their hobby is ${userInfo.hobbies || 'playing'}. ${userInfo.specialRequest ? `Special request: ${userInfo.specialRequest}` : ''} Make it engaging and leave the reader wanting more.`;
       
       const { data, error } = await supabase.functions.invoke('generate-adaptive-story', {
         body: {

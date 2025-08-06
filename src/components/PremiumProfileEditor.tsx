@@ -4,12 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { ColorPicker } from "@/components/ui/color-picker";
 import { AvatarPicker } from "@/components/ui/avatar-picker";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { User, Save, CheckCircle } from "lucide-react";
-import type { UserInfo, Grade, LanguageCode } from "@/types";
+import { User, Save, CheckCircle, BookOpen, Sparkles } from "lucide-react";
+import type { UserInfo, Grade, LanguageCode, DifficultyLevel } from "@/types";
+import { DifficultyManager } from "@/services/difficultyManager";
 
 interface PremiumProfileEditorProps {
   userInfo: UserInfo;
@@ -22,6 +24,9 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
   const [formData, setFormData] = useState<UserInfo>(userInfo);
   const [isSaving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  
+  // Get difficulty suggestions
+  const difficultyProfile = DifficultyManager.suggestDifficulty(formData);
 
   useEffect(() => {
     const changed = JSON.stringify(formData) !== JSON.stringify(userInfo);
@@ -77,7 +82,7 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
         </Badge>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Basic Information */}
         <Card>
           <CardHeader>
@@ -156,6 +161,101 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
                   <SelectItem value="pt">Portuguese</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Reading & Story Preferences */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BookOpen className="w-5 h-5" />
+              Reading & Story Preferences
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="difficulty">Reading Level</Label>
+              <Select
+                value={formData.difficultyLevel || difficultyProfile.suggestedDifficulty}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, difficultyLevel: value as DifficultyLevel }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select reading level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="beginner">
+                    <div className="flex flex-col items-start">
+                      <span className="font-medium">Beginner (Ages 3-5)</span>
+                      <span className="text-xs text-muted-foreground">Very simple words and sentences</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="easy">
+                    <div className="flex flex-col items-start">
+                      <span className="font-medium">Easy (Ages 5-7)</span>
+                      <span className="text-xs text-muted-foreground">Basic reading with storytelling</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="medium">
+                    <div className="flex flex-col items-start">
+                      <span className="font-medium">Medium (Ages 7-9)</span>
+                      <span className="text-xs text-muted-foreground">More complex vocabulary</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="hard">
+                    <div className="flex flex-col items-start">
+                      <span className="font-medium">Hard (Ages 9-11)</span>
+                      <span className="text-xs text-muted-foreground">Advanced stories</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="expert">
+                    <div className="flex flex-col items-start">
+                      <span className="font-medium">Expert (Ages 11+)</span>
+                      <span className="text-xs text-muted-foreground">Sophisticated language</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              {!formData.difficultyLevel && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Sparkles className="w-4 h-4" />
+                  Suggested: {difficultyProfile.suggestedDifficulty.charAt(0).toUpperCase() + difficultyProfile.suggestedDifficulty.slice(1)} 
+                  (Confidence: {Math.round(difficultyProfile.confidence * 100)}%)
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="storyLanguage">Story Language Preference</Label>
+              <Select
+                value={formData.storyLanguagePreference || formData.nativeLanguage}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, storyLanguagePreference: value as LanguageCode }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select story language" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="en">English Stories</SelectItem>
+                  <SelectItem value="es">Spanish Stories</SelectItem>
+                  <SelectItem value="fr">French Stories</SelectItem>
+                  <SelectItem value="ar">Arabic Stories</SelectItem>
+                  <SelectItem value="zh">Chinese Stories</SelectItem>
+                  <SelectItem value="hi">Hindi Stories</SelectItem>
+                  <SelectItem value="pt">Portuguese Stories</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="specialRequest">Special Story Requests</Label>
+              <Textarea
+                id="specialRequest"
+                value={formData.specialRequest || ""}
+                onChange={(e) => setFormData(prev => ({ ...prev, specialRequest: e.target.value }))}
+                placeholder="Any special themes, characters, or story elements you'd like to include? (e.g., dinosaurs, space adventures, fairy tales, etc.)"
+                className="resize-none"
+                rows={3}
+              />
             </div>
           </CardContent>
         </Card>
