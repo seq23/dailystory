@@ -502,6 +502,9 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
               <div className="space-y-2">
                 <Label htmlFor="readingAbility" className="text-base md:text-lg font-semibold text-foreground">
                   {t("userInfoForm.fields.readingAbility.label")}
+                  <span className="text-sm font-normal text-muted-foreground ml-2">
+                    (Research-Based Dolch Sight Words)
+                  </span>
                 </Label>
                 <Select value={formData.readingAbility} onValueChange={(value) => handleInputChange("readingAbility", value)}>
                   <SelectTrigger className="text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-primary/20 bg-white dark:bg-gray-800 z-50">
@@ -510,36 +513,43 @@ export const UserInfoForm = ({ onSubmit, onBack }: UserInfoFormProps) => {
                   <SelectContent className="bg-white dark:bg-gray-800 border-2 border-primary/20 rounded-xl md:rounded-2xl shadow-lg z-50">
                     <SelectItem value="beginner" className="text-sm md:text-lg p-2 md:p-3 hover:bg-primary/10">
                       <div className="flex flex-col items-start text-left">
-                        <span className="font-semibold text-blue-600">{t("userInfoForm.fields.readingAbility.levels.beginner.title")}</span>
-                        <span className="text-xs text-muted-foreground hidden sm:block">{t("userInfoForm.fields.readingAbility.levels.beginner.description")}</span>
+                        <span className="font-semibold text-blue-600">Level 0 - Beginner</span>
+                        <span className="text-xs text-muted-foreground">Pre-K & Kindergarten (92 Dolch words)</span>
                       </div>
                     </SelectItem>
                     <SelectItem value="easy" className="text-sm md:text-lg p-2 md:p-3 hover:bg-primary/10">
                       <div className="flex flex-col items-start text-left">
-                        <span className="font-semibold text-green-600">{t("userInfoForm.fields.readingAbility.levels.easy.title")}</span>
-                        <span className="text-xs text-muted-foreground hidden sm:block">{t("userInfoForm.fields.readingAbility.levels.easy.description")}</span>
+                        <span className="font-semibold text-green-600">Level 1 - Easy</span>
+                        <span className="text-xs text-muted-foreground">1st Grade (133 Dolch words)</span>
                       </div>
                     </SelectItem>
                     <SelectItem value="medium" className="text-sm md:text-lg p-2 md:p-3 hover:bg-primary/10">
                       <div className="flex flex-col items-start text-left">
-                        <span className="font-semibold text-yellow-600">{t("userInfoForm.fields.readingAbility.levels.medium.title")}</span>
-                        <span className="text-xs text-muted-foreground hidden sm:block">{t("userInfoForm.fields.readingAbility.levels.medium.description")}</span>
+                        <span className="font-semibold text-yellow-600">Level 2 - Medium</span>
+                        <span className="text-xs text-muted-foreground">2nd Grade (179 Dolch words)</span>
                       </div>
                     </SelectItem>
                     <SelectItem value="hard" className="text-sm md:text-lg p-2 md:p-3 hover:bg-primary/10">
                       <div className="flex flex-col items-start text-left">
-                        <span className="font-semibold text-orange-600">{t("userInfoForm.fields.readingAbility.levels.hard.title")}</span>
-                        <span className="text-xs text-muted-foreground hidden sm:block">{t("userInfoForm.fields.readingAbility.levels.hard.description")}</span>
+                        <span className="font-semibold text-orange-600">Level 3 - Hard</span>
+                        <span className="text-xs text-muted-foreground">3rd Grade+ (220+ words)</span>
                       </div>
                     </SelectItem>
                     <SelectItem value="expert" className="text-sm md:text-lg p-2 md:p-3 hover:bg-primary/10">
                       <div className="flex flex-col items-start text-left">
-                        <span className="font-semibold text-red-600">{t("userInfoForm.fields.readingAbility.levels.expert.title")}</span>
-                        <span className="text-xs text-muted-foreground hidden sm:block">{t("userInfoForm.fields.readingAbility.levels.expert.description")}</span>
+                        <span className="font-semibold text-red-600">Level 4 - Expert</span>
+                        <span className="text-xs text-muted-foreground">Advanced Reader (Unlimited vocabulary)</span>
                       </div>
                     </SelectItem>
                   </SelectContent>
                 </Select>
+                <p className="text-sm text-muted-foreground">
+                  {t("userInfoForm.fields.readingAbility.helper", "Choose the reading level that matches your child's current abilities.")}
+                  <br />
+                  <span className="text-xs">
+                    Stories use research-based Dolch sight word lists that cumulatively build reading skills.
+                  </span>
+                </p>
               </div>
 
               <div className="space-y-2">

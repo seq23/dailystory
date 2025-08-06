@@ -2,8 +2,12 @@ import { useState, useEffect } from "react";
 import { MobileOptimizedButton } from "@/components/MobileOptimizedButton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { BookOpen, Home, RotateCcw, Loader2, Volume2, VolumeX } from "lucide-react";
+import { BookOpen, Home, RotateCcw, Loader2, Volume2, VolumeX, ChevronUp, ChevronDown, Settings } from "lucide-react";
 import { useTranslation } from "react-i18next";
+
+// Missing UI Components
+import { FloatingTimer } from "@/components/FloatingTimer";
+import { TutorialOverlay } from "@/components/TutorialOverlay";
 
 // Audio and Interactive Components
 import { ElevenLabsAudio } from "@/components/ElevenLabsAudio";
@@ -59,6 +63,16 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [showVocabularyCollector, setShowVocabularyCollector] = useState(false);
   const [sessionStartTime] = useState(Date.now());
   const [wordsInteracted, setWordsInteracted] = useState(0);
+
+  // Timer and Tutorial state
+  const [timeRemaining, setTimeRemaining] = useState(20 * 60); // 20 minutes
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(true);
+  const [currentTutorialStep, setCurrentTutorialStep] = useState(0);
+
+  // Reading Level state
+  const [currentDifficulty, setCurrentDifficulty] = useState<'beginner' | 'easy' | 'medium' | 'hard' | 'expert'>(userInfo.difficultyLevel || 'beginner');
+  const difficultyLevels: ('beginner' | 'easy' | 'medium' | 'hard' | 'expert')[] = ['beginner', 'easy', 'medium', 'hard', 'expert'];
   
   // Define current story for highlighting hook
   const currentStory = story[currentPage] || "";
@@ -89,6 +103,23 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
       generateImageForCurrentPage();
     }
   }, [currentPage, story, pageImages]);
+
+  // Timer countdown effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isTimerRunning && timeRemaining > 0) {
+      interval = setInterval(() => {
+        setTimeRemaining(prev => {
+          if (prev <= 1) {
+            setIsTimerRunning(false);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isTimerRunning, timeRemaining]);
 
   const initializeStory = async () => {
     setIsLoading(true);
@@ -238,6 +269,78 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     updateActivity({ wordsRead: 1 });
   };
 
+  // Timer controls
+  const handleToggleTimer = () => {
+    setIsTimerRunning(!isTimerRunning);
+  };
+
+  const handleReduceTime = () => {
+    setTimeRemaining(prev => Math.max(5 * 60, prev - 5 * 60)); // Reduce by 5 minutes, minimum 5 minutes
+  };
+
+  const handleEndSession = () => {
+    const timeSpent = (20 * 60 - timeRemaining) * 1000; // Convert to milliseconds
+    const totalWordsRead = story.join(' ').split(' ').length;
+    
+    const sessionStats = {
+      timeSpent,
+      wordsRead: totalWordsRead,
+      pagesRead: story.length,
+      startTime: sessionStartTime,
+      accuracy: 100
+    };
+    
+    recordReadingSession({
+      timeSpent,
+      wordsRead: totalWordsRead,
+      pagesRead: story.length,
+      storyCompleted: currentPage === story.length - 1,
+      readingSpeed: Math.round((totalWordsRead / timeSpent) * 60000)
+    });
+    
+    onSessionEnded(sessionStats);
+  };
+
+  // Difficulty controls
+  const handleDifficultyChange = (direction: 'up' | 'down') => {
+    const currentIndex = difficultyLevels.indexOf(currentDifficulty);
+    let newIndex = currentIndex;
+    
+    if (direction === 'up' && currentIndex < difficultyLevels.length - 1) {
+      newIndex = currentIndex + 1;
+    } else if (direction === 'down' && currentIndex > 0) {
+      newIndex = currentIndex - 1;
+    }
+    
+    if (newIndex !== currentIndex) {
+      setCurrentDifficulty(difficultyLevels[newIndex]);
+      // Here you would trigger story regeneration with new difficulty
+      console.log('Difficulty changed to:', difficultyLevels[newIndex]);
+    }
+  };
+
+  // Tutorial controls
+  const handleCompleteTutorial = () => {
+    setShowTutorial(false);
+    setIsTimerRunning(true); // Start timer after tutorial
+  };
+
+  const handleSkipTutorial = () => {
+    setShowTutorial(false);
+  };
+
+  // Get text size based on difficulty level
+  const getTextSize = () => {
+    switch (currentDifficulty) {
+      case 'beginner': return 'text-4xl'; // Level 0 - largest
+      case 'easy': return 'text-3xl';     // Level 1
+      case 'medium': return 'text-2xl';   // Level 2
+      case 'hard': return 'text-xl';      // Level 3
+      case 'expert': return 'text-lg';    // Level 4 - smallest
+      default: return 'text-2xl';
+    }
+  };
+
   const progress = story.length > 0 ? ((currentPage + 1) / story.length) * 100 : 0;
   const currentImage = pageImages[currentPage];
 
@@ -274,7 +377,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-gradient-primary">
-        {/* Header */}
+        {/* Header with Reading Level Controls */}
         <header className="bg-white/90 backdrop-blur-sm shadow-sm border-b">
           <div className="container mx-auto px-4 py-3">
             <div className="flex items-center justify-between">
@@ -288,6 +391,33 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                   </span>
                 )}
               </div>
+              
+              {/* Reading Level Controls */}
+              <div id="reading-level-controls" className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Level:</span>
+                <div className="flex flex-col gap-1">
+                  <MobileOptimizedButton
+                    onClick={() => handleDifficultyChange('up')}
+                    variant="outline"
+                    size="sm"
+                    className="h-6 px-2"
+                    disabled={currentDifficulty === 'expert'}
+                  >
+                    <ChevronUp className="w-3 h-3" />
+                  </MobileOptimizedButton>
+                  <MobileOptimizedButton
+                    onClick={() => handleDifficultyChange('down')}
+                    variant="outline"
+                    size="sm"
+                    className="h-6 px-2"
+                    disabled={currentDifficulty === 'beginner'}
+                  >
+                    <ChevronDown className="w-3 h-3" />
+                  </MobileOptimizedButton>
+                </div>
+                <span className="text-sm font-medium capitalize">{currentDifficulty}</span>
+              </div>
+              
               <div className="flex gap-2">
                 <MobileOptimizedButton onClick={onNewStory} variant="outline" size="sm">
                   <RotateCcw className="w-4 h-4 mr-2" />
@@ -316,75 +446,79 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                 </p>
               </div>
 
-              {/* Story Content */}
-              <div className="bg-gradient-card rounded-lg p-6 mb-6 min-h-[300px]">
-                {/* Image Section */}
-                {currentImage && (
-                  <div className="mb-6">
-                    <img 
-                      src={currentImage} 
-                      alt={`Story illustration for page ${currentPage + 1}`}
-                      className="w-full h-48 object-cover rounded-lg shadow-soft"
-                    />
-                  </div>
-                )}
-                
-                {isGeneratingImage && !currentImage && (
-                  <div className="mb-6 h-48 bg-muted rounded-lg flex items-center justify-center">
-                    <div className="text-center">
-                      <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
-                      <p className="text-sm text-muted-foreground">Creating illustration...</p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Audio Controls */}
-                <div className="mb-6 flex justify-center gap-4">
-                  <ElevenLabsAudio
-                    text={currentStory}
-                    userInfo={userInfo}
-                    isPremium={isPremium}
-                    onUpgrade={onUpgrade}
-                    onWordHighlight={onWordHighlight}
-                    difficulty={userInfo.difficultyLevel || 'medium'}
-                  />
-                  
-                  {/* Audio Playing State Monitor */}
-                  {isAudioPlaying && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-                      Playing Audio
-                    </div>
-                  )}
-                  
-                  <MobileOptimizedButton
-                    onClick={() => setShowVocabularyCollector(true)}
-                    variant="outline"
-                    size="sm"
-                  >
-                    <BookOpen className="w-4 h-4 mr-2" />
-                    Vocabulary
-                  </MobileOptimizedButton>
-                </div>
-
-                {/* Interactive Text Content */}
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-foreground mb-4 leading-relaxed story-content">
-                    {processTextForPhonetics(
-                      currentStory,
-                      "cursor-pointer hover:bg-primary/10 rounded px-1 transition-colors",
-                      userInfo.difficultyLevel || 'medium',
-                      userInfo,
-                      isPremium,
-                      userInfo.name,
-                      currentHighlightedWord
+              {/* Story Content - Vertical Layout */}
+              <div className="bg-gradient-card rounded-lg p-6 mb-6 min-h-[400px]">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Image Section - Left Side */}
+                  <div className="lg:order-1">
+                    {currentImage && (
+                      <img 
+                        src={currentImage} 
+                        alt={`Story illustration for page ${currentPage + 1}`}
+                        className="w-full h-64 lg:h-96 object-cover rounded-lg shadow-soft"
+                      />
                     )}
+                    
+                    {isGeneratingImage && !currentImage && (
+                      <div className="w-full h-64 lg:h-96 bg-muted rounded-lg flex items-center justify-center">
+                        <div className="text-center">
+                          <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
+                          <p className="text-sm text-muted-foreground">Creating illustration...</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Audio Controls */}
+                    <div id="audio-controls" className="mt-4 flex justify-center gap-4">
+                      <ElevenLabsAudio
+                        text={currentStory}
+                        userInfo={userInfo}
+                        isPremium={isPremium}
+                        onUpgrade={onUpgrade}
+                        onWordHighlight={onWordHighlight}
+                        difficulty={currentDifficulty}
+                      />
+                      
+                      {/* Audio Playing State Monitor */}
+                      {isAudioPlaying && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                          Playing Audio
+                        </div>
+                      )}
+                      
+                      <MobileOptimizedButton
+                        onClick={() => setShowVocabularyCollector(true)}
+                        variant="outline"
+                        size="sm"
+                      >
+                        <BookOpen className="w-4 h-4 mr-2" />
+                        Vocabulary
+                      </MobileOptimizedButton>
+                    </div>
+                  </div>
+
+                  {/* Text Content - Right Side */}
+                  <div className="lg:order-2 flex flex-col justify-center">
+                    <div className="text-center lg:text-left">
+                      <div className={`${getTextSize()} font-bold text-foreground mb-4 leading-relaxed story-content`}>
+                        {processTextForPhonetics(
+                          currentStory,
+                          "cursor-pointer hover:bg-primary/10 rounded px-1 transition-colors",
+                          currentDifficulty,
+                          userInfo,
+                          isPremium,
+                          userInfo.name,
+                          currentHighlightedWord
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Navigation */}
-              <div className="flex justify-between items-center">
+              <div id="story-navigation" className="flex justify-between items-center">
                 <MobileOptimizedButton
                   onClick={handlePrevious}
                   disabled={currentPage === 0}
@@ -421,6 +555,30 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         </div>
       </main>
       
+      {/* Floating Timer - Only for Premium */}
+      {isPremium && (
+        <FloatingTimer
+          timeRemaining={timeRemaining}
+          isReading={isTimerRunning}
+          onToggleReading={handleToggleTimer}
+          onReduceTime={handleReduceTime}
+          onEndSession={handleEndSession}
+          onSessionEnded={handleEndSession}
+          showTutorial={showTutorial}
+          tutorialStep={currentTutorialStep}
+        />
+      )}
+
+      {/* Tutorial Overlay */}
+      <TutorialOverlay
+        isVisible={showTutorial}
+        onComplete={handleCompleteTutorial}
+        onSkip={handleSkipTutorial}
+        onStartTimer={() => setIsTimerRunning(true)}
+        onStepChange={setCurrentTutorialStep}
+        sessionStartTime={new Date(sessionStartTime)}
+      />
+
       {/* Vocabulary Collector Modal */}
       <VocabularyCollector
         userInfo={userInfo}
