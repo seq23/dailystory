@@ -146,7 +146,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
           readingLevel: profile.reading_level || 'beginner',
           interests: profile.interests || [],
           learningGoal: 'improve-english-reading' as LearningGoal,
-          avatar: (profile as any).avatar || { type: 'boy', skinTone: 'medium' }, // Load from profile or default
+          avatar: typeof (profile as any).avatar === 'string' ? JSON.parse((profile as any).avatar) : ((profile as any).avatar || { type: 'boy', skinTone: 'medium' }),
           favoriteColor: (profile as any).favorite_color || '#3B82F6',
           favoriteAnimal: (profile as any).favorite_animal || 'cat',
           hobbies: (profile as any).hobbies || '',
@@ -214,7 +214,15 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
           date_of_birth: dateOfBirth,
           grade_level: updatedUserInfo.gradeLevel || updatedUserInfo.grade,
           reading_level: updatedUserInfo.readingLevel,
+          difficulty_level: updatedUserInfo.difficultyLevel,
           native_language: updatedUserInfo.nativeLanguage,
+          story_language_preference: updatedUserInfo.storyLanguagePreference,
+          special_request: updatedUserInfo.specialRequest,
+          avatar: JSON.stringify(updatedUserInfo.avatar),
+          favorite_color: updatedUserInfo.favoriteColor,
+          favorite_animal: updatedUserInfo.favoriteAnimal,
+          favorite_food: updatedUserInfo.favoriteFood,
+          hobbies: updatedUserInfo.hobbies,
           interests: updatedUserInfo.interests || []
         });
 

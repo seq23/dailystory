@@ -49,38 +49,62 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar: Json | null
           created_at: string
           date_of_birth: string | null
+          difficulty_level: string | null
           display_name: string | null
+          favorite_animal: string | null
+          favorite_color: string | null
+          favorite_food: string | null
           grade_level: string | null
+          hobbies: string | null
           id: string
           interests: string[] | null
           native_language: string | null
           reading_level: string | null
+          special_request: string | null
+          story_language_preference: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          avatar?: Json | null
           created_at?: string
           date_of_birth?: string | null
+          difficulty_level?: string | null
           display_name?: string | null
+          favorite_animal?: string | null
+          favorite_color?: string | null
+          favorite_food?: string | null
           grade_level?: string | null
+          hobbies?: string | null
           id?: string
           interests?: string[] | null
           native_language?: string | null
           reading_level?: string | null
+          special_request?: string | null
+          story_language_preference?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          avatar?: Json | null
           created_at?: string
           date_of_birth?: string | null
+          difficulty_level?: string | null
           display_name?: string | null
+          favorite_animal?: string | null
+          favorite_color?: string | null
+          favorite_food?: string | null
           grade_level?: string | null
+          hobbies?: string | null
           id?: string
           interests?: string[] | null
           native_language?: string | null
           reading_level?: string | null
+          special_request?: string | null
+          story_language_preference?: string | null
           updated_at?: string
           user_id?: string
         }
