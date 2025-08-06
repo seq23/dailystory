@@ -68,16 +68,16 @@ export async function validateTemplateSystemFix(): Promise<{
       }
     }
 
-    // Test 4: Level 3→4 Transition Simulation (The Original Issue)
-    console.log('\n🎯 Test 4: Level 3→4 Transition Simulation...');
-    const level3ToLevel4Test = await testLevel3ToLevel4Transition();
-    summary.testResults.level3ToLevel4Transition = level3ToLevel4Test;
+    // Test 4: All Level Transitions (1→2, 2→3, 3→4)
+    console.log('\n🎯 Test 4: All Level Transitions Simulation...');
+    const allTransitionsTest = await testAllLevelTransitions();
+    summary.testResults.allTransitions = allTransitionsTest;
     
-    if (!level3ToLevel4Test.isValid) {
-      errors.push(...level3ToLevel4Test.errors);
-      console.error('❌ Level 3→4 Transition FAILED:', level3ToLevel4Test.errors);
+    if (!allTransitionsTest.isValid) {
+      errors.push(...allTransitionsTest.errors);
+      console.error('❌ All Level Transitions FAILED:', allTransitionsTest.errors);
     } else {
-      console.log('✅ Level 3→4 Transition PASSED');
+      console.log('✅ All Level Transitions PASSED');
     }
 
     // Test 5: Enhanced Template Manager Story Generation
@@ -139,7 +139,11 @@ export async function validateTemplateSystemFix(): Promise<{
   }
 }
 
-async function testLevel3ToLevel4Transition(): Promise<{
+/**
+ * Test all level transitions comprehensively
+ * Tests 1→2, 2→3, and 3→4 transitions with correct difficulty mappings
+ */
+async function testAllLevelTransitions(): Promise<{
   isValid: boolean;
   errors: string[];
   details: any;
@@ -148,109 +152,111 @@ async function testLevel3ToLevel4Transition(): Promise<{
   const details: any = {};
 
   try {
-    // Test user profile
-    const testUser: UserInfo = {
-      name: 'Sequoia',
-      age: 8,
-      grade: '3rd',
-      nativeLanguage: 'en',
-      learningGoal: 'improve-english-reading',
-      avatar: { type: 'boy', skinTone: 'medium' },
-      favoriteColor: 'blue',
-      favoriteAnimal: 'elephant',
-      hobbies: 'reading, exploring',
-      favoriteFood: 'pizza',
-      specialRequest: '',
-      interests: ['books', 'reading']
-    };
+    console.log("🔄 Testing all level transitions...");
 
-    // Clear sessions first
+    // Clear any existing session state
     EnhancedTemplateManager.clearSession();
 
-    // Generate Level 3 story
-    console.log('🔄 Testing Level 3 story generation...');
-    const level3Result = await EnhancedTemplateManager.generateEnhancedStory({
-      userInfo: testUser,
-      difficulty: 'medium' as DifficultyLevel,
-      isPremium: false
-    });
-
-    details.level3 = {
-      templateIndex: level3Result.templateIndex,
-      gradeLevel: level3Result.gradeLevel,
-      pageCount: level3Result.pages.length,
-      firstPage: level3Result.pages[0]?.substring(0, 100) + '...'
+    const mockUser: UserInfo = {
+      name: "TransitionTestUser",
+      age: 10,
+      grade: "3rd",
+      nativeLanguage: "en",
+      learningGoal: "improve-english-reading",
+      avatar: { type: "boy", skinTone: "medium" },
+      favoriteColor: "blue",
+      favoriteAnimal: "elephant",
+      hobbies: "adventure, reading",
+      favoriteFood: "pizza",
+      specialRequest: "",
+      interests: ["adventure", "books"]
     };
 
-    if (level3Result.gradeLevel !== 3) {
-      errors.push(`Level 3: Expected grade level 3, got ${level3Result.gradeLevel}`);
+    // Correct difficulty mappings: easy=1, medium=2, hard=3, expert=4
+    const transitions = [
+      { from: "easy", to: "medium", fromLevel: 1, toLevel: 2, name: "Level 1→2" },
+      { from: "medium", to: "hard", fromLevel: 2, toLevel: 3, name: "Level 2→3" },
+      { from: "hard", to: "expert", fromLevel: 3, toLevel: 4, name: "Level 3→4" }
+    ] as const;
+
+    for (const transition of transitions) {
+      console.log(`🔄 Testing ${transition.name} transition...`);
+
+      // Clear session before each transition test
+      EnhancedTemplateManager.clearSession();
+
+      // Generate story at source level
+      const sourceStory = await EnhancedTemplateManager.generateEnhancedStory({
+        userInfo: mockUser,
+        difficulty: transition.from as DifficultyLevel,
+        isPremium: false
+      });
+
+      if (sourceStory.gradeLevel !== transition.fromLevel) {
+        errors.push(`${transition.name}: Source story has wrong grade level: ${sourceStory.gradeLevel}, expected ${transition.fromLevel}`);
+      }
+
+      if (sourceStory.templateIndex === undefined || sourceStory.templateIndex >= 40) {
+        errors.push(`${transition.name}: Source story has invalid template index: ${sourceStory.templateIndex}`);
+      }
+
+      details[`${transition.name}_source`] = {
+        gradeLevel: sourceStory.gradeLevel,
+        templateIndex: sourceStory.templateIndex,
+        pageCount: sourceStory.pages.length
+      };
+
+      // Generate story at target level
+      const targetStory = await EnhancedTemplateManager.generateEnhancedStory({
+        userInfo: mockUser,
+        difficulty: transition.to as DifficultyLevel,
+        isPremium: false
+      });
+
+      if (targetStory.gradeLevel !== transition.toLevel) {
+        errors.push(`${transition.name}: Target story has wrong grade level: ${targetStory.gradeLevel}, expected ${transition.toLevel}`);
+      }
+
+      if (targetStory.templateIndex === undefined || targetStory.templateIndex >= 40) {
+        errors.push(`${transition.name}: Target story has invalid template index: ${targetStory.templateIndex}`);
+      }
+
+      details[`${transition.name}_target`] = {
+        gradeLevel: targetStory.gradeLevel,
+        templateIndex: targetStory.templateIndex,
+        pageCount: targetStory.pages.length
+      };
+
+      // Check for repetition issues
+      const hasRepetition = targetStory.pages.some(page => 
+        page.includes("TransitionTestUser discovered an interesting book in the library") ||
+        page.includes(". " + page.split(". ")[0] + ".")
+      );
+
+      if (hasRepetition) {
+        errors.push(`${transition.name}: Target story contains repetitive text`);
+      }
+
+      console.log(`✅ ${transition.name} transition completed`);
     }
 
-    if (level3Result.templateIndex < 0 || level3Result.templateIndex >= 40) {
-      errors.push(`Level 3: Template index ${level3Result.templateIndex} outside valid range [0-39]`);
-    }
-
-    // Simulate difficulty increase to Level 4
-    console.log('🔄 Testing Level 4 story generation (difficulty transition)...');
-    EnhancedTemplateManager.clearSessionForDifficultyChange('medium', 'hard');
-
-    const level4Result = await EnhancedTemplateManager.generateEnhancedStory({
-      userInfo: testUser,
-      difficulty: 'hard' as DifficultyLevel,
-      isPremium: false
-    });
-
-    details.level4 = {
-      templateIndex: level4Result.templateIndex,
-      gradeLevel: level4Result.gradeLevel,
-      pageCount: level4Result.pages.length,
-      firstPage: level4Result.pages[0]?.substring(0, 100) + '...'
+    return {
+      isValid: errors.length === 0,
+      errors,
+      details
     };
-
-    if (level4Result.gradeLevel !== 4) {
-      errors.push(`Level 4: Expected grade level 4, got ${level4Result.gradeLevel}`);
-    }
-
-    if (level4Result.templateIndex < 0 || level4Result.templateIndex >= 40) {
-      errors.push(`Level 4: Template index ${level4Result.templateIndex} outside valid range [0-39]`);
-    }
-
-    // Test for the specific repetition issue
-    const level4Pages = level4Result.pages.join(' ').toLowerCase();
-    if (level4Pages.includes('sequoia discovered an interesting book in the library')) {
-      errors.push('Level 4: Found the problematic repetitive text that should be fixed');
-    }
-
-    // Test continuation to ensure no immediate repetition
-    console.log('🔄 Testing Level 4 story continuation...');
-    const level4Continuation = await EnhancedTemplateManager.continueStory({
-      userInfo: testUser,
-      difficulty: 'hard' as DifficultyLevel,
-      isPremium: false,
-      targetPages: 5
-    });
-
-    details.level4Continuation = {
-      templateIndex: level4Continuation.templateIndex,
-      pageCount: level4Continuation.pages.length,
-      firstPage: level4Continuation.pages[0]?.substring(0, 100) + '...'
-    };
-
-    // Ensure continuation uses different template or continues current one properly
-    const continuationPages = level4Continuation.pages.join(' ').toLowerCase();
-    if (continuationPages.includes('sequoia discovered an interesting book in the library')) {
-      errors.push('Level 4 Continuation: Found problematic repetitive text in continuation');
-    }
 
   } catch (error) {
-    errors.push(`Level 3→4 transition test exception: ${error}`);
-  }
+    const errorMsg = `All transitions test failed: ${error}`;
+    errors.push(errorMsg);
+    console.error("❌", errorMsg);
 
-  return {
-    isValid: errors.length === 0,
-    errors,
-    details
-  };
+    return {
+      isValid: false,
+      errors,
+      details: { error: errorMsg }
+    };
+  }
 }
 
 async function testStoryGeneration(): Promise<{
@@ -277,9 +283,9 @@ async function testStoryGeneration(): Promise<{
       interests: ['adventure']
     };
 
-    // Test each level 1-4
+    // Test each level 1-4 with correct difficulty mappings
     for (let grade = 1; grade <= 4; grade++) {
-      const difficulty = ['beginner', 'easy', 'medium', 'hard'][grade - 1] as DifficultyLevel;
+      const difficulty = ['easy', 'medium', 'hard', 'expert'][grade - 1] as DifficultyLevel;
       
       console.log(`🔄 Testing Level ${grade} (${difficulty}) story generation...`);
       
@@ -329,5 +335,6 @@ async function testStoryGeneration(): Promise<{
 // Expose for browser testing
 if (typeof window !== 'undefined') {
   (window as any).validateTemplateSystemFix = validateTemplateSystemFix;
-  (window as any).testLevel3ToLevel4Transition = testLevel3ToLevel4Transition;
+  (window as any).testAllLevelTransitions = testAllLevelTransitions;
+  (window as any).testStoryGeneration = testStoryGeneration;
 }

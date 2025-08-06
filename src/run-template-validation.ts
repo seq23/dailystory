@@ -1,5 +1,6 @@
 // Run Template System Fix Validation
 import { validateTemplateSystemFix } from './test-template-system-fix';
+import { runAllTransitionTests } from './test-level-transitions';
 
 export async function runTemplateValidation(): Promise<void> {
   console.log('🚀 Starting Template System Fix Validation...');
@@ -16,7 +17,7 @@ export async function runTemplateValidation(): Promise<void> {
       console.log('\n📊 Key Achievements:');
       console.log('✅ Level 1-4: 40 main templates each (160 total main templates)');
       console.log('✅ Template selection: Enforces main template range [0-39]');
-      console.log('✅ Level 3→4 transitions: No repetition, clean session isolation');
+      console.log('✅ All level transitions (1→2, 2→3, 3→4): No repetition, clean session isolation');
       console.log('✅ Anti-repetition system: Working across all levels');
       console.log('✅ Session state management: Unified and persistent');
       console.log('✅ Template bounds validation: Active with error handling');
@@ -29,10 +30,17 @@ export async function runTemplateValidation(): Promise<void> {
       console.log(`- System Version: ${result.summary.systemHealth.version}`);
       
       console.log('\n🎯 Resolution Confirmed:');
-      console.log('❌ OLD ISSUE: "Sequoia discovered an interesting book in the library" repetition');
+      console.log('❌ OLD ISSUE: Template repetition across level transitions');
       console.log('✅ NEW BEHAVIOR: 200 unique pages per level before recycling');
       console.log('✅ MAIN TEMPLATES: Enforced selection from 40 main templates (0-39)');
       console.log('✅ EXTENSIONS: Only used for premium page count increases');
+      
+      console.log('\n' + '='.repeat(50));
+      console.log('🚀 Running comprehensive transition tests...');
+      console.log('='.repeat(50));
+      
+      // Run additional transition tests
+      await runAllTransitionTests();
       
     } else {
       console.log('❌ 🚨 VALIDATION FAILED - Issues Found:');
