@@ -344,12 +344,12 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   // Get text size based on difficulty level
   const getTextSize = () => {
     switch (currentDifficulty) {
-      case 'beginner': return 'text-4xl'; // Level 0 - largest
-      case 'easy': return 'text-3xl';     // Level 1
-      case 'medium': return 'text-2xl';   // Level 2
-      case 'hard': return 'text-xl';      // Level 3
-      case 'expert': return 'text-lg';    // Level 4 - smallest
-      default: return 'text-2xl';
+      case 'beginner': return 'text-6xl md:text-7xl'; // Level 0 - very large for beginners
+      case 'easy': return 'text-5xl md:text-6xl';     // Level 1 - large
+      case 'medium': return 'text-4xl md:text-5xl';   // Level 2 - medium-large
+      case 'hard': return 'text-3xl md:text-4xl';     // Level 3 - medium
+      case 'expert': return 'text-2xl md:text-3xl';   // Level 4 - standard
+      default: return 'text-4xl md:text-5xl';
     }
   };
 
