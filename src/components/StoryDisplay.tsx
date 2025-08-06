@@ -17,6 +17,7 @@ import { UnifiedImageService, type EstablishedCharacter } from "@/services/unifi
 import { APP_CONFIG } from "@/constants/app";
 import { useToast } from "@/hooks/use-toast";
 import { useHybridStoryGeneration } from "@/hooks/useHybridStoryGeneration";
+import { DifficultyManager } from "@/services/difficultyManager";
 import { TutorialOverlay } from "@/components/TutorialOverlay";
 import { FloatingTimer } from "@/components/FloatingTimer";
 import { useGamification } from "@/hooks/useGamification";
@@ -275,11 +276,16 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
       startLoading();
       setStoryGenerated(true);
         
-      const readingLevel = userInfo.readingLevel || (userInfo as any).difficultyLevel || 'easy';
-      const initialDifficulty = (readingLevel === 'beginner' ? 'beginner' :
-                                 readingLevel === 'elementary' ? 'medium' :
-                                 readingLevel === 'intermediate' ? 'hard' : 
-                                 readingLevel === 'advanced' ? 'expert' : 'easy') as 'beginner' | 'easy' | 'medium' | 'hard' | 'expert';
+      // Use intelligent difficulty management instead of basic mapping
+      const difficultyResult = DifficultyManager.getFinalDifficulty(userInfo);
+      const initialDifficulty = difficultyResult.difficulty;
+      
+      console.log('🎯 StoryDisplay: Story generation difficulty assignment:', {
+        difficulty: initialDifficulty,
+        hasAuthorVoice: DifficultyManager.hasAuthorVoice(initialDifficulty),
+        reasoning: difficultyResult.profile.reasoning
+      });
+      
       setCurrentDifficulty(initialDifficulty);
       
       // Generate story content - simplified version to fix syntax

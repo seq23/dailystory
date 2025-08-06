@@ -10,6 +10,7 @@ import { MultilingualTemplateManager } from '@/services/multilingualTemplateMana
 import { ErrorHandlingManager } from '@/services/errorHandlingManager';
 import { Level0Simplifier } from '@/services/level0Simplifier';
 import type { UserInfo } from '@/types';
+import { TemplateDebugger } from './templateDebugger';
 
 export interface Level0StoryResult {
   content: string[];
@@ -196,6 +197,16 @@ export class Level0StoryProcessor {
     }
     
     console.log(`✅ Level0StoryProcessor: Generated ${processedPages.length} pages using ${selection.phase} phase`);
+    
+    // Log usage for debugging
+    TemplateDebugger.logTemplateUsage({
+      manager: 'Level0StoryProcessor',
+      difficulty: 'beginner',
+      templateIndex,
+      templatePreview: processedPages?.[0]?.substring(0, 50) || 'NO_PREVIEW',
+      userName: userInfo?.name,
+      phase: selection.phase
+    });
     
     return {
       content: processedPages,

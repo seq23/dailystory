@@ -2,6 +2,8 @@ import { UserInfo, Story, DifficultyLevel } from "@/types";
 import { SessionPageTracker } from "./sessionPageTracker";
 import { SimplifiedTemplateManager } from "./simplifiedTemplateManager";
 import { SimplifiedLevel0Processor } from "@/services/simplifiedLevel0Processor";
+import { DifficultyManager } from "./difficultyManager";
+import { TemplateDebugger } from "./templateDebugger";
 
 // Define custom error classes
 class StoryGenerationError extends Error {
@@ -78,7 +80,15 @@ export class UniversalContentManager {
     difficulty: DifficultyLevel,
     config: ContentManagerConfig
   ): Promise<StoryGenerationResult> {
-    console.log(`🎯 UniversalContentManager: Starting story generation for ${difficulty} level`);
+    console.log('🎯 UniversalContentManager: === STORY GENERATION START ===');
+    console.log(`📋 UniversalContentManager: Requested difficulty: ${difficulty}`);
+    
+    // Debug difficulty assignment
+    DifficultyManager.debugDifficultyState(userInfo);
+    
+    // Check if this difficulty supports author voice
+    const hasAuthorVoice = DifficultyManager.hasAuthorVoice(difficulty);
+    console.log(`🌟 Author voice available for ${difficulty}: ${hasAuthorVoice}`);
     
     // Check session page limit for free users
     if (!config.isPremium) {
@@ -98,10 +108,26 @@ export class UniversalContentManager {
       
       // Use simplified processors for reliable story generation
       if (difficulty === 'beginner') {
-        console.log('🎯 Level 0 Story Generation: Using SimplifiedLevel0Processor');
+        console.log('🎯 Level 0 Story Generation: Using SimplifiedLevel0Processor (NO AUTHOR VOICE)');
+        TemplateDebugger.logTemplateUsage({
+          manager: 'UniversalContentManager->Level0',
+          difficulty: 'beginner',
+          templateIndex: -1,
+          templatePreview: 'Level 0 routing',
+          userName: userInfo?.name,
+          phase: 'routing_to_level0'
+        });
         story = await this.generateLevel0Story(userInfo, config.isPremium);
       } else {
-        console.log(`🎯 ${difficulty} Story Generation: Using SimplifiedTemplateManager`);
+        console.log(`🎯 ${difficulty} Story Generation: Using SimplifiedTemplateManager (WITH AUTHOR VOICE)`);
+        TemplateDebugger.logTemplateUsage({
+          manager: 'UniversalContentManager->Simplified',
+          difficulty,
+          templateIndex: -1,
+          templatePreview: 'Higher level routing',
+          userName: userInfo?.name,
+          phase: `routing_to_${difficulty}`
+        });
         const result = await SimplifiedTemplateManager.generateStory({
           userInfo,
           difficulty,

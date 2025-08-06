@@ -8,6 +8,7 @@ import {
   validateSentence,
   GRADE_LEVEL_INFO
 } from '@/constants/gradeBased';
+import { TemplateDebugger } from './templateDebugger';
 
 import {
   selectTemplate,
@@ -48,13 +49,74 @@ interface SimplifiedTemplateResult {
 }
 
 export class SimplifiedTemplateManager {
-  // Template exhaustion tracking (similar to Level 0 pattern)
-  private static usedBaseTemplates = new Map<DifficultyLevel, Set<number>>();
-  private static usedExtensions = new Map<DifficultyLevel, Set<number>>();
-  private static sessionData = new Map<DifficultyLevel, {
+  // Persistent template exhaustion tracking using sessionStorage
+  private static readonly STORAGE_PREFIX = 'simplified_template_manager_';
+  
+  /**
+   * Get persistent session data from sessionStorage
+   */
+  private static getSessionData(difficulty: DifficultyLevel): {
+    usedBaseTemplates: Set<number>;
+    usedExtensions: Set<number>;
     phase: 'base' | 'extensions';
     totalGenerated: number;
-  }>();
+  } {
+    try {
+      const key = `${this.STORAGE_PREFIX}${difficulty}`;
+      const stored = sessionStorage.getItem(key);
+      
+      if (stored) {
+        const data = JSON.parse(stored);
+        return {
+          usedBaseTemplates: new Set(data.usedBaseTemplates || []),
+          usedExtensions: new Set(data.usedExtensions || []),
+          phase: data.phase || 'base',
+          totalGenerated: data.totalGenerated || 0
+        };
+      }
+    } catch (error) {
+      console.warn('⚠️ SimplifiedTemplateManager: Failed to load session data from storage:', error);
+    }
+    
+    // Return default empty state
+    return {
+      usedBaseTemplates: new Set(),
+      usedExtensions: new Set(),
+      phase: 'base',
+      totalGenerated: 0
+    };
+  }
+  
+  /**
+   * Save session data to sessionStorage
+   */
+  private static saveSessionData(difficulty: DifficultyLevel, data: {
+    usedBaseTemplates: Set<number>;
+    usedExtensions: Set<number>;
+    phase: 'base' | 'extensions';
+    totalGenerated: number;
+  }): void {
+    try {
+      const key = `${this.STORAGE_PREFIX}${difficulty}`;
+      const serializable = {
+        usedBaseTemplates: Array.from(data.usedBaseTemplates),
+        usedExtensions: Array.from(data.usedExtensions),
+        phase: data.phase,
+        totalGenerated: data.totalGenerated,
+        lastUpdated: Date.now()
+      };
+      
+      sessionStorage.setItem(key, JSON.stringify(serializable));
+      console.log(`💾 SimplifiedTemplateManager: Saved session data for ${difficulty}:`, {
+        baseUsed: data.usedBaseTemplates.size,
+        extensionsUsed: data.usedExtensions.size,
+        phase: data.phase,
+        totalGenerated: data.totalGenerated
+      });
+    } catch (error) {
+      console.warn('⚠️ SimplifiedTemplateManager: Failed to save session data to storage:', error);
+    }
+  }
   /**
    * Generate a story with simplified processing - basic variable replacement only
    */
@@ -66,10 +128,19 @@ export class SimplifiedTemplateManager {
       templateIndex
     } = options;
 
+    console.log('🎯 SimplifiedTemplateManager: === STORY GENERATION START ===');
+    console.log('📋 SimplifiedTemplateManager: Options received:', {
+      difficulty,
+      hasUserInfo: !!userInfo,
+      userName: userInfo?.name || 'NO_NAME',
+      templateType: 'initial_generation'
+    });
+
     const gradeLevel = difficultyToGradeLevel(difficulty);
     const gradeInfo = GRADE_LEVEL_INFO[gradeLevel];
     
     console.log(`🎯 SimplifiedTemplateManager: Processing ${difficulty} (Level ${gradeLevel})`);
+    console.log('📊 SimplifiedTemplateManager: Current template usage before generation:', this.getTemplateAnalytics(difficulty));
     
     // Level 0 should never reach this manager
     if (gradeLevel === 0) {
@@ -97,6 +168,18 @@ export class SimplifiedTemplateManager {
     
     console.log(`✅ SimplifiedTemplateManager: Generated ${pages.length} pages for ${difficulty}`);
     
+    // Log usage for debugging
+    TemplateDebugger.logTemplateUsage({
+      manager: 'SimplifiedTemplateManager',
+      difficulty,
+      templateIndex: selectedIndex,
+      templatePreview: pages?.[0]?.substring(0, 50) || 'NO_PREVIEW',
+      userName: userInfo?.name,
+      phase: 'generation'
+    });
+    
+    console.log('🎯 SimplifiedTemplateManager: === STORY GENERATION COMPLETE ===');
+    
     return {
       pages,
       templateIndex: selectedIndex,
@@ -121,9 +204,18 @@ export class SimplifiedTemplateManager {
     const { targetPages = 5, ...generateOptions } = options;
     const { userInfo, difficulty, isPremium = false } = generateOptions;
     
+    console.log('🔄 SimplifiedTemplateManager: === STORY CONTINUATION START ===');
+    console.log('📋 SimplifiedTemplateManager: Continuation options:', {
+      difficulty,
+      targetPages,
+      hasUserInfo: !!userInfo,
+      userName: userInfo?.name || 'NO_NAME'
+    });
+    
     const gradeLevel = difficultyToGradeLevel(difficulty);
     
     console.log(`🔄 SimplifiedTemplateManager: Continuing story for ${difficulty} with ${targetPages} pages`);
+    console.log('📊 SimplifiedTemplateManager: Template usage before continuation:', this.getTemplateAnalytics(difficulty));
     
     // For simplicity, generate a new story segment
     const result = await this.generateStory(generateOptions);
@@ -246,27 +338,27 @@ export class SimplifiedTemplateManager {
     };
   }
   
-  /**
-   * Select next template using exhaustion logic with randomization and safety limits
-   */
-  private static selectNextTemplate(difficulty: DifficultyLevel, preferredIndex?: number): {
-    pages: string[];
-    templateIndex: number;
-    source: 'base' | 'extension';
-  } {
-    const MAX_SELECTION_ATTEMPTS = 1000; // Safety limit to prevent infinite loops
-    
-    // Initialize tracking for this difficulty if needed
-    if (!this.usedBaseTemplates.has(difficulty)) {
-      this.usedBaseTemplates.set(difficulty, new Set());
-      this.usedExtensions.set(difficulty, new Set());
-      this.sessionData.set(difficulty, { phase: 'base', totalGenerated: 0 });
-      console.log(`🚀 SimplifiedTemplateManager: Initialized tracking for ${difficulty}`);
-    }
-
-    const usedBase = this.usedBaseTemplates.get(difficulty)!;
-    const usedExt = this.usedExtensions.get(difficulty)!;
-    const session = this.sessionData.get(difficulty)!;
+   /**
+    * Select next template using persistent exhaustion logic with enhanced randomization
+    */
+   private static selectNextTemplate(difficulty: DifficultyLevel, preferredIndex?: number): {
+     pages: string[];
+     templateIndex: number;
+     source: 'base' | 'extension';
+   } {
+     const MAX_SELECTION_ATTEMPTS = 1000; // Safety limit to prevent infinite loops
+     
+     // Load persistent session data
+     const sessionData = this.getSessionData(difficulty);
+     const { usedBaseTemplates: usedBase, usedExtensions: usedExt } = sessionData;
+     let { phase, totalGenerated } = sessionData;
+     
+     console.log(`🚀 SimplifiedTemplateManager: Loaded persistent data for ${difficulty}:`, {
+       baseUsed: usedBase.size,
+       extensionsUsed: usedExt.size,
+       phase,
+       totalGenerated
+     });
 
     // Get base templates count (40 for each difficulty)
     const baseTemplates = DIFFICULTY_APPROPRIATE_TEMPLATES[difficulty];
@@ -276,14 +368,14 @@ export class SimplifiedTemplateManager {
     const extensionTemplates = this.getExtensionTemplates(difficulty);
     const extensionCount = extensionTemplates.length;
 
-    console.log(`📊 Template State for ${difficulty}: Base ${usedBase.size}/${baseCount}, Extensions ${usedExt.size}/${extensionCount}, Phase: ${session.phase}`);
+    console.log(`📊 Template State for ${difficulty}: Base ${usedBase.size}/${baseCount}, Extensions ${usedExt.size}/${extensionCount}, Phase: ${phase}`);
 
     let selectedIndex: number;
     let pages: string[];
     let source: 'base' | 'extension';
 
-    // Phase 1: Use base templates (40 templates) with randomization
-    if (session.phase === 'base' && usedBase.size < baseCount) {
+     // Phase 1: Use base templates (40 templates) with enhanced randomization
+     if (phase === 'base' && usedBase.size < baseCount) {
       if (preferredIndex !== undefined && !usedBase.has(preferredIndex) && preferredIndex < baseCount) {
         selectedIndex = preferredIndex;
         console.log(`🎯 Using preferred base template ${selectedIndex} for ${difficulty}`);
@@ -306,14 +398,14 @@ export class SimplifiedTemplateManager {
 
       console.log(`✅ Selected base template ${selectedIndex} - Progress: ${usedBase.size}/${baseCount} base templates used`);
 
-      // If all base templates used, move to extension phase
-      if (usedBase.size >= baseCount) {
-        session.phase = 'extensions';
-        console.log(`🔄 All base templates exhausted for ${difficulty} - moving to extensions phase`);
-      }
+       // If all base templates used, move to extension phase
+       if (usedBase.size >= baseCount) {
+         phase = 'extensions';
+         console.log(`🔄 All base templates exhausted for ${difficulty} - moving to extensions phase`);
+       }
     }
-    // Phase 2: Use extension templates (5 templates) with randomization
-    else if (session.phase === 'extensions' && usedExt.size < extensionCount) {
+     // Phase 2: Use extension templates (5 templates) with enhanced randomization
+     else if (phase === 'extensions' && usedExt.size < extensionCount) {
       // Randomized selection from unused extension templates
       const availableExtIndices = Array.from({ length: extensionCount }, (_, i) => i)
         .filter(i => !usedExt.has(i));
@@ -331,34 +423,51 @@ export class SimplifiedTemplateManager {
 
       console.log(`✅ Selected extension template ${selectedIndex} - Progress: ${usedExt.size}/${extensionCount} extension templates used`);
 
-      // If all extensions used, cycle back to base templates
-      if (usedExt.size >= extensionCount) {
-        console.log(`🔄 All extension templates exhausted for ${difficulty} - cycling back to base templates`);
-        this.resetExhaustion(difficulty);
-      }
+       // If all extensions used, cycle back to base templates
+       if (usedExt.size >= extensionCount) {
+         console.log(`🔄 All extension templates exhausted for ${difficulty} - cycling back to base templates`);
+         // Reset and update local variables
+         usedBase.clear();
+         usedExt.clear();
+         phase = 'base';
+         totalGenerated = 0;
+         console.log(`✨ SimplifiedTemplateManager: Reset cycle complete for ${difficulty}`);
+       }
     }
-    // Fallback: cycle back to base templates with safety check
-    else {
-      console.log(`🔄 Fallback triggered for ${difficulty} - cycling back to base templates`);
-      this.resetExhaustion(difficulty);
-      
-      // Safety check - ensure we have base templates
-      if (baseCount === 0) {
-        throw new Error(`No base templates available for ${difficulty}`);
-      }
-      
-      selectedIndex = Math.floor(Math.random() * baseCount);
-      const updatedUsedBase = this.usedBaseTemplates.get(difficulty)!;
-      updatedUsedBase.add(selectedIndex);
-      pages = [...baseTemplates[selectedIndex]];
-      source = 'base';
-      
-      console.log(`✅ Fallback selected random base template ${selectedIndex} for ${difficulty}`);
-    }
+     // Fallback: cycle back to base templates with safety check
+     else {
+       console.log(`🔄 Fallback triggered for ${difficulty} - cycling back to base templates`);
+       
+       // Reset and update local variables
+       usedBase.clear();
+       usedExt.clear();
+       phase = 'base';
+       totalGenerated = 0;
+       
+       // Safety check - ensure we have base templates
+       if (baseCount === 0) {
+         throw new Error(`No base templates available for ${difficulty}`);
+       }
+       
+       selectedIndex = Math.floor(Math.random() * baseCount);
+       usedBase.add(selectedIndex);
+       pages = [...baseTemplates[selectedIndex]];
+       source = 'base';
+       
+       console.log(`✅ Fallback selected random base template ${selectedIndex} for ${difficulty}`);
+     }
 
-    session.totalGenerated++;
-    
-    console.log(`📈 Template selection complete for ${difficulty}: Index ${selectedIndex}, Source: ${source}, Total generated: ${session.totalGenerated}`);
+     totalGenerated++;
+     
+     // Save updated session data to persistent storage
+     this.saveSessionData(difficulty, {
+       usedBaseTemplates: usedBase,
+       usedExtensions: usedExt,
+       phase,
+       totalGenerated
+     });
+     
+     console.log(`📈 Template selection complete for ${difficulty}: Index ${selectedIndex}, Source: ${source}, Total generated: ${totalGenerated}`);
     
     return { pages, templateIndex: selectedIndex, source };
   }
@@ -376,37 +485,43 @@ export class SimplifiedTemplateManager {
     }
   }
 
-  /**
-   * Reset exhaustion state and cycle back to base templates
-   */
-  private static resetExhaustion(difficulty: DifficultyLevel): void {
-    this.usedBaseTemplates.set(difficulty, new Set());
-    this.usedExtensions.set(difficulty, new Set());
-    this.sessionData.set(difficulty, { phase: 'base', totalGenerated: 0 });
-    console.log(`🔄 SimplifiedTemplateManager: Reset exhaustion for ${difficulty} - cycling back to base templates`);
-  }
+   /**
+    * Reset exhaustion state and cycle back to base templates
+    */
+   private static resetExhaustion(difficulty: DifficultyLevel): void {
+     const resetData = {
+       usedBaseTemplates: new Set<number>(),
+       usedExtensions: new Set<number>(),
+       phase: 'base' as const,
+       totalGenerated: 0
+     };
+     
+     this.saveSessionData(difficulty, resetData);
+     console.log(`🔄 SimplifiedTemplateManager: Reset exhaustion for ${difficulty} - cycling back to base templates`);
+   }
 
   /**
    * Get analytics for template usage
    */
-  static getTemplateAnalytics(difficulty?: DifficultyLevel): any {
-    if (difficulty) {
-      const usedBase = this.usedBaseTemplates.get(difficulty)?.size || 0;
-      const usedExt = this.usedExtensions.get(difficulty)?.size || 0;
-      const session = this.sessionData.get(difficulty) || { phase: 'base', totalGenerated: 0 };
-      
-      return {
-        difficulty,
-        usedBaseTemplates: usedBase,
-        usedExtensions: usedExt,
-        totalGenerated: session.totalGenerated,
-        currentPhase: session.phase,
-        exhaustionRate: {
-          base: `${usedBase}/40`,
-          extensions: `${usedExt}/5`
-        }
-      };
-    }
+   static getTemplateAnalytics(difficulty?: DifficultyLevel): any {
+     if (difficulty) {
+       const sessionData = this.getSessionData(difficulty);
+       const usedBase = sessionData.usedBaseTemplates.size;
+       const usedExt = sessionData.usedExtensions.size;
+       
+       return {
+         difficulty,
+         usedBaseTemplates: usedBase,
+         usedExtensions: usedExt,
+         totalGenerated: sessionData.totalGenerated,
+         currentPhase: sessionData.phase,
+         exhaustionRate: {
+           base: `${usedBase}/40`,
+           extensions: `${usedExt}/5`
+         },
+         persistentStorage: true
+       };
+     }
 
     // Return analytics for all difficulties
     const allDifficulties: DifficultyLevel[] = ['easy', 'medium', 'hard', 'expert'];
@@ -416,13 +531,21 @@ export class SimplifiedTemplateManager {
     }, {} as Record<string, any>);
   }
 
-  /**
-   * Clear session data and reset exhaustion tracking
-   */
-  static clearSession(): void {
-    this.usedBaseTemplates.clear();
-    this.usedExtensions.clear();
-    this.sessionData.clear();
-    console.log('🔄 SimplifiedTemplateManager: Session cleared - all exhaustion tracking reset');
-  }
+   /**
+    * Clear session data and reset exhaustion tracking
+    */
+   static clearSession(): void {
+     const difficulties: DifficultyLevel[] = ['easy', 'medium', 'hard', 'expert'];
+     
+     difficulties.forEach(difficulty => {
+       try {
+         const key = `${this.STORAGE_PREFIX}${difficulty}`;
+         sessionStorage.removeItem(key);
+       } catch (error) {
+         console.warn(`⚠️ Failed to clear session storage for ${difficulty}:`, error);
+       }
+     });
+     
+     console.log('🔄 SimplifiedTemplateManager: Session cleared - all exhaustion tracking reset from persistent storage');
+   }
 }
