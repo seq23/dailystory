@@ -9,7 +9,7 @@ import type { Achievement } from "@/services/gamificationService";
 import { InteractiveAudioReading } from "@/components/InteractiveAudioReading";
 import { ElevenLabsAudio } from "@/components/ElevenLabsAudio";
 import { UniversalContentManager } from "@/services/universalContentManager";
-import { Level0StoryProcessor } from "@/services/level0StoryProcessor";
+import { SimplifiedLevel0Processor } from "@/services/simplifiedLevel0Processor";
 import { UnifiedImageService, type EstablishedCharacter } from "@/services/unifiedImageService";
 import { FreeTrialPageLimitError } from "@/utils/errorHandling";
 import { SessionPageTracker } from "@/services/sessionPageTracker";
@@ -326,11 +326,11 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
           let storyResult;
           
           if (currentDifficulty === 'beginner') {
-            console.log('🚀 FreeReadingSession: Using Level0StoryProcessor for Level 0 (beginner)');
+            console.log('🚀 FreeReadingSession: Using SimplifiedLevel0Processor for Level 0 (beginner)');
             console.log('📊 FreeReadingSession: Current difficulty:', currentDifficulty);
             console.log('🎯 FreeReadingSession: User info:', userInfo);
             
-            const level0Result = await Level0StoryProcessor.generateStory(userInfo);
+            const level0Result = await SimplifiedLevel0Processor.generateStory(userInfo, false);
             storyResult = { 
               segments: level0Result.content.map(text => ({ text })),
               wordCount: level0Result.content.join(' ').split(' ').length,
@@ -540,8 +540,8 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
         let storyResult;
         
         if (newDifficulty === 'beginner') {
-          console.log('🔄 FreeReadingSession: Difficulty change to Level 0, using Level0StoryProcessor');
-          const level0Result = await Level0StoryProcessor.generateStory(userInfo);
+          console.log('🔄 FreeReadingSession: Difficulty change to Level 0, using SimplifiedLevel0Processor');
+          const level0Result = await SimplifiedLevel0Processor.generateStory(userInfo, false);
           storyResult = { 
             segments: level0Result.content.map(text => ({ text })),
             wordCount: level0Result.content.join(' ').split(' ').length,
@@ -570,7 +570,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
             
             // Generate additional pages through Level0StoryProcessor to ensure validation
             try {
-              const continuationResult = await Level0StoryProcessor.continueStory(userInfo, additionalPages);
+              const continuationResult = await SimplifiedLevel0Processor.continueStory(userInfo, false, additionalPages);
               if (continuationResult.content.length > 0) {
                 pages.push(...continuationResult.content);
               } else {

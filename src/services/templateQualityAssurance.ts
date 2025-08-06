@@ -4,7 +4,7 @@
 import { DifficultyLevel, UserInfo } from '@/types';
 import { validateByMode, VocabularyMode, DOLCH_PRE_PRIMER_VOCABULARY, ENHANCED_LEVEL_0_VOCABULARY } from '@/constants/dolchPrePrimer';
 import { getLevel0FreeTemplate, getLevel0FreeTemplateCount } from '@/constants/level0TemplatesFree';
-import { EnhancedTemplateManager } from './enhancedTemplateManager';
+import { SimplifiedTemplateManager } from './simplifiedTemplateManager';
 
 interface QualityTestResult {
   testName: string;
@@ -312,7 +312,7 @@ export class TemplateQualityAssurance {
       };
       
       // Test premium page counts
-      const premiumResult = await EnhancedTemplateManager.generateEnhancedStory({
+      const premiumResult = await SimplifiedTemplateManager.generateStory({
         userInfo: testUserInfo,
         difficulty: 'beginner',
         isPremium: true
@@ -326,7 +326,7 @@ export class TemplateQualityAssurance {
       }
       
       // Test free page counts
-      const freeResult = await EnhancedTemplateManager.generateEnhancedStory({
+      const freeResult = await SimplifiedTemplateManager.generateStory({
         userInfo: testUserInfo,
         difficulty: 'beginner',
         isPremium: false
@@ -392,11 +392,10 @@ export class TemplateQualityAssurance {
           difficultyLevel: 'beginner'
         };
         
-        const result = await EnhancedTemplateManager.generateEnhancedStory({
+        const result = await SimplifiedTemplateManager.generateStory({
           userInfo: testUserInfo,
           difficulty: 'beginner',
-          isPremium: true,
-          templateIndex: undefined // Test with auto-selection
+          isPremium: true
         });
         
         // Check if user name is properly allowed even in strict mode
@@ -466,13 +465,13 @@ export class TemplateQualityAssurance {
           continue;
         }
         
-        const premiumResult = await EnhancedTemplateManager.generateEnhancedStory({
+        const premiumResult = await SimplifiedTemplateManager.generateStory({
           userInfo: testUserInfo,
           difficulty,
           isPremium: true
         });
         
-        const freeResult = await EnhancedTemplateManager.generateEnhancedStory({
+        const freeResult = await SimplifiedTemplateManager.generateStory({
           userInfo: testUserInfo,
           difficulty,
           isPremium: false
@@ -541,7 +540,7 @@ export class TemplateQualityAssurance {
       const startTime = performance.now();
       
       for (let i = 0; i < 10; i++) {
-        await EnhancedTemplateManager.generateEnhancedStory({
+        await SimplifiedTemplateManager.generateStory({
           userInfo: testUserInfo,
           difficulty: 'beginner',
           isPremium: true
