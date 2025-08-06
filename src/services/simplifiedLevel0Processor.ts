@@ -65,30 +65,47 @@ export class SimplifiedLevel0Processor {
   }
   
   /**
-   * Continue story with simple approach
+   * Continue story with proper template selection
    */
   static async continueStory(userInfo?: UserInfo, isPremium?: boolean, targetPages: number = 5): Promise<SimplifiedLevel0Result> {
-    console.log(`🔄 SimplifiedLevel0Processor: Continuing story with ${targetPages} pages`);
+    console.log(`🔄 SimplifiedLevel0Processor: Continuing story with next template`);
     
-    // For simplicity, generate a new story segment
-    const result = await this.generateStory(userInfo, isPremium);
+    const userType: UserType = isPremium ? 'premium' : 'free';
+    const templates = isPremium ? LEVEL_0_PREMIUM_TEMPLATES : LEVEL_0_FREE_TEMPLATES;
     
-    // Extend if needed
-    if (result.content.length < targetPages) {
-      const userName = userInfo?.name || 'I';
-      while (result.content.length < targetPages) {
-        result.content.push(`${userName} sees something new.`);
+    // Select the next unused template for continuation
+    let templateIndex = this.selectUnusedTemplate(templates.length);
+    let template = templates[templateIndex];
+    
+    // If all templates are used, reset and pick a new one
+    if (this.usedTemplates.size >= templates.length) {
+      console.log('🔄 All templates used, resetting for continuation');
+      this.usedTemplates.clear();
+      templateIndex = Math.floor(Math.random() * templates.length);
+      template = templates[templateIndex];
+    }
+    
+    // Mark template as used
+    this.usedTemplates.add(templateIndex);
+    
+    // Process variables
+    const processedPages = template.map(page => {
+      if (userInfo?.name) {
+        return page.replace(/\{userName\}/g, userInfo.name);
       }
-    }
+      return page;
+    });
     
-    // Trim if too long
-    if (result.content.length > targetPages) {
-      result.content = result.content.slice(0, targetPages);
-    }
+    // Basic validation
+    const validation = this.validateStory(processedPages, userType, userInfo?.name);
+    
+    console.log(`✅ SimplifiedLevel0Processor: Continued with ${processedPages.length} pages (template ${templateIndex + 1})`);
     
     return {
-      ...result,
-      content: result.content
+      content: processedPages,
+      templateIndex,
+      isValid: validation.isValid,
+      validationErrors: validation.errors
     };
   }
   
