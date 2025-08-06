@@ -45,6 +45,8 @@ export class NetflixStyleStoryService {
             hobbies: userInfo.hobbies,
             maxLength: promptConfig.maxLength,
             expectedPages: promptConfig.expectedPages,
+            systemPrompt: systemPrompt,
+            userPrompt: userPrompt,
             avatar: {
               type: 'child',
               skinTone: 'medium'
@@ -58,20 +60,14 @@ export class NetflixStyleStoryService {
         return this.generateFallbackStory(userInfo, difficulty);
       }
 
-      if (data?.content) {
-        // Split content into pages
-        const pages = data.content
-          .split('\n\n')
-          .filter((page: string) => page.trim())
-          .map((page: string) => page.trim());
-        
-        console.log(`🎬 Netflix-Style: Generated ${pages.length} pages for ${difficulty} level`);
+      if (data?.pages && data.pages.length > 0) {
+        console.log(`🎬 Netflix-Style: Generated ${data.pages.length} pages for ${difficulty} level`);
         
         return {
-          pages,
-          difficulty,
-          title: `${userInfo.name}'s Adventure`,
-          isComplete: true
+          pages: data.pages,
+          difficulty: data.difficulty || difficulty,
+          title: data.title || `${userInfo.name}'s Adventure`,
+          isComplete: data.isComplete || true
         };
       }
 
