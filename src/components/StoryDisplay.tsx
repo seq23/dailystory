@@ -1,3 +1,4 @@
+/* StoryDisplay Component - Debug mode active */
 import { useState, useEffect, useRef } from "react";
 import { MobileOptimizedButton } from "@/components/MobileOptimizedButton";
 import { Card, CardContent } from "@/components/ui/card";
@@ -1274,6 +1275,6 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
       />
     </div>
   );
-};
+}; // End StoryDisplay component
 
 export default StoryDisplay;
