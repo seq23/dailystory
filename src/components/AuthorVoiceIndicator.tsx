@@ -2,8 +2,8 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Sparkles, BookOpen } from 'lucide-react';
-import { DifficultyLevel } from '@/types';
-import { DifficultyManager } from '@/services/difficultyManager';
+import type { DifficultyLevel } from '@/types';
+// import { DifficultyManager } from '@/services/difficultyManager';
 
 interface AuthorVoiceIndicatorProps {
   difficulty: DifficultyLevel;
@@ -14,7 +14,7 @@ export const AuthorVoiceIndicator: React.FC<AuthorVoiceIndicatorProps> = ({
   difficulty, 
   className = "" 
 }) => {
-  const hasAuthorVoice = DifficultyManager.hasAuthorVoice(difficulty);
+  const hasAuthorVoice = difficulty !== 'beginner';
 
   if (!hasAuthorVoice) {
     return (
