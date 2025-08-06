@@ -5,6 +5,7 @@ import type { UserInfo } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 import { APP_CONFIG, IMAGE_STYLES, type ImageStyle } from '@/config/appConfig';
 import { ErrorHandler, ErrorType } from '@/utils/errorHandling';
+import { AdvancedStoryAnalyzer, type StoryAnalysis } from './AdvancedStoryAnalyzer';
 
 export interface ImageGenerationConfig {
   provider: 'runware' | 'dalle';
@@ -17,6 +18,7 @@ export interface ImageResult {
   url: string;
   success: boolean;
   error?: string;
+  analysis?: StoryAnalysis;
 }
 
 export class SimpleImageService {
@@ -27,29 +29,60 @@ export class SimpleImageService {
     style: 'children-book-illustration'
   };
 
+  // Store previous analysis for continuity
+  private static previousAnalysis: StoryAnalysis | undefined;
+
   static async generateStoryImage(
     storyText: string, 
     userInfo: UserInfo, 
     pageNumber: number = 1,
+    totalPages: number = 10,
     config: Partial<ImageGenerationConfig> = {}
   ): Promise<ImageResult> {
     const finalConfig = { ...this.DEFAULT_CONFIG, ...config };
     
     try {
-      console.log(`🎨 Simple Image: Generating image for page ${pageNumber} using ${finalConfig.provider}`);
+      console.log(`🎨 Enhanced Image: Analyzing story content for page ${pageNumber}/${totalPages}`);
       
-      // Create character-consistent prompt
-      const characterDescription = this.buildCharacterDescription(userInfo);
-      const prompt = this.buildImagePrompt(storyText, characterDescription, finalConfig.style);
+      // Advanced content analysis
+      const analysis = AdvancedStoryAnalyzer.analyzeStoryContent(
+        storyText, 
+        pageNumber, 
+        totalPages, 
+        this.previousAnalysis
+      );
       
-      if (finalConfig.provider === 'runware') {
-        return await this.generateWithRunware(prompt, finalConfig);
-      } else {
-        return await this.generateWithDALLE(prompt, finalConfig);
-      }
+      // Store for next iteration
+      this.previousAnalysis = analysis;
+      
+      console.log(`🎨 Analysis complete:`, {
+        action: analysis.mainAction,
+        setting: analysis.setting.location,
+        mood: analysis.mood,
+        emotions: analysis.emotions,
+        objects: analysis.objects.slice(0, 3)
+      });
+      
+      // Generate enhanced prompt
+      const enhancedPrompt = AdvancedStoryAnalyzer.generateEnhancedPrompt(
+        analysis, 
+        userInfo, 
+        finalConfig.style
+      );
+      
+      const fullPrompt = this.buildFinalPrompt(enhancedPrompt);
+      
+      const result = finalConfig.provider === 'runware' 
+        ? await this.generateWithRunware(fullPrompt, finalConfig, enhancedPrompt.negativePrompt.join(', '))
+        : await this.generateWithDALLE(fullPrompt, finalConfig);
+      
+      return {
+        ...result,
+        analysis
+      };
       
     } catch (error) {
-      console.error('🎨 Simple Image: Generation failed:', error);
+      console.error('🎨 Enhanced Image: Generation failed:', error);
       return {
         url: '',
         success: false,
@@ -66,15 +99,10 @@ export class SimpleImageService {
     return `${ageGroup} named ${userInfo.name}, ${userInfo.avatar?.type || 'friendly'} appearance with ${userInfo.avatar?.skinTone || 'warm'} skin tone`;
   }
 
-  private static buildImagePrompt(storyText: string, characterDescription: string, style: ImageStyle): string {
-    // Extract key elements from story text
-    const cleanText = storyText.toLowerCase();
-    const actions = this.extractActions(cleanText);
-    const setting = this.extractSetting(cleanText);
-    const styleDescription = IMAGE_STYLES[style];
+  private static buildFinalPrompt(enhancedPrompt: any): string {
+    const { mainPrompt, styleModifiers, compositionHints, colorPalette } = enhancedPrompt;
     
-    return `A beautiful ${styleDescription} showing ${characterDescription} ${actions} in ${setting}. 
-    Bright, cheerful, safe for children, high quality digital art, warm lighting, engaging composition.`;
+    return `${mainPrompt} ${styleModifiers.join(', ')}. ${compositionHints.join(', ')}. Color palette: ${colorPalette.join(', ')}.`;
   }
 
   private static extractActions(text: string): string {
@@ -98,21 +126,27 @@ export class SimpleImageService {
     return 'a magical, safe place';
   }
 
-  private static async generateWithRunware(prompt: string, config: ImageGenerationConfig): Promise<ImageResult> {
+  private static async generateWithRunware(prompt: string, config: ImageGenerationConfig, negativePrompt?: string): Promise<ImageResult> {
     try {
       console.log('🎨 Calling Supabase Edge Function for Runware image generation');
       
+      const body: any = {
+        positivePrompt: prompt,
+        width: config.width,
+        height: config.height,
+        model: APP_CONFIG.images.runware.model,
+        numberResults: 1,
+        outputFormat: APP_CONFIG.images.runware.outputFormat,
+        steps: APP_CONFIG.images.runware.steps,
+        CFGScale: APP_CONFIG.images.runware.CFGScale
+      };
+      
+      if (negativePrompt) {
+        body.negativePrompt = negativePrompt;
+      }
+      
       const { data, error } = await supabase.functions.invoke('runware-generate-image', {
-        body: {
-          positivePrompt: prompt,
-          width: config.width,
-          height: config.height,
-          model: APP_CONFIG.images.runware.model,
-          numberResults: 1,
-          outputFormat: APP_CONFIG.images.runware.outputFormat,
-          steps: APP_CONFIG.images.runware.steps,
-          CFGScale: APP_CONFIG.images.runware.CFGScale
-        }
+        body
       });
 
       if (error) {

@@ -168,7 +168,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
       const result = await SimpleImageService.generateStoryImage(
         storyText, 
         userInfo, 
-        currentPage + 1
+        currentPage + 1,
+        story.length
       );
       
       if (result.success && result.url) {

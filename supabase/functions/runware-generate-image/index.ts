@@ -13,7 +13,8 @@ serve(async (req) => {
 
   try {
     const { 
-      positivePrompt, 
+      positivePrompt,
+      negativePrompt,
       model = "runware:100@1",
       width = 1024,
       height = 1024,
@@ -90,7 +91,12 @@ serve(async (req) => {
     enhancedPrompt += `, award-winning children's book illustration style, ultra-realistic skin tones, accurate diverse representation, beautiful vibrant colors, perfect lighting, professional artwork composition, high-quality detailed artwork, child-appropriate content, consistent character design, inclusive and diverse, completely text-free, museum-quality illustration, masterpiece children's art`;
 
     // SMART TEXT RULES: Enhanced negative prompt allowing environmental text but preventing story overlays
-    const negativePrompt = "large title text, story text overlays, sentences from the story written across the image, speech bubbles, dialogue text, narration text, large prominent text, story quotes, chapter titles, book text overlays, captions, subtitles, story sentences, blurry, low quality, distorted, scary, inappropriate, adult content, violence, weapons, dark themes, inconsistent character, different character, wrong skin tone, inaccurate skin color, whitewashed, wrong gender, pale when should be dark, light when should be dark, ugly, malformed, deformed, bad anatomy, poor composition, amateur art, copyrighted characters, trademarked content, Godzilla, Pokemon, Disney characters, brand logos, commercial characters";
+    const defaultNegativePrompt = "large title text, story text overlays, sentences from the story written across the image, speech bubbles, dialogue text, narration text, large prominent text, story quotes, chapter titles, book text overlays, captions, subtitles, story sentences, blurry, low quality, distorted, scary, inappropriate, adult content, violence, weapons, dark themes, inconsistent character, different character, wrong skin tone, inaccurate skin color, whitewashed, wrong gender, pale when should be dark, light when should be dark, ugly, malformed, deformed, bad anatomy, poor composition, amateur art, copyrighted characters, trademarked content, Godzilla, Pokemon, Disney characters, brand logos, commercial characters";
+    
+    // Combine default negative prompt with any additional negative prompt
+    const finalNegativePrompt = negativePrompt 
+      ? `${defaultNegativePrompt}, ${negativePrompt}`
+      : defaultNegativePrompt;
 
     // Create WebSocket connection to Runware
     const ws = new WebSocket("wss://ws-api.runware.ai/v1");
@@ -135,7 +141,7 @@ serve(async (req) => {
                 taskType: "imageInference",
                 taskUUID,
                 positivePrompt: enhancedPrompt,
-                negativePrompt: negativePrompt,
+                negativePrompt: finalNegativePrompt,
                 model,
                 width,
                 height,
