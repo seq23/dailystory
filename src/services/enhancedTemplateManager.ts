@@ -116,6 +116,10 @@ export class EnhancedTemplateManager {
     // Levels 1-4: Full processing pipeline
     console.log(`🚀 EnhancedTemplateManager: Starting full processing pipeline for Level ${gradeLevel}`);
     
+    // Process enhanced user inputs for richer personalization
+    const { EnhancedInputProcessor } = await import('./enhancedInputProcessor');
+    const processedInputs = await EnhancedInputProcessor.processUserInputsAdvanced(userInfo, difficulty);
+    
     // Determine target page count
     const targetPages = getTargetPageCount(gradeLevel, isPremium);
     
@@ -144,9 +148,10 @@ export class EnhancedTemplateManager {
     console.log(`👥 EnhancedTemplateManager: Generating Character Pool for Level ${gradeLevel}`);
     const characterPool = CharacterPoolManager.generateCharacterPool(userInfo || {} as UserInfo, difficulty);
     
-    // STEP 3: Get Enhanced User Inputs for deeper story context
+    // STEP 3: Get Enhanced User Inputs for deeper story context (use both systems)
     console.log(`🔧 EnhancedTemplateManager: Processing Enhanced User Inputs for Level ${gradeLevel}`);
-    const enhancedInputs = InputEnhancementEngine.enhanceUserInputs(userInfo || {} as UserInfo);
+    const baseEnhancedInputs = InputEnhancementEngine.enhanceUserInputs(userInfo || {} as UserInfo);
+    const enhancedInputs = { ...baseEnhancedInputs, ...processedInputs };
     
     // STEP 4: Select Author Voice for consistent storytelling
     console.log(`✍️ EnhancedTemplateManager: Selecting Author Voice for Level ${gradeLevel}`);
@@ -156,7 +161,7 @@ export class EnhancedTemplateManager {
     console.log(`🎭 EnhancedTemplateManager: Applying Character Details to Template for Level ${gradeLevel}`);
     try {
       // Enhance each template page with character details while preserving the template narrative
-      pages = pages.map((page, index) => {
+      pages = await Promise.all(pages.map(async (page, index) => {
         const context = {
           currentPage: index + 1,
           totalPages: pages.length,
@@ -168,14 +173,14 @@ export class EnhancedTemplateManager {
         };
         
         // Enhance the template page with character details (don't replace)
-        return this.enhanceTemplateWithCharacters(
+        return await this.enhanceTemplateWithCharacters(
           page,
           userInfo || {} as UserInfo,
           characterPool,
           enhancedInputs,
           { currentPage: index + 1, totalPages: pages.length }
         );
-      });
+      }));
     } catch (error) {
       console.warn(`⚠️ EnhancedTemplateManager: Character enhancement failed:`, error);
       // Continue with original pages on error
@@ -497,16 +502,16 @@ export class EnhancedTemplateManager {
    * Enhance template pages with contextual character integration (FIXED)
    * Replaces broken placeholder system with intelligent character enhancement
    */
-  private static enhanceTemplateWithCharacters(
+  private static async enhanceTemplateWithCharacters(
     page: string,
     userInfo: UserInfo,
     characterPool: any,
     enhancedInputs: any,
     context: { currentPage: number; totalPages: number }
-  ): string {
+  ): Promise<string> {
     try {
       // Import the new contextual character enhancer
-      const { ContextualCharacterEnhancer } = require('./contextualCharacterEnhancer');
+      const { ContextualCharacterEnhancer } = await import('./contextualCharacterEnhancer');
       
       // Determine difficulty level from grade
       const difficultyMapping = {
