@@ -3,7 +3,7 @@ import { MobileKeyboardHandler } from "@/components/MobileKeyboardHandler";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { UserInfoForm } from "@/components/UserInfoForm";
-import StoryDisplay from "@/components/StoryDisplay";
+import CleanStoryDisplay from "@/components/CleanStoryDisplay";
 import { MobileOptimizedButton } from "@/components/MobileOptimizedButton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookOpen, BarChart3, Settings, LogOut } from "lucide-react";
@@ -211,7 +211,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
           </TabsList>
 
           <TabsContent value="story">
-            <StoryDisplay
+            <CleanStoryDisplay
               userInfo={userInfo}
               onHome={() => setCurrentView("progress")}
               onNewStory={() => setCurrentView("profile")}
