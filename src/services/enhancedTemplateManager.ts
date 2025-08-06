@@ -54,40 +54,260 @@ interface EnhancedTemplateResult {
   };
 }
 
+// Enhanced session state interface for template continuation
+interface EnhancedTemplateSessionState {
+  currentTemplate: string[] | null;
+  currentTemplateIndex: number;
+  currentPageIndex: number;
+  usedTemplates: Set<number>;
+  sessionStartTime: number;
+  gradeLevel: GradeLevel;
+}
+
 export class EnhancedTemplateManager {
   // Track used templates per session to avoid repetition
   private static sessionUsedTemplates: Map<GradeLevel, Set<number>> = new Map();
   
+  // Session storage for template continuation
+  private static getSessionStorageKey(gradeLevel: GradeLevel): string {
+    return `enhanced_template_session_${gradeLevel}`;
+  }
+  
   /**
-   * Continue an existing story for Levels 1-4 using the same template selection logic as initial generation
-   * Ensures consistency with already-used templates tracking
+   * Get current session state for a grade level
+   */
+  private static getSessionState(gradeLevel: GradeLevel): EnhancedTemplateSessionState | null {
+    try {
+      const { MobileSessionManager } = require('./mobileSessionManager');
+      const stored = MobileSessionManager.getItem(this.getSessionStorageKey(gradeLevel));
+      if (!stored) return null;
+      
+      const parsed = JSON.parse(stored);
+      return {
+        currentTemplate: parsed.currentTemplate || null,
+        currentTemplateIndex: parsed.currentTemplateIndex || -1,
+        currentPageIndex: parsed.currentPageIndex || 0,
+        usedTemplates: new Set(parsed.usedTemplates || []),
+        sessionStartTime: parsed.sessionStartTime || Date.now(),
+        gradeLevel
+      };
+    } catch (error) {
+      console.warn(`⚠️ Failed to load session state for ${gradeLevel}:`, error);
+      return null;
+    }
+  }
+  
+  /**
+   * Save current session state for a grade level
+   */
+  private static saveSessionState(state: EnhancedTemplateSessionState): void {
+    try {
+      const { MobileSessionManager } = require('./mobileSessionManager');
+      MobileSessionManager.setItem(this.getSessionStorageKey(state.gradeLevel), JSON.stringify({
+        currentTemplate: state.currentTemplate,
+        currentTemplateIndex: state.currentTemplateIndex,
+        currentPageIndex: state.currentPageIndex,
+        usedTemplates: Array.from(state.usedTemplates),
+        sessionStartTime: state.sessionStartTime,
+        gradeLevel: state.gradeLevel
+      }));
+    } catch (error) {
+      console.warn(`⚠️ Failed to save session state for ${state.gradeLevel}:`, error);
+    }
+  }
+  
+  /**
+   * Continue an existing story for Levels 1-4 with proper template state management
+   * Fixed to respect current template sequence instead of starting new templates
    */
   static async continueStory(options: EnhancedTemplateOptions & { targetPages?: number }): Promise<EnhancedTemplateResult> {
     const { targetPages = 5, ...generateOptions } = options;
+    const { userInfo, difficulty, isPremium = false } = generateOptions;
     
-    console.log(`🔄 EnhancedTemplateManager: Continuing story for ${generateOptions.difficulty} with ${targetPages} pages`);
+    const gradeLevel = difficultyToGradeLevel(difficulty);
+    const gradeInfo = GRADE_LEVEL_INFO[gradeLevel];
     
-    // Generate a new story segment using the same logic but with reduced page count
-    const result = await this.generateEnhancedStory({
-      ...generateOptions,
-      enableExtensions: false // Disable extensions for continuation to get base template content
+    console.log(`🔄 EnhancedTemplateManager: Continuing story for ${difficulty} (Level ${gradeLevel}) with ${targetPages} pages`);
+    
+    // Get current session state
+    let sessionState = this.getSessionState(gradeLevel);
+    
+    // Initialize session if not exists
+    if (!sessionState) {
+      console.log(`🔄 No existing session for Level ${gradeLevel}, initializing new session`);
+      sessionState = {
+        currentTemplate: null,
+        currentTemplateIndex: -1,
+        currentPageIndex: 0,
+        usedTemplates: new Set(),
+        sessionStartTime: Date.now(),
+        gradeLevel
+      };
+    }
+    
+    const pages: string[] = [];
+    let pagesGenerated = 0;
+    
+    // Generate exactly the requested number of pages
+    while (pagesGenerated < targetPages) {
+      // If no current template or current template is exhausted, get a new one
+      if (!sessionState.currentTemplate || sessionState.currentPageIndex >= sessionState.currentTemplate.length) {
+        console.log(`🔄 Level ${gradeLevel}: Need new template (current: ${sessionState.currentTemplateIndex}, page: ${sessionState.currentPageIndex})`);
+        
+        // Select next template with anti-repetition
+        const totalTemplates = getTemplateCountByGradeLevel(gradeLevel);
+        const usedTemplates = Array.from(sessionState.usedTemplates);
+        const { templateIndex: selectedIndex, template: baseTemplate } = selectTemplate(
+          gradeLevel,
+          usedTemplates
+        );
+        
+        // Process the complete template with character enhancement and author voice
+        const processedTemplate = await this.processCompleteTemplate(
+          baseTemplate,
+          userInfo,
+          difficulty,
+          gradeLevel
+        );
+        
+        // Update session state with new template
+        sessionState.currentTemplate = processedTemplate;
+        sessionState.currentTemplateIndex = selectedIndex;
+        sessionState.currentPageIndex = 0;
+        sessionState.usedTemplates.add(selectedIndex);
+        
+        console.log(`✅ Level ${gradeLevel}: Selected template ${selectedIndex + 1}/${totalTemplates} with ${processedTemplate.length} pages`);
+      }
+      
+      // Get pages from current template up to the remaining target
+      const remainingPages = targetPages - pagesGenerated;
+      const remainingTemplatePages = sessionState.currentTemplate.length - sessionState.currentPageIndex;
+      const pagesToTake = Math.min(remainingPages, remainingTemplatePages);
+      
+      // Extract pages from current template
+      for (let i = 0; i < pagesToTake; i++) {
+        const pageIndex = sessionState.currentPageIndex + i;
+        pages.push(sessionState.currentTemplate[pageIndex]);
+      }
+      
+      // Update session state
+      sessionState.currentPageIndex += pagesToTake;
+      pagesGenerated += pagesToTake;
+      
+      console.log(`📄 Level ${gradeLevel}: Added ${pagesToTake} pages (${pagesGenerated}/${targetPages} total)`);
+    }
+    
+    // Save updated session state
+    this.saveSessionState(sessionState);
+    
+    // Validate vocabulary compliance
+    const validation = this.validateStoryVocabulary(pages, gradeLevel, userInfo?.name);
+    
+    console.log(`🎯 Level ${gradeLevel} Continuation Complete:`, {
+      totalPages: pages.length,
+      templateIndex: sessionState.currentTemplateIndex,
+      templateProgress: `${sessionState.currentPageIndex}/${sessionState.currentTemplate?.length || 0}`,
+      vocabularyCompliant: validation.isValid
     });
     
-    // Return exactly the requested number of pages
-    const continuationPages = result.pages.slice(0, targetPages);
-    
     return {
-      ...result,
-      pages: continuationPages,
-      actualPages: continuationPages.length,
+      pages,
+      templateIndex: sessionState.currentTemplateIndex,
+      gradeLevel,
+      actualPages: pages.length,
       targetPages,
+      isPremium,
+      vocabularyCompliant: validation.isValid,
+      validationErrors: validation.errors,
       metadata: {
-        ...result.metadata,
+        difficulty,
+        gradeInfo,
         wasExtended: false,
-        extensionMethod: 'continuation-slice'
+        extensionMethod: 'template-continuation',
+        systemVersion: 'enhanced-unified-v1'
       }
     };
   }
+
+  /**
+   * Process a complete template with full enhancement pipeline
+   * This method applies the same processing as generateEnhancedStory but without extensions
+   */
+  private static async processCompleteTemplate(
+    baseTemplate: string[],
+    userInfo?: UserInfo,
+    difficulty?: DifficultyLevel,
+    gradeLevel?: GradeLevel
+  ): Promise<string[]> {
+    try {
+      // STEP 1: Basic user name replacement
+      let pages = baseTemplate.map(page => 
+        page.replace(/{userName}/g, userInfo?.name || 'I')
+      );
+
+      if (!difficulty || !gradeLevel) {
+        return pages; // Return basic processed pages if missing required params
+      }
+
+      // STEP 2: Generate Character Pool
+      const characterPool = CharacterPoolManager.generateCharacterPool(userInfo || {} as UserInfo, difficulty);
+      
+      // STEP 3: Get Enhanced User Inputs
+      const { EnhancedInputProcessor } = await import('./enhancedInputProcessor');
+      const processedInputs = await EnhancedInputProcessor.processUserInputsAdvanced(userInfo, difficulty);
+      const baseEnhancedInputs = InputEnhancementEngine.enhanceUserInputs(userInfo || {} as UserInfo);
+      const enhancedInputs = { ...baseEnhancedInputs, ...processedInputs };
+      
+      // STEP 4: Select Author Voice
+      const authorVoice = getAuthorVoiceForUser(userInfo || {} as UserInfo, difficulty);
+      
+      // STEP 5: Apply Character Enhancement
+      pages = await Promise.all(pages.map(async (page, index) => {
+        try {
+          return await this.enhanceTemplateWithCharacters(
+            page,
+            userInfo || {} as UserInfo,
+            characterPool,
+            enhancedInputs,
+            { currentPage: index + 1, totalPages: pages.length }
+          );
+        } catch (error) {
+          console.warn(`⚠️ Character enhancement failed for page ${index + 1}:`, error);
+          return page; // Return original page on error
+        }
+      }));
+      
+      // STEP 6: Apply Author Voice
+      pages = pages.map((page, index) => {
+        const isOpening = index === 0;
+        const isClosing = index === pages.length - 1;
+        const isTransition = !isOpening && !isClosing;
+        
+        try {
+          if (isOpening) {
+            return applyAuthorVoice(page, authorVoice, 'opening');
+          } else if (isClosing) {
+            return applyAuthorVoice(page, authorVoice, 'closing');
+          } else if (isTransition) {
+            return applyAuthorVoice(page, authorVoice, 'transition');
+          }
+        } catch (error) {
+          console.warn(`⚠️ Author voice application failed for page ${index + 1}:`, error);
+        }
+        
+        return page;
+      });
+
+      return pages;
+    } catch (error) {
+      console.warn(`⚠️ Template processing failed, returning basic template:`, error);
+      // Fallback to basic name replacement
+      return baseTemplate.map(page => 
+        page.replace(/{userName}/g, userInfo?.name || 'I')
+      );
+    }
+  }
+
   /**
    * Generate enhanced story with grade-based vocabulary and smart extensions
    * Level 0: Minimal processing (name substitution + validation only)
@@ -651,6 +871,18 @@ export class EnhancedTemplateManager {
     SessionTemplateManager.clearSession();
     // Clear used templates tracking
     this.sessionUsedTemplates.clear();
+    
+    // Clear enhanced template session storage for all grade levels
+    try {
+      const { MobileSessionManager } = require('./mobileSessionManager');
+      const gradeLevels = [1, 2, 3, 4] as GradeLevel[];
+      gradeLevels.forEach(gradeLevel => {
+        MobileSessionManager.removeItem(this.getSessionStorageKey(gradeLevel));
+      });
+      console.log('🧹 Cleared enhanced template session storage for all grade levels');
+    } catch (error) {
+      console.warn('⚠️ Failed to clear enhanced template session storage:', error);
+    }
   }
 
   /**
