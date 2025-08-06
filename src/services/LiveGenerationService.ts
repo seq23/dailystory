@@ -1,9 +1,13 @@
 // Live Generation Service for Premium Users
-// Generates stories page-by-page on demand
+// Generates stories page-by-page with tolerance-based validation
 
 import { supabase } from '@/integrations/supabase/client';
 import type { UserInfo, DifficultyLevel } from '@/types';
 import { getStoryPrompt, formatUserPrompt, calculateDifficultyFromUser } from '@/config/storyPrompts';
+import { ToleranceBasedValidator } from '@/utils/toleranceBasedValidator';
+import { FlexiblePromptConstraints } from '@/utils/flexiblePromptConstraints';
+import { EnhancedFallbackManager } from '@/constants/enhancedFallbackTemplates';
+import { ErrorHandler } from '@/utils/errorHandling';
 
 export interface LiveGenerationContext {
   userInfo: UserInfo;
@@ -23,23 +27,26 @@ export interface LivePageResult {
 }
 
 export class LiveGenerationService {
+  private static fallbackManager = new EnhancedFallbackManager();
+
   static async generateFirstPage(userInfo: UserInfo): Promise<LivePageResult> {
     try {
       console.log('🚀 Live Generation: Starting first page for', userInfo.name);
       
       const difficulty = userInfo.difficultyLevel || calculateDifficultyFromUser(userInfo);
-      const promptConfig = getStoryPrompt(difficulty);
+      const constraints = FlexiblePromptConstraints.getFlexibleConstraints(difficulty);
       
-      const systemPrompt = `${promptConfig.systemPrompt}
+      const systemPrompt = `${FlexiblePromptConstraints.createFlexibleSystemPrompt(difficulty)}
       
       IMPORTANT: You are generating the FIRST PAGE only of a multi-page story. 
       - Create an engaging opening that establishes the character and setting
       - End with a hook that makes the reader want to continue
-      - This is page 1 of approximately ${promptConfig.expectedPages} pages
+      - This is page 1 of approximately ${constraints.pageRange.min}-${constraints.pageRange.max} pages
       - Keep the content appropriate for the difficulty level
-      - Return ONLY the page content, no page numbers or formatting`;
+      - Return ONLY the page content, no page numbers or formatting
+      - Focus on quality storytelling over exact word counts`;
       
-      const userPrompt = `Create the opening page for ${userInfo.name} (age ${userInfo.age}). They love ${userInfo.favoriteAnimal} and ${userInfo.favoriteColor}. Their hobby is ${userInfo.hobbies}. Make it engaging and leave the reader wanting more.`;
+      const userPrompt = `Create the opening page for ${userInfo.name} (age ${userInfo.age}). They love ${userInfo.favoriteAnimal || 'animals'} and ${userInfo.favoriteColor || 'bright colors'}. Their hobby is ${userInfo.hobbies || 'playing'}. Make it engaging and leave the reader wanting more.`;
       
       const { data, error } = await supabase.functions.invoke('generate-adaptive-story', {
         body: {
@@ -60,23 +67,32 @@ export class LiveGenerationService {
 
       if (error || !data?.content) {
         console.error('🚀 Live Generation: Failed to generate first page:', error);
-        return this.generateFallbackFirstPage(userInfo, difficulty);
+        return this.generateEnhancedFallbackFirstPage(userInfo, difficulty, 'api_error');
       }
 
       const content = data.content.trim();
       
+      // Validate single page with lenient approach
+      const validation = ToleranceBasedValidator.validateStory([content], difficulty, userInfo);
+      
+      if (!validation.isValid && validation.scores.overallScore < 0.3) {
+        console.log('❌ First page quality too low, using fallback');
+        return this.generateEnhancedFallbackFirstPage(userInfo, difficulty, 'quality_failed');
+      }
+      
       // Create context for next page
+      const contextConstraints = FlexiblePromptConstraints.getFlexibleConstraints(difficulty);
       const context: LiveGenerationContext = {
         userInfo,
         difficulty,
         storyContext: [content],
         currentPage: 1,
-        totalExpectedPages: promptConfig.expectedPages,
+        totalExpectedPages: Math.round((contextConstraints.pageRange.min + contextConstraints.pageRange.max) / 2),
         theme: 'adventure',
-        characters: [userInfo.name, userInfo.favoriteAnimal]
+        characters: [userInfo.name, userInfo.favoriteAnimal || 'friend']
       };
 
-      console.log('🚀 Live Generation: First page generated successfully');
+      console.log('🚀 Live Generation: First page generated and validated successfully');
       
       return {
         content,
@@ -86,7 +102,8 @@ export class LiveGenerationService {
       
     } catch (error) {
       console.error('🚀 Live Generation: Error generating first page:', error);
-      return this.generateFallbackFirstPage(userInfo, userInfo.difficultyLevel || 'easy');
+      const wrappedError = ErrorHandler.handleError(error as Error, 'LiveGenerationService.generateFirstPage');
+      return this.generateEnhancedFallbackFirstPage(userInfo, userInfo.difficultyLevel || 'easy', 'generation_error');
     }
   }
 
@@ -132,10 +149,18 @@ export class LiveGenerationService {
 
       if (error || !data?.content) {
         console.error('🚀 Live Generation: Failed to generate page:', error);
-        return this.generateFallbackNextPage(context, nextPageNumber, isLastPage);
+        return this.generateEnhancedFallbackNextPage(context, nextPageNumber, isLastPage, 'api_error');
       }
 
       const content = data.content.trim();
+      
+      // Validate page quality
+      const validation = ToleranceBasedValidator.validateStory([content], context.difficulty, context.userInfo);
+      
+      if (!validation.isValid && validation.scores.overallScore < 0.3) {
+        console.log(`❌ Page ${nextPageNumber} quality too low, using fallback`);
+        return this.generateEnhancedFallbackNextPage(context, nextPageNumber, isLastPage, 'quality_failed');
+      }
       
       // Update context for next page
       const updatedContext: LiveGenerationContext = {
@@ -144,7 +169,7 @@ export class LiveGenerationService {
         currentPage: nextPageNumber
       };
 
-      console.log(`🚀 Live Generation: Page ${nextPageNumber} generated successfully`);
+      console.log(`🚀 Live Generation: Page ${nextPageNumber} generated and validated successfully`);
       
       return {
         content,
@@ -156,32 +181,97 @@ export class LiveGenerationService {
       console.error('🚀 Live Generation: Error generating next page:', error);
       const nextPageNumber = context.currentPage + 1;
       const isLastPage = nextPageNumber >= context.totalExpectedPages;
-      return this.generateFallbackNextPage(context, nextPageNumber, isLastPage);
+      const wrappedError = ErrorHandler.handleError(error as Error, 'LiveGenerationService.generateNextPage');
+      return this.generateEnhancedFallbackNextPage(context, nextPageNumber, isLastPage, 'generation_error');
     }
   }
 
-  private static generateFallbackFirstPage(userInfo: UserInfo, difficulty: DifficultyLevel): LivePageResult {
-    console.log('🚀 Live Generation: Using fallback first page');
+  private static generateEnhancedFallbackFirstPage(userInfo: UserInfo, difficulty: DifficultyLevel, reason: string): LivePageResult {
+    console.log(`🚀 Live Generation: Using enhanced fallback first page (reason: ${reason})`);
     
-    const fallbackContent = {
-      beginner: `Hello ${userInfo.name}! Today is a special day. You will meet a new friend.`,
-      easy: `${userInfo.name} woke up feeling excited. Something amazing was going to happen today, they could feel it in the air.`,
-      medium: `${userInfo.name} had always loved ${userInfo.hobbies}, but today felt different. As they stepped outside, a mysterious ${userInfo.favoriteColor} glow caught their attention.`,
-      hard: `At ${userInfo.age} years old, ${userInfo.name} had become quite skilled at ${userInfo.hobbies}. Little did they know that their passion would soon lead them on an extraordinary adventure.`,
-      expert: `In the quiet moments before dawn, ${userInfo.name} contemplated the relationship between ${userInfo.hobbies} and the deeper mysteries of existence. Today, that contemplation would become reality.`
-    };
+    try {
+      // Use enhanced fallback system
+      const fallbackStory = EnhancedFallbackManager.getFallbackTemplate(difficulty, userInfo, 0);
+      const pages = fallbackStory.split('\n\n').filter(page => page.trim().length > 0);
+      const content = pages[0] || `${userInfo.name} began a wonderful adventure.`;
+      
+      const constraints = FlexiblePromptConstraints.getFlexibleConstraints(difficulty);
+      const context: LiveGenerationContext = {
+        userInfo,
+        difficulty,
+        storyContext: [content],
+        currentPage: 1,
+        totalExpectedPages: Math.round((constraints.pageRange.min + constraints.pageRange.max) / 2),
+        theme: 'adventure',
+        characters: [userInfo.name, userInfo.favoriteAnimal || 'friend']
+      };
 
-    const promptConfig = getStoryPrompt(difficulty);
-    const content = fallbackContent[difficulty] || fallbackContent.easy;
+      return {
+        content,
+        isComplete: false,
+        nextContext: context
+      };
+    } catch (error) {
+      console.error('🚀 Enhanced fallback failed, using basic fallback:', error);
+      return this.generateBasicFallbackFirstPage(userInfo, difficulty);
+    }
+  }
+
+  private static generateEnhancedFallbackNextPage(
+    context: LiveGenerationContext, 
+    pageNumber: number, 
+    isLastPage: boolean,
+    reason: string
+  ): LivePageResult {
+    console.log(`🚀 Live Generation: Using enhanced fallback page ${pageNumber} (reason: ${reason})`);
+    
+    try {
+      // Use enhanced fallback system for continuation
+      const existingStory = context.storyContext.join('\n\n');
+      const fallbackStory = EnhancedFallbackManager.getFallbackTemplate(context.difficulty, context.userInfo, pageNumber - 1, context.storyContext);
+      const pages = fallbackStory.split('\n\n').filter(page => page.trim().length > 0);
+      
+      let content: string;
+      if (pages.length > pageNumber - 1) {
+        content = pages[pageNumber - 1];
+      } else {
+        // Generate appropriate content for the page
+        content = isLastPage 
+          ? `${context.userInfo.name} felt happy about the wonderful adventure. The end!`
+          : `${context.userInfo.name} continued the exciting journey.`;
+      }
+      
+      const updatedContext: LiveGenerationContext = {
+        ...context,
+        storyContext: [...context.storyContext, content],
+        currentPage: pageNumber
+      };
+
+      return {
+        content,
+        isComplete: isLastPage,
+        nextContext: isLastPage ? undefined : updatedContext
+      };
+    } catch (error) {
+      console.error('🚀 Enhanced fallback failed, using basic fallback:', error);
+      return this.generateBasicFallbackNextPage(context, pageNumber, isLastPage);
+    }
+  }
+
+  private static generateBasicFallbackFirstPage(userInfo: UserInfo, difficulty: DifficultyLevel): LivePageResult {
+    console.log('🚀 Live Generation: Using basic fallback first page as last resort');
+    
+    const content = `${userInfo.name} started a wonderful day.`;
+    const constraints = FlexiblePromptConstraints.getFlexibleConstraints(difficulty);
     
     const context: LiveGenerationContext = {
       userInfo,
       difficulty,
       storyContext: [content],
       currentPage: 1,
-      totalExpectedPages: promptConfig.expectedPages,
+      totalExpectedPages: constraints.pageRange.min,
       theme: 'adventure',
-      characters: [userInfo.name, userInfo.favoriteAnimal]
+      characters: [userInfo.name]
     };
 
     return {
@@ -191,36 +281,16 @@ export class LiveGenerationService {
     };
   }
 
-  private static generateFallbackNextPage(
+  private static generateBasicFallbackNextPage(
     context: LiveGenerationContext, 
     pageNumber: number, 
     isLastPage: boolean
   ): LivePageResult {
-    console.log(`🚀 Live Generation: Using fallback page ${pageNumber}`);
+    console.log(`🚀 Live Generation: Using basic fallback page ${pageNumber} as last resort`);
     
-    const { userInfo, difficulty } = context;
-    
-    let content: string;
-    
-    if (isLastPage) {
-      // Conclusion content
-      content = {
-        beginner: `${userInfo.name} is happy. The end!`,
-        easy: `${userInfo.name} smiled big. It was the best adventure ever!`,
-        medium: `As the sun set, ${userInfo.name} realized that this was just the beginning of many wonderful adventures ahead.`,
-        hard: `${userInfo.name} understood that every ending is also a new beginning, filled with infinite possibilities.`,
-        expert: `In the quiet aftermath of transformation, ${userInfo.name} carried forward the wisdom that growth and wonder are eternal companions.`
-      }[difficulty] || `${userInfo.name} felt grateful for the amazing adventure and looked forward to what tomorrow might bring.`;
-    } else {
-      // Continuation content
-      content = {
-        beginner: `${userInfo.name} sees something new. It is ${userInfo.favoriteColor}!`,
-        easy: `Suddenly, a friendly ${userInfo.favoriteAnimal} appeared. It wanted to show ${userInfo.name} something special.`,
-        medium: `The ${userInfo.favoriteAnimal} led ${userInfo.name} deeper into the adventure, where ${userInfo.favoriteColor} magic filled the air.`,
-        hard: `With each step forward, ${userInfo.name} discovered that their skills in ${userInfo.hobbies} were more important than they had ever imagined.`,
-        expert: `The journey continued to unfold layers of meaning, each revelation building upon the last in an intricate dance of discovery and understanding.`
-      }[difficulty] || `The adventure continued as ${userInfo.name} discovered something wonderful.`;
-    }
+    const content = isLastPage 
+      ? `${context.userInfo.name} had a great day. The end.`
+      : `${context.userInfo.name} continued the adventure.`;
     
     const updatedContext: LiveGenerationContext = {
       ...context,
