@@ -109,7 +109,7 @@ export class ErrorHandlingManager {
   }
 
   /**
-   * Get emergency content for critical failures - routes through Level0StoryProcessor for validation
+   * Get emergency content for critical failures - simple fallback content
    */
   static async getEmergencyContent(userInfo?: UserInfo): Promise<string[]> {
     try {

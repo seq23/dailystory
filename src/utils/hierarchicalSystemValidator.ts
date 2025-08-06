@@ -4,8 +4,7 @@
  */
 
 import { HierarchicalSessionTemplateManager } from '@/services/hierarchicalSessionTemplateManager';
-// Temporarily disabled - service removed
-// import { Level0StoryProcessor } from '@/services/level0StoryProcessor';
+// Level0StoryProcessor removed from system
 import { EnhancedSubscriptionManager } from '@/services/enhancedSubscriptionManager';
 import { getTemplateCountByGradeLevel } from '@/constants/gradeBased/unifiedTemplateSystem';
 import { difficultyToGradeLevel } from '@/constants/gradeBased/index';
@@ -235,8 +234,8 @@ export class HierarchicalSystemValidator {
         storyLanguagePreference: 'en'
       };
 
-      // Level0StoryProcessor temporarily disabled
-      console.log('⚠️ Level 0 processing validation skipped - service removed');
+      // Level 0 validation skipped - processor removed from system
+      console.log('ℹ️ Level 0 processing validation skipped - using simplified template system');
       
     } catch (error) {
       result.errors.push(`Level 0 processing validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);

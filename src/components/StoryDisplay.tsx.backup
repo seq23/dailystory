@@ -12,7 +12,7 @@ import type { Achievement } from "@/services/gamificationService";
 import { ElevenLabsAudio } from "@/components/ElevenLabsAudio";
 import { InteractiveAudioReading } from "@/components/InteractiveAudioReading";
 import { UniversalContentManager } from "@/services/universalContentManager";
-import { Level0StoryProcessor } from "@/services/level0StoryProcessor";
+// Level0StoryProcessor removed - using simplified approach
 import { FreeTrialPageLimitError } from "@/utils/errorHandling";
 import { UnifiedImageService, type EstablishedCharacter } from "@/services/unifiedImageService";
 import { APP_CONFIG } from "@/constants/app";
