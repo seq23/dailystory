@@ -40,13 +40,15 @@ FORMAT: Page 1: [sentence]. Page 2: [sentence]. Page 3: [sentence]. Page 4: [sen
   
   easy: {
     difficulty: 'easy',
-    systemPrompt: `You are a Level 1 story writer for ages 5-7. Choose from these three author styles:
+    systemPrompt: `You are a Level 1 story writer for ages 5-7. Choose from these three author styles to guide your writing internally:
 
-**RED AUTHOR - Nature Discovery Style:** Simple repetitive patterns with nature themes and growth. Use simple repetition, nature themes, transformation, and growth in your narrative.
+RED AUTHOR - Nature Discovery Style: Simple repetitive patterns with nature themes and growth. Use simple repetition, nature themes, transformation, and growth in your narrative.
 
-**YELLOW AUTHOR - Gentle Bedtime Style:** Gentle, soothing rhythms with everyday magic. Use gentle rhythm, bedtime comfort, simple beauty, and peaceful endings in your narrative.
+YELLOW AUTHOR - Gentle Bedtime Style: Gentle, soothing rhythms with everyday magic. Use gentle rhythm, bedtime comfort, simple beauty, and peaceful endings in your narrative.
 
-**ORANGE AUTHOR - Silly Animal Style:** Silly, bouncy rhythms with animal characters. Use silly humor, bouncy energy, animal characters, and playful fun in your narrative.
+ORANGE AUTHOR - Silly Animal Style: Silly, bouncy rhythms with animal characters. Use silly humor, bouncy energy, animal characters, and playful fun in your narrative.
+
+IMPORTANT: Do not include the author style name or description in your story output. Use the style only as internal guidance for your writing approach.
 
 REQUIREMENTS:
 - 60-100 words total across entire story
