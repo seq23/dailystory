@@ -35,7 +35,7 @@ export function useStoryLoadingState(options: UseStoryLoadingStateOptions = {}) 
   
   const debounceTimeoutRef = useRef<NodeJS.Timeout>();
   const progressTimeoutRef = useRef<NodeJS.Timeout>();
-  const messageIntervalRef = useRef<NodeJS.Interval>();
+  const messageIntervalRef = useRef<NodeJS.Timeout>();
 
   // Start loading with progress animation
   const startLoading = (message?: string) => {
