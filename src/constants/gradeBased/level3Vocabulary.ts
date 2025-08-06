@@ -7,11 +7,16 @@ export const LEVEL_3_VOCABULARY = new Set([
   // Include all Level 2 words
   ...LEVEL_2_VOCABULARY,
   
-  // 5th-6th Grade Advanced Vocabulary
+  // 5th-6th Grade Advanced Vocabulary + Author Voice Keywords
   'abandon', 'ability', 'absence', 'absolute', 'absorb', 'abstract', 'abuse', 'academic', 'accept', 'access',
   'accident', 'accompany', 'accomplish', 'according', 'account', 'accurate', 'achieve', 'acquire', 'action', 'active',
   'activity', 'actual', 'adapt', 'addition', 'adequate', 'adjust', 'administration', 'admit', 'adopt', 'adult',
   'advance', 'advantage', 'adventure', 'advertise', 'advice', 'advise', 'affect', 'afford', 'afraid', 'agency',
+  
+  // CRITICAL AUTHOR VOICE WORDS - ensuring templates don't fail validation
+  'opportunity', 'curiosity', 'experiment', 'realized', 'chances', 'distilled', 'carefully', 'measure', 'record',
+  'sleeping', 'outdoors', 'calling', 'campfires', 'safely', 'marshmallows', 'countless', 'community', 'neighbors',
+  'prepare', 'throughout', 'science', 'reminded', 'growth', 'types', 'investigate', 'mysteries', 'fascinating',
   'agent', 'aggressive', 'agree', 'agreement', 'agriculture', 'ahead', 'aid', 'aim', 'aircraft', 'album',
   'alcohol', 'alert', 'alien', 'alive', 'alliance', 'allow', 'ally', 'almost', 'alone', 'alternative',
   'amazing', 'ambition', 'ambulance', 'amount', 'analysis', 'analyze', 'ancient', 'anger', 'angle', 'angry',

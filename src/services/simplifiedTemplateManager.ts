@@ -342,16 +342,33 @@ export class SimplifiedTemplateManager {
     gradeLevel: GradeLevel, 
     userName?: string
   ): { isValid: boolean; errors: string[] } {
+    console.log(`🔍 AUTHOR VOICE DEBUG: Validating ${pages.length} pages for Level ${gradeLevel}`);
+    
     const errors: string[] = [];
     let isValid = true;
     
     pages.forEach((page, index) => {
+      console.log(`📄 Validating page ${index + 1}: "${page}"`);
+      
       const validation = validateSentence(page, gradeLevel, userName);
+      
       if (!validation.isValid) {
+        console.log(`❌ AUTHOR VOICE BLOCKED: Page ${index + 1} failed validation!`);
+        console.log(`   🚫 Invalid words: ${validation.invalidWords.join(', ')}`);
+        console.log(`   🔍 Expected words for Level ${gradeLevel} author voice: opportunity, curiosity, experiment, adventure, realized`);
+        console.log(`   📝 This is likely why Level ${gradeLevel} author voice isn't appearing`);
         errors.push(`Page ${index + 1}: ${validation.invalidWords.join(', ')}`);
         isValid = false;
+      } else {
+        console.log(`✅ Page ${index + 1} passed validation - author voice preserved!`);
       }
     });
+    
+    if (!isValid) {
+      console.log(`🚨 AUTHOR VOICE FAILURE: Level ${gradeLevel} templates failed validation, falling back to generic content`);
+    } else {
+      console.log(`🎭 AUTHOR VOICE SUCCESS: Level ${gradeLevel} templates validated successfully!`);
+    }
     
     return { isValid, errors };
   }
