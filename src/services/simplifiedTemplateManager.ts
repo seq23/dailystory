@@ -247,18 +247,21 @@ export class SimplifiedTemplateManager {
   }
   
   /**
-   * Select next template using exhaustion logic (base templates first, then extensions)
+   * Select next template using exhaustion logic with randomization and safety limits
    */
   private static selectNextTemplate(difficulty: DifficultyLevel, preferredIndex?: number): {
     pages: string[];
     templateIndex: number;
     source: 'base' | 'extension';
   } {
+    const MAX_SELECTION_ATTEMPTS = 1000; // Safety limit to prevent infinite loops
+    
     // Initialize tracking for this difficulty if needed
     if (!this.usedBaseTemplates.has(difficulty)) {
       this.usedBaseTemplates.set(difficulty, new Set());
       this.usedExtensions.set(difficulty, new Set());
       this.sessionData.set(difficulty, { phase: 'base', totalGenerated: 0 });
+      console.log(`🚀 SimplifiedTemplateManager: Initialized tracking for ${difficulty}`);
     }
 
     const usedBase = this.usedBaseTemplates.get(difficulty)!;
@@ -273,59 +276,89 @@ export class SimplifiedTemplateManager {
     const extensionTemplates = this.getExtensionTemplates(difficulty);
     const extensionCount = extensionTemplates.length;
 
+    console.log(`📊 Template State for ${difficulty}: Base ${usedBase.size}/${baseCount}, Extensions ${usedExt.size}/${extensionCount}, Phase: ${session.phase}`);
+
     let selectedIndex: number;
     let pages: string[];
     let source: 'base' | 'extension';
 
-    // Phase 1: Use base templates (40 templates)
+    // Phase 1: Use base templates (40 templates) with randomization
     if (session.phase === 'base' && usedBase.size < baseCount) {
-      // Select unused base template
       if (preferredIndex !== undefined && !usedBase.has(preferredIndex) && preferredIndex < baseCount) {
         selectedIndex = preferredIndex;
+        console.log(`🎯 Using preferred base template ${selectedIndex} for ${difficulty}`);
       } else {
-        // Find next unused base template
-        selectedIndex = 0;
-        while (usedBase.has(selectedIndex) && selectedIndex < baseCount) {
-          selectedIndex++;
+        // Randomized selection from unused base templates
+        const availableIndices = Array.from({ length: baseCount }, (_, i) => i)
+          .filter(i => !usedBase.has(i));
+        
+        if (availableIndices.length === 0) {
+          throw new Error(`No available base templates for ${difficulty} - this should not happen`);
         }
+        
+        selectedIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+        console.log(`🎲 Randomly selected base template ${selectedIndex} from ${availableIndices.length} available for ${difficulty}`);
       }
       
       usedBase.add(selectedIndex);
       pages = [...baseTemplates[selectedIndex]];
       source = 'base';
 
+      console.log(`✅ Selected base template ${selectedIndex} - Progress: ${usedBase.size}/${baseCount} base templates used`);
+
       // If all base templates used, move to extension phase
       if (usedBase.size >= baseCount) {
         session.phase = 'extensions';
+        console.log(`🔄 All base templates exhausted for ${difficulty} - moving to extensions phase`);
       }
     }
-    // Phase 2: Use extension templates (5 templates)
+    // Phase 2: Use extension templates (5 templates) with randomization
     else if (session.phase === 'extensions' && usedExt.size < extensionCount) {
-      // Select unused extension template
-      selectedIndex = 0;
-      while (usedExt.has(selectedIndex) && selectedIndex < extensionCount) {
-        selectedIndex++;
+      // Randomized selection from unused extension templates
+      const availableExtIndices = Array.from({ length: extensionCount }, (_, i) => i)
+        .filter(i => !usedExt.has(i));
+      
+      if (availableExtIndices.length === 0) {
+        throw new Error(`No available extension templates for ${difficulty} - this should not happen`);
       }
+      
+      selectedIndex = availableExtIndices[Math.floor(Math.random() * availableExtIndices.length)];
+      console.log(`🎲 Randomly selected extension template ${selectedIndex} from ${availableExtIndices.length} available for ${difficulty}`);
       
       usedExt.add(selectedIndex);
       pages = [...extensionTemplates[selectedIndex]];
       source = 'extension';
 
+      console.log(`✅ Selected extension template ${selectedIndex} - Progress: ${usedExt.size}/${extensionCount} extension templates used`);
+
       // If all extensions used, cycle back to base templates
       if (usedExt.size >= extensionCount) {
+        console.log(`🔄 All extension templates exhausted for ${difficulty} - cycling back to base templates`);
         this.resetExhaustion(difficulty);
       }
     }
-    // Fallback: cycle back to base templates
+    // Fallback: cycle back to base templates with safety check
     else {
+      console.log(`🔄 Fallback triggered for ${difficulty} - cycling back to base templates`);
       this.resetExhaustion(difficulty);
-      selectedIndex = 0;
-      usedBase.add(selectedIndex);
+      
+      // Safety check - ensure we have base templates
+      if (baseCount === 0) {
+        throw new Error(`No base templates available for ${difficulty}`);
+      }
+      
+      selectedIndex = Math.floor(Math.random() * baseCount);
+      const updatedUsedBase = this.usedBaseTemplates.get(difficulty)!;
+      updatedUsedBase.add(selectedIndex);
       pages = [...baseTemplates[selectedIndex]];
       source = 'base';
+      
+      console.log(`✅ Fallback selected random base template ${selectedIndex} for ${difficulty}`);
     }
 
     session.totalGenerated++;
+    
+    console.log(`📈 Template selection complete for ${difficulty}: Index ${selectedIndex}, Source: ${source}, Total generated: ${session.totalGenerated}`);
     
     return { pages, templateIndex: selectedIndex, source };
   }
