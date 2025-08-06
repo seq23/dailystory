@@ -1,7 +1,7 @@
 import { UserInfo, Story, DifficultyLevel } from "@/types";
 import { SessionPageTracker } from "./sessionPageTracker";
-import { EnhancedTemplateManager } from "./enhancedTemplateManager";
-import { Level0StoryProcessor } from "@/services/level0StoryProcessor";
+import { SimplifiedTemplateManager } from "./simplifiedTemplateManager";
+import { SimplifiedLevel0Processor } from "@/services/simplifiedLevel0Processor";
 
 // Define custom error classes
 class StoryGenerationError extends Error {
@@ -96,17 +96,16 @@ export class UniversalContentManager {
     try {
       let story: Story;
       
-      // Use EnhancedTemplateManager for all levels except Level 0
+      // Use simplified processors for reliable story generation
       if (difficulty === 'beginner') {
-        console.log('🎯 Level 0 Story Generation: Using specialized Level0StoryProcessor');
+        console.log('🎯 Level 0 Story Generation: Using SimplifiedLevel0Processor');
         story = await this.generateLevel0Story(userInfo, config.isPremium);
       } else {
-        console.log(`🎯 ${difficulty} Story Generation: Using EnhancedTemplateManager for consistent quality`);
-        const result = await EnhancedTemplateManager.generateEnhancedStory({
+        console.log(`🎯 ${difficulty} Story Generation: Using SimplifiedTemplateManager`);
+        const result = await SimplifiedTemplateManager.generateStory({
           userInfo,
           difficulty,
-          isPremium: config.isPremium,
-          enableExtensions: true
+          isPremium: config.isPremium
         });
         
         story = {
@@ -164,12 +163,12 @@ export class UniversalContentManager {
       
       // Use consistent 5-page continuation for all levels
       if (difficulty === 'beginner') {
-        console.log('🔄 Level 0 Continuation: Using dedicated Level0StoryProcessor.continueStory() method');
-        const level0Result = await Level0StoryProcessor.continueStory(userInfo, 5);
+        console.log('🔄 Level 0 Continuation: Using SimplifiedLevel0Processor.continueStory()');
+        const level0Result = await SimplifiedLevel0Processor.continueStory(userInfo, config.isPremium, 5);
         continuationPages = level0Result.content;
       } else {
-        console.log(`🔄 ${difficulty} Continuation: Using dedicated EnhancedTemplateManager.continueStory() method`);
-        const result = await EnhancedTemplateManager.continueStory({
+        console.log(`🔄 ${difficulty} Continuation: Using SimplifiedTemplateManager.continueStory()`);
+        const result = await SimplifiedTemplateManager.continueStory({
           userInfo,
           difficulty,
           isPremium: config.isPremium,
@@ -210,7 +209,7 @@ export class UniversalContentManager {
     console.log(`🎯 Level 0 Story Generation: Using specialized Level0StoryProcessor for ${userInfo.name}`);
 
     try {
-      const result = await Level0StoryProcessor.generateStory(userInfo);
+      const result = await SimplifiedLevel0Processor.generateStory(userInfo, isPremium);
       
       // Determine page count based on premium status
       const pageCount = isPremium ? 25 : 5;

@@ -1,377 +1,379 @@
 // Level 3 Templates (Ages 9-11) - 5th-6th Grade Reading Level
-// 40 unique 5-page templates using Level 3 vocabulary
+// 40 unique 5-page templates using appropriate vocabulary for elementary school students
 
 export const LEVEL_3_TEMPLATES = [
-  // Template 1: Environmental Research Project
+  // Template 1: School Science Fair
   [
-    "{userName} embarks on an ambitious environmental research project investigating the effects of climate change on local ecosystems.",
-    "The comprehensive study requires analyzing temperature data, precipitation patterns, and wildlife population changes over the past decade.",
-    "Collaborating with university researchers and environmental scientists, {userName} learns sophisticated data collection and analysis techniques.",
-    "The research reveals concerning trends that demonstrate how global warming impacts biodiversity in their geographic region.",
-    "Their detailed findings are published in the school's scientific journal and presented at a regional environmental conference."
+    "{userName} decides to enter the school science fair with a project about growing plants.",
+    "After some research, {userName} chooses to test which type of water helps plants grow best.",
+    "The experiment uses three plants: one gets tap water, one gets rainwater, and one gets distilled water.",
+    "Every day for two weeks, {userName} measures the plants and writes down the results.",
+    "At the science fair, {userName}'s project wins third place and everyone is impressed with the hard work."
   ],
   
-  // Template 2: Archaeological Discovery
+  // Template 2: School Camping Trip
   [
-    "{userName} participates in an authentic archaeological excavation that uncovers evidence of a previously unknown Native American settlement.",
-    "The meticulous process involves careful documentation, precise measurement, and preservation of artifacts using professional archaeological methods.",
-    "Analysis of pottery fragments, tools, and organic materials provides fascinating insights into the daily lives of ancient inhabitants.",
-    "Carbon dating techniques reveal that the settlement existed approximately eight hundred years ago, predating European colonization.",
-    "The discovery contributes valuable knowledge to anthropological understanding of pre-Columbian civilizations in North America."
+    "{userName} goes on an exciting three-day camping trip with the fifth grade class.",
+    "The students learn how to set up tents, start a campfire safely, and identify different trees.",
+    "At night, they roast marshmallows and tell stories while looking at the stars.",
+    "On the second day, they go on a nature hike and spot deer, rabbits, and many birds.",
+    "Everyone agrees it was the best school trip ever, and {userName} can't wait to go camping again."
   ],
   
-  // Template 3: Artificial Intelligence Programming
+  // Template 3: Community Garden Project
   [
-    "{userName} develops an artificial intelligence program capable of recognizing and classifying different species of birds from photographs.",
-    "The complex project requires understanding machine learning algorithms, neural networks, and extensive computer programming skills.",
-    "Training the AI system involves processing thousands of images and teaching the program to identify distinguishing characteristics.",
-    "After months of refinement and testing, the program achieves remarkable accuracy in species identification and classification.",
-    "The innovative application earns recognition at the state technology fair and attracts attention from professional software developers."
+    "{userName} volunteers to help create a community garden in the neighborhood.",
+    "The project starts with clearing weeds and preparing the soil for planting.",
+    "Families from the area donate seeds for vegetables like tomatoes, carrots, and lettuce.",
+    "Throughout the summer, {userName} helps water the plants and pull weeds every week.",
+    "By fall, the garden produces enough vegetables to share with everyone who helped."
   ],
   
-  // Template 4: Mathematical Theorem Investigation
+  // Template 4: School Play Audition
   [
-    "{userName} investigates an unsolved mathematical theorem related to prime number distribution and develops original analytical approaches.",
-    "The research requires advanced understanding of number theory, algebraic manipulation, and sophisticated mathematical proof techniques.",
-    "Working with a university mathematics professor, {userName} explores various hypotheses and computational verification methods.",
-    "Although the theorem remains unproven, their investigation yields several interesting conjectures and novel mathematical insights.",
-    "The work demonstrates exceptional mathematical reasoning and earns {userName} recognition from the regional mathematics society."
+    "{userName} auditions for the lead role in the school's production of 'The Wizard of Oz.'",
+    "Preparation includes memorizing lines, practicing songs, and learning stage movements.",
+    "Although nervous, {userName} performs well during the audition in front of teachers and students.",
+    "The next day, the cast list is posted and {userName} gets the part of Dorothy.",
+    "Opening night arrives and the play is a huge success with standing ovations from the audience."
   ],
   
-  // Template 5: Biomedical Engineering Innovation
+  // Template 5: Pet Care Business
   [
-    "{userName} designs and constructs a biomedical device intended to assist individuals with mobility impairments navigate stairs safely.",
-    "The engineering challenge involves understanding biomechanics, materials science, and principles of mechanical engineering design.",
-    "Prototype development requires extensive testing, user feedback incorporation, and iterative design improvements based on performance data.",
-    "The final device successfully demonstrates improved safety and accessibility for users with various physical limitations.",
-    "Medical professionals express interest in further development, and {userName} receives mentorship opportunities with biomedical engineers."
+    "{userName} starts a small business taking care of neighbors' pets while they're away.",
+    "The first job is watching Mrs. Johnson's cat for a weekend while she visits family.",
+    "Responsibilities include feeding the cat, cleaning the litter box, and giving it attention.",
+    "Word spreads quickly, and soon {userName} is caring for dogs, birds, and fish too.",
+    "By the end of summer, {userName} has saved enough money to buy a new bicycle."
   ],
   
-  // Template 6: Historical Documentary Production
+  // Template 6: School Newspaper Reporter
   [
-    "{userName} produces a comprehensive documentary film examining the social and economic impact of industrialization on immigrant communities.",
-    "The project involves extensive archival research, interviews with historians, and analysis of primary source documents and photographs.",
-    "Advanced video production techniques, including digital editing and historical recreation, bring the narrative to life effectively.",
-    "The documentary explores themes of cultural adaptation, economic opportunity, and the evolution of American industrial society.",
-    "The film receives acclaim at student film festivals and is selected for broadcast on local educational television networks."
+    "{userName} joins the school newspaper as a reporter covering sports and events.",
+    "The first assignment is writing about the upcoming basketball tournament.",
+    "This involves interviewing players, coaches, and taking notes during games.",
+    "After writing the article, the editor helps {userName} revise and improve it.",
+    "When the newspaper comes out, {userName} feels proud seeing the article in print."
   ],
   
-  // Template 7: Quantum Physics Experiment
+  // Template 7: Recycling Initiative
   [
-    "{userName} conducts sophisticated experiments investigating quantum mechanical phenomena using advanced laboratory equipment at a university facility.",
-    "The research explores wave-particle duality, quantum entanglement, and the fundamental principles governing subatomic particle behavior.",
-    "Collaboration with physics professors provides access to specialized instruments and expertise in quantum measurement techniques.",
-    "Experimental results confirm theoretical predictions and demonstrate the counterintuitive nature of quantum mechanical systems.",
-    "The experience inspires {userName} to pursue advanced studies in theoretical physics and quantum computing applications."
+    "{userName} notices that the school throws away many items that could be recycled.",
+    "With the principal's permission, {userName} organizes a recycling program for the entire school.",
+    "Students learn to separate paper, plastic, and cans into different colored bins.",
+    "Within a month, the school reduces its waste by half and earns money from recycling.",
+    "The success leads other schools in the district to start their own recycling programs."
   ],
   
-  // Template 8: Genetic Engineering Research
+  // Template 8: Chess Club Champion
   [
-    "{userName} participates in cutting-edge genetic engineering research focused on developing drought-resistant agricultural crops.",
-    "The biotechnology project involves understanding DNA manipulation, gene expression, and advanced molecular biology techniques.",
-    "Laboratory work includes bacterial transformation, genetic sequencing, and careful monitoring of experimental plant growth conditions.",
-    "Preliminary results suggest that genetically modified specimens demonstrate improved survival rates under water-stressed conditions.",
-    "The research contributes to ongoing efforts addressing global food security challenges caused by climate change impacts."
+    "{userName} joins the chess club and practices every day after school.",
+    "Learning different strategies and famous moves takes patience and concentration.",
+    "The club enters a regional tournament against teams from other schools.",
+    "After several challenging matches, {userName} makes it to the final round.",
+    "Although finishing second place, {userName} learns that hard work and practice really pay off."
   ],
   
-  // Template 9: Astrophysics Observation Program
+  // Template 9: Art Museum Field Trip
   [
-    "{userName} joins an advanced astrophysics observation program studying distant galaxies and stellar formation processes.",
-    "The research utilizes sophisticated telescopes, spectroscopic analysis, and computational modeling to understand cosmic phenomena.",
-    "Data collection requires precise calibration, extended observation periods, and statistical analysis of astronomical measurements.",
-    "Discoveries include identification of previously uncharted star systems and evidence of planetary formation in distant regions.",
-    "The work contributes to humanity's understanding of galactic evolution and the potential for extraterrestrial life."
+    "{userName}'s class takes a field trip to the city art museum.",
+    "The tour guide explains different painting styles and the stories behind famous artworks.",
+    "Students participate in an art workshop where they create their own paintings.",
+    "{userName} is inspired by the impressionist paintings and tries a similar style.",
+    "Back at school, {userName} continues painting and eventually has artwork displayed in the hallway."
   ],
   
-  // Template 10: Neuroscience Brain Mapping
+  // Template 10: School Band Concert
   [
-    "{userName} contributes to groundbreaking neuroscience research investigating brain connectivity patterns associated with learning and memory formation.",
-    "The study employs advanced neuroimaging techniques, including functional magnetic resonance imaging and electroencephalography.",
-    "Data analysis involves sophisticated statistical methods and computational modeling of neural network activity patterns.",
-    "Research findings reveal previously unknown connections between brain regions involved in cognitive processing and memory consolidation.",
-    "The work has implications for understanding learning disabilities and developing more effective educational strategies."
+    "{userName} learns to play the trumpet and joins the school band.",
+    "Practice sessions happen three times a week, learning scales and simple songs.",
+    "As the spring concert approaches, the band rehearses more difficult pieces.",
+    "On concert night, {userName} feels nervous but excited to perform for families.",
+    "The concert goes perfectly, and {userName} decides to continue playing music in middle school."
   ],
   
-  // Template 11: Sustainable Energy Design
+  // Template 11: Weather Station Project
   [
-    "{userName} engineers an innovative sustainable energy system combining solar, wind, and hydroelectric power generation technologies.",
-    "The comprehensive design addresses energy storage challenges, grid integration, and efficient power distribution for rural communities.",
-    "Economic analysis demonstrates cost-effectiveness compared to traditional fossil fuel-based energy systems over extended time periods.",
-    "Environmental impact assessment reveals significant reductions in carbon emissions and ecological disruption.",
-    "The project attracts interest from renewable energy companies and environmental organizations seeking practical implementation solutions."
+    "{userName} builds a weather station for a class project about meteorology.",
+    "The station includes tools to measure temperature, rainfall, and wind direction.",
+    "Every morning for a month, {userName} records the weather data in a notebook.",
+    "Patterns begin to emerge, showing how weather changes with the seasons.",
+    "The project helps {userName} understand why weather forecasts are sometimes wrong."
   ],
   
-  // Template 12: Marine Conservation Initiative
+  // Template 12: Friendship Problem
   [
-    "{userName} leads a comprehensive marine conservation initiative focused on protecting endangered coral reef ecosystems.",
-    "The project involves underwater research, water quality monitoring, and collaboration with marine biologists and conservation organizations.",
-    "Data collection reveals the devastating effects of ocean acidification, pollution, and rising temperatures on coral populations.",
-    "Implementation of protective measures includes establishing marine sanctuaries and educating coastal communities about conservation practices.",
-    "The initiative successfully demonstrates measurable improvements in coral health and biodiversity within protected areas."
+    "{userName} faces a difficult situation when two best friends start arguing.",
+    "Both friends ask {userName} to choose sides, which creates an uncomfortable feeling.",
+    "Instead of picking sides, {userName} suggests they all talk together.",
+    "During the conversation, the friends realize their argument was about a misunderstanding.",
+    "They apologize to each other and thank {userName} for helping them work things out."
   ],
   
-  // Template 13: Robotics Competition Championship
+  // Template 13: School Safety Patrol
   [
-    "{userName} designs and programs an autonomous robot for international competition, incorporating advanced artificial intelligence and mechanical engineering.",
-    "The challenge requires robots to navigate complex obstacles, manipulate objects, and complete tasks without human intervention.",
-    "Development involves iterative design processes, extensive testing, and optimization of both hardware and software components.",
-    "The competition provides opportunities to collaborate with teams from different countries and learn about diverse engineering approaches.",
-    "Their robot's innovative design and exceptional performance earn recognition and scholarship opportunities for advanced engineering studies."
+    "{userName} applies to be a crossing guard on the school safety patrol.",
+    "Training includes learning traffic rules and how to help younger students cross safely.",
+    "Every morning and afternoon, {userName} helps kindergarten and first-grade students.",
+    "One rainy day, {userName} helps a scared first-grader who forgot their umbrella.",
+    "The principal recognizes {userName} for being responsible and caring about other students."
   ],
   
-  // Template 14: Literary Analysis Publication
+  // Template 14: Library Reading Program
   [
-    "{userName} conducts sophisticated literary analysis examining themes of social justice and cultural identity in contemporary American literature.",
-    "The research involves close textual analysis, historical contextualization, and exploration of authors' biographical influences on their work.",
-    "Theoretical frameworks from postcolonial studies and critical race theory provide analytical tools for understanding complex literary themes.",
-    "The resulting scholarly paper demonstrates advanced critical thinking and sophisticated understanding of literary interpretation methods.",
-    "The work is accepted for publication in a prestigious academic journal and earns recognition from literature professors."
+    "{userName} signs up for the library's summer reading program.",
+    "The challenge is to read twenty books and write short summaries about each one.",
+    "Some books are easy chapter books, while others are more challenging novels.",
+    "Reading becomes so enjoyable that {userName} finishes twenty-five books instead of twenty.",
+    "At the end of summer, {userName} wins the grand prize and becomes a regular library volunteer."
   ],
   
-  // Template 15: Pharmaceutical Research Development
+  // Template 15: Cooking Class Adventure
   [
-    "{userName} contributes to pharmaceutical research investigating potential treatments for neurodegenerative diseases like Alzheimer's and Parkinson's.",
-    "The laboratory work involves molecular biology techniques, cell culture maintenance, and analysis of drug effectiveness using advanced instrumentation.",
-    "Research protocols require strict adherence to safety procedures and ethical guidelines governing biomedical research practices.",
-    "Experimental results provide valuable data about cellular mechanisms underlying neurodegeneration and potential therapeutic interventions.",
-    "The research experience provides insight into the lengthy and complex process of developing new medications for human use."
+    "{userName} enrolls in a cooking class for kids at the community center.",
+    "The first lesson teaches basic skills like measuring ingredients and using kitchen tools safely.",
+    "Each week focuses on different foods: pasta, salads, soups, and desserts.",
+    "{userName} learns that cooking requires following directions carefully and being patient.",
+    "By the end of the class, {userName} can prepare a complete meal for the family."
   ],
   
-  // Template 16: Economic Policy Analysis
+  // Template 16: Lost Pet Search
   [
-    "{userName} analyzes the economic impact of trade policies on local manufacturing industries and employment rates.",
-    "The comprehensive study involves statistical analysis of economic data, interviews with business leaders, and examination of policy documents.",
-    "Research methods include econometric modeling, comparative analysis with other regions, and assessment of long-term economic trends.",
-    "Findings reveal complex relationships between international trade agreements and domestic economic conditions.",
-    "The analysis contributes to public policy discussions and earns recognition from economics professors and policy organizations."
+    "{userName} helps a neighbor search for their lost cat, Whiskers.",
+    "The search involves making posters with Whiskers' picture and posting them around the neighborhood.",
+    "For three days, {userName} and friends look in parks, under porches, and in garages.",
+    "Finally, they hear meowing from a tall tree two blocks away.",
+    "Whiskers is rescued by the fire department, and the grateful owner gives {userName} a reward."
   ],
   
-  // Template 17: Architecture Design Competition
+  // Template 17: School Garden Club
   [
-    "{userName} enters an international architecture design competition focused on creating sustainable housing solutions for urban environments.",
-    "The project requires understanding structural engineering, environmental systems, and urban planning principles.",
-    "Design development involves computer-aided modeling, materials research, and consideration of social and economic factors affecting residents.",
-    "The proposed building incorporates innovative features like green roofs, renewable energy systems, and flexible living spaces.",
-    "The design receives recognition for creativity and practical application of sustainable architecture principles."
+    "{userName} joins the school's gardening club and learns about growing vegetables.",
+    "The club plants seeds in spring and tends the garden throughout the school year.",
+    "Members learn about soil, composting, and which plants grow well together.",
+    "By summer, the garden produces tomatoes, peppers, and herbs for the cafeteria.",
+    "The success of the garden inspires {userName} to start a small garden at home."
   ],
   
-  // Template 18: Psychology Research Study
+  // Template 18: Junior Scientist Club
   [
-    "{userName} designs and conducts a psychology research study investigating factors that influence academic motivation in adolescent students.",
-    "The study employs rigorous research methodology, including controlled experimental design and statistical analysis of behavioral data.",
-    "Data collection involves surveys, interviews, and observation of student behavior in various academic settings.",
-    "Results provide valuable insights into effective strategies for enhancing student engagement and academic achievement.",
-    "The research contributes to educational psychology literature and informs development of evidence-based teaching practices."
+    "{userName} becomes a member of the junior scientist club at school.",
+    "Weekly meetings include fun experiments like making volcanoes and growing crystals.",
+    "The club visits a real laboratory where scientists study water quality.",
+    "{userName} learns that being a scientist requires curiosity and careful observation.",
+    "At the year-end celebration, {userName} receives an award for asking the best questions."
   ],
   
-  // Template 19: International Diplomacy Simulation
+  // Template 19: Community Helper
   [
-    "{userName} participates in a sophisticated international diplomacy simulation addressing global climate change negotiations and policy development.",
-    "The experience requires understanding complex geopolitical relationships, economic considerations, and environmental science principles.",
-    "Representing a specific country, {userName} must balance national interests with global cooperation requirements for effective climate action.",
-    "Negotiations involve compromise, strategic thinking, and the ability to communicate effectively with delegates from diverse cultural backgrounds.",
-    "The simulation provides valuable insights into the challenges and complexities of international cooperation on global issues."
+    "{userName} volunteers to help elderly neighbors with yard work and shopping.",
+    "Every Saturday morning, {userName} rakes leaves, pulls weeds, and carries groceries.",
+    "The neighbors share stories about their lives and teach {userName} about history.",
+    "This experience helps {userName} understand the importance of helping others in the community.",
+    "At the end of the year, the city gives {userName} a certificate for community service."
   ],
   
-  // Template 20: Cybersecurity Protection System
+  // Template 20: School Talent Show
   [
-    "{userName} develops a comprehensive cybersecurity system designed to protect critical infrastructure from sophisticated cyber attacks.",
-    "The project requires understanding computer networks, encryption algorithms, and advanced threat detection methodologies.",
-    "Implementation involves programming secure communication protocols and developing real-time monitoring systems for suspicious activities.",
-    "Testing demonstrates the system's effectiveness against simulated attacks and its ability to maintain operational security.",
-    "The work attracts attention from cybersecurity professionals and government agencies interested in infrastructure protection solutions."
+    "{userName} decides to perform a magic show for the school talent show.",
+    "Learning magic tricks requires hours of practice and memorizing steps carefully.",
+    "The performance includes card tricks, disappearing coins, and a rabbit in a hat.",
+    "On the night of the talent show, {userName} feels nervous but confident.",
+    "The magic show amazes the audience and earns {userName} second place in the competition."
   ],
   
-  // Template 21: Archaeological Site Preservation
+  // Template 21: Nature Photography
   [
-    "{userName} develops innovative preservation techniques for protecting archaeological sites from environmental degradation and human interference.",
-    "The project combines knowledge of chemistry, materials science, and cultural heritage preservation methodologies.",
-    "Research involves testing various protective coatings and stabilization methods on historical artifacts and structures.",
-    "Collaboration with archaeologists and conservators provides expertise in appropriate preservation practices for different types of cultural materials.",
-    "The developed techniques successfully demonstrate improved longevity and reduced deterioration of important historical sites."
+    "{userName} develops an interest in photographing birds and wildlife.",
+    "With a borrowed camera, {userName} visits parks and nature preserves on weekends.",
+    "Learning to be patient and quiet helps {userName} get close to shy animals.",
+    "The best photographs are entered in a youth photography contest.",
+    "Although not winning first place, {userName} decides to continue improving photography skills."
   ],
   
-  // Template 22: Bioengineering Tissue Development
+  // Template 22: School Debate Team
   [
-    "{userName} contributes to bioengineering research focused on developing artificial tissues for medical transplantation applications.",
-    "The complex project involves understanding cell biology, biomaterials engineering, and advanced tissue culture techniques.",
-    "Laboratory work includes maintaining sterile conditions, monitoring cell growth, and analyzing tissue development using microscopic examination.",
-    "Research findings contribute to ongoing efforts to address organ shortages and improve transplantation success rates.",
-    "The experience provides valuable insight into the intersection of engineering and medicine in solving complex healthcare challenges."
+    "{userName} joins the school debate team to improve public speaking skills.",
+    "The first debate topic is whether schools should have longer recess periods.",
+    "Preparation involves researching facts and practicing arguments with teammates.",
+    "During the actual debate, {userName} feels nervous but remembers to speak clearly.",
+    "The team wins the debate, and {userName} gains confidence in expressing ideas publicly."
   ],
   
-  // Template 23: Philosophical Ethics Debate
+  // Template 23: Neighborhood Cleanup
   [
-    "{userName} organizes and moderates sophisticated philosophical debates examining ethical implications of artificial intelligence and automation.",
-    "The discussions explore complex questions about consciousness, moral responsibility, and the impact of technology on human society.",
-    "Participants include philosophers, computer scientists, and ethicists who contribute diverse perspectives on technological development.",
-    "The debates address practical concerns about employment displacement, privacy rights, and equitable access to technological benefits.",
-    "The initiative promotes thoughtful consideration of ethical issues in technological advancement and policy development."
+    "{userName} organizes a neighborhood cleanup day to improve the local park.",
+    "Volunteers bring gloves, trash bags, and tools to pick up litter and debris.",
+    "The group works for four hours, filling dozens of bags with garbage.",
+    "After the cleanup, the park looks beautiful and families can enjoy it safely.",
+    "The mayor thanks the volunteers and promises the city will maintain the park better."
   ],
   
-  // Template 24: Advanced Mathematics Research
+  // Template 24: School Computer Club
   [
-    "{userName} conducts original research in advanced mathematics, investigating applications of topology to problems in theoretical physics.",
-    "The work requires sophisticated understanding of abstract mathematical concepts and their relationships to physical phenomena.",
-    "Collaboration with university mathematicians provides access to advanced computational resources and expert guidance.",
-    "Research progress involves developing new mathematical proofs and exploring connections between seemingly unrelated mathematical fields.",
-    "The work contributes to fundamental mathematical knowledge and demonstrates exceptional analytical and abstract reasoning abilities."
+    "{userName} learns basic computer programming in the after-school computer club.",
+    "Starting with simple commands, {userName} creates programs that draw shapes and patterns.",
+    "More advanced lessons teach how to make simple games and animations.",
+    "The final project is designing a program that helps students practice math facts.",
+    "Other teachers become interested in using {userName}'s program in their classrooms."
   ],
   
-  // Template 25: Space Mission Design
+  // Template 25: Family History Project
   [
-    "{userName} designs a comprehensive space mission for establishing a research station on Mars, addressing technological and logistical challenges.",
-    "The project requires understanding aerospace engineering, life support systems, and the psychological challenges of long-duration space travel.",
-    "Mission planning includes spacecraft design, trajectory calculation, resource management, and emergency contingency procedures.",
-    "Collaboration with aerospace engineers and mission planners provides realistic insights into space exploration complexities.",
-    "The detailed mission proposal earns recognition from space agencies and demonstrates sophisticated understanding of space exploration requirements."
+    "{userName} interviews grandparents for a family history project at school.",
+    "The conversations reveal stories about ancestors and how life was different long ago.",
+    "Old photographs and documents help illustrate the family's journey to America.",
+    "{userName} creates a family tree poster showing three generations of relatives.",
+    "Presenting the project helps classmates understand the importance of family traditions."
   ],
   
-  // Template 26: Linguistic Evolution Study
+  // Template 26: Swimming Lessons
   [
-    "{userName} investigates the evolution of language patterns in digital communication and their impact on traditional linguistic structures.",
-    "The research involves analyzing large datasets of electronic communication and identifying emerging linguistic trends and patterns.",
-    "Methodology includes computational linguistics techniques, statistical analysis, and comparison with historical language development patterns.",
-    "Findings reveal how technology influences language evolution and the emergence of new forms of human communication.",
-    "The study contributes to understanding of language change and its implications for education and cultural preservation."
+    "{userName} enrolls in swimming lessons at the local pool to overcome fear of water.",
+    "The instructor is patient and helps {userName} learn to float and kick properly.",
+    "Each lesson builds confidence with new skills like treading water and different strokes.",
+    "By the end of the session, {userName} can swim across the entire pool.",
+    "The achievement makes {userName} proud and excited to join the swim team next year."
   ],
   
-  // Template 27: Medical Diagnostic Innovation
+  // Template 27: Book Club Leader
   [
-    "{userName} develops an innovative medical diagnostic tool using artificial intelligence to improve early detection of cardiovascular disease.",
-    "The project combines knowledge of medical imaging, machine learning algorithms, and cardiovascular physiology.",
-    "Development involves training AI systems on extensive medical image databases and validating diagnostic accuracy against expert opinions.",
-    "Clinical testing demonstrates improved detection rates and reduced diagnostic errors compared to traditional assessment methods.",
-    "The innovation attracts interest from medical professionals and technology companies seeking to improve healthcare outcomes."
+    "{userName} starts a book club with friends to discuss favorite stories.",
+    "The group meets every two weeks at the library to talk about what they've read.",
+    "Members take turns choosing books and leading discussions about characters and plots.",
+    "The club grows as more students become interested in reading and sharing ideas.",
+    "By the end of the year, the book club has read fifteen books together."
   ],
   
-  // Template 28: Environmental Restoration Project
+  // Template 28: School Store Manager
   [
-    "{userName} leads a comprehensive environmental restoration project aimed at rehabilitating damaged wetland ecosystems.",
-    "The initiative requires understanding ecology, hydrology, and the complex interactions between species and their environments.",
-    "Implementation involves removing invasive species, replanting native vegetation, and restoring natural water flow patterns.",
-    "Monitoring reveals gradual recovery of biodiversity and improvement in ecosystem health over several years.",
-    "The project serves as a model for environmental restoration efforts and demonstrates the possibility of reversing ecological damage."
+    "{userName} helps manage the school store that sells supplies and snacks.",
+    "Responsibilities include counting inventory, handling money, and helping customers.",
+    "Math skills improve quickly when calculating change and tracking sales.",
+    "The store raises money for new playground equipment and field trip funding.",
+    "Managing the store teaches {userName} valuable lessons about responsibility and teamwork."
   ],
   
-  // Template 29: Advanced Chemistry Synthesis
+  // Template 29: Drama Club Member
   [
-    "{userName} conducts advanced organic chemistry research focused on synthesizing new pharmaceutical compounds with improved therapeutic properties.",
-    "The work involves sophisticated laboratory techniques, precise measurement protocols, and safety procedures for handling dangerous chemicals.",
-    "Synthesis procedures require understanding molecular structures, reaction mechanisms, and optimization of chemical processes.",
-    "Resulting compounds demonstrate promising biological activity and potential for development into new medications.",
-    "The research contributes to pharmaceutical science and provides valuable experience in advanced chemical research methodologies."
+    "{userName} auditions for the drama club's production of 'Charlotte's Web.'",
+    "Even though {userName} gets a small part, every role is important to the play's success.",
+    "Rehearsals happen three times a week, learning lines and practicing stage movements.",
+    "Building sets and making costumes teaches {userName} about all aspects of theater.",
+    "Opening night is successful, and {userName} appreciates the hard work of everyone involved."
   ],
   
-  // Template 30: Social Innovation Project
+  // Template 30: Science Museum Guide
   [
-    "{userName} develops an innovative social program addressing educational inequality in underserved communities.",
-    "The initiative combines understanding of social work principles, educational theory, and community development strategies.",
-    "Implementation involves partnerships with local organizations, volunteer recruitment, and development of culturally appropriate educational materials.",
-    "Program evaluation demonstrates measurable improvements in academic achievement and community engagement levels.",
-    "The project attracts funding from foundations and government agencies interested in replicating successful community intervention models."
+    "{userName} volunteers as a junior guide at the children's science museum.",
+    "Training includes learning about exhibits and how to explain science concepts clearly.",
+    "Helping younger children understand dinosaurs and space exploration is rewarding.",
+    "The experience improves {userName}'s communication skills and science knowledge.",
+    "At the end of the summer, the museum offers {userName} a scholarship for science camp."
   ],
   
-  // Template 31: Renewable Energy Storage
+  // Template 31: Spelling Bee Champion
   [
-    "{userName} researches advanced battery technologies for storing renewable energy and improving grid reliability.",
-    "The project involves understanding electrochemistry, materials science, and electrical engineering principles.",
-    "Laboratory work includes testing different battery chemistries and analyzing their performance under various operating conditions.",
-    "Research findings contribute to development of more efficient and cost-effective energy storage solutions.",
-    "The work has implications for accelerating adoption of renewable energy and reducing dependence on fossil fuels."
+    "{userName} studies hard to prepare for the school spelling bee competition.",
+    "Practice sessions include learning word origins and common spelling patterns.",
+    "The competition includes students from all grade levels at the school.",
+    "Although nervous, {userName} makes it to the final three contestants.",
+    "Win or lose, {userName} feels proud of the improvement in spelling and vocabulary."
   ],
   
-  // Template 32: Anthropological Field Study
+  // Template 32: Pen Pal Exchange
   [
-    "{userName} conducts ethnographic field research studying cultural adaptation strategies in immigrant communities.",
-    "The study employs anthropological methods including participant observation, in-depth interviews, and cultural analysis.",
-    "Research focuses on how traditional practices evolve in response to new cultural environments and social pressures.",
-    "Findings provide insights into processes of cultural change and the maintenance of cultural identity across generations.",
-    "The work contributes to anthropological understanding and informs policies supporting cultural diversity and integration."
+    "{userName}'s class starts a pen pal exchange with students from another country.",
+    "Writing letters teaches {userName} about different cultures and ways of life.",
+    "The pen pal shares photos of their school, family, and hometown.",
+    "Comparing daily routines shows how children's lives are similar around the world.",
+    "The friendship continues for years, even after the official pen pal program ends."
   ],
   
-  // Template 33: Particle Physics Experiment
+  // Template 33: School Carnival Helper
   [
-    "{userName} participates in particle physics experiments investigating fundamental properties of matter and energy.",
-    "The research utilizes particle accelerators and sophisticated detection equipment to study subatomic particle interactions.",
-    "Data analysis involves statistical methods and theoretical physics concepts to interpret experimental observations.",
-    "Results contribute to understanding of fundamental forces and the basic constituents of matter and energy.",
-    "The experience provides insight into frontier scientific research and the collaborative nature of modern physics."
+    "{userName} volunteers to help organize the annual school carnival fundraiser.",
+    "Jobs include setting up games, decorating booths, and helping younger students.",
+    "The carnival features ring toss, face painting, and a dunking booth for teachers.",
+    "Working together, volunteers raise money for new library books and art supplies.",
+    "The successful carnival brings the whole school community together for a fun day."
   ],
   
-  // Template 34: Urban Planning Initiative
+  // Template 34: Junior Fire Safety Inspector
   [
-    "{userName} develops a comprehensive urban planning proposal for creating more sustainable and livable cities.",
-    "The project addresses transportation systems, housing policy, environmental sustainability, and social equity considerations.",
-    "Research involves analyzing demographic data, studying successful urban development models, and engaging with community stakeholders.",
-    "The proposal includes innovative solutions for reducing urban sprawl and improving quality of life for all residents.",
-    "The work earns recognition from urban planning professionals and demonstrates sophisticated understanding of complex urban challenges."
+    "{userName} learns about fire safety and becomes a junior inspector at school.",
+    "Training covers escape routes, fire extinguisher locations, and emergency procedures.",
+    "Regular inspections help ensure classrooms follow proper fire safety rules.",
+    "The fire chief visits to test {userName}'s knowledge and present a certificate.",
+    "Teaching fire safety to younger students helps them stay safe at home and school."
   ],
   
-  // Template 35: Medical Ethics Analysis
+  // Template 35: School News Anchor
   [
-    "{userName} analyzes complex medical ethics cases involving end-of-life care decisions and patient autonomy rights.",
-    "The study requires understanding legal frameworks, philosophical principles, and practical considerations in medical decision-making.",
-    "Research involves case study analysis, interviews with medical professionals, and examination of ethical guidelines.",
-    "Findings contribute to ongoing discussions about balancing patient rights with medical professional responsibilities.",
-    "The work demonstrates sophisticated ethical reasoning and understanding of complex moral issues in healthcare."
+    "{userName} applies to be an anchor for the school's morning news broadcast.",
+    "Preparation includes writing scripts, practicing pronunciation, and learning camera skills.",
+    "The daily show covers school events, weather, and lunch menus.",
+    "Being on camera feels scary at first, but {userName} becomes more comfortable quickly.",
+    "Other students recognize {userName} in the hallway and compliment the news show."
   ],
   
-  // Template 36: Computational Biology Research
+  // Template 36: Math Tutoring Helper
   [
-    "{userName} applies computational methods to analyze genetic data and identify patterns associated with disease susceptibility.",
-    "The research involves bioinformatics techniques, statistical analysis, and understanding of molecular genetics principles.",
-    "Data processing requires sophisticated computer programming skills and knowledge of biological database systems.",
-    "Results provide insights into genetic factors influencing human health and disease development.",
-    "The work contributes to personalized medicine approaches and demonstrates the power of computational approaches in biological research."
+    "{userName} volunteers to help younger students who struggle with math homework.",
+    "Tutoring sessions happen twice a week in the library after school.",
+    "Breaking down difficult problems into smaller steps helps students understand better.",
+    "Seeing improvement in the younger students makes {userName} feel helpful and proud.",
+    "The experience teaches {userName} that helping others also strengthens your own skills."
   ],
   
-  // Template 37: International Trade Analysis
+  // Template 37: School Spirit Week
   [
-    "{userName} analyzes the economic impact of international trade agreements on developing countries and global economic inequality.",
-    "The research involves econometric analysis, examination of trade data, and understanding of international economic theory.",
-    "Methodology includes comparative studies of different countries and assessment of policy effectiveness over time.",
-    "Findings reveal complex relationships between trade policies and economic development outcomes.",
-    "The analysis contributes to academic literature and informs policy discussions about fair trade and economic development."
+    "{userName} helps organize spirit week activities to build school pride.",
+    "Each day has a different theme: pajama day, crazy hair day, and school colors day.",
+    "Planning involves creating posters, announcing events, and judging costume contests.",
+    "The week concludes with a pep rally featuring games and performances.",
+    "Spirit week brings students and teachers together and creates lasting memories."
   ],
   
-  // Template 38: Advanced Engineering Design
+  // Template 38: Environmental Club Project
   [
-    "{userName} designs an innovative transportation system for reducing urban congestion and environmental pollution.",
-    "The project requires understanding mechanical engineering, environmental science, and urban transportation planning principles.",
-    "Design development involves computer modeling, feasibility analysis, and consideration of implementation challenges.",
-    "The proposed system demonstrates potential for significant improvements in transportation efficiency and environmental impact.",
-    "The work attracts interest from transportation planners and engineering firms seeking innovative solutions to urban mobility challenges."
+    "{userName} joins the environmental club to learn about protecting nature.",
+    "The first project involves planting trees around the school playground.",
+    "Members also organize a paper recycling drive and energy conservation campaign.",
+    "Learning about pollution and climate change motivates {userName} to make changes at home.",
+    "The club's efforts inspire other schools to start their own environmental programs."
   ],
   
-  // Template 39: Cognitive Science Research
+  // Template 39: Student Council Representative
   [
-    "{userName} investigates cognitive processes involved in decision-making and their implications for educational practice.",
-    "The research combines psychology, neuroscience, and educational theory to understand how people learn and make decisions.",
-    "Experimental methodology involves behavioral testing, brain imaging, and statistical analysis of cognitive performance data.",
-    "Results provide insights into effective teaching strategies and learning environment design.",
-    "The work contributes to evidence-based education and demonstrates the application of scientific methods to educational challenges."
+    "{userName} runs for student council to represent the fifth-grade class.",
+    "The campaign includes making posters, giving speeches, and meeting with classmates.",
+    "Election day arrives and {userName} feels nervous but excited about the results.",
+    "Winning the election means attending monthly meetings and voicing student concerns.",
+    "Being on student council teaches {userName} about leadership and representing others."
   ],
   
-  // Template 40: Climate Modeling Research
+  // Template 40: School Garden Harvest
   [
-    "{userName} develops sophisticated computer models for predicting regional climate change impacts and adaptation strategies.",
-    "The project requires understanding atmospheric science, computer programming, and statistical analysis of climate data.",
-    "Model development involves incorporating multiple variables and validating predictions against historical climate records.",
-    "Results provide valuable information for policy makers and communities planning for climate change adaptation.",
-    "The work contributes to climate science and demonstrates the importance of computational modeling in understanding complex environmental systems."
+    "{userName} helps harvest vegetables from the school garden in the fall.",
+    "The garden produced tomatoes, carrots, lettuce, and herbs throughout the growing season.",
+    "Students wash, sort, and package the vegetables to share with families.",
+    "Some vegetables go to the school cafeteria for healthy lunch options.",
+    "The successful harvest celebrates months of hard work and teaches about healthy eating."
   ]
 ];
 
-export function getLevel3Template(templateIndex?: number): string[] {
+export const getLevel3Template = (templateIndex?: number): string[] => {
   if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < LEVEL_3_TEMPLATES.length) {
-    return [...LEVEL_3_TEMPLATES[templateIndex]];
+    return LEVEL_3_TEMPLATES[templateIndex];
   }
-  
-  const randomIndex = Math.floor(Math.random() * LEVEL_3_TEMPLATES.length);
-  return [...LEVEL_3_TEMPLATES[randomIndex]];
-}
+  return LEVEL_3_TEMPLATES[Math.floor(Math.random() * LEVEL_3_TEMPLATES.length)];
+};
 
-export function getLevel3TemplateCount(): number {
+export const getLevel3TemplateCount = (): number => {
   return LEVEL_3_TEMPLATES.length;
-}
+};
+
+export const getLevel3TotalPages = (): number => {
+  return LEVEL_3_TEMPLATES.length * 5; // Each template has 5 pages
+};
