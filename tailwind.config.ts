@@ -259,6 +259,42 @@ export default {
 					'0%': { transform: 'scale(1)', opacity: '1', boxShadow: '0 0 0 0 hsl(var(--primary) / 0.4)' },
 					'50%': { transform: 'scale(1.05)', opacity: '0.9', boxShadow: '0 0 0 8px hsl(var(--primary) / 0.1)' },
 					'100%': { transform: 'scale(1)', opacity: '1', boxShadow: '0 0 0 0 hsl(var(--primary) / 0)' }
+				},
+				'sparkle': {
+					'0%': {
+						transform: 'translateY(0px) scale(0)',
+						opacity: '1'
+					},
+					'50%': {
+						transform: 'translateY(-20px) scale(1)',
+						opacity: '1'
+					},
+					'100%': {
+						transform: 'translateY(-40px) scale(0)',
+						opacity: '0'
+					}
+				},
+				'sparkle-premium': {
+					'0%': {
+						transform: 'translateY(0px) scale(0) rotate(0deg)',
+						opacity: '1'
+					},
+					'25%': {
+						transform: 'translateY(-15px) scale(1.2) rotate(90deg)',
+						opacity: '1'
+					},
+					'50%': {
+						transform: 'translateY(-30px) scale(1) rotate(180deg)',
+						opacity: '0.8'
+					},
+					'75%': {
+						transform: 'translateY(-45px) scale(1.1) rotate(270deg)',
+						opacity: '0.4'
+					},
+					'100%': {
+						transform: 'translateY(-60px) scale(0) rotate(360deg)',
+						opacity: '0'
+					}
 				}
 			},
 			animation: {
@@ -278,7 +314,9 @@ export default {
 				'sparkleTrail2': 'sparkleTrail2 1.5s ease-out 0.2s',
 				'sparkleTrail3': 'sparkleTrail3 1.5s ease-out 0.4s',
 				'sparkleTrail4': 'sparkleTrail4 1.5s ease-out 0.6s',
-				'glow-pulse': 'glow-pulse 1s ease-in-out'
+				'glow-pulse': 'glow-pulse 1s ease-in-out',
+				'sparkle': 'sparkle 1.5s ease-out forwards',
+				'sparkle-premium': 'sparkle-premium 2s ease-out forwards'
 			}
 		}
 	},

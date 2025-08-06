@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ProgressTower } from './ProgressTower';
+import { EnhancedProgressTower } from './EnhancedProgressTower';
 import { useGamification } from '@/hooks/useGamification';
 import { BookOpen, FileText, Lightbulb, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -288,47 +288,41 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
                   </>
                 )}
                 
-                <div className={cn(
-                  "transition-all duration-500",
-                  animatingTowers.words && "animate-bounce scale-110 rotate-1"
-                )}>
-                  <ProgressTower
-                    value={totalWordsRead}
-                    maxValue={500}
-                    label={t('progressTowers.words')}
-                    icon={<BookOpen className="w-4 h-4" />}
-                    color="blue"
-                    className={animatingTowers.words ? "ring-4 ring-blue-300 shadow-2xl shadow-blue-200 glow-blue" : ""}
-                  />
-                </div>
+                <EnhancedProgressTower
+                  value={totalWordsRead}
+                  maxValue={userType === 'premium' ? 1000 : 500}
+                  label={t('progressTowers.words')}
+                  icon={<BookOpen className="w-4 h-4" />}
+                  color="blue"
+                  isPremium={userType === 'premium'}
+                  isActive={animatingTowers.words}
+                  previousValue={prevValuesRef.current.words}
+                  showPrediction={userType === 'premium'}
+                />
                 
-                <div className={cn(
-                  "transition-all duration-500",
-                  animatingTowers.pages && "animate-bounce scale-110 -rotate-1"
-                )}>
-                  <ProgressTower
-                    value={totalPagesRead}
-                    maxValue={500}
-                    label={t('progressTowers.pages')}
-                    icon={<FileText className="w-4 h-4" />}
-                    color="green"
-                    className={animatingTowers.pages ? "ring-4 ring-green-300 shadow-2xl shadow-green-200 glow-green" : ""}
-                  />
-                </div>
+                <EnhancedProgressTower
+                  value={totalPagesRead}
+                  maxValue={userType === 'premium' ? 250 : 100}
+                  label={t('progressTowers.pages')}
+                  icon={<FileText className="w-4 h-4" />}
+                  color="green"
+                  isPremium={userType === 'premium'}
+                  isActive={animatingTowers.pages}
+                  previousValue={prevValuesRef.current.pages}
+                  showPrediction={userType === 'premium'}
+                />
                 
-                <div className={cn(
-                  "transition-all duration-500",
-                  animatingTowers.vocabulary && "animate-bounce scale-110 rotate-1"
-                )}>
-                  <ProgressTower
-                    value={displayVocabularyLearned}
-                    maxValue={500}
-                    label={t('progressTowers.vocabulary')}
-                    icon={<Lightbulb className="w-4 h-4" />}
-                    color="gold"
-                    className={animatingTowers.vocabulary ? "ring-4 ring-yellow-300 shadow-2xl shadow-yellow-200 glow-gold" : ""}
-                  />
-                </div>
+                <EnhancedProgressTower
+                  value={displayVocabularyLearned}
+                  maxValue={userType === 'premium' ? 500 : 200}
+                  label={t('progressTowers.vocabulary')}
+                  icon={<Lightbulb className="w-4 h-4" />}
+                  color="gold"
+                  isPremium={userType === 'premium'}
+                  isActive={animatingTowers.vocabulary}
+                  previousValue={prevValuesRef.current.vocabulary}
+                  showPrediction={userType === 'premium'}
+                />
               </div>
 
               {/* Enhanced Milestone Message */}
