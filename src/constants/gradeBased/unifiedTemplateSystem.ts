@@ -171,13 +171,16 @@ export function getTargetPageCount(
   return PREMIUM_PAGE_EXTENSIONS[gradeLevel];
 }
 
-// Enhanced template selection with anti-repetition
+// Enhanced template selection with anti-repetition - MAIN TEMPLATES ONLY
 export function selectTemplate(
   gradeLevel: GradeLevel,
   usedTemplates: number[] = [],
   preferredIndex?: number
 ): { templateIndex: number; template: string[] } {
-  const totalTemplates = getTemplateCountByGradeLevel(gradeLevel);
+  // Always use main templates (not premium or extension templates)
+  const totalTemplates = getTemplateCountByGradeLevel(gradeLevel, false);
+  
+  console.log(`🎯 selectTemplate: Grade ${gradeLevel}, Total: ${totalTemplates}, Used: [${usedTemplates.join(', ')}]`);
   
   // If preferred index is valid and not recently used, use it
   if (
@@ -186,33 +189,39 @@ export function selectTemplate(
     preferredIndex < totalTemplates &&
     !usedTemplates.includes(preferredIndex)
   ) {
+    console.log(`✅ selectTemplate: Using preferred index ${preferredIndex}`);
     return {
       templateIndex: preferredIndex,
-      template: getTemplateByGradeLevel(gradeLevel, preferredIndex)
+      template: getTemplateByGradeLevel(gradeLevel, preferredIndex, false) // Force main templates
     };
   }
   
-  // Find unused templates
+  // Find unused templates from main template range (0 to totalTemplates-1)
   const availableTemplates = Array.from({ length: totalTemplates }, (_, i) => i)
     .filter(i => !usedTemplates.includes(i));
+  
+  console.log(`📊 selectTemplate: ${availableTemplates.length} available main templates: [${availableTemplates.slice(0, 5).join(', ')}${availableTemplates.length > 5 ? '...' : ''}]`);
   
   // If all templates have been used, reset (start over)
   if (availableTemplates.length === 0) {
     const randomIndex = Math.floor(Math.random() * totalTemplates);
+    console.log(`🔄 selectTemplate: All templates used, resetting with random index ${randomIndex}`);
     return {
       templateIndex: randomIndex,
-      template: getTemplateByGradeLevel(gradeLevel, randomIndex)
+      template: getTemplateByGradeLevel(gradeLevel, randomIndex, false) // Force main templates
     };
   }
   
-  // Select random from available templates
+  // Select random from available main templates
   const selectedIndex = availableTemplates[
     Math.floor(Math.random() * availableTemplates.length)
   ];
   
+  console.log(`✅ selectTemplate: Selected index ${selectedIndex} from available main templates`);
+  
   return {
     templateIndex: selectedIndex,
-    template: getTemplateByGradeLevel(gradeLevel, selectedIndex)
+    template: getTemplateByGradeLevel(gradeLevel, selectedIndex, false) // Force main templates
   };
 }
 

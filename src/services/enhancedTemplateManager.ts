@@ -65,12 +65,22 @@ interface EnhancedTemplateSessionState {
 }
 
 export class EnhancedTemplateManager {
-  // Track used templates per session to avoid repetition
-  private static sessionUsedTemplates: Map<GradeLevel, Set<number>> = new Map();
-  
   // Session storage for template continuation
   private static getSessionStorageKey(gradeLevel: GradeLevel): string {
     return `enhanced_template_session_${gradeLevel}`;
+  }
+  
+  /**
+   * Clear session state when switching difficulty levels
+   */
+  private static clearSessionForGradeLevel(gradeLevel: GradeLevel): void {
+    try {
+      const { MobileSessionManager } = require('./mobileSessionManager');
+      MobileSessionManager.removeItem(this.getSessionStorageKey(gradeLevel));
+      console.log(`🧹 Cleared session state for Level ${gradeLevel}`);
+    } catch (error) {
+      console.warn(`⚠️ Failed to clear session for ${gradeLevel}:`, error);
+    }
   }
   
   /**
@@ -154,13 +164,22 @@ export class EnhancedTemplateManager {
       if (!sessionState.currentTemplate || sessionState.currentPageIndex >= sessionState.currentTemplate.length) {
         console.log(`🔄 Level ${gradeLevel}: Need new template (current: ${sessionState.currentTemplateIndex}, page: ${sessionState.currentPageIndex})`);
         
-        // Select next template with anti-repetition
-        const totalTemplates = getTemplateCountByGradeLevel(gradeLevel);
+        // Select next template with anti-repetition from MAIN templates only
+        const totalTemplates = getTemplateCountByGradeLevel(gradeLevel, false); // Always use main templates
         const usedTemplates = Array.from(sessionState.usedTemplates);
+        
+        console.log(`📊 Level ${gradeLevel}: Selecting from ${totalTemplates} main templates, ${usedTemplates.length} already used`);
+        
         const { templateIndex: selectedIndex, template: baseTemplate } = selectTemplate(
           gradeLevel,
           usedTemplates
         );
+        
+        // Validate we're using main templates (0-39), not extensions
+        if (selectedIndex < 0 || selectedIndex >= totalTemplates) {
+          console.error(`🚨 TEMPLATE SOURCE ERROR: Level ${gradeLevel} selected index ${selectedIndex} outside main template range [0-${totalTemplates-1}]`);
+          throw new Error(`Invalid template selection: Level ${gradeLevel} index ${selectedIndex} should be 0-${totalTemplates-1}`);
+        }
         
         // Process the complete template with character enhancement and author voice
         const processedTemplate = await this.processCompleteTemplate(
@@ -176,7 +195,7 @@ export class EnhancedTemplateManager {
         sessionState.currentPageIndex = 0;
         sessionState.usedTemplates.add(selectedIndex);
         
-        console.log(`✅ Level ${gradeLevel}: Selected template ${selectedIndex + 1}/${totalTemplates} with ${processedTemplate.length} pages`);
+        console.log(`✅ Level ${gradeLevel}: Selected MAIN template ${selectedIndex + 1}/${totalTemplates} with ${processedTemplate.length} pages`);
       }
       
       // Get pages from current template up to the remaining target
@@ -343,21 +362,46 @@ export class EnhancedTemplateManager {
     // Determine target page count
     const targetPages = getTargetPageCount(gradeLevel, isPremium);
     
-    // Get or initialize used templates for this grade level
-    if (!this.sessionUsedTemplates.has(gradeLevel)) {
-      this.sessionUsedTemplates.set(gradeLevel, new Set());
-    }
-    const usedTemplates = Array.from(this.sessionUsedTemplates.get(gradeLevel)!);
+    // Use unified session state instead of in-memory tracking
+    let sessionState = this.getSessionState(gradeLevel);
     
-    // Select template with anti-repetition
+    // Initialize session if not exists or on difficulty change
+    if (!sessionState) {
+      console.log(`🆕 Level ${gradeLevel}: Initializing new session state`);
+      sessionState = {
+        currentTemplate: null,
+        currentTemplateIndex: -1,
+        currentPageIndex: 0,
+        usedTemplates: new Set(),
+        sessionStartTime: Date.now(),
+        gradeLevel
+      };
+    }
+    
+    const usedTemplates = Array.from(sessionState.usedTemplates);
+    const totalTemplates = getTemplateCountByGradeLevel(gradeLevel, false); // Always use main templates
+    
+    console.log(`📊 Level ${gradeLevel}: Selecting from ${totalTemplates} main templates, ${usedTemplates.length} already used`);
+    
+    // Select template with anti-repetition from MAIN templates only
     const { templateIndex: selectedIndex, template: baseTemplate } = selectTemplate(
       gradeLevel,
       usedTemplates,
       templateIndex
     );
     
-    // Track this template as used
-    this.sessionUsedTemplates.get(gradeLevel)!.add(selectedIndex);
+    // Validate we're using main templates (0-39), not extensions
+    if (selectedIndex < 0 || selectedIndex >= totalTemplates) {
+      console.error(`🚨 TEMPLATE SOURCE ERROR: Level ${gradeLevel} selected index ${selectedIndex} outside main template range [0-${totalTemplates-1}]`);
+      throw new Error(`Invalid template selection: Level ${gradeLevel} index ${selectedIndex} should be 0-${totalTemplates-1}`);
+    }
+    
+    // Track this template as used in session state
+    sessionState.usedTemplates.add(selectedIndex);
+    sessionState.currentTemplateIndex = selectedIndex;
+    this.saveSessionState(sessionState);
+    
+    console.log(`✅ Level ${gradeLevel}: Selected MAIN template ${selectedIndex + 1}/${totalTemplates}`);
     
     // STEP 1: Process template with user context
     let pages = baseTemplate.map(page => 
@@ -512,9 +556,10 @@ export class EnhancedTemplateManager {
     const extendedPages = [...originalPages];
     const userName = userInfo?.name || 'I';
     
-    // Get available base templates (exclude already used one)
-    const totalTemplates = getTemplateCountByGradeLevel(gradeLevel);
-    const usedTemplates = this.sessionUsedTemplates.get(gradeLevel) || new Set();
+    // Get available base templates from session state
+    const totalTemplates = getTemplateCountByGradeLevel(gradeLevel, false); // Main templates only
+    const sessionState = this.getSessionState(gradeLevel);
+    const usedTemplates = sessionState ? sessionState.usedTemplates : new Set();
     const availableTemplateIndices = Array.from({ length: totalTemplates }, (_, i) => i)
       .filter(i => !usedTemplates.has(i));
     
@@ -533,8 +578,11 @@ export class EnhancedTemplateManager {
         const randomPageIndex = Math.floor(Math.random() * template.length);
         newPage = template[randomPageIndex].replace(/{userName}/g, userName);
         
-        // Track this template as used
-        this.sessionUsedTemplates.get(gradeLevel)!.add(nextTemplateIndex);
+        // Track this template as used in session state
+        if (sessionState) {
+          sessionState.usedTemplates.add(nextTemplateIndex);
+          this.saveSessionState(sessionState);
+        }
         templateIndex++;
       } else {
         // Fallback: Use extension templates only after all base templates are exhausted
@@ -863,25 +911,32 @@ export class EnhancedTemplateManager {
     };
   }
 
+
   /**
-   * Clear session for testing
+   * Clear session state (called when session ends or difficulty changes)
    */
   static clearSession(): void {
-    // Clear session data
-    SessionTemplateManager.clearSession();
-    // Clear used templates tracking
-    this.sessionUsedTemplates.clear();
-    
-    // Clear enhanced template session storage for all grade levels
     try {
-      const { MobileSessionManager } = require('./mobileSessionManager');
-      const gradeLevels = [1, 2, 3, 4] as GradeLevel[];
-      gradeLevels.forEach(gradeLevel => {
-        MobileSessionManager.removeItem(this.getSessionStorageKey(gradeLevel));
-      });
-      console.log('🧹 Cleared enhanced template session storage for all grade levels');
+      // Clear all grade level sessions
+      for (let grade = 1; grade <= 4; grade++) {
+        this.clearSessionForGradeLevel(grade as GradeLevel);
+      }
+      console.log('🧹 Enhanced Template Manager: All sessions cleared');
     } catch (error) {
-      console.warn('⚠️ Failed to clear enhanced template session storage:', error);
+      console.warn('⚠️ Enhanced Template Manager: Failed to clear session:', error);
+    }
+  }
+  
+  /**
+   * Clear session for specific difficulty transition
+   */
+  static clearSessionForDifficultyChange(fromDifficulty: DifficultyLevel, toDifficulty: DifficultyLevel): void {
+    const fromGrade = difficultyToGradeLevel(fromDifficulty);
+    const toGrade = difficultyToGradeLevel(toDifficulty);
+    
+    if (fromGrade !== toGrade) {
+      this.clearSessionForGradeLevel(toGrade);
+      console.log(`🔄 Enhanced Template Manager: Cleared session for difficulty transition ${fromDifficulty} → ${toDifficulty} (Level ${fromGrade} → ${toGrade})`);
     }
   }
 
