@@ -49,30 +49,29 @@ export class SessionPageTracker {
   static trackPageNavigation(newPageIndex: number): void {
     const sessionData = this.getSessionData();
     
-    // Only count if we're moving to a new highest page
-    if (newPageIndex > sessionData.maxPageReached) {
-      const newPagesViewed = newPageIndex - sessionData.maxPageReached;
+    // Only count if we're moving to a new highest page (1-based page numbering)
+    const pageNumber = newPageIndex + 1; // Convert from 0-based index to 1-based page number
+    if (pageNumber > sessionData.maxPageReached) {
+      const newPagesViewed = pageNumber - sessionData.maxPageReached;
       sessionData.totalPagesViewed += newPagesViewed;
-      sessionData.maxPageReached = newPageIndex;
+      sessionData.maxPageReached = pageNumber;
       sessionData.lastPageTime = Date.now();
       
       this.saveSessionData(sessionData);
       
-      console.log(`📊 Page Tracker: Viewed ${newPagesViewed} new pages. Total: ${sessionData.totalPagesViewed}/${this.FREE_TRIAL_PAGE_LIMIT}`);
+      console.log(`📊 Page Tracker: Navigated to page ${pageNumber}, viewed ${newPagesViewed} new pages. Total: ${sessionData.totalPagesViewed}/${this.FREE_TRIAL_PAGE_LIMIT}`);
+    } else {
+      console.log(`📊 Page Tracker: Navigated to page ${pageNumber} (already viewed), no count change. Total: ${sessionData.totalPagesViewed}/${this.FREE_TRIAL_PAGE_LIMIT}`);
     }
   }
   
   /**
-   * Track when new pages are added to story
+   * Track when new pages are added to story (REMOVED - prevents double counting)
    */
   static trackPagesAdded(pagesAdded: number): void {
-    const sessionData = this.getSessionData();
-    sessionData.totalPagesViewed += pagesAdded;
-    sessionData.lastPageTime = Date.now();
-    
-    this.saveSessionData(sessionData);
-    
-    console.log(`📊 Page Tracker: Added ${pagesAdded} pages. Total: ${sessionData.totalPagesViewed}/${this.FREE_TRIAL_PAGE_LIMIT}`);
+    // No longer tracking pages added to prevent double counting
+    // Only trackPageNavigation should increment the counter
+    console.log(`📊 Page Tracker: ${pagesAdded} pages added to story (not counted - only navigation counts)`);
   }
   
   /**

@@ -709,8 +709,8 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
       // Update story max pages to reflect the new total possible pages
       setStoryMaxPages(prev => prev + newPages.length);
       
-      // Track navigation for analytics only
-      SessionPageTracker.trackPagesAdded(newPages.length);
+      // Track navigation for analytics only (removed to prevent double counting)
+      // SessionPageTracker.trackPagesAdded(newPages.length);
       
       // Initialize placeholder images
       const placeholderImages = newPages.map((_, i) => ({ 
@@ -1175,15 +1175,6 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                       </span>
                     </p>
                     
-                    {/* Session Page Progress Indicator */}
-                    <ProgressIndicator 
-                      pagesViewed={pageInfo.pagesViewed}
-                      maxPages={pageInfo.maxPages}
-                      isNearLimit={pageInfo.isNearLimit}
-                      hasReachedLimit={pageInfo.hasReachedLimit}
-                      isPremium={isPremium}
-                      className="mt-2"
-                    />
                     
                   </div>
                 </div>
@@ -1478,10 +1469,11 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
                               const nextPage = Math.min(story.length - 1, currentPage + 1);
                               setCurrentPage(nextPage);
                               
-                              // Track forward navigation
+                              // Track forward navigation (fixed indexing)
                               if (nextPage > currentPage) {
                                 SessionPageTracker.trackPageNavigation(nextPage);
                                 setPageInfo(SessionPageTracker.getPageInfo());
+                                console.log(`📊 FreeReading: Next page navigation to ${nextPage + 1}, session count:`, SessionPageTracker.getPageInfo());
                               }
                             }
                           }}
