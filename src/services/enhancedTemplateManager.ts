@@ -168,7 +168,13 @@ export class EnhancedTemplateManager {
         };
         
         // Enhance the template page with character details (don't replace)
-        return this.enhanceTemplateWithCharacters(page, characterPool, context, enhancedInputs);
+        return this.enhanceTemplateWithCharacters(
+          page,
+          userInfo || {} as UserInfo,
+          characterPool,
+          enhancedInputs,
+          { currentPage: index + 1, totalPages: pages.length }
+        );
       });
     } catch (error) {
       console.warn(`⚠️ EnhancedTemplateManager: Character enhancement failed:`, error);
@@ -488,78 +494,88 @@ export class EnhancedTemplateManager {
   }
 
   /**
-   * Enhance template with character details while preserving the template narrative
+   * Enhance template pages with contextual character integration (FIXED)
+   * Replaces broken placeholder system with intelligent character enhancement
    */
   private static enhanceTemplateWithCharacters(
-    templatePage: string,
+    page: string,
+    userInfo: UserInfo,
     characterPool: any,
-    context: any,
-    enhancedInputs?: any
+    enhancedInputs: any,
+    context: { currentPage: number; totalPages: number }
   ): string {
-    let enhancedPage = templatePage;
-    
-    // Replace basic placeholders with character names
-    if (characterPool.main) {
-      enhancedPage = enhancedPage.replace(/{main}/g, characterPool.main.name);
-      enhancedPage = enhancedPage.replace(/{character}/g, characterPool.main.name);
-    }
-    
-    if (characterPool.family && characterPool.family.length > 0) {
-      enhancedPage = enhancedPage.replace(/{family}/g, characterPool.family[0].name);
-    }
-    
-    if (characterPool.friends && characterPool.friends.length > 0) {
-      enhancedPage = enhancedPage.replace(/{friend}/g, characterPool.friends[0].name);
-    }
-    
-    if (characterPool.animals && characterPool.animals.length > 0) {
-      enhancedPage = enhancedPage.replace(/{animal}/g, characterPool.animals[0].name);
-      enhancedPage = enhancedPage.replace(/{pet}/g, characterPool.animals[0].name);
-    }
-    
-    if (characterPool.helpers && characterPool.helpers.length > 0) {
-      enhancedPage = enhancedPage.replace(/{helper}/g, characterPool.helpers[0].name);
-    }
-    
-    // Replace user preference placeholders from enhanced inputs
-    if (enhancedInputs) {
-      Object.entries(enhancedInputs).forEach(([key, value]) => {
-        if (typeof value === 'string' && key !== 'name') {
-          const regex = new RegExp(`\\{${key}\\}`, 'g');
-          enhancedPage = enhancedPage.replace(regex, value);
-        }
-      });
-    }
-    
-    // Add subtle character details without breaking the template narrative
-    const storyPosition = context.currentPage / context.totalPages;
-    
-    // Only add character details if the page doesn't already have rich character content
-    if (enhancedPage.length < 100 && !enhancedPage.includes(', who ') && !enhancedPage.includes(' the ')) {
-      // Early pages - add character relationships
-      if (storyPosition < 0.4 && characterPool.family && characterPool.family.length > 0) {
-        const familyMember = characterPool.family[0];
-        if (!enhancedPage.includes(familyMember.name)) {
-          enhancedPage = enhancedPage.replace(
-            /\./,
-            ` with ${familyMember.name}.`
-          );
-        }
-      }
+    try {
+      // Import the new contextual character enhancer
+      const { ContextualCharacterEnhancer } = require('./contextualCharacterEnhancer');
       
-      // Middle pages - add friend interactions
-      if (storyPosition >= 0.4 && storyPosition < 0.8 && characterPool.friends && characterPool.friends.length > 0) {
-        const friend = characterPool.friends[0];
-        if (!enhancedPage.includes(friend.name)) {
-          enhancedPage = enhancedPage.replace(
-            /\./,
-            ` and ${friend.name}.`
-          );
-        }
-      }
+      // Determine difficulty level from grade
+      const difficultyMapping = {
+        'PreK': 'beginner' as DifficultyLevel,
+        'K': 'beginner' as DifficultyLevel,
+        '1st': 'easy' as DifficultyLevel,
+        '2nd': 'easy' as DifficultyLevel,
+        '3rd': 'medium' as DifficultyLevel,
+        '4th': 'medium' as DifficultyLevel,
+        '5th': 'hard' as DifficultyLevel,
+        '6th+': 'hard' as DifficultyLevel
+      };
+      
+      const difficulty = difficultyMapping[userInfo.grade] || 'easy';
+      
+      // Create enhancement context
+      const enhancementContext = {
+        currentPage: context.currentPage,
+        totalPages: context.totalPages,
+        gradeLevel: this.getGradeLevelNumber(userInfo.grade),
+        templateTheme: 'general',
+        storyProgression: this.getStoryProgression(context.currentPage, context.totalPages)
+      };
+      
+      // Use new contextual enhancement system
+      return ContextualCharacterEnhancer.enhanceTemplateWithContext(
+        page,
+        userInfo,
+        difficulty,
+        enhancementContext
+      );
+      
+    } catch (error) {
+      console.error('Contextual character enhancement failed:', error);
+      
+      // Fallback: return original page with basic userName replacement only
+      // This prevents the broken placeholder system from corrupting content
+      return page; // Templates already have {userName} replaced by TemplateVariableProcessor
     }
+  }
+  
+  /**
+   * Get numeric grade level for processing
+   */
+  private static getGradeLevelNumber(grade: string): number {
+    const mapping = {
+      'PreK': 0,
+      'K': 0,
+      '1st': 1,
+      '2nd': 2,
+      '3rd': 3,
+      '4th': 4,
+      '5th': 5,
+      '6th+': 6
+    };
     
-    return enhancedPage;
+    return mapping[grade as keyof typeof mapping] || 1;
+  }
+  
+  /**
+   * Determine story progression phase
+   */
+  private static getStoryProgression(currentPage: number, totalPages: number): 'opening' | 'development' | 'climax' | 'resolution' {
+    const position = currentPage / totalPages;
+    
+    if (position < 0.25) return 'opening';
+    if (position < 0.75) return 'development';
+    if (position < 0.9) return 'climax';
+    return 'resolution';
   }
 
   /**
