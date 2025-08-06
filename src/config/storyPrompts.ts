@@ -23,16 +23,17 @@ export const STORY_PROMPTS: Record<DifficultyLevel, StoryPromptConfig> = {
 STRICT REQUIREMENTS:
 - Exactly 30 words total across entire story
 - Exactly 5 pages
-- Exactly 6 words per page (1 simple sentence)
-- Only 2-3 word sentences with 1-4 letter words only
-- Only Subject-Verb or Subject-Verb-Object sentences
-- USE 80% Dolch Pre-Primer words: a, and, away, big, blue, can, come, down, find, for, funny, go, help, here, i, in, is, it, jump, little, look, make, me, my, not, one, play, red, run, said, see, the, three, to, two, up, we, where, yellow, you
+- 4-8 words per page (flexible for natural flow)
+- Simple 2-6 word sentences using basic vocabulary
+- Use Subject-Verb, Subject-Verb-Object, and Subject-Verb-Adjective patterns
+- PRIMARY VOCABULARY: Use Dolch Pre-Primer words as foundation: a, and, away, big, blue, can, come, down, find, for, funny, go, help, here, i, in, is, it, jump, little, look, make, me, my, not, one, play, red, run, said, see, the, three, to, two, up, we, where, yellow, you
+- FLEXIBILITY: Up to 20% of words can be simple alternatives when needed for natural flow
 - EXCEPTION: Always allow user's name and their favorite color/animal/food/hobby
 - Use name 60% of time, pronouns (he/she/they) 40% of time
 - Every sentence must be joyful and positive
 
-FORMAT: Page 1: [6 words]. Page 2: [6 words]. Page 3: [6 words]. Page 4: [6 words]. Page 5: [6 words].`,
-    userPromptTemplate: `Create a 30-word story for {name}. Use their favorite {favoriteColor} {favoriteAnimal}. Include {hobbies}. Remember: exactly 6 words per page, 5 pages total.`,
+FORMAT: Page 1: [sentence]. Page 2: [sentence]. Page 3: [sentence]. Page 4: [sentence]. Page 5: [sentence].`,
+    userPromptTemplate: `Create a 30-word story for {name}. Use their favorite {favoriteColor} {favoriteAnimal}. Include {hobbies}. Remember: 5 pages total, 30 words exactly.`,
     maxLength: 30,
     expectedPages: 5
   },
