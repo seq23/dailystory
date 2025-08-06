@@ -1,42 +1,52 @@
 // Level 4 Extension Templates - Universal access for both free trial and premium users
 // Grade Level: Ages 9-10, 4th-5th grade reading level
 // Vocabulary: Advanced sentences with sophisticated vocabulary and complex narratives
+// Now enhanced with Gold/Silver/Purple author voice patterns
 
 export const LEVEL_4_EXTENSIONS: string[][] = [
+  // Extension 1: Library Mystery Investigation (Gold Pattern - Mature Adventure)
   [
-    "{userName} investigates mysterious disappearances of books from the library.",
-    "The librarian mentions that rare historical texts have been vanishing systematically.",
-    "{userName} discovers hidden passages behind the reference section's shelves.",
-    "A secret underground archive reveals centuries-old manuscripts and documents.",
-    "{userName} helps establish a proper preservation system for protecting cultural heritage."
+    "{userName} had been looking forward to this mystery - investigating disappearing books from the library.",
+    "But then something unexpected happened: rare historical texts were vanishing systematically from collections.",
+    "Of course, things didn't go smoothly when discovering hidden passages behind reference section shelves.",
+    "As usual, life was more complicated than anticipated when secret archives revealed centuries-old manuscripts.",
+    "And {userName} learned that growing up means helping establish proper preservation systems for cultural heritage."
   ],
+  
+  // Extension 2: Environmental Innovation (Silver Pattern - Wisdom)
   [
-    "{userName} develops an innovative solution for reducing plastic waste.",
-    "The environmental crisis requires creative thinking and sustainable alternatives.",
-    "{userName} designs biodegradable containers using agricultural byproducts.",
-    "Local businesses express enthusiasm about implementing these eco-friendly products.",
-    "{userName}'s invention receives recognition from environmental organizations worldwide."
+    "{userName} was not quite ready for environmental crisis solutions, but plastic waste innovation was calling.",
+    "But slowly, things began to change as they designed biodegradable containers using agricultural byproducts.",
+    "Sometimes the best things happen when you develop creative thinking and sustainable alternatives.",
+    "That's when {userName} realized local businesses enthusiastically implement eco-friendly products.",
+    "And {userName} knew everything would be okay - environmental recognition grows one invention at a time."
   ],
+  
+  // Extension 3: Archaeological Discovery (Purple Pattern - Sophisticated Adventure)
   [
-    "{userName} uncovers evidence of historical significance in the basement.",
-    "Archaeological artifacts suggest indigenous settlements existed here centuries ago.",
-    "{userName} collaborates with university researchers to document the findings.",
-    "The discovery challenges previously accepted theories about regional history.",
-    "{userName} contributes to scholarship that honors indigenous cultural contributions."
+    "If you give {userName} a basement archaeology opportunity...",
+    "That will remind them of their curiosity about indigenous settlements from centuries ago.",
+    "So they will want to collaborate with university researchers and document findings carefully.",
+    "Which means they will need to challenge accepted theories about regional historical development.",
+    "And chances are, they will want another archaeological project - which will remind them how this all started."
   ],
+  
+  // Extension 4: Intergenerational Mentorship (Gold Pattern - Mature Adventure)
   [
-    "{userName} establishes a mentorship program connecting students across generations.",
-    "Elderly community members share wisdom while learning modern technology.",
-    "{userName} facilitates meaningful relationships that benefit everyone involved.",
-    "The intergenerational exchange creates understanding and mutual respect.",
-    "{userName}'s program becomes a model for communities throughout the region."
+    "{userName} had been looking forward to this challenge - establishing mentorship programs connecting different generations.",
+    "But then something unexpected happened: elderly community members needed to learn modern technology skills.",
+    "Of course, things didn't go smoothly when facilitating meaningful relationships required patience and understanding.",
+    "As usual, life was more complicated than anticipated when intergenerational exchange created mutual respect.",
+    "And {userName} learned that growing up means creating models for communities throughout the region."
   ],
+  
+  // Extension 5: Urban Agriculture Pioneer (Silver Pattern - Wisdom)
   [
-    "{userName} pioneers sustainable agriculture techniques in urban environments.",
-    "Vertical gardens and hydroponic systems maximize food production efficiency.",
-    "{userName} teaches neighbors about soil conservation and organic farming methods.",
-    "The initiative provides fresh vegetables while reducing transportation costs.",
-    "{userName} demonstrates that innovation can address food security challenges."
+    "{userName} was not quite ready for sustainable agriculture, but urban food production was calling.",
+    "But slowly, things began to change as they developed vertical gardens and hydroponic systems.",
+    "Sometimes the best things happen when you teach neighbors about soil conservation and organic methods.",
+    "That's when {userName} realized innovation can address food security challenges effectively.",
+    "And {userName} knew everything would be okay - agricultural solutions grow one garden at a time."
   ]
 ];
 

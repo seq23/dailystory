@@ -20,360 +20,362 @@ export const LEVEL_4_TEMPLATES = [
     "And {userName} knew everything would be okay - some things are worth waiting for, like new computer labs."
   ],
   
-  // Template 3: Community Service Initiative
+  // Template 3: Community Service Initiative (Gold Pattern - Mature Adventure)
   [
-    "{userName} organizes a volunteer program to provide tutoring services for elementary school students.",
-    "Recruiting volunteers requires presenting the program to school clubs and creating training materials.",
-    "The tutoring sessions focus on reading comprehension, basic math skills, and homework assistance.",
-    "Feedback from parents and teachers shows significant improvement in the younger students' grades.",
-    "The program's success leads to expansion into other schools throughout the district."
+    "{userName} had been looking forward to this challenge - organizing tutoring services for elementary students.",
+    "But then something unexpected happened: recruiting volunteers required presenting programs to multiple school clubs.",
+    "Of course, things didn't go smoothly when creating training materials and scheduling sessions carefully.",
+    "As usual, life was more complicated than anticipated when feedback showed significant grade improvements.",
+    "And {userName} learned that growing up means expanding successful programs - life with service is deeply rewarding."
   ],
   
-  // Template 4: Investigative Journalism
+  // Template 4: Investigative Journalism (Purple Pattern - Sophisticated Adventure)
   [
-    "{userName} writes investigative articles for the school newspaper about budget cuts affecting arts programs.",
-    "Research involves interviewing administrators, teachers, students, and reviewing school district documents.",
-    "The articles reveal how funding decisions impact student opportunities and educational quality.",
-    "Publication generates community discussion and leads to school board meetings about budget priorities.",
-    "The journalism work demonstrates how student voices can influence important educational decisions."
+    "If you give {userName} an investigative journalism opportunity about budget cuts affecting arts programs...",
+    "That will remind them of their curiosity about interviewing administrators, teachers, and students thoroughly.",
+    "So they will want to review school district documents and reveal funding decisions carefully.",
+    "Which means they will need to generate community discussion and influence school board meetings.",
+    "And chances are, they will want another journalism project - which will remind them how this all started."
   ],
   
-  // Template 5: Entrepreneurship Project
+  // Template 5: Entrepreneurship Project (Silver Pattern - Wisdom)
   [
-    "{userName} starts a small business creating and selling custom phone cases and laptop stickers.",
-    "The venture requires learning about product design, marketing, customer service, and financial management.",
-    "Initial investment comes from savings, and production starts with simple materials and tools.",
-    "Social media marketing and word-of-mouth advertising help build a steady customer base.",
-    "By the end of the school year, the business generates enough profit to fund college savings."
+    "{userName} was not quite ready for business ownership, but entrepreneurship was calling.",
+    "But slowly, things began to change as they learned product design, marketing, and financial management.",
+    "Sometimes the best things happen when you start with simple materials and build customer bases.",
+    "That's when {userName} realized social media marketing could generate college savings profits.",
+    "And {userName} knew everything would be okay - successful businesses grow one customer at a time."
   ],
   
-  // Template 6: Debate Team Captain
+  // Template 6: Debate Team Captain (Gold Pattern - Mature Adventure)
   [
-    "{userName} leads the debate team in preparing for the state championship tournament.",
-    "Training involves researching current events, developing logical arguments, and practicing public speaking skills.",
-    "The team studies topics ranging from environmental policy to social justice issues.",
-    "During competition, {userName} demonstrates strong critical thinking and persuasive communication abilities.",
-    "Although finishing second in state, the team gains valuable experience in analytical reasoning."
+    "{userName} had been looking forward to this responsibility - leading debate team preparation for state championships.",
+    "But then something unexpected happened: researching current events required developing logical arguments and public speaking skills.",
+    "Of course, things didn't go smoothly when studying environmental policy and social justice issues intensively.",
+    "As usual, life was more complicated than anticipated when demonstrating critical thinking under competition pressure.",
+    "And {userName} learned that growing up means earning second place teaches valuable analytical reasoning."
   ],
   
-  // Template 7: Cultural Exchange Program
+  // Template 7: Cultural Exchange Program (Purple Pattern - Sophisticated Adventure)
   [
-    "{userName} participates in a cultural exchange program, hosting a student from Japan for one month.",
-    "Preparation includes learning about Japanese customs, language basics, and cultural differences.",
-    "Daily activities involve showing the exchange student American high school life and local attractions.",
-    "The experience provides insights into different educational systems and global perspectives.",
-    "Lasting friendships develop, leading to plans for {userName} to visit Japan the following summer."
+    "If you give {userName} a cultural exchange opportunity hosting a Japanese student...",
+    "That will remind them of their curiosity about learning customs, language basics, and cultural differences.",
+    "So they will want to show American high school life and explore local attractions together.",
+    "Which means they will need to gain insights into educational systems and global perspectives.",
+    "And chances are, they will want another exchange experience - which will remind them how this all started."
   ],
   
-  // Template 8: Environmental Activism
+  // Template 8: Environmental Activism (Silver Pattern - Wisdom)
   [
-    "{userName} organizes a school-wide campaign to reduce plastic waste and promote sustainability.",
-    "The initiative includes educational presentations, waste audits, and alternative product suggestions.",
-    "Students learn about environmental impact and develop habits like using reusable water bottles.",
-    "Collaboration with local businesses provides recycling programs and eco-friendly product discounts.",
-    "The campaign reduces school waste by forty percent and inspires similar programs in neighboring schools."
+    "{userName} was not quite ready for school-wide change, but sustainability campaigns were needed.",
+    "But slowly, things began to change as they organized presentations, waste audits, and alternative solutions.",
+    "Sometimes the best things happen when you collaborate with businesses providing eco-friendly discounts.",
+    "That's when {userName} realized reducing waste by forty percent inspires neighboring schools.",
+    "And {userName} knew everything would be okay - environmental progress happens one campaign at a time."
   ],
   
-  // Template 9: Theater Production Director
+  // Template 9: Theater Production Director (Gold Pattern - Mature Adventure)
   [
-    "{userName} directs the school's production of Shakespeare's 'Romeo and Juliet' adapted for young audiences.",
-    "Responsibilities include auditions, rehearsal scheduling, working with designers, and managing the cast.",
-    "The production requires understanding character development, staging, and effective communication with actors.",
-    "Opening night showcases months of hard work and demonstrates {userName}'s leadership abilities.",
-    "The successful production receives positive reviews from local newspapers and theater critics."
+    "{userName} had been looking forward to this challenge - directing Shakespeare's Romeo and Juliet for young audiences.",
+    "But then something unexpected happened: managing auditions, rehearsals, designers, and cast members simultaneously.",
+    "Of course, things didn't go smoothly when understanding character development and staging required effective communication.",
+    "As usual, life was more complicated than anticipated when opening night showcased months of dedicated leadership.",
+    "And {userName} learned that growing up means earning positive reviews from theater critics."
   ],
   
-  // Template 10: Medical Career Exploration
+  // Template 10: Medical Career Exploration (Purple Pattern - Sophisticated Adventure)
   [
-    "{userName} shadows doctors and nurses at the local hospital to explore healthcare careers.",
-    "The experience includes observing surgeries, patient consultations, and emergency room procedures.",
-    "Medical professionals explain their educational paths and the challenges of healthcare work.",
-    "Volunteering in the pediatric ward teaches {userName} about patient care and medical ethics.",
-    "The exposure to healthcare solidifies {userName}'s decision to pursue pre-medical studies in college."
+    "If you give {userName} a healthcare shadowing opportunity at the local hospital...",
+    "That will remind them of their curiosity about observing surgeries, consultations, and emergency procedures.",
+    "So they will want to learn about educational paths and healthcare work challenges from professionals.",
+    "Which means they will need to volunteer in pediatric wards and understand medical ethics deeply.",
+    "And chances are, they will want another medical experience - which will remind them how this all started."
   ],
   
-  // Template 11: Technology Innovation
+  // Template 11: Technology Innovation (Silver Pattern - Wisdom)
   [
-    "{userName} develops a mobile app to help students organize homework assignments and project deadlines.",
-    "Programming the app requires learning coding languages and user interface design principles.",
-    "Beta testing with classmates provides feedback for improving functionality and user experience.",
-    "The finished app gains popularity and receives recognition at a regional technology competition.",
-    "Several colleges express interest in {userName}'s programming skills and offer computer science scholarships."
+    "{userName} was not quite ready for app development, but programming solutions were calling.",
+    "But slowly, things began to change as they learned coding languages and user interface design.",
+    "Sometimes the best things happen when you beta test with classmates and improve functionality.",
+    "That's when {userName} realized regional technology competitions recognize programming skills.",
+    "And {userName} knew everything would be okay - computer science scholarships reward innovation one app at a time."
   ],
   
-  // Template 12: Historical Research Project
+  // Template 12: Historical Research Project (Gold Pattern - Mature Adventure)
   [
-    "{userName} researches the local community's role during World War II for a history competition.",
-    "Investigation involves interviewing elderly residents, examining newspaper archives, and visiting historical sites.",
-    "The research reveals previously unknown stories about wartime contributions and home front activities.",
-    "Presentation of findings includes a documentary film and museum exhibit proposal.",
-    "The work preserves community history and earns recognition from historical societies."
+    "{userName} had been looking forward to this investigation - researching community World War II contributions for history competitions.",
+    "But then something unexpected happened: interviewing elderly residents revealed previously unknown wartime stories.",
+    "Of course, things didn't go smoothly when examining newspaper archives and visiting historical sites extensively.",
+    "As usual, life was more complicated than anticipated when presenting documentary films and museum exhibits.",
+    "And {userName} learned that growing up means preserving community history earns historical society recognition."
   ],
   
-  // Template 13: Athletic Team Leadership
+  // Template 13: Athletic Team Leadership (Purple Pattern - Sophisticated Adventure)
   [
-    "{userName} serves as captain of the varsity basketball team during a challenging rebuilding season.",
-    "Leadership responsibilities include motivating teammates, organizing practice sessions, and representing the team.",
-    "Despite having many new players, the team improves throughout the season through hard work.",
-    "Important lessons about perseverance, teamwork, and sportsmanship emerge during difficult games.",
-    "The season concludes with the team making the playoffs and {userName} receiving a leadership award."
+    "If you give {userName} a varsity basketball captaincy during a challenging rebuilding season...",
+    "That will remind them of their dedication to motivating teammates and organizing practice sessions.",
+    "So they will want to represent the team and improve throughout the season despite difficulties.",
+    "Which means they will need to learn perseverance, teamwork, and sportsmanship during tough games.",
+    "And chances are, they will want another leadership role - which will remind them how this all started."
   ],
   
-  // Template 14: Literary Magazine Editor
+  // Template 14: Literary Magazine Editor (Silver Pattern - Wisdom)
   [
-    "{userName} serves as editor-in-chief of the school's literary magazine, publishing student poetry and stories.",
-    "Editorial duties include reviewing submissions, working with writers, and coordinating publication schedules.",
-    "The magazine features diverse voices and perspectives from students across all grade levels.",
-    "Collaboration with art students provides illustrations and cover designs for each issue.",
-    "The publication gains recognition for quality content and receives funding for expanded distribution."
+    "{userName} was not quite ready for editorial responsibility, but student publishing was calling.",
+    "But slowly, things began to change as they reviewed submissions and worked with writers carefully.",
+    "Sometimes the best things happen when you coordinate publication schedules and feature diverse voices.",
+    "That's when {userName} realized collaborating with art students creates quality content recognition.",
+    "And {userName} knew everything would be okay - literary magazines grow one story at a time."
   ],
   
-  // Template 15: Peer Mediation Program
+  // Template 15: Peer Mediation Program (Gold Pattern - Mature Adventure)
   [
-    "{userName} trains as a peer mediator to help resolve conflicts between students peacefully.",
-    "Training covers communication skills, conflict resolution techniques, and maintaining neutrality.",
-    "Mediation sessions require patience, empathy, and the ability to help others find common ground.",
-    "The program reduces disciplinary referrals and creates a more positive school climate.",
-    "Success in mediation inspires {userName} to consider careers in counseling or social work."
+    "{userName} had been looking forward to this training - becoming a peer mediator for student conflict resolution.",
+    "But then something unexpected happened: learning communication skills required maintaining neutrality and patience.",
+    "Of course, things didn't go smoothly when mediation sessions demanded empathy and common ground discovery.",
+    "As usual, life was more complicated than anticipated when reducing disciplinary referrals created positive school climates.",
+    "And {userName} learned that growing up means considering counseling careers through successful mediation."
   ],
   
-  // Template 16: Science Olympiad Competition
+  // Template 16: Science Olympiad Competition (Purple Pattern - Sophisticated Adventure)
   [
-    "{userName} competes in Science Olympiad events focusing on chemistry, physics, and engineering challenges.",
-    "Preparation involves months of studying scientific concepts and practicing laboratory techniques.",
-    "Team members specialize in different events and support each other's learning and preparation.",
-    "The state competition tests knowledge, problem-solving skills, and ability to work under pressure.",
-    "Strong performance earns the team a trip to nationals and individual recognition for {userName}."
+    "If you give {userName} a Science Olympiad opportunity focusing on chemistry, physics, and engineering...",
+    "That will remind them of their curiosity about studying scientific concepts and practicing laboratory techniques.",
+    "So they will want to specialize in different events and support teammates' learning preparation.",
+    "Which means they will need to demonstrate knowledge and problem-solving under competition pressure.",
+    "And chances are, they will want another scientific challenge - which will remind them how this all started."
   ],
   
-  // Template 17: International Model UN
+  // Template 17: International Model UN (Silver Pattern - Wisdom)
   [
-    "{userName} represents a country in Model United Nations, debating global issues and writing resolutions.",
-    "Preparation requires researching international relations, economic policies, and diplomatic procedures.",
-    "The conference involves formal debates, committee work, and negotiating with delegates from other schools.",
-    "Skills in public speaking, critical thinking, and cultural awareness develop throughout the experience.",
-    "Outstanding diplomacy earns {userName} recognition and inspires interest in international relations careers."
+    "{userName} was not quite ready for diplomatic representation, but international relations were calling.",
+    "But slowly, things began to change as they researched economic policies and diplomatic procedures.",
+    "Sometimes the best things happen when you engage in formal debates and committee negotiations.",
+    "That's when {userName} realized developing cultural awareness inspires international relations careers.",
+    "And {userName} knew everything would be okay - outstanding diplomacy earns recognition one resolution at a time."
   ],
   
-  // Template 18: Mentorship Program Coordinator
+  // Template 18: Mentorship Program Coordinator (Gold Pattern - Mature Adventure)
   [
-    "{userName} coordinates a mentorship program connecting high school students with middle school students.",
-    "Organization involves recruiting mentors, training sessions, and scheduling regular meeting times.",
-    "The program addresses academic challenges, social issues, and transition concerns for younger students.",
-    "Feedback indicates improved confidence and academic performance among participating middle schoolers.",
-    "The program's success leads to district-wide implementation and recognition for {userName}'s leadership."
+    "{userName} had been looking forward to this opportunity - coordinating high school and middle school mentorship connections.",
+    "But then something unexpected happened: recruiting mentors required organizing training sessions and scheduling meetings.",
+    "Of course, things didn't go smoothly when addressing academic challenges and social transition concerns.",
+    "As usual, life was more complicated than anticipated when feedback showed improved confidence and performance.",
+    "And {userName} learned that growing up means district-wide implementation recognizes exceptional leadership."
   ],
   
-  // Template 19: Independent Film Production
+  // Template 19: Independent Film Production (Purple Pattern - Sophisticated Adventure)
   [
-    "{userName} writes, directs, and produces a short documentary about local environmental issues.",
-    "Production involves learning camera techniques, interviewing subjects, and editing footage professionally.",
-    "The documentary examines water quality concerns and community efforts to address environmental challenges.",
-    "Screenings at local venues raise awareness and encourage community involvement in environmental protection.",
-    "The film receives awards at student film festivals and scholarship opportunities for media studies."
+    "If you give {userName} a documentary filmmaking opportunity about local environmental issues...",
+    "That will remind them of their curiosity about learning camera techniques and interviewing subjects professionally.",
+    "So they will want to examine water quality concerns and edit footage about community efforts.",
+    "Which means they will need to screen at local venues and raise environmental awareness effectively.",
+    "And chances are, they will want another film project - which will remind them how this all started."
   ],
   
-  // Template 20: Academic Competition Team
+  // Template 20: Academic Competition Team (Silver Pattern - Wisdom)
   [
-    "{userName} competes on the academic bowl team, answering questions about literature, science, and current events.",
-    "Training involves extensive reading, studying diverse subjects, and practicing quick recall techniques.",
-    "Competitions test knowledge across multiple disciplines and require strategic teamwork.",
-    "The team advances to regional championships and demonstrates impressive academic achievement.",
-    "Individual success in academic competition leads to scholarship offers from several universities."
+    "{userName} was not quite ready for academic bowl pressure, but intellectual challenges were calling.",
+    "But slowly, things began to change as they studied diverse subjects and practiced quick recall.",
+    "Sometimes the best things happen when you demonstrate strategic teamwork and advance to regionals.",
+    "That's when {userName} realized impressive academic achievement attracts university scholarship offers.",
+    "And {userName} knew everything would be okay - academic success grows one question at a time."
   ],
   
-  // Template 21: Social Justice Advocacy
+  // Template 21: Social Justice Advocacy (Gold Pattern - Mature Adventure)
   [
-    "{userName} organizes awareness campaigns about social justice issues affecting the local community.",
-    "Activities include educational forums, guest speakers, and volunteer opportunities with advocacy organizations.",
-    "The campaigns address topics like homelessness, food insecurity, and educational inequality.",
-    "Collaboration with community groups provides real-world perspective on social problems and solutions.",
-    "The advocacy work demonstrates civic engagement and inspires other students to become involved."
+    "{userName} had been looking forward to this challenge - organizing awareness campaigns about community social justice issues.",
+    "But then something unexpected happened: arranging educational forums required coordinating guest speakers and volunteer opportunities.",
+    "Of course, things didn't go smoothly when addressing homelessness, food insecurity, and educational inequality systematically.",
+    "As usual, life was more complicated than anticipated when collaborating with advocacy organizations provided real-world perspectives.",
+    "And {userName} learned that growing up means demonstrating civic engagement inspires student involvement."
   ],
   
-  // Template 22: Academic Research Assistant
+  // Template 22: Academic Research Assistant (Purple Pattern - Sophisticated Adventure)
   [
-    "{userName} assists a university professor with research on renewable energy applications.",
-    "Responsibilities include data collection, laboratory work, and literature review for ongoing studies.",
-    "The research experience provides exposure to scientific methodology and advanced analytical techniques.",
-    "Collaboration with graduate students offers insights into academic careers and research opportunities.",
-    "The research contribution leads to publication acknowledgment and strong graduate school recommendations."
+    "If you give {userName} a university research opportunity assisting professors with renewable energy studies...",
+    "That will remind them of their curiosity about data collection, laboratory work, and literature review.",
+    "So they will want to learn scientific methodology and practice advanced analytical techniques.",
+    "Which means they will need to collaborate with graduate students and explore academic careers.",
+    "And chances are, they will want another research experience - which will remind them how this all started."
   ],
   
-  // Template 23: Robotics Team Engineer
+  // Template 23: Robotics Team Engineer (Silver Pattern - Wisdom)
   [
-    "{userName} designs and programs robots for the FIRST Robotics Competition championships.",
-    "Engineering challenges involve mechanical design, programming, and strategic game analysis.",
-    "Team collaboration requires communication between programmers, builders, and strategy coordinators.",
-    "Competition success depends on robot performance, teamwork, and gracious professionalism.",
-    "The experience develops technical skills and demonstrates the practical application of STEM education."
+    "{userName} was not quite ready for engineering challenges, but robotics competition was calling.",
+    "But slowly, things began to change as they designed mechanical systems and programmed strategic solutions.",
+    "Sometimes the best things happen when you coordinate between programmers, builders, and strategy teams.",
+    "That's when {userName} realized competition success demonstrates practical STEM education applications.",
+    "And {userName} knew everything would be okay - technical skills develop one robot at a time."
   ],
   
-  // Template 24: Creative Writing Publication
+  // Template 24: Creative Writing Publication (Gold Pattern - Mature Adventure)
   [
-    "{userName} writes a collection of short stories exploring themes of identity and belonging.",
-    "The writing process involves character development, plot construction, and multiple revision cycles.",
-    "Feedback from teachers and peers helps refine the stories and improve writing techniques.",
-    "Submission to young adult literary magazines results in publication of several pieces.",
-    "Recognition for creative writing leads to workshop opportunities and college scholarship considerations."
+    "{userName} had been looking forward to this project - writing short story collections exploring identity and belonging themes.",
+    "But then something unexpected happened: character development required plot construction and multiple revision cycles.",
+    "Of course, things didn't go smoothly when incorporating feedback from teachers and peers improved techniques.",
+    "As usual, life was more complicated than anticipated when submitting to literary magazines resulted in publication.",
+    "And {userName} learned that growing up means recognition leads to workshop opportunities and scholarship considerations."
   ],
   
-  // Template 25: Community Health Initiative
+  // Template 25: Community Health Initiative (Purple Pattern - Sophisticated Adventure)
   [
-    "{userName} develops a health education program addressing nutrition and fitness for teenagers.",
-    "Research includes studying dietary requirements, exercise physiology, and adolescent health challenges.",
-    "The program features workshops, cooking demonstrations, and physical activity challenges.",
-    "Collaboration with healthcare professionals ensures accurate information and effective presentation.",
-    "Program success leads to adoption by youth organizations and recognition from public health officials."
+    "If you give {userName} a health education opportunity addressing teenage nutrition and fitness...",
+    "That will remind them of their curiosity about studying dietary requirements and exercise physiology.",
+    "So they will want to develop workshops, cooking demonstrations, and physical activity challenges.",
+    "Which means they will need to collaborate with healthcare professionals and ensure accurate presentations.",
+    "And chances are, they will want another health project - which will remind them how this all started."
   ],
   
-  // Template 26: Business Management Internship
+  // Template 26: Business Management Internship (Silver Pattern - Wisdom)
   [
-    "{userName} interns at a local marketing firm, learning about business operations and client relations.",
-    "Responsibilities include market research, social media management, and client communication.",
-    "The internship provides insight into professional work environments and business strategy.",
-    "Mentorship from experienced professionals offers career guidance and networking opportunities.",
-    "Strong performance results in a job offer and recommendation letters for college business programs."
+    "{userName} was not quite ready for professional environments, but business experience was calling.",
+    "But slowly, things began to change as they learned market research and client communication strategies.",
+    "Sometimes the best things happen when you gain insights into operations and receive mentorship.",
+    "That's when {userName} realized strong performance results in job offers and recommendation letters.",
+    "And {userName} knew everything would be okay - business skills develop one internship at a time."
   ],
   
-  // Template 27: Music Composition Project
+  // Template 27: Music Composition Project (Gold Pattern - Mature Adventure)
   [
-    "{userName} composes original music for the school's spring concert and graduation ceremony.",
-    "Composition requires understanding musical theory, instrumentation, and performance considerations.",
-    "Collaboration with music teachers and student musicians helps refine the compositions.",
-    "Performance of the original pieces showcases {userName}'s creativity and musical talent.",
-    "The compositions receive positive feedback and opportunities for additional commissions."
+    "{userName} had been looking forward to this opportunity - composing original music for spring concerts and graduation ceremonies.",
+    "But then something unexpected happened: understanding musical theory required instrumentation and performance considerations.",
+    "Of course, things didn't go smoothly when collaborating with music teachers and student musicians refined compositions.",
+    "As usual, life was more complicated than anticipated when performing original pieces showcased creativity and talent.",
+    "And {userName} learned that growing up means receiving positive feedback creates additional commission opportunities."
   ],
   
-  // Template 28: Philosophy Discussion Group
+  // Template 28: Philosophy Discussion Group (Purple Pattern - Sophisticated Adventure)
   [
-    "{userName} organizes weekly philosophy discussion groups exploring ethics, logic, and existential questions.",
-    "Topics include moral decision-making, the nature of reality, and theories of knowledge.",
-    "Discussions encourage critical thinking, respectful debate, and intellectual curiosity.",
-    "Guest speakers include university professors and community leaders with philosophical backgrounds.",
-    "The group develops a reputation for thoughtful discourse and attracts participants from multiple schools."
+    "If you give {userName} a philosophy opportunity organizing weekly discussions about ethics and logic...",
+    "That will remind them of their curiosity about moral decision-making and theories of knowledge.",
+    "So they will want to encourage critical thinking and respectful debate about existential questions.",
+    "Which means they will need to invite university professors and community leaders as speakers.",
+    "And chances are, they will want another intellectual challenge - which will remind them how this all started."
   ],
   
-  // Template 29: Foreign Language Immersion
+  // Template 29: Foreign Language Immersion (Silver Pattern - Wisdom)
   [
-    "{userName} participates in a summer immersion program to achieve fluency in Spanish.",
-    "The program includes intensive language classes, cultural activities, and homestay experiences.",
-    "Daily conversation practice with native speakers accelerates language acquisition and cultural understanding.",
-    "Immersion challenges include adapting to different communication styles and cultural norms.",
-    "Fluency achievement opens opportunities for international study and career possibilities."
+    "{userName} was not quite ready for language fluency, but Spanish immersion was calling.",
+    "But slowly, things began to change as they participated in intensive classes and cultural activities.",
+    "Sometimes the best things happen when you practice daily conversation with native speakers.",
+    "That's when {userName} realized fluency achievement opens international study and career possibilities.",
+    "And {userName} knew everything would be okay - language skills develop one conversation at a time."
   ],
   
-  // Template 30: Psychology Research Study
+  // Template 30: Psychology Research Study (Gold Pattern - Mature Adventure)
   [
-    "{userName} designs a research study investigating the effects of social media on teenage self-esteem.",
-    "The study involves survey development, data collection, and statistical analysis of results.",
-    "Ethical considerations require careful protection of participant privacy and well-being.",
-    "Research findings contribute to understanding of adolescent psychology and social media impact.",
-    "The study receives recognition at student research conferences and psychology scholarship consideration."
+    "{userName} had been looking forward to this investigation - designing research about social media effects on teenage self-esteem.",
+    "But then something unexpected happened: survey development required data collection and statistical analysis expertise.",
+    "Of course, things didn't go smoothly when ethical considerations demanded careful participant privacy protection.",
+    "As usual, life was more complicated than anticipated when research findings contributed to adolescent psychology understanding.",
+    "And {userName} learned that growing up means receiving recognition at conferences and scholarship considerations."
   ],
   
-  // Template 31: Legal Advocacy Experience
+  // Template 31: Legal Advocacy Experience (Purple Pattern - Sophisticated Adventure)
   [
-    "{userName} interns with a civil rights organization, assisting with legal research and client support.",
-    "Work involves researching case law, preparing legal documents, and observing court proceedings.",
-    "The experience provides insight into legal careers and social justice advocacy.",
-    "Mentorship from attorneys offers guidance about law school preparation and legal specializations.",
-    "The internship strengthens {userName}'s commitment to pursuing a legal career focused on public service."
+    "If you give {userName} a civil rights internship opportunity assisting with legal research...",
+    "That will remind them of their curiosity about researching case law and preparing legal documents.",
+    "So they will want to observe court proceedings and gain insights into legal careers.",
+    "Which means they will need to receive mentorship about law school preparation and specializations.",
+    "And chances are, they will want another legal experience - which will remind them how this all started."
   ],
   
-  // Template 32: Engineering Design Challenge
+  // Template 32: Engineering Design Challenge (Silver Pattern - Wisdom)
   [
-    "{userName} participates in an engineering design challenge to create sustainable urban transportation solutions.",
-    "Design process includes problem identification, research, prototyping, and testing phases.",
-    "Collaboration with team members requires communication, compromise, and shared problem-solving.",
-    "Final presentations showcase innovative solutions and demonstrate engineering design principles.",
-    "Competition success leads to recognition and encouragement to pursue engineering studies."
+    "{userName} was not quite ready for urban planning, but sustainable transportation was calling.",
+    "But slowly, things began to change as they collaborated with teams and developed innovative solutions.",
+    "Sometimes the best things happen when you address real-world problems through engineering principles.",
+    "That's when {userName} realized prototype development demonstrates practical problem-solving abilities.",
+    "And {userName} knew everything would be okay - engineering skills develop one challenge at a time."
   ],
   
-  // Template 33: Archaeological Field Experience
+  // Template 33: Artificial Intelligence Research (Gold Pattern - Mature Adventure)
   [
-    "{userName} volunteers on an archaeological dig site, learning about historical preservation and research methods.",
-    "Field work includes careful excavation, artifact documentation, and laboratory analysis.",
-    "The experience provides hands-on learning about ancient cultures and scientific methodology.",
-    "Discoveries contribute to understanding of local history and archaeological knowledge.",
-    "The field experience inspires {userName} to consider careers in archaeology or museum studies."
+    "{userName} had been looking forward to this opportunity - exploring machine learning applications for educational technology.",
+    "But then something unexpected happened: programming algorithms required understanding data analysis and pattern recognition.",
+    "Of course, things didn't go smoothly when developing prototypes demanded extensive testing and refinement.",
+    "As usual, life was more complicated than anticipated when presenting research attracted technology company attention.",
+    "And {userName} learned that growing up means innovation opens advanced computer science opportunities."
   ],
   
-  // Template 34: Astronomy Research Project
+  // Template 34: International Development Project (Purple Pattern - Sophisticated Adventure)
   [
-    "{userName} conducts observations and analysis of variable star brightness patterns using telescope data.",
-    "Research requires understanding of stellar physics, data collection techniques, and statistical analysis.",
-    "Collaboration with professional astronomers provides mentorship and access to advanced equipment.",
-    "Findings contribute to astronomical databases and scientific understanding of stellar behavior.",
-    "The research experience demonstrates scientific methodology and inspires continued astronomy studies."
+    "If you give {userName} a global development opportunity researching sustainable agriculture in developing nations...",
+    "That will remind them of their curiosity about studying food security and economic development strategies.",
+    "So they will want to collaborate with international organizations and learn about cultural contexts.",
+    "Which means they will need to develop solutions addressing real-world challenges and community needs.",
+    "And chances are, they will want another global project - which will remind them how this all started."
   ],
   
-  // Template 35: Political Campaign Volunteer
+  // Template 35: Biomedical Research Initiative (Silver Pattern - Wisdom)
   [
-    "{userName} volunteers for a local political campaign, learning about democratic processes and civic engagement.",
-    "Activities include voter registration, canvassing neighborhoods, and organizing campaign events.",
-    "The experience provides insight into political strategy, communication, and community organizing.",
-    "Working with diverse volunteers teaches about different perspectives and collaborative problem-solving.",
-    "Campaign involvement demonstrates civic responsibility and inspires continued political engagement."
+    "{userName} was not quite ready for laboratory research, but medical innovation was calling.",
+    "But slowly, things began to change as they learned experimental design and data collection techniques.",
+    "Sometimes the best things happen when you collaborate with graduate students and publish findings.",
+    "That's when {userName} realized contributing to scientific knowledge attracts research scholarship offers.",
+    "And {userName} knew everything would be okay - scientific discovery happens one experiment at a time."
   ],
   
-  // Template 36: Marine Biology Research
+  // Template 36: Urban Planning Simulation (Gold Pattern - Mature Adventure)
   [
-    "{userName} participates in marine biology research studying the effects of pollution on coral reef ecosystems.",
-    "Field work includes underwater observation, water quality testing, and species population counts.",
-    "Laboratory analysis involves examining coral samples and documenting environmental changes.",
-    "Research findings contribute to conservation efforts and environmental protection policies.",
-    "The experience strengthens {userName}'s commitment to environmental science and marine conservation."
+    "{userName} had been looking forward to this challenge - designing sustainable city planning solutions for growing populations.",
+    "But then something unexpected happened: analyzing transportation systems required understanding environmental impact and economic factors.",
+    "Of course, things didn't go smoothly when creating detailed proposals demanded collaboration with local government officials.",
+    "As usual, life was more complicated than anticipated when presenting solutions influenced actual city planning discussions.",
+    "And {userName} learned that growing up means student voices can impact real urban development decisions."
   ],
   
-  // Template 37: Artificial Intelligence Project
+  // Template 37: Advanced Linguistics Study (Purple Pattern - Sophisticated Adventure)
   [
-    "{userName} develops an artificial intelligence system to help students with learning disabilities access educational content.",
-    "Programming requires understanding machine learning algorithms, user interface design, and accessibility principles.",
-    "Testing with students and teachers provides feedback for improving system functionality.",
-    "The AI system demonstrates practical applications of technology for social good.",
-    "Recognition for innovation leads to opportunities for further development and implementation."
+    "If you give {userName} a linguistics opportunity studying language evolution and communication patterns...",
+    "That will remind them of their curiosity about analyzing syntax, semantics, and cultural language variations.",
+    "So they will want to conduct fieldwork and interview native speakers from different communities.",
+    "Which means they will need to develop theoretical frameworks and contribute to academic understanding.",
+    "And chances are, they will want another language project - which will remind them how this all started."
   ],
   
-  // Template 38: Global Economics Study
+  // Template 38: Quantum Computing Exploration (Silver Pattern - Wisdom)
   [
-    "{userName} researches international trade relationships and their effects on local communities.",
-    "Analysis includes studying economic data, interviewing business owners, and examining policy impacts.",
-    "Research reveals connections between global markets and local employment opportunities.",
-    "Findings are presented to community leaders and inform discussions about economic development.",
-    "The study demonstrates understanding of complex economic relationships and analytical skills."
+    "{userName} was not quite ready for quantum mechanics, but advanced computing was calling.",
+    "But slowly, things began to change as they learned theoretical principles and practical applications.",
+    "Sometimes the best things happen when you work with university researchers and explore algorithms.",
+    "That's when {userName} realized understanding quantum systems opens cutting-edge technology careers.",
+    "And {userName} knew everything would be okay - quantum knowledge develops one concept at a time."
   ],
   
-  // Template 39: Medical Ethics Symposium
+  // Template 39: Climate Science Research (Gold Pattern - Mature Adventure)
   [
-    "{userName} organizes a symposium on medical ethics, featuring healthcare professionals and philosophy experts.",
-    "Planning involves scheduling speakers, coordinating logistics, and developing discussion topics.",
-    "Symposium topics include end-of-life care, genetic engineering, and healthcare access equality.",
-    "Participants engage in thoughtful discussion about complex moral questions in medicine.",
-    "The successful event demonstrates leadership skills and interest in healthcare ethics."
+    "{userName} had been looking forward to this investigation - studying climate change impacts on local ecosystems and communities.",
+    "But then something unexpected happened: collecting environmental data required understanding atmospheric science and statistical modeling.",
+    "Of course, things didn't go smoothly when analyzing decades of weather patterns demanded advanced computational techniques.",
+    "As usual, life was more complicated than anticipated when presenting findings influenced local environmental policy decisions.",
+    "And {userName} learned that growing up means scientific research can drive meaningful environmental action."
   ],
   
-  // Template 40: Independent Mathematical Research
+  // Template 40: Diplomatic Relations Simulation (Purple Pattern - Sophisticated Adventure)
   [
-    "{userName} conducts original research in number theory, exploring patterns in prime number distribution.",
-    "Research involves advanced mathematical concepts, computer programming, and statistical analysis.",
-    "Collaboration with university mathematicians provides guidance and access to computational resources.",
-    "Findings contribute to mathematical knowledge and demonstrate exceptional analytical abilities.",
-    "Research recognition includes awards and opportunities for advanced mathematical study."
+    "If you give {userName} a diplomatic opportunity participating in international relations simulations...",
+    "That will remind them of their curiosity about studying global conflicts and negotiation strategies.",
+    "So they will want to represent nations and practice complex multilateral diplomacy techniques.",
+    "Which means they will need to develop cultural understanding and effective communication across differences.",
+    "And chances are, they will want another diplomatic experience - which will remind them how this all started."
   ]
 ];
 
-export const getLevel4Template = (templateIndex?: number): string[] => {
+export function getLevel4Template(templateIndex?: number): string[] {
   if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < LEVEL_4_TEMPLATES.length) {
-    return LEVEL_4_TEMPLATES[templateIndex];
+    return [...LEVEL_4_TEMPLATES[templateIndex]];
   }
-  return LEVEL_4_TEMPLATES[Math.floor(Math.random() * LEVEL_4_TEMPLATES.length)];
-};
+  
+  const randomIndex = Math.floor(Math.random() * LEVEL_4_TEMPLATES.length);
+  return [...LEVEL_4_TEMPLATES[randomIndex]];
+}
 
-export const getLevel4TemplateCount = (): number => {
+export function getLevel4TemplateCount(): number {
   return LEVEL_4_TEMPLATES.length;
-};
+}
 
-export const getLevel4TotalPages = (): number => {
+export function getLevel4TotalPages(): number {
   return LEVEL_4_TEMPLATES.length * 5; // Each template has 5 pages
-};
+}

@@ -20,360 +20,362 @@ export const LEVEL_3_TEMPLATES = [
     "And {userName} knew everything would be okay - growing up happens one adventure at a time."
   ],
   
-  // Template 3: Community Garden Project
+  // Template 3: Community Garden Project (Purple Pattern - Adventure)
   [
-    "{userName} volunteers to help create a community garden in the neighborhood.",
-    "The project starts with clearing weeds and preparing the soil for planting.",
-    "Families from the area donate seeds for vegetables like tomatoes, carrots, and lettuce.",
-    "Throughout the summer, {userName} helps water the plants and pull weeds every week.",
-    "By fall, the garden produces enough vegetables to share with everyone who helped."
+    "If you give {userName} a community garden opportunity...",
+    "That will remind them of their love for growing things together with neighbors.",
+    "So they will want to clear weeds and prepare soil with families from the area.",
+    "Which means they will need to water plants and pull weeds throughout the summer.",
+    "And chances are, they will want another garden project - which will remind them how this all started."
   ],
   
-  // Template 4: School Play Audition
+  // Template 4: School Play Audition (Silver Pattern - Growing Up)
   [
-    "{userName} auditions for the lead role in the school's production of 'The Wizard of Oz.'",
-    "Preparation includes memorizing lines, practicing songs, and learning stage movements.",
-    "Although nervous, {userName} performs well during the audition in front of teachers and students.",
-    "The next day, the cast list is posted and {userName} gets the part of Dorothy.",
-    "Opening night arrives and the play is a huge success with standing ovations from the audience."
+    "{userName} was not quite ready for the spotlight, but The Wizard of Oz auditions were calling.",
+    "But slowly, things began to change as they memorized lines and learned stage movements.",
+    "Sometimes the best things happen when you perform in front of teachers and students.",
+    "That's when {userName} realized getting the part of Dorothy was just the beginning.",
+    "And {userName} knew everything would be okay - opening night happens one step at a time."
   ],
   
-  // Template 5: Pet Care Business
+  // Template 5: Pet Care Business (Blue Pattern - Circularity)
   [
-    "{userName} starts a small business taking care of neighbors' pets while they're away.",
-    "The first job is watching Mrs. Johnson's cat for a weekend while she visits family.",
-    "Responsibilities include feeding the cat, cleaning the litter box, and giving it attention.",
-    "Word spreads quickly, and soon {userName} is caring for dogs, birds, and fish too.",
-    "By the end of summer, {userName} has saved enough money to buy a new bicycle."
+    "One day, {userName} was thinking about earning money, and that's when the pet care idea struck.",
+    "So {userName} started with Mrs. Johnson's cat, feeding and cleaning with careful attention.",
+    "Naturally, word spread quickly about {userName}'s responsible pet care services.",
+    "Before long, dogs, birds, and fish were all depending on {userName}'s dedication.",
+    "And wouldn't you know it - by summer's end, that new bicycle was waiting in the shop."
   ],
   
-  // Template 6: School Newspaper Reporter
+  // Template 6: School Newspaper Reporter (Purple Pattern - Adventure)
   [
-    "{userName} joins the school newspaper as a reporter covering sports and events.",
-    "The first assignment is writing about the upcoming basketball tournament.",
-    "This involves interviewing players, coaches, and taking notes during games.",
-    "After writing the article, the editor helps {userName} revise and improve it.",
-    "When the newspaper comes out, {userName} feels proud seeing the article in print."
+    "If you give {userName} a newspaper opportunity...",
+    "That will remind them of their curiosity about sports and school events.",
+    "So they will want to interview players and coaches during the basketball tournament.",
+    "Which means they will need to write articles and work with the editor carefully.",
+    "And chances are, they will want another story assignment - which will remind them how this all started."
   ],
   
-  // Template 7: Recycling Initiative
+  // Template 7: Recycling Initiative (Silver Pattern - Growing Up)
   [
-    "{userName} notices that the school throws away many items that could be recycled.",
-    "With the principal's permission, {userName} organizes a recycling program for the entire school.",
-    "Students learn to separate paper, plastic, and cans into different colored bins.",
-    "Within a month, the school reduces its waste by half and earns money from recycling.",
-    "The success leads other schools in the district to start their own recycling programs."
+    "{userName} was not quite ready to change the whole school, but the recycling problem needed solving.",
+    "But slowly, things began to change as they organized bins and taught students to separate waste.",
+    "Sometimes the best things happen when you reduce waste by half in just one month.",
+    "That's when {userName} realized other schools would want their own programs too.",
+    "And {userName} knew everything would be okay - change happens one bin at a time."
   ],
   
-  // Template 8: Chess Club Champion
+  // Template 8: Chess Club Champion (Blue Pattern - Circularity)
   [
-    "{userName} joins the chess club and practices every day after school.",
-    "Learning different strategies and famous moves takes patience and concentration.",
-    "The club enters a regional tournament against teams from other schools.",
-    "After several challenging matches, {userName} makes it to the final round.",
-    "Although finishing second place, {userName} learns that hard work and practice really pay off."
+    "One day, {userName} was thinking about joining chess club, and that's when strategy games became important.",
+    "So {userName} practiced every day after school, learning famous moves with patience and concentration.",
+    "Naturally, the regional tournament brought challenging matches against other teams.",
+    "Before long, {userName} reached the final round and discovered how practice creates champions.",
+    "And wouldn't you know it - finishing second place taught that hard work always pays off."
   ],
   
-  // Template 9: Art Museum Field Trip
+  // Template 9: Art Museum Field Trip (Purple Pattern - Adventure)
   [
-    "{userName}'s class takes a field trip to the city art museum.",
-    "The tour guide explains different painting styles and the stories behind famous artworks.",
-    "Students participate in an art workshop where they create their own paintings.",
-    "{userName} is inspired by the impressionist paintings and tries a similar style.",
-    "Back at school, {userName} continues painting and eventually has artwork displayed in the hallway."
+    "If you give {userName} an art museum opportunity...",
+    "That will remind them of their curiosity about painting styles and famous artworks.",
+    "So they will want to participate in workshops and create their own impressionist paintings.",
+    "Which means they will need to continue practicing back at school every day.",
+    "And chances are, they will want another art adventure - which will remind them how this all started."
   ],
   
-  // Template 10: School Band Concert
+  // Template 10: School Band Concert (Silver Pattern - Growing Up)
   [
-    "{userName} learns to play the trumpet and joins the school band.",
-    "Practice sessions happen three times a week, learning scales and simple songs.",
-    "As the spring concert approaches, the band rehearses more difficult pieces.",
-    "On concert night, {userName} feels nervous but excited to perform for families.",
-    "The concert goes perfectly, and {userName} decides to continue playing music in middle school."
+    "{userName} was not quite ready for the trumpet, but music was calling.",
+    "But slowly, things began to change as they practiced scales three times a week.",
+    "Sometimes the best things happen when you rehearse difficult pieces for spring concerts.",
+    "That's when {userName} realized performing for families was just the beginning.",
+    "And {userName} knew everything would be okay - music continues into middle school, one note at a time."
   ],
   
-  // Template 11: Weather Station Project
+  // Template 11: Weather Station Project (Blue Pattern - Circularity)
   [
-    "{userName} builds a weather station for a class project about meteorology.",
-    "The station includes tools to measure temperature, rainfall, and wind direction.",
-    "Every morning for a month, {userName} records the weather data in a notebook.",
-    "Patterns begin to emerge, showing how weather changes with the seasons.",
-    "The project helps {userName} understand why weather forecasts are sometimes wrong."
+    "One day, {userName} was thinking about meteorology, and that's when the weather station idea struck.",
+    "So {userName} built tools to measure temperature, rainfall, and wind direction every morning.",
+    "Naturally, patterns began emerging about how weather changes with the seasons.",
+    "Before long, data collection revealed why weather forecasts are sometimes wrong.",
+    "And wouldn't you know it - that project explained everything about predicting weather."
   ],
   
-  // Template 12: Friendship Problem
+  // Template 12: Friendship Problem (Silver Pattern - Growing Up)
   [
-    "{userName} faces a difficult situation when two best friends start arguing.",
-    "Both friends ask {userName} to choose sides, which creates an uncomfortable feeling.",
-    "Instead of picking sides, {userName} suggests they all talk together.",
-    "During the conversation, the friends realize their argument was about a misunderstanding.",
-    "They apologize to each other and thank {userName} for helping them work things out."
+    "{userName} was not quite ready for friendship conflicts, but mediation was needed.",
+    "But slowly, things began to change as they suggested all three friends talk together.",
+    "Sometimes the best things happen when you realize arguments come from misunderstandings.",
+    "That's when {userName} discovered helping friends work things out feels wonderful.",
+    "And {userName} knew everything would be okay - friendships grow stronger one conversation at a time."
   ],
   
-  // Template 13: School Safety Patrol
+  // Template 13: School Safety Patrol (Purple Pattern - Adventure)
   [
-    "{userName} applies to be a crossing guard on the school safety patrol.",
-    "Training includes learning traffic rules and how to help younger students cross safely.",
-    "Every morning and afternoon, {userName} helps kindergarten and first-grade students.",
-    "One rainy day, {userName} helps a scared first-grader who forgot their umbrella.",
-    "The principal recognizes {userName} for being responsible and caring about other students."
+    "If you give {userName} a safety patrol opportunity...",
+    "That will remind them of their desire to help kindergarten and first-grade students.",
+    "So they will want to learn traffic rules and crossing guard responsibilities carefully.",
+    "Which means they will need to help scared children on rainy days too.",
+    "And chances are, they will want another helping role - which will remind them how this all started."
   ],
   
-  // Template 14: Library Reading Program
+  // Template 14: Library Reading Program (Blue Pattern - Circularity)
   [
-    "{userName} signs up for the library's summer reading program.",
-    "The challenge is to read twenty books and write short summaries about each one.",
-    "Some books are easy chapter books, while others are more challenging novels.",
-    "Reading becomes so enjoyable that {userName} finishes twenty-five books instead of twenty.",
-    "At the end of summer, {userName} wins the grand prize and becomes a regular library volunteer."
+    "One day, {userName} was thinking about summer reading, and that's when twenty books seemed exciting.",
+    "So {userName} started with chapter books and moved to challenging novels gradually.",
+    "Naturally, reading became so enjoyable that twenty-five books got finished instead.",
+    "Before long, winning the grand prize led to becoming a regular library volunteer.",
+    "And wouldn't you know it - that summer reading program created a lifelong book lover."
   ],
   
-  // Template 15: Cooking Class Adventure
+  // Template 15: Cooking Class Adventure (Silver Pattern - Growing Up)
   [
-    "{userName} enrolls in a cooking class for kids at the community center.",
-    "The first lesson teaches basic skills like measuring ingredients and using kitchen tools safely.",
-    "Each week focuses on different foods: pasta, salads, soups, and desserts.",
-    "{userName} learns that cooking requires following directions carefully and being patient.",
-    "By the end of the class, {userName} can prepare a complete meal for the family."
+    "{userName} was not quite ready for the kitchen, but cooking skills were calling.",
+    "But slowly, things began to change as they learned to measure ingredients safely each week.",
+    "Sometimes the best things happen when you focus on pasta, salads, soups, and desserts.",
+    "That's when {userName} realized following directions and patience create delicious meals.",
+    "And {userName} knew everything would be okay - cooking for family happens one recipe at a time."
   ],
   
-  // Template 16: Lost Pet Search
+  // Template 16: Lost Pet Search (Purple Pattern - Adventure)
   [
-    "{userName} helps a neighbor search for their lost cat, Whiskers.",
-    "The search involves making posters with Whiskers' picture and posting them around the neighborhood.",
-    "For three days, {userName} and friends look in parks, under porches, and in garages.",
-    "Finally, they hear meowing from a tall tree two blocks away.",
-    "Whiskers is rescued by the fire department, and the grateful owner gives {userName} a reward."
+    "If you give {userName} a lost pet mystery...",
+    "That will remind them of their love for helping neighbors and solving problems.",
+    "So they will want to make posters and search parks, porches, and garages for three days.",
+    "Which means they will need to listen carefully for meowing from tall trees nearby.",
+    "And chances are, they will want another rescue adventure - which will remind them how this all started."
   ],
   
-  // Template 17: School Garden Club
+  // Template 17: School Garden Club (Blue Pattern - Circularity)
   [
-    "{userName} joins the school's gardening club and learns about growing vegetables.",
-    "The club plants seeds in spring and tends the garden throughout the school year.",
-    "Members learn about soil, composting, and which plants grow well together.",
-    "By summer, the garden produces tomatoes, peppers, and herbs for the cafeteria.",
-    "The success of the garden inspires {userName} to start a small garden at home."
+    "One day, {userName} was thinking about growing vegetables, and that's when gardening became fascinating.",
+    "So {userName} joined the club and learned about soil, composting, and plant partnerships.",
+    "Naturally, spring planting led to tending the garden throughout the entire school year.",
+    "Before long, tomatoes, peppers, and herbs were feeding the cafeteria every day.",
+    "And wouldn't you know it - success inspired {userName} to start a garden at home."
   ],
   
-  // Template 18: Junior Scientist Club
+  // Template 18: Junior Scientist Club (Silver Pattern - Growing Up)
   [
-    "{userName} becomes a member of the junior scientist club at school.",
-    "Weekly meetings include fun experiments like making volcanoes and growing crystals.",
-    "The club visits a real laboratory where scientists study water quality.",
-    "{userName} learns that being a scientist requires curiosity and careful observation.",
-    "At the year-end celebration, {userName} receives an award for asking the best questions."
+    "{userName} was not quite ready for real laboratories, but science curiosity was calling.",
+    "But slowly, things began to change as they made volcanoes and grew crystals weekly.",
+    "Sometimes the best things happen when you visit laboratories where scientists study water quality.",
+    "That's when {userName} realized being a scientist requires curiosity and careful observation.",
+    "And {userName} knew everything would be okay - asking questions leads to awards, one experiment at a time."
   ],
   
-  // Template 19: Community Helper
+  // Template 19: Community Helper (Purple Pattern - Adventure)
   [
-    "{userName} volunteers to help elderly neighbors with yard work and shopping.",
-    "Every Saturday morning, {userName} rakes leaves, pulls weeds, and carries groceries.",
-    "The neighbors share stories about their lives and teach {userName} about history.",
-    "This experience helps {userName} understand the importance of helping others in the community.",
-    "At the end of the year, the city gives {userName} a certificate for community service."
+    "If you give {userName} a community service opportunity...",
+    "That will remind them of their desire to help elderly neighbors with yard work.",
+    "So they will want to rake leaves, pull weeds, and carry groceries every Saturday morning.",
+    "Which means they will need to listen to stories about history and different times.",
+    "And chances are, they will want another helping project - which will remind them how this all started."
   ],
   
-  // Template 20: School Talent Show
+  // Template 20: School Talent Show (Blue Pattern - Circularity)
   [
-    "{userName} decides to perform a magic show for the school talent show.",
-    "Learning magic tricks requires hours of practice and memorizing steps carefully.",
-    "The performance includes card tricks, disappearing coins, and a rabbit in a hat.",
-    "On the night of the talent show, {userName} feels nervous but confident.",
-    "The magic show amazes the audience and earns {userName} second place in the competition."
+    "One day, {userName} was thinking about magic tricks, and that's when the talent show seemed perfect.",
+    "So {userName} practiced card tricks, disappearing coins, and rabbit-in-hat illusions for hours.",
+    "Naturally, performance night brought nervous excitement and confident preparation together.",
+    "Before long, the magic show amazed the audience and earned second place recognition.",
+    "And wouldn't you know it - that talent show proved practice makes magical performances."
   ],
   
-  // Template 21: Nature Photography
+  // Template 21: Nature Photography (Silver Pattern - Growing Up)
   [
-    "{userName} develops an interest in photographing birds and wildlife.",
-    "With a borrowed camera, {userName} visits parks and nature preserves on weekends.",
-    "Learning to be patient and quiet helps {userName} get close to shy animals.",
-    "The best photographs are entered in a youth photography contest.",
-    "Although not winning first place, {userName} decides to continue improving photography skills."
+    "{userName} was not quite ready for shy wildlife, but photography patience was calling.",
+    "But slowly, things began to change as they visited parks with borrowed cameras on weekends.",
+    "Sometimes the best things happen when you learn to be quiet and patient near animals.",
+    "That's when {userName} realized entering youth photography contests builds confidence.",
+    "And {userName} knew everything would be okay - improving skills happens one photograph at a time."
   ],
   
-  // Template 22: School Debate Team
+  // Template 22: School Debate Team (Purple Pattern - Adventure)
   [
-    "{userName} joins the school debate team to improve public speaking skills.",
-    "The first debate topic is whether schools should have longer recess periods.",
-    "Preparation involves researching facts and practicing arguments with teammates.",
-    "During the actual debate, {userName} feels nervous but remembers to speak clearly.",
-    "The team wins the debate, and {userName} gains confidence in expressing ideas publicly."
+    "If you give {userName} a debate team opportunity...",
+    "That will remind them of their curiosity about public speaking and expressing ideas.",
+    "So they will want to research facts about longer recess periods with dedicated teammates.",
+    "Which means they will need to practice arguments and remember to speak clearly during debates.",
+    "And chances are, they will want another speaking challenge - which will remind them how this all started."
   ],
   
-  // Template 23: Neighborhood Cleanup
+  // Template 23: Neighborhood Cleanup (Blue Pattern - Circularity)
   [
-    "{userName} organizes a neighborhood cleanup day to improve the local park.",
-    "Volunteers bring gloves, trash bags, and tools to pick up litter and debris.",
-    "The group works for four hours, filling dozens of bags with garbage.",
-    "After the cleanup, the park looks beautiful and families can enjoy it safely.",
-    "The mayor thanks the volunteers and promises the city will maintain the park better."
+    "One day, {userName} was thinking about the messy park, and that's when organizing seemed important.",
+    "So {userName} gathered volunteers with gloves, trash bags, and tools for four hours.",
+    "Naturally, hard work filled dozens of bags and made the park beautiful again.",
+    "Before long, families could enjoy safe recreation while the mayor promised better maintenance.",
+    "And wouldn't you know it - that cleanup day brought the whole community together."
   ],
   
-  // Template 24: School Computer Club
+  // Template 24: School Computer Club (Silver Pattern - Growing Up)
   [
-    "{userName} learns basic computer programming in the after-school computer club.",
-    "Starting with simple commands, {userName} creates programs that draw shapes and patterns.",
-    "More advanced lessons teach how to make simple games and animations.",
-    "The final project is designing a program that helps students practice math facts.",
-    "Other teachers become interested in using {userName}'s program in their classrooms."
+    "{userName} was not quite ready for programming, but computer skills were calling.",
+    "But slowly, things began to change as they learned simple commands and created shape patterns.",
+    "Sometimes the best things happen when you advance to making games and animations.",
+    "That's when {userName} realized designing math practice programs helps other students learn.",
+    "And {userName} knew everything would be okay - coding skills develop one program at a time."
   ],
   
-  // Template 25: Family History Project
+  // Template 25: Family History Project (Purple Pattern - Adventure)
   [
-    "{userName} interviews grandparents for a family history project at school.",
-    "The conversations reveal stories about ancestors and how life was different long ago.",
-    "Old photographs and documents help illustrate the family's journey to America.",
-    "{userName} creates a family tree poster showing three generations of relatives.",
-    "Presenting the project helps classmates understand the importance of family traditions."
+    "If you give {userName} a family history assignment...",
+    "That will remind them of their curiosity about grandparents and ancestor stories.",
+    "So they will want to interview relatives and examine old photographs and documents carefully.",
+    "Which means they will need to create family tree posters showing three generations.",
+    "And chances are, they will want another history project - which will remind them how this all started."
   ],
   
-  // Template 26: Swimming Lessons
+  // Template 26: Swimming Lessons (Blue Pattern - Circularity)
   [
-    "{userName} enrolls in swimming lessons at the local pool to overcome fear of water.",
-    "The instructor is patient and helps {userName} learn to float and kick properly.",
-    "Each lesson builds confidence with new skills like treading water and different strokes.",
-    "By the end of the session, {userName} can swim across the entire pool.",
-    "The achievement makes {userName} proud and excited to join the swim team next year."
+    "One day, {userName} was thinking about water fear, and that's when swimming lessons seemed necessary.",
+    "So {userName} worked with patient instructors learning to float and kick properly.",
+    "Naturally, each lesson built confidence with treading water and different swimming strokes.",
+    "Before long, swimming across the entire pool became an exciting achievement.",
+    "And wouldn't you know it - that accomplishment led to joining the swim team next year."
   ],
   
-  // Template 27: Book Club Leader
+  // Template 27: Book Club Leader (Silver Pattern - Growing Up)
   [
-    "{userName} starts a book club with friends to discuss favorite stories.",
-    "The group meets every two weeks at the library to talk about what they've read.",
-    "Members take turns choosing books and leading discussions about characters and plots.",
-    "The club grows as more students become interested in reading and sharing ideas.",
-    "By the end of the year, the book club has read fifteen books together."
+    "{userName} was not quite ready for leading discussions, but book sharing was calling.",
+    "But slowly, things began to change as they organized meetings every two weeks at the library.",
+    "Sometimes the best things happen when you take turns choosing books about characters and plots.",
+    "That's when {userName} realized more students wanted to join and share reading ideas.",
+    "And {userName} knew everything would be okay - book clubs grow one story at a time."
   ],
   
-  // Template 28: School Store Manager
+  // Template 28: School Store Manager (Purple Pattern - Adventure)
   [
-    "{userName} helps manage the school store that sells supplies and snacks.",
-    "Responsibilities include counting inventory, handling money, and helping customers.",
-    "Math skills improve quickly when calculating change and tracking sales.",
-    "The store raises money for new playground equipment and field trip funding.",
-    "Managing the store teaches {userName} valuable lessons about responsibility and teamwork."
+    "If you give {userName} a school store opportunity...",
+    "That will remind them of their curiosity about counting inventory and handling money.",
+    "So they will want to help customers while calculating change and tracking sales carefully.",
+    "Which means they will need to raise money for playground equipment and field trips.",
+    "And chances are, they will want another responsibility role - which will remind them how this all started."
   ],
   
-  // Template 29: Drama Club Member
+  // Template 29: Drama Club Member (Blue Pattern - Circularity)
   [
-    "{userName} auditions for the drama club's production of 'Charlotte's Web.'",
-    "Even though {userName} gets a small part, every role is important to the play's success.",
-    "Rehearsals happen three times a week, learning lines and practicing stage movements.",
-    "Building sets and making costumes teaches {userName} about all aspects of theater.",
-    "Opening night is successful, and {userName} appreciates the hard work of everyone involved."
+    "One day, {userName} was thinking about Charlotte's Web, and that's when auditioning seemed exciting.",
+    "So {userName} got a small part and learned that every role contributes to success.",
+    "Naturally, rehearsals three times weekly taught lines, movements, and theater cooperation.",
+    "Before long, building sets and making costumes revealed all aspects of drama production.",
+    "And wouldn't you know it - opening night celebrated everyone's hard work and dedication."
   ],
   
-  // Template 30: Science Museum Guide
+  // Template 30: Science Museum Guide (Silver Pattern - Growing Up)
   [
-    "{userName} volunteers as a junior guide at the children's science museum.",
-    "Training includes learning about exhibits and how to explain science concepts clearly.",
-    "Helping younger children understand dinosaurs and space exploration is rewarding.",
-    "The experience improves {userName}'s communication skills and science knowledge.",
-    "At the end of the summer, the museum offers {userName} a scholarship for science camp."
+    "{userName} was not quite ready for teaching children, but science communication was calling.",
+    "But slowly, things began to change as they learned about exhibits and clear explanations.",
+    "Sometimes the best things happen when you help younger children understand dinosaurs and space.",
+    "That's when {userName} realized improving communication skills strengthens science knowledge too.",
+    "And {userName} knew everything would be okay - museum scholarships happen one explanation at a time."
   ],
   
-  // Template 31: Spelling Bee Champion
+  // Template 31: Spelling Bee Champion (Purple Pattern - Adventure)
   [
-    "{userName} studies hard to prepare for the school spelling bee competition.",
-    "Practice sessions include learning word origins and common spelling patterns.",
-    "The competition includes students from all grade levels at the school.",
-    "Although nervous, {userName} makes it to the final three contestants.",
-    "Win or lose, {userName} feels proud of the improvement in spelling and vocabulary."
+    "If you give {userName} a spelling bee opportunity...",
+    "That will remind them of their curiosity about word origins and spelling patterns.",
+    "So they will want to practice with students from all grade levels at school.",
+    "Which means they will need to stay calm and focused reaching the final three contestants.",
+    "And chances are, they will want another vocabulary challenge - which will remind them how this all started."
   ],
   
-  // Template 32: Pen Pal Exchange
+  // Template 32: Pen Pal Exchange (Blue Pattern - Circularity)
   [
-    "{userName}'s class starts a pen pal exchange with students from another country.",
-    "Writing letters teaches {userName} about different cultures and ways of life.",
-    "The pen pal shares photos of their school, family, and hometown.",
-    "Comparing daily routines shows how children's lives are similar around the world.",
-    "The friendship continues for years, even after the official pen pal program ends."
+    "One day, {userName} was thinking about other countries, and that's when pen pal writing seemed perfect.",
+    "So {userName} learned about different cultures through letters and photograph sharing.",
+    "Naturally, comparing daily routines revealed how children's lives connect around the world.",
+    "Before long, friendships developed that continued beyond the official program ending.",
+    "And wouldn't you know it - that pen pal exchange created lasting international connections."
   ],
   
-  // Template 33: School Carnival Helper
+  // Template 33: School Carnival Helper (Silver Pattern - Growing Up)
   [
-    "{userName} volunteers to help organize the annual school carnival fundraiser.",
-    "Jobs include setting up games, decorating booths, and helping younger students.",
-    "The carnival features ring toss, face painting, and a dunking booth for teachers.",
-    "Working together, volunteers raise money for new library books and art supplies.",
-    "The successful carnival brings the whole school community together for a fun day."
+    "{userName} was not quite ready for big events, but carnival organization was calling.",
+    "But slowly, things began to change as they set up games, decorated booths, and helped students.",
+    "Sometimes the best things happen when you organize ring toss, face painting, and teacher dunking booths.",
+    "That's when {userName} realized working together raises money for library books and art supplies.",
+    "And {userName} knew everything would be okay - successful carnivals bring communities together one game at a time."
   ],
   
-  // Template 34: Junior Fire Safety Inspector
+  // Template 34: Junior Fire Safety Inspector (Purple Pattern - Adventure)
   [
-    "{userName} learns about fire safety and becomes a junior inspector at school.",
-    "Training covers escape routes, fire extinguisher locations, and emergency procedures.",
-    "Regular inspections help ensure classrooms follow proper fire safety rules.",
-    "The fire chief visits to test {userName}'s knowledge and present a certificate.",
-    "Teaching fire safety to younger students helps them stay safe at home and school."
+    "If you give {userName} a fire safety opportunity...",
+    "That will remind them of their desire to learn escape routes and emergency procedures.",
+    "So they will want to inspect classrooms and ensure proper fire safety rule following.",
+    "Which means they will need to teach younger students about staying safe everywhere.",
+    "And chances are, they will want another safety role - which will remind them how this all started."
   ],
   
-  // Template 35: School News Anchor
+  // Template 35: School News Anchor (Blue Pattern - Circularity)
   [
-    "{userName} applies to be an anchor for the school's morning news broadcast.",
-    "Preparation includes writing scripts, practicing pronunciation, and learning camera skills.",
-    "The daily show covers school events, weather, and lunch menus.",
-    "Being on camera feels scary at first, but {userName} becomes more comfortable quickly.",
-    "Other students recognize {userName} in the hallway and compliment the news show."
+    "One day, {userName} was thinking about morning announcements, and that's when broadcasting seemed exciting.",
+    "So {userName} practiced writing scripts, pronunciation, and camera skills for daily shows.",
+    "Naturally, covering school events, weather, and lunch menus required comfortable presentation.",
+    "Before long, being on camera felt natural and other students offered compliments.",
+    "And wouldn't you know it - that news anchor experience built confidence and recognition."
   ],
   
-  // Template 36: Math Tutoring Helper
+  // Template 36: Math Tutoring Helper (Silver Pattern - Growing Up)
   [
-    "{userName} volunteers to help younger students who struggle with math homework.",
-    "Tutoring sessions happen twice a week in the library after school.",
-    "Breaking down difficult problems into smaller steps helps students understand better.",
-    "Seeing improvement in the younger students makes {userName} feel helpful and proud.",
-    "The experience teaches {userName} that helping others also strengthens your own skills."
+    "{userName} was not quite ready for teaching others, but math helping was calling.",
+    "But slowly, things began to change as they broke down difficult problems into smaller steps.",
+    "Sometimes the best things happen when you see improvement in younger students' understanding.",
+    "That's when {userName} realized helping others also strengthens your own mathematical skills.",
+    "And {userName} knew everything would be okay - tutoring strengthens everyone one problem at a time."
   ],
   
-  // Template 37: School Spirit Week
+  // Template 37: School Spirit Week (Purple Pattern - Adventure)
   [
-    "{userName} helps organize spirit week activities to build school pride.",
-    "Each day has a different theme: pajama day, crazy hair day, and school colors day.",
-    "Planning involves creating posters, announcing events, and judging costume contests.",
-    "The week concludes with a pep rally featuring games and performances.",
-    "Spirit week brings students and teachers together and creates lasting memories."
+    "If you give {userName} a spirit week opportunity...",
+    "That will remind them of their excitement about pajama days, crazy hair days, and school colors.",
+    "So they will want to create posters, announce events, and judge costume contests carefully.",
+    "Which means they will need to organize pep rallies featuring games and special performances.",
+    "And chances are, they will want another school event - which will remind them how this all started."
   ],
   
-  // Template 38: Environmental Club Project
+  // Template 38: Environmental Club Project (Blue Pattern - Circularity)
   [
-    "{userName} joins the environmental club to learn about protecting nature.",
-    "The first project involves planting trees around the school playground.",
-    "Members also organize a paper recycling drive and energy conservation campaign.",
-    "Learning about pollution and climate change motivates {userName} to make changes at home.",
-    "The club's efforts inspire other schools to start their own environmental programs."
+    "One day, {userName} was thinking about protecting nature, and that's when the environmental club seemed important.",
+    "So {userName} joined tree planting around the playground and organized recycling drives.",
+    "Naturally, learning about pollution and climate change motivated changes at home too.",
+    "Before long, conservation campaigns reduced waste and inspired neighboring schools.",
+    "And wouldn't you know it - that environmental project created lasting ecological awareness."
   ],
   
-  // Template 39: Student Council Representative
+  // Template 39: Student Council Representative (Silver Pattern - Growing Up)
   [
-    "{userName} runs for student council to represent the fifth-grade class.",
-    "The campaign includes making posters, giving speeches, and meeting with classmates.",
-    "Election day arrives and {userName} feels nervous but excited about the results.",
-    "Winning the election means attending monthly meetings and voicing student concerns.",
-    "Being on student council teaches {userName} about leadership and representing others."
+    "{userName} was not quite ready for leadership, but student representation was calling.",
+    "But slowly, things began to change as they made posters, gave speeches, and met classmates.",
+    "Sometimes the best things happen when you win elections and attend monthly council meetings.",
+    "That's when {userName} realized voicing student concerns requires responsibility and dedication.",
+    "And {userName} knew everything would be okay - leadership develops one meeting at a time."
   ],
   
-  // Template 40: School Garden Harvest
+  // Template 40: School Garden Harvest (Purple Pattern - Adventure)
   [
-    "{userName} helps harvest vegetables from the school garden in the fall.",
-    "The garden produced tomatoes, carrots, lettuce, and herbs throughout the growing season.",
-    "Students wash, sort, and package the vegetables to share with families.",
-    "Some vegetables go to the school cafeteria for healthy lunch options.",
-    "The successful harvest celebrates months of hard work and teaches about healthy eating."
+    "If you give {userName} a garden harvest opportunity...",
+    "That will remind them of their excitement about tomatoes, carrots, lettuce, and fresh herbs.",
+    "So they will want to wash, sort, and package vegetables for families and cafeteria sharing.",
+    "Which means they will need to celebrate months of hard work and healthy eating education.",
+    "And chances are, they will want another growing season - which will remind them how this all started."
   ]
 ];
 
-export const getLevel3Template = (templateIndex?: number): string[] => {
+export function getLevel3Template(templateIndex?: number): string[] {
   if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < LEVEL_3_TEMPLATES.length) {
-    return LEVEL_3_TEMPLATES[templateIndex];
+    return [...LEVEL_3_TEMPLATES[templateIndex]];
   }
-  return LEVEL_3_TEMPLATES[Math.floor(Math.random() * LEVEL_3_TEMPLATES.length)];
-};
+  
+  const randomIndex = Math.floor(Math.random() * LEVEL_3_TEMPLATES.length);
+  return [...LEVEL_3_TEMPLATES[randomIndex]];
+}
 
-export const getLevel3TemplateCount = (): number => {
+export function getLevel3TemplateCount(): number {
   return LEVEL_3_TEMPLATES.length;
-};
+}
 
-export const getLevel3TotalPages = (): number => {
+export function getLevel3TotalPages(): number {
   return LEVEL_3_TEMPLATES.length * 5; // Each template has 5 pages
-};
+}

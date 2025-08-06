@@ -1,42 +1,52 @@
 // Level 3 Extension Templates - Universal access for both free trial and premium users
 // Grade Level: Ages 8-9, 3rd-4th grade reading level
 // Vocabulary: Complex sentences with advanced vocabulary and longer narratives
+// Now enhanced with Purple/Silver/Blue author voice patterns
 
 export const LEVEL_3_EXTENSIONS: string[][] = [
+  // Extension 1: Neighborhood Cleanup Campaign (Purple Pattern - Adventure)
   [
-    "{userName} organizes a neighborhood cleanup campaign this summer.",
-    "The community has been struggling with litter problems lately.",
-    "{userName} creates colorful posters and distributes them everywhere.",
-    "Dozens of neighbors volunteer and work together enthusiastically.",
-    "The neighborhood becomes beautiful again thanks to {userName}'s leadership."
+    "If you give {userName} a neighborhood cleanup opportunity...",
+    "That will remind them of their love for community and solving litter problems.",
+    "So they will want to create colorful posters and distribute them everywhere enthusiastically.",
+    "Which means they will need to organize dozens of neighbors working together.",
+    "And chances are, they will want another community project - which will remind them how this all started."
   ],
+  
+  // Extension 2: Injured Bird Rescue (Silver Pattern - Growing Up)
   [
-    "{userName} discovers an injured bird during morning walk.",
-    "The bird's wing appears to be damaged from flying into something.",
-    "{userName} carefully wraps the bird and calls wildlife rescue.",
-    "After weeks of rehabilitation, the bird recovers completely.",
-    "{userName} releases the healthy bird and watches it soar away."
+    "{userName} was not quite ready for wildlife rescue, but the injured bird needed help.",
+    "But slowly, things began to change as they carefully wrapped the bird and called professionals.",
+    "Sometimes the best things happen when you wait weeks for rehabilitation and recovery.",
+    "That's when {userName} realized releasing the healthy bird felt like watching freedom soar.",
+    "And {userName} knew everything would be okay - helping wildlife happens one rescue at a time."
   ],
+  
+  // Extension 3: Photography Hobby (Blue Pattern - Circularity)
   [
-    "{userName} decides to learn photography as a new hobby.",
-    "The camera captures amazing details that eyes often miss.",
-    "{userName} explores different techniques like lighting and composition.",
-    "A photo of sunrise over mountains wins the school contest.",
-    "{userName} realizes that patience and practice create beautiful art."
+    "One day, {userName} was thinking about art, and that's when photography became fascinating.",
+    "So {userName} explored different techniques like lighting and composition with patience.",
+    "Naturally, the camera captured amazing details that eyes often miss completely.",
+    "Before long, a sunrise mountain photo won the school contest beautifully.",
+    "And wouldn't you know it - that photography hobby proved practice creates beautiful art."
   ],
+  
+  // Extension 4: Handmade Crafts Business (Purple Pattern - Adventure)
   [
-    "{userName} starts a small business selling handmade crafts.",
-    "The products include friendship bracelets and painted bookmarks.",
-    "{userName} calculates costs, sets prices, and manages inventory carefully.",
-    "Customers appreciate the quality and creativity of each item.",
-    "{userName} donates half the profits to local children's charities."
+    "If you give {userName} a small business opportunity...",
+    "That will remind them of their creativity with friendship bracelets and painted bookmarks.",
+    "So they will want to calculate costs, set prices, and manage inventory carefully.",
+    "Which means they will need to appreciate quality and donate profits to charities.",
+    "And chances are, they will want another business venture - which will remind them how this all started."
   ],
+  
+  // Extension 5: Astronomy and Stargazing (Silver Pattern - Growing Up)
   [
-    "{userName} becomes fascinated with astronomy and stargazing.",
-    "The telescope reveals countless stars invisible to naked eyes.",
-    "{userName} learns constellation names and planetary movements.",
-    "A meteor shower provides an unforgettable nighttime spectacle.",
-    "{userName} dreams of becoming an astronomer and exploring space."
+    "{userName} was not quite ready for complex science, but astronomy fascination was calling.",
+    "But slowly, things began to change as they learned constellation names and planetary movements.",
+    "Sometimes the best things happen when you witness unforgettable meteor shower spectacles.",
+    "That's when {userName} realized the telescope reveals countless invisible stars above.",
+    "And {userName} knew everything would be okay - dreams of space exploration grow one star at a time."
   ]
 ];
 
