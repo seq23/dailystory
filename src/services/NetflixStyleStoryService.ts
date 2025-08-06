@@ -43,10 +43,12 @@ export class NetflixStyleStoryService {
             favoriteAnimal: userInfo.favoriteAnimal,
             favoriteFood: userInfo.favoriteFood,
             hobbies: userInfo.hobbies,
-            systemPrompt,
-            userPrompt,
             maxLength: promptConfig.maxLength,
-            expectedPages: promptConfig.expectedPages
+            expectedPages: promptConfig.expectedPages,
+            avatar: {
+              type: 'child',
+              skinTone: 'medium'
+            }
           }
         }
       });

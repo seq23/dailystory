@@ -12,7 +12,8 @@ serve(async (req) => {
   }
 
   try {
-    const { readingLevel, authorStyle, theme, interests, specs, config } = await req.json()
+    const requestBody = await req.json()
+    const { readingLevel, authorStyle, theme, interests, config } = requestBody
     
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY')
     if (!openaiApiKey) {
@@ -20,19 +21,28 @@ serve(async (req) => {
     }
 
     // Extract user information for personalization
-    const userName = config.userName || 'the child';
-    const userAge = config.age;
-    const userGrade = config.gradeLevel;
+    const userName = config?.userName || 'the child';
+    const userAge = config?.age || 8;
+    const userGrade = config?.gradeLevel || 'K';
     const userInterests = interests || [];
-    const favoriteColor = config.favoriteColor || 'blue';
-    const favoriteAnimal = config.favoriteAnimal || 'cat';
-    const hobbies = config.hobbies || '';
-    const favoriteFood = config.favoriteFood || '';
+    const favoriteColor = config?.favoriteColor || 'blue';
+    const favoriteAnimal = config?.favoriteAnimal || 'cat';
+    const hobbies = config?.hobbies || '';
+    const favoriteFood = config?.favoriteFood || '';
     
+    // Create specs from config if not provided
+    const specs = {
+      ageRange: config?.age || userAge,
+      maxWordsPerPage: readingLevel === 'beginner' ? 6 : readingLevel === 'elementary' ? 200 : readingLevel === 'intermediate' ? 300 : 500,
+      wordLimit: config?.maxLength || (readingLevel === 'beginner' ? 50 : readingLevel === 'elementary' ? 800 : readingLevel === 'intermediate' ? 1500 : 3000),
+      pageCount: config?.expectedPages || (readingLevel === 'beginner' ? 5 : readingLevel === 'elementary' ? 4 : readingLevel === 'intermediate' ? 5 : 6),
+      sentenceStructure: readingLevel === 'beginner' ? 'simple' : readingLevel === 'elementary' ? 'basic' : readingLevel === 'intermediate' ? 'complex' : 'advanced',
+      vocabulary: readingLevel
+    };
     
     // Character details for consistency
-    const avatarType = config.avatar?.type || 'child';
-    const skinTone = config.avatar?.skinTone || 'medium';
+    const avatarType = config?.avatar?.type || 'child';
+    const skinTone = config?.avatar?.skinTone || 'medium';
     
     // Build character description
     const characterDesc = `${avatarType === 'boy' ? 'young boy' : avatarType === 'girl' ? 'young girl' : 'child'} with ${skinTone} skin tone`;
@@ -238,11 +248,20 @@ Write as a complete, flowing narrative without page breaks or section markers.`
   } catch (error) {
     console.error('Story generation error:', error)
     
+    // Parse request body for fallback
+    let fallbackConfig = {};
+    try {
+      const requestBody = await req.json();
+      fallbackConfig = requestBody.config || {};
+    } catch (parseError) {
+      console.error('Could not parse request for fallback:', parseError);
+    }
+    
     // Enhanced fallback with user details
-    const userName = config?.userName || 'the child';
-    const theme = config?.theme || 'adventure';
-    const characterDesc = config?.avatar ? 
-      `${config.avatar.type === 'boy' ? 'young boy' : config.avatar.type === 'girl' ? 'young girl' : 'child'} with ${config.avatar.skinTone} skin tone` :
+    const userName = fallbackConfig?.userName || 'the child';
+    const theme = fallbackConfig?.theme || 'adventure';
+    const characterDesc = fallbackConfig?.avatar ? 
+      `${fallbackConfig.avatar.type === 'boy' ? 'young boy' : fallbackConfig.avatar.type === 'girl' ? 'young girl' : 'child'} with ${fallbackConfig.avatar.skinTone} skin tone` :
       'brave young adventurer';
     
     const fallbackStory = {
