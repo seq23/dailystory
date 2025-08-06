@@ -21,19 +21,19 @@ export const STORY_PROMPTS: Record<DifficultyLevel, StoryPromptConfig> = {
 **GREEN AUTHOR - Playful Rhythm Style:** Rhythmic patterns with playful language and wordplay. Use rhythm, rhyme, wordplay, and exuberance in your narrative.
 
 STRICT REQUIREMENTS:
-- Exactly 30 words total across entire story
+- 30-40 words total across entire story
 - Exactly 5 pages
-- 4-8 words per page (flexible for natural flow)
+- 2-8 words per page (flexible for natural flow)
 - Simple 2-6 word sentences using basic vocabulary
 - Use Subject-Verb, Subject-Verb-Object, and Subject-Verb-Adjective patterns
 - PRIMARY VOCABULARY: Use Dolch Pre-Primer words as foundation: a, and, away, big, blue, can, come, down, find, for, funny, go, help, here, i, in, is, it, jump, little, look, make, me, my, not, one, play, red, run, said, see, the, three, to, two, up, we, where, yellow, you
 - FLEXIBILITY: Up to 20% of words can be simple alternatives when needed for natural flow
 - EXCEPTION: Always allow user's name and their favorite color/animal/food/hobby
-- Use name 60% of time, pronouns (he/she/they) 40% of time
+- Mix user's name naturally with pronouns (he/she/they) throughout story
 - Every sentence must be joyful and positive
 
 FORMAT: Page 1: [sentence]. Page 2: [sentence]. Page 3: [sentence]. Page 4: [sentence]. Page 5: [sentence].`,
-    userPromptTemplate: `Create a 30-word story for {name}. Use their favorite {favoriteColor} {favoriteAnimal}. Include {hobbies}. Remember: 5 pages total, 30 words exactly.`,
+    userPromptTemplate: `Create a 30-40 word story for {name}. Use their favorite {favoriteColor} {favoriteAnimal}. Include {hobbies}. Remember: 5 pages total, 30-40 words.`,
     maxLength: 30,
     expectedPages: 5
   },
