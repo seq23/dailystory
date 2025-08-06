@@ -30,18 +30,18 @@ export class ToleranceBasedValidator {
   // Default tolerance settings - optimized to reduce false negatives
   private static readonly DEFAULT_TOLERANCE: ToleranceConfig = {
     vocabularyCompliance: 0.8,  // 80% vocab compliance
-    wordCountTolerance: 0.2,    // ±20% word count
-    pageCountTolerance: 1,      // ±1 page
+    wordCountTolerance: 0.3,    // ±30% word count for more natural stories
+    pageCountTolerance: 2,      // ±2 pages for better story flow
     allowMinorGrammar: true     // be forgiving with grammar
   };
 
-  // Expected story parameters by difficulty
+  // Expected story parameters by difficulty (updated for flexible ranges)
   private static readonly STORY_EXPECTATIONS = {
-    beginner: { targetWords: 30, targetPages: 5 },
-    easy: { targetWords: 80, targetPages: 6 },
-    medium: { targetWords: 225, targetPages: 7 },
-    hard: { targetWords: 500, targetPages: 11 },
-    expert: { targetWords: 700, targetPages: 13 }
+    beginner: { targetWords: 35, targetPages: 5 },
+    easy: { targetWords: 95, targetPages: 6 },
+    medium: { targetWords: 250, targetPages: 7 },
+    hard: { targetWords: 550, targetPages: 11 },
+    expert: { targetWords: 750, targetPages: 14 }
   };
 
   /**

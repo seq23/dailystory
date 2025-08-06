@@ -17,14 +17,17 @@ export const DOLCH_PRIMER_VOCABULARY = new Set([
   'with', 'yes'
 ]);
 
-// ENHANCED LEVEL 0 VOCABULARY - Cumulative Dolch Pre-K & K (92 words total)
-// For BOTH free and premium users as requested
+// ENHANCED LEVEL 0 VOCABULARY - Cumulative Dolch + Fry First 100 (100 words total)
+// Research-based vocabulary for ages 3-5, combining Dolch and Fry high-frequency words
 export const ENHANCED_LEVEL_0_VOCABULARY = new Set([
   // Include all Dolch Pre-Primer words (40 words)
   ...DOLCH_PRE_PRIMER_VOCABULARY,
   
   // Include all Dolch Primer words (52 words)
-  ...DOLCH_PRIMER_VOCABULARY
+  ...DOLCH_PRIMER_VOCABULARY,
+  
+  // Add 8 research-based Fry words to reach exactly 100 words for optimal beginner vocabulary
+  'been', 'called', 'water', 'time', 'words', 'each', 'which', 'would'
 ]);
 
 export function isDolchPrePrimerWord(word: string): boolean {

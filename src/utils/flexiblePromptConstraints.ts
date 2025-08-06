@@ -22,39 +22,39 @@ export class FlexiblePromptConstraints {
     
     const constraints = {
       beginner: {
-        wordRange: { min: 25, max: 35 },        // ±5 words from 30
-        pageRange: { min: 4, max: 6 },          // ±1 page from 5
-        sentenceGuidance: "1 simple sentence per page (3-7 words each)",
-        vocabularyGuidance: "Use ONLY Dolch Pre-Primer sight words + user's name/interests",
-        flexibilityNote: "Focus on simple, joyful sentences. Natural flow is more important than exact word counts."
+        wordRange: { min: 20, max: 50 },        // More flexible range for natural flow
+        pageRange: { min: 3, max: 7 },          // ±2 pages from 5
+        sentenceGuidance: "Mix of 2-3 word sentences and 4-5 word sentences. Simple patterns: 'Cat runs', 'I see cat', 'The cat is big'. Avoid compound subjects like 'Sally and dog'.",
+        vocabularyGuidance: "Use research-based 100-word vocabulary (Dolch + Fry high-frequency words for ages 3-5)",
+        flexibilityNote: "Age-appropriate simple sentences. No complex conjunctions or mature patterns."
       },
       easy: {
-        wordRange: { min: 50, max: 120 },       // Wider range for natural flow
-        pageRange: { min: 5, max: 7 },          // ±1 page from 6
-        sentenceGuidance: "1-2 simple sentences per page (8-20 words each)",
-        vocabularyGuidance: "Use Dolch vocabulary through 1st grade + user's interests",
-        flexibilityNote: "Prioritize engaging storytelling over exact word counts."
+        wordRange: { min: 40, max: 150 },       // More flexible for story development
+        pageRange: { min: 4, max: 9 },          // ±2 pages from 6
+        sentenceGuidance: "Mix of simple and compound sentences. Introduce basic connecting words like 'and', 'but'.",
+        vocabularyGuidance: "Dolch Grade 1 vocabulary with some Grade 2 words",
+        flexibilityNote: "Allow vocabulary flexibility while maintaining readability for early readers"
       },
       medium: {
-        wordRange: { min: 120, max: 360 },      // 20% tolerance around 240 words
-        pageRange: { min: 6, max: 8 },          // ±1 page from 7
-        sentenceGuidance: "2-3 sentences per page (15-50 words each)",
-        vocabularyGuidance: "Use Dolch vocabulary through 2nd grade + descriptive language",
-        flexibilityNote: "Allow natural story development. Quality over rigid structure."
+        wordRange: { min: 100, max: 400 },      // Broader range for creative freedom
+        pageRange: { min: 5, max: 10 },         // ±2 pages from 7
+        sentenceGuidance: "Complex sentences with varied structure. Multiple clauses and descriptive language.",
+        vocabularyGuidance: "Grade 2-3 vocabulary with some challenging words for growth",
+        flexibilityNote: "Balance challenge with accessibility for developing readers"
       },
       hard: {
-        wordRange: { min: 320, max: 720 },      // 20% tolerance around 500 words
-        pageRange: { min: 9, max: 13 },         // ±2 pages from 11
-        sentenceGuidance: "3-5 sentences per page with varied structure",
-        vocabularyGuidance: "Rich vocabulary appropriate for ages 9-11",
-        flexibilityNote: "Focus on meaningful content and character development."
+        wordRange: { min: 300, max: 800 },      // Expanded range for complex narratives
+        pageRange: { min: 8, max: 15 },         // ±3 pages from 11
+        sentenceGuidance: "Sophisticated sentence structures with varied complexity and literary devices.",
+        vocabularyGuidance: "Grade 3-4 vocabulary with advanced terms where appropriate",
+        flexibilityNote: "Encourage rich language and complex narratives"
       },
       expert: {
-        wordRange: { min: 560, max: 960 },      // 20% tolerance around 700 words
-        pageRange: { min: 11, max: 15 },        // ±2 pages from 13
-        sentenceGuidance: "4-6 sophisticated sentences per page",
-        vocabularyGuidance: "Advanced vocabulary with complex themes",
-        flexibilityNote: "Prioritize sophisticated storytelling and thematic depth."
+        wordRange: { min: 500, max: 1000 },     // Maximum creative freedom
+        pageRange: { min: 10, max: 18 },        // ±4 pages from 13
+        sentenceGuidance: "Advanced sentence structures with literary elements and sophisticated prose.",
+        vocabularyGuidance: "Grade 4+ vocabulary with sophisticated terminology and concepts",
+        flexibilityNote: "Maximum creative freedom with high educational and literary value"
       }
     };
 
@@ -73,10 +73,11 @@ export class FlexiblePromptConstraints {
     if (difficulty === 'beginner') {
       educationalGuidance = `
 EDUCATIONAL FOCUS:
-- Use ONLY Dolch Pre-Primer sight words (40 words) + user's name and interests
-- Words: a, and, away, big, blue, can, come, down, find, for, funny, go, help, here, i, in, is, it, jump, little, look, make, me, my, not, one, play, red, run, said, see, the, three, to, two, up, we, where, yellow, you
+- Use research-based 100-word vocabulary (Dolch + Fry high-frequency words) + user's name and interests
+- SENTENCE STRUCTURE CRITICAL: Use 2-3 word sentences: "Cat runs", "I see" AND 4-5 word sentences: "The cat is big", "Sally can see cat"
+- AVOID compound subjects: NO "Sally and dog go" - use "Sally goes" instead
 - ALWAYS allow user's name, favorite color, animal, food, and hobby
-- Every sentence should be joyful and positive`;
+- Every sentence should be joyful and age-appropriate for 3-5 year olds`;
     } else if (difficulty === 'easy') {
       educationalGuidance = `
 EDUCATIONAL FOCUS:
