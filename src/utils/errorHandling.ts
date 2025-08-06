@@ -4,11 +4,14 @@ import { SecurityLogger } from "./security";
 export enum ErrorType {
   VALIDATION = 'validation',
   NETWORK = 'network',
-  GENERATION = 'generation',
-  SECURITY = 'security',
+  API = 'api',
+  AUTH = 'auth',
   STORAGE = 'storage',
-  AUDIO = 'audio',
-  IMAGE = 'image',
+  IMAGE_GENERATION = 'image_generation',
+  STORY_GENERATION = 'story_generation',
+  TTS = 'tts',
+  SECURITY = 'security',
+  SUBSCRIPTION = 'subscription',
   UNKNOWN = 'unknown'
 }
 
@@ -110,12 +113,15 @@ export class ErrorHandler {
   static getUserMessage(error: AppError): string {
     const messages = {
       [ErrorType.VALIDATION]: "Please check your input and try again.",
-      [ErrorType.NETWORK]: "Connection issue. Please check your internet and try again.",
-      [ErrorType.GENERATION]: "Unable to create content right now. Please try again.",
-      [ErrorType.SECURITY]: "For safety reasons, we can't process that content.",
+      [ErrorType.NETWORK]: "Network connection issue. Please check your internet and try again.",
+      [ErrorType.API]: "Service temporarily unavailable. Please try again.",
+      [ErrorType.AUTH]: "Authentication issue. Please log in again.",
       [ErrorType.STORAGE]: "Unable to save your progress right now.",
-      [ErrorType.AUDIO]: "Audio is not available right now.",
-      [ErrorType.IMAGE]: "Unable to load images right now.",
+      [ErrorType.IMAGE_GENERATION]: "Unable to generate image. Using fallback content.",
+      [ErrorType.STORY_GENERATION]: "Story generation failed. Using pre-written content.",
+      [ErrorType.TTS]: "Text-to-speech temporarily unavailable.",
+      [ErrorType.SECURITY]: "For safety reasons, we can't process that content.",
+      [ErrorType.SUBSCRIPTION]: "Subscription service temporarily unavailable.",
       [ErrorType.UNKNOWN]: "Something went wrong. Please try again."
     };
     

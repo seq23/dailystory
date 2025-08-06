@@ -9,6 +9,8 @@ import type { UserInfo, SessionStats } from "@/types";
 import { NetflixStyleStoryService, type NetflixStoryResult } from "@/services/NetflixStyleStoryService";
 import { LiveGenerationService, type LiveGenerationContext, type LivePageResult } from "@/services/LiveGenerationService";
 import { SimpleImageService } from "@/services/SimpleImageService";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { ErrorHandler, ErrorType } from "@/utils/errorHandling";
 
 interface CleanStoryDisplayProps {
   userInfo: UserInfo;
@@ -210,34 +212,35 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-primary">
-      {/* Header */}
-      <header className="bg-white/90 backdrop-blur-sm shadow-sm border-b">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <h1 className="text-xl font-bold text-foreground">
-                {storyTitle}
-              </h1>
-              {isPremium && (
-                <span className="bg-primary text-white px-2 py-1 rounded text-sm">
-                  Live Generation
-                </span>
-              )}
-            </div>
-            <div className="flex gap-2">
-              <MobileOptimizedButton onClick={onNewStory} variant="outline" size="sm">
-                <RotateCcw className="w-4 h-4 mr-2" />
-                New Story
-              </MobileOptimizedButton>
-              <MobileOptimizedButton onClick={onHome} variant="outline" size="sm">
-                <Home className="w-4 h-4 mr-2" />
-                Home
-              </MobileOptimizedButton>
+    <ErrorBoundary>
+      <div className="min-h-screen bg-gradient-primary">
+        {/* Header */}
+        <header className="bg-white/90 backdrop-blur-sm shadow-sm border-b">
+          <div className="container mx-auto px-4 py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <h1 className="text-xl font-bold text-foreground">
+                  {storyTitle}
+                </h1>
+                {isPremium && (
+                  <span className="bg-primary text-white px-2 py-1 rounded text-sm">
+                    Live Generation
+                  </span>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <MobileOptimizedButton onClick={onNewStory} variant="outline" size="sm">
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  New Story
+                </MobileOptimizedButton>
+                <MobileOptimizedButton onClick={onHome} variant="outline" size="sm">
+                  <Home className="w-4 h-4 mr-2" />
+                  Home
+                </MobileOptimizedButton>
+              </div>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6">
@@ -320,7 +323,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
           </Card>
         </div>
       </main>
-    </div>
+      </div>
+    </ErrorBoundary>
   );
 };
 

@@ -2,12 +2,15 @@
 // Clean, minimal image generation with easy provider switching
 
 import type { UserInfo } from '@/types';
+import { supabase } from '@/integrations/supabase/client';
+import { APP_CONFIG, IMAGE_STYLES, type ImageStyle } from '@/config/appConfig';
+import { ErrorHandler, ErrorType } from '@/utils/errorHandling';
 
 export interface ImageGenerationConfig {
   provider: 'runware' | 'dalle';
   width: number;
   height: number;
-  style: string;
+  style: ImageStyle;
 }
 
 export interface ImageResult {
@@ -18,9 +21,9 @@ export interface ImageResult {
 
 export class SimpleImageService {
   private static readonly DEFAULT_CONFIG: ImageGenerationConfig = {
-    provider: 'runware',
-    width: 1024,
-    height: 1024,
+    provider: APP_CONFIG.images.defaultProvider,
+    width: APP_CONFIG.images.runware.width,
+    height: APP_CONFIG.images.runware.height,
     style: 'children-book-illustration'
   };
 
@@ -63,15 +66,15 @@ export class SimpleImageService {
     return `${ageGroup} named ${userInfo.name}, ${userInfo.avatar?.type || 'friendly'} appearance with ${userInfo.avatar?.skinTone || 'warm'} skin tone`;
   }
 
-  private static buildImagePrompt(storyText: string, characterDescription: string, style: string): string {
+  private static buildImagePrompt(storyText: string, characterDescription: string, style: ImageStyle): string {
     // Extract key elements from story text
     const cleanText = storyText.toLowerCase();
     const actions = this.extractActions(cleanText);
     const setting = this.extractSetting(cleanText);
+    const styleDescription = IMAGE_STYLES[style];
     
-    return `A beautiful ${style} showing ${characterDescription} ${actions} in ${setting}. 
-    Bright, cheerful, safe for children, high quality digital art, warm lighting, engaging composition.
-    Style: professional children's book illustration, vibrant colors, friendly atmosphere.`;
+    return `A beautiful ${styleDescription} showing ${characterDescription} ${actions} in ${setting}. 
+    Bright, cheerful, safe for children, high quality digital art, warm lighting, engaging composition.`;
   }
 
   private static extractActions(text: string): string {
@@ -97,50 +100,52 @@ export class SimpleImageService {
 
   private static async generateWithRunware(prompt: string, config: ImageGenerationConfig): Promise<ImageResult> {
     try {
-      // Use existing Runware service if available, otherwise call edge function directly
-      const response = await fetch('/api/runware-generate-image', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      console.log('🎨 Calling Supabase Edge Function for Runware image generation');
+      
+      const { data, error } = await supabase.functions.invoke('runware-generate-image', {
+        body: {
           positivePrompt: prompt,
           width: config.width,
           height: config.height,
-          model: 'runware:100@1',
+          model: APP_CONFIG.images.runware.model,
           numberResults: 1,
-          outputFormat: 'WEBP'
-        })
+          outputFormat: APP_CONFIG.images.runware.outputFormat,
+          steps: APP_CONFIG.images.runware.steps,
+          CFGScale: APP_CONFIG.images.runware.CFGScale
+        }
       });
 
-      if (!response.ok) {
-        throw new Error(`Runware API error: ${response.statusText}`);
+      if (error) {
+        throw new Error(`Runware API error: ${error.message}`);
       }
 
-      const data = await response.json();
-      
-      if (data.error) {
-        throw new Error(data.error);
+      if (!data?.success) {
+        throw new Error(data?.error || 'Image generation failed');
       }
 
       return {
-        url: data.imageURL || data.url,
+        url: data.imageURL,
         success: true
       };
       
     } catch (error) {
-      console.error('🎨 Runware generation failed:', error);
+      const appError = ErrorHandler.handleError(error instanceof Error ? error : new Error(String(error)), 'runware-generation');
+      console.error('🎨 Runware generation failed:', appError);
+      
       return {
         url: '',
         success: false,
-        error: error instanceof Error ? error.message : 'Runware generation failed'
+        error: ErrorHandler.getUserMessage(appError)
       };
     }
   }
 
   private static async generateWithDALLE(prompt: string, config: ImageGenerationConfig): Promise<ImageResult> {
     try {
-      // Placeholder for DALL-E implementation
-      // This would call OpenAI's DALL-E API when switched
-      console.log('🎨 DALL-E generation not yet implemented');
+      // Future DALL-E implementation would call OpenAI Edge Function
+      console.log('🎨 DALL-E integration ready for implementation');
+      
+      // Would call: supabase.functions.invoke('openai-dalle', { body: { prompt, ...config } })
       
       return {
         url: '',
@@ -149,10 +154,12 @@ export class SimpleImageService {
       };
       
     } catch (error) {
+      const appError = ErrorHandler.handleError(error instanceof Error ? error : new Error(String(error)), 'dalle-generation');
+      
       return {
         url: '',
         success: false,
-        error: error instanceof Error ? error.message : 'DALL-E generation failed'
+        error: ErrorHandler.getUserMessage(appError)
       };
     }
   }
@@ -160,7 +167,8 @@ export class SimpleImageService {
   static switchProvider(newProvider: 'runware' | 'dalle'): void {
     // Configuration-driven provider switching
     console.log(`🎨 Simple Image: Switching provider to ${newProvider}`);
-    // This would update a global config or local storage
+    APP_CONFIG.images.defaultProvider = newProvider;
+    localStorage.setItem('preferredImageProvider', newProvider);
   }
 
   static getAvailableProviders(): Array<{name: string; id: 'runware' | 'dalle'; costEffective: boolean}> {
