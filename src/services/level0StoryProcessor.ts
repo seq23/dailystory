@@ -266,7 +266,7 @@ export class Level0StoryProcessor {
    * Respects current template exhaustion state and adds exactly 5 pages
    */
   static async continueStory(userInfo?: UserInfo, targetPages: number = 5): Promise<Level0StoryResult> {
-    console.log('🔄 Level0StoryProcessor: Continuing Level 0 story with hierarchical system...');
+    console.log('🔄 Level0StoryProcessor: Continuing Level 0 story with proper template sequence management...');
     
     return await ErrorHandlingManager.executeWithRecovery(
       async () => {
@@ -280,45 +280,64 @@ export class Level0StoryProcessor {
         console.log(`👤 Level0StoryProcessor (Continuation): User type: ${userType}, language: ${templateLanguage}, target pages: ${targetPages}`);
         
         const continuationPages: string[] = [];
+        let pagesGenerated = 0;
         
-        // Generate exactly the requested number of pages
-        for (let i = 0; i < targetPages; i++) {
-          // Get next template from hierarchical system (respects current state)
+        // Continue generating until we have enough pages
+        while (pagesGenerated < targetPages) {
+          // Get next template selection from hierarchical system
           const selection = HierarchicalSessionTemplateManager.getNextTemplate('beginner', isPremium);
           
           if (selection.phase === 'fallback' || !selection.template || (Array.isArray(selection.template) && selection.template.length === 0)) {
-            // Use fallback content generation
-            try {
-              const fallbackContent = await Level0Simplifier.generateSimplifiedStory(userInfo);
-              if (fallbackContent.pages.length > 0) {
-                continuationPages.push(fallbackContent.pages[0]);
-              } else {
+            // Use fallback content for remaining pages
+            const remainingPages = targetPages - pagesGenerated;
+            console.log(`🔄 Level0StoryProcessor (Continuation): Generating ${remainingPages} fallback pages`);
+            
+            for (let i = 0; i < remainingPages; i++) {
+              try {
+                const fallbackContent = await Level0Simplifier.generateSimplifiedStory(userInfo);
+                if (fallbackContent.pages.length > 0) {
+                  continuationPages.push(fallbackContent.pages[0]);
+                } else {
+                  const emergencyPage = userInfo?.name ? `${userInfo.name} continues the adventure.` : 'The story continues.';
+                  continuationPages.push(emergencyPage);
+                }
+              } catch (error) {
                 const emergencyPage = userInfo?.name ? `${userInfo.name} continues the adventure.` : 'The story continues.';
                 continuationPages.push(emergencyPage);
               }
-            } catch (error) {
-              const emergencyPage = userInfo?.name ? `${userInfo.name} continues the adventure.` : 'The story continues.';
-              continuationPages.push(emergencyPage);
+              pagesGenerated++;
             }
+            break;
           } else {
-            // Process the template selection to get a single page
-            console.log(`🔍 Level0StoryProcessor (Continuation): Processing selection for page ${i + 1}:`, selection);
-            const pageResult = await this.processStorySelection(selection, userInfo, userType, isPremium);
+            // Process the complete template (all 5 pages)
+            console.log(`🔍 Level0StoryProcessor (Continuation): Processing complete template:`, selection);
+            const templateResult = await this.processStorySelection(selection, userInfo, userType, isPremium);
             
-            // Add the first page from this template to continuation
-            if (pageResult.content.length > 0) {
-              console.log(`✅ Level0StoryProcessor (Continuation): Adding page ${i + 1}: "${pageResult.content[0]}"`);
-              continuationPages.push(pageResult.content[0]);
+            if (templateResult.content.length > 0) {
+              // Add pages from this template up to our target
+              const pagesToAdd = Math.min(templateResult.content.length, targetPages - pagesGenerated);
+              for (let i = 0; i < pagesToAdd; i++) {
+                continuationPages.push(templateResult.content[i]);
+                pagesGenerated++;
+                console.log(`✅ Level0StoryProcessor (Continuation): Added page ${pagesGenerated}: "${templateResult.content[i]}"`);
+              }
+              
+              // If we used partial template, we need to track remaining pages for next continuation
+              if (pagesToAdd < templateResult.content.length) {
+                console.log(`📝 Level0StoryProcessor (Continuation): Template partially used (${pagesToAdd}/${templateResult.content.length} pages)`);
+                // Note: In future enhancement, we could store remaining pages for next continuation
+              }
             } else {
               // Fallback if template processing fails
               const emergencyPage = userInfo?.name ? `${userInfo.name} continues the adventure.` : 'The story continues.';
-              console.log(`🚨 Level0StoryProcessor (Continuation): Using emergency page ${i + 1}: "${emergencyPage}"`);
+              console.log(`🚨 Level0StoryProcessor (Continuation): Using emergency page: "${emergencyPage}"`);
               continuationPages.push(emergencyPage);
+              pagesGenerated++;
             }
           }
         }
         
-        console.log(`✅ Level0StoryProcessor: Generated ${continuationPages.length} continuation pages using hierarchical system`);
+        console.log(`✅ Level0StoryProcessor: Generated ${continuationPages.length} continuation pages using proper template sequences`);
         
         return {
           content: continuationPages,

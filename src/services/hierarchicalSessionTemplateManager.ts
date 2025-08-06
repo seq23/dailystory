@@ -15,6 +15,10 @@ interface HierarchicalTemplateState {
   extensionShuffleIndex: number;
   currentPhase: 'base' | 'extension' | 'fallback';
   sessionStartTime: number;
+  // Track current template progress for proper 5-page sequence management
+  currentTemplatePages?: string[];
+  currentTemplatePageIndex?: number;
+  currentTemplateId?: string;
 }
 
 interface TemplateSelection {
