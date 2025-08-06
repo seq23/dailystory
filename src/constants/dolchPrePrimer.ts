@@ -7,14 +7,35 @@ export const DOLCH_PRE_PRIMER_VOCABULARY = new Set([
   'see', 'the', 'three', 'to', 'two', 'up', 'we', 'where', 'yellow', 'you'
 ]);
 
+// Official Dolch Primer Sight Words (52 words) - Kindergarten Level
+export const DOLCH_PRIMER_VOCABULARY = new Set([
+  'all', 'am', 'are', 'at', 'ate', 'be', 'black', 'brown', 'but', 'came',
+  'did', 'do', 'eat', 'four', 'get', 'good', 'have', 'he', 'into', 'like',
+  'must', 'new', 'no', 'now', 'on', 'our', 'out', 'please', 'pretty', 'ran',
+  'ride', 'saw', 'say', 'she', 'so', 'soon', 'that', 'there', 'they', 'this',
+  'too', 'under', 'want', 'was', 'well', 'went', 'what', 'white', 'who', 'will',
+  'with', 'yes'
+]);
+
+// ENHANCED LEVEL 0 VOCABULARY - Cumulative Dolch Pre-K & K (92 words total)
+// For BOTH free and premium users as requested
+export const ENHANCED_LEVEL_0_VOCABULARY = new Set([
+  // Include all Dolch Pre-Primer words (40 words)
+  ...DOLCH_PRE_PRIMER_VOCABULARY,
+  
+  // Include all Dolch Primer words (52 words)
+  ...DOLCH_PRIMER_VOCABULARY
+]);
+
 export function isDolchPrePrimerWord(word: string): boolean {
   return DOLCH_PRE_PRIMER_VOCABULARY.has(word.toLowerCase());
 }
 
-export function validateDolchPrePrimerSentence(sentence: string, userName?: string): { 
+export function validateLevel0Sentence(sentence: string, userName?: string, userInputWords: string[] = []): { 
   isValid: boolean; 
   invalidWords: string[];
   isStrictMode: boolean;
+  allowedUserInputs: string[];
 } {
   const words = sentence.toLowerCase()
     .replace(/[^\w\s]/g, '') // Remove punctuation
@@ -22,45 +43,35 @@ export function validateDolchPrePrimerSentence(sentence: string, userName?: stri
     .filter(word => word.length > 0);
   
   const userNameLower = userName?.toLowerCase();
+  const userInputSet = new Set(userInputWords.map(w => w.toLowerCase()));
+  const allowedUserInputs: string[] = [];
+  
   const invalidWords = words.filter(word => {
     // Always allow the user's name
     if (userNameLower && word === userNameLower) {
       return false;
     }
-    return !DOLCH_PRE_PRIMER_VOCABULARY.has(word);
+    
+    // Always allow user input words (colors, animals, foods, hobbies)
+    if (userInputSet.has(word)) {
+      allowedUserInputs.push(word);
+      return false;
+    }
+    
+    return !ENHANCED_LEVEL_0_VOCABULARY.has(word);
   });
   
   return {
     isValid: invalidWords.length === 0,
     invalidWords,
-    isStrictMode: true
+    isStrictMode: false,
+    allowedUserInputs
   };
 }
 
-// Free Level 0 vocabulary - Strict Dolch Pre-Primer only (40 words)
-export const FREE_LEVEL_0_VOCABULARY = new Set([...DOLCH_PRE_PRIMER_VOCABULARY]);
-
-// Premium Level 0 vocabulary - Research-Enhanced (Education Expert Approved)
-// Based on Dolch Pre-Primer + Fry First 25 + Common Core RF.K.3.C + Head Start Standards
-export const PREMIUM_LEVEL_0_VOCABULARY = new Set([
-  // Include all Dolch Pre-Primer words (40 words)
-  ...DOLCH_PRE_PRIMER_VOCABULARY,
-  
-  // Fry First 25 additions not already in Dolch (high-frequency research-backed)
-  'of', 'to', 'he', 'was', 'that', 'she', 'his', 'her', 'had', 'at', 'but', 'have', 'him', 'with', 'this', 'all', 'from', 'they', 'know', 'want', 'been', 'now', 'were', 'there', 'what',
-  
-  // Common Core RF.K.3.C examples not already included (curriculum standard)
-  'do', 'does', 'are',
-  
-  // Head Start Priority Words (early learning standards)
-  'some', 'new', 'old', 'get', 'put', 'let', 'sit',
-  
-  // High-utility function words (kindergarten frequency analysis)
-  'an', 'on', 'yes', 'no', 'got', 'has', 'will', 'just', 'how'
-]);
-
-// Legacy enhanced vocabulary (kept for compatibility)
-export const ENHANCED_LEVEL_0_VOCABULARY = PREMIUM_LEVEL_0_VOCABULARY;
+// Legacy compatibility functions
+export const FREE_LEVEL_0_VOCABULARY = ENHANCED_LEVEL_0_VOCABULARY;
+export const PREMIUM_LEVEL_0_VOCABULARY = ENHANCED_LEVEL_0_VOCABULARY;
 
 export function validateEnhancedLevel0Sentence(sentence: string, userName?: string): { 
   isValid: boolean; 
@@ -144,7 +155,7 @@ export function validateByMode(
   userName?: string
 ) {
   if (mode === 'strict-dolch') {
-    return validateDolchPrePrimerSentence(sentence, userName);
+    return validateLevel0Sentence(sentence, userName);
   }
   return validateEnhancedLevel0Sentence(sentence, userName);
 }

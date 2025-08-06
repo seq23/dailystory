@@ -1,43 +1,34 @@
-// Level 2 Vocabulary (Ages 7-9) - 3rd-4th Grade
-// Includes all Level 1 words plus 3rd-4th grade vocabulary
+// Level 2 Vocabulary (Ages 7-9) - Cumulative through 2nd Grade Dolch
+// Includes all Level 1 words plus 2nd grade Dolch sight words
 
 import { LEVEL_1_VOCABULARY } from './level1Vocabulary';
 
+// Official Dolch 2nd Grade Sight Words (46 words)
+export const DOLCH_2ND_GRADE_VOCABULARY = new Set([
+  'always', 'around', 'because', 'been', 'before', 'best', 'both', 'buy', 'call', 'cold',
+  'does', 'don\'t', 'fast', 'first', 'five', 'found', 'gave', 'goes', 'green', 'its',
+  'made', 'many', 'off', 'or', 'pull', 'read', 'right', 'sing', 'sit', 'sleep',
+  'tell', 'their', 'these', 'those', 'upon', 'us', 'use', 'very', 'wash', 'which',
+  'why', 'wish', 'work', 'would', 'write', 'your'
+]);
+
+// LEVEL 2 VOCABULARY - Cumulative through 2nd Grade (179 words total)
 export const LEVEL_2_VOCABULARY = new Set([
-  // Include all Level 1 words
+  // Include all Level 1 words (133 words: Pre-Primer + Primer + 1st Grade)
   ...LEVEL_1_VOCABULARY,
   
-  // 3rd Grade Dolch Sight Words
-  'about', 'better', 'bring', 'carry', 'clean', 'cut', 'done', 'draw', 'drink', 'eight',
-  'fall', 'far', 'full', 'got', 'grow', 'hold', 'hot', 'hurt', 'if', 'keep',
-  'kind', 'laugh', 'light', 'long', 'much', 'myself', 'never', 'only', 'own', 'pick',
-  'seven', 'shall', 'show', 'six', 'small', 'start', 'ten', 'today', 'together', 'try',
-  'warm',
-  
-  // Common 3rd-4th Grade Words
-  'able', 'above', 'across', 'add', 'afraid', 'age', 'ago', 'air', 'almost', 'alone',
-  'along', 'also', 'although', 'am', 'animal', 'another', 'answer', 'anyone', 'anything', 'appear',
-  'area', 'arm', 'army', 'art', 'attack', 'attempt', 'attention', 'away', 'bad', 'bag',
-  'band', 'bank', 'base', 'basic', 'beat', 'beautiful', 'become', 'bed', 'begin', 'behind',
-  'believe', 'below', 'beside', 'between', 'beyond', 'big', 'bit', 'black', 'blood', 'blow',
-  'blue', 'board', 'boat', 'body', 'bone', 'born', 'box', 'bread', 'break', 'bright',
-  'brother', 'brown', 'build', 'business', 'busy', 'buy', 'came', 'camp', 'can\'t', 'card',
-  'care', 'carry', 'case', 'catch', 'caught', 'center', 'certain', 'chair', 'chance', 'change',
-  'character', 'charge', 'check', 'child', 'children', 'choose', 'church', 'city', 'class', 'clear',
-  'close', 'clothes', 'club', 'cold', 'color', 'come', 'common', 'company', 'complete', 'condition',
-  'consider', 'control', 'cool', 'copy', 'corner', 'cost', 'could', 'count', 'country', 'course',
-  'cover', 'create', 'cross', 'cry', 'cut', 'dance', 'dark', 'data', 'daughter', 'dead',
-  'deal', 'death', 'decide', 'deep', 'degree', 'describe', 'design', 'detail', 'determine', 'develop',
-  'die', 'difference', 'different', 'difficult', 'dinner', 'direction', 'discover', 'discuss', 'disease', 'doctor'
+  // Add 2nd Grade Dolch Sight Words (46 words)
+  ...DOLCH_2ND_GRADE_VOCABULARY
 ]);
 
 export function isLevel2Word(word: string): boolean {
   return LEVEL_2_VOCABULARY.has(word.toLowerCase());
 }
 
-export function validateLevel2Sentence(sentence: string, userName?: string): { 
+export function validateLevel2Sentence(sentence: string, userName?: string, userInputWords: string[] = []): { 
   isValid: boolean; 
   invalidWords: string[];
+  allowedUserInputs: string[];
 } {
   const words = sentence.toLowerCase()
     .replace(/[^\w\s]/g, '') // Remove punctuation
@@ -45,16 +36,27 @@ export function validateLevel2Sentence(sentence: string, userName?: string): {
     .filter(word => word.length > 0);
   
   const userNameLower = userName?.toLowerCase();
+  const userInputSet = new Set(userInputWords.map(w => w.toLowerCase()));
+  const allowedUserInputs: string[] = [];
+  
   const invalidWords = words.filter(word => {
     // Always allow the user's name
     if (userNameLower && word === userNameLower) {
       return false;
     }
+    
+    // Always allow user input words (colors, animals, foods, hobbies)
+    if (userInputSet.has(word)) {
+      allowedUserInputs.push(word);
+      return false;
+    }
+    
     return !LEVEL_2_VOCABULARY.has(word);
   });
   
   return {
     isValid: invalidWords.length === 0,
-    invalidWords
+    invalidWords,
+    allowedUserInputs
   };
 }

@@ -1,5 +1,5 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import "https://deno.land/x/xhr@0.1.0/mod.ts"
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -8,7 +8,7 @@ const corsHeaders = {
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response(null, { headers: corsHeaders })
   }
 
   try {
@@ -30,170 +30,102 @@ serve(async (req) => {
     const hobbies = config?.hobbies || '';
     const favoriteFood = config?.favoriteFood || '';
     
+    // Create user input words list for vocabulary exceptions
+    const userInputWords = [
+      userName,
+      favoriteColor,
+      favoriteAnimal,
+      favoriteFood,
+      ...(hobbies ? hobbies.split(' ').filter(w => w.length > 2) : []),
+      ...(userInterests || [])
+    ].filter(Boolean);
+    
     // Create specs from config if not provided
     const specs = {
       ageRange: config?.age || userAge,
-      maxWordsPerPage: readingLevel === 'beginner' ? 6 : readingLevel === 'elementary' ? 200 : readingLevel === 'intermediate' ? 300 : 500,
-      wordLimit: config?.maxLength || (readingLevel === 'beginner' ? 50 : readingLevel === 'elementary' ? 800 : readingLevel === 'intermediate' ? 1500 : 3000),
-      pageCount: config?.expectedPages || (readingLevel === 'beginner' ? 5 : readingLevel === 'elementary' ? 4 : readingLevel === 'intermediate' ? 5 : 6),
-      sentenceStructure: readingLevel === 'beginner' ? 'simple' : readingLevel === 'elementary' ? 'basic' : readingLevel === 'intermediate' ? 'complex' : 'advanced',
+      maxWordsPerPage: readingLevel === 'beginner' ? 6 : readingLevel === 'easy' ? 17 : readingLevel === 'medium' ? 43 : 500,
+      wordLimit: config?.maxLength || (readingLevel === 'beginner' ? 30 : readingLevel === 'easy' ? 100 : readingLevel === 'medium' ? 300 : 3000),
+      pageCount: config?.expectedPages || (readingLevel === 'beginner' ? 5 : readingLevel === 'easy' ? 6 : readingLevel === 'medium' ? 7 : 8),
+      sentenceStructure: readingLevel === 'beginner' ? 'simple' : readingLevel === 'easy' ? 'basic' : readingLevel === 'medium' ? 'complex' : 'advanced',
       vocabulary: readingLevel
     };
     
-    // Character details for consistency
+    // Character details - NO SKIN TONE REFERENCES
     const avatarType = config?.avatar?.type || 'child';
-    const skinTone = config?.avatar?.skinTone || 'medium';
     
-    // Build character description
-    const characterDesc = `${avatarType === 'boy' ? 'young boy' : avatarType === 'girl' ? 'young girl' : 'child'} with ${skinTone} skin tone`;
+    // Build character description without skin tone
+    const characterDesc = `${avatarType === 'boy' ? 'young boy' : avatarType === 'girl' ? 'young girl' : 'child'}`;
 
-    // Create highly detailed and personalized prompt
-    const systemPrompt = `You are a master children's book author who creates deeply personalized stories that make each child the hero of their own adventure.
+    // Create enhanced prompts based on reading level with vocabulary enforcement
+    const systemPrompt = readingLevel === 'beginner' 
+      ? `You are a Level 0 story writer for ages 3-5. Create very simple stories using ONLY Dolch Pre-Primer and Primer sight words (92 words total).
 
-CHILD PROFILE:
-- Name: ${userName}
-- Age: ${userAge} (Grade ${userGrade})
-- Character: ${characterDesc}
-- Reading Level: ${readingLevel}
+STRICT REQUIREMENTS:
+- Exactly ${specs.wordLimit} words total across entire story
+- Exactly ${specs.pageCount} pages
+- Exactly ${specs.maxWordsPerPage} words per page (1 simple sentence)
+- Only Subject-Verb or Subject-Verb-Object sentences
+- Use ONLY these 92 words: a, and, away, big, blue, can, come, down, find, for, funny, go, help, here, i, in, is, it, jump, little, look, make, me, my, not, one, play, red, run, said, see, the, three, to, two, up, we, where, yellow, you, all, am, are, at, ate, be, black, brown, but, came, did, do, eat, four, get, good, have, he, into, like, must, new, no, now, on, our, out, please, pretty, ran, ride, saw, say, she, so, soon, that, there, they, this, too, under, want, was, well, went, what, white, who, will, with, yes
+- EXCEPTION: Always allow user's name (${userName}) and their inputs: ${userInputWords.join(', ')}
+- Use ${userName} 60% of time, pronouns (he/she/they) 40% of time
+- Every sentence must be joyful and positive
+- NO conflicts, problems, or challenges
 
-- Interests: ${userInterests.join(', ')}
-- Favorite Color: ${favoriteColor}
-- Favorite Animal: ${favoriteAnimal}
-- Hobbies: ${hobbies}
-- Favorite Food: ${favoriteFood}
+VOCABULARY ENFORCEMENT: If you use ANY word not in the 92-word list or user exceptions, the story will be rejected.
 
-STORY REQUIREMENTS:
-- Theme: ${theme}
-- Author Style: ${authorStyle}
-- Target Age: ${specs.ageRange}
-- Max words per page: ${specs.maxWordsPerPage}
-- Total word limit: ${specs.wordLimit}
-- Page count: ${specs.pageCount}
-- Sentence structure: ${specs.sentenceStructure}
-- Vocabulary level: ${specs.vocabulary}
+Return story in this exact format:
+Page 1: [exactly 6 words]
+Page 2: [exactly 6 words]  
+Page 3: [exactly 6 words]
+Page 4: [exactly 6 words]
+Page 5: [exactly 6 words]`
+      : readingLevel === 'easy'
+      ? `You are a Level 1 story writer for ages 5-7. Create simple stories using cumulative Dolch vocabulary through 1st grade (133 words total).
 
-QUALITY REQUIREMENTS (MANDATORY):
-- Use PERFECT grammar and spelling throughout the story
-- Maintain consistent verb tenses (past tense for narrative)
-- Ensure proper punctuation, capitalization, and sentence structure
-- Write complete, well-formed sentences that flow naturally
-- Use correct subject-verb agreement and pronoun usage
-- Before completing the story, mentally proofread every sentence
+REQUIREMENTS:
+- Exactly ${specs.wordLimit} words total across entire story
+- Exactly ${specs.pageCount} pages
+- ${Math.floor(specs.wordLimit/specs.pageCount)}-${specs.maxWordsPerPage} words per page (1-2 simple sentences)
+- Simple sentences with basic conjunctions
+- Use cumulative Dolch vocabulary: Pre-Primer + Primer + 1st Grade words (133 total)
+- EXCEPTION: Always allow user's name (${userName}) and their inputs: ${userInputWords.join(', ')}
+- Use ${userName} 50% of time, pronouns 50% of time
+- Include gentle adventures and positive problem-solving
+- Focus on friendship, family, and discovery themes
 
-PRONOUN USAGE (CRITICAL):
-${avatarType === 'boy' ? 
-  `- Use HE/HIM/HIS pronouns for ${userName} throughout the story
-  - When referring to ${userName}: "he did this", "his favorite", "him and his friends"
-  - NEVER use they/them/their when referring specifically to ${userName}` :
-avatarType === 'girl' ? 
-  `- Use SHE/HER/HERS pronouns for ${userName} throughout the story
-  - When referring to ${userName}: "she did this", "her favorite", "her and her friends"  
-  - NEVER use they/them/their when referring specifically to ${userName}` :
-  `- Use THEY/THEM/THEIR pronouns for ${userName} throughout the story
-  - When referring to ${userName}: "they did this", "their favorite", "them and their friends"`
-}
+Return story in this exact format:
+Page 1: [${Math.floor(specs.wordLimit/specs.pageCount)}-${specs.maxWordsPerPage} words]
+Page 2: [${Math.floor(specs.wordLimit/specs.pageCount)}-${specs.maxWordsPerPage} words]
+etc. for ${specs.pageCount} pages`
+      : readingLevel === 'medium'
+      ? `You are a Level 2 story writer for ages 7-9. Create engaging stories using cumulative Dolch vocabulary through 2nd grade (179 words total).
 
-CRITICAL PERSONALIZATION RULES:
-1. ${userName} MUST be the main character and hero
-2. Naturally incorporate their favorite color, animal, and interests
-3. Include their hobbies and favorite food when contextually appropriate
-4. Make the character description consistent: ${characterDesc}
-5. Use age-appropriate language and concepts for ${userAge}-year-olds
-6. Create situations where ${userName} demonstrates bravery, kindness, and problem-solving
-7. CRITICAL: Use correct pronouns - ${avatarType === 'boy' ? 'he/him/his' : avatarType === 'girl' ? 'she/her/hers' : 'they/them/their'} for ${userName}
+REQUIREMENTS:
+- ${specs.wordLimit} words total across entire story
+- Exactly ${specs.pageCount} pages
+- ${Math.floor(specs.wordLimit/specs.pageCount)}-${specs.maxWordsPerPage} words per page (2-3 sentences)
+- Complex sentences with descriptive language
+- Use cumulative Dolch vocabulary: Pre-Primer + Primer + 1st Grade + 2nd Grade words (179 total)
+- EXCEPTION: Always allow user's name (${userName}) and their inputs: ${userInputWords.join(', ')}
+- Use ${userName} 40% of time, pronouns 60% of time
+- Include mild conflicts with positive resolution
+- Focus on character development and emotions
 
-WRITING STYLE FOR ${readingLevel.toUpperCase()}:
-${readingLevel === 'beginner' ? 
-  `- Write like Julia Donaldson, Mo Willems, Dr. Seuss, and Kevin Henkes
-  - Maximum 6 words per page only
-  - Very simple sentences with repetitive patterns
-  - Use simple past tense consistently, basic punctuation
-  - Focus on rhythm, rhyme, and emotional connection
-  - Use basic sight words and simple concepts
-  - Emphasize friendship, discovery, and gentle adventures` :
-readingLevel === 'elementary' ? 
-  `- Write like Jeff Kinney, Roald Dahl, Dav Pilkey, and Andrea Beaty
-  - Approximately 200 words per page for 2-minute reading time
-  - Conversational tone with humor and relatability
-  - Maintain consistent narrative tense, proper dialogue punctuation
-  - Include simple dialogue and character emotions
-  - Focus on friendship, problem-solving, and everyday adventures
-  - Use descriptive language that's accessible but engaging` :
-readingLevel === 'intermediate' ?
-  `- Write like Katherine Applegate, C.S. Lewis, and J.K. Rowling
-  - Approximately 300 words per page for 2-minute reading time
-  - Rich descriptions and character development
-  - Complex sentence structures with correct grammar
-  - Include mild conflict and emotional depth
-  - Use figurative language and deeper themes about growing up` :
-  `- Write like Sharon Creech, Anna Sewell, Louis Sachar, Jacqueline Woodson, Suzanne Collins, John Green, and Markus Zusak
-  - Approximately 500 words per page for 2-minute reading time
-  - Sophisticated storytelling with complex plots
-  - Sophisticated grammar with varied sentence types
-  - Rich world-building and character arcs
-  - Advanced vocabulary and literary devices
-  - Explore themes of identity, relationships, and moral decisions
-  - Randomly vary difficulty within 6th-12th grade range`
-}
+Return story in this exact format:
+Page 1: [${Math.floor(specs.wordLimit/specs.pageCount)}-${specs.maxWordsPerPage} words]
+etc. for ${specs.pageCount} pages`
+      : `You are an advanced children's story writer. Create age-appropriate stories with rich vocabulary and complex themes. Make ${userName} the main character and include their interests: ${userInputWords.join(', ')}.
 
-STORY STRUCTURE:
-- Opening: Introduce ${userName} in their familiar world
-- Inciting Incident: Something related to ${theme} happens
-- Rising Action: ${userName} faces challenges using their interests/skills
-- Climax: ${userName} overcomes the main challenge heroically
-- Resolution: ${userName} learns something valuable and feels proud
+Return story in exact page format as requested.`;
 
-Create a complete, engaging story that makes ${userName} feel like the hero of their own adventure.`
-
-    const userPrompt = `Write a captivating ${theme} story featuring ${userName}, a ${characterDesc}. This should read like a real children's book with natural flow and pacing.
-
-STORY ELEMENTS TO WEAVE IN NATURALLY:
-IMPORTANT: Select only 2-3 elements that naturally fit your ${theme} story. Don't force all elements into the narrative. Choose the most relevant ones:
-
-Available elements (intelligently select 2-3 that fit organically):
-- Favorite color: ${favoriteColor}
-- Favorite animal: ${favoriteAnimal}  
-- Interests: ${userInterests.join(', ')}
-${hobbies ? `- Hobby: ${hobbies}` : ''}
-${favoriteFood ? `- Favorite food: ${favoriteFood}` : ''}
-
-SELECTION GUIDANCE:
-- For adventure themes: Consider animal, hobbies, and interests that relate to exploration
-- For friendship themes: Focus on interests and activities that bring people together  
-- For magic themes: Choose elements that could have magical properties (colors, animals, objects)
-- For mystery themes: Select elements that could be clues or helpful tools
-- ONLY use elements that enhance your specific story - ignore others that don't fit naturally
-
-COPYRIGHT AWARENESS:
-If any user inputs reference copyrighted characters, brands, or content (like Godzilla, Pokemon, Disney characters, etc.), create original alternatives that capture the spirit:
-- Instead of "Godzilla" → create "Gigantus the friendly giant lizard" or "Mega-Rex the gentle giant"
-- Instead of "Pokemon" → create "magical creature companions" or "wonder pets"
-- Instead of "Batman" → create "Night Hero" or "Cape Guardian"
-- Use descriptive, original names that evoke similar feelings without copyright issues
-
-WRITING APPROACH:
-- Let the story flow naturally like a published children's book
-- Don't force all elements into the beginning - spread them throughout when they naturally fit
-- Some elements might appear early, others in the middle or end
-- Focus on creating engaging scenes, character development, and a satisfying narrative arc
-- ${userName} should feel like a real, relatable character going on a genuine adventure
-
-STORY STRUCTURE:
-- Start with an engaging opening that draws readers in
-- Build the world and character naturally
-- Let the adventure unfold with proper pacing
-- Include moments of challenge, discovery, and triumph
-- End with a satisfying conclusion that feels complete
-
-Make this feel like a real book that ${userName} would love to read about themselves. Age-appropriate for ${userAge} years old at ${readingLevel} level.
-
-FINAL QUALITY CHECK:
-Before finishing, review the entire story for grammatical errors and fix any issues with spelling, punctuation, or sentence structure.
-
-PRONOUN CHECK (MANDATORY):
-Verify that you use the correct pronouns for ${userName}: ${avatarType === 'boy' ? 'he/him/his' : avatarType === 'girl' ? 'she/her/hers' : 'they/them/their'}. Replace any incorrect pronoun usage.
-
-Write as a complete, flowing narrative without page breaks or section markers.`
+    // Create simplified user prompt
+    const userPrompt = readingLevel === 'beginner'
+      ? `Create a 30-word story for ${userName}. Use their favorite ${favoriteColor} ${favoriteAnimal}. Include ${hobbies}. Remember: exactly 6 words per page, 5 pages total. Use simple joy and happiness.`
+      : readingLevel === 'easy'
+      ? `Create a ${specs.wordLimit}-word story for ${userName} (age ${userAge}). They love ${favoriteAnimal} and ${favoriteColor}. Their hobby is ${hobbies} and they like ${favoriteFood}. Include gentle adventures and friendship.`
+      : readingLevel === 'medium' 
+      ? `Create a ${specs.wordLimit}-word adventure for ${userName} (age ${userAge}). They love ${favoriteAnimal} and ${favoriteColor}. Their passion is ${hobbies} and they enjoy ${favoriteFood}. Include problem-solving and character growth.`
+      : `Create an engaging ${theme || 'adventure'} story for ${userName} (age ${userAge}). Include their interests: ${favoriteColor}, ${favoriteAnimal}, ${hobbies}, ${favoriteFood}. Theme: ${theme || 'adventure'}. Style: ${authorStyle || 'engaging'}.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -207,8 +139,8 @@ Write as a complete, flowing narrative without page breaks or section markers.`
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        max_tokens: readingLevel === 'beginner' ? 300 : readingLevel === 'elementary' ? 600 : readingLevel === 'intermediate' ? 1200 : 2500,
-        temperature: 0.8,
+        max_tokens: readingLevel === 'beginner' ? 200 : readingLevel === 'easy' ? 400 : readingLevel === 'medium' ? 800 : 2000,
+        temperature: 0.7,
         presence_penalty: 0.1,
         frequency_penalty: 0.1
       }),
@@ -225,23 +157,19 @@ Write as a complete, flowing narrative without page breaks or section markers.`
       throw new Error('No story content generated')
     }
 
-    // Always return structured response
-    const storyResult = {
-      title: `${userName}'s ${theme} Adventure`,
-      content: storyText,
-      characterDetails: {
-        name: userName,
-        description: characterDesc,
-        favoriteColor,
-        favoriteAnimal,
-        skinTone,
-        avatarType
-      }
-    }
+    // Parse story into pages
+    const pages = storyText.split(/Page \d+:/g)
+      .filter(page => page.trim().length > 0)
+      .map(page => page.trim().replace(/^\d+\.\s*/, ''));
 
-    console.log(`Generated personalized story for ${userName} (${characterDesc}) about ${theme}`);
+    console.log(`Generated personalized story for ${userName} (${characterDesc}) about ${theme || 'adventure'}`);
 
-    return new Response(JSON.stringify(storyResult), {
+    return new Response(JSON.stringify({
+      pages,
+      difficulty: readingLevel || 'easy',
+      title: `${userName}'s ${theme || 'Adventure'} Story`,
+      isComplete: true
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
 
@@ -257,21 +185,38 @@ Write as a complete, flowing narrative without page breaks or section markers.`
       console.error('Could not parse request for fallback:', parseError);
     }
     
-    // Enhanced fallback with user details
+    // Enhanced fallback with user details - NO SKIN TONE
     const userName = fallbackConfig?.userName || 'the child';
     const theme = fallbackConfig?.theme || 'adventure';
     const characterDesc = fallbackConfig?.avatar ? 
-      `${fallbackConfig.avatar.type === 'boy' ? 'young boy' : fallbackConfig.avatar.type === 'girl' ? 'young girl' : 'child'} with ${fallbackConfig.avatar.skinTone} skin tone` :
+      `${fallbackConfig.avatar.type === 'boy' ? 'young boy' : fallbackConfig.avatar.type === 'girl' ? 'young girl' : 'child'}` :
       'brave young adventurer';
     
-    const fallbackStory = {
-      title: `${userName}'s Special ${theme}`,
-      content: `Once upon a time, there was a wonderful ${characterDesc} named ${userName}. ${userName} was very special and brave. One day, ${userName} went on an amazing ${theme} adventure. Along the way, ${userName} met friendly animals and discovered magical places. ${userName} showed great courage and kindness. In the end, ${userName} felt very proud of all the wonderful things they had accomplished. And they lived happily ever after, ready for their next adventure!`,
-      characterDetails: {
-        name: userName,
-        description: characterDesc
-      }
-    };
+    const fallbackStory = readingLevel === 'beginner' 
+      ? {
+          pages: [
+            `${userName} sees a cat.`,
+            `The cat is red.`, 
+            `${userName} likes cats.`,
+            `She runs to play.`,
+            `${userName} is happy.`
+          ],
+          difficulty: 'beginner',
+          title: `${userName} and the Cat`,
+          isComplete: true
+        }
+      : {
+          pages: [
+            `${userName} was excited to start a new ${theme}!`,
+            `The ${characterDesc} looked around with wonder and curiosity.`,
+            `${userName} discovered something amazing that made them smile.`,
+            `With courage and determination, ${userName} explored further.`,
+            `${userName} learned something wonderful and felt proud of their journey.`
+          ],
+          difficulty: readingLevel || 'easy',
+          title: `${userName}'s ${theme.charAt(0).toUpperCase() + theme.slice(1)} Story`,
+          isComplete: true
+        };
     
     return new Response(JSON.stringify(fallbackStory), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
