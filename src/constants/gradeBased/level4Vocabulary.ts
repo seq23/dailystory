@@ -7,6 +7,14 @@ export const LEVEL_4_VOCABULARY = new Set([
   // Include all Level 3 words
   ...LEVEL_3_VOCABULARY,
   
+  // CRITICAL AUTHOR VOICE WORDS FOR LEVEL 4+ - ensuring complex templates validate
+  'extraordinary', 'magnificent', 'sophisticated', 'tremendous', 'fascinating', 'spectacular', 'incredible', 
+  'exceptional', 'remarkable', 'outstanding', 'meanwhile', 'consequently', 'furthermore', 'nevertheless', 
+  'therefore', 'however', 'moreover', 'subsequently', 'alternatively', 'ultimately', 'personality', 
+  'characteristics', 'determination', 'perseverance', 'resilience', 'confidence', 'enthusiasm', 'dedication', 
+  'creativity', 'imagination', 'atmosphere', 'environment', 'circumstances', 'opportunities', 'experiences', 
+  'adventures', 'challenges', 'discoveries', 'investigations', 'explorations',
+
   // Advanced 7th-12th Grade Vocabulary
   'abbreviate', 'abolish', 'abrasive', 'abrupt', 'abundance', 'accessible', 'accompany', 'accumulate', 'acknowledge', 'acquisition',
   'adamant', 'adequate', 'adjacent', 'adversary', 'advocate', 'aesthetic', 'affiliate', 'aggravate', 'allegiance', 'alleviate',

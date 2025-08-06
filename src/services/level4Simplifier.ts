@@ -1,30 +1,30 @@
-// Level 3 Simplifier - Context-Aware Validation for Intermediate Users
-import { isLevel3Word, validateLevel3Sentence } from '@/constants/gradeBased/level3Vocabulary';
+// Level 4 Simplifier - Context-Aware Validation for Advanced Users
+import { isLevel4Word, validateLevel4Sentence } from '@/constants/gradeBased/level4Vocabulary';
 
-export class Level3Simplifier {
+export class Level4Simplifier {
   // Author voice and story-enhancing words that are allowed even if not in vocabulary
   private static AUTHOR_VOICE_ALLOWLIST = new Set([
     // Creative storytelling terms
-    'extraordinary', 'magnificent', 'tremendous', 'fascinating', 'spectacular',
-    'incredible', 'wonderful', 'amazing', 'marvelous', 'delightful',
+    'extraordinary', 'magnificent', 'sophisticated', 'tremendous', 'fascinating',
+    'spectacular', 'incredible', 'exceptional', 'remarkable', 'outstanding',
     // Narrative flow words
-    'meanwhile', 'however', 'therefore', 'because', 'although',
-    'suddenly', 'finally', 'immediately', 'carefully', 'quickly',
+    'meanwhile', 'consequently', 'furthermore', 'nevertheless', 'therefore',
+    'however', 'moreover', 'subsequently', 'alternatively', 'ultimately',
     // Character development terms
-    'personality', 'character', 'determination', 'courage', 'bravery',
-    'kindness', 'friendship', 'teamwork', 'leadership', 'creativity',
-    // Descriptive enhancement words
-    'adventure', 'mystery', 'discovery', 'exploration', 'investigation',
-    'opportunity', 'experience', 'challenge', 'achievement', 'success'
+    'personality', 'characteristics', 'determination', 'perseverance', 'resilience',
+    'confidence', 'enthusiasm', 'dedication', 'creativity', 'imagination',
+    // Advanced descriptive words
+    'atmosphere', 'environment', 'circumstances', 'opportunities', 'experiences',
+    'adventures', 'challenges', 'discoveries', 'investigations', 'explorations'
   ]);
 
-  static simplifyForLevel3(text: string, userName: string) {
+  static simplifyForLevel4(text: string, userName: string) {
     const relaxedValidation = this.validateWithContextRelaxation(text, userName);
     return {
       text: relaxedValidation.isValid ? text : this.attemptSimplification(text),
       wasSimplified: !relaxedValidation.isValid,
       strategyUsed: relaxedValidation.isValid ? 'context-relaxed' : 'word-replacement',
-      gradeLevel: 3,
+      gradeLevel: 4,
       contextAllowed: relaxedValidation.contextAllowedWords
     };
   }
@@ -49,7 +49,7 @@ export class Level3Simplifier {
       }
       
       // Check standard vocabulary
-      if (isLevel3Word(word)) {
+      if (isLevel4Word(word)) {
         return false;
       }
       
@@ -62,8 +62,8 @@ export class Level3Simplifier {
       return true;
     });
     
-    // Allow up to 3 context-enhanced words per sentence for Level 3
-    const maxContextWords = 3;
+    // Allow up to 5 context-enhanced words per sentence for Level 4
+    const maxContextWords = 5;
     const remainingInvalidWords = invalidWords.slice(maxContextWords);
     const additionalContextWords = invalidWords.slice(0, maxContextWords);
     
@@ -78,13 +78,15 @@ export class Level3Simplifier {
 
   private static attemptSimplification(text: string): string {
     return text
-      .replace(/sophisticated/gi, 'advanced')
-      .replace(/comprehensive/gi, 'complete')
       .replace(/extraordinary/gi, 'amazing')
       .replace(/magnificent/gi, 'wonderful')
-      .replace(/tremendous/gi, 'very big')
-      .replace(/fascinating/gi, 'interesting')
-      .replace(/spectacular/gi, 'amazing')
-      .replace(/incredible/gi, 'amazing');
+      .replace(/tremendous/gi, 'very large')
+      .replace(/sophisticated/gi, 'advanced')
+      .replace(/consequently/gi, 'as a result')
+      .replace(/nevertheless/gi, 'however')
+      .replace(/furthermore/gi, 'also')
+      .replace(/subsequently/gi, 'then')
+      .replace(/alternatively/gi, 'instead')
+      .replace(/ultimately/gi, 'in the end');
   }
 }
