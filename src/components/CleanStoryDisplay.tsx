@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next";
 // Missing UI Components
 import { FloatingTimer } from "@/components/FloatingTimer";
 import { TutorialOverlay } from "@/components/TutorialOverlay";
-import { ProgressTowerSimple } from "@/components/ProgressTowerSimple";
+import { ProgressTowers } from "@/components/ProgressTowers";
 import { GameContextProvider } from "@/components/GameContextProvider";
 
 // Audio and Interactive Components
@@ -594,14 +594,19 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         tutorialStep={currentTutorialStep}
       />
       
-      {/* Progress Tower - Replace Vocabulary Button */}
-      <div className="fixed bottom-4 right-4 z-30 w-64">
-        <ProgressTowerSimple 
-          userStats={userStats}
-          isPremium={isPremium}
-          resetOnSession={!isPremium}
-        />
-      </div>
+      {/* Progress Tower - Collapsible floating tower */}
+      <ProgressTowers
+        userId={userInfo?.name}
+        userType={isPremium ? 'premium' : 'free'}
+        currentWordsRead={userStats.totalWordsRead || 0}
+        currentPagesRead={userStats.totalStoriesCompleted || 0}
+        vocabularyLearned={userStats.vocabularyWordsLearned || 0}
+        onProgressUpdate={(progressData) => {
+          console.log('Progress updated:', progressData);
+        }}
+        shouldPulse={false}
+        className="fixed"
+      />
       </div>
     </ErrorBoundary>
     </GameContextProvider>
