@@ -29,337 +29,337 @@ export const LEVEL_2_TEMPLATES = [
     "And {userName} was very, very happy to see their name in the newspaper neat!"
   ],
   
-  // Template 4: Space Museum Visit
+  // Template 4: Space Museum Visit (Blue Pattern - Friendship)
   [
-    "{userName} and their class take an educational field trip to the space museum.",
-    "The museum contains real spacecraft, moon rocks, and interactive exhibits about the solar system.",
-    "A museum guide explains how astronauts live and work in space stations.",
-    "The planetarium show demonstrates how stars form and why planets orbit the sun.",
-    "This visit inspires {userName} to learn more about astronomy and space exploration."
+    "{userName} was not having the best day, but their friend had an idea.",
+    "But then their friend said something important: 'Let's visit the space museum!'",
+    "The museum guide helped them understand how astronauts work together in space.",
+    "When they saw the planetarium show, {userName} turned to their friend with excitement.",
+    "And they both laughed and laughed - space exploration became their shared dream!"
   ],
   
-  // Template 5: Chess Tournament
+  // Template 5: Chess Tournament (Green Pattern - Discovery)
   [
-    "{userName} learns to play chess and decides to enter the school tournament.",
-    "The game requires strategic thinking and the ability to plan several moves ahead.",
-    "During practice sessions, {userName} studies different opening strategies and defensive techniques.",
-    "In the tournament, they win some games and lose others, but improve with each match.",
-    "Although they don't win first place, {userName} gains confidence and makes new friends."
+    "Oh my! Oh me! {userName} could not believe they were entering the chess tournament!",
+    "But wait! What's that? Strategic thinking and planning moves ahead!",
+    "Round and round and round went the chess pieces as {userName} practiced daily!",
+    "This way, that way, here and there went the games in the tournament!",
+    "What a wonderful day it turned out to be - confidence and new friendships everywhere!"
   ],
   
-  // Template 6: Animal Shelter
+  // Template 6: Animal Shelter (Orange Pattern - Creativity)
   [
-    "{userName} convinces their family to volunteer at the local animal shelter.",
-    "The shelter houses dozens of cats, dogs, and other animals waiting for adoption.",
-    "Volunteers help feed the animals, clean their living areas, and provide exercise and attention.",
-    "{userName} especially enjoys reading books to the nervous animals to help them relax.",
-    "Several animals find new homes during their volunteer period, which makes everyone happy."
+    "But not just any volunteer work! {userName} says 'Let's help animals!'",
+    "Stomp stomp stomp goes {userName}, cleaning and feeding dozens of animals!",
+    "What a wonderful thing to do - reading books to nervous animals!",
+    "Everybody helps! Even {userName} finds homes for the waiting pets!",
+    "And {userName} was very, very happy to see animals find loving families!"
   ],
   
-  // Template 7: Weather Station
+  // Template 7: Weather Station (Blue Pattern - Friendship)
   [
-    "{userName} builds a weather station for a school science project.",
-    "The station includes instruments to measure temperature, humidity, wind speed, and rainfall.",
-    "Each morning and afternoon, {userName} records the weather data in a special journal.",
-    "After collecting information for one month, they create graphs showing weather patterns.",
-    "The project helps {userName} understand how meteorologists predict tomorrow's weather."
+    "{userName} was having trouble with their science project until a friend helped.",
+    "But then their friend said something important: 'Let's build a weather station together!'",
+    "Each day they recorded temperature, humidity, and rainfall measurements as a team.",
+    "That was not what {userName} expected - creating graphs would be so much fun!",
+    "And they both laughed and laughed when their weather predictions came true!"
   ],
   
-  // Template 8: Historic Town
+  // Template 8: Historic Town (Green Pattern - Discovery)
   [
-    "{userName} visits a historic town with their family during summer vacation.",
-    "The town preserves buildings and artifacts from colonial times in America.",
-    "Tour guides dressed in period costumes explain how people lived centuries ago.",
-    "{userName} learns about traditional crafts like blacksmithing, weaving, and candle making.",
-    "This experience helps them understand and appreciate life before modern technology existed."
+    "Oh my! Oh me! {userName} could not see what colonial times would show!",
+    "But wait! What's that? Period costumes and buildings from long ago!",
+    "Round and round and round they toured, learning crafts like blacksmithing!",
+    "This way, that way, here and there went traditional weaving and candle making!",
+    "What a wonderful day it turned out to be - history came alive before their eyes!"
   ],
   
-  // Template 9: School Play
+  // Template 9: School Play (Orange Pattern - Creativity)
   [
-    "{userName} auditions for a role in the school's annual theater production.",
-    "The play tells the story of pioneers traveling west during the California gold rush.",
-    "Although nervous at first, {userName} practices their lines until they memorize every word.",
-    "During rehearsals, they learn about stage makeup, costume design, and lighting techniques.",
-    "On opening night, the entire cast performs brilliantly and receives a standing ovation."
+    "But not just any audition! {userName} says 'I want to be in the play!'",
+    "Stomp stomp stomp goes {userName}, practicing lines about California pioneers!",
+    "What a wonderful thing to do - learning makeup, costumes, and lighting!",
+    "Everybody performs! Even {userName} shines brightly on opening night!",
+    "And {userName} was very, very happy when the audience gave standing ovations!"
   ],
   
-  // Template 10: Recycling Program
+  // Template 10: Recycling Program (Blue Pattern - Friendship)
   [
-    "{userName} organizes a recycling program to help protect the environment.",
-    "The program educates people about sorting plastic, paper, glass, and metal waste properly.",
-    "Students create colorful posters explaining why recycling helps preserve natural resources.",
-    "Local businesses agree to participate by providing collection bins for different materials.",
-    "Within six months, the program reduces the school's waste by almost fifty percent."
+    "{userName} was worried about the environment, but friends wanted to help too.",
+    "But then their friends said something important: 'Let's start a recycling program!'",
+    "Students worked together creating posters about sorting plastic, paper, and glass.",
+    "That was not what {userName} expected - businesses wanted to help with collection bins!",
+    "And they both laughed and laughed when waste decreased by fifty percent!"
   ],
   
-  // Template 11: Cooking Competition
+  // Template 11: Cooking Competition (Green Pattern - Discovery)
   [
-    "{userName} enters a cooking competition for young chefs in their community.",
-    "The challenge requires preparing a complete meal using only ingredients from local farms.",
-    "After researching recipes, {userName} decides to make vegetable soup and fresh bread.",
-    "During the competition, they carefully follow each step and manage their time efficiently.",
-    "The judges praise their creativity and presentation, awarding them third place overall."
+    "Oh my! Oh me! {userName} could not see themselves winning at cooking!",
+    "But wait! What's that? Local farm ingredients and recipe research to do!",
+    "Round and round and round they stirred, making vegetable soup and bread!",
+    "This way, that way, here and there went the timer as they managed each step!",
+    "What a wonderful day it turned out to be - third place and judges' praise!"
   ],
   
-  // Template 12: Photography Club
+  // Template 12: Photography Club (Orange Pattern - Creativity)
   [
-    "{userName} joins the school photography club to learn about taking better pictures.",
-    "The club meets weekly to discuss composition, lighting, and different camera techniques.",
-    "Their first assignment involves photographing nature scenes around the school campus.",
-    "{userName} discovers that patience and observation are essential skills for good photography.",
-    "At the end of the semester, their best photographs are displayed in the school hallway."
+    "But not just any club! {userName} says 'I want to take amazing pictures!'",
+    "Stomp stomp stomp goes {userName}, learning composition and lighting techniques!",
+    "What a wonderful thing to do - photographing nature scenes around campus!",
+    "Everybody learns patience! Even {userName} discovers observation skills matter!",
+    "And {userName} was very, very happy to see their photos displayed in hallways!"
   ],
   
-  // Template 13: Language Exchange
+  // Template 13: Language Exchange (Blue Pattern - Friendship)
   [
-    "{userName} participates in a language exchange program with students from another country.",
-    "Through video calls, they practice speaking and help each other learn new vocabulary.",
-    "The experience teaches {userName} about different cultures, traditions, and ways of life.",
-    "They exchange letters, recipes, and photographs to share information about their communities.",
-    "This friendship continues throughout the year and helps both students improve their language skills."
+    "{userName} wanted to learn another language but felt nervous about speaking.",
+    "But then their exchange partner said something important: 'We'll help each other!'",
+    "Through video calls they practiced vocabulary and shared cultural traditions together.",
+    "That was not what {userName} expected - exchanging recipes and photos was so fun!",
+    "And they both laughed and laughed as their language skills improved throughout the year!"
   ],
   
-  // Template 14: Marine Biology
+  // Template 14: Marine Biology (Green Pattern - Discovery)
   [
-    "{userName} develops a fascination with marine biology after visiting the aquarium.",
-    "They begin researching different types of fish, coral reefs, and ocean ecosystems.",
-    "The local library provides books and documentaries about underwater exploration and conservation.",
-    "{userName} starts a collection of shells and creates a presentation about ocean pollution.",
-    "Their teacher is so impressed that she invites {userName} to present to other classes."
+    "Oh my! Oh me! {userName} could not see all the ocean wonders below!",
+    "But wait! What's that? Coral reefs and fish in amazing underwater worlds!",
+    "Round and round and round they researched, reading about marine ecosystems!",
+    "This way, that way, here and there went shells into their growing collection!",
+    "What a wonderful day it turned out to be - presenting to other classes too!"
   ],
   
-  // Template 15: Invention Fair
+  // Template 15: Invention Fair (Orange Pattern - Creativity)
   [
-    "{userName} invents a device to help elderly people reach high shelves safely.",
-    "The invention uses simple materials like pulleys, ropes, and a lightweight grabbing mechanism.",
-    "After building several prototypes, {userName} tests the device with their grandmother's help.",
-    "The school invention fair showcases creative solutions to everyday problems by student inventors.",
-    "Although {userName} doesn't win, an engineer offers to help develop the idea further."
+    "But not just any invention! {userName} says 'Let's help elderly people reach high shelves!'",
+    "Stomp stomp stomp goes {userName}, building with pulleys, ropes, and grabbing mechanisms!",
+    "What a wonderful thing to do - testing prototypes with grandmother's helpful feedback!",
+    "Everybody invents solutions! Even {userName} impresses the watching engineer!",
+    "And {userName} was very, very happy when offered help developing ideas further!"
   ],
   
-  // Template 16: Hiking Adventure
+  // Template 16: Hiking Adventure (Blue Pattern - Friendship)
   [
-    "{userName} joins a hiking club that explores mountain trails every weekend.",
-    "The group learns about map reading, compass navigation, and wilderness safety procedures.",
-    "During hikes, they identify different types of trees, flowers, and wildlife in their natural habitat.",
-    "{userName} keeps a journal documenting each trip with sketches and detailed observations.",
-    "By the end of summer, they have hiked over one hundred miles and gained tremendous confidence."
+    "{userName} felt nervous about joining the hiking club, but other members were welcoming.",
+    "But then the group leader said something important: 'We'll teach you map reading!'",
+    "Friends helped identify trees, flowers, and wildlife during their weekend adventures.",
+    "That was not what {userName} expected - keeping a nature journal was so enjoyable!",
+    "And they both laughed and laughed after hiking one hundred miles together!"
   ],
   
-  // Template 17: Book Drive
+  // Template 17: Book Drive (Green Pattern - Discovery)
   [
-    "{userName} organizes a book drive to collect reading materials for underprivileged children.",
-    "The campaign involves creating flyers, setting up collection boxes, and recruiting volunteers.",
-    "Local bookstores and libraries donate new and gently used books for all age groups.",
-    "Students sort the books by reading level and wrap them as gifts for distribution.",
-    "The drive collects over five hundred books and brings joy to hundreds of children."
+    "Oh my! Oh me! {userName} could not see how many books they would collect!",
+    "But wait! What's that? Flyers, boxes, and volunteers joining the campaign!",
+    "Round and round and round went donations from bookstores and libraries!",
+    "This way, that way, here and there students sorted books by reading levels!",
+    "What a wonderful day it turned out to be - five hundred books bringing joy!"
   ],
   
-  // Template 18: Robotics Team
+  // Template 18: Robotics Team (Orange Pattern - Creativity)
   [
-    "{userName} joins the school robotics team and learns about engineering and programming.",
-    "The team's challenge is to build a robot that can navigate obstacles and complete specific tasks.",
-    "Members work together to design, build, test, and improve their robotic creation.",
-    "{userName} focuses on programming the robot's sensors to detect and avoid barriers.",
-    "At the regional competition, their robot performs well and the team earns recognition for innovation."
+    "But not just any team! {userName} says 'Let's build an amazing robot!'",
+    "Stomp stomp stomp goes {userName}, designing and programming robotic creations!",
+    "What a wonderful thing to do - testing sensors that detect and avoid barriers!",
+    "Everybody builds together! Even {userName} focuses on obstacle navigation!",
+    "And {userName} was very, very happy when the team earned innovation recognition!"
   ],
   
-  // Template 19: Cultural Festival
+  // Template 19: Cultural Festival (Blue Pattern - Friendship)
   [
-    "{userName} helps organize a multicultural festival celebrating diversity in their community.",
-    "The event features traditional music, dancing, food, and art from many different countries.",
-    "Families share stories about their heritage and teach others about their customs.",
-    "{userName} learns to prepare dishes from three different cultures for the food booths.",
-    "The festival promotes understanding and friendship among people from various backgrounds."
+    "{userName} wanted to celebrate diversity but wasn't sure how to bring people together.",
+    "But then community members said something important: 'Let's share our heritage!'",
+    "Families worked together featuring traditional music, dancing, food, and art.",
+    "That was not what {userName} expected - learning three different cooking traditions!",
+    "And they both laughed and laughed as the festival promoted understanding and friendship!"
   ],
   
-  // Template 20: Solar Car
+  // Template 20: Solar Car (Green Pattern - Discovery)
   [
-    "{userName} builds a small solar-powered car for an environmental technology contest.",
-    "The project requires understanding how solar panels convert sunlight into electrical energy.",
-    "After researching aerodynamics, {userName} designs a lightweight car body to reduce wind resistance.",
-    "Testing reveals problems with the initial design, so they make several important improvements.",
-    "The final version travels fifty feet using only solar power, earning praise from the judges."
+    "Oh my! Oh me! {userName} could not see how solar panels would power cars!",
+    "But wait! What's that? Sunlight converting into electrical energy for movement!",
+    "Round and round and round went research about aerodynamics and design!",
+    "This way, that way, here and there went improvements after testing revealed problems!",
+    "What a wonderful day it turned out to be - fifty feet of solar-powered travel!"
   ],
   
-  // Template 21: Archaeology Dig
+  // Template 21: Archaeology Dig (Orange Pattern - Creativity)
   [
-    "{userName} participates in a simulated archaeology dig during summer camp.",
-    "The activity teaches careful excavation techniques and proper handling of historical artifacts.",
-    "Using brushes and small tools, campers uncover pottery fragments and other buried objects.",
-    "{userName} learns how archaeologists piece together clues to understand ancient civilizations.",
-    "The experience inspires them to consider archaeology as a possible future career path."
+    "But not just any camp activity! {userName} says 'Let's dig for ancient treasures!'",
+    "Stomp stomp stomp goes {userName}, using brushes and tools for careful excavation!",
+    "What a wonderful thing to do - uncovering pottery fragments and buried objects!",
+    "Everybody learns techniques! Even {userName} pieces together ancient civilization clues!",
+    "And {userName} was very, very happy to consider archaeology as career inspiration!"
   ],
   
-  // Template 22: Butterfly Garden
+  // Template 22: Butterfly Garden (Blue Pattern - Friendship)
   [
-    "{userName} creates a butterfly garden to attract and support local butterfly populations.",
-    "The project requires research about which plants provide nectar and suitable breeding habitats.",
-    "After preparing the soil, {userName} plants flowers that bloom throughout the growing season.",
-    "They observe and document different butterfly species that visit the garden regularly.",
-    "The garden becomes a peaceful place where {userName} enjoys reading and relaxing outdoors."
+    "{userName} loved butterflies but didn't know how to help them find good homes.",
+    "But then a gardening expert said something important: 'Plant flowers that provide nectar!'",
+    "Friends helped prepare the soil and plant flowers for the growing season.",
+    "That was not what {userName} expected - observing and documenting visiting species!",
+    "And they both laughed and laughed in their peaceful reading garden retreat!"
   ],
   
-  // Template 23: Math Olympics
+  // Template 23: Math Olympics (Green Pattern - Discovery)
   [
-    "{userName} trains for the regional math olympics by solving challenging problems daily.",
-    "The competition tests skills in geometry, algebra, number theory, and logical reasoning.",
-    "A teacher provides extra practice sessions and strategies for approaching difficult questions.",
-    "{userName} forms a study group with classmates to practice and share problem-solving techniques.",
-    "At the competition, they perform better than expected and qualify for the state championship."
+    "Oh my! Oh me! {userName} could not see how to solve challenging problems!",
+    "But wait! What's that? Geometry, algebra, and logical reasoning to master!",
+    "Round and round and round went practice sessions with helpful teacher strategies!",
+    "This way, that way, here and there study groups shared problem-solving techniques!",
+    "What a wonderful day it turned out to be - qualifying for state championships!"
   ],
   
-  // Template 24: Pen Pal Program
+  // Template 24: Pen Pal Program (Orange Pattern - Creativity)
   [
-    "{userName} begins corresponding with a pen pal from a rural school in another state.",
-    "Their letters describe daily life, local traditions, and interesting facts about their regions.",
-    "The exchange helps both students improve their writing skills and broaden their perspectives.",
-    "{userName} sends photographs of local landmarks and receives pictures of farm life.",
-    "This friendship teaches them that people everywhere share similar hopes and dreams."
+    "But not just any letters! {userName} says 'Let's share our different worlds!'",
+    "Stomp stomp stomp goes {userName}, writing about daily life and local traditions!",
+    "What a wonderful thing to do - exchanging photographs of landmarks and farms!",
+    "Everybody improves writing! Even {userName} broadens perspectives through correspondence!",
+    "And {userName} was very, very happy to discover shared hopes and dreams!"
   ],
   
-  // Template 25: Nature Documentary
+  // Template 25: Nature Documentary (Blue Pattern - Friendship)
   [
-    "{userName} creates a short documentary film about wildlife in the local nature preserve.",
-    "The project requires patience, observation skills, and basic knowledge of video production.",
-    "Using a borrowed camera, {userName} films birds, small mammals, and insects in their habitats.",
-    "They research animal behavior and write narration explaining what viewers see on screen.",
-    "The finished documentary is shown at the school film festival and wins an award for best nature film."
+    "{userName} loved wildlife but felt nervous about creating a documentary alone.",
+    "But then their teacher said something important: 'Let's borrow a camera and work together!'",
+    "Friends helped film birds, mammals, and insects while researching animal behavior.",
+    "That was not what {userName} expected - writing narration would be so engaging!",
+    "And they both laughed and laughed when their film won the nature award!"
+  ],
+
+  // Template 26: Time Capsule (Green Pattern - Discovery)
+  [
+    "Oh my! Oh me! {userName} could not see what future students would discover!",
+    "But wait! What's that? Photographs, letters, and artwork from current times!",
+    "Round and round and round went predictions about technology and fashion!",
+    "This way, that way, here and there went hopes and dreams into the capsule!",
+    "What a wonderful day it turned out to be - buried for opening in 2045!"
+  ],
+
+  // Template 27: Bird Watching (Orange Pattern - Creativity)
+  [
+    "But not just any hobby! {userName} says 'Let's document amazing bird species!'",
+    "Stomp stomp stomp goes {userName}, using binoculars and field guides for identification!",
+    "What a wonderful thing to do - exploring different habitats for diversity!",
+    "Everybody counts birds! Even {userName} joins the junior naturalist expeditions!",
+    "And {userName} was very, very happy to document sixty species by year's end!"
+  ],
+
+  // Template 28: Debate Team (Blue Pattern - Friendship)
+  [
+    "{userName} felt intimidated by public speaking, but teammates offered encouragement.",
+    "But then the debate coach said something important: 'We'll practice together every day!'",
+    "Team members helped research controversial topics and develop balanced perspectives.",
+    "That was not what {userName} expected - thinking critically under pressure was exciting!",
+    "And they both laughed and laughed when respectful disagreement led to understanding!"
+  ],
+
+  // Template 29: Fossil Hunt (Green Pattern - Discovery)
+  [
+    "Oh my! Oh me! {userName} could not see what ancient creatures lay below!",
+    "But wait! What's that? Marine fossils from millions of years ago!",
+    "Round and round and round went hammers and chisels extracting specimens!",
+    "This way, that way, here and there went trilobites into their collection!",
+    "What a wonderful day it turned out to be - connecting with Earth's ancient past!"
+  ],
+
+  // Template 30: Farmers Market (Orange Pattern - Creativity)
+  [
+    "But not just any business! {userName} says 'Let's sell our garden vegetables!'",
+    "Stomp stomp stomp goes {userName}, planning budgets and tracking customer service!",
+    "What a wonderful thing to do - calculating profits and providing quality produce!",
+    "Everybody appreciates freshness! Even {userName} earns money for that bicycle!",
+    "And {userName} was very, very happy when regular customers kept returning!"
+  ],
+
+  // Template 31: Constellation Study (Blue Pattern - Friendship)
+  [
+    "{userName} was fascinated by stars but didn't know their names or stories.",
+    "But then the astronomy teacher said something important: 'Let's learn mythology together!'",
+    "Friends helped use star charts and telescopes to locate constellation patterns.",
+    "That was not what {userName} expected - ancient stories made astronomy magical!",
+    "And they both laughed and laughed when their science fair presentation won recognition!"
+  ],
+
+  // Template 32: Coding Club (Green Pattern - Discovery)
+  [
+    "Oh my! Oh me! {userName} could not see how computers would understand commands!",
+    "But wait! What's that? Simple programming building into complex concepts!",
+    "Round and round and round went visual tools creating basic games!",
+    "This way, that way, here and there went logical thinking and attention to detail!",
+    "What a wonderful day it turned out to be - several programs and growing confidence!"
   ],
   
-  // Template 26: Time Capsule
+  // Template 33: Historical Research (Orange Pattern - Creativity)
   [
-    "{userName} helps their class create a time capsule for future students to discover.",
-    "The capsule contains photographs, letters, artwork, and objects representing current times.",
-    "Students write predictions about technology, fashion, and social changes twenty years from now.",
-    "{userName} contributes a essay describing their hopes and dreams for the future.",
-    "The sealed capsule is buried on school grounds with instructions for opening in 2045."
+    "But not just any project! {userName} says 'Let's discover our family history!'",
+    "Stomp stomp stomp goes {userName}, interviewing relatives and searching old documents!",
+    "What a wonderful thing to do - finding stories about ancestors from other countries!",
+    "Everybody learns heritage! Even {userName} discovers family journeys to America!",
+    "And {userName} was very, very happy to appreciate their family's historical courage!"
   ],
-  
-  // Template 27: Bird Watching
+
+  // Template 34: Water Conservation (Blue Pattern - Friendship)
   [
-    "{userName} develops an interest in bird watching and begins keeping a detailed observation log.",
-    "Using binoculars and field guides, they learn to identify species by appearance and behavior.",
-    "Early morning trips to different habitats reveal the incredible diversity of local bird populations.",
-    "{userName} joins a junior naturalist club that organizes monthly bird counting expeditions.",
-    "By year's end, they have documented over sixty different species in their personal field journal."
+    "{userName} worried about water waste but didn't know how to make a difference.",
+    "But then the environmental club said something important: 'Let's start a conservation campaign!'",
+    "Students worked together calculating usage and identifying waste reduction opportunities.",
+    "That was not what {userName} expected - creating displays would educate everyone!",
+    "And they both laughed and laughed when water consumption dropped twenty percent!"
   ],
-  
-  // Template 28: Debate Team
+
+  // Template 35: Talent Show (Green Pattern - Discovery)
   [
-    "{userName} joins the school debate team to improve their public speaking and research skills.",
-    "The team practices arguing both sides of controversial topics to develop balanced perspectives.",
-    "Preparation involves extensive research, evidence gathering, and rehearsing presentation techniques.",
-    "{userName} learns to think critically and express ideas clearly under pressure.",
-    "At their first tournament, they discover that respectful disagreement can lead to better understanding."
+    "Oh my! Oh me! {userName} could not see themselves performing on stage!",
+    "But wait! What's that? Magic tricks requiring coordination and timing practice!",
+    "Round and round and round went rehearsals, perfecting impressive entertainment!",
+    "This way, that way, here and there went nervousness turning into confidence!",
+    "What a wonderful day it turned out to be - enthusiastic applause and confidence building!"
   ],
-  
-  // Template 29: Fossil Hunt
+
+  // Template 36: Greenhouse Project (Orange Pattern - Creativity)
   [
-    "{userName} goes fossil hunting with a geology class in the nearby limestone quarry.",
-    "The area contains fossils of marine creatures that lived millions of years ago.",
-    "Using hammers and chisels, students carefully extract fossils from the rock formations.",
-    "{userName} finds several trilobite fossils and learns about prehistoric ocean environments.",
-    "This hands-on experience makes ancient history feel real and connects them to Earth's past."
+    "But not just any building! {userName} says 'Let's create year-round growing space!'",
+    "Stomp stomp stomp goes {userName}, measuring, cutting, and assembling frame materials!",
+    "What a wonderful thing to do - learning temperature control and ventilation systems!",
+    "Everybody helps construction! Even {userName} understands plant growing requirements!",
+    "And {userName} was very, very happy when science classes used their greenhouse!"
   ],
-  
-  // Template 30: Farmers Market
+
+  // Template 37: Puppet Theater (Blue Pattern - Friendship)
   [
-    "{userName} starts a small business selling vegetables from their family garden at the farmers market.",
-    "The venture teaches valuable lessons about planning, budgeting, and customer service.",
-    "They learn to calculate profits, track expenses, and provide excellent products to customers.",
-    "Regular customers appreciate {userName}'s friendly attitude and high-quality produce.",
-    "The business earns enough money for {userName} to buy a bicycle they have wanted for months."
+    "{userName} wanted to teach recycling but wasn't sure how to make it engaging.",
+    "But then the drama teacher said something important: 'Let's create puppet shows!'",
+    "Friends helped write scripts, design puppets, and build the portable theater stage.",
+    "That was not what {userName} expected - performing at elementary schools was so fun!",
+    "And they both laughed and laughed when children remembered environmental messages!"
   ],
-  
-  // Template 31: Constellation Study
+
+  // Template 38: Geology Field Trip (Green Pattern - Discovery)
   [
-    "{userName} begins studying constellations and the stories behind their names.",
-    "Using star charts and telescope observations, they learn to locate major constellation patterns.",
-    "Ancient mythology provides fascinating explanations for how constellations received their names.",
-    "{userName} creates a presentation combining astronomy and mythology for the science fair.",
-    "The project wins recognition for creativity and helps other students appreciate the night sky."
+    "Oh my! Oh me! {userName} could not see what mountain rocks would reveal!",
+    "But wait! What's that? Different rock types and ancient geological formation!",
+    "Round and round and round went tools collecting samples and evidence!",
+    "This way, that way, here and there went erosion, volcanism, and sedimentation!",
+    "What a wonderful day it turned out to be - earth science concepts coming alive!"
   ],
-  
-  // Template 32: Coding Club
+
+  // Template 39: Junior Journalist (Orange Pattern - Creativity)
   [
-    "{userName} joins the after-school coding club to learn computer programming basics.",
-    "The club starts with simple commands and gradually introduces more complex programming concepts.",
-    "Their first project involves creating a basic game using visual programming tools.",
-    "{userName} discovers that programming requires logical thinking and careful attention to detail.",
-    "By semester's end, they have created several programs and developed confidence in problem-solving skills."
+    "But not just any writing! {userName} says 'Let's become community journalists!'",
+    "Stomp stomp stomp goes {userName}, covering events and interviewing local leaders!",
+    "What a wonderful thing to do - writing feature articles with strong skills!",
+    "Everybody reads news! Even {userName} learns accurate reporting and ethics!",
+    "And {userName} was very, very happy when articles earned positive community feedback!"
   ],
-  
-  // Template 33: Historical Research
+
+  // Template 40: Invention Convention (Blue Pattern - Friendship)
   [
-    "{userName} researches their family history and creates a detailed family tree project.",
-    "The investigation involves interviewing relatives and searching through old photographs and documents.",
-    "They discover interesting stories about ancestors who immigrated from other countries.",
-    "{userName} learns about historical events that affected their family's journey to America.",
-    "The completed project helps them understand their heritage and appreciate their family's courage."
-  ],
-  
-  // Template 34: Water Conservation
-  [
-    "{userName} leads a campaign to promote water conservation at school and home.",
-    "The project involves calculating water usage and identifying opportunities to reduce waste.",
-    "Students learn about drought conditions and the importance of protecting water resources.",
-    "{userName} creates informational displays showing simple ways to conserve water daily.",
-    "The campaign successfully reduces the school's water consumption by twenty percent over six months."
-  ],
-  
-  // Template 35: Talent Show
-  [
-    "{userName} overcomes stage fright to perform in the annual school talent show.",
-    "After weeks of practice, they perfect a magic act with several impressive tricks.",
-    "The performance requires coordination, timing, and the ability to entertain an audience.",
-    "{userName} feels nervous before going on stage but becomes confident once the act begins.",
-    "The audience applauds enthusiastically, and {userName} realizes that practice truly builds confidence."
-  ],
-  
-  // Template 36: Greenhouse Project
-  [
-    "{userName} helps build a small greenhouse for the school's environmental education program.",
-    "The structure will allow students to grow plants year-round regardless of weather conditions.",
-    "Construction involves measuring, cutting materials, and assembling the frame according to plans.",
-    "{userName} learns about temperature control, ventilation, and plant growing requirements.",
-    "When completed, the greenhouse becomes a valuable resource for science classes and gardening clubs."
-  ],
-  
-  // Template 37: Puppet Theater
-  [
-    "{userName} creates an educational puppet show about recycling for younger students.",
-    "The project involves writing scripts, designing puppets, and building a portable theater stage.",
-    "Characters teach audiences about sorting waste and protecting the environment through entertainment.",
-    "{userName} performs the show at several elementary schools and environmental events.",
-    "Children enjoy the entertaining format and remember the important environmental messages."
-  ],
-  
-  // Template 38: Geology Field Trip
-  [
-    "{userName} joins a geology field trip to study rock formations in the nearby mountains.",
-    "The expedition teaches students to identify different types of rocks and understand their formation.",
-    "Using geological tools, they collect samples and observe evidence of ancient geological processes.",
-    "{userName} discovers how erosion, volcanism, and sedimentation have shaped the landscape.",
-    "The trip makes earth science concepts more meaningful and inspires further geological study."
-  ],
-  
-  // Template 39: Junior Journalist
-  [
-    "{userName} becomes a junior journalist for the local community newspaper.",
-    "Their assignments include covering school events, interviewing community leaders, and writing feature articles.",
-    "The work requires strong writing skills, curiosity, and the ability to meet deadlines.",
-    "{userName} learns about the importance of accurate reporting and ethical journalism.",
-    "Several published articles earn positive feedback from readers and teachers throughout the community."
-  ],
-  
-  // Template 40: Invention Convention
-  [
-    "{userName} participates in the state invention convention with an innovative solution to a common problem.",
-    "Their invention helps people with arthritis open jars more easily using leverage and grip enhancement.",
-    "The development process includes research, prototyping, testing, and refinement based on user feedback.",
-    "{userName} presents their invention to judges and explains the engineering principles involved.",
-    "Although they don't win first place, a local company expresses interest in developing the idea commercially."
+    "{userName} had a great invention idea but felt nervous about the state convention.",
+    "But then their engineering mentor said something important: 'Let's develop this together!'",
+    "Friends helped with research, prototyping, testing, and user feedback refinement.",
+    "That was not what {userName} expected - presenting to judges would be so educational!",
+    "And they both laughed and laughed when companies showed commercial development interest!"
   ]
 ];
 
