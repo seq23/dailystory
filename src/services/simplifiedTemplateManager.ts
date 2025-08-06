@@ -16,7 +16,13 @@ import {
   getTemplateCountByGradeLevel
 } from '@/constants/gradeBased/unifiedTemplateSystem';
 
-import { getDifficultyAppropriateTemplate, validateDifficultyCompliance } from '@/constants/difficultyAppropriateTemplates';
+import { getDifficultyAppropriateTemplate, validateDifficultyCompliance, DIFFICULTY_APPROPRIATE_TEMPLATES } from '@/constants/difficultyAppropriateTemplates';
+
+// Import existing extension templates  
+import { getAllLevel1Extensions } from '@/constants/gradeBased/level1ExtensionTemplates';
+import { getAllLevel2Extensions } from '@/constants/gradeBased/level2ExtensionTemplates';
+import { getAllLevel3Extensions } from '@/constants/gradeBased/level3ExtensionTemplates';
+import { getAllLevel4Extensions } from '@/constants/gradeBased/level4ExtensionTemplates';
 
 interface SimplifiedTemplateOptions {
   userInfo?: UserInfo;
@@ -42,6 +48,13 @@ interface SimplifiedTemplateResult {
 }
 
 export class SimplifiedTemplateManager {
+  // Template exhaustion tracking (similar to Level 0 pattern)
+  private static usedBaseTemplates = new Map<DifficultyLevel, Set<number>>();
+  private static usedExtensions = new Map<DifficultyLevel, Set<number>>();
+  private static sessionData = new Map<DifficultyLevel, {
+    phase: 'base' | 'extensions';
+    totalGenerated: number;
+  }>();
   /**
    * Generate a story with simplified processing - basic variable replacement only
    */
@@ -63,30 +76,12 @@ export class SimplifiedTemplateManager {
       throw new Error('Level 0 content should be processed by Level0StoryProcessor');
     }
     
-    // Use DIFFICULTY_APPROPRIATE_TEMPLATES as primary source for Levels 1-4
-    let pages: string[];
-    let selectedIndex: number;
+    // Use template exhaustion logic - base templates first, then extensions
+    const selection = this.selectNextTemplate(difficulty, templateIndex);
+    let pages = selection.pages;
+    let selectedIndex = selection.templateIndex;
     
-    try {
-      // Get template from DIFFICULTY_APPROPRIATE_TEMPLATES
-      const template = getDifficultyAppropriateTemplate(difficulty, templateIndex, userInfo);
-      pages = template;
-      selectedIndex = templateIndex ?? 0;
-      
-      console.log(`✅ SimplifiedTemplateManager: Using DIFFICULTY_APPROPRIATE_TEMPLATES for ${difficulty}`);
-    } catch (error) {
-      console.warn(`⚠️ Fallback to unified templates for ${difficulty}:`, error);
-      
-      // Fallback to unified template system
-      const { templateIndex: fallbackIndex, template: fallbackTemplate } = selectTemplate(
-        gradeLevel,
-        [],
-        templateIndex
-      );
-      
-      pages = fallbackTemplate;
-      selectedIndex = fallbackIndex;
-    }
+    console.log(`✅ SimplifiedTemplateManager: Using ${selection.source} template ${selectedIndex} for ${difficulty}`);
     
     // Simple variable replacement - no complex character enhancement
     pages = this.processSimpleVariables(pages, userInfo);
@@ -160,14 +155,20 @@ export class SimplifiedTemplateManager {
     const userName = userInfo?.name || 'I';
     const favoriteAnimal = userInfo?.favoriteAnimal || 'dog';
     const favoriteColor = userInfo?.favoriteColor || 'blue';
+    const favoriteFood = userInfo?.favoriteFood || 'pizza';
     
     return pages.map(page => {
       let processed = page
+        // Handle DIFFICULTY_APPROPRIATE_TEMPLATES format
+        .replace(/\{name\}/g, userName)
         .replace(/\{userName\}/g, userName)
-        .replace(/\{favoriteAnimal\}/g, favoriteAnimal)
-        .replace(/\{favoriteColor\}/g, favoriteColor)
         .replace(/\{animal\}/g, favoriteAnimal)
-        .replace(/\{color\}/g, favoriteColor);
+        .replace(/\{favoriteAnimal\}/g, favoriteAnimal)
+        .replace(/\{color\}/g, favoriteColor)
+        .replace(/\{favoriteColor\}/g, favoriteColor)
+        .replace(/\{food\}/g, favoriteFood)
+        .replace(/\{object\}/g, 'toy')
+        .replace(/\{pronoun\}/g, userName === 'I' ? 'I' : (userName.endsWith('a') ? 'She' : 'He'));
       
       return processed;
     });
@@ -246,9 +247,149 @@ export class SimplifiedTemplateManager {
   }
   
   /**
-   * Clear any cached data
+   * Select next template using exhaustion logic (base templates first, then extensions)
+   */
+  private static selectNextTemplate(difficulty: DifficultyLevel, preferredIndex?: number): {
+    pages: string[];
+    templateIndex: number;
+    source: 'base' | 'extension';
+  } {
+    // Initialize tracking for this difficulty if needed
+    if (!this.usedBaseTemplates.has(difficulty)) {
+      this.usedBaseTemplates.set(difficulty, new Set());
+      this.usedExtensions.set(difficulty, new Set());
+      this.sessionData.set(difficulty, { phase: 'base', totalGenerated: 0 });
+    }
+
+    const usedBase = this.usedBaseTemplates.get(difficulty)!;
+    const usedExt = this.usedExtensions.get(difficulty)!;
+    const session = this.sessionData.get(difficulty)!;
+
+    // Get base templates count (40 for each difficulty)
+    const baseTemplates = DIFFICULTY_APPROPRIATE_TEMPLATES[difficulty];
+    const baseCount = baseTemplates.length;
+
+    // Get extension templates based on difficulty level
+    const extensionTemplates = this.getExtensionTemplates(difficulty);
+    const extensionCount = extensionTemplates.length;
+
+    let selectedIndex: number;
+    let pages: string[];
+    let source: 'base' | 'extension';
+
+    // Phase 1: Use base templates (40 templates)
+    if (session.phase === 'base' && usedBase.size < baseCount) {
+      // Select unused base template
+      if (preferredIndex !== undefined && !usedBase.has(preferredIndex) && preferredIndex < baseCount) {
+        selectedIndex = preferredIndex;
+      } else {
+        // Find next unused base template
+        selectedIndex = 0;
+        while (usedBase.has(selectedIndex) && selectedIndex < baseCount) {
+          selectedIndex++;
+        }
+      }
+      
+      usedBase.add(selectedIndex);
+      pages = [...baseTemplates[selectedIndex]];
+      source = 'base';
+
+      // If all base templates used, move to extension phase
+      if (usedBase.size >= baseCount) {
+        session.phase = 'extensions';
+      }
+    }
+    // Phase 2: Use extension templates (5 templates)
+    else if (session.phase === 'extensions' && usedExt.size < extensionCount) {
+      // Select unused extension template
+      selectedIndex = 0;
+      while (usedExt.has(selectedIndex) && selectedIndex < extensionCount) {
+        selectedIndex++;
+      }
+      
+      usedExt.add(selectedIndex);
+      pages = [...extensionTemplates[selectedIndex]];
+      source = 'extension';
+
+      // If all extensions used, cycle back to base templates
+      if (usedExt.size >= extensionCount) {
+        this.resetExhaustion(difficulty);
+      }
+    }
+    // Fallback: cycle back to base templates
+    else {
+      this.resetExhaustion(difficulty);
+      selectedIndex = 0;
+      usedBase.add(selectedIndex);
+      pages = [...baseTemplates[selectedIndex]];
+      source = 'base';
+    }
+
+    session.totalGenerated++;
+    
+    return { pages, templateIndex: selectedIndex, source };
+  }
+
+  /**
+   * Get extension templates for a difficulty level
+   */
+  private static getExtensionTemplates(difficulty: DifficultyLevel): string[][] {
+    switch (difficulty) {
+      case 'easy': return getAllLevel1Extensions();
+      case 'medium': return getAllLevel2Extensions();
+      case 'hard': return getAllLevel3Extensions();
+      case 'expert': return getAllLevel4Extensions();
+      default: return []; // beginner uses Level 0 processor, not this manager
+    }
+  }
+
+  /**
+   * Reset exhaustion state and cycle back to base templates
+   */
+  private static resetExhaustion(difficulty: DifficultyLevel): void {
+    this.usedBaseTemplates.set(difficulty, new Set());
+    this.usedExtensions.set(difficulty, new Set());
+    this.sessionData.set(difficulty, { phase: 'base', totalGenerated: 0 });
+    console.log(`🔄 SimplifiedTemplateManager: Reset exhaustion for ${difficulty} - cycling back to base templates`);
+  }
+
+  /**
+   * Get analytics for template usage
+   */
+  static getTemplateAnalytics(difficulty?: DifficultyLevel): any {
+    if (difficulty) {
+      const usedBase = this.usedBaseTemplates.get(difficulty)?.size || 0;
+      const usedExt = this.usedExtensions.get(difficulty)?.size || 0;
+      const session = this.sessionData.get(difficulty) || { phase: 'base', totalGenerated: 0 };
+      
+      return {
+        difficulty,
+        usedBaseTemplates: usedBase,
+        usedExtensions: usedExt,
+        totalGenerated: session.totalGenerated,
+        currentPhase: session.phase,
+        exhaustionRate: {
+          base: `${usedBase}/40`,
+          extensions: `${usedExt}/5`
+        }
+      };
+    }
+
+    // Return analytics for all difficulties
+    const allDifficulties: DifficultyLevel[] = ['easy', 'medium', 'hard', 'expert'];
+    return allDifficulties.reduce((acc, diff) => {
+      acc[diff] = this.getTemplateAnalytics(diff);
+      return acc;
+    }, {} as Record<string, any>);
+  }
+
+  /**
+   * Clear session data and reset exhaustion tracking
    */
   static clearSession(): void {
-    console.log('🔄 SimplifiedTemplateManager: Session cleared');
+    this.usedBaseTemplates.clear();
+    this.usedExtensions.clear();
+    this.sessionData.clear();
+    console.log('🔄 SimplifiedTemplateManager: Session cleared - all exhaustion tracking reset');
   }
 }

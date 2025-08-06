@@ -3,7 +3,7 @@
  * Tests all transitions between reading levels to ensure proper session isolation
  */
 
-import { EnhancedTemplateManager } from './services/enhancedTemplateManager';
+import { SimplifiedTemplateManager } from './services/simplifiedTemplateManager';
 import type { UserInfo, DifficultyLevel } from './types';
 
 /**
@@ -21,7 +21,7 @@ export async function testUserProgression(): Promise<{
     console.log("👤 Testing realistic user progression through all levels...");
 
     // Clear all session state to start fresh
-    EnhancedTemplateManager.clearSession();
+    SimplifiedTemplateManager.clearSession();
 
     const mockUser: UserInfo = {
       name: "ProgressionTestUser",
@@ -61,7 +61,7 @@ export async function testUserProgression(): Promise<{
       
       console.log(`📖 ${step.phase} (${step.difficulty})...`);
 
-      const story = await EnhancedTemplateManager.generateEnhancedStory({
+      const story = await SimplifiedTemplateManager.generateStory({
         userInfo: mockUser,
         difficulty: step.difficulty,
         isPremium: false
@@ -148,7 +148,7 @@ export async function testRapidDifficultySwitching(): Promise<{
   try {
     console.log("⚡ Testing rapid difficulty switching...");
 
-    EnhancedTemplateManager.clearSession();
+    SimplifiedTemplateManager.clearSession();
 
     const mockUser: UserInfo = {
       name: "SwitchTestUser",
@@ -184,7 +184,7 @@ export async function testRapidDifficultySwitching(): Promise<{
     for (const step of switchingPattern) {
       console.log(`🔄 ${step.label}...`);
 
-      const story = await EnhancedTemplateManager.generateEnhancedStory({
+      const story = await SimplifiedTemplateManager.generateStory({
         userInfo: mockUser,
         difficulty: step.difficulty,
         isPremium: false
