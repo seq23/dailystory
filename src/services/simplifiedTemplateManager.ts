@@ -170,7 +170,7 @@ export class SimplifiedTemplateManager {
     // Store the full template in session for future continuation
     const sessionData = this.getSessionData(difficulty);
     sessionData.currentTemplateIndex = selectedIndex;
-    sessionData.currentPageIndex = pages.length; // Mark as fully used
+    sessionData.currentPageIndex = 1; // Only used 1 page so far
     sessionData.currentTemplatePages = [...pages];
     this.saveSessionData(difficulty, sessionData);
     
