@@ -281,6 +281,8 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
     
     const generateRealStory = async () => {
       try {
+        // Reset page tracker for new story session
+        SessionPageTracker.resetSession();
         console.log('Generating enhanced story for user:', userInfo.name);
         
         // Build interests array from non-empty user preferences

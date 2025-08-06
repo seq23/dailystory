@@ -136,6 +136,10 @@ export class SimplifiedTemplateManager {
    * Generate a story with simplified processing - basic variable replacement only
    */
   static async generateStory(options: SimplifiedTemplateOptions): Promise<SimplifiedTemplateResult> {
+    // Reset page tracker for new story session
+    const { SessionPageTracker } = await import('./sessionPageTracker');
+    SessionPageTracker.resetSession();
+    
     const {
       userInfo,
       difficulty,

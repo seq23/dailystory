@@ -161,6 +161,8 @@ export class UniversalContentManager {
     difficulty: DifficultyLevel,
     config: ContentManagerConfig
   ): Promise<Story> {
+    // Reset page tracker for new story session
+    SessionPageTracker.resetSession();
     const result = await this.generateStory(userInfo, difficulty, config);
     return result.story;
   }

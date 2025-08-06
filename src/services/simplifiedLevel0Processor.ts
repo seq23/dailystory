@@ -20,6 +20,9 @@ export class SimplifiedLevel0Processor {
    * Generate a Level 0 story with simplified processing
    */
   static async generateStory(userInfo?: UserInfo, isPremium?: boolean): Promise<SimplifiedLevel0Result> {
+    // Reset page tracker for new story session
+    const { SessionPageTracker } = await import('./sessionPageTracker');
+    SessionPageTracker.resetSession();
     console.log('🎯 SimplifiedLevel0Processor: Generating Level 0 story');
     
     const userType: UserType = isPremium ? 'premium' : 'free';
