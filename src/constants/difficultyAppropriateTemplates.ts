@@ -67,7 +67,6 @@ export const DIFFICULTY_APPROPRIATE_TEMPLATES = {
     template.map(page => page.replace(/\{userName\}/g, "{name}"))
   )
 }
-};
 
 // Updated template selector that processes variables and enforces difficulty-appropriate word counts
 export const getDifficultyAppropriateTemplate = (
