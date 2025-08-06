@@ -152,10 +152,10 @@ export class EnhancedTemplateManager {
     console.log(`✍️ EnhancedTemplateManager: Selecting Author Voice for Level ${gradeLevel}`);
     const authorVoice = getAuthorVoiceForUser(userInfo || {} as UserInfo, difficulty);
     
-    // STEP 5: Apply Character-Driven Story Arc with Complete Context (Levels 1-4 only)
-    console.log(`🎭 EnhancedTemplateManager: Applying Character-Driven Story Arc for Level ${gradeLevel}`);
+    // STEP 5: Apply Character Details to Template (Levels 1-4 only)
+    console.log(`🎭 EnhancedTemplateManager: Applying Character Details to Template for Level ${gradeLevel}`);
     try {
-      // Process each page with character-driven enhancements using complete story context
+      // Enhance each template page with character details while preserving the template narrative
       pages = pages.map((page, index) => {
         const context = {
           currentPage: index + 1,
@@ -167,14 +167,11 @@ export class EnhancedTemplateManager {
           currentConflict: this.generateCharacterDrivenConflict(characterPool, index, pages.length)
         };
         
-        // Apply character-driven content with complete story context
-        const enhancedPage = CharacterDrivenStoryArc.getPageContent(context, enhancedInputs);
-        
-        // Robust character integration throughout the story
-        return this.integrateCharacterPoolRobustly(enhancedPage, characterPool, context, authorVoice);
+        // Enhance the template page with character details (don't replace)
+        return this.enhanceTemplateWithCharacters(page, characterPool, context, enhancedInputs);
       });
     } catch (error) {
-      console.warn(`⚠️ EnhancedTemplateManager: Character Arc enhancement failed:`, error);
+      console.warn(`⚠️ EnhancedTemplateManager: Character enhancement failed:`, error);
       // Continue with original pages on error
     }
     
@@ -491,61 +488,72 @@ export class EnhancedTemplateManager {
   }
 
   /**
-   * Integrate character pool robustly throughout the story
+   * Enhance template with character details while preserving the template narrative
    */
-  private static integrateCharacterPoolRobustly(
-    page: string,
+  private static enhanceTemplateWithCharacters(
+    templatePage: string,
     characterPool: any,
     context: any,
-    authorVoice: any
+    enhancedInputs?: any
   ): string {
-    let enhancedPage = page;
+    let enhancedPage = templatePage;
+    
+    // Replace basic placeholders with character names
+    if (characterPool.main) {
+      enhancedPage = enhancedPage.replace(/{main}/g, characterPool.main.name);
+      enhancedPage = enhancedPage.replace(/{character}/g, characterPool.main.name);
+    }
+    
+    if (characterPool.family && characterPool.family.length > 0) {
+      enhancedPage = enhancedPage.replace(/{family}/g, characterPool.family[0].name);
+    }
+    
+    if (characterPool.friends && characterPool.friends.length > 0) {
+      enhancedPage = enhancedPage.replace(/{friend}/g, characterPool.friends[0].name);
+    }
+    
+    if (characterPool.animals && characterPool.animals.length > 0) {
+      enhancedPage = enhancedPage.replace(/{animal}/g, characterPool.animals[0].name);
+      enhancedPage = enhancedPage.replace(/{pet}/g, characterPool.animals[0].name);
+    }
+    
+    if (characterPool.helpers && characterPool.helpers.length > 0) {
+      enhancedPage = enhancedPage.replace(/{helper}/g, characterPool.helpers[0].name);
+    }
+    
+    // Replace user preference placeholders from enhanced inputs
+    if (enhancedInputs) {
+      Object.entries(enhancedInputs).forEach(([key, value]) => {
+        if (typeof value === 'string' && key !== 'name') {
+          const regex = new RegExp(`\\{${key}\\}`, 'g');
+          enhancedPage = enhancedPage.replace(regex, value);
+        }
+      });
+    }
+    
+    // Add subtle character details without breaking the template narrative
     const storyPosition = context.currentPage / context.totalPages;
     
-    // Early pages - introduce main character and family
-    if (storyPosition < 0.3) {
-      if (characterPool.family && characterPool.family.length > 0) {
+    // Only add character details if the page doesn't already have rich character content
+    if (enhancedPage.length < 100 && !enhancedPage.includes(', who ') && !enhancedPage.includes(' the ')) {
+      // Early pages - add character relationships
+      if (storyPosition < 0.4 && characterPool.family && characterPool.family.length > 0) {
         const familyMember = characterPool.family[0];
         if (!enhancedPage.includes(familyMember.name)) {
           enhancedPage = enhancedPage.replace(
             /\./,
-            ` with ${familyMember.name}, who ${familyMember.personality || 'is always supportive'}.`
-          );
-        }
-      }
-    }
-    
-    // Middle pages - introduce friends and animal companions
-    if (storyPosition >= 0.3 && storyPosition < 0.7) {
-      if (characterPool.friends && characterPool.friends.length > 0) {
-        const friend = characterPool.friends[0];
-        if (!enhancedPage.includes(friend.name)) {
-          enhancedPage = enhancedPage.replace(
-            /\./,
-            `. ${friend.name}, ${friend.personality || 'a loyal friend'}, joins the adventure.`
+            ` with ${familyMember.name}.`
           );
         }
       }
       
-      if (characterPool.animals && characterPool.animals.length > 0) {
-        const animal = characterPool.animals[0];
-        if (!enhancedPage.includes(animal.name)) {
+      // Middle pages - add friend interactions
+      if (storyPosition >= 0.4 && storyPosition < 0.8 && characterPool.friends && characterPool.friends.length > 0) {
+        const friend = characterPool.friends[0];
+        if (!enhancedPage.includes(friend.name)) {
           enhancedPage = enhancedPage.replace(
             /\./,
-            `. ${animal.name} the ${animal.type || 'animal friend'} ${animal.catchphrase || 'helps along the way'}.`
-          );
-        }
-      }
-    }
-    
-    // Later pages - introduce helpers and resolve with all characters
-    if (storyPosition >= 0.7) {
-      if (characterPool.helpers && characterPool.helpers.length > 0) {
-        const helper = characterPool.helpers[0];
-        if (!enhancedPage.includes(helper.name)) {
-          enhancedPage = enhancedPage.replace(
-            /\./,
-            `. ${helper.name} ${helper.personality || 'provides wise guidance'} at just the right moment.`
+            ` and ${friend.name}.`
           );
         }
       }
