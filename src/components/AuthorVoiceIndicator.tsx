@@ -14,7 +14,8 @@ export const AuthorVoiceIndicator: React.FC<AuthorVoiceIndicatorProps> = ({
   difficulty, 
   className = "" 
 }) => {
-  const hasAuthorVoice = difficulty !== 'beginner';
+  // Level 3+ (hard/expert) should have author voice patterns  
+  const hasAuthorVoice = difficulty === 'hard' || difficulty === 'expert';
 
   if (!hasAuthorVoice) {
     return (

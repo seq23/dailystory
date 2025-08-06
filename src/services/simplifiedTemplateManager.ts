@@ -188,8 +188,10 @@ export class SimplifiedTemplateManager {
     
     // If validation fails, use simple fallback
     if (!validation.isValid) {
-      console.warn(`⚠️ Vocabulary validation failed for ${difficulty}, using fallback`);
+      console.warn(`🚨 AUTHOR VOICE LOST: Vocabulary validation failed for ${difficulty}, using fallback instead of rich templates`);
+      console.warn(`   💔 Original author voice content: "${pages[0]}"`);
       pages = this.generateSimpleFallback(gradeLevel, userInfo?.name || 'I');
+      console.warn(`   📝 Fallback content: "${pages[0]}"`);
     }
     
     console.log(`✅ SimplifiedTemplateManager: Generated ${pages.length} pages for ${difficulty}`);
@@ -374,9 +376,11 @@ export class SimplifiedTemplateManager {
   }
   
   /**
-   * Generate simple fallback content by grade level
+   * Generate enhanced fallback content with author voice patterns for Level 3+
    */
   private static generateSimpleFallback(gradeLevel: GradeLevel, userName: string): string[] {
+    console.log(`🎭 ENHANCED FALLBACK: Generating Level ${gradeLevel} fallback with author voice patterns`);
+    
     const fallbacks = {
       1: [
         `${userName} goes to the park.`,
@@ -393,22 +397,27 @@ export class SimplifiedTemplateManager {
         `Everything works out well in the end.`
       ],
       3: [
-        `${userName} begins an exciting project at school.`,
-        `Research and preparation take several weeks of hard work.`,
-        `Challenges arise that require creative problem-solving skills.`,
-        `With determination and help from others, progress is made.`,
-        `The completed project brings satisfaction and valuable learning.`
+        // Level 3+ includes Purple Pattern author voice elements
+        `If you give ${userName} a creative opportunity...`,
+        `That will remind them of their curiosity about amazing discoveries.`,
+        `So they will want to investigate mysteries that fascinate everyone.`,
+        `Which means they will need careful research and helpful friends.`,
+        `And chances are, they will want another adventure - which will remind them how this all started.`
       ],
       4: [
-        `${userName} embarks on a challenging academic endeavor.`,
-        `The project requires extensive research and analysis.`,
-        `Complex problems emerge that demand innovative solutions.`,
-        `Collaboration with mentors provides guidance and support.`,
-        `The experience demonstrates growth and academic achievement.`
+        // Level 4 uses advanced Purple Pattern author voice 
+        `If you give ${userName} a challenging academic opportunity...`,
+        `That will remind them of their curiosity about complex problems and fascinating solutions.`,
+        `So they will want to investigate advanced theories that challenge conventional thinking.`,
+        `Which means they will need extensive research and collaboration with expert mentors.`,
+        `And chances are, they will want another intellectual challenge - which will remind them how this all started.`
       ]
     };
     
-    return fallbacks[gradeLevel] || fallbacks[1];
+    const result = fallbacks[gradeLevel] || fallbacks[1];
+    console.log(`🎭 ENHANCED FALLBACK SUCCESS: Generated ${result.length} pages with ${gradeLevel >= 3 ? 'AUTHOR VOICE' : 'simple'} patterns`);
+    
+    return result;
   }
   
   /**
