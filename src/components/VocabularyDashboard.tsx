@@ -5,8 +5,9 @@ import { Button } from './ui/button';
 import { Progress } from './ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Trophy, Target, TrendingUp, BookOpen, Globe, Star } from 'lucide-react';
-import { PremiumVocabularyService } from '../services/premiumVocabularyService';
-import { ThemedSessionManager } from '../services/themedSessionManager';
+// Temporarily disabled - services removed
+// import { PremiumVocabularyService } from '../services/premiumVocabularyService';
+// import { ThemedSessionManager } from '../services/themedSessionManager';
 import type { UserInfo, DifficultyLevel } from '../types';
 
 interface VocabularyDashboardProps {
@@ -28,38 +29,25 @@ export const VocabularyDashboard: React.FC<VocabularyDashboardProps> = ({
   const [progressReport, setProgressReport] = useState<any>(null);
 
   useEffect(() => {
-    const userId = `${userInfo.name}-${userInfo.age}-${userInfo.nativeLanguage}`.toLowerCase();
+    // Temporarily disabled - services removed
+    // const userId = `${userInfo.name}-${userInfo.age}-${userInfo.nativeLanguage}`.toLowerCase();
     
-    // Initialize systems
-    PremiumVocabularyService.initializeUserState(userId);
+    // Mock data for now
+    setVocabularyStats({
+      level1Progress: [],
+      level2Progress: [],
+      totalWordsEncountered: 0,
+      mostPracticedWords: []
+    });
     
-    // Load vocabulary statistics
-    const stats = PremiumVocabularyService.getVocabularyStats(userId);
-    setVocabularyStats(stats);
-
-    // Load session progress
-    const sessionInfo = ThemedSessionManager.getSessionProgress(userInfo);
-    setSessionProgress(sessionInfo);
-
-    // Load premium features if available
-    if (isPremium) {
-      const features = PremiumVocabularyService.initializePremiumUser(userInfo);
-      const analytics = PremiumVocabularyService.generatePersonalizedVocabularyPath(userInfo);
-      const report = PremiumVocabularyService.generateVocabularyProgressReport(userInfo);
-      
-      setPremiumAnalytics(analytics);
-      setProgressReport(report);
-    }
+    setSessionProgress({
+      currentSession: 0,
+      completedThemes: []
+    });
   }, [userInfo, isPremium]);
 
   const getNextThemedSession = () => {
-    const difficulty = userInfo.difficultyLevel || 'easy';
-    
-    if (difficulty === 'easy' || difficulty === 'medium') {
-      const themedSession = ThemedSessionManager.generateThemedSession(userInfo, difficulty);
-      return themedSession;
-    }
-    
+    // Temporarily disabled - service removed
     return null;
   };
 

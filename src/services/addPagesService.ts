@@ -3,8 +3,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import type { UserInfo, DifficultyLevel } from '@/types';
-import { FlexiblePromptConstraints } from '@/utils/flexiblePromptConstraints';
-import { ToleranceBasedValidator } from '@/utils/toleranceBasedValidator';
 import { EnhancedFallbackManager } from '@/constants/enhancedFallbackTemplates';
 import { ErrorHandler } from '@/utils/errorHandling';
 
@@ -28,9 +26,8 @@ export class AddPagesService {
     try {
       console.log(`📄 AddPages: Adding pages for ${userInfo.name} (difficulty: ${difficulty})`);
       
-      // Determine number of pages to add based on difficulty
-      const constraints = FlexiblePromptConstraints.getFlexibleConstraints(difficulty);
-      const pagesToAdd = Math.max(3, Math.min(5, constraints.pageRange.min));
+      // Simple page count based on difficulty
+      const pagesToAdd = difficulty === 'beginner' ? 3 : 4;
       
       console.log(`📄 AddPages: Will add ${pagesToAdd} pages`);
       
@@ -38,9 +35,8 @@ export class AddPagesService {
       const lastPage = existingPages[existingPages.length - 1] || '';
       const currentPageNumber = existingPages.length;
       
-      const systemPrompt = `${FlexiblePromptConstraints.createFlexibleSystemPrompt(difficulty)}
-      
-      IMPORTANT: You are adding ${pagesToAdd} new pages to continue an existing story.
+      // Simple system prompt - trust OpenAI
+      const systemPrompt = `You are adding ${pagesToAdd} new pages to continue an existing story.
       - Use the last page as inspiration but feel free to introduce new adventures, characters, or concepts
       - You are NOT restricted to the exact same story - be creative and introduce new elements
       - Generate ${pagesToAdd} distinct pages, each building on the previous
@@ -101,12 +97,10 @@ export class AddPagesService {
       }
       newPages = newPages.slice(0, pagesToAdd);
 
-      // Validate pages
-      const validation = ToleranceBasedValidator.validateStory(newPages, difficulty, userInfo);
-      
-      if (!validation.isValid && validation.scores.overallScore < 0.4) {
-        console.log('❌ Added pages quality too low, using fallback');
-        return this.generateFallbackPages(userInfo, difficulty, pagesToAdd, lastPage, 'quality_failed');
+      // Simple validation - just check if pages have content
+      if (newPages.some(page => !page || page.trim().length < 10)) {
+        console.log('❌ Some added pages too short, using fallback');
+        return this.generateFallbackPages(userInfo, difficulty, pagesToAdd, lastPage, 'content_too_short');
       }
 
       console.log(`✅ AddPages: Successfully added ${newPages.length} pages`);
@@ -133,7 +127,7 @@ export class AddPagesService {
     console.log(`📄 AddPages: Using fallback pages (reason: ${reason})`);
     
     try {
-      // Use enhanced fallback system
+      // Use enhanced fallback system (187 templates available)
       const fallbackStory = EnhancedFallbackManager.getFallbackTemplate(difficulty, userInfo, 0);
       const templatePages = fallbackStory.split('\n\n').filter(page => page.trim().length > 0);
       
@@ -163,26 +157,21 @@ export class AddPagesService {
       };
     } catch (error) {
       console.error('📄 AddPages: Enhanced fallback failed:', error);
-      return this.generateBasicFallbackPages(userInfo, pagesToAdd);
+      // Emergency fallback - should rarely be needed with 187 templates
+      const basicPages = [
+        `${userInfo.name} continued the adventure.`,
+        `Something wonderful happened next.`,
+        `${userInfo.name} discovered something amazing.`,
+        `The journey became even more exciting.`,
+        `${userInfo.name} smiled with joy.`
+      ];
+
+      const newPages = basicPages.slice(0, pagesToAdd);
+      
+      return {
+        newPages,
+        isComplete: false
+      };
     }
-  }
-
-  private static generateBasicFallbackPages(userInfo: UserInfo, pagesToAdd: number): AddPagesResult {
-    console.log('📄 AddPages: Using basic fallback as last resort');
-    
-    const basicPages = [
-      `${userInfo.name} continued the adventure.`,
-      `Something wonderful happened next.`,
-      `${userInfo.name} discovered something amazing.`,
-      `The journey became even more exciting.`,
-      `${userInfo.name} smiled with joy.`
-    ];
-
-    const newPages = basicPages.slice(0, pagesToAdd);
-    
-    return {
-      newPages,
-      isComplete: false
-    };
   }
 }

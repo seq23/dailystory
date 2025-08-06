@@ -113,10 +113,13 @@ export class ErrorHandlingManager {
    */
   static async getEmergencyContent(userInfo?: UserInfo): Promise<string[]> {
     try {
-      // Use Level0StoryProcessor to generate validated content
-      const { Level0StoryProcessor } = await import('./level0StoryProcessor');
-      const result = await Level0StoryProcessor.generateStory(userInfo);
-      return result.content;
+      // Simple emergency content - Level0StoryProcessor removed
+      const userName = userInfo?.name || 'Someone';
+      return [
+        `${userName} had a wonderful day.`,
+        `They found something amazing.`,
+        `It was a great adventure.`
+      ];
     } catch (error) {
       console.error('Emergency content generation failed:', error);
       

@@ -2,7 +2,8 @@
 // Replaces broken placeholder system with intelligent character integration
 
 import type { UserInfo, DifficultyLevel } from '../types';
-import { CharacterPoolManager, CharacterPool } from './characterPoolManager';
+// Temporarily disabled - service removed
+// import { CharacterPoolManager, CharacterPool } from './characterPoolManager';
 import { InputEnhancementEngine } from './inputEnhancementEngine';
 import { validateSentence } from '@/constants/gradeBased/unifiedTemplateSystem';
 
@@ -41,18 +42,15 @@ export class ContextualCharacterEnhancer {
       const theme = this.analyzeTemplateTheme(templateContent);
       console.log(`📚 Detected template theme: ${theme}`);
 
-      // Get character pool and enhanced inputs
-      const characterPool = CharacterPoolManager.getCharacterPool(userInfo);
-      const enhancedInputs = InputEnhancementEngine.enhanceUserInputs(userInfo);
-
-      if (!characterPool) {
-        console.log('⚠️ No character pool available, returning original content');
-        return templateContent;
-      }
+      // Temporarily disabled - CharacterPoolManager removed
+      console.log('⚠️ Character enhancement temporarily disabled, returning original content');
+      return templateContent;
 
       // Determine appropriate character role for this context
-      const characterRole = this.selectCharacterRole(theme, context, characterPool);
+      // const characterRole = this.selectCharacterRole(theme, context, characterPool);
       
+      // Character enhancement temporarily disabled
+      /* 
       if (!characterRole) {
         console.log('ℹ️ No appropriate character role found, returning original content');
         return templateContent;
@@ -66,21 +64,9 @@ export class ContextualCharacterEnhancer {
         userInfo.name || 'Alex'
       );
 
-      // Validate vocabulary compliance after enhancement
-      const gradeLevel = this.mapDifficultyToGradeLevel(difficulty);
-      const validation = validateSentence(
-        enhancedContent, 
-        gradeLevel as any, // GradeLevel type compatibility
-        userInfo.name
-      );
-
-      if (!validation.isValid) {
-        console.log(`❌ Enhanced content failed vocabulary validation, using original`);
-        return templateContent;
-      }
-
       console.log(`✅ Successfully enhanced template with ${characterRole.name} as ${characterRole.type}`);
       return enhancedContent;
+      */
 
     } catch (error) {
       console.error('Character enhancement error:', error);
@@ -132,7 +118,7 @@ export class ContextualCharacterEnhancer {
   private static selectCharacterRole(
     theme: string,
     context: EnhancementContext,
-    characterPool: CharacterPool
+    characterPool: any
   ): CharacterRole | null {
     const storyPosition = context.currentPage / context.totalPages;
     

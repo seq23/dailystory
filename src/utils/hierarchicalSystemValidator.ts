@@ -4,7 +4,8 @@
  */
 
 import { HierarchicalSessionTemplateManager } from '@/services/hierarchicalSessionTemplateManager';
-import { Level0StoryProcessor } from '@/services/level0StoryProcessor';
+// Temporarily disabled - service removed
+// import { Level0StoryProcessor } from '@/services/level0StoryProcessor';
 import { EnhancedSubscriptionManager } from '@/services/enhancedSubscriptionManager';
 import { getTemplateCountByGradeLevel } from '@/constants/gradeBased/unifiedTemplateSystem';
 import { difficultyToGradeLevel } from '@/constants/gradeBased/index';
@@ -234,22 +235,8 @@ export class HierarchicalSystemValidator {
         storyLanguagePreference: 'en'
       };
 
-      // Test Level 0 story generation
-      const level0Result = await Level0StoryProcessor.generateStory(testUserInfo);
-      
-      if (!level0Result.isValid) {
-        result.errors.push(`Level 0 story generation failed: ${level0Result.validationErrors.join(', ')}`);
-      }
-      
-      if (level0Result.content.length === 0) {
-        result.errors.push('Level 0 story generation returned empty content');
-      }
-      
-      // Test Level 0 template stats
-      const stats = await Level0StoryProcessor.getTemplateStats();
-      if (stats.totalTemplates === 0) {
-        result.errors.push('Level 0 template stats show no templates available');
-      }
+      // Level0StoryProcessor temporarily disabled
+      console.log('⚠️ Level 0 processing validation skipped - service removed');
       
     } catch (error) {
       result.errors.push(`Level 0 processing validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);

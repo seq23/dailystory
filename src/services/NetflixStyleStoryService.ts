@@ -4,8 +4,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { UserInfo, DifficultyLevel } from '@/types';
 import { getStoryPrompt, formatUserPrompt, calculateDifficultyFromUser } from '@/config/storyPrompts';
-import { ToleranceBasedValidator } from '@/utils/toleranceBasedValidator';
-import { FlexiblePromptConstraints } from '@/utils/flexiblePromptConstraints';
 import { EnhancedFallbackManager } from '@/constants/enhancedFallbackTemplates';
 import { ErrorHandler } from '@/utils/errorHandling';
 import { DifficultyManager } from '@/services/difficultyManager';
@@ -30,11 +28,12 @@ export class NetflixStyleStoryService {
       const difficulty = difficultyResult.difficulty;
       console.log(`🎯 Netflix-Style: Using difficulty ${difficulty} for ${userInfo.name}`);
       
-      // Use flexible prompts instead of rigid constraints
-      const systemPrompt = FlexiblePromptConstraints.createFlexibleSystemPrompt(difficulty);
-      const userPrompt = FlexiblePromptConstraints.createFlexibleUserPrompt(difficulty, userInfo);
+      // Simple prompts - trust OpenAI to do its job
+      const promptConfig = getStoryPrompt(difficulty);
+      const systemPrompt = promptConfig.systemPrompt;
+      const userPrompt = `Create an engaging story for ${userInfo.name} (age ${userInfo.age}). They love ${userInfo.favoriteAnimal || 'animals'} and ${userInfo.favoriteColor || 'bright colors'}. Their hobby is ${userInfo.hobbies || 'playing'}. ${userInfo.specialRequest ? `Special request: ${userInfo.specialRequest}` : ''}`;
       
-      console.log('🎬 Calling OpenAI with flexible constraints...');
+      console.log('🎬 Calling OpenAI with simple prompts...');
       
       // Call OpenAI via Supabase Edge Function
       const { data, error } = await supabase.functions.invoke('generate-adaptive-story', {
@@ -69,27 +68,21 @@ export class NetflixStyleStoryService {
       }
 
       if (data?.pages && data.pages.length > 0) {
-        console.log(`🎬 Netflix-Style: Generated ${data.pages.length} pages, validating...`);
+        console.log(`🎬 Netflix-Style: Generated ${data.pages.length} pages - accepting OpenAI content`);
         
-        // Validate story with tolerance-based approach
-        const validation = ToleranceBasedValidator.validateStory(data.pages, difficulty, userInfo);
-        ToleranceBasedValidator.logValidationResult(validation, difficulty);
-        
-        if (validation.isValid) {
-          console.log('✅ Story passed validation');
+        // Simple validation - just check if content exists
+        if (data.pages.some(page => page && page.trim().length > 0)) {
+          console.log('✅ Story has content - proceeding');
           return {
             pages: data.pages,
             difficulty: data.difficulty || difficulty,
             title: data.title || `${userInfo.name}'s Adventure`,
             isComplete: data.isComplete || true
           };
-        } else {
-          console.log('❌ Story failed validation, using enhanced fallback');
-          return this.generateEnhancedFallbackStory(userInfo, difficulty, validation.fallbackReason || 'validation_failed');
         }
       }
 
-      // Fallback if no content
+      // Fallback if no content - use enhanced fallback templates
       return this.generateEnhancedFallbackStory(userInfo, difficulty, 'no_content');
       
     } catch (error) {
@@ -100,63 +93,28 @@ export class NetflixStyleStoryService {
   }
 
   private static generateEnhancedFallbackStory(userInfo: UserInfo, difficulty: DifficultyLevel, reason: string): NetflixStoryResult {
-    console.log(`🎬 Netflix-Style: Using enhanced fallback (reason: ${reason})`);
+    console.log(`🎬 Netflix-Style: Using enhanced fallback templates (reason: ${reason})`);
     
     try {
-      // Use the sophisticated enhanced fallback system
+      // Use the sophisticated enhanced fallback system with 187 templates
       const fallbackStory = EnhancedFallbackManager.getFallbackTemplate(difficulty, userInfo, 0);
       const pages = fallbackStory.split('\n\n').filter(page => page.trim().length > 0);
       
-      // Validate the fallback story too
-      const validation = ToleranceBasedValidator.validateStory(pages, difficulty, userInfo);
-      
-      if (validation.isValid || validation.scores.overallScore > 0.6) {
-        console.log('✅ Enhanced fallback story validated successfully');
-        return {
-          pages,
-          difficulty,
-          title: `${userInfo.name}'s ${difficulty.charAt(0).toUpperCase() + difficulty.slice(1)} Adventure`,
-          isComplete: true
-        };
-      } else {
-        console.log('⚠️ Enhanced fallback validation failed, using basic fallback');
-        return this.generateBasicFallbackStory(userInfo, difficulty);
-      }
+      return {
+        pages,
+        difficulty,
+        title: `${userInfo.name}'s ${difficulty.charAt(0).toUpperCase() + difficulty.slice(1)} Adventure`,
+        isComplete: true
+      };
     } catch (error) {
       console.error('🎬 Enhanced fallback failed:', error);
-      return this.generateBasicFallbackStory(userInfo, difficulty);
+      // Emergency fallback - should rarely be needed with 187 templates
+      return {
+        pages: [`${userInfo.name} had an amazing adventure today!`],
+        difficulty,
+        title: `${userInfo.name}'s Adventure`,
+        isComplete: true
+      };
     }
-  }
-
-  private static generateBasicFallbackStory(userInfo: UserInfo, difficulty: DifficultyLevel): NetflixStoryResult {
-    console.log('🎬 Netflix-Style: Using basic fallback as last resort');
-    
-    // Simple, guaranteed-to-work fallback
-    const basicStories = {
-      beginner: [
-        `${userInfo.name} is happy.`,
-        `${userInfo.name} sees a ${userInfo.favoriteColor || 'blue'} ${userInfo.favoriteAnimal || 'cat'}.`,
-        `The ${userInfo.favoriteAnimal || 'cat'} is good.`,
-        `${userInfo.name} and the ${userInfo.favoriteAnimal || 'cat'} play.`,
-        `The end.`
-      ],
-      easy: [
-        `${userInfo.name} had a wonderful day.`,
-        `They found a ${userInfo.favoriteColor || 'beautiful'} ${userInfo.favoriteAnimal || 'friend'}.`,
-        `Together they played happily.`,
-        `${userInfo.name} felt very lucky.`,
-        `It was the best day ever.`,
-        `${userInfo.name} smiled all the way home.`
-      ]
-    };
-
-    const pages = basicStories[difficulty as keyof typeof basicStories] || basicStories.easy;
-
-    return {
-      pages,
-      difficulty,
-      title: `${userInfo.name}'s Adventure`,
-      isComplete: true
-    };
   }
 }

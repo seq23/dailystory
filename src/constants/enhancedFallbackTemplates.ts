@@ -5,8 +5,6 @@
 
 import { UserInfo, DifficultyLevel } from "@/types";
 import { NameFormatter } from "@/utils/nameFormatter";
-import { CharacterDrivenStoryArc, StoryContext } from "@/services/characterDrivenStoryArc";
-import { CharacterPoolManager } from "@/services/characterPoolManager";
 
 export interface EnhancedFallbackTemplate {
   setup: string[];
@@ -16,11 +14,40 @@ export interface EnhancedFallbackTemplate {
   contextualContinuations: string[];
 }
 
+// Import all 180 templates from the grade-based system
+import { LEVEL_1_TEMPLATES } from './gradeBased/level1Templates';
+import { LEVEL_1_EXTENSIONS } from './gradeBased/level1ExtensionTemplates';
+import { LEVEL_2_TEMPLATES } from './gradeBased/level2Templates';
+import { LEVEL_2_EXTENSIONS } from './gradeBased/level2ExtensionTemplates';
+import { LEVEL_3_TEMPLATES } from './gradeBased/level3Templates';
+import { LEVEL_3_EXTENSIONS } from './gradeBased/level3ExtensionTemplates';
+import { LEVEL_4_TEMPLATES } from './gradeBased/level4Templates';
+import { LEVEL_4_EXTENSIONS } from './gradeBased/level4ExtensionTemplates';
+
 /**
- * Rich fallback templates that follow the same story arc patterns as the main system
+ * ALL 187 TEMPLATES: 160 base + 20 extension + 7 enhanced fallback
+ * Now consolidated in one place for ultimate reliability
  */
 export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallbackTemplate[]> = {
+  // BEGINNER: Level 1 templates (40) + Level 1 extensions (5) + enhanced fallback (1) = 46 templates
   beginner: [
+    // Convert Level 1 templates to enhanced format
+    ...LEVEL_1_TEMPLATES.map(template => ({
+      setup: template.slice(0, 2),
+      development: template.slice(2, 3),
+      climax: template.slice(3, 4),
+      resolution: template.slice(4, 5),
+      contextualContinuations: []
+    })),
+    // Convert Level 1 extensions
+    ...LEVEL_1_EXTENSIONS.map(template => ({
+      setup: template.slice(0, 2),
+      development: template.slice(2, 3),
+      climax: template.slice(3, 4),
+      resolution: template.slice(4, 5),
+      contextualContinuations: []
+    })),
+    // Original enhanced fallback
     {
       setup: [
         "{name} sees a {animal}.",
@@ -45,7 +72,25 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
       contextualContinuations: []
     }
   ],
+  // EASY: Level 2 templates (40) + Level 2 extensions (5) + enhanced fallbacks (2) = 47 templates  
   easy: [
+    // Convert Level 2 templates to enhanced format
+    ...LEVEL_2_TEMPLATES.map(template => ({
+      setup: template.slice(0, 2),
+      development: template.slice(2, 3),
+      climax: template.slice(3, 4),
+      resolution: template.slice(4, 5),
+      contextualContinuations: []
+    })),
+    // Convert Level 2 extensions
+    ...LEVEL_2_EXTENSIONS.map(template => ({
+      setup: template.slice(0, 2),
+      development: template.slice(2, 3),
+      climax: template.slice(3, 4),
+      resolution: template.slice(4, 5),
+      contextualContinuations: []
+    })),
+    // Original enhanced fallbacks
     {
       setup: [
         "{name} goes to the park today.",
@@ -94,7 +139,25 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
     }
   ],
 
+  // MEDIUM: Level 3 templates (40) + Level 3 extensions (5) + enhanced fallbacks (2) = 47 templates
   medium: [
+    // Convert Level 3 templates to enhanced format  
+    ...LEVEL_3_TEMPLATES.map(template => ({
+      setup: template.slice(0, 2),
+      development: template.slice(2, 3),
+      climax: template.slice(3, 4),
+      resolution: template.slice(4, 5),
+      contextualContinuations: []
+    })),
+    // Convert Level 3 extensions
+    ...LEVEL_3_EXTENSIONS.map(template => ({
+      setup: template.slice(0, 2),
+      development: template.slice(2, 3),
+      climax: template.slice(3, 4),
+      resolution: template.slice(4, 5),
+      contextualContinuations: []
+    })),
+    // Original enhanced fallbacks
     {
       setup: [
         "{name} discovers a mysterious path in the forest.",
@@ -143,7 +206,25 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
     }
   ],
 
+  // HARD: Level 4 templates (40) + Level 4 extensions (5) + enhanced fallback (1) = 46 templates
   hard: [
+    // Convert Level 4 templates to enhanced format
+    ...LEVEL_4_TEMPLATES.map(template => ({
+      setup: template.slice(0, 2),
+      development: template.slice(2, 3),
+      climax: template.slice(3, 4),
+      resolution: template.slice(4, 5),
+      contextualContinuations: []
+    })),
+    // Convert Level 4 extensions
+    ...LEVEL_4_EXTENSIONS.map(template => ({
+      setup: template.slice(0, 2),
+      development: template.slice(2, 3),
+      climax: template.slice(3, 4),
+      resolution: template.slice(4, 5),
+      contextualContinuations: []
+    })),
+    // Original enhanced fallback
     {
       setup: [
         "{name} lived in a peaceful village where everyone worked together harmoniously.",
@@ -169,6 +250,7 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
     }
   ],
 
+  // EXPERT: Enhanced fallback (1) = 1 template
   expert: [
     {
       setup: [
@@ -264,18 +346,8 @@ export class EnhancedFallbackManager {
     pageIndex: number,
     existingStory?: string[]
   ): string {
-    // Removed contextualContinuations - trust hierarchical system for content generation
-
-    // Generate character-driven content using the enhanced template
-    const characters = CharacterPoolManager.generateCharacterPool(userInfo, difficulty);
-    const context: StoryContext = {
-      currentPage: pageIndex,
-      totalPages: 10, // Default assumption
-      characters,
-      userInfo,
-      difficulty
-    };
-
+    // Simple template selection without complex character systems
+    
     // Determine which part of the story arc to use
     const position = this.determineStoryPosition(pageIndex, 10);
     const arcTemplates = template[position];
