@@ -178,7 +178,7 @@ export class ComprehensiveLevel0Audit {
         // Quick audit each story
         const audit = Level0VocabularyAuditor.auditStoryPages(result.pages, userName);
         if (testLevel === 0 && !audit.isCompliant) {
-          console.error(`❌ Level 0 story has vocabulary violations: ${audit.violations.map(v => v.word).join(', ')}`);
+          console.error(`❌ Level 0 story has violations: ${audit.violations.join('; ')}`);
         }
         
       } catch (error) {

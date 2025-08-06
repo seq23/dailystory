@@ -96,6 +96,9 @@ export function getLevel0VocabularyByUserType(userType: UserType): Set<string> {
   return userType === 'premium' ? PREMIUM_LEVEL_0_VOCABULARY : FREE_LEVEL_0_VOCABULARY;
 }
 
+// Import grammar validation
+import { GrammarValidator } from '../utils/grammarValidator';
+
 // Subscription-aware validation function
 export function validateLevel0SentenceByUserType(
   sentence: string, 
@@ -106,6 +109,7 @@ export function validateLevel0SentenceByUserType(
   invalidWords: string[];
   isStrictMode: boolean;
   vocabularySize: number;
+  grammarErrors?: string[];
 } {
   const vocabulary = getLevel0VocabularyByUserType(userType);
   const words = sentence.toLowerCase()
@@ -121,12 +125,16 @@ export function validateLevel0SentenceByUserType(
     }
     return !vocabulary.has(word);
   });
+
+  // Check grammar as well
+  const grammarValidation = GrammarValidator.validateStoryText(sentence);
   
   return {
-    isValid: invalidWords.length === 0,
+    isValid: invalidWords.length === 0 && grammarValidation.isValid,
     invalidWords,
     isStrictMode: userType === 'free',
-    vocabularySize: vocabulary.size
+    vocabularySize: vocabulary.size,
+    grammarErrors: grammarValidation.isValid ? undefined : grammarValidation.errors
   };
 }
 

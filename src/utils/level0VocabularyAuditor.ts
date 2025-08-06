@@ -4,57 +4,57 @@
  */
 
 import { LEVEL_0_VOCABULARY } from '@/constants/gradeBased/level0Vocabulary';
+import { validateLevel0SentenceByUserType } from '../constants/dolchPrePrimer';
 
 export interface VocabularyAuditResult {
   isCompliant: boolean;
-  violations: {
-    word: string;
-    occurrences: string[];
-  }[];
+  violations: string[];
   totalViolations: number;
   compliancePercentage: number;
 }
 
 export class Level0VocabularyAuditor {
   /**
-   * Audit text content for Level 0 vocabulary compliance
+   * Audit text content for Level 0 vocabulary and grammar compliance
    */
   static auditText(text: string, context: string = 'unknown', userName?: string): VocabularyAuditResult {
-    const words = text.toLowerCase()
-      .replace(/[^\w\s]/g, ' ') // Replace punctuation with spaces
-      .split(/\s+/)
-      .filter(word => word.length > 0);
-
-    const violations: { [word: string]: string[] } = {};
-    const userNameLower = userName?.toLowerCase();
-
-    words.forEach(word => {
-      // Skip user names
-      if (userNameLower && word === userNameLower) {
-        return;
-      }
-
-      // Check if word is in Level 0 vocabulary
-      if (!LEVEL_0_VOCABULARY.has(word)) {
-        if (!violations[word]) {
-          violations[word] = [];
+    const sentences = text.split(/[.!?]+/)
+      .map(s => s.trim())
+      .filter(s => s.length > 0);
+    
+    let totalViolations = 0;
+    const violations: string[] = [];
+    
+    sentences.forEach((sentence, index) => {
+      const validation = validateLevel0SentenceByUserType(sentence, 'free', userName);
+      if (!validation.isValid) {
+        // Add vocabulary violations
+        validation.invalidWords.forEach(word => {
+          violations.push(`[${context}] Sentence ${index + 1}: "${word}" not in Level 0 vocabulary`);
+          totalViolations++;
+        });
+        
+        // Add grammar violations
+        if (validation.grammarErrors && validation.grammarErrors.length > 0) {
+          validation.grammarErrors.forEach(error => {
+            violations.push(`[${context}] Sentence ${index + 1}: Grammar - ${error}`);
+            totalViolations++;
+          });
         }
-        violations[word].push(context);
       }
     });
-
-    const violationEntries = Object.entries(violations).map(([word, occurrences]) => ({
-      word,
-      occurrences
-    }));
-
-    const totalWords = words.filter(word => !(userNameLower && word === userNameLower)).length;
-    const totalViolations = violationEntries.reduce((sum, v) => sum + v.occurrences.length, 0);
-    const compliancePercentage = totalWords > 0 ? Math.round(((totalWords - totalViolations) / totalWords) * 100) : 100;
-
+    
+    const totalWords = text.toLowerCase()
+      .replace(/[^\w\s]/g, '')
+      .split(/\s+/)
+      .filter(word => word.length > 0).length;
+    
+    const compliantWords = totalWords - totalViolations;
+    const compliancePercentage = totalWords > 0 ? Math.round((compliantWords / totalWords) * 100) : 100;
+    
     return {
-      isCompliant: violationEntries.length === 0,
-      violations: violationEntries,
+      isCompliant: violations.length === 0,
+      violations,
       totalViolations,
       compliancePercentage
     };
@@ -79,7 +79,7 @@ export class Level0VocabularyAuditor {
   /**
    * Generate a detailed audit report
    */
-  static generateAuditReport(auditResult: VocabularyAuditResult, title: string = 'Vocabulary Audit'): string {
+  static generateAuditReport(auditResult: VocabularyAuditResult, title: string = 'Vocabulary & Grammar Audit'): string {
     const report = [
       `\n📊 ${title}`,
       `${'='.repeat(50)}`,
@@ -90,15 +90,15 @@ export class Level0VocabularyAuditor {
     ];
 
     if (auditResult.violations.length > 0) {
-      report.push('🔍 Vocabulary Violations:');
+      report.push('🔍 Violations Found:');
       auditResult.violations.forEach((violation, index) => {
-        report.push(`${index + 1}. "${violation.word}" (found in: ${violation.occurrences.join(', ')})`);
+        report.push(`${index + 1}. ${violation}`);
       });
       report.push('');
       report.push('📚 Reminder: Level 0 should ONLY use these 40 Dolch Pre-Primer words:');
       report.push(Array.from(LEVEL_0_VOCABULARY).sort().join(', '));
     } else {
-      report.push('🎉 All vocabulary complies with Dolch Pre-Primer standards!');
+      report.push('🎉 All content complies with vocabulary and grammar standards!');
     }
 
     return report.join('\n');
@@ -107,11 +107,12 @@ export class Level0VocabularyAuditor {
   /**
    * Quick validation for single sentences
    */
-  static validateSentence(sentence: string, userName?: string): { isValid: boolean; invalidWords: string[] } {
-    const auditResult = this.auditText(sentence, 'sentence', userName);
+  static validateSentence(sentence: string, userName?: string): { isValid: boolean; invalidWords: string[]; grammarErrors: string[] } {
+    const validation = validateLevel0SentenceByUserType(sentence, 'free', userName);
     return {
-      isValid: auditResult.isCompliant,
-      invalidWords: auditResult.violations.map(v => v.word)
+      isValid: validation.isValid,
+      invalidWords: validation.invalidWords,
+      grammarErrors: validation.grammarErrors || []
     };
   }
 

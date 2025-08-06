@@ -150,11 +150,11 @@ export const LEVEL_0_FREE_TEMPLATES = [
 
   // Template 17 - Purpose with personal connection
   [
-    "I can do for you.",
+    "I can help you.",
     "For me!",
-    "I make for you.",
+    "I make it for you.",
     "{userName} can play for fun.",
-    "I can see for you."
+    "I can look for you."
   ],
 
   // Template 18 - Questions with "I" focus
