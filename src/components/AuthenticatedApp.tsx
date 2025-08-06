@@ -6,10 +6,12 @@ import { UserInfoForm } from "@/components/UserInfoForm";
 import CleanStoryDisplay from "@/components/CleanStoryDisplay";
 import { MobileOptimizedButton } from "@/components/MobileOptimizedButton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, BarChart3, Settings, LogOut } from "lucide-react";
+import { BookOpen, BarChart3, Settings, LogOut, CreditCard, Crown, Bug } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import type { UserInfo, Grade, LanguageCode, LearningGoal } from "@/types";
 import { ProgressDashboard } from "@/components/ProgressDashboard";
 import { ParentDashboard } from "@/components/ParentDashboard";
+import { SubscriptionManager } from "@/components/SubscriptionManager";
 import { SecurityDashboard } from "@/components/SecurityDashboard";
 import { SystemStatus } from "@/components/SystemStatus";
 import { useSecurityMonitoring } from "@/hooks/useSecurityMonitoring";
@@ -18,7 +20,7 @@ interface AuthenticatedAppProps {
   user: User;
 }
 
-type AppView = "profile" | "story" | "progress" | "parent";
+type AppView = "profile" | "story" | "progress" | "parent" | "subscription";
 
 export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
   const [currentView, setCurrentView] = useState<AppView>("profile");
@@ -26,6 +28,9 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [isPremium, setIsPremium] = useState(false);
+  const [subscriptionTier, setSubscriptionTier] = useState<string | null>(null);
+  const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
+  const [devTestMode, setDevTestMode] = useState(false);
   
   // Initialize security monitoring
   useSecurityMonitoring();
@@ -50,15 +55,64 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
 
   const checkSubscription = async () => {
     try {
+      // Check for dev test mode in localStorage
+      const devOverride = localStorage.getItem('dev_premium_override');
+      if (devOverride === 'true') {
+        setDevTestMode(true);
+        setIsPremium(true);
+        setSubscriptionTier('Development');
+        setSubscriptionEnd(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString());
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke('check-subscription', {
-        body: { user_id: user.id }
+        headers: {
+          Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+        },
       });
 
       if (!error && data?.subscribed) {
         setIsPremium(true);
+        setSubscriptionTier(data.subscription_tier || 'Premium');
+        setSubscriptionEnd(data.subscription_end);
+      } else {
+        setIsPremium(false);
+        setSubscriptionTier(null);
+        setSubscriptionEnd(null);
       }
     } catch (error) {
       console.error('Failed to check subscription:', error);
+      // Fallback to check database directly
+      try {
+        const { data, error: dbError } = await supabase
+          .from('subscribers')
+          .select('subscribed, subscription_tier, subscription_end')
+          .eq('user_id', user.id)
+          .single();
+
+        if (!dbError && data?.subscribed) {
+          setIsPremium(true);
+          setSubscriptionTier(data.subscription_tier || 'Premium');
+          setSubscriptionEnd(data.subscription_end);
+        }
+      } catch (dbError) {
+        console.error('Failed to check subscription from database:', dbError);
+      }
+    }
+  };
+
+  const toggleDevTestMode = () => {
+    const newMode = !devTestMode;
+    if (newMode) {
+      localStorage.setItem('dev_premium_override', 'true');
+      setDevTestMode(true);
+      setIsPremium(true);
+      setSubscriptionTier('Development');
+      setSubscriptionEnd(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString());
+    } else {
+      localStorage.removeItem('dev_premium_override');
+      setDevTestMode(false);
+      checkSubscription(); // Re-check actual subscription
     }
   };
 
@@ -179,20 +233,46 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
               <BookOpen className="w-8 h-8 text-primary" />
               <div>
                 <h1 className="text-2xl font-bold text-gray-800">Time2Read</h1>
-                <p className="text-sm text-gray-600">Welcome back, {userInfo.name}!</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm text-gray-600">Welcome back, {userInfo.name}!</p>
+                  {isPremium && (
+                    <Badge variant="secondary" className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-none">
+                      <Crown className="w-3 h-3 mr-1" />
+                      {devTestMode ? 'DEV' : subscriptionTier || 'Premium'}
+                    </Badge>
+                  )}
+                  {devTestMode && (
+                    <Badge variant="outline" className="border-orange-500 text-orange-600">
+                      <Bug className="w-3 h-3 mr-1" />
+                      Test Mode
+                    </Badge>
+                  )}
+                </div>
               </div>
             </div>
-            <MobileOptimizedButton onClick={handleSignOut} variant="outline" size="sm">
-              <LogOut className="w-4 h-4 mr-2" />
-              Sign Out
-            </MobileOptimizedButton>
+            <div className="flex items-center gap-2">
+              {/* Developer Test Mode Toggle */}
+              <MobileOptimizedButton 
+                onClick={toggleDevTestMode} 
+                variant={devTestMode ? "default" : "outline"} 
+                size="sm"
+                className="text-xs"
+              >
+                <Bug className="w-3 h-3 mr-1" />
+                Test
+              </MobileOptimizedButton>
+              <MobileOptimizedButton onClick={handleSignOut} variant="outline" size="sm">
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </MobileOptimizedButton>
+            </div>
           </div>
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-6">
         <Tabs value={currentView} onValueChange={(value) => setCurrentView(value as AppView)}>
-          <TabsList className="grid w-full grid-cols-4 max-w-2xl mx-auto mb-6 mobile-safe-area">
+          <TabsList className="grid w-full grid-cols-5 max-w-3xl mx-auto mb-6 mobile-safe-area">
             <TabsTrigger value="story" className="flex items-center gap-2">
               <BookOpen className="w-4 h-4" />
               <span className="hidden sm:inline">Stories</span>
@@ -204,6 +284,10 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
             <TabsTrigger value="parent" className="flex items-center gap-2">
               <Settings className="w-4 h-4" />
               <span className="hidden sm:inline">Parent</span>
+            </TabsTrigger>
+            <TabsTrigger value="subscription" className="flex items-center gap-2">
+              <CreditCard className="w-4 h-4" />
+              <span className="hidden sm:inline">Premium</span>
             </TabsTrigger>
             <TabsTrigger value="profile" className="flex items-center gap-2">
               <Settings className="w-4 h-4" />
@@ -244,6 +328,27 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                 onClose={() => {}}
               />
             )}
+          </TabsContent>
+
+          <TabsContent value="subscription">
+            <div className="max-w-4xl mx-auto">
+              <SubscriptionManager />
+              {subscriptionEnd && (
+                <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <h3 className="font-semibold text-blue-900 mb-2">Subscription Details</h3>
+                  <div className="text-sm text-blue-700">
+                    <p><strong>Status:</strong> {isPremium ? 'Active' : 'Inactive'}</p>
+                    {subscriptionTier && <p><strong>Plan:</strong> {subscriptionTier}</p>}
+                    {subscriptionEnd && (
+                      <p><strong>Next Billing:</strong> {new Date(subscriptionEnd).toLocaleDateString()}</p>
+                    )}
+                    {devTestMode && (
+                      <p className="text-orange-600 font-medium">⚠️ Developer Test Mode Active</p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
           </TabsContent>
 
           <TabsContent value="profile">
