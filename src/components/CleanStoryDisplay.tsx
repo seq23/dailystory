@@ -553,7 +553,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
 
       {/* Main Content - Mobile Optimized */}
       <main className={`container mx-auto safe-area-padding ${mobileContainerConfig}`}>
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <Card className="bg-card shadow-card mobile-text-fixed">
             <CardContent className={`${isMobileOrTablet ? 'p-3 sm:p-4' : 'p-6'}`}>
               {/* Progress Bar */}
@@ -567,9 +567,9 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
 
               {/* Story Content - Vertical Layout */}
               <div className="bg-gradient-card rounded-lg p-6 mb-6 min-h-[400px]">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
                   {/* Image Section - Left Side */}
-                  <div className="lg:order-1">
+                  <div className="lg:order-1 lg:col-span-2">
                     {currentImage && (
                       <img 
                         src={currentImage} 
@@ -610,9 +610,9 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                   </div>
 
                   {/* Text Content - Right Side - Mobile Optimized */}
-                  <div className="lg:order-2 flex flex-col justify-center">
+                  <div className="lg:order-2 lg:col-span-3 flex flex-col justify-center">
                     <div className="text-center lg:text-left">
-                      <div className={`font-bold text-foreground mb-4 story-content ${isMobileOrTablet ? 'mobile-reading-optimized' : ''} ${mobileTextConfig.fontSize} ${mobileTextConfig.lineHeight} ${mobileTextConfig.letterSpacing} ${mobileTextConfig.paragraphSpacing}`}>
+                      <div className={`font-bold text-foreground mb-4 story-content ${isMobileOrTablet ? 'mobile-reading-optimized text-lg sm:text-xl leading-relaxed' : 'text-xl lg:text-2xl leading-relaxed'} ${isMobileOrTablet ? mobileTextConfig.letterSpacing : ''} ${mobileTextConfig.paragraphSpacing}`}>
                         {processTextForPhonetics(
                           currentStory,
                           "cursor-pointer hover:bg-primary/10 rounded px-1 transition-colors touch-target",
