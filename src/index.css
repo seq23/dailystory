@@ -491,7 +491,11 @@ All colors MUST be HSL.
 
 /* Tutorial highlighting styles */
 .tutorial-highlight-ring {
-  @apply ring-4 ring-yellow-400 ring-offset-4 ring-offset-yellow-100 rounded-lg;
+  position: relative;
+  z-index: 9998 !important;
+  animation: tutorialPulse 2s ease-in-out infinite;
+  box-shadow: 0 0 0 4px hsl(var(--primary) / 0.5), 0 0 20px 8px hsl(var(--primary) / 0.3) !important;
+  border-radius: 8px;
 }
 
 .tutorial-highlight-shadow {
@@ -499,8 +503,18 @@ All colors MUST be HSL.
 }
 
 .tutorial-highlight-glow {
+  background: hsl(var(--primary) / 0.1) !important;
   position: relative;
   animation: tutorial-pulse 2s ease-in-out infinite;
+}
+
+@keyframes tutorialPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 4px hsl(var(--primary) / 0.5), 0 0 20px 8px hsl(var(--primary) / 0.3) !important;
+  }
+  50% {
+    box-shadow: 0 0 0 8px hsl(var(--primary) / 0.7), 0 0 30px 12px hsl(var(--primary) / 0.5) !important;
+  }
 }
 
 @keyframes tutorial-pulse {

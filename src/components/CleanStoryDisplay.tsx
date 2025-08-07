@@ -8,9 +8,9 @@ import { useTranslation } from "react-i18next";
 import { useToast } from "@/hooks/use-toast";
 
 // Mobile-Optimized UI Components
-import { CollapsibleFloatingTimer } from "@/components/CollapsibleFloatingTimer";
+import { ResponsiveTimer } from "@/components/ResponsiveTimer";
 import { SmartTutorialOverlay } from "@/components/SmartTutorialOverlay";
-import { MobileOptimizedHeader } from "@/components/MobileOptimizedHeader";
+import { ResponsiveHeader } from "@/components/ResponsiveHeader";
 import { ProgressTowers } from "@/components/ProgressTowers";
 import { GameContextProvider } from "@/components/GameContextProvider";
 
@@ -511,8 +511,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     >
       <ErrorBoundary>
         <div className="min-h-screen bg-gradient-primary mobile-optimized">
-        {/* Mobile-Optimized Header */}
-        <MobileOptimizedHeader
+        {/* Responsive Header */}
+        <ResponsiveHeader
           storyTitle={storyTitle}
           currentDifficulty={currentDifficulty}
           onHome={onHome}
@@ -758,8 +758,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         enablePersistence={true}
       />
         
-      {/* Collapsible Floating Timer - Mobile Optimized */}
-      <CollapsibleFloatingTimer
+      {/* Responsive Timer */}
+      <ResponsiveTimer
         timeRemaining={timeRemaining}
         isReading={isTimerRunning}
         onToggleReading={handleToggleTimer}

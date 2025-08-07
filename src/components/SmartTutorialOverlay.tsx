@@ -348,16 +348,37 @@ export const SmartTutorialOverlay = ({
 
   return (
     <>
-      {/* Dark overlay with cutout effect */}
-      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40" />
+      {/* Dark overlay */}
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40" />
+      
+      {/* Global tutorial highlight styles */}
+      <style>{`
+        .tutorial-highlight-ring {
+          animation: tutorialPulse 2s ease-in-out infinite;
+          box-shadow: 0 0 0 4px hsl(var(--primary) / 0.5), 0 0 20px 8px hsl(var(--primary) / 0.3);
+          border-radius: 8px;
+          position: relative;
+          z-index: 9998 !important;
+        }
+        
+        .tutorial-highlight-glow {
+          background: hsl(var(--primary) / 0.1) !important;
+        }
+        
+        @keyframes tutorialPulse {
+          0%, 100% {
+            box-shadow: 0 0 0 4px hsl(var(--primary) / 0.5), 0 0 20px 8px hsl(var(--primary) / 0.3);
+          }
+          50% {
+            box-shadow: 0 0 0 8px hsl(var(--primary) / 0.7), 0 0 30px 12px hsl(var(--primary) / 0.5);
+          }
+        }
+      `}</style>
 
       {/* Tutorial Card - Positioned dynamically */}
       <div 
         className="fixed z-50"
-        style={{
-          ...cardPosition,
-          left: cardPosition.left ? `${parseInt(cardPosition.left) + 24}px` : cardPosition.left
-        }}
+        style={cardPosition}
       >
         <Card className={cn(
           "bg-background shadow-2xl border-2 border-primary/30 rounded-2xl",
