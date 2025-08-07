@@ -148,6 +148,7 @@ export const CollapsibleFloatingTimer = ({
           size={isMobile ? "sm" : "default"}
           onClick={onToggleReading}
           className="min-h-[44px] min-w-[44px] rounded-full bg-white/95 backdrop-blur-sm"
+          aria-label={isReading ? t("floatingTimer.pause", "Pause reading") : t("floatingTimer.play", "Start reading")}
         >
           {isReading ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
         </Button>
@@ -160,6 +161,7 @@ export const CollapsibleFloatingTimer = ({
             onClick={onReduceTime}
             disabled={timeRemaining <= 5 * 60}
             className="min-h-[44px] min-w-[44px] rounded-full bg-white/95 backdrop-blur-sm"
+            aria-label={t("floatingTimer.reduceTime", "Reduce time by 5 minutes")}
           >
             <Minus className="w-4 h-4" />
           </Button>
@@ -171,6 +173,7 @@ export const CollapsibleFloatingTimer = ({
           size={isMobile ? "sm" : "default"}
           onClick={onEndSession}
           className="min-h-[44px] min-w-[44px] rounded-full bg-white/95 backdrop-blur-sm"
+          aria-label={t("floatingTimer.endSession", "End reading session")}
         >
           <X className="w-4 h-4" />
         </Button>

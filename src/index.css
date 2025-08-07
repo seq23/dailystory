@@ -467,6 +467,26 @@ All colors MUST be HSL.
   50% { background-color: rgba(168, 85, 247, 0.2); }
 }
 
+/* Tutorial-specific positioning fixes */
+.tutorial-active .floating-timer-container {
+  z-index: 45; /* Above tutorial overlay but below tutorial cards */
+}
+
+.tutorial-active [data-radix-tooltip-content] {
+  z-index: 35; /* Below tutorial elements during tutorial */
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
 /* Mobile & Touch Optimizations */
 @layer utilities {
   /* Safe area utilities for mobile devices */

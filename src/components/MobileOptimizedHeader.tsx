@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Home, TrendingUp, TrendingDown } from "lucide-react";
+import { Home, TrendingUp, TrendingDown, RefreshCw } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
@@ -9,6 +9,7 @@ interface MobileOptimizedHeaderProps {
   storyTitle?: string;
   currentDifficulty?: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert';
   onHome?: () => void;
+  onNewStory?: () => void;
   onIncreaseDifficulty?: () => void;
   onDecreaseDifficulty?: () => void;
   showLevelControls?: boolean;
@@ -18,6 +19,7 @@ export const MobileOptimizedHeader = ({
   storyTitle,
   currentDifficulty = 'easy',
   onHome,
+  onNewStory,
   onIncreaseDifficulty,
   onDecreaseDifficulty,
   showLevelControls = true
@@ -64,8 +66,8 @@ export const MobileOptimizedHeader = ({
           isMobile && "px-4 py-2",
           isTablet && "px-6 py-3"
         )}>
-          {/* Left Section: Home Button */}
-          <div className="flex-shrink-0">
+          {/* Left Section: Home & New Story Buttons */}
+          <div className="flex-shrink-0 flex items-center gap-1">
             {onHome && (
               <Button
                 variant="ghost"
@@ -78,6 +80,26 @@ export const MobileOptimizedHeader = ({
                 aria-label={t("common.home", "Home")}
               >
                 <Home className={cn("w-5 h-5", isMobile && "w-4 h-4")} />
+              </Button>
+            )}
+            
+            {onNewStory && (
+              <Button
+                variant="ghost"
+                size={isMobile ? "sm" : "default"}
+                onClick={onNewStory}
+                className={cn(
+                  "min-h-[44px] rounded-full",
+                  isMobile ? "px-2 py-2" : "px-3 py-2"
+                )}
+                aria-label={t("common.newStory", "New Story")}
+              >
+                <RefreshCw className={cn("w-4 h-4", isMobile && "w-3 h-3 mr-1")} />
+                {!isMobile && (
+                  <span className="ml-1 text-sm">
+                    {t("common.newStory", "New Story")}
+                  </span>
+                )}
               </Button>
             )}
           </div>

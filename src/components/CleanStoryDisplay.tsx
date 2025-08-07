@@ -527,6 +527,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
           storyTitle={storyTitle}
           currentDifficulty={currentDifficulty}
           onHome={onHome}
+          onNewStory={onNewStory}
           onIncreaseDifficulty={() => handleDifficultyChange('up')}
           onDecreaseDifficulty={() => handleDifficultyChange('down')}
           showLevelControls={true}
