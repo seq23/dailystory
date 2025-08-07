@@ -757,6 +757,11 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         onEndSession={handleEndSession}
         onSessionEnded={handleEndSession}
         showTutorial={showTutorial}
+        tutorialStep={currentTutorialStep}
+        onTimerTooltipComplete={() => {
+          // Timer tooltips completed, tutorial can proceed to next step
+          setCurrentTutorialStep(1);
+        }}
       />
       
       {/* Progress Tower - Collapsible floating tower */}

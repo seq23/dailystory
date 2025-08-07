@@ -328,6 +328,11 @@ All colors MUST be HSL.
   }
 
   /* Safe RTL spacing adjustments */
+
+  /* Timer button highlighting during tutorial */
+  .timer-button-highlight {
+    @apply ring-4 ring-primary/50 ring-offset-2 ring-offset-white shadow-2xl animate-pulse;
+  }
   [dir="rtl"] .rtl-ml-auto {
     margin-left: unset;
     margin-right: auto;

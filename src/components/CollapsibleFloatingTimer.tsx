@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { ChevronUp, ChevronDown, Play, Pause, Minus, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { TimerButtonTooltip } from "@/components/TimerButtonTooltip";
 
 import { cn } from "@/lib/utils";
 
@@ -18,6 +19,7 @@ interface CollapsibleFloatingTimerProps {
   tutorialStep?: number;
   sessionStats?: any;
   showTutorial?: boolean;
+  onTimerTooltipComplete?: () => void;
 }
 
 export const CollapsibleFloatingTimer = ({
@@ -29,12 +31,15 @@ export const CollapsibleFloatingTimer = ({
   onSessionEnded,
   tutorialStep = 0,
   sessionStats,
-  showTutorial = false
+  showTutorial = false,
+  onTimerTooltipComplete
 }: CollapsibleFloatingTimerProps) => {
   const { t } = useTranslation();
   const { isMobile, isTablet, isMobileOrTablet } = useIsMobile();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [currentTooltipIndex, setCurrentTooltipIndex] = useState(0);
+  const [showTooltips, setShowTooltips] = useState(false);
   
 
   // Auto-collapse on mobile when not in tutorial
@@ -44,12 +49,43 @@ export const CollapsibleFloatingTimer = ({
     }
   }, [isMobile, showTutorial]);
 
-  // Reset when tutorial starts
+  // Reset when tutorial starts and manage tooltips
   useEffect(() => {
     if (showTutorial && tutorialStep === 0) {
       setIsCollapsed(false); // Always expand during tutorial
+      setShowTooltips(true);
+      setCurrentTooltipIndex(0);
+    } else {
+      setShowTooltips(false);
     }
   }, [showTutorial, tutorialStep]);
+
+  // Handle sequential tooltips
+  useEffect(() => {
+    if (!showTooltips || !showTutorial || tutorialStep !== 0) return;
+
+    const tooltipSequence = [
+      { targetId: 'timer-play-button', delay: 500 },
+      { targetId: 'timer-reduce-button', delay: 3000 },
+      { targetId: 'timer-end-button', delay: 5500 }
+    ];
+
+    if (currentTooltipIndex < tooltipSequence.length) {
+      const timer = setTimeout(() => {
+        if (currentTooltipIndex === tooltipSequence.length - 1) {
+          // Last tooltip completed
+          setTimeout(() => {
+            setShowTooltips(false);
+            onTimerTooltipComplete?.();
+          }, 2500);
+        } else {
+          setCurrentTooltipIndex(prev => prev + 1);
+        }
+      }, tooltipSequence[currentTooltipIndex].delay);
+
+      return () => clearTimeout(timer);
+    }
+  }, [currentTooltipIndex, showTooltips, showTutorial, tutorialStep, onTimerTooltipComplete]);
 
   // Format time for display
   const formatTime = (seconds: number) => {
@@ -76,6 +112,29 @@ export const CollapsibleFloatingTimer = ({
   }, [timeRemaining, showCelebration, onSessionEnded, sessionStats]);
 
   const isTutorialTimerStep = showTutorial && tutorialStep === 0;
+  
+  // Hide timer after tutorial step 0
+  const shouldShowComponent = !showTutorial || tutorialStep === 0;
+
+  const tooltipButtons = [
+    { 
+      id: 'timer-play-button',
+      title: 'Play/Pause Timer',
+      description: 'Click to start or pause your reading timer'
+    },
+    { 
+      id: 'timer-reduce-button',
+      title: 'Reduce Time',
+      description: 'Remove 5 minutes from your reading session'
+    },
+    { 
+      id: 'timer-end-button',
+      title: 'End Session',
+      description: 'Finish your reading session early'
+    }
+  ];
+
+  if (!shouldShowComponent) return null;
 
   // Simplified positioning - mobile first
   const getPositionClasses = () => {
@@ -120,8 +179,22 @@ export const CollapsibleFloatingTimer = ({
   }
 
   return (
-    <div className={cn(getPositionClasses(), "flex flex-col items-center gap-3")}>
-      {/* Expanded Timer Display */}
+    <>
+      {/* Sequential Timer Button Tooltips */}
+      {showTooltips && tooltipButtons.map((tooltip, index) => (
+        <TimerButtonTooltip
+          key={tooltip.id}
+          targetId={tooltip.id}
+          title={tooltip.title}
+          description={tooltip.description}
+          icon={index === 0 ? Play : index === 1 ? Minus : X}
+          isVisible={currentTooltipIndex === index}
+          delay={index === 0 ? 500 : 0}
+        />
+      ))}
+
+      <div className={cn(getPositionClasses(), "flex flex-col items-center gap-3")}>
+        {/* Expanded Timer Display */}
       <div className="relative">
         {/* Main Timer Circle */}
         <div className="relative w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 bg-gradient-to-br from-background to-muted/20 backdrop-blur-sm rounded-full shadow-2xl border-2 border-border flex items-center justify-center">
@@ -205,6 +278,7 @@ export const CollapsibleFloatingTimer = ({
         </div>
       )}
 
-    </div>
+      </div>
+    </>
   );
 };
