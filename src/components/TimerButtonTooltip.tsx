@@ -66,10 +66,10 @@ export const TimerButtonTooltip = ({
       (element as HTMLElement).style.zIndex = '99999';
       (element as HTMLElement).style.position = 'relative';
 
-      // Auto-complete after 2.5 seconds
+      // Auto-complete after 4 seconds
       const completeTimer = setTimeout(() => {
         onComplete?.();
-      }, 2500);
+      }, 4000);
 
       return () => {
         clearTimeout(completeTimer);
