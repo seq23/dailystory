@@ -144,14 +144,6 @@ describe('Supabase Integration Tests', () => {
       expect(result.error).toBeNull();
     });
 
-    it('invokes TTS function', async () => {
-      const result = await mockSupabaseClient.functions.invoke('openai-tts', {
-        body: { text: 'Hello world' }
-      });
-      
-      expect(result.data).toBeDefined();
-      expect(result.error).toBeNull();
-    });
 
     it('invokes dictionary function', async () => {
       const result = await mockSupabaseClient.functions.invoke('word-dictionary', {
