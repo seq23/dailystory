@@ -261,8 +261,8 @@ export class UnifiedTTSService {
   }
 
   isPlaying(): boolean {
-    const audioPlaying = !!(this.currentAudio && !this.currentAudio.paused);
-    const speechPlaying = typeof window !== 'undefined' && speechSynthesis && speechSynthesis.speaking;
+    const audioPlaying = this.currentAudio ? !this.currentAudio.paused : false;
+    const speechPlaying = (typeof window !== 'undefined' && speechSynthesis) ? speechSynthesis.speaking : false;
     return audioPlaying || speechPlaying;
   }
 

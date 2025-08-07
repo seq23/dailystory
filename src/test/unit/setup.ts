@@ -23,6 +23,11 @@ const mockSpeechSynthesisUtteranceConstructor = vi.fn().mockImplementation((text
   removeEventListener: vi.fn(),
 }));
 
+// Assign to global and window BEFORE any imports happen
+global.AudioContext = mockAudioContextConstructor;
+global.webkitAudioContext = mockAudioContextConstructor;
+global.SpeechSynthesisUtterance = mockSpeechSynthesisUtteranceConstructor;
+
 globalThis.AudioContext = mockAudioContextConstructor as any;
 globalThis.SpeechSynthesisUtterance = mockSpeechSynthesisUtteranceConstructor as any;
 globalThis.webkitAudioContext = mockAudioContextConstructor as any;
