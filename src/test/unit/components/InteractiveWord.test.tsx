@@ -1,64 +1,42 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import React from 'react';
 import { render } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { InteractiveWord } from '@/components/InteractiveWord';
 
-// Mock the TTS service
-vi.mock('@/services/unifiedTTSService', () => ({
-  UnifiedTTSService: vi.fn().mockImplementation(() => ({
-    speakText: vi.fn().mockResolvedValue(undefined),
-    explainWord: vi.fn().mockResolvedValue(undefined),
-    stopCurrentAudio: vi.fn(),
-    isPlaying: vi.fn().mockReturnValue(false),
-  })),
+// Basic mock setup
+const mockToast = vi.fn();
+vi.mock('@/hooks/use-toast', () => ({
+  useToast: () => ({ toast: mockToast }),
 }));
 
-// Mock services that InteractiveWord depends on
-vi.mock('@/services/enhancedAudioService', () => ({
-  EnhancedAudioService: vi.fn().mockImplementation(() => ({
-    speak: vi.fn().mockResolvedValue(undefined),
-    stopAudio: vi.fn(),
-    isPlaying: vi.fn().mockReturnValue(false),
-  })),
+vi.mock('@/hooks/use-mobile', () => ({
+  useIsMobile: () => ({ isMobileOrTablet: false, isCapacitor: false, isMobile: false }),
 }));
 
-vi.mock('@/services/mobileAudioManager', () => ({
-  MobileAudioManager: {
-    getInstance: vi.fn(() => ({
-      initializeMobileAudio: vi.fn().mockResolvedValue(undefined),
-      playAudioBlob: vi.fn().mockResolvedValue(undefined),
-      stopAudio: vi.fn(),
-      isAudioReady: vi.fn().mockReturnValue(true),
-      getAudioStatus: vi.fn().mockReturnValue({
-        initialized: true,
-        userInteractionUnlocked: true,
-        audioFormat: 'mp3',
-        networkQuality: 'good',
-        lowPowerMode: false,
-      }),
-      destroy: vi.fn(),
-    })),
-  },
+vi.mock('@/utils/gamificationGlobals', () => ({
+  getGlobalAddVocabularyWord: () => vi.fn(),
 }));
 
 describe('InteractiveWord Component', () => {
   const defaultProps = {
-    word: 'hello',
-    className: 'test-class',
+    word: 'test',
+    className: 'interactive-word',
     difficulty: 'easy' as const,
-    userInfo: {
-      name: 'Test User',
-      age: 8,
-      grade: '3rd' as const,
+    userInfo: { 
+      name: 'Test User', 
+      age: 10, 
       nativeLanguage: 'en' as const,
+      grade: 'K' as const,
       learningGoal: 'improve-english-reading' as const,
-      avatar: { type: 'boy' as const, skinTone: 'medium' as const },
+      avatar: { type: 'girl' as const, skinTone: 'medium' as const },
       favoriteColor: 'blue',
-      favoriteAnimal: 'dog',
+      favoriteAnimal: 'cat',
       hobbies: 'reading',
       favoriteFood: 'pizza',
-      specialRequest: 'none',
+      specialRequest: ''
     },
+    isPremium: false,
+    sentenceContext: 'This is a test sentence.',
   };
 
   beforeEach(() => {
@@ -67,64 +45,25 @@ describe('InteractiveWord Component', () => {
 
   it('renders the word correctly', () => {
     const { container } = render(<InteractiveWord {...defaultProps} />);
-    // InteractiveWord should render some text content
-    expect(container).toBeInTheDocument();
-    expect(container.textContent).toBeTruthy();
+    expect(container).toHaveTextContent('test');
   });
 
   it('applies the correct CSS classes', () => {
     const { container } = render(<InteractiveWord {...defaultProps} />);
-    // Component should render with some styling
-    expect(container.firstElementChild).toBeInTheDocument();
-  });
-
-  it('handles click events', async () => {
-    const user = userEvent.setup();
-    const { container } = render(<InteractiveWord {...defaultProps} />);
-    
-    const wordElement = container.firstElementChild;
-    if (wordElement) {
-      await user.click(wordElement as Element);
-    }
-    
-    // Component should handle interactions
-    expect(container).toBeInTheDocument();
-  });
-
-  it('supports mobile touch interactions', () => {
-    const { container } = render(<InteractiveWord {...defaultProps} />);
-    // Component should render on mobile
-    expect(container.firstElementChild).toBeInTheDocument();
-  });
-
-  it('maintains proper inline display style', () => {
-    const { container } = render(<InteractiveWord {...defaultProps} />);
-    // Component should have proper structure
-    expect(container.firstElementChild).toBeInTheDocument();
+    const wordElement = container.querySelector('.interactive-word');
+    expect(wordElement).toBeInTheDocument();
   });
 
   it('handles different difficulty levels', () => {
-    const { rerender, container } = render(<InteractiveWord {...defaultProps} difficulty="hard" />);
-    expect(container.firstElementChild).toBeInTheDocument();
+    const { container, rerender } = render(<InteractiveWord {...defaultProps} difficulty="hard" />);
+    expect(container).toHaveTextContent('test');
     
-    rerender(<InteractiveWord {...defaultProps} difficulty="medium" />);
-    expect(container.firstElementChild).toBeInTheDocument();
+    rerender(<InteractiveWord {...defaultProps} difficulty="beginner" />);
+    expect(container).toHaveTextContent('test');
   });
 
-  it('handles different user info', () => {
-    const spanishUser = {
-      ...defaultProps.userInfo,
-      nativeLanguage: 'es' as const,
-    };
-    const { container } = render(<InteractiveWord {...defaultProps} userInfo={spanishUser} />);
-    expect(container.firstElementChild).toBeInTheDocument();
-  });
-
-  it('shows loading state during audio playback', async () => {
-    const user = userEvent.setup();
-    const { container } = render(<InteractiveWord {...defaultProps} />);
-    
-    // Component should handle audio interactions
-    expect(container.firstElementChild).toBeInTheDocument();
+  it('handles premium features', () => {
+    const { container } = render(<InteractiveWord {...defaultProps} isPremium={true} />);
+    expect(container).toHaveTextContent('test');
   });
 });

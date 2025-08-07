@@ -1,6 +1,31 @@
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 
+// Set up global mocks BEFORE any imports
+const mockAudioContextConstructor = vi.fn().mockImplementation(() => ({
+  createOscillator: vi.fn(),
+  createGain: vi.fn(),
+  destination: {},
+  resume: vi.fn().mockResolvedValue(undefined),
+  suspend: vi.fn().mockResolvedValue(undefined),
+  close: vi.fn().mockResolvedValue(undefined),
+  state: 'suspended',
+}));
+
+const mockSpeechSynthesisUtteranceConstructor = vi.fn().mockImplementation((text) => ({
+  text,
+  rate: 1,
+  pitch: 1,
+  volume: 1,
+  voice: null,
+  lang: 'en-US',
+  addEventListener: vi.fn(),
+  removeEventListener: vi.fn(),
+}));
+
+globalThis.AudioContext = mockAudioContextConstructor as any;
+globalThis.SpeechSynthesisUtterance = mockSpeechSynthesisUtteranceConstructor as any;
+
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
@@ -30,18 +55,7 @@ global.ResizeObserver = vi.fn().mockImplementation(() => ({
   disconnect: vi.fn(),
 }));
 
-// Mock AudioContext constructor to return proper constructor function
-const mockAudioContextConstructor = vi.fn().mockImplementation(() => ({
-  createOscillator: vi.fn(),
-  createGain: vi.fn(),
-  destination: {},
-  resume: vi.fn().mockResolvedValue(undefined),
-  suspend: vi.fn().mockResolvedValue(undefined),
-  close: vi.fn().mockResolvedValue(undefined),
-  state: 'suspended',
-}));
-
-// Ensure constructor can be called with 'new'
+// Set up window mocks using the existing constructors
 Object.defineProperty(window, 'AudioContext', {
   writable: true,
   value: mockAudioContextConstructor,
@@ -52,19 +66,6 @@ Object.defineProperty(window, 'webkitAudioContext', {
   value: mockAudioContextConstructor,
 });
 
-// Mock SpeechSynthesisUtterance constructor to return proper constructor function
-const mockSpeechSynthesisUtteranceConstructor = vi.fn().mockImplementation((text) => ({
-  text,
-  rate: 1,
-  pitch: 1,
-  volume: 1,
-  voice: null,
-  lang: 'en-US',
-  addEventListener: vi.fn(),
-  removeEventListener: vi.fn(),
-}));
-
-// Ensure constructor can be called with 'new'
 Object.defineProperty(window, 'SpeechSynthesisUtterance', {
   writable: true,
   value: mockSpeechSynthesisUtteranceConstructor,
@@ -93,12 +94,6 @@ global.AudioContext = mockAudioContextConstructor;
 global.webkitAudioContext = mockAudioContextConstructor;
 global.SpeechSynthesisUtterance = mockSpeechSynthesisUtteranceConstructor;
 global.speechSynthesis = window.speechSynthesis;
-
-// Explicitly assign constructors to globalThis for better compatibility
-globalThis.AudioContext = mockAudioContextConstructor;
-globalThis.webkitAudioContext = mockAudioContextConstructor;
-globalThis.SpeechSynthesisUtterance = mockSpeechSynthesisUtteranceConstructor;
-globalThis.speechSynthesis = window.speechSynthesis;
 
 // Mock URL.createObjectURL
 Object.assign(global.URL, {
