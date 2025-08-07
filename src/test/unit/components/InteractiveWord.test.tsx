@@ -13,6 +13,34 @@ vi.mock('@/services/unifiedTTSService', () => ({
   })),
 }));
 
+// Mock services that InteractiveWord depends on
+vi.mock('@/services/enhancedAudioService', () => ({
+  EnhancedAudioService: vi.fn().mockImplementation(() => ({
+    speak: vi.fn().mockResolvedValue(undefined),
+    stopAudio: vi.fn(),
+    isPlaying: vi.fn().mockReturnValue(false),
+  })),
+}));
+
+vi.mock('@/services/mobileAudioManager', () => ({
+  MobileAudioManager: {
+    getInstance: vi.fn(() => ({
+      initializeMobileAudio: vi.fn().mockResolvedValue(undefined),
+      playAudioBlob: vi.fn().mockResolvedValue(undefined),
+      stopAudio: vi.fn(),
+      isAudioReady: vi.fn().mockReturnValue(true),
+      getAudioStatus: vi.fn().mockReturnValue({
+        initialized: true,
+        userInteractionUnlocked: true,
+        audioFormat: 'mp3',
+        networkQuality: 'good',
+        lowPowerMode: false,
+      }),
+      destroy: vi.fn(),
+    })),
+  },
+}));
+
 describe('InteractiveWord Component', () => {
   const defaultProps = {
     word: 'hello',

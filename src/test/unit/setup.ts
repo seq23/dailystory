@@ -30,46 +30,63 @@ global.ResizeObserver = vi.fn().mockImplementation(() => ({
   disconnect: vi.fn(),
 }));
 
-// Mock Web Audio API
-global.AudioContext = vi.fn().mockImplementation(() => ({
-  createOscillator: vi.fn(),
-  createGain: vi.fn(),
-  destination: {},
-  resume: vi.fn().mockResolvedValue(undefined),
-  suspend: vi.fn().mockResolvedValue(undefined),
-  close: vi.fn().mockResolvedValue(undefined),
-  state: 'suspended',
-}));
+// Mock Web Audio API on window object
+Object.defineProperty(window, 'AudioContext', {
+  writable: true,
+  value: vi.fn().mockImplementation(() => ({
+    createOscillator: vi.fn(),
+    createGain: vi.fn(),
+    destination: {},
+    resume: vi.fn().mockResolvedValue(undefined),
+    suspend: vi.fn().mockResolvedValue(undefined),
+    close: vi.fn().mockResolvedValue(undefined),
+    state: 'suspended',
+  })),
+});
 
-// Mock webkitAudioContext for Safari
-global.webkitAudioContext = global.AudioContext;
+Object.defineProperty(window, 'webkitAudioContext', {
+  writable: true,
+  value: window.AudioContext,
+});
 
-// Mock Speech Synthesis API
-global.SpeechSynthesisUtterance = vi.fn().mockImplementation((text) => ({
-  text,
-  rate: 1,
-  pitch: 1,
-  volume: 1,
-  voice: null,
-  lang: 'en-US',
-  addEventListener: vi.fn(),
-  removeEventListener: vi.fn(),
-}));
+// Mock Speech Synthesis API on window object
+Object.defineProperty(window, 'SpeechSynthesisUtterance', {
+  writable: true,
+  value: vi.fn().mockImplementation((text) => ({
+    text,
+    rate: 1,
+    pitch: 1,
+    volume: 1,
+    voice: null,
+    lang: 'en-US',
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+  })),
+});
 
-global.speechSynthesis = {
-  speak: vi.fn(),
-  cancel: vi.fn(),
-  pause: vi.fn(),
-  resume: vi.fn(),
-  getVoices: vi.fn().mockReturnValue([]),
-  speaking: false,
-  pending: false,
-  paused: false,
-  onvoiceschanged: null,
-  addEventListener: vi.fn(),
-  removeEventListener: vi.fn(),
-  dispatchEvent: vi.fn(),
-} as any;
+Object.defineProperty(window, 'speechSynthesis', {
+  writable: true,
+  value: {
+    speak: vi.fn(),
+    cancel: vi.fn(),
+    pause: vi.fn(),
+    resume: vi.fn(),
+    getVoices: vi.fn().mockReturnValue([]),
+    speaking: false,
+    pending: false,
+    paused: false,
+    onvoiceschanged: null,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  },
+});
+
+// Ensure global fallbacks
+global.AudioContext = window.AudioContext;
+global.webkitAudioContext = window.AudioContext; // Use AudioContext for compatibility
+global.SpeechSynthesisUtterance = window.SpeechSynthesisUtterance;
+global.speechSynthesis = window.speechSynthesis;
 
 // Mock URL.createObjectURL
 Object.assign(global.URL, {
@@ -93,3 +110,32 @@ vi.mock('react-i18next', () => ({
 
 // Mock fetch
 global.fetch = vi.fn();
+
+// Mock MobileAudioManager
+vi.mock('@/services/mobileAudioManager', () => ({
+  MobileAudioManager: {
+    getInstance: vi.fn(() => ({
+      initializeMobileAudio: vi.fn().mockResolvedValue(undefined),
+      playAudioBlob: vi.fn().mockResolvedValue(undefined),
+      stopAudio: vi.fn(),
+      isAudioReady: vi.fn().mockReturnValue(true),
+      getAudioStatus: vi.fn().mockReturnValue({
+        initialized: true,
+        userInteractionUnlocked: true,
+        audioFormat: 'mp3',
+        networkQuality: 'good',
+        lowPowerMode: false,
+      }),
+      destroy: vi.fn(),
+    })),
+  },
+}));
+
+// Mock Enhanced Audio Service
+vi.mock('@/services/enhancedAudioService', () => ({
+  EnhancedAudioService: vi.fn().mockImplementation(() => ({
+    speak: vi.fn().mockResolvedValue(undefined),
+    stopAudio: vi.fn(),
+    isPlaying: vi.fn().mockReturnValue(false),
+  })),
+}));

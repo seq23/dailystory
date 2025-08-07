@@ -142,12 +142,16 @@ describe('UnifiedTTSService', () => {
     });
 
     it('tracks playing state correctly', () => {
-      // Test initial state
-      expect(ttsService.isPlaying()).toBeDefined();
+      // Test initial state - should return false when no audio is playing
+      expect(ttsService.isPlaying()).toBe(false);
       
-      // The method exists and returns a value
+      // Simulate playing state
+      (ttsService as any).currentAudio = mockAudio;
+      mockAudio.paused = false;
+      
+      // Should now indicate playing (implementation may vary)
       const playingState = ttsService.isPlaying();
-      expect(typeof playingState === 'boolean' || typeof playingState === 'undefined').toBe(true);
+      expect(typeof playingState).toBe('boolean');
     });
   });
 
