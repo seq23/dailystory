@@ -62,4 +62,10 @@ describe('InteractiveWord Component', () => {
     const { container } = render(<InteractiveWord {...defaultProps} isPremium={true} />);
     expect(container).toHaveTextContent('test');
   });
+
+  it('handles different user languages', () => {
+    const spanishUserInfo = { ...defaultProps.userInfo, nativeLanguage: 'es' as const };
+    const { container } = render(<InteractiveWord {...defaultProps} userInfo={spanishUserInfo} />);
+    expect(container).toHaveTextContent('test');
+  });
 });
