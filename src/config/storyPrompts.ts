@@ -118,7 +118,8 @@ Create sophisticated stories with:
 - Complex character relationships
 - Use name 30% of time, pronouns 70% of time - natural reading flow with strategic name placement
 - Meaningful themes and lessons
-Write exactly 10-12 pages, each page should be 4-5 sentences.`,
+
+FORMAT: Page 1: [4-5 sentences]. Page 2: [4-5 sentences]. Continue for 10-12 pages.`,
     userPromptTemplate: `Create a meaningful story for {name} (age {age}). They are passionate about {hobbies} and love {favoriteAnimal} and {favoriteColor}. Their favorite food is {favoriteFood}. Include challenges that lead to personal growth and deep friendships.`,
     maxLength: 600,
     expectedPages: 11
@@ -141,7 +142,8 @@ Create complex stories with:
 - Abstract concepts made accessible
 - Use name 25% of time, pronouns 75% of time - sophisticated natural flow with occasional name emphasis
 - Multiple plot layers and rich storytelling
-Write exactly 12-15 pages, each page should be 5-6 sentences.`,
+
+FORMAT: Page 1: [5-6 sentences]. Page 2: [5-6 sentences]. Continue for 12-15 pages.`,
     userPromptTemplate: `Create a sophisticated story for {name} (age {age}). They are deeply interested in {hobbies} and find meaning in {favoriteAnimal} and {favoriteColor}. They appreciate {favoriteFood}. Explore themes of identity, purpose, and complex relationships.`,
     maxLength: 800,
     expectedPages: 13

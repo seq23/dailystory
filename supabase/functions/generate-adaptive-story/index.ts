@@ -63,10 +63,43 @@ serve(async (req) => {
       throw new Error('No story content generated')
     }
 
-    // Parse story into pages
-    const pages = storyText.split(/Page \d+:/g)
-      .filter(page => page.trim().length > 0)
-      .map(page => page.trim().replace(/^\d+\.\s*/, ''));
+    // Parse story into pages with improved logic
+    let pages = [];
+    
+    // Try multiple parsing strategies
+    if (storyText.includes('Page ')) {
+      // Standard format: "Page X: content"
+      pages = storyText.split(/Page \d+:/g)
+        .filter(page => page.trim().length > 0)
+        .map(page => page.trim().replace(/^\d+\.\s*/, ''));
+    } else if (storyText.includes('\n\n')) {
+      // Fallback: Split by double newlines
+      pages = storyText.split('\n\n')
+        .filter(page => page.trim().length > 0)
+        .map(page => page.trim());
+    } else {
+      // Emergency fallback: Split by sentences for single block
+      const sentences = storyText.split(/\. (?=[A-Z])/);
+      const wordsPerPage = readingLevel === 'beginner' ? 8 : readingLevel === 'easy' ? 15 : readingLevel === 'medium' ? 30 : 50;
+      
+      let currentPage = '';
+      let currentWords = 0;
+      
+      for (const sentence of sentences) {
+        const sentenceWords = sentence.split(' ').length;
+        if (currentWords + sentenceWords > wordsPerPage && currentPage) {
+          pages.push(currentPage.trim() + (currentPage.endsWith('.') ? '' : '.'));
+          currentPage = sentence;
+          currentWords = sentenceWords;
+        } else {
+          currentPage += (currentPage ? '. ' : '') + sentence;
+          currentWords += sentenceWords;
+        }
+      }
+      if (currentPage) {
+        pages.push(currentPage.trim() + (currentPage.endsWith('.') ? '' : '.'));
+      }
+    }
 
     const userName = config?.userName || 'the child';
     console.log(`Generated story for ${userName} about ${theme || 'adventure'}`);
