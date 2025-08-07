@@ -1,0 +1,61 @@
+name: Scheduled Comprehensive Testing
+
+on:
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  daily-comprehensive-testing:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Install Playwright browsers
+      run: npx playwright install --with-deps
+    
+    - name: Run full test suite with analytics
+      run: npm run test:comprehensive:analytics
+      env:
+        CI: true
+        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        ANALYTICS_MODE: true
+    
+    - name: Generate trend analysis
+      run: npm run test:analyze-trends
+    
+    - name: Upload comprehensive results
+      uses: actions/upload-artifact@v4
+      with:
+        name: daily-test-results-${{ github.run_number }}
+        path: |
+          test-results/
+          analytics/
+          performance-reports/
+          accessibility-reports/
+        retention-days: 30
+    
+    - name: Send Slack notification
+      if: always()
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        channel: '#testing-alerts'
+        text: |
+          Daily comprehensive testing completed
+          Status: ${{ job.status }}
+          View results: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

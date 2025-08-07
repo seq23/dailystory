@@ -1,0 +1,60 @@
+name: Performance Monitoring
+
+on:
+  schedule:
+    # Run weekly on Sundays at 3 AM UTC
+    - cron: '0 3 * * 0'
+  workflow_dispatch:
+
+jobs:
+  performance-benchmarking:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Install Playwright browsers
+      run: npx playwright install --with-deps
+    
+    - name: Run performance benchmarks
+      run: npm run test:performance:full
+      env:
+        CI: true
+        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        PERFORMANCE_MODE: true
+    
+    - name: Run load testing
+      run: npm run test:load
+      env:
+        CI: true
+        LOAD_TEST_USERS: 100
+        LOAD_TEST_DURATION: 300
+    
+    - name: Analyze performance regression
+      run: npm run test:performance:analyze
+    
+    - name: Upload performance reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: performance-reports-${{ github.run_number }}
+        path: |
+          performance-reports/
+          load-test-results/
+        retention-days: 90
+    
+    - name: Performance regression check
+      run: |
+        if [ -f "performance-reports/regression-detected.flag" ]; then
+          echo "Performance regression detected!"
+          exit 1
+        fi

@@ -1,0 +1,89 @@
+name: Continuous Integration Testing
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  comprehensive-testing:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18, 20]
+        browser: [chrome, firefox, safari]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Install Playwright browsers
+      run: npx playwright install --with-deps
+    
+    - name: Run comprehensive test suite
+      run: npm run test:comprehensive
+      env:
+        BROWSER: ${{ matrix.browser }}
+        CI: true
+        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results-${{ matrix.node-version }}-${{ matrix.browser }}
+        path: |
+          test-results/
+          coverage/
+          accessibility-reports/
+    
+    - name: Comment test results on PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          if (fs.existsSync('test-results/summary.json')) {
+            const results = JSON.parse(fs.readFileSync('test-results/summary.json', 'utf8'));
+            const comment = `## 🧪 Test Results Summary
+            
+            **Overall Success Rate:** ${results.successRate}%
+            **Total Tests:** ${results.totalTests}
+            **Duration:** ${results.duration}ms
+            
+            ### Category Breakdown:
+            ${Object.entries(results.categories).map(([name, data]) => 
+              `- **${name}:** ${data.passed}/${data.total} (${((data.passed/data.total)*100).toFixed(1)}%)`
+            ).join('\n')}
+            
+            ${results.successRate < 85 ? '⚠️ **Quality gate failed - Success rate below 85%**' : '✅ **Quality gate passed**'}
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+          }
+    
+    - name: Quality gate check
+      run: |
+        if [ -f "test-results/summary.json" ]; then
+          SUCCESS_RATE=$(cat test-results/summary.json | jq '.successRate')
+          if [ "$SUCCESS_RATE" -lt 85 ]; then
+            echo "Quality gate failed: Success rate $SUCCESS_RATE% is below 85%"
+            exit 1
+          fi
+        fi
