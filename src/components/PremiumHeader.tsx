@@ -43,8 +43,8 @@ export const PremiumHeader = ({
 
   const getAvatarUrl = () => {
     if (userInfo.avatar?.type && userInfo.avatar?.skinTone) {
-      // Use proper asset import path
-      return new URL(`../assets/avatar-${userInfo.avatar.type}-${userInfo.avatar.skinTone}.jpg`, import.meta.url).href;
+      // Use direct import path that works with Vite
+      return `/src/assets/avatar-${userInfo.avatar.type}-${userInfo.avatar.skinTone}.jpg`;
     }
     return undefined;
   };
