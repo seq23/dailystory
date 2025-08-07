@@ -47,12 +47,14 @@ export const mockUserInfo = {
   specialRequests: 'Make it exciting!'
 };
 
+import { vi, beforeEach, afterEach } from 'vitest';
+
 // Utility to suppress console logs during tests
 export const suppressConsoleLogs = () => {
   beforeEach(() => {
-    jest.spyOn(console, 'log').mockImplementation(() => {});
-    jest.spyOn(console, 'warn').mockImplementation(() => {});
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -67,7 +69,7 @@ export const createMockQueryClient = () => new QueryClient({
   defaultOptions: {
     queries: {
       retry: false,
-      cacheTime: 0,
+      gcTime: 0,
     },
     mutations: {
       retry: false,
@@ -79,7 +81,7 @@ export const createMockQueryClient = () => new QueryClient({
 export const waitForAsync = (ms = 0) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Mock implementations for common hooks
-export const mockToast = { toast: jest.fn() };
+export const mockToast = { toast: vi.fn() };
 export const mockMobile = { 
   isMobileOrTablet: false, 
   isCapacitor: false, 
