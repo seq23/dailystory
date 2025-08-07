@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { ChevronUp, ChevronDown, Play, Pause, Minus, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { TimerButtonTooltip } from "./TimerButtonTooltip";
 import { cn } from "@/lib/utils";
 
 interface CollapsibleFloatingTimerProps {
@@ -34,6 +35,7 @@ export const CollapsibleFloatingTimer = ({
   const { isMobile, isTablet, isMobileOrTablet } = useIsMobile();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [currentTooltip, setCurrentTooltip] = useState(0);
 
   // Auto-collapse on mobile when not in tutorial
   useEffect(() => {
@@ -41,6 +43,14 @@ export const CollapsibleFloatingTimer = ({
       setIsCollapsed(true);
     }
   }, [isMobile, showTutorial]);
+
+  // Reset tooltip when tutorial starts
+  useEffect(() => {
+    if (showTutorial && tutorialStep === 0) {
+      setCurrentTooltip(0);
+      setIsCollapsed(false); // Always expand during tutorial
+    }
+  }, [showTutorial, tutorialStep]);
 
   // Format time for display
   const formatTime = (seconds: number) => {
@@ -108,8 +118,33 @@ export const CollapsibleFloatingTimer = ({
             variant="outline"
             onClick={onToggleReading}
             className="w-8 h-8 p-0 rounded-full bg-white/95 backdrop-blur-sm"
+            id="timer-play-button"
           >
             {isReading ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+          </Button>
+          
+          {/* Show reduce button even in collapsed mode */}
+          {onReduceTime && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={onReduceTime}
+              disabled={timeRemaining <= 5 * 60}
+              className="w-8 h-8 p-0 rounded-full bg-white/95 backdrop-blur-sm"
+              id="timer-reduce-button"
+            >
+              <Minus className="w-3 h-3" />
+            </Button>
+          )}
+          
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={onEndSession}
+            className="w-8 h-8 p-0 rounded-full bg-white/95 backdrop-blur-sm"
+            id="timer-end-button"
+          >
+            <X className="w-3 h-3" />
           </Button>
           
           <Button
@@ -211,6 +246,43 @@ export const CollapsibleFloatingTimer = ({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Tutorial Tooltips */}
+      {isTutorialTimerStep && (
+        <>
+          <TimerButtonTooltip
+            targetId="timer-play-button"
+            title={t("tutorial.timer.playButton", "Play/Pause")}
+            description={t("tutorial.timer.playDescription", "Click to start or pause your reading timer")}
+            icon={Play}
+            isVisible={currentTooltip === 0}
+            delay={100}
+            onComplete={() => setCurrentTooltip(1)}
+          />
+          
+          {onReduceTime && (
+            <TimerButtonTooltip
+              targetId="timer-reduce-button"
+              title={t("tutorial.timer.reduceButton", "Reduce Time")}
+              description={t("tutorial.timer.reduceDescription", "Remove 5 minutes if you need less time")}
+              icon={Minus}
+              isVisible={currentTooltip === 1}
+              delay={0}
+              onComplete={() => setCurrentTooltip(2)}
+            />
+          )}
+          
+          <TimerButtonTooltip
+            targetId="timer-end-button"
+            title={t("tutorial.timer.endButton", "End Session")}
+            description={t("tutorial.timer.endDescription", "Finish your reading session early")}
+            icon={X}
+            isVisible={currentTooltip === (onReduceTime ? 2 : 1)}
+            delay={0}
+            onComplete={() => {}}
+          />
+        </>
       )}
     </div>
   );

@@ -5,7 +5,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { X, Timer, ChevronLeft, ChevronRight, Volume2, TrendingUp, TrendingDown, Play, Pause, BookOpen } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { TimerTooltipCallouts } from "./TimerTooltipCallouts";
 
 interface TutorialStep {
   target: string;
@@ -344,13 +343,6 @@ export const SmartTutorialOverlay = ({
     <>
       {/* Dark overlay with cutout effect */}
       <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40" />
-
-      {/* Timer Button Callouts - Only for timer step */}
-      <TimerTooltipCallouts 
-        isVisible={isVisible && currentStep === 0}
-        tutorialStep={currentStep}
-        onComplete={() => {}}
-      />
 
       {/* Tutorial Card - Positioned dynamically */}
       <div 
