@@ -65,9 +65,9 @@ export const CollapsibleFloatingTimer = ({
     if (!showTooltips || !showTutorial || tutorialStep !== 0) return;
 
     const tooltipSequence = [
-      { targetId: 'timer-play-button', delay: 1000, duration: 2500 },
-      { targetId: 'timer-end-button', delay: 3500, duration: 2000 },
-      { targetId: 'timer-reduce-button', delay: 5500, duration: 2000 }
+      { targetId: 'timer-end-button', delay: 1000, duration: 2000 },
+      { targetId: 'timer-reduce-button', delay: 3000, duration: 2000 },
+      { targetId: 'timer-play-button', delay: 5000, duration: 2500 }
     ];
 
     if (currentTooltipIndex < tooltipSequence.length) {
@@ -119,11 +119,6 @@ export const CollapsibleFloatingTimer = ({
 
   const tooltipButtons = [
     { 
-      id: 'timer-play-button',
-      title: 'Play/Pause Timer',
-      description: 'Click to start or pause your reading timer'
-    },
-    { 
       id: 'timer-end-button',
       title: 'End Session',
       description: 'Finish your reading session early'
@@ -132,6 +127,11 @@ export const CollapsibleFloatingTimer = ({
       id: 'timer-reduce-button',
       title: 'Reduce Time',
       description: 'Remove 5 minutes from your reading session'
+    },
+    { 
+      id: 'timer-play-button',
+      title: 'Play/Pause Timer',
+      description: 'Click to start or pause your reading timer'
     }
   ];
 
@@ -188,10 +188,10 @@ export const CollapsibleFloatingTimer = ({
           targetId={tooltip.id}
           title={tooltip.title}
           description={tooltip.description}
-          icon={index === 0 ? Play : index === 1 ? X : Minus}
+          icon={index === 0 ? X : index === 1 ? Minus : Play}
           isVisible={currentTooltipIndex === index}
           delay={index === 0 ? 1000 : 0}
-          duration={index === 0 ? 2500 : 2000}
+          duration={index === 0 ? 2000 : index === 1 ? 2000 : 2500}
         />
       ))}
 
