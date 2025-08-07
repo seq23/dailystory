@@ -147,6 +147,14 @@ All colors MUST be HSL.
     max-width: 100%;
     overflow-wrap: break-word;
     hyphens: auto;
+    white-space: normal;
+  }
+  
+  /* Ensure interactive words flow properly */
+  .story-content span,
+  .story-content .interactive-word {
+    display: inline;
+    white-space: normal;
   }
   
   /* Level-specific mobile optimizations */

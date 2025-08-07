@@ -905,7 +905,7 @@ export const InteractiveWord = ({
   };
 
   if (!shouldBeInteractive()) {
-    return <span className={className}>{word}</span>;
+    return <span className={`inline ${className}`}>{word}</span>;
   }
 
   // Visual indicators for word complexity
@@ -921,7 +921,7 @@ export const InteractiveWord = ({
   return (
     <span
       ref={wordRef}
-      className={`relative inline-block cursor-pointer touch-manipulation ${className} ${isPlaying ? 'opacity-70' : ''}`}
+      className={`relative inline cursor-pointer touch-manipulation ${className} ${isPlaying ? 'opacity-70' : ''}`}
       // Universal event handling - attach both mouse and touch events regardless of device detection
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
