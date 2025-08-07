@@ -947,6 +947,10 @@ export const InteractiveWord = ({
         }
       }}
       style={{
+        // Font inheritance for proper sizing
+        fontSize: 'inherit',
+        lineHeight: 'inherit',
+        display: 'inline',
         // Ensure interactions work in all environments
         userSelect: 'text',
         pointerEvents: 'auto',

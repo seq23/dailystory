@@ -609,7 +609,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
 
                   {/* Text Content - Enhanced Typography for Book-like Reading */}
                   <div className="lg:order-2 lg:col-span-3 flex flex-col justify-center">
-                    <div className="text-center lg:text-left px-2 md:px-4 lg:px-8">
+                    <div className="story-container">
                       <div 
                         className="story-content"
                         data-difficulty={currentDifficulty}

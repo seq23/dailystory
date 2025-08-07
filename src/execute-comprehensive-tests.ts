@@ -28,10 +28,23 @@ const testResults: any = {};
     const { OptimizedUserInfoFormTester } = await import('./testing/modules/OptimizedUserInfoFormTester');
     testResults.forms = await OptimizedUserInfoFormTester.runUserInfoFormTests();
     
-    // 5. Enhanced Formatting Test
+    // 5. Enhanced Formatting Test with CSS-Component Integration Check
     console.log('🎨 Running Enhanced Formatting Test...');
     const { EnhancedFormattingTester } = await import('./testing/modules/EnhancedFormattingTester');
     testResults.formatting = await EnhancedFormattingTester.runFormattingTests();
+    
+    // Additional validation for story display CSS integration
+    console.log('🔍 Validating story display CSS integration...');
+    const storyElements = document.querySelectorAll('.story-content[data-difficulty]');
+    if (storyElements.length > 0) {
+      storyElements.forEach(element => {
+        const computedStyle = window.getComputedStyle(element);
+        const fontSize = computedStyle.fontSize;
+        console.log(`📏 Story element font-size: ${fontSize} for difficulty: ${element.getAttribute('data-difficulty')}`);
+      });
+    } else {
+      console.log('⚠️ No story content elements found - may indicate CSS selector issues');
+    }
     
     // 6. Visual Design Test Suite
     console.log('🎨 Running Visual Design Test...');

@@ -26,16 +26,24 @@
   /* Interactive word flow - CRITICAL FOR TEXT PROCESSING */
   & span,
   & .interactive-word {
-    display: inline;
-    white-space: normal;
-    font-size: inherit;
-    line-height: inherit;
+    display: inline !important;
+    white-space: normal !important;
+    font-size: inherit !important;
+    line-height: inherit !important;
   }
   
-  /* Prevent Tailwind utility conflicts */
+  /* Prevent Tailwind utility conflicts - Force inheritance */
   & * {
-    font-size: inherit;
-    line-height: inherit;
+    font-size: inherit !important;
+    line-height: inherit !important;
+  }
+  
+  /* Force component boundaries to respect parent styles */
+  & [class*="interactive"],
+  & [class*="word"] {
+    font-size: inherit !important;
+    line-height: inherit !important;
+    display: inline !important;
   }
 }
 

@@ -48,6 +48,11 @@ export const MobileOptimizedInteractiveWord = (props: MobileOptimizedInteractive
         <span
           onClick={handleClick}
           className={`${props.className} inline cursor-pointer touch-manipulation select-none underline decoration-dotted decoration-2 underline-offset-2 text-primary hover:text-primary/80 active:text-primary/60 transition-colors duration-200`}
+          style={{ 
+            fontSize: 'inherit',
+            lineHeight: 'inherit',
+            display: 'inline'
+          }}
         >
           {props.word}
         </span>

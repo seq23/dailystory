@@ -977,32 +977,4 @@ All colors MUST be HSL.
   .mobile-tablet\:text-lg { font-size: 1.125rem; line-height: 1.75rem; }
 }
 
-/* Desktop Text Flow Fix - Target specific elements only */
-@media (min-width: 1024px) {
-  .story-content {
-    white-space: normal;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    line-height: 1.75;
-  }
-  
-  /* Only target text spans and interactive words, preserve block elements */
-  .story-content span:not(.block):not(.flex):not(.grid),
-  .story-content .interactive-word,
-  .story-content [class*="word-index"]:not(.block):not(.flex):not(.grid) {
-    display: inline;
-    white-space: normal;
-    word-break: normal;
-    line-height: inherit;
-  }
-  
-  /* Ensure buttons, divs, and other block elements remain block */
-  .story-content button,
-  .story-content div,
-  .story-content .card,
-  .story-content [class*="button"],
-  .story-content [class*="container"] {
-    display: revert;
-    white-space: revert;
-  }
-}
+/* Remove duplicate story content rules - handled by storyDisplay.css */
