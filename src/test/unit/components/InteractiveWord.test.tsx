@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { InteractiveWord } from '@/components/InteractiveWord';
 
@@ -38,22 +38,22 @@ describe('InteractiveWord Component', () => {
   });
 
   it('renders the word correctly', () => {
-    render(<InteractiveWord {...defaultProps} />);
-    expect(screen.getByText('hello')).toBeInTheDocument();
+    const { getByText } = render(<InteractiveWord {...defaultProps} />);
+    expect(getByText('hello')).toBeInTheDocument();
   });
 
   it('applies the correct CSS classes', () => {
-    render(<InteractiveWord {...defaultProps} />);
-    const wordElement = screen.getByText('hello');
+    const { getByText } = render(<InteractiveWord {...defaultProps} />);
+    const wordElement = getByText('hello');
     expect(wordElement).toHaveClass('test-class');
     expect(wordElement).toHaveClass('interactive-word');
   });
 
   it('handles click events', async () => {
     const user = userEvent.setup();
-    render(<InteractiveWord {...defaultProps} />);
+    const { getByText } = render(<InteractiveWord {...defaultProps} />);
     
-    const wordElement = screen.getByText('hello');
+    const wordElement = getByText('hello');
     await user.click(wordElement);
     
     // Should trigger TTS or explanation
@@ -61,8 +61,8 @@ describe('InteractiveWord Component', () => {
   });
 
   it('supports mobile touch interactions', async () => {
-    render(<InteractiveWord {...defaultProps} />);
-    const wordElement = screen.getByText('hello');
+    const { getByText } = render(<InteractiveWord {...defaultProps} />);
+    const wordElement = getByText('hello');
     
     // Simulate touch events manually since fireEvent is not available
     const touchEvent = new TouchEvent('touchstart', { bubbles: true });
@@ -73,8 +73,8 @@ describe('InteractiveWord Component', () => {
   });
 
   it('maintains proper inline display style', () => {
-    render(<InteractiveWord {...defaultProps} />);
-    const wordElement = screen.getByText('hello');
+    const { getByText } = render(<InteractiveWord {...defaultProps} />);
+    const wordElement = getByText('hello');
     
     expect(wordElement).toHaveStyle({
       display: 'inline',
@@ -84,11 +84,11 @@ describe('InteractiveWord Component', () => {
   });
 
   it('handles different difficulty levels', () => {
-    const { rerender } = render(<InteractiveWord {...defaultProps} difficulty="hard" />);
-    expect(screen.getByText('hello')).toBeInTheDocument();
+    const { rerender, getByText } = render(<InteractiveWord {...defaultProps} difficulty="hard" />);
+    expect(getByText('hello')).toBeInTheDocument();
     
     rerender(<InteractiveWord {...defaultProps} difficulty="medium" />);
-    expect(screen.getByText('hello')).toBeInTheDocument();
+    expect(getByText('hello')).toBeInTheDocument();
   });
 
   it('handles different user info', () => {
@@ -96,15 +96,15 @@ describe('InteractiveWord Component', () => {
       ...defaultProps.userInfo,
       nativeLanguage: 'es' as const,
     };
-    render(<InteractiveWord {...defaultProps} userInfo={spanishUser} />);
-    expect(screen.getByText('hello')).toBeInTheDocument();
+    const { getByText } = render(<InteractiveWord {...defaultProps} userInfo={spanishUser} />);
+    expect(getByText('hello')).toBeInTheDocument();
   });
 
   it('shows loading state during audio playback', async () => {
     const user = userEvent.setup();
-    render(<InteractiveWord {...defaultProps} />);
+    const { getByText } = render(<InteractiveWord {...defaultProps} />);
     
-    const wordElement = screen.getByText('hello');
+    const wordElement = getByText('hello');
     await user.click(wordElement);
     
     // The component should handle loading states properly
