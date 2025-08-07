@@ -410,12 +410,12 @@ export const SmartTutorialOverlay = ({
               
               {/* Skip Tutorial Button */}
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 onClick={onSkip}
                 className="text-muted-foreground hover:text-foreground"
               >
-                Skip Tutorial
+                Skip
               </Button>
             </div>
 
