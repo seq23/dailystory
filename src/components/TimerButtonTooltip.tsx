@@ -10,6 +10,7 @@ interface TimerButtonTooltipProps {
   icon: React.ComponentType<{ className?: string }>;
   isVisible: boolean;
   delay?: number;
+  duration?: number;
   onComplete?: () => void;
 }
 
@@ -20,6 +21,7 @@ export const TimerButtonTooltip = ({
   icon: Icon,
   isVisible,
   delay = 0,
+  duration = 2500,
   onComplete
 }: TimerButtonTooltipProps) => {
   const [position, setPosition] = useState({ top: 0, left: 0, show: false });
@@ -66,10 +68,10 @@ export const TimerButtonTooltip = ({
       (element as HTMLElement).style.zIndex = '99999';
       (element as HTMLElement).style.position = 'relative';
 
-      // Auto-complete after 2.5 seconds
+      // Auto-complete after specified duration
       const completeTimer = setTimeout(() => {
         onComplete?.();
-      }, 2500);
+      }, duration);
 
       return () => {
         clearTimeout(completeTimer);
@@ -80,7 +82,7 @@ export const TimerButtonTooltip = ({
     }, delay);
 
     return () => clearTimeout(timer);
-  }, [isVisible, targetId, delay, onComplete]);
+  }, [isVisible, targetId, delay, duration, onComplete]);
 
   if (!position.show) return null;
 

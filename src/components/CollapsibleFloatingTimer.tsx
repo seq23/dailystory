@@ -65,9 +65,9 @@ export const CollapsibleFloatingTimer = ({
     if (!showTooltips || !showTutorial || tutorialStep !== 0) return;
 
     const tooltipSequence = [
-      { targetId: 'timer-play-button', delay: 1000 },
-      { targetId: 'timer-end-button', delay: 3500 },
-      { targetId: 'timer-reduce-button', delay: 6000 }
+      { targetId: 'timer-play-button', delay: 1000, duration: 2500 },
+      { targetId: 'timer-end-button', delay: 3500, duration: 2000 },
+      { targetId: 'timer-reduce-button', delay: 5500, duration: 2000 }
     ];
 
     if (currentTooltipIndex < tooltipSequence.length) {
@@ -78,7 +78,7 @@ export const CollapsibleFloatingTimer = ({
             setShowTooltips(false);
             setCurrentTooltipIndex(0);
             onTimerTooltipComplete?.();
-          }, 2500);
+          }, tooltipSequence[currentTooltipIndex].duration);
         } else {
           setCurrentTooltipIndex(prev => prev + 1);
         }
@@ -190,7 +190,8 @@ export const CollapsibleFloatingTimer = ({
           description={tooltip.description}
           icon={index === 0 ? Play : index === 1 ? X : Minus}
           isVisible={currentTooltipIndex === index}
-          delay={index === 0 ? 500 : 0}
+          delay={index === 0 ? 1000 : 0}
+          duration={index === 0 ? 2500 : 2000}
         />
       ))}
 
