@@ -49,6 +49,7 @@ export const UnifiedTutorial: React.FC<UnifiedTutorialProps> = ({
   const [currentStep, setCurrentStep] = useState(0);
   const [cardPosition, setCardPosition] = useState<Position>({});
   const [highlightedElement, setHighlightedElement] = useState<Element | null>(null);
+  const [highlightedRect, setHighlightedRect] = useState<DOMRect | null>(null);
   const [showTempMagicWand, setShowTempMagicWand] = useState(false);
 
   console.log('🎓 UnifiedTutorial render:', { isVisible, currentStep, isPremium, isMobile, isTablet });
@@ -321,10 +322,11 @@ export const UnifiedTutorial: React.FC<UnifiedTutorialProps> = ({
     return position;
   };
 
-  // Element highlighting and positioning
+  // Element highlighting and positioning - stabilized to prevent shaking
   useEffect(() => {
     if (!isVisible || currentStep >= tutorialSteps.length) {
       clearElementHighlighting();
+      setHighlightedRect(null);
       return;
     }
 
@@ -335,11 +337,16 @@ export const UnifiedTutorial: React.FC<UnifiedTutorialProps> = ({
       const element = findTargetElement(step);
       
       if (element) {
+        // Cache the rect to prevent getBoundingClientRect calls during render
+        const rect = element.getBoundingClientRect();
+        setHighlightedRect(rect);
+        
         highlightElement(element);
         const position = calculateCardPosition(element, step);
         setCardPosition(position);
       } else {
         console.warn(`🎯 Tutorial: Element not found for step ${currentStep}: ${step.target}`);
+        setHighlightedRect(null);
         // Use center fallback position
         setCardPosition({
           top: "50%",
@@ -360,8 +367,9 @@ export const UnifiedTutorial: React.FC<UnifiedTutorialProps> = ({
     return () => {
       clearTimeout(retryTimer);
       clearElementHighlighting();
+      setHighlightedRect(null);
     };
-  }, [currentStep, isVisible, tutorialSteps, isMobile]);
+  }, [currentStep, isVisible]);
 
   const highlightElement = (element: Element) => {
     clearElementHighlighting();
@@ -477,8 +485,8 @@ export const UnifiedTutorial: React.FC<UnifiedTutorialProps> = ({
       <div className="fixed inset-0 z-[8000]">
         {/* Background dimming */}
         <div className="absolute inset-0 bg-black/50" />
-        {/* Spotlight effect around highlighted element */}
-        {highlightedElement && (
+        {/* Spotlight effect around highlighted element - using cached rect */}
+        {highlightedRect && (
           <div 
             className="absolute bg-black/20 backdrop-blur-sm"
             style={{
@@ -486,9 +494,10 @@ export const UnifiedTutorial: React.FC<UnifiedTutorialProps> = ({
               left: 0,
               right: 0,
               bottom: 0,
-              clipPath: highlightedElement ? 
-                `polygon(0% 0%, 0% 100%, ${highlightedElement.getBoundingClientRect().left - 10}px 100%, ${highlightedElement.getBoundingClientRect().left - 10}px ${highlightedElement.getBoundingClientRect().top - 10}px, ${highlightedElement.getBoundingClientRect().right + 10}px ${highlightedElement.getBoundingClientRect().top - 10}px, ${highlightedElement.getBoundingClientRect().right + 10}px ${highlightedElement.getBoundingClientRect().bottom + 10}px, ${highlightedElement.getBoundingClientRect().left - 10}px ${highlightedElement.getBoundingClientRect().bottom + 10}px, ${highlightedElement.getBoundingClientRect().left - 10}px 100%, 100% 100%, 100% 0%)` : 
-                'none'
+              clipPath: (() => {
+                const padding = 12;
+                return `polygon(0% 0%, 0% 100%, ${highlightedRect.left - padding}px 100%, ${highlightedRect.left - padding}px ${highlightedRect.top - padding}px, ${highlightedRect.right + padding}px ${highlightedRect.top - padding}px, ${highlightedRect.right + padding}px ${highlightedRect.bottom + padding}px, ${highlightedRect.left - padding}px ${highlightedRect.bottom + padding}px, ${highlightedRect.left - padding}px 100%, 100% 100%, 100% 0%)`;
+              })()
             }}
           />
         )}
