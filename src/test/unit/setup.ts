@@ -82,11 +82,17 @@ Object.defineProperty(window, 'speechSynthesis', {
   },
 });
 
-// Ensure global fallbacks
+// Ensure global fallbacks and proper constructor assignment
 global.AudioContext = window.AudioContext;
-global.webkitAudioContext = window.AudioContext; // Use AudioContext for compatibility
+global.webkitAudioContext = window.AudioContext;
 global.SpeechSynthesisUtterance = window.SpeechSynthesisUtterance;
 global.speechSynthesis = window.speechSynthesis;
+
+// Explicitly assign constructors to globalThis for better compatibility
+globalThis.AudioContext = window.AudioContext;
+globalThis.webkitAudioContext = window.AudioContext;
+globalThis.SpeechSynthesisUtterance = window.SpeechSynthesisUtterance;
+globalThis.speechSynthesis = window.speechSynthesis;
 
 // Mock URL.createObjectURL
 Object.assign(global.URL, {
