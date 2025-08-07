@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { X, Timer, ChevronLeft, ChevronRight, Volume2, TrendingUp, TrendingDown, Play, Pause, BookOpen } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { TimerTooltipCallouts } from "./TimerTooltipCallouts";
 
 interface TutorialStep {
   target: string;
@@ -50,7 +51,7 @@ export const SmartTutorialOverlay = ({
       target: "#timer-display",
       targetFallback: "[id*='timer']",
       title: t("tutorial.timer.title", "⏰ Reading Timer"),
-      description: t("tutorial.timer.description", "This shows your reading time! Click the play button to start/pause your timer. Use the minus button to reduce time if needed."),
+      description: t("tutorial.timer.description", "This shows your reading time! Watch for button tooltips showing what each control does."),
       icon: Timer,
       position: "left"
     },
@@ -96,77 +97,84 @@ export const SmartTutorialOverlay = ({
     }
   ];
 
-  // Calculate smart positioning for tutorial card
+  // Calculate smart positioning for tutorial card with enhanced viewport detection
   const calculateCardPosition = (targetElement: Element, preferredPosition: string): Position => {
     const rect = targetElement.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
-    const cardWidth = isMobile ? 300 : 400;
+    const cardWidth = isMobile ? Math.min(300, viewportWidth - 32) : Math.min(400, viewportWidth - 48);
     const cardHeight = isMobile ? 200 : 250;
     const padding = isMobile ? 16 : 24;
+    const safeMargin = isMobile ? 8 : 16; // Extra margin to prevent cutoffs
     
     let position: Position = {};
 
     // Handle different preferred positions with collision detection
     switch (preferredPosition) {
       case "left":
-        if (rect.left > cardWidth + padding) {
+        if (rect.left > cardWidth + padding + safeMargin) {
           position = {
             top: `${rect.top + rect.height / 2}px`,
             right: `${viewportWidth - rect.left + padding}px`,
             transform: "translateY(-50%)"
           };
         } else {
-          // Fallback to bottom
+          // Fallback to bottom with safe positioning
+          const leftPos = Math.max(safeMargin, Math.min(viewportWidth - cardWidth - safeMargin, rect.left + rect.width / 2 - cardWidth / 2));
           position = {
             top: `${rect.bottom + padding}px`,
-            left: `${Math.max(padding, rect.left + rect.width / 2 - cardWidth / 2)}px`
+            left: `${leftPos}px`
           };
         }
         break;
 
       case "right":
-        if (viewportWidth - rect.right > cardWidth + padding) {
+        if (viewportWidth - rect.right > cardWidth + padding + safeMargin) {
           position = {
             top: `${rect.top + rect.height / 2}px`,
             left: `${rect.right + padding}px`,
             transform: "translateY(-50%)"
           };
         } else {
-          // Fallback to bottom
+          // Fallback to bottom with safe positioning
+          const leftPos = Math.max(safeMargin, Math.min(viewportWidth - cardWidth - safeMargin, rect.left + rect.width / 2 - cardWidth / 2));
           position = {
             top: `${rect.bottom + padding}px`,
-            left: `${Math.max(padding, rect.left + rect.width / 2 - cardWidth / 2)}px`
+            left: `${leftPos}px`
           };
         }
         break;
 
       case "top":
-        if (rect.top > cardHeight + padding) {
+        if (rect.top > cardHeight + padding + safeMargin) {
+          const leftPos = Math.max(safeMargin, Math.min(viewportWidth - cardWidth - safeMargin, rect.left + rect.width / 2 - cardWidth / 2));
           position = {
             bottom: `${viewportHeight - rect.top + padding}px`,
-            left: `${Math.max(padding, rect.left + rect.width / 2 - cardWidth / 2)}px`
+            left: `${leftPos}px`
           };
         } else {
-          // Fallback to bottom
+          // Fallback to bottom with safe positioning
+          const leftPos = Math.max(safeMargin, Math.min(viewportWidth - cardWidth - safeMargin, rect.left + rect.width / 2 - cardWidth / 2));
           position = {
             top: `${rect.bottom + padding}px`,
-            left: `${Math.max(padding, rect.left + rect.width / 2 - cardWidth / 2)}px`
+            left: `${leftPos}px`
           };
         }
         break;
 
       case "bottom":
-        if (viewportHeight - rect.bottom > cardHeight + padding) {
+        if (viewportHeight - rect.bottom > cardHeight + padding + safeMargin) {
+          const leftPos = Math.max(safeMargin, Math.min(viewportWidth - cardWidth - safeMargin, rect.left + rect.width / 2 - cardWidth / 2));
           position = {
             top: `${rect.bottom + padding}px`,
-            left: `${Math.max(padding, rect.left + rect.width / 2 - cardWidth / 2)}px`
+            left: `${leftPos}px`
           };
         } else {
-          // Fallback to top
+          // Fallback to top with safe positioning
+          const leftPos = Math.max(safeMargin, Math.min(viewportWidth - cardWidth - safeMargin, rect.left + rect.width / 2 - cardWidth / 2));
           position = {
             bottom: `${viewportHeight - rect.top + padding}px`,
-            left: `${Math.max(padding, rect.left + rect.width / 2 - cardWidth / 2)}px`
+            left: `${leftPos}px`
           };
         }
         break;
@@ -320,6 +328,13 @@ export const SmartTutorialOverlay = ({
       {/* Dark overlay with cutout effect */}
       <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40" />
 
+      {/* Timer Button Callouts - Only for timer step */}
+      <TimerTooltipCallouts 
+        isVisible={isVisible && currentStep === 0}
+        tutorialStep={currentStep}
+        onComplete={() => {}}
+      />
+
       {/* Tutorial Card - Positioned dynamically */}
       <div 
         className="fixed z-50"
@@ -327,7 +342,7 @@ export const SmartTutorialOverlay = ({
       >
         <Card className={cn(
           "bg-white dark:bg-gray-900 shadow-2xl border-2 border-primary/30 rounded-2xl",
-          isMobile ? "w-80" : "w-96",
+          isMobile ? `w-[${Math.min(300, window.innerWidth - 32)}px]` : `w-[${Math.min(400, window.innerWidth - 48)}px]`,
           "animate-in fade-in slide-in-from-top-4 duration-300"
         )}>
           <CardContent className="p-6">

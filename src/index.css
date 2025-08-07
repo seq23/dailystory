@@ -499,6 +499,21 @@ All colors MUST be HSL.
   }
 }
 
+/* Timer button highlight animation */
+.timer-button-highlight {
+  @apply ring-2 ring-blue-400 ring-offset-2 rounded-full;
+  animation: timer-button-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes timer-button-pulse {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(59, 130, 246, 0.7);
+  }
+}
+
 /* Ensure highlighted elements are always visible during tutorial */
 .tutorial-highlight {
   z-index: 55 !important;
