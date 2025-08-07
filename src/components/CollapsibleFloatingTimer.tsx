@@ -92,60 +92,29 @@ export const CollapsibleFloatingTimer = ({
 
   if (isCollapsed && !isTutorialTimerStep) {
     return (
-      <div className={cn(getPositionClasses(), "flex flex-col items-center gap-2")}>
-        {/* Collapsed Timer Display */}
+      <div className={cn(getPositionClasses())}>
+        {/* Truly Collapsed - Only Timer Circle */}
         <div 
-          className="bg-background/95 backdrop-blur-sm rounded-full shadow-lg border-2 border-primary/20 p-3 cursor-pointer hover:scale-105 transition-transform min-w-[44px] min-h-[44px] flex items-center justify-center"
+          className="relative w-16 h-16 bg-background/95 backdrop-blur-sm rounded-full shadow-lg border-2 border-primary/20 cursor-pointer hover:scale-110 transition-all duration-200 group flex items-center justify-center"
           onClick={() => setIsCollapsed(false)}
           id="timer-display"
+          role="button"
+          aria-label="Expand timer controls"
         >
+          {/* Time display */}
           <div className={cn("text-sm font-bold", getTimerColor())}>
             {formatTime(timeRemaining)}
           </div>
-        </div>
-        
-        {/* Quick Controls - Always show all buttons */}
-        <div className="flex gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={onToggleReading}
-            className="min-w-[44px] min-h-[44px] p-0 rounded-full bg-background/95 backdrop-blur-sm"
-            id="timer-play-button"
-          >
-            {isReading ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-          </Button>
           
-          {/* Always show reduce time button */}
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={onReduceTime}
-            disabled={timeRemaining <= 5 * 60}
-            className="min-w-[44px] min-h-[44px] p-0 rounded-full bg-background/95 backdrop-blur-sm"
-            id="timer-reduce-button"
-          >
-            <Minus className="w-4 h-4" />
-          </Button>
+          {/* Subtle expand indicator - only visible on hover */}
+          <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-primary rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
+            <ChevronUp className="w-2 h-2 text-primary-foreground" />
+          </div>
           
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={onEndSession}
-            className="min-w-[44px] min-h-[44px] p-0 rounded-full bg-background/95 backdrop-blur-sm"
-            id="timer-end-button"
-          >
-            <X className="w-4 h-4" />
-          </Button>
-          
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setIsCollapsed(false)}
-            className="min-w-[44px] min-h-[44px] p-0 rounded-full bg-background/95 backdrop-blur-sm"
-          >
-            <ChevronUp className="w-4 h-4" />
-          </Button>
+          {/* Reading state indicator */}
+          {isReading && (
+            <div className="absolute -top-1 -left-1 w-3 h-3 bg-green-500 rounded-full animate-pulse" />
+          )}
         </div>
       </div>
     );
