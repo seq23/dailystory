@@ -80,12 +80,13 @@ export class LiveGenerationService {
         }
       });
 
-      if (error || !data?.content) {
+      if (error || !data?.pages) {
         console.error('🚀 Live Generation: Failed to generate first page:', error);
         return this.generateEnhancedFallbackFirstPage(userInfo, difficulty, 'api_error');
       }
 
-      const content = data.content.trim();
+      // Extract first page from the pages array
+      const content = (data.pages[0] || '').trim();
       
       // Simple validation - just check if content exists and has reasonable length
       if (!content || content.length < 10) {
@@ -166,12 +167,13 @@ export class LiveGenerationService {
         }
       });
 
-      if (error || !data?.content) {
+      if (error || !data?.pages) {
         console.error('🚀 Live Generation: Failed to generate page:', error);
         return this.generateEnhancedFallbackNextPage(context, nextPageNumber, isLastPage, 'api_error');
       }
 
-      const content = data.content.trim();
+      // Extract first page from the pages array
+      const content = (data.pages[0] || '').trim();
       
       // Simple validation - just check if content exists and has reasonable length
       if (!content || content.length < 10) {

@@ -355,7 +355,12 @@ export class EnhancedFallbackManager {
     const templateIndex = pageIndex % arcTemplates.length;
     const selectedTemplate = arcTemplates[templateIndex];
 
-    return this.processTemplate(selectedTemplate, userInfo, difficulty);
+    const processed = this.processTemplate(selectedTemplate, userInfo, difficulty);
+    
+    // Validate that all placeholders were replaced
+    this.validateTemplateProcessing(processed, pageIndex);
+    
+    return processed;
   }
 
   /**
@@ -380,8 +385,10 @@ export class EnhancedFallbackManager {
   ): string {
     let processed = template;
     
-    // Replace user placeholders
-    processed = processed.replace(/{name}/g, NameFormatter.capitalize(userInfo.name || 'Alex'));
+    // Replace user placeholders (support both {name} and {userName})
+    const formattedName = NameFormatter.capitalize(userInfo.name || 'Alex');
+    processed = processed.replace(/{name}/g, formattedName);
+    processed = processed.replace(/{userName}/g, formattedName);
     
     // Get difficulty-appropriate vocabulary
     const vocabulary = this.getDifficultyVocabulary(difficulty);
@@ -472,6 +479,20 @@ export class EnhancedFallbackManager {
     
     const fallbacks = basicFallbacks[difficulty];
     return fallbacks[pageIndex % fallbacks.length];
+  }
+
+  /**
+   * Validate that template processing was successful
+   */
+  private static validateTemplateProcessing(content: string, pageIndex: number): void {
+    const unreplacedPlaceholders = content.match(/\{[^}]+\}/g);
+    
+    if (unreplacedPlaceholders) {
+      console.warn(`🚨 Template validation failed on page ${pageIndex}:`, {
+        unreplacedPlaceholders,
+        content: content.substring(0, 100) + '...'
+      });
+    }
   }
 
   /**
