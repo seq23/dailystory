@@ -189,7 +189,7 @@ export const UnifiedTutorial: React.FC<UnifiedTutorialProps> = ({
     return element;
   };
 
-  // Smart positioning that works across all devices
+  // Smart positioning that works across all devices with better clearance
   const calculateCardPosition = (element: Element | null, step: TutorialStep): Position => {
     if (!element) {
       // Fallback to center position
@@ -210,13 +210,19 @@ export const UnifiedTutorial: React.FC<UnifiedTutorialProps> = ({
     const cardWidth = isMobile ? Math.min(320, viewportWidth - 40) : isTablet ? 360 : 400;
     const cardHeight = isMobile ? 280 : 260;
     const margin = isMobile ? 20 : 30;
-    const clearance = isMobile ? 150 : 120;
+    const clearance = isMobile ? 20 : 40; // Reduced clearance to keep elements visible
 
-    // Special positioning for magic wand step
-    if (currentStep === 3) {
-      if (isMobile) {
-        return {
-          bottom: "120px",
+    // Calculate safe position with better element visibility
+    let position: Position = { zIndex: "9000" };
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    if (isMobile) {
+      // Mobile: Position based on element location to avoid covering
+      if (centerY > viewportHeight * 0.6) {
+        // Element in bottom area - position tutorial above
+        position = {
+          top: `${Math.max(margin, rect.top - cardHeight - clearance)}px`,
           left: `${margin}px`,
           right: `${margin}px`,
           transform: "none",
@@ -224,36 +230,20 @@ export const UnifiedTutorial: React.FC<UnifiedTutorialProps> = ({
           zIndex: "9000"
         };
       } else {
-        return {
-          top: "50%",
-          left: "8%",
-          transform: "translateY(-50%)",
+        // Element in top/middle area - position tutorial below
+        position = {
+          top: `${Math.min(rect.bottom + clearance, viewportHeight - cardHeight - margin)}px`,
+          left: `${margin}px`,
+          right: `${margin}px`,
+          transform: "none",
           maxWidth: `${cardWidth}px`,
           zIndex: "9000"
         };
       }
-    }
-
-    // Calculate safe position based on device and element position
-    let position: Position = { zIndex: "9000" };
-
-    if (isMobile) {
-      // Mobile: Always use bottom positioning for safety
-      position = {
-        bottom: `${margin + 60}px`,
-        left: `${margin}px`,
-        right: `${margin}px`,
-        transform: "none",
-        maxWidth: `${cardWidth}px`,
-        zIndex: "9000"
-      };
     } else if (isTablet) {
-      // Tablet: Smart positioning with safety margins
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-      
-      if (centerY > viewportHeight / 2) {
-        // Element in bottom half - position above
+      // Tablet: Smart positioning to avoid element coverage
+      if (centerY > viewportHeight * 0.6) {
+        // Element in bottom area - position above
         position = {
           top: `${Math.max(margin, rect.top - cardHeight - clearance)}px`,
           left: `${Math.max(margin, Math.min(centerX - cardWidth/2, viewportWidth - cardWidth - margin))}px`,
@@ -262,7 +252,7 @@ export const UnifiedTutorial: React.FC<UnifiedTutorialProps> = ({
           zIndex: "9000"
         };
       } else {
-        // Element in top half - position below
+        // Element in top/middle area - position below
         position = {
           top: `${Math.min(rect.bottom + clearance, viewportHeight - cardHeight - margin)}px`,
           left: `${Math.max(margin, Math.min(centerX - cardWidth/2, viewportWidth - cardWidth - margin))}px`,
@@ -272,55 +262,59 @@ export const UnifiedTutorial: React.FC<UnifiedTutorialProps> = ({
         };
       }
     } else {
-      // Desktop: Precise positioning based on step.position
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
+      // Desktop: Intelligent positioning to avoid element coverage
+      const spaceLeft = rect.left;
+      const spaceRight = viewportWidth - rect.right;
+      const spaceTop = rect.top;
+      const spaceBottom = viewportHeight - rect.bottom;
 
-      switch (step.position) {
-        case "left":
-          position = {
-            top: `${Math.max(margin, Math.min(centerY - cardHeight/2, viewportHeight - cardHeight - margin))}px`,
-            left: `${Math.max(margin, rect.left - cardWidth - clearance)}px`,
-            transform: "none",
-            maxWidth: `${cardWidth}px`,
-            zIndex: "9000"
-          };
-          break;
-        case "right":
-          position = {
-            top: `${Math.max(margin, Math.min(centerY - cardHeight/2, viewportHeight - cardHeight - margin))}px`,
-            left: `${Math.min(rect.right + clearance, viewportWidth - cardWidth - margin)}px`,
-            transform: "none",
-            maxWidth: `${cardWidth}px`,
-            zIndex: "9000"
-          };
-          break;
-        case "top":
-          position = {
-            top: `${Math.max(margin, rect.top - cardHeight - clearance)}px`,
-            left: `${Math.max(margin, Math.min(centerX - cardWidth/2, viewportWidth - cardWidth - margin))}px`,
-            transform: "none",
-            maxWidth: `${cardWidth}px`,
-            zIndex: "9000"
-          };
-          break;
-        case "bottom":
-          position = {
-            top: `${Math.min(rect.bottom + clearance, viewportHeight - cardHeight - margin)}px`,
-            left: `${Math.max(margin, Math.min(centerX - cardWidth/2, viewportWidth - cardWidth - margin))}px`,
-            transform: "none",
-            maxWidth: `${cardWidth}px`,
-            zIndex: "9000"
-          };
-          break;
-        default:
-          position = {
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            maxWidth: `${cardWidth}px`,
-            zIndex: "9000"
-          };
+      // Choose best position based on available space
+      if (spaceRight >= cardWidth + clearance && centerY > cardHeight/2 && centerY < viewportHeight - cardHeight/2) {
+        // Position to the right
+        position = {
+          top: `${Math.max(margin, Math.min(centerY - cardHeight/2, viewportHeight - cardHeight - margin))}px`,
+          left: `${rect.right + clearance}px`,
+          transform: "none",
+          maxWidth: `${cardWidth}px`,
+          zIndex: "9000"
+        };
+      } else if (spaceLeft >= cardWidth + clearance && centerY > cardHeight/2 && centerY < viewportHeight - cardHeight/2) {
+        // Position to the left
+        position = {
+          top: `${Math.max(margin, Math.min(centerY - cardHeight/2, viewportHeight - cardHeight - margin))}px`,
+          left: `${rect.left - cardWidth - clearance}px`,
+          transform: "none",
+          maxWidth: `${cardWidth}px`,
+          zIndex: "9000"
+        };
+      } else if (spaceBottom >= cardHeight + clearance) {
+        // Position below
+        position = {
+          top: `${rect.bottom + clearance}px`,
+          left: `${Math.max(margin, Math.min(centerX - cardWidth/2, viewportWidth - cardWidth - margin))}px`,
+          transform: "none",
+          maxWidth: `${cardWidth}px`,
+          zIndex: "9000"
+        };
+      } else if (spaceTop >= cardHeight + clearance) {
+        // Position above
+        position = {
+          top: `${rect.top - cardHeight - clearance}px`,
+          left: `${Math.max(margin, Math.min(centerX - cardWidth/2, viewportWidth - cardWidth - margin))}px`,
+          transform: "none",
+          maxWidth: `${cardWidth}px`,
+          zIndex: "9000"
+        };
+      } else {
+        // Fallback: center with offset to avoid element
+        const offsetY = centerY < viewportHeight/2 ? 100 : -100;
+        position = {
+          top: `${Math.max(margin, Math.min(viewportHeight/2 + offsetY, viewportHeight - cardHeight - margin))}px`,
+          left: `${Math.max(margin, Math.min(centerX - cardWidth/2, viewportWidth - cardWidth - margin))}px`,
+          transform: "none",
+          maxWidth: `${cardWidth}px`,
+          zIndex: "9000"
+        };
       }
     }
 
@@ -376,18 +370,20 @@ export const UnifiedTutorial: React.FC<UnifiedTutorialProps> = ({
       'tutorial-highlight',
       'ring-4',
       'ring-yellow-400',
-      'ring-offset-4',
+      'ring-offset-2',
       'ring-offset-background',
       'rounded-lg',
       'shadow-2xl',
-      'shadow-yellow-400/50',
-      'relative',
-      'animate-pulse'
+      'shadow-yellow-400/80',
+      'relative'
     );
     
-    // Ensure high z-index
+    // Ensure element is clearly visible and above background blur
     (element as HTMLElement).style.zIndex = '8500';
     (element as HTMLElement).style.position = 'relative';
+    (element as HTMLElement).style.backgroundColor = 'hsl(var(--background))';
+    (element as HTMLElement).style.transform = 'scale(1.02)';
+    (element as HTMLElement).style.transition = 'all 0.3s ease';
     
     setHighlightedElement(element);
   };
@@ -398,16 +394,18 @@ export const UnifiedTutorial: React.FC<UnifiedTutorialProps> = ({
         'tutorial-highlight',
         'ring-4',
         'ring-yellow-400',
-        'ring-offset-4',
+        'ring-offset-2',
         'ring-offset-background',
         'rounded-lg',
         'shadow-2xl',
-        'shadow-yellow-400/50',
-        'relative',
-        'animate-pulse'
+        'shadow-yellow-400/80',
+        'relative'
       );
       (highlightedElement as HTMLElement).style.zIndex = '';
       (highlightedElement as HTMLElement).style.position = '';
+      (highlightedElement as HTMLElement).style.backgroundColor = '';
+      (highlightedElement as HTMLElement).style.transform = '';
+      (highlightedElement as HTMLElement).style.transition = '';
       setHighlightedElement(null);
     }
   };
@@ -447,30 +445,54 @@ export const UnifiedTutorial: React.FC<UnifiedTutorialProps> = ({
   return (
     <>
 
-      {/* Temporary Magic Wand for Free Users */}
+      {/* Temporary Magic Wand for Free Users - positioned near tutorial card */}
       {showTempMagicWand && (
-        <Button
-          id="temp-tutorial-magic-wand"
-          className={cn(
-            "fixed top-1/2 right-8 z-[8600]",
-            "bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0",
-            "hover:from-amber-600 hover:to-orange-600 transition-all duration-300",
-            "rounded-full p-6 shadow-2xl shadow-amber-500/60",
-            "animate-pulse",
-            "ring-4 ring-amber-300/60 ring-offset-4 ring-offset-background"
-          )}
-          disabled
-          aria-label="Magic Wand (Tutorial Preview)"
-          style={{ transform: 'translateY(-50%)' }}
+        <div 
+          className="fixed z-[8600]"
+          style={{
+            top: cardPosition.top ? `calc(${cardPosition.top} + 20px)` : '50%',
+            left: cardPosition.left ? `calc(${cardPosition.left} + ${isMobile ? '280px' : '380px'})` : '50%',
+            transform: !cardPosition.left ? 'translate(-50%, -50%)' : 'none'
+          }}
         >
-          <Wand2 className="w-8 h-8" />
-          <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-300 rounded-full animate-ping" />
-          <div className="absolute -bottom-1 -left-1 w-3 h-3 bg-orange-300 rounded-full animate-ping delay-500" />
-        </Button>
+          <Button
+            id="temp-tutorial-magic-wand"
+            className={cn(
+              "bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0",
+              "hover:from-amber-600 hover:to-orange-600 transition-all duration-300",
+              "rounded-full p-4 shadow-2xl shadow-amber-500/60",
+              "ring-4 ring-amber-300/60 ring-offset-2 ring-offset-background"
+            )}
+            disabled
+            aria-label="Magic Wand (Tutorial Preview)"
+          >
+            <Wand2 className="w-6 h-6" />
+            <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-300 rounded-full animate-ping" />
+            <div className="absolute -bottom-1 -left-1 w-2 h-2 bg-orange-300 rounded-full animate-ping delay-500" />
+          </Button>
+        </div>
       )}
 
-      {/* Semi-transparent overlay */}
-      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[8000]" />
+      {/* Focused overlay that doesn't blur highlighted elements */}
+      <div className="fixed inset-0 z-[8000]">
+        {/* Background dimming */}
+        <div className="absolute inset-0 bg-black/50" />
+        {/* Spotlight effect around highlighted element */}
+        {highlightedElement && (
+          <div 
+            className="absolute bg-black/20 backdrop-blur-sm"
+            style={{
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              clipPath: highlightedElement ? 
+                `polygon(0% 0%, 0% 100%, ${highlightedElement.getBoundingClientRect().left - 10}px 100%, ${highlightedElement.getBoundingClientRect().left - 10}px ${highlightedElement.getBoundingClientRect().top - 10}px, ${highlightedElement.getBoundingClientRect().right + 10}px ${highlightedElement.getBoundingClientRect().top - 10}px, ${highlightedElement.getBoundingClientRect().right + 10}px ${highlightedElement.getBoundingClientRect().bottom + 10}px, ${highlightedElement.getBoundingClientRect().left - 10}px ${highlightedElement.getBoundingClientRect().bottom + 10}px, ${highlightedElement.getBoundingClientRect().left - 10}px 100%, 100% 100%, 100% 0%)` : 
+                'none'
+            }}
+          />
+        )}
+      </div>
 
       {/* Tutorial Card */}
       <div 
