@@ -8,6 +8,7 @@ import './i18n/config'
 import { finalVerificationAudit } from './utils/finalVerificationAudit';
 import { tripleCheckImplementation } from './utils/tripleCheckAudit';
 import './run-comprehensive-test-fix';
+import './execute-tests-now';
 
 // Expose audit functions globally for console access
 if (typeof window !== 'undefined') {
