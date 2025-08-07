@@ -30,13 +30,22 @@ jobs:
     - name: Install Playwright browsers
       run: npx playwright install --with-deps
     
-    - name: Run comprehensive test suite
-      run: npm run test:comprehensive
+    - name: Run unit tests
+      run: npm run test:unit
       env:
-        BROWSER: ${{ matrix.browser }}
+        CI: true
+    
+    - name: Run integration tests  
+      run: npm run test:integration
+      env:
         CI: true
         SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
         SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+    
+    - name: Run E2E tests
+      run: npm run test:e2e
+      env:
+        CI: true
     
     - name: Upload test results
       uses: actions/upload-artifact@v4
