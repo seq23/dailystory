@@ -1,7 +1,12 @@
-/* Unified story display styles - no conflicts, clean hierarchy */
+/* SINGLE SOURCE OF TRUTH for story display styles */
 
 /* Base story content container */
 .story-content {
+  /* Text rendering optimizations */
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "liga" 1, "kern" 1;
+  
   /* Text flow and readability */
   line-height: 1.6;
   word-spacing: 0.05em;
@@ -18,11 +23,19 @@
   margin: 0.5rem 0;
   backdrop-filter: blur(8px);
   
-  /* Interactive word flow */
+  /* Interactive word flow - CRITICAL FOR TEXT PROCESSING */
   & span,
   & .interactive-word {
     display: inline;
     white-space: normal;
+    font-size: inherit;
+    line-height: inherit;
+  }
+  
+  /* Prevent Tailwind utility conflicts */
+  & * {
+    font-size: inherit;
+    line-height: inherit;
   }
 }
 

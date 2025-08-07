@@ -5,7 +5,7 @@ console.log('=' .repeat(70));
 // Store results for later display
 const testResults: any = {};
 
-// Execute tests and capture results
+// Execute ALL tests including UI/UX
 (async () => {
   try {
     // 1. Mobile Test
@@ -32,6 +32,16 @@ const testResults: any = {};
     console.log('🎨 Running Enhanced Formatting Test...');
     const { EnhancedFormattingTester } = await import('./testing/modules/EnhancedFormattingTester');
     testResults.formatting = await EnhancedFormattingTester.runFormattingTests();
+    
+    // 6. Visual Design Test Suite
+    console.log('🎨 Running Visual Design Test...');
+    const { VisualDesignTestSuite } = await import('./testing/modules/VisualDesignTestSuite');
+    testResults.visualDesign = await VisualDesignTestSuite.runVisualDesignTests();
+    
+    // 7. Enhanced UX Test Suite  
+    console.log('😊 Running Enhanced UX Test Suite...');
+    const { EnhancedUXTestSuite } = await import('./testing/modules/EnhancedUXTestSuite');
+    testResults.ux = await EnhancedUXTestSuite.runComprehensiveUXTests();
     
     // Display comprehensive results
     console.log('\n📊 COMPREHENSIVE TEST RESULTS SUMMARY');
@@ -71,6 +81,20 @@ const testResults: any = {};
         issues: testResults.formatting?.issues?.filter((i: any) => i.severity === 'critical') || [],
         cssConflicts: testResults.formatting?.metrics?.cssConflicts || 0,
         textFlowIssues: testResults.formatting?.metrics?.textFlowConsistency || 0
+      },
+      visualDesign: {
+        score: testResults.visualDesign?.score || 0,
+        criticalIssues: testResults.visualDesign?.issues?.filter((i: any) => i.severity === 'critical')?.length || 0,
+        quickWins: testResults.visualDesign?.issues?.filter((i: any) => i.quickWin)?.length || 0,
+        designSystemCompliance: testResults.visualDesign?.details?.find((d: any) => d.testName === 'Design System Compliance')?.score || 0
+      },
+      ux: {
+        overallScore: testResults.ux?.executionSummary?.overallUXScore || 0,
+        userJourneyScore: testResults.ux?.userJourney?.overallScore || 0,
+        cognitiveLoadScore: testResults.ux?.cognitiveLoad?.overallScore || 0,
+        emotionalUXScore: testResults.ux?.emotionalUX?.overallScore || 0,
+        criticalIssues: testResults.ux?.executionSummary?.criticalIssuesCount || 0,
+        quickWins: testResults.ux?.comprehensiveAnalysis?.quickWins?.length || 0
       }
     };
     
@@ -97,6 +121,18 @@ const testResults: any = {};
     console.log(`   CSS Conflicts: ${results.formatting.cssConflicts}`);
     console.log(`   Text Flow Issues: ${results.formatting.textFlowIssues}`);
     console.log(`   Critical Issues: ${results.formatting.criticalIssues}`);
+    
+    console.log(`🎨 VISUAL DESIGN: ${results.visualDesign.score.toFixed(1)}%`);
+    console.log(`   Design System: ${results.visualDesign.designSystemCompliance.toFixed(1)}%`);
+    console.log(`   Quick Wins: ${results.visualDesign.quickWins}`);
+    console.log(`   Critical Issues: ${results.visualDesign.criticalIssues}`);
+    
+    console.log(`😊 UX OVERALL: ${results.ux.overallScore.toFixed(1)}%`);
+    console.log(`   User Journey: ${results.ux.userJourneyScore.toFixed(1)}%`);
+    console.log(`   Cognitive Load: ${results.ux.cognitiveLoadScore.toFixed(1)}%`);
+    console.log(`   Emotional UX: ${results.ux.emotionalUXScore.toFixed(1)}%`);
+    console.log(`   Critical Issues: ${results.ux.criticalIssues}`);
+    console.log(`   Quick Wins: ${results.ux.quickWins}`);
     
     // Store globally for retrieval
     (window as any).comprehensiveTestResults = results;

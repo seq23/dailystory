@@ -610,20 +610,13 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                   {/* Text Content - Enhanced Typography for Book-like Reading */}
                   <div className="lg:order-2 lg:col-span-3 flex flex-col justify-center">
                     <div className="text-center lg:text-left px-2 md:px-4 lg:px-8">
-                      <div className={cn(
-                        "font-bold text-foreground mb-6 story-content leading-relaxed",
-                        currentDifficulty === "beginner" && "!text-4xl !md:text-5xl !lg:text-6xl !important", // Much larger font for beginners
-                        currentDifficulty === "easy" && "text-2xl md:text-3xl lg:text-4xl",
-                        currentDifficulty === "medium" && "text-xl md:text-2xl lg:text-3xl", 
-                        currentDifficulty === "hard" && "text-lg md:text-xl lg:text-2xl",
-                        currentDifficulty === "expert" && "text-base md:text-lg lg:text-xl",
-                        isMobileOrTablet ? 'mobile-reading-optimized' : '',
-                        isMobileOrTablet ? mobileTextConfig.letterSpacing : '',
-                        mobileTextConfig.paragraphSpacing
-                      )}>
+                      <div 
+                        className="story-content"
+                        data-difficulty={currentDifficulty}
+                      >
                         {processTextWithConsistentFlow({
                           text: currentStory,
-                          className: "cursor-pointer hover:bg-primary/10 rounded px-1 transition-colors touch-target",
+                          className: "interactive-word",
                           difficulty: currentDifficulty,
                           userInfo,
                           isPremium,
