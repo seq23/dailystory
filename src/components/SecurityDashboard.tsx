@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Download, Trash2, Shield, AlertTriangle } from 'lucide-react';
 import { useSecurityMonitoring } from '@/hooks/useSecurityMonitoring';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface SecurityEvent {
   type: string;
@@ -16,6 +17,7 @@ export const SecurityDashboard: React.FC = () => {
   const [events, setEvents] = useState<SecurityEvent[]>([]);
   const [criticalEvents, setCriticalEvents] = useState<SecurityEvent[]>([]);
   const [isVisible, setIsVisible] = useState(false);
+  const { isMobile } = useIsMobile();
   
   const { getEvents, getCriticalEvents, exportEvents, clearEvents } = useSecurityMonitoring();
 
@@ -64,18 +66,24 @@ export const SecurityDashboard: React.FC = () => {
     return (
       <Button
         variant="outline"
-        size="sm"
+        size={isMobile ? "icon" : "sm"}
         onClick={() => setIsVisible(true)}
         className="fixed bottom-4 right-4 z-50"
+        title="Security Dashboard"
       >
-        <Shield className="h-4 w-4 mr-2" />
-        Security Dashboard
+        <Shield className="h-4 w-4" />
+        {criticalEvents.length > 0 && (
+          <div className="absolute -top-1 -right-1 w-3 h-3 bg-destructive rounded-full">
+            <span className="text-xs text-white">{criticalEvents.length}</span>
+          </div>
+        )}
+        {!isMobile && <span className="ml-2">Security Dashboard</span>}
       </Button>
     );
   }
 
   return (
-    <Card className="fixed bottom-4 right-4 z-50 w-96 max-h-96 overflow-hidden shadow-lg">
+    <Card className={`fixed bottom-4 right-4 z-50 ${isMobile ? 'w-80 max-w-[calc(100vw-32px)]' : 'w-96'} max-h-96 overflow-hidden shadow-lg`}>
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center justify-between text-sm">
           <div className="flex items-center gap-2">

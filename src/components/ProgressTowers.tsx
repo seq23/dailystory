@@ -3,6 +3,7 @@ import { EnhancedProgressTower } from './EnhancedProgressTower';
 import { useGamification } from '@/hooks/useGamification';
 import { BookOpen, FileText, Lightbulb, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 
 interface ProgressTowersProps {
@@ -27,6 +28,7 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
   onProgressUpdate
 }) => {
   const { t, i18n } = useTranslation();
+  const { isMobile } = useIsMobile();
   const isRTL = i18n.language === 'ar';
   const [isExpanded, setIsExpanded] = useState(false);
   const [autoCollapseTimer, setAutoCollapseTimer] = useState<NodeJS.Timeout | null>(null);
@@ -62,17 +64,23 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
   }, [isExpanded]);
 
   const handleMouseEnter = () => {
-    setIsExpanded(true);
-    if (autoCollapseTimer) {
-      clearTimeout(autoCollapseTimer);
+    // Disable hover expansion on mobile to prevent sensitivity issues
+    if (!isMobile) {
+      setIsExpanded(true);
+      if (autoCollapseTimer) {
+        clearTimeout(autoCollapseTimer);
+      }
     }
   };
 
   const handleMouseLeave = () => {
-    const timer = setTimeout(() => {
-      setIsExpanded(false);
-    }, 2000);
-    setAutoCollapseTimer(timer);
+    // Only handle mouse leave on non-mobile devices
+    if (!isMobile) {
+      const timer = setTimeout(() => {
+        setIsExpanded(false);
+      }, 2000);
+      setAutoCollapseTimer(timer);
+    }
   };
 
   const handleToggle = () => {
@@ -192,6 +200,7 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
       )}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      onClick={isMobile ? handleToggle : undefined}
     >
       <div className={cn(
         "bg-white/95 backdrop-blur-sm shadow-xl rounded-lg border border-gray-200 progress-towers-container",

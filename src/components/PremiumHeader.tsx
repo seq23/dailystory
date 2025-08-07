@@ -43,10 +43,13 @@ export const PremiumHeader = ({
 
   const getAvatarUrl = () => {
     if (userInfo.avatar?.type && userInfo.avatar?.skinTone) {
-      return `/src/assets/avatar-${userInfo.avatar.type}-${userInfo.avatar.skinTone}.jpg`;
+      // Use proper asset import path
+      return new URL(`../assets/avatar-${userInfo.avatar.type}-${userInfo.avatar.skinTone}.jpg`, import.meta.url).href;
     }
     return undefined;
   };
+
+  const hasSelectedAvatar = userInfo.avatar?.type && userInfo.avatar?.skinTone;
 
   return (
     <header className="bg-white/95 backdrop-blur-sm shadow-sm border-b sticky top-0 z-50">
@@ -89,7 +92,7 @@ export const PremiumHeader = ({
                   <Avatar className="w-8 h-8">
                     <AvatarImage src={getAvatarUrl()} alt={userInfo.name} />
                     <AvatarFallback className="bg-gradient-primary text-white text-sm font-semibold">
-                      {userInfo.name.charAt(0).toUpperCase()}
+                      {hasSelectedAvatar ? "" : userInfo.name.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div className="text-left hidden sm:block">

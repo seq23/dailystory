@@ -46,6 +46,23 @@ export const SmartTutorialOverlay = ({
   const [cardPosition, setCardPosition] = useState<Position>({});
   const [highlightedElement, setHighlightedElement] = useState<Element | null>(null);
 
+  // Handle escape key to exit tutorial
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isVisible) {
+        onSkip();
+      }
+    };
+
+    if (isVisible) {
+      document.addEventListener('keydown', handleEscape);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isVisible, onSkip]);
+
   const tutorialSteps: TutorialStep[] = [
     {
       target: "#timer-display",
@@ -395,6 +412,16 @@ export const SmartTutorialOverlay = ({
                   {currentStep < tutorialSteps.length - 1 && <ChevronRight className="w-4 h-4 ml-1" />}
                 </Button>
               </div>
+              
+              {/* Skip Tutorial Button */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onSkip}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                Skip Tutorial
+              </Button>
 
               {/* Progress dots */}
               <div className="flex gap-1">
