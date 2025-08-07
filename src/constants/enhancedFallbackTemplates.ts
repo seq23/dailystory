@@ -357,6 +357,13 @@ export class EnhancedFallbackManager {
 
     const processed = this.processTemplate(selectedTemplate, userInfo, difficulty);
     
+    console.log('🚀 Template Processing Debug:', {
+      pageIndex,
+      templateBefore: selectedTemplate.substring(0, 50) + '...',
+      templateAfter: processed.substring(0, 50) + '...',
+      userName: userInfo.name
+    });
+    
     // Validate that all placeholders were replaced
     this.validateTemplateProcessing(processed, pageIndex);
     
