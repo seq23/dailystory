@@ -17,8 +17,9 @@ import { GameContextProvider } from "@/components/GameContextProvider";
 // Audio and Interactive Components
 import { ElevenLabsAudio } from "@/components/ElevenLabsAudio";
 import { VocabularyCollector } from "@/components/VocabularyCollector";
-import { processTextForPhonetics } from "@/utils/textProcessor";
-import { processTextForDesktop } from "@/utils/desktopTextProcessor";
+import { processTextWithConsistentFlow } from "@/utils/unifiedTextProcessor";
+import "@/styles/storyDisplay.css";
+// import { processTextForDesktop } from "@/utils/desktopTextProcessor";
 import { useWordHighlighting } from "@/hooks/useWordHighlighting";
 import { useGamification } from "@/hooks/useGamification";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -620,26 +621,16 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                         isMobileOrTablet ? mobileTextConfig.letterSpacing : '',
                         mobileTextConfig.paragraphSpacing
                       )}>
-                        {isMobileOrTablet 
-                          ? processTextForPhonetics(
-                              currentStory,
-                              "cursor-pointer hover:bg-primary/10 rounded px-1 transition-colors touch-target",
-                              currentDifficulty,
-                              userInfo,
-                              isPremium,
-                              userInfo.name,
-                              currentHighlightedWord
-                            )
-                          : processTextForDesktop(
-                              currentStory,
-                              "cursor-pointer hover:bg-primary/10 rounded px-1 transition-colors",
-                              currentDifficulty,
-                              userInfo,
-                              isPremium,
-                              userInfo.name,
-                              currentHighlightedWord
-                            )
-                        }
+                        {processTextWithConsistentFlow({
+                          text: currentStory,
+                          className: "cursor-pointer hover:bg-primary/10 rounded px-1 transition-colors touch-target",
+                          difficulty: currentDifficulty,
+                          userInfo,
+                          isPremium,
+                          userId: userInfo.name,
+                          highlightedWordIndex: currentHighlightedWord,
+                          isMobile: isMobileOrTablet
+                        })}
                       </div>
                     </div>
                   </div>

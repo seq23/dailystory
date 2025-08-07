@@ -28,6 +28,11 @@ const testResults: any = {};
     const { OptimizedUserInfoFormTester } = await import('./testing/modules/OptimizedUserInfoFormTester');
     testResults.forms = await OptimizedUserInfoFormTester.runUserInfoFormTests();
     
+    // 5. Enhanced Formatting Test
+    console.log('🎨 Running Enhanced Formatting Test...');
+    const { EnhancedFormattingTester } = await import('./testing/modules/EnhancedFormattingTester');
+    testResults.formatting = await EnhancedFormattingTester.runFormattingTests();
+    
     // Display comprehensive results
     console.log('\n📊 COMPREHENSIVE TEST RESULTS SUMMARY');
     console.log('=' .repeat(70));
@@ -59,6 +64,13 @@ const testResults: any = {};
         accessibilityScore: testResults.forms?.accessibilityScore || 0,
         mobileScore: testResults.forms?.mobileOptimizationScore || 0,
         executionTime: testResults.forms?.performanceMetrics?.executionTime || 0
+      },
+      formatting: {
+        score: testResults.formatting?.score || 0,
+        criticalIssues: testResults.formatting?.issues?.filter((i: any) => i.severity === 'critical')?.length || 0,
+        issues: testResults.formatting?.issues?.filter((i: any) => i.severity === 'critical') || [],
+        cssConflicts: testResults.formatting?.metrics?.cssConflicts || 0,
+        textFlowIssues: testResults.formatting?.metrics?.textFlowConsistency || 0
       }
     };
     
@@ -80,6 +92,11 @@ const testResults: any = {};
     console.log(`   Mobile Score: ${results.forms.mobileScore.toFixed(0)}%`);
     console.log(`   Critical Issues: ${results.forms.criticalIssues}`);
     console.log(`   Execution Time: ${results.forms.executionTime.toFixed(1)}ms`);
+    
+    console.log(`🎨 FORMATTING: ${results.formatting.score}%`);
+    console.log(`   CSS Conflicts: ${results.formatting.cssConflicts}`);
+    console.log(`   Text Flow Issues: ${results.formatting.textFlowIssues}`);
+    console.log(`   Critical Issues: ${results.formatting.criticalIssues}`);
     
     // Store globally for retrieval
     (window as any).comprehensiveTestResults = results;

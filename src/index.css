@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import custom story display styles */
+@import "./styles/storyDisplay.css";
+
 /* Scrollbar styling */
 .scrollbar-thin {
   scrollbar-width: thin;
@@ -154,74 +157,6 @@ All colors MUST be HSL.
   /* Prevent viewport zoom on input focus */
   .mobile-optimized input {
     font-size: 16px;
-  }
-  
-  /* Mobile text size optimizations for reading levels */
-  .story-content {
-    line-height: 1.6 !important;
-    word-spacing: 0.1em;
-    letter-spacing: 0.02em;
-    max-width: 100%;
-    overflow-wrap: break-word;
-    hyphens: auto;
-    white-space: normal;
-  }
-  
-  /* Enhanced touch targets for mobile */
-  .mobile-optimized button,
-  .mobile-optimized .touch-target {
-    min-height: var(--touch-target-min);
-    min-width: var(--touch-target-min);
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-  }
-  
-  /* Ensure interactive words flow properly */
-  .story-content span,
-  .story-content .interactive-word {
-    display: inline;
-    white-space: normal;
-  }
-  
-  /* Level-specific mobile optimizations */
-  .story-content.text-sm,
-  .story-content.text-base {
-    line-height: 1.7 !important; /* Better for advanced readers on mobile */
-  }
-  
-  .story-content.text-lg,
-  .story-content.text-xl {
-    line-height: 1.65 !important; /* Intermediate readers */
-  }
-  
-  .story-content.text-2xl,
-  .story-content.text-3xl {
-    line-height: 1.6 !important; /* Early readers */
-  }
-
-  /* Enhanced story display for book-like experience on mobile */
-  .story-content {
-    padding: 1.5rem;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 1rem;
-    margin: 0.5rem 0;
-    backdrop-filter: blur(8px);
-  }
-  
-  /* Beginner level larger font sizes for mobile */
-  .story-content.text-3xl {
-    font-size: 2rem !important;
-    line-height: 1.5 !important;
-  }
-  
-  .story-content.text-4xl {
-    font-size: 2.5rem !important;
-    line-height: 1.4 !important;
-  }
-  
-  .story-content.text-5xl {
-    font-size: 3rem !important;
-    line-height: 1.3 !important;
   }
 }
 
