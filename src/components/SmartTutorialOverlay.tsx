@@ -394,17 +394,19 @@ export const SmartTutorialOverlay = ({
                   size="sm"
                   onClick={handlePrevious}
                   disabled={currentStep === 0}
+                  className="min-w-[80px]"
                 >
                   <ChevronLeft className="w-4 h-4 mr-1" />
                   Previous
                 </Button>
                 <Button
-                  variant="default"
+                  variant="outline"
                   size="sm"
                   onClick={handleNext}
+                  className="min-w-[80px]"
                 >
-                  {currentStep === tutorialSteps.length - 1 ? "Start Reading!" : "Next"}
-                  {currentStep < tutorialSteps.length - 1 && <ChevronRight className="w-4 h-4 ml-1" />}
+                  Next
+                  <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
               </div>
               
@@ -413,7 +415,7 @@ export const SmartTutorialOverlay = ({
                 variant="outline"
                 size="sm"
                 onClick={onSkip}
-                className="text-muted-foreground hover:text-foreground"
+                className="min-w-[60px]"
               >
                 Skip
               </Button>
