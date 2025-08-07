@@ -268,7 +268,5 @@ class EnterpriseTestRunner {
 }
 
 // Run if called directly
-if (import.meta.url === `file://${process.argv[1]}`) {
-  const runner = new EnterpriseTestRunner();
-  runner.run();
-}
+const runner = new EnterpriseTestRunner();
+runner.run();

@@ -1,14 +1,10 @@
-#!/usr/bin/env node
-
-// Run the enterprise test suite to establish baseline
-import { execSync } from 'child_process';
+const { execSync } = require('child_process');
 
 try {
   console.log('🚀 Starting Enterprise Test Suite - Baseline Run...\n');
   
-  const result = execSync('node enterprise-test-runner.js', {
-    stdio: 'inherit',
-    encoding: 'utf8'
+  execSync('node enterprise-test-runner.js', {
+    stdio: 'inherit'
   });
   
   console.log('\n✅ Enterprise test suite completed successfully!');
