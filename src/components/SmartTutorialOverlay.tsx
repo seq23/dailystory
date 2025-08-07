@@ -89,7 +89,7 @@ export const SmartTutorialOverlay = ({
     },
     {
       target: "[id*='magic-wand'], #magic-wand-free, #magic-wand-premium",
-      targetFallback: "button:has([data-lucide='wand'])",
+      targetFallback: "button:has([data-lucide='wand']), .generate-new-story",
       title: t("tutorial.magicWand.title", "🪄 Magic Wand"),
       description: t("tutorial.magicWand.description.free", "Generate new stories to keep reading! Premium users can refresh anytime."),
       icon: Play,
@@ -107,7 +107,7 @@ export const SmartTutorialOverlay = ({
       target: ".progress-towers-container",
       targetFallback: "[class*='progress-tower'], [class*='progress'], [id*='progress']",
       title: t("tutorial.progressTowers.title", "🏗️ Progress Towers"),
-      description: t("tutorial.progressTowers.description", "Watch your reading progress grow! These towers show your words read, pages completed, and vocabulary learned. Click to expand and see detailed stats."),
+      description: t("tutorial.progressTowers.description", "Watch your reading progress grow! These towers show your words read, pages completed, and vocabulary learned."),
       icon: TrendingUp,
       position: "right"
     }
@@ -207,7 +207,7 @@ export const SmartTutorialOverlay = ({
     return position;
   };
 
-  // Find target element with fallback
+  // Find target element with fallback and skip missing elements
   const findTargetElement = (step: TutorialStep): Element | null => {
     // Try primary selector
     let element = document.querySelector(step.target);
@@ -228,6 +228,10 @@ export const SmartTutorialOverlay = ({
           break;
         case Volume2:
           element = document.querySelector('button[aria-label*="audio"], button[aria-label*="Audio"]');
+          break;
+        case Play:
+          // Magic wand - check multiple selectors
+          element = document.querySelector('button[aria-label*="generate"], button[aria-label*="Generate"], .generate-new-story, [id*="magic"]');
           break;
         case TrendingUp:
           if (step.title.includes("Reading Level")) {
@@ -279,7 +283,7 @@ export const SmartTutorialOverlay = ({
     (element as HTMLElement).style.position = '';
   };
 
-  // Handle step changes and positioning
+  // Handle step changes and positioning with element existence checks
   useEffect(() => {
     if (!isVisible || currentStep >= tutorialSteps.length) return;
 
@@ -296,13 +300,16 @@ export const SmartTutorialOverlay = ({
       const position = calculateCardPosition(targetElement, step.position);
       setCardPosition(position);
     } else {
-      console.warn('🎯 SmartTutorial: Target element not found for step', currentStep);
-      // Fallback to center positioning
-      setCardPosition({
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%)"
-      });
+      console.warn('🎯 SmartTutorial: Target element not found for step', currentStep, '- skipping to next step');
+      // Auto-skip to next step if element doesn't exist
+      setTimeout(() => {
+        if (currentStep < tutorialSteps.length - 1) {
+          setCurrentStep(currentStep + 1);
+        } else {
+          onComplete();
+        }
+      }, 100);
+      return;
     }
 
     // Notify parent about step change
@@ -355,6 +362,7 @@ export const SmartTutorialOverlay = ({
         <Card className={cn(
           "bg-background shadow-2xl border-2 border-primary/30 rounded-2xl",
           "w-72 sm:w-80 md:w-96",
+          "max-h-[90vh] overflow-auto",
           "animate-in fade-in slide-in-from-top-4 duration-300"
         )}>
           <CardContent className="p-6">
