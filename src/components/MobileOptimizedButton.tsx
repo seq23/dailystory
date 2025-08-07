@@ -18,16 +18,16 @@ export const MobileOptimizedButton: React.FC<MobileOptimizedButtonProps> = ({
 }) => {
   const { isMobile, isTablet, isMobileOrTablet, hasTouchCapability } = useIsMobile();
 
-  // Mobile-specific classes (phones)
+  // Mobile-specific classes (phones) - Increased minimum sizes
   const mobileClasses = isMobile ? {
-    sm: 'min-h-[40px] min-w-[40px] px-3 py-2 text-sm',
+    sm: 'min-h-[44px] min-w-[44px] px-3 py-2 text-sm', // Increased from 40px to 44px
     default: 'min-h-[48px] min-w-[48px] px-4 py-3 text-base',
     lg: 'min-h-[52px] min-w-[52px] px-6 py-4 text-lg'
   }[mobileSize] : '';
 
-  // Tablet-specific classes (larger touch targets for tablets)
+  // Tablet-specific classes (larger touch targets for tablets) - Increased minimum sizes  
   const tabletClasses = isTablet ? {
-    sm: 'min-h-[44px] min-w-[44px] px-4 py-2.5 text-base',
+    sm: 'min-h-[44px] min-w-[44px] px-4 py-2.5 text-base', // Increased from 44px to 44px (already compliant)
     default: 'min-h-[48px] min-w-[48px] px-5 py-3 text-base',
     lg: 'min-h-[52px] min-w-[52px] px-6 py-4 text-lg'
   }[tabletSize] : '';

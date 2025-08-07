@@ -81,7 +81,7 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
             <div className="flex items-center gap-1 flex-1 justify-center min-w-0 px-2">
               <img 
                 src={logoImage} 
-                alt="Time 2 Read Logo" 
+                alt="Time2Read - Interactive reading platform for children with AI-powered stories"
                 className="w-5 h-5 flex-shrink-0 drop-shadow-lg"
               />
               <div className="flex items-center font-comic mobile-text-fixed truncate">
@@ -221,7 +221,7 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                     <div className="relative">
                       <img 
                         src={carouselImage1} 
-                        alt="Black girl reading on tablet in car" 
+                        alt="Young girl reading on tablet in car - mobile reading anywhere experience" 
                         className="w-full h-48 sm:h-64 md:h-80 lg:h-96 object-cover rounded-2xl md:rounded-3xl shadow-glow border-2 md:border-4 border-white/20"
                       />
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent rounded-b-2xl md:rounded-b-3xl p-3 md:p-4">

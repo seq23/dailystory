@@ -403,12 +403,16 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
                   value={formData.name}
                   onChange={(e) => handleInputChange("name", e.target.value)}
                   placeholder={t("userInfoForm.fields.name.placeholder")}
-                  className={`text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 focus:border-primary/50 mobile-input ${
-                    showValidationErrors && !formData.name ? 'border-red-300 bg-red-50' : 'border-primary/20'
-                  }`}
+                  className="w-full text-base md:text-lg py-3 md:py-4 min-h-[44px] md:min-h-[48px] rounded-xl border-2 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white/50 backdrop-blur-sm hover:bg-white/70 focus:bg-white mobile-input"
                   autoComplete="given-name"
                   inputMode="text"
+                  autoFocus
+                  aria-describedby="name-description"
+                  aria-required="true"
                 />
+                <div className="text-xs text-muted-foreground" id="name-description">
+                  {t("userInfoForm.fields.name.help", "Your child's first name helps create personalized stories")}
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -416,9 +420,9 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
                   {t("userInfoForm.fields.age.label")}
                 </Label>
                 <Select value={formData.age.toString()} onValueChange={(value) => handleInputChange("age", parseInt(value))}>
-                  <SelectTrigger className={`text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 touch-target ${
+                  <SelectTrigger className={`text-base md:text-lg p-3 md:p-4 min-h-[44px] md:min-h-[48px] rounded-xl md:rounded-2xl border-2 touch-target ${
                     showValidationErrors && !formData.age ? 'border-red-300 bg-red-50' : 'border-primary/20'
-                  }`}>
+                  }`} aria-label="Select your child's age">
                     <SelectValue placeholder={t("userInfoForm.fields.age.placeholder")} />
                   </SelectTrigger>
                   <SelectContent>
@@ -456,7 +460,8 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
                   {t("userInfoForm.fields.nativeLanguage.label")} <span className="text-red-500">*</span>
                 </Label>
                 <Select value={formData.nativeLanguage} onValueChange={handleLanguageChange}>
-                  <SelectTrigger className={`text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 ${showValidationErrors && !formData.nativeLanguage ? 'border-red-300 bg-red-50' : 'border-primary/20'}`}>
+                  <SelectTrigger className={`text-base md:text-lg p-3 md:p-4 min-h-[44px] md:min-h-[48px] rounded-xl md:rounded-2xl border-2 ${showValidationErrors && !formData.nativeLanguage ? 'border-red-300 bg-red-50' : 'border-primary/20'}`}
+                                aria-label="Select your child's native language" aria-required="true">
                     <SelectValue placeholder={t("userInfoForm.fields.nativeLanguage.placeholder")} />
                   </SelectTrigger>
                   <SelectContent>
@@ -830,9 +835,10 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
                   size="lg"
                   onClick={handleSubmit}
                   disabled={!isFormComplete()}
+                  aria-label={isFormComplete() ? "Create personalized story" : "Complete required fields to create story"}
                   className={`w-full transition-all duration-300 text-lg py-6 rounded-xl shadow-glow ${
                     isFormComplete() 
-                      ? 'bg-gradient-primary hover:scale-105 text-white font-semibold' 
+                      ? 'bg-gradient-primary hover:scale-105 text-white font-semibold focus:ring-4 focus:ring-primary/30' 
                       : 'bg-gray-200 text-gray-400 cursor-not-allowed opacity-50'
                   }`}
                 >

@@ -557,16 +557,22 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
               </div>
 
               {/* Story Content - Enhanced Layout for Book-like Experience */}
-              <div className="bg-gradient-card rounded-2xl p-3 md:p-6 lg:p-8 mb-6 min-h-[600px] md:min-h-[700px] lg:min-h-[800px] shadow-xl">
+              <div className="bg-gradient-card rounded-2xl p-3 md:p-6 lg:p-8 mb-6 min-h-[600px] md:min-h-[700px] lg:min-h-[800px] shadow-xl" 
+                   dir="ltr" lang="en" role="main" aria-label="Story content">
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 md:gap-6 lg:gap-8">
                   {/* Image Section - Enhanced for larger display */}
                   <div className="lg:order-1 lg:col-span-2">
-                    {currentImage && (
-                      <img 
-                        src={currentImage} 
-                        alt={`Story illustration for page ${currentPage + 1}`}
-                        className="w-full h-80 sm:h-96 md:h-[36rem] lg:h-[42rem] xl:h-[48rem] object-cover rounded-2xl shadow-2xl story-image-container-enhanced"
-                      />
+                      {currentImage && (
+                        <img 
+                          src={currentImage} 
+                          alt={`Story illustration for page ${currentPage + 1}: ${story[currentPage]?.substring(0, 100)}...`}
+                          className="w-full h-80 sm:h-96 md:h-[36rem] lg:h-[42rem] xl:h-[48rem] object-cover rounded-2xl shadow-2xl story-image-container-enhanced"
+                          loading="lazy"
+                          onError={(e) => {
+                            console.warn('Story image failed to load:', currentImage);
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
                     )}
                     
                     {isGeneratingImage && !currentImage && (
