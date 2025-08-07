@@ -60,6 +60,9 @@ export class VisualDesignTestSuite {
       // Test console display behavior (Issue #6)
       results.push(await this.testConsoleDisplayBehavior());
 
+      // Test translation coverage and RTL/LTR handling
+      results.push(await this.testTranslationCoverage());
+
       const passed = results.filter(r => r.passed).length;
       const total = results.length;
       const avgScore = results.reduce((sum, r) => sum + r.score, 0) / total;
@@ -334,6 +337,91 @@ ${results.issues?.map(issue => `• ${issue.severity.toUpperCase()}: ${issue.mes
       effortToImpact: 6,
       complexity: 'low',
       quickWin: true
+    };
+  }
+
+  private static async testTranslationCoverage(): Promise<VisualDesignTestResult> {
+    const issues: string[] = [];
+    let score = 100;
+
+    // Test for untranslated text
+    const textElements = document.querySelectorAll('p, span, div, h1, h2, h3, h4, h5, h6, button, label');
+    const englishOnlyPatterns = [
+      /^(Start|Stop|Play|Pause|Next|Previous|Back|Continue|Submit|Save|Cancel|Login|Logout)$/i,
+      /^(The|A|An)\s+/,
+      /\b(reading|story|page|level|difficulty)\b/i
+    ];
+
+    let untranslatedCount = 0;
+    textElements.forEach(element => {
+      const text = element.textContent?.trim();
+      if (text && text.length > 2) {
+        const isEnglish = englishOnlyPatterns.some(pattern => pattern.test(text));
+        if (isEnglish) {
+          untranslatedCount++;
+        }
+      }
+    });
+
+    if (untranslatedCount > textElements.length * 0.3) {
+      issues.push('High percentage of potentially untranslated English text detected');
+      score -= 30;
+    }
+
+    // Test RTL language support with LTR navigation
+    const htmlElement = document.documentElement;
+    const currentDir = htmlElement.getAttribute('dir') || 'ltr';
+    const currentLang = htmlElement.getAttribute('lang') || 'en';
+    
+    const rtlLanguages = ['ar', 'he', 'fa', 'ur'];
+    const isRTLLanguage = rtlLanguages.some(lang => currentLang.startsWith(lang));
+
+    if (isRTLLanguage && currentDir === 'rtl') {
+      // Check if story navigation remains LTR (since content is in English)
+      const storyNavigation = document.querySelectorAll(
+        '[data-testid*="story-nav"], .story-navigation, [class*="page-nav"]'
+      );
+      
+      storyNavigation.forEach(nav => {
+        const navDir = nav.getAttribute('dir') || window.getComputedStyle(nav).direction;
+        if (navDir === 'rtl') {
+          issues.push('Story navigation should remain LTR even in RTL languages (content is English)');
+          score -= 20;
+        }
+      });
+
+      // Check story display direction
+      const storyDisplay = document.querySelector('[data-testid="story-display"], .story-content');
+      if (storyDisplay) {
+        const storyDir = storyDisplay.getAttribute('dir') || window.getComputedStyle(storyDisplay).direction;
+        if (storyDir === 'rtl') {
+          issues.push('Story content should remain LTR (English text) even when UI is RTL');
+          score -= 25;
+        }
+      }
+    }
+
+    // Test language switching functionality
+    const languageSwitcher = document.querySelector('[data-testid*="language"], .language-switch, [class*="lang"]');
+    if (!languageSwitcher) {
+      issues.push('No language switcher detected - translation coverage cannot be verified');
+      score -= 15;
+    }
+
+    return {
+      testName: 'Translation Coverage & RTL Support',
+      passed: score >= 70,
+      score,
+      details: issues.join('; ') || 'Translation coverage appears adequate',
+      suggestions: issues.length > 0 ? [
+        'Ensure all UI text is properly translated',
+        'Keep story content and navigation LTR in RTL languages',
+        'Test with actual RTL language users',
+        'Add comprehensive translation coverage'
+      ] : ['Translation coverage looks good'],
+      effortToImpact: 8,
+      complexity: 'high',
+      quickWin: false
     };
   }
 }

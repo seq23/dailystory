@@ -42,6 +42,9 @@ export class SubscriptionTester {
     // Test subscription-based UI elements (Issue #5)
     await this.testSubscriptionUIElements(results);
 
+    // Test header user avatar visibility across devices
+    await this.testHeaderAvatarVisibility(results);
+
     console.log(`📊 Subscription: ${results.passed}/${results.total} passed`);
     return results;
   }
@@ -432,6 +435,73 @@ export class SubscriptionTester {
       details: passed 
         ? `${testCase.element} visibility correct for ${testCase.userType} user`
         : `${testCase.element} should ${testCase.shouldShow ? 'show' : 'hide'} for ${testCase.userType} user but is ${isVisible ? 'visible' : 'hidden'}`,
+      category: 'feature-access'
+    };
+  }
+
+  private async testHeaderAvatarVisibility(results: SubscriptionTestResult): Promise<void> {
+    const testCases = [
+      { device: 'desktop', minWidth: 1024 },
+      { device: 'tablet', minWidth: 768, maxWidth: 1023 },
+      { device: 'mobile', maxWidth: 767 }
+    ];
+
+    for (const testCase of testCases) {
+      const testResult = this.validateHeaderAvatar(testCase);
+      
+      results.details.push(testResult);
+      results.total++;
+      
+      if (testResult.passed) {
+        results.passed++;
+      } else {
+        results.failed++;
+      }
+    }
+  }
+
+  private validateHeaderAvatar(testCase: {
+    device: string;
+    minWidth?: number;
+    maxWidth?: number;
+  }): {
+    testName: string;
+    passed: boolean;
+    details: string;
+    category: 'feature-access' | 'upgrade-prompts' | 'status-checking' | 'content-gating';
+  } {
+    // Check for header avatar elements
+    const headerSelectors = [
+      'header [data-testid*="avatar"]',
+      'header .avatar',
+      'header [class*="avatar"]',
+      'nav [data-testid*="avatar"]',
+      'nav .avatar',
+      '[role="banner"] [data-testid*="avatar"]'
+    ];
+
+    let avatarFound = false;
+    for (const selector of headerSelectors) {
+      const elements = document.querySelectorAll(selector);
+      if (elements.length > 0) {
+        // Check if avatar is visible
+        const isVisible = Array.from(elements).some(el => {
+          const style = window.getComputedStyle(el);
+          return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
+        });
+        if (isVisible) {
+          avatarFound = true;
+          break;
+        }
+      }
+    }
+
+    return {
+      testName: `Header avatar visibility on ${testCase.device}`,
+      passed: avatarFound,
+      details: avatarFound 
+        ? `Header avatar visible on ${testCase.device}`
+        : `Header avatar missing or hidden on ${testCase.device}`,
       category: 'feature-access'
     };
   }

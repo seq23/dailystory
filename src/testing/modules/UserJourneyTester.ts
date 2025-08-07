@@ -36,7 +36,10 @@ export class UserJourneyTester {
       this.testErrorRecovery(),
       this.testOnboardingExperience(),
       this.testTaskCompletion(),
-      this.testStoryContentValidation() // Issue #2
+      this.testStoryContentValidation(), // Issue #2
+      this.testFloatingTimerBehavior(), // Test timer auto-start
+      this.testBackButtonFunctionality(), // Test back button works
+      this.testSessionEndPageFormatting() // Test session metrics display
     ];
 
     return Promise.all(tests);
@@ -464,6 +467,256 @@ export class UserJourneyTester {
         'Implement template variable validation before story display',
         'Add fallback values for missing user data',
         'Test story generation with various user profiles',
+        ...recommendations
+      ],
+      metrics
+    };
+  }
+
+  private static async testFloatingTimerBehavior(): Promise<UserJourneyTestResult> {
+    const issues: UserJourneyIssue[] = [];
+    const recommendations: string[] = [];
+    let score = 100;
+
+    // Test for floating timer presence
+    const timerElements = document.querySelectorAll('[data-testid*="timer"], .floating-timer, [class*="timer"]');
+    if (timerElements.length === 0) {
+      issues.push({
+        type: 'major',
+        category: 'flow',
+        description: 'No floating timer detected',
+        impact: 'Users lack reading time feedback',
+        suggestion: 'Add floating timer for reading sessions'
+      });
+      score -= 30;
+    } else {
+      // Test if timer auto-starts
+      const timerElement = timerElements[0];
+      const timerText = timerElement.textContent || '';
+      
+      // Check if timer shows active state (not 00:00)
+      if (timerText.includes('00:00') || timerText.trim() === '') {
+        issues.push({
+          type: 'major',
+          category: 'flow',
+          description: 'Timer not auto-starting or showing time',
+          impact: 'Users cannot track reading progress',
+          suggestion: 'Ensure timer auto-starts when reading session begins'
+        });
+        score -= 25;
+      }
+
+      // Test timer collapsibility on mobile
+      const currentWidth = window.innerWidth;
+      if (currentWidth < 768) {
+        const isCollapsible = timerElement.querySelector('[data-testid*="collapse"], .collapsible, [aria-expanded]');
+        if (!isCollapsible) {
+          recommendations.push('Consider making timer collapsible on mobile to save screen space');
+        }
+      }
+    }
+
+    const metrics: JourneyMetrics = {
+      navigationClarity: 85,
+      flowEfficiency: score,
+      errorRecovery: 90,
+      onboardingSuccess: 85,
+      taskCompletion: 90,
+      averageTime: 30,
+      dropOffPoints: issues.filter(i => i.type === 'critical').map(i => i.description)
+    };
+
+    return {
+      testName: 'Floating Timer Behavior',
+      passed: score >= 70,
+      score,
+      issues,
+      recommendations: [
+        'Ensure timer auto-starts with reading session',
+        'Make timer collapsible on mobile devices',
+        'Add timer controls for pause/resume',
+        ...recommendations
+      ],
+      metrics
+    };
+  }
+
+  private static async testBackButtonFunctionality(): Promise<UserJourneyTestResult> {
+    const issues: UserJourneyIssue[] = [];
+    const recommendations: string[] = [];
+    let score = 100;
+
+    // Test for back button in user info form
+    const userInfoForm = document.querySelector('form[data-testid*="user"], .user-form, [class*="user-info"]');
+    if (userInfoForm) {
+      const backButtons = userInfoForm.querySelectorAll(
+        'button[data-testid*="back"], button[aria-label*="back"], button[class*="back"], [role="button"][data-testid*="back"]'
+      );
+      
+      if (backButtons.length === 0) {
+        issues.push({
+          type: 'major',
+          category: 'navigation',
+          description: 'No back button found in user info form',
+          impact: 'Users cannot navigate back from user setup',
+          suggestion: 'Add clear back navigation button to user info form'
+        });
+        score -= 30;
+      } else {
+        // Test if back button is functional
+        const backButton = backButtons[0] as HTMLElement;
+        const isClickable = !backButton.hasAttribute('disabled') && 
+                          window.getComputedStyle(backButton).pointerEvents !== 'none';
+        
+        if (!isClickable) {
+          issues.push({
+            type: 'major',
+            category: 'navigation',
+            description: 'Back button appears disabled or non-functional',
+            impact: 'Users cannot navigate back',
+            suggestion: 'Ensure back button is always clickable and functional'
+          });
+          score -= 20;
+        }
+      }
+    } else {
+      recommendations.push('User info form not detected - ensure back navigation exists where needed');
+    }
+
+    // Test general back navigation pattern
+    const allBackButtons = document.querySelectorAll('button[data-testid*="back"], button[aria-label*="back"]');
+    if (allBackButtons.length === 0) {
+      issues.push({
+        type: 'minor',
+        category: 'navigation',
+        description: 'No back navigation pattern detected across the app',
+        impact: 'Users may feel trapped in deep navigation flows',
+        suggestion: 'Implement consistent back navigation throughout the app'
+      });
+      score -= 10;
+    }
+
+    const metrics: JourneyMetrics = {
+      navigationClarity: score,
+      flowEfficiency: 85,
+      errorRecovery: 90,
+      onboardingSuccess: 85,
+      taskCompletion: 90,
+      averageTime: 15,
+      dropOffPoints: issues.filter(i => i.type === 'critical').map(i => i.description)
+    };
+
+    return {
+      testName: 'Back Button Functionality',
+      passed: score >= 70,
+      score,
+      issues,
+      recommendations: [
+        'Add clear back navigation to all forms',
+        'Ensure back buttons are always functional',
+        'Test back navigation on mobile devices',
+        ...recommendations
+      ],
+      metrics
+    };
+  }
+
+  private static async testSessionEndPageFormatting(): Promise<UserJourneyTestResult> {
+    const issues: UserJourneyIssue[] = [];
+    const recommendations: string[] = [];
+    let score = 100;
+
+    // Test for session end page
+    const sessionEndElements = document.querySelectorAll(
+      '[data-testid*="session-end"], .session-complete, [class*="session-end"], [class*="complete"]'
+    );
+    
+    if (sessionEndElements.length === 0) {
+      issues.push({
+        type: 'minor',
+        category: 'completion',
+        description: 'No session end page detected',
+        impact: 'Users lack completion feedback and metrics',
+        suggestion: 'Create dedicated session completion page with metrics'
+      });
+      score -= 15;
+    } else {
+      const sessionEndPage = sessionEndElements[0];
+      
+      // Test for time spent display
+      const timeDisplay = sessionEndPage.querySelector('[data-testid*="time"], [class*="time"], [class*="duration"]');
+      if (!timeDisplay) {
+        issues.push({
+          type: 'major',
+          category: 'completion',
+          description: 'No time spent display found on session end page',
+          impact: 'Users cannot see how long they spent reading',
+          suggestion: 'Add properly formatted time spent display (MM:SS format)'
+        });
+        score -= 25;
+      } else {
+        // Check time format
+        const timeText = timeDisplay.textContent || '';
+        const hasProperFormat = /\d{1,2}:\d{2}/.test(timeText) || timeText.includes('minute') || timeText.includes('second');
+        
+        if (!hasProperFormat) {
+          issues.push({
+            type: 'minor',
+            category: 'completion',
+            description: 'Time display format unclear or missing',
+            impact: 'Users cannot easily understand time spent',
+            suggestion: 'Format time as MM:SS or "X minutes Y seconds"'
+          });
+          score -= 10;
+        }
+      }
+
+      // Test for user metrics (premium users)
+      const metricsElements = sessionEndPage.querySelectorAll(
+        '[data-testid*="metric"], [class*="metric"], [class*="stats"], [class*="progress"]'
+      );
+      
+      if (metricsElements.length === 0) {
+        issues.push({
+          type: 'minor',
+          category: 'completion',
+          description: 'No user metrics display found',
+          impact: 'Premium users miss cumulative progress tracking',
+          suggestion: 'Add metrics display for words read, stories completed, etc.'
+        });
+        score -= 15;
+      }
+
+      // Test for cumulative data indication (premium feature)
+      const cumulativeElements = sessionEndPage.querySelectorAll(
+        '[data-testid*="cumulative"], [data-testid*="total"], [class*="cumulative"], [class*="total"]'
+      );
+      
+      if (cumulativeElements.length === 0) {
+        recommendations.push('Consider adding cumulative metrics for premium users');
+      }
+    }
+
+    const metrics: JourneyMetrics = {
+      navigationClarity: 85,
+      flowEfficiency: 85,
+      errorRecovery: 90,
+      onboardingSuccess: 85,
+      taskCompletion: score,
+      averageTime: 45,
+      dropOffPoints: issues.filter(i => i.type === 'critical').map(i => i.description)
+    };
+
+    return {
+      testName: 'Session End Page Formatting',
+      passed: score >= 70,
+      score,
+      issues,
+      recommendations: [
+        'Format time spent in clear, readable format',
+        'Add comprehensive metrics for premium users',
+        'Include cumulative progress tracking',
+        'Ensure session data persists correctly',
         ...recommendations
       ],
       metrics

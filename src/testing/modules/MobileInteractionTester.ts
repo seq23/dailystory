@@ -57,6 +57,9 @@ export class MobileInteractionTester {
       }
     }
 
+    // Test user info form clickability and formatting
+    this.testUserInfoFormInteraction(issues, deviceInfo);
+
     // Test mobile view quality (Issue #7)
     if (deviceInfo.isMobile && window.innerWidth < 768) {
       const storyDisplay = document.querySelector('[data-testid="story-display"], .story-content');
@@ -264,5 +267,67 @@ export class MobileInteractionTester {
     }
 
     return report;
+  }
+
+  private static testUserInfoFormInteraction(issues: string[], deviceInfo: ReturnType<typeof MobileInteractionTester.getDeviceInfo>): void {
+    const userInfoForm = document.querySelector('form[data-testid*="user"], .user-form, [class*="user-info"]');
+    
+    if (userInfoForm) {
+      // Test form input sizes
+      const inputs = userInfoForm.querySelectorAll('input, select, textarea, button');
+      inputs.forEach((input, index) => {
+        const rect = input.getBoundingClientRect();
+        const minHeight = deviceInfo.isMobile ? 44 : 32;
+        
+        if (rect.height < minHeight) {
+          issues.push(`User info form input ${index + 1} too small for touch (${rect.height}px height)`);
+        }
+      });
+
+      // Test form field spacing
+      const formFields = userInfoForm.querySelectorAll('.form-field, [class*="field"], .input-group');
+      if (formFields.length > 1 && deviceInfo.isMobile) {
+        for (let i = 0; i < formFields.length - 1; i++) {
+          const rect1 = formFields[i].getBoundingClientRect();
+          const rect2 = formFields[i + 1].getBoundingClientRect();
+          const spacing = rect2.top - rect1.bottom;
+          
+          if (spacing < 16) {
+            issues.push(`Insufficient spacing between form fields (${spacing}px)`);
+          }
+        }
+      }
+
+      // Test form button accessibility
+      const submitButtons = userInfoForm.querySelectorAll('button[type="submit"], button[data-testid*="submit"], .submit-button');
+      submitButtons.forEach((button, index) => {
+        const rect = button.getBoundingClientRect();
+        const minSize = deviceInfo.isMobile ? 48 : 36;
+        
+        if (rect.width < minSize || rect.height < minSize) {
+          issues.push(`Submit button ${index + 1} too small for reliable touch interaction`);
+        }
+
+        // Check button positioning
+        if (deviceInfo.isMobile && rect.bottom > window.innerHeight - 100) {
+          issues.push(`Submit button may be obscured by mobile keyboard`);
+        }
+      });
+
+      // Test form layout on mobile
+      if (deviceInfo.isMobile) {
+        const formWidth = userInfoForm.getBoundingClientRect().width;
+        const screenWidth = window.innerWidth;
+        
+        if (formWidth > screenWidth * 0.95) {
+          issues.push('User info form too wide for mobile viewport');
+        }
+
+        // Check for horizontal scrolling in form
+        if (userInfoForm.scrollWidth > userInfoForm.clientWidth) {
+          issues.push('User info form requires horizontal scrolling on mobile');
+        }
+      }
+    }
   }
 }
