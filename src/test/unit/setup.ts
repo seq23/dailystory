@@ -1,8 +1,8 @@
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 
-// Set up global mocks BEFORE any imports
-const mockAudioContextConstructor = vi.fn().mockImplementation(() => ({
+// CRITICAL: Set up global constructor mocks BEFORE any imports
+const mockAudioContext = vi.fn(() => ({
   createOscillator: vi.fn(),
   createGain: vi.fn(),
   destination: {},
@@ -12,7 +12,7 @@ const mockAudioContextConstructor = vi.fn().mockImplementation(() => ({
   state: 'suspended',
 }));
 
-const mockSpeechSynthesisUtteranceConstructor = vi.fn().mockImplementation((text) => ({
+const mockSpeechSynthesisUtterance = vi.fn((text) => ({
   text,
   rate: 1,
   pitch: 1,
@@ -23,58 +23,29 @@ const mockSpeechSynthesisUtteranceConstructor = vi.fn().mockImplementation((text
   removeEventListener: vi.fn(),
 }));
 
-// Assign to global and window BEFORE any imports happen
-global.AudioContext = mockAudioContextConstructor;
-global.webkitAudioContext = mockAudioContextConstructor;
-global.SpeechSynthesisUtterance = mockSpeechSynthesisUtteranceConstructor;
+// Set up ALL possible scopes for these constructors with proper type casting
+(global as any).AudioContext = mockAudioContext;
+(global as any).webkitAudioContext = mockAudioContext;
+(global as any).SpeechSynthesisUtterance = mockSpeechSynthesisUtterance;
 
-globalThis.AudioContext = mockAudioContextConstructor as any;
-globalThis.SpeechSynthesisUtterance = mockSpeechSynthesisUtteranceConstructor as any;
-globalThis.webkitAudioContext = mockAudioContextConstructor as any;
+(globalThis as any).AudioContext = mockAudioContext;
+(globalThis as any).webkitAudioContext = mockAudioContext;  
+(globalThis as any).SpeechSynthesisUtterance = mockSpeechSynthesisUtterance;
 
-// Mock window.matchMedia
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: vi.fn().mockImplementation(query => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: vi.fn(), // Deprecated
-    removeListener: vi.fn(), // Deprecated
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  })),
-});
-
-// Mock IntersectionObserver
-global.IntersectionObserver = vi.fn().mockImplementation(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}));
-
-// Mock ResizeObserver
-global.ResizeObserver = vi.fn().mockImplementation(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}));
-
-// Set up window mocks using the existing constructors
+// Mock window objects
 Object.defineProperty(window, 'AudioContext', {
   writable: true,
-  value: mockAudioContextConstructor,
+  value: mockAudioContext,
 });
 
 Object.defineProperty(window, 'webkitAudioContext', {
   writable: true,
-  value: mockAudioContextConstructor,
+  value: mockAudioContext,
 });
 
 Object.defineProperty(window, 'SpeechSynthesisUtterance', {
   writable: true,
-  value: mockSpeechSynthesisUtteranceConstructor,
+  value: mockSpeechSynthesisUtterance,
 });
 
 Object.defineProperty(window, 'speechSynthesis', {
@@ -88,70 +59,73 @@ Object.defineProperty(window, 'speechSynthesis', {
     speaking: false,
     pending: false,
     paused: false,
-    onvoiceschanged: null,
     addEventListener: vi.fn(),
     removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn(),
   },
 });
 
-// Ensure global fallbacks and proper constructor assignment
-global.AudioContext = mockAudioContextConstructor;
-global.webkitAudioContext = mockAudioContextConstructor;
-global.SpeechSynthesisUtterance = mockSpeechSynthesisUtteranceConstructor;
-global.speechSynthesis = window.speechSynthesis;
-
-// Mock URL.createObjectURL
-Object.assign(global.URL, {
-  createObjectURL: vi.fn().mockReturnValue('mocked-blob-url'),
-  revokeObjectURL: vi.fn(),
+// Mock other window APIs
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: vi.fn().mockImplementation(query => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })),
 });
+
+global.IntersectionObserver = vi.fn().mockImplementation(() => ({
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+  disconnect: vi.fn(),
+}));
+
+global.ResizeObserver = vi.fn().mockImplementation(() => ({
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+  disconnect: vi.fn(),
+}));
+
+global.URL.createObjectURL = vi.fn().mockReturnValue('mocked-blob-url');
+global.URL.revokeObjectURL = vi.fn();
+
+global.fetch = vi.fn();
 
 // Mock i18next
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) => key,
-    i18n: {
-      changeLanguage: vi.fn(),
-    },
+    i18n: { changeLanguage: vi.fn() },
   }),
-  initReactI18next: {
-    type: '3rdParty',
-    init: vi.fn(),
-  },
 }));
-
-// Mock fetch
-global.fetch = vi.fn();
 
 // Mock Supabase client
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
-    functions: {
-      invoke: vi.fn(),
-    },
+    functions: { invoke: vi.fn() },
   },
 }));
 
-// Mock PhoneticRulesEngine
+// Mock services that cause issues
 vi.mock('@/services/phoneticRulesEngine', () => ({
   PhoneticRulesEngine: {
     getInstance: vi.fn(() => ({
       breakIntoSyllables: vi.fn((word) => [word]),
-      getPhoneticSpelling: vi.fn((word) => word),
     })),
   },
 }));
 
-// Mock contextualPronunciation
 vi.mock('@/services/contextualPronunciation', () => ({
   contextualPronunciation: {
     getPhoneticSpelling: vi.fn((word) => word),
-    getSyllables: vi.fn((word) => [word]),
   },
 }));
 
-// Mock VocabularyLevelClassifier
 vi.mock('@/utils/vocabularyLevelClassifier', () => ({
   VocabularyLevelClassifier: {
     getWordDifficulty: vi.fn(() => ({
@@ -162,7 +136,6 @@ vi.mock('@/utils/vocabularyLevelClassifier', () => ({
   },
 }));
 
-// Mock MobileAudioManager
 vi.mock('@/services/mobileAudioManager', () => ({
   MobileAudioManager: {
     getInstance: vi.fn(() => ({
@@ -182,7 +155,6 @@ vi.mock('@/services/mobileAudioManager', () => ({
   },
 }));
 
-// Mock Enhanced Audio Service
 vi.mock('@/services/enhancedAudioService', () => ({
   EnhancedAudioService: vi.fn().mockImplementation(() => ({
     speak: vi.fn().mockResolvedValue(undefined),

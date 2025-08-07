@@ -261,9 +261,14 @@ export class UnifiedTTSService {
   }
 
   isPlaying(): boolean {
-    const audioPlaying = this.currentAudio ? !this.currentAudio.paused : false;
-    const speechPlaying = (typeof window !== 'undefined' && speechSynthesis) ? speechSynthesis.speaking : false;
-    return audioPlaying || speechPlaying;
+    // Explicit boolean checks to avoid undefined returns
+    if (this.currentAudio) {
+      return !this.currentAudio.paused;
+    }
+    if (typeof window !== 'undefined' && speechSynthesis) {
+      return speechSynthesis.speaking;
+    }
+    return false;
   }
 
   clearCache(): void {

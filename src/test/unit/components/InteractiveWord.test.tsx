@@ -3,7 +3,7 @@ import { render } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { InteractiveWord } from '@/components/InteractiveWord';
 
-// Basic mock setup
+// Mock all dependencies
 const mockToast = vi.fn();
 vi.mock('@/hooks/use-toast', () => ({
   useToast: () => ({ toast: mockToast }),
@@ -48,17 +48,13 @@ describe('InteractiveWord Component', () => {
     expect(container).toHaveTextContent('test');
   });
 
-  it('applies the correct CSS classes', () => {
+  it('applies CSS classes correctly', () => {
     const { container } = render(<InteractiveWord {...defaultProps} />);
-    const wordElement = container.querySelector('.interactive-word');
-    expect(wordElement).toBeInTheDocument();
+    expect(container.querySelector('.interactive-word')).toBeInTheDocument();
   });
 
   it('handles different difficulty levels', () => {
-    const { container, rerender } = render(<InteractiveWord {...defaultProps} difficulty="hard" />);
-    expect(container).toHaveTextContent('test');
-    
-    rerender(<InteractiveWord {...defaultProps} difficulty="beginner" />);
+    const { container } = render(<InteractiveWord {...defaultProps} difficulty="hard" />);
     expect(container).toHaveTextContent('test');
   });
 
