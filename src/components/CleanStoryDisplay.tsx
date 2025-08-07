@@ -473,15 +473,15 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     setShowTutorial(false);
   };
 
-  // Get text size based on difficulty level
+  // Get mobile-first responsive text size based on difficulty level
   const getTextSize = () => {
     switch (currentDifficulty) {
-      case 'beginner': return 'text-6xl md:text-7xl'; // Level 0 - very large for beginners
-      case 'easy': return 'text-5xl md:text-6xl';     // Level 1 - large
-      case 'medium': return 'text-4xl md:text-5xl';   // Level 2 - medium-large
-      case 'hard': return 'text-3xl md:text-4xl';     // Level 3 - medium
-      case 'expert': return 'text-2xl md:text-3xl';   // Level 4 - standard
-      default: return 'text-4xl md:text-5xl';
+      case 'beginner': return 'text-2xl sm:text-3xl md:text-4xl lg:text-5xl'; // Level 0 - large for early readers
+      case 'easy': return 'text-xl sm:text-2xl md:text-3xl lg:text-4xl';      // Level 1 - medium-large
+      case 'medium': return 'text-lg sm:text-xl md:text-2xl lg:text-3xl';     // Level 2 - medium
+      case 'hard': return 'text-base sm:text-lg md:text-xl lg:text-2xl';      // Level 3 - standard for advanced readers
+      case 'expert': return 'text-sm sm:text-base md:text-lg lg:text-xl';     // Level 4 - compact for fluent readers
+      default: return 'text-lg sm:text-xl md:text-2xl lg:text-3xl';
     }
   };
 
@@ -668,7 +668,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                   {/* Text Content - Right Side */}
                   <div className="lg:order-2 flex flex-col justify-center">
                     <div className="text-center lg:text-left">
-                      <div className={`${getTextSize()} font-bold text-foreground mb-4 leading-relaxed story-content`}>
+                      <div className={`${getTextSize()} font-bold text-foreground mb-4 leading-relaxed story-content px-2 sm:px-0`}>
                         {processTextForPhonetics(
                           currentStory,
                           "cursor-pointer hover:bg-primary/10 rounded px-1 transition-colors",

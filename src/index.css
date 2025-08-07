@@ -138,6 +138,32 @@ All colors MUST be HSL.
   .mobile-optimized input {
     font-size: 16px;
   }
+  
+  /* Mobile text size optimizations for reading levels */
+  .story-content {
+    line-height: 1.6 !important;
+    word-spacing: 0.1em;
+    letter-spacing: 0.02em;
+    max-width: 100%;
+    overflow-wrap: break-word;
+    hyphens: auto;
+  }
+  
+  /* Level-specific mobile optimizations */
+  .story-content.text-sm,
+  .story-content.text-base {
+    line-height: 1.7 !important; /* Better for advanced readers on mobile */
+  }
+  
+  .story-content.text-lg,
+  .story-content.text-xl {
+    line-height: 1.65 !important; /* Intermediate readers */
+  }
+  
+  .story-content.text-2xl,
+  .story-content.text-3xl {
+    line-height: 1.6 !important; /* Early readers */
+  }
 }
 
 /* Tablet-specific optimizations */
