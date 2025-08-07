@@ -348,9 +348,12 @@
       "title": "🎵 Audio Reading",
       "description": "Click to hear the story read aloud! Perfect for following along and learning pronunciation."
     },
-    "addPages": {
-      "title": "➕ Add More Pages",
-      "description": "Want to continue the adventure? Click this button to add 5 more pages to your story!"
+    "magicWand": {
+      "title": "🪄 Magic Wand",
+      "description": {
+        "free": "For free users: Generate new stories on the last page to keep reading!",
+        "premium": "For premium users: Click the magic wand to refresh your story anytime!"
+      }
     },
     "difficulty": {
       "title": "🎯 Reading Level",
@@ -522,14 +525,14 @@
       "descriptionWords": "Amazing! You read {{wordsRead}} words and completed the story!",
       "descriptionWordsTime": "Great job! You read {{wordsRead}} words in {{minutes}} minutes."
     },
-    "addPagesSuccess": {
-      "title": "5 More Pages Added! 📚",
-      "description": "Your story has been extended!"
+    "magicWandSuccess": {
+      "title": "✨ New Story Generated!",
+      "description": "Your fresh adventure awaits!"
     },
-    "addMorePages": "Add More Pages",
-    "addPagesTooltip": "+ 5 pages - only available on last page",
-    "addPagesAlert": "⏰ Add more pages now!",
-    "addPagesDisabled": "Reach the last page to add more",
+    "generateNewStory": "Generate New Story",
+    "magicWandTooltip": "🪄 Generate a fresh story adventure",
+    "magicWandActive": "✨ Magic wand ready - new story awaits!",
+    "magicWandOnLastPage": "Reach the last page to generate a new story",
     "header": "Reading Adventure",
     "endSession": "End Session",
     "nextPage": "Next Page",

@@ -62,9 +62,9 @@ export const MobileOptimizedTutorial = ({
       position: "center"
     },
     {
-      target: "add-pages-button",
-      title: t("tutorial.addPages.title", "➕ Continue Story"),
-      description: t("tutorial.addPages.description", "Want more? Add pages to continue your adventure! Premium users get unlimited pages."),
+      target: "magic-wand-free",
+      title: t("tutorial.magicWand.title", "🪄 Magic Wand"),
+      description: t("tutorial.magicWand.description.free", "Generate new stories to keep reading! Premium users can refresh anytime."),
       icon: Play,
       position: "top"
     }

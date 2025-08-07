@@ -48,9 +48,9 @@ export const SimpleTutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTi
       position: "top"
     },
     {
-      target: "add-pages-button",
-      title: t("tutorial.addPages.title", "➕ Add More Pages"),
-      description: t("tutorial.addPages.description", "Want to continue the adventure? Click this button to add 5 more pages to your story!"),
+      target: "magic-wand-free",
+      title: t("tutorial.magicWand.title", "🪄 Magic Wand"),
+      description: t("tutorial.magicWand.description.free", "Generate new stories to keep reading! Premium users can refresh anytime."),
       icon: Play,
       position: "top"
     },

@@ -88,10 +88,10 @@ export const SmartTutorialOverlay = ({
       position: "top"
     },
     {
-      target: "[id*='add-pages'], .add-pages-button, button:has([data-lucide='plus'])",
-      targetFallback: "button:contains('Add'), button[aria-label*='Add']",
-      title: t("tutorial.addPages.title", "➕ Add More Pages"),
-      description: t("tutorial.addPages.description", "Want to continue the adventure? Click this button to add 5 more pages to your story!"),
+      target: "[id*='magic-wand'], #magic-wand-free, #magic-wand-premium",
+      targetFallback: "button:has([data-lucide='wand'])",
+      title: t("tutorial.magicWand.title", "🪄 Magic Wand"),
+      description: t("tutorial.magicWand.description.free", "Generate new stories to keep reading! Premium users can refresh anytime."),
       icon: Play,
       position: "top"
     },

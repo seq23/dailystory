@@ -3,7 +3,7 @@ import { MobileOptimizedButton } from "@/components/MobileOptimizedButton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Home, RotateCcw, Loader2, Volume2, VolumeX, ChevronUp, ChevronDown, Settings, Plus, RefreshCw, X, Clock, PlusCircle } from "lucide-react";
+import { BookOpen, Home, RotateCcw, Loader2, Volume2, VolumeX, ChevronUp, ChevronDown, Settings, Plus, RefreshCw, X, Clock, Wand, Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/hooks/use-toast";
 
@@ -22,11 +22,12 @@ import { useWordHighlighting } from "@/hooks/useWordHighlighting";
 import { useGamification } from "@/hooks/useGamification";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getMobileTextConfig, getMobileStoryContainer } from "@/utils/mobileTextOptimizations";
+import { cn } from "@/lib/utils";
 
 import type { UserInfo, SessionStats } from "@/types";
 import { NetflixStyleStoryService, type NetflixStoryResult } from "@/services/NetflixStyleStoryService";
 import { LiveGenerationService, type LiveGenerationContext, type LivePageResult } from "@/services/LiveGenerationService";
-import { AddPagesService, type AddPagesResult } from "@/services/addPagesService";
+
 import { SimpleImageService } from "@/services/SimpleImageService";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ErrorHandler, ErrorType } from "@/utils/errorHandling";
@@ -81,9 +82,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [showTutorial, setShowTutorial] = useState(true);
   const [currentTutorialStep, setCurrentTutorialStep] = useState(0);
 
-  // Add pages state
-  const [isAddingPages, setIsAddingPages] = useState(false);
-  const [showAddPagesButton, setShowAddPagesButton] = useState(false);
+  // Magic wand state
+  const [isGeneratingNewStory, setIsGeneratingNewStory] = useState(false);
 
   // Reading Level state
   const [currentDifficulty, setCurrentDifficulty] = useState<'beginner' | 'easy' | 'medium' | 'hard' | 'expert'>(userInfo.difficultyLevel || 'beginner');
@@ -150,12 +150,6 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     return () => clearInterval(interval);
   }, [isTimerRunning, timeRemaining, isTimerCanceled, isPremium]);
 
-  // Show "Add Pages" button when user reaches the end
-  useEffect(() => {
-    const isAtEnd = currentPage === story.length - 1 && story.length > 0;
-    const canAddPages = isPremium || (!isPremium && timeRemaining > 0);
-    setShowAddPagesButton(isAtEnd && canAddPages && !isStoryComplete);
-  }, [currentPage, story.length, isPremium, timeRemaining, isStoryComplete]);
 
   const initializeStory = async () => {
     setIsLoading(true);
@@ -359,53 +353,47 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     });
   };
 
-  // Add pages functionality
-  const handleAddPages = async () => {
-    if (isAddingPages) return;
+  // Magic wand functionality - Generate new story
+  const handleGenerateNewStory = async () => {
+    if (isGeneratingNewStory) return;
     
-    setIsAddingPages(true);
+    setIsGeneratingNewStory(true);
     
     try {
-      console.log('📄 Adding pages to story...');
+      console.log('🪄 Generating new story...');
       
-      const result = await AddPagesService.addPages(
-        userInfo, 
-        story, 
-        userInfo.difficultyLevel || currentDifficulty
-      );
+      const originalPageCount = story.length;
+      const result = await NetflixStyleStoryService.generateCompleteStory(userInfo);
       
-      if (result.error) {
-        toast({
-          title: "Couldn't Add Pages",
-          description: result.error,
-          variant: "destructive",
-        });
-        return;
+      // For free users, maintain original page count; for premium, use full story
+      const newStory = isPremium ? result.pages : result.pages.slice(0, originalPageCount);
+      
+      setStory(newStory);
+      setCurrentPage(0); // Reset to first page
+      
+      // Reset live generation context for premium users
+      if (isPremium) {
+        setLiveContext(null);
+        setIsStoryComplete(false);
       }
       
-      // Add new pages to story
-      setStory(prev => [...prev, ...result.newPages]);
-      
       toast({
-        title: "Pages Added! ✨",
-        description: `Added ${result.newPages.length} new pages to your story!`,
+        title: isPremium ? "New Story Generated! 🪄" : "New Adventure! 🪄",
+        description: isPremium 
+          ? "Your fresh story is ready to explore!"
+          : "A new adventure awaits! Keep reading until time runs out!",
         duration: 4000,
       });
       
-      // Auto-navigate to first new page
-      setTimeout(() => {
-        setCurrentPage(story.length);
-      }, 500);
-      
     } catch (error) {
-      console.error('Failed to add pages:', error);
+      console.error('Failed to generate new story:', error);
       toast({
-        title: "Error Adding Pages",
+        title: "Magic Failed",
         description: "Please try again in a moment.",
         variant: "destructive",
       });
     } finally {
-      setIsAddingPages(false);
+      setIsGeneratingNewStory(false);
     }
   };
 
@@ -640,59 +628,67 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                 </div>
               </div>
 
-              {/* Add Pages Section - Show when at end */}
-              {showAddPagesButton && (
-                <div className="mb-6 p-4 bg-gradient-card rounded-lg border border-primary/20">
-                  <div className="text-center">
-                    <h3 className="text-lg font-semibold mb-2">Want more adventure?</h3>
-                    <p className="text-muted-foreground mb-4">
-                      {isPremium 
-                        ? "Add more pages to continue your story!" 
-                        : `Add pages before time runs out! ${Math.floor(timeRemaining / 60)}:${(timeRemaining % 60).toString().padStart(2, '0')} remaining`
-                      }
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                      <Button
-                        onClick={handleAddPages}
-                        disabled={isAddingPages}
-                        className="bg-primary text-primary-foreground"
-                      >
-                        {isAddingPages ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Adding Pages...
-                          </>
-                        ) : (
-                          <>
-                            <PlusCircle className="w-4 h-4 mr-2" />
-                            Add 3-5 More Pages
-                          </>
-                        )}
-                      </Button>
-                      
-                      {isPremium && (
-                        <Button
-                          onClick={handleRegeneratePage}
-                          disabled={isLoadingNextPage}
-                          variant="outline"
-                        >
-                          {isLoadingNextPage ? (
-                            <>
-                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                              Regenerating...
-                            </>
-                          ) : (
-                            <>
-                              <RefreshCw className="w-4 h-4 mr-2" />
-                              Regenerate Page
-                            </>
-                          )}
-                        </Button>
+              {/* Magic Wand Buttons Section */}
+              <div className="mb-6 flex flex-col items-center gap-4">
+                {/* Premium Magic Wand - Below page count */}
+                {isPremium && (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      id="magic-wand-premium"
+                      onClick={handleGenerateNewStory}
+                      disabled={isGeneratingNewStory}
+                      variant="outline"
+                      size="sm"
+                      className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 border-purple-300/30 hover:from-purple-500/20 hover:to-blue-500/20 transition-all duration-300"
+                    >
+                      {isGeneratingNewStory ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Creating magic...
+                        </>
+                      ) : (
+                        <>
+                          <Wand className="w-4 h-4 mr-2" />
+                          <Sparkles className="w-3 h-3 absolute top-1 right-1 text-purple-400" />
+                          Fresh Story
+                        </>
                       )}
-                    </div>
+                    </Button>
                   </div>
-                </div>
-              )}
+                )}
+
+                {/* Free User Magic Wand - Only on last page */}
+                {!isPremium && currentPage === story.length - 1 && timeRemaining > 0 && (
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Ready for another adventure? Generate a new story!
+                    </p>
+                    <Button
+                      id="magic-wand-free"
+                      onClick={handleGenerateNewStory}
+                      disabled={isGeneratingNewStory}
+                      className={cn(
+                        "bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 relative overflow-hidden",
+                        "hover:from-amber-600 hover:to-orange-600 transition-all duration-300",
+                        "animate-pulse shadow-lg shadow-amber-500/25"
+                      )}
+                    >
+                      {isGeneratingNewStory ? (
+                        <>
+                          <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                          Creating new adventure...
+                        </>
+                      ) : (
+                        <>
+                          <Wand className="w-5 h-5 mr-2" />
+                          <Sparkles className="w-4 h-4 absolute top-1 right-1 text-yellow-300 animate-pulse" />
+                          Generate New Story
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </div>
 
               {/* Navigation */}
               <div id="story-navigation" className="story-navigation flex justify-between items-center">
