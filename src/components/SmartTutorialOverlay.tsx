@@ -349,7 +349,7 @@ export const SmartTutorialOverlay = ({
         className="fixed z-50"
         style={{
           ...cardPosition,
-          left: cardPosition.left ? `${parseInt(cardPosition.left) - 56}px` : cardPosition.left
+          left: cardPosition.left ? `${parseInt(cardPosition.left) + 24}px` : cardPosition.left
         }}
       >
         <Card className={cn(
