@@ -121,7 +121,7 @@ export class CIIntegrationHelper {
       return {
         success: qualityGatePassed,
         successRate,
-        totalTests: results.total,
+        totalTests: (results as any).overall?.total || 0,
         duration,
         qualityGatePassed,
         reportPath,
@@ -169,17 +169,17 @@ export class CIIntegrationHelper {
         wcagLevel: config.wcagLevel,
         qualityGateThreshold: config.qualityGateThreshold,
         results: {
-          successRate: (results.passed / results.total) * 100,
-          totalTests: results.total,
-          passed: results.passed,
-          failed: results.failed,
-          duration: results.duration,
+          successRate: ((results as any).overall?.passed || 0) / ((results as any).overall?.total || 1) * 100,
+          totalTests: (results as any).overall?.total || 0,
+          passed: (results as any).overall?.passed || 0,
+          failed: (results as any).overall?.failed || 0,
+          duration: results.duration || 0,
           categories: results.categories
         },
         qualityGate: {
-          passed: (results.passed / results.total) * 100 >= config.qualityGateThreshold,
+          passed: ((results as any).overall?.passed || 0) / ((results as any).overall?.total || 1) * 100 >= config.qualityGateThreshold,
           threshold: config.qualityGateThreshold,
-          actualSuccessRate: (results.passed / results.total) * 100
+          actualSuccessRate: ((results as any).overall?.passed || 0) / ((results as any).overall?.total || 1) * 100
         },
         recommendations: results.recommendations
       };
@@ -272,13 +272,13 @@ export class CIIntegrationHelper {
   }
 
   private static generateSummary(results: any, qualityGatePassed: boolean, duration: number): string {
-    const successRate = (results.passed / results.total) * 100;
+    const successRate = ((results.overall?.passed || 0) / (results.overall?.total || 1)) * 100;
     
     let summary = `Test Execution Summary:\n`;
     summary += `- Success Rate: ${successRate.toFixed(1)}%\n`;
-    summary += `- Total Tests: ${results.total}\n`;
-    summary += `- Passed: ${results.passed}\n`;
-    summary += `- Failed: ${results.failed}\n`;
+    summary += `- Total Tests: ${results.overall?.total || 0}\n`;
+    summary += `- Passed: ${results.overall?.passed || 0}\n`;
+    summary += `- Failed: ${results.overall?.failed || 0}\n`;
     summary += `- Duration: ${Math.round(duration / 1000)}s\n`;
     summary += `- Quality Gate: ${qualityGatePassed ? 'PASSED' : 'FAILED'}\n`;
 
@@ -311,10 +311,10 @@ export class CIIntegrationHelper {
 
   static generateJUnitXML(results: any): string {
     const timestamp = new Date().toISOString();
-    const totalDuration = results.duration / 1000; // Convert to seconds
+    const totalDuration = (results.duration || 0) / 1000; // Convert to seconds
 
     let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
-    xml += `<testsuites name="Comprehensive Test Suite" tests="${results.total}" failures="${results.failed}" time="${totalDuration}" timestamp="${timestamp}">\n`;
+    xml += `<testsuites name="Comprehensive Test Suite" tests="${results.overall?.total || 0}" failures="${results.overall?.failed || 0}" time="${totalDuration}" timestamp="${timestamp}">\n`;
 
     for (const [categoryName, categoryData] of Object.entries(results.categories)) {
       const category = categoryData as any;
