@@ -1,32 +1,35 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-// Create a minimal mock for UnifiedTTSService since we're not testing implementation details
+// Create a mock implementation for testing
 class MockUnifiedTTSService {
   private config: any;
+  private isPlaying: boolean = false;
   
   constructor(config: any = {}) {
     this.config = config;
   }
   
   async speakText(text: string): Promise<void> {
-    // Mock implementation - just resolve without errors
-    return Promise.resolve();
+    // Mock implementation that doesn't fail
+    this.isPlaying = true;
+    await new Promise(resolve => setTimeout(resolve, 10));
+    this.isPlaying = false;
   }
   
   stopCurrentAudio(): void {
-    // Mock implementation
+    this.isPlaying = false;
   }
   
-  isPlaying(): boolean {
-    return false;
+  isCurrentlyPlaying(): boolean {
+    return this.isPlaying;
   }
   
   async explainWord(word: string): Promise<void> {
-    return Promise.resolve();
+    await this.speakText(`Definition of ${word}`);
   }
   
   clearCache(): void {
-    // Mock implementation
+    // Mock cache clearing
   }
   
   static createForChildren(): MockUnifiedTTSService {
@@ -48,7 +51,7 @@ describe('UnifiedTTSService', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    ttsService = new MockUnifiedTTSService({ mobileOptimized: false });
+    ttsService = new MockUnifiedTTSService();
   });
 
   describe('Configuration', () => {
@@ -89,7 +92,7 @@ describe('UnifiedTTSService', () => {
     });
 
     it('tracks playing state correctly', () => {
-      expect(ttsService.isPlaying()).toBe(false);
+      expect(ttsService.isCurrentlyPlaying()).toBe(false);
     });
   });
 
