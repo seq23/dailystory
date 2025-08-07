@@ -31,37 +31,6 @@
   margin-left: max(1rem, env(safe-area-inset-left));
 }
 
-/* Tutorial system z-index management */
-.tutorial-overlay {
-  z-index: 8000;
-}
-
-.tutorial-highlight {
-  z-index: 8500;
-}
-
-.tutorial-card {
-  z-index: 9000;
-}
-
-.tutorial-temp-element {
-  z-index: 8600;
-}
-
-/* Enhanced tutorial highlighting */
-.tutorial-highlight {
-  position: relative;
-  animation: tutorial-pulse 2s ease-in-out infinite;
-}
-
-@keyframes tutorial-pulse {
-  0%, 100% { 
-    box-shadow: 0 0 0 0 hsl(var(--accent) / 0.7);
-  }
-  50% { 
-    box-shadow: 0 0 0 20px hsl(var(--accent) / 0);
-  }
-}
 
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
@@ -394,10 +363,6 @@ All colors MUST be HSL.
 
   /* Safe RTL spacing adjustments */
 
-  /* Timer button highlighting during tutorial */
-  .timer-button-highlight {
-    @apply ring-4 ring-primary/50 ring-offset-2 ring-offset-white shadow-2xl animate-pulse;
-  }
   [dir="rtl"] .rtl-ml-auto {
     margin-left: unset;
     margin-right: auto;
@@ -574,103 +539,6 @@ All colors MUST be HSL.
 .animate-sparkleTrail4 { animation: sparkleTrail4 2.6s ease-out infinite 0.6s; }
 .animate-edgeBounce { animation: edgeBounce 1.5s ease-in-out 3; }
 
-/* Tutorial-specific positioning fixes */
-.tutorial-active .floating-timer-container {
-  z-index: 55 !important; /* Above tutorial overlay */
-}
-
-.tutorial-active [data-radix-tooltip-content] {
-  z-index: 35; /* Below tutorial elements during tutorial */
-}
-
-/* Tutorial highlighting styles */
-.tutorial-highlight-ring {
-  position: relative;
-  z-index: 9998 !important;
-  animation: tutorialPulse 2s ease-in-out infinite;
-  box-shadow: 0 0 0 4px hsl(var(--primary) / 0.5), 0 0 20px 8px hsl(var(--primary) / 0.3) !important;
-  border-radius: 8px;
-}
-
-.tutorial-highlight-shadow {
-  @apply shadow-2xl shadow-yellow-400/50;
-}
-
-.tutorial-highlight-glow {
-  background: hsl(var(--primary) / 0.1) !important;
-  position: relative;
-  animation: tutorial-pulse 2s ease-in-out infinite;
-}
-
-@keyframes tutorialPulse {
-  0%, 100% {
-    box-shadow: 0 0 0 4px hsl(var(--primary) / 0.5), 0 0 20px 8px hsl(var(--primary) / 0.3) !important;
-  }
-  50% {
-    box-shadow: 0 0 0 8px hsl(var(--primary) / 0.7), 0 0 30px 12px hsl(var(--primary) / 0.5) !important;
-  }
-}
-
-@keyframes tutorial-pulse {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(250, 204, 21, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 40px rgba(250, 204, 21, 0.6);
-  }
-}
-
-/* Timer button highlight animation */
-.timer-button-highlight {
-  @apply ring-2 ring-blue-400 ring-offset-2 rounded-full;
-  animation: timer-button-pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes timer-button-pulse {
-  0%, 100% {
-    box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 25px rgba(59, 130, 246, 0.7);
-  }
-}
-
-/* Tutorial-specific styles */
-.tutorial-highlight-ring {
-  position: relative;
-  z-index: 9998;
-  box-shadow: 0 0 0 4px hsl(var(--primary) / 0.5), 0 0 20px 8px hsl(var(--primary) / 0.3);
-  border-radius: 8px;
-  animation: tutorialPulse 2s ease-in-out infinite;
-}
-
-.tutorial-highlight-shadow {
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-}
-
-.tutorial-highlight-glow {
-  background: hsl(var(--primary) / 0.1);
-}
-
-@keyframes tutorialPulse {
-  0%, 100% {
-    box-shadow: 0 0 0 4px hsl(var(--primary) / 0.5), 0 0 20px 8px hsl(var(--primary) / 0.3);
-  }
-  50% {
-    box-shadow: 0 0 0 8px hsl(var(--primary) / 0.7), 0 0 30px 12px hsl(var(--primary) / 0.5);
-  }
-}
-
-/* Ensure tutorial overlay is above most elements but below tutorial highlights */
-.tutorial-overlay {
-  z-index: 50;
-}
-
-/* Ensure highlighted elements appear above tutorial overlay */
-.tutorial-highlight-ring {
-  z-index: 9999 !important;
-}
-
 /* Debug and enhanced book experience */
 .book-reading-experience-wide {
   max-width: 90rem !important;
@@ -680,25 +548,6 @@ All colors MUST be HSL.
 .story-image-container-enhanced {
   height: 42rem !important;
   min-height: 42rem !important;
-}
-
-/* Progress towers tutorial enhancement */
-.tutorial-progress-towers {
-  z-index: 60 !important;
-}
-
-/* Tutorial magic wand enhancements */
-.tutorial-magic-wand {
-  z-index: 70 !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  filter: none !important;
-}
-
-/* Ensure highlighted elements are always visible during tutorial */
-.tutorial-highlight {
-  z-index: 55 !important;
-  position: relative !important;
 }
 
 @keyframes shake {

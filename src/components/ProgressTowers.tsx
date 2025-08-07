@@ -190,10 +190,8 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
   return (
     <div 
       id="progress-towers"
-      data-tutorial-target="progress-towers"
       className={cn(
         "progress-towers fixed top-1/2 transform -translate-y-1/2 transition-all duration-300 ease-in-out z-50",
-        "tutorial-progress-towers",
         isRTL ? "left-2" : "right-2",
         isMobile && "scale-90",
         className

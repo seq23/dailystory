@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 
 // Mobile-Optimized UI Components
 import { ResponsiveTimer } from "@/components/ResponsiveTimer";
-import { UnifiedTutorial } from "@/components/UnifiedTutorial";
+
 import { ResponsiveStoryHeader } from "@/components/ResponsiveStoryHeader";
 import { ProgressTowers } from "@/components/ProgressTowers";
 import { GameContextProvider } from "@/components/GameContextProvider";
@@ -76,12 +76,10 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [sessionStartTime] = useState(Date.now());
   const [wordsInteracted, setWordsInteracted] = useState(0);
 
-  // Timer and Tutorial state
+  // Timer state
   const [timeRemaining, setTimeRemaining] = useState(20 * 60); // 20 minutes
-  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [isTimerRunning, setIsTimerRunning] = useState(true); // Start timer immediately
   const [isTimerCanceled, setIsTimerCanceled] = useState(false); // Premium: timer can be canceled
-  const [showTutorial, setShowTutorial] = useState(true);
-  const [currentTutorialStep, setCurrentTutorialStep] = useState(0);
 
   // Magic wand state
   const [isGeneratingNewStory, setIsGeneratingNewStory] = useState(false);
@@ -456,15 +454,6 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     }
   };
 
-  // Tutorial controls
-  const handleCompleteTutorial = () => {
-    setShowTutorial(false);
-    setIsTimerRunning(true); // Start timer after tutorial
-  };
-
-  const handleSkipTutorial = () => {
-    setShowTutorial(false);
-  };
 
   // Get mobile-optimized text configuration
   const mobileTextConfig = getMobileTextConfig(currentDifficulty);
@@ -681,9 +670,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                   </div>
                 )}
 
-                {/* Free User Magic Wand - Enhanced visibility and tutorial support */}
-                {(!isPremium && currentPage === story.length - 1 && timeRemaining > 0) || 
-                 (showTutorial && currentTutorialStep === 3) && (
+                {/* Free User Magic Wand - Enhanced visibility */}
+                {!isPremium && currentPage === story.length - 1 && timeRemaining > 0 && (
                   <div className="text-center">
                     <p className="text-sm text-muted-foreground mb-3">
                       Ready for another adventure? Generate a new story!
@@ -731,16 +719,6 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
       </main>
       
 
-      {/* Unified Tutorial */}
-      <UnifiedTutorial
-        isVisible={showTutorial}
-        onComplete={handleCompleteTutorial}
-        onSkip={handleSkipTutorial}
-        onStartTimer={handleToggleTimer}
-        onStepChange={setCurrentTutorialStep}
-        isPremium={isPremium}
-      />
-
       {/* Vocabulary Collector Modal */}
       <VocabularyCollector
         userInfo={userInfo}
@@ -757,12 +735,6 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         onReduceTime={isPremium ? handleReduceTime : undefined}
         onEndSession={handleEndSession}
         onSessionEnded={handleEndSession}
-        showTutorial={showTutorial}
-        tutorialStep={currentTutorialStep}
-        onTimerTooltipComplete={() => {
-          // Timer tooltips completed, tutorial can proceed to next step
-          setCurrentTutorialStep(1);
-        }}
       />
       
       {/* Progress Tower - Collapsible floating tower */}
