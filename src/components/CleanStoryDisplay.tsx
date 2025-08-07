@@ -9,11 +9,10 @@ import { useToast } from "@/hooks/use-toast";
 
 // Mobile-Optimized UI Components
 import { ResponsiveTimer } from "@/components/ResponsiveTimer";
-import { SmartTutorialOverlay } from "@/components/SmartTutorialOverlay";
+import { UnifiedTutorial } from "@/components/UnifiedTutorial";
 import { ResponsiveStoryHeader } from "@/components/ResponsiveStoryHeader";
 import { ProgressTowers } from "@/components/ProgressTowers";
 import { GameContextProvider } from "@/components/GameContextProvider";
-import { TutorialMagicWand } from "@/components/TutorialMagicWand";
 
 // Audio and Interactive Components
 import { ElevenLabsAudio } from "@/components/ElevenLabsAudio";
@@ -553,11 +552,6 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
           </div>
         )}
 
-      {/* Tutorial Magic Wand for Free Users */}
-      <TutorialMagicWand
-        isVisible={showTutorial && !isPremium}
-        tutorialStep={currentTutorialStep}
-      />
 
       {/* Main Content - Enhanced for book-like experience */}
       <main className={`container mx-auto safe-area-padding ${mobileContainerConfig} px-1 md:px-2 lg:px-4`}>
@@ -737,12 +731,14 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
       </main>
       
 
-      {/* Smart Tutorial */}
-      <SmartTutorialOverlay
+      {/* Unified Tutorial */}
+      <UnifiedTutorial
         isVisible={showTutorial}
         onComplete={handleCompleteTutorial}
         onSkip={handleSkipTutorial}
+        onStartTimer={handleToggleTimer}
         onStepChange={setCurrentTutorialStep}
+        isPremium={isPremium}
       />
 
       {/* Vocabulary Collector Modal */}
