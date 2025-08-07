@@ -65,9 +65,9 @@ export const CollapsibleFloatingTimer = ({
     if (!showTooltips || !showTutorial || tutorialStep !== 0) return;
 
     const tooltipSequence = [
-      { targetId: 'timer-end-button', delay: 1000, duration: 2000 },
-      { targetId: 'timer-reduce-button', delay: 3000, duration: 2000 },
-      { targetId: 'timer-play-button', delay: 5000, duration: 2500 }
+      { targetId: 'timer-end-button', delay: 1500, duration: 4000 },
+      { targetId: 'timer-reduce-button', delay: 5500, duration: 2000 },
+      { targetId: 'timer-play-button', delay: 7500, duration: 2500 }
     ];
 
     if (currentTooltipIndex < tooltipSequence.length) {
