@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 // Mobile-Optimized UI Components
 import { ResponsiveTimer } from "@/components/ResponsiveTimer";
 import { SmartTutorialOverlay } from "@/components/SmartTutorialOverlay";
-import { ResponsiveHeader } from "@/components/ResponsiveHeader";
+import { ResponsiveStoryHeader } from "@/components/ResponsiveStoryHeader";
 import { ProgressTowers } from "@/components/ProgressTowers";
 import { GameContextProvider } from "@/components/GameContextProvider";
 
@@ -512,7 +512,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
       <ErrorBoundary>
         <div className="min-h-screen bg-gradient-primary mobile-optimized">
         {/* Responsive Header */}
-        <ResponsiveHeader
+        <ResponsiveStoryHeader
           storyTitle={storyTitle}
           currentDifficulty={currentDifficulty}
           onHome={onHome}

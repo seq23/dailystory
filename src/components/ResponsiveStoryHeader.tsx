@@ -5,7 +5,7 @@ import { Home, TrendingUp, TrendingDown, RefreshCw } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
-interface MobileOptimizedHeaderProps {
+interface ResponsiveStoryHeaderProps {
   storyTitle?: string;
   currentDifficulty?: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert';
   onHome?: () => void;
@@ -15,7 +15,7 @@ interface MobileOptimizedHeaderProps {
   showLevelControls?: boolean;
 }
 
-export const MobileOptimizedHeader = ({
+export const ResponsiveStoryHeader = ({
   storyTitle,
   currentDifficulty = 'easy',
   onHome,
@@ -23,7 +23,7 @@ export const MobileOptimizedHeader = ({
   onIncreaseDifficulty,
   onDecreaseDifficulty,
   showLevelControls = true
-}: MobileOptimizedHeaderProps) => {
+}: ResponsiveStoryHeaderProps) => {
   const { t } = useTranslation();
   const { isMobile, isTablet, isMobileOrTablet } = useIsMobile();
 
@@ -59,27 +59,41 @@ export const MobileOptimizedHeader = ({
   const displayTitle = storyTitle ? truncateTitle(storyTitle, maxTitleLength) : '';
 
   return (
-    <header className="w-full bg-white/95 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-30">
-      <div className="safe-area-padding">
+    <header className={cn(
+      "w-full bg-white/95 backdrop-blur-sm border-b border-gray-200 z-30",
+      isMobileOrTablet && "sticky top-0"
+    )}>
+      <div className={cn(
+        isMobileOrTablet ? "safe-area-padding" : "max-w-7xl mx-auto px-6"
+      )}>
         <div className={cn(
-          "flex items-center justify-between gap-2 p-3",
-          isMobile && "px-4 py-2",
-          isTablet && "px-6 py-3"
+          "flex items-center justify-between",
+          isMobile && "gap-2 px-4 py-2",
+          isTablet && "gap-3 px-6 py-3",
+          !isMobileOrTablet && "gap-6 py-4"
         )}>
           {/* Left Section: Home & New Story Buttons */}
-          <div className="flex-shrink-0 flex items-center gap-1">
+          <div className={cn(
+            "flex-shrink-0 flex items-center",
+            isMobileOrTablet ? "gap-1" : "gap-4"
+          )}>
             {onHome && (
               <Button
                 variant="ghost"
                 size={isMobile ? "sm" : "default"}
                 onClick={onHome}
                 className={cn(
-                  "min-h-[44px] min-w-[44px] rounded-full",
-                  isMobile && "p-2"
+                  isMobileOrTablet 
+                    ? "min-h-[44px] min-w-[44px] rounded-full p-2" 
+                    : "h-12 px-4 rounded-xl hover:bg-gray-100"
                 )}
                 aria-label={t("common.home", "Home")}
               >
-                <Home className={cn("w-5 h-5", isMobile && "w-4 h-4")} />
+                <Home className={cn(
+                  isMobile ? "w-4 h-4" : "w-5 h-5",
+                  !isMobileOrTablet && "mr-2"
+                )} />
+                {!isMobileOrTablet && t("common.home", "Home")}
               </Button>
             )}
             
@@ -89,14 +103,20 @@ export const MobileOptimizedHeader = ({
                 size={isMobile ? "sm" : "default"}
                 onClick={onNewStory}
                 className={cn(
-                  "min-h-[44px] rounded-full",
-                  isMobile ? "px-2 py-2" : "px-3 py-2"
+                  isMobileOrTablet 
+                    ? "min-h-[44px] rounded-full px-2 py-2" 
+                    : "h-12 px-4 rounded-xl hover:bg-gray-100"
                 )}
                 aria-label={t("common.newStory", "New Story")}
               >
-                <RefreshCw className={cn("w-4 h-4", isMobile && "w-3 h-3 mr-1")} />
+                <RefreshCw className={cn(
+                  isMobile ? "w-3 h-3" : "w-5 h-5",
+                  !isMobileOrTablet && "mr-2"
+                )} />
                 {!isMobile && (
-                  <span className="ml-1 text-sm">
+                  <span className={cn(
+                    isMobileOrTablet ? "ml-1 text-sm" : ""
+                  )}>
                     {t("common.newStory", "New Story")}
                   </span>
                 )}
@@ -109,7 +129,9 @@ export const MobileOptimizedHeader = ({
             {displayTitle && (
               <h1 className={cn(
                 "font-semibold text-gray-900 truncate",
-                isMobile ? "text-sm" : isTablet ? "text-base" : "text-lg"
+                isMobile ? "text-sm" : 
+                isTablet ? "text-base" : 
+                "text-xl max-w-md mx-auto"
               )}>
                 {displayTitle}
               </h1>
@@ -120,14 +142,23 @@ export const MobileOptimizedHeader = ({
           <div className="flex-shrink-0">
             {showLevelControls && (
               <div 
-                className="flex items-center gap-1 sm:gap-2"
+                className={cn(
+                  "flex items-center",
+                  isMobileOrTablet ? "gap-1 sm:gap-2" : "gap-3 bg-gray-50 rounded-xl p-2"
+                )}
                 id="reading-level-controls"
                 data-id="reading-level"
               >
-                {/* Level Label - Hidden on very small screens */}
+                {/* Level Label */}
                 {!isMobile && (
-                  <span className="text-sm text-gray-600 mr-1">
-                    {t("storyDisplay.level", "Level")}:
+                  <span className={cn(
+                    "text-sm text-gray-600",
+                    isMobileOrTablet ? "mr-1" : "font-medium px-2"
+                  )}>
+                    {isMobileOrTablet 
+                      ? t("storyDisplay.level", "Level")
+                      : t("storyDisplay.readingLevel", "Reading Level")
+                    }:
                   </span>
                 )}
 
@@ -135,13 +166,20 @@ export const MobileOptimizedHeader = ({
                 {onDecreaseDifficulty && (
                   <Button
                     variant="outline"
-                    size="sm"
+                    size={isMobileOrTablet ? "sm" : "default"}
                     onClick={onDecreaseDifficulty}
                     disabled={currentDifficulty === 'beginner'}
-                    className="min-h-[44px] min-w-[44px] rounded-full p-2"
+                    className={cn(
+                      isMobileOrTablet 
+                        ? "min-h-[44px] min-w-[44px] rounded-full p-2"
+                        : "h-10 w-10 rounded-lg hover:bg-red-50 hover:border-red-200"
+                    )}
                     aria-label={t("storyDisplay.decreaseDifficulty", "Make easier")}
                   >
-                    <TrendingDown className="w-4 h-4" />
+                    <TrendingDown className={cn(
+                      "w-4 h-4",
+                      !isMobileOrTablet && "text-red-600"
+                    )} />
                   </Button>
                 )}
 
@@ -150,7 +188,9 @@ export const MobileOptimizedHeader = ({
                   variant="outline" 
                   className={cn(
                     "border px-2 py-1",
-                    isMobile ? "text-xs" : "text-sm",
+                    isMobile ? "text-xs" : 
+                    isMobileOrTablet ? "text-sm" :
+                    "px-4 py-2 text-sm font-medium border-2 rounded-lg",
                     getDifficultyColor(currentDifficulty)
                   )}
                 >
@@ -161,13 +201,20 @@ export const MobileOptimizedHeader = ({
                 {onIncreaseDifficulty && (
                   <Button
                     variant="outline"
-                    size="sm"
+                    size={isMobileOrTablet ? "sm" : "default"}
                     onClick={onIncreaseDifficulty}
                     disabled={currentDifficulty === 'expert'}
-                    className="min-h-[44px] min-w-[44px] rounded-full p-2"
+                    className={cn(
+                      isMobileOrTablet 
+                        ? "min-h-[44px] min-w-[44px] rounded-full p-2"
+                        : "h-10 w-10 rounded-lg hover:bg-green-50 hover:border-green-200"
+                    )}
                     aria-label={t("storyDisplay.increaseDifficulty", "Make harder")}
                   >
-                    <TrendingUp className="w-4 h-4" />
+                    <TrendingUp className={cn(
+                      "w-4 h-4",
+                      !isMobileOrTablet && "text-green-600"
+                    )} />
                   </Button>
                 )}
               </div>
