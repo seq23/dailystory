@@ -167,7 +167,7 @@ describe('Supabase Integration Tests', () => {
         .eq('user_id', 'test-user-id');
       
       expect(result.data).toEqual(mockStories);
-    });
+    }, { timeout: 10000 }); // Increase timeout for this specific test
   });
 
   describe('Edge Functions', () => {

@@ -96,12 +96,23 @@ global.URL.revokeObjectURL = vi.fn();
 
 global.fetch = vi.fn();
 
-// Mock i18next
+// Enhanced i18next mock to prevent warnings
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string) => key,
-    i18n: { changeLanguage: vi.fn() },
+    t: (key: string, options?: any) => {
+      // Return key as fallback to prevent missing translation warnings
+      return key;
+    },
+    i18n: { 
+      changeLanguage: vi.fn().mockResolvedValue(undefined),
+      language: 'en',
+      languages: ['en', 'es', 'fr', 'pt', 'ar', 'zh', 'hi'],
+    },
   }),
+  initReactI18next: {
+    type: '3rdParty',
+    init: vi.fn(),
+  },
 }));
 
 // Mock Supabase client
@@ -160,5 +171,16 @@ vi.mock('@/services/enhancedAudioService', () => ({
     speak: vi.fn().mockResolvedValue(undefined),
     stopAudio: vi.fn(),
     isPlaying: vi.fn().mockReturnValue(false),
+    initialize: vi.fn().mockResolvedValue(undefined),
+  })),
+}));
+
+// Additional service mocks
+vi.mock('@/services/unifiedTTSService', () => ({
+  UnifiedTTSService: vi.fn().mockImplementation(() => ({
+    speakText: vi.fn().mockResolvedValue(undefined),
+    stopCurrentAudio: vi.fn(),
+    isPlaying: vi.fn().mockReturnValue(false),
+    clearCache: vi.fn(),
   })),
 }));
