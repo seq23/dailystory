@@ -359,26 +359,16 @@ export const SmartTutorialOverlay = ({
         )}>
           <CardContent className="p-6">
             {/* Header */}
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 rounded-full">
-                  <Icon className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-lg">{step.title}</h3>
-                  <div className="text-sm text-muted-foreground">
-                    Step {currentStep + 1} of {tutorialSteps.length}
-                  </div>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-primary/10 rounded-full">
+                <Icon className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-bold text-lg">{step.title}</h3>
+                <div className="text-sm text-muted-foreground">
+                  Step {currentStep + 1} of {tutorialSteps.length}
                 </div>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onSkip}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <X className="w-4 h-4" />
-              </Button>
             </div>
 
             {/* Description */}

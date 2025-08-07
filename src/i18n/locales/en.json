@@ -338,7 +338,7 @@
   "tutorial": {
     "timer": {
       "title": "⏰ Reading Timer",
-      "description": "This shows your reading time! Click the play button to start/pause your timer. Use the minus button to reduce time if needed."
+      "description": "This shows your reading time! The X button ends your session, play button starts/pauses timer, and minus button reduces time by 5 minutes."
     },
     "navigation": {
       "title": "📖 Page Navigation", 
