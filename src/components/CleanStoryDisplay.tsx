@@ -566,12 +566,12 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
       )}
 
       {/* Main Content - Enhanced for book-like experience */}
-      <main className={`container mx-auto safe-area-padding ${mobileContainerConfig} px-2 md:px-4`}>
-        <div className="max-w-6xl mx-auto">
+      <main className={`container mx-auto safe-area-padding ${mobileContainerConfig} px-1 md:px-2 lg:px-4`}>
+        <div className="max-w-7xl mx-auto">
           <Card className="bg-white/95 backdrop-blur-sm shadow-2xl border border-white/70 mobile-text-fixed">
-            <CardContent className={`${isMobileOrTablet ? 'p-4 sm:p-6' : 'p-8'}`}>
+            <CardContent className={`${isMobileOrTablet ? 'p-2 sm:p-4' : 'p-4 lg:p-6'}`}>
               {/* Progress Bar */}
-              <div className="mb-6">
+              <div className="mb-4 md:mb-6">
                 <Progress value={progress} className="h-2" />
                 <p className="text-sm text-muted-foreground mt-2 text-center">
                   Page {currentPage + 1} of {isPremium && !isStoryComplete ? `${story.length}+` : story.length}
@@ -579,21 +579,21 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                 </p>
               </div>
 
-              {/* Story Content - Enhanced Layout */}
-              <div className="bg-gradient-card rounded-2xl p-6 mb-8 min-h-[500px] shadow-xl">
-                <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-                  {/* Image Section - Enhanced */}
+              {/* Story Content - Enhanced Layout for Book-like Experience */}
+              <div className="bg-gradient-card rounded-2xl p-3 md:p-6 lg:p-8 mb-6 min-h-[600px] md:min-h-[700px] lg:min-h-[800px] shadow-xl">
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 md:gap-6 lg:gap-8">
+                  {/* Image Section - Enhanced for larger display */}
                   <div className="lg:order-1 lg:col-span-2">
                     {currentImage && (
                       <img 
                         src={currentImage} 
                         alt={`Story illustration for page ${currentPage + 1}`}
-                        className="w-full h-72 sm:h-80 lg:h-[32rem] object-cover rounded-2xl shadow-2xl"
+                        className="w-full h-80 sm:h-96 md:h-[36rem] lg:h-[40rem] object-cover rounded-2xl shadow-2xl"
                       />
                     )}
                     
                     {isGeneratingImage && !currentImage && (
-                      <div className="w-full h-72 sm:h-80 lg:h-[32rem] bg-muted rounded-2xl flex items-center justify-center">
+                      <div className="w-full h-80 sm:h-96 md:h-[36rem] lg:h-[40rem] bg-muted rounded-2xl flex items-center justify-center">
                         <div className="text-center">
                           <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
                           <p className="text-sm text-muted-foreground">Creating illustration...</p>
@@ -602,7 +602,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                     )}
 
                     {/* Audio Controls */}
-                    <div id="audio-controls" className="mt-6 flex justify-center gap-4">
+                    <div id="audio-controls" className="mt-4 md:mt-6 flex justify-center gap-4">
                       <ElevenLabsAudio
                         text={currentStory}
                         userInfo={userInfo}
@@ -623,16 +623,16 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                     </div>
                   </div>
 
-                  {/* Text Content - Enhanced Typography */}
+                  {/* Text Content - Enhanced Typography for Book-like Reading */}
                   <div className="lg:order-2 lg:col-span-3 flex flex-col justify-center">
-                    <div className="text-center lg:text-left px-2 md:px-4">
+                    <div className="text-center lg:text-left px-2 md:px-4 lg:px-8">
                       <div className={cn(
                         "font-bold text-foreground mb-6 story-content leading-relaxed",
-                        currentDifficulty === "beginner" && "text-2xl md:text-3xl lg:text-4xl", // Larger font for beginners
-                        currentDifficulty === "easy" && "text-xl md:text-2xl lg:text-3xl",
-                        currentDifficulty === "medium" && "text-lg md:text-xl lg:text-2xl", 
-                        currentDifficulty === "hard" && "text-base md:text-lg lg:text-xl",
-                        currentDifficulty === "expert" && "text-sm md:text-base lg:text-lg",
+                        currentDifficulty === "beginner" && "text-3xl md:text-4xl lg:text-5xl", // Much larger font for beginners
+                        currentDifficulty === "easy" && "text-2xl md:text-3xl lg:text-4xl",
+                        currentDifficulty === "medium" && "text-xl md:text-2xl lg:text-3xl", 
+                        currentDifficulty === "hard" && "text-lg md:text-xl lg:text-2xl",
+                        currentDifficulty === "expert" && "text-base md:text-lg lg:text-xl",
                         isMobileOrTablet ? 'mobile-reading-optimized' : '',
                         isMobileOrTablet ? mobileTextConfig.letterSpacing : '',
                         mobileTextConfig.paragraphSpacing

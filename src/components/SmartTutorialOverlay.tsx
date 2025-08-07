@@ -105,7 +105,7 @@ export const SmartTutorialOverlay = ({
     },
     {
       target: ".progress-towers-container",
-      targetFallback: "[class*='progress-tower'], [class*='progress'], [id*='progress'], .fixed.top-1\\/2",
+      targetFallback: "[class*='progress-tower'], [class*='progress'], [id*='progress'], .fixed.top-1\\/2, .progress-tower, .progress-towers, [class*='ProgressTower']",
       title: t("tutorial.progressTowers.title", "🏗️ Progress Towers"),
       description: t("tutorial.progressTowers.description", "Track your reading achievements! Click to see your progress grow."),
       icon: TrendingUp,
@@ -120,9 +120,9 @@ export const SmartTutorialOverlay = ({
     const viewportHeight = window.innerHeight;
     const cardWidth = isMobile ? Math.min(280, viewportWidth - 40) : isTablet ? Math.min(320, viewportWidth - 48) : Math.min(400, viewportWidth - 48);
     const cardHeight = isMobile ? 260 : isTablet ? 240 : 250;
-    const padding = isMobile ? 20 : isTablet ? 24 : 32;
-    const safeMargin = isMobile ? 12 : isTablet ? 16 : 20;
-    const clearance = isMobile ? 80 : isTablet ? 100 : 120; // Extra clearance to avoid covering targets
+    const padding = isMobile ? 20 : isTablet ? 40 : 32;
+    const safeMargin = isMobile ? 12 : isTablet ? 24 : 20;
+    const clearance = isMobile ? 80 : isTablet ? 120 : 140; // Extra clearance to avoid covering targets
     
     let position: Position = {};
 
@@ -208,37 +208,83 @@ export const SmartTutorialOverlay = ({
     return position;
   };
 
-  // Find target element with fallback and skip missing elements
+  // Find target element with fallback and retry logic
   const findTargetElement = (step: TutorialStep): Element | null => {
+    // Helper function to try multiple selectors
+    const trySelectors = (selectors: string[]): Element | null => {
+      for (const selector of selectors) {
+        try {
+          const element = document.querySelector(selector);
+          if (element) return element;
+        } catch (e) {
+          console.warn('Invalid selector:', selector);
+        }
+      }
+      return null;
+    };
+
     // Try primary selector
     let element = document.querySelector(step.target);
     
     // Try fallback selector
     if (!element && step.targetFallback) {
-      element = document.querySelector(step.targetFallback);
+      const fallbackSelectors = step.targetFallback.split(', ');
+      element = trySelectors(fallbackSelectors);
     }
     
-    // Additional fallbacks based on step content
+    // Additional fallbacks based on step content with retry logic
     if (!element) {
       switch (step.icon) {
         case Timer:
-          element = document.querySelector('[class*="timer"], [id*="timer"], [aria-label*="timer"]');
+          element = trySelectors([
+            '[class*="timer"]', '[id*="timer"]', '[aria-label*="timer"]',
+            '.floating-timer', '.responsive-timer', '.timer-display'
+          ]);
           break;
         case ChevronRight:
-          element = document.querySelector('button[aria-label*="next"], button[aria-label*="Next"]');
+          element = trySelectors([
+            'button[aria-label*="next"]', 'button[aria-label*="Next"]',
+            '.story-navigation button', '.navigation button'
+          ]);
           break;
         case Volume2:
-          element = document.querySelector('button[aria-label*="audio"], button[aria-label*="Audio"]');
+          element = trySelectors([
+            'button[aria-label*="audio"]', 'button[aria-label*="Audio"]',
+            '[data-lucide="volume-2"]', '.audio-controls button'
+          ]);
           break;
         case Play:
-          // Magic wand - check multiple selectors
-          element = document.querySelector('button[aria-label*="generate"], button[aria-label*="Generate"], .generate-new-story, [id*="magic"]');
+          // Magic wand - comprehensive selectors
+          element = trySelectors([
+            '#tutorial-magic-wand', '[data-id="magic-wand"]',
+            'button[aria-label*="generate"]', 'button[aria-label*="Generate"]',
+            '.generate-new-story', '[id*="magic"]', '.tutorial-magic-wand',
+            'button:has([data-lucide="wand2"])'
+          ]);
           break;
         case TrendingUp:
           if (step.title.includes("Reading Level")) {
-            element = document.querySelector('[class*="difficulty"], [class*="level"], button[aria-label*="difficulty"], .reading-level-controls');
+            element = trySelectors([
+              '[data-id="reading-level"]', '.reading-level-controls',
+              '[class*="difficulty"]', '[class*="level"]',
+              'button[aria-label*="difficulty"]'
+            ]);
           } else {
-            element = document.querySelector('.progress-towers-container, [class*="progress-tower"], .fixed.top-1\\/2');
+            // Progress towers with enhanced selectors and z-index fix
+            element = trySelectors([
+              '.progress-towers-container', '[class*="progress-tower"]',
+              '.progress-tower', '.progress-towers', '[class*="ProgressTower"]',
+              '.fixed.top-1\\/2', '[id*="progress"]', '[class*="progress"]'
+            ]);
+            
+            // Force z-index for progress towers
+            if (element) {
+              (element as HTMLElement).style.zIndex = '9999';
+              const parent = element.closest('.fixed');
+              if (parent) {
+                (parent as HTMLElement).style.zIndex = '9999';
+              }
+            }
           }
           break;
       }
@@ -284,45 +330,64 @@ export const SmartTutorialOverlay = ({
     (element as HTMLElement).style.position = '';
   };
 
-  // Handle step changes and positioning with element existence checks
+  // Handle step changes and positioning with element existence checks and retry logic
   useEffect(() => {
     if (!isVisible || currentStep >= tutorialSteps.length) return;
 
     const step = tutorialSteps[currentStep];
     console.log('🎯 SmartTutorial: Step', currentStep, 'targeting:', step.target);
     
-    const targetElement = findTargetElement(step);
-    console.log('🎯 SmartTutorial: Found element:', targetElement);
+    let retryCount = 0;
+    const maxRetries = 3;
     
-    if (targetElement) {
-      highlightElement(targetElement);
+    const tryFindElement = () => {
+      const targetElement = findTargetElement(step);
+      console.log('🎯 SmartTutorial: Found element:', targetElement, 'retry:', retryCount);
       
-      // Calculate and set card position with enhanced anti-collision
-      const position = calculateCardPosition(targetElement, step.position);
-      setCardPosition(position);
-    } else {
-      console.warn('🎯 SmartTutorial: Target element not found for step', currentStep, 'target:', step.target);
-      
-      // Try to continue tutorial for certain steps even if element isn't found
-      if (step.target.includes('magic-wand') && currentStep === 3) {
-        // For magic wand step, position tutorial centrally and continue
-        setCardPosition({
-          top: "50%",
-          left: "50%", 
-          transform: "translate(-50%, -50%)"
-        });
-      } else {
-        // Auto-skip to next step after a short delay
-        setTimeout(() => {
-          if (currentStep < tutorialSteps.length - 1) {
-            setCurrentStep(currentStep + 1);
-          } else {
-            onComplete();
-          }
-        }, 500);
+      if (targetElement) {
+        highlightElement(targetElement);
+        
+        // Calculate and set card position with enhanced anti-collision
+        const position = calculateCardPosition(targetElement, step.position);
+        setCardPosition(position);
+      } else if (retryCount < maxRetries) {
+        // Retry after a short delay
+        retryCount++;
+        setTimeout(tryFindElement, 500);
         return;
+      } else {
+        console.warn('🎯 SmartTutorial: Target element not found after retries for step', currentStep, 'target:', step.target);
+        
+        // Special handling for specific steps
+        if (step.target.includes('magic-wand') && currentStep === 3) {
+          // For magic wand step, position tutorial centrally and continue
+          setCardPosition({
+            top: "50%",
+            left: "50%", 
+            transform: "translate(-50%, -50%)"
+          });
+        } else if (step.title.includes("Progress Towers")) {
+          // For progress towers, show tutorial in center with explanation
+          setCardPosition({
+            top: "50%",
+            left: "50%", 
+            transform: "translate(-50%, -50%)"
+          });
+        } else {
+          // Auto-skip to next step
+          setTimeout(() => {
+            if (currentStep < tutorialSteps.length - 1) {
+              setCurrentStep(currentStep + 1);
+            } else {
+              onComplete();
+            }
+          }, 1000);
+          return;
+        }
       }
-    }
+    };
+    
+    tryFindElement();
 
     // Notify parent about step change
     onStepChange?.(currentStep);
@@ -361,7 +426,7 @@ export const SmartTutorialOverlay = ({
   return (
     <>
       {/* Dark overlay */}
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40" />
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40" style={{ backdropFilter: 'blur(4px)' }} />
       
       {/* Global tutorial highlight styles */}
       <style>{`

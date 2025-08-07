@@ -175,10 +175,27 @@ All colors MUST be HSL.
 
   /* Enhanced story display for book-like experience on mobile */
   .story-content {
-    padding: 1rem;
+    padding: 1.5rem;
     background: rgba(255, 255, 255, 0.1);
     border-radius: 1rem;
     margin: 0.5rem 0;
+    backdrop-filter: blur(8px);
+  }
+  
+  /* Beginner level larger font sizes for mobile */
+  .story-content.text-3xl {
+    font-size: 2rem !important;
+    line-height: 1.5 !important;
+  }
+  
+  .story-content.text-4xl {
+    font-size: 2.5rem !important;
+    line-height: 1.4 !important;
+  }
+  
+  .story-content.text-5xl {
+    font-size: 3rem !important;
+    line-height: 1.3 !important;
   }
 }
 
