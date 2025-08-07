@@ -1,5 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+
+console.log('🔍 UnifiedTTSService test file loading...');
+console.log('🔍 About to import UnifiedTTSService...');
 import { UnifiedTTSService } from '@/services/unifiedTTSService';
+console.log('✅ UnifiedTTSService imported successfully');
 
 // Mock Supabase
 vi.mock('@/integrations/supabase/client', () => ({
@@ -52,8 +56,11 @@ describe('UnifiedTTSService', () => {
 
   describe('Configuration', () => {
     it('initializes with default config', () => {
+      console.log('🧪 Testing default config initialization...');
       const defaultService = new UnifiedTTSService();
+      console.log('🧪 Default service created:', !!defaultService);
       expect(defaultService).toBeDefined();
+      console.log('✅ Default config test passed');
     });
 
     it('initializes with custom config', () => {

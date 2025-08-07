@@ -1,7 +1,13 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
+
+console.log('🔍 InteractiveWord test file loading...');
+
+// Import the component to check for import issues
+console.log('🔍 About to import InteractiveWord...');
 import { InteractiveWord } from '@/components/InteractiveWord';
+console.log('✅ InteractiveWord imported successfully');
 
 // Basic mock setup
 const mockToast = vi.fn();
@@ -44,8 +50,11 @@ describe('InteractiveWord Component', () => {
   });
 
   it('renders the word correctly', () => {
+    console.log('🧪 Running "renders the word correctly" test...');
     const { container } = render(<InteractiveWord {...defaultProps} />);
+    console.log('🧪 Component rendered, checking for text content...');
     expect(container).toHaveTextContent('test');
+    console.log('✅ Test passed: renders the word correctly');
   });
 
   it('applies the correct CSS classes', () => {
