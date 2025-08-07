@@ -51,6 +51,15 @@ export class VisualDesignTestSuite {
       // Test component reusability
       results.push(await this.testComponentReusability());
 
+      // Test layout consistency across difficulty levels (Issue #3)
+      results.push(await this.testLayoutConsistency());
+
+      // Test desktop vs mobile optimization conflicts (Issue #3, #4, #7)
+      results.push(await this.testDeviceOptimizationConflicts());
+
+      // Test console display behavior (Issue #6)
+      results.push(await this.testConsoleDisplayBehavior());
+
       const passed = results.filter(r => r.passed).length;
       const total = results.length;
       const avgScore = results.reduce((sum, r) => sum + r.score, 0) / total;
@@ -247,5 +256,84 @@ ${highImpact.map(issue => `• ${issue.message} (Impact: ${issue.effortToImpact}
 📋 All Issues:
 ${results.issues?.map(issue => `• ${issue.severity.toUpperCase()}: ${issue.message}`).join('\n') || 'No issues found'}
     `.trim();
+  }
+
+  private static async testLayoutConsistency(): Promise<VisualDesignTestResult> {
+    const issues: string[] = [];
+    let score = 100;
+    const difficultyElements = document.querySelectorAll('[data-difficulty]');
+    
+    if (difficultyElements.length > 1) {
+      const beginnerElements = document.querySelectorAll('[data-difficulty="beginner"], [data-difficulty="easy"], [data-difficulty="medium"]');
+      const expertElements = document.querySelectorAll('[data-difficulty="hard"], [data-difficulty="expert"]');
+      
+      if (beginnerElements.length > 0 && expertElements.length > 0) {
+        const beginnerWidth = beginnerElements[0].getBoundingClientRect().width;
+        const expertWidth = expertElements[0].getBoundingClientRect().width;
+        
+        if (Math.abs(beginnerWidth - expertWidth) > 50) {
+          issues.push('Inconsistent story display widths between difficulty levels');
+          score -= 25;
+        }
+      }
+    }
+
+    return {
+      testName: 'Layout Consistency',
+      passed: score >= 70,
+      score,
+      details: issues.join('; ') || 'Layout consistency maintained',
+      suggestions: issues.length > 0 ? ['Standardize container widths across difficulty levels'] : [],
+      effortToImpact: 8,
+      complexity: 'medium',
+      quickWin: true
+    };
+  }
+
+  private static async testDeviceOptimizationConflicts(): Promise<VisualDesignTestResult> {
+    const issues: string[] = [];
+    let score = 100;
+    
+    const floatingTimer = document.querySelector('[data-testid*="timer"], .floating-timer');
+    if (floatingTimer && window.innerWidth > 1024) {
+      const rect = floatingTimer.getBoundingClientRect();
+      if (rect.top < 100) {
+        issues.push('Floating timer may obstruct content on desktop');
+        score -= 20;
+      }
+    }
+
+    return {
+      testName: 'Device Optimization Conflicts',
+      passed: score >= 70,
+      score,
+      details: issues.join('; ') || 'No device conflicts detected',
+      suggestions: issues.length > 0 ? ['Make floating timer collapsible on desktop'] : [],
+      effortToImpact: 7,
+      complexity: 'medium',
+      quickWin: true
+    };
+  }
+
+  private static async testConsoleDisplayBehavior(): Promise<VisualDesignTestResult> {
+    const issues: string[] = [];
+    let score = 100;
+    
+    const consoleElements = document.querySelectorAll('[class*="console"]');
+    if (consoleElements.length > 0 && window.innerWidth > 768) {
+      issues.push('Console may be showing words line-by-line on desktop');
+      score -= 30;
+    }
+
+    return {
+      testName: 'Console Display Behavior',
+      passed: score >= 70,
+      score,
+      details: issues.join('; ') || 'Console behavior appropriate',
+      suggestions: issues.length > 0 ? ['Use paragraph format on desktop, word-by-word on mobile'] : [],
+      effortToImpact: 6,
+      complexity: 'low',
+      quickWin: true
+    };
   }
 }

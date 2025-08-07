@@ -35,7 +35,8 @@ export class UserJourneyTester {
       this.testNavigationPatterns(),
       this.testErrorRecovery(),
       this.testOnboardingExperience(),
-      this.testTaskCompletion()
+      this.testTaskCompletion(),
+      this.testStoryContentValidation() // Issue #2
     ];
 
     return Promise.all(tests);
@@ -395,5 +396,77 @@ export class UserJourneyTester {
     });
 
     return report;
+  }
+
+  private static async testStoryContentValidation(): Promise<UserJourneyTestResult> {
+    const issues: UserJourneyIssue[] = [];
+    const recommendations: string[] = [];
+    let score = 100;
+
+    // Test for unprocessed template variables (Issue #2: {user name})
+    const storyContent = document.querySelector('[data-testid="story-content"], .story-display, [class*="story-content"]');
+    if (storyContent) {
+      const content = storyContent.textContent || storyContent.innerHTML;
+      
+      // Check for unprocessed template variables
+      const templateVariables = content.match(/\{[^}]+\}/g);
+      if (templateVariables && templateVariables.length > 0) {
+        issues.push({
+          type: 'critical',
+          category: 'flow',
+          description: `Unprocessed template variables found: ${templateVariables.join(', ')}`,
+          impact: 'Story personalization is broken, showing raw template variables',
+          suggestion: 'Ensure all template variables are properly processed before story display'
+        });
+        score -= 40;
+      }
+
+      // Check for placeholder text
+      const placeholders = ['[USER_NAME]', '[PLACEHOLDER]', 'PLACEHOLDER', '{name}', '{user_name}'];
+      const hasPlaceholders = placeholders.some(placeholder => 
+        content.toLowerCase().includes(placeholder.toLowerCase())
+      );
+      
+      if (hasPlaceholders) {
+        issues.push({
+          type: 'major',
+          category: 'flow',
+          description: 'Placeholder text detected in story content',
+          impact: 'Users see unfinished or broken story content',
+          suggestion: 'Replace all placeholders with actual user data or default values'
+        });
+        score -= 25;
+      }
+    }
+
+    // Test story content completeness
+    const storyPages = document.querySelectorAll('[data-testid*="page"], .story-page, [class*="page"]');
+    if (storyPages.length === 0) {
+      recommendations.push('Consider adding page structure for better story navigation');
+    }
+
+    const metrics: JourneyMetrics = {
+      navigationClarity: 85,
+      flowEfficiency: score,
+      errorRecovery: 90,
+      onboardingSuccess: 85,
+      taskCompletion: 90,
+      averageTime: 60,
+      dropOffPoints: issues.filter(i => i.type === 'critical').map(i => i.description)
+    };
+
+    return {
+      testName: 'Story Content Validation',
+      passed: score >= 70,
+      score,
+      issues,
+      recommendations: [
+        'Implement template variable validation before story display',
+        'Add fallback values for missing user data',
+        'Test story generation with various user profiles',
+        ...recommendations
+      ],
+      metrics
+    };
   }
 }
