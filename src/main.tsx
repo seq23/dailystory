@@ -3,6 +3,8 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 import './i18n/config'
+import './test-performance-suite' // Test the new performance-optimized system
+import './manual-test-runner' // Run manual tests to show console results
 
 // Import audit functions for console debugging
 import { finalVerificationAudit } from './utils/finalVerificationAudit';
