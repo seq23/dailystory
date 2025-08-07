@@ -142,8 +142,7 @@ describe('UnifiedTTSService', () => {
     });
 
     it('stops current audio when requested', () => {
-      // Set up audio to be playing first
-      mockAudio.pause = vi.fn();
+      // Set up audio to be playing first  
       (ttsService as any).currentAudio = mockAudio;
       ttsService.stopCurrentAudio();
       expect(mockAudio.pause).toHaveBeenCalled();

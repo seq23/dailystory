@@ -25,6 +25,7 @@ const mockSpeechSynthesisUtteranceConstructor = vi.fn().mockImplementation((text
 
 globalThis.AudioContext = mockAudioContextConstructor as any;
 globalThis.SpeechSynthesisUtterance = mockSpeechSynthesisUtteranceConstructor as any;
+globalThis.webkitAudioContext = mockAudioContextConstructor as any;
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
