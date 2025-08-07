@@ -82,12 +82,10 @@ export class LiveGenerationService {
 
       if (error || !data?.pages) {
         console.error('🚀 Live Generation: Failed to generate first page:', error);
-        console.log('🚀 Live Generation: Data received:', data);
         return this.generateEnhancedFallbackFirstPage(userInfo, difficulty, 'api_error');
       }
 
       // Extract first page from the pages array
-      console.log('🚀 Live Generation: Successfully received pages:', data.pages?.length || 0);
       const content = (data.pages[0] || '').trim();
       
       // Simple validation - just check if content exists and has reasonable length

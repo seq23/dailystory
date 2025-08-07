@@ -278,7 +278,7 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
             <div className="space-y-2">
               <Label>Favorite Color</Label>
               <ColorPicker
-                value={formData.favoriteColor || "#3B82F6"}
+                value={formData.favoriteColor || "blue"}
                 onChange={(color) => setFormData(prev => ({ ...prev, favoriteColor: color }))}
               />
             </div>

@@ -147,7 +147,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
           interests: profile.interests || [],
           learningGoal: 'improve-english-reading' as LearningGoal,
           avatar: typeof (profile as any).avatar === 'string' ? JSON.parse((profile as any).avatar) : ((profile as any).avatar || { type: 'boy', skinTone: 'medium' }),
-          favoriteColor: (profile as any).favorite_color || '#3B82F6',
+          favoriteColor: (profile as any).favorite_color || 'blue',
           favoriteAnimal: (profile as any).favorite_animal || 'cat',
           hobbies: (profile as any).hobbies || '',
           favoriteFood: (profile as any).favorite_food || '',

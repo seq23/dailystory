@@ -1,6 +1,5 @@
 // Comprehensive Error Handling Manager for Level 0 Story System
 import { EnhancedSubscriptionManager } from './enhancedSubscriptionManager';
-import { MultilingualTemplateManager } from './multilingualTemplateManager';
 import { MobileSessionManager } from './mobileSessionManager';
 import type { UserInfo } from '@/types';
 
@@ -123,10 +122,13 @@ export class ErrorHandlingManager {
     } catch (error) {
       console.error('Emergency content generation failed:', error);
       
-      // Final fallback uses MultilingualTemplateManager which has validation
+      // Final simple fallback for critical errors
       const userName = userInfo?.name || 'I';
-      const language = MultilingualTemplateManager.getTemplateLanguage(userInfo);
-      return MultilingualTemplateManager.getLanguageFallback(language, userInfo);
+      return [
+        `${userName} had fun today.`,
+        `${userName} felt happy.`,
+        `It was good.`
+      ];
     }
   }
 

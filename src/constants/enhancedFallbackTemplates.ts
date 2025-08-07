@@ -5,6 +5,7 @@
 
 import { UserInfo, DifficultyLevel } from "@/types";
 import { NameFormatter } from "@/utils/nameFormatter";
+import { ensureColorName } from "@/utils/colorConverter";
 
 export interface EnhancedFallbackTemplate {
   setup: string[];
@@ -357,13 +358,6 @@ export class EnhancedFallbackManager {
 
     const processed = this.processTemplate(selectedTemplate, userInfo, difficulty);
     
-    console.log('🚀 Template Processing Debug:', {
-      pageIndex,
-      templateBefore: selectedTemplate.substring(0, 50) + '...',
-      templateAfter: processed.substring(0, 50) + '...',
-      userName: userInfo.name
-    });
-    
     // Validate that all placeholders were replaced
     this.validateTemplateProcessing(processed, pageIndex);
     
@@ -404,7 +398,7 @@ export class EnhancedFallbackManager {
     processed = processed.replace(/{animal}/g, 
       userInfo.favoriteAnimal || vocabulary.animals[Math.floor(Math.random() * vocabulary.animals.length)]);
     processed = processed.replace(/{color}/g, 
-      userInfo.favoriteColor || vocabulary.colors[Math.floor(Math.random() * vocabulary.colors.length)]);
+      ensureColorName(userInfo.favoriteColor) || vocabulary.colors[Math.floor(Math.random() * vocabulary.colors.length)]);
     processed = processed.replace(/{object}/g, 
       vocabulary.objects[Math.floor(Math.random() * vocabulary.objects.length)]);
     
