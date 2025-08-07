@@ -19,9 +19,9 @@ export const processTextForPhonetics = (
     .filter(item => item.word.trim().length > 0);
   
   return words.map((word, index) => {
-    // If it's just whitespace, return as is
+    // If it's just whitespace, return as React text node
     if (/^\s+$/.test(word)) {
-      return word;
+      return <span key={`space-${index}`}>{word}</span>;
     }
     
     // If it's empty, skip

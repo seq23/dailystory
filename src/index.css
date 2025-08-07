@@ -880,14 +880,25 @@ All colors MUST be HSL.
     letter-spacing: 0.01em;
   }
   
-  /* Ensure proper word flow on mobile */
-  .mobile-reading-optimized * {
-    display: inline !important;
-  }
-  
-  .mobile-reading-optimized .interactive-word {
+  /* Ensure proper word flow on mobile and desktop */
+  .mobile-reading-optimized .interactive-word,
+  .mobile-reading-optimized span[class*="word-index"] {
     display: inline !important;
     white-space: normal !important;
+  }
+  
+  /* Desktop text flow fix - prevent line breaking on each word */
+  @media (min-width: 768px) {
+    .mobile-reading-optimized {
+      white-space: normal;
+      word-wrap: break-word;
+    }
+    
+    .mobile-reading-optimized .interactive-word,
+    .mobile-reading-optimized span[class*="word-index"] {
+      display: inline;
+      white-space: normal;
+    }
   }
 }
 

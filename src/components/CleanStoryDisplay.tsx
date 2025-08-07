@@ -612,7 +612,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                   {/* Text Content - Right Side - Mobile Optimized */}
                   <div className="lg:order-2 flex flex-col justify-center">
                     <div className="text-center lg:text-left">
-                      <div className={`font-bold text-foreground mb-4 story-content mobile-reading-optimized ${mobileTextConfig.fontSize} ${mobileTextConfig.lineHeight} ${mobileTextConfig.letterSpacing} ${mobileTextConfig.paragraphSpacing}`}>
+                      <div className={`font-bold text-foreground mb-4 story-content ${isMobileOrTablet ? 'mobile-reading-optimized' : ''} ${mobileTextConfig.fontSize} ${mobileTextConfig.lineHeight} ${mobileTextConfig.letterSpacing} ${mobileTextConfig.paragraphSpacing}`}>
                         {processTextForPhonetics(
                           currentStory,
                           "cursor-pointer hover:bg-primary/10 rounded px-1 transition-colors touch-target",
