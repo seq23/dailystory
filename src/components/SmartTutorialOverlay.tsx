@@ -347,7 +347,10 @@ export const SmartTutorialOverlay = ({
       {/* Tutorial Card - Positioned dynamically */}
       <div 
         className="fixed z-50"
-        style={cardPosition}
+        style={{
+          ...cardPosition,
+          left: cardPosition.left ? `${parseInt(cardPosition.left) - 24}px` : cardPosition.left
+        }}
       >
         <Card className={cn(
           "bg-white dark:bg-gray-900 shadow-2xl border-2 border-primary/30 rounded-2xl",
