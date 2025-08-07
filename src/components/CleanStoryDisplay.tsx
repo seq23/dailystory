@@ -18,6 +18,7 @@ import { GameContextProvider } from "@/components/GameContextProvider";
 import { ElevenLabsAudio } from "@/components/ElevenLabsAudio";
 import { VocabularyCollector } from "@/components/VocabularyCollector";
 import { processTextForPhonetics } from "@/utils/textProcessor";
+import { processTextForDesktop } from "@/utils/desktopTextProcessor";
 import { useWordHighlighting } from "@/hooks/useWordHighlighting";
 import { useGamification } from "@/hooks/useGamification";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -613,15 +614,26 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                   <div className="lg:order-2 lg:col-span-3 flex flex-col justify-center">
                     <div className="text-center lg:text-left">
                       <div className={`font-bold text-foreground mb-4 story-content ${isMobileOrTablet ? 'mobile-reading-optimized text-lg sm:text-xl leading-relaxed' : 'text-xl lg:text-2xl leading-relaxed'} ${isMobileOrTablet ? mobileTextConfig.letterSpacing : ''} ${mobileTextConfig.paragraphSpacing}`}>
-                        {processTextForPhonetics(
-                          currentStory,
-                          "cursor-pointer hover:bg-primary/10 rounded px-1 transition-colors touch-target",
-                          currentDifficulty,
-                          userInfo,
-                          isPremium,
-                          userInfo.name,
-                          currentHighlightedWord
-                        )}
+                        {isMobileOrTablet 
+                          ? processTextForPhonetics(
+                              currentStory,
+                              "cursor-pointer hover:bg-primary/10 rounded px-1 transition-colors touch-target",
+                              currentDifficulty,
+                              userInfo,
+                              isPremium,
+                              userInfo.name,
+                              currentHighlightedWord
+                            )
+                          : processTextForDesktop(
+                              currentStory,
+                              "cursor-pointer hover:bg-primary/10 rounded px-1 transition-colors",
+                              currentDifficulty,
+                              userInfo,
+                              isPremium,
+                              userInfo.name,
+                              currentHighlightedWord
+                            )
+                        }
                       </div>
                     </div>
                   </div>
@@ -635,6 +647,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                   <div className="flex items-center gap-2">
                     <Button
                       id="magic-wand-premium"
+                      data-id="magic-wand"
                       onClick={handleGenerateNewStory}
                       disabled={isGeneratingNewStory}
                       variant="outline"
@@ -665,6 +678,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                     </p>
                     <Button
                       id="magic-wand-free"
+                      data-id="magic-wand"
                       onClick={handleGenerateNewStory}
                       disabled={isGeneratingNewStory}
                       className={cn(

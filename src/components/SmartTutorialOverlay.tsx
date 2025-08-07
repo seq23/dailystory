@@ -88,16 +88,16 @@ export const SmartTutorialOverlay = ({
       position: "top"
     },
     {
-      target: "[id*='magic-wand'], #magic-wand-free, #magic-wand-premium",
-      targetFallback: "button:has([data-lucide='wand']), .generate-new-story",
+      target: "[data-id='magic-wand'], #magic-wand-free, #magic-wand-premium",
+      targetFallback: "button:has([data-lucide='wand']), .generate-new-story, .lucide-wand2",
       title: t("tutorial.magicWand.title", "🪄 Magic Wand"),
       description: t("tutorial.magicWand.description.free", "Generate new stories to keep reading! Premium users can refresh anytime."),
       icon: Play,
       position: "top"
     },
     {
-      target: "#reading-level-controls",
-      targetFallback: ".reading-level-controls, [class*='difficulty']",
+      target: "[data-id='reading-level'], #reading-level-controls",
+      targetFallback: ".reading-level-controls, [class*='difficulty'], .lucide-trending-up, .lucide-trending-down",
       title: t("tutorial.difficulty.title", "🎯 Reading Level"),
       description: t("tutorial.difficulty.description", "Make the story easier or harder instantly! Up arrow makes it harder, down arrow makes it easier to match your reading level."),
       icon: TrendingUp,
@@ -107,7 +107,7 @@ export const SmartTutorialOverlay = ({
       target: ".progress-towers-container",
       targetFallback: "[class*='progress-tower'], [class*='progress'], [id*='progress']",
       title: t("tutorial.progressTowers.title", "🏗️ Progress Towers"),
-      description: t("tutorial.progressTowers.description", "Watch your reading progress grow! These towers show your words read, pages completed, and vocabulary learned."),
+      description: t("tutorial.progressTowers.description", "Track your reading achievements!"),
       icon: TrendingUp,
       position: "right"
     }

@@ -122,6 +122,7 @@ export const MobileOptimizedHeader = ({
               <div 
                 className="flex items-center gap-1 sm:gap-2"
                 id="reading-level-controls"
+                data-id="reading-level"
               >
                 {/* Level Label - Hidden on very small screens */}
                 {!isMobile && (
