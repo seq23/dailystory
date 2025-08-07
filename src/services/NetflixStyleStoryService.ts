@@ -2,15 +2,17 @@
 // Generates complete stories upfront with tolerance-based validation
 
 import { supabase } from '@/integrations/supabase/client';
-import type { UserInfo, DifficultyLevel } from '@/types';
-import { getStoryPrompt, formatUserPrompt, calculateDifficultyFromUser } from '@/config/storyPrompts';
+import type { UserInfo, DifficultyLevel, ExpertGradeLevel } from '@/types';
+import { getStoryPrompt, getExpertStoryPrompt, formatUserPrompt, calculateDifficultyFromUser } from '@/config/storyPrompts';
 import { EnhancedFallbackManager } from '@/constants/enhancedFallbackTemplates';
 import { ErrorHandler } from '@/utils/errorHandling';
 import { DifficultyManager } from '@/services/difficultyManager';
+import { ExpertDifficultyManager } from '@/services/expertDifficultyManager';
 
 export interface NetflixStoryResult {
   pages: string[];
   difficulty: DifficultyLevel;
+  expertGradeLevel?: ExpertGradeLevel;
   title: string;
   isComplete: boolean;
   error?: string;
@@ -28,8 +30,17 @@ export class NetflixStyleStoryService {
       const difficulty = difficultyResult.difficulty;
       console.log(`🎯 Netflix-Style: Using difficulty ${difficulty} for ${userInfo.name}`);
       
-      // Simple prompts - trust OpenAI to do its job
-      const promptConfig = getStoryPrompt(difficulty);
+      // Get expert grade level if using expert difficulty
+      let expertGradeLevel: ExpertGradeLevel | undefined;
+      let promptConfig: any;
+      
+      if (difficulty === 'expert') {
+        expertGradeLevel = await ExpertDifficultyManager.getExpertGradeLevel(userInfo);
+        promptConfig = getExpertStoryPrompt(expertGradeLevel);
+        console.log(`📚 Netflix-Style: Using expert grade ${expertGradeLevel} for ${userInfo.name}`);
+      } else {
+        promptConfig = getStoryPrompt(difficulty);
+      }
       const systemPrompt = promptConfig.systemPrompt;
       const userPrompt = `Create an engaging story for ${userInfo.name} (age ${userInfo.age}). They love ${userInfo.favoriteAnimal || 'animals'} and ${userInfo.favoriteColor || 'bright colors'}. Their hobby is ${userInfo.hobbies || 'playing'}. ${userInfo.specialRequest ? `Special request: ${userInfo.specialRequest}` : ''}`;
       
@@ -50,10 +61,11 @@ export class NetflixStyleStoryService {
             favoriteAnimal: userInfo.favoriteAnimal,
             favoriteFood: userInfo.favoriteFood,
             hobbies: userInfo.hobbies,
-            maxLength: 500,
-            expectedPages: 7,
+            maxLength: promptConfig.maxLength || 500,
+            expectedPages: promptConfig.expectedPages || 7,
             systemPrompt: systemPrompt,
             userPrompt: userPrompt,
+            expertGrade: expertGradeLevel,
             avatar: {
               type: 'child',
               skinTone: 'medium'
@@ -76,6 +88,7 @@ export class NetflixStyleStoryService {
           return {
             pages: data.pages,
             difficulty: data.difficulty || difficulty,
+            expertGradeLevel,
             title: data.title || `${userInfo.name}'s Adventure`,
             isComplete: data.isComplete || true
           };

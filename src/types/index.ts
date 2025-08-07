@@ -1,6 +1,7 @@
 // Central type definitions for the Time2Read application
 
 export type DifficultyLevel = "beginner" | "easy" | "medium" | "hard" | "expert";
+export type ExpertGradeLevel = "4th" | "5th" | "6th" | "7th" | "8th";
 export type LanguageCode = "en" | "ar" | "es" | "zh" | "hi" | "pt" | "fr";
 export type LearningGoal = "improve-english-reading" | "learn-english-language" | "both";
 export type SkinTone = "pale" | "light" | "medium" | "olive" | "dark";
@@ -30,6 +31,7 @@ export interface UserInfo {
   readingLevel?: string; // Add this for compatibility
   interests?: string[]; // Add this for compatibility
   storyLanguagePreference?: LanguageCode; // New: separate story content language from native language
+  expertGradeLevel?: ExpertGradeLevel; // For Level 4 adaptive progression
 }
 
 export interface StorySegment {

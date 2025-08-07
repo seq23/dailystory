@@ -2,15 +2,17 @@
 // Generates stories page-by-page with tolerance-based validation
 
 import { supabase } from '@/integrations/supabase/client';
-import type { UserInfo, DifficultyLevel } from '@/types';
-import { getStoryPrompt, formatUserPrompt, calculateDifficultyFromUser } from '@/config/storyPrompts';
+import type { UserInfo, DifficultyLevel, ExpertGradeLevel } from '@/types';
+import { getStoryPrompt, getExpertStoryPrompt, formatUserPrompt, calculateDifficultyFromUser } from '@/config/storyPrompts';
 import { EnhancedFallbackManager } from '@/constants/enhancedFallbackTemplates';
 import { ErrorHandler } from '@/utils/errorHandling';
 import { DifficultyManager } from '@/services/difficultyManager';
+import { ExpertDifficultyManager } from '@/services/expertDifficultyManager';
 
 export interface LiveGenerationContext {
   userInfo: UserInfo;
   difficulty: DifficultyLevel;
+  expertGradeLevel?: ExpertGradeLevel;
   storyContext: string[];
   currentPage: number;
   totalExpectedPages: number;
@@ -36,8 +38,18 @@ export class LiveGenerationService {
       const difficultyResult = DifficultyManager.getFinalDifficulty(userInfo);
       const difficulty = difficultyResult.difficulty;
       console.log(`🎯 Live Generation: Using difficulty ${difficulty} for ${userInfo.name}`);
-      // Simple system prompt - trust OpenAI to do its job
-      const promptConfig = getStoryPrompt(difficulty);
+      
+      // Get expert grade level if using expert difficulty
+      let expertGradeLevel: ExpertGradeLevel | undefined;
+      let promptConfig: any;
+      
+      if (difficulty === 'expert') {
+        expertGradeLevel = await ExpertDifficultyManager.getExpertGradeLevel(userInfo);
+        promptConfig = getExpertStoryPrompt(expertGradeLevel);
+        console.log(`📚 Live Generation: Using expert grade ${expertGradeLevel} for ${userInfo.name}`);
+      } else {
+        promptConfig = getStoryPrompt(difficulty);
+      }
       const systemPrompt = `${promptConfig.systemPrompt}
       
       IMPORTANT: You are generating the FIRST PAGE only of a multi-page story. 
@@ -62,7 +74,8 @@ export class LiveGenerationService {
             systemPrompt,
             userPrompt,
             pageNumber: 1,
-            isFirstPage: true
+            isFirstPage: true,
+            expertGrade: expertGradeLevel
           }
         }
       });
@@ -84,9 +97,10 @@ export class LiveGenerationService {
       const context: LiveGenerationContext = {
         userInfo,
         difficulty,
+        expertGradeLevel,
         storyContext: [content],
         currentPage: 1,
-        totalExpectedPages: 6, // Simple fixed value
+        totalExpectedPages: promptConfig.expectedPages || 6,
         theme: 'adventure',
         characters: [userInfo.name, userInfo.favoriteAnimal || 'friend']
       };
@@ -113,7 +127,12 @@ export class LiveGenerationService {
       
       console.log(`🚀 Live Generation: Generating page ${nextPageNumber}/${context.totalExpectedPages}`);
       
-      const promptConfig = getStoryPrompt(context.difficulty);
+      let promptConfig: any;
+      if (context.difficulty === 'expert' && context.expertGradeLevel) {
+        promptConfig = getExpertStoryPrompt(context.expertGradeLevel);
+      } else {
+        promptConfig = getStoryPrompt(context.difficulty);
+      }
       
       const systemPrompt = `${promptConfig.systemPrompt}
       
@@ -141,7 +160,8 @@ export class LiveGenerationService {
             userPrompt,
             pageNumber: nextPageNumber,
             isLastPage,
-            storyContext: context.storyContext
+            storyContext: context.storyContext,
+            expertGrade: context.expertGradeLevel
           }
         }
       });

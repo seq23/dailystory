@@ -1,5 +1,6 @@
-import type { UserInfo } from "@/types";
+import type { UserInfo, ExpertGradeLevel } from "@/types";
 import { APP_CONFIG } from "@/constants/app";
+import { ExpertDifficultyManager } from "./expertDifficultyManager";
 
 export interface ReadingProgress {
   userId: string;
@@ -132,6 +133,8 @@ export class ProgressTrackingService {
       timeSpent: number;
       storiesCompleted: number;
       comprehensionScore?: number;
+      expertGradeLevel?: ExpertGradeLevel;
+      difficulty?: string;
     }
   ): ReadingProgress {
     const updatedProgress = { ...progress };
@@ -160,6 +163,30 @@ export class ProgressTrackingService {
     
     // Update weekly goals
     updatedProgress.weeklyGoals = this.updateWeeklyGoals(updatedProgress.weeklyGoals, sessionData);
+    
+    // Update expert difficulty progression if applicable
+    if (sessionData.difficulty === 'expert' && sessionData.expertGradeLevel) {
+      // Extract userInfo from progress (we'll need to improve this structure later)
+      const userInfo: UserInfo = {
+        name: updatedProgress.userId.split('_')[1] || 'user',
+        age: 11, // Default for expert level
+        grade: '6th+',
+        nativeLanguage: 'en',
+        learningGoal: 'improve-english-reading',
+        avatar: { type: 'boy', skinTone: 'medium' },
+        favoriteColor: '',
+        favoriteAnimal: '',
+        hobbies: '',
+        favoriteFood: '',
+        specialRequest: ''
+      };
+      
+      ExpertDifficultyManager.updateProgress(userInfo, sessionData.expertGradeLevel, {
+        comprehensionScore: sessionData.comprehensionScore,
+        readingSpeed: updatedProgress.readingSpeed,
+        completed: sessionData.storiesCompleted > 0
+      });
+    }
     
     return updatedProgress;
   }

@@ -30,7 +30,8 @@ serve(async (req) => {
       readingLevel,
       theme,
       hasCustomPrompts: !!(config?.systemPrompt && config?.userPrompt),
-      userName: config?.userName
+      userName: config?.userName,
+      expertGrade: config?.expertGrade
     });
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -63,23 +64,30 @@ serve(async (req) => {
       throw new Error('No story content generated')
     }
 
+    // Clean up markdown formatting from OpenAI response
+    const cleanStoryText = storyText
+      .replace(/\*\*(.*?)\*\*/g, '$1')  // Remove **bold**
+      .replace(/\*(.*?)\*/g, '$1')     // Remove *italic*
+      .replace(/\*+/g, '')            // Remove any remaining asterisks
+      .trim();
+
     // Parse story into pages with improved logic
     let pages = [];
     
     // Try multiple parsing strategies
-    if (storyText.includes('Page ')) {
+    if (cleanStoryText.includes('Page ')) {
       // Standard format: "Page X: content"
-      pages = storyText.split(/Page \d+:/g)
+      pages = cleanStoryText.split(/Page \d+:/g)
         .filter(page => page.trim().length > 0)
         .map(page => page.trim().replace(/^\d+\.\s*/, ''));
-    } else if (storyText.includes('\n\n')) {
+    } else if (cleanStoryText.includes('\n\n')) {
       // Fallback: Split by double newlines
-      pages = storyText.split('\n\n')
+      pages = cleanStoryText.split('\n\n')
         .filter(page => page.trim().length > 0)
         .map(page => page.trim());
     } else {
       // Emergency fallback: Split by sentences for single block
-      const sentences = storyText.split(/\. (?=[A-Z])/);
+      const sentences = cleanStoryText.split(/\. (?=[A-Z])/);
       const wordsPerPage = readingLevel === 'beginner' ? 8 : readingLevel === 'easy' ? 15 : readingLevel === 'medium' ? 30 : 50;
       
       let currentPage = '';

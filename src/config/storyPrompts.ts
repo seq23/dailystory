@@ -1,7 +1,7 @@
 // Configuration-driven story prompts with no hardcoding
 // Easy to update and modify without code changes
 
-import type { DifficultyLevel, UserInfo } from '@/types';
+import type { DifficultyLevel, ExpertGradeLevel, UserInfo } from '@/types';
 
 export interface StoryPromptConfig {
   difficulty: DifficultyLevel;
@@ -9,6 +9,15 @@ export interface StoryPromptConfig {
   userPromptTemplate: string;
   maxLength: number;
   expectedPages: number;
+}
+
+export interface ExpertStoryPromptConfig {
+  gradeLevel: ExpertGradeLevel;
+  systemPrompt: string;
+  userPromptTemplate: string;
+  maxLength: number;
+  expectedPages: number;
+  wordCount: string;
 }
 
 export const STORY_PROMPTS: Record<DifficultyLevel, StoryPromptConfig> = {
@@ -127,26 +136,150 @@ FORMAT: Page 1: [4-5 sentences]. Page 2: [4-5 sentences]. Continue for 10-12 pag
   
   expert: {
     difficulty: 'expert',
-    systemPrompt: `You are a sophisticated children's story writer for ages 11+. Choose from these two author styles to guide your writing internally:
+    systemPrompt: `You are a sophisticated children's story writer for ages 11+. Choose from these three author styles to guide your writing internally:
 
 GOLD AUTHOR - Adventure Life Style: Realistic childhood adventures with humor and relatability. Use realistic scenarios, family life, humor, and relatability in your narrative.
 
 SILVER AUTHOR - Growing Up Style: Gentle emotional stories about growing up themes. Use gentle emotion, growing up scenarios, reassurance, and quiet wisdom in your narrative.
 
+PURPLE AUTHOR - Cause & Effect Style: Cause-and-effect chains with circular storytelling. Use cause and effect, circular narratives, predictable patterns, and humor in your narrative.
+
 IMPORTANT: Do not include the author style name or description in your story output. Use the style only as internal guidance for your writing approach.
 
-Create complex stories with:
-- 600+ words total
-- Sophisticated language and complex themes
-- Nuanced character development
+Create complex stories with adaptive grade-level complexity:
+- Sophisticated language and complex themes appropriate for 11+ year olds
+- Nuanced character development and emotional depth
 - Abstract concepts made accessible
 - Use name 25% of time, pronouns 75% of time - sophisticated natural flow with occasional name emphasis
 - Multiple plot layers and rich storytelling
 
-FORMAT: Page 1: [5-6 sentences]. Page 2: [5-6 sentences]. Continue for 12-15 pages.`,
+FORMAT: Page 1: [content]. Page 2: [content]. Continue based on grade level.`,
     userPromptTemplate: `Create a sophisticated story for {name} (age {age}). They are deeply interested in {hobbies} and find meaning in {favoriteAnimal} and {favoriteColor}. They appreciate {favoriteFood}. Explore themes of identity, purpose, and complex relationships.`,
     maxLength: 800,
     expectedPages: 13
+  }
+};
+
+// Expert Level 4 Grade-Specific Prompts (4th-8th grade reading levels)
+export const EXPERT_STORY_PROMPTS: Record<ExpertGradeLevel, ExpertStoryPromptConfig> = {
+  "4th": {
+    gradeLevel: "4th",
+    systemPrompt: `You are an expert story writer creating 4th grade level content for advanced 11+ year old readers. Choose from these author styles internally:
+
+GOLD AUTHOR - Adventure Life Style: Realistic childhood adventures with humor and relatability.
+SILVER AUTHOR - Growing Up Style: Gentle emotional stories about growing up themes.
+PURPLE AUTHOR - Cause & Effect Style: Cause-and-effect chains with circular storytelling.
+
+Create sophisticated stories with 4th grade reading complexity:
+- 600-700 words total across entire story
+- Vocabulary appropriate for 4th grade but themes for 11+ year olds
+- Clear narrative structure with sophisticated emotional content
+- Advanced concepts presented in accessible language
+- Character development and meaningful relationships
+
+FORMAT: Page 1: [4-5 sentences]. Continue for 10-12 pages.
+
+CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.`,
+    userPromptTemplate: `Create a 600-700 word story for {name} (age {age}). Reading level: 4th grade vocabulary with sophisticated 11+ themes. Include {hobbies}, {favoriteAnimal}, {favoriteColor}, and {favoriteFood}. Focus on growth, friendship, and meaningful challenges.`,
+    maxLength: 700,
+    expectedPages: 11,
+    wordCount: "600-700"
+  },
+  
+  "5th": {
+    gradeLevel: "5th",
+    systemPrompt: `You are an expert story writer creating 5th grade level content for advanced 11+ year old readers. Choose from these author styles internally:
+
+GOLD AUTHOR - Adventure Life Style: Realistic childhood adventures with humor and relatability.
+SILVER AUTHOR - Growing Up Style: Gentle emotional stories about growing up themes.
+PURPLE AUTHOR - Cause & Effect Style: Cause-and-effect chains with circular storytelling.
+
+Create sophisticated stories with 5th grade reading complexity:
+- 700-800 words total across entire story
+- More complex sentence structures and vocabulary
+- Deeper character relationships and emotional exploration
+- Advanced themes appropriate for 11+ year olds
+- Multiple plot elements and character growth
+
+FORMAT: Page 1: [4-6 sentences]. Continue for 11-13 pages.
+
+CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.`,
+    userPromptTemplate: `Create a 700-800 word story for {name} (age {age}). Reading level: 5th grade vocabulary with sophisticated 11+ themes. Include {hobbies}, {favoriteAnimal}, {favoriteColor}, and {favoriteFood}. Explore deeper relationships and personal growth.`,
+    maxLength: 800,
+    expectedPages: 12,
+    wordCount: "700-800"
+  },
+  
+  "6th": {
+    gradeLevel: "6th",
+    systemPrompt: `You are an expert story writer creating 6th grade level content for advanced 11+ year old readers. Choose from these author styles internally:
+
+GOLD AUTHOR - Adventure Life Style: Realistic childhood adventures with humor and relatability.
+SILVER AUTHOR - Growing Up Style: Gentle emotional stories about growing up themes.
+PURPLE AUTHOR - Cause & Effect Style: Cause-and-effect chains with circular storytelling.
+
+Create sophisticated stories with 6th grade reading complexity:
+- 800-900 words total across entire story
+- Advanced vocabulary and complex sentence structures
+- Sophisticated themes and character development
+- Abstract concepts and moral complexity
+- Rich narrative layers and emotional depth
+
+FORMAT: Page 1: [5-6 sentences]. Continue for 12-14 pages.
+
+CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.`,
+    userPromptTemplate: `Create an 800-900 word story for {name} (age {age}). Reading level: 6th grade vocabulary with sophisticated 11+ themes. Include {hobbies}, {favoriteAnimal}, {favoriteColor}, and {favoriteFood}. Explore complex themes of identity and purpose.`,
+    maxLength: 900,
+    expectedPages: 13,
+    wordCount: "800-900"
+  },
+  
+  "7th": {
+    gradeLevel: "7th",
+    systemPrompt: `You are an expert story writer creating 7th grade level content for advanced 11+ year old readers. Choose from these author styles internally:
+
+GOLD AUTHOR - Adventure Life Style: Realistic childhood adventures with humor and relatability.
+SILVER AUTHOR - Growing Up Style: Gentle emotional stories about growing up themes.
+PURPLE AUTHOR - Cause & Effect Style: Cause-and-effect chains with circular storytelling.
+
+Create sophisticated stories with 7th grade reading complexity:
+- 900-1000 words total across entire story
+- Pre-teen level vocabulary and sophisticated concepts
+- Complex character relationships and moral dilemmas
+- Advanced emotional themes and social awareness
+- Multiple narrative perspectives and deeper insights
+
+FORMAT: Page 1: [5-7 sentences]. Continue for 13-15 pages.
+
+CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.`,
+    userPromptTemplate: `Create a 900-1000 word story for {name} (age {age}). Reading level: 7th grade vocabulary with sophisticated 11+ themes. Include {hobbies}, {favoriteAnimal}, {favoriteColor}, and {favoriteFood}. Explore complex social themes and personal responsibility.`,
+    maxLength: 1000,
+    expectedPages: 14,
+    wordCount: "900-1000"
+  },
+  
+  "8th": {
+    gradeLevel: "8th",
+    systemPrompt: `You are an expert story writer creating 8th grade level content for advanced 11+ year old readers. Choose from these author styles internally:
+
+GOLD AUTHOR - Adventure Life Style: Realistic childhood adventures with humor and relatability.
+SILVER AUTHOR - Growing Up Style: Gentle emotional stories about growing up themes.
+PURPLE AUTHOR - Cause & Effect Style: Cause-and-effect chains with circular storytelling.
+
+Create sophisticated stories with 8th grade reading complexity:
+- 1000-1100 words total across entire story
+- Near high school level vocabulary and complexity
+- Sophisticated character development and themes
+- Abstract concepts and philosophical questions
+- Advanced narrative techniques and emotional maturity
+
+FORMAT: Page 1: [6-7 sentences]. Continue for 14-16 pages.
+
+CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.`,
+    userPromptTemplate: `Create a 1000-1100 word story for {name} (age {age}). Reading level: 8th grade vocabulary with sophisticated 11+ themes. Include {hobbies}, {favoriteAnimal}, {favoriteColor}, and {favoriteFood}. Explore advanced themes of purpose, ethics, and complex relationships.`,
+    maxLength: 1100,
+    expectedPages: 15,
+    wordCount: "1000-1100"
   }
 };
 
@@ -170,6 +303,10 @@ export const CULTURAL_ADAPTATIONS = {
 
 export function getStoryPrompt(difficulty: DifficultyLevel): StoryPromptConfig {
   return STORY_PROMPTS[difficulty];
+}
+
+export function getExpertStoryPrompt(gradeLevel: ExpertGradeLevel): ExpertStoryPromptConfig {
+  return EXPERT_STORY_PROMPTS[gradeLevel];
 }
 
 export function formatUserPrompt(template: string, userInfo: UserInfo): string {
