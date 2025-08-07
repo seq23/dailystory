@@ -35,7 +35,7 @@ STRICT REQUIREMENTS:
 - 30-40 words total across entire story
 - Exactly 5 pages
 - 2-8 words per page (flexible for natural flow)
-- Simple 2-6 word sentences using basic vocabulary
+- Simple 2-6 word sentences using basic vocabulary (prioritize 2-3 word sentences when possible)
 - Use Subject-Verb, Subject-Verb-Object, and Subject-Verb-Adjective patterns
 - PRIMARY VOCABULARY: Use Dolch Pre-Primer words as foundation: a, and, away, big, blue, can, come, down, find, for, funny, go, help, here, i, in, is, it, jump, little, look, make, me, my, not, one, play, red, run, said, see, the, three, to, two, up, we, where, yellow, you
 - FLEXIBILITY: Up to 20% of words can be simple alternatives when needed for natural flow
