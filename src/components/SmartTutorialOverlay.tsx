@@ -336,6 +336,16 @@ export const SmartTutorialOverlay = ({
     return null;
   }
 
+  // Skip rendering the big tutorial card for timer step (step 0) since we use individual tooltips
+  if (currentStep === 0) {
+    return (
+      <>
+        {/* Dark overlay only */}
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40" />
+      </>
+    );
+  }
+
   const step = tutorialSteps[currentStep];
   const Icon = step.icon;
 
