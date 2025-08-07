@@ -353,8 +353,8 @@ export const SmartTutorialOverlay = ({
         }}
       >
         <Card className={cn(
-          "bg-white dark:bg-gray-900 shadow-2xl border-2 border-primary/30 rounded-2xl",
-          isMobile ? `w-[${Math.min(240, window.innerWidth - 80)}px]` : `w-[${Math.min(350, window.innerWidth - 80)}px]`,
+          "bg-background shadow-2xl border-2 border-primary/30 rounded-2xl",
+          "w-72 sm:w-80 md:w-96",
           "animate-in fade-in slide-in-from-top-4 duration-300"
         )}>
           <CardContent className="p-6">

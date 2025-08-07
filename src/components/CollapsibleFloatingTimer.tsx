@@ -61,9 +61,9 @@ export const CollapsibleFloatingTimer = ({
 
   // Get timer color based on time remaining
   const getTimerColor = () => {
-    if (timeRemaining <= 300) return "text-red-600";
-    if (timeRemaining <= 600) return "text-orange-600";
-    return "text-green-600";
+    if (timeRemaining <= 300) return "text-destructive";
+    if (timeRemaining <= 600) return "text-amber-600";
+    return "text-emerald-600";
   };
 
   // Handle timer completion
@@ -78,23 +78,16 @@ export const CollapsibleFloatingTimer = ({
 
   const isTutorialTimerStep = showTutorial && tutorialStep === 0;
 
-  // Mobile-optimized positioning with higher z-index during tutorial
+  // Simplified positioning - mobile first
   const getPositionClasses = () => {
-    const baseZIndex = showTutorial ? "z-50" : "z-40";
-    
     if (isTutorialTimerStep) {
-      return `fixed top-[35%] right-4 ${baseZIndex}`;
+      return "fixed top-1/3 right-4 z-50";
     }
     
-    if (isMobile) {
-      return `fixed bottom-4 left-4 ${baseZIndex}`;
-    }
-    
-    if (isTablet) {
-      return `fixed bottom-6 left-6 ${baseZIndex}`;
-    }
-    
-    return `fixed bottom-8 left-8 ${baseZIndex}`;
+    return cn(
+      "fixed z-40",
+      isMobile ? "bottom-20 left-4" : "bottom-8 left-8"
+    );
   };
 
   if (isCollapsed && !isTutorialTimerStep) {
@@ -102,7 +95,7 @@ export const CollapsibleFloatingTimer = ({
       <div className={cn(getPositionClasses(), "flex flex-col items-center gap-2")}>
         {/* Collapsed Timer Display */}
         <div 
-          className="bg-white/95 backdrop-blur-sm rounded-full shadow-lg border-2 border-primary/20 p-3 cursor-pointer hover:scale-105 transition-transform"
+          className="bg-background/95 backdrop-blur-sm rounded-full shadow-lg border-2 border-primary/20 p-3 cursor-pointer hover:scale-105 transition-transform min-w-[44px] min-h-[44px] flex items-center justify-center"
           onClick={() => setIsCollapsed(false)}
           id="timer-display"
         >
@@ -111,49 +104,47 @@ export const CollapsibleFloatingTimer = ({
           </div>
         </div>
         
-        {/* Quick Controls */}
-        <div className="flex gap-1">
+        {/* Quick Controls - Always show all buttons */}
+        <div className="flex gap-2">
           <Button
             size="sm"
             variant="outline"
             onClick={onToggleReading}
-            className="w-8 h-8 p-0 rounded-full bg-white/95 backdrop-blur-sm"
+            className="min-w-[44px] min-h-[44px] p-0 rounded-full bg-background/95 backdrop-blur-sm"
             id="timer-play-button"
           >
-            {isReading ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+            {isReading ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
           </Button>
           
-          {/* Show reduce button even in collapsed mode */}
-          {onReduceTime && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={onReduceTime}
-              disabled={timeRemaining <= 5 * 60}
-              className="w-8 h-8 p-0 rounded-full bg-white/95 backdrop-blur-sm"
-              id="timer-reduce-button"
-            >
-              <Minus className="w-3 h-3" />
-            </Button>
-          )}
+          {/* Always show reduce time button */}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={onReduceTime}
+            disabled={timeRemaining <= 5 * 60}
+            className="min-w-[44px] min-h-[44px] p-0 rounded-full bg-background/95 backdrop-blur-sm"
+            id="timer-reduce-button"
+          >
+            <Minus className="w-4 h-4" />
+          </Button>
           
           <Button
             size="sm"
             variant="outline"
             onClick={onEndSession}
-            className="w-8 h-8 p-0 rounded-full bg-white/95 backdrop-blur-sm"
+            className="min-w-[44px] min-h-[44px] p-0 rounded-full bg-background/95 backdrop-blur-sm"
             id="timer-end-button"
           >
-            <X className="w-3 h-3" />
+            <X className="w-4 h-4" />
           </Button>
           
           <Button
             size="sm"
             variant="outline"
             onClick={() => setIsCollapsed(false)}
-            className="w-8 h-8 p-0 rounded-full bg-white/95 backdrop-blur-sm"
+            className="min-w-[44px] min-h-[44px] p-0 rounded-full bg-background/95 backdrop-blur-sm"
           >
-            <ChevronUp className="w-3 h-3" />
+            <ChevronUp className="w-4 h-4" />
           </Button>
         </div>
       </div>
@@ -165,9 +156,9 @@ export const CollapsibleFloatingTimer = ({
       {/* Expanded Timer Display */}
       <div className="relative">
         {/* Main Timer Circle */}
-        <div className="relative w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 bg-gradient-to-br from-white to-gray-50 backdrop-blur-sm rounded-full shadow-2xl border-2 border-white/80 flex items-center justify-center">
+        <div className="relative w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 bg-gradient-to-br from-background to-muted/20 backdrop-blur-sm rounded-full shadow-2xl border-2 border-border flex items-center justify-center">
           <div id="timer-display" className="text-center">
-            <div className={cn("text-sm sm:text-base md:text-xl font-bold", getTimerColor())}>
+            <div className={cn("text-sm sm:text-base md:text-lg font-bold", getTimerColor())}>
               {formatTime(timeRemaining)}
             </div>
             <div className="text-xs text-muted-foreground hidden sm:block">
@@ -184,34 +175,32 @@ export const CollapsibleFloatingTimer = ({
           variant="outline"
           size={isMobile ? "sm" : "default"}
           onClick={onToggleReading}
-          className="min-h-[44px] min-w-[44px] rounded-full bg-white/95 backdrop-blur-sm timer-play-button"
+          className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm"
           aria-label={isReading ? t("floatingTimer.pause", "Pause reading") : t("floatingTimer.play", "Start reading")}
           id="timer-play-button"
         >
           {isReading ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
         </Button>
 
-        {/* Reduce Time */}
-        {onReduceTime && (
-          <Button
-            variant="outline"
-            size={isMobile ? "sm" : "default"}
-            onClick={onReduceTime}
-            disabled={timeRemaining <= 5 * 60}
-            className="min-h-[44px] min-w-[44px] rounded-full bg-white/95 backdrop-blur-sm timer-reduce-button"
-            aria-label={t("floatingTimer.reduceTime", "Reduce time by 5 minutes")}
-            id="timer-reduce-button"
-          >
-            <Minus className="w-4 h-4" />
-          </Button>
-        )}
+        {/* Always show Reduce Time */}
+        <Button
+          variant="outline"
+          size={isMobile ? "sm" : "default"}
+          onClick={onReduceTime}
+          disabled={timeRemaining <= 5 * 60}
+          className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm"
+          aria-label={t("floatingTimer.reduceTime", "Reduce time by 5 minutes")}
+          id="timer-reduce-button"
+        >
+          <Minus className="w-4 h-4" />
+        </Button>
 
         {/* End Session */}
         <Button
           variant="outline"
           size={isMobile ? "sm" : "default"}
           onClick={onEndSession}
-          className="min-h-[44px] min-w-[44px] rounded-full bg-white/95 backdrop-blur-sm timer-end-button"
+          className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm"
           aria-label={t("floatingTimer.endSession", "End reading session")}
           id="timer-end-button"
         >
@@ -224,7 +213,7 @@ export const CollapsibleFloatingTimer = ({
             variant="outline"
             size={isMobile ? "sm" : "default"}
             onClick={() => setIsCollapsed(true)}
-            className="min-h-[44px] min-w-[44px] rounded-full bg-white/95 backdrop-blur-sm"
+            className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm"
           >
             <ChevronDown className="w-4 h-4" />
           </Button>
