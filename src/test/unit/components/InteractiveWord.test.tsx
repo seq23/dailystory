@@ -1,11 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-
-// Create screen object for queries
-const screen = {
-  getByText: (text: string) => document.querySelector(`*:contains("${text}")`) as HTMLElement,
-};
 import { InteractiveWord } from '@/components/InteractiveWord';
 
 // Mock the TTS service

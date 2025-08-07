@@ -81,5 +81,5 @@ export default defineConfig({
   },
 
   /* Global setup for accessibility testing */
-  globalSetup: require.resolve('./e2e/global-setup.ts'),
+  globalSetup: './e2e/global-setup.ts',
 });
