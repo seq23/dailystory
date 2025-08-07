@@ -767,6 +767,61 @@ All colors MUST be HSL.
     letter-spacing: 0.01em;
   }
 
+/* Mobile Reading Optimizations */
+.mobile-reading-optimized {
+  line-height: 1.8;
+  word-spacing: 0.1em;
+  letter-spacing: 0.02em;
+}
+
+.mobile-reading-optimized .interactive-word {
+  display: inline;
+  padding: 1px 2px;
+  margin: 0 1px;
+  border-radius: 2px;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Mobile Story Container */
+.mobile-story-container {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* Mobile TTS Modal */
+.mobile-modal-content {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  background: hsl(var(--background));
+  border: 1px solid hsl(var(--border));
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 768px) {
+  .mobile-story-container {
+    padding: 0 12px;
+    font-size: 1.1rem;
+    line-height: 1.7;
+    letter-spacing: 0.01em;
+  }
+  
+  /* Ensure proper word flow on mobile */
+  .mobile-reading-optimized * {
+    display: inline !important;
+  }
+  
+  .mobile-reading-optimized .interactive-word {
+    display: inline !important;
+    white-space: normal !important;
+  }
+}
+
 /* Mobile Keyboard Handling */
 .keyboard-open {
   --viewport-adjust: calc(var(--keyboard-height, 0px) * 0.5);
