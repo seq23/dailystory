@@ -736,11 +736,6 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         </div>
       </main>
       
-      {/* Tutorial Magic Wand for Free Users */}
-      <TutorialMagicWand
-        isVisible={showTutorial && !isPremium}
-        tutorialStep={currentTutorialStep}
-      />
 
       {/* Smart Tutorial */}
       <SmartTutorialOverlay

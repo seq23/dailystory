@@ -368,13 +368,15 @@ export const SmartTutorialOverlay = ({
         
         // Special handling for specific steps
         if (step.target.includes('magic-wand') && currentStep === 3) {
-        // For magic wand step, position tutorial to the left of magic wand
-          setCardPosition({
-            top: "50%",
-            left: "8%", 
-            transform: "translateY(-50%)",
-            maxWidth: "300px"
-          });
+        // For magic wand step, wait longer and position tutorial to the left of magic wand
+          setTimeout(() => {
+            setCardPosition({
+              top: "50%",
+              left: "8%", 
+              transform: "translateY(-50%)",
+              maxWidth: "300px"
+            });
+          }, 100);
         } else if (step.title.includes("Progress Towers")) {
           // For progress towers, show tutorial in center with explanation
           setCardPosition({
