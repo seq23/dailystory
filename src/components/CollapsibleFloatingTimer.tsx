@@ -68,21 +68,23 @@ export const CollapsibleFloatingTimer = ({
 
   const isTutorialTimerStep = showTutorial && tutorialStep === 0;
 
-  // Mobile-optimized positioning
+  // Mobile-optimized positioning with higher z-index during tutorial
   const getPositionClasses = () => {
+    const baseZIndex = showTutorial ? "z-50" : "z-40";
+    
     if (isTutorialTimerStep) {
-      return "fixed top-[35%] right-4 z-50";
+      return `fixed top-[35%] right-4 ${baseZIndex}`;
     }
     
     if (isMobile) {
-      return "fixed bottom-4 left-4 z-40";
+      return `fixed bottom-4 left-4 ${baseZIndex}`;
     }
     
     if (isTablet) {
-      return "fixed bottom-6 left-6 z-40";
+      return `fixed bottom-6 left-6 ${baseZIndex}`;
     }
     
-    return "fixed bottom-8 left-8 z-40";
+    return `fixed bottom-8 left-8 ${baseZIndex}`;
   };
 
   if (isCollapsed && !isTutorialTimerStep) {

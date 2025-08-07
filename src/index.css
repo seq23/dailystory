@@ -469,11 +469,17 @@ All colors MUST be HSL.
 
 /* Tutorial-specific positioning fixes */
 .tutorial-active .floating-timer-container {
-  z-index: 45; /* Above tutorial overlay but below tutorial cards */
+  z-index: 55 !important; /* Above tutorial overlay */
 }
 
 .tutorial-active [data-radix-tooltip-content] {
   z-index: 35; /* Below tutorial elements during tutorial */
+}
+
+/* Ensure highlighted elements are always visible during tutorial */
+.tutorial-highlight {
+  z-index: 55 !important;
+  position: relative !important;
 }
 
 @keyframes shake {

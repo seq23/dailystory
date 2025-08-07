@@ -86,60 +86,45 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
     const targetElement = document.querySelector(`#${step.target}, .${step.target}`);
     
     if (targetElement) {
-      // Calculate if we should pulse (only for Progress Towers on step 6 AND within first 5 seconds)
-      const shouldPulse = step.target === "progress-towers-container" && 
-                         currentStep === 5 && 
-                         sessionStartTime && 
-                         (Date.now() - sessionStartTime.getTime()) < 5000;
-
-      // Add highlighting classes
+      // Add highlighting classes with stronger visibility
       const highlightClasses = [
         'tutorial-highlight',
         'ring-4',
-        'ring-yellow-400/50',
-        'ring-offset-2',
-        'ring-offset-yellow-100',
+        'ring-yellow-400/80',
+        'ring-offset-4',
+        'ring-offset-white',
         'rounded-lg',
         'shadow-2xl',
-        'shadow-yellow-400/30',
+        'shadow-yellow-400/50',
         'z-50',
-        'relative'
+        'relative',
+        'bg-white/10' // Light background to make it more visible
       ];
-
-      // Add pulse only if conditions are met
-      if (shouldPulse) {
-        highlightClasses.push('animate-pulse');
-        
-        // Stop pulse after 5 seconds
-        const pulseTimeout = setTimeout(() => {
-          targetElement.classList.remove('animate-pulse');
-          setIsPulseActive(false);
-        }, 5000);
-
-        return () => clearTimeout(pulseTimeout);
-      }
 
       targetElement.classList.add(...highlightClasses);
 
-      // Add shake animation
-      (targetElement as HTMLElement).style.animation = 'shake 1s ease-in-out infinite, pulse 2s ease-in-out infinite';
+      // Add enhanced animations
+      (targetElement as HTMLElement).style.animation = 'shake 1.5s ease-in-out infinite, pulse 2s ease-in-out infinite';
+      (targetElement as HTMLElement).style.transition = 'all 0.3s ease-out';
       
-      // SPECIAL HANDLING FOR TIMER - Make it pop out with enhanced focus
+      // SPECIAL HANDLING FOR TIMER - Ensure maximum visibility
       if (step.target === "timer-display") {
         const floatingTimer = document.querySelector('#floating-timer');
         if (floatingTimer) {
           floatingTimer.classList.add(
             'z-50', 
             'relative',
-            'scale-110',
+            'scale-105',
             'ring-8',
-            'ring-yellow-400/70',
+            'ring-yellow-400/90',
             'rounded-3xl',
             'shadow-2xl',
-            'shadow-yellow-400/50'
+            'shadow-yellow-400/60',
+            'bg-white/20'
           );
-          (floatingTimer as HTMLElement).style.transform = 'scale(1.1)';
+          (floatingTimer as HTMLElement).style.transform = 'scale(1.05)';
           (floatingTimer as HTMLElement).style.transition = 'all 0.3s ease-out';
+          (floatingTimer as HTMLElement).style.zIndex = '60';
         }
       }
 
@@ -194,16 +179,18 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
           'tutorial-highlight',
           'animate-pulse',
           'ring-4',
-          'ring-yellow-400/50',
-          'ring-offset-2',
-          'ring-offset-yellow-100',
+          'ring-yellow-400/80',
+          'ring-offset-4',
+          'ring-offset-white',
           'rounded-lg',
           'shadow-2xl',
-          'shadow-yellow-400/30',
+          'shadow-yellow-400/50',
           'z-50',
-          'relative'
+          'relative',
+          'bg-white/10'
         );
         (targetElement as HTMLElement).style.animation = '';
+        (targetElement as HTMLElement).style.transition = '';
         
         // Clean up timer special styling
         if (step.target === "timer-display") {
@@ -212,15 +199,17 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
             floatingTimer.classList.remove(
               'z-50', 
               'relative',
-              'scale-110',
+              'scale-105',
               'ring-8',
-              'ring-yellow-400/70',
+              'ring-yellow-400/90',
               'rounded-3xl',
               'shadow-2xl',
-              'shadow-yellow-400/50'
+              'shadow-yellow-400/60',
+              'bg-white/20'
             );
             (floatingTimer as HTMLElement).style.transform = '';
             (floatingTimer as HTMLElement).style.transition = '';
+            (floatingTimer as HTMLElement).style.zIndex = '';
           }
         }
 
@@ -530,18 +519,41 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
         }
       `}</style>
 
-      {/* Enhanced overlay background - darker when focusing on timer */}
-      <div className={`fixed inset-0 transition-opacity duration-500 z-40 ${
+      {/* Enhanced overlay background with cutouts for highlighted elements */}
+      <div className={`fixed inset-0 transition-opacity duration-500 z-30 pointer-events-none ${
         step.target === "timer-display" 
-          ? 'bg-black/50 backdrop-blur-md' // Stronger dimming for timer focus
-          : 'bg-black/20 backdrop-blur-sm'  // Normal dimming for other steps
+          ? 'bg-black/60 backdrop-blur-md' // Stronger dimming for timer focus
+          : 'bg-black/30 backdrop-blur-sm'  // Normal dimming for other steps
       }`}>
+        
+        {/* Create a cutout effect for the highlighted element */}
+        <div 
+          className="absolute bg-transparent rounded-lg"
+          style={{
+            boxShadow: `0 0 0 9999px rgba(0, 0, 0, 0.3)`, // Creates cutout effect
+            ...(() => {
+              const element = document.querySelector(`#${step.target}, .${step.target}`);
+              if (!element) return { display: 'none' };
+              
+              const rect = element.getBoundingClientRect();
+              const padding = 20; // Extra space around element
+              
+              return {
+                left: `${rect.left - padding}px`,
+                top: `${rect.top - padding}px`,
+                width: `${rect.width + padding * 2}px`,
+                height: `${rect.height + padding * 2}px`,
+              };
+            })()
+          }}
+        />
+        
         {/* Subtle background elements */}
-        <div className="absolute inset-0 overflow-hidden">
-          {[...Array(8)].map((_, i) => (
+        <div className="absolute inset-0 overflow-hidden opacity-30">
+          {[...Array(6)].map((_, i) => (
             <div
               key={i}
-              className="absolute w-2 h-2 bg-primary/30 rounded-full animate-float opacity-50"
+              className="absolute w-1 h-1 bg-primary/40 rounded-full animate-float"
               style={{
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
