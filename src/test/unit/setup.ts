@@ -30,38 +30,44 @@ global.ResizeObserver = vi.fn().mockImplementation(() => ({
   disconnect: vi.fn(),
 }));
 
-// Mock Web Audio API on window object
+// Mock AudioContext constructor to return proper constructor function
+const mockAudioContextConstructor = vi.fn().mockImplementation(() => ({
+  createOscillator: vi.fn(),
+  createGain: vi.fn(),
+  destination: {},
+  resume: vi.fn().mockResolvedValue(undefined),
+  suspend: vi.fn().mockResolvedValue(undefined),
+  close: vi.fn().mockResolvedValue(undefined),
+  state: 'suspended',
+}));
+
+// Ensure constructor can be called with 'new'
 Object.defineProperty(window, 'AudioContext', {
   writable: true,
-  value: vi.fn().mockImplementation(() => ({
-    createOscillator: vi.fn(),
-    createGain: vi.fn(),
-    destination: {},
-    resume: vi.fn().mockResolvedValue(undefined),
-    suspend: vi.fn().mockResolvedValue(undefined),
-    close: vi.fn().mockResolvedValue(undefined),
-    state: 'suspended',
-  })),
+  value: mockAudioContextConstructor,
 });
 
 Object.defineProperty(window, 'webkitAudioContext', {
   writable: true,
-  value: window.AudioContext,
+  value: mockAudioContextConstructor,
 });
 
-// Mock Speech Synthesis API on window object
+// Mock SpeechSynthesisUtterance constructor to return proper constructor function
+const mockSpeechSynthesisUtteranceConstructor = vi.fn().mockImplementation((text) => ({
+  text,
+  rate: 1,
+  pitch: 1,
+  volume: 1,
+  voice: null,
+  lang: 'en-US',
+  addEventListener: vi.fn(),
+  removeEventListener: vi.fn(),
+}));
+
+// Ensure constructor can be called with 'new'
 Object.defineProperty(window, 'SpeechSynthesisUtterance', {
   writable: true,
-  value: vi.fn().mockImplementation((text) => ({
-    text,
-    rate: 1,
-    pitch: 1,
-    volume: 1,
-    voice: null,
-    lang: 'en-US',
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-  })),
+  value: mockSpeechSynthesisUtteranceConstructor,
 });
 
 Object.defineProperty(window, 'speechSynthesis', {
@@ -83,15 +89,15 @@ Object.defineProperty(window, 'speechSynthesis', {
 });
 
 // Ensure global fallbacks and proper constructor assignment
-global.AudioContext = window.AudioContext;
-global.webkitAudioContext = window.AudioContext;
-global.SpeechSynthesisUtterance = window.SpeechSynthesisUtterance;
+global.AudioContext = mockAudioContextConstructor;
+global.webkitAudioContext = mockAudioContextConstructor;
+global.SpeechSynthesisUtterance = mockSpeechSynthesisUtteranceConstructor;
 global.speechSynthesis = window.speechSynthesis;
 
 // Explicitly assign constructors to globalThis for better compatibility
-globalThis.AudioContext = window.AudioContext;
-globalThis.webkitAudioContext = window.AudioContext;
-globalThis.SpeechSynthesisUtterance = window.SpeechSynthesisUtterance;
+globalThis.AudioContext = mockAudioContextConstructor;
+globalThis.webkitAudioContext = mockAudioContextConstructor;
+globalThis.SpeechSynthesisUtterance = mockSpeechSynthesisUtteranceConstructor;
 globalThis.speechSynthesis = window.speechSynthesis;
 
 // Mock URL.createObjectURL
