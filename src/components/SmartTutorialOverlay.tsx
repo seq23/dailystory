@@ -105,12 +105,12 @@ export const SmartTutorialOverlay = ({
       position: "bottom"
     },
     {
-      target: ".progress-towers-container",
-      targetFallback: "[class*='progress-tower'], [class*='progress'], [id*='progress'], .fixed.top-1\\/2, .progress-tower, .progress-towers, [class*='ProgressTower']",
+      target: "#progress-towers",
+      targetFallback: ".progress-towers-container, [data-tutorial-target='progress-towers'], .tutorial-progress-towers, .progress-towers, .fixed.top-1\\/2.right-2",
       title: t("tutorial.progressTowers.title", "🏗️ Progress Towers"),
       description: t("tutorial.progressTowers.description", "Track your reading achievements! Click to see your progress grow."),
       icon: TrendingUp,
-      position: "right"
+      position: "left"
     }
   ];
 
@@ -132,7 +132,7 @@ export const SmartTutorialOverlay = ({
       case "left":
         if (rect.left > cardWidth + padding + safeMargin) {
           position = {
-            top: `${rect.top + rect.height / 2}px`,
+            top: `${Math.max(safeMargin, Math.min(viewportHeight - cardHeight - safeMargin, rect.top + rect.height / 2))}px`,
             right: `${viewportWidth - rect.left + padding}px`,
             transform: "translateY(-50%)"
           };
@@ -140,7 +140,7 @@ export const SmartTutorialOverlay = ({
           // Fallback to bottom with safe positioning
           const leftPos = Math.max(safeMargin, Math.min(viewportWidth - cardWidth - safeMargin, rect.left + rect.width / 2 - cardWidth / 2));
           position = {
-            top: `${rect.bottom + padding}px`,
+            top: `${Math.min(viewportHeight - cardHeight - safeMargin, rect.bottom + padding)}px`,
             left: `${leftPos}px`
           };
         }
@@ -273,17 +273,24 @@ export const SmartTutorialOverlay = ({
           } else {
             // Progress towers with enhanced selectors and z-index fix
             element = trySelectors([
-              '.progress-towers-container', '[class*="progress-tower"]',
-              '.progress-tower', '.progress-towers', '[class*="ProgressTower"]',
+              '#progress-towers', '.progress-towers-container', '[data-tutorial-target="progress-towers"]',
+              '.tutorial-progress-towers', '.progress-towers', '.fixed.top-1\\/2.right-2',
+              '[class*="progress-tower"]', '.progress-tower', '[class*="ProgressTower"]',
               '.fixed.top-1\\/2', '[id*="progress"]', '[class*="progress"]'
             ]);
             
-            // Force z-index for progress towers
+            // Force z-index for progress towers and ensure proper highlighting
             if (element) {
               (element as HTMLElement).style.zIndex = '9999';
               const parent = element.closest('.fixed');
               if (parent) {
                 (parent as HTMLElement).style.zIndex = '9999';
+              }
+              
+              // Find the actual container to highlight
+              const container = element.querySelector('.progress-towers-container') || element;
+              if (container !== element) {
+                element = container;
               }
             }
           }
@@ -361,19 +368,20 @@ export const SmartTutorialOverlay = ({
         
         // Special handling for specific steps
         if (step.target.includes('magic-wand') && currentStep === 3) {
-        // For magic wand step, position tutorial to complement the magic wand
+        // For magic wand step, position tutorial to the left of magic wand
           setCardPosition({
-            top: "30%",
-            left: "20%", 
-            transform: "translate(0, -50%)",
-            maxWidth: "320px"
+            top: "50%",
+            left: "8%", 
+            transform: "translateY(-50%)",
+            maxWidth: "300px"
           });
         } else if (step.title.includes("Progress Towers")) {
           // For progress towers, show tutorial in center with explanation
           setCardPosition({
             top: "50%",
             left: "50%", 
-            transform: "translate(-50%, -50%)"
+            transform: "translate(-50%, -50%)",
+            maxWidth: "320px"
           });
         } else {
           // Auto-skip to next step
@@ -455,14 +463,19 @@ export const SmartTutorialOverlay = ({
         
         /* Ensure tutorial magic wand is not blurred */
         .tutorial-overlay {
-          mask: radial-gradient(circle at var(--tutorial-magic-x, 50%) var(--tutorial-magic-y, 50%), transparent 60px, black 80px);
-          -webkit-mask: radial-gradient(circle at var(--tutorial-magic-x, 50%) var(--tutorial-magic-y, 50%), transparent 60px, black 80px);
+          mask: radial-gradient(circle at calc(100% - 120px) 50%, transparent 80px, black 100px);
+          -webkit-mask: radial-gradient(circle at calc(100% - 120px) 50%, transparent 80px, black 100px);
         }
         
         .tutorial-magic-wand {
           z-index: 70 !important;
           backdrop-filter: none !important;
           -webkit-backdrop-filter: none !important;
+        }
+        
+        /* Enhanced highlighting for progress towers */
+        .progress-towers-container.tutorial-highlight-ring {
+          border-radius: 12px !important;
         }
       `}</style>
 

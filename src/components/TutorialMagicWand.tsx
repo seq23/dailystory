@@ -23,12 +23,12 @@ export const TutorialMagicWand: React.FC<TutorialMagicWandProps> = ({
       id="tutorial-magic-wand"
       data-id="magic-wand"
       className={cn(
-        "fixed top-24 right-6 z-[70] tutorial-magic-wand",
+        "fixed top-1/2 right-8 z-[70] tutorial-magic-wand",
         "bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0",
         "hover:from-amber-600 hover:to-orange-600 transition-all duration-300",
-        "rounded-full p-6 shadow-xl shadow-amber-500/50",
-        "animate-pulse scale-125",
-        "ring-4 ring-amber-300/50 ring-offset-2 ring-offset-background",
+        "rounded-full p-8 shadow-2xl shadow-amber-500/60",
+        "animate-pulse scale-150",
+        "ring-6 ring-amber-300/60 ring-offset-4 ring-offset-background",
         "backdrop-filter-none !important",
         className
       )}
@@ -36,11 +36,13 @@ export const TutorialMagicWand: React.FC<TutorialMagicWandProps> = ({
       aria-label="Magic Wand - Generate New Story (Tutorial)"
       style={{ 
         backdropFilter: 'none !important',
-        WebkitBackdropFilter: 'none !important'
+        WebkitBackdropFilter: 'none !important',
+        transform: 'translateY(-50%)'
       }}
     >
-      <Wand2 className="w-8 h-8" />
-      <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-300 rounded-full animate-ping" />
+      <Wand2 className="w-10 h-10" />
+      <div className="absolute -top-2 -right-2 w-6 h-6 bg-yellow-300 rounded-full animate-ping" />
+      <div className="absolute -bottom-1 -left-1 w-4 h-4 bg-orange-300 rounded-full animate-ping delay-500" />
     </Button>
   );
 };
