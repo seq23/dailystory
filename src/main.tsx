@@ -7,6 +7,7 @@ import './i18n/config'
 // Import audit functions for console debugging
 import { finalVerificationAudit } from './utils/finalVerificationAudit';
 import { tripleCheckImplementation } from './utils/tripleCheckAudit';
+import './run-comprehensive-test-fix';
 
 // Expose audit functions globally for console access
 if (typeof window !== 'undefined') {
