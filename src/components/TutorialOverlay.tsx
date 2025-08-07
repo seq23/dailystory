@@ -80,12 +80,18 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
 
   // Create pulsing highlight effect on target elements
   useEffect(() => {
-    if (!isVisible || currentStep >= tutorialSteps.length) return;
+    if (!isVisible || currentStep >= tutorialSteps.length) {
+      console.log('🎯 Tutorial: Not running effect', { isVisible, currentStep, totalSteps: tutorialSteps.length });
+      return;
+    }
 
     const step = tutorialSteps[currentStep];
+    console.log('🎯 Tutorial: Looking for target element:', { target: step.target, currentStep });
     const targetElement = document.querySelector(`#${step.target}, .${step.target}`);
+    console.log('🎯 Tutorial: Found target element:', { targetElement, selector: `#${step.target}, .${step.target}` });
     
     if (targetElement) {
+      console.log('🎯 Tutorial: Applying highlight to element:', targetElement);
       // Add highlighting classes with stronger visibility
       const highlightClasses = [
         'tutorial-highlight',
@@ -109,7 +115,11 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
       
       // SPECIAL HANDLING FOR TIMER - Ensure maximum visibility
       if (step.target === "timer-display") {
+        console.log('🎯 Tutorial: Special timer handling');
         const floatingTimer = document.querySelector('#floating-timer');
+        const floatingTimerContainer = document.querySelector('.floating-timer-container');
+        console.log('🎯 Tutorial: Timer elements found:', { floatingTimer, floatingTimerContainer });
+        
         if (floatingTimer) {
           floatingTimer.classList.add(
             'z-50', 
@@ -125,53 +135,14 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
           (floatingTimer as HTMLElement).style.transform = 'scale(1.05)';
           (floatingTimer as HTMLElement).style.transition = 'all 0.3s ease-out';
           (floatingTimer as HTMLElement).style.zIndex = '60';
+          console.log('🎯 Tutorial: Applied timer highlighting');
+        } else {
+          console.warn('🎯 Tutorial: Timer element not found!');
         }
       }
-
-      // ENHANCED HIGHLIGHTING FOR ADD PAGES BUTTON - Make it super prominent
-      if (step.target === "add-pages-button") {
-        // Make the button much more prominent
-        targetElement.classList.add(
-          'scale-150',
-          'ring-8',
-          'ring-yellow-400/80',
-          'ring-offset-4',
-          'bg-yellow-100',
-          'border-yellow-400',
-          'text-yellow-800'
-        );
-        (targetElement as HTMLElement).style.transform = 'scale(1.5)';
-        (targetElement as HTMLElement).style.transition = 'all 0.3s ease-out';
-        (targetElement as HTMLElement).style.zIndex = '60';
-        
-          // Also highlight the parent container
-          const parentContainer = targetElement.closest('.flex.flex-col.items-center.gap-2');
-          if (parentContainer) {
-            parentContainer.classList.add(
-              'ring-4',
-              'ring-yellow-300/50',
-              'rounded-xl',
-              'bg-yellow-50/50',
-              'p-4'
-            );
-          }
-        }
-
-        // ENHANCED HIGHLIGHTING FOR PROGRESS TOWERS - Make it prominent on step 6
-        if (step.target === "progress-towers-container") {
-          targetElement.classList.add(
-            'scale-110',
-            'ring-8',
-            'ring-yellow-400/80',
-            'ring-offset-4',
-            'bg-yellow-100/20',
-            'border-yellow-400'
-          );
-          (targetElement as HTMLElement).style.transform = 'scale(1.1)';
-          (targetElement as HTMLElement).style.transition = 'all 0.3s ease-out';
-          (targetElement as HTMLElement).style.zIndex = '60';
-        }
-      }
+    } else {
+      console.warn('🎯 Tutorial: Target element not found for:', step.target);
+    }
 
     return () => {
       if (targetElement) {
@@ -533,17 +504,24 @@ export const TutorialOverlay = ({ isVisible, onComplete, onSkip, onStartTimer, o
             boxShadow: `0 0 0 9999px rgba(0, 0, 0, 0.3)`, // Creates cutout effect
             ...(() => {
               const element = document.querySelector(`#${step.target}, .${step.target}`);
-              if (!element) return { display: 'none' };
+              console.log('🎯 Tutorial: Creating cutout for element:', { target: step.target, element });
+              if (!element) {
+                console.warn('🎯 Tutorial: No element found for cutout!');
+                return { display: 'none' };
+              }
               
               const rect = element.getBoundingClientRect();
               const padding = 20; // Extra space around element
               
-              return {
+              const cutoutStyle = {
                 left: `${rect.left - padding}px`,
                 top: `${rect.top - padding}px`,
                 width: `${rect.width + padding * 2}px`,
                 height: `${rect.height + padding * 2}px`,
               };
+              
+              console.log('🎯 Tutorial: Cutout positioning:', { rect, cutoutStyle });
+              return cutoutStyle;
             })()
           }}
         />

@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 
 // Mobile-Optimized UI Components
 import { CollapsibleFloatingTimer } from "@/components/CollapsibleFloatingTimer";
-import { MobileOptimizedTutorial } from "@/components/MobileOptimizedTutorial";
+import { SimpleTutorialOverlay } from "@/components/SimpleTutorialOverlay";
 import { MobileOptimizedHeader } from "@/components/MobileOptimizedHeader";
 import { ProgressTowers } from "@/components/ProgressTowers";
 import { GameContextProvider } from "@/components/GameContextProvider";
@@ -732,8 +732,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         </div>
       </main>
       
-      {/* Mobile-Optimized Tutorial */}
-      <MobileOptimizedTutorial
+      {/* Simplified Tutorial */}
+      <SimpleTutorialOverlay
         isVisible={showTutorial}
         onComplete={handleCompleteTutorial}
         onSkip={handleSkipTutorial}
