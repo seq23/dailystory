@@ -68,7 +68,7 @@ export const SecurityDashboard: React.FC = () => {
         variant="outline"
         size={isMobile ? "icon" : "sm"}
         onClick={() => setIsVisible(true)}
-        className={`fixed bottom-4 z-50 ${isMobile ? 'left-4' : 'right-4'}`}
+        className="fixed bottom-4 left-4 z-50"
         title="Security Dashboard"
       >
         <Shield className="h-4 w-4" />
@@ -83,7 +83,7 @@ export const SecurityDashboard: React.FC = () => {
   }
 
   return (
-    <Card className={`fixed bottom-4 z-50 ${isMobile ? 'left-4 w-80 max-w-[calc(100vw-32px)]' : 'right-4 w-96'} max-h-96 overflow-hidden shadow-lg`}>
+    <Card className="fixed bottom-4 left-4 z-50 w-80 max-w-[calc(100vw-32px)] max-h-96 overflow-hidden shadow-lg">
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center justify-between text-sm">
           <div className="flex items-center gap-2">

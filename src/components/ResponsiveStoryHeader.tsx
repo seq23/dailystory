@@ -143,7 +143,7 @@ export const ResponsiveStoryHeader = ({
             {showLevelControls && (
               <div 
                 className={cn(
-                  "flex items-center",
+                  "flex items-center reading-level-controls difficulty-controls",
                   isMobileOrTablet ? "gap-1 sm:gap-2" : "gap-3 bg-gray-50 rounded-xl p-2"
                 )}
                 id="reading-level-controls"

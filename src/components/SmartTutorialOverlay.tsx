@@ -65,7 +65,7 @@ export const SmartTutorialOverlay = ({
   const tutorialSteps: TutorialStep[] = [
     {
       target: "#timer-display",
-      targetFallback: "[id*='timer']",
+      targetFallback: "[id*='timer'], .floating-timer-container, .responsive-timer",
       title: t("tutorial.timer.title", "⏰ Reading Timer"),
       description: t("tutorial.timer.description", "This shows your reading time! Watch for button tooltips showing what each control does."),
       icon: Timer,
@@ -73,7 +73,7 @@ export const SmartTutorialOverlay = ({
     },
     {
       target: "[id*='story-navigation'], .story-navigation",
-      targetFallback: "button:has([data-lucide='chevron-left']), button:has([data-lucide='chevron-right'])",
+      targetFallback: "button:has([data-lucide='chevron-left']), button:has([data-lucide='chevron-right']), .story-header",
       title: t("tutorial.navigation.title", "📖 Page Navigation"),
       description: t("tutorial.navigation.description", "Use Previous and Next buttons to move between story pages. The page counter shows your current position."),
       icon: ChevronRight,
@@ -81,23 +81,23 @@ export const SmartTutorialOverlay = ({
     },
     {
       target: "[id*='audio'], .audio-controls, button:has([data-lucide='volume-2'])",
-      targetFallback: "[aria-label*='audio'], [aria-label*='Audio']",
+      targetFallback: "[aria-label*='audio'], [aria-label*='Audio'], .lucide-volume-2",
       title: t("tutorial.audio.title", "🎵 Audio Reading"),
       description: t("tutorial.audio.description", "Click to hear the story read aloud! Perfect for following along and learning pronunciation."),
       icon: Volume2,
       position: "top"
     },
     {
-      target: "[data-id='magic-wand'], #magic-wand-free, #magic-wand-premium",
-      targetFallback: "button:has([data-lucide='wand']), .generate-new-story, .lucide-wand2",
+      target: "[data-id='magic-wand'], #magic-wand-free, #magic-wand-premium, #tutorial-magic-wand",
+      targetFallback: "button:has([data-lucide='wand']), .generate-new-story, .lucide-wand2, .tutorial-magic-wand",
       title: t("tutorial.magicWand.title", "🪄 Magic Wand"),
       description: t("tutorial.magicWand.description.free", "Generate new stories to keep reading! Premium users can refresh anytime."),
       icon: Play,
       position: "top"
     },
     {
-      target: "[data-id='reading-level'], #reading-level-controls",
-      targetFallback: ".reading-level-controls, [class*='difficulty'], .lucide-trending-up, .lucide-trending-down",
+      target: "[data-id='reading-level'], #reading-level-controls, .reading-level-controls",
+      targetFallback: "[class*='difficulty'], .lucide-trending-up, .lucide-trending-down, .difficulty-controls",
       title: t("tutorial.difficulty.title", "🎯 Reading Level"),
       description: t("tutorial.difficulty.description", "Make the story easier or harder instantly! Up arrow makes it harder, down arrow makes it easier to match your reading level."),
       icon: TrendingUp,
@@ -105,9 +105,9 @@ export const SmartTutorialOverlay = ({
     },
     {
       target: ".progress-towers-container",
-      targetFallback: "[class*='progress-tower'], [class*='progress'], [id*='progress']",
+      targetFallback: "[class*='progress-tower'], [class*='progress'], [id*='progress'], .fixed.top-1\\/2",
       title: t("tutorial.progressTowers.title", "🏗️ Progress Towers"),
-      description: t("tutorial.progressTowers.description", "Track your reading achievements!"),
+      description: t("tutorial.progressTowers.description", "Track your reading achievements! Click to see your progress grow."),
       icon: TrendingUp,
       position: "right"
     }
@@ -118,10 +118,11 @@ export const SmartTutorialOverlay = ({
     const rect = targetElement.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
-    const cardWidth = isMobile ? Math.min(300, viewportWidth - 32) : Math.min(400, viewportWidth - 48);
-    const cardHeight = isMobile ? 200 : 250;
-    const padding = isMobile ? 16 : 24;
-    const safeMargin = isMobile ? 8 : 16; // Extra margin to prevent cutoffs
+    const cardWidth = isMobile ? Math.min(280, viewportWidth - 40) : isTablet ? Math.min(320, viewportWidth - 48) : Math.min(400, viewportWidth - 48);
+    const cardHeight = isMobile ? 260 : isTablet ? 240 : 250;
+    const padding = isMobile ? 20 : isTablet ? 24 : 32;
+    const safeMargin = isMobile ? 12 : isTablet ? 16 : 20;
+    const clearance = isMobile ? 80 : isTablet ? 100 : 120; // Extra clearance to avoid covering targets
     
     let position: Position = {};
 
@@ -235,9 +236,9 @@ export const SmartTutorialOverlay = ({
           break;
         case TrendingUp:
           if (step.title.includes("Reading Level")) {
-            element = document.querySelector('[class*="difficulty"], [class*="level"], button[aria-label*="difficulty"]');
+            element = document.querySelector('[class*="difficulty"], [class*="level"], button[aria-label*="difficulty"], .reading-level-controls');
           } else {
-            element = document.querySelector('[class*="progress"], [class*="tower"]');
+            element = document.querySelector('.progress-towers-container, [class*="progress-tower"], .fixed.top-1\\/2');
           }
           break;
       }
@@ -296,20 +297,31 @@ export const SmartTutorialOverlay = ({
     if (targetElement) {
       highlightElement(targetElement);
       
-      // Calculate and set card position
+      // Calculate and set card position with enhanced anti-collision
       const position = calculateCardPosition(targetElement, step.position);
       setCardPosition(position);
     } else {
-      console.warn('🎯 SmartTutorial: Target element not found for step', currentStep, '- skipping to next step');
-      // Auto-skip to next step if element doesn't exist
-      setTimeout(() => {
-        if (currentStep < tutorialSteps.length - 1) {
-          setCurrentStep(currentStep + 1);
-        } else {
-          onComplete();
-        }
-      }, 100);
-      return;
+      console.warn('🎯 SmartTutorial: Target element not found for step', currentStep, 'target:', step.target);
+      
+      // Try to continue tutorial for certain steps even if element isn't found
+      if (step.target.includes('magic-wand') && currentStep === 3) {
+        // For magic wand step, position tutorial centrally and continue
+        setCardPosition({
+          top: "50%",
+          left: "50%", 
+          transform: "translate(-50%, -50%)"
+        });
+      } else {
+        // Auto-skip to next step after a short delay
+        setTimeout(() => {
+          if (currentStep < tutorialSteps.length - 1) {
+            setCurrentStep(currentStep + 1);
+          } else {
+            onComplete();
+          }
+        }, 500);
+        return;
+      }
     }
 
     // Notify parent about step change

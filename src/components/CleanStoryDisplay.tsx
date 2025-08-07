@@ -552,11 +552,24 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
           </div>
         )}
 
-      {/* Main Content - Mobile Optimized */}
-      <main className={`container mx-auto safe-area-padding ${mobileContainerConfig}`}>
-        <div className="max-w-7xl mx-auto">
-          <Card className="bg-card shadow-card mobile-text-fixed">
-            <CardContent className={`${isMobileOrTablet ? 'p-3 sm:p-4' : 'p-6'}`}>
+      {/* Tutorial Magic Wand Button - Only shown during tutorial step 4 for free users */}
+      {showTutorial && currentTutorialStep === 3 && !isPremium && (
+        <button
+          id="tutorial-magic-wand"
+          data-id="magic-wand"
+          className="fixed top-20 right-4 z-50 p-3 bg-primary text-primary-foreground rounded-full shadow-lg tutorial-magic-wand animate-pulse"
+          disabled
+          aria-label="Magic Wand (Tutorial)"
+        >
+          🪄
+        </button>
+      )}
+
+      {/* Main Content - Enhanced for book-like experience */}
+      <main className={`container mx-auto safe-area-padding ${mobileContainerConfig} px-2 md:px-4`}>
+        <div className="max-w-6xl mx-auto">
+          <Card className="bg-white/95 backdrop-blur-sm shadow-2xl border border-white/70 mobile-text-fixed">
+            <CardContent className={`${isMobileOrTablet ? 'p-4 sm:p-6' : 'p-8'}`}>
               {/* Progress Bar */}
               <div className="mb-6">
                 <Progress value={progress} className="h-2" />
@@ -566,21 +579,21 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                 </p>
               </div>
 
-              {/* Story Content - Vertical Layout */}
-              <div className="bg-gradient-card rounded-lg p-6 mb-6 min-h-[400px]">
-                <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                  {/* Image Section - Left Side */}
+              {/* Story Content - Enhanced Layout */}
+              <div className="bg-gradient-card rounded-2xl p-6 mb-8 min-h-[500px] shadow-xl">
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                  {/* Image Section - Enhanced */}
                   <div className="lg:order-1 lg:col-span-2">
                     {currentImage && (
                       <img 
                         src={currentImage} 
                         alt={`Story illustration for page ${currentPage + 1}`}
-                        className="w-full h-64 lg:h-96 object-cover rounded-lg shadow-soft"
+                        className="w-full h-72 sm:h-80 lg:h-[32rem] object-cover rounded-2xl shadow-2xl"
                       />
                     )}
                     
                     {isGeneratingImage && !currentImage && (
-                      <div className="w-full h-64 lg:h-96 bg-muted rounded-lg flex items-center justify-center">
+                      <div className="w-full h-72 sm:h-80 lg:h-[32rem] bg-muted rounded-2xl flex items-center justify-center">
                         <div className="text-center">
                           <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
                           <p className="text-sm text-muted-foreground">Creating illustration...</p>
@@ -589,7 +602,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                     )}
 
                     {/* Audio Controls */}
-                    <div id="audio-controls" className="mt-4 flex justify-center gap-4">
+                    <div id="audio-controls" className="mt-6 flex justify-center gap-4">
                       <ElevenLabsAudio
                         text={currentStory}
                         userInfo={userInfo}
@@ -610,10 +623,20 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                     </div>
                   </div>
 
-                  {/* Text Content - Right Side - Mobile Optimized */}
+                  {/* Text Content - Enhanced Typography */}
                   <div className="lg:order-2 lg:col-span-3 flex flex-col justify-center">
-                    <div className="text-center lg:text-left">
-                      <div className={`font-bold text-foreground mb-4 story-content ${isMobileOrTablet ? 'mobile-reading-optimized text-lg sm:text-xl leading-relaxed' : 'text-xl lg:text-2xl leading-relaxed'} ${isMobileOrTablet ? mobileTextConfig.letterSpacing : ''} ${mobileTextConfig.paragraphSpacing}`}>
+                    <div className="text-center lg:text-left px-2 md:px-4">
+                      <div className={cn(
+                        "font-bold text-foreground mb-6 story-content leading-relaxed",
+                        currentDifficulty === "beginner" && "text-2xl md:text-3xl lg:text-4xl", // Larger font for beginners
+                        currentDifficulty === "easy" && "text-xl md:text-2xl lg:text-3xl",
+                        currentDifficulty === "medium" && "text-lg md:text-xl lg:text-2xl", 
+                        currentDifficulty === "hard" && "text-base md:text-lg lg:text-xl",
+                        currentDifficulty === "expert" && "text-sm md:text-base lg:text-lg",
+                        isMobileOrTablet ? 'mobile-reading-optimized' : '',
+                        isMobileOrTablet ? mobileTextConfig.letterSpacing : '',
+                        mobileTextConfig.paragraphSpacing
+                      )}>
                         {isMobileOrTablet 
                           ? processTextForPhonetics(
                               currentStory,
@@ -670,8 +693,9 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                   </div>
                 )}
 
-                {/* Free User Magic Wand - Only on last page */}
-                {!isPremium && currentPage === story.length - 1 && timeRemaining > 0 && (
+                {/* Free User Magic Wand - Enhanced visibility and tutorial support */}
+                {(!isPremium && currentPage === story.length - 1 && timeRemaining > 0) || 
+                 (showTutorial && currentTutorialStep === 3) && (
                   <div className="text-center">
                     <p className="text-sm text-muted-foreground mb-3">
                       Ready for another adventure? Generate a new story!
@@ -680,7 +704,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                       id="magic-wand-free"
                       data-id="magic-wand"
                       onClick={handleGenerateNewStory}
-                      disabled={isGeneratingNewStory}
+                      disabled={isGeneratingNewStory || (showTutorial && currentTutorialStep === 3)}
                       className={cn(
                         "bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 relative overflow-hidden",
                         "hover:from-amber-600 hover:to-orange-600 transition-all duration-300",
