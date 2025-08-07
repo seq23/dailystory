@@ -498,6 +498,64 @@ All colors MUST be HSL.
   
   /* Improved touch feedback */
   .touch-feedback {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+    transition: transform 0.1s ease-out, background-color 0.1s ease-out;
+  }
+
+  .touch-feedback:active {
+    transform: scale(0.98);
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  /* Safe area padding for mobile devices */
+  .safe-area-padding {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+
+  /* Mobile text size fixes to prevent iOS zoom */
+  .mobile-text-fixed {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  .mobile-text-fixed input,
+  .mobile-text-fixed textarea,
+  .mobile-text-fixed select {
+    font-size: 16px; /* Prevents iOS zoom */
+  }
+
+  /* Mobile reading optimizations */
+  .mobile-reading-optimized {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+    -moz-hyphens: auto;
+    font-kerning: auto;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Mobile story container optimizations */
+  .mobile-story-container {
+    max-width: 100%;
+    padding: 0.75rem;
+    margin: 0 auto;
+  }
+
+  @media (min-width: 640px) {
+    .mobile-story-container {
+      padding: 1rem;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .mobile-story-container {
+      padding: 1.5rem;
+      max-width: 42rem;
+    }
+  }
     -webkit-tap-highlight-color: rgba(var(--primary), 0.1);
     tap-highlight-color: rgba(var(--primary), 0.1);
     transition: background-color 0.15s ease;

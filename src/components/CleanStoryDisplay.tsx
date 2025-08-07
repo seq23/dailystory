@@ -7,9 +7,10 @@ import { BookOpen, Home, RotateCcw, Loader2, Volume2, VolumeX, ChevronUp, Chevro
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/hooks/use-toast";
 
-// Missing UI Components
-import { FloatingTimer } from "@/components/FloatingTimer";
-import { TutorialOverlay } from "@/components/TutorialOverlay";
+// Mobile-Optimized UI Components
+import { CollapsibleFloatingTimer } from "@/components/CollapsibleFloatingTimer";
+import { MobileOptimizedTutorial } from "@/components/MobileOptimizedTutorial";
+import { MobileOptimizedHeader } from "@/components/MobileOptimizedHeader";
 import { ProgressTowers } from "@/components/ProgressTowers";
 import { GameContextProvider } from "@/components/GameContextProvider";
 
@@ -19,6 +20,8 @@ import { VocabularyCollector } from "@/components/VocabularyCollector";
 import { processTextForPhonetics } from "@/utils/textProcessor";
 import { useWordHighlighting } from "@/hooks/useWordHighlighting";
 import { useGamification } from "@/hooks/useGamification";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { getMobileTextConfig, getMobileStoryContainer } from "@/utils/mobileTextOptimizations";
 
 import type { UserInfo, SessionStats } from "@/types";
 import { NetflixStyleStoryService, type NetflixStoryResult } from "@/services/NetflixStyleStoryService";
@@ -47,6 +50,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
 }) => {
   const { t } = useTranslation();
   const { toast } = useToast();
+  const { isMobile, isTablet, isMobileOrTablet } = useIsMobile();
   
   // Story state
   const [story, setStory] = useState<string[]>([]);
@@ -473,17 +477,9 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     setShowTutorial(false);
   };
 
-  // Get mobile-first responsive text size based on difficulty level
-  const getTextSize = () => {
-    switch (currentDifficulty) {
-      case 'beginner': return 'text-2xl sm:text-3xl md:text-4xl lg:text-5xl'; // Level 0 - large for early readers
-      case 'easy': return 'text-xl sm:text-2xl md:text-3xl lg:text-4xl';      // Level 1 - medium-large
-      case 'medium': return 'text-lg sm:text-xl md:text-2xl lg:text-3xl';     // Level 2 - medium
-      case 'hard': return 'text-base sm:text-lg md:text-xl lg:text-2xl';      // Level 3 - standard for advanced readers
-      case 'expert': return 'text-sm sm:text-base md:text-lg lg:text-xl';     // Level 4 - compact for fluent readers
-      default: return 'text-lg sm:text-xl md:text-2xl lg:text-3xl';
-    }
-  };
+  // Get mobile-optimized text configuration
+  const mobileTextConfig = getMobileTextConfig(currentDifficulty);
+  const mobileContainerConfig = getMobileStoryContainer(currentDifficulty);
 
   const progress = story.length > 0 ? ((currentPage + 1) / story.length) * 100 : 0;
   const currentImage = pageImages[currentPage];
@@ -525,93 +521,52 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
       userInfo={userInfo}
     >
       <ErrorBoundary>
-        <div className="min-h-screen bg-gradient-primary">
-        {/* Header with Reading Level Controls */}
-        <header className="bg-white/90 backdrop-blur-sm shadow-sm border-b">
-          <div className="container mx-auto px-4 py-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <h1 className="text-xl font-bold text-foreground">
-                  {storyTitle}
-                </h1>
-                {isPremium && (
-                  <div className="flex items-center gap-2">
-                    <span className="bg-primary text-white px-2 py-1 rounded text-sm">
-                      Live Generation
-                    </span>
-                    {/* Premium Timer Controls */}
-                    {!isTimerCanceled && timeRemaining > 0 && (
-                      <div className="flex gap-1">
-                        <Button
-                          onClick={handleCancelTimer}
-                          size="sm"
-                          variant="outline"
-                          className="h-6 px-2 text-xs"
-                        >
-                          <X className="w-3 h-3 mr-1" />
-                          Cancel Timer
-                        </Button>
-                        <Button
-                          onClick={handleExtendTime}
-                          size="sm"
-                          variant="outline"
-                          className="h-6 px-2 text-xs"
-                          disabled={timeRemaining >= 60 * 60}
-                        >
-                          <Clock className="w-3 h-3 mr-1" />
-                          +15min
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-              
-              {/* Reading Level Controls */}
-              <div id="reading-level-controls" className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">Level:</span>
-                <div className="flex flex-col gap-1">
-                  <MobileOptimizedButton
-                    onClick={() => handleDifficultyChange('up')}
-                    variant="outline"
-                    size="sm"
-                    className="h-6 px-2"
-                    disabled={currentDifficulty === 'expert'}
-                  >
-                    <ChevronUp className="w-3 h-3" />
-                  </MobileOptimizedButton>
-                  <MobileOptimizedButton
-                    onClick={() => handleDifficultyChange('down')}
-                    variant="outline"
-                    size="sm"
-                    className="h-6 px-2"
-                    disabled={currentDifficulty === 'beginner'}
-                  >
-                    <ChevronDown className="w-3 h-3" />
-                  </MobileOptimizedButton>
-                </div>
-                <span className="text-sm font-medium capitalize">{currentDifficulty}</span>
-              </div>
-              
-              <div className="flex gap-2">
-                <MobileOptimizedButton onClick={onNewStory} variant="outline" size="sm">
-                  <RotateCcw className="w-4 h-4 mr-2" />
-                  New Story
-                </MobileOptimizedButton>
-                <MobileOptimizedButton onClick={onHome} variant="outline" size="sm">
-                  <Home className="w-4 h-4 mr-2" />
-                  Home
-                </MobileOptimizedButton>
-              </div>
+        <div className="min-h-screen bg-gradient-primary mobile-optimized">
+        {/* Mobile-Optimized Header */}
+        <MobileOptimizedHeader
+          storyTitle={storyTitle}
+          currentDifficulty={currentDifficulty}
+          onHome={onHome}
+          onIncreaseDifficulty={() => handleDifficultyChange('up')}
+          onDecreaseDifficulty={() => handleDifficultyChange('down')}
+          showLevelControls={true}
+        />
+
+        {/* Premium Controls Bar - Mobile Optimized */}
+        {isPremium && !isTimerCanceled && timeRemaining > 0 && (
+          <div className="bg-primary/10 border-b border-primary/20 p-2 sm:p-3">
+            <div className="container mx-auto flex flex-wrap items-center justify-center gap-2">
+              <span className="bg-primary text-white px-2 py-1 rounded text-xs sm:text-sm">
+                Live Generation
+              </span>
+              <MobileOptimizedButton
+                onClick={handleCancelTimer}
+                size="sm"
+                variant="outline"
+                className="h-8 px-2 text-xs"
+              >
+                <X className="w-3 h-3 mr-1" />
+                Cancel Timer
+              </MobileOptimizedButton>
+              <MobileOptimizedButton
+                onClick={handleExtendTime}
+                size="sm"
+                variant="outline"
+                className="h-8 px-2 text-xs"
+                disabled={timeRemaining >= 60 * 60}
+              >
+                <Clock className="w-3 h-3 mr-1" />
+                +15min
+              </MobileOptimizedButton>
             </div>
           </div>
-        </header>
+        )}
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-6">
+      {/* Main Content - Mobile Optimized */}
+      <main className={`container mx-auto safe-area-padding ${mobileContainerConfig}`}>
         <div className="max-w-4xl mx-auto">
-          <Card className="bg-card shadow-card">
-            <CardContent className="p-6">
+          <Card className="bg-card shadow-card mobile-text-fixed">
+            <CardContent className={`${isMobileOrTablet ? 'p-3 sm:p-4' : 'p-6'}`}>
               {/* Progress Bar */}
               <div className="mb-6">
                 <Progress value={progress} className="h-2" />
@@ -665,13 +620,13 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                     </div>
                   </div>
 
-                  {/* Text Content - Right Side */}
+                  {/* Text Content - Right Side - Mobile Optimized */}
                   <div className="lg:order-2 flex flex-col justify-center">
                     <div className="text-center lg:text-left">
-                      <div className={`${getTextSize()} font-bold text-foreground mb-4 leading-relaxed story-content px-2 sm:px-0`}>
+                      <div className={`font-bold text-foreground mb-4 story-content mobile-reading-optimized ${mobileTextConfig.fontSize} ${mobileTextConfig.lineHeight} ${mobileTextConfig.letterSpacing} ${mobileTextConfig.paragraphSpacing}`}>
                         {processTextForPhonetics(
                           currentStory,
-                          "cursor-pointer hover:bg-primary/10 rounded px-1 transition-colors",
+                          "cursor-pointer hover:bg-primary/10 rounded px-1 transition-colors touch-target",
                           currentDifficulty,
                           userInfo,
                           isPremium,
@@ -776,14 +731,12 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         </div>
       </main>
       
-      {/* Tutorial Overlay */}
-      <TutorialOverlay
+      {/* Mobile-Optimized Tutorial */}
+      <MobileOptimizedTutorial
         isVisible={showTutorial}
         onComplete={handleCompleteTutorial}
         onSkip={handleSkipTutorial}
-        onStartTimer={() => setIsTimerRunning(true)}
         onStepChange={setCurrentTutorialStep}
-        sessionStartTime={new Date(sessionStartTime)}
       />
 
       {/* Vocabulary Collector Modal */}
@@ -794,16 +747,15 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         enablePersistence={true}
       />
         
-      {/* Floating Timer Display - Always Visible */}
-      <FloatingTimer
+      {/* Collapsible Floating Timer - Mobile Optimized */}
+      <CollapsibleFloatingTimer
         timeRemaining={timeRemaining}
         isReading={isTimerRunning}
         onToggleReading={handleToggleTimer}
-        onReduceTime={handleReduceTime}
+        onReduceTime={isPremium ? handleReduceTime : undefined}
         onEndSession={handleEndSession}
         onSessionEnded={handleEndSession}
         showTutorial={showTutorial}
-        tutorialStep={currentTutorialStep}
       />
       
       {/* Progress Tower - Collapsible floating tower */}
