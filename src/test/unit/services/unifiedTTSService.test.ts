@@ -5,7 +5,7 @@ console.log('🔍 About to import UnifiedTTSService...');
 import { UnifiedTTSService } from '@/services/unifiedTTSService';
 console.log('✅ UnifiedTTSService imported successfully');
 
-// Mock Supabase
+// Mock Supabase (this will be overridden by setup.ts but we keep it for clarity)
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
     functions: {

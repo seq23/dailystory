@@ -118,6 +118,44 @@ vi.mock('react-i18next', () => ({
 // Mock fetch
 global.fetch = vi.fn();
 
+// Mock Supabase client
+vi.mock('@/integrations/supabase/client', () => ({
+  supabase: {
+    functions: {
+      invoke: vi.fn(),
+    },
+  },
+}));
+
+// Mock PhoneticRulesEngine
+vi.mock('@/services/phoneticRulesEngine', () => ({
+  PhoneticRulesEngine: {
+    getInstance: vi.fn(() => ({
+      breakIntoSyllables: vi.fn((word) => [word]),
+      getPhoneticSpelling: vi.fn((word) => word),
+    })),
+  },
+}));
+
+// Mock contextualPronunciation
+vi.mock('@/services/contextualPronunciation', () => ({
+  contextualPronunciation: {
+    getPhoneticSpelling: vi.fn((word) => word),
+    getSyllables: vi.fn((word) => [word]),
+  },
+}));
+
+// Mock VocabularyLevelClassifier
+vi.mock('@/utils/vocabularyLevelClassifier', () => ({
+  VocabularyLevelClassifier: {
+    getWordDifficulty: vi.fn(() => ({
+      level: 1,
+      shouldHighlight: true,
+      complexity: 'beginner',
+    })),
+  },
+}));
+
 // Mock MobileAudioManager
 vi.mock('@/services/mobileAudioManager', () => ({
   MobileAudioManager: {
