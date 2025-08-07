@@ -957,3 +957,28 @@ All colors MUST be HSL.
   .mobile-tablet\:text-base { font-size: 1rem; line-height: 1.5rem; }
   .mobile-tablet\:text-lg { font-size: 1.125rem; line-height: 1.75rem; }
 }
+
+/* Desktop Text Flow Fix - Ensure words display on same line */
+@media (min-width: 1024px) {
+  .story-content {
+    white-space: normal !important;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.75;
+  }
+  
+  .story-content span,
+  .story-content .interactive-word,
+  .story-content [class*="word-index"] {
+    display: inline !important;
+    white-space: normal !important;
+    word-break: normal !important;
+    line-height: inherit;
+  }
+  
+  /* Override any mobile-specific styling for desktop */
+  .story-content * {
+    display: inline !important;
+    white-space: normal !important;
+  }
+}
