@@ -387,7 +387,7 @@ export const SmartTutorialOverlay = ({
             </p>
 
             {/* Navigation */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-4">
               <div className="flex gap-2">
                 <Button
                   variant="outline"
@@ -417,8 +417,10 @@ export const SmartTutorialOverlay = ({
               >
                 Skip Tutorial
               </Button>
+            </div>
 
-              {/* Progress dots */}
+            {/* Progress dots - centered below navigation */}
+            <div className="flex justify-center">
               <div className="flex gap-1">
                 {tutorialSteps.map((_, index) => (
                   <div
