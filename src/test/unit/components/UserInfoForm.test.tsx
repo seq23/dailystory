@@ -1,13 +1,7 @@
-import { describe, it, expect, vi } from 'vitest';
-import { renderWithProviders } from '../../../../tests/utils/testHelpers';
+import { describe, it, expect } from 'vitest';
 
 describe('UserInfoForm', () => {
-  it('should render without crashing', () => {
-    // Basic smoke test
-    expect(true).toBe(true);
-  });
-
-  it('validates form data structure', () => {
+  it('should handle basic form data structure', () => {
     const mockFormData = {
       name: 'Test Child',
       age: 8,
@@ -19,11 +13,12 @@ describe('UserInfoForm', () => {
     expect(mockFormData.grade).toBe('PreK');
   });
 
-  it('handles form submission logic', () => {
-    const mockOnSubmit = vi.fn();
-    const mockOnBack = vi.fn();
-    
-    expect(mockOnSubmit).toBeDefined();
-    expect(mockOnBack).toBeDefined();
+  it('should validate required fields', () => {
+    const isValidForm = (data: any) => {
+      return data.name && data.age && data.grade;
+    };
+
+    expect(isValidForm({ name: 'Test', age: 8, grade: 'PreK' })).toBe(true);
+    expect(isValidForm({ name: '', age: 8, grade: 'PreK' })).toBe(false);
   });
 });

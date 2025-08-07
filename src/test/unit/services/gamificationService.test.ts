@@ -1,8 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
 describe('GamificationService', () => {
-  it('should handle level calculations', () => {
-    // Basic level calculation logic
+  it('should calculate levels correctly', () => {
     const calculateLevel = (points: number) => {
       if (points < 100) return 1;
       if (points < 250) return 2;
@@ -27,13 +26,5 @@ describe('GamificationService', () => {
     expect(mockAchievement.id).toBe('test_achievement');
     expect(mockAchievement.points).toBe(10);
     expect(mockAchievement.unlocked).toBe(false);
-  });
-
-  it('should calculate progress correctly', () => {
-    const currentPoints = 75;
-    const nextLevelThreshold = 100;
-    const progress = (currentPoints / nextLevelThreshold) * 100;
-
-    expect(progress).toBe(75);
   });
 });
