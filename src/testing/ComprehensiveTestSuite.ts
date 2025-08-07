@@ -6,6 +6,9 @@ import { SubscriptionTester } from './modules/SubscriptionTester';
 import { PerformanceTester } from './modules/PerformanceTester';
 import { SecurityTester } from '../utils/securityTesting';
 import { MobileInteractionTester } from '../utils/mobileInteractionTester';
+import { VisualDesignTestSuite } from './modules/VisualDesignTestSuite';
+import { EfficiencyFirstRecommendationEngine } from './modules/EfficiencyFirstRecommendationEngine';
+import { AutomatedFixSystem } from './modules/AutomatedFixSystem';
 import { TestDataGenerator } from './utils/TestDataGenerator';
 import { TestReporter } from './utils/TestReporter';
 
@@ -25,6 +28,7 @@ export interface TestSuiteResult {
     performance: TestCategoryResult;
     security: TestCategoryResult;
     mobile: TestCategoryResult;
+    design: TestCategoryResult;
   };
   issues: TestIssue[];
   recommendations: string[];
@@ -38,6 +42,14 @@ export interface TestCategoryResult {
   successRate: number;
   duration: number;
   details: any[];
+  score?: number;
+  issues?: Array<{
+    severity: string;
+    message: string;
+    suggestion: string;
+    effortToImpact?: number;
+    quickWin?: boolean;
+  }>;
 }
 
 export interface TestIssue {
@@ -70,7 +82,8 @@ export class ComprehensiveTestSuite {
         subscription: this.createEmptyCategory('Subscription'),
         performance: this.createEmptyCategory('Performance'),
         security: this.createEmptyCategory('Security'),
-        mobile: this.createEmptyCategory('Mobile')
+        mobile: this.createEmptyCategory('Mobile'),
+        design: this.createEmptyCategory('Design')
       },
       issues: [],
       recommendations: []
@@ -92,6 +105,7 @@ export class ComprehensiveTestSuite {
       console.log('\n⚡ Phase 3: Performance & Security Tests');
       results.categories.performance = await this.runPerformanceTests();
       results.categories.security = await this.runSecurityTests();
+      results.categories.design = await this.runDesignTests();
 
       // Calculate overall results
       this.calculateOverallResults(results);
@@ -254,6 +268,15 @@ export class ComprehensiveTestSuite {
     } catch (error) {
       console.error('Mobile Tests Failed:', error);
       return this.createFailedCategory('Mobile', Date.now() - startTime);
+    }
+  }
+
+  private async runDesignTests(): Promise<TestCategoryResult> {
+    try {
+      return await VisualDesignTestSuite.runVisualDesignTests();
+    } catch (error) {
+      console.error('Design Tests Failed:', error);
+      return this.createFailedCategory('Design', 0);
     }
   }
 
