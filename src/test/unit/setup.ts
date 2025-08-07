@@ -38,6 +38,7 @@ global.AudioContext = vi.fn().mockImplementation(() => ({
   resume: vi.fn().mockResolvedValue(undefined),
   suspend: vi.fn().mockResolvedValue(undefined),
   close: vi.fn().mockResolvedValue(undefined),
+  state: 'suspended',
 }));
 
 // Mock webkitAudioContext for Safari
@@ -51,6 +52,8 @@ global.SpeechSynthesisUtterance = vi.fn().mockImplementation((text) => ({
   volume: 1,
   voice: null,
   lang: 'en-US',
+  addEventListener: vi.fn(),
+  removeEventListener: vi.fn(),
 }));
 
 global.speechSynthesis = {
