@@ -51,6 +51,8 @@ export const UnifiedTutorial: React.FC<UnifiedTutorialProps> = ({
   const [highlightedElement, setHighlightedElement] = useState<Element | null>(null);
   const [showTempMagicWand, setShowTempMagicWand] = useState(false);
 
+  console.log('🎓 UnifiedTutorial render:', { isVisible, currentStep, isPremium, isMobile, isTablet });
+
   // Tutorial steps with conditional content
   const tutorialSteps: TutorialStep[] = [
     {
@@ -425,15 +427,26 @@ export const UnifiedTutorial: React.FC<UnifiedTutorialProps> = ({
     }
   };
 
+  console.log('🎓 Tutorial visibility check:', { isVisible, currentStep, totalSteps: tutorialSteps.length });
+  
   if (!isVisible || currentStep >= tutorialSteps.length) {
+    console.log('🎓 Tutorial not showing because:', { 
+      isVisible, 
+      currentStep, 
+      totalSteps: tutorialSteps.length,
+      reason: !isVisible ? 'not visible' : 'step out of bounds'
+    });
     return null;
   }
 
   const step = tutorialSteps[currentStep];
   const Icon = step.icon;
 
+  console.log('🎓 About to render tutorial with step:', step.title);
+
   return (
     <>
+
       {/* Temporary Magic Wand for Free Users */}
       {showTempMagicWand && (
         <Button
