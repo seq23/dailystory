@@ -30,6 +30,7 @@ interface Position {
   right?: string;
   bottom?: string;
   transform?: string;
+  maxWidth?: string;
 }
 
 export const SmartTutorialOverlay = ({ 
@@ -360,11 +361,12 @@ export const SmartTutorialOverlay = ({
         
         // Special handling for specific steps
         if (step.target.includes('magic-wand') && currentStep === 3) {
-          // For magic wand step, position tutorial centrally and continue
+        // For magic wand step, position tutorial to complement the magic wand
           setCardPosition({
-            top: "50%",
-            left: "50%", 
-            transform: "translate(-50%, -50%)"
+            top: "30%",
+            left: "20%", 
+            transform: "translate(0, -50%)",
+            maxWidth: "320px"
           });
         } else if (step.title.includes("Progress Towers")) {
           // For progress towers, show tutorial in center with explanation
@@ -425,8 +427,8 @@ export const SmartTutorialOverlay = ({
 
   return (
     <>
-      {/* Dark overlay */}
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40" style={{ backdropFilter: 'blur(4px)' }} />
+      {/* Dark overlay with tutorial element exceptions */}
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 tutorial-overlay" style={{ backdropFilter: 'blur(4px)' }} />
       
       {/* Global tutorial highlight styles */}
       <style>{`
@@ -449,6 +451,18 @@ export const SmartTutorialOverlay = ({
           50% {
             box-shadow: 0 0 0 8px hsl(var(--primary) / 0.7), 0 0 30px 12px hsl(var(--primary) / 0.5);
           }
+        }
+        
+        /* Ensure tutorial magic wand is not blurred */
+        .tutorial-overlay {
+          mask: radial-gradient(circle at var(--tutorial-magic-x, 50%) var(--tutorial-magic-y, 50%), transparent 60px, black 80px);
+          -webkit-mask: radial-gradient(circle at var(--tutorial-magic-x, 50%) var(--tutorial-magic-y, 50%), transparent 60px, black 80px);
+        }
+        
+        .tutorial-magic-wand {
+          z-index: 70 !important;
+          backdrop-filter: none !important;
+          -webkit-backdrop-filter: none !important;
         }
       `}</style>
 

@@ -27,6 +27,7 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
   shouldPulse = false,
   onProgressUpdate
 }) => {
+  console.log('🏗️ ProgressTowers: Rendering progress towers component');
   const { t, i18n } = useTranslation();
   const { isMobile } = useIsMobile();
   const isRTL = i18n.language === 'ar';
@@ -188,16 +189,19 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
 
   return (
     <div 
+      id="progress-towers"
+      data-tutorial-target="progress-towers"
       className={cn(
-        "progress-towers-container fixed top-1/2 transform -translate-y-1/2 z-40 transition-all duration-300 ease-out",
-        isRTL ? "left-0" : "right-0",
-        isExpanded 
-          ? (isRTL ? "translate-x-0" : "translate-x-0")
-          : (isRTL ? "translate-x-0" : "translate-x-0"), // Keep visible on screen edge
-        // Enhanced edge bounce animation when new progress is detected
-        hasNewProgress && !isExpanded && "animate-edgeBounce",
+        "progress-towers fixed top-1/2 transform -translate-y-1/2 transition-all duration-300 ease-in-out z-50",
+        "tutorial-progress-towers",
+        isRTL ? "left-2" : "right-2",
+        isMobile && "scale-90",
         className
       )}
+      style={{
+        filter: hasNewProgress ? 'drop-shadow(0 0 20px rgba(147, 51, 234, 0.6))' : 'none',
+        zIndex: 50
+      }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onClick={isMobile ? handleToggle : undefined}

@@ -13,6 +13,7 @@ import { SmartTutorialOverlay } from "@/components/SmartTutorialOverlay";
 import { ResponsiveStoryHeader } from "@/components/ResponsiveStoryHeader";
 import { ProgressTowers } from "@/components/ProgressTowers";
 import { GameContextProvider } from "@/components/GameContextProvider";
+import { TutorialMagicWand } from "@/components/TutorialMagicWand";
 
 // Audio and Interactive Components
 import { ElevenLabsAudio } from "@/components/ElevenLabsAudio";
@@ -552,23 +553,16 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
           </div>
         )}
 
-      {/* Tutorial Magic Wand Button - Only shown during tutorial step 4 for free users */}
-      {showTutorial && currentTutorialStep === 3 && !isPremium && (
-        <button
-          id="tutorial-magic-wand"
-          data-id="magic-wand"
-          className="fixed top-20 right-4 z-50 p-3 bg-primary text-primary-foreground rounded-full shadow-lg tutorial-magic-wand animate-pulse"
-          disabled
-          aria-label="Magic Wand (Tutorial)"
-        >
-          🪄
-        </button>
-      )}
+      {/* Tutorial Magic Wand for Free Users */}
+      <TutorialMagicWand
+        isVisible={showTutorial && !isPremium}
+        tutorialStep={currentTutorialStep}
+      />
 
       {/* Main Content - Enhanced for book-like experience */}
       <main className={`container mx-auto safe-area-padding ${mobileContainerConfig} px-1 md:px-2 lg:px-4`}>
-        <div className="max-w-7xl mx-auto">
-          <Card className="bg-white/95 backdrop-blur-sm shadow-2xl border border-white/70 mobile-text-fixed">
+        <div className="max-w-[90rem] mx-auto book-reading-experience-wide">
+          <Card className="bg-white/95 backdrop-blur-sm shadow-2xl border border-white/70 mobile-text-fixed min-h-[70vh] xl:min-h-[75vh]">
             <CardContent className={`${isMobileOrTablet ? 'p-2 sm:p-4' : 'p-4 lg:p-6'}`}>
               {/* Progress Bar */}
               <div className="mb-4 md:mb-6">
@@ -588,12 +582,12 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                       <img 
                         src={currentImage} 
                         alt={`Story illustration for page ${currentPage + 1}`}
-                        className="w-full h-80 sm:h-96 md:h-[36rem] lg:h-[40rem] object-cover rounded-2xl shadow-2xl"
+                        className="w-full h-80 sm:h-96 md:h-[36rem] lg:h-[42rem] xl:h-[48rem] object-cover rounded-2xl shadow-2xl story-image-container-enhanced"
                       />
                     )}
                     
                     {isGeneratingImage && !currentImage && (
-                      <div className="w-full h-80 sm:h-96 md:h-[36rem] lg:h-[40rem] bg-muted rounded-2xl flex items-center justify-center">
+                      <div className="w-full h-80 sm:h-96 md:h-[36rem] lg:h-[42rem] xl:h-[48rem] bg-muted rounded-2xl flex items-center justify-center story-image-container-enhanced">
                         <div className="text-center">
                           <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
                           <p className="text-sm text-muted-foreground">Creating illustration...</p>
@@ -628,7 +622,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                     <div className="text-center lg:text-left px-2 md:px-4 lg:px-8">
                       <div className={cn(
                         "font-bold text-foreground mb-6 story-content leading-relaxed",
-                        currentDifficulty === "beginner" && "text-3xl md:text-4xl lg:text-5xl", // Much larger font for beginners
+                        currentDifficulty === "beginner" && "!text-4xl !md:text-5xl !lg:text-6xl !important", // Much larger font for beginners
                         currentDifficulty === "easy" && "text-2xl md:text-3xl lg:text-4xl",
                         currentDifficulty === "medium" && "text-xl md:text-2xl lg:text-3xl", 
                         currentDifficulty === "hard" && "text-lg md:text-xl lg:text-2xl",
@@ -700,30 +694,6 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                     <p className="text-sm text-muted-foreground mb-3">
                       Ready for another adventure? Generate a new story!
                     </p>
-                    <Button
-                      id="magic-wand-free"
-                      data-id="magic-wand"
-                      onClick={handleGenerateNewStory}
-                      disabled={isGeneratingNewStory || (showTutorial && currentTutorialStep === 3)}
-                      className={cn(
-                        "bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 relative overflow-hidden",
-                        "hover:from-amber-600 hover:to-orange-600 transition-all duration-300",
-                        "animate-pulse shadow-lg shadow-amber-500/25"
-                      )}
-                    >
-                      {isGeneratingNewStory ? (
-                        <>
-                          <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                          Creating new adventure...
-                        </>
-                      ) : (
-                        <>
-                          <Wand className="w-5 h-5 mr-2" />
-                          <Sparkles className="w-4 h-4 absolute top-1 right-1 text-yellow-300 animate-pulse" />
-                          Generate New Story
-                        </>
-                      )}
-                    </Button>
                   </div>
                 )}
               </div>
@@ -766,6 +736,12 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         </div>
       </main>
       
+      {/* Tutorial Magic Wand for Free Users */}
+      <TutorialMagicWand
+        isVisible={showTutorial && !isPremium}
+        tutorialStep={currentTutorialStep}
+      />
+
       {/* Smart Tutorial */}
       <SmartTutorialOverlay
         isVisible={showTutorial}
