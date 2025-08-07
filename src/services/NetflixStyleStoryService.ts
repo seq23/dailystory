@@ -6,6 +6,7 @@ import type { UserInfo, DifficultyLevel, ExpertGradeLevel } from '@/types';
 import { getStoryPrompt, getExpertStoryPrompt, formatUserPrompt, calculateDifficultyFromUser } from '@/config/storyPrompts';
 import { EnhancedFallbackManager } from '@/constants/enhancedFallbackTemplates';
 import { ErrorHandler } from '@/utils/errorHandling';
+import { InputSanitizer } from '@/utils/inputSanitizer';
 import { DifficultyManager } from '@/services/difficultyManager';
 import { ExpertDifficultyManager } from '@/services/expertDifficultyManager';
 
@@ -42,7 +43,15 @@ export class NetflixStyleStoryService {
         promptConfig = getStoryPrompt(difficulty);
       }
       const systemPrompt = promptConfig.systemPrompt;
-      const userPrompt = `Create an engaging story for ${userInfo.name} (age ${userInfo.age}). They love ${userInfo.favoriteAnimal || 'animals'} and ${userInfo.favoriteColor || 'bright colors'}. Their hobby is ${userInfo.hobbies || 'playing'}. ${userInfo.specialRequest ? `Special request: ${userInfo.specialRequest}` : ''}`;
+      
+      // Sanitize all user inputs before story generation
+      const safeName = InputSanitizer.sanitizeUserInfo(userInfo.name);
+      const safeAnimal = InputSanitizer.sanitizeStoryInput(userInfo.favoriteAnimal || 'animals');
+      const safeColor = InputSanitizer.sanitizeStoryInput(userInfo.favoriteColor || 'bright colors');
+      const safeHobbies = InputSanitizer.sanitizeStoryInput(userInfo.hobbies || 'playing');
+      const safeRequest = InputSanitizer.sanitizeStoryInput(userInfo.specialRequest || '');
+      
+      const userPrompt = `Create an engaging story for ${safeName} (age ${userInfo.age}). They love ${safeAnimal} and ${safeColor}. Their hobby is ${safeHobbies}. ${safeRequest ? `Special request: ${safeRequest}` : ''}`;
       
       console.log('🎬 Calling OpenAI with simple prompts...');
       

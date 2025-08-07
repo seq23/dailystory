@@ -14,6 +14,7 @@ import { MobileTooltip } from "@/components/MobileTooltip";
 import { ChevronRight, User, GraduationCap, Heart, Star, Globe, Sparkles, AlertCircle, ArrowRightLeft, CheckCircle, Loader2 } from "lucide-react";
 
 import { ContentSecurity, SecurityLogger } from "@/utils/security";
+import { InputSanitizer } from "@/utils/inputSanitizer";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SmartInputParser } from "@/services/smartInputParser";
@@ -104,8 +105,8 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
         setSelectedOptionalField(null); // Clear any previous restriction tracking
       }
       
-      // Sanitize input
-      const sanitizedValue = ContentSecurity.sanitizeInput(value);
+      // Sanitize input with enhanced protection
+      const sanitizedValue = InputSanitizer.sanitizeUserInfo(value);
       
       // Only check for inappropriate content on additions, not deletions
       if (!isDeletion) {
