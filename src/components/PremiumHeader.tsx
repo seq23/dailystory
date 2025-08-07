@@ -44,8 +44,11 @@ export const PremiumHeader = ({
   const getAvatarUrl = () => {
     if (userInfo.avatar?.type && userInfo.avatar?.skinTone) {
       // Use public folder path for proper access
-      return `/avatar-${userInfo.avatar.type}-${userInfo.avatar.skinTone}.jpg`;
+      const url = `/avatar-${userInfo.avatar.type}-${userInfo.avatar.skinTone}.jpg`;
+      console.log('🎭 Avatar URL generated:', url, 'for user:', userInfo.name, 'avatar:', userInfo.avatar);
+      return url;
     }
+    console.log('🎭 No avatar data found for user:', userInfo.name, 'avatar:', userInfo.avatar);
     return undefined;
   };
 
@@ -90,7 +93,17 @@ export const PremiumHeader = ({
                   className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
                 >
                   <Avatar className="w-8 h-8">
-                    <AvatarImage src={getAvatarUrl()} alt={userInfo.name} />
+                    <AvatarImage 
+                      src={getAvatarUrl()} 
+                      alt={userInfo.name}
+                      onError={(e) => {
+                        console.log('🎭 Avatar image failed to load:', getAvatarUrl());
+                        console.log('🎭 Image error event:', e);
+                      }}
+                      onLoad={() => {
+                        console.log('🎭 Avatar image loaded successfully:', getAvatarUrl());
+                      }}
+                    />
                     <AvatarFallback className="bg-gradient-primary text-white text-sm font-semibold">
                       {hasSelectedAvatar ? "" : userInfo.name.charAt(0).toUpperCase()}
                     </AvatarFallback>
