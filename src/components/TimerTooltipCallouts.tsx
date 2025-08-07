@@ -51,41 +51,60 @@ export const TimerTooltipCallouts = ({
     }
   ];
 
-  // Position callout relative to target element with better collision detection
   const positionCallout = (targetSelector: string) => {
-    const element = document.querySelector(targetSelector);
-    if (!element) return;
-
-    const rect = element.getBoundingClientRect();
-    const calloutWidth = 220;
-    const calloutHeight = 100;
-    const offset = 15;
+    const elements = document.querySelectorAll(targetSelector);
+    let targetElement: Element | null = null;
     
-    // Default to top positioning
-    let top = rect.top - calloutHeight - offset;
-    let left = rect.left + rect.width / 2 - calloutWidth / 2;
-
-    // Viewport collision detection
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-    
-    // Horizontal bounds check
-    if (left < 10) left = 10;
-    if (left + calloutWidth > viewportWidth - 10) {
-      left = viewportWidth - calloutWidth - 10;
+    // Find the first visible element that matches
+    for (const element of elements) {
+      const rect = element.getBoundingClientRect();
+      const style = window.getComputedStyle(element);
+      
+      if (rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none') {
+        targetElement = element;
+        break;
+      }
     }
     
-    // Vertical bounds check - if not enough space on top, place below
+    if (!targetElement) {
+      console.warn('🎯 Timer Tutorial: No visible element found for:', targetSelector);
+      return;
+    }
+    
+    const rect = targetElement.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const cardWidth = 280;
+    const cardHeight = 120;
+    const offset = 20;
+    
+    console.log('🎯 Timer Tutorial: Positioning callout for element:', targetElement, 'rect:', rect);
+    
+    // Position above the button with collision detection
+    let top = rect.top - cardHeight - offset;
+    let left = rect.left + rect.width / 2 - cardWidth / 2;
+    
+    // Adjust horizontal position if it goes off screen
+    if (left < 10) left = 10;
+    if (left + cardWidth > viewportWidth - 10) left = viewportWidth - cardWidth - 10;
+    
+    // If positioning above would go off screen, position below
     if (top < 10) {
       top = rect.bottom + offset;
     }
     
-    // Final safety check for bottom overflow
-    if (top + calloutHeight > viewportHeight - 10) {
-      top = viewportHeight - calloutHeight - 10;
-    }
-
     setCalloutPosition({ top, left });
+    
+    // Highlight the target element with maximum z-index
+    targetElement.classList.add('timer-button-highlight');
+    (targetElement as HTMLElement).style.zIndex = '99999';
+    (targetElement as HTMLElement).style.position = 'relative';
+    
+    // Also ensure parent timer container is visible
+    const timerContainer = targetElement.closest('.timer-container, [class*="timer"]');
+    if (timerContainer) {
+      (timerContainer as HTMLElement).style.zIndex = '99998';
+    }
   };
 
   // Auto-progress through callouts with proper timing
@@ -96,7 +115,7 @@ export const TimerTooltipCallouts = ({
     if (currentCallout === 0) {
       const step = calloutSteps[currentCallout];
       if (step) {
-        setTimeout(() => positionCallout(step.target), 100); // Small delay for DOM updates
+        setTimeout(() => positionCallout(step.target), 100);
       }
     }
 
@@ -107,7 +126,7 @@ export const TimerTooltipCallouts = ({
         // Complete the callouts after the last one
         setTimeout(() => onComplete(), 1000);
       }
-    }, currentCallout === 0 ? 2500 : 3000); // Shorter first tooltip, then 3s each
+    }, currentCallout === 0 ? 2500 : 3000);
 
     return () => clearTimeout(timer);
   }, [currentCallout, isVisible, tutorialStep, onComplete]);
@@ -118,29 +137,34 @@ export const TimerTooltipCallouts = ({
     
     const step = calloutSteps[currentCallout];
     if (step) {
-      // Small delay to ensure DOM is ready
       setTimeout(() => {
         positionCallout(step.target);
-        
-        // Highlight the target button with pulsing animation
-        const element = document.querySelector(step.target);
-        if (element) {
-          element.classList.add('timer-button-highlight');
-          console.log(`🎯 Timer Tutorial: Highlighting button ${currentCallout + 1}: ${step.title}`);
-        } else {
-          console.warn(`🎯 Timer Tutorial: Button not found for step ${currentCallout + 1}: ${step.target}`);
-        }
+        console.log(`🎯 Timer Tutorial: Highlighting button ${currentCallout + 1}: ${step.title}`);
       }, 100);
       
+      // Cleanup highlighting when changing steps
       return () => {
-        // Clean up previous highlights
-        const element = document.querySelector(step.target);
-        if (element) {
-          element.classList.remove('timer-button-highlight');
-        }
+        const allButtons = document.querySelectorAll('.timer-button-highlight');
+        allButtons.forEach(button => {
+          button.classList.remove('timer-button-highlight');
+          (button as HTMLElement).style.zIndex = '';
+          (button as HTMLElement).style.position = '';
+        });
       };
     }
   }, [currentCallout, isVisible, tutorialStep]);
+
+  // Cleanup when component unmounts
+  useEffect(() => {
+    return () => {
+      const allButtons = document.querySelectorAll('.timer-button-highlight');
+      allButtons.forEach(button => {
+        button.classList.remove('timer-button-highlight');
+        (button as HTMLElement).style.zIndex = '';
+        (button as HTMLElement).style.position = '';
+      });
+    };
+  }, []);
 
   if (!isVisible || tutorialStep !== 0 || currentCallout >= calloutSteps.length) {
     return null;
@@ -151,34 +175,34 @@ export const TimerTooltipCallouts = ({
 
   return (
     <div 
-      className="fixed z-60 pointer-events-none"
+      className="fixed z-[99999] pointer-events-none"
       style={{ 
         top: `${calloutPosition.top}px`, 
         left: `${calloutPosition.left}px` 
       }}
     >
       <Card className={cn(
-        "w-56 bg-white/95 backdrop-blur-sm shadow-xl border-2 border-primary/30 rounded-lg",
+        "w-72 bg-white/95 backdrop-blur-sm shadow-2xl border-2 border-primary/50 rounded-lg",
         "animate-in fade-in slide-in-from-bottom-2 duration-500 ease-out"
       )}>
-        <CardContent className="p-3">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-1.5 bg-primary/10 rounded-full">
-              <Icon className="w-4 h-4 text-primary" />
+        <CardContent className="p-4">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2 bg-primary/10 rounded-full">
+              <Icon className="w-5 h-5 text-primary" />
             </div>
             <h4 className="font-semibold text-sm text-foreground">{step.title}</h4>
           </div>
-          <p className="text-xs text-muted-foreground leading-relaxed">
+          <p className="text-sm text-muted-foreground leading-relaxed mb-3">
             {step.description}
           </p>
           
           {/* Progress indicator */}
-          <div className="flex gap-1 mt-2 justify-center">
+          <div className="flex gap-1 justify-center">
             {calloutSteps.map((_, index) => (
               <div
                 key={index}
                 className={cn(
-                  "w-1.5 h-1.5 rounded-full transition-colors",
+                  "w-2 h-2 rounded-full transition-colors",
                   index === currentCallout 
                     ? 'bg-primary' 
                     : index < currentCallout 
