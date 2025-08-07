@@ -476,6 +476,29 @@ All colors MUST be HSL.
   z-index: 35; /* Below tutorial elements during tutorial */
 }
 
+/* Tutorial highlighting styles */
+.tutorial-highlight-ring {
+  @apply ring-4 ring-yellow-400 ring-offset-4 ring-offset-yellow-100 rounded-lg;
+}
+
+.tutorial-highlight-shadow {
+  @apply shadow-2xl shadow-yellow-400/50;
+}
+
+.tutorial-highlight-glow {
+  position: relative;
+  animation: tutorial-pulse 2s ease-in-out infinite;
+}
+
+@keyframes tutorial-pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(250, 204, 21, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(250, 204, 21, 0.6);
+  }
+}
+
 /* Ensure highlighted elements are always visible during tutorial */
 .tutorial-highlight {
   z-index: 55 !important;

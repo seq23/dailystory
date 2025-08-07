@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 
 // Mobile-Optimized UI Components
 import { CollapsibleFloatingTimer } from "@/components/CollapsibleFloatingTimer";
-import { SimpleTutorialOverlay } from "@/components/SimpleTutorialOverlay";
+import { SmartTutorialOverlay } from "@/components/SmartTutorialOverlay";
 import { MobileOptimizedHeader } from "@/components/MobileOptimizedHeader";
 import { ProgressTowers } from "@/components/ProgressTowers";
 import { GameContextProvider } from "@/components/GameContextProvider";
@@ -695,7 +695,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
               )}
 
               {/* Navigation */}
-              <div id="story-navigation" className="flex justify-between items-center">
+              <div id="story-navigation" className="story-navigation flex justify-between items-center">
                 <MobileOptimizedButton
                   onClick={handlePrevious}
                   disabled={currentPage === 0}
@@ -732,8 +732,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         </div>
       </main>
       
-      {/* Simplified Tutorial */}
-      <SimpleTutorialOverlay
+      {/* Smart Tutorial */}
+      <SmartTutorialOverlay
         isVisible={showTutorial}
         onComplete={handleCompleteTutorial}
         onSkip={handleSkipTutorial}

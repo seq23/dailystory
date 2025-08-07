@@ -181,7 +181,7 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
   return (
     <div 
       className={cn(
-        "fixed top-1/2 transform -translate-y-1/2 z-40 transition-all duration-300 ease-out",
+        "progress-towers-container fixed top-1/2 transform -translate-y-1/2 z-40 transition-all duration-300 ease-out",
         isRTL ? "left-0" : "right-0",
         isExpanded 
           ? (isRTL ? "translate-x-0" : "translate-x-0")
