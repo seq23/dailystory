@@ -103,7 +103,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [isGeneratingNewStory, setIsGeneratingNewStory] = useState(false);
   const [isMagicWandAnimating, setIsMagicWandAnimating] = useState(false);
   const loaderStartRef = useRef<number>(0);
-  const LOADER_MIN_MS = 500;
+  const LOADER_MIN_MS = 1200;
 
   // Reading Level state with animation support
   const [currentDifficulty, setCurrentDifficulty] = useState<'beginner' | 'easy' | 'medium' | 'hard' | 'expert'>(userInfo.difficultyLevel || 'beginner');
@@ -185,6 +185,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
 
 
   const initializeStory = async () => {
+    console.log('🚀 initializeStory start', { isPremium, userName: userInfo?.name });
     setIsLoading(true);
     loaderStartRef.current = Date.now();
     setError(null);
@@ -254,6 +255,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     } finally {
       const elapsed = Date.now() - loaderStartRef.current;
       const remaining = Math.max(0, LOADER_MIN_MS - elapsed);
+      console.log('✅ initializeStory finished', { elapsed, remaining, LOADER_MIN_MS });
       if (remaining > 0) {
         setTimeout(() => setIsLoading(false), remaining);
       } else {

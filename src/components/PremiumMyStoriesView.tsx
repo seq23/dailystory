@@ -35,6 +35,9 @@ export const PremiumMyStoriesView = ({ userInfo, isPremium, onSessionEnded }: Pr
     setShowTutorial(!hasReadStoriesBefore);
   }, [userInfo.name]);
 
+  useEffect(() => {
+    console.log('🧭 PremiumMyStoriesView currentView:', currentView);
+  }, [currentView]);
   const handleLoadStory = (story: Story) => {
     setCurrentStory(story);
     setCurrentView('reading');

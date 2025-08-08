@@ -26,7 +26,7 @@ export function AdaptiveEnhancedLoading({ isPremium, userName }: AdaptiveEnhance
   }, [isPremium, userName]);
 
   return (
-    <div className={cn("min-h-screen bg-gradient-primary flex items-center justify-center p-6 animate-fade-in")}>
+    <div data-testid="adaptive-loading" className={cn("min-h-screen bg-gradient-primary flex items-center justify-center p-6 animate-fade-in")}>
       <div className="text-center space-y-4">
         <div className="relative inline-flex items-center justify-center">
           <BookOpen className="w-14 h-14 text-primary animate-pulse" />
