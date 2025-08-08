@@ -1,10 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Star, Trophy, Zap, BookOpen, Target, Award, Heart, Sparkles } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 import type { UserInfo } from '@/types';
 
 interface RewardSystemProps {
@@ -34,10 +32,10 @@ export const ReadingRewardsSystem = ({
   onRewardEarned 
 }: RewardSystemProps) => {
   const { t } = useTranslation();
-  const { toast } = useToast();
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [totalPoints, setTotalPoints] = useState(0);
   const [currentStreak, setCurrentStreak] = useState(1);
+  const prevUnlockedRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     const baseAchievements: Achievement[] = [
@@ -111,17 +109,22 @@ export const ReadingRewardsSystem = ({
     }, 0);
     setTotalPoints(points);
 
-    // Check for new achievements and trigger notifications
-    const newlyUnlocked = baseAchievements.filter(achievement => 
-      achievement.unlocked && !achievements.find(a => a.id === achievement.id && a.unlocked)
-    );
+    // Check for newly unlocked achievements (no toasts)
+    const prev = prevUnlockedRef.current;
+    const currentUnlocked = new Set(baseAchievements.filter(a => a.unlocked).map(a => a.id));
+    const newlyUnlocked = Array.from(currentUnlocked).filter(id => !prev.has(id));
 
-    // No toast notifications for achievements
-    newlyUnlocked.forEach(achievement => {
-      onRewardEarned?.(achievement);
+    newlyUnlocked.forEach(id => {
+      const achievement = baseAchievements.find(a => a.id === id);
+      if (achievement) {
+        onRewardEarned?.(achievement);
+      }
     });
 
-  }, [wordsRead, pagesRead, timeSpent, t, toast, onRewardEarned, achievements]);
+    // Update ref
+    prevUnlockedRef.current = currentUnlocked;
+
+  }, [wordsRead, pagesRead, timeSpent, t, onRewardEarned]);
 
   const getRewardLevel = () => {
     if (totalPoints >= 1000) return { level: 'Master Reader', color: 'bg-purple-500', icon: <Award className="w-4 h-4" /> };
