@@ -101,7 +101,10 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
       icon: Clock,
       label: t('progress.time', 'Minutes'),
       color: 'purple',
-      getValue: (stats, current) => Math.floor((stats.totalTimeSpent + current.time) / 60000),
+      getValue: (stats, current) => {
+        const totalTime = (stats.totalTimeSpent || 0) + (current.time || 0);
+        return Math.floor(totalTime / 60000);
+      },
       getMaxValue: (isPremium) => isPremium ? 120 : 30
     }
   ];
