@@ -502,7 +502,7 @@ serve(async (req) => {
       bodyKeys: Object.keys(requestBody || {})
     });
     
-    const { readingLevel, authorStyle, theme, interests, config } = requestBody
+    const { readingLevel, theme, interests, config } = requestBody
     
     // Validate OpenAI API key first
     const keyValidation = validateOpenAIApiKey();

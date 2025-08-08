@@ -93,7 +93,6 @@ export class NetflixStyleStoryService {
       const { data, error } = await supabase.functions.invoke('generate-adaptive-story', {
         body: {
           readingLevel: difficulty,
-          authorStyle: 'simple',
           theme: 'adventure',
           interests: [userInfo.favoriteAnimal, userInfo.favoriteColor].filter(Boolean),
           config: {

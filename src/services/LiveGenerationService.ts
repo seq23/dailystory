@@ -66,7 +66,6 @@ export class LiveGenerationService {
       const { data, error } = await supabase.functions.invoke('generate-adaptive-story', {
         body: {
           readingLevel: difficulty,
-          authorStyle: 'live-generation',
           theme: 'adventure',
           interests: [userInfo.favoriteAnimal, userInfo.favoriteColor].filter(Boolean),
           config: {
@@ -154,7 +153,6 @@ export class LiveGenerationService {
       const { data, error } = await supabase.functions.invoke('generate-adaptive-story', {
         body: {
           readingLevel: context.difficulty,
-          authorStyle: 'live-generation',
           theme: context.theme,
           interests: [context.userInfo.favoriteAnimal, context.userInfo.favoriteColor].filter(Boolean),
           config: {
