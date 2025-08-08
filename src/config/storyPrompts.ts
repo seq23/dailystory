@@ -33,21 +33,40 @@ SIMPLE SILVER AUTHOR - Simple Growing Style: Ultra-simple growth words with 2-4 
 
 IMPORTANT: Do not include the author style name or description in your story output. Use the style only as internal guidance for your writing approach.
 
-INTEGRATION DEPTH - SURFACE LEVEL: Weave user inputs naturally as basic story elements and simple relationships. The favorite animal becomes a friend or helper, colors describe the world around them, and hobbies become gentle adventures.
+INTEGRATION DEPTH - SURFACE LEVEL:
+Include user inputs as clear and distinct story elements, with at least one user input appearing in the story.
 
 STRICT REQUIREMENTS:
-- 30-40 words total across entire story
-- Exactly 5 pages
-- 2-8 words per page (flexible for natural flow)
-- Simple 2-6 word sentences using basic vocabulary (prioritize 2-4 word sentences, max 6 when necessary)
-- Use Subject-Verb, Subject-Verb-Object, and Subject-Verb-Adjective patterns
-- PRIMARY VOCABULARY: Use Dolch Pre-Primer words as foundation: a, and, away, big, blue, can, come, down, find, for, funny, go, help, here, i, in, is, it, jump, little, look, make, me, my, not, one, play, red, run, said, see, the, three, to, two, up, we, where, yellow, you
-- FLEXIBILITY: Up to 20% of words can be simple alternatives when needed for natural flow
-- EXCEPTION: Always allow user's name and their favorite color/animal/food/hobby
-- Use name 60% of time, pronouns 40% of time - prioritize name recognition for young readers
-- Every sentence must be joyful and positive
 
-FORMAT: Page 1: [sentence]. Page 2: [sentence]. Page 3: [sentence]. Page 4: [sentence]. Page 5: [sentence].`,
+* Exactly 5 pages
+
+* Maximum of 8 words per page
+
+* Maximum of 40 words total across entire story
+
+* Use Subject-Verb, Subject-Verb-Object, and Subject-Verb-Adjective patterns
+
+* PRIMARY VOCABULARY: Use Dolch Pre-Primer and Primer words as foundation: a, and, away, big, blue, can, come, down, find, for, funny, go, help, here, i, in, is, it, jump, little, look, make, me, my, not, one, play, red, run, said, see, the, three, to, two, up, we, where, yellow, you 'all', 'am', 'are', 'at', 'ate', 'be', 'black', 'brown', 'but', 'came', 'did', 'do', 'eat', 'four', 'get', 'good', 'have', 'he', 'into', 'like', 'must', 'new', 'no', 'now', 'on', 'our', 'out', 'please', 'pretty', 'ran', 'ride', 'saw', 'say', 'she', 'so', 'soon', 'that', 'there', 'they', 'this', 'too', 'under', 'want', 'was', 'well', 'went', 'what', 'white', 'who', 'will', 'with', 'yes', 'all', 'am', 'are', 'at', 'ate', 'be', 'black', 'brown', 'but', 'came', 'did', 'do', 'eat', 'four', 'get', 'good', 'have', 'he', 'into', 'like', 'must', 'new', 'no', 'now', 'on', 'our', 'out', 'please', 'pretty', 'ran', 'ride', 'saw', 'say', 'she', 'so', 'soon', 'that', 'there', 'they', 'this', 'too', 'under', 'want', 'was', 'well', 'went', 'what', 'white', 'who', 'will', 'with', 'yes', 'been', 'called', 'water', 'time', 'words', 'each', 'which', 'would'
+
+* STRONG PREFERENCES:
+  Strong preference for 2-4 word sentences on each page.
+  Strong preference for 2-4 letter words.
+  Strong preference for rhyming patterns and repetition.
+
+* FLEXIBILITY: Words outside of the PRIMARY VOCABULARY can be used when needed for natural flow.
+
+* EXCEPTION: Always allow user's name and their favorite color/animal/food/hobby.
+
+* Use name 60% of time, pronouns 40% of time - prioritize name recognition for young readers.
+
+* All content must be age appropriate for children 3-5.
+
+FORMAT:
+Page 1: \[sentence].
+Page 2: \[sentence].
+Page 3: \[sentence].
+Page 4: \[sentence].
+Page 5: \[sentence].`,
     userPromptTemplate: `Write a joyful, easy-to-read story for a pre-reader named {name}. Include {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}, or {specialRequest} as clear, distinct story elements, using at least one user input at least once. The story should be fun to read aloud and visually engaging as a picture book.
 
 Format & Structure
