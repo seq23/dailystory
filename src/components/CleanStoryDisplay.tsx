@@ -29,6 +29,7 @@ import { cn } from "@/lib/utils";
 import type { UserInfo, SessionStats } from "@/types";
 import { NetflixStyleStoryService, type NetflixStoryResult } from "@/services/NetflixStyleStoryService";
 import { LiveGenerationService, type LiveGenerationContext, type LivePageResult } from "@/services/LiveGenerationService";
+import { DifficultyManager } from "@/services/difficultyManager";
 
 import { SimpleImageService } from "@/services/SimpleImageService";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -89,6 +90,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [currentDifficulty, setCurrentDifficulty] = useState<'beginner' | 'easy' | 'medium' | 'hard' | 'expert'>(userInfo.difficultyLevel || 'beginner');
   const [isChangingDifficulty, setIsChangingDifficulty] = useState(false);
   const [changeDirection, setChangeDirection] = useState<'increase' | 'decrease' | 'badge'>();
+  const [expertGradeLevel, setExpertGradeLevel] = useState<"6th" | "7th" | "8th" | "9th" | "10th">("6th");
   const difficultyLevels: ('beginner' | 'easy' | 'medium' | 'hard' | 'expert')[] = ['beginner', 'easy', 'medium', 'hard', 'expert'];
   
   // Define current story for highlighting hook
@@ -446,22 +448,60 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     
     const currentIndex = difficultyLevels.indexOf(currentDifficulty);
     let newIndex = currentIndex;
+    let newGradeLevel = expertGradeLevel;
     
-    if (direction === 'up' && currentIndex < difficultyLevels.length - 1) {
-      newIndex = currentIndex + 1;
-    } else if (direction === 'down' && currentIndex > 0) {
-      newIndex = currentIndex - 1;
+    // Handle expert mode internal grade cycling
+    if (currentDifficulty === 'expert') {
+      const gradeOrder: ("6th" | "7th" | "8th" | "9th" | "10th")[] = ["6th", "7th", "8th", "9th", "10th"];
+      const currentGradeIndex = gradeOrder.indexOf(expertGradeLevel);
+      
+      if (direction === 'up' && currentGradeIndex < gradeOrder.length - 1) {
+        newGradeLevel = gradeOrder[currentGradeIndex + 1];
+        setExpertGradeLevel(newGradeLevel);
+      } else if (direction === 'down' && currentGradeIndex > 0) {
+        newGradeLevel = gradeOrder[currentGradeIndex - 1];
+        setExpertGradeLevel(newGradeLevel);
+      } else if (direction === 'down' && currentGradeIndex === 0) {
+        // Transition from expert to hard
+        newIndex = currentIndex - 1;
+      }
+    } else {
+      // Normal difficulty progression
+      if (direction === 'up' && currentIndex < difficultyLevels.length - 1) {
+        newIndex = currentIndex + 1;
+        if (difficultyLevels[newIndex] === 'expert') {
+          setExpertGradeLevel("6th"); // Start expert at grade 6th
+        }
+      } else if (direction === 'down' && currentIndex > 0) {
+        newIndex = currentIndex - 1;
+      }
     }
     
     if (newIndex !== currentIndex) {
-      setCurrentDifficulty(difficultyLevels[newIndex]);
+      const newDifficulty = difficultyLevels[newIndex];
+      setCurrentDifficulty(newDifficulty);
+      
+      // Store the difficulty choice
+      DifficultyManager.storeDifficulty(userInfo.name || 'guest', newDifficulty, userInfo);
       
       // Update live context for premium users
       if (isPremium && liveContext) {
-        setLiveContext(prev => prev ? {...prev, difficulty: difficultyLevels[newIndex]} : null);
+        setLiveContext(prev => prev ? {
+          ...prev, 
+          difficulty: newDifficulty,
+          expertGradeLevel: newDifficulty === 'expert' ? newGradeLevel : undefined
+        } : null);
       }
       
       // Animate badge change
+      setTimeout(() => setChangeDirection('badge'), 200);
+    } else if (currentDifficulty === 'expert') {
+      // Update live context for expert grade level changes
+      if (isPremium && liveContext) {
+        setLiveContext(prev => prev ? {...prev, expertGradeLevel: newGradeLevel} : null);
+      }
+      
+      // Animate badge change for expert level progression
       setTimeout(() => setChangeDirection('badge'), 200);
     }
     
