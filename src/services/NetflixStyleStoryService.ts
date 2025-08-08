@@ -71,7 +71,7 @@ export class NetflixStyleStoryService {
             favoriteFood: userInfo.favoriteFood,
             hobbies: userInfo.hobbies,
             maxLength: promptConfig.maxLength || 500,
-            expectedPages: promptConfig.expectedPages || 7,
+            expectedPages: promptConfig.expectedPages || 6,
             systemPrompt: systemPrompt,
             userPrompt: userPrompt,
             expertGrade: expertGradeLevel,
