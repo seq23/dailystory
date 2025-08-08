@@ -40,8 +40,8 @@ export class ExpertDifficultyManager {
     const progressData = this.getStoredProgress(userId);
     
     if (!progressData) {
-      // Start new users at 4th grade level
-      const initialGrade: ExpertGradeLevel = '4th';
+      // Start new users at 6th grade level
+      const initialGrade: ExpertGradeLevel = '6th';
       this.storeProgress(userId, {
         currentGrade: initialGrade,
         successfulSessions: 0,
@@ -78,7 +78,7 @@ export class ExpertDifficultyManager {
    * Free users get random grade level selection
    */
   private static getRandomGradeLevel(): ExpertGradeLevel {
-    const gradeLevels: ExpertGradeLevel[] = ['4th', '5th', '6th', '7th', '8th'];
+    const gradeLevels: ExpertGradeLevel[] = ['6th', '7th', '8th', '9th', '10th'];
     const randomIndex = Math.floor(Math.random() * gradeLevels.length);
     const selectedGrade = gradeLevels[randomIndex];
     
@@ -159,11 +159,11 @@ export class ExpertDifficultyManager {
    */
   private static getNextGradeLevel(currentGrade: ExpertGradeLevel): ExpertGradeLevel | null {
     const progression: Record<ExpertGradeLevel, ExpertGradeLevel | null> = {
-      '4th': '5th',
-      '5th': '6th',
       '6th': '7th',
       '7th': '8th',
-      '8th': null // Already at highest level
+      '8th': '9th',
+      '9th': '10th',
+      '10th': null // Already at highest level
     };
     
     return progression[currentGrade];
@@ -201,7 +201,7 @@ export class ExpertDifficultyManager {
   static getCurrentGradeLevel(userInfo: UserInfo): ExpertGradeLevel {
     const userId = userInfo.name || 'guest';
     const progressData = this.getStoredProgress(userId);
-    return progressData?.currentGrade || '4th';
+    return progressData?.currentGrade || '6th';
   }
 
   /**
