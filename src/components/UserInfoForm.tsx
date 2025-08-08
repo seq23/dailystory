@@ -474,22 +474,19 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
                     <SelectValue placeholder={t("userInfoForm.fields.readingAbility.placeholder")} />
                   </SelectTrigger>
                   <SelectContent className="bg-popover border border-border shadow-soft z-50">
-                    <SelectItem value="pre-reader" className="focus:bg-accent focus:text-accent-foreground">
-                      {t("userInfoForm.fields.readingAbility.options.pre-reader")}
-                    </SelectItem>
-                    <SelectItem value="early-beginner" className="focus:bg-accent focus:text-accent-foreground">
-                      {t("userInfoForm.fields.readingAbility.options.early-beginner")}
-                    </SelectItem>
                     <SelectItem value="beginner" className="focus:bg-accent focus:text-accent-foreground">
+                      {t("userInfoForm.fields.readingAbility.options.preReader")}
+                    </SelectItem>
+                    <SelectItem value="easy" className="focus:bg-accent focus:text-accent-foreground">
                       {t("userInfoForm.fields.readingAbility.options.beginner")}
                     </SelectItem>
-                    <SelectItem value="early-intermediate" className="focus:bg-accent focus:text-accent-foreground">
-                      {t("userInfoForm.fields.readingAbility.options.early-intermediate")}
+                    <SelectItem value="medium" className="focus:bg-accent focus:text-accent-foreground">
+                      {t("userInfoForm.fields.readingAbility.options.developing")}
                     </SelectItem>
-                    <SelectItem value="intermediate" className="focus:bg-accent focus:text-accent-foreground">
-                      {t("userInfoForm.fields.readingAbility.options.intermediate")}
+                    <SelectItem value="hard" className="focus:bg-accent focus:text-accent-foreground">
+                      {t("userInfoForm.fields.readingAbility.options.independent")}
                     </SelectItem>
-                    <SelectItem value="advanced" className="focus:bg-accent focus:text-accent-foreground">
+                    <SelectItem value="expert" className="focus:bg-accent focus:text-accent-foreground">
                       {t("userInfoForm.fields.readingAbility.options.advanced")}
                     </SelectItem>
                   </SelectContent>
@@ -507,16 +504,24 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
                   <div className="space-y-3 text-sm">
                     <h4 className="font-medium text-foreground">{t("userInfoForm.fields.readingAbility.learnMore.title")}</h4>
                     <p className="text-muted-foreground">{t("userInfoForm.fields.readingAbility.learnMore.description")}</p>
-                    {formData.readingAbility && (
-                      <div className="p-3 bg-background rounded border border-border/50">
-                        <div className="font-medium text-foreground mb-1">
-                          {t(`userInfoForm.fields.readingAbility.options.${formData.readingAbility}`)}
-                        </div>
-                        <div className="text-muted-foreground">
-                          {t(`userInfoForm.fields.readingAbility.details.${formData.readingAbility}`)}
-                        </div>
-                      </div>
-                    )}
+                     {formData.readingAbility && (
+                       <div className="p-3 bg-background rounded border border-border/50">
+                         <div className="font-medium text-foreground mb-1">
+                           {formData.readingAbility === 'beginner' && t("userInfoForm.fields.readingAbility.options.preReader")}
+                           {formData.readingAbility === 'easy' && t("userInfoForm.fields.readingAbility.options.beginner")}
+                           {formData.readingAbility === 'medium' && t("userInfoForm.fields.readingAbility.options.developing")}
+                           {formData.readingAbility === 'hard' && t("userInfoForm.fields.readingAbility.options.independent")}
+                           {formData.readingAbility === 'expert' && t("userInfoForm.fields.readingAbility.options.advanced")}
+                         </div>
+                         <div className="text-muted-foreground">
+                           {formData.readingAbility === 'beginner' && t("userInfoForm.fields.readingAbility.details.preReader")}
+                           {formData.readingAbility === 'easy' && t("userInfoForm.fields.readingAbility.details.beginner")}
+                           {formData.readingAbility === 'medium' && t("userInfoForm.fields.readingAbility.details.developing")}
+                           {formData.readingAbility === 'hard' && t("userInfoForm.fields.readingAbility.details.independent")}
+                           {formData.readingAbility === 'expert' && t("userInfoForm.fields.readingAbility.details.advanced")}
+                         </div>
+                       </div>
+                     )}
                   </div>
                 </CollapsibleContent>
               </Collapsible>

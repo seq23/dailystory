@@ -216,20 +216,18 @@
         "description": "Choose the level that feels comfortable for reading",
         "placeholder": "Select reading level",
         "options": {
-          "pre-reader": "Pre-Reader",
-          "early-beginner": "Early Beginner", 
-          "beginner": "Beginning Reader",
-          "early-intermediate": "Developing Reader",
-          "intermediate": "Independent Reader",
-          "advanced": "Advanced Reader"
+          "preReader": "Pre-Reader (Level 0)",
+          "beginner": "Beginner (Level 1)", 
+          "developing": "Developing (Level 2)",
+          "independent": "Independent (Level 3)",
+          "advanced": "Advanced (Level 4)"
         },
         "details": {
-          "pre-reader": "Perfect for letter and sound recognition • Uses 40 essential sight words",
-          "early-beginner": "Basic sight word recognition • 52 fundamental reading words",
-          "beginner": "Simple sentences and common words • Building reading confidence",
-          "early-intermediate": "Longer sentences with varied vocabulary • Growing independence",
-          "intermediate": "Chapter-level reading with support • Complex story elements",
-          "advanced": "Rich vocabulary and sentence structures • Confident independent reading"
+          "preReader": "Ages 3-5 • Picture-based learning • Simple words and concepts • Focus on recognition",
+          "beginner": "Ages 5-7 • Basic sight words • Simple sentences • Building reading foundation",
+          "developing": "Ages 7-9 • Expanding vocabulary • Longer sentences • Growing confidence",
+          "independent": "Ages 9-11 • Complex stories • Advanced vocabulary • Independent reading",
+          "advanced": "Ages 11+ • Sophisticated narratives • Grade-appropriate content • Expert comprehension"
         },
         "learnMore": {
           "title": "About Reading Levels",
