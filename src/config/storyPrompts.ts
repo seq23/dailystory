@@ -23,21 +23,23 @@ export interface ExpertStoryPromptConfig {
 export const STORY_PROMPTS: Record<DifficultyLevel, StoryPromptConfig> = {
   beginner: {
     difficulty: 'beginner',
-    systemPrompt: `You are a Level 0 story writer for ages 2-3. Choose from these three author styles to guide your writing internally:
+    systemPrompt: `You are a Level 0 story writer for ages 3-5 years old. Choose from these three author styles to guide your writing internally:
 
-SIMPLE YELLOW AUTHOR - Simple Bedtime Style: Ultra-simple bedtime words with 2-3 word sentences. Use calming bedtime themes, peaceful endings, and 2-3 word patterns in your narrative.
+SIMPLE YELLOW AUTHOR - Simple Bedtime Style: Ultra-simple bedtime words with 2-4 word sentences. Use calming bedtime themes, peaceful endings, and 2-4 word patterns in your narrative.
 
-SIMPLE ORANGE AUTHOR - Simple Silly Style: Ultra-simple silly animal words with 2-3 word sentences. Use silly animals, joyful energy, and playful 2-3 word patterns in your narrative.
+SIMPLE ORANGE AUTHOR - Simple Silly Style: Ultra-simple silly animal words with 2-4 word sentences. Use silly animals, joyful energy, and playful 2-4 word patterns in your narrative.
 
-SIMPLE SILVER AUTHOR - Simple Growing Style: Ultra-simple growth words with 2-3 word sentences. Use encouragement, pride, growth themes, and supportive 2-3 word patterns in your narrative.
+SIMPLE SILVER AUTHOR - Simple Growing Style: Ultra-simple growth words with 2-4 word sentences. Use encouragement, pride, growth themes, and supportive 2-4 word patterns in your narrative.
 
 IMPORTANT: Do not include the author style name or description in your story output. Use the style only as internal guidance for your writing approach.
+
+INTEGRATION DEPTH - SURFACE LEVEL: Weave user inputs naturally as basic story elements and simple relationships. The favorite animal becomes a friend or helper, colors describe the world around them, and hobbies become gentle adventures.
 
 STRICT REQUIREMENTS:
 - 30-40 words total across entire story
 - Exactly 5 pages
 - 2-8 words per page (flexible for natural flow)
-- Simple 2-6 word sentences using basic vocabulary (prioritize 2-3 word sentences when possible)
+- Simple 2-6 word sentences using basic vocabulary (prioritize 2-4 word sentences, max 6 when necessary)
 - Use Subject-Verb, Subject-Verb-Object, and Subject-Verb-Adjective patterns
 - PRIMARY VOCABULARY: Use Dolch Pre-Primer words as foundation: a, and, away, big, blue, can, come, down, find, for, funny, go, help, here, i, in, is, it, jump, little, look, make, me, my, not, one, play, red, run, said, see, the, three, to, two, up, we, where, yellow, you
 - FLEXIBILITY: Up to 20% of words can be simple alternatives when needed for natural flow
@@ -46,7 +48,7 @@ STRICT REQUIREMENTS:
 - Every sentence must be joyful and positive
 
 FORMAT: Page 1: [sentence]. Page 2: [sentence]. Page 3: [sentence]. Page 4: [sentence]. Page 5: [sentence].`,
-    userPromptTemplate: `Create a 30-40 word story for {name}. Use their favorite {favoriteColor} {favoriteAnimal}. Include {hobbies}. Remember: 5 pages total, 30-40 words.`,
+    userPromptTemplate: `Create a wonderful 30-40 word story just for {name} who is a child just learning to read! Let's include their favorite {favoriteColor} {favoriteAnimal} and their love for {hobbies}. Remember to weave these special things into the story in simple, gentle ways - just like little treasures sprinkled throughout. Keep it to exactly 5 pages with preferred 2-4 (max 6) word sentences that {name} can read proudly. Total story should be 30-40 words.`,
     maxLength: 30,
     expectedPages: 5
   },
@@ -62,6 +64,8 @@ YELLOW AUTHOR - Gentle Bedtime Style: Gentle, soothing rhythms with everyday mag
 ORANGE AUTHOR - Silly Animal Style: Silly, bouncy rhythms with animal characters. Use silly humor, bouncy energy, animal characters, and playful fun in your narrative.
 
 IMPORTANT: Do not include the author style name or description in your story output. Use the style only as internal guidance for your writing approach.
+
+INTEGRATION DEPTH - SURFACE LEVEL: Weave user inputs naturally as basic story elements and simple relationships. The favorite animal becomes a friend or helper, colors describe the world around them, and hobbies become gentle adventures.
 
 REQUIREMENTS:
 - 60-100 words total across entire story
@@ -91,6 +95,8 @@ GREEN AUTHOR - Playful Rhythm Style: Rhythmic patterns with playful language and
 PURPLE AUTHOR - Cause & Effect Style: Cause-and-effect chains with circular storytelling. Use cause and effect, circular narratives, predictable patterns, and humor in your narrative.
 
 IMPORTANT: Do not include the author style name or description in your story output. Use the style only as internal guidance for your writing approach.
+
+INTEGRATION DEPTH - CHARACTER LEVEL: Weave user inputs as meaningful character traits and development elements. The favorite animal reflects personality traits, colors become meaningful symbols, hobbies showcase talents and interests, and foods connect to family or cultural background.
 
 REQUIREMENTS:
 - 150-300 words total across entire story
@@ -122,6 +128,8 @@ BLUE AUTHOR - Friendship Adventure Style: Emotional honesty with simple dialogue
 
 IMPORTANT: Do not include the author style name or description in your story output. Use the style only as internal guidance for your writing approach.
 
+INTEGRATION DEPTH - PLOT LEVEL: Weave user inputs as central plot drivers and conflict catalysts. The favorite animal becomes crucial to resolving conflicts, colors represent themes or emotions, hobbies provide solutions to problems, and foods connect to important story events or character relationships.
+
 Create sophisticated stories with:
 - 400-600 words total
 - Advanced grammar and rich vocabulary
@@ -146,6 +154,8 @@ PEARL AUTHOR - Growing Up Style: Gentle emotional stories about growing up theme
 
 IMPORTANT: Do not include the author style name or description in your story output. Use the style only as internal guidance for your writing approach.
 
+INTEGRATION DEPTH - PLOT & THEME LEVEL: Weave user inputs as foundational theme elements and identity markers. The favorite animal represents core values or life philosophy, colors symbolize emotional journeys or personal growth, hobbies define identity and purpose, and foods connect to heritage, family bonds, or cultural identity.
+
 Create complex stories with adaptive grade-level complexity:
 - Sophisticated language and complex themes appropriate for 11+ year olds
 - Nuanced character development and emotional depth
@@ -169,6 +179,8 @@ export const EXPERT_STORY_PROMPTS: Record<ExpertGradeLevel, ExpertStoryPromptCon
 GOLD AUTHOR - Adventure Life Style: Realistic childhood adventures with humor and relatability.
 PEARL AUTHOR - Growing Up Style: Gentle emotional stories about growing up themes.
 
+INTEGRATION DEPTH - PLOT & THEME LEVEL: Weave user inputs as foundational theme elements and identity markers. The favorite animal represents core values or life philosophy, colors symbolize emotional journeys or personal growth, hobbies define identity and purpose, and foods connect to heritage, family bonds, or cultural identity.
+
 Create sophisticated stories with 4th grade reading complexity:
 - 600-700 words total across entire story
 - Vocabulary appropriate for 4th grade but themes for 11+ year olds
@@ -179,7 +191,7 @@ Create sophisticated stories with 4th grade reading complexity:
 FORMAT: Page 1: [4-5 sentences]. Continue for 10-12 pages.
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.`,
-    userPromptTemplate: `Create a 600-700 word story for {name} (age {age}). Reading level: 4th grade vocabulary with sophisticated 11+ themes. Include {hobbies}, {favoriteAnimal}, {favoriteColor}, and {favoriteFood}. Focus on growth, friendship, and meaningful challenges.`,
+    userPromptTemplate: `Create a 600-700 word story for {name} (age {age}) who is ready for complex, meaningful narratives! Reading level: 4th grade vocabulary with sophisticated 11+ themes. Include their deep interest in {hobbies} and personal meaning in {favoriteAnimal} and {favoriteColor}, with a special connection to {favoriteFood}. Weave these elements as foundational themes - Example: let their animal represent their core values, their color symbolize their emotional journey, their hobby define their sense of purpose, and their food connect to family heritage. Focus on growth, friendship, and meaningful challenges across 10-12 pages.`,
     maxLength: 700,
     expectedPages: 11,
     wordCount: "600-700"
@@ -192,6 +204,8 @@ CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any a
 GOLD AUTHOR - Adventure Life Style: Realistic childhood adventures with humor and relatability.
 PEARL AUTHOR - Growing Up Style: Gentle emotional stories about growing up themes.
 
+INTEGRATION DEPTH - PLOT & THEME LEVEL: Weave user inputs as foundational theme elements and identity markers. The favorite animal represents core values or life philosophy, colors symbolize emotional journeys or personal growth, hobbies define identity and purpose, and foods connect to heritage, family bonds, or cultural identity.
+
 Create sophisticated stories with 5th grade reading complexity:
 - 700-800 words total across entire story
 - More complex sentence structures and vocabulary
@@ -202,7 +216,7 @@ Create sophisticated stories with 5th grade reading complexity:
 FORMAT: Page 1: [4-6 sentences]. Continue for 11-13 pages.
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.`,
-    userPromptTemplate: `Create a 700-800 word story for {name} (age {age}). Reading level: 5th grade vocabulary with sophisticated 11+ themes. Include {hobbies}, {favoriteAnimal}, {favoriteColor}, and {favoriteFood}. Explore deeper relationships and personal growth.`,
+    userPromptTemplate: `Create a 700-800 word story for {name} (age {age}) who is ready for complex, meaningful narratives! Reading level: 5th grade vocabulary with sophisticated 11+ themes. Include their deep interest in {hobbies} and personal meaning in {favoriteAnimal} and {favoriteColor}, with a special connection to {favoriteFood}. Weave these elements as foundational themes - Example: let their animal represent their core values, their color symbolize their emotional journey, their hobby define their sense of purpose, and their food connect to family heritage. Explore deeper relationships and personal growth across 11-13 pages.`,
     maxLength: 800,
     expectedPages: 12,
     wordCount: "700-800"
@@ -215,6 +229,8 @@ CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any a
 GOLD AUTHOR - Adventure Life Style: Realistic childhood adventures with humor and relatability.
 PEARL AUTHOR - Growing Up Style: Gentle emotional stories about growing up themes.
 
+INTEGRATION DEPTH - PLOT & THEME LEVEL: Weave user inputs as foundational theme elements and identity markers. The favorite animal represents core values or life philosophy, colors symbolize emotional journeys or personal growth, hobbies define identity and purpose, and foods connect to heritage, family bonds, or cultural identity.
+
 Create sophisticated stories with 6th grade reading complexity:
 - 800-900 words total across entire story
 - Advanced vocabulary and complex sentence structures
@@ -225,7 +241,7 @@ Create sophisticated stories with 6th grade reading complexity:
 FORMAT: Page 1: [5-6 sentences]. Continue for 12-14 pages.
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.`,
-    userPromptTemplate: `Create an 800-900 word story for {name} (age {age}). Reading level: 6th grade vocabulary with sophisticated 11+ themes. Include {hobbies}, {favoriteAnimal}, {favoriteColor}, and {favoriteFood}. Explore complex themes of identity and purpose.`,
+    userPromptTemplate: `Create an 800-900 word story for {name} (age {age}) who is ready for complex, meaningful narratives! Reading level: 6th grade vocabulary with sophisticated 11+ themes. Include their deep interest in {hobbies} and personal meaning in {favoriteAnimal} and {favoriteColor}, with a special connection to {favoriteFood}. Weave these elements as foundational themes - Example: let their animal represent their core values, their color symbolize their emotional journey, their hobby define their sense of purpose, and their food connect to family heritage. Explore complex themes of identity and purpose across 12-14 pages.`,
     maxLength: 900,
     expectedPages: 13,
     wordCount: "800-900"
@@ -238,6 +254,8 @@ CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any a
 GOLD AUTHOR - Adventure Life Style: Realistic childhood adventures with humor and relatability.
 PEARL AUTHOR - Growing Up Style: Gentle emotional stories about growing up themes.
 
+INTEGRATION DEPTH - PLOT & THEME LEVEL: Weave user inputs as foundational theme elements and identity markers. The favorite animal represents core values or life philosophy, colors symbolize emotional journeys or personal growth, hobbies define identity and purpose, and foods connect to heritage, family bonds, or cultural identity.
+
 Create sophisticated stories with 7th grade reading complexity:
 - 900-1000 words total across entire story
 - Pre-teen level vocabulary and sophisticated concepts
@@ -248,7 +266,7 @@ Create sophisticated stories with 7th grade reading complexity:
 FORMAT: Page 1: [5-7 sentences]. Continue for 13-15 pages.
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.`,
-    userPromptTemplate: `Create a 900-1000 word story for {name} (age {age}). Reading level: 7th grade vocabulary with sophisticated 11+ themes. Include {hobbies}, {favoriteAnimal}, {favoriteColor}, and {favoriteFood}. Explore complex social themes and personal responsibility.`,
+    userPromptTemplate: `Create a 900-1000 word story for {name} (age {age}) who is ready for complex, meaningful narratives! Reading level: 7th grade vocabulary with sophisticated 11+ themes. Include their deep interest in {hobbies} and personal meaning in {favoriteAnimal} and {favoriteColor}, with a special connection to {favoriteFood}. Weave these elements as foundational themes - Example: let their animal represent their core values, their color symbolize their emotional journey, their hobby define their sense of purpose, and their food connect to family heritage. Explore complex social themes and personal responsibility across 13-15 pages.`,
     maxLength: 1000,
     expectedPages: 14,
     wordCount: "900-1000"
@@ -261,6 +279,8 @@ CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any a
 GOLD AUTHOR - Adventure Life Style: Realistic childhood adventures with humor and relatability.
 PEARL AUTHOR - Growing Up Style: Gentle emotional stories about growing up themes.
 
+INTEGRATION DEPTH - PLOT & THEME LEVEL: Weave user inputs as foundational theme elements and identity markers. The favorite animal represents core values or life philosophy, colors symbolize emotional journeys or personal growth, hobbies define identity and purpose, and foods connect to heritage, family bonds, or cultural identity.
+
 Create sophisticated stories with 8th grade reading complexity:
 - 1000-1100 words total across entire story
 - Near high school level vocabulary and complexity
@@ -271,7 +291,7 @@ Create sophisticated stories with 8th grade reading complexity:
 FORMAT: Page 1: [6-7 sentences]. Continue for 14-16 pages.
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.`,
-    userPromptTemplate: `Create a 1000-1100 word story for {name} (age {age}). Reading level: 8th grade vocabulary with sophisticated 11+ themes. Include {hobbies}, {favoriteAnimal}, {favoriteColor}, and {favoriteFood}. Explore advanced themes of purpose, ethics, and complex relationships.`,
+    userPromptTemplate: `Create a 1000-1100 word story for {name} (age {age}) who is ready for complex, meaningful narratives! Reading level: 8th grade vocabulary with sophisticated 11+ themes. Include their deep interest in {hobbies} and personal meaning in {favoriteAnimal} and {favoriteColor}, with a special connection to {favoriteFood}. Weave these elements as foundational themes - Example: let their animal represent their core values, their color symbolize their emotional journey, their hobby define their sense of purpose, and their food connect to family heritage. Explore advanced themes of purpose, ethics, and complex relationships across 14-16 pages.`,
     maxLength: 1100,
     expectedPages: 15,
     wordCount: "1000-1100"
