@@ -85,6 +85,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
 
   // Magic wand state
   const [isGeneratingNewStory, setIsGeneratingNewStory] = useState(false);
+  const [isMagicWandAnimating, setIsMagicWandAnimating] = useState(false);
 
   // Reading Level state with animation support
   const [currentDifficulty, setCurrentDifficulty] = useState<'beginner' | 'easy' | 'medium' | 'hard' | 'expert'>(userInfo.difficultyLevel || 'beginner');
@@ -153,6 +154,20 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     }
     return () => clearInterval(interval);
   }, [isTimerRunning, timeRemaining, isTimerCanceled, isPremium]);
+
+  // Magic wand animation effect for free users on last page
+  useEffect(() => {
+    if (!isPremium && currentPage === story.length - 1 && story.length > 0) {
+      setIsMagicWandAnimating(true);
+      const timer = setTimeout(() => {
+        setIsMagicWandAnimating(false);
+      }, 3000);
+      
+      return () => clearTimeout(timer);
+    } else {
+      setIsMagicWandAnimating(false);
+    }
+  }, [currentPage, story.length, isPremium]);
 
 
   const initializeStory = async () => {
@@ -722,7 +737,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                   </div>
                 )}
 
-                {/* Free User Magic Wand - Enhanced visibility */}
+                {/* Free User Magic Wand - Enhanced visibility with animation */}
                 {!isPremium && currentPage === story.length - 1 && timeRemaining > 0 && (
                   <div className="text-center">
                     <p className="text-sm text-muted-foreground mb-3">
@@ -734,7 +749,10 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                       disabled={isGeneratingNewStory}
                       variant="outline"
                       size="sm"
-                      className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 border-purple-300/30 hover:from-purple-500/20 hover:to-blue-500/20 transition-all duration-300"
+                      className={cn(
+                        "bg-gradient-to-r from-purple-500/10 to-blue-500/10 border-purple-300/30 hover:from-purple-500/20 hover:to-blue-500/20 transition-all duration-300",
+                        isMagicWandAnimating && "animate-wiggle"
+                      )}
                     >
                       {isGeneratingNewStory ? (
                         <>
@@ -771,7 +789,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
 
                   <MobileOptimizedButton
                     onClick={handleNext}
-                    disabled={isLoadingNextPage}
+                    disabled={isLoadingNextPage || (!isPremium && currentPage === story.length - 1)}
                     className="bg-primary text-primary-foreground"
                   >
                     {isLoadingNextPage ? (
@@ -779,9 +797,9 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                         {isPremium ? 'Generating page...' : 'Generating...'}
                       </>
-                    ) : currentPage === story.length - 1 && isStoryComplete ? (
+                    ) : isPremium && currentPage === story.length - 1 && isStoryComplete ? (
                       'Complete'
-                    ) : currentPage === story.length - 1 && isPremium ? (
+                    ) : isPremium && currentPage === story.length - 1 ? (
                       'Generate Next'
                     ) : (
                       'Next'
@@ -806,7 +824,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
 
                   <MobileOptimizedButton
                     onClick={handleNext}
-                    disabled={isLoadingNextPage}
+                    disabled={isLoadingNextPage || (!isPremium && currentPage === story.length - 1)}
                     className="bg-primary text-primary-foreground"
                     size="sm"
                   >
@@ -815,9 +833,9 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                         {isPremium ? 'Generating page...' : 'Generating...'}
                       </>
-                    ) : currentPage === story.length - 1 && isStoryComplete ? (
+                    ) : isPremium && currentPage === story.length - 1 && isStoryComplete ? (
                       'Complete'
-                    ) : currentPage === story.length - 1 && isPremium ? (
+                    ) : isPremium && currentPage === story.length - 1 ? (
                       'Generate Next'
                     ) : (
                       'Next'
