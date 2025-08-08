@@ -1,83 +1,83 @@
 // Level 0 Extension Templates - For Page Extensions Beyond Base Template
 // Separated into Free (Dolch) and Premium (Enhanced) vocabulary tiers
 
-// Free user extensions - strict Dolch Pre-Primer vocabulary (40 words)
+// Enhanced Level 0 vocabulary extensions following the beginner template prompt
 // Each extension is a complete 5-page story template
 export const LEVEL_0_FREE_EXTENSIONS: string[][] = [
   [
-    "I see a big red ball.",
-    "The ball can jump up and down.",
-    "We play with the funny ball.",
-    "Look where it will go.",
-    "I run to find my ball."
+    "{userName} finds a big {favoriteColor} truck.",
+    "The truck can carry many things.",
+    "{userName} loads toys in the truck.",
+    "Vroom, vroom goes the truck!",
+    "{userName} drives the truck around town."
   ],
   [
-    "Here is a little blue bird.",
-    "The bird can fly up high.",
-    "It will come down to me.",
-    "I help the bird find food.",
-    "We are happy together."
+    "{userName} sees a little fish swimming.",
+    "The fish lives in clean water.",
+    "Fish swim fast in the pond.",
+    "{userName} watches fish swim by.",
+    "Fish are fun animals to watch."
   ],
   [
-    "The funny dog is big.",
-    "It can run and jump.",
-    "I play with my dog.",
-    "We go up the hill.",
-    "My dog and I have fun."
+    "{userName} can make a tall tower.",
+    "The tower is made of blocks.",
+    "{userName} puts blocks up high.",
+    "Building towers takes good thinking.",
+    "Look at {userName}'s amazing tower!"
   ],
   [
-    "Look at the yellow sun.",
-    "It is big and bright.",
-    "The sun will help us see.",
-    "We can play in the sun.",
-    "I like the warm sun."
+    "{userName} likes to hop like {favoriteAnimal}.",
+    "Hopping is fun exercise to do.",
+    "Hop, hop, hop around the yard.",
+    "{userName} hops fast and slow.",
+    "Hopping makes {userName} giggle loudly."
   ],
   [
-    "I have three red apples.",
-    "The apples are big and good.",
-    "I can make apple pie.",
-    "We will eat and be happy.",
-    "Apples help us grow big."
+    "{userName} helps cook yummy {favoriteFood}.",
+    "Cooking together is lots of fun.",
+    "{userName} stirs and mixes carefully.",
+    "Good food makes everyone happy.",
+    "{userName} is a great little helper."
   ]
 ];
 
-// Premium user extensions - enhanced 75+ word vocabulary
-// Each extension is a complete 5-page story template
+// Enhanced Level 0 premium extensions with richer vocabulary
+// Each extension is a complete 5-page story template  
 export const LEVEL_0_PREMIUM_EXTENSIONS: string[][] = [
   [
-    "I love to learn new words every day.",
-    "Good books have nice stories for me.",
-    "Reading helps me understand the world.",
-    "Each page brings exciting knowledge.",
-    "Learning makes me feel very proud."
+    "{userName} discovers a magical {favoriteColor} garden.",
+    "The garden has beautiful flowers everywhere.",
+    "{userName} explores each wonderful path.",
+    "Butterflies dance around pretty flowers.",
+    "{userName} feels amazed by nature's beauty."
   ],
   [
-    "We work together as a happy family.",
-    "This old house has many good things.",
-    "Everyone helps with important tasks.",
-    "Sharing love makes us feel warm.",
-    "Our home is full of kindness."
+    "{userName} creates art with bright colors.",
+    "Painting pictures brings {userName} great joy.",
+    "{userName} uses brushes to make shapes.",
+    "Each artwork tells a special story.",
+    "{userName} feels proud of creative work."
   ],
   [
-    "Time with friends makes me very happy.",
-    "We laugh and play interesting games.",
-    "Sometimes we explore new places.",
-    "Friendship teaches us about caring.",
-    "Good friends stay close forever."
+    "{userName} learns about caring for animals.",
+    "Animals need love and gentle treatment.",
+    "{userName} feeds the hungry {favoriteAnimal}.",
+    "Being kind to animals feels wonderful.",
+    "{userName} becomes an animal's best friend."
   ],
   [
-    "Some water is nice to drink today.",
-    "Clean water keeps our bodies healthy.",
-    "Plants need water to grow tall.",
-    "Animals come to drink fresh water.",
-    "Water is precious for all life."
+    "{userName} enjoys preparing healthy {favoriteFood}.",
+    "Cooking teaches important life skills.",
+    "{userName} measures ingredients very carefully.",
+    "Sharing meals brings families together.",
+    "{userName} feels accomplished after cooking successfully."
   ],
   [
-    "New and old toys are fun to play.",
-    "Creative games help us learn skills.",
-    "Building blocks teach us about shapes.",
-    "Imagination makes simple toys exciting.",
-    "Playing together brings us closer."
+    "{userName} explores the fascinating outdoor world.",
+    "Nature offers countless learning opportunities.",
+    "{userName} observes insects and small creatures.",
+    "Every adventure teaches something new.",
+    "{userName} develops curiosity about everything."
   ]
 ];
 

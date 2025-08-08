@@ -15,7 +15,9 @@ export interface EnhancedFallbackTemplate {
   contextualContinuations: string[];
 }
 
-// Import all 180 templates from the grade-based system
+// Import all templates from the grade-based system including new Level 0
+import { LEVEL_0_TEMPLATES } from './gradeBased/level0Templates';
+import { LEVEL_0_FREE_EXTENSIONS, LEVEL_0_PREMIUM_EXTENSIONS } from './gradeBased/level0ExtensionTemplates';
 import { LEVEL_1_TEMPLATES } from './gradeBased/level1Templates';
 import { LEVEL_1_EXTENSIONS } from './gradeBased/level1ExtensionTemplates';
 import { LEVEL_2_TEMPLATES } from './gradeBased/level2Templates';
@@ -30,18 +32,25 @@ import { LEVEL_4_EXTENSIONS } from './gradeBased/level4ExtensionTemplates';
  * Now consolidated in one place for ultimate reliability
  */
 export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallbackTemplate[]> = {
-  // BEGINNER: Level 1 templates (40) + Level 1 extensions (5) + enhanced fallback (1) = 46 templates
+  // BEGINNER: Level 0 templates (40) + Level 0 extensions (10) = 50 templates
   beginner: [
-    // Convert Level 1 templates to enhanced format
-    ...LEVEL_1_TEMPLATES.map(template => ({
+    // Convert Level 0 templates to enhanced format
+    ...LEVEL_0_TEMPLATES.map(template => ({
       setup: template.slice(0, 2),
       development: template.slice(2, 3),
       climax: template.slice(3, 4),
       resolution: template.slice(4, 5),
       contextualContinuations: []
     })),
-    // Convert Level 1 extensions
-    ...LEVEL_1_EXTENSIONS.map(template => ({
+    // Convert Level 0 extensions (both free and premium)
+    ...LEVEL_0_FREE_EXTENSIONS.map(template => ({
+      setup: template.slice(0, 2),
+      development: template.slice(2, 3),
+      climax: template.slice(3, 4),
+      resolution: template.slice(4, 5),
+      contextualContinuations: []
+    })),
+    ...LEVEL_0_PREMIUM_EXTENSIONS.map(template => ({
       setup: template.slice(0, 2),
       development: template.slice(2, 3),
       climax: template.slice(3, 4),
@@ -73,18 +82,18 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
       contextualContinuations: []
     }
   ],
-  // EASY: Level 2 templates (40) + Level 2 extensions (5) + enhanced fallbacks (2) = 47 templates  
+  // EASY: Level 1 templates (40) + Level 1 extensions (5) + enhanced fallbacks (2) = 47 templates  
   easy: [
-    // Convert Level 2 templates to enhanced format
-    ...LEVEL_2_TEMPLATES.map(template => ({
+    // Convert Level 1 templates to enhanced format
+    ...LEVEL_1_TEMPLATES.map(template => ({
       setup: template.slice(0, 2),
       development: template.slice(2, 3),
       climax: template.slice(3, 4),
       resolution: template.slice(4, 5),
       contextualContinuations: []
     })),
-    // Convert Level 2 extensions
-    ...LEVEL_2_EXTENSIONS.map(template => ({
+    // Convert Level 1 extensions
+    ...LEVEL_1_EXTENSIONS.map(template => ({
       setup: template.slice(0, 2),
       development: template.slice(2, 3),
       climax: template.slice(3, 4),
@@ -140,18 +149,18 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
     }
   ],
 
-  // MEDIUM: Level 3 templates (40) + Level 3 extensions (5) + enhanced fallbacks (2) = 47 templates
+  // MEDIUM: Level 2 templates (40) + Level 2 extensions (5) + enhanced fallbacks (2) = 47 templates
   medium: [
-    // Convert Level 3 templates to enhanced format  
-    ...LEVEL_3_TEMPLATES.map(template => ({
+    // Convert Level 2 templates to enhanced format  
+    ...LEVEL_2_TEMPLATES.map(template => ({
       setup: template.slice(0, 2),
       development: template.slice(2, 3),
       climax: template.slice(3, 4),
       resolution: template.slice(4, 5),
       contextualContinuations: []
     })),
-    // Convert Level 3 extensions
-    ...LEVEL_3_EXTENSIONS.map(template => ({
+    // Convert Level 2 extensions
+    ...LEVEL_2_EXTENSIONS.map(template => ({
       setup: template.slice(0, 2),
       development: template.slice(2, 3),
       climax: template.slice(3, 4),
@@ -207,18 +216,18 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
     }
   ],
 
-  // HARD: Level 4 templates (40) + Level 4 extensions (5) + enhanced fallback (1) = 46 templates
+  // HARD: Level 3 templates (40) + Level 3 extensions (5) + enhanced fallback (1) = 46 templates
   hard: [
-    // Convert Level 4 templates to enhanced format
-    ...LEVEL_4_TEMPLATES.map(template => ({
+    // Convert Level 3 templates to enhanced format
+    ...LEVEL_3_TEMPLATES.map(template => ({
       setup: template.slice(0, 2),
       development: template.slice(2, 3),
       climax: template.slice(3, 4),
       resolution: template.slice(4, 5),
       contextualContinuations: []
     })),
-    // Convert Level 4 extensions
-    ...LEVEL_4_EXTENSIONS.map(template => ({
+    // Convert Level 3 extensions
+    ...LEVEL_3_EXTENSIONS.map(template => ({
       setup: template.slice(0, 2),
       development: template.slice(2, 3),
       climax: template.slice(3, 4),
@@ -251,8 +260,24 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
     }
   ],
 
-  // EXPERT: Enhanced fallback (1) = 1 template
+  // EXPERT: Level 4 templates (40) + Level 4 extensions (5) + Enhanced fallback (1) = 46 templates
   expert: [
+    // Convert Level 4 templates to enhanced format
+    ...LEVEL_4_TEMPLATES.map(template => ({
+      setup: template.slice(0, 2),
+      development: template.slice(2, 3),
+      climax: template.slice(3, 4),
+      resolution: template.slice(4, 5),
+      contextualContinuations: []
+    })),
+    // Convert Level 4 extensions
+    ...LEVEL_4_EXTENSIONS.map(template => ({
+      setup: template.slice(0, 2),
+      development: template.slice(2, 3),
+      climax: template.slice(3, 4),
+      resolution: template.slice(4, 5),
+      contextualContinuations: []
+    })),
     {
       setup: [
         "{name} began questioning the fundamental principles that governed their society and personal beliefs.",

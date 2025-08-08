@@ -224,6 +224,13 @@ const LEVEL_4_EXTENSIONS = [
 // Integrating all vocabulary-compliant templates from the grade-based system
 // ============================================================================
 const ENHANCED_FALLBACK_TEMPLATES = {
+  "0": LEVEL_0_FALLBACK_TEMPLATES.map(template => ({
+    setup: template.slice(0, 2),
+    development: template.slice(2, 3),
+    climax: template.slice(3, 4),
+    resolution: template.slice(4, 5),
+    contextualContinuations: []
+  })),
   "1": LEVEL_1_TEMPLATES.map(template => ({
     setup: template.slice(0, 3),
     development: template.slice(3, 6),
@@ -314,16 +321,41 @@ class EnhancedFallbackManager {
   }
 }
 
+// Simple fallback template function for Level 0
+function getFallbackTemplate(difficulty: string, userName: string, favoriteColor?: string, favoriteAnimal?: string, favoriteFood?: string): string[] {
+  console.log(`Getting fallback template for difficulty: ${difficulty}`);
+  
+  const templates = LEVEL_0_FALLBACK_TEMPLATES;
+  const randomTemplate = templates[Math.floor(Math.random() * templates.length)];
+  
+  // Process template with user information
+  return randomTemplate.map(page => 
+    page
+      .replace(/{userName}/g, userName)
+      .replace(/{favoriteColor}/g, favoriteColor || 'blue')
+      .replace(/{favoriteAnimal}/g, favoriteAnimal || 'cat')
+      .replace(/{favoriteFood}/g, favoriteFood || 'apples')
+  );
+}
+
 // Enhanced fallback page generator using the Enhanced Template Library
 function getEnhancedFallbackPages(difficulty: string, userInfo: any): string[] {
+  console.log(`Getting enhanced fallback for difficulty: ${difficulty}`);
+  
+  // Update mapping to include Level 0 for beginner
+  if (difficulty === 'beginner') {
+    return getFallbackTemplate('beginner', userInfo.name || 'Alex', userInfo.favoriteColor, userInfo.favoriteAnimal, userInfo.favoriteFood);
+  }
+  
   const difficultyMap: Record<string, string> = {
-    'beginner': '1',
-    'easy': '2', 
-    'medium': '3',
-    'hard': '4'
+    'beginner': '0',
+    'easy': '1', 
+    'medium': '2',
+    'hard': '3',
+    'expert': '4'
   };
   
-  const mappedDifficulty = difficultyMap[difficulty] || '2';
+  const mappedDifficulty = difficultyMap[difficulty] || '1';
   
   // Generate 5 pages using Enhanced Template Library
   const pages: string[] = [];
