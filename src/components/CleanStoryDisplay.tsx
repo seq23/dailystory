@@ -103,7 +103,17 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [isGeneratingNewStory, setIsGeneratingNewStory] = useState(false);
   const [isMagicWandAnimating, setIsMagicWandAnimating] = useState(false);
   const loaderStartRef = useRef<number>(0);
-  const LOADER_MIN_MS = 1200;
+  const LOADER_MIN_MS = 1600;
+
+  // Debug flag to force loader overlay for quick verification
+  const [forceLoaderActive, setForceLoaderActive] = useState(false);
+  useEffect(() => {
+    const force = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('forceLoader') === '1';
+    if (force) {
+      setForceLoaderActive(true);
+      setTimeout(() => setForceLoaderActive(false), 2000);
+    }
+  }, []);
 
   // Reading Level state with animation support
   const [currentDifficulty, setCurrentDifficulty] = useState<'beginner' | 'easy' | 'medium' | 'hard' | 'expert'>(userInfo.difficultyLevel || 'beginner');
@@ -597,7 +607,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const progress = story.length > 0 ? ((currentPage + 1) / story.length) * 100 : 0;
   const currentImage = pageImages[currentPage];
 
-  if (isLoading) {
+  if (isLoading || forceLoaderActive) {
     return (
       <AdaptiveEnhancedLoading isPremium={isPremium} userName={userInfo.name} />
     );
