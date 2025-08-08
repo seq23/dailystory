@@ -20,19 +20,19 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
     ageRange: "3-6",
     patterns: {
       openings: [
-        "In the light of the moon, {name} saw...",
-        "On Monday, {name} ate through one {food}...",
+        "In the light of the moon, {userName} saw...",
+        "On Monday, {userName} ate through one {food}...",
         "A small {animal} sat on a leaf...",
-        "The very {adjective} {name} was ready..."
+        "The very {adjective} {userName} was ready..."
       ],
       transitions: [
         "But {pronoun} was still hungry.",
         "The next day was Sunday again.",
-        "Pop! Out came {name}...",
+        "Pop! Out came {userName}...",
         "Now {pronoun} wasn't {adjective} any more."
       ],
       closings: [
-        "And {name} was a beautiful {animal}!",
+        "And {userName} was a beautiful {animal}!",
         "What a beautiful {animal} {pronoun} had become!",
         "Now {pronoun} was no longer hungry.",
         "The end of a perfect day."
@@ -47,14 +47,14 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
     ageRange: "3-7",
     patterns: {
       openings: [
-        "{name} was having a really bad day.",
-        "'I do NOT want to!' said {name}.",
-        "{name} and {friend} were best friends.",
+        "{userName} was having a really bad day.",
+        "'I do NOT want to!' said {userName}.",
+        "{userName} and {friend} were best friends.",
         "There was a big problem today."
       ],
       transitions: [
         "But then {friend} said something important.",
-        "'Wait!' shouted {name}.",
+        "'Wait!' shouted {userName}.",
         "That was not what {pronoun} expected at all.",
         "Friends can help each other."
       ],
@@ -74,19 +74,19 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
     ageRange: "3-8", 
     patterns: {
       openings: [
-        "Oh my! Oh me! {name} could not see...",
-        "Here comes {name} running fast...",
+        "Oh my! Oh me! {userName} could not see...",
+        "Here comes {userName} running fast...",
         "Would you like {food} and {object}?",
         "I do not like them, Sam-I-Am..."
       ],
       transitions: [
         "But wait! What's that? What could it be?",
-        "Then {name} said with a great big grin...",
+        "Then {userName} said with a great big grin...",
         "Round and round and round they go!",
         "This way, that way, here and there!"
       ],
       closings: [
-        "And {name} learned something new that day!",
+        "And {userName} learned something new that day!",
         "What a {adjective} day it turned out to be!",
         "The fun was done, but memories stayed.",
         "And that is that about that!"
@@ -107,13 +107,13 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
         "Sleep time."
       ],
       transitions: [
-        "{name} yawns.",
+        "{userName} yawns.",
         "Eyes close.",
         "Dream time.",
         "So quiet."
       ],
       closings: [
-        "{name} sleeps.",
+        "{userName} sleeps.",
         "Good night.",
         "Sweet dreams.",
         "All done."
@@ -134,13 +134,13 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
         "Fun time!"
       ],
       transitions: [
-        "{name} laughs.",
+        "{userName} laughs.",
         "So silly!",
         "More fun!",
         "Again! Again!"
       ],
       closings: [
-        "{name} giggles.",
+        "{userName} giggles.",
         "So funny!",
         "Happy day!",
         "All done!"
@@ -162,14 +162,14 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
       ],
       transitions: [
         "And in the {setting} there was...",
-        "Quietly, softly, {name} whispered...",
+        "Quietly, softly, {userName} whispered...",
         "The moon rose higher and...",
         "All around the {setting}, things were peaceful."
       ],
       closings: [
         "And they all lived quietly ever after.",
         "Goodnight stars, goodnight air, goodnight noises everywhere.",
-        "And {name} fell fast asleep.",
+        "And {userName} fell fast asleep.",
         "Peace filled the {setting} as night came."
       ]
     },
@@ -182,20 +182,20 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
     ageRange: "4-5",
     patterns: {
       openings: [
-        "Hippos go berserk! And so does {name}!",
-        "But not {name}. {name} says...",
-        "Moo, baa, la la la! {name} loves to...",
-        "Oh my goodness! Oh my gosh! {name} needs to..."
+        "Hippos go berserk! And so does {userName}!",
+        "But not {userName}. {userName} says...",
+        "Moo, baa, la la la! {userName} loves to...",
+        "Oh my goodness! Oh my gosh! {userName} needs to..."
       ],
       transitions: [
         "But wait! There's more!",
-        "Stomp stomp stomp goes {name}!",
+        "Stomp stomp stomp goes {userName}!",
         "What a {adjective} thing to do!",
-        "Everybody {action}! Even {name}!"
+        "Everybody {action}! Even {userName}!"
       ],
       closings: [
         "The end! (But not really the end.)",
-        "And {name} was very, very happy.",
+        "And {userName} was very, very happy.",
         "What a silly, wonderful day!",
         "Time for a snack and a nap!"
       ]
@@ -209,9 +209,9 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
     ageRange: "3-7",
     patterns: {
       openings: [
-        "If you give {name} a {object}...",
-        "When {name} sees a {animal}...",
-        "If {name} goes to the {setting}...",
+        "If you give {userName} a {object}...",
+        "When {userName} sees a {animal}...",
+        "If {userName} goes to the {setting}...",
         "One thing always leads to another when..."
       ],
       transitions: [
@@ -236,10 +236,10 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
     ageRange: "2-3",
     patterns: {
       openings: [
-        "{name} grows.",
+        "{userName} grows.",
         "Getting big.",
         "I can!",
-        "Look! {name}!"
+        "Look! {userName}!"
       ],
       transitions: [
         "Try again.",
@@ -248,7 +248,7 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
         "Good job!"
       ],
       closings: [
-        "{name} did!",
+        "{userName} did!",
         "All done!",
         "So proud!",
         "Big now!"
@@ -263,22 +263,22 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
     ageRange: "4-8",
     patterns: {
       openings: [
-        "{name} was not quite ready for...",
-        "Sometimes {name} felt very small...",
-        "When {name} was little, {pronoun} thought...",
+        "{userName} was not quite ready for...",
+        "Sometimes {userName} felt very small...",
+        "When {userName} was little, {pronoun} thought...",
         "There are days when everything seems..."
       ],
       transitions: [
         "But slowly, things began to change.",
-        "And then {name} had an idea.",
+        "And then {userName} had an idea.",
         "Sometimes the best things happen when...",
-        "That's when {name} realized..."
+        "That's when {userName} realized..."
       ],
       closings: [
-        "And {name} knew everything would be okay.",
+        "And {userName} knew everything would be okay.",
         "Growing up happens one day at a time.",
         "Some things are worth waiting for.",
-        "And {name} felt brave and ready."
+        "And {userName} felt brave and ready."
       ]
     },
     characteristics: ["gentle emotion", "growing up", "reassurance", "quiet wisdom"]
@@ -290,22 +290,22 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
     ageRange: "7-12",
     patterns: {
       openings: [
-        "{name} had been looking forward to this day...",
-        "It all started when {name} decided to...",
-        "Nobody understood {name} the way...",
-        "Things never went the way {name} planned..."
+        "{userName} had been looking forward to this day...",
+        "It all started when {userName} decided to...",
+        "Nobody understood {userName} the way...",
+        "Things never went the way {userName} planned..."
       ],
       transitions: [
         "But then something unexpected happened.",
-        "That's when {name} got a brilliant idea.",
+        "That's when {userName} got a brilliant idea.",
         "Of course, things didn't go smoothly.",
         "As usual, life was more complicated than..."
       ],
       closings: [
-        "And {name} learned that growing up means...",
+        "And {userName} learned that growing up means...",
         "Sometimes the best adventures are unexpected.",
         "Life with family is never boring.",
-        "And {name} couldn't wait for tomorrow."
+        "And {userName} couldn't wait for tomorrow."
       ]
     },
     characteristics: ["realistic", "family life", "humor", "relatability"]

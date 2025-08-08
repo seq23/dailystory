@@ -53,22 +53,22 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
     // Original enhanced fallback
     {
       setup: [
-        "{name} sees a {animal}.",
+        "{userName} sees a {animal}.",
         "The {animal} is {color}.",
-        "{name} can play."
+        "{userName} can play."
       ],
       development: [
-        "{name} and {animal} play.",
+        "{userName} and {animal} play.",
         "They run and jump.",
         "The {animal} is happy."
       ],
       climax: [
-        "{name} helps the {animal}.",
+        "{userName} helps the {animal}.",
         "They are good friends.",
         "They have fun."
       ],
       resolution: [
-        "{name} is happy.",
+        "{userName} is happy.",
         "The {animal} is happy.",
         "It is a good day."
       ],
@@ -96,46 +96,46 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
     // Original enhanced fallbacks
     {
       setup: [
-        "{name} goes to the park today.",
-        "{name} sees a {animal} there.",
+        "{userName} goes to the park today.",
+        "{userName} sees a {animal} there.",
         "The {animal} looks friendly and nice."
       ],
       development: [
-        "{name} says hello to the {animal}.",
+        "{userName} says hello to the {animal}.",
         "The {animal} wants to play together.",
         "They play with a {color} ball."
       ],
       climax: [
         "The ball rolls away fast.",
-        "{name} and {animal} run after it.",
+        "{userName} and {animal} run after it.",
         "They work together to get it."
       ],
       resolution: [
         "They get the ball back together.",
-        "{name} and {animal} are happy.",
+        "{userName} and {animal} are happy.",
         "They are good friends now."
       ],
       contextualContinuations: []
     },
     {
       setup: [
-        "{name} finds a {object} outside.",
+        "{userName} finds a {object} outside.",
         "It is very {color} and pretty.",
-        "{name} picks it up carefully."
+        "{userName} picks it up carefully."
       ],
       development: [
         "A {animal} comes over to see.",
-        "The {animal} wants to help {name}.",
+        "The {animal} wants to help {userName}.",
         "They look at the {object} together."
       ],
       climax: [
         "The {object} starts to glow bright.",
         "It makes a soft, happy sound.",
-        "{name} and {animal} are surprised."
+        "{userName} and {animal} are surprised."
       ],
       resolution: [
         "The {object} brings them good luck.",
-        "{name} shares it with {animal}.",
+        "{userName} shares it with {animal}.",
         "They both feel very happy."
       ],
       contextualContinuations: []
@@ -163,22 +163,22 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
     // Original enhanced fallbacks
     {
       setup: [
-        "{name} discovers a mysterious path in the forest.",
+        "{userName} discovers a mysterious path in the forest.",
         "The path is covered with sparkling {color} stones.",
         "A wise {animal} appears to guide the way."
       ],
       development: [
-        "The {animal} leads {name} to a hidden grove.",
+        "The {animal} leads {userName} to a hidden grove.",
         "In the center grows a magnificent {object} tree.",
         "The tree seems to whisper secrets of nature."
       ],
       climax: [
         "Suddenly, the tree begins to lose its magical glow.",
-        "{name} realizes the tree needs their help urgently.",
+        "{userName} realizes the tree needs their help urgently.",
         "Working with {animal}, they search for the solution."
       ],
       resolution: [
-        "{name} learns that caring for nature heals everything.",
+        "{userName} learns that caring for nature heals everything.",
         "The tree regains its beautiful, vibrant glow completely.",
         "The forest celebrates their act of kindness and wisdom."
       ],
@@ -186,23 +186,23 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
     },
     {
       setup: [
-        "{name} receives an invitation to a special celebration.",
+        "{userName} receives an invitation to a special celebration.",
         "The invitation is written in shimmering {color} ink.",
         "A clever {animal} messenger delivered it personally."
       ],
       development: [
-        "At the celebration, {name} meets many interesting friends.",
+        "At the celebration, {userName} meets many interesting friends.",
         "Everyone shares their unique talents and special gifts.",
-        "The {animal} teaches {name} an important traditional dance."
+        "The {animal} teaches {userName} an important traditional dance."
       ],
       climax: [
-        "When it's {name}'s turn to share something special,",
+        "When it's {userName}'s turn to share something special,",
         "they feel nervous and unsure of their abilities.",
-        "The supportive friends encourage {name} to try anyway."
+        "The supportive friends encourage {userName} to try anyway."
       ],
       resolution: [
-        "{name} discovers their own unique talent for bringing joy.",
-        "Everyone appreciates {name}'s authentic contribution to the celebration.",
+        "{userName} discovers their own unique talent for bringing joy.",
+        "Everyone appreciates {userName}'s authentic contribution to the celebration.",
         "The experience teaches them about confidence and community belonging."
       ],
       contextualContinuations: []
@@ -230,24 +230,24 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
     // Original enhanced fallback
     {
       setup: [
-        "{name} lived in a peaceful village where everyone worked together harmoniously.",
+        "{userName} lived in a peaceful village where everyone worked together harmoniously.",
         "One morning, they noticed that the village's ancient {object} had stopped glowing mysteriously.",
         "The wise elder {animal} explained that this meant trouble was approaching the community."
       ],
       development: [
-        "{name} volunteered to journey to the distant mountains to seek the legendary solution.",
+        "{userName} volunteered to journey to the distant mountains to seek the legendary solution.",
         "Along the dangerous path, they encountered various challenges that tested their courage and determination.",
         "A helpful {animal} companion joined the quest, bringing valuable knowledge about the ancient mysteries."
       ],
       climax: [
-        "At the mountain's peak, {name} discovered that the solution required a significant personal sacrifice.",
+        "At the mountain's peak, {userName} discovered that the solution required a significant personal sacrifice.",
         "They had to choose between their own dreams and the welfare of their community.",
-        "With great courage, {name} made the difficult choice to put others before themselves."
+        "With great courage, {userName} made the difficult choice to put others before themselves."
       ],
       resolution: [
         "Their selfless decision restored the {object}'s power and saved the entire village community.",
-        "{name} learned that true leadership means serving others with wisdom and compassion.",
-        "The village thrived, and {name} became known for their character and moral strength."
+        "{userName} learned that true leadership means serving others with wisdom and compassion.",
+        "The village thrived, and {userName} became known for their character and moral strength."
       ],
       contextualContinuations: []
     }
@@ -273,24 +273,24 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
     })),
     {
       setup: [
-        "{name} began questioning the fundamental principles that governed their society and personal beliefs.",
+        "{userName} began questioning the fundamental principles that governed their society and personal beliefs.",
         "These philosophical inquiries led to deep conversations with the enlightened {animal} who served as mentor.",
         "Together they explored complex concepts of justice, truth, and the nature of human existence."
       ],
       development: [
-        "Through rigorous intellectual discourse and careful observation, {name} examined various worldviews and perspectives.",
+        "Through rigorous intellectual discourse and careful observation, {userName} examined various worldviews and perspectives.",
         "The journey of understanding revealed contradictions between idealistic theories and practical realities of life.",
         "Each new insight brought both clarity and additional questions about the complexities of ethical living."
       ],
       climax: [
-        "{name} faced a profound moral dilemma that challenged everything they believed about right and wrong.",
+        "{userName} faced a profound moral dilemma that challenged everything they believed about right and wrong.",
         "The decision required integrating philosophical understanding with practical wisdom and compassionate action.",
-        "No simple answer existed, forcing {name} to synthesize multiple viewpoints into a coherent personal philosophy."
+        "No simple answer existed, forcing {userName} to synthesize multiple viewpoints into a coherent personal philosophy."
       ],
       resolution: [
-        "Through thoughtful reflection and dialogue, {name} developed a nuanced understanding of ethical complexity.",
+        "Through thoughtful reflection and dialogue, {userName} developed a nuanced understanding of ethical complexity.",
         "They learned that wisdom comes from embracing paradox while maintaining commitment to truth and justice.",
-        "This intellectual and spiritual growth transformed {name} into a bridge between different ways of thinking."
+        "This intellectual and spiritual growth transformed {userName} into a bridge between different ways of thinking."
       ],
       contextualContinuations: []
     }
