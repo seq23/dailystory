@@ -245,14 +245,14 @@ INTEGRATION DEPTH - PLOT LEVEL: Weave user inputs as central plot drivers and co
 
 Create sophisticated stories with:
 - 350-500 words total
-- 4th grade vocabulary with advanced grammar
+- 4th grade vocabulary (Dolch Pre-Primer through 4th Grade word foundation) with advanced grammar structure (compound and complex sentences with varied sentence starters)
 - Realistic problems with growth-oriented solutions
 - Complex character relationships
 - Use name 30% of time, pronouns 70% of time - natural reading flow with strategic name placement
 - Meaningful themes and lessons
 
 FORMAT: Page 1: [4-5 sentences]. Page 2: [4-5 sentences]. Continue for exactly 10 pages.`,
-    userPromptTemplate: `Create a meaningful story for a child aged 9-11 named {userName}. Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}, and {specialRequest} as plot-level inputs naturally woven in as key story elements and conflict drivers. The favorite animal helps solve conflicts, colors show themes or feelings, hobbies offer solutions, and foods link to key story moments or relationships. The story must be exactly 10 pages, 4-5 sentences per page, 350-500 words total, using 4th grade vocabulary with advanced grammar structure. Use Dolch Pre-Primer through 4th Grade words as a foundation and pronouns 70% of the time for natural flow. Follow the internal author style guidance to shape the story (without mentioning style names), including realistic problems with growth-oriented solutions, complex character relationships, and meaningful themes and lessons appropriate for children. Before writing, internally imagine a random "story seed" between 1 and 10,000 to vary setting, events, and details so each story is unique, even with identical inputs. Do not mention the seed.`,
+    userPromptTemplate: `Create a meaningful story for a child aged 9-11 named {userName}. Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}, and {specialRequest} as plot-level inputs naturally woven in as key story elements and conflict drivers. The favorite animal helps solve conflicts, colors show themes or feelings, hobbies offer solutions, and foods link to key story moments or relationships. The story must be exactly 10 pages, 4-5 sentences per page, 350-500 words total, using 4th grade vocabulary (Dolch Pre-Primer through 4th Grade word foundation) with advanced grammar structure (compound and complex sentences with varied sentence starters). Use pronouns 70% of the time for natural flow. Follow the internal author style guidance to shape the story (without mentioning style names), including realistic problems with growth-oriented solutions, complex character relationships, and meaningful themes and lessons appropriate for children. Before writing, internally imagine a random "story seed" between 1 and 10,000 to vary setting, events, and details so each story is unique, even with identical inputs. Do not mention the seed.`,
     maxLength: 500,
     expectedPages: 10
   },
@@ -282,16 +282,17 @@ IMPORTANT: Do not include the author style name or description in your story out
 INTEGRATION DEPTH - PLOT & THEME LEVEL: Weave user inputs as foundational theme elements and identity markers. The favorite animal represents core values or life philosophy, colors symbolize emotional journeys or personal growth, hobbies define identity and purpose, and foods connect to heritage, family bonds, or cultural identity.
 
 Create complex stories with adaptive grade-level complexity:
+- 700-800 words total across entire story
 - Sophisticated language and complex themes appropriate for 11+ year olds
 - Nuanced character development and emotional depth
 - Abstract concepts made accessible
 - Use name 25% of time, pronouns 75% of time - sophisticated natural flow with occasional name emphasis
 - Multiple plot layers and rich storytelling
 
-FORMAT: Page 1: [content]. Page 2: [content]. Continue for 12-15 pages.`,
-    userPromptTemplate: `Create a sophisticated story for {userName} (age {age}) who is ready for complex, meaningful narratives! They are deeply interested in {hobbies} and find personal meaning in {favoriteAnimal} and {favoriteColor}, with a special connection to {favoriteFood}. Weave these elements as foundational themes - Example: let their animal represent their core values, their color symbolize their emotional journey, their hobby define their sense of purpose, and their food connect to family heritage and cultural identity. Explore themes of identity, purpose, and complex relationships across 12-15 pages. Before writing, internally imagine a random "story seed" between 1 and 10,000 to vary setting, events, and details so each story is unique, even with identical inputs. Do not mention the seed.`,
+FORMAT: Page 1: [content]. Page 2: [content]. Continue for 12-15 pages with natural pacing.`,
+    userPromptTemplate: `Create a sophisticated 700-800 word story for {userName} (age {age}) who is ready for complex, meaningful narratives! They are deeply interested in {hobbies} and find personal meaning in {favoriteAnimal} and {favoriteColor}, with a special connection to {favoriteFood}. Weave these elements as foundational themes - Example: let their animal represent their core values, their color symbolize their emotional journey, their hobby define their sense of purpose, and their food connect to family heritage and cultural identity. Explore themes of identity, purpose, and complex relationships across 12-15 pages. Before writing, internally imagine a random "story seed" between 1 and 10,000 to vary setting, events, and details so each story is unique, even with identical inputs. Do not mention the seed.`,
     maxLength: 800,
-    expectedPages: 13
+    expectedPages: 14
   }
 };
 
