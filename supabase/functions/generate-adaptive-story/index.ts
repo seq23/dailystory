@@ -6,70 +6,228 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Enhanced Template Library integration for fallbacks
-function getEnhancedFallbackPages(difficulty, userInfo) {
-  const userName = userInfo.name || 'the child';
-  
-  // Enhanced fallback templates based on difficulty
-  const templates = {
-    beginner: {
-      setup: [
-        `${userName} sees a big red ball.`,
-        `${userName} finds a blue cat.`,
-        `${userName} meets a nice dog.`
-      ],
-      development: [
-        `The ball is fun to play with.`,
-        `The cat wants to play too.`,
-        `The dog wags its tail happily.`
-      ],
-      climax: [
-        `${userName} throws the ball high.`,
-        `The cat and dog run fast.`,
-        `All three friends play together.`
-      ],
-      resolution: [
-        `${userName} feels very happy.`,
-        `The animals are good friends now.`,
-        `They all play until the sun sets.`
-      ]
-    },
-    easy: [
-      `${userName} began a wonderful adventure in the garden.`,
-      `The curious child discovered beautiful flowers everywhere.`,
-      `${userName} found a friendly butterfly sitting on a rose.`,
-      `Together they explored the magical garden paths.`,
-      `${userName} felt amazed by all the colorful beauty around.`
-    ],
-    medium: [
-      `${userName} embarked on an exciting journey through the mysterious forest.`,
-      `The brave explorer noticed ancient trees whispering secrets in the wind.`,
-      `${userName} encountered a wise owl who offered helpful guidance.`,
-      `Following the owl's advice, ${userName} discovered a hidden clearing filled with wonder.`,
-      `${userName} returned home with incredible stories and newfound wisdom about nature.`
-    ],
-    hard: [
-      `${userName} initiated an extraordinary expedition into the uncharted wilderness, determined to uncover its secrets.`,
-      `The intrepid adventurer meticulously documented fascinating discoveries while navigating through challenging terrain.`,
-      `${userName} demonstrated exceptional problem-solving abilities when confronted with a complex environmental puzzle.`,
-      `Through perseverance and scientific observation, ${userName} successfully decoded the mysteries of the ecosystem.`,
-      `${userName} emerged as a accomplished naturalist, having contributed valuable knowledge to the understanding of wildlife conservation.`
-    ]
-  };
+// ============================================================================
+// ENHANCED TEMPLATE LIBRARY INTEGRATION
+// ============================================================================
 
-  if (difficulty === 'beginner') {
-    // For beginner, create a 5-page story from the structured template
-    const template = templates.beginner;
-    return [
-      template.setup[Math.floor(Math.random() * template.setup.length)],
-      template.development[Math.floor(Math.random() * template.development.length)],
-      template.climax[Math.floor(Math.random() * template.climax.length)],
-      template.resolution[Math.floor(Math.random() * template.resolution.length)],
-      `${userName} smiles and feels proud.`
-    ];
+// Name formatting utilities for proper capitalization
+class NameFormatter {
+  static capitalize(name: string): string {
+    if (!name || typeof name !== 'string') return '';
+    
+    const trimmed = name.trim();
+    if (!trimmed) return '';
+    
+    // Handle hyphenated names (Mary-Jane -> Mary-Jane)
+    if (trimmed.includes('-')) {
+      return trimmed.split('-')
+        .map(part => this.capitalizeWord(part))
+        .join('-');
+    }
+    
+    // Handle multiple words (Mary Jane -> Mary Jane)
+    if (trimmed.includes(' ')) {
+      return trimmed.split(' ')
+        .map(part => this.capitalizeWord(part))
+        .join(' ');
+    }
+    
+    // Single word
+    return this.capitalizeWord(trimmed);
   }
   
-  return templates[difficulty] || templates.easy;
+  private static capitalizeWord(word: string): string {
+    if (!word) return '';
+    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+  }
+}
+
+// Color converter utility
+const HEX_TO_COLOR_MAP: Record<string, string> = {
+  '#3B82F6': 'blue',
+  '#EF4444': 'red', 
+  '#10B981': 'green',
+  '#F59E0B': 'yellow',
+  '#8B5CF6': 'purple',
+  '#EC4899': 'pink',
+  '#F97316': 'orange',
+  '#06B6D4': 'cyan',
+  '#84CC16': 'lime',
+  '#6366F1': 'indigo',
+  '#14B8A6': 'teal',
+  '#F43F5E': 'rose',
+  '#A855F7': 'violet',
+  '#22C55E': 'emerald'
+};
+
+function ensureColorName(color: string | undefined): string {
+  if (!color) return 'blue';
+  if (!color?.startsWith('#')) {
+    return color || 'blue';
+  }
+  const colorName = HEX_TO_COLOR_MAP[color.toLowerCase()];
+  return colorName || 'blue';
+}
+
+// Enhanced Template Library Templates
+const ENHANCED_FALLBACK_TEMPLATES = {
+  "1": [
+    {
+      setup: [
+        "{NAME} has a {COLOR} ball.",
+        "{NAME} sees a {COLOR} cat.",
+        "{NAME} finds a big {COLOR} dog."
+      ],
+      development: [
+        "The ball is fun to play with.",
+        "The cat likes to run and jump.",
+        "The dog wags its tail happily."
+      ],
+      climax: [
+        "{NAME} throws the ball high up.",
+        "The cat and dog run very fast.",
+        "All the animals want to play."
+      ],
+      resolution: [
+        "{NAME} feels very happy.",
+        "Everyone plays together nicely.",
+        "The sun shines on all the friends."
+      ],
+      contextualContinuations: []
+    }
+  ],
+  "2": [
+    {
+      setup: [
+        "{NAME} began a wonderful adventure in the magical garden.",
+        "{NAME} discovered beautiful {COLOR} flowers everywhere around.",
+        "{NAME} found a friendly butterfly sitting on a rose."
+      ],
+      development: [
+        "The curious child explored the winding garden paths.",
+        "Many colorful creatures lived among the flowers.",
+        "The butterfly showed {NAME} secret hiding places."
+      ],
+      climax: [
+        "{NAME} helped the butterfly find its lost friend.",
+        "Together they discovered a hidden waterfall.",
+        "The garden revealed its most beautiful secret."
+      ],
+      resolution: [
+        "{NAME} felt amazed by all the natural beauty.",
+        "The butterfly thanked {NAME} for the kind help.",
+        "They promised to meet again next spring."
+      ],
+      contextualContinuations: []
+    }
+  ],
+  "3": [
+    {
+      setup: [
+        "{NAME} embarked on an exciting journey through the mysterious forest.",
+        "{NAME} noticed ancient trees whispering secrets in the wind.",
+        "{NAME} encountered a wise owl sitting on a {COLOR} branch."
+      ],
+      development: [
+        "The brave explorer followed winding trails deeper into the woods.",
+        "Many fascinating creatures called the forest their home.",
+        "The owl offered helpful guidance for the challenging path ahead."
+      ],
+      climax: [
+        "{NAME} discovered a hidden clearing filled with magical wonder.",
+        "The forest revealed its most carefully guarded secrets.",
+        "Ancient wisdom flowed through every leaf and stone."
+      ],
+      resolution: [
+        "{NAME} returned home with incredible stories to share.",
+        "The experience taught valuable lessons about nature's balance.",
+        "Forever changed, {NAME} became a true friend of the forest."
+      ],
+      contextualContinuations: []
+    }
+  ],
+  "4": [
+    {
+      setup: [
+        "{NAME} initiated an extraordinary expedition into the uncharted wilderness, determined to uncover its secrets.",
+        "{NAME} meticulously prepared advanced equipment for the challenging scientific research ahead.",
+        "{NAME} established a base camp near a pristine {COLOR} mountain lake."
+      ],
+      development: [
+        "The intrepid researcher documented fascinating discoveries while navigating treacherous terrain.",
+        "Complex ecological relationships revealed themselves through careful observation and analysis.",
+        "Environmental challenges tested every aspect of {NAME}'s scientific knowledge and determination."
+      ],
+      climax: [
+        "{NAME} successfully decoded the intricate mysteries of the ecosystem's delicate balance.",
+        "Revolutionary discoveries emerged from months of dedicated fieldwork and research.",
+        "The breakthrough findings would transform humanity's understanding of wilderness conservation."
+      ],
+      resolution: [
+        "{NAME} emerged as an accomplished naturalist, having contributed invaluable knowledge to science.",
+        "The expedition's success opened new frontiers for environmental research and protection.",
+        "Future generations would benefit from {NAME}'s groundbreaking conservation discoveries."
+      ],
+      contextualContinuations: []
+    }
+  ]
+};
+
+// Enhanced Fallback Manager
+class EnhancedFallbackManager {
+  private static usedTemplates: Set<string> = new Set();
+  
+  static getFallbackTemplate(difficulty: string, userInfo: any, pageIndex: number = 0): string {
+    const templates = ENHANCED_FALLBACK_TEMPLATES[difficulty] || ENHANCED_FALLBACK_TEMPLATES["2"];
+    const template = templates[0]; // Use first template for simplicity
+    
+    const storyPosition = this.determineStoryPosition(pageIndex);
+    const phrases = template[storyPosition] || template.setup;
+    const selectedPhrase = phrases[Math.floor(Math.random() * phrases.length)];
+    
+    return this.processTemplate(selectedPhrase, userInfo);
+  }
+  
+  private static determineStoryPosition(pageIndex: number): keyof typeof ENHANCED_FALLBACK_TEMPLATES["1"][0] {
+    if (pageIndex === 0) return 'setup';
+    if (pageIndex <= 2) return 'development';
+    if (pageIndex === 3) return 'climax';
+    return 'resolution';
+  }
+  
+  private static processTemplate(template: string, userInfo: any): string {
+    const userName = NameFormatter.capitalize(userInfo?.name || 'the child');
+    const userColor = ensureColorName(userInfo?.favoriteColor);
+    
+    return template
+      .replace(/{NAME}/g, userName)
+      .replace(/{COLOR}/g, userColor);
+  }
+  
+  static clearSession(): void {
+    this.usedTemplates.clear();
+  }
+}
+
+// Enhanced fallback page generator using the Enhanced Template Library
+function getEnhancedFallbackPages(difficulty: string, userInfo: any): string[] {
+  const difficultyMap: Record<string, string> = {
+    'beginner': '1',
+    'easy': '2', 
+    'medium': '3',
+    'hard': '4'
+  };
+  
+  const mappedDifficulty = difficultyMap[difficulty] || '2';
+  
+  // Generate 5 pages using Enhanced Template Library
+  const pages: string[] = [];
+  for (let i = 0; i < 5; i++) {
+    const page = EnhancedFallbackManager.getFallbackTemplate(mappedDifficulty, userInfo, i);
+    pages.push(page);
+  }
+  
+  return pages;
 }
 
 serve(async (req) => {
