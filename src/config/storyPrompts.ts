@@ -140,8 +140,8 @@ IMPORTANT: Do not include the author style name or description in your story out
 INTEGRATION DEPTH - CHARACTER LEVEL: Weave user inputs as meaningful character traits and development elements. The favorite animal reflects personality traits, colors become meaningful symbols, hobbies showcase talents and interests, and foods connect to family or cultural background.
 
 REQUIREMENTS:
-- 150-300 words total across entire story
-- Exactly 7 pages
+- 180-387 words total across entire story
+- Exactly 9 pages
 - 20-43 words per page (2-3 sentences)
 - Complex sentences with descriptive language
 - Use cumulative Dolch vocabulary: Pre-Primer + Primer + 1st Grade + 2nd Grade words
@@ -151,10 +151,10 @@ REQUIREMENTS:
 - Focus on character development and emotions
 - Themes: problem-solving, friendship, discovery, creativity
 
-FORMAT: Page 1: [20-43 words]. Continue for 7 pages.`,
-    userPromptTemplate: `Create an engaging story for a child aged 7-9 named {name}. Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}, and {specialRequest} as meaningful character traits and development elements: the favorite animal reflects personality traits, colors become meaningful symbols, hobbies showcase talents and interests, and foods connect to family or cultural background. The story must be exactly 7 pages, 20-43 words per page, 150-300 words total, using complex sentences with descriptive language and 2-3 sentences per page. Use Dolch Pre-Primer + Primer + 1st Grade + 2nd Grade words as a foundation. Follow the internal author style guidance to shape the story (without mentioning style names), including mild conflicts with positive resolution. Before writing, internally imagine a random "story seed" between 1 and 10,000 to vary setting, events, and details so each story is unique, even with identical inputs. Do not mention the seed.`,
-    maxLength: 300,
-    expectedPages: 7
+FORMAT: Page 1: [20-43 words]. Continue for exactly 9 pages.`,
+    userPromptTemplate: `Create an engaging story for a child aged 7-9 named {name}. Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}, and {specialRequest} as meaningful character traits and development elements: the favorite animal reflects personality traits, colors become meaningful symbols, hobbies showcase talents and interests, and foods connect to family or cultural background. The story must be exactly 9 pages, 20-43 words per page, 180-387 words total, using complex sentences with descriptive language and 2-3 sentences per page. Use Dolch Pre-Primer + Primer + 1st Grade + 2nd Grade words as a foundation. Follow the internal author style guidance to shape the story (without mentioning style names), including mild conflicts with positive resolution. Before writing, internally imagine a random "story seed" between 1 and 10,000 to vary setting, events, and details so each story is unique, even with identical inputs. Do not mention the seed.`,
+    maxLength: 387,
+    expectedPages: 9
   },
   
   hard: {
@@ -204,8 +204,8 @@ Create complex stories with adaptive grade-level complexity:
 - Use name 25% of time, pronouns 75% of time - sophisticated natural flow with occasional name emphasis
 - Multiple plot layers and rich storytelling
 
-FORMAT: Page 1: [content]. Page 2: [content]. Continue based on grade level.`,
-    userPromptTemplate: `Create a sophisticated story for {name} (age {age}) who is ready for complex, meaningful narratives! They are deeply interested in {hobbies} and find personal meaning in {favoriteAnimal} and {favoriteColor}, with a special connection to {favoriteFood}. Weave these elements as foundational themes - Example: let their animal represent their core values, their color symbolize their emotional journey, their hobby define their sense of purpose, and their food connect to family heritage and cultural identity. Explore themes of identity, purpose, and complex relationships across 13 pages. Before writing, internally imagine a random "story seed" between 1 and 10,000 to vary setting, events, and details so each story is unique, even with identical inputs. Do not mention the seed.`,
+FORMAT: Page 1: [content]. Page 2: [content]. Continue for 12-15 pages.`,
+    userPromptTemplate: `Create a sophisticated story for {name} (age {age}) who is ready for complex, meaningful narratives! They are deeply interested in {hobbies} and find personal meaning in {favoriteAnimal} and {favoriteColor}, with a special connection to {favoriteFood}. Weave these elements as foundational themes - Example: let their animal represent their core values, their color symbolize their emotional journey, their hobby define their sense of purpose, and their food connect to family heritage and cultural identity. Explore themes of identity, purpose, and complex relationships across 12-15 pages. Before writing, internally imagine a random "story seed" between 1 and 10,000 to vary setting, events, and details so each story is unique, even with identical inputs. Do not mention the seed.`,
     maxLength: 800,
     expectedPages: 13
   }
@@ -230,12 +230,12 @@ Create sophisticated stories with 6th grade reading complexity:
 - Abstract concepts and moral complexity
 - Rich narrative layers and emotional depth
 
-FORMAT: Page 1: [5-6 sentences]. Continue for 12-14 pages.
+FORMAT: Page 1: [5-6 sentences]. Continue for exactly 12 pages.
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.`,
-    userPromptTemplate: `Create an 800-900 word story for {name} (age {age}) who is ready for complex, meaningful narratives! Reading level: 6th grade vocabulary with sophisticated 11+ themes. Include their deep interest in {hobbies} and personal meaning in {favoriteAnimal} and {favoriteColor}, with a special connection to {favoriteFood}. Weave these elements as foundational themes - Example: let their animal represent their core values, their color symbolize their emotional journey, their hobby define their sense of purpose, and their food connect to family heritage. Explore complex themes of identity and purpose across 12-14 pages. Before writing, internally imagine a random "story seed" between 1 and 10,000 to vary setting, events, and details so each story is unique, even with identical inputs. Do not mention the seed.`,
+    userPromptTemplate: `Create an 800-900 word story for {name} (age {age}) who is ready for complex, meaningful narratives! Reading level: 6th grade vocabulary with sophisticated 11+ themes. Include their deep interest in {hobbies} and personal meaning in {favoriteAnimal} and {favoriteColor}, with a special connection to {favoriteFood}. Weave these elements as foundational themes - Example: let their animal represent their core values, their color symbolize their emotional journey, their hobby define their sense of purpose, and their food connect to family heritage. Explore complex themes of identity and purpose across exactly 12 pages. Before writing, internally imagine a random "story seed" between 1 and 10,000 to vary setting, events, and details so each story is unique, even with identical inputs. Do not mention the seed.`,
     maxLength: 900,
-    expectedPages: 13,
+    expectedPages: 12,
     wordCount: "800-900"
   },
   

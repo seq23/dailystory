@@ -72,7 +72,7 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
       
       {hasReachedLimit && (
         <p className="text-xs text-destructive">
-          You've reached the 90-page free trial limit. Upgrade to premium for unlimited reading!
+          Free trial session ended. Upgrade to premium for unlimited reading!
         </p>
       )}
     </div>

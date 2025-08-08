@@ -15,27 +15,15 @@ export enum ErrorType {
   UNKNOWN = 'unknown'
 }
 
-// Page limit error classes
-export class FreeTrialPageLimitError extends Error {
+// Trial session error classes  
+export class FreeTrialTimeoutError extends Error {
   constructor(
-    message: string, 
-    public currentPages: number, 
-    public maxPages: number,
-    public upgradeMessage: string
+    public sessionDuration: number,
+    public maxDuration: number,
+    message: string = `Free trial session ended: ${Math.round(sessionDuration/60000)} minutes`
   ) {
     super(message);
-    this.name = 'FreeTrialPageLimitError';
-  }
-}
-
-export class PremiumPageLimitError extends Error {
-  constructor(
-    message: string, 
-    public currentPages: number, 
-    public maxPages: number
-  ) {
-    super(message);
-    this.name = 'PremiumPageLimitError';
+    this.name = 'FreeTrialTimeoutError';
   }
 }
 
