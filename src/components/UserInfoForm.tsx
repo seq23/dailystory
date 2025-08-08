@@ -396,11 +396,14 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
                     <SelectValue placeholder={t("userInfoForm.fields.age.placeholder")} />
                   </SelectTrigger>
                   <SelectContent className="bg-popover border border-border shadow-soft z-50">
-                    {[3, 4, 5, 6, 7, 8, 9, 10, 11].map((age) => (
+                    {[3, 4, 5, 6, 7, 8, 9, 10].map((age) => (
                       <SelectItem key={age} value={age.toString()} className="focus:bg-accent focus:text-accent-foreground">
                         {age} years old
                       </SelectItem>
                     ))}
+                    <SelectItem key={11} value="11" className="focus:bg-accent focus:text-accent-foreground">
+                      11+
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
