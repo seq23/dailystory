@@ -85,8 +85,10 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   // Magic wand state
   const [isGeneratingNewStory, setIsGeneratingNewStory] = useState(false);
 
-  // Reading Level state
+  // Reading Level state with animation support
   const [currentDifficulty, setCurrentDifficulty] = useState<'beginner' | 'easy' | 'medium' | 'hard' | 'expert'>(userInfo.difficultyLevel || 'beginner');
+  const [isChangingDifficulty, setIsChangingDifficulty] = useState(false);
+  const [changeDirection, setChangeDirection] = useState<'increase' | 'decrease' | 'badge'>();
   const difficultyLevels: ('beginner' | 'easy' | 'medium' | 'hard' | 'expert')[] = ['beginner', 'easy', 'medium', 'hard', 'expert'];
   
   // Define current story for highlighting hook
@@ -437,8 +439,11 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     }
   };
 
-  // Difficulty controls
-  const handleDifficultyChange = (direction: 'up' | 'down') => {
+  // Simplified difficulty controls with button animations
+  const handleDifficultyChange = async (direction: 'up' | 'down') => {
+    setIsChangingDifficulty(true);
+    setChangeDirection(direction === 'up' ? 'increase' : 'decrease');
+    
     const currentIndex = difficultyLevels.indexOf(currentDifficulty);
     let newIndex = currentIndex;
     
@@ -450,9 +455,21 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     
     if (newIndex !== currentIndex) {
       setCurrentDifficulty(difficultyLevels[newIndex]);
-      // Here you would trigger story regeneration with new difficulty
-      console.log('Difficulty changed to:', difficultyLevels[newIndex]);
+      
+      // Update live context for premium users
+      if (isPremium && liveContext) {
+        setLiveContext(prev => prev ? {...prev, difficulty: difficultyLevels[newIndex]} : null);
+      }
+      
+      // Animate badge change
+      setTimeout(() => setChangeDirection('badge'), 200);
     }
+    
+    // Complete animation
+    setTimeout(() => {
+      setIsChangingDifficulty(false);
+      setChangeDirection(undefined);
+    }, 800);
   };
 
 
@@ -510,6 +527,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
           onIncreaseDifficulty={() => handleDifficultyChange('up')}
           onDecreaseDifficulty={() => handleDifficultyChange('down')}
           showLevelControls={true}
+          isChangingDifficulty={isChangingDifficulty}
+          changeDirection={changeDirection}
         />
 
         {/* Premium Controls Bar - Mobile Optimized */}

@@ -534,7 +534,7 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
 
               <div className="space-y-2">
                 <Label htmlFor="readingAbility" className="text-base md:text-lg font-semibold text-foreground">
-                  {t("userInfoForm.fields.readingAbility.label")}
+                  {t("userInfoForm.fields.readingAbility.label")} <span className="text-red-500">*</span>
                   <span className="text-sm font-normal text-muted-foreground ml-2">
                     (Research-Based Dolch Sight Words)
                   </span>
@@ -576,8 +576,9 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
                     </SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="text-sm text-muted-foreground">
-                  {t("userInfoForm.fields.readingAbility.helper", "Choose the reading level that matches your child's current abilities.")}
+                <p className="text-sm text-muted-foreground bg-blue-50 dark:bg-blue-950/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <CheckCircle className="w-4 h-4 inline mr-2 text-blue-600" />
+                  <strong>This is your preference and will be respected</strong> throughout your reading experience.
                   <br />
                   <span className="text-xs">
                     Stories use research-based Dolch sight word lists that cumulatively build reading skills.

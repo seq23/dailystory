@@ -151,7 +151,7 @@ export class DifficultyManager {
   }
 
   /**
-   * Get final difficulty recommendation considering stored preferences
+   * Get final difficulty recommendation - prioritizes user's explicit readingAbility choice
    */
   static getFinalDifficulty(userInfo: UserInfo): {
     difficulty: DifficultyLevel;
@@ -159,11 +159,24 @@ export class DifficultyManager {
     profile: DifficultyProfile;
   } {
     const userId = userInfo.name || 'guest';
-    
-    // Check for stored preference first
-    const storedDifficulty = this.getStoredDifficulty(userId);
     const profile = this.suggestDifficulty(userInfo);
     
+    // FIRST PRIORITY: User's explicit readingAbility choice (complete user control)
+    if (userInfo.readingAbility) {
+      console.log(`🎯 DifficultyManager: Using user's explicit readingAbility ${userInfo.readingAbility} for ${userId}`);
+      return {
+        difficulty: userInfo.readingAbility,
+        isStored: false,
+        profile: {
+          ...profile,
+          suggestedDifficulty: userInfo.readingAbility,
+          reasoning: ['Using user\'s explicit reading ability choice', ...profile.reasoning]
+        }
+      };
+    }
+    
+    // SECOND PRIORITY: Check for stored preference
+    const storedDifficulty = this.getStoredDifficulty(userId);
     if (storedDifficulty) {
       console.log(`🎯 DifficultyManager: Using stored difficulty ${storedDifficulty} for ${userId}`);
       return {
@@ -177,6 +190,7 @@ export class DifficultyManager {
       };
     }
     
+    // LAST PRIORITY: Age-based suggestions (all levels available regardless of age)
     console.log(`🎯 DifficultyManager: Suggesting ${profile.suggestedDifficulty} for ${userId} (confidence: ${profile.confidence})`);
     console.log(`📋 DifficultyManager: Reasoning:`, profile.reasoning);
     

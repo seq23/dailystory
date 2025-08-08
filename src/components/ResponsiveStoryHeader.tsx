@@ -1,18 +1,22 @@
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Home, TrendingUp, TrendingDown, RefreshCw } from "lucide-react";
+import { Home, TrendingUp, TrendingDown, RefreshCw, Loader2 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import type { DifficultyLevel } from '@/types';
 
 interface ResponsiveStoryHeaderProps {
   storyTitle?: string;
-  currentDifficulty?: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert';
+  currentDifficulty?: DifficultyLevel;
   onHome?: () => void;
   onNewStory?: () => void;
   onIncreaseDifficulty?: () => void;
   onDecreaseDifficulty?: () => void;
   showLevelControls?: boolean;
+  isChangingDifficulty?: boolean;
+  changeDirection?: 'increase' | 'decrease' | 'badge';
 }
 
 export const ResponsiveStoryHeader = ({
@@ -22,10 +26,33 @@ export const ResponsiveStoryHeader = ({
   onNewStory,
   onIncreaseDifficulty,
   onDecreaseDifficulty,
-  showLevelControls = true
+  showLevelControls = true,
+  isChangingDifficulty = false,
+  changeDirection
 }: ResponsiveStoryHeaderProps) => {
   const { t } = useTranslation();
   const { isMobile, isTablet, isMobileOrTablet } = useIsMobile();
+  
+  // Animation states for buttons
+  const [buttonAnimations, setButtonAnimations] = useState({
+    increase: false,
+    decrease: false,
+    badge: false
+  });
+
+  // Handle animation effects
+  useEffect(() => {
+    if (isChangingDifficulty && changeDirection) {
+      setButtonAnimations(prev => ({ ...prev, [changeDirection]: true }));
+      
+      // Reset animation after completion
+      const timer = setTimeout(() => {
+        setButtonAnimations(prev => ({ ...prev, [changeDirection]: false }));
+      }, 600);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isChangingDifficulty, changeDirection]);
 
   const getDifficultyLabel = (difficulty: string) => {
     const labels = {
@@ -168,18 +195,26 @@ export const ResponsiveStoryHeader = ({
                     variant="outline"
                     size={isMobileOrTablet ? "sm" : "default"}
                     onClick={onDecreaseDifficulty}
-                    disabled={currentDifficulty === 'beginner'}
+                    disabled={currentDifficulty === 'beginner' || isChangingDifficulty}
                     className={cn(
                       isMobileOrTablet 
                         ? "min-h-[44px] min-w-[44px] rounded-full p-2"
-                        : "h-10 w-10 rounded-lg hover:bg-red-50 hover:border-red-200"
+                        : "h-10 w-10 rounded-lg hover:bg-red-50 hover:border-red-200",
+                      "transition-all duration-300",
+                      buttonAnimations.decrease 
+                        ? 'animate-scale-in bg-secondary/20 border-secondary' 
+                        : ''
                     )}
                     aria-label={t("storyDisplay.decreaseDifficulty", "Make easier")}
                   >
-                    <TrendingDown className={cn(
-                      "w-4 h-4",
-                      !isMobileOrTablet && "text-red-600"
-                    )} />
+                    {isChangingDifficulty && changeDirection === 'decrease' ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <TrendingDown className={cn(
+                        "w-4 h-4",
+                        !isMobileOrTablet && "text-red-600"
+                      )} />
+                    )}
                   </Button>
                 )}
 
@@ -187,11 +222,14 @@ export const ResponsiveStoryHeader = ({
                 <Badge 
                   variant="outline" 
                   className={cn(
-                    "border px-2 py-1",
+                    "border px-2 py-1 transition-all duration-300",
                     isMobile ? "text-xs" : 
                     isMobileOrTablet ? "text-sm" :
                     "px-4 py-2 text-sm font-medium border-2 rounded-lg",
-                    getDifficultyColor(currentDifficulty)
+                    getDifficultyColor(currentDifficulty),
+                    buttonAnimations.badge 
+                      ? 'animate-[wiggle_0.5s_ease-in-out] scale-110' 
+                      : ''
                   )}
                 >
                   {getDifficultyLabel(currentDifficulty)}
@@ -203,18 +241,26 @@ export const ResponsiveStoryHeader = ({
                     variant="outline"
                     size={isMobileOrTablet ? "sm" : "default"}
                     onClick={onIncreaseDifficulty}
-                    disabled={currentDifficulty === 'expert'}
+                    disabled={currentDifficulty === 'expert' || isChangingDifficulty}
                     className={cn(
                       isMobileOrTablet 
                         ? "min-h-[44px] min-w-[44px] rounded-full p-2"
-                        : "h-10 w-10 rounded-lg hover:bg-green-50 hover:border-green-200"
+                        : "h-10 w-10 rounded-lg hover:bg-green-50 hover:border-green-200",
+                      "transition-all duration-300",
+                      buttonAnimations.increase 
+                        ? 'animate-[glow-pulse_0.6s_ease-in-out,_edgeBounce_0.4s_ease-out] border-primary/50 shadow-lg shadow-primary/25' 
+                        : ''
                     )}
                     aria-label={t("storyDisplay.increaseDifficulty", "Make harder")}
                   >
-                    <TrendingUp className={cn(
-                      "w-4 h-4",
-                      !isMobileOrTablet && "text-green-600"
-                    )} />
+                    {isChangingDifficulty && changeDirection === 'increase' ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <TrendingUp className={cn(
+                        "w-4 h-4",
+                        !isMobileOrTablet && "text-green-600"
+                      )} />
+                    )}
                   </Button>
                 )}
               </div>
