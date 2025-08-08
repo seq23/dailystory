@@ -520,11 +520,10 @@ serve(async (req) => {
     // If custom prompts are provided (from LiveGenerationService), use those
     // Otherwise, fall back to basic prompts for NetflixStyleStoryService  
     const systemPrompt = config?.systemPrompt || `You are a children's story writer. Create an engaging story for ${readingLevel} level readers.`;
-    const userPrompt = config?.userPrompt || `Create a story for ${config?.userName || 'the child'} about ${theme || 'adventure'}.`;
+    const userPrompt = config?.userPrompt || `Create a unique story for ${config?.userName || 'the child'}.`;
 
     console.log('📖 Story Generation Request:', {
       readingLevel,
-      theme,
       hasCustomPrompts: !!(config?.systemPrompt && config?.userPrompt),
       userName: config?.userName,
       expertGrade: config?.expertGrade,
@@ -623,12 +622,12 @@ serve(async (req) => {
     }
 
     const userName = config?.userName || 'the child';
-    console.log(`Generated story for ${userName} about ${theme || 'adventure'}`);
+    console.log(`Generated story for ${userName}`);
 
     return new Response(JSON.stringify({
       pages,
       difficulty: readingLevel || 'easy',
-      title: `${userName}'s ${theme || 'Adventure'} Story`,
+      title: `${userName}'s Story`,
       isComplete: true
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -640,12 +639,10 @@ serve(async (req) => {
     // Parse request body for fallback
     let fallbackConfig = {};
     let fallbackReadingLevel = 'easy';
-    let fallbackTheme = 'adventure';
     try {
       const requestBody = await req.json();
       fallbackConfig = requestBody.config || {};
       fallbackReadingLevel = requestBody.readingLevel || 'easy';
-      fallbackTheme = requestBody.theme || 'adventure';
     } catch (parseError) {
       console.error('Could not parse request for fallback:', parseError);
     }
@@ -663,7 +660,7 @@ serve(async (req) => {
     const fallbackStory = {
       pages: fallbackPages,
       difficulty: fallbackReadingLevel || 'easy',
-      title: `${userName}'s ${fallbackTheme.charAt(0).toUpperCase() + fallbackTheme.slice(1)} Story`,
+      title: `${userName}'s Story`,
       isComplete: true
     };
     

@@ -16,7 +16,6 @@ export interface LiveGenerationContext {
   storyContext: string[];
   currentPage: number;
   totalExpectedPages: number;
-  theme: string;
   characters: string[];
 }
 
@@ -101,7 +100,6 @@ export class LiveGenerationService {
         storyContext: [content],
         currentPage: 1,
         totalExpectedPages: promptConfig.expectedPages || 6,
-        theme: 'adventure',
         characters: [userInfo.name, userInfo.favoriteAnimal || 'friend']
       };
 
@@ -152,7 +150,6 @@ export class LiveGenerationService {
       const { data, error } = await supabase.functions.invoke('generate-adaptive-story', {
         body: {
           readingLevel: context.difficulty,
-          theme: context.theme,
           interests: [context.userInfo.favoriteAnimal, context.userInfo.favoriteColor].filter(Boolean),
           config: {
             userName: context.userInfo.name,
@@ -220,7 +217,6 @@ export class LiveGenerationService {
         storyContext: [content],
         currentPage: 1,
         totalExpectedPages: 6, // Simple fixed value
-        theme: 'adventure',
         characters: [userInfo.name, userInfo.favoriteAnimal || 'friend']
       };
 
@@ -240,7 +236,6 @@ export class LiveGenerationService {
         storyContext: [content],
         currentPage: 1,
         totalExpectedPages: 6,
-        theme: 'adventure',
         characters: [userInfo.name, userInfo.favoriteAnimal || 'friend']
       };
 
