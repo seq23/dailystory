@@ -83,7 +83,7 @@ export const CollapsibleFloatingTimer = ({
         <div 
           className={cn(
             "relative bg-background/95 backdrop-blur-sm rounded-full shadow-lg border-2 border-primary/20 cursor-pointer hover:scale-110 transition-all duration-200 group flex items-center justify-center",
-            isMobile ? "w-14 h-14" : isTablet ? "w-16 h-16" : "w-18 h-18"
+            isMobile ? "w-14 h-14" : isTablet ? "w-16 h-16" : "w-20 h-20"
           )}
           onClick={() => setIsCollapsed(false)}
           id="timer-display"
@@ -120,19 +120,19 @@ export const CollapsibleFloatingTimer = ({
         {/* Main Timer Circle */}
         <div className={cn(
           "relative bg-gradient-to-br from-background to-muted/20 backdrop-blur-sm rounded-full shadow-2xl border-2 border-border flex items-center justify-center",
-          isMobile ? "w-20 h-20" : isTablet ? "w-24 h-24" : "w-28 h-28"
+          isMobile ? "w-20 h-20" : isTablet ? "w-24 h-24" : "w-32 h-32"
         )}>
           <div id="timer-display" className="text-center">
             <div className={cn(
               "font-bold", 
               getTimerColor(),
-              isMobile ? "text-sm" : isTablet ? "text-base" : "text-lg"
+              isMobile ? "text-sm" : isTablet ? "text-base" : "text-xl"
             )}>
               {formatTime(timeRemaining)}
             </div>
             <div className={cn(
               "text-muted-foreground",
-              isMobile ? "text-xs hidden" : isTablet ? "text-xs" : "text-sm"
+              isMobile ? "text-xs hidden" : isTablet ? "text-xs" : "text-base"
             )}>
               {!isMobile && t("floatingTimer.readingTime", "Reading Time")}
             </div>
