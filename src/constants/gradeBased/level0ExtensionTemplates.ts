@@ -13,26 +13,26 @@ export const LEVEL_0_EXTENSIONS: string[][] = [
     "Big blocks everywhere!",
     "Stack them up high.",
     "Tower falls down!",
-    "{userName} builds again happily."
+    "{userName} builds again."
   ],
   [
     "{userName} sees little {favoriteAnimal}.",
     "It runs fast.",
     "Come here, little friend!",
-    "Pet the soft fur.",
+    "Pet the little fur.",
     "{userName} loves animals so."
   ],
   [
-    "{userName} makes yummy {favoriteFood}.",
+    "{userName} makes good {favoriteFood}.",
     "Mix and stir.",
     "Taste it now!",
-    "Mmm, so good!",
+    "So good!",
     "{userName} shares with friends."
   ],
   [
     "{userName} plays with water.",
     "Splash, splash, splash!",
-    "Water feels cool.",
+    "Water is cool.",
     "Make big waves.",
     "{userName} loves water play."
   ],

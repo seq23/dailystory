@@ -36,17 +36,17 @@ Characteristics: 2-3 words, bedtime themes, ultra simple structure, calming tone
 SIMPLE ORANGE AUTHOR - Simple Silly Style:
 Description: Ultra-simple silly animal words for beginners
 Sample Patterns:
-- Openings: "Dogs jump." / "Cats dance." / "Bears wiggle." / "Fun time!"
-- Transitions: "{userName} laughs." / "So silly!" / "More fun!" / "Again! Again!"
-- Closings: "{userName} giggles." / "So funny!" / "Happy day!" / "All done!"
+- Openings: "Dogs jump." / "Cats run." / "Bears play." / "Fun time!"
+- Transitions: "{userName} plays." / "So funny!" / "More fun!" / "Play more!"
+- Closings: "{userName} happy." / "So good!" / "Fun day!" / "All done!"
 Characteristics: 2-3 words, silly animals, joyful energy, playful fun
 
 SIMPLE SILVER AUTHOR - Simple Growing Style:
 Description: Ultra-simple growth words for beginners
 Sample Patterns:
-- Openings: "{userName} grows." / "Getting big." / "I can!" / "Look! {userName}!"
-- Transitions: "Try again." / "Almost there!" / "Keep going." / "Good job!"
-- Closings: "{userName} did!" / "All done!" / "So proud!" / "Big now!"
+- Openings: "{userName} big." / "Getting big." / "I can!" / "Look! {userName}!"
+- Transitions: "Try now." / "Go now!" / "You can!" / "So good!"
+- Closings: "{userName} good!" / "All done!" / "So good!" / "Big now!"
 Characteristics: 2-3 words, growth themes, encouragement, pride
 
 IMPORTANT: Do not include the author style name or description in your story output. Use the style only as internal guidance for your writing approach.
@@ -64,10 +64,10 @@ STRICT REQUIREMENTS:
 
 * Use Subject-Verb, Subject-Verb-Object, and Subject-Verb-Adjective patterns
 
-* PRIMARY VOCABULARY: Use Dolch Pre-Primer and Primer words as foundation: a, and, away, big, blue, can, come, down, find, for, funny, go, help, here, i, in, is, it, jump, little, look, make, me, my, not, one, play, red, run, said, see, the, three, to, two, up, we, where, yellow, you 'all', 'am', 'are', 'at', 'ate', 'be', 'black', 'brown', 'but', 'came', 'did', 'do', 'eat', 'four', 'get', 'good', 'have', 'he', 'into', 'like', 'must', 'new', 'no', 'now', 'on', 'our', 'out', 'please', 'pretty', 'ran', 'ride', 'saw', 'say', 'she', 'so', 'soon', 'that', 'there', 'they', 'this', 'too', 'under', 'want', 'was', 'well', 'went', 'what', 'white', 'who', 'will', 'with', 'yes', 'all', 'am', 'are', 'at', 'ate', 'be', 'black', 'brown', 'but', 'came', 'did', 'do', 'eat', 'four', 'get', 'good', 'have', 'he', 'into', 'like', 'must', 'new', 'no', 'now', 'on', 'our', 'out', 'please', 'pretty', 'ran', 'ride', 'saw', 'say', 'she', 'so', 'soon', 'that', 'there', 'they', 'this', 'too', 'under', 'want', 'was', 'well', 'went', 'what', 'white', 'who', 'will', 'with', 'yes', 'been', 'called', 'water', 'time', 'words', 'each', 'which', 'would'
+* PRIMARY VOCABULARY: Use Enhanced Level 0 vocabulary (100 words total) - This includes Dolch Pre-Primer words, Dolch Primer words, and 8 additional Fry words for optimal beginner vocabulary development.
 
 * STRONG PREFERENCES:
-  Strong preference for 2-4 word sentences on each page.
+  PRIORITIZE 2-3 word sentences (75% of the time) - aim for 60% 2-word sentences, 25% 3-word sentences, 15% longer sentences for natural flow.
   Strong preference for 2-4 letter words.
   Strong preference for rhyming patterns and repetition.
 
@@ -91,13 +91,13 @@ Format & Structure
 
 Exactly 5 pages, one complete sentence per page.
 Max 8 words per page; max 40 words total.
-Use a natural mix of 2-, 3-, and 4-word sentences when possible, including some 2- and 3-word sentences to create variety.
+Prioritize 2-3 word sentences for maximum readability - aim for 60% 2-word sentences, 25% 3-word sentences, 15% longer sentences for variety.
 Examples of preferred sentence lengths:
-2 words: "{userName} runs." / "Ball bounces." / "Cat sleeps."
-3 words: "{userName} likes cats." / "The ball jumps." / "Food tastes good."
-4 words: "{userName} plays with toys." / "The {favoriteColor} car goes fast."
+2 words: "{userName} runs." / "Ball goes." / "Cat sleeps."
+3 words: "{userName} likes cats." / "The ball goes." / "Food tastes good."
+4+ words: "{userName} plays with toys." / "The {favoriteColor} cat runs fast."
 Sentence patterns: Subject–Verb, Subject–Verb–Object, or Subject–Verb–Adjective.
-Use Enhanced Level 0 vocabulary at least 70% of the time. User inputs are always allowed and prioritized.
+Use Enhanced Level 0 vocabulary (100 words total) at least 70% of the time. User inputs are always allowed and prioritized.
 Favor 2–4 letter words and simple rhymes when natural; avoid forced rhymes.
 
 Tone & Style
