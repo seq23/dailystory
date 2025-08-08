@@ -106,10 +106,9 @@ export class ExtensionTemplateValidator {
   private static getExtensionTemplates(gradeLevel: GradeLevel, userType: 'free' | 'premium' = 'premium'): string[] {
     switch (gradeLevel) {
       case 0:
-        // Level 0 maintains free vs premium distinction using actual extension templates
-        const { LEVEL_0_FREE_EXTENSIONS, LEVEL_0_PREMIUM_EXTENSIONS } = require('@/constants/gradeBased/level0ExtensionTemplates');
-        const level0Extensions = userType === 'premium' ? LEVEL_0_PREMIUM_EXTENSIONS : LEVEL_0_FREE_EXTENSIONS;
-        return level0Extensions.flatMap((template: string[]) => template);
+        // Universal access - all users get same templates
+        const { getAllLevel0Extensions } = require('@/constants/gradeBased/level0ExtensionTemplates');
+        return getAllLevel0Extensions().flatMap((template: string[]) => template);
       case 1:
         // Universal access - all users get same templates
         const { getAllLevel1Extensions } = require('@/constants/gradeBased/level1ExtensionTemplates');
