@@ -121,6 +121,10 @@
     }
   },
   "freeReadingSession": {
+    "loading": {
+      "title": "正在创建您的免费故事...",
+      "description": "正在为{userName}生成个性化内容"
+    },
     "freeTrial": "免费试用",
     "session": {
       "title": "{userName}的阅读冒险",

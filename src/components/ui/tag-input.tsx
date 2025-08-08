@@ -8,21 +8,22 @@ interface TagInputProps {
   placeholder?: string;
   className?: string;
   onBlur?: (value: string) => void;
+  disabled?: boolean;
 }
 
-export const TagInput = ({ value, onChange, placeholder, className, onBlur }: TagInputProps) => {
+export const TagInput = ({ value, onChange, placeholder, className, onBlur, disabled = false }: TagInputProps) => {
   const [currentInput, setCurrentInput] = useState("");
   
   // Parse existing items from comma-separated string
   const items = value ? value.split(',').map(h => h.trim()).filter(h => h.length > 0) : [];
 
   const addItem = (item: string) => {
+    if (disabled) return;
     const trimmedItem = item.trim();
     if (trimmedItem && !items.includes(trimmedItem)) {
       const newItems = [...items, trimmedItem];
       const newValue = newItems.join(', ');
       onChange(newValue);
-      // Trigger blur processing for the new item
       if (onBlur) {
         onBlur(newValue);
       }
@@ -31,11 +32,13 @@ export const TagInput = ({ value, onChange, placeholder, className, onBlur }: Ta
   };
 
   const removeItem = (indexToRemove: number) => {
+    if (disabled) return;
     const newItems = items.filter((_, index) => index !== indexToRemove);
     onChange(newItems.join(', '));
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (disabled) return;
     if (e.key === 'Enter') {
       e.preventDefault();
       if (currentInput.trim()) {
@@ -49,6 +52,7 @@ export const TagInput = ({ value, onChange, placeholder, className, onBlur }: Ta
   return (
     <div className={cn(
       "min-h-[100px] sm:min-h-[120px] p-4 sm:p-5 rounded-xl sm:rounded-2xl border-2 border-primary/20 focus-within:border-primary/50 bg-background touch-target",
+      disabled && "opacity-60 pointer-events-none",
       className
     )}>
       {/* Display existing items as tags */}
@@ -63,6 +67,8 @@ export const TagInput = ({ value, onChange, placeholder, className, onBlur }: Ta
               type="button"
               onClick={() => removeItem(index)}
               className="hover:bg-primary/20 rounded-full p-0.5 transition-colors touch-target-small"
+              aria-label="remove"
+              disabled={disabled}
             >
               <X className="w-3 h-3" />
             </button>
@@ -79,8 +85,9 @@ export const TagInput = ({ value, onChange, placeholder, className, onBlur }: Ta
           onKeyDown={handleKeyDown}
           placeholder={items.length === 0 ? (placeholder || "") : ""}
           className="w-full bg-transparent border-none outline-none text-base sm:text-lg placeholder:text-muted-foreground touch-target"
+          disabled={disabled}
           onBlur={() => {
-            if (currentInput.trim()) {
+            if (currentInput.trim() && !disabled) {
               addItem(currentInput);
             }
             if (onBlur) {

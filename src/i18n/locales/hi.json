@@ -121,6 +121,10 @@
     }
   },
   "freeReadingSession": {
+    "loading": {
+      "title": "आपकी मुफ्त कहानी बनाई जा रही है...",
+      "description": "{userName} के लिए व्यक्तिगत सामग्री बनाई जा रही है"
+    },
     "freeTrial": "मुफ्त परीक्षण",
     "session": {
       "title": "{userName} का पठन साहसिक कार्य",

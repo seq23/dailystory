@@ -121,6 +121,10 @@
     }
   },
   "freeReadingSession": {
+    "loading": {
+      "title": "جاري إنشاء قصتك المجانية...",
+      "description": "إنشاء محتوى مخصص لـ {userName}"
+    },
     "freeTrial": "تجربة مجانية",
     "session": {
       "title": "مغامرة قراءة {userName}",

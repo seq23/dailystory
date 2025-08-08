@@ -574,6 +574,7 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
                     onBlur={(val) => handleInputChange("favoriteAnimal", val)}
                     placeholder={t("userInfoForm.fields.favoriteAnimal.placeholder")}
                     className="bg-background"
+                    disabled={!isPremium && selectedOptionalField && selectedOptionalField !== 'favoriteAnimal'}
                   />
                 </div>
                 {translations.favoriteAnimal && (
@@ -596,6 +597,7 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
                     onBlur={(val) => handleInputChange("favoriteFood", val)}
                     placeholder={t("userInfoForm.fields.favoriteFood.placeholder")}
                     className="bg-background"
+                    disabled={!isPremium && selectedOptionalField && selectedOptionalField !== 'favoriteFood'}
                   />
                 </div>
                 {translations.favoriteFood && (
@@ -618,6 +620,7 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
                     onBlur={(val) => handleInputChange("hobbies", val)}
                     placeholder={t("userInfoForm.fields.hobbies.placeholder")}
                     className="bg-background"
+                    disabled={!isPremium && selectedOptionalField && selectedOptionalField !== 'hobbies'}
                   />
                 </div>
                 {translations.hobbies && (
@@ -640,6 +643,7 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
                     onBlur={(val) => handleInputChange("specialRequest", val)}
                     placeholder={t("userInfoForm.fields.specialRequest.placeholder")}
                     className="bg-background"
+                    disabled={!isPremium && selectedOptionalField && selectedOptionalField !== 'specialRequest'}
                   />
                   {translationLoading.specialRequest && (
                     <Loader2 className="absolute right-3 top-3 w-4 h-4 animate-spin text-primary" />
