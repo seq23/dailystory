@@ -31,7 +31,9 @@ serve(async (req) => {
       theme,
       hasCustomPrompts: !!(config?.systemPrompt && config?.userPrompt),
       userName: config?.userName,
-      expertGrade: config?.expertGrade
+      expertGrade: config?.expertGrade,
+      model: 'gpt-4o',
+      maxTokens: readingLevel === 'beginner' ? 100 : readingLevel === 'easy' ? 300 : readingLevel === 'medium' ? 600 : 1200
     });
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -41,12 +43,12 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4.1-2025-04-14',
+        model: 'gpt-4o',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        max_tokens: readingLevel === 'beginner' ? 200 : readingLevel === 'easy' ? 400 : readingLevel === 'medium' ? 800 : 2000,
+        max_tokens: readingLevel === 'beginner' ? 100 : readingLevel === 'easy' ? 300 : readingLevel === 'medium' ? 600 : 1200,
         temperature: 0.7,
         presence_penalty: 0.1,
         frequency_penalty: 0.1
@@ -54,15 +56,30 @@ serve(async (req) => {
     })
 
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.statusText}`)
+      const errorText = await response.text();
+      console.error('OpenAI API error details:', {
+        status: response.status,
+        statusText: response.statusText,
+        errorBody: errorText
+      });
+      throw new Error(`OpenAI API error: ${response.statusText} - ${errorText}`)
     }
 
     const data = await response.json()
+    console.log('OpenAI API response received:', {
+      hasChoices: !!data.choices,
+      choicesLength: data.choices?.length || 0,
+      hasContent: !!data.choices?.[0]?.message?.content
+    });
+
     const storyText = data.choices[0]?.message?.content?.trim()
 
     if (!storyText) {
+      console.error('No story content generated:', { data });
       throw new Error('No story content generated')
     }
+
+    console.log('Generated story length:', storyText.length, 'characters');
 
     // Clean up markdown formatting from OpenAI response
     const cleanStoryText = storyText
