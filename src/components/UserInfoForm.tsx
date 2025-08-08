@@ -259,8 +259,8 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
     }
     
     // Age defaults to 7, so only validate if it's somehow null/undefined
-    if (!formData.age || formData.age < 3 || formData.age > 12) {
-      errors.push("Please select a valid age (3-12 years)");
+    if (!formData.age || formData.age < 3 || formData.age > 11) {
+      errors.push("Please select a valid age (3-11 years)");
     }
     
     // Grade and language should have defaults, only validate if missing
@@ -287,7 +287,7 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
   const isFormComplete = () => {
     // Only require the most essential fields for completion
     const hasName = formData.name.trim().length > 0;
-    const hasAge = formData.age && formData.age >= 3 && formData.age <= 12;
+    const hasAge = formData.age && formData.age >= 3 && formData.age <= 11;
     const hasGrade = formData.grade && formData.grade.length > 0;
     const hasLanguage = formData.nativeLanguage && formData.nativeLanguage.length > 0;
     
@@ -396,7 +396,7 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
                     <SelectValue placeholder={t("userInfoForm.fields.age.placeholder")} />
                   </SelectTrigger>
                   <SelectContent className="bg-popover border border-border shadow-soft z-50">
-                    {[3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((age) => (
+                    {[3, 4, 5, 6, 7, 8, 9, 10, 11].map((age) => (
                       <SelectItem key={age} value={age.toString()} className="focus:bg-accent focus:text-accent-foreground">
                         {age} years old
                       </SelectItem>
