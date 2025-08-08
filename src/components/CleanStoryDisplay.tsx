@@ -31,10 +31,12 @@ import type { UserInfo, SessionStats } from "@/types";
 import { NetflixStyleStoryService, type NetflixStoryResult } from "@/services/NetflixStyleStoryService";
 import { LiveGenerationService, type LiveGenerationContext, type LivePageResult } from "@/services/LiveGenerationService";
 import { DifficultyManager } from "@/services/difficultyManager";
+import { DiagnosticTool } from "@/utils/diagnostics";
 
 import { SimpleImageService } from "@/services/SimpleImageService";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ErrorHandler, ErrorType } from "@/utils/errorHandling";
+import { DiagnosticPanel } from "@/components/DiagnosticPanel";
 
 interface CleanStoryDisplayProps {
   userInfo: UserInfo;
@@ -171,6 +173,11 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     setIsLoading(true);
     setError(null);
     
+    // Run diagnostics for free users to identify API issues
+    if (!isPremium) {
+      await DiagnosticTool.runFullDiagnostic();
+    }
+    
     try {
       if (isPremium) {
         // Premium: Live generation - start with first page
@@ -190,13 +197,30 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
       } else {
         // Free: Netflix-style - generate complete story upfront
         console.log('🎬 Free user: Generating complete story', { isPremium, userInfo });
+        console.log('🔍 DIAGNOSTIC: CleanStoryDisplay calling NetflixStyleStoryService', {
+          userName: userInfo.name,
+          difficulty: userInfo.difficultyLevel,
+          timestamp: new Date().toISOString()
+        });
         const result = await NetflixStyleStoryService.generateCompleteStory(userInfo);
         
+        console.log('🔍 DIAGNOSTIC: NetflixStyleStoryService result received', {
+          hasError: !!result.error,
+          pagesCount: result.pages?.length,
+          title: result.title,
+          sampleContent: result.pages?.[0]?.substring(0, 50)
+        });
+
         if (result.error) {
+          console.error('🔍 DIAGNOSTIC: Story generation returned error', result.error);
           setError(result.error);
           return;
         }
         
+        console.log('🔍 DIAGNOSTIC: Setting story in CleanStoryDisplay', {
+          pagesCount: result.pages.length,
+          firstPage: result.pages[0]?.substring(0, 100)
+        });
         setStory(result.pages);
         setStoryTitle(result.title);
         setIsStoryComplete(true);
@@ -544,10 +568,16 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-primary flex items-center justify-center">
-        <div className="text-center">
+      <div className="min-h-screen bg-gradient-primary flex items-center justify-center p-4">
+        <div className="text-center max-w-4xl w-full">
           <h2 className="text-2xl font-bold text-white mb-4">Oops! Something went wrong</h2>
           <p className="text-white/80 mb-6">{error}</p>
+          
+          {/* Diagnostic Panel for troubleshooting */}
+          <div className="mb-6">
+            <DiagnosticPanel userInfo={userInfo} />
+          </div>
+          
           <MobileOptimizedButton onClick={onNewStory} className="bg-white text-primary">
             Try Again
           </MobileOptimizedButton>

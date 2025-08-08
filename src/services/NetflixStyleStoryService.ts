@@ -23,6 +23,12 @@ export class NetflixStyleStoryService {
   private static fallbackManager = new EnhancedFallbackManager();
 
   static async generateCompleteStory(userInfo: UserInfo): Promise<NetflixStoryResult> {
+    console.log('🔍 DIAGNOSTIC: NetflixStyleStoryService.generateCompleteStory called', { 
+      userName: userInfo.name, 
+      isPremiumUser: false,
+      timestamp: new Date().toISOString()
+    });
+    
     try {
       console.log('🎬 Netflix-Style: Generating complete story for', userInfo.name);
       
@@ -64,6 +70,12 @@ export class NetflixStyleStoryService {
       });
       
       console.log('🎬 Calling OpenAI with simple prompts...');
+      console.log('🔍 DIAGNOSTIC: About to call supabase.functions.invoke', {
+        functionName: 'generate-adaptive-story',
+        difficulty,
+        userName: userInfo.name,
+        timestamp: new Date().toISOString()
+      });
       
       // Call OpenAI via Supabase Edge Function
       const { data, error } = await supabase.functions.invoke('generate-adaptive-story', {
@@ -93,17 +105,39 @@ export class NetflixStyleStoryService {
         }
       });
 
+      console.log('🔍 DIAGNOSTIC: Supabase function call completed', {
+        hasData: !!data,
+        hasError: !!error,
+        errorDetails: error,
+        dataKeys: data ? Object.keys(data) : [],
+        timestamp: new Date().toISOString()
+      });
+
       if (error) {
         console.error('🎬 Netflix-Style: OpenAI call failed:', error);
+        console.error('🔍 DIAGNOSTIC: API call error details', {
+          errorMessage: error.message,
+          errorCode: error.code,
+          errorDetails: error.details,
+          fallbackReason: 'api_error'
+        });
         return this.generateEnhancedFallbackStory(userInfo, difficulty, 'api_error');
       }
 
       if (data?.pages && data.pages.length > 0) {
         console.log(`🎬 Netflix-Style: Generated ${data.pages.length} pages - accepting OpenAI content`);
+        console.log('🔍 DIAGNOSTIC: API response data validation', {
+          pagesCount: data.pages.length,
+          hasValidContent: data.pages.some(page => page && page.trim().length > 0),
+          sampleContent: data.pages[0]?.substring(0, 50),
+          difficulty: data.difficulty,
+          title: data.title
+        });
         
         // Simple validation - just check if content exists
         if (data.pages.some(page => page && page.trim().length > 0)) {
           console.log('✅ Story has content - proceeding');
+          console.log('🔍 DIAGNOSTIC: Using API-generated content successfully');
           return {
             pages: data.pages,
             difficulty: data.difficulty || difficulty,
@@ -115,10 +149,22 @@ export class NetflixStyleStoryService {
       }
 
       // Fallback if no content - use enhanced fallback templates
+      console.log('🔍 DIAGNOSTIC: No valid content from API, using fallback', {
+        hasData: !!data,
+        hasPages: !!(data?.pages),
+        pagesLength: data?.pages?.length,
+        fallbackReason: 'no_content'
+      });
       return this.generateEnhancedFallbackStory(userInfo, difficulty, 'no_content');
       
     } catch (error) {
       console.error('🎬 Netflix-Style: Story generation failed:', error);
+      console.error('🔍 DIAGNOSTIC: Unexpected error in story generation', {
+        errorName: error?.constructor?.name,
+        errorMessage: error?.message,
+        errorStack: error?.stack,
+        fallbackReason: 'generation_error'
+      });
       const wrappedError = ErrorHandler.handleError(error as Error, 'NetflixStyleStoryService.generateCompleteStory');
       return this.generateEnhancedFallbackStory(userInfo, userInfo.difficultyLevel || 'easy', 'generation_error');
     }
@@ -126,6 +172,13 @@ export class NetflixStyleStoryService {
 
   private static generateEnhancedFallbackStory(userInfo: UserInfo, difficulty: DifficultyLevel, reason: string): NetflixStoryResult {
     console.log(`🎬 Netflix-Style: Using enhanced fallback templates (reason: ${reason})`);
+    console.log('🔍 DIAGNOSTIC: Fallback triggered', {
+      reason,
+      difficulty,
+      userName: userInfo.name,
+      fallbackMethod: 'enhanced_templates',
+      timestamp: new Date().toISOString()
+    });
     
     try {
       // Use the sophisticated enhanced fallback system with 187 templates

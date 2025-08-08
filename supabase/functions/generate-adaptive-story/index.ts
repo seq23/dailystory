@@ -6,6 +6,30 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Diagnostic function to check API key availability
+function validateOpenAIApiKey(): { isValid: boolean; error?: string } {
+  const apiKey = Deno.env.get('OPENAI_API_KEY');
+  console.log('🔍 DIAGNOSTIC: Checking OpenAI API key availability', {
+    hasApiKey: !!apiKey,
+    keyPrefix: apiKey ? apiKey.substring(0, 7) + '...' : 'none',
+    timestamp: new Date().toISOString()
+  });
+  
+  if (!apiKey) {
+    return { isValid: false, error: 'OPENAI_API_KEY environment variable not set' };
+  }
+  
+  if (!apiKey.startsWith('sk-')) {
+    return { isValid: false, error: 'Invalid OpenAI API key format' };
+  }
+  
+  if (apiKey.length < 20) {
+    return { isValid: false, error: 'OpenAI API key appears to be incomplete' };
+  }
+  
+  return { isValid: true };
+}
+
 // ============================================================================
 // ENHANCED TEMPLATE LIBRARY INTEGRATION
 // ============================================================================
@@ -368,13 +392,34 @@ function getEnhancedFallbackPages(difficulty: string, userInfo: any): string[] {
 }
 
 serve(async (req) => {
+  console.log('🔍 DIAGNOSTIC: Edge function invoked', {
+    method: req.method,
+    url: req.url,
+    headers: Object.fromEntries(req.headers.entries()),
+    timestamp: new Date().toISOString()
+  });
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
     const requestBody = await req.json()
+    console.log('🔍 DIAGNOSTIC: Request body parsed', {
+      hasBody: !!requestBody,
+      readingLevel: requestBody?.readingLevel,
+      userName: requestBody?.config?.userName,
+      bodyKeys: Object.keys(requestBody || {})
+    });
+    
     const { readingLevel, authorStyle, theme, interests, config } = requestBody
+    
+    // Validate OpenAI API key first
+    const keyValidation = validateOpenAIApiKey();
+    if (!keyValidation.isValid) {
+      console.error('🔍 DIAGNOSTIC: OpenAI API key validation failed:', keyValidation.error);
+      throw new Error(`API configuration error: ${keyValidation.error}`);
+    }
     
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY')
     if (!openaiApiKey) {
