@@ -20,6 +20,20 @@ interface ResponsiveTimerProps {
 export const ResponsiveTimer = (props: ResponsiveTimerProps) => {
   const { isMobile, isTablet, isMobileOrTablet, hasTouchCapability } = useIsMobile();
   
-  // Always use CollapsibleFloatingTimer for consistency
-  return <CollapsibleFloatingTimer {...props} />;
+  console.log('🖥️ ResponsiveTimer: Device detection:', {
+    isMobile,
+    isTablet, 
+    isMobileOrTablet,
+    hasTouchCapability,
+    windowWidth: typeof window !== 'undefined' ? window.innerWidth : 'unknown',
+    selectedTimer: isMobileOrTablet ? 'CollapsibleFloatingTimer' : 'FloatingTimer',
+    breakpoints: { mobile: 480, tablet: 900 }
+  });
+
+  // Use proper responsive behavior
+  if (isMobileOrTablet) {
+    return <CollapsibleFloatingTimer {...props} />;
+  }
+
+  return <FloatingTimer {...props} />;
 };
