@@ -373,7 +373,8 @@ export function formatUserPrompt(template: string, userInfo: UserInfo): string {
     .replace(/{favoriteAnimal}/g, userInfo.favoriteAnimal || 'animals')
     .replace(/{favoriteColor}/g, userInfo.favoriteColor || 'bright colors')
     .replace(/{hobbies}/g, userInfo.hobbies || 'playing')
-    .replace(/{favoriteFood}/g, userInfo.favoriteFood || 'delicious food');
+    .replace(/{favoriteFood}/g, userInfo.favoriteFood || 'delicious food')
+    .replace(/{specialRequest}/g, userInfo.specialRequest || '');
 }
 
 export function calculateDifficultyFromUser(userInfo: UserInfo): DifficultyLevel {

@@ -365,9 +365,26 @@ export class EnhancedFallbackManager {
     pageIndex: number,
     existingStory?: string[]
   ): string {
-    // Simple template selection without complex character systems
+    // For Level 0 (beginner), return complete story instead of single page
+    if (difficulty === 'beginner' && pageIndex === 0) {
+      // Return complete 5-page story by combining all template parts
+      const allPages = [
+        ...template.setup,
+        ...template.development, 
+        ...template.climax,
+        ...template.resolution
+      ];
+      
+      // Process all pages and return as complete story
+      const processedPages = allPages.map(page => this.processTemplate(page, userInfo, difficulty));
+      
+      // Validate all pages
+      processedPages.forEach((page, idx) => this.validateTemplateProcessing(page, idx));
+      
+      return processedPages.join('\n\n');
+    }
     
-    // Determine which part of the story arc to use
+    // For other difficulties or subsequent pages, use single page logic
     const position = this.determineStoryPosition(pageIndex, 10);
     const arcTemplates = template[position];
     
@@ -412,13 +429,27 @@ export class EnhancedFallbackManager {
     // Get difficulty-appropriate vocabulary
     const vocabulary = this.getDifficultyVocabulary(difficulty);
     
-    // Replace story elements
+    // Replace story elements (both old and Level 0 format)
     processed = processed.replace(/{animal}/g, 
       userInfo.favoriteAnimal || vocabulary.animals[Math.floor(Math.random() * vocabulary.animals.length)]);
+    processed = processed.replace(/{favoriteAnimal}/g, 
+      userInfo.favoriteAnimal || vocabulary.animals[Math.floor(Math.random() * vocabulary.animals.length)]);
+    
     processed = processed.replace(/{color}/g, 
       ensureColorName(userInfo.favoriteColor) || vocabulary.colors[Math.floor(Math.random() * vocabulary.colors.length)]);
+    processed = processed.replace(/{favoriteColor}/g, 
+      ensureColorName(userInfo.favoriteColor) || vocabulary.colors[Math.floor(Math.random() * vocabulary.colors.length)]);
+      
     processed = processed.replace(/{object}/g, 
       vocabulary.objects[Math.floor(Math.random() * vocabulary.objects.length)]);
+    
+    // Level 0 specific placeholders
+    processed = processed.replace(/{favoriteFood}/g, 
+      userInfo.favoriteFood || 'food');
+    processed = processed.replace(/{hobbies}/g, 
+      userInfo.hobbies || 'playing');
+    processed = processed.replace(/{specialRequest}/g, 
+      userInfo.specialRequest || '');
     
     return processed;
   }
