@@ -79,7 +79,7 @@ REQUIREMENTS:
 - Focus on friendship, family, and discovery themes
 
 FORMAT: Page 1: [10-17 words]. Page 2: [10-17 words]. Continue for 6 pages.`,
-    userPromptTemplate: `Create a delightful 60-100 word story for {name} (age {age}) who is building their reading confidence! Include their favorite {favoriteAnimal} and {favoriteColor}, plus their hobby of {hobbies} and love for {favoriteFood}. Weave these special interests into gentle adventures as natural story elements - Example: their animal friend helps them explore, their favorite color appears in the world around them, and their hobbies become fun activities. Create exactly 6 pages with 10-17 words per page for a wonderful reading experience.`,
+    userPromptTemplate: `Create a delightful and elementary story for a child aged 5-7 named {name}, age {age}. Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}, and {specialRequest} as surface-level inputs naturally woven in as story elements or relationships. The story must be exactly 6 pages, 10-17 words per page, 60-100 words total, with simple sentences using basic conjunctions and preferring 1-2 sentence structures per page. Use Dolch Pre-Primer + Primer + 1st Grade words as a foundation. Follow the internal author style guidance to shape the story (without mentioning style names) and keep a positive tone. Before writing, internally imagine a random "story seed" between 1 and 10,000 to vary setting, events, and details so each story is unique, even with identical inputs. Do not mention the seed.`,
     maxLength: 100,
     expectedPages: 6
   },
