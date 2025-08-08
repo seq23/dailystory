@@ -30,15 +30,15 @@ export const CollapsibleFloatingTimer = ({
 }: CollapsibleFloatingTimerProps) => {
   const { t } = useTranslation();
   const { isMobile, isTablet, isMobileOrTablet } = useIsMobile();
-  const [isCollapsed, setIsCollapsed] = useState(isMobile);
+  const [isCollapsed, setIsCollapsed] = useState(isMobileOrTablet);
   const [showCelebration, setShowCelebration] = useState(false);
 
-  // Auto-collapse on mobile
+  // Auto-collapse on mobile/tablet by default
   useEffect(() => {
-    if (isMobile) {
+    if (isMobileOrTablet) {
       setIsCollapsed(true);
     }
-  }, [isMobile]);
+  }, [isMobileOrTablet]);
 
   // Format time for display
   const formatTime = (seconds: number) => {
@@ -66,11 +66,13 @@ export const CollapsibleFloatingTimer = ({
 
 
 
-  // Simplified positioning - mobile first
+  // Responsive positioning
   const getPositionClasses = () => {
     return cn(
       "fixed z-40",
-      isMobile ? "bottom-20 left-4" : "bottom-8 left-8"
+      isMobile ? "bottom-20 left-4" : 
+      isTablet ? "bottom-16 left-6" : 
+      "bottom-8 left-8"
     );
   };
 
@@ -79,14 +81,21 @@ export const CollapsibleFloatingTimer = ({
       <div className={cn(getPositionClasses())}>
         {/* Truly Collapsed - Only Timer Circle */}
         <div 
-          className="relative w-16 h-16 bg-background/95 backdrop-blur-sm rounded-full shadow-lg border-2 border-primary/20 cursor-pointer hover:scale-110 transition-all duration-200 group flex items-center justify-center"
+          className={cn(
+            "relative bg-background/95 backdrop-blur-sm rounded-full shadow-lg border-2 border-primary/20 cursor-pointer hover:scale-110 transition-all duration-200 group flex items-center justify-center",
+            isMobile ? "w-14 h-14" : isTablet ? "w-16 h-16" : "w-18 h-18"
+          )}
           onClick={() => setIsCollapsed(false)}
           id="timer-display"
           role="button"
           aria-label="Expand timer controls"
         >
           {/* Time display */}
-          <div className={cn("text-sm font-bold", getTimerColor())}>
+          <div className={cn(
+            "font-bold", 
+            getTimerColor(),
+            isMobile ? "text-xs" : isTablet ? "text-sm" : "text-base"
+          )}>
             {formatTime(timeRemaining)}
           </div>
           
@@ -109,13 +118,23 @@ export const CollapsibleFloatingTimer = ({
       {/* Expanded Timer Display */}
       <div className="relative">
         {/* Main Timer Circle */}
-        <div className="relative w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 bg-gradient-to-br from-background to-muted/20 backdrop-blur-sm rounded-full shadow-2xl border-2 border-border flex items-center justify-center">
+        <div className={cn(
+          "relative bg-gradient-to-br from-background to-muted/20 backdrop-blur-sm rounded-full shadow-2xl border-2 border-border flex items-center justify-center",
+          isMobile ? "w-20 h-20" : isTablet ? "w-24 h-24" : "w-28 h-28"
+        )}>
           <div id="timer-display" className="text-center">
-            <div className={cn("text-sm sm:text-base md:text-lg font-bold", getTimerColor())}>
+            <div className={cn(
+              "font-bold", 
+              getTimerColor(),
+              isMobile ? "text-sm" : isTablet ? "text-base" : "text-lg"
+            )}>
               {formatTime(timeRemaining)}
             </div>
-            <div className="text-xs text-muted-foreground hidden sm:block">
-              {t("floatingTimer.readingTime", "Reading Time")}
+            <div className={cn(
+              "text-muted-foreground",
+              isMobile ? "text-xs hidden" : isTablet ? "text-xs" : "text-sm"
+            )}>
+              {!isMobile && t("floatingTimer.readingTime", "Reading Time")}
             </div>
           </div>
         </div>
@@ -160,17 +179,16 @@ export const CollapsibleFloatingTimer = ({
           <X className="w-4 h-4" />
         </Button>
 
-        {/* Collapse Button - Only show on mobile/tablet */}
-        {isMobileOrTablet && (
-          <Button
-            variant="outline"
-            size={isMobile ? "sm" : "default"}
-            onClick={() => setIsCollapsed(true)}
-            className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm"
-          >
-            <ChevronDown className="w-4 h-4" />
-          </Button>
-        )}
+        {/* Collapse Button - Always show */}
+        <Button
+          variant="outline"
+          size={isMobile ? "sm" : "default"}
+          onClick={() => setIsCollapsed(true)}
+          className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm"
+          aria-label={t("floatingTimer.collapse", "Collapse timer")}
+        >
+          <ChevronDown className="w-4 h-4" />
+        </Button>
       </div>
 
       {/* Celebration Animation */}
