@@ -111,7 +111,7 @@ REQUIREMENTS:
 - Themes: problem-solving, friendship, discovery, creativity
 
 FORMAT: Page 1: [20-43 words]. Continue for 7 pages.`,
-    userPromptTemplate: `Create an engaging 150-300 word adventure for {name} (age {age}) who is ready for more complex stories! Include their favorite {favoriteAnimal} and {favoriteColor}, their passion for {hobbies}, and love for {favoriteFood}. Weave these elements as meaningful character traits - Example: let their animal choice reflect their personality, their color become a meaningful symbol, their hobby showcase their talents, and their food connect to family memories. Include gentle problem-solving and character growth across exactly 7 pages with 20-43 words per page.`,
+    userPromptTemplate: `Create an engaging story for a child aged 7-9 named {name}. Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}, and {specialRequest} as meaningful character traits and development elements: the favorite animal reflects personality traits, colors become meaningful symbols, hobbies showcase talents and interests, and foods connect to family or cultural background. The story must be exactly 7 pages, 20-43 words per page, 150-300 words total, using complex sentences with descriptive language and 2-3 sentences per page. Use Dolch Pre-Primer + Primer + 1st Grade + 2nd Grade words as a foundation. Follow the internal author style guidance to shape the story (without mentioning style names), including mild conflicts with positive resolution. Before writing, internally imagine a random "story seed" between 1 and 10,000 to vary setting, events, and details so each story is unique, even with identical inputs. Do not mention the seed.`,
     maxLength: 300,
     expectedPages: 7
   },
