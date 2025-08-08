@@ -48,7 +48,41 @@ STRICT REQUIREMENTS:
 - Every sentence must be joyful and positive
 
 FORMAT: Page 1: [sentence]. Page 2: [sentence]. Page 3: [sentence]. Page 4: [sentence]. Page 5: [sentence].`,
-    userPromptTemplate: `Create a joyful and elementary story for a pre-reader child aged 3-5 named {name}. Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}, and {specialRequest} as surface-level inputs naturally woven in as story elements or relationships. The story must be exactly 5 pages, 2-8 words per page, 30-40 words total, with simple sentences preferring 2-4 word sentence structures but up to 8 words if needed. Use a simple Subject-Verb or Subject-Verb-Object pattern. Use Dolch Pre-Primer + Primer words as a foundation. Follow the internal author style guidance to shape the story (without mentioning style names) and keep a positive tone. Before writing, internally imagine a random "story seed" between 1 and 10,000 to vary setting, events, and details so each story is unique, even with identical inputs. Do not mention the seed.`,
+    userPromptTemplate: `Create a joyful, rhyming, and elementary story for a pre-reader child aged 3–5 named {name}. Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}, and {specialRequest} as surface-level inputs, each appearing at least once in the story.
+
+The story must be:
+
+Exactly 5 pages.
+
+2–8 words per page.
+
+No more than 40 total words.
+
+Sentence rules:
+
+Prefer 2–3 word sentences.
+
+Use mostly Dolch Pre-Primer and Primer list words.
+
+Use a Subject–Verb or Subject–Verb–Object pattern for most sentences.
+
+Favor rhyming when possible, but never sacrifice clarity or naturalness to force a rhyme.
+
+Integration rules:
+
+Each personalization input must be naturally woven into the story, but still explicitly mentioned.
+
+Words outside the Dolch list are allowed. 
+
+Creativity rule:
+
+Before writing, internally imagine a random "story seed" between 1 and 10,000 to change the setting, events, and small details so that even identical inputs create different stories.
+
+Do not mention or describe the seed.
+
+Tone rule:
+Follow the internal author style guidance to shape the story (without mentioning style names)
+Keep the tone positive, simple, and joyful.`,
     maxLength: 30,
     expectedPages: 5
   },
