@@ -6,6 +6,72 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Enhanced Template Library integration for fallbacks
+function getEnhancedFallbackPages(difficulty, userInfo) {
+  const userName = userInfo.name || 'the child';
+  
+  // Enhanced fallback templates based on difficulty
+  const templates = {
+    beginner: {
+      setup: [
+        `${userName} sees a big red ball.`,
+        `${userName} finds a blue cat.`,
+        `${userName} meets a nice dog.`
+      ],
+      development: [
+        `The ball is fun to play with.`,
+        `The cat wants to play too.`,
+        `The dog wags its tail happily.`
+      ],
+      climax: [
+        `${userName} throws the ball high.`,
+        `The cat and dog run fast.`,
+        `All three friends play together.`
+      ],
+      resolution: [
+        `${userName} feels very happy.`,
+        `The animals are good friends now.`,
+        `They all play until the sun sets.`
+      ]
+    },
+    easy: [
+      `${userName} began a wonderful adventure in the garden.`,
+      `The curious child discovered beautiful flowers everywhere.`,
+      `${userName} found a friendly butterfly sitting on a rose.`,
+      `Together they explored the magical garden paths.`,
+      `${userName} felt amazed by all the colorful beauty around.`
+    ],
+    medium: [
+      `${userName} embarked on an exciting journey through the mysterious forest.`,
+      `The brave explorer noticed ancient trees whispering secrets in the wind.`,
+      `${userName} encountered a wise owl who offered helpful guidance.`,
+      `Following the owl's advice, ${userName} discovered a hidden clearing filled with wonder.`,
+      `${userName} returned home with incredible stories and newfound wisdom about nature.`
+    ],
+    hard: [
+      `${userName} initiated an extraordinary expedition into the uncharted wilderness, determined to uncover its secrets.`,
+      `The intrepid adventurer meticulously documented fascinating discoveries while navigating through challenging terrain.`,
+      `${userName} demonstrated exceptional problem-solving abilities when confronted with a complex environmental puzzle.`,
+      `Through perseverance and scientific observation, ${userName} successfully decoded the mysteries of the ecosystem.`,
+      `${userName} emerged as a accomplished naturalist, having contributed valuable knowledge to the understanding of wildlife conservation.`
+    ]
+  };
+
+  if (difficulty === 'beginner') {
+    // For beginner, create a 5-page story from the structured template
+    const template = templates.beginner;
+    return [
+      template.setup[Math.floor(Math.random() * template.setup.length)],
+      template.development[Math.floor(Math.random() * template.development.length)],
+      template.climax[Math.floor(Math.random() * template.climax.length)],
+      template.resolution[Math.floor(Math.random() * template.resolution.length)],
+      `${userName} smiles and feels proud.`
+    ];
+  }
+  
+  return templates[difficulty] || templates.easy;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -154,49 +220,18 @@ serve(async (req) => {
       console.error('Could not parse request for fallback:', parseError);
     }
     
-    // Enhanced fallback with user details
+    // Enhanced fallback using simplified template system
     const userName = fallbackConfig?.userName || 'the child';
-    const characterDesc = fallbackConfig?.avatar ? 
-      `${fallbackConfig.avatar.type === 'boy' ? 'young boy' : fallbackConfig.avatar.type === 'girl' ? 'young girl' : 'child'}` :
-      'brave young adventurer';
     
-    // Use Enhanced Template Library for all fallbacks
-    // Since we can't import the full template system in Edge Function,
-    // we'll create a simplified fallback that matches the template structure
-    const simpleTemplates = {
-      beginner: [
-        `${userName} sees a {color} {animal}.`,
-        `The {animal} is happy.`,
-        `${userName} plays with the {animal}.`,
-        `They have fun together.`,
-        `${userName} smiles big.`
-      ],
-      easy: [
-        `${userName} started a wonderful adventure.`,
-        `The brave child looked around with excitement.`,
-        `${userName} found something special and amazing.`,
-        `With courage, ${userName} explored the new place.`,
-        `${userName} felt proud and happy about the journey.`
-      ],
-      medium: [
-        `${userName} began an exciting journey through a magical place.`,
-        `The curious adventurer discovered something truly remarkable.`,
-        `${userName} faced a challenge with determination and cleverness.`,
-        `Working together with new friends, ${userName} solved the problem.`,
-        `${userName} returned home with wonderful memories and new wisdom.`
-      ],
-      hard: [
-        `${userName} embarked on an extraordinary quest that would test their courage.`,
-        `The determined young explorer encountered mysteries that sparked their curiosity.`,
-        `${userName} demonstrated remarkable problem-solving skills when faced with obstacles.`,
-        `Through perseverance and teamwork, ${userName} overcame the greatest challenges.`,
-        `${userName} emerged victorious, having grown wiser and more confident than ever before.`
-      ]
-    };
+    // Get fallback pages using Enhanced Template Library logic
+    const fallbackPages = getEnhancedFallbackPages(fallbackReadingLevel, {
+      name: userName,
+      avatar: fallbackConfig?.avatar,
+      interests: fallbackConfig?.interests || []
+    });
 
-    const templatePages = simpleTemplates[fallbackReadingLevel] || simpleTemplates.easy;
     const fallbackStory = {
-      pages: templatePages,
+      pages: fallbackPages,
       difficulty: fallbackReadingLevel || 'easy',
       title: `${userName}'s ${fallbackTheme.charAt(0).toUpperCase() + fallbackTheme.slice(1)} Story`,
       isComplete: true
