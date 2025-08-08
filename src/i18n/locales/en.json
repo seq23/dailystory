@@ -518,6 +518,12 @@
     "home": "Home",
     "newStory": "New Story"
   },
+  "auth": {
+    "loading": {
+      "title": "Getting things ready...",
+      "description": "Preparing your reading experience..."
+    }
+  },
   "gamification": {
     "achievements": {
       "unlocked": "Achievement Unlocked!",

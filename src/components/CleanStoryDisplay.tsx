@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { MobileOptimizedButton } from "@/components/MobileOptimizedButton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -98,6 +98,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   // Magic wand state
   const [isGeneratingNewStory, setIsGeneratingNewStory] = useState(false);
   const [isMagicWandAnimating, setIsMagicWandAnimating] = useState(false);
+  const loaderStartRef = useRef<number>(0);
+  const LOADER_MIN_MS = 500;
 
   // Reading Level state with animation support
   const [currentDifficulty, setCurrentDifficulty] = useState<'beginner' | 'easy' | 'medium' | 'hard' | 'expert'>(userInfo.difficultyLevel || 'beginner');
@@ -180,6 +182,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
 
   const initializeStory = async () => {
     setIsLoading(true);
+    loaderStartRef.current = Date.now();
     setError(null);
     
     // Run diagnostics for free users to identify API issues
@@ -245,7 +248,13 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
       console.error('Story initialization failed:', error);
       setError('Failed to create your story. Please try again.');
     } finally {
-      setIsLoading(false);
+      const elapsed = Date.now() - loaderStartRef.current;
+      const remaining = Math.max(0, LOADER_MIN_MS - elapsed);
+      if (remaining > 0) {
+        setTimeout(() => setIsLoading(false), remaining);
+      } else {
+        setIsLoading(false);
+      }
     }
   };
 

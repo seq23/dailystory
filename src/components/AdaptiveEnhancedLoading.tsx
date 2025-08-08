@@ -11,8 +11,16 @@ interface AdaptiveEnhancedLoadingProps {
 export function AdaptiveEnhancedLoading({ isPremium, userName }: AdaptiveEnhancedLoadingProps) {
   const { t } = useTranslation();
 
+  const title = userName
+    ? t("freeReadingSession.loading.title", "Creating Your Free Story...")
+    : t("auth.loading.title", "Getting things ready...");
+
+  const description = userName
+    ? t("freeReadingSession.loading.description", { userName })
+    : t("auth.loading.description", "Preparing your reading experience...");
+
   return (
-    <div className={cn("min-h-screen bg-gradient-primary flex items-center justify-center p-6")}>
+    <div className={cn("min-h-screen bg-gradient-primary flex items-center justify-center p-6 animate-fade-in")}>
       <div className="text-center space-y-4">
         <div className="relative inline-flex items-center justify-center">
           <BookOpen className="w-14 h-14 text-primary animate-pulse" />
@@ -20,10 +28,10 @@ export function AdaptiveEnhancedLoading({ isPremium, userName }: AdaptiveEnhance
         </div>
         <div className="space-y-3" role="status" aria-live="polite">
           <h2 className="text-2xl font-bold text-primary-foreground">
-            {t("freeReadingSession.loading.title", "Creating Your Free Story...")}
+            {title}
           </h2>
           <p className="text-primary-foreground/80">
-            {t("freeReadingSession.loading.description", { userName })}
+            {description}
           </p>
           <div className="flex items-center justify-center gap-2 text-primary-foreground/80">
             <LoadingSpinner size="md" />
