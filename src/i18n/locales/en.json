@@ -182,170 +182,108 @@
     }
   },
   "userInfoForm": {
-    "title": "Let's Create Your Perfect Story!",
-    "subtitle": "Tell us about yourself so we can create amazing stories just for you.",
+    "title": "Create Your Perfect Reading Adventure!",
+    "subtitle": "Help us build a story that's just right for you",
     "sections": {
-      "aboutYou": "About You",
-      "yourFavorites": "Your Favorites",
-      "additionalInfo": "Tell Us More"
+      "essentials": "Getting Started",
+      "readingLevel": "Reading Level",
+      "personalization": "Make It Yours",
+      "character": "Your Story Character"
     },
     "fields": {
       "name": {
-        "label": "What is your first name?",
-        "placeholder": "Enter your name"
+        "label": "First name",
+        "placeholder": "What should we call you?"
       },
       "age": {
-        "label": "How old are you?",
-        "placeholder": "Select your age",
-        "yearsOld": "years old"
+        "label": "Age",
+        "placeholder": "How old are you?"
       },
       "grade": {
-        "label": "What grade are you in?",
-        "placeholder": "Select your grade"
+        "label": "Grade level",
+        "placeholder": "What grade are you in?"
       },
       "nativeLanguage": {
-        "label": "What language do you speak at home?",
-        "placeholder": "Select your native language",
-        "translationInfo": "🌟 Great choice! When you read stories, you can hover over any word to hear it pronounced and see its translation in your native language."
+        "label": "Home language",
+        "placeholder": "What language do you speak at home?"
       },
       "learningGoal": {
-        "label": "What do you want to improve?",
-        "placeholder": "Select your goal",
-        "options": {
-          "improve-english-reading": "Get better at reading English",
-          "learn-english-language": "Learn English as a new language",
-          "both": "Both reading and language skills"
-        }
+        "label": "Learning focus",
+        "placeholder": "What would you like to practice?"
       },
       "readingAbility": {
-        "label": "How well do you read?",
-        "placeholder": "Select your reading level",
-        "helpText": "💡 These levels are based on research-backed Dolch sight words and reading science",
-        "researchInfo": "Why This Matters",
-        "researchDetails": "Our reading levels align with proven literacy research to ensure age-appropriate vocabulary and story complexity for optimal learning outcomes.",
-        "levels": {
-          "beginner": {
-            "title": "Pre-Reader",
-            "description": "I'm just learning letters and sounds",
-            "details": "Based on Dolch Pre-Primer (40 sight words) • Perfect for ages 3-5",
-            "icon": "🌱"
-          },
-          "easy": {
-            "title": "Beginning Reader", 
-            "description": "I can read short, easy stories",
-            "details": "Dolch Primer Level (52 sight words) • Ideal for kindergarten",
-            "icon": "📖"
-          },
-          "medium": {
-            "title": "Emerging Reader",
-            "description": "I love picture books with longer stories", 
-            "details": "Dolch 1st Grade (133 words) • Great for early elementary",
-            "icon": "📘"
-          },
-          "hard": {
-            "title": "Developing Reader",
-            "description": "I'm ready for chapter books and adventures",
-            "details": "Dolch 2nd Grade (179 words) • Perfect for growing readers",
-            "icon": "📗"
-          },
-          "expert": {
-            "title": "Confident Reader",
-            "description": "I read anything - bring on the challenge!",
-            "details": "Advanced vocabulary • For independent readers",
-            "icon": "📕"
-          }
+        "label": "Reading level",
+        "description": "Choose the level that feels comfortable for reading",
+        "placeholder": "Select reading level",
+        "options": {
+          "pre-reader": "Pre-Reader",
+          "early-beginner": "Early Beginner", 
+          "beginner": "Beginning Reader",
+          "early-intermediate": "Developing Reader",
+          "intermediate": "Independent Reader",
+          "advanced": "Advanced Reader"
+        },
+        "details": {
+          "pre-reader": "Perfect for letter and sound recognition • Uses 40 essential sight words",
+          "early-beginner": "Basic sight word recognition • 52 fundamental reading words",
+          "beginner": "Simple sentences and common words • Building reading confidence",
+          "early-intermediate": "Longer sentences with varied vocabulary • Growing independence",
+          "intermediate": "Chapter-level reading with support • Complex story elements",
+          "advanced": "Rich vocabulary and sentence structures • Confident independent reading"
+        },
+        "learnMore": {
+          "title": "About Reading Levels",
+          "description": "Our levels are based on proven educational research and Dolch sight word lists, ensuring age-appropriate content that supports reading development."
         }
       },
       "avatar": {
-        "label": "Which avatar do you want?"
+        "label": "Story character",
+        "placeholder": "Choose your character"
       },
-      "avatarTypes": {
-        "label": "Avatar Type:",
-        "boy": "Boy",
-        "girl": "Girl",
-        "preferNotToAnswer": "Prefer not to answer"
+      "favoriteColor": {
+        "label": "Favorite color",
+        "placeholder": "Pick a color"
       },
-      "skinTone": {
-        "label": "Skin Tone:",
-        "select": "Select",
-        "options": {
-          "pale": "Pale",
-          "light": "Light",
-          "medium": "Medium", 
-          "olive": "Olive",
-          "dark": "Dark"
-        }
+      "favoriteAnimal": {
+        "label": "Favorite animal", 
+        "placeholder": "What's your favorite animal?"
       },
-      "avatarPreview": {
-        "label": "Your avatar:"
+      "favoriteFood": {
+        "label": "Favorite food",
+        "placeholder": "What's your favorite food?"
       },
-       "favoriteColor": {
-         "label": "What is your favorite color or shade?",
-         "optional": "(Optional)",
-         "placeholder": "Pull down to select color"
-       },
-       "favoriteAnimal": {
-         "label": "What's your favorite animal?",
-         "placeholder": "dog, cat, lion, dolphin...",
-         "optional": "(Optional)",
-         "tooltip": "Enter animals as simple words - singular or plural doesn't matter!"
-       },
-       "favoriteFood": {
-         "label": "What's your favorite food?",
-         "placeholder": "pizza, ice cream, apples, cookies...",
-         "optional": "(Optional)",
-         "tooltip": "Enter foods as simple words - plural or singular works!"
-       },
-       "hobbies": {
-         "label": "What do you love doing?",
-         "placeholder": "soccer, drawing, dancing, video games...",
-         "optional": "(Optional)",
-         "tooltip": "Enter activities your child enjoys - any way you like!"
-       },
+      "hobbies": {
+        "label": "Hobbies & interests",
+        "placeholder": "What do you love to do?"
+      },
       "specialRequest": {
-        "label": "Anything special you'd like in your story?",
-        "placeholder": "dinosaurs, princesses, space adventures, magic...",
-        "optional": "(Optional)"
+        "label": "Story theme",
+        "placeholder": "Any special requests for your story?"
       }
     },
-    "grades": {
-      "PreK": "Pre-K",
-      "K": "Kindergarten",
-      "1st": "1st Grade",
-      "2nd": "2nd Grade", 
-      "3rd": "3rd Grade",
-      "4th": "4th Grade",
-      "5th": "5th Grade",
-      "6th": "6th Grade"
-    },
-    "languages": {
-      "en": "English",
-      "es": "Spanish", 
-      "fr": "French",
-      "ar": "Arabic",
-      "hi": "Hindi",
-      "pt": "Portuguese",
-      "zh": "Chinese"
-    },
-    "submit": "Create My Story! ✨",
-    "back": "← Back",
     "buttons": {
-      "backToHome": "← Back to Home",
-      "createStory": "Create My Story! ✨"
+      "back": "Back",
+      "createStory": "Create My Story",
+      "learnMore": "Learn More",
+      "hideDetails": "Hide Details"
     },
     "validation": {
-      "nameRequired": "Please tell us your name",
-      "ageRequired": "Please tell us your age",
-      "gradeRequired": "Please tell us your grade",
-      "contentWarning": "Content Warning",
-      "inappropriateContent": "Please use child-friendly language",
-      "tooManyRequests": "Too Many Requests",
-      "waitToSubmit": "Please wait before submitting again",
-      "contentIssue": "Content Issue",
-      "reviewInputs": "Please review your inputs for appropriate content"
+      "nameRequired": "Please enter a name",
+      "ageRequired": "Please select an age",
+      "gradeRequired": "Please select a grade level", 
+      "languageRequired": "Please select a language"
     },
-    "tooltips": {
-      "nameRequired": "Please enter your child's name first"
+    "processing": {
+      "translating": "Processing...",
+      "completed": "Ready!"
+    },
+    "restrictions": {
+      "freeUserLimit": "Free users can personalize one field. Upgrade for unlimited customization!"
+    },
+    "help": {
+      "readingLevels": "Reading levels are based on educational research to ensure appropriate difficulty",
+      "optional": "Optional - helps personalize your story",
+      "required": "Required to create your story"
     }
   },
   "tutorial": {
