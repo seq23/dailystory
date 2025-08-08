@@ -752,38 +752,77 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                 )}
               </div>
 
-              {/* Navigation */}
-              <div id="story-navigation" className="story-navigation flex justify-between items-center">
-                <MobileOptimizedButton
-                  onClick={handlePrevious}
-                  disabled={currentPage === 0}
-                  variant="outline"
-                >
-                  Previous
-                </MobileOptimizedButton>
+              {/* Navigation - Responsive Layout */}
+              <div id="story-navigation" className="story-navigation">
+                {/* Mobile/Tablet: Spread out layout */}
+                <div className="flex justify-between items-center xl:hidden">
+                  <MobileOptimizedButton
+                    onClick={handlePrevious}
+                    disabled={currentPage === 0}
+                    variant="outline"
+                  >
+                    Previous
+                  </MobileOptimizedButton>
 
-                <span className="text-sm font-medium text-muted-foreground">
-                  {currentPage + 1} / {isPremium && !isStoryComplete ? `${story.length}+` : story.length}
-                </span>
+                  <span className="text-sm font-medium text-muted-foreground">
+                    {currentPage + 1} / {isPremium && !isStoryComplete ? `${story.length}+` : story.length}
+                  </span>
 
-                <MobileOptimizedButton
-                  onClick={handleNext}
-                  disabled={isLoadingNextPage}
-                  className="bg-primary text-primary-foreground"
-                >
-                  {isLoadingNextPage ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      {isPremium ? 'Generating page...' : 'Generating...'}
-                    </>
-                  ) : currentPage === story.length - 1 && isStoryComplete ? (
-                    'Complete'
-                  ) : currentPage === story.length - 1 && isPremium ? (
-                    'Generate Next'
-                  ) : (
-                    'Next'
-                  )}
-                </MobileOptimizedButton>
+                  <MobileOptimizedButton
+                    onClick={handleNext}
+                    disabled={isLoadingNextPage}
+                    className="bg-primary text-primary-foreground"
+                  >
+                    {isLoadingNextPage ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        {isPremium ? 'Generating page...' : 'Generating...'}
+                      </>
+                    ) : currentPage === story.length - 1 && isStoryComplete ? (
+                      'Complete'
+                    ) : currentPage === story.length - 1 && isPremium ? (
+                      'Generate Next'
+                    ) : (
+                      'Next'
+                    )}
+                  </MobileOptimizedButton>
+                </div>
+
+                {/* Desktop: Centered compact layout */}
+                <div className="hidden xl:flex justify-center items-center gap-4">
+                  <MobileOptimizedButton
+                    onClick={handlePrevious}
+                    disabled={currentPage === 0}
+                    variant="outline"
+                    size="sm"
+                  >
+                    Previous
+                  </MobileOptimizedButton>
+
+                  <span className="text-base font-medium text-muted-foreground px-4">
+                    {currentPage + 1} / {isPremium && !isStoryComplete ? `${story.length}+` : story.length}
+                  </span>
+
+                  <MobileOptimizedButton
+                    onClick={handleNext}
+                    disabled={isLoadingNextPage}
+                    className="bg-primary text-primary-foreground"
+                    size="sm"
+                  >
+                    {isLoadingNextPage ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        {isPremium ? 'Generating page...' : 'Generating...'}
+                      </>
+                    ) : currentPage === story.length - 1 && isStoryComplete ? (
+                      'Complete'
+                    ) : currentPage === story.length - 1 && isPremium ? (
+                      'Generate Next'
+                    ) : (
+                      'Next'
+                    )}
+                  </MobileOptimizedButton>
+                </div>
               </div>
             </CardContent>
           </Card>
