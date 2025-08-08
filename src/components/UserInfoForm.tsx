@@ -11,7 +11,8 @@ import { ColorPicker } from "@/components/ui/color-picker";
 import { AvatarPicker } from "@/components/ui/avatar-picker";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { MobileTooltip } from "@/components/MobileTooltip";
-import { ChevronRight, User, GraduationCap, Heart, Star, Globe, Sparkles, AlertCircle, ArrowRightLeft, CheckCircle, Loader2 } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ChevronRight, ChevronDown, User, BookOpen, Heart, Palette, Sparkles, AlertCircle, Info, CheckCircle, Loader2, Globe } from "lucide-react";
 
 import { ContentSecurity, SecurityLogger } from "@/utils/security";
 import { InputSanitizer } from "@/utils/inputSanitizer";
@@ -65,6 +66,7 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
   
   // Track optional fields for free users (only 1 allowed)
   const [selectedOptionalField, setSelectedOptionalField] = useState<string | null>(null);
+  const [showReadingLevelDetails, setShowReadingLevelDetails] = useState(false);
 
   // Enhanced content filtering with grade-aware security and multilingual support
   const contentFilter = (text: string): { hasInappropriateContent: boolean; reason?: string } => {
@@ -182,13 +184,6 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
     }
   };
 
-  // This function is no longer needed - replaced by real-time translation
-  // Keeping for now in case of rollback needed
-  const handleTranslationProcessing = async () => {
-    // Real-time translation is now handled in handleInputChange
-    console.log('📝 Legacy batch processing - now handled in real-time');
-  };
-
   const handleSubmit = () => {
     console.log("Form submitted! Name:", formData.name.trim(), "Complete:", isFormComplete());
     // Check form validation first
@@ -201,7 +196,7 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
       
       // Show helpful, encouraging toast notification
       toast({
-        title: "🌟 Almost Ready!",
+        title: "Almost Ready!",
         description: "Just need a few more details to create your perfect story.",
         duration: 4000,
       });
@@ -308,636 +303,400 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
   };
 
   return (
-    <div className="min-h-screen bg-gradient-subtle flex items-center justify-center p-3 sm:p-6 md:p-8 pb-safe relative overflow-hidden">
-        {/* Subtle background elements */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/5 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-1/3 right-1/3 w-48 h-48 bg-secondary/5 rounded-full blur-2xl"></div>
-          <div className="absolute top-1/2 right-1/4 w-32 h-32 bg-accent/5 rounded-full blur-xl"></div>
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 sm:p-6">
+      {/* Subtle background decoration */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/3 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-1/3 right-1/3 w-48 h-48 bg-secondary/3 rounded-full blur-2xl"></div>
+      </div>
+
+      <div className="relative z-10 w-full max-w-2xl">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <MobileOptimizedButton
+              variant="ghost"
+              size="sm"
+              onClick={onBack}
+              className="flex items-center gap-2"
+            >
+              <ChevronRight className={`w-4 h-4 ${i18n.language === 'ar' ? '' : 'rotate-180'}`} />
+              <span className="hidden sm:inline">{t('userInfoForm.buttons.back')}</span>
+            </MobileOptimizedButton>
+          </div>
+          
+          <div className="flex justify-center mb-6">
+            <div className="p-4 bg-primary rounded-2xl text-primary-foreground shadow-soft">
+              <Sparkles className="w-8 h-8" />
+            </div>
+          </div>
+          
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-3">
+            {t("userInfoForm.title")}
+          </h1>
+          <p className="text-muted-foreground text-base max-w-lg mx-auto">
+            {t("userInfoForm.subtitle")}
+          </p>
         </div>
 
-        <Card className="relative z-10 w-full max-w-4xl bg-card/80 backdrop-blur-md shadow-elegant border border-border/50 rounded-3xl p-6 sm:p-8 md:p-12 transition-all duration-300 hover:shadow-glow">
-          {/* Modern Header */}
-          <div className="text-center mb-10 md:mb-12" id="welcome-title">
-            <div className="flex items-center justify-between mb-6">
-              <MobileOptimizedButton
-                variant="ghost"
-                size="sm"
-                onTouchEnd={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  onBack();
-                }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  onBack();
-                }}
-                className="flex items-center gap-2 min-h-[48px] min-w-[48px] touch-target hover-scale transition-smooth"
-                type="button"
-              >
-                <ChevronRight className={`w-5 h-5 ${i18n.language === 'ar' ? '' : 'rotate-180'}`} />
-                <span className="hidden sm:inline">{t('userInfoForm.buttons.back', 'Back')}</span>
-              </MobileOptimizedButton>
-            </div>
-            
-            <div className="flex justify-center mb-6">
-              <div className="relative">
-                <div className="p-6 bg-gradient-primary rounded-2xl text-white shadow-glow">
-                  <Sparkles className="w-12 h-12 md:w-16 md:h-16" />
-                </div>
-                <div className="absolute inset-0 bg-primary/20 rounded-2xl animate-pulse"></div>
+        {/* Validation Errors */}
+        {showValidationErrors && validationErrors.length > 0 && (
+          <Alert className="border-destructive/20 bg-destructive/5 mb-6">
+            <AlertCircle className="h-4 w-4 text-destructive" />
+            <AlertDescription className="text-destructive">
+              <div className="font-medium mb-2">Please complete the required fields:</div>
+              <ul className="list-disc list-inside space-y-1 text-sm">
+                {validationErrors.map((error, index) => (
+                  <li key={index}>{error}</li>
+                ))}
+              </ul>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Form Sections */}
+        <div className="space-y-8">
+          {/* Essential Information */}
+          <Card className="p-6 bg-card border border-border shadow-card">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <User className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold text-foreground">
+                  {t("userInfoForm.sections.essentials")}
+                </h2>
+                <p className="text-sm text-muted-foreground">{t("userInfoForm.help.required")}</p>
               </div>
             </div>
-            
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent mb-4 tracking-tight">
-              {t("userInfoForm.title")}
-            </h1>
-            <p className="text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
-              {t("userInfoForm.subtitle")}
-            </p>
-          </div>
 
-          {/* Progressive Form Layout */}
-          <div className="space-y-8 md:space-y-12 mb-10 md:mb-12">
-            {/* Essential Information Section */}
-            <div className="space-y-6" id="essential-info-section">
-              <div className="flex items-center gap-3 mb-8">
-                <div className="p-3 bg-primary/10 rounded-xl">
-                  <User className="w-6 h-6 text-primary" />
-                </div>
-                <div>
-                  <h2 className="text-2xl md:text-3xl font-bold text-foreground">
-                    {t("userInfoForm.sections.aboutYou")}
-                  </h2>
-                  <p className="text-muted-foreground text-sm mt-1">Essential details to get started</p>
-                </div>
-              </div>
-            
-            {/* Friendly Validation Error Alert */}
-            {showValidationErrors && validationErrors.length > 0 && (
-              <Alert className="border-blue-200 bg-blue-50 mb-6">
-                <AlertCircle className="h-4 w-4 text-blue-600" />
-                <AlertDescription className="text-blue-700">
-                  <div className="font-semibold mb-2">Let's finish setting up your story! 🌟</div>
-                  <ul className="list-disc list-inside space-y-1">
-                    {validationErrors.map((error, index) => (
-                      <li key={index} className="text-sm">{error}</li>
-                    ))}
-                  </ul>
-                  <div className="text-xs mt-2 opacity-75">All other fields are optional and help make your story even better!</div>
-                </AlertDescription>
-              </Alert>
-            )}
-
-            <div className="space-y-3 md:space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              {/* Name */}
               <div className="space-y-2">
-                <Label htmlFor="name" className="text-base md:text-lg font-semibold text-foreground">
-                  {t("userInfoForm.fields.name.label")} <span className="text-red-500">*</span>
+                <Label htmlFor="name" className="text-sm font-medium">
+                  {t("userInfoForm.fields.name.label")} <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => handleInputChange("name", e.target.value)}
                   placeholder={t("userInfoForm.fields.name.placeholder")}
-                  className="w-full text-base md:text-lg py-3 md:py-4 min-h-[44px] md:min-h-[48px] rounded-xl border-2 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white/50 backdrop-blur-sm hover:bg-white/70 focus:bg-white mobile-input"
+                  className="h-10 bg-background border border-input focus:border-primary focus:ring-1 focus:ring-primary"
                   autoComplete="given-name"
-                  inputMode="text"
-                  autoFocus
-                  aria-describedby="name-description"
-                  aria-required="true"
                 />
-                <div className="text-xs text-muted-foreground" id="name-description">
-                  {t("userInfoForm.fields.name.help", "Your child's first name helps create personalized stories")}
-                </div>
               </div>
 
+              {/* Age */}
               <div className="space-y-2">
-                <Label htmlFor="age" className="text-base md:text-lg font-semibold text-foreground">
-                  {t("userInfoForm.fields.age.label")}
+                <Label htmlFor="age" className="text-sm font-medium">
+                  {t("userInfoForm.fields.age.label")} <span className="text-destructive">*</span>
                 </Label>
-                <Select value={formData.age.toString()} onValueChange={(value) => handleInputChange("age", parseInt(value))}>
-                  <SelectTrigger className={`text-base md:text-lg p-3 md:p-4 min-h-[44px] md:min-h-[48px] rounded-xl md:rounded-2xl border-2 touch-target ${
-                    showValidationErrors && !formData.age ? 'border-red-300 bg-red-50' : 'border-primary/20'
-                  }`} aria-label="Select your child's age">
+                <Select value={formData.age?.toString()} onValueChange={(value) => handleInputChange("age", parseInt(value))}>
+                  <SelectTrigger className="h-10 bg-background border border-input focus:border-primary focus:ring-1 focus:ring-primary">
                     <SelectValue placeholder={t("userInfoForm.fields.age.placeholder")} />
                   </SelectTrigger>
-                  <SelectContent>
-                    {[3, 4, 5, 6, 7, 8, 9, 10].map(age => (
-                      <SelectItem key={age} value={age.toString()}>{age} {t("userInfoForm.fields.age.yearsOld")}</SelectItem>
+                  <SelectContent className="bg-popover border border-border shadow-soft z-50">
+                    {[3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((age) => (
+                      <SelectItem key={age} value={age.toString()} className="focus:bg-accent focus:text-accent-foreground">
+                        {age} years old
+                      </SelectItem>
                     ))}
-                    <SelectItem value="11">11+ {t("userInfoForm.fields.age.yearsOld")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
+              {/* Grade */}
               <div className="space-y-2">
-                <Label htmlFor="grade" className="text-base md:text-lg font-semibold text-foreground">
-                  {t("userInfoForm.fields.grade.label")}
+                <Label htmlFor="grade" className="text-sm font-medium">
+                  {t("userInfoForm.fields.grade.label")} <span className="text-destructive">*</span>
                 </Label>
                 <Select value={formData.grade} onValueChange={(value) => handleInputChange("grade", value)}>
-                  <SelectTrigger className="text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-primary/20">
+                  <SelectTrigger className="h-10 bg-background border border-input focus:border-primary focus:ring-1 focus:ring-primary">
                     <SelectValue placeholder={t("userInfoForm.fields.grade.placeholder")} />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="PreK">{t("userInfoForm.grades.PreK")}</SelectItem>
-                    <SelectItem value="K">{t("userInfoForm.grades.K")}</SelectItem>
-                    <SelectItem value="1st">{t("userInfoForm.grades.1st")}</SelectItem>
-                    <SelectItem value="2nd">{t("userInfoForm.grades.2nd")}</SelectItem>
-                    <SelectItem value="3rd">{t("userInfoForm.grades.3rd")}</SelectItem>
-                    <SelectItem value="4th">{t("userInfoForm.grades.4th")}</SelectItem>
-                    <SelectItem value="5th">{t("userInfoForm.grades.5th")}</SelectItem>
-                    <SelectItem value="6th+">{t("userInfoForm.grades.6th")} or Higher</SelectItem>
+                  <SelectContent className="bg-popover border border-border shadow-soft z-50">
+                    <SelectItem value="PreK" className="focus:bg-accent focus:text-accent-foreground">Pre-K</SelectItem>
+                    <SelectItem value="Kindergarten" className="focus:bg-accent focus:text-accent-foreground">Kindergarten</SelectItem>
+                    <SelectItem value="1st" className="focus:bg-accent focus:text-accent-foreground">1st Grade</SelectItem>
+                    <SelectItem value="2nd" className="focus:bg-accent focus:text-accent-foreground">2nd Grade</SelectItem>
+                    <SelectItem value="3rd" className="focus:bg-accent focus:text-accent-foreground">3rd Grade</SelectItem>
+                    <SelectItem value="4th" className="focus:bg-accent focus:text-accent-foreground">4th Grade</SelectItem>
+                    <SelectItem value="5th" className="focus:bg-accent focus:text-accent-foreground">5th Grade</SelectItem>
+                    <SelectItem value="6th" className="focus:bg-accent focus:text-accent-foreground">6th Grade</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
+              {/* Language */}
               <div className="space-y-2">
-                <Label htmlFor="nativeLanguage" className="text-base md:text-lg font-semibold text-foreground">
-                  {t("userInfoForm.fields.nativeLanguage.label")} <span className="text-red-500">*</span>
+                <Label htmlFor="language" className="text-sm font-medium">
+                  {t("userInfoForm.fields.nativeLanguage.label")} <span className="text-destructive">*</span>
                 </Label>
-                <Select value={formData.nativeLanguage} onValueChange={handleLanguageChange}>
-                  <SelectTrigger className={`text-base md:text-lg p-3 md:p-4 min-h-[44px] md:min-h-[48px] rounded-xl md:rounded-2xl border-2 ${showValidationErrors && !formData.nativeLanguage ? 'border-red-300 bg-red-50' : 'border-primary/20'}`}
-                                aria-label="Select your child's native language" aria-required="true">
+                <Select value={formData.nativeLanguage} onValueChange={(value) => handleLanguageChange(value as LanguageCode)}>
+                  <SelectTrigger className="h-10 bg-background border border-input focus:border-primary focus:ring-1 focus:ring-primary">
                     <SelectValue placeholder={t("userInfoForm.fields.nativeLanguage.placeholder")} />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="en">{t("userInfoForm.languages.en")}</SelectItem>
-                    <SelectItem value="ar" className="relative">
-                      <div className="flex items-center justify-between w-full">
-                        <span>{t("userInfoForm.languages.ar")}</span>
-                        <Globe className="w-4 h-4 text-blue-500 ml-2" />
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="es" className="relative">
-                      <div className="flex items-center justify-between w-full">
-                        <span>{t("userInfoForm.languages.es")}</span>
-                        <Globe className="w-4 h-4 text-blue-500 ml-2" />
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="zh" className="relative">
-                      <div className="flex items-center justify-between w-full">
-                        <span>{t("userInfoForm.languages.zh")}</span>
-                        <Globe className="w-4 h-4 text-blue-500 ml-2" />
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="hi" className="relative">
-                      <div className="flex items-center justify-between w-full">
-                        <span>{t("userInfoForm.languages.hi")}</span>
-                        <Globe className="w-4 h-4 text-blue-500 ml-2" />
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="pt" className="relative">
-                      <div className="flex items-center justify-between w-full">
-                        <span>{t("userInfoForm.languages.pt")}</span>
-                        <Globe className="w-4 h-4 text-blue-500 ml-2" />
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="fr" className="relative">
-                      <div className="flex items-center justify-between w-full">
-                        <span>{t("userInfoForm.languages.fr")}</span>
-                        <Globe className="w-4 h-4 text-blue-500 ml-2" />
-                      </div>
-                    </SelectItem>
+                  <SelectContent className="bg-popover border border-border shadow-soft z-50">
+                    <SelectItem value="en" className="focus:bg-accent focus:text-accent-foreground">English</SelectItem>
+                    <SelectItem value="es" className="focus:bg-accent focus:text-accent-foreground">Español (Spanish)</SelectItem>
+                    <SelectItem value="fr" className="focus:bg-accent focus:text-accent-foreground">Français (French)</SelectItem>
+                    <SelectItem value="pt" className="focus:bg-accent focus:text-accent-foreground">Português (Portuguese)</SelectItem>
+                    <SelectItem value="zh" className="focus:bg-accent focus:text-accent-foreground">中文 (Chinese)</SelectItem>
+                    <SelectItem value="ar" className="focus:bg-accent focus:text-accent-foreground">العربية (Arabic)</SelectItem>
+                    <SelectItem value="hi" className="focus:bg-accent focus:text-accent-foreground">हिन्दी (Hindi)</SelectItem>
                   </SelectContent>
                 </Select>
-                {formData.nativeLanguage && formData.nativeLanguage !== 'en' && (
-                  <div className="mt-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                    <div className="flex items-start gap-2">
-                      <Globe className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-                      <p className="text-sm text-blue-700 dark:text-blue-300">
-                        {t("userInfoForm.fields.nativeLanguage.translationInfo")}
-                      </p>
-                    </div>
-                  </div>
-                )}
               </div>
+            </div>
+          </Card>
 
+          {/* Reading Level */}
+          <Card className="p-6 bg-card border border-border shadow-card">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <BookOpen className="w-5 h-5 text-primary" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-xl font-semibold text-foreground">
+                  {t("userInfoForm.sections.readingLevel")}
+                </h2>
+                <p className="text-sm text-muted-foreground">{t("userInfoForm.fields.readingAbility.description")}</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="learningGoal" className="text-base md:text-lg font-semibold text-foreground">
-                  {t("userInfoForm.fields.learningGoal.label")}
+                <Label htmlFor="readingAbility" className="text-sm font-medium">
+                  {t("userInfoForm.fields.readingAbility.label")}
                 </Label>
-                <Select value={formData.learningGoal} onValueChange={(value) => handleInputChange("learningGoal", value)}>
-                  <SelectTrigger className="text-base md:text-lg p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-primary/20">
-                    <SelectValue placeholder={t("userInfoForm.fields.learningGoal.placeholder")} />
+                <Select value={formData.readingAbility} onValueChange={(value) => handleInputChange("readingAbility", value)}>
+                  <SelectTrigger className="h-10 bg-background border border-input focus:border-primary focus:ring-1 focus:ring-primary">
+                    <SelectValue placeholder={t("userInfoForm.fields.readingAbility.placeholder")} />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="improve-english-reading">{t("userInfoForm.fields.learningGoal.options.improve-english-reading")}</SelectItem>
-                    <SelectItem value="learn-english-language">{t("userInfoForm.fields.learningGoal.options.learn-english-language")}</SelectItem>
-                    <SelectItem value="both">{t("userInfoForm.fields.learningGoal.options.both")}</SelectItem>
+                  <SelectContent className="bg-popover border border-border shadow-soft z-50">
+                    <SelectItem value="pre-reader" className="focus:bg-accent focus:text-accent-foreground">
+                      {t("userInfoForm.fields.readingAbility.options.pre-reader")}
+                    </SelectItem>
+                    <SelectItem value="early-beginner" className="focus:bg-accent focus:text-accent-foreground">
+                      {t("userInfoForm.fields.readingAbility.options.early-beginner")}
+                    </SelectItem>
+                    <SelectItem value="beginner" className="focus:bg-accent focus:text-accent-foreground">
+                      {t("userInfoForm.fields.readingAbility.options.beginner")}
+                    </SelectItem>
+                    <SelectItem value="early-intermediate" className="focus:bg-accent focus:text-accent-foreground">
+                      {t("userInfoForm.fields.readingAbility.options.early-intermediate")}
+                    </SelectItem>
+                    <SelectItem value="intermediate" className="focus:bg-accent focus:text-accent-foreground">
+                      {t("userInfoForm.fields.readingAbility.options.intermediate")}
+                    </SelectItem>
+                    <SelectItem value="advanced" className="focus:bg-accent focus:text-accent-foreground">
+                      {t("userInfoForm.fields.readingAbility.options.advanced")}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="readingAbility" className="text-base md:text-lg font-semibold text-foreground">
-                  {t("userInfoForm.fields.readingAbility.label")} <span className="text-red-500">*</span>
-                  <span className="text-sm font-normal text-muted-foreground ml-2">
-                    (Research-Based Dolch Sight Words)
-                  </span>
-                </Label>
-                 <Select value={formData.readingAbility} onValueChange={(value) => handleInputChange("readingAbility", value)}>
-                   <SelectTrigger className="text-base md:text-lg p-4 md:p-5 rounded-2xl border-2 border-primary/20 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:bg-white hover:border-primary/40 transition-all duration-200 min-h-[60px]">
-                     <SelectValue placeholder={t("userInfoForm.fields.readingAbility.placeholder")} />
-                   </SelectTrigger>
-                   <SelectContent className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-md border-2 border-primary/20 rounded-2xl shadow-elegant p-2 max-w-md">
-                     <SelectItem value="beginner" className="p-4 rounded-xl hover:bg-primary/10 transition-all duration-200 cursor-pointer">
-                       <div className="flex items-start gap-3">
-                         <span className="text-2xl">{t("userInfoForm.fields.readingAbility.levels.beginner.icon")}</span>
-                         <div className="flex-1">
-                           <div className="font-bold text-lg text-primary mb-1">
-                             {t("userInfoForm.fields.readingAbility.levels.beginner.title")}
-                           </div>
-                           <div className="text-sm text-foreground/80 mb-2">
-                             {t("userInfoForm.fields.readingAbility.levels.beginner.description")}
-                           </div>
-                           <div className="text-xs text-muted-foreground font-medium bg-primary/10 px-2 py-1 rounded-full inline-block">
-                             {t("userInfoForm.fields.readingAbility.levels.beginner.details")}
-                           </div>
-                         </div>
-                       </div>
-                     </SelectItem>
-                     <SelectItem value="easy" className="p-4 rounded-xl hover:bg-primary/10 transition-all duration-200 cursor-pointer">
-                       <div className="flex items-start gap-3">
-                         <span className="text-2xl">{t("userInfoForm.fields.readingAbility.levels.easy.icon")}</span>
-                         <div className="flex-1">
-                           <div className="font-bold text-lg text-emerald-600 mb-1">
-                             {t("userInfoForm.fields.readingAbility.levels.easy.title")}
-                           </div>
-                           <div className="text-sm text-foreground/80 mb-2">
-                             {t("userInfoForm.fields.readingAbility.levels.easy.description")}
-                           </div>
-                           <div className="text-xs text-muted-foreground font-medium bg-emerald-100 px-2 py-1 rounded-full inline-block">
-                             {t("userInfoForm.fields.readingAbility.levels.easy.details")}
-                           </div>
-                         </div>
-                       </div>
-                     </SelectItem>
-                     <SelectItem value="medium" className="p-4 rounded-xl hover:bg-primary/10 transition-all duration-200 cursor-pointer">
-                       <div className="flex items-start gap-3">
-                         <span className="text-2xl">{t("userInfoForm.fields.readingAbility.levels.medium.icon")}</span>
-                         <div className="flex-1">
-                           <div className="font-bold text-lg text-blue-600 mb-1">
-                             {t("userInfoForm.fields.readingAbility.levels.medium.title")}
-                           </div>
-                           <div className="text-sm text-foreground/80 mb-2">
-                             {t("userInfoForm.fields.readingAbility.levels.medium.description")}
-                           </div>
-                           <div className="text-xs text-muted-foreground font-medium bg-blue-100 px-2 py-1 rounded-full inline-block">
-                             {t("userInfoForm.fields.readingAbility.levels.medium.details")}
-                           </div>
-                         </div>
-                       </div>
-                     </SelectItem>
-                     <SelectItem value="hard" className="p-4 rounded-xl hover:bg-primary/10 transition-all duration-200 cursor-pointer">
-                       <div className="flex items-start gap-3">
-                         <span className="text-2xl">{t("userInfoForm.fields.readingAbility.levels.hard.icon")}</span>
-                         <div className="flex-1">
-                           <div className="font-bold text-lg text-orange-600 mb-1">
-                             {t("userInfoForm.fields.readingAbility.levels.hard.title")}
-                           </div>
-                           <div className="text-sm text-foreground/80 mb-2">
-                             {t("userInfoForm.fields.readingAbility.levels.hard.description")}
-                           </div>
-                           <div className="text-xs text-muted-foreground font-medium bg-orange-100 px-2 py-1 rounded-full inline-block">
-                             {t("userInfoForm.fields.readingAbility.levels.hard.details")}
-                           </div>
-                         </div>
-                       </div>
-                     </SelectItem>
-                     <SelectItem value="expert" className="p-4 rounded-xl hover:bg-primary/10 transition-all duration-200 cursor-pointer">
-                       <div className="flex items-start gap-3">
-                         <span className="text-2xl">{t("userInfoForm.fields.readingAbility.levels.expert.icon")}</span>
-                         <div className="flex-1">
-                           <div className="font-bold text-lg text-purple-600 mb-1">
-                             {t("userInfoForm.fields.readingAbility.levels.expert.title")}
-                           </div>
-                           <div className="text-sm text-foreground/80 mb-2">
-                             {t("userInfoForm.fields.readingAbility.levels.expert.description")}
-                           </div>
-                           <div className="text-xs text-muted-foreground font-medium bg-purple-100 px-2 py-1 rounded-full inline-block">
-                             {t("userInfoForm.fields.readingAbility.levels.expert.details")}
-                           </div>
-                         </div>
-                       </div>
-                     </SelectItem>
-                   </SelectContent>
-                 </Select>
-                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 p-4 rounded-xl border border-blue-200 dark:border-blue-800 space-y-3">
-                   <div className="flex items-start gap-2">
-                     <CheckCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                     <div className="space-y-2">
-                       <p className="text-sm font-semibold text-blue-900 dark:text-blue-100">
-                         {t("userInfoForm.fields.readingAbility.helpText")}
-                       </p>
-                       <p className="text-xs text-blue-700 dark:text-blue-300">
-                         {t("userInfoForm.fields.readingAbility.researchDetails")}
-                       </p>
-                     </div>
-                   </div>
-                 </div>
-              </div>
+              {/* Expandable Reading Level Details */}
+              <Collapsible open={showReadingLevelDetails} onOpenChange={setShowReadingLevelDetails}>
+                <CollapsibleTrigger className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors">
+                  <Info className="w-4 h-4" />
+                  {showReadingLevelDetails ? t("userInfoForm.buttons.hideDetails") : t("userInfoForm.buttons.learnMore")}
+                  <ChevronDown className={`w-4 h-4 transition-transform ${showReadingLevelDetails ? 'rotate-180' : ''}`} />
+                </CollapsibleTrigger>
+                <CollapsibleContent className="mt-4 p-4 bg-muted/50 rounded-lg border border-border/50">
+                  <div className="space-y-3 text-sm">
+                    <h4 className="font-medium text-foreground">{t("userInfoForm.fields.readingAbility.learnMore.title")}</h4>
+                    <p className="text-muted-foreground">{t("userInfoForm.fields.readingAbility.learnMore.description")}</p>
+                    {formData.readingAbility && (
+                      <div className="p-3 bg-background rounded border border-border/50">
+                        <div className="font-medium text-foreground mb-1">
+                          {t(`userInfoForm.fields.readingAbility.options.${formData.readingAbility}`)}
+                        </div>
+                        <div className="text-muted-foreground">
+                          {t(`userInfoForm.fields.readingAbility.details.${formData.readingAbility}`)}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+            </div>
+          </Card>
 
+          {/* Character Selection */}
+          <Card className="p-6 bg-card border border-border shadow-card">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <User className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold text-foreground">
+                  {t("userInfoForm.sections.character")}
+                </h2>
+                <p className="text-sm text-muted-foreground">{t("userInfoForm.help.optional")}</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="avatar" className="text-base md:text-lg font-semibold text-foreground">
+                <Label className="text-sm font-medium">
                   {t("userInfoForm.fields.avatar.label")}
                 </Label>
                 <AvatarPicker
                   value={formData.avatar}
                   onChange={(avatar) => setFormData(prev => ({ ...prev, avatar }))}
+                  className="flex justify-center"
                 />
               </div>
             </div>
-          </div>
+          </Card>
 
-            {/* Personalization Section */}
-            <div className="space-y-6" id="personalization-section">
-              <div className="flex items-center gap-3 mb-8">
-                <div className="p-3 bg-gradient-to-br from-pink-500/20 to-purple-500/20 rounded-xl">
-                  <Heart className="w-6 h-6 text-pink-600" />
-                </div>
-                <div className="flex-1">
-                  <h2 className="text-2xl md:text-3xl font-bold text-foreground">
-                    {t("userInfoForm.sections.yourFavorites")}
-                  </h2>
-                  <p className="text-muted-foreground text-sm mt-1">
-                    {isPremium ? "Add as many favorites as you'd like!" : "Choose one favorite to personalize your story"}
-                  </p>
-                </div>
-                {!isPremium && (
-                  <div className="bg-gradient-to-r from-orange-100 to-amber-100 text-orange-800 px-4 py-2 rounded-full text-sm font-medium border border-orange-200">
-                    Free: Pick 1
-                  </div>
-                )}
+          {/* Personalization */}
+          <Card className="p-6 bg-card border border-border shadow-card">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Heart className="w-5 h-5 text-primary" />
               </div>
-              
-              {!isPremium && (
-                <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-xl p-4 mb-6">
-                  <div className="flex items-start gap-3">
-                    <div className="p-1 bg-orange-100 rounded-full">
-                      <AlertCircle className="h-4 w-4 text-orange-600" />
-                    </div>
-                    <div>
-                      <p className="text-orange-800 font-medium text-sm">Free Version Limit</p>
-                      <p className="text-orange-700 text-sm mt-1">
-                        Choose one favorite below to personalize your story. Upgrade for unlimited customization!
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className={`space-y-3 p-4 rounded-2xl border-2 transition-all duration-200 ${
-                (!isPremium && selectedOptionalField && selectedOptionalField !== 'favoriteColor') 
-                  ? 'border-gray-200 bg-gray-50/50 opacity-60' 
-                  : 'border-primary/20 bg-white/50 hover:border-primary/40 hover:bg-white/70'
-              }`}>
-                <Label htmlFor="favoriteColor" className="text-base font-semibold text-foreground flex items-center gap-2">
-                  🎨 {t("userInfoForm.fields.favoriteColor.label")}
-                  <span className="text-xs text-muted-foreground">{t("userInfoForm.fields.favoriteColor.optional")}</span>
+              <div className="flex-1">
+                <h2 className="text-xl font-semibold text-foreground">
+                  {t("userInfoForm.sections.personalization")}
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  {isPremium ? t("userInfoForm.help.optional") : t("userInfoForm.restrictions.freeUserLimit")}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              {/* Favorite Color */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">
+                  {t("userInfoForm.fields.favoriteColor.label")}
+                </Label>
+                <ColorPicker
+                  value={formData.favoriteColor}
+                  onChange={(color) => handleInputChange("favoriteColor", color)}
+                />
+              </div>
+
+              {/* Favorite Animal */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">
+                  {t("userInfoForm.fields.favoriteAnimal.label")}
+                  {!isPremium && selectedOptionalField && selectedOptionalField !== 'favoriteAnimal' && (
+                    <span className="text-xs text-muted-foreground ml-2">(Premium)</span>
+                  )}
                 </Label>
                 <div className="relative">
-                  <ColorPicker
-                    value={formData.favoriteColor}
-                    onChange={(color) => handleInputChange("favoriteColor", color)}
+                  <Input
+                    value={formData.favoriteAnimal}
+                    onChange={(e) => handleInputChange("favoriteAnimal", e.target.value)}
+                    placeholder={t("userInfoForm.fields.favoriteAnimal.placeholder")}
+                    className="h-10 bg-background border border-input focus:border-primary focus:ring-1 focus:ring-primary pr-8"
+                    disabled={!isPremium && selectedOptionalField && selectedOptionalField !== 'favoriteAnimal'}
                   />
-                  {translationLoading.favoriteColor && (
-                    <div className="absolute right-3 top-3">
-                      <Loader2 className="w-4 h-4 text-primary animate-spin" />
-                    </div>
+                  {translationLoading.favoriteAnimal && (
+                    <Loader2 className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 animate-spin text-primary" />
                   )}
                 </div>
-                {translationLoading.favoriteColor && (
-                  <div className="translation-feedback">
-                    <Loader2 className="w-3 h-3 animate-spin inline mr-1" />
-                    {t('userForm.translating', 'Translating...')}
-                  </div>
-                )}
-                {translations.favoriteColor && !translationLoading.favoriteColor && (
-                  <div className="translation-feedback">
-                    <Globe className="w-3 h-3 inline mr-1" />
-                    {translations.favoriteColor}
-                  </div>
+                {translations.favoriteAnimal && (
+                  <div className="text-xs text-primary">{translations.favoriteAnimal}</div>
                 )}
               </div>
 
-              <div className={`space-y-3 p-4 rounded-2xl border-2 transition-all duration-200 ${
-                (!isPremium && selectedOptionalField && selectedOptionalField !== 'favoriteAnimal') 
-                  ? 'border-gray-200 bg-gray-50/50 opacity-60' 
-                  : 'border-primary/20 bg-white/50 hover:border-primary/40 hover:bg-white/70'
-              }`}>
-                <Label htmlFor="favoriteAnimal" className="text-base font-semibold text-foreground flex items-center gap-2">
-                  🐾 {t("userInfoForm.fields.favoriteAnimal.label")}
-                  <span className="text-xs text-muted-foreground">{t("userInfoForm.fields.favoriteAnimal.optional")}</span>
+              {/* Favorite Food */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">
+                  {t("userInfoForm.fields.favoriteFood.label")}
+                  {!isPremium && selectedOptionalField && selectedOptionalField !== 'favoriteFood' && (
+                    <span className="text-xs text-muted-foreground ml-2">(Premium)</span>
+                  )}
                 </Label>
-                <MobileTooltip
-                  content={t("userInfoForm.fields.favoriteAnimal.tooltip", "Enter animals as simple words - singular or plural doesn't matter!")}
-                  side="top"
-                >
-                  <div className="relative">
-                     <TagInput
-                       value={formData.favoriteAnimal}
-                       onChange={(value) => handleInputChange("favoriteAnimal", value)}
-                       placeholder={t("userInfoForm.fields.favoriteAnimal.placeholder", "dog, cat, lion, dolphin...")}
-                       className="multilingual-input"
-                     />
-                    {translationLoading.favoriteAnimal && (
-                      <div className="absolute right-3 top-3">
-                        <Loader2 className="w-4 h-4 text-primary animate-spin" />
-                      </div>
-                    )}
-                  </div>
-                </MobileTooltip>
-                {translationLoading.favoriteAnimal && (
-                  <div className="translation-feedback">
-                    <Loader2 className="w-3 h-3 animate-spin inline mr-1" />
-                    {t('userForm.translating', 'Translating...')}
-                  </div>
-                )}
-                {translations.favoriteAnimal && !translationLoading.favoriteAnimal && (
-                  <div className="translation-feedback">
-                    <Globe className="w-3 h-3 inline mr-1" />
-                    {translations.favoriteAnimal}
-                  </div>
+                <div className="relative">
+                  <Input
+                    value={formData.favoriteFood}
+                    onChange={(e) => handleInputChange("favoriteFood", e.target.value)}
+                    placeholder={t("userInfoForm.fields.favoriteFood.placeholder")}
+                    className="h-10 bg-background border border-input focus:border-primary focus:ring-1 focus:ring-primary pr-8"
+                    disabled={!isPremium && selectedOptionalField && selectedOptionalField !== 'favoriteFood'}
+                  />
+                  {translationLoading.favoriteFood && (
+                    <Loader2 className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 animate-spin text-primary" />
+                  )}
+                </div>
+                {translations.favoriteFood && (
+                  <div className="text-xs text-primary">{translations.favoriteFood}</div>
                 )}
               </div>
 
-              <div className={`space-y-3 p-4 rounded-2xl border-2 transition-all duration-200 ${
-                (!isPremium && selectedOptionalField && selectedOptionalField !== 'favoriteFood') 
-                  ? 'border-gray-200 bg-gray-50/50 opacity-60' 
-                  : 'border-primary/20 bg-white/50 hover:border-primary/40 hover:bg-white/70'
-              }`}>
-                <Label htmlFor="favoriteFood" className="text-base font-semibold text-foreground flex items-center gap-2">
-                  🍕 {t("userInfoForm.fields.favoriteFood.label")}
-                  <span className="text-xs text-muted-foreground">{t("userInfoForm.fields.favoriteFood.optional")}</span>
+              {/* Hobbies */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">
+                  {t("userInfoForm.fields.hobbies.label")}
+                  {!isPremium && selectedOptionalField && selectedOptionalField !== 'hobbies' && (
+                    <span className="text-xs text-muted-foreground ml-2">(Premium)</span>
+                  )}
                 </Label>
-                <MobileTooltip
-                  content={t("userInfoForm.fields.favoriteFood.tooltip", "Enter foods as simple words - plural or singular works!")}
-                  side="top"
-                >
-                  <div className="relative">
-                     <TagInput
-                       value={formData.favoriteFood}
-                       onChange={(value) => handleInputChange("favoriteFood", value)}
-                       placeholder={t("userInfoForm.fields.favoriteFood.placeholder", "pizza, ice cream, apples, cookies...")}
-                       className="multilingual-input"
-                     />
-                    {translationLoading.favoriteFood && (
-                      <div className="absolute right-3 top-3">
-                        <Loader2 className="w-4 h-4 text-primary animate-spin" />
-                      </div>
-                    )}
-                  </div>
-                </MobileTooltip>
-                {translationLoading.favoriteFood && (
-                  <div className="translation-feedback">
-                    <Loader2 className="w-3 h-3 animate-spin inline mr-1" />
-                    {t('userForm.translating', 'Translating...')}
-                  </div>
-                )}
-                {translations.favoriteFood && !translationLoading.favoriteFood && (
-                  <div className="translation-feedback">
-                    <Globe className="w-3 h-3 inline mr-1" />
-                    {translations.favoriteFood}
-                  </div>
+                <div className="relative">
+                  <Input
+                    value={formData.hobbies}
+                    onChange={(e) => handleInputChange("hobbies", e.target.value)}
+                    placeholder={t("userInfoForm.fields.hobbies.placeholder")}
+                    className="h-10 bg-background border border-input focus:border-primary focus:ring-1 focus:ring-primary pr-8"
+                    disabled={!isPremium && selectedOptionalField && selectedOptionalField !== 'hobbies'}
+                  />
+                  {translationLoading.hobbies && (
+                    <Loader2 className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 animate-spin text-primary" />
+                  )}
+                </div>
+                {translations.hobbies && (
+                  <div className="text-xs text-primary">{translations.hobbies}</div>
                 )}
               </div>
 
-              <div className={`space-y-3 p-4 rounded-2xl border-2 transition-all duration-200 ${
-                (!isPremium && selectedOptionalField && selectedOptionalField !== 'hobbies') 
-                  ? 'border-gray-200 bg-gray-50/50 opacity-60' 
-                  : 'border-primary/20 bg-white/50 hover:border-primary/40 hover:bg-white/70'
-              }`}>
-                <Label htmlFor="hobbies" className="text-base font-semibold text-foreground flex items-center gap-2">
-                  ⚽ {t("userInfoForm.fields.hobbies.label")}
-                  <span className="text-xs text-muted-foreground">{t("userInfoForm.fields.hobbies.optional")}</span>
+              {/* Special Request */}
+              <div className="space-y-2 sm:col-span-2">
+                <Label className="text-sm font-medium">
+                  {t("userInfoForm.fields.specialRequest.label")}
+                  {!isPremium && selectedOptionalField && selectedOptionalField !== 'specialRequest' && (
+                    <span className="text-xs text-muted-foreground ml-2">(Premium)</span>
+                  )}
                 </Label>
-                <MobileTooltip
-                  content={t("userInfoForm.fields.hobbies.tooltip", "Enter activities your child enjoys - any way you like!")}
-                  side="top"
-                >
-                  <div className="relative">
-                     <TagInput
-                       value={formData.hobbies}
-                       onChange={(value) => handleInputChange("hobbies", value)}
-                       placeholder={t("userInfoForm.fields.hobbies.placeholder", "soccer, drawing, dancing, video games...")}
-                       className="multilingual-input"
-                     />
-                    {translationLoading.hobbies && (
-                      <div className="absolute right-3 top-3">
-                        <Loader2 className="w-4 h-4 text-primary animate-spin" />
-                      </div>
-                    )}
-                  </div>
-                </MobileTooltip>
-                {translationLoading.hobbies && (
-                  <div className="translation-feedback">
-                    <Loader2 className="w-3 h-3 animate-spin inline mr-1" />
-                    {t('userForm.translating', 'Translating...')}
-                  </div>
-                )}
-                {translations.hobbies && !translationLoading.hobbies && (
-                  <div className="translation-feedback">
-                    <Globe className="w-3 h-3 inline mr-1" />
-                    {translations.hobbies}
-                  </div>
+                <div className="relative">
+                  <Textarea
+                    value={formData.specialRequest}
+                    onChange={(e) => handleInputChange("specialRequest", e.target.value)}
+                    placeholder={t("userInfoForm.fields.specialRequest.placeholder")}
+                    className="min-h-20 bg-background border border-input focus:border-primary focus:ring-1 focus:ring-primary resize-none"
+                    disabled={!isPremium && selectedOptionalField && selectedOptionalField !== 'specialRequest'}
+                    rows={3}
+                  />
+                  {translationLoading.specialRequest && (
+                    <Loader2 className="absolute right-2 top-2 w-4 h-4 animate-spin text-primary" />
+                  )}
+                </div>
+                {translations.specialRequest && (
+                  <div className="text-xs text-primary">{translations.specialRequest}</div>
                 )}
               </div>
             </div>
-          </div>
-
-            {/* Special Requests Section */}
-            <div className="space-y-6" id="special-request-section">
-              <div className="flex items-center gap-3 mb-8">
-                <div className="p-3 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-xl">
-                  <Star className="w-6 h-6 text-amber-600" />
-                </div>
-                <div>
-                  <h2 className="text-2xl md:text-3xl font-bold text-foreground">
-                    {t("userInfoForm.sections.additionalInfo")}
-                  </h2>
-                  <p className="text-muted-foreground text-sm mt-1">Any special themes or ideas for your story</p>
-                </div>
-              </div>
-            
-            <div className={`p-6 rounded-2xl border-2 transition-all duration-200 ${
-              (!isPremium && selectedOptionalField && selectedOptionalField !== 'specialRequest') 
-                ? 'border-gray-200 bg-gray-50/50 opacity-60' 
-                : 'border-primary/20 bg-white/50 hover:border-primary/40 hover:bg-white/70'
-            }`}>
-              <Label htmlFor="specialRequest" className="text-base font-semibold text-foreground flex items-center gap-2 mb-3">
-                ✨ {t("userInfoForm.fields.specialRequest.label")}
-                <span className="text-xs text-muted-foreground">{t("userInfoForm.fields.specialRequest.optional")}</span>
-              </Label>
-              <div className="relative">
-                 <TagInput
-                   value={formData.specialRequest}
-                   onChange={(value) => handleInputChange("specialRequest", value)}
-                   placeholder={t("userInfoForm.fields.specialRequest.placeholder")}
-                   className="multilingual-input min-h-[60px]"
-                 />
-                {translationLoading.specialRequest && (
-                  <div className="absolute right-3 top-3">
-                    <Loader2 className="w-4 h-4 text-primary animate-spin" />
-                  </div>
-                )}
-              </div>
-              {translationLoading.specialRequest && (
-                <div className="translation-feedback mt-2">
-                  <Loader2 className="w-3 h-3 animate-spin inline mr-1" />
-                  {t('userForm.translating', 'Translating...')}
-                </div>
-              )}
-              {translations.specialRequest && !translationLoading.specialRequest && (
-                <div className="translation-feedback mt-2">
-                  <Globe className="w-3 h-3 inline mr-1" />
-                  {translations.specialRequest}
-                </div>
-              )}
-            </div>
-          </div>
+          </Card>
         </div>
 
-          {/* Navigation buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 md:gap-6 justify-between pt-8 border-t border-primary/20">
-            <div className="flex-1 sm:max-w-xs order-2 sm:order-1">
-              <MobileOptimizedButton
-                variant="outline"
-                size="lg"
-                onClick={onBack}
-                className="w-full text-lg py-6 rounded-xl hover:scale-105 transition-all duration-200"
-              >
-                {t("userInfoForm.buttons.backToHome")}
-              </MobileOptimizedButton>
+        {/* Submit Button */}
+        <div className="mt-8 text-center">
+          <MobileOptimizedButton
+            onClick={handleSubmit}
+            disabled={!isFormComplete()}
+            className="w-full sm:w-auto min-w-48 h-12 bg-primary text-primary-foreground hover:bg-primary/90 focus:bg-primary/90 font-semibold text-base shadow-soft hover:shadow-glow transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <div className="flex items-center justify-center gap-2">
+              <Sparkles className="w-5 h-5" />
+              {t("userInfoForm.buttons.createStory")}
             </div>
-            <MobileTooltip
-              content={!isFormComplete() ? t("userInfoForm.tooltips.nameRequired", "Please enter your child's name first") : ""}
-              side="top"
-              disabled={isFormComplete()}
-            >
-              <div className="flex-1 sm:max-w-xs order-1 sm:order-2">
-                <MobileOptimizedButton
-                  id="create-story-button"
-                  variant="default"
-                  size="lg"
-                  onClick={handleSubmit}
-                  disabled={!isFormComplete()}
-                  aria-label={isFormComplete() ? "Create personalized story" : "Complete required fields to create story"}
-                  className={`w-full transition-all duration-300 text-lg py-6 rounded-xl shadow-glow ${
-                    isFormComplete() 
-                      ? 'bg-gradient-primary hover:scale-105 text-white font-semibold focus:ring-4 focus:ring-primary/30' 
-                      : 'bg-gray-200 text-gray-400 cursor-not-allowed opacity-50'
-                  }`}
-                >
-                  <Sparkles className="w-5 h-5 mr-2 animate-pulse" />
-                  {t("userInfoForm.buttons.createStory")}
-                  <ChevronRight className="w-5 h-5 ml-2" />
-                </MobileOptimizedButton>
-              </div>
-            </MobileTooltip>
-          </div>
-        </Card>
+          </MobileOptimizedButton>
+        </div>
       </div>
-    );
-  };
+    </div>
+  );
+};
