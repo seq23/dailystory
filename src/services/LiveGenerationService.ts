@@ -66,7 +66,6 @@ export class LiveGenerationService {
       const { data, error } = await supabase.functions.invoke('generate-adaptive-story', {
         body: {
           readingLevel: difficulty,
-          theme: 'adventure',
           interests: [userInfo.favoriteAnimal, userInfo.favoriteColor].filter(Boolean),
           config: {
             userName: userInfo.name,

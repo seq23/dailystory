@@ -93,7 +93,6 @@ export class NetflixStyleStoryService {
       const { data, error } = await supabase.functions.invoke('generate-adaptive-story', {
         body: {
           readingLevel: difficulty,
-          theme: 'adventure',
           interests: [userInfo.favoriteAnimal, userInfo.favoriteColor].filter(Boolean),
           config: {
             userName: userInfo.name,
@@ -107,11 +106,7 @@ export class NetflixStyleStoryService {
             expectedPages: promptConfig.expectedPages || 6,
             systemPrompt: systemPrompt,
             userPrompt: userPrompt,
-            expertGrade: expertGradeLevel,
-            avatar: {
-              type: 'child',
-              skinTone: 'medium'
-            }
+            expertGrade: expertGradeLevel
           }
         }
       });
