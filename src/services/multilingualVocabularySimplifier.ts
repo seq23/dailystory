@@ -1,5 +1,6 @@
 // Unified Multilingual Vocabulary Simplifier
-// Handles cascading simplification across all vocabulary levels (1-3) with language support
+// Handles cascading simplification across vocabulary levels (0-3) with language support
+// Note: Expert difficulty (Level 4) bypasses vocabulary simplification entirely
 
 import { SupportedLanguage } from '@/types/multilingual';
 import { LanguagePreferenceService } from './languagePreferenceService';
