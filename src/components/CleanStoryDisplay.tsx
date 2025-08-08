@@ -622,8 +622,29 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
               <div className="bg-gradient-card rounded-2xl p-3 md:p-6 lg:p-8 mb-6 min-h-[600px] md:min-h-[700px] lg:min-h-[800px] shadow-xl" 
                    dir="ltr" lang="en" role="main" aria-label="Story content">
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 md:gap-6 lg:gap-8">
+                  {/* Text Content - Enhanced Typography for Book-like Reading */}
+                  <div className="lg:order-1 lg:col-span-3 flex flex-col justify-center">
+                    <div className="story-container">
+                      <div 
+                        className="story-content"
+                        data-difficulty={currentDifficulty}
+                      >
+                        {processTextWithConsistentFlow({
+                          text: currentStory,
+                          className: "interactive-word",
+                          difficulty: currentDifficulty,
+                          userInfo,
+                          isPremium,
+                          userId: userInfo.name,
+                          highlightedWordIndex: currentHighlightedWord,
+                          isMobile: isMobileOrTablet
+                        })}
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Image Section - Enhanced for larger display */}
-                  <div className="lg:order-1 lg:col-span-2">
+                  <div className="lg:order-2 lg:col-span-2">
                       {currentImage && (
                         <img 
                           src={currentImage} 
@@ -665,27 +686,6 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                         </div>
                       )}
                       
-                    </div>
-                  </div>
-
-                  {/* Text Content - Enhanced Typography for Book-like Reading */}
-                  <div className="lg:order-2 lg:col-span-3 flex flex-col justify-center">
-                    <div className="story-container">
-                      <div 
-                        className="story-content"
-                        data-difficulty={currentDifficulty}
-                      >
-                        {processTextWithConsistentFlow({
-                          text: currentStory,
-                          className: "interactive-word",
-                          difficulty: currentDifficulty,
-                          userInfo,
-                          isPremium,
-                          userId: userInfo.name,
-                          highlightedWordIndex: currentHighlightedWord,
-                          isMobile: isMobileOrTablet
-                        })}
-                      </div>
                     </div>
                   </div>
                 </div>
