@@ -35,7 +35,7 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
   const { isMobileOrTablet } = useIsMobile();
   const [formData, setFormData] = useState<UserInfo>({
     name: "",
-    age: 6,
+    age: 7, // Default age for compatibility
     grade: "PreK",
     nativeLanguage: "en",
     learningGoal: "improve-english-reading",
@@ -137,8 +137,7 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
           console.log(`🔄 Real-time translation triggered for ${field}: "${sanitizedValue}"`);
           console.log(`📋 User info:`, { 
             nativeLanguage: formData.nativeLanguage, 
-            grade: formData.grade,
-            age: formData.age 
+            grade: formData.grade
           });
           
           // Use SmartInputParser for processing (includes translation)
@@ -238,12 +237,11 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
       return;
     }
 
-    // Use the selected reading ability, or fall back to age-based difficulty
-    const difficulty = formData.readingAbility || (formData.age <= 5 ? "beginner" : formData.age <= 8 ? "easy" : formData.age <= 11 ? "medium" : formData.age <= 13 ? "hard" : "expert");
+    // Use the selected reading ability
+    const difficulty = formData.readingAbility || "beginner";
     
     SecurityLogger.log('form_submission_success', {
       difficultyLevel: difficulty,
-      age: formData.age,
       grade: formData.grade
     });
     
@@ -258,10 +256,6 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
       errors.push("Please enter your child's first name");
     }
     
-    // Age defaults to 6, so only validate if it's somehow null/undefined
-    if (!formData.age || formData.age < 3 || formData.age > 12) {
-      errors.push("Please select a valid age (3-12 years)");
-    }
     
     // Grade and language should have defaults, only validate if missing
     if (!formData.grade) {
@@ -287,12 +281,11 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
   const isFormComplete = () => {
     // Only require the most essential fields for completion
     const hasName = formData.name.trim().length > 0;
-    const hasAge = formData.age && formData.age >= 3 && formData.age <= 12;
     const hasGrade = formData.grade && formData.grade.length > 0;
     const hasLanguage = formData.nativeLanguage && formData.nativeLanguage.length > 0;
     
-    const complete = hasName && hasAge && hasGrade && hasLanguage;
-    console.log("Form complete check:", { hasName, hasAge, hasGrade, hasLanguage, complete });
+    const complete = hasName && hasGrade && hasLanguage;
+    console.log("Form complete check:", { hasName, hasGrade, hasLanguage, complete });
     return complete;
   };
 
@@ -370,7 +363,7 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
               </div>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4">
               {/* Name */}
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-sm font-medium">
@@ -386,24 +379,6 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
                 />
               </div>
 
-              {/* Age */}
-              <div className="space-y-2">
-                <Label htmlFor="age" className="text-sm font-medium">
-                  {t("userInfoForm.fields.age.label")} <span className="text-destructive">*</span>
-                </Label>
-                <Select value={formData.age?.toString()} onValueChange={(value) => handleInputChange("age", parseInt(value))}>
-                  <SelectTrigger className="h-10 bg-background border border-input focus:border-primary focus:ring-1 focus:ring-primary">
-                    <SelectValue placeholder={t("userInfoForm.fields.age.placeholder")} />
-                  </SelectTrigger>
-                  <SelectContent className="bg-popover border border-border shadow-soft z-50">
-                    {[3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((age) => (
-                      <SelectItem key={age} value={age.toString()} className="focus:bg-accent focus:text-accent-foreground">
-                        {age} years old
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
 
               {/* Grade */}
               <div className="space-y-2">
