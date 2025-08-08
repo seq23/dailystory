@@ -180,21 +180,23 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
   };
 
   const handleToggle = () => {
-    setIsExpanded(!isExpanded);
-    if (!isExpanded) {
+    const newExpanded = !isExpanded;
+    setIsExpanded(newExpanded);
+    if (newExpanded) {
       scheduleAutoCollapse();
     }
   };
 
   const handleMouseEnter = () => {
-    if (!isMobile && !isExpanded) {
-      setIsExpanded(true);
-      scheduleAutoCollapse();
+    // Disable hover expansion - only allow click to expand
+    if (autoCollapseRef.current) {
+      clearTimeout(autoCollapseRef.current);
     }
   };
 
   const handleMouseLeave = () => {
-    if (!isMobile) {
+    // Keep collapse timer for when expanded via click
+    if (isExpanded) {
       scheduleAutoCollapse();
     }
   };
@@ -205,7 +207,7 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
         className={cn(
           "fixed top-1/2 right-4 transform -translate-y-1/2 z-40",
           "transition-all duration-500 ease-out",
-          isMobile && "scale-90",
+          isMobile && "scale-90 right-2",
           className
         )}
         onMouseEnter={handleMouseEnter}
@@ -217,7 +219,7 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
           "bg-gradient-to-br from-white/90 via-white/80 to-white/70",
           "border border-white/20 shadow-2xl",
           "transition-all duration-500 ease-out",
-          isExpanded ? "w-80 p-6" : "w-16 p-4",
+          isExpanded ? "w-80 p-6" : "w-20 p-4",
           celebrationMode && "animate-pulse ring-4 ring-amber-400/50"
         )}>
           
@@ -243,33 +245,67 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
             </div>
           )}
 
-          {/* Toggle button */}
+          {/* Toggle button - Fixed positioning and enhanced animations */}
           <button
             onClick={handleToggle}
             className={cn(
-              "absolute top-4 left-4 p-2 rounded-full",
-              "bg-primary/20 hover:bg-primary/30 backdrop-blur-sm",
-              "border border-primary/20 transition-all duration-200",
-              "hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary/50",
-              isExpanded && "rotate-180"
+              "absolute top-1/2 -translate-y-1/2 flex items-center justify-center",
+              "w-12 h-12 rounded-full backdrop-blur-sm border transition-all duration-300",
+              "bg-gradient-to-br from-primary/20 to-primary/30 border-primary/30",
+              "hover:from-primary/30 hover:to-primary/40 hover:border-primary/40",
+              "shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary/50",
+              "group relative overflow-hidden",
+              isExpanded ? "-left-6" : "-right-6",
+              // Enhanced animations for progress feedback
+              !isExpanded && Object.values(animatingTowers).some(Boolean) && "animate-bounce",
+              !isExpanded && hasNewAchievements && "animate-pulse ring-2 ring-amber-400/60",
+              celebrationMode && "animate-spin ring-4 ring-rainbow"
             )}
           >
-            {isExpanded ? (
-              <ChevronRight className="w-4 h-4 text-primary" />
-            ) : (
-              <ChevronLeft className="w-4 h-4 text-primary" />
+            {/* Animated background ripple effect */}
+            <div className={cn(
+              "absolute inset-0 rounded-full opacity-0 group-hover:opacity-100",
+              "bg-gradient-to-br from-primary/40 to-accent/40 animate-pulse transition-opacity duration-500"
+            )} />
+            
+            {/* Icon with smooth transitions */}
+            <div className={cn(
+              "relative z-10 transition-transform duration-300",
+              isExpanded && "rotate-180"
+            )}>
+              {isExpanded ? (
+                <ChevronRight className="w-5 h-5 text-primary group-hover:text-primary/80" />
+              ) : (
+                <ChevronLeft className="w-5 h-5 text-primary group-hover:text-primary/80" />
+              )}
+            </div>
+            
+            {/* Progress indicator dots */}
+            {!isExpanded && Object.values(animatingTowers).some(Boolean) && (
+              <div className="absolute -top-1 -right-1">
+                <div className="w-3 h-3 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full animate-pulse shadow-lg" />
+              </div>
+            )}
+            
+            {/* Achievement indicator */}
+            {!isExpanded && hasNewAchievements && (
+              <div className="absolute -top-2 -right-2">
+                <div className="w-4 h-4 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-full animate-bounce shadow-lg">
+                  <div className="w-full h-full flex items-center justify-center text-xs">🏆</div>
+                </div>
+              </div>
             )}
           </button>
 
           {/* Content */}
           <div className={cn(
             "transition-all duration-500",
-            isExpanded ? "opacity-100 translate-x-0" : "opacity-0 translate-x-8"
+            isExpanded ? "opacity-100 translate-x-0 mt-4" : "opacity-0 translate-x-8 pointer-events-none"
           )}>
             {isExpanded && (
               <>
                 {/* Header */}
-                <div className="text-center mb-6 mt-8">
+                <div className="text-center mb-6">
                   <div className="flex items-center justify-center gap-2 mb-2">
                     <Trophy className="w-5 h-5 text-primary" />
                     <h3 className="text-lg font-bold text-foreground">
@@ -347,29 +383,45 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
             )}
           </div>
 
-          {/* Collapsed state indicators */}
+          {/* Collapsed state indicators - Fixed overlapping */}
           {!isExpanded && (
-            <div className="mt-8 flex flex-col items-center gap-3">
+            <div className="flex flex-col items-center gap-4 mt-16">
               {towers.slice(0, 3).map((tower, index) => {
                 const isActive = animatingTowers[tower.key] || false;
+                const currentValue = tower.getValue(userStats, currentValues);
                 
                 return (
-                  <div
-                    key={tower.key}
-                    className={cn(
-                      "w-8 h-8 rounded-full flex items-center justify-center",
-                      "transition-all duration-300",
-                      `bg-gradient-to-br ${
-                        tower.color === 'blue' ? 'from-blue-400 to-blue-600' :
-                        tower.color === 'green' ? 'from-green-400 to-green-600' :
-                        tower.color === 'gold' ? 'from-yellow-400 to-amber-500' :
-                        'from-purple-400 to-purple-600'
-                      }`,
-                      "text-white shadow-lg",
-                      isActive && "animate-pulse ring-2 ring-primary/50 scale-110"
-                    )}
-                  >
-                    <tower.icon className="w-4 h-4" />
+                  <div key={tower.key} className="relative flex flex-col items-center">
+                    <div
+                      className={cn(
+                        "w-10 h-10 rounded-full flex items-center justify-center",
+                        "transition-all duration-300 shadow-lg border-2 border-white/50",
+                        `bg-gradient-to-br ${
+                          tower.color === 'blue' ? 'from-blue-400 to-blue-600' :
+                          tower.color === 'green' ? 'from-green-400 to-green-600' :
+                          tower.color === 'gold' ? 'from-yellow-400 to-amber-500' :
+                          'from-purple-400 to-purple-600'
+                        }`,
+                        "text-white",
+                        isActive && "animate-pulse ring-2 ring-primary/50 scale-110"
+                      )}
+                    >
+                      <tower.icon className="w-5 h-5" />
+                    </div>
+                    
+                    {/* Value display below icon - no overlap */}
+                    <div className="mt-2 text-center">
+                      <div className={cn(
+                        "text-xs font-bold px-2 py-1 rounded-full bg-white/90 shadow-sm border",
+                        tower.color === 'blue' ? 'text-blue-600 border-blue-200' :
+                        tower.color === 'green' ? 'text-green-600 border-green-200' :
+                        tower.color === 'gold' ? 'text-amber-600 border-amber-200' :
+                        'text-purple-600 border-purple-200',
+                        isActive && "animate-pulse"
+                      )}>
+                        {currentValue}
+                      </div>
+                    </div>
                   </div>
                 );
               })}
