@@ -396,13 +396,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         setIsStoryComplete(false);
       }
       
-      toast({
-        title: isPremium ? "New Story Generated! 🪄" : "New Adventure! 🪄",
-        description: isPremium 
-          ? "Your fresh story is ready to explore!"
-          : "A new adventure awaits! Keep reading until time runs out!",
-        duration: 4000,
-      });
+      // Toast notifications removed for smoother experience
       
     } catch (error) {
       console.error('Failed to generate new story:', error);
@@ -724,12 +718,13 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                       {isGeneratingNewStory ? (
                         <>
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          <Sparkles className="w-3 h-3 absolute top-1 right-1 text-purple-400 animate-pulse" />
                           Creating magic...
                         </>
                       ) : (
                         <>
-                          <Wand className="w-4 h-4 mr-2" />
-                          <Sparkles className="w-3 h-3 absolute top-1 right-1 text-purple-400" />
+                          <Wand className="w-4 h-4 mr-2 animate-bounce" />
+                          <Sparkles className="w-3 h-3 absolute top-1 right-1 text-purple-400 animate-pulse" />
                           Fresh Story
                         </>
                       )}
@@ -751,18 +746,20 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                       size="sm"
                       className={cn(
                         "bg-gradient-to-r from-purple-500/10 to-blue-500/10 border-purple-300/30 hover:from-purple-500/20 hover:to-blue-500/20 transition-all duration-300",
-                        isMagicWandAnimating && "animate-wiggle"
+                        isMagicWandAnimating && "animate-wiggle",
+                        isGeneratingNewStory && "animate-pulse border-purple-400/50 shadow-lg shadow-purple-500/20"
                       )}
                     >
                       {isGeneratingNewStory ? (
                         <>
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          <Sparkles className="w-3 h-3 absolute top-1 right-1 text-purple-400 animate-pulse" />
                           Creating magic...
                         </>
                       ) : (
                         <>
-                          <Wand className="w-4 h-4 mr-2" />
-                          <Sparkles className="w-3 h-3 absolute top-1 right-1 text-purple-400" />
+                          <Wand className="w-4 h-4 mr-2 animate-bounce" />
+                          <Sparkles className="w-3 h-3 absolute top-1 right-1 text-purple-400 animate-pulse" />
                           Fresh Story
                         </>
                       )}
