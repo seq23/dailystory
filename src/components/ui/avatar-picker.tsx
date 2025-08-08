@@ -92,22 +92,26 @@ export const AvatarPicker = React.forwardRef<
         <Label className="text-lg font-semibold text-foreground">
           {t("userInfoForm.fields.skinTone.label", "Skin Tone:")}
         </Label>
-        <div className="flex gap-3 flex-wrap">
+        <div className="grid grid-cols-5 gap-3 max-w-sm mx-auto">
           {(Object.keys(skinToneColors) as Array<keyof typeof skinToneColors>).map((tone) => (
-            <Button
-              key={tone}
-              type="button"
-              variant="outline"
-              onClick={() => handleSkinToneChange(tone)}
-              className={cn(
-                "w-12 h-12 rounded-full border-4 hover:scale-110 transition-transform",
-                value.skinTone === tone 
-                  ? "border-primary shadow-lg scale-110" 
-                  : "border-gray-300 hover:border-primary/50"
-              )}
-              style={{ backgroundColor: skinToneColors[tone] }}
-              aria-label={`${t("userInfoForm.fields.skinTone.select", "Select")} ${t(`userInfoForm.fields.skinTone.options.${tone}`, tone)} ${t("userInfoForm.fields.skinTone.label", "skin tone")}`}
-            />
+            <div key={tone} className="flex flex-col items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => handleSkinToneChange(tone)}
+                className={cn(
+                  "w-12 h-12 rounded-full border-4 hover:scale-110 transition-all duration-200 hover:shadow-lg",
+                  value.skinTone === tone 
+                    ? "border-primary shadow-lg scale-110 ring-2 ring-primary/20" 
+                    : "border-gray-300 hover:border-primary/50"
+                )}
+                style={{ backgroundColor: skinToneColors[tone] }}
+                aria-label={`${t("userInfoForm.fields.skinTone.select", "Select")} ${t(`userInfoForm.fields.skinTone.options.${tone}`, tone)} ${t("userInfoForm.fields.skinTone.label", "skin tone")}`}
+              />
+              <span className="text-xs text-muted-foreground text-center capitalize">
+                {t(`userInfoForm.fields.skinTone.options.${tone}`, tone)}
+              </span>
+            </div>
           ))}
         </div>
       </div>

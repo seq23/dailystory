@@ -318,10 +318,10 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
               variant="ghost"
               size="sm"
               onClick={onBack}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 px-4 py-2 hover:bg-muted rounded-lg transition-colors cursor-pointer"
             >
               <ChevronRight className={`w-4 h-4 ${i18n.language === 'ar' ? '' : 'rotate-180'}`} />
-              <span className="hidden sm:inline">{t('userInfoForm.buttons.back')}</span>
+              <span>{t('userInfoForm.buttons.back')}</span>
             </MobileOptimizedButton>
           </div>
           
@@ -523,34 +523,6 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
             </div>
           </Card>
 
-          {/* Character Selection */}
-          <Card className="p-6 bg-card border border-border shadow-card">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <User className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-foreground">
-                  {t("userInfoForm.sections.character")}
-                </h2>
-                <p className="text-sm text-muted-foreground">{t("userInfoForm.help.optional")}</p>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">
-                  {t("userInfoForm.fields.avatar.label")}
-                </Label>
-                <AvatarPicker
-                  value={formData.avatar}
-                  onChange={(avatar) => setFormData(prev => ({ ...prev, avatar }))}
-                  className="flex justify-center"
-                />
-              </div>
-            </div>
-          </Card>
-
           {/* Personalization */}
           <Card className="p-6 bg-card border border-border shadow-card">
             <div className="flex items-center gap-3 mb-6">
@@ -592,11 +564,11 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
                     value={formData.favoriteAnimal}
                     onChange={(e) => handleInputChange("favoriteAnimal", e.target.value)}
                     placeholder={t("userInfoForm.fields.favoriteAnimal.placeholder")}
-                    className="h-10 bg-background border border-input focus:border-primary focus:ring-1 focus:ring-primary pr-8"
+                    className="h-12 text-base bg-background border-2 border-input focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200"
                     disabled={!isPremium && selectedOptionalField && selectedOptionalField !== 'favoriteAnimal'}
                   />
                   {translationLoading.favoriteAnimal && (
-                    <Loader2 className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 animate-spin text-primary" />
+                    <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 animate-spin text-primary" />
                   )}
                 </div>
                 {translations.favoriteAnimal && (
@@ -617,11 +589,11 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
                     value={formData.favoriteFood}
                     onChange={(e) => handleInputChange("favoriteFood", e.target.value)}
                     placeholder={t("userInfoForm.fields.favoriteFood.placeholder")}
-                    className="h-10 bg-background border border-input focus:border-primary focus:ring-1 focus:ring-primary pr-8"
+                    className="h-12 text-base bg-background border-2 border-input focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200"
                     disabled={!isPremium && selectedOptionalField && selectedOptionalField !== 'favoriteFood'}
                   />
                   {translationLoading.favoriteFood && (
-                    <Loader2 className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 animate-spin text-primary" />
+                    <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 animate-spin text-primary" />
                   )}
                 </div>
                 {translations.favoriteFood && (
@@ -642,11 +614,11 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
                     value={formData.hobbies}
                     onChange={(e) => handleInputChange("hobbies", e.target.value)}
                     placeholder={t("userInfoForm.fields.hobbies.placeholder")}
-                    className="h-10 bg-background border border-input focus:border-primary focus:ring-1 focus:ring-primary pr-8"
+                    className="h-12 text-base bg-background border-2 border-input focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200"
                     disabled={!isPremium && selectedOptionalField && selectedOptionalField !== 'hobbies'}
                   />
                   {translationLoading.hobbies && (
-                    <Loader2 className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 animate-spin text-primary" />
+                    <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 animate-spin text-primary" />
                   )}
                 </div>
                 {translations.hobbies && (
@@ -667,17 +639,45 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
                     value={formData.specialRequest}
                     onChange={(e) => handleInputChange("specialRequest", e.target.value)}
                     placeholder={t("userInfoForm.fields.specialRequest.placeholder")}
-                    className="min-h-20 bg-background border border-input focus:border-primary focus:ring-1 focus:ring-primary resize-none"
+                    className="min-h-24 text-base bg-background border-2 border-input focus:border-primary focus:ring-2 focus:ring-primary/20 resize-none transition-all duration-200"
                     disabled={!isPremium && selectedOptionalField && selectedOptionalField !== 'specialRequest'}
                     rows={3}
                   />
                   {translationLoading.specialRequest && (
-                    <Loader2 className="absolute right-2 top-2 w-4 h-4 animate-spin text-primary" />
+                    <Loader2 className="absolute right-3 top-3 w-4 h-4 animate-spin text-primary" />
                   )}
                 </div>
                 {translations.specialRequest && (
                   <div className="text-xs text-primary">{translations.specialRequest}</div>
                 )}
+              </div>
+            </div>
+          </Card>
+
+          {/* Character Selection - Moved to Last */}
+          <Card className="p-6 bg-card border border-border shadow-card">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <User className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold text-foreground">
+                  {t("userInfoForm.sections.character")}
+                </h2>
+                <p className="text-sm text-muted-foreground">{t("userInfoForm.help.optional")}</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">
+                  {t("userInfoForm.fields.avatar.label")}
+                </Label>
+                <AvatarPicker
+                  value={formData.avatar}
+                  onChange={(avatar) => setFormData(prev => ({ ...prev, avatar }))}
+                  className="w-full"
+                />
               </div>
             </div>
           </Card>
