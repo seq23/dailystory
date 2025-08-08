@@ -754,8 +754,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
 
               {/* Navigation - Responsive Layout */}
               <div id="story-navigation" className="story-navigation">
-                {/* Mobile/Tablet: Spread out layout */}
-                <div className="flex justify-between items-center xl:hidden">
+                {/* Mobile/Tablet: Slightly more compact layout */}
+                <div className="flex justify-center items-center gap-6 xl:hidden">
                   <MobileOptimizedButton
                     onClick={handlePrevious}
                     disabled={currentPage === 0}
@@ -764,7 +764,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                     Previous
                   </MobileOptimizedButton>
 
-                  <span className="text-sm font-medium text-muted-foreground">
+                  <span className="text-sm font-medium text-muted-foreground px-2">
                     {currentPage + 1} / {isPremium && !isStoryComplete ? `${story.length}+` : story.length}
                   </span>
 
