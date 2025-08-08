@@ -604,11 +604,11 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         )}
 
 
-      {/* Main Content - Enhanced for book-like experience */}
-      <main className={`container mx-auto safe-area-padding ${mobileContainerConfig} px-1 md:px-2 lg:px-4`}>
-        <div className="max-w-[90rem] mx-auto book-reading-experience-wide">
-          <Card className="bg-white/95 backdrop-blur-sm shadow-2xl border border-white/70 mobile-text-fixed min-h-[70vh] xl:min-h-[75vh]">
-            <CardContent className={`${isMobileOrTablet ? 'p-2 sm:p-4' : 'p-4 lg:p-6'}`}>
+      {/* Main Content - Full Width Layout */}
+      <main className="w-full px-2 md:px-4 lg:px-6 xl:px-8">
+        <div className="w-full max-w-[98vw] mx-auto">
+          <Card className="bg-white/95 backdrop-blur-sm shadow-2xl border border-white/70 mobile-text-fixed min-h-[85vh]">
+            <CardContent className="p-4 lg:p-8">
               {/* Progress Bar */}
               <div className="mb-4 md:mb-6">
                 <Progress value={progress} className="h-2" />
@@ -622,29 +622,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
               <div className="bg-gradient-card rounded-2xl p-3 md:p-6 lg:p-8 mb-6 min-h-[600px] md:min-h-[700px] lg:min-h-[800px] shadow-xl" 
                    dir="ltr" lang="en" role="main" aria-label="Story content">
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 md:gap-6 lg:gap-8">
-                  {/* Text Content - Enhanced Typography for Book-like Reading */}
-                  <div className="lg:order-1 lg:col-span-3 flex flex-col justify-center">
-                    <div className="story-container">
-                      <div 
-                        className="story-content"
-                        data-difficulty={currentDifficulty}
-                      >
-                        {processTextWithConsistentFlow({
-                          text: currentStory,
-                          className: "interactive-word",
-                          difficulty: currentDifficulty,
-                          userInfo,
-                          isPremium,
-                          userId: userInfo.name,
-                          highlightedWordIndex: currentHighlightedWord,
-                          isMobile: isMobileOrTablet
-                        })}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Image Section - Enhanced for larger display */}
-                  <div className="lg:order-2 lg:col-span-2">
+                  {/* Image Section - LEFT SIDE */}
+                  <div className="lg:order-1 lg:col-span-2">
                       {currentImage && (
                         <img 
                           src={currentImage} 
@@ -686,6 +665,27 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                         </div>
                       )}
                       
+                    </div>
+                  </div>
+
+                  {/* Text Content - RIGHT SIDE */}
+                  <div className="lg:order-2 lg:col-span-3 flex flex-col justify-center">
+                    <div className="story-container">
+                      <div 
+                        className="story-content"
+                        data-difficulty={currentDifficulty}
+                      >
+                        {processTextWithConsistentFlow({
+                          text: currentStory,
+                          className: "interactive-word",
+                          difficulty: currentDifficulty,
+                          userInfo,
+                          isPremium,
+                          userId: userInfo.name,
+                          highlightedWordIndex: currentHighlightedWord,
+                          isMobile: isMobileOrTablet
+                        })}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -809,19 +809,21 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         onSessionEnded={handleEndSession}
       />
       
-      {/* Progress Tower - Collapsible floating tower */}
-      <ProgressTowers
-        userId={userInfo?.name}
-        userType={isPremium ? 'premium' : 'free'}
-        currentWordsRead={userStats.totalWordsRead || 0}
-        currentPagesRead={userStats.totalStoriesCompleted || 0}
-        vocabularyLearned={userStats.vocabularyWordsLearned || 0}
-        onProgressUpdate={(progressData) => {
-          console.log('Progress updated:', progressData);
-        }}
-        shouldPulse={false}
-        className="fixed"
-      />
+      {/* Progress Tower - HIDDEN */}
+      {false && (
+        <ProgressTowers
+          userId={userInfo?.name}
+          userType={isPremium ? 'premium' : 'free'}
+          currentWordsRead={userStats.totalWordsRead || 0}
+          currentPagesRead={userStats.totalStoriesCompleted || 0}
+          vocabularyLearned={userStats.vocabularyWordsLearned || 0}
+          onProgressUpdate={(progressData) => {
+            console.log('Progress updated:', progressData);
+          }}
+          shouldPulse={false}
+          className="fixed"
+        />
+      )}
       </div>
     </ErrorBoundary>
     </GameContextProvider>
