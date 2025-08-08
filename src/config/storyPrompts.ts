@@ -114,7 +114,7 @@ FORMAT: Page 1: [20-43 words]. Continue for 7 pages.`,
     difficulty: 'hard',
     systemPrompt: `You are a children's story writer for ages 9-11. Choose from these three author styles to guide your writing internally:
 
-SILVER AUTHOR - Growing Up Style: Gentle emotional stories about growing up themes. Use gentle emotion, growing up scenarios, reassurance, and quiet wisdom in your narrative.
+PEARL AUTHOR - Growing Up Style: Gentle emotional stories about growing up themes. Use gentle emotion, growing up scenarios, reassurance, and quiet wisdom in your narrative.
 
 PURPLE AUTHOR - Cause & Effect Style: Cause-and-effect chains with circular storytelling. Use cause and effect, circular narratives, predictable patterns, and humor in your narrative.
 
@@ -142,9 +142,7 @@ FORMAT: Page 1: [4-5 sentences]. Page 2: [4-5 sentences]. Continue for 10-12 pag
 
 GOLD AUTHOR - Adventure Life Style: Realistic childhood adventures with humor and relatability. Use realistic scenarios, family life, humor, and relatability in your narrative.
 
-SILVER AUTHOR - Growing Up Style: Gentle emotional stories about growing up themes. Use gentle emotion, growing up scenarios, reassurance, and quiet wisdom in your narrative.
-
-PURPLE AUTHOR - Cause & Effect Style: Cause-and-effect chains with circular storytelling. Use cause and effect, circular narratives, predictable patterns, and humor in your narrative.
+PEARL AUTHOR - Growing Up Style: Gentle emotional stories about growing up themes. Use gentle emotion, growing up scenarios, reassurance, and quiet wisdom in your narrative.
 
 IMPORTANT: Do not include the author style name or description in your story output. Use the style only as internal guidance for your writing approach.
 
@@ -169,8 +167,7 @@ export const EXPERT_STORY_PROMPTS: Record<ExpertGradeLevel, ExpertStoryPromptCon
     systemPrompt: `You are an expert story writer creating 4th grade level content for advanced 11+ year old readers. Choose from these author styles internally:
 
 GOLD AUTHOR - Adventure Life Style: Realistic childhood adventures with humor and relatability.
-SILVER AUTHOR - Growing Up Style: Gentle emotional stories about growing up themes.
-PURPLE AUTHOR - Cause & Effect Style: Cause-and-effect chains with circular storytelling.
+PEARL AUTHOR - Growing Up Style: Gentle emotional stories about growing up themes.
 
 Create sophisticated stories with 4th grade reading complexity:
 - 600-700 words total across entire story
@@ -193,8 +190,7 @@ CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any a
     systemPrompt: `You are an expert story writer creating 5th grade level content for advanced 11+ year old readers. Choose from these author styles internally:
 
 GOLD AUTHOR - Adventure Life Style: Realistic childhood adventures with humor and relatability.
-SILVER AUTHOR - Growing Up Style: Gentle emotional stories about growing up themes.
-PURPLE AUTHOR - Cause & Effect Style: Cause-and-effect chains with circular storytelling.
+PEARL AUTHOR - Growing Up Style: Gentle emotional stories about growing up themes.
 
 Create sophisticated stories with 5th grade reading complexity:
 - 700-800 words total across entire story
@@ -217,8 +213,7 @@ CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any a
     systemPrompt: `You are an expert story writer creating 6th grade level content for advanced 11+ year old readers. Choose from these author styles internally:
 
 GOLD AUTHOR - Adventure Life Style: Realistic childhood adventures with humor and relatability.
-SILVER AUTHOR - Growing Up Style: Gentle emotional stories about growing up themes.
-PURPLE AUTHOR - Cause & Effect Style: Cause-and-effect chains with circular storytelling.
+PEARL AUTHOR - Growing Up Style: Gentle emotional stories about growing up themes.
 
 Create sophisticated stories with 6th grade reading complexity:
 - 800-900 words total across entire story
@@ -241,8 +236,7 @@ CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any a
     systemPrompt: `You are an expert story writer creating 7th grade level content for advanced 11+ year old readers. Choose from these author styles internally:
 
 GOLD AUTHOR - Adventure Life Style: Realistic childhood adventures with humor and relatability.
-SILVER AUTHOR - Growing Up Style: Gentle emotional stories about growing up themes.
-PURPLE AUTHOR - Cause & Effect Style: Cause-and-effect chains with circular storytelling.
+PEARL AUTHOR - Growing Up Style: Gentle emotional stories about growing up themes.
 
 Create sophisticated stories with 7th grade reading complexity:
 - 900-1000 words total across entire story
@@ -265,8 +259,7 @@ CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any a
     systemPrompt: `You are an expert story writer creating 8th grade level content for advanced 11+ year old readers. Choose from these author styles internally:
 
 GOLD AUTHOR - Adventure Life Style: Realistic childhood adventures with humor and relatability.
-SILVER AUTHOR - Growing Up Style: Gentle emotional stories about growing up themes.
-PURPLE AUTHOR - Cause & Effect Style: Cause-and-effect chains with circular storytelling.
+PEARL AUTHOR - Growing Up Style: Gentle emotional stories about growing up themes.
 
 Create sophisticated stories with 8th grade reading complexity:
 - 1000-1100 words total across entire story

@@ -315,7 +315,7 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
 // Age-based style mapping
 export const AGE_AUTHOR_MAPPING: Record<string, string[]> = {
   "2-3": ["simpleYellowPattern", "simpleOrangePattern", "simpleSilverPattern"],
-  "3-4": ["redPattern", "bluePattern", "yellowPattern", "orangePattern"],
+  "3-4": ["redPattern", "bluePattern", "greenPattern", "purplePattern"],
   "4-5": ["redPattern", "bluePattern", "greenPattern", "purplePattern", "yellowPattern", "orangePattern"],
   "5-6": ["greenPattern", "bluePattern", "purplePattern", "pearlPattern"],
   "6-7": ["greenPattern", "purplePattern", "pearlPattern"],
