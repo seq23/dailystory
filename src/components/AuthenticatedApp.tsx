@@ -37,6 +37,10 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
   const [devTestMode, setDevTestMode] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   
+  useEffect(() => {
+    console.log('👤 AuthenticatedApp loading state:', loading);
+  }, [loading]);
+  
   // Initialize security monitoring
   useSecurityMonitoring();
 

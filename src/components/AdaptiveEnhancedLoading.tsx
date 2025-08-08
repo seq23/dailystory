@@ -1,4 +1,5 @@
 import { BookOpen, Sparkles } from "lucide-react";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { LoadingSpinner } from "@/components/LoadingStates";
@@ -18,6 +19,11 @@ export function AdaptiveEnhancedLoading({ isPremium, userName }: AdaptiveEnhance
   const description = userName
     ? t("freeReadingSession.loading.description", { userName })
     : t("auth.loading.description", "Preparing your reading experience...");
+
+  useEffect(() => {
+    console.log("🌀 AdaptiveEnhancedLoading mounted", { isPremium, userName });
+    return () => console.log("🌀 AdaptiveEnhancedLoading unmounted");
+  }, [isPremium, userName]);
 
   return (
     <div className={cn("min-h-screen bg-gradient-primary flex items-center justify-center p-6 animate-fade-in")}>

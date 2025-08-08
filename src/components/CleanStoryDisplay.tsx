@@ -69,6 +69,10 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [isLoadingNextPage, setIsLoadingNextPage] = useState(false);
   const [storyTitle, setStoryTitle] = useState('');
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    console.log('📥 CleanStoryDisplay isLoading changed:', isLoading);
+  }, [isLoading]);
   
   // Premium live generation state
   const [liveContext, setLiveContext] = useState<LiveGenerationContext | null>(null);
