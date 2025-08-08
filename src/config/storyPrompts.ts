@@ -369,6 +369,7 @@ export function getExpertStoryPrompt(gradeLevel: ExpertGradeLevel): ExpertStoryP
 export function formatUserPrompt(template: string, userInfo: UserInfo): string {
   return template
     .replace(/{name}/g, userInfo.name)
+    .replace(/{userName}/g, userInfo.name)  // Support both {name} and {userName}
     .replace(/{age}/g, userInfo.age.toString())
     .replace(/{favoriteAnimal}/g, userInfo.favoriteAnimal || 'animals')
     .replace(/{favoriteColor}/g, userInfo.favoriteColor || 'bright colors')
