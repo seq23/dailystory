@@ -28,11 +28,11 @@ import { LEVEL_4_TEMPLATES } from './gradeBased/level4Templates';
 import { LEVEL_4_EXTENSIONS } from './gradeBased/level4ExtensionTemplates';
 
 /**
- * ALL 187 TEMPLATES: 160 base + 20 extension + 7 enhanced fallback
+ * ALL 182 TEMPLATES: 160 base + 15 extension + 7 enhanced fallback
  * Now consolidated in one place for ultimate reliability
  */
 export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallbackTemplate[]> = {
-  // BEGINNER: Level 0 templates (40) + Level 0 extensions (10) = 50 templates
+  // BEGINNER: Level 0 templates (40) + Level 0 extensions (5) = 45 templates
   beginner: [
     // Convert Level 0 templates to enhanced format
     ...LEVEL_0_TEMPLATES.map(template => ({
