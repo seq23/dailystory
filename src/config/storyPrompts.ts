@@ -48,41 +48,29 @@ STRICT REQUIREMENTS:
 - Every sentence must be joyful and positive
 
 FORMAT: Page 1: [sentence]. Page 2: [sentence]. Page 3: [sentence]. Page 4: [sentence]. Page 5: [sentence].`,
-    userPromptTemplate: `Create a joyful, rhyming, and elementary story for a pre-reader child aged 3–5 named {name}. Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}, and {specialRequest} as surface-level inputs, each appearing at least once in the story.
+    userPromptTemplate: `Write a joyful, easy-to-read story for a pre-reader named {name}. Include {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}, or {specialRequest} as clear, distinct story elements, using at least one user input at least once. The story should be fun to read aloud and visually engaging as a picture book.
 
-The story must be:
+Format & Structure
 
-Exactly 5 pages.
+Exactly 5 pages, one complete sentence per page.
+Max 8 words per page; max 40 words total.
+Use a natural mix of 2-, 3-, and 4-word sentences when possible, including some 2- and 3-word sentences to create variety.
+Examples of preferred sentence lengths:
+2 words: "{userName} runs." / "Ball bounces." / "Cat sleeps."
+3 words: "{userName} likes cats." / "The ball jumps." / "Food tastes good."
+4 words: "{userName} plays with toys." / "The {favoriteColor} car goes fast."
+Sentence patterns: Subject–Verb, Subject–Verb–Object, or Subject–Verb–Adjective.
+Use Enhanced Level 0 vocabulary at least 70% of the time. User inputs are always allowed and prioritized.
+Favor 2–4 letter words and simple rhymes when natural; avoid forced rhymes.
 
-2–8 words per page.
+Tone & Style
 
-No more than 40 total words.
+Refer to the author's voice for this reading level to guide tone and style.
+Keep content positive, warm, age-appropriate, and engaging for ages 3–5.
 
-Sentence rules:
+Variation
 
-Prefer 2–3 word sentences.
-
-Use mostly Dolch Pre-Primer and Primer list words.
-
-Use a Subject–Verb or Subject–Verb–Object pattern for most sentences.
-
-Favor rhyming when possible, but never sacrifice clarity or naturalness to force a rhyme.
-
-Integration rules:
-
-Each personalization input must be naturally woven into the story, but still explicitly mentioned.
-
-Words outside the Dolch list are allowed. 
-
-Creativity rule:
-
-Before writing, internally imagine a random "story seed" between 1 and 10,000 to change the setting, events, and small details so that even identical inputs create different stories.
-
-Do not mention or describe the seed.
-
-Tone rule:
-Follow the internal author style guidance to shape the story (without mentioning style names)
-Keep the tone positive, simple, and joyful.`,
+Internally select a random story seed (1–10,000) to vary details for uniqueness. Do not mention or describe the seed.`,
     maxLength: 30,
     expectedPages: 5
   },
