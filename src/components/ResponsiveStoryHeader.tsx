@@ -17,6 +17,8 @@ interface ResponsiveStoryHeaderProps {
   showLevelControls?: boolean;
   isChangingDifficulty?: boolean;
   changeDirection?: 'increase' | 'decrease' | 'badge';
+  canIncrease?: boolean;
+  canDecrease?: boolean;
 }
 
 export const ResponsiveStoryHeader = ({
@@ -28,7 +30,9 @@ export const ResponsiveStoryHeader = ({
   onDecreaseDifficulty,
   showLevelControls = true,
   isChangingDifficulty = false,
-  changeDirection
+  changeDirection,
+  canIncrease = true,
+  canDecrease = true
 }: ResponsiveStoryHeaderProps) => {
   const { t } = useTranslation();
   const { isMobile, isTablet, isMobileOrTablet } = useIsMobile();
@@ -195,7 +199,7 @@ export const ResponsiveStoryHeader = ({
                     variant="outline"
                     size={isMobileOrTablet ? "sm" : "default"}
                     onClick={onDecreaseDifficulty}
-                    disabled={currentDifficulty === 'beginner' || isChangingDifficulty}
+                    disabled={!canDecrease || isChangingDifficulty}
                     className={cn(
                       isMobileOrTablet 
                         ? "min-h-[44px] min-w-[44px] rounded-full p-2"
@@ -241,7 +245,7 @@ export const ResponsiveStoryHeader = ({
                     variant="outline"
                     size={isMobileOrTablet ? "sm" : "default"}
                     onClick={onIncreaseDifficulty}
-                    disabled={currentDifficulty === 'expert' || isChangingDifficulty}
+                    disabled={!canIncrease || isChangingDifficulty}
                     className={cn(
                       isMobileOrTablet 
                         ? "min-h-[44px] min-w-[44px] rounded-full p-2"

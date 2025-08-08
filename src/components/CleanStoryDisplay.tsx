@@ -569,6 +569,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
           showLevelControls={true}
           isChangingDifficulty={isChangingDifficulty}
           changeDirection={changeDirection}
+          canIncrease={currentDifficulty !== 'expert' || expertGradeLevel !== "10th"}
+          canDecrease={currentDifficulty !== 'beginner'}
         />
 
         {/* Premium Controls Bar - Mobile Optimized */}
