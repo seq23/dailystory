@@ -32,15 +32,10 @@ export const CollapsibleFloatingTimer = ({
 }: CollapsibleFloatingTimerProps) => {
   const { t } = useTranslation();
   const { isMobile, isTablet, isMobileOrTablet } = useIsMobile();
-  const [isCollapsed, setIsCollapsed] = useState(isMobileOrTablet);
+  const [isCollapsed, setIsCollapsed] = useState(false); // NOT auto-collapsed - consistent for all users
   const [showCelebration, setShowCelebration] = useState(false);
 
-  // Auto-collapse on mobile/tablet by default
-  useEffect(() => {
-    if (isMobileOrTablet) {
-      setIsCollapsed(true);
-    }
-  }, [isMobileOrTablet]);
+  // Responsive sizing only - no auto-collapse behavior removed
 
   // Format time for display
   const formatTime = (seconds: number) => {

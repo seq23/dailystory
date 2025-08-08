@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { SparkleAnimation } from "@/components/SparkleAnimation";
 
 // Mobile-Optimized UI Components
-import { ResponsiveTimer } from "@/components/ResponsiveTimer";
+import { CollapsibleFloatingTimer } from "@/components/CollapsibleFloatingTimer";
 
 import { ResponsiveStoryHeader } from "@/components/ResponsiveStoryHeader";
 import { ModernProgressTowers } from "@/components/ModernProgressTowers";
@@ -189,7 +189,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         
       } else {
         // Free: Netflix-style - generate complete story upfront
-        console.log('🎬 Free user: Generating complete story');
+        console.log('🎬 Free user: Generating complete story', { isPremium, userInfo });
         const result = await NetflixStyleStoryService.generateCompleteStory(userInfo);
         
         if (result.error) {
@@ -904,8 +904,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         enablePersistence={true}
       />
         
-      {/* Responsive Timer */}
-      <ResponsiveTimer
+      {/* Unified Timer for All Users */}
+      <CollapsibleFloatingTimer
         timeRemaining={timeRemaining}
         isReading={isTimerRunning}
         onToggleReading={handleToggleTimer}
