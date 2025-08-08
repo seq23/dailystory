@@ -596,40 +596,59 @@ serve(async (req) => {
       .trim();
 
     // Parse story into pages with improved logic
-    let pages = [];
+    let pages = [] as string[];
     
-    // Try multiple parsing strategies
+    // Try multiple parsing strategies with Level 0 (beginner) optimizations
     if (cleanStoryText.includes('Page ')) {
       // Standard format: "Page X: content"
       pages = cleanStoryText.split(/Page \d+:/g)
         .filter(page => page.trim().length > 0)
         .map(page => page.trim().replace(/^\d+\.\s*/, ''));
-    } else if (cleanStoryText.includes('\n\n')) {
-      // Fallback: Split by double newlines
+    } else if (readingLevel === 'beginner') {
+      // Level 0: Many models output one sentence per line without blank lines
+      const linePages = cleanStoryText
+        .split(/\r?\n+/)
+        .map(s => s.trim())
+        .filter(Boolean);
+      if (linePages.length >= 5) {
+        pages = linePages.slice(0, 5);
+      } else if (linePages.length > 1) {
+        // If fewer than 5 lines, still use them as pages
+        pages = linePages;
+      }
+    }
+    
+    // General fallback: Split by double newlines when available and not already parsed
+    if (pages.length === 0 && cleanStoryText.includes('\n\n')) {
       pages = cleanStoryText.split('\n\n')
         .filter(page => page.trim().length > 0)
         .map(page => page.trim());
-    } else {
-      // Emergency fallback: Split by sentences for single block
-      const sentences = cleanStoryText.split(/\. (?=[A-Z])/);
+    }
+    
+    // Emergency fallback: Sentence-based pagination
+    if (pages.length === 0) {
+      // Split on punctuation followed by whitespace/newline
+      const sentences = cleanStoryText.split(/(?<=[.!?])\s+/);
       const wordsPerPage = readingLevel === 'beginner' ? 8 : readingLevel === 'easy' ? 15 : readingLevel === 'medium' ? 30 : 50;
       
       let currentPage = '';
       let currentWords = 0;
       
       for (const sentence of sentences) {
-        const sentenceWords = sentence.split(' ').length;
+        const trimmedSentence = sentence.trim();
+        if (!trimmedSentence) continue;
+        const sentenceWords = trimmedSentence.split(/\s+/).length;
         if (currentWords + sentenceWords > wordsPerPage && currentPage) {
-          pages.push(currentPage.trim() + (currentPage.endsWith('.') ? '' : '.'));
-          currentPage = sentence;
+          pages.push(currentPage.trim() + (/[.!?]$/.test(currentPage) ? '' : '.'));
+          currentPage = trimmedSentence;
           currentWords = sentenceWords;
         } else {
-          currentPage += (currentPage ? '. ' : '') + sentence;
+          currentPage += (currentPage ? ' ' : '') + trimmedSentence;
           currentWords += sentenceWords;
         }
       }
       if (currentPage) {
-        pages.push(currentPage.trim() + (currentPage.endsWith('.') ? '' : '.'));
+        pages.push(currentPage.trim() + (/[.!?]$/.test(currentPage) ? '' : '.'));
       }
     }
 
