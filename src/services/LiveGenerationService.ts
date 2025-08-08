@@ -55,7 +55,7 @@ export class LiveGenerationService {
       IMPORTANT: You are generating the FIRST PAGE only of a multi-page story. 
       - Create an engaging opening that establishes the character and setting
       - End with a hook that makes the reader want to continue
-      - This is page 1 of approximately 5-8 pages
+      - This is page 1 of ${promptConfig.expectedPages || 6} pages
       - Keep the content appropriate for the difficulty level
       - Return ONLY the page content, no page numbers or formatting
       - Focus on quality storytelling over exact word counts`;
