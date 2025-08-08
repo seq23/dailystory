@@ -119,7 +119,7 @@ export const ProgressTower: React.FC<ProgressTowerProps> = ({
         </div>
       )}
 
-      {/* Icon with value */}
+      {/* Icon only */}
       <div className={cn(
         "relative mb-3 p-3 rounded-full backdrop-blur-sm border",
         "transition-all duration-300",
@@ -130,17 +130,6 @@ export const ProgressTower: React.FC<ProgressTowerProps> = ({
       )}>
         <div className="w-5 h-5">
           {icon}
-        </div>
-        
-        {/* Value display */}
-        <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
-          <div className={cn(
-            "px-2 py-1 rounded-full text-xs font-bold",
-            "bg-white shadow-md border",
-            theme.text
-          )}>
-            {value.toLocaleString()}
-          </div>
         </div>
       </div>
 
@@ -231,27 +220,34 @@ export const ProgressTower: React.FC<ProgressTowerProps> = ({
           )}
         </div>
 
-        {/* Max value indicator */}
+        {/* Max value indicator at top */}
         <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
-          <span className="text-xs text-muted-foreground font-medium">
+          <div className={cn(
+            "px-2 py-1 rounded-full text-xs font-bold bg-white shadow-md border",
+            "text-muted-foreground"
+          )}>
             {maxValue.toLocaleString()}
-          </span>
+          </div>
+        </div>
+        {/* Current value indicator at bottom */}
+        <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2">
+          <div className={cn(
+            "px-2 py-1 rounded-full text-xs font-bold bg-white shadow-md border",
+            theme.text
+          )}>
+            {value.toLocaleString()}
+          </div>
         </div>
       </div>
 
-      {/* Label */}
-      <div className="mt-3 text-center">
+      {/* Label only */}
+      <div className="mt-6 text-center">
         <p className={cn(
           "text-sm font-medium transition-colors duration-200",
           celebrating ? theme.text : "text-muted-foreground",
           "group-hover:text-foreground"
         )}>
           {label}
-        </p>
-        
-        {/* Progress percentage */}
-        <p className="text-xs text-muted-foreground mt-1">
-          {percentage.toFixed(0)}%
         </p>
       </div>
     </div>
