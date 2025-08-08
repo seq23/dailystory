@@ -131,6 +131,6 @@ export const GRADE_LEVEL_INFO = {
   0: { ages: '3-5', description: 'Dolch Pre-Primer', words: 40 },
   1: { ages: '5-7', description: '1st-2nd Grade', words: 120 },
   2: { ages: '7-9', description: '2nd-3rd Grade', words: 200 },
-  3: { ages: '9-11', description: '4th Grade', words: 400 },
+  3: { ages: '9-11', description: 'Sophisticated 4th Grade', words: 200 },
   4: { ages: '11+', description: 'Expert (6th-10th Grade)', words: 'No limit - uses adaptive grade system' }
 } as const;

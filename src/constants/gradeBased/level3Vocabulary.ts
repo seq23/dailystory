@@ -1,45 +1,55 @@
 // Level 3 Vocabulary (Ages 9-11) - 4th Grade
-// Includes all Level 2 words plus 4th grade vocabulary
-
-import { LEVEL_2_VOCABULARY } from './level2Vocabulary';
+// Refined sophisticated vocabulary with essential function words
 
 export const LEVEL_3_VOCABULARY = new Set([
-  // Include all Level 2 words
-  ...LEVEL_2_VOCABULARY,
+  // Essential function words for sentence structure
+  'the', 'and', 'is', 'was', 'were', 'are', 'have', 'has', 'had', 'will', 'would', 'could', 'should', 
+  'can', 'may', 'might', 'must', 'do', 'does', 'did', 'be', 'been', 'being', 'with', 'without',
+  'but', 'or', 'so', 'if', 'when', 'where', 'who', 'what', 'why', 'how', 'that', 'this', 'these',
+  'those', 'in', 'on', 'at', 'by', 'for', 'from', 'to', 'of', 'about', 'through', 'during',
   
-  // 4th Grade Core Vocabulary
-  'ability', 'accept', 'accident', 'accomplish', 'according', 'account', 'accurate', 'achieve', 'action', 'active',
-  'activity', 'actual', 'addition', 'advance', 'adventure', 'advice', 'affect', 'afraid', 'agency', 'agree',
-  'agreement', 'allow', 'almost', 'alone', 'amount', 'analysis', 'ancient', 'anger', 'angry', 'announce',
-  'annual', 'anxiety', 'apart', 'appear', 'appearance', 'application', 'approach', 'appropriate', 'approval', 'area',
+  // Sophisticated 4th Grade Core Vocabulary
+  'ability', 'accomplish', 'according', 'accurate', 'achieve', 'adventure', 'analyze', 'ancient', 'announce',
+  'appearance', 'approach', 'appropriate', 'arrangement', 'assistance', 'atmosphere', 'attention', 'attitude',
+  'audience', 'authority', 'available', 'balance', 'barrier', 'behavior', 'brilliant', 'celebrate', 'ceremony',
+  'challenge', 'character', 'civilization', 'communicate', 'community', 'compare', 'compete', 'complete',
+  'concentrate', 'conclude', 'confidence', 'consider', 'contribute', 'convince', 'cooperation', 'courage',
   
-  // 4th Grade Narrative & Author Voice Words
-  'opportunity', 'curiosity', 'experiment', 'realized', 'chances', 'carefully', 'measure', 'record', 'sleeping',
-  'outdoors', 'calling', 'safely', 'community', 'neighbors', 'prepare', 'throughout', 'science', 'reminded',
-  'growth', 'types', 'investigate', 'mysteries', 'fascinating', 'adventure', 'discovery', 'exploration', 'challenge',
-  'achievement', 'success', 'determination', 'creativity', 'meanwhile', 'however', 'therefore', 'suddenly', 'finally',
-  'immediately', 'wonderful', 'delightful', 'personality', 'character', 'courage', 'bravery', 'kindness', 'friendship',
-  'teamwork', 'leadership', 'experience', 'magnificent', 'incredible', 'marvelous',
-  // 4th Grade Extended Vocabulary
-  'argue', 'argument', 'arrange', 'arrangement', 'arrival', 'arrive', 'article', 'artist', 'artistic', 'aside',
-  'assignment', 'assist', 'assistance', 'assistant', 'associate', 'assume', 'athlete', 'athletic', 'atmosphere', 'attach',
-  'attack', 'attempt', 'attend', 'attention', 'attitude', 'attract', 'attractive', 'audience', 'author', 'authority',
-  'available', 'average', 'avoid', 'award', 'aware', 'background', 'balance', 'band', 'bank', 'banner',
-  'barrier', 'basic', 'basket', 'basketball', 'battle', 'beach', 'bear', 'beat', 'beautiful', 'beauty',
-  'become', 'bedroom', 'begin', 'beginning', 'behave', 'behavior', 'belief', 'believe', 'bell', 'belong',
-  'below', 'belt', 'bench', 'bend', 'benefit', 'beside', 'best', 'better', 'between', 'beyond',
-  'bicycle', 'bird', 'birth', 'birthday', 'bite', 'bitter', 'blame', 'blank', 'block', 'blood',
-  'blow', 'board', 'boat', 'body', 'bone', 'book', 'border', 'born', 'bottle', 'bottom',
-  'bowl', 'brain', 'branch', 'brave', 'bread', 'break', 'breakfast', 'breath', 'breathe', 'bridge',
-  'bright', 'bring', 'broad', 'broke', 'broken', 'brother', 'brought', 'brown', 'brush', 'build',
-  'building', 'burn', 'business', 'button', 'camera', 'camp', 'campaign', 'cancel', 'cancer', 'candidate',
-  'capable', 'capital', 'captain', 'capture', 'carbon', 'card', 'care', 'career', 'careful', 'carry',
-  'case', 'cash', 'cast', 'catch', 'category', 'cause', 'ceiling', 'celebrate', 'cell', 'center',
-  'central', 'century', 'ceremony', 'certain', 'chain', 'chair', 'chairman', 'chamber', 'champion', 'chance',
-  'change', 'channel', 'chapter', 'charge', 'charity', 'chart', 'chase', 'cheap', 'check', 'cheese',
-  'chemical', 'chest', 'chicken', 'chief', 'child', 'choice', 'choose', 'church', 'citizen', 'city',
-  'civil', 'claim', 'class', 'classic', 'classroom', 'clean', 'clear', 'click', 'client', 'climate',
-  'climb', 'clock', 'close', 'clothes', 'cloud', 'club', 'coach', 'coast', 'coat', 'code'
+  // Advanced Descriptive Words
+  'magnificent', 'extraordinary', 'tremendous', 'spectacular', 'incredible', 'marvelous', 'fantastic', 'amazing',
+  'brilliant', 'gorgeous', 'splendid', 'remarkable', 'outstanding', 'excellent', 'wonderful', 'delightful',
+  'fascinating', 'mysterious', 'adventurous', 'dangerous', 'enormous', 'gigantic', 'miniature', 'transparent',
+  'fragile', 'sturdy', 'flexible', 'smooth', 'rough', 'slippery', 'comfortable', 'uncomfortable',
+  
+  // Complex Emotion & Character Words
+  'determined', 'confident', 'anxious', 'relieved', 'satisfied', 'frustrated', 'disappointed', 'embarrassed',
+  'suspicious', 'curious', 'jealous', 'grateful', 'generous', 'selfish', 'honest', 'dishonest',
+  'patient', 'impatient', 'responsible', 'irresponsible', 'loyal', 'disloyal', 'brave', 'cowardly',
+  'creative', 'imaginative', 'intelligent', 'foolish', 'wise', 'stubborn', 'flexible', 'independent',
+  
+  // Academic & Scientific Vocabulary
+  'experiment', 'investigate', 'observe', 'examine', 'research', 'discover', 'analyze', 'compare',
+  'contrast', 'conclude', 'predict', 'hypothesis', 'evidence', 'measurement', 'calculation', 'solution',
+  'environment', 'ecosystem', 'habitat', 'population', 'community', 'organism', 'species', 'evolution',
+  'temperature', 'pressure', 'energy', 'matter', 'substance', 'chemical', 'physical', 'mechanical',
+  
+  // Narrative & Literary Words
+  'meanwhile', 'however', 'therefore', 'consequently', 'nevertheless', 'furthermore', 'initially', 'eventually',
+  'suddenly', 'gradually', 'immediately', 'frequently', 'occasionally', 'constantly', 'certainly', 'obviously',
+  'apparently', 'fortunately', 'unfortunately', 'surprisingly', 'remarkably', 'especially', 'particularly',
+  'definitely', 'absolutely', 'completely', 'entirely', 'partially', 'somewhat', 'extremely', 'incredibly',
+  
+  // Leadership & Social Words
+  'leadership', 'teamwork', 'cooperation', 'collaboration', 'responsibility', 'citizenship', 'democracy',
+  'government', 'election', 'candidate', 'representative', 'senator', 'president', 'mayor', 'governor',
+  'constitution', 'amendment', 'freedom', 'liberty', 'justice', 'equality', 'opportunity', 'privilege',
+  'tradition', 'culture', 'heritage', 'celebration', 'ceremony', 'festival', 'holiday', 'anniversary',
+  
+  // Action & Movement Words
+  'accomplish', 'achieve', 'attempt', 'struggle', 'overcome', 'conquer', 'defeat', 'triumph', 'succeed',
+  'persevere', 'persist', 'continue', 'proceed', 'advance', 'progress', 'develop', 'improve', 'enhance',
+  'demonstrate', 'illustrate', 'represent', 'symbolize', 'indicate', 'suggest', 'recommend', 'propose',
+  'require', 'demand', 'insist', 'persuade', 'convince', 'influence', 'inspire', 'motivate', 'encourage'
 ]);
 
 export function isLevel3Word(word: string): boolean {
