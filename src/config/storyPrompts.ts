@@ -75,7 +75,7 @@ REQUIREMENTS:
 - Focus on friendship, family, and discovery themes
 
 FORMAT: Page 1: [10-17 words]. Page 2: [10-17 words]. Continue for 6 pages.`,
-    userPromptTemplate: `Create a 60-100 word story for {name} (age {age}). They love {favoriteAnimal} and {favoriteColor}. Their hobby is {hobbies} and they like {favoriteFood}. Include gentle adventures.`,
+    userPromptTemplate: `Create a delightful 60-100 word story for {name} (age {age}) who is building their reading confidence! Include their favorite {favoriteAnimal} and {favoriteColor}, plus their hobby of {hobbies} and love for {favoriteFood}. Weave these special interests into gentle adventures as natural story elements - Example: their animal friend helps them explore, their favorite color appears in the world around them, and their hobbies become fun activities. Create exactly 6 pages with 10-17 words per page for a wonderful reading experience.`,
     maxLength: 100,
     expectedPages: 6
   },
@@ -105,7 +105,7 @@ REQUIREMENTS:
 - Themes: problem-solving, friendship, discovery, creativity
 
 FORMAT: Page 1: [20-43 words]. Continue for 7 pages.`,
-    userPromptTemplate: `Create a 150-300 word adventure for {name} (age {age}). They love {favoriteAnimal} and {favoriteColor}. Their passion is {hobbies} and they enjoy {favoriteFood}. Include problem-solving.`,
+    userPromptTemplate: `Create an engaging 150-300 word adventure for {name} (age {age}) who is ready for more complex stories! Include their favorite {favoriteAnimal} and {favoriteColor}, their passion for {hobbies}, and love for {favoriteFood}. Weave these elements as meaningful character traits - Example: let their animal choice reflect their personality, their color become a meaningful symbol, their hobby showcase their talents, and their food connect to family memories. Include gentle problem-solving and character growth across exactly 7 pages with 20-43 words per page.`,
     maxLength: 300,
     expectedPages: 7
   },
@@ -131,7 +131,7 @@ Create sophisticated stories with:
 - Meaningful themes and lessons
 
 FORMAT: Page 1: [4-5 sentences]. Page 2: [4-5 sentences]. Continue for 10-12 pages.`,
-    userPromptTemplate: `Create a meaningful story for {name} (age {age}). They are passionate about {hobbies} and love {favoriteAnimal} and {favoriteColor}. Their favorite food is {favoriteFood}. Include challenges that lead to personal growth and deep friendships.`,
+    userPromptTemplate: `Create a meaningful 400-600 word story for {name} (age {age}) who is ready for sophisticated adventures! They are passionate about {hobbies} and deeply connected to {favoriteAnimal} and {favoriteColor}, with a special appreciation for {favoriteFood}. Weave these elements as central plot drivers - Example: let their animal become crucial to resolving conflicts, their color represent important themes, their hobby provide solutions to challenges, and their food connect to meaningful relationships. Include challenges that lead to personal growth and deep friendships across 10-12 pages.`,
     maxLength: 600,
     expectedPages: 11
   },
@@ -154,7 +154,7 @@ Create complex stories with adaptive grade-level complexity:
 - Multiple plot layers and rich storytelling
 
 FORMAT: Page 1: [content]. Page 2: [content]. Continue based on grade level.`,
-    userPromptTemplate: `Create a sophisticated story for {name} (age {age}). They are deeply interested in {hobbies} and find meaning in {favoriteAnimal} and {favoriteColor}. They appreciate {favoriteFood}. Explore themes of identity, purpose, and complex relationships.`,
+    userPromptTemplate: `Create a sophisticated story for {name} (age {age}) who is ready for complex, meaningful narratives! They are deeply interested in {hobbies} and find personal meaning in {favoriteAnimal} and {favoriteColor}, with a special connection to {favoriteFood}. Weave these elements as foundational themes - Example: let their animal represent their core values, their color symbolize their emotional journey, their hobby define their sense of purpose, and their food connect to family heritage and cultural identity. Explore themes of identity, purpose, and complex relationships across 13 pages.`,
     maxLength: 800,
     expectedPages: 13
   }
