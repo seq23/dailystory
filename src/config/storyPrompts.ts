@@ -48,7 +48,7 @@ STRICT REQUIREMENTS:
 - Every sentence must be joyful and positive
 
 FORMAT: Page 1: [sentence]. Page 2: [sentence]. Page 3: [sentence]. Page 4: [sentence]. Page 5: [sentence].`,
-    userPromptTemplate: ` Create a joyful and easy-to-read story for a child aged 3-5 named {name}. Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}, and {specialRequest} as surface-level inputs naturally woven in. The total story should be exactly 5 pages, 2-8 words per page, and 30-40 words total with simple, positive 2-4 word sentences (up to 8 words max) on each page. Follow the internal author style guidance to shape tone without mentioning style names. Before writing, internally imagine a random "story seed" between 1 and 10,000 to vary setting, events, and details so each story is unique, even with identical inputs. Do not mention the seed.`,
+    userPromptTemplate: `Create a joyful and elementary story for a pre-reader child aged 3-5 named {name}. Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}, and {specialRequest} as surface-level inputs naturally woven in as story elements or relationships. The story must be exactly 5 pages, 2-8 words per page, 30-40 words total, with simple sentences preferring 2-4 word sentence structures but up to 8 words if needed. Use a simple Subject-Verb or Subject-Verb-Object pattern. Use Dolch Pre-Primer + Primer words as a foundation. Follow the internal author style guidance to shape the story (without mentioning style names) and keep a positive tone. Before writing, internally imagine a random "story seed" between 1 and 10,000 to vary setting, events, and details so each story is unique, even with identical inputs. Do not mention the seed.`,
     maxLength: 30,
     expectedPages: 5
   },
