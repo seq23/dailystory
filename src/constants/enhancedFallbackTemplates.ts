@@ -421,9 +421,8 @@ export class EnhancedFallbackManager {
   ): string {
     let processed = template;
     
-    // Replace user placeholders (support both {name} and {userName})
+    // Replace user placeholders
     const formattedName = NameFormatter.capitalize(userInfo.name || 'Alex');
-    processed = processed.replace(/{name}/g, formattedName);
     processed = processed.replace(/{userName}/g, formattedName);
     
     // Get difficulty-appropriate vocabulary
