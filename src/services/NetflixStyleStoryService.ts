@@ -64,7 +64,7 @@ export class NetflixStyleStoryService {
       const safeRequest = InputSanitizer.sanitizeStoryInput(userInfo.specialRequest || '');
       
       // Use configured prompts from storyPrompts.ts only
-      const userPrompt = formatUserPrompt(promptConfig.userPrompt, {
+      const userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, {
         ...userInfo,
         name: safeName,
         favoriteAnimal: safeAnimal,

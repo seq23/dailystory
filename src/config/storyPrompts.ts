@@ -367,9 +367,19 @@ export function getExpertStoryPrompt(gradeLevel: ExpertGradeLevel): ExpertStoryP
 }
 
 export function formatUserPrompt(template: string, userInfo: UserInfo): string {
+  if (!template || typeof template !== 'string') {
+    console.error('❌ formatUserPrompt: Invalid template provided', template);
+    return 'Create a fun story for {userName}.';
+  }
+  
+  if (!userInfo) {
+    console.error('❌ formatUserPrompt: No userInfo provided');
+    return template;
+  }
+  
   return template
-    .replace(/{userName}/g, userInfo.name)
-    .replace(/{age}/g, userInfo.age.toString())
+    .replace(/{userName}/g, userInfo.name || 'Child')
+    .replace(/{age}/g, (userInfo.age || 6).toString())
     .replace(/{favoriteAnimal}/g, userInfo.favoriteAnimal || 'animals')
     .replace(/{favoriteColor}/g, userInfo.favoriteColor || 'bright colors')
     .replace(/{hobbies}/g, userInfo.hobbies || 'playing')

@@ -61,7 +61,7 @@ export class LiveGenerationService {
       - Focus on quality storytelling over exact word counts`;
       
       // Use configured prompts from storyPrompts.ts only
-      const userPrompt = formatUserPrompt(promptConfig.userPrompt, userInfo);
+      const userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, userInfo);
       
       const { data, error } = await supabase.functions.invoke('generate-adaptive-story', {
         body: {
@@ -148,7 +148,7 @@ export class LiveGenerationService {
       ${context.storyContext.join('\n\n')}`;
       
       // Use configured prompts from storyPrompts.ts only - append page context
-      const baseUserPrompt = formatUserPrompt(promptConfig.userPrompt, context.userInfo);
+      const baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.userInfo);
       const userPrompt = `${baseUserPrompt} This is page ${nextPageNumber}. ${isLastPage ? 'Bring the story to a satisfying and uplifting conclusion.' : 'Continue the adventure and build excitement for what comes next.'}`;
       
       const { data, error } = await supabase.functions.invoke('generate-adaptive-story', {
