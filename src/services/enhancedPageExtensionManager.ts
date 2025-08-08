@@ -10,8 +10,8 @@ import {
   LEVEL_0_VOCABULARY,
   LEVEL_1_VOCABULARY,
   LEVEL_2_VOCABULARY,
-  LEVEL_3_VOCABULARY,
-  LEVEL_4_VOCABULARY
+  LEVEL_3_VOCABULARY
+  // LEVEL_4_VOCABULARY removed - Expert uses grade-based system
 } from '@/constants/gradeBased';
 
 export interface ExtensionContext {
