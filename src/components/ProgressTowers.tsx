@@ -184,10 +184,12 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
         vocabulary: hasVocabIncrease
       });
 
-      // Call progress update callback
-      if (hasWordsIncrease) onProgressUpdate?.('words', currentValues.words);
-      if (hasPagesIncrease) onProgressUpdate?.('pages', currentValues.pages);
-      if (hasVocabIncrease) onProgressUpdate?.('vocabulary', currentValues.vocabulary);
+      // Call progress update callback - but don't depend on it
+      if (onProgressUpdate) {
+        if (hasWordsIncrease) onProgressUpdate('words', currentValues.words);
+        if (hasPagesIncrease) onProgressUpdate('pages', currentValues.pages);
+        if (hasVocabIncrease) onProgressUpdate('vocabulary', currentValues.vocabulary);
+      }
 
       // Clear animations after a brief moment
       setTimeout(() => {
@@ -206,7 +208,8 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
     }
 
     prevValuesRef.current = currentValues;
-  }, [calculatedValues.totalWordsRead, calculatedValues.totalPagesRead, calculatedValues.displayVocabularyLearned, onProgressUpdate]);
+    // FIXED: Removed onProgressUpdate from dependencies to prevent infinite loops
+  }, [totalWordsRead, totalPagesRead, displayVocabularyLearned]);
 
   console.log('ProgressTowers component rendering...', { 
     isExpanded, 

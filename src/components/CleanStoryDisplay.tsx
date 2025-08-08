@@ -809,21 +809,19 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         onSessionEnded={handleEndSession}
       />
       
-      {/* Progress Tower - HIDDEN */}
-      {false && (
-        <ProgressTowers
-          userId={userInfo?.name}
-          userType={isPremium ? 'premium' : 'free'}
-          currentWordsRead={userStats.totalWordsRead || 0}
-          currentPagesRead={userStats.totalStoriesCompleted || 0}
-          vocabularyLearned={userStats.vocabularyWordsLearned || 0}
-          onProgressUpdate={(progressData) => {
-            console.log('Progress updated:', progressData);
-          }}
-          shouldPulse={false}
-          className="fixed"
-        />
-      )}
+      {/* Progress Tower - Fixed and restored */}
+      <ProgressTowers
+        userId={userInfo?.name}
+        userType={isPremium ? 'premium' : 'free'}
+        currentWordsRead={userStats.totalWordsRead || 0}
+        currentPagesRead={userStats.totalStoriesCompleted || 0}
+        vocabularyLearned={userStats.vocabularyWordsLearned || 0}
+        onProgressUpdate={(progressData) => {
+          console.log('Progress updated:', progressData);
+        }}
+        shouldPulse={false}
+        className="fixed"
+      />
       </div>
     </ErrorBoundary>
     </GameContextProvider>
