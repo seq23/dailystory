@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ResponsiveTimer } from "@/components/ResponsiveTimer";
 
 import { ResponsiveStoryHeader } from "@/components/ResponsiveStoryHeader";
-import { ProgressTowers } from "@/components/ProgressTowers";
+import { ModernProgressTowers } from "@/components/ModernProgressTowers";
 import { GameContextProvider } from "@/components/GameContextProvider";
 
 // Audio and Interactive Components
@@ -848,17 +848,17 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         onSessionEnded={handleEndSession}
       />
       
-      {/* Progress Tower - Fixed and restored */}
-      <ProgressTowers
+      {/* Modern Progress Towers - Rebuilt with better design */}
+      <ModernProgressTowers
         userId={userInfo?.name}
         userType={isPremium ? 'premium' : 'free'}
-        currentWordsRead={userStats.totalWordsRead || 0}
-        currentPagesRead={userStats.totalStoriesCompleted || 0}
+        currentWordsRead={wordsInteracted}
+        currentPagesRead={currentPage + 1}
         vocabularyLearned={userStats.vocabularyWordsLearned || 0}
-        onProgressUpdate={(progressData) => {
-          console.log('Progress updated:', progressData);
+        timeSpent={Date.now() - sessionStartTime}
+        onProgressUpdate={(type, value) => {
+          console.log('Progress updated:', type, value);
         }}
-        shouldPulse={false}
         className="fixed"
       />
       </div>
