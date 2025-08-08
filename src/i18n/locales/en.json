@@ -123,6 +123,7 @@
   "freeReadingSession": {
     "loading": {
       "title": "Creating Your Free Story...",
+      "titleWithName": "Creating Your Free Story for {userName}…",
       "description": "Generating personalized content for {userName}"
     },
     "timer": {

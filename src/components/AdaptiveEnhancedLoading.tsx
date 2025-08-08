@@ -13,12 +13,22 @@ export function AdaptiveEnhancedLoading({ isPremium, userName }: AdaptiveEnhance
   const { t } = useTranslation();
 
   const title = userName
-    ? t("freeReadingSession.loading.title", `Creating Your Free Story for ${userName}…`)
-    : t("auth.loading.title", "Getting things ready...");
+    ? t("freeReadingSession.loading.titleWithName", {
+        defaultValue: "Creating Your Free Story for {userName}…",
+        userName,
+      })
+    : t("auth.loading.title", { defaultValue: "Getting things ready..." });
 
   const description = userName
-    ? t("freeReadingSession.loading.description", `Generating personalized content for ${userName}`)
-    : t("auth.loading.description", "Preparing your reading experience...");
+    ? t("freeReadingSession.loading.description", {
+        defaultValue: "Generating personalized content for {userName}",
+        userName,
+      })
+    : t("auth.loading.description", { defaultValue: "Preparing your reading experience..." });
+
+  if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("debug") === "1") {
+    console.log("🔤 AdaptiveEnhancedLoading text", { title, description, userName });
+  }
 
   const containerRef = useRef<HTMLDivElement>(null);
   const debugMode = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("debug") === "1";
