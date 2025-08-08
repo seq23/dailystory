@@ -604,15 +604,15 @@ serve(async (req) => {
     // Parse story into pages with improved logic
     let pages = [] as string[];
     
-    // Strategy A: Explicit "Page N" sections (with or without colon)
-    if (/Page\s*\d+/i.test(preprocessed)) {
+    // Strategy A: Explicit "Page N" sections (with or without colon), supporting multiple languages
+    if (/(?:Page|Página|Pagina|Seite)\s*\d+/i.test(preprocessed)) {
       // Prefer extracting content after each Page label
-      const matches = Array.from(preprocessed.matchAll(/(?:^|\n)Page\s*\d+\s*(?::|-)?\s*(?:\r?\n)+([\s\S]*?)(?=(?:\r?\n)+Page\s*\d+|$)/gi));
+      const matches = Array.from(preprocessed.matchAll(/(?:^|\r?\n)(?:Page|Página|Pagina|Seite)\s*\d+\s*(?::|-)?\s*(?:\r?\n)+([\s\S]*?)(?=(?:\r?\n)+(?:Page|Página|Pagina|Seite)\s*\d+|$)/gi));
       if (matches.length > 0) {
         pages = matches.map(m => m[1].trim()).filter(Boolean);
       } else {
         // Fallback split on generic Page labels
-        pages = preprocessed.split(/(?:^|\n)Page\s*\d+\s*(?::|-)?\s*/gi)
+        pages = preprocessed.split(/(?:^|\r?\n)(?:Page|Página|Pagina|Seite)\s*\d+\s*(?::|-)?\s*/gi)
           .map(s => s.trim())
           .filter(Boolean);
       }
@@ -664,19 +664,6 @@ serve(async (req) => {
       }
     }
 
-        if (currentWords + sentenceWords > wordsPerPage && currentPage) {
-          pages.push(currentPage.trim() + (/[.!?]$/.test(currentPage) ? '' : '.'));
-          currentPage = trimmedSentence;
-          currentWords = sentenceWords;
-        } else {
-          currentPage += (currentPage ? ' ' : '') + trimmedSentence;
-          currentWords += sentenceWords;
-        }
-      }
-      if (currentPage) {
-        pages.push(currentPage.trim() + (/[.!?]$/.test(currentPage) ? '' : '.'));
-      }
-    }
 
     const userName = config?.userName || 'the child';
     console.log(`Generated story for ${userName}`);
