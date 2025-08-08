@@ -37,6 +37,7 @@ import { SimpleImageService } from "@/services/SimpleImageService";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ErrorHandler, ErrorType } from "@/utils/errorHandling";
 import { DiagnosticPanel } from "@/components/DiagnosticPanel";
+import { ApiKeyDiagnostic } from "@/components/ApiKeyDiagnostic";
 
 interface CleanStoryDisplayProps {
   userInfo: UserInfo;
@@ -576,6 +577,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
           {/* Diagnostic Panel for troubleshooting */}
           <div className="mb-6">
             <DiagnosticPanel userInfo={userInfo} />
+            <ApiKeyDiagnostic />
           </div>
           
           <MobileOptimizedButton onClick={onNewStory} className="bg-white text-primary">

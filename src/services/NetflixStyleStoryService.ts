@@ -9,6 +9,7 @@ import { ErrorHandler } from '@/utils/errorHandling';
 import { InputSanitizer } from '@/utils/inputSanitizer';
 import { DifficultyManager } from '@/services/difficultyManager';
 import { ExpertDifficultyManager } from '@/services/expertDifficultyManager';
+import { DiagnosticTool } from '@/utils/diagnostics';
 
 export interface NetflixStoryResult {
   pages: string[];
@@ -28,6 +29,10 @@ export class NetflixStyleStoryService {
       isPremiumUser: false,
       timestamp: new Date().toISOString()
     });
+    
+    // Run full diagnostics first for free users
+    console.log('🔍 Running diagnostics for free user...');
+    await DiagnosticTool.runFullDiagnostic();
     
     try {
       console.log('🎬 Netflix-Style: Generating complete story for', userInfo.name);
@@ -76,6 +81,13 @@ export class NetflixStyleStoryService {
         userName: userInfo.name,
         timestamp: new Date().toISOString()
       });
+      
+      // Test connection first
+      const connectionOk = await DiagnosticTool.checkSupabaseConnection();
+      if (!connectionOk) {
+        console.error('🚨 Supabase connection failed, using fallback');
+        return this.generateEnhancedFallbackStory(userInfo, difficulty, 'Supabase connection failed');
+      }
       
       // Call OpenAI via Supabase Edge Function
       const { data, error } = await supabase.functions.invoke('generate-adaptive-story', {
