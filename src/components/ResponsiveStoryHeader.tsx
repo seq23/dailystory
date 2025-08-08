@@ -2,14 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Home, TrendingUp, TrendingDown, RefreshCw, Loader2 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import type { DifficultyLevel } from '@/types';
+import type { DifficultyLevel, UserInfo } from '@/types';
 
 interface ResponsiveStoryHeaderProps {
   storyTitle?: string;
   currentDifficulty?: DifficultyLevel;
+  userInfo?: UserInfo;
   onHome?: () => void;
   onNewStory?: () => void;
   onIncreaseDifficulty?: () => void;
@@ -24,6 +26,7 @@ interface ResponsiveStoryHeaderProps {
 export const ResponsiveStoryHeader = ({
   storyTitle,
   currentDifficulty = 'easy',
+  userInfo,
   onHome,
   onNewStory,
   onIncreaseDifficulty,
@@ -86,8 +89,18 @@ export const ResponsiveStoryHeader = ({
     return title.substring(0, maxLength - 3) + '...';
   };
 
-  const maxTitleLength = isMobile ? 25 : isTablet ? 35 : 50;
+  const maxTitleLength = isMobile ? 20 : isTablet ? 30 : 45;
   const displayTitle = storyTitle ? truncateTitle(storyTitle, maxTitleLength) : '';
+
+  // Avatar helper function
+  const getAvatarUrl = () => {
+    if (userInfo?.avatar?.type && userInfo?.avatar?.skinTone) {
+      return `/avatar-${userInfo.avatar.type}-${userInfo.avatar.skinTone}.jpg`;
+    }
+    return undefined;
+  };
+
+  const hasSelectedAvatar = userInfo?.avatar?.type && userInfo?.avatar?.skinTone;
 
   return (
     <header className={cn(
@@ -103,56 +116,104 @@ export const ResponsiveStoryHeader = ({
           isTablet && "gap-3 px-6 py-3",
           !isMobileOrTablet && "gap-6 py-4"
         )}>
-          {/* Left Section: Home & New Story Buttons */}
+          {/* Left Section: User Avatar & Action Buttons */}
           <div className={cn(
             "flex-shrink-0 flex items-center",
-            isMobileOrTablet ? "gap-1" : "gap-4"
+            isMobileOrTablet ? "gap-2" : "gap-4"
           )}>
-            {onHome && (
-              <Button
-                variant="ghost"
-                size={isMobile ? "sm" : "default"}
-                onClick={onHome}
-                className={cn(
-                  isMobileOrTablet 
-                    ? "min-h-[44px] min-w-[44px] rounded-full p-2" 
-                    : "h-12 px-4 rounded-xl hover:bg-gray-100"
+            {/* User Avatar - Prominent Display */}
+            {userInfo && (
+              <div className="flex items-center gap-2">
+                <Avatar className={cn(
+                  "border-2 border-white/50 shadow-lg bg-white",
+                  isMobile ? "w-10 h-10" : 
+                  isTablet ? "w-12 h-12" : 
+                  "w-14 h-14"
+                )}>
+                  <AvatarImage 
+                    src={getAvatarUrl()} 
+                    alt={`${userInfo.name}'s avatar`}
+                    className="object-cover"
+                  />
+                  <AvatarFallback className={cn(
+                    "bg-gradient-to-br from-primary to-primary/80 text-white font-bold",
+                    isMobile ? "text-sm" : 
+                    isTablet ? "text-base" : 
+                    "text-lg"
+                  )}>
+                    {userInfo.name.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                {!isMobile && (
+                  <div className="text-left">
+                    <p className={cn(
+                      "font-semibold text-gray-800",
+                      isTablet ? "text-sm" : "text-base"
+                    )}>
+                      {userInfo.name}
+                    </p>
+                    <p className={cn(
+                      "text-gray-600",
+                      isTablet ? "text-xs" : "text-sm"
+                    )}>
+                      {userInfo.grade === 'PreK' ? 'Pre-K' : `Grade ${userInfo.grade}`}
+                    </p>
+                  </div>
                 )}
-                aria-label={t("common.home", "Home")}
-              >
-                <Home className={cn(
-                  isMobile ? "w-4 h-4" : "w-5 h-5",
-                  !isMobileOrTablet && "mr-2"
-                )} />
-                {!isMobileOrTablet && t("common.home", "Home")}
-              </Button>
+              </div>
             )}
             
-            {onNewStory && (
-              <Button
-                variant="ghost"
-                size={isMobile ? "sm" : "default"}
-                onClick={onNewStory}
-                className={cn(
-                  isMobileOrTablet 
-                    ? "min-h-[44px] rounded-full px-2 py-2" 
-                    : "h-12 px-4 rounded-xl hover:bg-gray-100"
-                )}
-                aria-label={t("common.newStory", "New Story")}
-              >
-                <RefreshCw className={cn(
-                  isMobile ? "w-3 h-3" : "w-5 h-5",
-                  !isMobileOrTablet && "mr-2"
-                )} />
-                {!isMobile && (
-                  <span className={cn(
-                    isMobileOrTablet ? "ml-1 text-sm" : ""
-                  )}>
-                    {t("common.newStory", "New Story")}
-                  </span>
-                )}
-              </Button>
-            )}
+            {/* Action Buttons */}
+            <div className={cn(
+              "flex items-center",
+              isMobileOrTablet ? "gap-1" : "gap-2 ml-4"
+            )}>
+              {onHome && (
+                <Button
+                  variant="ghost"
+                  size={isMobile ? "sm" : "default"}
+                  onClick={onHome}
+                  className={cn(
+                    isMobileOrTablet 
+                      ? "min-h-[44px] min-w-[44px] rounded-full p-2" 
+                      : "h-12 px-4 rounded-xl hover:bg-gray-100"
+                  )}
+                  aria-label={t("common.home", "Home")}
+                >
+                  <Home className={cn(
+                    isMobile ? "w-4 h-4" : "w-5 h-5",
+                    !isMobileOrTablet && "mr-2"
+                  )} />
+                  {!isMobileOrTablet && t("common.home", "Home")}
+                </Button>
+              )}
+              
+              {onNewStory && (
+                <Button
+                  variant="ghost"
+                  size={isMobile ? "sm" : "default"}
+                  onClick={onNewStory}
+                  className={cn(
+                    isMobileOrTablet 
+                      ? "min-h-[44px] rounded-full px-2 py-2" 
+                      : "h-12 px-4 rounded-xl hover:bg-gray-100"
+                  )}
+                  aria-label={t("common.newStory", "New Story")}
+                >
+                  <RefreshCw className={cn(
+                    isMobile ? "w-3 h-3" : "w-5 h-5",
+                    !isMobileOrTablet && "mr-2"
+                  )} />
+                  {!isMobile && (
+                    <span className={cn(
+                      isMobileOrTablet ? "ml-1 text-sm" : ""
+                    )}>
+                      {t("common.newStory", "New Story")}
+                    </span>
+                  )}
+                </Button>
+              )}
+            </div>
           </div>
 
           {/* Center Section: Title */}

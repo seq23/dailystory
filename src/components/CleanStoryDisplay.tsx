@@ -562,6 +562,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         <ResponsiveStoryHeader
           storyTitle={storyTitle}
           currentDifficulty={currentDifficulty}
+          userInfo={userInfo}
           onHome={onHome}
           onNewStory={onNewStory}
           onIncreaseDifficulty={() => handleDifficultyChange('up')}
