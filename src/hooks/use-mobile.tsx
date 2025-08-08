@@ -46,7 +46,7 @@ export function useIsMobile() {
     isTablet: !!isTablet,
     isCapacitor,
     hasTouchCapability,
-    isMobileDevice: !!isMobile || hasTouchCapability,
-    isMobileOrTablet: !!isMobile || !!isTablet || hasTouchCapability
+    isMobileDevice: !!isMobile,
+    isMobileOrTablet: !!isMobile || !!isTablet
   }
 }
