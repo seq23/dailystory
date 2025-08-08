@@ -243,6 +243,96 @@ const LEVEL_4_EXTENSIONS = [
   ["{name} integrates shadow work for collective unconscious healing.", "Individual shadow healing contributes to collective unconscious transformation.", "A shadow-wise {animal} guides safe navigation of unconscious psychological material.", "Collective shadow includes historical trauma and suppressed cultural wisdom.", "Shadow integration requires courage to face rejected aspects of self and society.", "Personal shadow work heals generational patterns and collective wounds.", "Shadow integration transforms destructive patterns into creative power.", "Collective unconscious healing serves the evolution of human consciousness.", "Shadow work requires both individual therapy and collective healing practices.", "{name} becomes healer of collective unconscious patterns.", "Shadow integration serves the emergence of authentic human potential.", "Collective shadow healing transforms civilization from the psychological foundation."]
 ];
 
+// Level 0 Templates (Ages 3-5) - 40 templates + 5 extensions = 45 total
+const LEVEL_0_TEMPLATES: string[][] = [
+  // Template 1: Playground Adventure
+  [
+    "{userName} runs fast.",
+    "The {favoriteColor} slide waits.",
+    "{userName} climbs up high.",
+    "Down they go!",
+    "Fun day outside."
+  ],
+  
+  // Template 2: Pet Story
+  [
+    "{userName} loves {favoriteAnimal}s.",
+    "The {favoriteAnimal} plays.",
+    "They run together.",
+    "{userName} gives food.",
+    "Best friends forever."
+  ],
+  
+  // Template 3: Cooking Fun
+  [
+    "{userName} helps cook.",
+    "Mix the {favoriteFood}.",
+    "Smell so good!",
+    "Time to eat.",
+    "Yummy food together."
+  ],
+  
+  // Template 4: Garden Discovery
+  [
+    "{userName} finds flowers.",
+    "Pretty {favoriteColor} ones.",
+    "Bees buzz around.",
+    "Water helps grow.",
+    "Garden looks beautiful."
+  ],
+  
+  // Template 5: Car Ride
+  [
+    "Car goes fast.",
+    "{userName} sits inside.",
+    "The {favoriteColor} car shines.",
+    "Windows show trees.",
+    "Happy car ride."
+  ]
+];
+
+// Level 0 Extension Templates
+const LEVEL_0_EXTENSIONS: string[][] = [
+  [
+    "{userName} finds {favoriteColor} blocks.",
+    "Big blocks everywhere!",
+    "Stack them up high.",
+    "Tower falls down!",
+    "{userName} builds again happily."
+  ],
+  [
+    "{userName} sees little {favoriteAnimal}.",
+    "It runs fast.",
+    "Come here, little friend!",
+    "Pet the soft fur.",
+    "{userName} loves animals so."
+  ],
+  [
+    "{userName} makes yummy {favoriteFood}.",
+    "Mix and stir.",
+    "Taste it now!",
+    "Mmm, so good!",
+    "{userName} shares with friends."
+  ],
+  [
+    "{userName} plays with water.",
+    "Splash, splash, splash!",
+    "Water feels cool.",
+    "Make big waves.",
+    "{userName} loves water play."
+  ],
+  [
+    "{userName} reads picture books.",
+    "Look at colors!",
+    "Point to {favoriteAnimal}.",
+    "Turn the page.",
+    "{userName} loves story time."
+  ]
+];
+
+// Combine Level 0 templates and extensions
+const LEVEL_0_FALLBACK_TEMPLATES = [...LEVEL_0_TEMPLATES, ...LEVEL_0_EXTENSIONS];
+
 // ============================================================================
 // COMPLETE ENHANCED FALLBACK TEMPLATES SYSTEM (187 TEMPLATES TOTAL)
 // Integrating all vocabulary-compliant templates from the grade-based system
