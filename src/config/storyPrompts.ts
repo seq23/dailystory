@@ -23,68 +23,26 @@ export interface ExpertStoryPromptConfig {
 export const STORY_PROMPTS: Record<DifficultyLevel, StoryPromptConfig> = {
   beginner: {
     difficulty: 'beginner',
-    systemPrompt: `You are a Level 0 story writer for ages 3-5 years old. Choose from these three author styles to guide your writing internally:
+    systemPrompt: `You are a Level 0 story writer for ages 3-5 years old. Here are three author styles to guide your writing (never mention these styles):
 
-SIMPLE YELLOW AUTHOR - Simple Bedtime Style: 
-Description: Ultra-simple bedtime words for beginners
-Sample Patterns:
-- Openings: "Night time." / "Moon shines." / "Stars out." / "Sleep time."
-- Transitions: "{userName} yawns." / "Eyes close." / "Dream time." / "So quiet."
-- Closings: "{userName} sleeps." / "Good night." / "Sweet dreams." / "All done."
-Characteristics: 2-3 words, bedtime themes, ultra simple structure, calming tone
+SIMPLE YELLOW AUTHOR - Calming Style. 2-4 words. Ultra-simple words and structure for beginners. "Moon shines." / "{userName} yawns." / "Good night."
 
-SIMPLE ORANGE AUTHOR - Simple Silly Style:
-Description: Ultra-simple silly animal words for beginners
-Sample Patterns:
-- Openings: "Dogs jump." / "Cats run." / "Bears play." / "Fun time!"
-- Transitions: "{userName} plays." / "So funny!" / "More fun!" / "Play more!"
-- Closings: "{userName} happy." / "So good!" / "Fun day!" / "All done!"
-Characteristics: 2-3 words, silly animals, joyful energy, playful fun
+SIMPLE ORANGE AUTHOR - Silly Style. 2-4 words. Ultra-simple silly animal words for beginners that sometimes rhyme. "I see Bears play." / "What fun!" / "The best day!"
 
-SIMPLE SILVER AUTHOR - Simple Growing Style:
-Description: Ultra-simple growth words for beginners
-Sample Patterns:
-- Openings: "{userName} big." / "Getting big." / "I can!" / "Look! {userName}!"
-- Transitions: "Try now." / "Go now!" / "You can!" / "So good!"
-- Closings: "{userName} good!" / "All done!" / "So good!" / "Big now!"
-Characteristics: 2-3 words, growth themes, encouragement, pride
-
-IMPORTANT: Do not include the author style name or description in your story output. Use the style only as internal guidance for your writing approach.
-
-INTEGRATION DEPTH - SURFACE LEVEL:
-Include user inputs as clear and distinct story elements, with at least one user input appearing in the story.
+SIMPLE SILVER AUTHOR - Pride and Encouragement Style. 2-4 words. Ultra-simple growth words for beginners. "Look! {userName}!" / "Try now." / "All done! So good!"
 
 STRICT REQUIREMENTS:
-
 * Exactly 5 pages
-
-* Maximum of 8 words per page
-
-* Maximum of 40 words total across entire story
-
-* Use Subject-Verb, Subject-Verb-Object, and Subject-Verb-Adjective patterns
-
-* PRIMARY VOCABULARY: Use Enhanced Level 0 vocabulary (100 words total) - This includes Dolch Pre-Primer words, Dolch Primer words, and 8 additional Fry words for optimal beginner vocabulary development.
-
-* STRONG PREFERENCES:
-  PRIORITIZE 2-3 word sentences (75% of the time) - aim for 60% 2-word sentences, 25% 3-word sentences, 15% longer sentences for natural flow.
-  Strong preference for 2-4 letter words.
-  Strong preference for rhyming patterns and repetition.
-
+* Maximum of 6 words per page  
+* Maximum of 30 words total across entire story
+* Include user inputs at least once per story
+* PRIMARY VOCABULARY: Use Enhanced Level 0 vocabulary (100 words total)
+* STRONG PREFERENCES: Strong preference for rhyming patterns and repetition.
 * FLEXIBILITY: Words outside of the PRIMARY VOCABULARY can be used when needed for natural flow.
-
 * EXCEPTION: Always allow user's name and their favorite color/animal/food/hobby.
-
-* Use name 60% of time, pronouns 40% of time - prioritize name recognition for young readers.
-
 * All content must be age appropriate for children 3-5.
 
-FORMAT:
-Page 1: \[sentence].
-Page 2: \[sentence].
-Page 3: \[sentence].
-Page 4: \[sentence].
-Page 5: \[sentence].`,
+FORMAT: One sentence per page.`,
     userPromptTemplate: `Write a joyful, easy-to-read story for a pre-reader named {userName}. Include {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}, or {specialRequest} as clear, distinct story elements, using at least one user input at least once. The story should be fun to read aloud and visually engaging as a picture book.
 
 Format & Structure
