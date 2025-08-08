@@ -595,40 +595,52 @@ serve(async (req) => {
       .replace(/\*+/g, '')            // Remove any remaining asterisks
       .trim();
 
+    // Remove optional title/header lines before parsing
+    const preprocessed = cleanStoryText
+      .replace(/^\s*Title:\s?.*$/gim, '')
+      .replace(/^\s*#\s?.*$/gim, '')
+      .trim();
+
     // Parse story into pages with improved logic
     let pages = [] as string[];
     
-    // Try multiple parsing strategies with Level 0 (beginner) optimizations
-    if (cleanStoryText.includes('Page ')) {
-      // Standard format: "Page X: content"
-      pages = cleanStoryText.split(/Page \d+:/g)
-        .filter(page => page.trim().length > 0)
-        .map(page => page.trim().replace(/^\d+\.\s*/, ''));
-    } else if (readingLevel === 'beginner') {
-      // Level 0: Many models output one sentence per line without blank lines
-      const linePages = cleanStoryText
-        .split(/\r?\n+/)
-        .map(s => s.trim())
-        .filter(Boolean);
-      if (linePages.length >= 5) {
-        pages = linePages.slice(0, 5);
-      } else if (linePages.length > 1) {
-        // If fewer than 5 lines, still use them as pages
-        pages = linePages;
+    // Strategy A: Explicit "Page N" sections (with or without colon)
+    if (/Page\s*\d+/i.test(preprocessed)) {
+      // Prefer extracting content after each Page label
+      const matches = Array.from(preprocessed.matchAll(/(?:^|\n)Page\s*\d+\s*(?::|-)?\s*(?:\r?\n)+([\s\S]*?)(?=(?:\r?\n)+Page\s*\d+|$)/gi));
+      if (matches.length > 0) {
+        pages = matches.map(m => m[1].trim()).filter(Boolean);
+      } else {
+        // Fallback split on generic Page labels
+        pages = preprocessed.split(/(?:^|\n)Page\s*\d+\s*(?::|-)?\s*/gi)
+          .map(s => s.trim())
+          .filter(Boolean);
       }
     }
     
-    // General fallback: Split by double newlines when available and not already parsed
-    if (pages.length === 0 && cleanStoryText.includes('\n\n')) {
-      pages = cleanStoryText.split('\n\n')
-        .filter(page => page.trim().length > 0)
-        .map(page => page.trim());
+    // Strategy B: Beginner (Level 0) special handling – one sentence per page blocks
+    if (pages.length === 0 && readingLevel === 'beginner') {
+      // Try splitting into 5 blocks separated by blank lines, then strip any leading 'Page N' labels
+      const blocks = preprocessed.split(/\r?\n\s*\r?\n/)
+        .map(b => b.replace(/^Page\s*\d+\s*(?::|-)?\s*/i, '').trim())
+        .filter(Boolean);
+      if (blocks.length >= 5) {
+        pages = blocks.slice(0, 5);
+      } else if (blocks.length > 0) {
+        pages = blocks;
+      }
     }
     
-    // Emergency fallback: Sentence-based pagination
+    // Strategy C: General paragraph split (double newlines)
+    if (pages.length === 0 && /\n\n/.test(preprocessed)) {
+      pages = preprocessed.split(/\r?\n\s*\r?\n/)
+        .map(p => p.trim())
+        .filter(Boolean);
+    }
+    
+    // Strategy D: Emergency fallback – sentence-based pagination
     if (pages.length === 0) {
-      // Split on punctuation followed by whitespace/newline
-      const sentences = cleanStoryText.split(/(?<=[.!?])\s+/);
+      const sentences = preprocessed.split(/(?<=[.!?])\s+/);
       const wordsPerPage = readingLevel === 'beginner' ? 8 : readingLevel === 'easy' ? 15 : readingLevel === 'medium' ? 30 : 50;
       
       let currentPage = '';
@@ -638,6 +650,20 @@ serve(async (req) => {
         const trimmedSentence = sentence.trim();
         if (!trimmedSentence) continue;
         const sentenceWords = trimmedSentence.split(/\s+/).length;
+        if (currentWords + sentenceWords > wordsPerPage && currentPage) {
+          pages.push(currentPage.trim() + (/[.!?]$/.test(currentPage) ? '' : '.'));
+          currentPage = trimmedSentence;
+          currentWords = sentenceWords;
+        } else {
+          currentPage += (currentPage ? ' ' : '') + trimmedSentence;
+          currentWords += sentenceWords;
+        }
+      }
+      if (currentPage) {
+        pages.push(currentPage.trim() + (/[.!?]$/.test(currentPage) ? '' : '.'));
+      }
+    }
+
         if (currentWords + sentenceWords > wordsPerPage && currentPage) {
           pages.push(currentPage.trim() + (/[.!?]$/.test(currentPage) ? '' : '.'));
           currentPage = trimmedSentence;
