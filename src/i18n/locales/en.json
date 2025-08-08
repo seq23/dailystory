@@ -123,14 +123,14 @@
   "freeReadingSession": {
     "loading": {
       "title": "Creating Your Free Story...",
-      "description": "Generating personalized content for {name}"
+      "description": "Generating personalized content for {userName}"
     },
     "timer": {
       "freeTime": "free time"
     },
     "freeTrial": "🎁 FREE TRIAL",
     "session": {
-      "title": "{name}'s Reading Adventure",
+      "title": "{userName}'s Reading Adventure",
       "titleNotStarted": "Free Reading Trial",
       "subtitle": "Page {currentPage} of {totalPages}",
       "subtitleNotStarted": "Click \"Start Reading\" to begin your 20-minute trial",

@@ -123,14 +123,14 @@
   "freeReadingSession": {
     "loading": {
       "title": "Création de Votre Histoire Gratuite...",
-      "description": "Génération de contenu personnalisé pour {name}"
+      "description": "Génération de contenu personnalisé pour {userName}"
     },
     "timer": {
       "freeTime": "temps gratuit"
     },
     "freeTrial": "ESSAI GRATUIT",
     "session": {
-      "title": "Aventure de Lecture de {name}",
+      "title": "Aventure de Lecture de {userName}",
       "titleNotStarted": "Essai de Lecture Gratuit",
       "subtitle": "Page {currentPage} sur {totalPages}",
       "subtitleNotStarted": "Cliquez sur \"Commencer à Lire\" pour débuter votre essai de 20 minutes",

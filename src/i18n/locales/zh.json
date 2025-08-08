@@ -123,7 +123,7 @@
   "freeReadingSession": {
     "freeTrial": "免费试用",
     "session": {
-      "title": "{name}的阅读冒险",
+      "title": "{userName}的阅读冒险",
       "titleNotStarted": "免费阅读试用",
       "subtitle": "第{currentPage}页，共{totalPages}页",
       "subtitleNotStarted": "点击\"开始阅读\"开始您的20分钟试用",

@@ -123,7 +123,7 @@
   "freeReadingSession": {
     "freeTrial": "تجربة مجانية",
     "session": {
-      "title": "مغامرة قراءة {name}",
+      "title": "مغامرة قراءة {userName}",
       "titleNotStarted": "جلسة قراءة مجانية",
       "subtitle": "صفحة {currentPage} من {totalPages}",
       "subtitleNotStarted": "انقر على \"بدء القراءة\" لبدء تجربة الـ 20 دقيقة",

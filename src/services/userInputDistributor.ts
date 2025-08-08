@@ -109,8 +109,7 @@ export class UserInputDistributor {
     
     const allVariables = {
       // Basic user info - ALWAYS provide fallbacks
-      '{name}': name,
-      '{character}': name,
+      '{userName}': name,
       '{age}': userInfo.age?.toString() || '6',
       
       // Primary elements (most important - used early) - with fallbacks

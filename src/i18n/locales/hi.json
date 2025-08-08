@@ -123,7 +123,7 @@
   "freeReadingSession": {
     "freeTrial": "मुफ्त परीक्षण",
     "session": {
-      "title": "{name} का पठन साहसिक कार्य",
+      "title": "{userName} का पठन साहसिक कार्य",
       "titleNotStarted": "मुफ्त पठन परीक्षण",
       "subtitle": "पृष्ठ {currentPage} का {totalPages}",
       "subtitleNotStarted": "अपना 20 मिनट का परीक्षण शुरू करने के लिए \"पढ़ना शुरू करें\" पर क्लिक करें",
