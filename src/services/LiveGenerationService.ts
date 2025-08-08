@@ -60,7 +60,8 @@ export class LiveGenerationService {
       - Return ONLY the page content, no page numbers or formatting
       - Focus on quality storytelling over exact word counts`;
       
-      const userPrompt = `Create the opening page for ${userInfo.name} (age ${userInfo.age}). They love ${userInfo.favoriteAnimal || 'animals'} and ${userInfo.favoriteColor || 'bright colors'}. Their hobby is ${userInfo.hobbies || 'playing'}. ${userInfo.specialRequest ? `Special request: ${userInfo.specialRequest}` : ''} Make it engaging and leave the reader wanting more.`;
+      // Use configured prompts from storyPrompts.ts only
+      const userPrompt = formatUserPrompt(promptConfig.userPrompt, userInfo);
       
       const { data, error } = await supabase.functions.invoke('generate-adaptive-story', {
         body: {
@@ -146,7 +147,9 @@ export class LiveGenerationService {
       Previous story context:
       ${context.storyContext.join('\n\n')}`;
       
-      const userPrompt = `Continue the story for ${context.userInfo.name}. This is page ${nextPageNumber}. ${isLastPage ? 'Bring the story to a satisfying and uplifting conclusion.' : 'Continue the adventure and build excitement for what comes next.'}`;
+      // Use configured prompts from storyPrompts.ts only - append page context
+      const baseUserPrompt = formatUserPrompt(promptConfig.userPrompt, context.userInfo);
+      const userPrompt = `${baseUserPrompt} This is page ${nextPageNumber}. ${isLastPage ? 'Bring the story to a satisfying and uplifting conclusion.' : 'Continue the adventure and build excitement for what comes next.'}`;
       
       const { data, error } = await supabase.functions.invoke('generate-adaptive-story', {
         body: {
@@ -231,8 +234,9 @@ export class LiveGenerationService {
       };
     } catch (error) {
       console.error('🚀 Enhanced fallback failed:', error);
-      // Emergency fallback - should rarely be needed with 187 templates
-      const content = `${userInfo.name} began a wonderful adventure.`;
+      // Emergency fallback using Enhanced Template Library
+      const emergencyFallback = EnhancedFallbackManager.getFallbackTemplate(difficulty, userInfo, 0);
+      const content = emergencyFallback.split('\n\n')[0] || `${userInfo.name} began a wonderful adventure.`;
       const context: LiveGenerationContext = {
         userInfo,
         difficulty,
@@ -268,10 +272,11 @@ export class LiveGenerationService {
       if (pages.length > pageNumber - 1) {
         content = pages[pageNumber - 1];
       } else {
-        // Generate appropriate content for the page
-        content = isLastPage 
-          ? `${context.userInfo.name} felt happy about the wonderful adventure. The end!`
-          : `${context.userInfo.name} continued the exciting journey.`;
+        // Use Enhanced Template Library for missing pages
+        const fallbackTemplate = EnhancedFallbackManager.getFallbackTemplate(context.difficulty, context.userInfo, pageNumber - 1, context.storyContext);
+        const fallbackPages = fallbackTemplate.split('\n\n').filter(page => page.trim().length > 0);
+        content = fallbackPages[Math.min(pageNumber - 1, fallbackPages.length - 1)] || 
+          (isLastPage ? `${context.userInfo.name} felt happy about the wonderful adventure. The end!` : `${context.userInfo.name} continued the exciting journey.`);
       }
       
       const updatedContext: LiveGenerationContext = {
@@ -287,10 +292,11 @@ export class LiveGenerationService {
       };
     } catch (error) {
       console.error('🚀 Enhanced fallback failed:', error);
-      // Emergency fallback - should rarely be needed
-      const content = isLastPage 
-        ? `${context.userInfo.name} had a great day. The end.`
-        : `${context.userInfo.name} continued the adventure.`;
+      // Emergency fallback using Enhanced Template Library
+      const emergencyFallback = EnhancedFallbackManager.getFallbackTemplate(context.difficulty, context.userInfo, pageNumber - 1, context.storyContext);
+      const emergencyPages = emergencyFallback.split('\n\n').filter(page => page.trim().length > 0);
+      const content = emergencyPages[Math.min(pageNumber - 1, emergencyPages.length - 1)] || 
+        (isLastPage ? `${context.userInfo.name} had a great day. The end.` : `${context.userInfo.name} continued the adventure.`);
       
       const updatedContext: LiveGenerationContext = {
         ...context,

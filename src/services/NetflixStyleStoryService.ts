@@ -52,14 +52,16 @@ export class NetflixStyleStoryService {
       const safeFood = InputSanitizer.sanitizeStoryInput(userInfo.favoriteFood || 'food');
       const safeRequest = InputSanitizer.sanitizeStoryInput(userInfo.specialRequest || '');
       
-      // Create difficulty-specific user prompts
-      let userPrompt: string;
-      
-      if (difficulty === 'beginner') {
-        userPrompt = `Create a joyful and elementary story for a pre-reader child aged 3-5 named ${safeName}. Integrate ${safeColor}, ${safeAnimal}, ${safeFood}, ${safeHobbies}, and ${safeRequest ? safeRequest : 'happy adventures'} as story elements that show up at least once. The story must be exactly 5 pages, 2-8 words per page, maximum 40 words total. Simple 2-4 word sentences and 2-3 letter words that rhyme are preferred. However, User inputs are always allowed. Follow the internal author style guidance to shape the story (without mentioning style names) and keep a positive tone. Before writing, internally imagine a random "story seed" between 1 and 10,000 to vary setting, events, and details so each story is unique, even with identical inputs. Do not mention the seed.`;
-      } else {
-        userPrompt = `Create an engaging story for ${safeName} (age ${userInfo.age}). They love ${safeAnimal} and ${safeColor}. Their hobby is ${safeHobbies}. ${safeRequest ? `Special request: ${safeRequest}` : ''}`;
-      }
+      // Use configured prompts from storyPrompts.ts only
+      const userPrompt = formatUserPrompt(promptConfig.userPrompt, {
+        ...userInfo,
+        name: safeName,
+        favoriteAnimal: safeAnimal,
+        favoriteColor: safeColor,
+        hobbies: safeHobbies,
+        favoriteFood: safeFood,
+        specialRequest: safeRequest
+      });
       
       console.log('🎬 Calling OpenAI with simple prompts...');
       

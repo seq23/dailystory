@@ -160,31 +160,47 @@ serve(async (req) => {
       `${fallbackConfig.avatar.type === 'boy' ? 'young boy' : fallbackConfig.avatar.type === 'girl' ? 'young girl' : 'child'}` :
       'brave young adventurer';
     
-    const fallbackStory = fallbackReadingLevel === 'beginner'
-      ? {
-          pages: [
-            `${userName} sees a cat.`,
-            `The cat is red.`, 
-            `${userName} likes cats.`,
-            `She runs to play.`,
-            `${userName} is happy.`
-          ],
-          difficulty: 'beginner',
-          title: `${userName} and the Cat`,
-          isComplete: true
-        }
-      : {
-          pages: [
-            `${userName} was excited to start a new ${fallbackTheme}!`,
-            `The ${characterDesc} looked around with wonder and curiosity.`,
-            `${userName} discovered something amazing that made them smile.`,
-            `With courage and determination, ${userName} explored further.`,
-            `${userName} learned something wonderful and felt proud of their journey.`
-          ],
-          difficulty: fallbackReadingLevel || 'easy',
-          title: `${userName}'s ${fallbackTheme.charAt(0).toUpperCase() + fallbackTheme.slice(1)} Story`,
-          isComplete: true
-        };
+    // Use Enhanced Template Library for all fallbacks
+    // Since we can't import the full template system in Edge Function,
+    // we'll create a simplified fallback that matches the template structure
+    const simpleTemplates = {
+      beginner: [
+        `${userName} sees a {color} {animal}.`,
+        `The {animal} is happy.`,
+        `${userName} plays with the {animal}.`,
+        `They have fun together.`,
+        `${userName} smiles big.`
+      ],
+      easy: [
+        `${userName} started a wonderful adventure.`,
+        `The brave child looked around with excitement.`,
+        `${userName} found something special and amazing.`,
+        `With courage, ${userName} explored the new place.`,
+        `${userName} felt proud and happy about the journey.`
+      ],
+      medium: [
+        `${userName} began an exciting journey through a magical place.`,
+        `The curious adventurer discovered something truly remarkable.`,
+        `${userName} faced a challenge with determination and cleverness.`,
+        `Working together with new friends, ${userName} solved the problem.`,
+        `${userName} returned home with wonderful memories and new wisdom.`
+      ],
+      hard: [
+        `${userName} embarked on an extraordinary quest that would test their courage.`,
+        `The determined young explorer encountered mysteries that sparked their curiosity.`,
+        `${userName} demonstrated remarkable problem-solving skills when faced with obstacles.`,
+        `Through perseverance and teamwork, ${userName} overcame the greatest challenges.`,
+        `${userName} emerged victorious, having grown wiser and more confident than ever before.`
+      ]
+    };
+
+    const templatePages = simpleTemplates[fallbackReadingLevel] || simpleTemplates.easy;
+    const fallbackStory = {
+      pages: templatePages,
+      difficulty: fallbackReadingLevel || 'easy',
+      title: `${userName}'s ${fallbackTheme.charAt(0).toUpperCase() + fallbackTheme.slice(1)} Story`,
+      isComplete: true
+    };
     
     return new Response(JSON.stringify(fallbackStory), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
