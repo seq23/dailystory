@@ -305,7 +305,10 @@
     "success": "نجح",
     "tryAgainLater": "حاول مرة أخرى لاحقاً",
     "inputProcessed": "تمت معالجة المدخلات",
-    "inputCorrectionsMade": "تم تطبيق التصحيحات"
+    "inputCorrectionsMade": "تم تطبيق التصحيحات",
+    "close": "إغلاق",
+    "home": "الصفحة الرئيسية",
+    "newStory": "قصة جديدة"
   },
   "tutorial": {
     "timer": {
@@ -545,9 +548,6 @@
     "turquoise": "فيروزي",
     "black": "أسود",
     "white": "أبيض"
-  },
-  "common": {
-    "close": "إغلاق"
   },
   "userForm": {
     "translating": "ترجمة...",

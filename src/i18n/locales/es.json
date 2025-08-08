@@ -487,7 +487,15 @@
     }
   },
   "common": {
-    "close": "Cerrar"
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "tryAgainLater": "Inténtalo de nuevo más tarde",
+    "inputProcessed": "Entrada procesada",
+    "inputCorrectionsMade": "Correcciones aplicadas",
+    "close": "Cerrar",
+    "home": "Inicio",
+    "newStory": "Nueva Historia"
   },
   "gamification": {
     "achievements": {

@@ -637,7 +637,15 @@
     "readingLevelDescription": "Esta história está escrita no nível {level}"
   },
   "common": {
-    "close": "Fechar"
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "tryAgainLater": "Tente novamente mais tarde",
+    "inputProcessed": "Entrada processada",
+    "inputCorrectionsMade": "Correções aplicadas",
+    "close": "Fechar",
+    "home": "Início",
+    "newStory": "Nova História"
   },
   "gamification": {
     "achievements": {

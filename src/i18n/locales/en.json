@@ -513,7 +513,10 @@
     }
   },
   "common": {
-    "close": "Close"
+    "loading": "Loading...",
+    "close": "Close",
+    "home": "Home",
+    "newStory": "New Story"
   },
   "gamification": {
     "achievements": {

@@ -304,7 +304,10 @@
     "success": "成功",
     "tryAgainLater": "请稍后再试",
     "inputProcessed": "输入已处理",
-    "inputCorrectionsMade": "已应用更正"
+    "inputCorrectionsMade": "已应用更正",
+    "close": "关闭",
+    "home": "首页",
+    "newStory": "新故事"
   },
   "tutorial": {
     "timer": {
@@ -544,9 +547,6 @@
     "turquoise": "青绿色",
     "black": "黑色",
     "white": "白色"
-  },
-  "common": {
-    "close": "关闭"
   },
   "userForm": {
     "translating": "翻译中...",

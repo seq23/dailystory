@@ -487,7 +487,15 @@
     }
   },
   "common": {
-    "close": "Fermer"
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "tryAgainLater": "Réessayez plus tard",
+    "inputProcessed": "Entrée traitée",
+    "inputCorrectionsMade": "Corrections appliquées",
+    "close": "Fermer",
+    "home": "Accueil",
+    "newStory": "Nouvelle Histoire"
   },
   "gamification": {
     "achievements": {

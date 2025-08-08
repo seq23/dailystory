@@ -304,7 +304,10 @@
     "success": "सफलता",
     "tryAgainLater": "बाद में पुनः प्रयास करें",
     "inputProcessed": "इनपुट प्रसंस्कृत",
-    "inputCorrectionsMade": "सुधार लागू किए गए"
+    "inputCorrectionsMade": "सुधार लागू किए गए",
+    "close": "बंद करें",
+    "home": "मुख्य पृष्ठ",
+    "newStory": "नई कहानी"
   },
   "tutorial": {
     "timer": {
@@ -544,9 +547,6 @@
     "turquoise": "फिरोज़ी",
     "black": "काला",
     "white": "सफ़ेद"
-  },
-  "common": {
-    "close": "बंद करें"
   },
   "userForm": {
     "translating": "अनुवाद कर रहे हैं...",
