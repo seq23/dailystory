@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
-
+import { AdaptiveEnhancedLoading } from '@/components/AdaptiveEnhancedLoading';
 interface MobileWrapperProps {
   children: React.ReactNode;
 }
@@ -8,6 +8,7 @@ interface MobileWrapperProps {
 export const MobileWrapper: React.FC<MobileWrapperProps> = ({ children }) => {
   const { isMobileOrTablet, isCapacitor } = useIsMobile();
   const [isInitialized, setIsInitialized] = useState(false);
+  const debugMode = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1';
 
   useEffect(() => {
     // Mobile initialization
@@ -60,14 +61,27 @@ export const MobileWrapper: React.FC<MobileWrapperProps> = ({ children }) => {
     };
   }, [isMobileOrTablet]);
 
-  if (!isInitialized) {
+  // Desktop: render immediately without blocking
+  if (!isMobileOrTablet) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
+      <div className="homepage">
+        {children}
       </div>
+    );
+  }
+
+  // Mobile/tablet: show enhanced loader until initialized
+  if (!isInitialized) {
+    console.log('📱 MobileWrapper: showing AdaptiveEnhancedLoading', { isMobileOrTablet, initialized: isInitialized });
+    return (
+      <>
+        <AdaptiveEnhancedLoading isPremium={false} />
+        {debugMode && (
+          <div className="fixed top-2 right-2 z-50 text-xs px-2 py-1 rounded bg-primary text-primary-foreground shadow">
+            Mobile loader active
+          </div>
+        )}
+      </>
     );
   }
 
