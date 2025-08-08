@@ -618,17 +618,17 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                 </p>
               </div>
 
-              {/* Story Content - Enhanced Layout for Book-like Experience */}
-              <div className="bg-gradient-card rounded-2xl p-3 md:p-6 lg:p-8 mb-6 min-h-[600px] md:min-h-[700px] lg:min-h-[800px] shadow-xl" 
+              {/* Story Content - Enhanced Layout for Desktop Split-Screen */}
+              <div className="bg-gradient-card rounded-2xl p-3 md:p-6 lg:p-8 mb-6 min-h-[600px] md:min-h-[700px] xl:min-h-[800px] shadow-xl" 
                    dir="ltr" lang="en" role="main" aria-label="Story content">
-                <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 md:gap-6 lg:gap-8">
-                  {/* Image Section - LEFT SIDE */}
-                  <div className="lg:order-1 lg:col-span-2">
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6 lg:gap-8 h-full">
+                  {/* Image Section - LEFT SIDE - Equal size on desktop */}
+                  <div className="xl:order-1 flex flex-col">
                       {currentImage && (
                         <img 
                           src={currentImage} 
                           alt={`Story illustration for page ${currentPage + 1}: ${story[currentPage]?.substring(0, 100)}...`}
-                          className="w-full h-80 sm:h-96 md:h-[36rem] lg:h-[42rem] xl:h-[48rem] object-cover rounded-2xl shadow-2xl story-image-container-enhanced"
+                          className="w-full h-80 sm:h-96 md:h-[36rem] xl:h-full object-cover rounded-2xl shadow-2xl story-image-container-enhanced"
                           loading="lazy"
                           onError={(e) => {
                             console.warn('Story image failed to load:', currentImage);
@@ -638,7 +638,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                     )}
                     
                     {isGeneratingImage && !currentImage && (
-                      <div className="w-full h-80 sm:h-96 md:h-[36rem] lg:h-[42rem] xl:h-[48rem] bg-muted rounded-2xl flex items-center justify-center story-image-container-enhanced">
+                      <div className="w-full h-80 sm:h-96 md:h-[36rem] xl:h-full bg-muted rounded-2xl flex items-center justify-center story-image-container-enhanced">
                         <div className="text-center">
                           <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
                           <p className="text-sm text-muted-foreground">Creating illustration...</p>
@@ -668,11 +668,11 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                     </div>
                   </div>
 
-                  {/* Text Content - RIGHT SIDE */}
-                  <div className="lg:order-2 lg:col-span-3 flex flex-col justify-center">
-                    <div className="story-container">
+                  {/* Text Content - RIGHT SIDE - Equal size on desktop */}
+                  <div className="xl:order-2 flex flex-col justify-center h-full">
+                    <div className="story-container h-full flex items-center">
                       <div 
-                        className="story-content"
+                        className="story-content w-full"
                         data-difficulty={currentDifficulty}
                       >
                         {processTextWithConsistentFlow({
