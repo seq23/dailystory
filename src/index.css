@@ -308,18 +308,18 @@ All colors MUST be HSL.
   }
 
   [lang="zh"] {
-    font-family: 'Noto Sans SC', 'Ma Shan Zheng', sans-serif;
+    font-family: 'Noto Sans SC', sans-serif;
   }
 
   [lang="zh"] .font-fun {
-    font-family: 'Ma Shan Zheng', 'Noto Sans SC', serif;
+    font-family: 'Noto Sans SC', sans-serif;
   }
 
-  /* Ensure story content uses English-appropriate fonts regardless of UI language */
+  /* Ensure story content uses kid-friendly, non-slanted Chinese font */
   [lang="zh"] .story-content,
   [lang="zh"] .story-text,
   [lang="zh"] .story-display {
-    font-family: 'Fredoka', 'Comic Neue', cursive, sans-serif !important;
+    font-family: 'Noto Sans SC', sans-serif !important;
     letter-spacing: 0.01em;
   }
 

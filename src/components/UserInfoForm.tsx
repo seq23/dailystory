@@ -255,21 +255,21 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
     
     // Only validate truly essential fields to improve form completion rates
     if (!formData.name.trim()) {
-      errors.push("Please enter your child's first name");
+      errors.push(t("userInfoForm.validation.nameRequired", "Please enter a name"));
     }
     
     // Age defaults to 7, so only validate if it's somehow null/undefined
     if (!formData.age || formData.age < 3 || formData.age > 11) {
-      errors.push("Please select a valid age (3-11 years)");
+      errors.push(t("userInfoForm.validation.ageRequired", "Please select an age"));
     }
     
     // Grade and language should have defaults, only validate if missing
     if (!formData.grade) {
-      errors.push("Please select a grade level");
+      errors.push(t("userInfoForm.validation.gradeRequired", "Please select a grade level"));
     }
     
     if (!formData.nativeLanguage) {
-      errors.push("Please select a language");
+      errors.push(t("userInfoForm.validation.languageRequired", "Please select a language"));
     }
     
     // Avatar validation is less critical - provide defaults if missing
@@ -344,7 +344,7 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
           <Alert className="border-destructive/20 bg-destructive/5 mb-6">
             <AlertCircle className="h-4 w-4 text-destructive" />
             <AlertDescription className="text-destructive">
-              <div className="font-medium mb-2">Please complete the required fields:</div>
+              <div className="font-medium mb-2">{t("userInfoForm.help.required", "Required to create your story")}</div>
               <ul className="list-disc list-inside space-y-1 text-sm">
                 {validationErrors.map((error, index) => (
                   <li key={index}>{error}</li>
@@ -398,7 +398,7 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
                   <SelectContent className="bg-popover border border-border shadow-soft z-50">
                     {[3, 4, 5, 6, 7, 8, 9, 10].map((age) => (
                       <SelectItem key={age} value={age.toString()} className="focus:bg-accent focus:text-accent-foreground">
-                        {age} {t("userInfoForm.fields.age.yearsOld")}
+                        {age} {t("userInfoForm.fields.age.yearsOld", "years old")}
                       </SelectItem>
                     ))}
                     <SelectItem key={11} value="11" className="focus:bg-accent focus:text-accent-foreground">
@@ -418,14 +418,14 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
                     <SelectValue placeholder={t("userInfoForm.fields.grade.placeholder")} />
                   </SelectTrigger>
                   <SelectContent className="bg-popover border border-border shadow-soft z-50">
-                    <SelectItem value="PreK" className="focus:bg-accent focus:text-accent-foreground">Pre-K</SelectItem>
-                    <SelectItem value="Kindergarten" className="focus:bg-accent focus:text-accent-foreground">Kindergarten</SelectItem>
-                    <SelectItem value="1st" className="focus:bg-accent focus:text-accent-foreground">1st Grade</SelectItem>
-                    <SelectItem value="2nd" className="focus:bg-accent focus:text-accent-foreground">2nd Grade</SelectItem>
-                    <SelectItem value="3rd" className="focus:bg-accent focus:text-accent-foreground">3rd Grade</SelectItem>
-                    <SelectItem value="4th" className="focus:bg-accent focus:text-accent-foreground">4th Grade</SelectItem>
-                    <SelectItem value="5th" className="focus:bg-accent focus:text-accent-foreground">5th Grade</SelectItem>
-                    <SelectItem value="6th" className="focus:bg-accent focus:text-accent-foreground">6th Grade</SelectItem>
+                    <SelectItem value="PreK" className="focus:bg-accent focus:text-accent-foreground">{t("userInfoForm.grades.PreK", "Pre-K")}</SelectItem>
+                    <SelectItem value="K" className="focus:bg-accent focus:text-accent-foreground">{t("userInfoForm.grades.K", "Kindergarten")}</SelectItem>
+                    <SelectItem value="1st" className="focus:bg-accent focus:text-accent-foreground">{t("userInfoForm.grades.1st", "1st Grade")}</SelectItem>
+                    <SelectItem value="2nd" className="focus:bg-accent focus:text-accent-foreground">{t("userInfoForm.grades.2nd", "2nd Grade")}</SelectItem>
+                    <SelectItem value="3rd" className="focus:bg-accent focus:text-accent-foreground">{t("userInfoForm.grades.3rd", "3rd Grade")}</SelectItem>
+                    <SelectItem value="4th" className="focus:bg-accent focus:text-accent-foreground">{t("userInfoForm.grades.4th", "4th Grade")}</SelectItem>
+                    <SelectItem value="5th" className="focus:bg-accent focus:text-accent-foreground">{t("userInfoForm.grades.5th", "5th Grade")}</SelectItem>
+                    <SelectItem value="6th" className="focus:bg-accent focus:text-accent-foreground">{t("userInfoForm.grades.6th", "6th Grade")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

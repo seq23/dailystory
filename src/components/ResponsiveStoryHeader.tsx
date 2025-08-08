@@ -153,10 +153,10 @@ export const ResponsiveStoryHeader = ({
                       {userInfo.name}
                     </p>
                     <p className={cn(
-                      "text-gray-600",
-                      isTablet ? "text-xs" : "text-sm"
-                    )}>
-                      {userInfo.grade === 'PreK' ? 'Pre-K' : `Grade ${userInfo.grade}`}
+                       "text-gray-600",
+                       isTablet ? "text-xs" : "text-sm"
+                     )}>
+                      {t(`userInfoForm.grades.${userInfo.grade}` as any, userInfo.grade === 'PreK' ? 'Pre-K' : `Grade ${userInfo.grade}`)}
                     </p>
                   </div>
                 )}

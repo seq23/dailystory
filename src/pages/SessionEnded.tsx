@@ -186,25 +186,21 @@ const SessionEnded = ({ onHome, onNewStory, isPremium = false, onUpgrade }: Sess
               <div className="space-y-2 text-sm text-amber-600">
                  <div className="flex items-center gap-2">
                    <Star className="w-4 h-4" />
-                   <span>AI-personalized stories created just for you</span>
+                   <span>{t("sessionEnded.premiumBenefits.unlimitedSessions", "Unlimited reading sessions")}</span>
                  </div>
                  <div className="flex items-center gap-2">
                    <Volume2 className="w-4 h-4" />
-                   <span>Voice personalization & voice commands</span>
+                   <span>{t("sessionEnded.premiumBenefits.customDifficulty", "Custom story difficulty adjustment")}</span>
                  </div>
                  <div className="flex items-center gap-2">
                    <BookOpen className="w-4 h-4" />
-                   <span>Reading assessment with pronunciation feedback</span>
-                 </div>
-                 <div className="flex items-center gap-2">
-                   <Sparkles className="w-4 h-4" />
-                   <span>Unlimited audio plays & advanced learning analytics</span>
+                   <span>{t("sessionEnded.premiumBenefits.extendedLibrary", "Extended story library with more topics")}</span>
                  </div>
                  <div className="flex items-center gap-2">
                    <TrendingUp className="w-4 h-4" />
-                   <span>Extended story library & premium gamification</span>
+                   <span>{t("sessionEnded.premiumBenefits.advancedTracking", "Advanced progress tracking & analytics")}</span>
                  </div>
-              </div>
+               </div>
               {onUpgrade && (
                 <Button
                   onClick={onUpgrade}

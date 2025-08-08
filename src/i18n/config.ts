@@ -30,6 +30,8 @@ i18n
     debug: false,
     interpolation: {
       escapeValue: false,
+      prefix: '{',
+      suffix: '}',
     },
     detection: {
       order: ['localStorage'],

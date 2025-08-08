@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { ChevronUp, ChevronDown, Play, Pause, Minus, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 import { cn } from "@/lib/utils";
 
@@ -182,55 +182,78 @@ export const CollapsibleFloatingTimer = ({
       </div>
 
       {/* Control Buttons */}
-      <div className="flex items-center gap-2">
-        {/* Play/Pause */}
-        <Button
-          variant="outline"
-          size={isMobile ? "sm" : "default"}
-          onClick={onToggleReading}
-          className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm"
-          aria-label={isReading ? t("floatingTimer.pause", "Pause reading") : t("floatingTimer.play", "Start reading")}
-          id="timer-play-button"
-        >
-          {isReading ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-        </Button>
+      <TooltipProvider>
+        <div className="flex items-center gap-2">
+          {/* Play/Pause */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size={isMobile ? "sm" : "default"}
+                onClick={onToggleReading}
+                className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm"
+                aria-label={isReading ? t("floatingTimer.pauseTimer", "Pause Timer") : t("floatingTimer.startTimer", "Start Timer")}
+                id="timer-play-button"
+              >
+                {isReading ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {t("floatingTimer.sequentialTooltips.startPause", "Click to start/pause your reading timer!")}
+            </TooltipContent>
+          </Tooltip>
 
-        {/* Always show Reduce Time */}
-        <Button
-          variant="outline"
-          size={isMobile ? "sm" : "default"}
-          onClick={onReduceTime}
-          disabled={timeRemaining <= 5 * 60}
-          className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm"
-          aria-label={t("floatingTimer.reduceTime", "Reduce time by 5 minutes")}
-          id="timer-reduce-button"
-        >
-          <Minus className="w-4 h-4" />
-        </Button>
+          {/* Reduce Time */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size={isMobile ? "sm" : "default"}
+                onClick={onReduceTime}
+                disabled={timeRemaining <= 5 * 60}
+                className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm"
+                aria-label={t("floatingTimer.reduceTime", "Reduce time by 5 minutes")}
+                id="timer-reduce-button"
+              >
+                <Minus className="w-4 h-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {t("floatingTimer.sequentialTooltips.reduceTime", "Reduce time by 5 minutes!")}
+            </TooltipContent>
+          </Tooltip>
 
-        {/* End Session */}
-        <Button
-          variant="outline"
-          size={isMobile ? "sm" : "default"}
-          onClick={onEndSession}
-          className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm"
-          aria-label={t("floatingTimer.endSession", "End reading session")}
-          id="timer-end-button"
-        >
-          <X className="w-4 h-4" />
-        </Button>
+          {/* End Session */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size={isMobile ? "sm" : "default"}
+                onClick={onEndSession}
+                className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm"
+                aria-label={t("floatingTimer.endSession", "End reading session")}
+                id="timer-end-button"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {t("floatingTimer.sequentialTooltips.endSession", "Click to end your reading session!")}
+            </TooltipContent>
+          </Tooltip>
 
-        {/* Collapse Button - Always show */}
-        <Button
-          variant="outline"
-          size={isMobile ? "sm" : "default"}
-          onClick={() => setIsCollapsed(true)}
-          className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm"
-          aria-label={t("floatingTimer.collapse", "Collapse timer")}
-        >
-          <ChevronDown className="w-4 h-4" />
-        </Button>
-      </div>
+          {/* Collapse Button - No tooltip needed */}
+          <Button
+            variant="outline"
+            size={isMobile ? "sm" : "default"}
+            onClick={() => setIsCollapsed(true)}
+            className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm"
+            aria-label={t("floatingTimer.collapse", "Collapse timer")}
+          >
+            <ChevronDown className="w-4 h-4" />
+          </Button>
+        </div>
+      </TooltipProvider>
 
       {/* Celebration Animation */}
       {showCelebration && (

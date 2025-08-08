@@ -282,6 +282,16 @@
       "readingLevels": "Reading levels are based on educational research to ensure appropriate difficulty",
       "optional": "Optional - helps personalize your story",
       "required": "Required to create your story"
+    },
+    "grades": {
+      "PreK": "Pre-K",
+      "K": "Kindergarten",
+      "1st": "1st Grade",
+      "2nd": "2nd Grade",
+      "3rd": "3rd Grade",
+      "4th": "4th Grade",
+      "5th": "5th Grade",
+      "6th": "6th Grade"
     }
   },
   "tutorial": {

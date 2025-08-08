@@ -2,6 +2,8 @@
 
 /* Base story content container */
 .story-content {
+  /* Font for readability across languages */
+  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
   /* Text rendering optimizations */
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
