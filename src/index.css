@@ -238,6 +238,33 @@ All colors MUST be HSL.
   box-shadow: 0 0 20px hsl(var(--yellow) / 0.6), 0 0 40px hsl(var(--yellow) / 0.4), 0 0 60px hsl(var(--yellow) / 0.2);
 }
 
+/* Magic wand dramatic glow effect */
+.glow-purple {
+  box-shadow: 
+    0 0 30px rgba(147, 51, 234, 0.8), 
+    0 0 60px rgba(147, 51, 234, 0.6),
+    0 0 90px rgba(147, 51, 234, 0.4),
+    inset 0 0 20px rgba(147, 51, 234, 0.3);
+  animation: pulse-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes pulse-glow {
+  from {
+    box-shadow: 
+      0 0 30px rgba(147, 51, 234, 0.8), 
+      0 0 60px rgba(147, 51, 234, 0.6),
+      0 0 90px rgba(147, 51, 234, 0.4),
+      inset 0 0 20px rgba(147, 51, 234, 0.3);
+  }
+  to {
+    box-shadow: 
+      0 0 50px rgba(147, 51, 234, 1), 
+      0 0 100px rgba(147, 51, 234, 0.8),
+      0 0 150px rgba(147, 51, 234, 0.6),
+      inset 0 0 30px rgba(147, 51, 234, 0.5);
+  }
+}
+
 @layer base {
   * {
     @apply border-border;

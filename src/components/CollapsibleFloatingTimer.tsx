@@ -17,6 +17,7 @@ interface CollapsibleFloatingTimerProps {
   currentParagraph?: number;
   onSessionEnded: (sessionStats?: any) => void;
   sessionStats?: any;
+  isPremium?: boolean; // Add premium status for enhanced free trial experience
 }
 
 export const CollapsibleFloatingTimer = ({
@@ -26,7 +27,8 @@ export const CollapsibleFloatingTimer = ({
   onReduceTime,
   onEndSession,
   onSessionEnded,
-  sessionStats
+  sessionStats,
+  isPremium = false
 }: CollapsibleFloatingTimerProps) => {
   const { t } = useTranslation();
   const { isMobile, isTablet, isMobileOrTablet } = useIsMobile();
@@ -79,29 +81,73 @@ export const CollapsibleFloatingTimer = ({
   if (isCollapsed) {
     return (
       <div className={cn(getPositionClasses())}>
-        {/* Truly Collapsed - Only Timer Circle */}
+        {/* Enhanced Collapsed Timer - More Prominent for Free Users */}
         <div 
           className={cn(
-            "relative bg-background/95 backdrop-blur-sm rounded-full shadow-lg border-2 border-primary/20 cursor-pointer hover:scale-110 transition-all duration-200 group flex items-center justify-center",
-            isMobile ? "w-14 h-14" : isTablet ? "w-16 h-16" : "w-20 h-20"
+            "relative backdrop-blur-sm rounded-full shadow-lg border-2 cursor-pointer hover:scale-110 transition-all duration-200 group flex items-center justify-center",
+            // Enhanced styling for free users when time is running low
+            !isPremium && timeRemaining <= 300 && [
+              "bg-gradient-to-br from-red-500/20 to-orange-500/20",
+              "border-red-400/60",
+              "shadow-red-500/30",
+              "animate-pulse",
+              "shadow-2xl",
+              "ring-2 ring-red-400/40"
+            ],
+            !isPremium && timeRemaining > 300 && timeRemaining <= 600 && [
+              "bg-gradient-to-br from-orange-500/20 to-yellow-500/20", 
+              "border-orange-400/60",
+              "shadow-orange-500/30"
+            ],
+            !isPremium && timeRemaining > 600 && [
+              "bg-gradient-to-br from-purple-500/10 to-blue-500/10",
+              "border-purple-300/50",
+              "shadow-purple-500/20"
+            ],
+            isPremium && [
+              "bg-background/95",
+              "border-primary/20"
+            ],
+            isMobile ? "w-16 h-16" : isTablet ? "w-18 h-18" : "w-22 h-22"
           )}
           onClick={() => setIsCollapsed(false)}
           id="timer-display"
           role="button"
           aria-label="Expand timer controls"
         >
-          {/* Time display */}
+          {/* Time display with enhanced styling for free users */}
           <div className={cn(
-            "font-bold", 
+            "font-bold text-center", 
             getTimerColor(),
+            !isPremium && timeRemaining <= 300 && "animate-bounce text-red-600",
             isMobile ? "text-xs" : isTablet ? "text-sm" : "text-base"
           )}>
             {formatTime(timeRemaining)}
           </div>
           
-          {/* Subtle expand indicator - only visible on hover */}
-          <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-primary rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
-            <ChevronUp className="w-2 h-2 text-primary-foreground" />
+          {/* Free user upgrade hint when time is low */}
+          {!isPremium && timeRemaining <= 300 && (
+            <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-red-600 text-white text-xs px-2 py-1 rounded-full shadow-lg animate-bounce whitespace-nowrap">
+              🚨 Time Low!
+            </div>
+          )}
+          
+          {/* Upgrade hint for free users */}
+          {!isPremium && (
+            <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-xs px-2 py-1 rounded-full shadow-lg opacity-70 whitespace-nowrap">
+              ⏱️ Try Premium
+            </div>
+          )}
+          
+          {/* Enhanced expand indicator */}
+          <div className={cn(
+            "absolute -bottom-1 -right-1 w-4 h-4 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center",
+            !isPremium ? "bg-purple-500" : "bg-primary"
+          )}>
+            <ChevronUp className={cn(
+              "w-2 h-2",
+              !isPremium ? "text-white" : "text-primary-foreground"
+            )} />
           </div>
           
           {/* Reading state indicator */}

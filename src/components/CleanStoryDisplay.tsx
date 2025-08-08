@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { BookOpen, Home, RotateCcw, Loader2, Volume2, VolumeX, ChevronUp, ChevronDown, Settings, Plus, RefreshCw, X, Clock, Wand, Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/hooks/use-toast";
+import { SparkleAnimation } from "@/components/SparkleAnimation";
 
 // Mobile-Optimized UI Components
 import { ResponsiveTimer } from "@/components/ResponsiveTimer";
@@ -155,15 +156,11 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     return () => clearInterval(interval);
   }, [isTimerRunning, timeRemaining, isTimerCanceled, isPremium]);
 
-  // Magic wand animation effect for free users on last page
+  // Magic wand DRAMATIC animation effect for free users on last page - CONTINUOUS until clicked
   useEffect(() => {
     if (!isPremium && currentPage === story.length - 1 && story.length > 0) {
       setIsMagicWandAnimating(true);
-      const timer = setTimeout(() => {
-        setIsMagicWandAnimating(false);
-      }, 3000);
-      
-      return () => clearTimeout(timer);
+      // NO TIMEOUT - Keep animating until user clicks!
     } else {
       setIsMagicWandAnimating(false);
     }
@@ -732,38 +729,91 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                   </div>
                 )}
 
-                {/* Free User Magic Wand - Enhanced visibility with animation */}
+                {/* Free User Magic Wand - DRAMATICALLY ENHANCED for MAXIMUM visibility */}
                 {!isPremium && currentPage === story.length - 1 && timeRemaining > 0 && (
-                  <div className="text-center">
-                    <p className="text-sm text-muted-foreground mb-3">
-                      Ready for another adventure? Generate a new story!
+                  <div className="text-center relative">
+                    {/* Urgent messaging with flashing colors */}
+                    <p className={cn(
+                      "text-lg font-bold mb-4 px-4 py-2 rounded-full",
+                      isMagicWandAnimating && "animate-pulse text-gradient-primary bg-gradient-to-r from-purple-500/20 to-blue-500/20"
+                    )}>
+                      🌟 Generate New Story Now! 🌟
                     </p>
-                    <Button
-                      data-id="magic-wand-free"
-                      onClick={handleGenerateNewStory}
-                      disabled={isGeneratingNewStory}
-                      variant="outline"
-                      size="sm"
-                      className={cn(
-                        "bg-gradient-to-r from-purple-500/10 to-blue-500/10 border-purple-300/30 hover:from-purple-500/20 hover:to-blue-500/20 transition-all duration-300",
-                        isMagicWandAnimating && "animate-wiggle",
-                        isGeneratingNewStory && "animate-pulse border-purple-400/50 shadow-lg shadow-purple-500/20"
-                      )}
-                    >
-                      {isGeneratingNewStory ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          <Sparkles className="w-3 h-3 absolute top-1 right-1 text-purple-400 animate-pulse" />
-                          Creating magic...
-                        </>
-                      ) : (
-                        <>
-                          <Wand className="w-4 h-4 mr-2 animate-bounce" />
-                          <Sparkles className="w-3 h-3 absolute top-1 right-1 text-purple-400 animate-pulse" />
-                          Fresh Story
-                        </>
-                      )}
-                    </Button>
+                    
+                    {/* Sparkle animation container */}
+                    <div className="relative">
+                      <SparkleAnimation 
+                        isActive={isMagicWandAnimating} 
+                        intensity="high" 
+                        className="absolute inset-0 pointer-events-none z-10" 
+                      />
+                      
+                      <Button
+                        data-id="magic-wand-free"
+                        onClick={() => {
+                          setIsMagicWandAnimating(false); // Stop animation when clicked
+                          handleGenerateNewStory();
+                        }}
+                        disabled={isGeneratingNewStory}
+                        variant="hero"
+                        size="xl"
+                        className={cn(
+                          "relative z-20 transform transition-all duration-500",
+                          // DRAMATIC multi-layered animation effects
+                          isMagicWandAnimating && [
+                            "animate-bounce", 
+                            "animate-pulse", 
+                            "scale-125", 
+                            "shadow-2xl",
+                            "shadow-purple-500/50",
+                            "border-4",
+                            "border-purple-400/60",
+                            "bg-gradient-to-r",
+                            "from-purple-600/90",
+                            "to-blue-600/90",
+                            "hover:from-purple-700",
+                            "hover:to-blue-700",
+                            "glow-purple" // Custom glow effect
+                          ].join(" "),
+                          isGeneratingNewStory && "animate-spin border-purple-400/50 shadow-lg shadow-purple-500/20"
+                        )}
+                      >
+                        {isGeneratingNewStory ? (
+                          <>
+                            <Loader2 className="w-6 h-6 mr-3 animate-spin" />
+                            <Sparkles className="w-5 h-5 absolute top-2 right-2 text-purple-200 animate-pulse" />
+                            Creating Magic...
+                          </>
+                        ) : (
+                          <>
+                            <Wand className={cn(
+                              "w-6 h-6 mr-3", 
+                              isMagicWandAnimating && "animate-bounce text-yellow-300"
+                            )} />
+                            <Sparkles className={cn(
+                              "w-5 h-5 absolute top-2 right-2", 
+                              isMagicWandAnimating && "animate-ping text-yellow-300"
+                            )} />
+                            {isMagicWandAnimating && (
+                              <>
+                                {/* Additional sparkle effects */}
+                                <Sparkles className="w-3 h-3 absolute top-1 left-1 text-pink-300 animate-pulse" />
+                                <Sparkles className="w-4 h-4 absolute bottom-1 left-2 text-cyan-300 animate-bounce" />
+                                <Sparkles className="w-3 h-3 absolute bottom-1 right-1 text-green-300 animate-ping" />
+                              </>
+                            )}
+                            ✨ Generate Fresh Story! ✨
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                    
+                    {/* Additional attention-grabbing text */}
+                    {isMagicWandAnimating && (
+                      <p className="text-sm text-purple-600 mt-3 animate-pulse font-semibold">
+                        🎯 Click the magic wand for unlimited new adventures! 🎯
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
@@ -862,6 +912,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         onReduceTime={isPremium ? handleReduceTime : undefined}
         onEndSession={handleEndSession}
         onSessionEnded={handleEndSession}
+        isPremium={isPremium}
       />
       
       {/* Modern Progress Towers - Rebuilt with better design */}

@@ -15,6 +15,7 @@ interface ResponsiveTimerProps {
   sessionStats?: any;
   showTutorial?: boolean;
   onTimerTooltipComplete?: () => void;
+  isPremium?: boolean; // Add premium status for enhanced free trial experience
 }
 
 export const ResponsiveTimer = (props: ResponsiveTimerProps) => {

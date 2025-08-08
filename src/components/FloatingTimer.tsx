@@ -16,6 +16,7 @@ interface FloatingTimerProps {
   currentParagraph?: number;
   onSessionEnded: (sessionStats?: any) => void;
   sessionStats?: any; // Session data to pass to end page
+  isPremium?: boolean; // Add premium status for enhanced free trial experience
 }
 
 export const FloatingTimer = ({ 
@@ -27,7 +28,8 @@ export const FloatingTimer = ({
   pagesRemaining = 0,
   currentParagraph = 0,
   onSessionEnded,
-  sessionStats
+  sessionStats,
+  isPremium = false
 }: FloatingTimerProps) => {
   const { t } = useTranslation();
   const [showCelebration, setShowCelebration] = useState(false);
