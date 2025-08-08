@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { EnhancedProgressTower } from './EnhancedProgressTower';
 import { useGamification } from '@/hooks/useGamification';
 import { BookOpen, FileText, Lightbulb, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -88,10 +88,20 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
     setIsExpanded(!isExpanded);
   };
 
-  // Calculate display values (including current session)
-  const totalWordsRead = userStats.totalWordsRead + currentWordsRead;
-  const totalPagesRead = Math.floor(totalWordsRead / 200) + currentPagesRead; // Estimate pages from words
-  const displayVocabularyLearned = vocabularyLearned || userStats.vocabularyWordsLearned;
+  // Calculate display values (including current session) - memoized to prevent infinite re-renders
+  const calculatedValues = useMemo(() => {
+    const totalWordsRead = userStats.totalWordsRead + currentWordsRead;
+    const totalPagesRead = Math.floor(totalWordsRead / 200) + currentPagesRead; // Estimate pages from words
+    const displayVocabularyLearned = vocabularyLearned || userStats.vocabularyWordsLearned;
+    
+    return {
+      totalWordsRead,
+      totalPagesRead,
+      displayVocabularyLearned
+    };
+  }, [userStats.totalWordsRead, currentWordsRead, currentPagesRead, vocabularyLearned, userStats.vocabularyWordsLearned]);
+
+  const { totalWordsRead, totalPagesRead, displayVocabularyLearned } = calculatedValues;
 
   // Detect progress changes and trigger animations
   useEffect(() => {
@@ -174,7 +184,7 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
     }
 
     prevValuesRef.current = currentValues;
-  }, [totalWordsRead, totalPagesRead, displayVocabularyLearned, onProgressUpdate]);
+  }, [calculatedValues.totalWordsRead, calculatedValues.totalPagesRead, calculatedValues.displayVocabularyLearned, onProgressUpdate]);
 
   console.log('ProgressTowers component rendering...', { 
     isExpanded, 
