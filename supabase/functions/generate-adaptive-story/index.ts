@@ -522,33 +522,45 @@ serve(async (req) => {
     const systemPrompt = config?.systemPrompt || `You are a children's story writer. Create an engaging story for ${readingLevel} level readers.`;
     const userPrompt = config?.userPrompt || `Create a unique story for ${config?.userName || 'the child'}.`;
 
+    const maxTokens = readingLevel === 'beginner' ? 150 : 
+                     readingLevel === 'easy' ? 250 : 
+                     readingLevel === 'medium' ? 400 : 
+                     readingLevel === 'hard' ? 500 : 600; // expert
+
     console.log('📖 Story Generation Request:', {
       readingLevel,
       hasCustomPrompts: !!(config?.systemPrompt && config?.userPrompt),
       userName: config?.userName,
       expertGrade: config?.expertGrade,
-      model: 'gpt-4o',
-      maxTokens: readingLevel === 'beginner' ? 100 : readingLevel === 'easy' ? 300 : readingLevel === 'medium' ? 600 : 1200
+      model: 'gpt-4o-mini',
+      maxTokens
     });
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Add timeout wrapper for OpenAI API call
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('OpenAI API request timed out after 30 seconds')), 30000);
+    });
+
+    const openAIRequest = fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${openaiApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        max_tokens: readingLevel === 'beginner' ? 100 : readingLevel === 'easy' ? 300 : readingLevel === 'medium' ? 600 : 1200,
+        max_tokens: maxTokens,
         temperature: 0.7,
         presence_penalty: 0.1,
         frequency_penalty: 0.1
       }),
-    })
+    });
+
+    const response = await Promise.race([openAIRequest, timeoutPromise]) as Response;
 
     if (!response.ok) {
       const errorText = await response.text();
