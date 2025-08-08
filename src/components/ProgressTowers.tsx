@@ -27,7 +27,14 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
   shouldPulse = false,
   onProgressUpdate
 }) => {
-  console.log('🏗️ ProgressTowers: Rendering progress towers component');
+  console.log('🏗️ ProgressTowers: Rendering progress towers component', {
+    userId,
+    userType,
+    currentWordsRead,
+    currentPagesRead,
+    vocabularyLearned,
+    renderTime: new Date().getTime()
+  });
   const { t, i18n } = useTranslation();
   const { isMobile } = useIsMobile();
   const isRTL = i18n.language === 'ar';
@@ -40,13 +47,28 @@ export const ProgressTowers: React.FC<ProgressTowersProps> = ({
   });
   const [celebration, setCelebration] = useState(false);
   const [hasNewProgress, setHasNewProgress] = useState(false);
-  const prevValuesRef = useRef({ words: 0, pages: 0, vocabulary: 0 });
+  const prevValuesRef = useRef<{ 
+    words: number; 
+    pages: number; 
+    vocabulary: number; 
+    lastUserStats?: any;
+  }>({ words: 0, pages: 0, vocabulary: 0 });
 
   const { userStats } = useGamification({
     userId,
     userType,
     enablePersistence: userType === 'premium'
   });
+
+  console.log('🏗️ ProgressTowers: useGamification result:', {
+    userStats,
+    hasChanged: JSON.stringify(userStats) !== JSON.stringify(prevValuesRef.current?.lastUserStats || {})
+  });
+
+  // Store last userStats to detect changes
+  if (!prevValuesRef.current.lastUserStats) {
+    prevValuesRef.current.lastUserStats = userStats;
+  }
 
   // Auto-collapse after 5 seconds of no interaction
   useEffect(() => {

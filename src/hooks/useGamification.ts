@@ -124,7 +124,7 @@ export const useGamification = (options: UseGamificationOptions = {}) => {
 
       return updatedStats;
     });
-  }, [onAchievementUnlocked, onLevelUp, toast]);
+  }, [onAchievementUnlocked, onLevelUp, userType]);
 
   const recordReadingSession = useCallback((sessionData: {
     wordsRead: number;
@@ -163,7 +163,7 @@ export const useGamification = (options: UseGamificationOptions = {}) => {
       });
       return newStats;
     });
-  }, [userStats.vocabularyWordsLearned]); // Include current count in dependencies for proper tracking
+  }, []); // Remove dependency that was causing infinite re-renders
 
   const getNextAchievement = useCallback(() => {
     if (newAchievements.length > 0) {
