@@ -1,5 +1,5 @@
-// Level 3 Vocabulary (Ages 9-11) - 5th-6th Grade
-// Includes all Level 2 words plus 5th-6th grade vocabulary
+// Level 3 Vocabulary (Ages 9-11) - 4th Grade
+// Includes all Level 2 words plus 4th grade vocabulary
 
 import { LEVEL_2_VOCABULARY } from './level2Vocabulary';
 
@@ -7,36 +7,39 @@ export const LEVEL_3_VOCABULARY = new Set([
   // Include all Level 2 words
   ...LEVEL_2_VOCABULARY,
   
-  // 5th-6th Grade Advanced Vocabulary + Author Voice Keywords
-  'abandon', 'ability', 'absence', 'absolute', 'absorb', 'abstract', 'abuse', 'academic', 'accept', 'access',
-  'accident', 'accompany', 'accomplish', 'according', 'account', 'accurate', 'achieve', 'acquire', 'action', 'active',
-  'activity', 'actual', 'adapt', 'addition', 'adequate', 'adjust', 'administration', 'admit', 'adopt', 'adult',
-  'advance', 'advantage', 'adventure', 'advertise', 'advice', 'advise', 'affect', 'afford', 'afraid', 'agency',
+  // 4th Grade Core Vocabulary
+  'ability', 'accept', 'accident', 'accomplish', 'according', 'account', 'accurate', 'achieve', 'action', 'active',
+  'activity', 'actual', 'addition', 'advance', 'adventure', 'advice', 'affect', 'afraid', 'agency', 'agree',
+  'agreement', 'allow', 'almost', 'alone', 'amount', 'analysis', 'ancient', 'anger', 'angry', 'announce',
+  'annual', 'anxiety', 'apart', 'appear', 'appearance', 'application', 'approach', 'appropriate', 'approval', 'area',
   
-  // CRITICAL AUTHOR VOICE WORDS - ensuring templates don't fail validation
-  'opportunity', 'curiosity', 'experiment', 'realized', 'chances', 'distilled', 'carefully', 'measure', 'record',
-  'sleeping', 'outdoors', 'calling', 'campfires', 'safely', 'marshmallows', 'countless', 'community', 'neighbors',
-  'prepare', 'throughout', 'science', 'reminded', 'growth', 'types', 'investigate', 'mysteries', 'fascinating',
-  'adventure', 'discovery', 'exploration', 'challenge', 'achievement', 'success', 'determination', 'creativity',
-  'meanwhile', 'however', 'therefore', 'suddenly', 'finally', 'immediately', 'magnificent', 'tremendous',
-  'spectacular', 'incredible', 'wonderful', 'marvelous', 'delightful', 'personality', 'character', 'courage',
-  'bravery', 'kindness', 'friendship', 'teamwork', 'leadership', 'experience',
-  'agent', 'aggressive', 'agree', 'agreement', 'agriculture', 'ahead', 'aid', 'aim', 'aircraft', 'album',
-  'alcohol', 'alert', 'alien', 'alive', 'alliance', 'allow', 'ally', 'almost', 'alone', 'alternative',
-  'amazing', 'ambition', 'ambulance', 'amount', 'analysis', 'analyze', 'ancient', 'anger', 'angle', 'angry',
-  'announce', 'annual', 'anonymous', 'anxiety', 'anxious', 'apart', 'apartment', 'apologize', 'apparent', 'appeal',
-  'appear', 'appearance', 'application', 'apply', 'appoint', 'appointment', 'appreciate', 'approach', 'appropriate', 'approval',
-  'approve', 'approximately', 'architect', 'architecture', 'argue', 'argument', 'arise', 'arrange', 'arrangement', 'arrest',
-  'arrival', 'arrive', 'article', 'artificial', 'artist', 'artistic', 'aside', 'assault', 'assembly', 'assess',
-  'assignment', 'assist', 'assistance', 'assistant', 'associate', 'association', 'assume', 'assumption', 'assure', 'athlete',
-  'athletic', 'atmosphere', 'attach', 'attack', 'attempt', 'attend', 'attention', 'attitude', 'attorney', 'attract',
-  'attractive', 'attribute', 'audience', 'author', 'authority', 'automatic', 'available', 'average', 'avoid', 'award',
-  'aware', 'awareness', 'background', 'balance', 'ban', 'band', 'bank', 'banner', 'bar', 'barely',
-  'bargain', 'barrier', 'basic', 'basically', 'basket', 'basketball', 'battle', 'beach', 'bean', 'bear',
-  'beat', 'beautiful', 'beauty', 'become', 'bedroom', 'beer', 'begin', 'beginning', 'behalf', 'behave',
-  'behavior', 'being', 'belief', 'believe', 'bell', 'belong', 'below', 'belt', 'bench', 'bend',
-  'benefit', 'beside', 'best', 'bet', 'better', 'between', 'beyond', 'bicycle', 'bid', 'big',
-  'bill', 'billion', 'bind', 'biological', 'bird', 'birth', 'birthday', 'bit', 'bite', 'bitter'
+  // 4th Grade Narrative & Author Voice Words
+  'opportunity', 'curiosity', 'experiment', 'realized', 'chances', 'carefully', 'measure', 'record', 'sleeping',
+  'outdoors', 'calling', 'safely', 'community', 'neighbors', 'prepare', 'throughout', 'science', 'reminded',
+  'growth', 'types', 'investigate', 'mysteries', 'fascinating', 'adventure', 'discovery', 'exploration', 'challenge',
+  'achievement', 'success', 'determination', 'creativity', 'meanwhile', 'however', 'therefore', 'suddenly', 'finally',
+  'immediately', 'wonderful', 'delightful', 'personality', 'character', 'courage', 'bravery', 'kindness', 'friendship',
+  'teamwork', 'leadership', 'experience', 'magnificent', 'incredible', 'marvelous',
+  // 4th Grade Extended Vocabulary
+  'argue', 'argument', 'arrange', 'arrangement', 'arrival', 'arrive', 'article', 'artist', 'artistic', 'aside',
+  'assignment', 'assist', 'assistance', 'assistant', 'associate', 'assume', 'athlete', 'athletic', 'atmosphere', 'attach',
+  'attack', 'attempt', 'attend', 'attention', 'attitude', 'attract', 'attractive', 'audience', 'author', 'authority',
+  'available', 'average', 'avoid', 'award', 'aware', 'background', 'balance', 'band', 'bank', 'banner',
+  'barrier', 'basic', 'basket', 'basketball', 'battle', 'beach', 'bear', 'beat', 'beautiful', 'beauty',
+  'become', 'bedroom', 'begin', 'beginning', 'behave', 'behavior', 'belief', 'believe', 'bell', 'belong',
+  'below', 'belt', 'bench', 'bend', 'benefit', 'beside', 'best', 'better', 'between', 'beyond',
+  'bicycle', 'bird', 'birth', 'birthday', 'bite', 'bitter', 'blame', 'blank', 'block', 'blood',
+  'blow', 'board', 'boat', 'body', 'bone', 'book', 'border', 'born', 'bottle', 'bottom',
+  'bowl', 'brain', 'branch', 'brave', 'bread', 'break', 'breakfast', 'breath', 'breathe', 'bridge',
+  'bright', 'bring', 'broad', 'broke', 'broken', 'brother', 'brought', 'brown', 'brush', 'build',
+  'building', 'burn', 'business', 'button', 'camera', 'camp', 'campaign', 'cancel', 'cancer', 'candidate',
+  'capable', 'capital', 'captain', 'capture', 'carbon', 'card', 'care', 'career', 'careful', 'carry',
+  'case', 'cash', 'cast', 'catch', 'category', 'cause', 'ceiling', 'celebrate', 'cell', 'center',
+  'central', 'century', 'ceremony', 'certain', 'chain', 'chair', 'chairman', 'chamber', 'champion', 'chance',
+  'change', 'channel', 'chapter', 'charge', 'charity', 'chart', 'chase', 'cheap', 'check', 'cheese',
+  'chemical', 'chest', 'chicken', 'chief', 'child', 'choice', 'choose', 'church', 'citizen', 'city',
+  'civil', 'claim', 'class', 'classic', 'classroom', 'clean', 'clear', 'click', 'client', 'climate',
+  'climb', 'clock', 'close', 'clothes', 'cloud', 'club', 'coach', 'coast', 'coat', 'code'
 ]);
 
 export function isLevel3Word(word: string): boolean {

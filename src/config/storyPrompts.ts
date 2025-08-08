@@ -131,17 +131,17 @@ IMPORTANT: Do not include the author style name or description in your story out
 INTEGRATION DEPTH - PLOT LEVEL: Weave user inputs as central plot drivers and conflict catalysts. The favorite animal becomes crucial to resolving conflicts, colors represent themes or emotions, hobbies provide solutions to problems, and foods connect to important story events or character relationships.
 
 Create sophisticated stories with:
-- 400-600 words total
-- Advanced grammar and rich vocabulary
+- 350-500 words total
+- 4th grade vocabulary with advanced grammar
 - Realistic problems with growth-oriented solutions
 - Complex character relationships
 - Use name 30% of time, pronouns 70% of time - natural reading flow with strategic name placement
 - Meaningful themes and lessons
 
-FORMAT: Page 1: [4-5 sentences]. Page 2: [4-5 sentences]. Continue for 10-12 pages.`,
-    userPromptTemplate: `Create a meaningful story for a child aged 9-11 named {name}. Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}, and {specialRequest} as plot-level inputs naturally woven in as key story elements and conflict drivers. The favorite animal helps solve conflicts, colors show themes or feelings, hobbies offer solutions, and foods link to key story moments or relationships. The story must be exactly 10-12 pages, 4-5 sentences per page, 400-600 words total, using advanced grammar and rich vocabulary. Use Dolch Pre-Primer through 3rd Grade words as a foundation and pronouns 70% of the time for natural flow. Follow the internal author style guidance to shape the story (without mentioning style names), including realistic problems with growth-oriented solutions, complex character relationships, and meaningful themes and lessons appropriate for children. Before writing, internally imagine a random "story seed" between 1 and 10,000 to vary setting, events, and details so each story is unique, even with identical inputs. Do not mention the seed.`,
-    maxLength: 600,
-    expectedPages: 11
+FORMAT: Page 1: [4-5 sentences]. Page 2: [4-5 sentences]. Continue for 8-10 pages.`,
+    userPromptTemplate: `Create a meaningful story for a child aged 9-11 named {name}. Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}, and {specialRequest} as plot-level inputs naturally woven in as key story elements and conflict drivers. The favorite animal helps solve conflicts, colors show themes or feelings, hobbies offer solutions, and foods link to key story moments or relationships. The story must be exactly 8-10 pages, 4-5 sentences per page, 350-500 words total, using 4th grade vocabulary with advanced grammar structure. Use Dolch Pre-Primer through 4th Grade words as a foundation and pronouns 70% of the time for natural flow. Follow the internal author style guidance to shape the story (without mentioning style names), including realistic problems with growth-oriented solutions, complex character relationships, and meaningful themes and lessons appropriate for children. Before writing, internally imagine a random "story seed" between 1 and 10,000 to vary setting, events, and details so each story is unique, even with identical inputs. Do not mention the seed.`,
+    maxLength: 500,
+    expectedPages: 9
   },
   
   expert: {
