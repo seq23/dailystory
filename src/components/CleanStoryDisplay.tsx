@@ -666,6 +666,27 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                     <p className="text-sm text-muted-foreground mb-3">
                       Ready for another adventure? Generate a new story!
                     </p>
+                    <Button
+                      data-id="magic-wand-free"
+                      onClick={handleGenerateNewStory}
+                      disabled={isGeneratingNewStory}
+                      variant="outline"
+                      size="sm"
+                      className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 border-purple-300/30 hover:from-purple-500/20 hover:to-blue-500/20 transition-all duration-300"
+                    >
+                      {isGeneratingNewStory ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Creating magic...
+                        </>
+                      ) : (
+                        <>
+                          <Wand className="w-4 h-4 mr-2" />
+                          <Sparkles className="w-3 h-3 absolute top-1 right-1 text-purple-400" />
+                          Fresh Story
+                        </>
+                      )}
+                    </Button>
                   </div>
                 )}
               </div>
