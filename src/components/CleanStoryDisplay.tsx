@@ -25,6 +25,8 @@ import { useWordHighlighting } from "@/hooks/useWordHighlighting";
 import { useGamification } from "@/hooks/useGamification";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getMobileTextConfig, getMobileStoryContainer } from "@/utils/mobileTextOptimizations";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { AdaptiveEnhancedLoading } from "@/components/AdaptiveEnhancedLoading";
 import { cn } from "@/lib/utils";
 
 import type { UserInfo, SessionStats } from "@/types";
@@ -81,6 +83,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [showVocabularyCollector, setShowVocabularyCollector] = useState(false);
   const [sessionStartTime] = useState(Date.now());
   const [wordsInteracted, setWordsInteracted] = useState(0);
+  const [sessionWordsRead, setSessionWordsRead] = useState(0);
+  const [pagesCompleted, setPagesCompleted] = useState<Set<number>>(new Set());
 
   // Timer state
   const [timeRemaining, setTimeRemaining] = useState(20 * 60); // 20 minutes
@@ -288,10 +292,27 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     }
   };
 
+  const countWords = (text: string) => {
+    const matches = text?.trim().match(/\S+/g);
+    return matches ? matches.length : 0;
+  };
+
   const handleNext = async () => {
     // Stop audio when navigating
     setIsAudioPlaying(false);
     clearHighlighting();
+
+    // Count words for the page we're leaving (once per page)
+    if (story[currentPage] && !pagesCompleted.has(currentPage)) {
+      const pageWordCount = countWords(story[currentPage]);
+      setSessionWordsRead(prev => prev + pageWordCount);
+      setPagesCompleted(prev => {
+        const next = new Set(prev);
+        next.add(currentPage);
+        return next;
+      });
+      updateActivity({ wordsRead: pageWordCount, sessionPagesRead: 1 });
+    }
     
     if (isPremium && !isStoryComplete && currentPage === story.length - 1) {
       // Premium: Generate next page live
@@ -553,17 +574,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-primary flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-          <h2 className="text-2xl font-bold text-white mb-2">
-            {isPremium ? 'Creating Your Live Story...' : 'Creating Your Complete Story...'}
-          </h2>
-          <p className="text-white/80">
-            {isPremium ? `Generating page 1 for ${userInfo.name}` : `Preparing ${userInfo.name}'s complete adventure`}
-          </p>
-        </div>
-      </div>
+      <AdaptiveEnhancedLoading isPremium={isPremium} userName={userInfo.name} />
     );
   }
 
@@ -663,18 +674,36 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6 lg:gap-8 h-full">
                   {/* Image Section - LEFT SIDE - Equal size on desktop */}
                   <div className="xl:order-1 flex flex-col">
-                      {currentImage && (
-                        <img 
-                          src={currentImage} 
-                          alt={`Story illustration for page ${currentPage + 1}: ${story[currentPage]?.substring(0, 100)}...`}
-                          className="w-full h-80 sm:h-96 md:h-[36rem] xl:h-full object-cover rounded-2xl shadow-2xl story-image-container-enhanced"
-                          loading="lazy"
-                          onError={(e) => {
-                            console.warn('Story image failed to load:', currentImage);
-                            e.currentTarget.style.display = 'none';
-                          }}
-                        />
-                    )}
+                        {currentImage && (
+                          <>
+                            <div className="xl:hidden">
+                              <AspectRatio ratio={4/3}>
+                                <img 
+                                  src={currentImage} 
+                                  alt={`Story illustration for page ${currentPage + 1}: ${story[currentPage]?.substring(0, 100)}...`}
+                                  className="h-full w-full object-cover rounded-2xl shadow-2xl story-image-container-enhanced"
+                                  loading="lazy"
+                                  onError={(e) => {
+                                    console.warn('Story image failed to load:', currentImage);
+                                    (e.currentTarget as HTMLImageElement).style.display = 'none';
+                                  }}
+                                />
+                              </AspectRatio>
+                            </div>
+                            <div className="hidden xl:block">
+                              <img 
+                                src={currentImage} 
+                                alt={`Story illustration for page ${currentPage + 1}: ${story[currentPage]?.substring(0, 100)}...`}
+                                className="w-full h-full object-cover rounded-2xl shadow-2xl story-image-container-enhanced"
+                                loading="lazy"
+                                onError={(e) => {
+                                  console.warn('Story image failed to load:', currentImage);
+                                  (e.currentTarget as HTMLImageElement).style.display = 'none';
+                                }}
+                              />
+                            </div>
+                          </>
+                        )}
                     
                     {isGeneratingImage && !currentImage && (
                       <div className="w-full h-80 sm:h-96 md:h-[36rem] xl:h-full bg-muted rounded-2xl flex items-center justify-center story-image-container-enhanced">
@@ -951,8 +980,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
       <ModernProgressTowers
         userId={userInfo?.name}
         userType={isPremium ? 'premium' : 'free'}
-        currentWordsRead={wordsInteracted}
-        currentPagesRead={currentPage + 1}
+        currentWordsRead={sessionWordsRead}
+        currentPagesRead={pagesCompleted.size}
         vocabularyLearned={userStats.vocabularyWordsLearned || 0}
         timeSpent={Date.now() - sessionStartTime}
         onProgressUpdate={(type, value) => {

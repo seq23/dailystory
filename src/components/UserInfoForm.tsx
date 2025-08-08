@@ -398,7 +398,7 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
                   <SelectContent className="bg-popover border border-border shadow-soft z-50">
                     {[3, 4, 5, 6, 7, 8, 9, 10].map((age) => (
                       <SelectItem key={age} value={age.toString()} className="focus:bg-accent focus:text-accent-foreground">
-                        {age} years old
+                        {age} {t("userInfoForm.fields.age.yearsOld")}
                       </SelectItem>
                     ))}
                     <SelectItem key={11} value="11" className="focus:bg-accent focus:text-accent-foreground">
@@ -568,16 +568,13 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
                   )}
                 </Label>
                 <div className="relative">
-                  <Input
+                  <TagInput
                     value={formData.favoriteAnimal}
-                    onChange={(e) => handleInputChange("favoriteAnimal", e.target.value)}
+                    onChange={(val) => handleInputChange("favoriteAnimal", val)}
+                    onBlur={(val) => handleInputChange("favoriteAnimal", val)}
                     placeholder={t("userInfoForm.fields.favoriteAnimal.placeholder")}
-                    className="h-12 text-base bg-background border-2 border-input focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200"
-                    disabled={!isPremium && selectedOptionalField && selectedOptionalField !== 'favoriteAnimal'}
+                    className="bg-background"
                   />
-                  {translationLoading.favoriteAnimal && (
-                    <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 animate-spin text-primary" />
-                  )}
                 </div>
                 {translations.favoriteAnimal && (
                   <div className="text-xs text-primary">{translations.favoriteAnimal}</div>
@@ -593,16 +590,13 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
                   )}
                 </Label>
                 <div className="relative">
-                  <Input
+                  <TagInput
                     value={formData.favoriteFood}
-                    onChange={(e) => handleInputChange("favoriteFood", e.target.value)}
+                    onChange={(val) => handleInputChange("favoriteFood", val)}
+                    onBlur={(val) => handleInputChange("favoriteFood", val)}
                     placeholder={t("userInfoForm.fields.favoriteFood.placeholder")}
-                    className="h-12 text-base bg-background border-2 border-input focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200"
-                    disabled={!isPremium && selectedOptionalField && selectedOptionalField !== 'favoriteFood'}
+                    className="bg-background"
                   />
-                  {translationLoading.favoriteFood && (
-                    <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 animate-spin text-primary" />
-                  )}
                 </div>
                 {translations.favoriteFood && (
                   <div className="text-xs text-primary">{translations.favoriteFood}</div>
@@ -618,16 +612,13 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
                   )}
                 </Label>
                 <div className="relative">
-                  <Input
+                  <TagInput
                     value={formData.hobbies}
-                    onChange={(e) => handleInputChange("hobbies", e.target.value)}
+                    onChange={(val) => handleInputChange("hobbies", val)}
+                    onBlur={(val) => handleInputChange("hobbies", val)}
                     placeholder={t("userInfoForm.fields.hobbies.placeholder")}
-                    className="h-12 text-base bg-background border-2 border-input focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200"
-                    disabled={!isPremium && selectedOptionalField && selectedOptionalField !== 'hobbies'}
+                    className="bg-background"
                   />
-                  {translationLoading.hobbies && (
-                    <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 animate-spin text-primary" />
-                  )}
                 </div>
                 {translations.hobbies && (
                   <div className="text-xs text-primary">{translations.hobbies}</div>
@@ -643,13 +634,12 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
                   )}
                 </Label>
                 <div className="relative">
-                  <Textarea
+                  <TagInput
                     value={formData.specialRequest}
-                    onChange={(e) => handleInputChange("specialRequest", e.target.value)}
+                    onChange={(val) => handleInputChange("specialRequest", val)}
+                    onBlur={(val) => handleInputChange("specialRequest", val)}
                     placeholder={t("userInfoForm.fields.specialRequest.placeholder")}
-                    className="min-h-24 text-base bg-background border-2 border-input focus:border-primary focus:ring-2 focus:ring-primary/20 resize-none transition-all duration-200"
-                    disabled={!isPremium && selectedOptionalField && selectedOptionalField !== 'specialRequest'}
-                    rows={3}
+                    className="bg-background"
                   />
                   {translationLoading.specialRequest && (
                     <Loader2 className="absolute right-3 top-3 w-4 h-4 animate-spin text-primary" />
