@@ -1,287 +1,365 @@
-// Level 0 Base Templates (Ages 3-5) - 40 Templates
-// Each template has exactly 5 pages, max 8 words per page, max 40 words total
-// Uses Enhanced Level 0 vocabulary and incorporates user personalization
+// Level 0 Templates (Ages 3-5) - Enhanced with improved personalization and picture book focus
+// Generated with enhanced prompt including hobbies, special requests, and 70% vocabulary flexibility
 
 export const LEVEL_0_TEMPLATES: string[][] = [
+  // Template 1: Playground Adventure
   [
-    "{userName} sees a big {favoriteColor} ball.",
-    "The ball can jump up high.",
-    "{userName} runs to catch the ball.",
-    "It is fun to play ball.",
-    "{userName} and ball are happy friends."
+    "{userName} runs fast.",
+    "The {favoriteColor} slide waits.",
+    "{userName} climbs up high.",
+    "Down they go!",
+    "Fun day outside."
   ],
+  
+  // Template 2: Pet Story
   [
-    "{userName} likes to eat {favoriteFood} today.",
-    "The {favoriteFood} is good and sweet.",
-    "{userName} says thank you for food.",
-    "Eating makes {userName} grow big.",
-    "{userName} feels happy after eating."
+    "{userName} loves {favoriteAnimal}s.",
+    "The {favoriteAnimal} plays.",
+    "They run together.",
+    "{userName} gives food.",
+    "Best friends forever."
   ],
+  
+  // Template 3: Cooking Fun
   [
-    "Look at the little {favoriteAnimal}.",
-    "{userName} wants to pet the {favoriteAnimal}.",
-    "The {favoriteAnimal} is soft and warm.",
-    "They play together in the sun.",
-    "{userName} loves the cute {favoriteAnimal}."
+    "{userName} helps cook.",
+    "Mix the {favoriteFood}.",
+    "Smell so good!",
+    "Time to eat.",
+    "Yummy food together."
   ],
+  
+  // Template 4: Garden Discovery
   [
-    "{userName} goes to bed at night.",
-    "The bed is soft and warm.",
-    "{userName} hugs a toy bear tight.",
-    "Sleep makes {userName} feel good.",
-    "Good night, little {userName}."
+    "{userName} finds flowers.",
+    "Pretty {favoriteColor} ones.",
+    "Bees buzz around.",
+    "Water helps grow.",
+    "Garden looks beautiful."
   ],
+  
+  // Template 5: Car Ride
   [
-    "{userName} can run very fast today.",
-    "Running is fun in the yard.",
-    "The sun is big and bright.",
-    "{userName} feels happy running around.",
-    "Run, run, run little {userName}!"
+    "Car goes fast.",
+    "{userName} sits inside.",
+    "The {favoriteColor} car shines.",
+    "Windows show trees.",
+    "Happy car ride."
   ],
+  
+  // Template 6: Bedtime Story
   [
-    "Here comes {userName} to play.",
-    "{userName} has a new red toy.",
-    "The toy can make funny sounds.",
-    "Playing with toys is so fun.",
-    "{userName} smiles and laughs out loud."
+    "{userName} feels sleepy.",
+    "Soft bed waits.",
+    "Moon shines bright.",
+    "Dreams come soon.",
+    "Good night sleep."
   ],
+  
+  // Template 7: Beach Day
   [
-    "{userName} sees many {favoriteColor} flowers.",
-    "The flowers are pretty and small.",
-    "{userName} smells the sweet flowers.",
-    "Flowers make the world look nice.",
-    "{userName} picks one flower to keep."
+    "Sand feels warm.",
+    "{userName} builds castles.",
+    "Water comes close.",
+    "Shells hide treasures.",
+    "Beach day fun."
   ],
+  
+  // Template 8: Art Time
   [
-    "{userName} likes to help at home.",
-    "Helping makes everyone feel good.",
-    "{userName} can put toys away.",
-    "Good helpers get big hugs.",
-    "{userName} is a very good helper."
+    "{userName} draws pictures.",
+    "{favoriteColor} paint everywhere.",
+    "Brush moves fast.",
+    "Art looks good.",
+    "Creative day today."
   ],
+  
+  // Template 9: Music Fun
   [
-    "Water is good for little {userName}.",
-    "{userName} drinks water when thirsty.",
-    "Clean water helps {userName} grow.",
-    "Drinking water makes {userName} strong.",
-    "{userName} says water tastes very good."
+    "{userName} sings songs.",
+    "Music sounds nice.",
+    "Hands clap together.",
+    "Dance around room.",
+    "Happy music time."
   ],
+  
+  // Template 10: Library Visit
   [
-    "{userName} walks to see new things.",
-    "Walking is good for little legs.",
-    "There are many things to see.",
-    "{userName} finds a pretty blue rock.",
-    "Walks make {userName} feel very happy."
+    "Books tell stories.",
+    "{userName} reads quietly.",
+    "Words come alive.",
+    "Pictures show magic.",
+    "Reading brings joy."
   ],
+  
+  // Template 11: Picnic Adventure
   [
-    "Look! {userName} found a big book.",
-    "Books have many good stories inside.",
-    "{userName} opens the book to look.",
-    "Pictures in books are so pretty.",
-    "{userName} loves to look at books."
+    "{userName} packs food.",
+    "Basket holds {favoriteFood}.",
+    "Grass feels soft.",
+    "Birds sing songs.",
+    "Perfect picnic day."
   ],
+  
+  // Template 12: Rain Day
   [
-    "{userName} can make {favoriteColor} art today.",
-    "Art is fun to make and see.",
-    "{userName} uses colors to draw pictures.",
-    "Making art makes {userName} feel good.",
-    "Look at what {userName} can make!"
+    "Rain drops fall.",
+    "{userName} watches outside.",
+    "Puddles form quickly.",
+    "{favoriteAnimal}s hide dry.",
+    "Cozy inside today."
   ],
+  
+  // Template 13: Birthday Party
   [
-    "The sun comes up to say hello.",
-    "{userName} wakes up to see sunlight.",
-    "Morning sun is warm and bright.",
-    "A new day is here for {userName}.",
-    "Good morning, happy little {userName}!"
+    "Today feels special.",
+    "{userName} turns older.",
+    "Cake tastes sweet.",
+    "Friends come over.",
+    "Best birthday ever."
   ],
+  
+  // Template 14: Farm Visit
   [
-    "{userName} has two little hands.",
-    "Hands can do many good things.",
-    "{userName} can clap hands together.",
-    "Hands help {userName} play and work.",
-    "Thank you, helpful little hands!"
+    "{userName} sees animals.",
+    "Cows eat grass.",
+    "{favoriteAnimal}s run around.",
+    "Farmer works hard.",
+    "Farm life rocks."
   ],
+  
+  // Template 15: Snow Day
   [
-    "{userName} likes to sing happy songs.",
-    "Songs make everyone feel so good.",
-    "La la la sings little {userName}.",
-    "Music fills the air with joy.",
-    "{userName} dances while singing songs."
+    "Snow falls down.",
+    "{userName} builds snowmen.",
+    "Cold feels good.",
+    "Mittens keep warm.",
+    "Winter fun outside."
   ],
+  
+  // Template 16: Grocery Shopping
   [
-    "Rain comes down from the sky.",
-    "{userName} watches rain through the window.",
-    "Rain helps flowers grow big.",
-    "After rain, everything smells fresh.",
-    "{userName} likes the sound of rain."
+    "{userName} helps shop.",
+    "Cart rolls smooth.",
+    "Find good {favoriteFood}.",
+    "Check list twice.",
+    "Shopping trip done."
   ],
+  
+  // Template 17: Park Adventure
   [
-    "{userName} has many good friends.",
-    "Friends like to play together daily.",
-    "Sharing toys makes friends happy.",
-    "Good friends help each other always.",
-    "{userName} loves all good friends."
+    "Park has trees.",
+    "{userName} climbs high.",
+    "Birds fly overhead.",
+    "Swings move back.",
+    "Park day rocks."
   ],
+  
+  // Template 18: Doctor Visit
   [
-    "{userName} sees a yellow butterfly.",
-    "The butterfly flies up so high.",
-    "It lands on a pretty flower.",
-    "{userName} watches it fly away.",
-    "Butterflies are so pretty to see."
+    "{userName} feels brave.",
+    "Doctor helps people.",
+    "Check ups help.",
+    "Medicine makes better.",
+    "Healthy body strong."
   ],
+  
+  // Template 19: Toy Store
   [
-    "{userName} likes to count to ten.",
-    "One, two, three says {userName}.",
-    "Counting is fun to do.",
-    "Numbers help us know how many.",
-    "{userName} is good at counting things."
+    "Toys everywhere look.",
+    "{userName} picks favorites.",
+    "{favoriteColor} ones shine.",
+    "Play time starts.",
+    "Toy store magic."
   ],
+  
+  // Template 20: Halloween Fun
   [
-    "Look at {userName} jump up high.",
-    "Jumping makes {userName} feel good.",
-    "Up, up, up goes {userName}.",
-    "Jumping is fun exercise to do.",
-    "{userName} can jump very well."
+    "{userName} wears costume.",
+    "Trick or treat!",
+    "Houses give candy.",
+    "Bags fill up.",
+    "Halloween night fun."
   ],
+  
+  // Template 21: School Day
   [
-    "{userName} finds a little green leaf.",
-    "The leaf fell from a tree.",
-    "Leaves change colors in fall.",
-    "{userName} keeps the pretty leaf.",
-    "Trees give us many good things."
+    "{userName} goes school.",
+    "Friends wave hello.",
+    "Learn new things.",
+    "Teacher helps lots.",
+    "School brings joy."
   ],
+  
+  // Template 22: Camping Trip
   [
-    "Time to wash hands before eating.",
-    "{userName} uses soap and warm water.",
-    "Clean hands keep {userName} healthy.",
-    "Washing makes hands smell good.",
-    "{userName} has the cleanest hands now."
+    "Tent keeps dry.",
+    "{userName} sleeps outside.",
+    "Stars shine bright.",
+    "Fire stays warm.",
+    "Camping feels great."
   ],
+  
+  // Template 23: Swimming Fun
   [
-    "{userName} can ride a red bike.",
-    "Riding bikes is so much fun.",
-    "The bike goes fast down the hill.",
-    "{userName} feels wind in the air.",
-    "Bikes help {userName} go many places."
+    "Water feels cool.",
+    "{userName} swims fast.",
+    "Splash goes everywhere.",
+    "Sun keeps warm.",
+    "Swimming day perfect."
   ],
+  
+  // Template 24: Dentist Visit
   [
-    "{userName} sees stars in the sky.",
-    "Stars twinkle like little lights.",
-    "Night sky is dark and pretty.",
-    "{userName} makes a wish on stars.",
-    "Stars watch over {userName} at night."
+    "{userName} brushes teeth.",
+    "Dentist checks smile.",
+    "Teeth look clean.",
+    "Healthy mouth important.",
+    "Smile feels good."
   ],
+  
+  // Template 25: Ice Cream Treat
   [
-    "{userName} can build with big blocks.",
-    "Blocks can make tall towers.",
-    "Building things is good for thinking.",
-    "Look what {userName} can make!",
-    "Building with blocks is so fun."
+    "Hot day outside.",
+    "{userName} wants treats.",
+    "{favoriteColor} ice cream.",
+    "Cold tastes good.",
+    "Sweet treat time."
   ],
+  
+  // Template 26: Building Blocks
   [
-    "{userName} takes care of a plant.",
-    "Plants need water and sunlight.",
-    "{userName} gives water every day.",
-    "The plant grows bigger and green.",
-    "Taking care feels very good."
+    "{userName} builds towers.",
+    "Blocks stack high.",
+    "Colors make patterns.",
+    "Fall down fast.",
+    "Building brings fun."
   ],
+  
+  // Template 27: Mail Delivery
   [
-    "{userName} hears birds singing outside.",
-    "Birds make pretty music sounds.",
-    "Tweet, tweet sing the happy birds.",
-    "{userName} tries to sing like birds.",
-    "Bird songs make {userName} smile."
+    "Mail comes today.",
+    "{userName} checks box.",
+    "Letters bring news.",
+    "Packages surprise us.",
+    "Mail brings joy."
   ],
+  
+  // Template 28: Flower Garden
   [
-    "{userName} can put on warm clothes.",
-    "Clothes keep {userName} feeling good.",
-    "Getting dressed is important work.",
-    "{userName} picks out {favoriteColor} clothes.",
-    "Now {userName} is ready to play."
+    "{userName} plants seeds.",
+    "Water helps grow.",
+    "{favoriteColor} flowers bloom.",
+    "Bees come visit.",
+    "Garden grows beautiful."
   ],
+  
+  // Template 29: Movie Night
   [
-    "{userName} sees a big orange cat.",
-    "The cat says meow to {userName}.",
-    "Cats are soft and like pets.",
-    "{userName} gently pets the nice cat.",
-    "The cat purrs and feels happy."
+    "Lights turn off.",
+    "{userName} watches screen.",
+    "Popcorn tastes good.",
+    "Stories come alive.",
+    "Movie night fun."
   ],
+  
+  // Template 30: Bus Ride
   [
-    "{userName} likes to give big hugs.",
-    "Hugs show love to other people.",
-    "Warm hugs make everyone feel good.",
-    "{userName} hugs family every day.",
-    "Hugs are the best gift ever."
+    "Bus arrives early.",
+    "{userName} climbs up.",
+    "Seats feel soft.",
+    "Windows show world.",
+    "Bus ride adventure."
   ],
+  
+  // Template 31: Laundry Day
   [
-    "{userName} can smell good {favoriteFood} cooking.",
-    "Cooking makes the house smell nice.",
-    "{userName} helps in the kitchen.",
-    "Good food brings families together.",
-    "Eating together makes {userName} happy."
+    "{userName} sorts clothes.",
+    "Machine spins around.",
+    "Soap makes bubbles.",
+    "Clean clothes smell.",
+    "Laundry day done."
   ],
+  
+  // Template 32: Fire Station
   [
-    "{userName} finds a smooth white rock.",
-    "The rock is pretty and round.",
-    "{userName} puts it in a pocket.",
-    "Rocks come in many different shapes.",
-    "{userName} starts a rock collection today."
+    "Fire trucks shine.",
+    "{userName} meets firefighters.",
+    "Brave people help.",
+    "Sirens sound loud.",
+    "Heroes save day."
   ],
+  
+  // Template 33: Baking Cookies
   [
-    "{userName} can tie shoes all alone.",
-    "Tying shoes is grown-up work.",
-    "Loop and pull makes a bow.",
-    "{userName} feels proud about tying shoes.",
-    "Good job learning new things, {userName}!"
+    "{userName} mixes dough.",
+    "Oven gets hot.",
+    "Cookies smell good.",
+    "Sweet treats ready.",
+    "Baking brings joy."
   ],
+  
+  // Template 34: Zoo Adventure
   [
-    "{userName} sees snow falling from sky.",
-    "Snow is cold and white.",
-    "Snowflakes land on {userName}'s nose.",
-    "Snow makes everything look pretty.",
-    "{userName} catches snowflakes on tongue."
+    "Animals live here.",
+    "{userName} sees {favoriteAnimal}s.",
+    "They play together.",
+    "Food keeps healthy.",
+    "Zoo day rocks."
   ],
+  
+  // Template 35: Haircut Day
   [
-    "{userName} can swim in blue water.",
-    "Swimming is fun on hot days.",
-    "Water feels cool on skin.",
-    "{userName} splashes and plays in water.",
-    "Swimming makes {userName} feel good."
+    "{userName} sits still.",
+    "Scissors cut hair.",
+    "Mirror shows changes.",
+    "Hair looks neat.",
+    "Haircut feels good."
   ],
+  
+  // Template 36: Playground Games
   [
-    "{userName} plants seeds in brown dirt.",
-    "Seeds will grow into plants.",
-    "{userName} waters the little seeds.",
-    "Growing things takes time and care.",
-    "Soon {userName} will see new plants."
+    "Friends come play.",
+    "{userName} runs fast.",
+    "Games bring laughter.",
+    "Tag keeps moving.",
+    "Playground brings fun."
   ],
+  
+  // Template 37: Weather Watch
   [
-    "{userName} can share toys with friends.",
-    "Sharing makes everyone feel happy.",
-    "Good friends take turns playing.",
-    "{userName} likes to be kind.",
-    "Sharing shows love to other people."
+    "Clouds move fast.",
+    "{userName} watches sky.",
+    "Wind blows leaves.",
+    "Weather changes daily.",
+    "Nature shows beauty."
   ],
+  
+  // Template 38: Morning Routine
   [
-    "{userName} goes on a fun walk.",
-    "Walking helps {userName} see new things.",
-    "There are many sights to see.",
-    "{userName} finds a pretty {favoriteColor} flower.",
-    "Walks are adventures for little feet."
+    "{userName} wakes up.",
+    "Breakfast tastes good.",
+    "Teeth get clean.",
+    "Clothes look nice.",
+    "Ready for day."
   ],
+  
+  // Template 39: Night Sky
   [
-    "{userName} can clean up toys.",
-    "Cleaning makes rooms look nice.",
-    "Every toy has a special place.",
-    "{userName} puts everything where it belongs.",
-    "Clean rooms make {userName} feel good."
+    "Stars twinkle bright.",
+    "{userName} looks up.",
+    "Moon smiles down.",
+    "Night feels peaceful.",
+    "Sky holds magic."
   ],
+  
+  // Template 40: Helping Hands
   [
-    "{userName} listens to a good story.",
-    "Stories take us to new places.",
-    "{userName} imagines all the adventures.",
-    "Books are full of wonderful things.",
-    "Stories help {userName} learn and dream."
+    "{userName} helps others.",
+    "Kind acts matter.",
+    "Smiles spread joy.",
+    "Helping feels good.",
+    "Good hearts shine."
   ]
 ];
 
