@@ -245,21 +245,21 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
             </div>
           )}
 
-          {/* Toggle button - Fixed positioning and enhanced animations */}
+          {/* Toggle button - Aligned with colored icons */}
           <button
             onClick={handleToggle}
             className={cn(
-              "absolute top-1/2 -translate-y-1/2 flex items-center justify-center",
+              "absolute flex items-center justify-center",
               "w-12 h-12 rounded-full backdrop-blur-sm border transition-all duration-300",
               "bg-gradient-to-br from-primary/20 to-primary/30 border-primary/30",
               "hover:from-primary/30 hover:to-primary/40 hover:border-primary/40",
               "shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary/50",
               "group relative overflow-hidden",
-              isExpanded ? "-left-6" : "-right-6",
-              // Enhanced animations for progress feedback
-              !isExpanded && Object.values(animatingTowers).some(Boolean) && "animate-bounce",
-              !isExpanded && hasNewAchievements && "animate-pulse ring-2 ring-amber-400/60",
-              celebrationMode && "animate-spin ring-4 ring-rainbow"
+              // Align with the first colored icon when collapsed
+              isExpanded ? "top-4 right-4" : "top-16 left-1/2 -translate-x-1/2",
+              // Remove indefinite pulsing, only brief animations for feedback
+              !isExpanded && Object.values(animatingTowers).some(Boolean) && "animate-bounce [animation-duration:1s] [animation-iteration-count:3]",
+              celebrationMode && "animate-spin [animation-duration:2s] [animation-iteration-count:2]"
             )}
           >
             {/* Animated background ripple effect */}
@@ -287,10 +287,10 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
               </div>
             )}
             
-            {/* Achievement indicator */}
+            {/* Achievement indicator - Brief animation only */}
             {!isExpanded && hasNewAchievements && (
               <div className="absolute -top-2 -right-2">
-                <div className="w-4 h-4 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-full animate-bounce shadow-lg">
+                <div className="w-4 h-4 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-full shadow-lg animate-bounce [animation-duration:1s] [animation-iteration-count:3]">
                   <div className="w-full h-full flex items-center justify-center text-xs">🏆</div>
                 </div>
               </div>
@@ -383,9 +383,9 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
             )}
           </div>
 
-          {/* Collapsed state indicators - Fixed overlapping */}
+          {/* Collapsed state indicators - Aligned with toggle button */}
           {!isExpanded && (
-            <div className="flex flex-col items-center gap-4 mt-16">
+            <div className="flex flex-col items-center gap-4 mt-20">
               {towers.slice(0, 3).map((tower, index) => {
                 const isActive = animatingTowers[tower.key] || false;
                 const currentValue = tower.getValue(userStats, currentValues);
