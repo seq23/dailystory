@@ -86,6 +86,10 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [sessionWordsRead, setSessionWordsRead] = useState(0);
   const [pagesCompleted, setPagesCompleted] = useState<Set<number>>(new Set());
 
+  // Debug source badge state
+  const [storySource, setStorySource] = useState<'ai' | 'fallback' | 'unknown' | null>(null);
+  const isDebug = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1';
+
   // Timer state
   const [timeRemaining, setTimeRemaining] = useState(20 * 60); // 20 minutes
   const [isTimerRunning, setIsTimerRunning] = useState(true); // Start timer immediately
@@ -198,6 +202,9 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         setLiveContext(result.nextContext || null);
         setIsStoryComplete(result.isComplete);
         setStoryTitle(`${userInfo.name}'s Live Adventure`);
+        const srcPremium = (window as any).__LAST_STORY_SOURCE__ || 'unknown';
+        console.log('🧭 UI SOURCE', { source: srcPremium, tier: 'premium' });
+        setStorySource(srcPremium);
         
       } else {
         // Free: Netflix-style - generate complete story upfront
@@ -229,6 +236,9 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         setStory(result.pages);
         setStoryTitle(result.title);
         setIsStoryComplete(true);
+        const srcFree = (window as any).__LAST_STORY_SOURCE__ || 'unknown';
+        console.log('🧭 UI SOURCE', { source: srcFree, tier: 'free' });
+        setStorySource(srcFree as any);
       }
       
     } catch (error) {

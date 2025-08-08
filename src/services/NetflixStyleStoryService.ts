@@ -144,6 +144,11 @@ export class NetflixStyleStoryService {
         if (data.pages.some(page => page && page.trim().length > 0)) {
           console.log('✅ Story has content - proceeding');
           console.log('🔍 DIAGNOSTIC: Using API-generated content successfully');
+          // Mark source as AI
+          try {
+            (globalThis as any).__LAST_STORY_SOURCE__ = (data as any)?.source || 'ai';
+          } catch {}
+          console.log('🧭 STORY_SOURCE', { source: (globalThis as any).__LAST_STORY_SOURCE__, service: 'Netflix', pagesCount: data.pages.length, difficulty: data.difficulty || difficulty });
           return {
             pages: data.pages,
             difficulty: data.difficulty || difficulty,
@@ -190,7 +195,10 @@ export class NetflixStyleStoryService {
       // Use the sophisticated enhanced fallback system with 187 templates
       const fallbackStory = EnhancedFallbackManager.getFallbackTemplate(difficulty, userInfo, 0);
       const pages = fallbackStory.split('\n\n').filter(page => page.trim().length > 0);
-      
+      try {
+        (globalThis as any).__LAST_STORY_SOURCE__ = 'fallback';
+      } catch {}
+      console.log('🧭 STORY_SOURCE', { source: (globalThis as any).__LAST_STORY_SOURCE__, service: 'Netflix', pagesCount: pages.length, difficulty });
       return {
         pages,
         difficulty,

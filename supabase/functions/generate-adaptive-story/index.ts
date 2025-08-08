@@ -668,7 +668,9 @@ serve(async (req) => {
     const userName = config?.userName || 'the child';
     console.log(`Generated story for ${userName}`);
 
+    console.log('EDGE SOURCE=ai', { readingLevel, pagesCount: pages.length });
     return new Response(JSON.stringify({
+      source: 'ai',
       pages,
       difficulty: readingLevel || 'easy',
       title: `${userName}'s Story`,
@@ -701,7 +703,9 @@ serve(async (req) => {
       interests: fallbackConfig?.interests || []
     });
 
+    console.log('EDGE SOURCE=fallback', { readingLevel: fallbackReadingLevel, pagesCount: fallbackPages.length });
     const fallbackStory = {
+      source: 'fallback',
       pages: fallbackPages,
       difficulty: fallbackReadingLevel || 'easy',
       title: `${userName}'s Story`,

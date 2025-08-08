@@ -104,6 +104,11 @@ export class LiveGenerationService {
       };
 
       console.log('🚀 Live Generation: First page generated and validated successfully');
+      try {
+        (globalThis as any).__LAST_PAGE_SOURCE__ = (data as any)?.source || 'ai';
+        (globalThis as any).__LAST_STORY_SOURCE__ = (globalThis as any).__LAST_PAGE_SOURCE__;
+      } catch {}
+      console.log('🧭 PAGE_SOURCE', { page: 1, source: (globalThis as any).__LAST_PAGE_SOURCE__, service: 'Live' });
       
       return {
         content,
@@ -186,6 +191,11 @@ export class LiveGenerationService {
       };
 
       console.log(`🚀 Live Generation: Page ${nextPageNumber} generated and validated successfully`);
+      try {
+        (globalThis as any).__LAST_PAGE_SOURCE__ = (data as any)?.source || 'ai';
+        (globalThis as any).__LAST_STORY_SOURCE__ = (globalThis as any).__LAST_PAGE_SOURCE__;
+      } catch {}
+      console.log('🧭 PAGE_SOURCE', { page: nextPageNumber, source: (globalThis as any).__LAST_PAGE_SOURCE__, service: 'Live' });
       
       return {
         content,
@@ -219,6 +229,12 @@ export class LiveGenerationService {
         totalExpectedPages: 6, // Simple fixed value
         characters: [userInfo.name, userInfo.favoriteAnimal || 'friend']
       };
+
+      try {
+        (globalThis as any).__LAST_PAGE_SOURCE__ = 'fallback';
+        (globalThis as any).__LAST_STORY_SOURCE__ = 'fallback';
+      } catch {}
+      console.log('🧭 PAGE_SOURCE', { page: 1, source: (globalThis as any).__LAST_PAGE_SOURCE__, service: 'Live' });
 
       return {
         content,
@@ -276,6 +292,12 @@ export class LiveGenerationService {
         storyContext: [...context.storyContext, content],
         currentPage: pageNumber
       };
+
+      try {
+        (globalThis as any).__LAST_PAGE_SOURCE__ = 'fallback';
+        (globalThis as any).__LAST_STORY_SOURCE__ = 'fallback';
+      } catch {}
+      console.log('🧭 PAGE_SOURCE', { page: pageNumber, source: (globalThis as any).__LAST_PAGE_SOURCE__, service: 'Live' });
 
       return {
         content,
