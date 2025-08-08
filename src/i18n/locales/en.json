@@ -220,26 +220,39 @@
       "readingAbility": {
         "label": "How well do you read?",
         "placeholder": "Select your reading level",
+        "helpText": "💡 These levels are based on research-backed Dolch sight words and reading science",
+        "researchInfo": "Why This Matters",
+        "researchDetails": "Our reading levels align with proven literacy research to ensure age-appropriate vocabulary and story complexity for optimal learning outcomes.",
         "levels": {
           "beginner": {
             "title": "Pre-Reader",
-            "description": "Just learning letters and sounds"
+            "description": "I'm just learning letters and sounds",
+            "details": "Based on Dolch Pre-Primer (40 sight words) • Perfect for ages 3-5",
+            "icon": "🌱"
           },
           "easy": {
-            "title": "I'm just starting to read",
-            "description": "Simple words and short sentences"
+            "title": "Beginning Reader", 
+            "description": "I can read short, easy stories",
+            "details": "Dolch Primer Level (52 sight words) • Ideal for kindergarten",
+            "icon": "📖"
           },
           "medium": {
-            "title": "I can read simple books",
-            "description": "Longer sentences and paragraphs"
+            "title": "Emerging Reader",
+            "description": "I love picture books with longer stories", 
+            "details": "Dolch 1st Grade (133 words) • Great for early elementary",
+            "icon": "📘"
           },
           "hard": {
-            "title": "I can read chapter books",
-            "description": "Complex stories and vocabulary"
+            "title": "Developing Reader",
+            "description": "I'm ready for chapter books and adventures",
+            "details": "Dolch 2nd Grade (179 words) • Perfect for growing readers",
+            "icon": "📗"
           },
           "expert": {
-            "title": "I love reading big books",
-            "description": "Advanced vocabulary and concepts"
+            "title": "Confident Reader",
+            "description": "I read anything - bring on the challenge!",
+            "details": "Advanced vocabulary • For independent readers",
+            "icon": "📕"
           }
         }
       },
