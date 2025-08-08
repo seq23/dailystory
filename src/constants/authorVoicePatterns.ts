@@ -95,10 +95,64 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
     characteristics: ["rhythm", "rhyme", "wordplay", "exuberance"]
   },
 
+  simpleYellowPattern: {
+    name: "Simple Bedtime Style",
+    description: "Ultra-simple bedtime words for beginners",
+    ageRange: "2-3",
+    patterns: {
+      openings: [
+        "Night time.",
+        "Moon shines.",
+        "Stars out.",
+        "Sleep time."
+      ],
+      transitions: [
+        "{name} yawns.",
+        "Eyes close.",
+        "Dream time.",
+        "So quiet."
+      ],
+      closings: [
+        "{name} sleeps.",
+        "Good night.",
+        "Sweet dreams.",
+        "All done."
+      ]
+    },
+    characteristics: ["2-3 words", "bedtime", "ultra simple", "calming"]
+  },
+
+  simpleOrangePattern: {
+    name: "Simple Silly Style",
+    description: "Ultra-simple silly animal words for beginners",
+    ageRange: "2-3",
+    patterns: {
+      openings: [
+        "Dogs jump.",
+        "Cats dance.",
+        "Bears wiggle.",
+        "Fun time!"
+      ],
+      transitions: [
+        "{name} laughs.",
+        "So silly!",
+        "More fun!",
+        "Again! Again!"
+      ],
+      closings: [
+        "{name} giggles.",
+        "So funny!",
+        "Happy day!",
+        "All done!"
+      ]
+    },
+    characteristics: ["2-3 words", "silly", "animals", "joyful"]
+  },
+
   yellowPattern: {
     name: "Gentle Bedtime Style",
     description: "Gentle, soothing rhythms with everyday magic",
-    ageRange: "2-6",
+    ageRange: "4-6",
     patterns: {
       openings: [
         "In the great green {setting}, there was...",
@@ -125,7 +179,7 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
   orangePattern: {
     name: "Silly Animal Style",
     description: "Silly, bouncy rhythms with animal characters",
-    ageRange: "2-5",
+    ageRange: "4-5",
     patterns: {
       openings: [
         "Hippos go berserk! And so does {name}!",
@@ -176,7 +230,34 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
     characteristics: ["cause and effect", "circular narratives", "predictable patterns", "humor"]
   },
 
-  silverPattern: {
+  simpleSilverPattern: {
+    name: "Simple Growing Style",
+    description: "Ultra-simple growth words for beginners",
+    ageRange: "2-3",
+    patterns: {
+      openings: [
+        "{name} grows.",
+        "Getting big.",
+        "I can!",
+        "Look! {name}!"
+      ],
+      transitions: [
+        "Try again.",
+        "Almost there!",
+        "Keep going.",
+        "Good job!"
+      ],
+      closings: [
+        "{name} did!",
+        "All done!",
+        "So proud!",
+        "Big now!"
+      ]
+    },
+    characteristics: ["2-3 words", "growth", "encouragement", "pride"]
+  },
+
+  pearlPattern: {
     name: "Growing Up Style",
     description: "Gentle emotional stories about growing up",
     ageRange: "4-8",
@@ -233,22 +314,22 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
 
 // Age-based style mapping
 export const AGE_AUTHOR_MAPPING: Record<string, string[]> = {
-  "2-3": ["yellowPattern", "orangePattern"],
-  "3-4": ["redPattern", "bluePattern", "orangePattern"],
-  "4-5": ["redPattern", "bluePattern", "greenPattern", "purplePattern"],
-  "5-6": ["greenPattern", "bluePattern", "purplePattern", "silverPattern"],
-  "6-7": ["greenPattern", "purplePattern", "silverPattern"],
-  "7-8": ["silverPattern", "goldPattern"],
+  "2-3": ["simpleYellowPattern", "simpleOrangePattern", "simpleSilverPattern"],
+  "3-4": ["redPattern", "bluePattern", "yellowPattern", "orangePattern"],
+  "4-5": ["redPattern", "bluePattern", "greenPattern", "purplePattern", "yellowPattern", "orangePattern"],
+  "5-6": ["greenPattern", "bluePattern", "purplePattern", "pearlPattern"],
+  "6-7": ["greenPattern", "purplePattern", "pearlPattern"],
+  "7-8": ["pearlPattern", "goldPattern"],
   "8-12": ["goldPattern"],
   "12+": ["goldPattern"]
 };
 
 export const DIFFICULTY_VOICE_MAPPING: Record<DifficultyLevel, string[]> = {
-  beginner: ["redPattern", "yellowPattern", "orangePattern"],
+  beginner: ["simpleYellowPattern", "simpleOrangePattern", "simpleSilverPattern"],
   easy: ["redPattern", "yellowPattern", "orangePattern"],
   medium: ["bluePattern", "greenPattern", "purplePattern"],
-  hard: ["silverPattern", "purplePattern", "bluePattern"],
-  expert: ["goldPattern", "silverPattern"]
+  hard: ["pearlPattern", "purplePattern", "bluePattern"],
+  expert: ["goldPattern", "pearlPattern"]
 };
 
 /**
