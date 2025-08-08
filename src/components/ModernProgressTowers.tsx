@@ -53,6 +53,7 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
   const [previousValues, setPreviousValues] = useState<Record<string, number>>({});
   const [animatingTowers, setAnimatingTowers] = useState<Record<string, boolean>>({});
   const [celebrationMode, setCelebrationMode] = useState(false);
+  const [sparkleMode, setSparkleMode] = useState(false);
   
   const autoCollapseRef = useRef<NodeJS.Timeout>();
 
@@ -143,16 +144,16 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
       setPreviousValues(newValues);
       setAnimatingTowers(newAnimations);
       
+      // Trigger sparkle effects instead of expanding
+      setSparkleMode(true);
+      setTimeout(() => {
+        setSparkleMode(false);
+      }, 3000);
+      
       // Clear animations after delay
       setTimeout(() => {
         setAnimatingTowers({});
       }, 2000);
-      
-      // Auto-expand to show progress
-      if (!isExpanded) {
-        setIsExpanded(true);
-        scheduleAutoCollapse();
-      }
     } else if (Object.keys(previousValues).length === 0) {
       // Initialize previous values
       setPreviousValues(newValues);
@@ -188,14 +189,14 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
   };
 
   const handleMouseEnter = () => {
-    // Disable hover expansion - only allow click to expand
+    // Only clear auto-collapse timer, no other interactions
     if (autoCollapseRef.current) {
       clearTimeout(autoCollapseRef.current);
     }
   };
 
   const handleMouseLeave = () => {
-    // Keep collapse timer for when expanded via click
+    // Only restart auto-collapse if expanded
     if (isExpanded) {
       scheduleAutoCollapse();
     }
@@ -220,11 +221,50 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
           "border border-white/20 shadow-2xl",
           "transition-all duration-500 ease-out",
           isExpanded ? "w-80 p-6" : "w-20 p-4",
-          celebrationMode && "animate-pulse ring-4 ring-amber-400/50"
+          celebrationMode && "animate-pulse ring-4 ring-amber-400/50",
+          sparkleMode && "relative overflow-visible"
         )}>
           
           {/* Background effects */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
+          
+          {/* Sparkle effects when progress is made */}
+          {sparkleMode && (
+            <div className="absolute inset-0 pointer-events-none overflow-visible">
+              {[...Array(8)].map((_, i) => (
+                <div
+                  key={`sparkle-${i}`}
+                  className={cn(
+                    "absolute w-2 h-2 text-amber-400",
+                    i % 2 === 0 ? "animate-sparkleTrail1" : "animate-sparkleTrail2"
+                  )}
+                  style={{
+                    left: `${20 + (i * 10)}%`,
+                    top: `${10 + (i * 8)}%`,
+                    animationDelay: `${i * 200}ms`,
+                    animationDuration: '2s'
+                  }}
+                >
+                  ✨
+                </div>
+              ))}
+              {/* Additional floating sparkles around the container */}
+              {[...Array(6)].map((_, i) => (
+                <div
+                  key={`float-sparkle-${i}`}
+                  className="absolute animate-float-gentle"
+                  style={{
+                    left: `${-20 + (i * 25)}%`,
+                    top: `${-10 + (i * 15)}%`,
+                    animationDelay: `${i * 300}ms`,
+                    animationDuration: '3s'
+                  }}
+                >
+                  <Sparkles className="w-3 h-3 text-purple-400 opacity-80" />
+                </div>
+              ))}
+            </div>
+          )}
           
           {/* Celebration particles */}
           {celebrationMode && (
@@ -254,12 +294,11 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
               "bg-gradient-to-br from-primary/20 to-primary/30 border-primary/30",
               "hover:from-primary/30 hover:to-primary/40 hover:border-primary/40",
               "shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary/50",
-              "group relative overflow-hidden",
-              // Move up 2 spaces (8px each = 16px up from mt-16 to mt-8)
+              "group relative overflow-hidden touch-manipulation",
               isExpanded ? "top-4 right-4" : "top-8 left-1/2 -translate-x-1/2",
-              // Only brief bounce animation for progress feedback, no pulsing
-              !isExpanded && Object.values(animatingTowers).some(Boolean) && "animate-bounce [animation-duration:1s] [animation-iteration-count:2]",
-              celebrationMode && "animate-spin [animation-duration:1s] [animation-iteration-count:1]"
+              // Remove auto-animations, only celebration mode spins
+              celebrationMode && "animate-spin [animation-duration:1s] [animation-iteration-count:1]",
+              sparkleMode && "ring-2 ring-amber-400/50"
             )}
           >
             {/* Animated background ripple effect - no pulsing */}
@@ -280,14 +319,16 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
               )}
             </div>
             
-            {/* Progress indicator dots - no pulsing */}
-            {!isExpanded && Object.values(animatingTowers).some(Boolean) && (
+            {/* Progress indicator dots - sparkle instead of pulsing */}
+            {!isExpanded && sparkleMode && (
               <div className="absolute -top-1 -right-1">
-                <div className="w-3 h-3 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full shadow-lg" />
+                <div className="w-3 h-3 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full shadow-lg animate-pulse">
+                  <div className="absolute inset-0 animate-ping rounded-full bg-amber-400/50" />
+                </div>
               </div>
             )}
             
-            {/* Achievement indicator - brief animation only */}
+            {/* Achievement indicator */}
             {!isExpanded && hasNewAchievements && (
               <div className="absolute -top-2 -right-2">
                 <div className="w-4 h-4 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-full shadow-lg animate-bounce [animation-duration:1s] [animation-iteration-count:2]">
@@ -403,7 +444,8 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
                           'from-purple-400 to-purple-600'
                         }`,
                         "text-white",
-                        isActive && "animate-pulse ring-2 ring-primary/50 scale-110"
+                        isActive && "ring-2 ring-primary/50 scale-110",
+                        sparkleMode && "animate-pulse"
                       )}
                     >
                       <tower.icon className="w-5 h-5" />
