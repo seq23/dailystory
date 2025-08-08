@@ -125,15 +125,25 @@ export const EnhancedProgressTower: React.FC<EnhancedProgressTowerProps> = ({
       "hover:scale-105 hover:-translate-y-1",
       className
     )}>
-      {/* Glass morphism container */}
-      <div className={cn(
-        "relative backdrop-blur-xl bg-white/20 rounded-2xl p-4 border transition-all duration-500",
-        theme.border,
-        theme.shadow,
-        glowEffect && theme.glow,
-        isPremium && "bg-gradient-to-br from-white/30 via-white/20 to-white/10",
-        milestoneAchieved && "animate-pulse ring-4 ring-yellow-400/60 ring-offset-2"
-      )}>
+        {/* Glass morphism container with dramatic styling */}
+        <div className={cn(
+          "relative backdrop-blur-xl rounded-3xl p-6 border-2 transition-all duration-500 transform hover:rotate-1",
+          "bg-gradient-to-br from-purple-900/30 via-blue-900/20 to-indigo-900/30",
+          "border-gradient-to-r from-cyan-400/50 via-purple-500/50 to-pink-500/50",
+          "shadow-[0_20px_40px_rgba(147,51,234,0.3)]",
+          glowEffect && "shadow-[0_30px_60px_rgba(147,51,234,0.6)] scale-110",
+          isPremium && "bg-gradient-to-br from-yellow-500/20 via-purple-600/20 to-pink-600/20",
+          milestoneAchieved && "animate-pulse ring-4 ring-yellow-400/80 ring-offset-4 shadow-[0_40px_80px_rgba(255,215,0,0.4)]"
+        )}
+        style={{
+          background: isPremium 
+            ? 'linear-gradient(135deg, rgba(255,215,0,0.2), rgba(147,51,234,0.3), rgba(236,72,153,0.2))' 
+            : 'linear-gradient(135deg, rgba(147,51,234,0.2), rgba(59,130,246,0.3), rgba(99,102,241,0.2))',
+          borderImage: 'linear-gradient(45deg, #06b6d4, #8b5cf6, #ec4899) 1',
+          boxShadow: glowEffect 
+            ? '0 0 60px rgba(147,51,234,0.8), inset 0 0 20px rgba(255,255,255,0.1)'
+            : '0 20px 40px rgba(147,51,234,0.4), inset 0 0 10px rgba(255,255,255,0.05)'
+        }}>
         
         {/* Premium crown indicator with enhanced styling */}
         {isPremium && (
@@ -184,13 +194,17 @@ export const EnhancedProgressTower: React.FC<EnhancedProgressTowerProps> = ({
             )}
             
             <div className={cn(
-              "relative w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500",
-              "bg-gradient-to-br shadow-lg border border-white/30",
-              theme.gradient,
-              glowEffect && "scale-110 shadow-2xl",
+              "relative w-16 h-16 rounded-3xl flex items-center justify-center transition-all duration-500",
+              "bg-gradient-to-br from-cyan-400 via-purple-500 to-pink-500 shadow-2xl border-2 border-white/50",
+              glowEffect && "scale-125 shadow-[0_0_40px_rgba(147,51,234,1)] rotate-12",
               celebrationPulse && "animate-pulse",
-              isPremium && "backdrop-blur-sm"
-            )}>
+              isPremium && "from-yellow-400 via-orange-500 to-red-500 shadow-[0_0_30px_rgba(255,215,0,0.8)]"
+            )}
+            style={{
+              boxShadow: glowEffect 
+                ? '0 0 50px rgba(147,51,234,1), 0 0 100px rgba(147,51,234,0.6), inset 0 0 20px rgba(255,255,255,0.3)'
+                : '0 10px 30px rgba(147,51,234,0.5), inset 0 0 10px rgba(255,255,255,0.2)'
+            }}>
               <div className={cn(
                 "text-white transition-all duration-300",
                 glowEffect && "scale-125"
@@ -247,14 +261,25 @@ export const EnhancedProgressTower: React.FC<EnhancedProgressTowerProps> = ({
             </>
           )}
           
-          {/* Tower Background with glassmorphism */}
+          {/* Tower Background with DRAMATIC glassmorphism */}
           <div className={cn(
-            "w-16 h-40 relative overflow-hidden transition-all duration-500 rounded-xl",
-            "bg-gradient-to-t from-white/40 via-white/20 to-white/10 backdrop-blur-sm",
-            "border-2 border-white/30 shadow-inner",
-            glowEffect && "scale-105 shadow-2xl",
-            milestoneAchieved && "ring-2 ring-yellow-400/80 shadow-yellow-400/30"
-          )}>
+            "w-20 h-48 relative overflow-hidden transition-all duration-500 rounded-2xl",
+            "bg-gradient-to-t from-purple-900/60 via-blue-900/40 to-indigo-900/60 backdrop-blur-lg",
+            "border-4 border-gradient-to-t from-cyan-400/80 via-purple-500/80 to-pink-500/80",
+            "shadow-[inset_0_0_30px_rgba(147,51,234,0.4)]",
+            glowEffect && "scale-110 shadow-[0_0_80px_rgba(147,51,234,0.8)]",
+            milestoneAchieved && "ring-4 ring-yellow-400/80 shadow-[0_0_60px_rgba(255,215,0,0.6)]",
+            isPremium && "from-yellow-900/60 via-orange-900/40 to-red-900/60 border-yellow-400/80"
+          )}
+          style={{
+            background: isPremium 
+              ? 'linear-gradient(to top, rgba(180,83,9,0.8), rgba(251,146,60,0.6), rgba(254,202,87,0.8))'
+              : 'linear-gradient(to top, rgba(88,28,135,0.8), rgba(59,130,246,0.6), rgba(99,102,241,0.8))',
+            borderImage: 'linear-gradient(to top, #06b6d4, #8b5cf6, #ec4899) 1',
+            boxShadow: glowEffect 
+              ? 'inset 0 0 40px rgba(147,51,234,0.6), 0 0 80px rgba(147,51,234,0.8)'
+              : 'inset 0 0 20px rgba(147,51,234,0.3), 0 20px 40px rgba(147,51,234,0.4)'
+          }}>
             
             {/* Animated background pattern */}
             <div className="absolute inset-0 opacity-10">
@@ -273,15 +298,24 @@ export const EnhancedProgressTower: React.FC<EnhancedProgressTowerProps> = ({
               </div>
             </div>
 
-            {/* Enhanced Progress Fill with liquid effect */}
+            {/* DRAMATIC Progress Fill with liquid effect */}
             <div
               className={cn(
-                "absolute bottom-0 w-full bg-gradient-to-t transition-all duration-1000 ease-out rounded-b-xl overflow-hidden",
-                theme.gradient,
+                "absolute bottom-0 w-full transition-all duration-1000 ease-out rounded-b-2xl overflow-hidden",
+                "bg-gradient-to-t from-cyan-400 via-purple-500 to-pink-400",
                 milestoneAchieved && "animate-pulse",
-                isPremium && "shadow-inner backdrop-blur-sm"
+                isPremium && "from-yellow-400 via-orange-500 to-red-400",
+                glowEffect && "shadow-[inset_0_0_30px_rgba(255,255,255,0.4)]"
               )}
-              style={{ height: `${percentage}%` }}
+              style={{ 
+                height: `${percentage}%`,
+                background: isPremium
+                  ? 'linear-gradient(to top, #fbbf24, #f97316, #ef4444)'
+                  : 'linear-gradient(to top, #06b6d4, #8b5cf6, #ec4899)',
+                boxShadow: glowEffect
+                  ? 'inset 0 0 40px rgba(255,255,255,0.5), 0 0 30px rgba(147,51,234,0.8)'
+                  : 'inset 0 0 20px rgba(255,255,255,0.3)'
+              }}
             >
               {/* Liquid wave effect for premium */}
               {isPremium && percentage > 10 && (
