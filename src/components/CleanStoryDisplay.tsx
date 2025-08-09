@@ -73,6 +73,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [currentPage, setCurrentPage] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingNextPage, setIsLoadingNextPage] = useState(false);
+  const [justAdvanced, setJustAdvanced] = useState(false);
   const [storyTitle, setStoryTitle] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -283,26 +284,20 @@ useEffect(() => {
     }
   };
 
-  const generateNextPage = async () => {
+  const generateNextPage = async (): Promise<LivePageResult | undefined> => {
     if (!isPremium || !liveContext || isLoadingNextPage) return;
-    
     setIsLoadingNextPage(true);
-    
     try {
       const result = await LiveGenerationService.generateNextPage(liveContext);
-      
       if (result.error) {
         setError(result.error);
         return;
       }
-      
-      setStory(prev => [...prev, result.content]);
-      setLiveContext(result.nextContext || null);
-      setIsStoryComplete(result.isComplete);
-      
+      return result;
     } catch (error) {
       console.error('Failed to generate next page:', error);
       setError('Failed to continue the story. Please try again.');
+      return;
     } finally {
       setIsLoadingNextPage(false);
     }
@@ -359,11 +354,16 @@ useEffect(() => {
     }
     
     if (isPremium && !isStoryComplete && currentPage === story.length - 1) {
-      // Premium: Generate next page live
-      await generateNextPage();
-      if (story.length > currentPage + 1) {
-        setCurrentPage(currentPage + 1);
+      // Premium: generate and auto-advance to the new page
+      setCurrentPage(prev => prev + 1);
+      setJustAdvanced(true);
+      const result = await generateNextPage();
+      if (result && !result.error) {
+        setStory(prev => [...prev, result.content]);
+        setLiveContext(result.nextContext || null);
+        setIsStoryComplete(result.isComplete);
       }
+      setTimeout(() => setJustAdvanced(false), 600);
     } else if (currentPage < story.length - 1) {
       // Navigate to next existing page
       setCurrentPage(currentPage + 1);
@@ -766,7 +766,7 @@ const handleRestartTimer = () => {
                     )}
                   </div>
                   {/* Bottom Half: Text (scrollable) + audio controls */}
-                  <div className="flex-[0.4] min-h-0 w-full rounded-2xl shadow-2xl bg-card overflow-hidden flex flex-col">
+                  <div className="flex-[0.4] min-h-0 w-full rounded-2xl shadow-2xl bg-card overflow-hidden flex flex-col relative">
                     <div id="audio-controls" className="p-3 md:p-4 flex justify-center gap-4 shrink-0">
                       <ElevenLabsAudio
                         text={currentStory}
@@ -785,9 +785,19 @@ const handleRestartTimer = () => {
                         </div>
                       )}
                     </div>
+                    {isPremium && isLoadingNextPage && currentPage === story.length - 1 && !isStoryComplete && (
+                      <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/60 backdrop-blur-sm pointer-events-none">
+                        <div className="rounded-xl px-4 py-3 bg-card/90 shadow-lg border border-primary/20 animate-enter">
+                          <div className="flex items-center gap-2">
+                            <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                            <span className="text-sm text-muted-foreground">Generating next page...</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                     <div className={cn("flex-1 min-h-0 overflow-y-auto px-4 md:px-6 pb-4")}>
                       <div 
-                        className={cn("story-content storybook-frame w-full")}
+                        className={cn("story-content storybook-frame w-full", justAdvanced && "animate-enter")}
                         data-difficulty={currentDifficulty}
                       >
                         {processTextWithConsistentFlow({
@@ -838,10 +848,20 @@ const handleRestartTimer = () => {
 
                   {/* Text Content - RIGHT SIDE - Equal size on desktop */}
                   <div className="xl:order-2 flex flex-col h-full min-h-0">
-                    <div className="w-full h-full min-h-0 rounded-2xl overflow-hidden shadow-2xl bg-card">
+                    <div className="w-full h-full min-h-0 rounded-2xl overflow-hidden shadow-2xl bg-card relative">
+                      {isPremium && isLoadingNextPage && currentPage === story.length - 1 && !isStoryComplete && (
+                        <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/60 backdrop-blur-sm pointer-events-none">
+                          <div className="rounded-xl px-4 py-3 bg-card/90 shadow-lg border border-primary/20 animate-enter">
+                            <div className="flex items-center gap-2">
+                              <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                              <span className="text-sm text-muted-foreground">Generating next page...</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                       <div className={cn("h-full overflow-y-auto overflow-x-hidden p-3 md:p-4", isShortPage && "flex items-center justify-center")}> 
                         <div 
-                          className={cn("story-content story-content--compact w-full", isPremium && isShortPage && "text-center")}
+                          className={cn("story-content story-content--compact w-full", isPremium && isShortPage && "text-center", justAdvanced && "animate-enter")}
                           data-difficulty={currentDifficulty}
                         >
                           {processTextWithConsistentFlow({
