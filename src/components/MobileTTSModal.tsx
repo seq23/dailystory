@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Volume2, HelpCircle, Layers, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -47,6 +47,9 @@ export const MobileTTSModal = ({
               <X className="h-4 w-4" />
             </Button>
           </DialogTitle>
+          <DialogDescription id="word-modal-desc" className="sr-only">
+            Hear pronunciation, get an explanation, or break the word into syllables.
+          </DialogDescription>
         </DialogHeader>
         
         <div className="p-6 space-y-4">

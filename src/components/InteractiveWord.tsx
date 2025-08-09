@@ -263,72 +263,19 @@ export const InteractiveWord = ({
     setIsPlaying(true);
     try {
       const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
-      
-      // For non-English speakers, use browser speech synthesis for better pronunciation
-      if (!isNativeEnglishSpeaker) {
-        console.log('TTS: Using browser speech for non-English user');
-        
-        if ('speechSynthesis' in window) {
-          // Cancel any existing speech
-          speechSynthesis.cancel();
-          await new Promise(resolve => setTimeout(resolve, 100));
-          
-          const utterance = new SpeechSynthesisUtterance(cleanWord);
-          utterance.rate = 0.8;
-          utterance.pitch = 1.0;
-          utterance.volume = 1.0;
-          utterance.lang = 'en'; // Always pronounce English words in English
-          
-          // Load voices if needed
-          let voices = speechSynthesis.getVoices();
-          if (voices.length === 0) {
-            await new Promise(resolve => {
-              speechSynthesis.onvoiceschanged = resolve;
-              setTimeout(resolve, 1000);
-            });
-            voices = speechSynthesis.getVoices();
-          }
-          
-          // Find an English voice for proper pronunciation
-          const englishVoice = voices.find(voice => 
-            voice.lang.toLowerCase().startsWith('en')
-          );
-          
-          if (englishVoice) {
-            utterance.voice = englishVoice;
-            console.log(`TTS: Using English voice: ${englishVoice.name}`);
-          }
-          
-          utterance.onend = () => {
-            console.log('TTS: Browser speech ended');
-            setIsPlaying(false);
-          };
-          
-          utterance.onerror = (e) => {
-            console.error('TTS: Browser speech error:', e);
-            setIsPlaying(false);
-          };
-          
-          speechSynthesis.speak(utterance);
-          console.log('TTS: Browser speech synthesis started');
-          return; // Exit early, don't use ElevenLabs
-        } else {
-          throw new Error('Speech synthesis not available');
-        }
-      }
-      
-      // For English speakers, use ElevenLabs for high-quality pronunciation
+
+      // Always use ElevenLabs for high-quality English pronunciation
       const voice = getVoiceForUser(userInfo);
-      const model = "eleven_turbo_v2";
-      console.log('TTS: Using ElevenLabs for English speaker');
+      const model = "eleven_turbo_v2"; // English pronunciation
+      console.log('TTS: Using ElevenLabs for Hear It (English)');
       
       const response = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/elevenlabs-tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           text: cleanWord,
-          voice: voice,
-          model: model
+          voice,
+          model
         })
       });
 
@@ -337,7 +284,6 @@ export const InteractiveWord = ({
         const audioUrl = URL.createObjectURL(audioBlob);
         const audio = new Audio(audioUrl);
         
-        // Mobile-specific audio configuration
         if (isMobileOrTablet) {
           audio.preload = 'metadata';
         }
@@ -354,28 +300,7 @@ export const InteractiveWord = ({
       }
     } catch (error) {
       console.error('Error pronouncing word:', error);
-      
-      // Fallback to browser speech synthesis
-      if ('speechSynthesis' in window) {
-        try {
-          const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
-          const utterance = new SpeechSynthesisUtterance(cleanWord);
-          utterance.rate = 0.8;
-          utterance.pitch = 1.0;
-          utterance.volume = 1.0;
-          utterance.lang = 'en';
-          
-          utterance.onend = () => setIsPlaying(false);
-          utterance.onerror = () => setIsPlaying(false);
-          
-          speechSynthesis.speak(utterance);
-        } catch (fallbackError) {
-          console.error('Fallback speech also failed:', fallbackError);
-          setIsPlaying(false);
-        }
-      } else {
-        setIsPlaying(false);
-      }
+      setIsPlaying(false);
     }
   };
 
@@ -879,29 +804,19 @@ export const InteractiveWord = ({
     });
   };
 
-  // Determine if word should be interactive based on difficulty level and user type
+  // Determine if word should be interactive based on level rules
   const shouldBeInteractive = () => {
     const cleanWord = word.toLowerCase().replace(/[.,!?;:'"()]/g, '');
-    
     // Never make the user's name interactive
     if (userInfo?.name && cleanWord === userInfo.name.toLowerCase()) {
       return false;
     }
-    
-    // For easy difficulty, make ALL words interactive (except user's name)
-    if (difficulty === "easy") {
+    // Level 0-1: underline all words (beginner/easy)
+    if (difficulty === 'beginner' || difficulty === 'easy') {
       return cleanWord.length > 0;
     }
-    
-    // For ESL learners, more words are interactive to help with learning
-    if (isESLLearner) {
-      if (difficulty === "medium") return cleanWord.length > 2;
-      return cleanWord.length > 3;
-    }
-    
-    // For native speakers, focus on more complex words
-    if (difficulty === "medium") return cleanWord.length > 4;
-    return cleanWord.length > 4;
+    // Level 2-4: underline only significant words by classifier
+    return shouldHighlight;
   };
 
   if (!shouldBeInteractive()) {
@@ -983,9 +898,9 @@ export const InteractiveWord = ({
           style={{
             // Mobile-optimized positioning with better viewport handling
             ...(tooltipPosition.horizontal === 'left' ? {
-              left: `${Math.max(10, wordRef.current?.getBoundingClientRect().left || 0)}px`,
+              left: `${Math.max(10, (wordRef.current?.getBoundingClientRect().left || 0) + (tooltipPosition.offset || 0))}px`,
             } : tooltipPosition.horizontal === 'right' ? {
-              right: `${Math.max(10, window.innerWidth - (wordRef.current?.getBoundingClientRect().right || window.innerWidth))}px`,
+              right: `${Math.max(10, (window.innerWidth - (wordRef.current?.getBoundingClientRect().right || window.innerWidth)) + (tooltipPosition.offset || 0))}px`,
             } : {
               left: `${Math.max(10, Math.min(window.innerWidth - 320, (wordRef.current?.getBoundingClientRect().left || 0) + (wordRef.current?.getBoundingClientRect().width || 0) / 2 - 160))}px`,
             }),
