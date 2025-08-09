@@ -825,44 +825,39 @@ const handleRestartTimer = () => {
                 <div className="hidden xl:grid grid-cols-2 gap-0 h-full">
                   {/* Image Section - LEFT SIDE - Equal size on desktop */}
                   {layout !== 'classic' && (
-                    <div className="xl:order-1 flex flex-col">
-                      {currentImage && (
-                        <>
-                          <div className="hidden xl:block h-full">
-                            <div className="w-full h-full rounded-2xl shadow-2xl flex items-center justify-center">
-                              <img 
-                                src={currentImage} 
-                                alt={`Story illustration for page ${currentPage + 1}: ${story[currentPage]?.substring(0, 100)}...`}
-                                className="max-h-full max-w-full object-contain"
-                                loading="lazy"
-                                decoding="async"
-                                onError={(e) => {
-                                  console.warn('Story image failed to load, switching to classic fallback:', currentImage);
-                                  (e.currentTarget as HTMLImageElement).style.display = 'none';
-                                  fallbackToClassic('image-error');
-                                }}
-                              />
+                    <div className="xl:order-1 h-full">
+                      <div className="w-full h-full rounded-2xl overflow-hidden shadow-2xl">
+                        {currentImage ? (
+                          <img 
+                            src={currentImage} 
+                            alt={`Story illustration for page ${currentPage + 1}: ${story[currentPage]?.substring(0, 100)}...`}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                            decoding="async"
+                            onError={(e) => {
+                              console.warn('Story image failed to load, switching to classic fallback:', currentImage);
+                              (e.currentTarget as HTMLImageElement).style.display = 'none';
+                              fallbackToClassic('image-error');
+                            }}
+                          />
+                        ) : isGeneratingImage ? (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <div className="text-center">
+                              <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
+                              <p className="text-sm text-muted-foreground">Creating illustration...</p>
                             </div>
                           </div>
-                        </>
-                      )}
-                      {isGeneratingImage && !currentImage && (
-                        <div className="w-full h-full rounded-2xl flex items-center justify-center">
-                          <div className="text-center">
-                            <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
-                            <p className="text-sm text-muted-foreground">Creating illustration...</p>
-                          </div>
-                        </div>
-                      )}
+                        ) : null}
+                      </div>
                     </div>
                   )}
 
                   {/* Text Content - RIGHT SIDE - Equal size on desktop */}
                   <div className="xl:order-2 flex flex-col h-full">
-                    <div className="w-full h-full rounded-2xl shadow-2xl bg-card">
-                      <div className={cn("h-full overflow-y-auto p-4 md:p-6 lg:p-8", isShortPage && "flex items-center justify-center")}>
+                    <div className="w-full h-full rounded-2xl overflow-hidden shadow-2xl bg-card">
+                      <div className={cn("h-full overflow-y-auto p-3 md:p-4", isShortPage && "flex items-center justify-center")}> 
                         <div 
-                          className={cn("story-content storybook-frame w-full", isPremium && isShortPage && "text-center")}
+                          className={cn("story-content story-content--compact w-full", isPremium && isShortPage && "text-center")}
                           data-difficulty={currentDifficulty}
                         >
                           {processTextWithConsistentFlow({

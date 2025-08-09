@@ -279,3 +279,11 @@
     max-height: none;
   }
 }
+
+/* Compact variant for desktop text pane */
+.story-content--compact {
+  padding: clamp(0.5rem, 1.2vw, 1rem) !important;
+  background: transparent !important;
+  border-radius: 0.75rem;
+  margin: 0 !important;
+}
