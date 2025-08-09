@@ -656,7 +656,7 @@ const handleRestartTimer = () => {
       userInfo={userInfo}
     >
       <ErrorBoundary>
-        <div className="h-full min-h-0 bg-gradient-primary mobile-optimized flex flex-col">
+        <div className="min-h-screen bg-gradient-primary mobile-optimized flex flex-col">
         {/* Responsive Header */}
         <ResponsiveStoryHeader
           storyTitle={storyTitle}
@@ -713,8 +713,7 @@ const handleRestartTimer = () => {
               <div className="mb-4 md:mb-6">
                 <Progress value={progress} className="h-2" />
                 <p className="text-sm text-muted-foreground mt-2 text-center">
-                  Page {currentPage + 1} of {isPremium && !isStoryComplete ? `${story.length}+` : story.length}
-                  {isPremium && !isStoryComplete && ' (Live Generation)'}
+                  Page {currentPage + 1}
                 </p>
               </div>
 
@@ -1029,7 +1028,7 @@ const handleRestartTimer = () => {
                   </MobileOptimizedButton>
 
                   <span className="text-sm font-medium text-muted-foreground px-2">
-                    {currentPage + 1} / {isPremium && !isStoryComplete ? `${story.length}+` : story.length}
+                    Page {currentPage + 1}
                   </span>
 
                   <MobileOptimizedButton
@@ -1064,7 +1063,7 @@ const handleRestartTimer = () => {
                   </MobileOptimizedButton>
 
                   <span className="text-base font-medium text-muted-foreground px-4">
-                    {currentPage + 1} / {isPremium && !isStoryComplete ? `${story.length}+` : story.length}
+                    Page {currentPage + 1}
                   </span>
 
                   <MobileOptimizedButton
@@ -1136,7 +1135,7 @@ const handleRestartTimer = () => {
           onEndSession={handleEndSession}
           onSessionEnded={handleEndSession}
           isPremium={isPremium}
-          onIncreaseTime={isPremium ? handleExtendTime : undefined}
+          onIncreaseTime={undefined}
           onDismiss={isPremium ? () => setIsTimerVisible(false) : undefined}
           onRestartTimer={isPremium ? handleRestartTimer : undefined}
         />

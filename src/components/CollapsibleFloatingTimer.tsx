@@ -257,7 +257,7 @@ useEffect(() => {
           </Tooltip>
 
           {/* Increase Time (Premium only) */}
-          {isPremium && (
+          {isPremium && onIncreaseTime && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button

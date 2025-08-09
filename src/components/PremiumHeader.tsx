@@ -57,18 +57,18 @@ export const PremiumHeader = ({
 
   return (
     <header className="bg-white/95 backdrop-blur-sm shadow-sm border-b sticky top-0 z-50">
-      <div className="container mx-auto px-4 py-3">
-        <div className="flex justify-between items-center">
+      <div className="container mx-auto px-4 pr-[env(safe-area-inset-right)] py-3">
+        <div className="flex justify-between items-center gap-2 min-w-0">
           {/* Logo and Title */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 min-w-0">
             <SidebarTrigger className="mr-1" />
             <div className="p-2 bg-gradient-primary rounded-lg">
               <BookOpen className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-800">Time2Read</h1>
+              <h1 className="text-xl font-bold text-gray-800 truncate max-w-[50vw] sm:max-w-none">Time2Read</h1>
               <div className="flex items-center gap-2">
-                <p className="text-sm text-gray-600">Welcome back!</p>
+                <p className="hidden sm:block text-sm text-gray-600">Welcome back!</p>
                 {isPremium && (
                   <Badge variant="secondary" className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-none text-xs">
                     <Crown className="w-3 h-3 mr-1" />
@@ -86,13 +86,13 @@ export const PremiumHeader = ({
           </div>
 
           {/* User Avatar and Actions */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0">
             {/* Avatar with Dropdown */}
             <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
               <DropdownMenuTrigger asChild>
                 <Button 
                   variant="ghost" 
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors shrink-0"
                 >
                   <Avatar className="w-8 h-8">
                     <AvatarImage 
