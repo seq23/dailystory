@@ -25,7 +25,7 @@ const dict: Record<string, string[]> = {
   'good': ['good'],
   'green': ['gr', 'ee', 'n'],
   'likes': ['like', 's'],
-  'smiles': ['smile', 'z'],
+  'smiles': ['smiles'],
   'bounce': ['b', 'ow', 'n', 's'],
   'what': ['whuh', 'ut'],
 

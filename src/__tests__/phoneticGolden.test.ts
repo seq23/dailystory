@@ -13,7 +13,7 @@ describe('PhoneticRulesEngine golden cases (deterministic)', () => {
     ['what', ['whuh','ut']],
     ['green', ['gr','ee','n']],
     ['chase', ['chay','s']],
-    ['smiles', ['smile','z']],
+    ['smiles', ['smiles']],
     ['good', ['good']],
     ['illuminate', ['ill','loo','muh','nate']],
     ['illumination', ['ill','loo','muh','nay','shun']],
