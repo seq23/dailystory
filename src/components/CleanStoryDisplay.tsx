@@ -185,15 +185,22 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     return () => clearInterval(interval);
   }, [isTimerRunning, timeRemaining, isTimerCanceled]);
 
-  // Magic wand DRAMATIC animation effect for free users on last page - CONTINUOUS until clicked
-  useEffect(() => {
-    if (!isPremium && currentPage === story.length - 1 && story.length > 0) {
-      setIsMagicWandAnimating(true);
-      // NO TIMEOUT - Keep animating until user clicks!
-    } else {
-      setIsMagicWandAnimating(false);
-    }
-  }, [currentPage, story.length, isPremium]);
+// Magic wand DRAMATIC animation effect for free users on last page - CONTINUOUS until clicked
+useEffect(() => {
+  if (!isPremium && currentPage === story.length - 1 && story.length > 0) {
+    setIsMagicWandAnimating(true);
+    // NO TIMEOUT - Keep animating until user clicks!
+  } else {
+    setIsMagicWandAnimating(false);
+  }
+}, [currentPage, story.length, isPremium]);
+
+// Ensure timer UI becomes visible when time ends for premium (to show celebration + choice)
+useEffect(() => {
+  if (isPremium && timeRemaining === 0 && !isTimerVisible) {
+    setIsTimerVisible(true);
+  }
+}, [isPremium, timeRemaining, isTimerVisible]);
 
 
   const initializeStory = async () => {
@@ -444,10 +451,19 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
 const handleExtendTime = () => {
   const extension = 15 * 60; // 15 minutes
   const maxTime = 60 * 60; // 60 minutes max
-  setTimeRemaining(prev => Math.min(maxTime, prev + extension));
+  if (timeRemaining >= maxTime) {
+    toast({
+      title: "Max time reached",
+      description: "You can use up to 60 minutes per session.",
+      duration: 3000,
+    });
+    return;
+  }
+  const newValue = Math.min(maxTime, timeRemaining + extension);
+  setTimeRemaining(newValue);
   toast({
-    title: "Time Extended!",
-    description: "Added 15 minutes to your reading session.",
+    title: newValue === maxTime ? "Extended to 60 minutes" : "Time Extended!",
+    description: newValue === maxTime ? "You've reached the session maximum." : "Added 15 minutes to your reading session.",
     duration: 3000,
   });
 };
@@ -1135,7 +1151,7 @@ const handleRestartTimer = () => {
           onEndSession={handleEndSession}
           onSessionEnded={handleEndSession}
           isPremium={isPremium}
-          onIncreaseTime={undefined}
+          onIncreaseTime={isPremium ? handleExtendTime : undefined}
           onDismiss={isPremium ? () => setIsTimerVisible(false) : undefined}
           onRestartTimer={isPremium ? handleRestartTimer : undefined}
         />

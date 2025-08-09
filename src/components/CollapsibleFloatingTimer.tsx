@@ -81,12 +81,17 @@ const [showChoice, setShowChoice] = useState(false);
 useEffect(() => {
   if (timeRemaining === 0 && !showCelebration && !showChoice) {
     setShowCelebration(true);
-    setTimeout(() => {
+    const timeout = setTimeout(() => {
       setShowCelebration(false);
-      setShowChoice(true);
-    }, 5000);
+      if (isPremium) {
+        setShowChoice(true);
+      } else {
+        onSessionEnded(sessionStats);
+      }
+    }, 3000);
+    return () => clearTimeout(timeout);
   }
-}, [timeRemaining, showCelebration, showChoice]);
+}, [timeRemaining, showCelebration, showChoice, isPremium, onSessionEnded, sessionStats]);
 
 // Reset choice/celebration when timer is restarted
 useEffect(() => {
@@ -165,6 +170,19 @@ useEffect(() => {
             <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-xs px-2 py-1 rounded-full shadow-lg opacity-70 whitespace-nowrap">
               ⏱️ Try Premium
             </div>
+          )}
+          
+          {/* Quick +15m for Premium in collapsed mode */}
+          {isPremium && onIncreaseTime && timeRemaining < 60 * 60 && (
+            <Button
+              variant="outline"
+              size={isMobile ? "sm" : "icon"}
+              onClick={(e) => { e.stopPropagation(); onIncreaseTime(); }}
+              className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-background/95 backdrop-blur-sm"
+              aria-label={t("floatingTimer.increaseTime", "Increase time by 15 minutes")}
+            >
+              <Plus className="w-3 h-3" />
+            </Button>
           )}
           
           {/* Enhanced expand indicator */}
@@ -264,7 +282,7 @@ useEffect(() => {
                   variant="outline"
                   size={isMobile ? "sm" : "default"}
                   onClick={onIncreaseTime}
-                  disabled={!onIncreaseTime || timeRemaining >= 60 * 60}
+                  disabled={!onIncreaseTime}
                   className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm"
                   aria-label={t("floatingTimer.increaseTime", "Increase time by 15 minutes")}
                   id="timer-increase-button"
@@ -324,17 +342,16 @@ useEffect(() => {
 
 {/* Celebration Animation */}
 {showCelebration && (
-  <div className="absolute inset-0 pointer-events-none">
-    <div className="flex items-center justify-center h-full">
-      <div className="bg-white rounded-xl shadow-2xl p-4 text-center animate-scale-in">
-        <div className="text-4xl mb-2">🎉</div>
-        <h3 className="text-lg font-bold text-green-600">
-          {t("floatingTimer.congratulations", "Congratulations!")}
-        </h3>
-        <p className="text-sm text-gray-600">
-          {t("floatingTimer.sessionComplete", "Reading session complete!")}
-        </p>
-      </div>
+  <div className="fixed inset-0 z-[100] flex items-center justify-center">
+    <div className="absolute inset-0 bg-background/70 backdrop-blur-sm pointer-events-none" />
+    <div className="relative z-[101] bg-background border border-border rounded-2xl shadow-2xl p-6 text-center animate-scale-in">
+      <div className="text-5xl mb-3">🎉</div>
+      <h3 className="text-xl font-bold text-emerald-600">
+        {t("floatingTimer.congratulations", "Congratulations!")}
+      </h3>
+      <p className="text-sm text-muted-foreground">
+        {t("floatingTimer.sessionComplete", "Reading session complete!")}
+      </p>
     </div>
   </div>
 )}
