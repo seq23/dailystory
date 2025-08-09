@@ -139,6 +139,7 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
                     <SelectItem value="3">Grade 3</SelectItem>
                     <SelectItem value="4">Grade 4</SelectItem>
                     <SelectItem value="5">Grade 5</SelectItem>
+                    <SelectItem value="6">Grade 6</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -177,43 +178,43 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="difficulty">Reading Level</Label>
+              <Label htmlFor="difficulty">Reading Ability</Label>
               <Select
                 value={formData.difficultyLevel || difficultyProfile.suggestedDifficulty}
                 onValueChange={(value) => setFormData(prev => ({ ...prev, difficultyLevel: value as DifficultyLevel }))}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select reading level" />
+                  <SelectValue placeholder="Select reading ability" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="beginner">
                     <div className="flex flex-col items-start">
-                      <span className="font-medium">Beginner (Ages 3-5)</span>
-                      <span className="text-xs text-muted-foreground">Very simple words and sentences</span>
+                      <span className="font-medium">Pre‑Reader</span>
+                      <span className="text-xs text-muted-foreground">Just starting out with sounds and letters</span>
                     </div>
                   </SelectItem>
                   <SelectItem value="easy">
                     <div className="flex flex-col items-start">
-                      <span className="font-medium">Easy (Ages 5-7)</span>
-                      <span className="text-xs text-muted-foreground">Basic reading with storytelling</span>
+                      <span className="font-medium">Beginner</span>
+                      <span className="text-xs text-muted-foreground">Simple words and short sentences</span>
                     </div>
                   </SelectItem>
                   <SelectItem value="medium">
                     <div className="flex flex-col items-start">
-                      <span className="font-medium">Medium (Ages 7-9)</span>
-                      <span className="text-xs text-muted-foreground">More complex vocabulary</span>
+                      <span className="font-medium">Developing</span>
+                      <span className="text-xs text-muted-foreground">Growing vocabulary with more detail</span>
                     </div>
                   </SelectItem>
                   <SelectItem value="hard">
                     <div className="flex flex-col items-start">
-                      <span className="font-medium">Hard (Ages 9-11)</span>
-                      <span className="text-xs text-muted-foreground">Advanced stories</span>
+                      <span className="font-medium">Independent</span>
+                      <span className="text-xs text-muted-foreground">Reads comfortably with rich language</span>
                     </div>
                   </SelectItem>
                   <SelectItem value="expert">
                     <div className="flex flex-col items-start">
-                      <span className="font-medium">Expert (Ages 11+)</span>
-                      <span className="text-xs text-muted-foreground">Sophisticated language</span>
+                      <span className="font-medium">Advanced</span>
+                      <span className="text-xs text-muted-foreground">Sophisticated stories and complex ideas</span>
                     </div>
                   </SelectItem>
                 </SelectContent>
