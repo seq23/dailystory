@@ -90,6 +90,7 @@ export class PhoneticRulesEngine {
     'family': ['fam', 'uh', 'lee'],
     'friend': ['frend'],
     'school': ['skool'],
+    'sweet': ['sweet'],
     'children': ['chil', 'dren'],
     
     // Level 1 words
@@ -281,15 +282,24 @@ export class PhoneticRulesEngine {
       
       // Extended vowel support for multiple languages
       const vowels = 'aeiouáéíóúñüàèìòùâêîôûäëïöüy';
+      // Do not split common vowel teams (keeps "sweet" = one syllable, not "swe-et")
+      const vowelTeams = new Set(['aa','ee','ea','ei','ie','oa','oo','ou','ow','oi','oy','ai','ay','au','ue']);
       
       for (let i = 0; i < transformed.length; i++) {
         const char = transformed[i];
         const isVowel = vowels.includes(char.toLowerCase());
         
         if (isVowel && lastWasVowel && currentSyllable.length > 0) {
-          // Two vowels in a row, break before this one
-          syllables.push(currentSyllable);
-          currentSyllable = char;
+          const prevChar = transformed[i - 1]?.toLowerCase() || '';
+          const pair = (prevChar + char.toLowerCase());
+          if (vowelTeams.has(pair)) {
+            // Keep vowel team together
+            currentSyllable += char;
+          } else {
+            // Two vowels in a row, break before this one
+            syllables.push(currentSyllable);
+            currentSyllable = char;
+          }
         } else if (!isVowel && lastWasVowel && i < transformed.length - 1) {
           // Consonant after vowel, might be a break point
           const nextIsVowel = vowels.includes(transformed[i + 1].toLowerCase());
