@@ -3,7 +3,7 @@ import { MobileOptimizedButton } from "@/components/MobileOptimizedButton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Home, RotateCcw, Loader2, Volume2, VolumeX, ChevronUp, ChevronDown, Settings, Plus, RefreshCw, X, Clock, Wand, Sparkles } from "lucide-react";
+import { BookOpen, Home, RotateCcw, Loader2, Volume2, VolumeX, ChevronUp, ChevronDown, Settings, Plus, RefreshCw, Clock, Wand, Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/hooks/use-toast";
 import { SparkleAnimation } from "@/components/SparkleAnimation";
@@ -688,37 +688,6 @@ const handleRestartTimer = () => {
           canIncrease={currentDifficulty !== 'expert' || expertGradeLevel !== "10th"}
           canDecrease={currentDifficulty !== 'beginner'}
         />
-
-        {/* Premium Controls Bar - Mobile Optimized */}
-        {isPremium && !isTimerCanceled && timeRemaining > 0 && (
-          <div className="bg-primary/10 border-b border-primary/20 p-2 sm:p-3">
-            <div className="container mx-auto flex flex-wrap items-center justify-center gap-2">
-              <span className="bg-primary text-white px-2 py-1 rounded text-xs sm:text-sm">
-                Live Generation
-              </span>
-              <MobileOptimizedButton
-                onClick={handleCancelTimer}
-                size="sm"
-                variant="outline"
-                className="h-8 px-2 text-xs"
-              >
-                <X className="w-3 h-3 mr-1" />
-                Cancel Timer
-              </MobileOptimizedButton>
-              <MobileOptimizedButton
-                onClick={handleExtendTime}
-                size="sm"
-                variant="outline"
-                className="h-8 px-2 text-xs"
-                disabled={timeRemaining >= 60 * 60}
-              >
-                <Clock className="w-3 h-3 mr-1" />
-                +15min
-              </MobileOptimizedButton>
-            </div>
-          </div>
-        )}
-
 
       {/* Main Content - Full Width Layout */}
       <main className="w-full px-2 md:px-4 lg:px-6 xl:px-8 flex-1 min-h-0">
