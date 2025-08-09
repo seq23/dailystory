@@ -3,6 +3,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import heroImage from "@/assets/hero-image-diverse-clear.jpg";
 import leftPageImage from "@/assets/story-illustration-14.jpg";
+import { Check } from "lucide-react";
+import ReadAloudCoach from "@/components/ReadAloudCoach";
+import VoiceCommandController from "@/components/VoiceCommandController";
 
 const sampleText = `Luna and Max found a hidden door in the library. When they pushed it open, a tiny breeze carried the scent of pine trees and warm cookies. “Ready?” Max whispered. Luna nodded, and together they stepped into a world of stories.`;
 
@@ -162,6 +165,117 @@ const StylePreview: React.FC = () => {
           </Card>
         </article>
       </main>
+
+      {/* Free vs Premium (Preview) */}
+      <section className="max-w-5xl mx-auto mt-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Free vs Premium (Preview)</CardTitle>
+            <CardDescription>Exact wording and ordering as requested</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-6 md:grid-cols-2">
+              <article>
+                <h3 className="font-semibold mb-2">Free trial</h3>
+                <ul className="space-y-2 text-sm">
+                  {[
+                    "Limited customization of your story via User Info Form",
+                    "Free 20-minute reading sessions with Images",
+                    "Basic vocabulary highlights",
+                    "Standard audio and word tools (word-by-word highlighting, pronunciation help)",
+                    "End of session reporting gamification - gain points & unlock milestones within a single session analytics",
+                  ].map((f) => (
+                    <li key={f} className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1" />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+              </article>
+
+              <article className="space-y-4">
+                <div>
+                  <h3 className="font-semibold mb-2">Top Premium</h3>
+                  <ul className="space-y-2 text-sm">
+                    {[
+                      "Customize your story",
+                      "Unlimited reading time",
+                      "Advanced audio narration",
+                      "Word-by-word highlighting",
+                      "Text-to-speech tools: Hear it, Explain it, and phonetic breakdown",
+                      "Achievements, points, badges, and reading streaks",
+                      "End-of-session report with milestones",
+                    ].map((f) => (
+                      <li key={f} className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1" />
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div>
+                  <h4 className="font-medium text-sm text-muted-foreground">Additional offerings</h4>
+                  <ul className="mt-2 space-y-2 text-sm">
+                    {[
+                      "Personalized live story generation (Your story doesn't end until you decide!)",
+                      "Saved stories, favorites, and collections",
+                      "Multiple child profiles",
+                      "Parent dashboard insights and reports",
+                      "Learning goals with weekly targets",
+                      "Progress dashboard and detailed analytics",
+                      "Vocabulary tracking and practice quizzes",
+                      "Comprehension questions after reading",
+                      "Mini-games to reinforce vocabulary and phonics",
+                      "Reading timer and progress tracking",
+                      "Personalized difficulty adjustments as your child improves",
+                      "Vocabulary word bank and review activities",
+                      "Curated story library and recommendations",
+                      "Mobile-optimized audio controls and kid-friendly UI",
+                      "Voice commands for navigation and controls",
+                      "Read-aloud feedback (speech-to-text coaching)",
+                      "Priority support",
+                    ].map((f) => (
+                      <li key={f} className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1" />
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </article>
+            </div>
+
+            {/* Premium-only interactive preview */}
+            <div className="grid gap-4 md:grid-cols-2 mt-6">
+              <div>
+                <Card className="border-muted/50">
+                  <CardHeader>
+                    <CardTitle className="text-base">Read‑aloud coach (Premium)</CardTitle>
+                    <CardDescription>Speech‑to‑text feedback preview</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {/* @ts-ignore demo import below */}
+                    <ReadAloudCoach />
+                  </CardContent>
+                </Card>
+              </div>
+              <div>
+                <Card className="border-muted/50">
+                  <CardHeader>
+                    <CardTitle className="text-base">Voice commands (Premium)</CardTitle>
+                    <CardDescription>Try a command like “Next page”</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {/* @ts-ignore demo import below */}
+                    <VoiceCommandController />
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </section>
 
       <footer className="max-w-5xl mx-auto mt-8 flex items-center justify-between">
         <a href="/" className="story-link text-sm">Back to home</a>

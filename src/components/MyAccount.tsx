@@ -17,18 +17,33 @@ const freeFeatures: string[] = [
   "End of session reporting gamification - gain points & unlock milestones within a single session analytics",
 ];
 
-const premiumFeatures: string[] = [
+const topPremiumFeatures: string[] = [
+  "Customize your story",
   "Unlimited reading time",
-  "Personalized live story generation",
-  "Saved stories, favorites & collections",
+  "Advanced audio narration",
+  "Word-by-word highlighting",
+  "Text-to-speech tools: Hear it, Explain it, and phonetic breakdown",
+  "Achievements, points, badges, and reading streaks",
+  "End-of-session report with milestones",
+];
+
+const additionalOfferings: string[] = [
+  "Personalized live story generation (Your story doesn't end until you decide!)",
+  "Saved stories, favorites, and collections",
   "Multiple child profiles",
-  "Progress dashboard & detailed analytics",
+  "Parent dashboard insights and reports",
   "Learning goals with weekly targets",
-  "Parent dashboard insights & reports",
-  "Achievements, badges & reading streaks",
-  "Advanced audio narration (TTS)",
-  "Word-by-word highlighting & phonics cues",
-  "Vocabulary tracking & practice quizzes",
+  "Progress dashboard and detailed analytics",
+  "Vocabulary tracking and practice quizzes",
+  "Comprehension questions after reading",
+  "Mini-games to reinforce vocabulary and phonics",
+  "Reading timer and progress tracking",
+  "Personalized difficulty adjustments as your child improves",
+  "Vocabulary word bank and review activities",
+  "Curated story library and recommendations",
+  "Mobile-optimized audio controls and kid-friendly UI",
+  "Voice commands for navigation and controls",
+  "Read-aloud feedback (speech-to-text coaching)",
   "Priority support",
 ];
 
@@ -93,7 +108,7 @@ export function MyAccount({ isPremium, subscriptionTier, subscriptionEnd, devTes
               <ul className="space-y-2">
                 {freeFeatures.map((f) => (
                   <li key={f} className="flex items-start gap-2">
-                    <Check className="w-4 h-4 text-green-600 mt-1" />
+                    <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1" />
                     <span>{f}</span>
                   </li>
                 ))}
@@ -110,15 +125,29 @@ export function MyAccount({ isPremium, subscriptionTier, subscriptionEnd, devTes
               </div>
               <CardDescription>Best for families and serious readers</CardDescription>
             </CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                {premiumFeatures.map((f) => (
-                  <li key={f} className="flex items-start gap-2">
-                    <Check className="w-4 h-4 text-green-600 mt-1" />
-                    <span>{f}</span>
-                  </li>
-                ))}
-              </ul>
+            <CardContent className="space-y-4">
+              <div>
+                <h3 className="font-semibold mb-2">Top Premium</h3>
+                <ul className="space-y-2">
+                  {topPremiumFeatures.map((f) => (
+                    <li key={f} className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1" />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-medium text-sm text-muted-foreground">Additional offerings</h4>
+                <ul className="mt-2 space-y-2">
+                  {additionalOfferings.map((f) => (
+                    <li key={f} className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1" />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </CardContent>
           </Card>
         </div>
