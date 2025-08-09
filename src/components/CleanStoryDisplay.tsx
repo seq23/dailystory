@@ -656,7 +656,7 @@ const handleRestartTimer = () => {
       userInfo={userInfo}
     >
       <ErrorBoundary>
-        <div className="min-h-screen bg-gradient-primary mobile-optimized">
+        <div className="min-h-screen bg-gradient-primary mobile-optimized flex flex-col">
         {/* Responsive Header */}
         <ResponsiveStoryHeader
           storyTitle={storyTitle}
@@ -705,9 +705,9 @@ const handleRestartTimer = () => {
 
 
       {/* Main Content - Full Width Layout */}
-      <main className="w-full px-2 md:px-4 lg:px-6 xl:px-8">
+      <main className="w-full px-2 md:px-4 lg:px-6 xl:px-8 flex-1 min-h-0">
         <div className="w-full max-w-[98vw] mx-auto">
-          <Card className="bg-white/95 backdrop-blur-sm shadow-2xl border border-white/70 mobile-text-fixed flex flex-col h-[calc(100vh-2rem)] max-h-[calc(100vh-2rem)] overflow-hidden">
+          <Card className="bg-white/95 backdrop-blur-sm shadow-2xl border border-white/70 mobile-text-fixed flex flex-col h-full min-h-0 overflow-hidden">
             <CardContent className="p-4 lg:p-8 h-full flex flex-col min-h-0">
               {/* Progress Bar */}
               <div className="mb-4 md:mb-6">
@@ -740,7 +740,7 @@ const handleRestartTimer = () => {
               )}
 
               {/* Story Content - Enhanced Layout for Desktop Split-Screen */}
-              <div className="bg-gradient-card rounded-2xl p-3 md:p-6 lg:p-8 mb-6 h-full min-h-0 flex flex-col shadow-xl" 
+              <div className="bg-gradient-card rounded-2xl p-3 md:p-6 lg:p-8 mb-6 flex-1 min-h-0 flex flex-col shadow-xl" 
                    dir="ltr" lang="en" role="main" aria-label="Story content">
                 {/* Mobile/Tablet: Top-half image, bottom-half text (full-bleed, no gray) */}
                 <div className="xl:hidden flex-1 min-h-0 flex flex-col gap-3">
@@ -822,10 +822,10 @@ const handleRestartTimer = () => {
                 </div>
 
                 {/* Desktop: Perfectly mirrored split columns */}
-                <div className="hidden xl:grid grid-cols-2 gap-0 h-full">
+                <div className="hidden xl:grid grid-cols-2 gap-0 flex-1 min-h-0">
                   {/* Image Section - LEFT SIDE - Equal size on desktop */}
                   {layout !== 'classic' && (
-                    <div className="xl:order-1 h-full">
+                    <div className="xl:order-1 h-full min-h-0">
                       <div className="w-full h-full rounded-2xl overflow-hidden shadow-2xl">
                         {currentImage ? (
                           <img 
@@ -853,9 +853,9 @@ const handleRestartTimer = () => {
                   )}
 
                   {/* Text Content - RIGHT SIDE - Equal size on desktop */}
-                  <div className="xl:order-2 flex flex-col h-full">
-                    <div className="w-full h-full rounded-2xl overflow-hidden shadow-2xl bg-card">
-                      <div className={cn("h-full overflow-y-auto p-3 md:p-4", isShortPage && "flex items-center justify-center")}> 
+                  <div className="xl:order-2 flex flex-col h-full min-h-0">
+                    <div className="w-full h-full min-h-0 rounded-2xl overflow-hidden shadow-2xl bg-card">
+                      <div className={cn("h-full overflow-y-auto overflow-x-hidden p-3 md:p-4", isShortPage && "flex items-center justify-center")}> 
                         <div 
                           className={cn("story-content story-content--compact w-full", isPremium && isShortPage && "text-center")}
                           data-difficulty={currentDifficulty}
