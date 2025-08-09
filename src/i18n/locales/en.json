@@ -419,12 +419,19 @@
     "startTimer": "Start Timer",
     "pauseTimer": "Pause Timer",
     "reduceTime": "Reduce 5 Minutes",
+    "increaseTime": "Increase 15 Minutes",
+    "collapse": "Collapse timer",
+    "dismissTimer": "Dismiss Timer",
+    "showTimer": "Show Timer",
     "endSession": "End Reading Session",
     "congratulations": "Congratulations!",
     "sessionComplete": "You completed your reading session!",
     "sequentialTooltips": {
       "startPause": "🎯 Click to start/pause your reading timer!",
       "reduceTime": "⏰ Reduce time by 5 minutes!",
+      "increaseTime": "➕ Add 15 minutes (max 60)",
+      "dismissTimer": "🙈 Hide the timer; it keeps running",
+      "collapse": "🫥 Collapse the timer",
       "endSession": "🔚 Click to end your reading session!"
     }
   },

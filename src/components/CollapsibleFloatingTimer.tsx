@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import { ChevronUp, ChevronDown, Play, Pause, Minus, X } from "lucide-react";
+import { ChevronUp, ChevronDown, Play, Pause, Minus, Plus, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -18,6 +18,8 @@ interface CollapsibleFloatingTimerProps {
   onSessionEnded: (sessionStats?: any) => void;
   sessionStats?: any;
   isPremium?: boolean; // Add premium status for enhanced free trial experience
+  onIncreaseTime?: () => void; // Premium: increase time (up to 60 minutes)
+  onDismiss?: () => void; // Premium: dismiss/hide timer without ending session
 }
 
 export const CollapsibleFloatingTimer = ({
@@ -28,7 +30,9 @@ export const CollapsibleFloatingTimer = ({
   onEndSession,
   onSessionEnded,
   sessionStats,
-  isPremium = false
+  isPremium = false,
+  onIncreaseTime,
+  onDismiss
 }: CollapsibleFloatingTimerProps) => {
   const { t } = useTranslation();
   const { isMobile, isTablet, isMobileOrTablet } = useIsMobile();
@@ -241,22 +245,48 @@ export const CollapsibleFloatingTimer = ({
             </TooltipContent>
           </Tooltip>
 
-          {/* Collapse (X) - does NOT end session */}
+          {/* Increase Time (Premium only) */}
+          {isPremium && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size={isMobile ? "sm" : "default"}
+                  onClick={onIncreaseTime}
+                  disabled={!onIncreaseTime || timeRemaining >= 60 * 60}
+                  className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm"
+                  aria-label={t("floatingTimer.increaseTime", "Increase time by 15 minutes")}
+                  id="timer-increase-button"
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                {timeRemaining >= 60 * 60
+                  ? t("floatingTimer.maxLimit", "Max Limit")
+                  : t("floatingTimer.sequentialTooltips.increaseTime", "Add 15 minutes (max 60)")}
+              </TooltipContent>
+            </Tooltip>
+          )}
+
+          {/* X Button - End session (Free) or Dismiss (Premium) */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 variant="outline"
                 size={isMobile ? "sm" : "default"}
-                onClick={() => setIsCollapsed(true)}
+                onClick={() => (isPremium ? onDismiss?.() : onEndSession())}
                 className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm"
-                aria-label={t("floatingTimer.collapse", "Collapse timer")}
-                id="timer-collapse-x-button"
+                aria-label={isPremium ? t("floatingTimer.dismissTimer", "Dismiss timer") : t("floatingTimer.endSession", "End Reading Session")}
+                id="timer-dismiss-x-button"
               >
                 <X className="w-4 h-4" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              {t("floatingTimer.sequentialTooltips.collapse", "Collapse the timer")}
+              {isPremium
+                ? t("floatingTimer.sequentialTooltips.dismissTimer", "Hide the timer; it keeps running")
+                : t("floatingTimer.sequentialTooltips.endSession", "Click to end your reading session!")}
             </TooltipContent>
           </Tooltip>
 

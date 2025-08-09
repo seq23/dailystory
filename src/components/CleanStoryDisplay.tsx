@@ -7,6 +7,7 @@ import { BookOpen, Home, RotateCcw, Loader2, Volume2, VolumeX, ChevronUp, Chevro
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/hooks/use-toast";
 import { SparkleAnimation } from "@/components/SparkleAnimation";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 // Mobile-Optimized UI Components
 import { CollapsibleFloatingTimer } from "@/components/CollapsibleFloatingTimer";
@@ -103,7 +104,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [timeRemaining, setTimeRemaining] = useState(20 * 60); // 20 minutes
   const [isTimerRunning, setIsTimerRunning] = useState(true); // Start timer immediately
   const [isTimerCanceled, setIsTimerCanceled] = useState(false); // Premium: timer can be canceled
-
+  const [isTimerVisible, setIsTimerVisible] = useState(true); // Premium: timer can be dismissed and shown again
   // Magic wand state
   const [isGeneratingNewStory, setIsGeneratingNewStory] = useState(false);
   const [isMagicWandAnimating, setIsMagicWandAnimating] = useState(false);
@@ -1092,16 +1093,44 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         enablePersistence={true}
       />
         
+      {/* Premium "Show Timer" when dismissed */}
+      {isPremium && !isTimerVisible && timeRemaining > 0 && !isTimerCanceled && (
+        <div className="fixed bottom-8 left-8 z-40">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsTimerVisible(true)}
+                  aria-label={t("floatingTimer.showTimer", "Show Timer")}
+                >
+                  <Clock className="w-4 h-4 mr-2" />
+                  {t("floatingTimer.showTimer", "Show Timer")}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                {t("floatingTimer.showTimer", "Show Timer")}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+      )}
+        
       {/* Unified Timer for All Users */}
-      <CollapsibleFloatingTimer
-        timeRemaining={timeRemaining}
-        isReading={isTimerRunning}
-        onToggleReading={handleToggleTimer}
-        onReduceTime={handleReduceTime}
-        onEndSession={handleEndSession}
-        onSessionEnded={handleEndSession}
-        isPremium={isPremium}
-      />
+      {(!isPremium || isTimerVisible) && (
+        <CollapsibleFloatingTimer
+          timeRemaining={timeRemaining}
+          isReading={isTimerRunning}
+          onToggleReading={handleToggleTimer}
+          onReduceTime={handleReduceTime}
+          onEndSession={handleEndSession}
+          onSessionEnded={handleEndSession}
+          isPremium={isPremium}
+          onIncreaseTime={isPremium ? handleExtendTime : undefined}
+          onDismiss={isPremium ? () => setIsTimerVisible(false) : undefined}
+        />
+      )}
       
       {/* Modern Progress Towers - Rebuilt with better design */}
       <ModernProgressTowers
