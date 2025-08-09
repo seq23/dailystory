@@ -34,7 +34,7 @@ export const MobileTTSModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="mobile-modal-content w-[90vw] max-w-md mx-auto rounded-lg p-0">
+      <DialogContent aria-describedby="word-modal-desc" className="mobile-modal-content w-[90vw] max-w-md mx-auto rounded-lg p-0">
         <DialogHeader className="p-6 pb-4 border-b">
           <DialogTitle className="text-xl font-semibold text-center flex items-center justify-between">
             <span className="flex-1 text-center">"{cleanWord}"</span>
