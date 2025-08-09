@@ -42,6 +42,7 @@ export class PhoneticRulesEngine {
     { pattern: /ough/i, replacement: 'uf', priority: 75 },
     { pattern: /augh/i, replacement: 'af', priority: 75 },
     { pattern: /eigh/i, replacement: 'ay', priority: 75 },
+    { pattern: /igh/i, replacement: 'eye', priority: 75 },
     { pattern: /ea/i, replacement: 'ee', priority: 65 },
     { pattern: /ou/i, replacement: 'ow', priority: 60 },
     { pattern: /oi/i, replacement: 'oy', priority: 60 },
@@ -53,7 +54,8 @@ export class PhoneticRulesEngine {
     { pattern: /tch/i, replacement: 'ch', priority: 70 },
     { pattern: /dge/i, replacement: 'j', priority: 70 },
     { pattern: /ph/i, replacement: 'f', priority: 65 },
-    { pattern: /gh/i, replacement: 'f', priority: 60 },
+    { pattern: /^gh/i, replacement: 'g', priority: 70 },
+    { pattern: /gh$/i, replacement: '', priority: 70 },
     { pattern: /ck/i, replacement: 'k', priority: 60 },
     { pattern: /qu/i, replacement: 'kw', priority: 60 },
     
@@ -92,6 +94,10 @@ export class PhoneticRulesEngine {
     'school': ['skool'],
     'sweet': ['sweet'],
     'children': ['chil', 'dren'],
+    // Single-syllable helper breakdowns for clarity
+    'jump': ['jum', 'p'],
+    'blue': ['bl', 'oo'],
+    'high': ['h', 'eye'],
     
     // Level 1 words
     'animal': ['an', 'ih', 'mul'],
@@ -147,7 +153,13 @@ export class PhoneticRulesEngine {
     'uf': 'uff', 'af': 'aff', 'ay': 'ay', 'oh': 'oh', 'ey': 'ee',
     'ow': 'ow', 'oy': 'oy', 'aw': 'aw', 'sk': 'sk', 'ch': 'ch',
     'j': 'j', 'f': 'f', 'k': 'k', 'kw': 'kw', 'n': 'n', 'r': 'r',
-    'm': 'm', 'ing': 'ing', 'd': 'd'
+    'm': 'm', 'ing': 'ing', 'd': 'd',
+    // Added helpers for clearer segmented pronunciation
+    'p': 'puh', 'b': 'buh', 't': 'tuh', 'v': 'vuh', 's': 'suh', 'z': 'zuh', 'h': 'huh', 'l': 'luh', 'w': 'wuh', 'y': 'yuh',
+    // Common clusters
+    'bl': 'bluh', 'cl': 'cluh', 'fl': 'fluh', 'gl': 'gluh', 'pl': 'pluh', 'sl': 'sluh', 'br': 'bruh', 'cr': 'cruh', 'dr': 'druh', 'fr': 'fruh', 'gr': 'gruh', 'pr': 'pruh', 'tr': 'truh',
+    // Vowel teams
+    'ue': 'oo', 'oo': 'oo', 'igh': 'eye'
   };
 
   public static getInstance(): PhoneticRulesEngine {

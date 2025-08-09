@@ -61,8 +61,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
 }) => {
   const { t } = useTranslation();
   const { toast } = useToast();
-  const { isMobile, isTablet, isMobileOrTablet, hasTouchCapability } = useIsMobile();
-  const preferMobileModal = isMobile || (isTablet && hasTouchCapability);
+  const { isMobile, isTablet, isMobileOrTablet } = useIsMobile();
   const { layout, fallbackToClassic } = useReaderLayout();
   
   // Story state
@@ -799,7 +798,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                           isPremium,
                           userId: userInfo.name,
                           highlightedWordIndex: currentHighlightedWord,
-                           isMobile: preferMobileModal
+                           isMobile: isMobileOrTablet
                         })}
                       </div>
                     </div>
@@ -858,7 +857,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                             isPremium,
                             userId: userInfo.name,
                             highlightedWordIndex: currentHighlightedWord,
-                            isMobile: preferMobileModal
+                            isMobile: isMobileOrTablet
                           })}
                         </div>
                       </div>
