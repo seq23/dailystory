@@ -174,16 +174,45 @@ useEffect(() => {
           
           {/* Quick +15m for Premium in collapsed mode */}
           {isPremium && onIncreaseTime && timeRemaining < 60 * 60 && (
-            <Button
-              variant="outline"
-              size={isMobile ? "sm" : "icon"}
-              onClick={(e) => { e.stopPropagation(); onIncreaseTime(); }}
-              className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-background/95 backdrop-blur-sm"
-              aria-label={t("floatingTimer.increaseTime", "Increase time by 15 minutes")}
-            >
-              <Plus className="w-3 h-3" />
-            </Button>
+            isMobileOrTablet ? (
+              <Button
+                variant="outline"
+                size={isMobile ? "sm" : "icon"}
+                onClick={(e) => { e.stopPropagation(); onIncreaseTime(); }}
+                className={cn(
+                  "absolute -top-1 -right-1 rounded-full bg-background/95 backdrop-blur-sm",
+                  isMobile ? "w-8 h-8" : "w-6 h-6"
+                )}
+                aria-label={t("floatingTimer.increaseTime", "Increase time by 15 minutes")}
+                id="timer-increase-collapsed-button"
+              >
+                <Plus className={isMobile ? "w-4 h-4" : "w-3 h-3"} />
+              </Button>
+            ) : (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={(e) => { e.stopPropagation(); onIncreaseTime(); }}
+                      className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-background/95 backdrop-blur-sm"
+                      aria-label={t("floatingTimer.increaseTime", "Increase time by 15 minutes")}
+                      id="timer-increase-collapsed-button"
+                    >
+                      <Plus className="w-3 h-3" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {timeRemaining >= 60 * 60
+                      ? t("floatingTimer.maxLimit", "Max Limit")
+                      : t("floatingTimer.sequentialTooltips.increaseTime", "Add 15 minutes (max 60)")}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )
           )}
+
           
           {/* Enhanced expand indicator */}
           <div className={cn(
