@@ -776,7 +776,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                         </div>
                       )}
                       {/* Audio Controls */}
-                      <div id="audio-controls" className="mt-4 md:mt-6 flex justify-center gap-4">
+                      <div id="audio-controls" className="mt-4 md:mt-6 flex justify-center gap-4 xl:hidden">
                         <ElevenLabsAudio
                           text={currentStory}
                           userInfo={userInfo}
@@ -795,26 +795,44 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                     </div>
                   )}
 
-                  {/* Text Content - RIGHT SIDE - Equal size on desktop */}
-                  <div className="xl:order-2 flex flex-col h-full justify-center xl:justify-start">
-                    <div className="story-container h-full flex items-center xl:items-stretch xl:overflow-y-auto">
-                      <div 
-                        className="story-content storybook-frame w-full"
-                        data-difficulty={currentDifficulty}
-                      >
-                        {processTextWithConsistentFlow({
-                          text: currentStory,
-                          className: "interactive-word",
-                          difficulty: currentDifficulty,
-                          userInfo,
-                          isPremium,
-                          userId: userInfo.name,
-                          highlightedWordIndex: currentHighlightedWord,
-                          isMobile: isMobileOrTablet
-                        })}
+                  <div className="xl:order-2 flex flex-col h-full">
+                    <div className="w-full h-full rounded-2xl shadow-2xl bg-card">
+                      <div className="h-full overflow-y-auto p-4 md:p-6 lg:p-8">
+                        <div 
+                          className="story-content storybook-frame w-full"
+                          data-difficulty={currentDifficulty}
+                        >
+                          {processTextWithConsistentFlow({
+                            text: currentStory,
+                            className: "interactive-word",
+                            difficulty: currentDifficulty,
+                            userInfo,
+                            isPremium,
+                            userId: userInfo.name,
+                            highlightedWordIndex: currentHighlightedWord,
+                            isMobile: isMobileOrTablet
+                          })}
+                        </div>
                       </div>
                     </div>
                   </div>
+                </div>
+                {/* Desktop Audio Controls - moved outside columns for perfect mirroring */}
+                <div className="hidden xl:flex justify-center gap-4 mt-4">
+                  <ElevenLabsAudio
+                    text={currentStory}
+                    userInfo={userInfo}
+                    isPremium={isPremium}
+                    onUpgrade={onUpgrade}
+                    onWordHighlight={onWordHighlight}
+                    difficulty={currentDifficulty}
+                  />
+                  {isAudioPlaying && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                      Playing Audio
+                    </div>
+                  )}
                 </div>
               </div>
 
