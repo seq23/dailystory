@@ -1143,6 +1143,7 @@ const handleRestartTimer = () => {
           isPremium={isPremium}
           onIncreaseTime={isPremium ? handleExtendTime : undefined}
           onDismiss={isPremium ? () => setIsTimerVisible(false) : undefined}
+          onRestartTimer={isPremium ? handleRestartTimer : undefined}
         />
       )}
       

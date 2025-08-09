@@ -63,7 +63,11 @@ const SessionEnded = ({ onHome, onNewStory, isPremium = false, onUpgrade }: Sess
     window.history.pushState(null, '', '/?action=new-story');
     window.location.reload();
   };
-  
+
+  const handleStartTimed = () => {
+    window.history.pushState(null, '', '/?action=new-story');
+    window.location.reload();
+  };
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
@@ -232,6 +236,17 @@ const SessionEnded = ({ onHome, onNewStory, isPremium = false, onUpgrade }: Sess
           
           {/* Action Buttons */}
           <div className="space-y-3 pt-4">
+              {userIsPremium && (
+                <Button
+                  onClick={handleStartTimed}
+                  className="w-full bg-primary text-primary-foreground font-medium py-3"
+                  size="lg"
+                >
+                  <Clock className="w-5 h-5 mr-2" />
+                  {t("sessionEnded.startAnotherTimed", "Start Another Timed Session")}
+                </Button>
+              )}
+
               <Button
                 onClick={handleHome}
                 className="w-full bg-amber-500 hover:bg-amber-600 text-white font-medium py-3"
