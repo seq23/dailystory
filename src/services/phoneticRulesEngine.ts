@@ -17,6 +17,7 @@ interface SyllableBreakRule {
 
 export class PhoneticRulesEngine {
   private static instance: PhoneticRulesEngine;
+  private dictCache = new Map<string, string[]>();
   
   // Phonetic transformation rules (high to low priority)
   private phoneticRules: PhoneticRule[] = [
@@ -229,23 +230,62 @@ export class PhoneticRulesEngine {
     return pronunciation;
   }
 
-  /**
-   * Apply phonetic transformations to make text more speech-friendly
-   */
-  public applyPhoneticTransformations(text: string): string {
-    let transformed = text.toLowerCase();
-    
-    // Apply rules by priority (highest first)
-    const sortedRules = [...this.phoneticRules].sort((a, b) => b.priority - a.priority);
-    
-    for (const rule of sortedRules) {
-      if (rule.pattern.test(transformed)) {
-        transformed = transformed.replace(rule.pattern, rule.replacement);
-        console.log(`🔄 Applied rule ${rule.pattern} → "${transformed}"`);
+  // Async: try Datamuse ARPABET, then fallback to sync
+  public async breakIntoSyllablesAsync(word: string): Promise<string[]> {
+    const key = word.toLowerCase();
+    if (this.dictCache.has(key)) return this.dictCache.get(key)!;
+    try {
+      const url = `https://api.datamuse.com/words?sp=${encodeURIComponent(key)}&md=r&max=1`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          const tags: string[] = data[0]?.tags || [];
+          const pronTag = tags.find(t => t.startsWith('pron:'));
+          if (pronTag) {
+            const arp = pronTag.replace('pron:', '').replace(/\d/g, '').trim();
+            const phones = arp.split(/\s+/).filter(Boolean);
+            const chunks = this.arpabetToChunks(phones, key);
+            if (chunks.length) {
+              this.dictCache.set(key, chunks);
+              return chunks;
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Datamuse lookup failed, using heuristic:', e);
+    }
+    const fallback = this.breakIntoSyllables(word);
+    this.dictCache.set(key, fallback);
+    return fallback;
+  }
+
+  private arpabetToChunks(phones: string[], clean: string): string[] {
+    const VOWELS = new Set(['AA','AE','AH','AO','AW','AY','EH','ER','EY','IH','IY','OW','OY','UH','UW']);
+    const MAP: Record<string,string> = {
+      AA:'ah', AE:'a', AH:'uh', AO:'aw', AW:'ow', AY:'eye', EH:'e', ER:'er', EY:'ay', IH:'i', IY:'ee', OW:'oh', OY:'oy', UH:'oo', UW:'oo',
+      B:'b', CH:'ch', D:'d', DH:'th', F:'f', G:'g', HH:'h', JH:'j', K:'k', L:'l', M:'m', N:'n', NG:'ng', P:'p', R:'r', S:'s', SH:'sh', T:'t', TH:'th', V:'v', W:'w', Y:'y', Z:'z', ZH:'zh'
+    };
+    const out: string[] = [];
+    let i = 0;
+    while (i < phones.length) {
+      let onset = '';
+      while (i < phones.length && !VOWELS.has(phones[i])) { onset += MAP[phones[i]] || phones[i].toLowerCase(); i++; }
+      if (i < phones.length && VOWELS.has(phones[i])) {
+        const nucleus = MAP[phones[i]] || phones[i].toLowerCase(); i++;
+        let coda = '';
+        while (i < phones.length && !VOWELS.has(phones[i])) { coda += MAP[phones[i]] || phones[i].toLowerCase(); i++; }
+        if (onset) out.push(onset);
+        out.push(nucleus);
+        if (coda) {
+          if (coda.endsWith('s') && coda.length > 1) { out.push(coda.slice(0, -1)); out.push('s'); }
+          else out.push(coda);
+        }
       }
     }
-    
-    return transformed;
+    if (clean.startsWith('wh') && out.length > 0 && out[0] === 'w') out[0] = 'whuh';
+    return out.filter(Boolean);
   }
 
   /**

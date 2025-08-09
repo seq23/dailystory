@@ -172,7 +172,7 @@ export class EnhancedAudioService {
       }
 
       // Break word into syllables and play each with pauses - now available to all users
-      const syllables = this.breakIntoSyllables(word);
+      const syllables = await phoneticRulesEngine.breakIntoSyllablesAsync(word);
       
       console.log(`🔤 Playing phonetic breakdown for "${word}":`, syllables);
       
