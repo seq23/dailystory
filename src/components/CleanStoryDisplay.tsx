@@ -366,12 +366,12 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     } else {
       // Story completed - record comprehensive session stats
       const timeSpent = Date.now() - sessionStartTime;
-      const totalWordsRead = story.join(' ').split(' ').length;
+      const totalWordsRead = sessionWordsRead;
       
       const sessionStats: SessionStats = {
         timeSpent,
         wordsRead: totalWordsRead,
-        pagesRead: story.length,
+        pagesRead: pagesCompleted.size,
         startTime: sessionStartTime,
         accuracy: 100
       };
@@ -380,7 +380,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
       recordReadingSession({
         timeSpent,
         wordsRead: totalWordsRead,
-        pagesRead: story.length,
+        pagesRead: pagesCompleted.size,
         storyCompleted: true,
         readingSpeed: Math.round((totalWordsRead / timeSpent) * 60000) // words per minute
       });
@@ -412,12 +412,12 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
 
   const handleEndSession = () => {
     const timeSpent = (20 * 60 - timeRemaining) * 1000; // Convert to milliseconds
-    const totalWordsRead = story.join(' ').split(' ').length;
+    const totalWordsRead = sessionWordsRead;
     
     const sessionStats = {
       timeSpent,
       wordsRead: totalWordsRead,
-      pagesRead: story.length,
+      pagesRead: pagesCompleted.size,
       startTime: sessionStartTime,
       accuracy: 100
     };
@@ -425,7 +425,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     recordReadingSession({
       timeSpent,
       wordsRead: totalWordsRead,
-      pagesRead: story.length,
+      pagesRead: pagesCompleted.size,
       storyCompleted: currentPage === story.length - 1,
       readingSpeed: Math.round((totalWordsRead / timeSpent) * 60000)
     });
@@ -1012,7 +1012,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                 <div className="flex justify-center items-center gap-6 xl:hidden">
                   <MobileOptimizedButton
                     onClick={handlePrevious}
-                    disabled={currentPage === 0}
+                    disabled={currentPage === 0 || timeRemaining <= 0}
                     variant="outline"
                   >
                     Previous
@@ -1024,7 +1024,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
 
                   <MobileOptimizedButton
                     onClick={handleNext}
-                    disabled={isLoadingNextPage || (!isPremium && currentPage === story.length - 1)}
+                    disabled={isLoadingNextPage || timeRemaining <= 0 || (!isPremium && currentPage === story.length - 1)}
                     className="bg-primary text-primary-foreground"
                   >
                     {isLoadingNextPage ? (
@@ -1059,7 +1059,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
 
                   <MobileOptimizedButton
                     onClick={handleNext}
-                    disabled={isLoadingNextPage || (!isPremium && currentPage === story.length - 1)}
+                    disabled={isLoadingNextPage || timeRemaining <= 0 || (!isPremium && currentPage === story.length - 1)}
                     className="bg-primary text-primary-foreground"
                     size="sm"
                   >
@@ -1097,7 +1097,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         timeRemaining={timeRemaining}
         isReading={isTimerRunning}
         onToggleReading={handleToggleTimer}
-        onReduceTime={isPremium ? handleReduceTime : undefined}
+        onReduceTime={handleReduceTime}
         onEndSession={handleEndSession}
         onSessionEnded={handleEndSession}
         isPremium={isPremium}

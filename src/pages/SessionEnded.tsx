@@ -155,7 +155,7 @@ const SessionEnded = ({ onHome, onNewStory, isPremium = false, onUpgrade }: Sess
                 
                 <div className="bg-green-50 rounded-lg p-4 text-center">
                   <Clock className="w-6 h-6 text-green-600 mx-auto mb-2" />
-                  <div className="text-2xl font-bold text-green-700">{formatTime(sessionStats.timeSpent)}</div>
+                  <div className="text-2xl font-bold text-green-700">{formatTime(Math.round((sessionStats.timeSpent > 1000 ? sessionStats.timeSpent/1000 : sessionStats.timeSpent)))}</div>
                   <div className="text-sm text-green-600">{t("sessionEnded.timeSpent", "Time Spent")}</div>
                 </div>
                 
@@ -183,24 +183,40 @@ const SessionEnded = ({ onHome, onNewStory, isPremium = false, onUpgrade }: Sess
                 <Crown className="w-6 h-6 text-amber-600" />
                 <h3 className="text-lg font-bold text-amber-700">{t("sessionEnded.unlockPremium", "Unlock Premium Benefits!")}</h3>
               </div>
-              <div className="space-y-2 text-sm text-amber-600">
-                 <div className="flex items-center gap-2">
-                   <Star className="w-4 h-4" />
-                   <span>{t("sessionEnded.premiumBenefits.unlimitedSessions", "Unlimited reading sessions")}</span>
-                 </div>
-                 <div className="flex items-center gap-2">
-                   <Volume2 className="w-4 h-4" />
-                   <span>{t("sessionEnded.premiumBenefits.customDifficulty", "Custom story difficulty adjustment")}</span>
-                 </div>
-                 <div className="flex items-center gap-2">
-                   <BookOpen className="w-4 h-4" />
-                   <span>{t("sessionEnded.premiumBenefits.extendedLibrary", "Extended story library with more topics")}</span>
-                 </div>
-                 <div className="flex items-center gap-2">
-                   <TrendingUp className="w-4 h-4" />
-                   <span>{t("sessionEnded.premiumBenefits.advancedTracking", "Advanced progress tracking & analytics")}</span>
-                 </div>
-               </div>
+               <div className="space-y-2 text-sm text-amber-600">
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4" />
+                    <span>{t("sessionEnded.premiumBenefits.unlimitedSessions", "Unlimited reading sessions")}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Volume2 className="w-4 h-4" />
+                    <span>{t("sessionEnded.premiumBenefits.customDifficulty", "Custom story difficulty adjustment")}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="w-4 h-4" />
+                    <span>{t("sessionEnded.premiumBenefits.extendedLibrary", "Extended story library with more topics")}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4" />
+                    <span>{t("sessionEnded.premiumBenefits.advancedTracking", "Advanced progress tracking & analytics")}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4" />
+                    <span>{t("sessionEnded.premiumBenefits.liveGeneration", "Live page-by-page story generation")}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4" />
+                    <span>{t("sessionEnded.premiumBenefits.saveProfiles", "Save multiple profiles and avatars")}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="w-4 h-4" />
+                    <span>{t("sessionEnded.premiumBenefits.vocabulary", "Vocabulary builder and achievements")}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Volume2 className="w-4 h-4" />
+                    <span>{t("sessionEnded.premiumBenefits.multilingual", "Multi-language stories and audio support")}</span>
+                  </div>
+                </div>
               {onUpgrade && (
                 <Button
                   onClick={onUpgrade}

@@ -81,8 +81,6 @@ export const CollapsibleFloatingTimer = ({
     }
   }, [timeRemaining, showCelebration, onSessionEnded, sessionStats]);
 
-
-
   // Responsive positioning
   const getPositionClasses = () => {
     return cn(
@@ -230,7 +228,7 @@ export const CollapsibleFloatingTimer = ({
                 variant="outline"
                 size={isMobile ? "sm" : "default"}
                 onClick={onReduceTime}
-                disabled={timeRemaining <= 5 * 60}
+                disabled={!onReduceTime || timeRemaining <= 5 * 60}
                 className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm"
                 aria-label={t("floatingTimer.reduceTime", "Reduce time by 5 minutes")}
                 id="timer-reduce-button"
@@ -243,35 +241,43 @@ export const CollapsibleFloatingTimer = ({
             </TooltipContent>
           </Tooltip>
 
-          {/* End Session */}
+          {/* Collapse (X) - does NOT end session */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 variant="outline"
                 size={isMobile ? "sm" : "default"}
-                onClick={onEndSession}
+                onClick={() => setIsCollapsed(true)}
                 className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm"
-                aria-label={t("floatingTimer.endSession", "End reading session")}
-                id="timer-end-button"
+                aria-label={t("floatingTimer.collapse", "Collapse timer")}
+                id="timer-collapse-x-button"
               >
                 <X className="w-4 h-4" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              {t("floatingTimer.sequentialTooltips.endSession", "Click to end your reading session!")}
+              {t("floatingTimer.sequentialTooltips.collapse", "Collapse the timer")}
             </TooltipContent>
           </Tooltip>
 
-          {/* Collapse Button - No tooltip needed */}
-          <Button
-            variant="outline"
-            size={isMobile ? "sm" : "default"}
-            onClick={() => setIsCollapsed(true)}
-            className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm"
-            aria-label={t("floatingTimer.collapse", "Collapse timer")}
-          >
-            <ChevronDown className="w-4 h-4" />
-          </Button>
+          {/* Collapse Button */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size={isMobile ? "sm" : "default"}
+                onClick={() => setIsCollapsed(true)}
+                className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm"
+                aria-label={t("floatingTimer.collapse", "Collapse timer")}
+                id="timer-collapse-button"
+              >
+                <ChevronDown className="w-4 h-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {t("floatingTimer.sequentialTooltips.collapse", "Collapse the timer")}
+            </TooltipContent>
+          </Tooltip>
         </div>
       </TooltipProvider>
 
