@@ -434,7 +434,45 @@
     "prevPage": "Page Précédente",
     "currentReading": "Niveau de Lecture Actuel:",
     "readingLevelHeader": "Niveau de Lecture",
-    "readingLevelDescription": "Cette histoire est écrite au niveau {level}"
+     "readingLevelDescription": "Cette histoire est écrite au niveau {level}"
+   },
+  "endStory": {
+    "modal": {
+      "title": "Votre histoire est terminée !",
+      "subtitle": "Choisissez ce que vous souhaitez faire ensuite.",
+      "saveAndGoTitle": "Enregistrer et aller à la Bibliothèque",
+      "saveAndGoDesc": "Vous serez dirigé vers votre Bibliothèque d'Histoires, où cette histoire rejoindra vos histoires enregistrées.",
+      "sequelTitle": "Commencer une Suite ouverte",
+      "sequelDesc": "Vous resterez dans cette session et nous commencerons un nouveau chapitre ouvert inspiré de l'histoire que vous venez de terminer.",
+      "freshTitle": "Générer une Nouvelle Histoire",
+      "freshDesc": "Vous resterez dans cette session et commencerez une toute nouvelle aventure en direct.",
+      "closeLabel": "Rester ici"
+    }
+  },
+  "nav": {
+    "next": "Que se passe-t-il ensuite ?",
+    "endStory": "Terminer l'histoire",
+    "endSession": "Terminer la session"
+  },
+  "timer": {
+    "celebration": { "caption": "Beau travail ! Nous terminons votre session…" },
+    "expired": {
+      "title": "Le temps est écoulé !",
+      "subtitle": "Souhaitez-vous continuer la lecture sans minuterie, enregistrer votre histoire maintenant ou terminer la session ?",
+      "keepUntimed": "Continuer sans minuterie",
+      "saveNow": "Enregistrer l'histoire maintenant",
+      "endNow": "Terminer la session"
+    }
+  },
+  "save": {
+    "toastSaved": "Enregistré dans votre Bibliothèque d'Histoires",
+    "toastError": "Nous n'avons pas pu enregistrer votre histoire. Veuillez réessayer."
+  },
+  "accessibility": {
+    "celebrationSound": "Carillon de célébration",
+    "loadingStory": "Tissons plus de magie d'histoire…",
+    "loadingImage": "Peinture de l'illustration…"
+  }
   },
   "sessionEnded": {
     "completed": "Session de Lecture Terminée!",

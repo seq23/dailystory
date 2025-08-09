@@ -44,6 +44,13 @@ export interface AudioSettings {
     audioFormat: 'mp3' | 'wav';
     cacheAudio: boolean;
   };
+  
+  // Celebration sound settings
+  celebration?: {
+    enabled: boolean;
+    volume: number;
+    duckTTS: boolean;
+  };
 }
 
 export const defaultAudioConfig: AudioSettings = {
@@ -83,6 +90,12 @@ export const defaultAudioConfig: AudioSettings = {
     },
     audioFormat: 'mp3',
     cacheAudio: true,
+  },
+  
+  celebration: {
+    enabled: true,
+    volume: 0.5,
+    duckTTS: true,
   },
 };
 

@@ -668,15 +668,43 @@
       "errorDescription": "Failed to submit feedback. Please try again."
     }
   },
-  "progressTowers": {
-    "title": "Reading Progress",
-    "subtitle": "Keep climbing!",
-    "words": "Words Read",
-    "pages": "Pages Completed", 
-    "vocabulary": "Words Learned",
-    "milestone": "Great progress!",
-    "storyComplete": "Story completed!",
-    "expand": "View Progress",
-    "collapse": "Hide Progress"
+  "endStory": {
+    "modal": {
+      "title": "Your story is complete!",
+      "subtitle": "Choose what you’d like to do next.",
+      "saveAndGoTitle": "Save and go to Library",
+      "saveAndGoDesc": "You’ll be directed to your Story Library, where this story will join your saved stories.",
+      "sequelTitle": "Start an open‑ended Sequel",
+      "sequelDesc": "You’ll remain in this session and we’ll begin a new open‑ended chapter inspired by the story you just ended.",
+      "freshTitle": "Generate a Fresh Story",
+      "freshDesc": "You’ll remain in this session and start a brand‑new live adventure.",
+      "closeLabel": "Stay here"
+    }
+  },
+  "nav": {
+    "next": "What happens next?",
+    "endStory": "End Story",
+    "endSession": "End Session"
+  },
+  "timer": {
+    "celebration": {
+      "caption": "Amazing work! Wrapping up your session…"
+    },
+    "expired": {
+      "title": "Time’s up!",
+      "subtitle": "Would you like to keep reading without a timer, save your story now, or end the session?",
+      "keepUntimed": "Keep reading untimed",
+      "saveNow": "Save story now",
+      "endNow": "End session"
+    }
+  },
+  "save": {
+    "toastSaved": "Saved to your Story Library",
+    "toastError": "We couldn’t save your story. Please try again."
+  },
+  "accessibility": {
+    "celebrationSound": "Celebration chime",
+    "loadingStory": "Weaving more story magic…",
+    "loadingImage": "Painting illustration…"
   }
 }

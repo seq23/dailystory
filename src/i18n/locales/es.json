@@ -378,6 +378,57 @@
       "endSession": "🔚 ¡Haz clic para terminar tu sesión de lectura!"
     }
   },
+  "endStory": {
+    "modal": {
+      "title": "¡Tu historia está completa!",
+      "subtitle": "Elige qué te gustaría hacer a continuación.",
+      "saveAndGoTitle": "Guardar e ir a la Biblioteca",
+      "saveAndGoDesc": "Serás dirigido a tu Biblioteca de Historias, donde esta historia se unirá a tus historias guardadas.",
+      "sequelTitle": "Comenzar una Secuela abierta",
+      "sequelDesc": "Permanecerás en esta sesión y comenzaremos un nuevo capítulo abierto inspirado en la historia que acabas de finalizar.",
+      "freshTitle": "Generar una Historia Nueva",
+      "freshDesc": "Permanecerás en esta sesión y comenzarás una aventura completamente nueva.",
+      "closeLabel": "Quedarme aquí"
+    }
+  },
+  "nav": {
+    "next": "¿Qué sucede después?",
+    "endStory": "Terminar Historia",
+    "endSession": "Terminar Sesión"
+  },
+  "timer": {
+    "celebration": { "caption": "¡Trabajo increíble! Terminando tu sesión…" },
+    "expired": {
+      "title": "¡Se acabó el tiempo!",
+      "subtitle": "¿Te gustaría seguir leyendo sin temporizador, guardar tu historia ahora o terminar la sesión?",
+      "keepUntimed": "Seguir sin temporizador",
+      "saveNow": "Guardar historia ahora",
+      "endNow": "Terminar sesión"
+    }
+  },
+  "save": {
+    "toastSaved": "Guardado en tu Biblioteca de Historias",
+    "toastError": "No pudimos guardar tu historia. Inténtalo de nuevo."
+  },
+  "accessibility": {
+    "celebrationSound": "Timbre de celebración",
+    "loadingStory": "Tejiendo más magia de historia…",
+    "loadingImage": "Pintando ilustración…"
+  }
+    "maxLimit": "Límite Máximo",
+    "readingTime": "Tiempo de Lectura",
+    "startTimer": "Iniciar Cronómetro",
+    "pauseTimer": "Pausar Cronómetro",
+    "reduceTime": "Reducir 5 Minutos",
+    "endSession": "Terminar Sesión de Lectura",
+    "congratulations": "¡Felicitaciones!",
+    "sessionComplete": "¡Completaste tu sesión de lectura!",
+    "sequentialTooltips": {
+      "startPause": "🎯 ¡Haz clic para iniciar/pausar tu cronómetro de lectura!",
+      "reduceTime": "⏰ ¡Reduce el tiempo en 5 minutos!",
+      "endSession": "🔚 ¡Haz clic para terminar tu sesión de lectura!"
+    }
+  },
   "audioReading": {
     "playAudio": "Reproducir audio",
     "audioPlaying": "Reproduciendo audio...",

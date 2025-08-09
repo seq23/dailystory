@@ -112,6 +112,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [isMagicWandAnimating, setIsMagicWandAnimating] = useState(false);
   const [isGeneratingEnding, setIsGeneratingEnding] = useState(false);
   const [showManualCelebration, setShowManualCelebration] = useState(false);
+  const [showEndStoryModal, setShowEndStoryModal] = useState(false);
   const loaderStartRef = useRef<number>(0);
   const LOADER_MIN_MS = 1600;
 
@@ -552,8 +553,32 @@ const handleRestartTimer = () => {
     }
   };
 
-  // Regenerate current page (premium only)
-  const handleRegeneratePage = async () => {
+  // End Story follow-up actions (Premium)
+  const handleSaveAndGoToLibrary = async () => {
+    await handleSaveStoryNow();
+    try { window.location.href='/?action=library'; } catch {}
+  };
+
+  const handleStartSequel = () => {
+    const newContext: LiveGenerationContext = {
+      userInfo,
+      difficulty: currentDifficulty,
+      expertGradeLevel: currentDifficulty === 'expert' ? expertGradeLevel : undefined,
+      storyContext: [...story],
+      currentPage: story.length,
+      totalExpectedPages: Math.max(story.length + 1, 6),
+      characters: [userInfo.name, userInfo.favoriteAnimal || 'friend'],
+      openEnded: true,
+    };
+    setLiveContext(newContext);
+    setIsStoryComplete(false);
+    setShowEndStoryModal(false);
+  };
+
+  const handleFreshStoryAfterEnd = async () => {
+    setShowEndStoryModal(false);
+    await initializeStory();
+  };
     if (!isPremium || isLoadingNextPage) return;
     
     setIsLoadingNextPage(true);
@@ -602,9 +627,10 @@ const handleRestartTimer = () => {
         setStory(prev => [...prev, result.content]);
         setIsStoryComplete(true);
         setLiveContext(null);
+        setShowEndStoryModal(true);
         toast({
-          title: "Ending created",
-          description: "A concluding page was added. You can save the story.",
+          title: t('endStory.modal.title', 'Your story is complete!'),
+          description: t('endStory.modal.subtitle', 'Choose what you’d like to do next.'),
           duration: 3000,
         });
       }
@@ -620,7 +646,7 @@ const handleRestartTimer = () => {
   const handleManualEndSession = () => {
     setShowManualCelebration(true);
     try {
-      const audio = new Audio('/audio/celebration-chime.mp3');
+      const audio = new Audio('/audio/celebration.mp3');
       audio.volume = 0.6;
       audio.play().catch(() => {});
     } catch {}
@@ -1004,14 +1030,14 @@ const handleRestartTimer = () => {
                       variant="outline"
                       size="sm"
                     >
-                      {isGeneratingEnding ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Ending...
-                        </>
-                      ) : (
-                        'End Story'
-                      )}
+                        {isGeneratingEnding ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            {t('common.processing', 'Processing...')}
+                          </>
+                        ) : (
+                          t('nav.endStory', 'End Story')
+                        )}
                     </Button>
                   </div>
                 )}
@@ -1152,10 +1178,10 @@ const handleRestartTimer = () => {
                       {isGeneratingEnding ? (
                         <>
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Ending...
+                          {t('common.processing', 'Processing...')}
                         </>
                       ) : (
-                        'End Story'
+                        t('nav.endStory', 'End Story')
                       )}
                     </MobileOptimizedButton>
                     {isStoryComplete && (
@@ -1217,10 +1243,10 @@ const handleRestartTimer = () => {
                       {isGeneratingEnding ? (
                         <>
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Ending...
+                          {t('common.processing', 'Processing...')}
                         </>
                       ) : (
-                        'End Story'
+                        t('nav.endStory', 'End Story')
                       )}
                     </MobileOptimizedButton>
                     {isStoryComplete && (
@@ -1292,6 +1318,37 @@ const handleRestartTimer = () => {
           onKeepReadingUntimed={isPremium ? handleKeepReadingUntimed : undefined}
           onSaveStoryNow={isPremium ? handleSaveStoryNow : undefined}
         />
+      )}
+      
+      {/* End Story Modal (Premium) */}
+      {isPremium && showEndStoryModal && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center">
+          <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" />
+          <div className="relative z-[111] bg-background border border-border rounded-2xl shadow-2xl w-[92vw] max-w-2xl p-6 animate-scale-in" role="dialog" aria-labelledby="endstory-title" aria-describedby="endstory-desc">
+            <h3 id="endstory-title" className="text-2xl font-bold text-center mb-1">{t('endStory.modal.title','Your story is complete!')}</h3>
+            <p id="endstory-desc" className="text-sm text-muted-foreground text-center mb-5">{t('endStory.modal.subtitle','Choose what you’d like to do next.')}</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="rounded-xl border border-border p-4">
+                <h4 className="font-semibold mb-1">{t('endStory.modal.saveAndGoTitle','Save and go to Library')}</h4>
+                <p className="text-xs text-muted-foreground mb-3">{t('endStory.modal.saveAndGoDesc','You’ll be directed to your Story Library, where this story will join your saved stories.')}</p>
+                <Button className="w-full" onClick={async () => { await handleSaveAndGoToLibrary(); }}>{t('endStory.modal.saveAndGoTitle','Save and go to Library')}</Button>
+              </div>
+              <div className="rounded-xl border border-border p-4">
+                <h4 className="font-semibold mb-1">{t('endStory.modal.sequelTitle','Start an open‑ended Sequel')}</h4>
+                <p className="text-xs text-muted-foreground mb-3">{t('endStory.modal.sequelDesc','You’ll remain in this session and we’ll begin a new open‑ended chapter inspired by the story you just ended.')}</p>
+                <Button variant="outline" className="w-full" onClick={handleStartSequel}>{t('endStory.modal.sequelTitle','Start an open‑ended Sequel')}</Button>
+              </div>
+              <div className="rounded-xl border border-border p-4">
+                <h4 className="font-semibold mb-1">{t('endStory.modal.freshTitle','Generate a Fresh Story')}</h4>
+                <p className="text-xs text-muted-foreground mb-3">{t('endStory.modal.freshDesc','You’ll remain in this session and start a brand‑new live adventure.')}</p>
+                <Button variant="outline" className="w-full" onClick={handleFreshStoryAfterEnd}>{t('endStory.modal.freshTitle','Generate a Fresh Story')}</Button>
+              </div>
+            </div>
+            <div className="mt-5 text-center">
+              <Button variant="ghost" onClick={() => setShowEndStoryModal(false)}>{t('endStory.modal.closeLabel','Stay here')}</Button>
+            </div>
+          </div>
+        </div>
       )}
       
       {/* Modern Progress Towers - Rebuilt with better design */}

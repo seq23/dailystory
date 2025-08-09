@@ -394,7 +394,58 @@
     "voiceCommandsEnabled": "语音命令已启用",
     "voiceCommandsInstructions": "试着说'下一页'、'读慢一点'或'[单词]是什么意思？'"
   },
-  "freeReadingSession": {
+  "floatingTimer": {
+    "maxLimit": "最大限制",
+    "readingTime": "阅读时间",
+    "startTimer": "开始计时器",
+    "pauseTimer": "暂停计时器",
+    "reduceTime": "减少5分钟",
+    "endSession": "结束阅读会话",
+    "congratulations": "恭喜！",
+    "sessionComplete": "您已完成阅读会话！",
+    "sequentialTooltips": {
+      "startPause": "🎯 点击开始/暂停您的阅读计时器！",
+      "reduceTime": "⏰ 减少5分钟时间！",
+      "endSession": "🔚 点击结束您的阅读会话！"
+    }
+  },
+  "endStory": {
+    "modal": {
+      "title": "您的故事完成啦！",
+      "subtitle": "选择您接下来想做的事。",
+      "saveAndGoTitle": "保存并前往库",
+      "saveAndGoDesc": "我们将带您前往故事库，这个故事会加入您的已保存故事。",
+      "sequelTitle": "开启开放式续集",
+      "sequelDesc": "您将留在本次会话中，我们会开始一个受刚刚故事启发的开放式新章节。",
+      "freshTitle": "生成全新故事",
+      "freshDesc": "您将留在本次会话中，开始一段全新的实时冒险。",
+      "closeLabel": "留在这里"
+    }
+  },
+  "nav": {
+    "next": "接下来会发生什么？",
+    "endStory": "结束故事",
+    "endSession": "结束会话"
+  },
+  "timer": {
+    "celebration": { "caption": "太棒了！正在结束本次会话…" },
+    "expired": {
+      "title": "时间到！",
+      "subtitle": "您想在无计时器下继续阅读、现在保存故事，还是结束会话？",
+      "keepUntimed": "无计时继续阅读",
+      "saveNow": "立即保存故事",
+      "endNow": "结束会话"
+    }
+  },
+  "save": {
+    "toastSaved": "已保存到您的故事库",
+    "toastError": "我们未能保存您的故事。请重试。"
+  },
+  "accessibility": {
+    "celebrationSound": "庆祝提示音",
+    "loadingStory": "编织更多故事魔法…",
+    "loadingImage": "绘制插图…"
+  }
     "navigation": {
       "previous": "← 上一页",
       "next": "下一页 →",

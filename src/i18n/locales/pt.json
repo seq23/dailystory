@@ -149,6 +149,52 @@
       "sessionComplete": "Você completou sua sessão de leitura gratuita!"
     },
     "readingLevel": {
+      "tutorialSteps": {
+        "step1": "Seu cronômetro de 20 minutos está rodando! Use + para adicionar tempo, - para reduzir tempo.",
+        "step2": "O botão do alto-falante lê em voz alta, o microfone grava sua leitura.",
+        "step3": "Os botões Mais fácil/Mais difícil ajustam a dificuldade da história enquanto você lê.",
+        "step4": "Os botões Adicionar/Remover páginas alteram o comprimento da sua história.",
+        "step5": "Feliz leitura! Aproveite sua aventura personalizada!"
+      }
+    }
+  },
+  "endStory": {
+    "modal": {
+      "title": "Sua história está completa!",
+      "subtitle": "Escolha o que deseja fazer em seguida.",
+      "saveAndGoTitle": "Salvar e ir para a Biblioteca",
+      "saveAndGoDesc": "Você será direcionado à Biblioteca de Histórias, onde esta história se juntará às suas histórias salvas.",
+      "sequelTitle": "Começar uma Continuação aberta",
+      "sequelDesc": "Você permanecerá nesta sessão e começaremos um novo capítulo aberto inspirado na história que você acabou de terminar.",
+      "freshTitle": "Gerar uma Nova História",
+      "freshDesc": "Você permanecerá nesta sessão e começará uma aventura totalmente nova.",
+      "closeLabel": "Ficar aqui"
+    }
+  },
+  "nav": {
+    "next": "O que acontece depois?",
+    "endStory": "Encerrar História",
+    "endSession": "Encerrar Sessão"
+  },
+  "timer": {
+    "celebration": { "caption": "Trabalho incrível! Finalizando sua sessão…" },
+    "expired": {
+      "title": "O tempo acabou!",
+      "subtitle": "Você gostaria de continuar lendo sem cronômetro, salvar sua história agora ou encerrar a sessão?",
+      "keepUntimed": "Continuar sem cronômetro",
+      "saveNow": "Salvar história agora",
+      "endNow": "Encerrar sessão"
+    }
+  },
+  "save": {
+    "toastSaved": "Salvo na sua Biblioteca de Histórias",
+    "toastError": "Não foi possível salvar sua história. Tente novamente."
+  },
+  "accessibility": {
+    "celebrationSound": "Som de celebração",
+    "loadingStory": "Tecendo mais magia de história…",
+    "loadingImage": "Pintando ilustração…"
+  }
       "label": "Nível de Leitura",
       "easier": "🌟 Tornar esta história mais fácil",
       "harder": "🚀 Tornar esta história mais difícil"

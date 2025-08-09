@@ -36,13 +36,24 @@ export const CollapsibleFloatingTimer = ({
   isPremium = false,
   onIncreaseTime,
   onDismiss,
-  onRestartTimer
+  onRestartTimer,
+  onKeepReadingUntimed,
+  onSaveStoryNow
 }: CollapsibleFloatingTimerProps) => {
   const { t } = useTranslation();
   const { isMobile, isTablet, isMobileOrTablet } = useIsMobile();
-const [isCollapsed, setIsCollapsed] = useState(false); // NOT auto-collapsed - consistent for all users
-const [showCelebration, setShowCelebration] = useState(false);
-const [showChoice, setShowChoice] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false); // NOT auto-collapsed - consistent for all users
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [showChoice, setShowChoice] = useState(false);
+  // Celebration sound mute preference
+  const [muted, setMuted] = useState<boolean>(() => {
+    try { return localStorage.getItem('celebrationMuted') === '1'; } catch { return false; }
+  });
+  useEffect(() => {
+    try {
+      if (muted) localStorage.setItem('celebrationMuted','1'); else localStorage.removeItem('celebrationMuted');
+    } catch {}
+  }, [muted]);
   // Low time pulse (one-shot) management
   const [lowTimePulse, setLowTimePulse] = useState(false);
   const wasBelowThresholdRef = useRef(false);
@@ -84,9 +95,11 @@ useEffect(() => {
   if (timeRemaining === 0 && !showCelebration && !showChoice) {
     setShowCelebration(true);
     try {
-      const audio = new Audio('/audio/celebration-chime.mp3');
-      audio.volume = 0.6;
-      audio.play().catch(() => {});
+      if (!muted) {
+        const audio = new Audio('/audio/celebration.mp3');
+        audio.volume = 0.5;
+        audio.play().catch(() => {});
+      }
     } catch {}
     const timeout = setTimeout(() => {
       setShowCelebration(false);
@@ -98,7 +111,7 @@ useEffect(() => {
     }, 5000);
     return () => clearTimeout(timeout);
   }
-}, [timeRemaining, showCelebration, showChoice, isPremium, onSessionEnded, sessionStats]);
+}, [timeRemaining, showCelebration, showChoice, isPremium, onSessionEnded, sessionStats, muted]);
 
 // Reset choice/celebration when timer is restarted
 useEffect(() => {
@@ -378,15 +391,22 @@ useEffect(() => {
 
 {/* Celebration Animation */}
 {showCelebration && (
-  <div className="fixed inset-0 z-[100] flex items-center justify-center">
-    <div className="absolute inset-0 bg-background/70 backdrop-blur-sm pointer-events-none" />
+  <div className="fixed inset-0 z-[100] flex items-center justify-center" role="dialog" aria-labelledby="celebration-title" aria-live="polite">
+    <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" />
     <div className="relative z-[101] bg-background border border-border rounded-2xl shadow-2xl p-6 text-center animate-scale-in">
+      <button
+        className="absolute top-3 right-3 text-muted-foreground hover:text-foreground"
+        aria-label={muted ? t('audio.muted','Muted') : t('audio.unmuted','Sound on')}
+        onClick={() => setMuted((m) => !m)}
+      >
+        {muted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+      </button>
       <div className="text-5xl mb-3">🎉</div>
-      <h3 className="text-xl font-bold text-emerald-600">
+      <h3 id="celebration-title" className="text-xl font-bold text-emerald-600">
         {t("floatingTimer.congratulations", "Congratulations!")}
       </h3>
-      <p className="text-sm text-muted-foreground">
-        {t("floatingTimer.sessionComplete", "Reading session complete!")}
+      <p className="text-sm text-muted-foreground" role="status" aria-live="polite">
+        {t('timer.celebration.caption', 'Amazing work! Wrapping up your session…')}
       </p>
     </div>
   </div>
@@ -396,32 +416,33 @@ useEffect(() => {
 {showChoice && (
   <div className="absolute inset-0 flex items-center justify-center">
     <div className="bg-background/95 backdrop-blur-md border border-border rounded-2xl shadow-2xl p-4 sm:p-6 w-[90vw] max-w-md animate-scale-in">
-      <h3 className="text-lg font-bold mb-2 text-center">{t("floatingTimer.timeUp", "Time's up!")}</h3>
+      <h3 className="text-lg font-bold mb-2 text-center">{t('timer.expired.title', "Time's up!")}</h3>
       <p className="text-sm text-muted-foreground text-center mb-4">
-        {t("floatingTimer.chooseAction", "Would you like to stay in this story or end the session?")}
+        {t('timer.expired.subtitle', 'Would you like to keep reading without a timer, save your story now, or end the session?')}
       </p>
       <div className="grid grid-cols-1 gap-2">
         {isPremium && (
           <Button
             onClick={() => {
+              onKeepReadingUntimed?.();
               setShowChoice(false);
             }}
             variant="outline"
             className="w-full"
           >
-            {t("floatingTimer.stayInStory", "Stay in current story")}
+            {t('timer.expired.keepUntimed', 'Keep reading untimed')}
           </Button>
         )}
         {isPremium && (
           <Button
-            onClick={() => {
-              if (typeof onRestartTimer === 'function') onRestartTimer();
+            onClick={async () => {
+              await onSaveStoryNow?.();
               setShowChoice(false);
-              setIsCollapsed(false);
+              try { window.location.href='/?action=library'; } catch {}
             }}
             className="w-full"
           >
-            {t("floatingTimer.restartTimer", "Restart 20-minute Timer")}
+            {t('timer.expired.saveNow', 'Save story now')}
           </Button>
         )}
         <Button
@@ -429,7 +450,7 @@ useEffect(() => {
           variant="secondary"
           className="w-full"
         >
-          {t("floatingTimer.endSession", "End session")}
+          {t('timer.expired.endNow', 'End session')}
         </Button>
       </div>
     </div>

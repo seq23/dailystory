@@ -54,6 +54,10 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
       setCurrentView("stories");
       // Clean up the URL
       window.history.replaceState({}, '', '/');
+    } else if (action === 'library') {
+      // Navigate directly to the Story Library after save
+      setCurrentView("library");
+      window.history.replaceState({}, '', '/');
     }
   }, []);
 
