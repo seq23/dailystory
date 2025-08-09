@@ -140,3 +140,81 @@
     padding: 2rem;
   }
 }
+
+/* Vintage hardcover spread: two-page layout and stacked page edges */
+.hardcover-spread.hardcover--vintage-pages .spread-pages {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(0.5rem, 1vw, 0.75rem);
+  position: relative;
+  z-index: 1;
+}
+
+.hardcover-spread .left-page,
+.hardcover-spread .right-page {
+  contain: layout paint;
+}
+
+.hardcover-spread .page-figure {
+  margin: 0;
+}
+
+.hardcover-spread .page-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px hsl(var(--leather-deep) / 0.18);
+  filter: sepia(0.2) contrast(1.05) saturate(0.9);
+  mix-blend-mode: multiply;
+}
+
+.hardcover-spread .page-caption {
+  margin-top: 0.5rem;
+  opacity: 0.85;
+}
+
+/* Simulated page stacks to show book thickness */
+.page-stack {
+  position: absolute;
+  top: clamp(10px, 2vw, 14px);
+  bottom: clamp(10px, 2vw, 14px);
+  width: clamp(12px, 1.8vw, 18px);
+  background: repeating-linear-gradient(
+    to bottom,
+    hsl(var(--paper-edge)),
+    hsl(var(--paper-edge)) 2px,
+    hsl(var(--paper)) 2px,
+    hsl(var(--paper)) 6px
+  );
+  z-index: 0;
+  opacity: 0.92;
+}
+
+.page-stack--left {
+  left: clamp(6px, 1vw, 10px);
+  border-top-left-radius: 0.75rem;
+  border-bottom-left-radius: 0.75rem;
+  box-shadow: inset -4px 0 6px hsl(var(--leather-deep) / 0.25);
+}
+
+.page-stack--right {
+  right: clamp(6px, 1vw, 10px);
+  border-top-right-radius: 0.75rem;
+  border-bottom-right-radius: 0.75rem;
+  box-shadow: inset 4px 0 6px hsl(var(--leather-deep) / 0.25);
+}
+
+@media (max-width: 768px) {
+  .hardcover-spread.hardcover--vintage-pages .spread-pages {
+    grid-template-columns: 1fr;
+  }
+  .hardcover-spread::after {
+    display: none; /* hide center gutter on narrow screens */
+  }
+  .page-stack--left,
+  .page-stack--right {
+    width: clamp(8px, 2.5vw, 12px);
+    opacity: 0.78;
+  }
+}

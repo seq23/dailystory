@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import heroImage from "@/assets/hero-image-diverse-clear.jpg";
+import leftPageImage from "@/assets/story-illustration-14.jpg";
 
 const sampleText = `Luna and Max found a hidden door in the library. When they pushed it open, a tiny breeze carried the scent of pine trees and warm cookies. “Ready?” Max whispered. Luna nodded, and together they stepped into a world of stories.`;
 
@@ -84,12 +85,31 @@ const StylePreview: React.FC = () => {
               <CardDescription>Outer border, subtle center spine, inset page.</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="hardcover-spread">
-                <div className="page-inset">
-                  <div className="story-content" data-difficulty="easy">
-                    {sampleText}
+              <div className="hardcover-spread hardcover--vintage-pages">
+                <div className="spread-pages">
+                  <div className="left-page page-inset">
+                    <figure className="page-figure">
+                      <img
+                        src={leftPageImage}
+                        alt="Vintage story illustration on the left page of the hardcover spread"
+                        loading="lazy"
+                        width={600}
+                        height={400}
+                        className="page-image"
+                      />
+                      <figcaption className="page-caption text-xs text-muted-foreground">
+                        Illustration page
+                      </figcaption>
+                    </figure>
+                  </div>
+                  <div className="right-page page-inset">
+                    <div className="story-content" data-difficulty="easy">
+                      {sampleText}
+                    </div>
                   </div>
                 </div>
+                <div className="page-stack page-stack--left" aria-hidden="true" />
+                <div className="page-stack page-stack--right" aria-hidden="true" />
               </div>
             </CardContent>
           </Card>
