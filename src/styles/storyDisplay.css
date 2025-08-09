@@ -92,6 +92,9 @@
   .story-content {
     padding: 1rem;
     margin: 0.25rem 0;
+    background: hsl(var(--card));
+    color: hsl(var(--card-foreground));
+    backdrop-filter: none;
   }
   
   .story-container {
@@ -121,6 +124,9 @@
   
   .story-content {
     padding: 1.5rem;
+    background: hsl(var(--card));
+    color: hsl(var(--card-foreground));
+    backdrop-filter: none;
   }
 }
 

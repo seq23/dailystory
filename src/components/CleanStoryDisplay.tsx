@@ -712,11 +712,11 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                         {currentImage && (
                           <>
                             <div className="xl:hidden">
-                              <AspectRatio ratio={4/3}>
+                              <AspectRatio ratio={16/9}>
                                 <img 
                                   src={currentImage} 
                                   alt={`Story illustration for page ${currentPage + 1}: ${story[currentPage]?.substring(0, 100)}...`}
-                                  className="h-full w-full object-cover rounded-2xl shadow-2xl story-image-container-enhanced"
+                                  className="h-full w-full object-cover rounded-2xl shadow-2xl"
                                   loading="lazy"
                                   onError={(e) => {
                                     console.warn('Story image failed to load:', currentImage);
@@ -726,22 +726,24 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                               </AspectRatio>
                             </div>
                             <div className="hidden xl:block">
-                              <img 
-                                src={currentImage} 
-                                alt={`Story illustration for page ${currentPage + 1}: ${story[currentPage]?.substring(0, 100)}...`}
-                                className="w-full h-full object-cover rounded-2xl shadow-2xl story-image-container-enhanced"
-                                loading="lazy"
-                                onError={(e) => {
-                                  console.warn('Story image failed to load:', currentImage);
-                                  (e.currentTarget as HTMLImageElement).style.display = 'none';
-                                }}
-                              />
+                              <AspectRatio ratio={16/9}>
+                                <img 
+                                  src={currentImage} 
+                                  alt={`Story illustration for page ${currentPage + 1}: ${story[currentPage]?.substring(0, 100)}...`}
+                                  className="h-full w-full object-cover rounded-2xl shadow-2xl"
+                                  loading="lazy"
+                                  onError={(e) => {
+                                    console.warn('Story image failed to load:', currentImage);
+                                    (e.currentTarget as HTMLImageElement).style.display = 'none';
+                                  }}
+                                />
+                              </AspectRatio>
                             </div>
                           </>
                         )}
                     
                     {isGeneratingImage && !currentImage && (
-                      <div className="w-full h-80 sm:h-96 md:h-[36rem] xl:h-full bg-muted rounded-2xl flex items-center justify-center story-image-container-enhanced">
+                      <div className="w-full h-80 sm:h-96 md:h-[36rem] xl:h-full bg-muted rounded-2xl flex items-center justify-center">
                         <div className="text-center">
                           <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
                           <p className="text-sm text-muted-foreground">Creating illustration...</p>

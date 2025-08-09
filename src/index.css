@@ -546,8 +546,8 @@ All colors MUST be HSL.
 }
 
 .story-image-container-enhanced {
-  height: 42rem !important;
-  min-height: 42rem !important;
+  height: auto !important;
+  min-height: 0 !important;
 }
 
 @keyframes shake {
