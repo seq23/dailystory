@@ -19,6 +19,7 @@ import {
   ChevronDown
 } from "lucide-react";
 import type { UserInfo } from "@/types";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 interface PremiumHeaderProps {
   userInfo: UserInfo;
@@ -60,6 +61,7 @@ export const PremiumHeader = ({
         <div className="flex justify-between items-center">
           {/* Logo and Title */}
           <div className="flex items-center gap-3">
+            <SidebarTrigger className="mr-1" />
             <div className="p-2 bg-gradient-primary rounded-lg">
               <BookOpen className="w-6 h-6 text-white" />
             </div>

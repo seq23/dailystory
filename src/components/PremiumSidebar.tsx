@@ -8,7 +8,6 @@ import {
   SidebarMenu, 
   SidebarMenuButton, 
   SidebarMenuItem,
-  SidebarTrigger,
   useSidebar 
 } from "@/components/ui/sidebar";
 import { Badge } from "@/components/ui/badge";
@@ -117,7 +116,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
               </div>
             </>
           )}
-          <SidebarTrigger />
+          
         </div>
       </div>
 
