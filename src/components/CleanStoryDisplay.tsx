@@ -441,16 +441,28 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     });
   };
 
-  const handleExtendTime = () => {
-    const extension = 15 * 60; // 15 minutes
-    const maxTime = 60 * 60; // 60 minutes max
-    setTimeRemaining(prev => Math.min(maxTime, prev + extension));
-    toast({
-      title: "Time Extended!",
-      description: "Added 15 minutes to your reading session.",
-      duration: 3000,
-    });
-  };
+const handleExtendTime = () => {
+  const extension = 15 * 60; // 15 minutes
+  const maxTime = 60 * 60; // 60 minutes max
+  setTimeRemaining(prev => Math.min(maxTime, prev + extension));
+  toast({
+    title: "Time Extended!",
+    description: "Added 15 minutes to your reading session.",
+    duration: 3000,
+  });
+};
+
+const handleRestartTimer = () => {
+  setIsTimerCanceled(false);
+  setIsTimerVisible(true);
+  setTimeRemaining(20 * 60);
+  setIsTimerRunning(true);
+  toast({
+    title: "New Timer Started",
+    description: "A fresh 20-minute session has begun.",
+    duration: 2500,
+  });
+};
 
   // Magic wand functionality - Generate new story
   const handleGenerateNewStory = async () => {

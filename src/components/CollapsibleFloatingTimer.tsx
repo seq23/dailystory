@@ -20,6 +20,7 @@ interface CollapsibleFloatingTimerProps {
   isPremium?: boolean; // Add premium status for enhanced free trial experience
   onIncreaseTime?: () => void; // Premium: increase time (up to 60 minutes)
   onDismiss?: () => void; // Premium: dismiss/hide timer without ending session
+  onRestartTimer?: () => void; // Premium: restart a new timed session in-session
 }
 
 export const CollapsibleFloatingTimer = ({
@@ -32,13 +33,14 @@ export const CollapsibleFloatingTimer = ({
   sessionStats,
   isPremium = false,
   onIncreaseTime,
-  onDismiss
+  onDismiss,
+  onRestartTimer
 }: CollapsibleFloatingTimerProps) => {
   const { t } = useTranslation();
   const { isMobile, isTablet, isMobileOrTablet } = useIsMobile();
-  const [isCollapsed, setIsCollapsed] = useState(false); // NOT auto-collapsed - consistent for all users
-  const [showCelebration, setShowCelebration] = useState(false);
-
+const [isCollapsed, setIsCollapsed] = useState(false); // NOT auto-collapsed - consistent for all users
+const [showCelebration, setShowCelebration] = useState(false);
+const [showChoice, setShowChoice] = useState(false);
   // Low time pulse (one-shot) management
   const [lowTimePulse, setLowTimePulse] = useState(false);
   const wasBelowThresholdRef = useRef(false);
@@ -75,15 +77,24 @@ export const CollapsibleFloatingTimer = ({
     return "text-emerald-600";
   };
 
-  // Handle timer completion
-  useEffect(() => {
-    if (timeRemaining === 0 && !showCelebration) {
-      setShowCelebration(true);
-      setTimeout(() => {
-        onSessionEnded(sessionStats);
-      }, 5000);
-    }
-  }, [timeRemaining, showCelebration, onSessionEnded, sessionStats]);
+// Handle timer completion
+useEffect(() => {
+  if (timeRemaining === 0 && !showCelebration && !showChoice) {
+    setShowCelebration(true);
+    setTimeout(() => {
+      setShowCelebration(false);
+      setShowChoice(true);
+    }, 5000);
+  }
+}, [timeRemaining, showCelebration, showChoice]);
+
+// Reset choice/celebration when timer is restarted
+useEffect(() => {
+  if (timeRemaining > 0 && (showCelebration || showChoice)) {
+    setShowCelebration(false);
+    setShowChoice(false);
+  }
+}, [timeRemaining]);
 
   // Responsive positioning
   const getPositionClasses = () => {
@@ -95,7 +106,7 @@ export const CollapsibleFloatingTimer = ({
     );
   };
 
-  if (isCollapsed) {
+  if (isCollapsed && !showCelebration && !showChoice) {
     return (
       <div className={cn(getPositionClasses())}>
         {/* Enhanced Collapsed Timer - More Prominent for Free Users */}
@@ -311,22 +322,66 @@ export const CollapsibleFloatingTimer = ({
         </div>
       </TooltipProvider>
 
-      {/* Celebration Animation */}
-      {showCelebration && (
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="flex items-center justify-center h-full">
-            <div className="bg-white rounded-xl shadow-2xl p-4 text-center animate-scale-in">
-              <div className="text-4xl mb-2">🎉</div>
-              <h3 className="text-lg font-bold text-green-600">
-                {t("floatingTimer.congratulations", "Congratulations!")}
-              </h3>
-              <p className="text-sm text-gray-600">
-                {t("floatingTimer.sessionComplete", "Reading session complete!")}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+{/* Celebration Animation */}
+{showCelebration && (
+  <div className="absolute inset-0 pointer-events-none">
+    <div className="flex items-center justify-center h-full">
+      <div className="bg-white rounded-xl shadow-2xl p-4 text-center animate-scale-in">
+        <div className="text-4xl mb-2">🎉</div>
+        <h3 className="text-lg font-bold text-green-600">
+          {t("floatingTimer.congratulations", "Congratulations!")}
+        </h3>
+        <p className="text-sm text-gray-600">
+          {t("floatingTimer.sessionComplete", "Reading session complete!")}
+        </p>
+      </div>
+    </div>
+  </div>
+)}
+
+{/* Post-celebration choice for premium users */}
+{showChoice && (
+  <div className="absolute inset-0 flex items-center justify-center">
+    <div className="bg-background/95 backdrop-blur-md border border-border rounded-2xl shadow-2xl p-4 sm:p-6 w-[90vw] max-w-md animate-scale-in">
+      <h3 className="text-lg font-bold mb-2 text-center">{t("floatingTimer.timeUp", "Time's up!")}</h3>
+      <p className="text-sm text-muted-foreground text-center mb-4">
+        {t("floatingTimer.chooseAction", "Would you like to stay in this story or end the session?")}
+      </p>
+      <div className="grid grid-cols-1 gap-2">
+        {isPremium && (
+          <Button
+            onClick={() => {
+              setShowChoice(false);
+            }}
+            variant="outline"
+            className="w-full"
+          >
+            {t("floatingTimer.stayInStory", "Stay in current story")}
+          </Button>
+        )}
+        {isPremium && (
+          <Button
+            onClick={() => {
+              if (typeof onRestartTimer === 'function') onRestartTimer();
+              setShowChoice(false);
+              setIsCollapsed(false);
+            }}
+            className="w-full"
+          >
+            {t("floatingTimer.restartTimer", "Restart 20-minute Timer")}
+          </Button>
+        )}
+        <Button
+          onClick={() => onSessionEnded(sessionStats)}
+          variant="secondary"
+          className="w-full"
+        >
+          {t("floatingTimer.endSession", "End session")}
+        </Button>
+      </div>
+    </div>
+  </div>
+)}
 
     </div>
   );
