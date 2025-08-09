@@ -47,7 +47,7 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
   onProgressUpdate
 }) => {
   const { t } = useTranslation();
-  const { isMobile } = useIsMobile();
+  const { isMobile, isTablet } = useIsMobile();
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeAchievement, setActiveAchievement] = useState<any>(null);
   const [previousValues, setPreviousValues] = useState<Record<string, number>>({});
@@ -212,6 +212,7 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
           "fixed top-1/2 right-4 transform -translate-y-1/2 z-40",
           "transition-all duration-500 ease-out",
           isMobile && "scale-75 right-1",
+          isTablet && !isExpanded && "scale-90 right-2",
           className
         )}
         onMouseEnter={handleMouseEnter}
@@ -225,6 +226,7 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
           "transition-all duration-500 ease-out",
           isExpanded ? "w-80 p-6" : "w-20 p-4",
           isMobile && !isExpanded && "w-14 p-2",
+          isTablet && !isExpanded && "w-16 p-3",
           celebrationMode && "animate-pulse ring-4 ring-amber-400/50",
           sparkleMode && "relative overflow-visible"
         )}>
@@ -450,11 +452,12 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
                         }`,
                         "text-white",
                         isMobile && "w-8 h-8",
+                        isTablet && "w-9 h-9",
                         isActive && "ring-2 ring-primary/50 scale-110",
                         sparkleMode && "animate-pulse"
                       )}
                     >
-                      <tower.icon className={cn(isMobile ? "w-4 h-4" : "w-5 h-5")} />
+                      <tower.icon className={cn(isMobile ? "w-4 h-4" : isTablet ? "w-4 h-4" : "w-5 h-5")} />
                     </div>
                     
                     {/* Value display below icon - no overlap */}

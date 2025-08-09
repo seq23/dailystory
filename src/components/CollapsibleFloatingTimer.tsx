@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { ChevronUp, ChevronDown, Play, Pause, Minus, X } from "lucide-react";
@@ -35,7 +35,27 @@ export const CollapsibleFloatingTimer = ({
   const [isCollapsed, setIsCollapsed] = useState(false); // NOT auto-collapsed - consistent for all users
   const [showCelebration, setShowCelebration] = useState(false);
 
-  // Responsive sizing only - no auto-collapse behavior removed
+  // Low time pulse (one-shot) management
+  const [lowTimePulse, setLowTimePulse] = useState(false);
+  const wasBelowThresholdRef = useRef(false);
+
+  useEffect(() => {
+    const below = timeRemaining <= 300;
+    if (!isReading || isCollapsed) {
+      setLowTimePulse(false);
+      wasBelowThresholdRef.current = below;
+      return;
+    }
+    if (below && !wasBelowThresholdRef.current) {
+      setLowTimePulse(true);
+      const t = setTimeout(() => setLowTimePulse(false), 1600);
+      return () => clearTimeout(t);
+    }
+    if (!below && wasBelowThresholdRef.current) {
+      setLowTimePulse(false);
+    }
+    wasBelowThresholdRef.current = below;
+  }, [timeRemaining, isReading, isCollapsed]);
 
   // Format time for display
   const formatTime = (seconds: number) => {
@@ -85,9 +105,8 @@ export const CollapsibleFloatingTimer = ({
               "bg-gradient-to-br from-red-500/20 to-orange-500/20",
               "border-red-400/60",
               "shadow-red-500/30",
-              "animate-pulse",
               "shadow-2xl",
-              "ring-2 ring-red-400/40"
+              lowTimePulse && "animate-pulse ring-2 ring-red-400/40"
             ],
             !isPremium && timeRemaining > 300 && timeRemaining <= 600 && [
               "bg-gradient-to-br from-orange-500/20 to-yellow-500/20", 
@@ -114,7 +133,8 @@ export const CollapsibleFloatingTimer = ({
           <div className={cn(
             "font-bold text-center", 
             getTimerColor(),
-            !isPremium && timeRemaining <= 300 && "animate-bounce text-red-600",
+            !isPremium && timeRemaining <= 300 && "text-red-600",
+            lowTimePulse && "animate-bounce",
             isMobile ? "text-sm" : isTablet ? "text-base" : "text-lg"
           )}>
             {formatTime(timeRemaining)}
@@ -122,7 +142,7 @@ export const CollapsibleFloatingTimer = ({
           
           {/* Free user upgrade hint when time is low */}
           {!isPremium && timeRemaining <= 300 && (
-            <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-red-600 text-white text-xs px-2 py-1 rounded-full shadow-lg animate-bounce whitespace-nowrap">
+            <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-red-600 text-white text-xs px-2 py-1 rounded-full shadow-lg whitespace-nowrap">
               🚨 Time Low!
             </div>
           )}

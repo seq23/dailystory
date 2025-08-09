@@ -608,6 +608,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
 
   const progress = story.length > 0 ? ((currentPage + 1) / story.length) * 100 : 0;
   const currentImage = pageImages[currentPage];
+  const isShortPage = countWords(currentStory) <= 8;
 
   if (isLoading || forceLoaderActive) {
     return (
@@ -728,22 +729,38 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
               <div className="bg-gradient-card rounded-2xl p-3 md:p-6 lg:p-8 mb-6 min-h-[600px] md:min-h-[700px] xl:min-h-[800px] xl:h-[70vh] shadow-xl" 
                    dir="ltr" lang="en" role="main" aria-label="Story content">
                 {/* Mobile/Tablet: Top-half image, bottom-half text (full-bleed, no gray) */}
-                <div className="xl:hidden h-[80vh] md:h-[85vh] flex flex-col gap-3">
+                <div className="xl:hidden h-[80vh] md:h-[88vh] flex flex-col gap-3">
                   {/* Top Half: Image */}
-                  <div className="relative h-1/2 w-full rounded-2xl overflow-hidden shadow-2xl">
+                  <div className="relative h-1/2 md:h-[60%] w-full rounded-2xl overflow-hidden shadow-2xl">
                     {currentImage ? (
-                      <img
-                        src={currentImage}
-                        alt={`Story illustration for page ${currentPage + 1}: ${story[currentPage]?.substring(0, 100)}...`}
-                        className="absolute inset-0 h-full w-full object-cover"
-                        loading="lazy"
-                        decoding="async"
-                        onError={(e) => {
-                          console.warn('Story image failed to load, switching to classic fallback:', currentImage);
-                          (e.currentTarget as HTMLImageElement).style.display = 'none';
-                          fallbackToClassic('image-error');
-                        }}
-                      />
+                      <>
+                        {/* Background fill to avoid cropping/margins */}
+                        <img
+                          src={currentImage}
+                          alt={`Story illustration for page ${currentPage + 1}: ${story[currentPage]?.substring(0, 100)}...`}
+                          className="absolute inset-0 h-full w-full object-cover blur-md scale-110 brightness-[1.05]"
+                          loading="lazy"
+                          decoding="async"
+                          onError={(e) => {
+                            console.warn('Story image failed to load, switching to classic fallback:', currentImage);
+                            (e.currentTarget as HTMLImageElement).style.display = 'none';
+                            fallbackToClassic('image-error');
+                          }}
+                        />
+                        {/* Foreground clean image, never cropped */}
+                        <img
+                          src={currentImage}
+                          alt={`Story illustration for page ${currentPage + 1}: ${story[currentPage]?.substring(0, 100)}...`}
+                          className="relative z-10 h-full w-full object-contain"
+                          loading="lazy"
+                          decoding="async"
+                          onError={(e) => {
+                            console.warn('Story image failed to load, switching to classic fallback:', currentImage);
+                            (e.currentTarget as HTMLImageElement).style.display = 'none';
+                            fallbackToClassic('image-error');
+                          }}
+                        />
+                      </>
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center">
                         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -751,7 +768,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                     )}
                   </div>
                   {/* Bottom Half: Text (scrollable) + audio controls */}
-                  <div className="h-1/2 w-full rounded-2xl shadow-2xl bg-card overflow-hidden flex flex-col">
+                  <div className="h-1/2 md:h-[40%] w-full rounded-2xl shadow-2xl bg-card overflow-hidden flex flex-col">
                     <div id="audio-controls" className="p-3 md:p-4 flex justify-center gap-4 shrink-0">
                       <ElevenLabsAudio
                         text={currentStory}
@@ -827,7 +844,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                   {/* Text Content - RIGHT SIDE - Equal size on desktop */}
                   <div className="xl:order-2 flex flex-col h-full">
                     <div className="w-full h-full rounded-2xl shadow-2xl bg-card">
-                      <div className="h-full overflow-y-auto p-4 md:p-6 lg:p-8">
+                      <div className={cn("h-full overflow-y-auto p-4 md:p-6 lg:p-8", isShortPage && "flex items-center justify-center")}>
                         <div 
                           className="story-content storybook-frame w-full"
                           data-difficulty={currentDifficulty}
