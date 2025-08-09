@@ -14,7 +14,7 @@ interface SubscriptionData {
   subscription_end?: string;
 }
 
-export const SubscriptionManager = () => {
+export const SubscriptionManager = ({ showComparison = true }: { showComparison?: boolean }) => {
   const [subscriptionData, setSubscriptionData] = useState<SubscriptionData | null>(null);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -243,21 +243,23 @@ export const SubscriptionManager = () => {
         </Card>
       )}
 
-      <Card className="border-dashed">
-        <CardHeader>
-          <CardTitle>Free vs Premium</CardTitle>
-          <CardDescription>What you get with Premium compared to Free</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ul className="grid md:grid-cols-2 gap-2 text-sm">
-            <li>• Unlimited stories vs. daily limit</li>
-            <li>• Live page-by-page generation</li>
-            <li>• Save stories to your library</li>
-            <li>• Vocabulary tracking and progress</li>
-            <li>• Parent dashboard insights</li>
-          </ul>
-        </CardContent>
-      </Card>
+{showComparison && (
+        <Card className="border-dashed">
+          <CardHeader>
+            <CardTitle>Free vs Premium</CardTitle>
+            <CardDescription>What you get with Premium compared to Free</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ul className="grid md:grid-cols-2 gap-2 text-sm">
+              <li>• Unlimited stories vs. daily limit</li>
+              <li>• Live page-by-page generation</li>
+              <li>• Save stories to your library</li>
+              <li>• Vocabulary tracking and progress</li>
+              <li>• Parent dashboard insights</li>
+            </ul>
+          </CardContent>
+        </Card>
+      )}
 
       <Dialog open={cancelOpen} onOpenChange={setCancelOpen}>
         <DialogContent>

@@ -10,11 +10,11 @@ interface MyAccountProps {
 }
 
 const freeFeatures: string[] = [
-  "Netflix-style complete stories",
-  "Up to 20-minute reading sessions",
-  "Basic word highlighting",
-  "Single profile (no saved progress)",
-  "Starter achievements",
+  "Limited customization of your story via User Info Form",
+  "Free 20-minute reading sessions with Images",
+  "Basic vocabulary highlights",
+  "Standard audio and word tools (word-by-word highlighting, pronunciation help)",
+  "End of session reporting gamification - gain points & unlock milestones within a single session analytics",
 ];
 
 const premiumFeatures: string[] = [
@@ -47,7 +47,7 @@ export function MyAccount({ isPremium, subscriptionTier, subscriptionEnd, devTes
       </div>
 
       {/* Subscription Manager */}
-      <SubscriptionManager />
+      <SubscriptionManager showComparison={false} />
 
       {/* Subscription Details */}
       <Card className="border-muted/40">
@@ -87,7 +87,7 @@ export function MyAccount({ isPremium, subscriptionTier, subscriptionEnd, devTes
           <Card>
             <CardHeader>
               <CardTitle>Free</CardTitle>
-              <CardDescription>Great to get started</CardDescription>
+              <CardDescription>Free trial:</CardDescription>
             </CardHeader>
             <CardContent>
               <ul className="space-y-2">
