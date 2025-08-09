@@ -9,7 +9,7 @@ describe('PhoneticRulesEngine', () => {
 
   it('does not break "illuminating" incorrectly and returns expected chunks', async () => {
     const chunks = await phoneticRulesEngine.breakIntoSyllablesAsync('ILLUMINATING');
-    expect(chunks).toEqual(['ih', 'loo', 'muh', 'nay', 'ting']);
+    expect(chunks).toEqual(['ill', 'loo', 'muh', 'nay', 'ting']);
   });
 
   it('handles known tricky words', async () => {
@@ -18,14 +18,14 @@ describe('PhoneticRulesEngine', () => {
     expect(await phoneticRulesEngine.breakIntoSyllablesAsync('chase')).toEqual(['ch','ay','s']);
   });
 
-  it('groups phones into proper syllables via ARPABET when available', async () => {
+  it('prefers known overrides even when ARPABET is available', async () => {
     // Mock datamuse ARPABET response for "illuminate" -> IH L UW M AH N EY T
     (global as any).fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ([{ tags: ['pron:IH L UW M AH N EY T'] }])
     });
     const chunks = await phoneticRulesEngine.breakIntoSyllablesAsync('illuminate');
-    // Expect syllables roughly: ih | loo | muh | nate
-    expect(chunks).toEqual(['ih','loo','muh','nate']);
+    // Expect override to win
+    expect(chunks).toEqual(['ill','loo','muh','nate']);
   });
 });

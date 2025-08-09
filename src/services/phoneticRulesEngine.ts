@@ -152,9 +152,9 @@ export class PhoneticRulesEngine {
     'transportation': ['trans', 'per', 'tay', 'shun'],
 
     // Specific fixes for illuminate family
-    'illuminate': ['ih', 'loo', 'muh', 'nate'],
-    'illumination': ['ih', 'loo', 'muh', 'nay', 'shun'],
-    'illuminating': ['ih', 'loo', 'muh', 'nay', 'ting'],
+    'illuminate': ['ill', 'loo', 'muh', 'nate'],
+    'illumination': ['ill', 'loo', 'muh', 'nay', 'shun'],
+    'illuminating': ['ill', 'loo', 'muh', 'nay', 'ting'],
   };
 
   // Speech-friendly pronunciation mapping
@@ -239,6 +239,11 @@ export class PhoneticRulesEngine {
   public async breakIntoSyllablesAsync(word: string): Promise<string[]> {
     const key = word.toLowerCase();
     if (this.dictCache.has(key)) return this.dictCache.get(key)!;
+    // Prefer explicit overrides
+    if (this.knownSyllables[key]) {
+      this.dictCache.set(key, this.knownSyllables[key]);
+      return this.knownSyllables[key];
+    }
     try {
       const url = `https://api.datamuse.com/words?sp=${encodeURIComponent(key)}&md=r&max=1`;
       const res = await fetch(url);
