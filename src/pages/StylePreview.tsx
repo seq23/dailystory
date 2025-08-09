@@ -35,6 +35,55 @@ const StylePreview: React.FC = () => {
       </header>
 
       <main className="max-w-5xl mx-auto grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        {/* Modern Split Desktop (Reference) */}
+        <article className="md:col-span-2 xl:col-span-3">
+          <Card className="h-full">
+            <CardHeader>
+              <CardTitle>Modern Split Desktop (Reference)</CardTitle>
+              <CardDescription>Mirrored image + story pane with centered navigation.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col gap-4">
+                <div className="relative rounded-lg border shadow-sm overflow-hidden">
+                  <div className="grid grid-cols-1 lg:grid-cols-2">
+                    <section
+                      aria-label="Story text window"
+                      className="min-h-[280px] lg:min-h-[420px] max-h-[420px] p-6 overflow-auto"
+                    >
+                      <div className="space-y-4 leading-relaxed">
+                        <p>{sampleText}</p>
+                        <p className="text-muted-foreground">{sampleText}</p>
+                      </div>
+                    </section>
+                    <aside
+                      aria-label="Mirrored image"
+                      className="min-h-[280px] lg:min-h-[420px] max-h-[420px] overflow-hidden"
+                    >
+                      <img
+                        src={heroImage}
+                        alt="Mirrored story image pane — desktop split reference"
+                        loading="lazy"
+                        width={800}
+                        height={600}
+                        className="w-full h-full object-cover"
+                      />
+                    </aside>
+                  </div>
+                </div>
+
+                <nav aria-label="Story navigation" className="flex items-center justify-center gap-3">
+                  <Button variant="secondary" size="sm" aria-label="Previous page" disabled>
+                    Prev
+                  </Button>
+                  <div className="text-sm text-muted-foreground" aria-live="polite">1 / 10</div>
+                  <Button variant="default" size="sm" aria-label="Next page">
+                    Next
+                  </Button>
+                </nav>
+              </div>
+            </CardContent>
+          </Card>
+        </article>
         {/* Classic Storybook Page */}
         <article>
           <Card className="h-full">
