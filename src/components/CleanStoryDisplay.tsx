@@ -656,7 +656,7 @@ const handleRestartTimer = () => {
       userInfo={userInfo}
     >
       <ErrorBoundary>
-        <div className="min-h-screen bg-gradient-primary mobile-optimized flex flex-col">
+        <div className="h-full min-h-0 bg-gradient-primary mobile-optimized flex flex-col">
         {/* Responsive Header */}
         <ResponsiveStoryHeader
           storyTitle={storyTitle}
