@@ -50,7 +50,7 @@ interface CleanStoryDisplayProps {
   onSessionEnded: (stats: SessionStats) => void;
   onHome: () => void;
   onUpgrade: () => void;
-  onNewStory: () => void;
+  onNewStory?: () => void;
 }
 
 const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
@@ -720,7 +720,7 @@ const handleRestartTimer = () => {
             <ApiKeyDiagnostic />
           </div>
           
-          <MobileOptimizedButton onClick={onNewStory} className="bg-white text-primary">
+          <MobileOptimizedButton onClick={() => (onNewStory ? onNewStory() : window.location.reload())} className="bg-white text-primary">
             Try Again
           </MobileOptimizedButton>
         </div>
