@@ -28,7 +28,7 @@ export function OrbitingSparkLoader({ className, isPremium = false, size = "md" 
       <div className="absolute inset-4 rounded-full border border-primary/10" />
 
       {/* Outer orbit (clockwise) */}
-      <div className="absolute inset-0 motion-safe:animate-[spin_12s_linear_infinite] motion-reduce:animate-none">
+      <div className="absolute inset-0 motion-safe:animate-[spin_14s_linear_infinite] md:motion-safe:animate-[spin_12s_linear_infinite] motion-reduce:animate-none">
         <div
           className={cn(
             "absolute left-1/2 top-0 -translate-x-1/2 w-3 h-3 rounded-full shadow",
@@ -38,7 +38,7 @@ export function OrbitingSparkLoader({ className, isPremium = false, size = "md" 
       </div>
 
       {/* Inner orbit (reverse) */}
-      <div className="absolute inset-4 motion-safe:animate-[spin_18s_linear_infinite] motion-reduce:animate-none [animation-direction:reverse]">
+      <div className="absolute inset-4 motion-safe:animate-[spin_20s_linear_infinite] md:motion-safe:animate-[spin_18s_linear_infinite] motion-reduce:animate-none [animation-direction:reverse]">
         <div
           className={cn(
             "absolute left-1/2 bottom-0 -translate-x-1/2 w-2.5 h-2.5 rounded-full opacity-90",

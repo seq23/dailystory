@@ -12,6 +12,8 @@ interface AdaptiveEnhancedLoadingProps {
 export function AdaptiveEnhancedLoading({ isPremium, userName }: AdaptiveEnhancedLoadingProps) {
   const { t } = useTranslation();
 
+  const debugMode = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("debug") === "1";
+
   const title = userName
     ? t("freeReadingSession.loading.titleWithName", {
         defaultValue: "Creating Your Free Story for {userName}…",
@@ -49,6 +51,7 @@ export function AdaptiveEnhancedLoading({ isPremium, userName }: AdaptiveEnhance
       <div
         ref={containerRef}
         data-testid="adaptive-loading"
+        data-loader-variant="orbit-v2"
         className={cn(
           "fixed inset-0 z-[9999] bg-gradient-primary flex items-center justify-center p-6 animate-fade-in"
         )}
@@ -58,7 +61,7 @@ export function AdaptiveEnhancedLoading({ isPremium, userName }: AdaptiveEnhance
       >
         <div className="w-full max-w-md md:max-w-xl text-center space-y-6">
           <div className="flex items-center justify-center">
-            <OrbitingSparkLoader isPremium={isPremium} />
+            <OrbitingSparkLoader isPremium={isPremium} className="w-28 h-28 md:w-40 md:h-40" />
           </div>
           <div className="space-y-3">
             <h2 className="text-2xl md:text-3xl font-bold text-foreground">{title}</h2>
@@ -70,6 +73,11 @@ export function AdaptiveEnhancedLoading({ isPremium, userName }: AdaptiveEnhance
           </div>
         </div>
       </div>
+      {debugMode && (
+        <div className="fixed top-2 right-2 z-[10000] text-xs px-2 py-1 rounded bg-primary text-primary-foreground shadow">
+          Orbit v2
+        </div>
+      )}
     </>
   );
 }

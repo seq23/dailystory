@@ -74,14 +74,7 @@ export const MobileWrapper: React.FC<MobileWrapperProps> = ({ children }) => {
   if (!isInitialized) {
     console.log('📱 MobileWrapper: showing AdaptiveEnhancedLoading', { isMobileOrTablet, initialized: isInitialized });
     return (
-      <>
-        <AdaptiveEnhancedLoading isPremium={false} />
-        {debugMode && (
-          <div className="fixed top-2 right-2 z-50 text-xs px-2 py-1 rounded bg-primary text-primary-foreground shadow">
-            Mobile loader active
-          </div>
-        )}
-      </>
+      <AdaptiveEnhancedLoading isPremium={false} />
     );
   }
 
