@@ -99,7 +99,7 @@ export function PricingSection({ compact }: PricingSectionProps) {
                   </li>
                 ))}
               </ul>
-              <Link to="/">
+              <Link to="/?action=new-story">
                 <Button variant="outline" className="w-full">
                   Start Free
                 </Button>
@@ -129,7 +129,7 @@ export function PricingSection({ compact }: PricingSectionProps) {
                   </li>
                 ))}
               </ul>
-              <Link to="/upgrade">
+              <Link to="/auth">
                 <Button className="w-full">
                   Upgrade to Premium
                 </Button>

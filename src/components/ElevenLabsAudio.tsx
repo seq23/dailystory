@@ -205,7 +205,7 @@ export const ElevenLabsAudio = ({
           <Tooltip>
             <TooltipTrigger asChild>
               <Button 
-                onClick={onUpgrade} 
+                onClick={() => onUpgrade ? onUpgrade() : (window.location.href = '/auth')} 
                 variant="outline" 
                 size={isMobileOrTablet ? "default" : "sm"}
                 className={isMobileOrTablet ? 'min-h-[44px] px-4' : ''}

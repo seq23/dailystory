@@ -81,7 +81,7 @@ export const CollapsibleFloatingTimer = ({
       setShowCelebration(true);
       setTimeout(() => {
         onSessionEnded(sessionStats);
-      }, 2000);
+      }, 5000);
     }
   }, [timeRemaining, showCelebration, onSessionEnded, sessionStats]);
 

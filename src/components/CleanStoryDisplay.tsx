@@ -176,10 +176,6 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         setTimeRemaining(prev => {
           if (prev <= 1) {
             setIsTimerRunning(false);
-            // Only end session for free users when timer expires
-            if (!isPremium) {
-              handleEndSession();
-            }
             return 0;
           }
           return prev - 1;
@@ -187,7 +183,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [isTimerRunning, timeRemaining, isTimerCanceled, isPremium]);
+  }, [isTimerRunning, timeRemaining, isTimerCanceled]);
 
   // Magic wand DRAMATIC animation effect for free users on last page - CONTINUOUS until clicked
   useEffect(() => {
@@ -719,6 +715,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                     onUpgrade={onUpgrade}
                     onWordHighlight={onWordHighlight}
                     difficulty={currentDifficulty}
+                    currentPage={currentPage}
+                    totalPages={story.length}
                   />
                   {isAudioPlaying && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -781,6 +779,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                         onUpgrade={onUpgrade}
                         onWordHighlight={onWordHighlight}
                         difficulty={currentDifficulty}
+                        currentPage={currentPage}
+                        totalPages={story.length}
                       />
                       {isAudioPlaying && (
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -877,6 +877,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                     onUpgrade={onUpgrade}
                     onWordHighlight={onWordHighlight}
                     difficulty={currentDifficulty}
+                    currentPage={currentPage}
+                    totalPages={story.length}
                   />
                   {isAudioPlaying && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">

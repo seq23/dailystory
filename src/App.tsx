@@ -11,9 +11,9 @@ import SessionEnded from "./pages/SessionEnded";
 import StylePreview from "./pages/StylePreview";
 import TTSDebug from "./pages/TTSDebug";
 import Pricing from "./pages/Pricing";
-import Upgrade from "./pages/Upgrade";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
+import Auth from "./pages/Auth";
 
 const queryClient = new QueryClient();
 
@@ -30,7 +30,7 @@ const App = () => {
               <Route path="/style-preview" element={<StylePreview />} />
               <Route path="/tts-debug" element={<TTSDebug />} />
               <Route path="/pricing" element={<Pricing />} />
-              <Route path="/upgrade" element={<Upgrade />} />
+              <Route path="/auth" element={<Auth />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/session-ended" element={<SessionEnded onHome={() => { window.history.pushState(null, '', '/'); window.location.reload(); }} onNewStory={() => { window.history.pushState(null, '', '/'); window.location.reload(); }} />} />
