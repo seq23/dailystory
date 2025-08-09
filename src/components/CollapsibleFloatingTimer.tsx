@@ -99,7 +99,7 @@ useEffect(() => {
   // Responsive positioning
   const getPositionClasses = () => {
     return cn(
-      "fixed z-40",
+      "fixed z-[60]",
       isMobile ? "bottom-20 left-4" : 
       isTablet ? "bottom-16 left-6" : 
       "bottom-8 left-8"

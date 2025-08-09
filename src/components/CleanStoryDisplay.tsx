@@ -707,8 +707,8 @@ const handleRestartTimer = () => {
       {/* Main Content - Full Width Layout */}
       <main className="w-full px-2 md:px-4 lg:px-6 xl:px-8">
         <div className="w-full max-w-[98vw] mx-auto">
-          <Card className="bg-white/95 backdrop-blur-sm shadow-2xl border border-white/70 mobile-text-fixed min-h-[85vh]">
-            <CardContent className="p-4 lg:p-8">
+          <Card className="bg-white/95 backdrop-blur-sm shadow-2xl border border-white/70 mobile-text-fixed flex flex-col h-[calc(100vh-2rem)] max-h-[calc(100vh-2rem)] overflow-hidden">
+            <CardContent className="p-4 lg:p-8 h-full flex flex-col min-h-0">
               {/* Progress Bar */}
               <div className="mb-4 md:mb-6">
                 <Progress value={progress} className="h-2" />
@@ -740,12 +740,12 @@ const handleRestartTimer = () => {
               )}
 
               {/* Story Content - Enhanced Layout for Desktop Split-Screen */}
-              <div className="bg-gradient-card rounded-2xl p-3 md:p-6 lg:p-8 mb-6 min-h-[600px] md:min-h-[700px] xl:min-h-[800px] xl:h-[70vh] shadow-xl" 
+              <div className="bg-gradient-card rounded-2xl p-3 md:p-6 lg:p-8 mb-6 h-full min-h-0 flex flex-col shadow-xl" 
                    dir="ltr" lang="en" role="main" aria-label="Story content">
                 {/* Mobile/Tablet: Top-half image, bottom-half text (full-bleed, no gray) */}
-                <div className="xl:hidden h-[80vh] md:h-[88vh] flex flex-col gap-3">
+                <div className="xl:hidden flex-1 min-h-0 flex flex-col gap-3">
                   {/* Top Half: Image */}
-                  <div className="relative h-1/2 md:h-[60%] w-full rounded-2xl overflow-hidden shadow-2xl">
+                  <div className="relative flex-[0.6] min-h-0 w-full rounded-2xl overflow-hidden shadow-2xl">
                     {currentImage ? (
                       <>
                         {/* Background fill to avoid cropping/margins */}
@@ -782,7 +782,7 @@ const handleRestartTimer = () => {
                     )}
                   </div>
                   {/* Bottom Half: Text (scrollable) + audio controls */}
-                  <div className="h-1/2 md:h-[40%] w-full rounded-2xl shadow-2xl bg-card overflow-hidden flex flex-col">
+                  <div className="flex-[0.4] min-h-0 w-full rounded-2xl shadow-2xl bg-card overflow-hidden flex flex-col">
                     <div id="audio-controls" className="p-3 md:p-4 flex justify-center gap-4 shrink-0">
                       <ElevenLabsAudio
                         text={currentStory}
@@ -801,9 +801,9 @@ const handleRestartTimer = () => {
                         </div>
                       )}
                     </div>
-                    <div className="flex-1 overflow-y-auto px-4 md:px-6 pb-4">
+                    <div className={cn("flex-1 min-h-0 overflow-y-auto px-4 md:px-6 pb-4", isPremium && isShortPage && "flex items-center justify-center")}>
                       <div 
-                        className="story-content storybook-frame w-full"
+                        className={cn("story-content storybook-frame w-full", isPremium && isShortPage && "text-center")}
                         data-difficulty={currentDifficulty}
                       >
                         {processTextWithConsistentFlow({
@@ -862,7 +862,7 @@ const handleRestartTimer = () => {
                     <div className="w-full h-full rounded-2xl shadow-2xl bg-card">
                       <div className={cn("h-full overflow-y-auto p-4 md:p-6 lg:p-8", isShortPage && "flex items-center justify-center")}>
                         <div 
-                          className="story-content storybook-frame w-full"
+                          className={cn("story-content storybook-frame w-full", isPremium && isShortPage && "text-center")}
                           data-difficulty={currentDifficulty}
                         >
                           {processTextWithConsistentFlow({
