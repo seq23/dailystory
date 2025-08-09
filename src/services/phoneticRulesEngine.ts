@@ -150,6 +150,11 @@ export class PhoneticRulesEngine {
     'relationship': ['rih', 'lay', 'shun', 'ship'],
     'temperature': ['tem', 'per', 'uh', 'cher'],
     'transportation': ['trans', 'per', 'tay', 'shun'],
+
+    // Specific fixes for illuminate family
+    'illuminate': ['ih', 'loo', 'muh', 'nate'],
+    'illumination': ['ih', 'loo', 'muh', 'nay', 'shun'],
+    'illuminating': ['ih', 'loo', 'muh', 'nay', 'ting'],
   };
 
   // Speech-friendly pronunciation mapping
@@ -262,30 +267,84 @@ export class PhoneticRulesEngine {
   }
 
   private arpabetToChunks(phones: string[], clean: string): string[] {
+    // Group phones into true syllables (onset + nucleus + coda)
     const VOWELS = new Set(['AA','AE','AH','AO','AW','AY','EH','ER','EY','IH','IY','OW','OY','UH','UW']);
     const MAP: Record<string,string> = {
-      AA:'ah', AE:'a', AH:'uh', AO:'aw', AW:'ow', AY:'eye', EH:'e', ER:'er', EY:'ay', IH:'i', IY:'ee', OW:'oh', OY:'oy', UH:'oo', UW:'oo',
+      AA:'ah', AE:'a', AH:'uh', AO:'aw', AW:'ow', AY:'ay', EH:'e', ER:'er', EY:'ay', IH:'ih', IY:'ee', OW:'oh', OY:'oy', UH:'oo', UW:'oo',
       B:'b', CH:'ch', D:'d', DH:'th', F:'f', G:'g', HH:'h', JH:'j', K:'k', L:'l', M:'m', N:'n', NG:'ng', P:'p', R:'r', S:'s', SH:'sh', T:'t', TH:'th', V:'v', W:'w', Y:'y', Z:'z', ZH:'zh'
     };
-    const out: string[] = [];
+
+    const ALLOWED_ONSET_PAIRS: Array<[string,string]> = [
+      ['B','L'], ['B','R'], ['C','L'], ['C','R'], ['D','R'], ['F','L'], ['F','R'], ['G','L'], ['G','R'],
+      ['K','L'], ['K','R'], ['P','L'], ['P','R'], ['T','R'], ['S','P'], ['S','T'], ['S','K'], ['S','M'], ['S','N'], ['S','L'],
+      // Using ARPABET phones; C is not a phone, but we include it to be tolerant if any data source emits 'C'.
+    ];
+    const isAllowedOnsetPair = (a: string, b: string) => ALLOWED_ONSET_PAIRS.some(([x,y]) => x===a && y===b);
+
+    const mapSeq = (seq: string[]) => seq.map(p => MAP[p] || p.toLowerCase()).join('');
+
+    const result: string[] = [];
     let i = 0;
     while (i < phones.length) {
-      let onset = '';
-      while (i < phones.length && !VOWELS.has(phones[i])) { onset += MAP[phones[i]] || phones[i].toLowerCase(); i++; }
-      if (i < phones.length && VOWELS.has(phones[i])) {
-        const nucleus = MAP[phones[i]] || phones[i].toLowerCase(); i++;
-        let coda = '';
-        while (i < phones.length && !VOWELS.has(phones[i])) { coda += MAP[phones[i]] || phones[i].toLowerCase(); i++; }
-        if (onset) out.push(onset);
-        out.push(nucleus);
-        if (coda) {
-          if (coda.endsWith('s') && coda.length > 1) { out.push(coda.slice(0, -1)); out.push('s'); }
-          else out.push(coda);
-        }
+      // Collect onset
+      const onset: string[] = [];
+      while (i < phones.length && !VOWELS.has(phones[i])) {
+        onset.push(phones[i]);
+        i++;
       }
+      if (i >= phones.length) {
+        // No vowel found; attach leftover consonants to previous syllable if possible
+        if (onset.length) {
+          if (result.length) {
+            result[result.length - 1] += mapSeq(onset);
+          } else {
+            result.push(mapSeq(onset));
+          }
+        }
+        break;
+      }
+
+      // Nucleus (must exist here)
+      const nucleus = phones[i];
+      i++;
+
+      // Lookahead consonant cluster until next vowel
+      let j = i;
+      while (j < phones.length && !VOWELS.has(phones[j])) j++;
+      const cluster = phones.slice(i, j);
+
+      // Decide how many consonants to keep for next onset (maximal onset principle)
+      let keepForNextOnset = 0;
+      if (cluster.length === 0) {
+        keepForNextOnset = 0;
+      } else if (j < phones.length) { // there is another vowel ahead
+        if (cluster.length === 1) {
+          // V C V -> split V.CV (move the consonant to next onset)
+          keepForNextOnset = 1;
+        } else {
+          // V C C (+) V -> if last two form valid onset cluster, keep them; otherwise keep only last
+          const a = cluster[cluster.length - 2];
+          const b = cluster[cluster.length - 1];
+          keepForNextOnset = isAllowedOnsetPair(a, b) ? 2 : 1;
+        }
+      } else {
+        // No more vowels; all remaining consonants belong to this coda
+        keepForNextOnset = 0;
+      }
+
+      const coda = cluster.slice(0, Math.max(0, cluster.length - keepForNextOnset));
+
+      // Consume only the coda from the stream; remaining will be onset next loop
+      i = i + coda.length;
+
+      const syllable = mapSeq(onset) + (MAP[nucleus] || nucleus.toLowerCase()) + mapSeq(coda);
+      result.push(syllable);
     }
-    if (clean.startsWith('wh') && out.length > 0 && out[0] === 'w') out[0] = 'whuh';
-    return out.filter(Boolean);
+
+    // Special-case tweak for wh- initial
+    if (clean.startsWith('wh') && result.length > 0 && result[0] === 'w') result[0] = 'whuh';
+
+    return result.filter(Boolean);
   }
 
   /**
