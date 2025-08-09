@@ -87,7 +87,7 @@ const StylePreview: React.FC = () => {
             <CardContent>
               <div className="hardcover-spread hardcover--vintage-pages">
                 <div className="spread-pages">
-                  <div className="left-page page-inset">
+                  <div className="left-page">
                     <figure className="page-figure">
                       <img
                         src={leftPageImage}
@@ -97,12 +97,9 @@ const StylePreview: React.FC = () => {
                         height={400}
                         className="page-image"
                       />
-                      <figcaption className="page-caption text-xs text-muted-foreground">
-                        Illustration page
-                      </figcaption>
                     </figure>
                   </div>
-                  <div className="right-page page-inset">
+                  <div className="right-page">
                     <div className="story-content" data-difficulty="easy">
                       {sampleText}
                     </div>

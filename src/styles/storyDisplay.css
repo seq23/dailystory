@@ -218,3 +218,64 @@
     opacity: 0.78;
   }
 }
+
+/* Vintage book full-bleed and aged paper refinements */
+.hardcover-spread.hardcover--vintage-pages {
+  aspect-ratio: 16 / 9;
+  max-height: clamp(360px, 55vh, 560px);
+  position: relative;
+}
+
+.hardcover-spread.hardcover--vintage-pages .spread-pages {
+  height: 100%;
+}
+
+.hardcover--vintage-pages .left-page,
+.hardcover--vintage-pages .right-page {
+  height: 100%;
+  border-radius: 0.75rem;
+  background:
+    radial-gradient(160% 140% at 50% 0%, hsl(var(--paper, 45 40% 90%)) 0%, hsl(var(--paper, 45 35% 88%)) 40%, transparent 70%),
+    radial-gradient(160% 140% at 50% 100%, hsl(var(--paper, 45 40% 90%)) 0%, hsl(var(--paper, 45 35% 88%)) 40%, transparent 70%),
+    linear-gradient(180deg, hsl(var(--paper, 45 35% 92%)) 0%, hsl(var(--paper, 45 30% 88%)) 100%);
+  box-shadow:
+    inset 0 0 0 1px hsl(var(--border, 0 0% 50%) / 0.06),
+    inset 0 20px 40px hsl(40 30% 60% / 0.15),
+    inset 0 -20px 40px hsl(35 35% 60% / 0.12);
+}
+
+.hardcover--vintage-pages .left-page .page-figure,
+.hardcover--vintage-pages .left-page .page-image {
+  height: 100%;
+}
+
+.hardcover--vintage-pages .left-page .page-image {
+  width: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  box-shadow: none;
+  filter: sepia(0.12) contrast(1.02) saturate(0.95);
+  mix-blend-mode: normal;
+}
+
+.hardcover--vintage-pages .right-page .story-content {
+  height: 100%;
+  padding: clamp(1rem, 2.2vw, 1.5rem);
+  background: transparent;
+  border-radius: inherit;
+  box-shadow: none;
+  border: none;
+  color: hsl(var(--foreground));
+  overflow: auto;
+}
+
+.hardcover--vintage-pages .page-stack {
+  width: clamp(16px, 2.2vw, 22px);
+}
+
+@media (max-width: 768px) {
+  .hardcover-spread.hardcover--vintage-pages {
+    aspect-ratio: auto;
+    max-height: none;
+  }
+}
