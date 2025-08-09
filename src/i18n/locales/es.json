@@ -414,20 +414,6 @@
     "celebrationSound": "Timbre de celebración",
     "loadingStory": "Tejiendo más magia de historia…",
     "loadingImage": "Pintando ilustración…"
-  }
-    "maxLimit": "Límite Máximo",
-    "readingTime": "Tiempo de Lectura",
-    "startTimer": "Iniciar Cronómetro",
-    "pauseTimer": "Pausar Cronómetro",
-    "reduceTime": "Reducir 5 Minutos",
-    "endSession": "Terminar Sesión de Lectura",
-    "congratulations": "¡Felicitaciones!",
-    "sessionComplete": "¡Completaste tu sesión de lectura!",
-    "sequentialTooltips": {
-      "startPause": "🎯 ¡Haz clic para iniciar/pausar tu cronómetro de lectura!",
-      "reduceTime": "⏰ ¡Reduce el tiempo en 5 minutos!",
-      "endSession": "🔚 ¡Haz clic para terminar tu sesión de lectura!"
-    }
   },
   "audioReading": {
     "playAudio": "Reproducir audio",

@@ -345,16 +345,6 @@
     "celebrationSound": "सेलिब्रेशन चाइम",
     "loadingStory": "और अधिक कहानी का जादू बुन रहे हैं…",
     "loadingImage": "चित्र बना रहे हैं…"
-  }
-    "loading": "लोड हो रहा है...",
-    "error": "त्रुटि",
-    "success": "सफलता",
-    "tryAgainLater": "बाद में पुनः प्रयास करें",
-    "inputProcessed": "इनपुट प्रसंस्कृत",
-    "inputCorrectionsMade": "सुधार लागू किए गए",
-    "close": "बंद करें",
-    "home": "मुख्य पृष्ठ",
-    "newStory": "नई कहानी"
   },
   "tutorial": {
     "timer": {
