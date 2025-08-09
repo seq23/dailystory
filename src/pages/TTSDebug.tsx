@@ -10,6 +10,8 @@ const debugUser = { id: 'debug', name: 'QA', age: 9, nativeLanguage: 'en' } as a
 const TTSDebug: React.FC = () => {
   const [word, setWord] = useState('illuminating');
   const [syllables, setSyllables] = useState<string[]>([]);
+  const [source, setSource] = useState<'override' | 'heuristic' | null>(null);
+  const [pronunciations, setPronunciations] = useState<string[] | null>(null);
   const audio = useMemo(() => new EnhancedAudioService(), []);
 
   useEffect(() => {
@@ -28,6 +30,9 @@ const TTSDebug: React.FC = () => {
   const handleAnalyze = async () => {
     const chunks = await phoneticRulesEngine.breakIntoSyllablesAsync(word);
     setSyllables(chunks);
+    const info = phoneticRulesEngine.getDebugInfo(word);
+    setSource(info.hasKnownSyllables ? 'override' : 'heuristic');
+    setPronunciations(info.pronunciations);
   };
 
   const handlePlay = async () => {
@@ -58,6 +63,20 @@ const TTSDebug: React.FC = () => {
                 <span key={i} className="inline-flex items-center rounded-md border px-2 py-1 text-sm">{s}</span>
               ))}
             </div>
+            <div className="mt-3 text-sm text-muted-foreground">
+              <span className="mr-2">Source:</span>
+              <span className="font-medium">{source === 'override' ? 'Override (mini-dict)' : 'Heuristic'}</span>
+            </div>
+            {pronunciations && (
+              <div className="mt-2 text-sm">
+                <div className="mb-1 font-medium">Speech-friendly:</div>
+                <div className="flex flex-wrap gap-2">
+                  {pronunciations.map((p, idx) => (
+                    <span key={idx} className="inline-flex items-center rounded-md bg-muted px-2 py-0.5">{p}</span>
+                  ))}
+                </div>
+              </div>
+            )}
           </article>
         )}
 

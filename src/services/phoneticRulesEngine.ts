@@ -2,7 +2,7 @@
  * Universal Phonetic Rules Engine
  * Handles phonetic breakdown for ALL users (free/premium), ALL languages, ALL devices
  */
-
+import miniDict from '@/data/phonicsMiniDict';
 
 interface PhoneticRule {
   pattern: RegExp;
@@ -85,77 +85,9 @@ export class PhoneticRulesEngine {
     { pattern: /(tion|sion|ment|ness|able|ible)$/i, breakPoints: [-4, -4, -4, -4, -4, -4] },
   ];
 
-  // Enhanced known syllables for common words
-  private knownSyllables: Record<string, string[]> = {
-    // Level 0 words
-    'hello': ['heh', 'loh'],
-    'water': ['wah', 'ter'],
-    'happy': ['hap', 'ee'],
-    'family': ['fam', 'uh', 'lee'],
-    'friend': ['frend'],
-    'school': ['skool'],
-    'sweet': ['sweet'],
-    'children': ['chil', 'dren'],
-    // Single-syllable helper breakdowns for clarity
-    'jump': ['jum', 'p'],
-    'blue': ['bl', 'oo'],
-    'high': ['h', 'eye'],
-    'bright': ['br', 'igh', 't'],
-    'plays': ['play', 's'],
-    'play': ['pl', 'ay'],
-    'chase': ['ch', 'ay', 's'],
-    'fast': ['f', 'a', 'st'],
-    'snack': ['sn', 'ack'],
-    'snacks': ['sn', 'ack', 's'],
-    'good': ['g', 'oo', 'd'],
-    'green': ['gr', 'ee', 'n'],
-    'likes': ['like', 's'],
-    'smiles': ['sm', 'eye', 'ls'],
-    'bounce': ['b', 'ow', 'n', 's'],
-    'what': ['whuh', 'ut'],
-    
-    // Level 1 words
-    'animal': ['an', 'ih', 'mul'],
-    'garden': ['gar', 'den'],
-    'mountain': ['mown', 'tin'],
-    'adventure': ['ad', 'ven', 'cher'],
-    'character': ['kar', 'ik', 'ter'],
-    'favorite': ['fay', 'vor', 'it'],
-    'flowers': ['flow', 'ers'],
-    'wonderful': ['wun', 'der', 'ful'],
-    'beautiful': ['byoo', 'ti', 'ful'],
-    'together': ['toh', 'get', 'her'],
-    'remember': ['rih', 'mem', 'ber'],
-    'different': ['dif', 'er', 'ent'],
-    'important': ['im', 'por', 'tant'],
-    
-    // Level 2-4 words (including complex ones)
-    'principles': ['prin', 'suh', 'puls'],
-    'organization': ['or', 'gan', 'ih', 'zay', 'shun'],
-    'development': ['dih', 'vel', 'up', 'ment'],
-    'responsibility': ['rih', 'spon', 'suh', 'bil', 'ih', 'tee'],
-    'understanding': ['un', 'der', 'stan', 'ding'],
-    'environment': ['en', 'vy', 'run', 'ment'],
-    'technology': ['tek', 'nol', 'uh', 'jee'],
-    'communication': ['kuh', 'myoo', 'nih', 'kay', 'shun'],
-    'opportunity': ['op', 'er', 'too', 'nih', 'tee'],
-    'experience': ['ik', 'speer', 'ee', 'ens'],
-    'education': ['ed', 'yoo', 'kay', 'shun'],
-    'government': ['guv', 'ern', 'ment'],
-    'information': ['in', 'fer', 'may', 'shun'],
-    'international': ['in', 'ter', 'nash', 'uh', 'nul'],
-    'management': ['man', 'ij', 'ment'],
-    'presentation': ['prez', 'en', 'tay', 'shun'],
-    'professional': ['pruh', 'fesh', 'uh', 'nul'],
-    'relationship': ['rih', 'lay', 'shun', 'ship'],
-    'temperature': ['tem', 'per', 'uh', 'cher'],
-    'transportation': ['trans', 'per', 'tay', 'shun'],
+  // Enhanced known syllables for common words (loaded from data file)
+  private knownSyllables: Record<string, string[]> = miniDict;
 
-    // Specific fixes for illuminate family
-    'illuminate': ['ill', 'loo', 'muh', 'nate'],
-    'illumination': ['ill', 'loo', 'muh', 'nay', 'shun'],
-    'illuminating': ['ill', 'loo', 'muh', 'nay', 'ting'],
-  };
 
   // Speech-friendly pronunciation mapping
   private speechFriendlyMap: Record<string, string> = {
@@ -235,36 +167,13 @@ export class PhoneticRulesEngine {
     return pronunciation;
   }
 
-  // Async: try Datamuse ARPABET, then fallback to sync
+  // Deterministic async API: override -> heuristic (no network)
   public async breakIntoSyllablesAsync(word: string): Promise<string[]> {
     const key = word.toLowerCase();
     if (this.dictCache.has(key)) return this.dictCache.get(key)!;
-    // Prefer explicit overrides
-    if (this.knownSyllables[key]) {
+    if (this.knownSyllables && this.knownSyllables[key]) {
       this.dictCache.set(key, this.knownSyllables[key]);
       return this.knownSyllables[key];
-    }
-    try {
-      const url = `https://api.datamuse.com/words?sp=${encodeURIComponent(key)}&md=r&max=1`;
-      const res = await fetch(url);
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
-          const tags: string[] = data[0]?.tags || [];
-          const pronTag = tags.find(t => t.startsWith('pron:'));
-          if (pronTag) {
-            const arp = pronTag.replace('pron:', '').replace(/\d/g, '').trim();
-            const phones = arp.split(/\s+/).filter(Boolean);
-            const chunks = this.arpabetToChunks(phones, key);
-            if (chunks.length) {
-              this.dictCache.set(key, chunks);
-              return chunks;
-            }
-          }
-        }
-      }
-    } catch (e) {
-      console.warn('Datamuse lookup failed, using heuristic:', e);
     }
     const fallback = this.breakIntoSyllables(word);
     this.dictCache.set(key, fallback);
