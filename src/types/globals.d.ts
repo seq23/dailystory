@@ -8,4 +8,6 @@ declare global {
   interface Global {}
 }
 
+declare module 'pronouncing';
+
 export {};

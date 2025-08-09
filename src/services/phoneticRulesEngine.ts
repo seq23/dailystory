@@ -3,6 +3,7 @@
  * Handles phonetic breakdown for ALL users (free/premium), ALL languages, ALL devices
  */
 
+
 interface PhoneticRule {
   pattern: RegExp;
   replacement: string;
@@ -225,7 +226,6 @@ export class PhoneticRulesEngine {
     }
     
     const pronunciation = this.speechFriendlyMap[syllable.toLowerCase()] || syllable;
-    console.log(`🗣️ UNIVERSAL: Syllable "${syllable}" → pronunciation "${pronunciation}"`);
     return pronunciation;
   }
 
@@ -299,7 +299,7 @@ export class PhoneticRulesEngine {
     }
 
     try {
-      // For segmentation, avoid transforming the whole word to keep natural chunks
+      // Heuristic fallback - avoid transforming the whole word to keep natural chunks
       const transformed = word;
       
       // Simple vowel-based breaking as robust fallback for ALL languages

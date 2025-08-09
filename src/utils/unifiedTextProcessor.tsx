@@ -1,4 +1,3 @@
-import { InteractiveWord } from "@/components/InteractiveWord";
 import { MobileOptimizedInteractiveWord } from "@/components/MobileOptimizedInteractiveWord";
 import type { UserInfo } from "@/types";
 
@@ -59,25 +58,9 @@ export const processTextWithConsistentFlow = ({
     
     const finalClassName = `inline ${className} ${highlightClasses}`;
     
-    // Choose the appropriate component based on preference (modal vs tooltip)
-    if (isMobile) {
-      return (
-        <MobileOptimizedInteractiveWord
-          key={`${index}-${word}`}
-          word={word}
-          className={finalClassName}
-          difficulty={difficulty}
-          userInfo={userInfo}
-          isPremium={isPremium}
-          sentenceContext={text}
-          userId={userId}
-          forceModal={true}
-        />
-      );
-    }
-
+    // Always use modal (no hover tooltips across devices)
     return (
-      <InteractiveWord
+      <MobileOptimizedInteractiveWord
         key={`${index}-${word}`}
         word={word}
         className={finalClassName}
@@ -86,6 +69,7 @@ export const processTextWithConsistentFlow = ({
         isPremium={isPremium}
         sentenceContext={text}
         userId={userId}
+        forceModal={true}
       />
     );
   }).filter(Boolean);
