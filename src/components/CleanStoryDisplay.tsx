@@ -28,6 +28,7 @@ import { getMobileTextConfig, getMobileStoryContainer } from "@/utils/mobileText
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { AdaptiveEnhancedLoading } from "@/components/AdaptiveEnhancedLoading";
 import { cn } from "@/lib/utils";
+import { useReaderLayout } from "@/hooks/useReaderLayout";
 
 import type { UserInfo, SessionStats } from "@/types";
 import { NetflixStyleStoryService, type NetflixStoryResult } from "@/services/NetflixStyleStoryService";
@@ -61,6 +62,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const { t } = useTranslation();
   const { toast } = useToast();
   const { isMobile, isTablet, isMobileOrTablet } = useIsMobile();
+  const { layout, fallbackToClassic } = useReaderLayout();
   
   // Story state
   const [story, setStory] = useState<string[]>([]);
@@ -155,12 +157,12 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     initializeStory();
   }, [userInfo, isPremium]);
 
-  // Generate image for current page
+  // Generate image for current page (skip on classic fallback)
   useEffect(() => {
-    if (story.length > 0 && currentPage < story.length && !pageImages[currentPage]) {
+    if (layout !== "classic" && story.length > 0 && currentPage < story.length && !pageImages[currentPage]) {
       generateImageForCurrentPage();
     }
-  }, [currentPage, story, pageImages]);
+  }, [currentPage, story, pageImages, layout]);
 
   // Timer countdown effect
   useEffect(() => {
@@ -703,75 +705,95 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                 </p>
               </div>
 
+              {layout === "classic" && (
+                <div id="audio-controls" className="mt-2 md:mt-4 flex justify-center gap-4">
+                  <ElevenLabsAudio
+                    text={currentStory}
+                    userInfo={userInfo}
+                    isPremium={isPremium}
+                    onUpgrade={onUpgrade}
+                    onWordHighlight={onWordHighlight}
+                    difficulty={currentDifficulty}
+                  />
+                  {isAudioPlaying && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                      Playing Audio
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Story Content - Enhanced Layout for Desktop Split-Screen */}
               <div className="bg-gradient-card rounded-2xl p-3 md:p-6 lg:p-8 mb-6 min-h-[600px] md:min-h-[700px] xl:min-h-[800px] shadow-xl" 
                    dir="ltr" lang="en" role="main" aria-label="Story content">
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6 lg:gap-8 h-full">
                   {/* Image Section - LEFT SIDE - Equal size on desktop */}
-                  <div className="xl:order-1 flex flex-col">
-                        {currentImage && (
-                          <>
-                            <div className="xl:hidden">
-                              <AspectRatio ratio={16/9}>
-                                <img 
-                                  src={currentImage} 
-                                  alt={`Story illustration for page ${currentPage + 1}: ${story[currentPage]?.substring(0, 100)}...`}
-                                  className="h-full w-full object-cover rounded-2xl shadow-2xl"
-                                  loading="lazy"
-                                  onError={(e) => {
-                                    console.warn('Story image failed to load:', currentImage);
-                                    (e.currentTarget as HTMLImageElement).style.display = 'none';
-                                  }}
-                                />
-                              </AspectRatio>
-                            </div>
-                            <div className="hidden xl:block">
-                              <AspectRatio ratio={16/9}>
-                                <img 
-                                  src={currentImage} 
-                                  alt={`Story illustration for page ${currentPage + 1}: ${story[currentPage]?.substring(0, 100)}...`}
-                                  className="h-full w-full object-cover rounded-2xl shadow-2xl"
-                                  loading="lazy"
-                                  onError={(e) => {
-                                    console.warn('Story image failed to load:', currentImage);
-                                    (e.currentTarget as HTMLImageElement).style.display = 'none';
-                                  }}
-                                />
-                              </AspectRatio>
-                            </div>
-                          </>
-                        )}
-                    
-                    {isGeneratingImage && !currentImage && (
-                      <div className="w-full h-80 sm:h-96 md:h-[36rem] xl:h-full bg-muted rounded-2xl flex items-center justify-center">
-                        <div className="text-center">
-                          <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
-                          <p className="text-sm text-muted-foreground">Creating illustration...</p>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Audio Controls */}
-                    <div id="audio-controls" className="mt-4 md:mt-6 flex justify-center gap-4">
-                      <ElevenLabsAudio
-                        text={currentStory}
-                        userInfo={userInfo}
-                        isPremium={isPremium}
-                        onUpgrade={onUpgrade}
-                        onWordHighlight={onWordHighlight}
-                        difficulty={currentDifficulty}
-                      />
-                      
-                      {/* Audio Playing State Monitor */}
-                      {isAudioPlaying && (
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-                          Playing Audio
+                  {layout !== 'classic' && (
+                    <div className="xl:order-1 flex flex-col">
+                      {currentImage && (
+                        <>
+                          <div className="xl:hidden">
+                            <AspectRatio ratio={16/9}>
+                              <img 
+                                src={currentImage} 
+                                alt={`Story illustration for page ${currentPage + 1}: ${story[currentPage]?.substring(0, 100)}...`}
+                                className="h-full w-full object-cover rounded-2xl shadow-2xl"
+                                loading="lazy"
+                                decoding="async"
+                                onError={(e) => {
+                                  console.warn('Story image failed to load, switching to classic fallback:', currentImage);
+                                  (e.currentTarget as HTMLImageElement).style.display = 'none';
+                                  fallbackToClassic('image-error');
+                                }}
+                              />
+                            </AspectRatio>
+                          </div>
+                          <div className="hidden xl:block">
+                            <AspectRatio ratio={16/9}>
+                              <img 
+                                src={currentImage} 
+                                alt={`Story illustration for page ${currentPage + 1}: ${story[currentPage]?.substring(0, 100)}...`}
+                                className="h-full w-full object-cover rounded-2xl shadow-2xl"
+                                loading="lazy"
+                                decoding="async"
+                                onError={(e) => {
+                                  console.warn('Story image failed to load, switching to classic fallback:', currentImage);
+                                  (e.currentTarget as HTMLImageElement).style.display = 'none';
+                                  fallbackToClassic('image-error');
+                                }}
+                              />
+                            </AspectRatio>
+                          </div>
+                        </>
+                      )}
+                      {isGeneratingImage && !currentImage && (
+                        <div className="w-full h-80 sm:h-96 md:h-[36rem] xl:h-full bg-muted rounded-2xl flex items-center justify-center">
+                          <div className="text-center">
+                            <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
+                            <p className="text-sm text-muted-foreground">Creating illustration...</p>
+                          </div>
                         </div>
                       )}
-                      
+                      {/* Audio Controls */}
+                      <div id="audio-controls" className="mt-4 md:mt-6 flex justify-center gap-4">
+                        <ElevenLabsAudio
+                          text={currentStory}
+                          userInfo={userInfo}
+                          isPremium={isPremium}
+                          onUpgrade={onUpgrade}
+                          onWordHighlight={onWordHighlight}
+                          difficulty={currentDifficulty}
+                        />
+                        {isAudioPlaying && (
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                            Playing Audio
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Text Content - RIGHT SIDE - Equal size on desktop */}
                   <div className="xl:order-2 flex flex-col justify-center h-full">

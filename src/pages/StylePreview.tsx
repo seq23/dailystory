@@ -39,8 +39,8 @@ const StylePreview: React.FC = () => {
         <article>
           <Card className="h-full">
             <CardHeader>
-              <CardTitle>Classic Storybook Page</CardTitle>
-              <CardDescription>Framed page with soft border and comfy reading size.</CardDescription>
+              <CardTitle>Classic Storybook Page (Fallback)</CardTitle>
+              <CardDescription>Text-first layout; used on slower devices.</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="storybook-frame">
@@ -56,8 +56,8 @@ const StylePreview: React.FC = () => {
         <article>
           <Card className="h-full">
             <CardHeader>
-              <CardTitle>Modern Story Card</CardTitle>
-              <CardDescription>Polished image card with stronger shadow.</CardDescription>
+              <CardTitle>Modern Story Card (Recommended)</CardTitle>
+              <CardDescription>Kid-friendly, mobile-first layout.</CardDescription>
             </CardHeader>
             <CardContent>
               <figure className="modern-photo-card overflow-hidden">
@@ -82,7 +82,7 @@ const StylePreview: React.FC = () => {
           <Card className="h-full">
             <CardHeader>
               <CardTitle>Hardcover Spread</CardTitle>
-              <CardDescription>Outer border, subtle center spine, inset page.</CardDescription>
+              <CardDescription>Experimental two-page spread; desktop only.</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="hardcover-spread hardcover--vintage-pages">
