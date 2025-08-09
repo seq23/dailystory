@@ -12,7 +12,9 @@ describe('PhoneticRulesEngine golden cases (deterministic)', () => {
   const cases: Array<[string, string[]]> = [
     ['what', ['whuh','ut']],
     ['green', ['gr','ee','n']],
-    ['chase', ['ch','ay','s']],
+    ['chase', ['chay','s']],
+    ['smiles', ['smile','z']],
+    ['good', ['good']],
     ['illuminate', ['ill','loo','muh','nate']],
     ['illumination', ['ill','loo','muh','nay','shun']],
     ['illuminating', ['ill','loo','muh','nay','ting']],

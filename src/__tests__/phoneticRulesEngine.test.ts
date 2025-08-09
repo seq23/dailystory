@@ -15,7 +15,7 @@ describe('PhoneticRulesEngine', () => {
   it('handles known tricky words', async () => {
     expect(await phoneticRulesEngine.breakIntoSyllablesAsync('what')).toEqual(['whuh','ut']);
     expect(await phoneticRulesEngine.breakIntoSyllablesAsync('green')).toEqual(['gr','ee','n']);
-    expect(await phoneticRulesEngine.breakIntoSyllablesAsync('chase')).toEqual(['ch','ay','s']);
+    expect(await phoneticRulesEngine.breakIntoSyllablesAsync('chase')).toEqual(['chay','s']);
   });
 
   it('prefers known overrides even when ARPABET is available', async () => {
