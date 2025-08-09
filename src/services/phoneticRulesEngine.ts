@@ -100,6 +100,17 @@ export class PhoneticRulesEngine {
     'high': ['h', 'eye'],
     'bright': ['br', 'igh', 't'],
     'plays': ['play', 's'],
+    'play': ['pl', 'ay'],
+    'chase': ['ch', 'ay', 's'],
+    'fast': ['f', 'a', 'st'],
+    'snack': ['sn', 'ack'],
+    'snacks': ['sn', 'ack', 's'],
+    'good': ['g', 'oo', 'd'],
+    'green': ['gr', 'ee', 'n'],
+    'likes': ['like', 's'],
+    'smiles': ['sm', 'eye', 'ls'],
+    'bounce': ['b', 'ow', 'n', 's'],
+    'what': ['whuh', 'ut'],
     
     // Level 1 words
     'animal': ['an', 'ih', 'mul'],
@@ -157,11 +168,13 @@ export class PhoneticRulesEngine {
     'j': 'j', 'f': 'f', 'k': 'k', 'kw': 'kw', 'n': 'n', 'r': 'r',
     'm': 'm', 'ing': 'ing', 'd': 'd',
     // Added helpers for clearer segmented pronunciation
-    'p': 'puh', 'b': 'buh', 't': 'tuh', 'v': 'vuh', 's': 'suh', 'z': 'zuh', 'h': 'huh', 'l': 'luh', 'w': 'wuh', 'y': 'yuh',
-    // Common clusters
-    'bl': 'bluh', 'cl': 'cluh', 'fl': 'fluh', 'gl': 'gluh', 'pl': 'pluh', 'sl': 'sluh', 'br': 'bruh', 'cr': 'cruh', 'dr': 'druh', 'fr': 'fruh', 'gr': 'gruh', 'pr': 'pruh', 'tr': 'truh',
+    'p': 'p', 'b': 'b', 't': 't', 'v': 'v', 's': 's', 'z': 'z', 'h': 'h', 'l': 'l', 'w': 'w', 'y': 'y',
+    // Common clusters (keep crisp unless explicitly schwa-extended)
+    'bl': 'bl', 'cl': 'cl', 'fl': 'fl', 'gl': 'gl', 'pl': 'pl', 'sl': 'sl', 'br': 'br', 'cr': 'cr', 'dr': 'dr', 'fr': 'fr', 'gr': 'gruh', 'pr': 'pr', 'tr': 'tr', 'st': 'st', 'sn': 'sn', 'sm': 'sm',
     // Vowel teams
-    'ue': 'oo', 'oo': 'oo', 'igh': 'eye'
+    'ue': 'oo', 'oo': 'oo', 'igh': 'eye', 'ee': 'ee',
+    // Special helpers
+    'whuh': 'whuh', 'ut': 'ut'
   };
 
   public static getInstance(): PhoneticRulesEngine {
@@ -353,6 +366,28 @@ export class PhoneticRulesEngine {
         if (suffixMatch) {
           const parts = [suffixMatch[1], suffixMatch[2]] as string[];
           console.log('🔧 Heuristic split (suffix):', parts);
+          return parts;
+        }
+        // Split around vowel teams for readability (good → g | oo | d, play → pl | ay)
+        const teams = ['oo','ee','ay','ai','oi','oy','ow','ou','ea','ie','ue','oa','ey'];
+        for (const team of teams) {
+          const idx = w.indexOf(team);
+          if (idx > 0 && idx < w.length - team.length) {
+            const parts = [w.slice(0, idx), team, w.slice(idx + team.length)].filter(Boolean) as string[];
+            console.log('🔧 Heuristic split (vowel team):', parts);
+            return parts;
+          }
+        }
+        // Silent-e long vowel pattern (chase → ch | ay | s)
+        const se = w.match(/^(.+?)([aeiou])([bcdfghjklmnpqrstvwxyz])e$/);
+        if (se) {
+          const onset = se[1];
+          const vowel = se[2];
+          const cons = se[3];
+          const longMap: Record<string, string> = { a: 'ay', e: 'ee', i: 'eye', o: 'oh', u: 'yoo' };
+          const nucleus = longMap[vowel] || vowel;
+          const parts = [onset, nucleus, cons].filter(Boolean) as string[];
+          console.log('🔧 Heuristic split (silent-e):', parts);
           return parts;
         }
       }
