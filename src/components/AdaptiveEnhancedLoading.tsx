@@ -15,17 +15,35 @@ export function AdaptiveEnhancedLoading({ isPremium, userName }: AdaptiveEnhance
   const debugMode = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("debug") === "1";
 
   const title = userName
-    ? t("freeReadingSession.loading.titleWithName", {
-        defaultValue: "Creating Your Free Story for {userName}…",
-        userName,
-      })
-    : t("auth.loading.title", { defaultValue: "Getting things ready..." });
+    ? (
+        isPremium
+          ? t("premium.loading.titleWithName", {
+              defaultValue: "Summoning your Premium Adventure, {userName}! ✨",
+              userName,
+            })
+          : t("freeReadingSession.loading.titleWithName", {
+              defaultValue: "Creating Your Free Story for {userName}…",
+              userName,
+            })
+      )
+    : (
+        isPremium
+          ? t("premium.loading.title", { defaultValue: "Forging your premium reading adventure..." })
+          : t("auth.loading.title", { defaultValue: "Getting things ready..." })
+      );
 
   const description = userName
-    ? t("freeReadingSession.loading.description", {
-        defaultValue: "Generating personalized content for {userName}",
-        userName,
-      })
+    ? (
+        isPremium
+          ? t("premium.loading.description", {
+              defaultValue: "Tailoring a next‑level story just for {userName}",
+              userName,
+            })
+          : t("freeReadingSession.loading.description", {
+              defaultValue: "Generating personalized content for {userName}",
+              userName,
+            })
+      )
     : t("auth.loading.description", { defaultValue: "Preparing your reading experience..." });
 
   if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("debug") === "1") {

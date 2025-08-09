@@ -66,7 +66,13 @@ export const PremiumHeader = ({
               <BookOpen className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-800 truncate max-w-[50vw] sm:max-w-none">Time2Read</h1>
+              <button
+                onClick={() => (window.location.href = '/')}
+                className="text-left text-xl font-bold text-gray-800 truncate max-w-[50vw] sm:max-w-none hover:underline story-link"
+                aria-label="Go to Time2Read Home"
+              >
+                Time2Read
+              </button>
               <div className="flex items-center gap-2">
                 <p className="hidden sm:block text-sm text-gray-600">Welcome back!</p>
                 {isPremium && (

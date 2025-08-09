@@ -113,8 +113,10 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
                     <SelectValue placeholder="Select age" />
                   </SelectTrigger>
                   <SelectContent>
-                    {Array.from({ length: 10 }, (_, i) => i + 3).map(age => (
-                      <SelectItem key={age} value={age.toString()}>{age} years old</SelectItem>
+                    {[3,4,5,6,7,8,9,10,11].map(age => (
+                      <SelectItem key={age} value={age.toString()}>
+                        {age === 11 ? '11+' : `${age} years old`}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -246,17 +248,7 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="specialRequest">Special Story Requests</Label>
-              <Textarea
-                id="specialRequest"
-                value={formData.specialRequest || ""}
-                onChange={(e) => setFormData(prev => ({ ...prev, specialRequest: e.target.value }))}
-                placeholder="Any special themes, characters, or story elements you'd like to include? (e.g., dinosaurs, space adventures, fairy tales, etc.)"
-                className="resize-none"
-                rows={3}
-              />
-            </div>
+            {/* Special Request removed for premium; now asked per-story at start */}
           </CardContent>
         </Card>
 

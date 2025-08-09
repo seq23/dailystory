@@ -17,6 +17,8 @@ import {
 import { PremiumStoryLibrary } from "@/components/PremiumStoryLibrary";
 import CleanStoryDisplay from "@/components/CleanStoryDisplay";
 import type { UserInfo, Story, SessionStats } from "@/types";
+import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 
 interface PremiumMyStoriesViewProps {
   userInfo: UserInfo;
@@ -28,6 +30,8 @@ export const PremiumMyStoriesView = ({ userInfo, isPremium, onSessionEnded }: Pr
   const [currentView, setCurrentView] = useState<'library' | 'reading'>('library');
   const [currentStory, setCurrentStory] = useState<Story | null>(null);
   const [showTutorial, setShowTutorial] = useState(false);
+  const [requestDialogOpen, setRequestDialogOpen] = useState(false);
+  const [specialRequest, setSpecialRequest] = useState("");
 
   // Check if user has read stories before to prevent auto-tutorial
   useEffect(() => {
@@ -47,11 +51,8 @@ export const PremiumMyStoriesView = ({ userInfo, isPremium, onSessionEnded }: Pr
   };
 
   const handleStartNewStory = () => {
-    setCurrentStory(null);
-    setCurrentView('reading');
-    
-    // Mark user as having read stories
-    localStorage.setItem(`user_${userInfo.name}_has_read_stories`, 'true');
+    setSpecialRequest("");
+    setRequestDialogOpen(true);
   };
 
   const handleBackToLibrary = () => {
@@ -62,7 +63,7 @@ export const PremiumMyStoriesView = ({ userInfo, isPremium, onSessionEnded }: Pr
   if (currentView === 'reading') {
     return (
       <CleanStoryDisplay
-        userInfo={userInfo}
+        userInfo={{ ...userInfo, specialRequest }}
         isPremium={isPremium}
         onSessionEnded={(stats) => {
           setCurrentView('library');
@@ -70,7 +71,7 @@ export const PremiumMyStoriesView = ({ userInfo, isPremium, onSessionEnded }: Pr
         }}
         onHome={handleBackToLibrary}
         onUpgrade={() => {}}
-        onNewStory={handleStartNewStory}
+        {...(!isPremium ? { onNewStory: handleStartNewStory } : {})}
         // Additional props can be added here when CleanStoryDisplay supports them
       />
     );
@@ -91,7 +92,7 @@ export const PremiumMyStoriesView = ({ userInfo, isPremium, onSessionEnded }: Pr
         </div>
         
         <Button 
-          onClick={handleStartNewStory}
+          onClick={() => setRequestDialogOpen(true)}
           className="bg-gradient-primary hover:bg-gradient-primary/90"
         >
           <Plus className="w-4 h-4 mr-2" />
@@ -149,7 +150,7 @@ export const PremiumMyStoriesView = ({ userInfo, isPremium, onSessionEnded }: Pr
         <CardContent className="p-6">
           <PremiumStoryLibrary
             onLoadStory={handleLoadStory}
-            onStartNewStory={handleStartNewStory}
+            onStartNewStory={() => setRequestDialogOpen(true)}
             currentStory={currentStory}
           />
         </CardContent>
@@ -157,7 +158,7 @@ export const PremiumMyStoriesView = ({ userInfo, isPremium, onSessionEnded }: Pr
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="border-2 border-dashed border-muted-foreground/25 hover:border-primary/50 transition-colors cursor-pointer" onClick={handleStartNewStory}>
+        <Card className="border-2 border-dashed border-muted-foreground/25 hover:border-primary/50 transition-colors cursor-pointer" onClick={() => setRequestDialogOpen(true)}>
           <CardContent className="p-6 text-center">
             <div className="w-12 h-12 bg-gradient-primary/20 rounded-full flex items-center justify-center mx-auto mb-3">
               <Plus className="w-6 h-6 text-primary" />
@@ -181,6 +182,33 @@ export const PremiumMyStoriesView = ({ userInfo, isPremium, onSessionEnded }: Pr
           </CardContent>
         </Card>
       </div>
+
+      <Dialog open={requestDialogOpen} onOpenChange={setRequestDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Any special requests for this new story?</DialogTitle>
+          </DialogHeader>
+          <Textarea
+            placeholder="Optional: themes, characters, settings (e.g., space cats, time travel, treasure maps)"
+            value={specialRequest}
+            onChange={(e) => setSpecialRequest(e.target.value)}
+            rows={4}
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRequestDialogOpen(false)}>Cancel</Button>
+            <Button
+              onClick={() => {
+                setRequestDialogOpen(false);
+                setCurrentStory(null);
+                setCurrentView('reading');
+                localStorage.setItem(`user_${userInfo.name}_has_read_stories`, 'true');
+              }}
+            >
+              Start Story
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

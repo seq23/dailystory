@@ -135,6 +135,8 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
         .from('profiles')
         .select('*')
         .eq('user_id', user.id)
+        .order('updated_at', { ascending: false })
+        .limit(1)
         .maybeSingle();
 
       if (error) {
@@ -215,25 +217,43 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
       const birthYear = new Date().getFullYear() - updatedUserInfo.age;
       const dateOfBirth = `${birthYear}-01-01`;
 
-      const { error } = await supabase
+      const payload = {
+        display_name: updatedUserInfo.name,
+        date_of_birth: dateOfBirth,
+        grade_level: updatedUserInfo.gradeLevel || updatedUserInfo.grade,
+        reading_level: updatedUserInfo.readingLevel,
+        difficulty_level: updatedUserInfo.difficultyLevel,
+        native_language: updatedUserInfo.nativeLanguage,
+        story_language_preference: updatedUserInfo.storyLanguagePreference,
+        special_request: updatedUserInfo.specialRequest,
+        avatar: JSON.stringify(updatedUserInfo.avatar),
+        favorite_color: updatedUserInfo.favoriteColor,
+        favorite_animal: updatedUserInfo.favoriteAnimal,
+        favorite_food: updatedUserInfo.favoriteFood,
+        hobbies: updatedUserInfo.hobbies,
+        interests: updatedUserInfo.interests || []
+      };
+
+      const { data: existing, error: fetchErr } = await supabase
         .from('profiles')
-        .upsert({
-          user_id: user.id,
-          display_name: updatedUserInfo.name,
-          date_of_birth: dateOfBirth,
-          grade_level: updatedUserInfo.gradeLevel || updatedUserInfo.grade,
-          reading_level: updatedUserInfo.readingLevel,
-          difficulty_level: updatedUserInfo.difficultyLevel,
-          native_language: updatedUserInfo.nativeLanguage,
-          story_language_preference: updatedUserInfo.storyLanguagePreference,
-          special_request: updatedUserInfo.specialRequest,
-          avatar: JSON.stringify(updatedUserInfo.avatar),
-          favorite_color: updatedUserInfo.favoriteColor,
-          favorite_animal: updatedUserInfo.favoriteAnimal,
-          favorite_food: updatedUserInfo.favoriteFood,
-          hobbies: updatedUserInfo.hobbies,
-          interests: updatedUserInfo.interests || []
-        });
+        .select('id')
+        .eq('user_id', user.id)
+        .limit(1)
+        .maybeSingle();
+
+      let error;
+      if (existing?.id) {
+        const { error: updateErr } = await supabase
+          .from('profiles')
+          .update(payload)
+          .eq('user_id', user.id);
+        error = updateErr;
+      } else {
+        const { error: insertErr } = await supabase
+          .from('profiles')
+          .insert([{ user_id: user.id, ...payload }]);
+        error = insertErr;
+      }
 
       if (error) {
         console.error('Error updating profile:', error);

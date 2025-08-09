@@ -5,6 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { RefreshCw, CreditCard, Calendar, CheckCircle, XCircle } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 
 interface SubscriptionData {
   subscribed: boolean;
@@ -16,6 +18,8 @@ export const SubscriptionManager = () => {
   const [subscriptionData, setSubscriptionData] = useState<SubscriptionData | null>(null);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
 
   const checkSubscription = async () => {
     try {
@@ -185,10 +189,18 @@ export const SubscriptionManager = () => {
                     <span>Renewal Date: {formatDate(subscriptionData.subscription_end)}</span>
                   </div>
                 )}
-                <Button onClick={openCustomerPortal} disabled={loading}>
-                  <CreditCard className="w-4 h-4 mr-2" />
-                  {loading ? "Opening..." : "Manage Subscription"}
-                </Button>
+                <div className="flex gap-3 flex-wrap">
+                  <Button onClick={openCustomerPortal} disabled={loading}>
+                    <CreditCard className="w-4 h-4 mr-2" />
+                    {loading ? "Opening..." : "Manage Subscription"}
+                  </Button>
+                  <Button variant="outline" onClick={() => setCancelOpen(true)}>
+                    Cancel Subscription
+                  </Button>
+                  <Button variant="secondary" onClick={() => window.open('mailto:sales@time2read.example?subject=Enterprise%20Inquiry','_blank')}>
+                    Upgrade to Enterprise
+                  </Button>
+                </div>
               </div>
             ) : (
               <div className="grid md:grid-cols-2 gap-4">
@@ -230,6 +242,60 @@ export const SubscriptionManager = () => {
           </CardContent>
         </Card>
       )}
+
+      <Card className="border-dashed">
+        <CardHeader>
+          <CardTitle>Free vs Premium</CardTitle>
+          <CardDescription>What you get with Premium compared to Free</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ul className="grid md:grid-cols-2 gap-2 text-sm">
+            <li>• Unlimited stories vs. daily limit</li>
+            <li>• Live page-by-page generation</li>
+            <li>• Save stories to your library</li>
+            <li>• Vocabulary tracking and progress</li>
+            <li>• Parent dashboard insights</li>
+          </ul>
+        </CardContent>
+      </Card>
+
+      <Dialog open={cancelOpen} onOpenChange={setCancelOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Why are you cancelling?</DialogTitle>
+          </DialogHeader>
+          <Textarea
+            placeholder="Optional: Your feedback helps us improve"
+            value={cancelReason}
+            onChange={(e) => setCancelReason(e.target.value)}
+            rows={4}
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCancelOpen(false)}>Back</Button>
+            <Button
+              onClick={async () => {
+                try {
+                  if (cancelReason.trim()) {
+                    await supabase.from('feedback').insert({
+                      message: cancelReason.trim(),
+                      category: 'cancellation',
+                      user_agent: navigator.userAgent,
+                      page_url: window.location.href,
+                    });
+                  }
+                } catch (e) {
+                  console.error('Failed to record cancellation reason', e);
+                } finally {
+                  setCancelOpen(false);
+                  openCustomerPortal();
+                }
+              }}
+            >
+              Continue to Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
