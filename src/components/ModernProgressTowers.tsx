@@ -211,7 +211,7 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
         className={cn(
           "fixed top-1/2 right-4 transform -translate-y-1/2 z-40",
           "transition-all duration-500 ease-out",
-          isMobile && "scale-90 right-2",
+          isMobile && "scale-75 right-1",
           className
         )}
         onMouseEnter={handleMouseEnter}
@@ -224,6 +224,7 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
           "border border-white/20 shadow-2xl",
           "transition-all duration-500 ease-out",
           isExpanded ? "w-80 p-6" : "w-20 p-4",
+          isMobile && !isExpanded && "w-14 p-2",
           celebrationMode && "animate-pulse ring-4 ring-amber-400/50",
           sparkleMode && "relative overflow-visible"
         )}>
@@ -299,6 +300,7 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
               "shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary/50",
               "group relative overflow-hidden touch-manipulation",
               isExpanded ? "top-4 right-4" : "top-8 left-1/2 -translate-x-1/2",
+              isMobile && !isExpanded && "w-9 h-9 top-6",
               // Remove auto-animations, only celebration mode spins
               celebrationMode && "animate-spin [animation-duration:1s] [animation-iteration-count:1]",
               sparkleMode && "ring-2 ring-amber-400/50"
@@ -447,11 +449,12 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
                           'from-purple-400 to-purple-600'
                         }`,
                         "text-white",
+                        isMobile && "w-8 h-8",
                         isActive && "ring-2 ring-primary/50 scale-110",
                         sparkleMode && "animate-pulse"
                       )}
                     >
-                      <tower.icon className="w-5 h-5" />
+                      <tower.icon className={cn(isMobile ? "w-4 h-4" : "w-5 h-5")} />
                     </div>
                     
                     {/* Value display below icon - no overlap */}

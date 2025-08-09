@@ -727,30 +727,76 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
               {/* Story Content - Enhanced Layout for Desktop Split-Screen */}
               <div className="bg-gradient-card rounded-2xl p-3 md:p-6 lg:p-8 mb-6 min-h-[600px] md:min-h-[700px] xl:min-h-[800px] xl:h-[70vh] shadow-xl" 
                    dir="ltr" lang="en" role="main" aria-label="Story content">
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6 lg:gap-8 xl:gap-0 h-full">
+                {/* Mobile/Tablet: Top-half image, bottom-half text (full-bleed, no gray) */}
+                <div className="xl:hidden h-[80vh] md:h-[85vh] flex flex-col gap-3">
+                  {/* Top Half: Image */}
+                  <div className="relative h-1/2 w-full rounded-2xl overflow-hidden shadow-2xl">
+                    {currentImage ? (
+                      <img
+                        src={currentImage}
+                        alt={`Story illustration for page ${currentPage + 1}: ${story[currentPage]?.substring(0, 100)}...`}
+                        className="absolute inset-0 h-full w-full object-cover"
+                        loading="lazy"
+                        decoding="async"
+                        onError={(e) => {
+                          console.warn('Story image failed to load, switching to classic fallback:', currentImage);
+                          (e.currentTarget as HTMLImageElement).style.display = 'none';
+                          fallbackToClassic('image-error');
+                        }}
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                      </div>
+                    )}
+                  </div>
+                  {/* Bottom Half: Text (scrollable) + audio controls */}
+                  <div className="h-1/2 w-full rounded-2xl shadow-2xl bg-card overflow-hidden flex flex-col">
+                    <div id="audio-controls" className="p-3 md:p-4 flex justify-center gap-4 shrink-0">
+                      <ElevenLabsAudio
+                        text={currentStory}
+                        userInfo={userInfo}
+                        isPremium={isPremium}
+                        onUpgrade={onUpgrade}
+                        onWordHighlight={onWordHighlight}
+                        difficulty={currentDifficulty}
+                      />
+                      {isAudioPlaying && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                          Playing Audio
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 overflow-y-auto px-4 md:px-6 pb-4">
+                      <div 
+                        className="story-content storybook-frame w-full"
+                        data-difficulty={currentDifficulty}
+                      >
+                        {processTextWithConsistentFlow({
+                          text: currentStory,
+                          className: "interactive-word",
+                          difficulty: currentDifficulty,
+                          userInfo,
+                          isPremium,
+                          userId: userInfo.name,
+                          highlightedWordIndex: currentHighlightedWord,
+                          isMobile: isMobileOrTablet
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Desktop: Perfectly mirrored split columns */}
+                <div className="hidden xl:grid grid-cols-2 gap-0 h-full">
                   {/* Image Section - LEFT SIDE - Equal size on desktop */}
                   {layout !== 'classic' && (
                     <div className="xl:order-1 flex flex-col">
                       {currentImage && (
                         <>
-                          <div className="xl:hidden">
-                            <AspectRatio ratio={16/9}>
-                              <img 
-                                src={currentImage} 
-                                alt={`Story illustration for page ${currentPage + 1}: ${story[currentPage]?.substring(0, 100)}...`}
-                                className="h-full w-full object-contain rounded-2xl shadow-2xl bg-muted"
-                                loading="lazy"
-                                decoding="async"
-                                onError={(e) => {
-                                  console.warn('Story image failed to load, switching to classic fallback:', currentImage);
-                                  (e.currentTarget as HTMLImageElement).style.display = 'none';
-                                  fallbackToClassic('image-error');
-                                }}
-                              />
-                            </AspectRatio>
-                          </div>
                           <div className="hidden xl:block h-full">
-                            <div className="w-full h-full rounded-2xl bg-muted shadow-2xl flex items-center justify-center">
+                            <div className="w-full h-full rounded-2xl shadow-2xl flex items-center justify-center">
                               <img 
                                 src={currentImage} 
                                 alt={`Story illustration for page ${currentPage + 1}: ${story[currentPage]?.substring(0, 100)}...`}
@@ -768,33 +814,17 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                         </>
                       )}
                       {isGeneratingImage && !currentImage && (
-                        <div className="w-full h-80 sm:h-96 md:h-[36rem] xl:h-full bg-muted rounded-2xl flex items-center justify-center">
+                        <div className="w-full h-full rounded-2xl flex items-center justify-center">
                           <div className="text-center">
                             <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
                             <p className="text-sm text-muted-foreground">Creating illustration...</p>
                           </div>
                         </div>
                       )}
-                      {/* Audio Controls */}
-                      <div id="audio-controls" className="mt-4 md:mt-6 flex justify-center gap-4 xl:hidden">
-                        <ElevenLabsAudio
-                          text={currentStory}
-                          userInfo={userInfo}
-                          isPremium={isPremium}
-                          onUpgrade={onUpgrade}
-                          onWordHighlight={onWordHighlight}
-                          difficulty={currentDifficulty}
-                        />
-                        {isAudioPlaying && (
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-                            Playing Audio
-                          </div>
-                        )}
-                      </div>
                     </div>
                   )}
 
+                  {/* Text Content - RIGHT SIDE - Equal size on desktop */}
                   <div className="xl:order-2 flex flex-col h-full">
                     <div className="w-full h-full rounded-2xl shadow-2xl bg-card">
                       <div className="h-full overflow-y-auto p-4 md:p-6 lg:p-8">
