@@ -801,9 +801,9 @@ const handleRestartTimer = () => {
                         </div>
                       )}
                     </div>
-                    <div className={cn("flex-1 min-h-0 overflow-y-auto px-4 md:px-6 pb-4", isPremium && isShortPage && "flex items-center justify-center")}>
+                    <div className={cn("flex-1 min-h-0 overflow-y-auto px-4 md:px-6 pb-4")}>
                       <div 
-                        className={cn("story-content storybook-frame w-full", isPremium && isShortPage && "text-center")}
+                        className={cn("story-content storybook-frame w-full")}
                         data-difficulty={currentDifficulty}
                       >
                         {processTextWithConsistentFlow({
