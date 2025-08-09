@@ -103,13 +103,13 @@ export class PhoneticRulesEngine {
     'zhun': 'zhun', 'proh': 'pro', 'pree': 'pree', 'an-tee': 'antee',
     'aw-toh': 'auto', 'in-ter': 'inter', 'un-der': 'under',
     'uf': 'uff', 'af': 'aff', 'ay': 'ay', 'oh': 'oh', 'ey': 'ee',
-    'ow': 'ow', 'oy': 'oy', 'aw': 'aw', 'sk': 'sk', 'ch': 'ch',
+    'ow': 'ow', 'oy': 'oy', 'aw': 'aw', 'sk': 'sk', 'ch': 'cha',
     'j': 'j', 'f': 'f', 'k': 'k', 'kw': 'kw', 'n': 'n', 'r': 'r',
     'm': 'm', 'ing': 'ing', 'd': 'd',
     // Added helpers for clearer segmented pronunciation
     'p': 'p', 'b': 'b', 't': 't', 'v': 'v', 's': 's', 'z': 'z', 'h': 'h', 'l': 'l', 'w': 'w', 'y': 'y',
-    // Common clusters (keep crisp unless explicitly schwa-extended)
-    'bl': 'bl', 'cl': 'cl', 'fl': 'fl', 'gl': 'gl', 'pl': 'pl', 'sl': 'sl', 'br': 'br', 'cr': 'cr', 'dr': 'dr', 'fr': 'fr', 'gr': 'gruh', 'pr': 'pr', 'tr': 'tr', 'st': 'st', 'sn': 'sn', 'sm': 'sm',
+    // Common clusters (use gentle schwa for better articulation when isolated)
+    'bl': 'bl', 'cl': 'cl', 'fl': 'fl', 'gl': 'gl', 'pl': 'pl', 'sl': 'sl', 'br': 'br', 'cr': 'cr', 'dr': 'dr', 'fr': 'fr', 'gr': 'gruh', 'pr': 'pr', 'tr': 'tr', 'st': 'st', 'sn': 'sn', 'sm': 'smuh',
     // Vowel teams
     'ue': 'oo', 'oo': 'oo', 'igh': 'eye', 'ee': 'ee',
     // Special helpers
