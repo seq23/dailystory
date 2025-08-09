@@ -725,9 +725,9 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
               )}
 
               {/* Story Content - Enhanced Layout for Desktop Split-Screen */}
-              <div className="bg-gradient-card rounded-2xl p-3 md:p-6 lg:p-8 mb-6 min-h-[600px] md:min-h-[700px] xl:min-h-[800px] shadow-xl" 
+              <div className="bg-gradient-card rounded-2xl p-3 md:p-6 lg:p-8 mb-6 min-h-[600px] md:min-h-[700px] xl:min-h-[800px] xl:h-[70vh] shadow-xl" 
                    dir="ltr" lang="en" role="main" aria-label="Story content">
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6 lg:gap-8 h-full">
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6 lg:gap-8 xl:gap-0 h-full">
                   {/* Image Section - LEFT SIDE - Equal size on desktop */}
                   {layout !== 'classic' && (
                     <div className="xl:order-1 flex flex-col">
@@ -738,7 +738,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                               <img 
                                 src={currentImage} 
                                 alt={`Story illustration for page ${currentPage + 1}: ${story[currentPage]?.substring(0, 100)}...`}
-                                className="h-full w-full object-cover rounded-2xl shadow-2xl"
+                                className="h-full w-full object-contain rounded-2xl shadow-2xl bg-muted"
                                 loading="lazy"
                                 decoding="async"
                                 onError={(e) => {
@@ -749,12 +749,12 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                               />
                             </AspectRatio>
                           </div>
-                          <div className="hidden xl:block">
-                            <AspectRatio ratio={16/9}>
+                          <div className="hidden xl:block h-full">
+                            <div className="w-full h-full rounded-2xl bg-muted shadow-2xl flex items-center justify-center">
                               <img 
                                 src={currentImage} 
                                 alt={`Story illustration for page ${currentPage + 1}: ${story[currentPage]?.substring(0, 100)}...`}
-                                className="h-full w-full object-cover rounded-2xl shadow-2xl"
+                                className="max-h-full max-w-full object-contain"
                                 loading="lazy"
                                 decoding="async"
                                 onError={(e) => {
@@ -763,7 +763,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                                   fallbackToClassic('image-error');
                                 }}
                               />
-                            </AspectRatio>
+                            </div>
                           </div>
                         </>
                       )}
@@ -796,8 +796,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                   )}
 
                   {/* Text Content - RIGHT SIDE - Equal size on desktop */}
-                  <div className="xl:order-2 flex flex-col justify-center h-full">
-                    <div className="story-container h-full flex items-center">
+                  <div className="xl:order-2 flex flex-col h-full justify-center xl:justify-start">
+                    <div className="story-container h-full flex items-center xl:items-stretch xl:overflow-y-auto">
                       <div 
                         className="story-content storybook-frame w-full"
                         data-difficulty={currentDifficulty}
