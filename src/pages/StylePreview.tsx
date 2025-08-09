@@ -178,18 +178,19 @@ const StylePreview: React.FC = () => {
               <article>
                 <h3 className="font-semibold mb-2">Free trial</h3>
                 <ul className="space-y-2 text-sm">
-                  {[
-                    "Limited customization of your story via User Info Form",
-                    "Free 20-minute reading sessions with Images",
-                    "Basic vocabulary highlights",
-                    "Standard audio and word tools (word-by-word highlighting, pronunciation help)",
-                    "End of session reporting gamification - gain points & unlock milestones within a single session analytics",
-                  ].map((f) => (
-                    <li key={f} className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1" />
-                      <span>{f}</span>
-                    </li>
-                  ))}
+{[
+  "Limited customization of your story via User Info Form",
+  "Free 20-minute reading sessions with images",
+  "Text-to-speech suite: Hear it, Explain it, phonetic breakdown, and precise word-by-word highlighting",
+  "Limited audio narration",
+  "In-session achievements, points, badges, and reading streaks",
+  "End-of-session report with milestones",
+].map((f) => (
+  <li key={f} className="flex items-start gap-2">
+    <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1" />
+    <span>{f}</span>
+  </li>
+))}
                 </ul>
               </article>
 
@@ -197,50 +198,48 @@ const StylePreview: React.FC = () => {
                 <div>
                   <h3 className="font-semibold mb-2">Top Premium</h3>
                   <ul className="space-y-2 text-sm">
-                    {[
-                      "Customize your story",
-                      "Unlimited reading time",
-                      "Advanced audio narration",
-                      "Word-by-word highlighting",
-                      "Text-to-speech tools: Hear it, Explain it, and phonetic breakdown",
-                      "Achievements, points, badges, and reading streaks",
-                      "End-of-session report with milestones",
-                    ].map((f) => (
-                      <li key={f} className="flex items-start gap-2">
-                        <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1" />
-                        <span>{f}</span>
-                      </li>
-                    ))}
+{[
+  "Customize your story",
+  "Unlimited reading time",
+  "Text-to-speech suite: Hear it, Explain it, phonetic breakdown, and precise word-by-word highlighting",
+  "Advanced audio narration",
+  "Achievements, points, badges, and reading streaks",
+  "End-of-session report with milestones",
+].map((f) => (
+  <li key={f} className="flex items-start gap-2">
+    <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1" />
+    <span>{f}</span>
+  </li>
+))}
                   </ul>
                 </div>
 
                 <div>
                   <h4 className="font-medium text-sm text-muted-foreground">Additional offerings</h4>
                   <ul className="mt-2 space-y-2 text-sm">
-                    {[
-                      "Personalized live story generation (Your story doesn't end until you decide!)",
-                      "Saved stories, favorites, and collections",
-                      "Multiple child profiles",
-                      "Parent dashboard insights and reports",
-                      "Learning goals with weekly targets",
-                      "Progress dashboard and detailed analytics",
-                      "Vocabulary tracking and practice quizzes",
-                      "Comprehension questions after reading",
-                      "Mini-games to reinforce vocabulary and phonics",
-                      "Reading timer and progress tracking",
-                      "Personalized difficulty adjustments as your child improves",
-                      "Vocabulary word bank and review activities",
-                      "Curated story library and recommendations",
-                      "Mobile-optimized audio controls and kid-friendly UI",
-                      "Voice commands for navigation and controls",
-                      "Read-aloud feedback (speech-to-text coaching)",
-                      "Priority support",
-                    ].map((f) => (
-                      <li key={f} className="flex items-start gap-2">
-                        <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1" />
-                        <span>{f}</span>
-                      </li>
-                    ))}
+{[
+  "Personalized live story generation (Your story doesn't end until you decide!)",
+  "Saved stories, favorites, and collections",
+  "Multiple child profiles",
+  "Parent dashboard with insights and analytics",
+  "Learning goals with weekly targets",
+  "Vocabulary tracking and practice quizzes",
+  "Comprehension questions after reading",
+  "Mini-games to reinforce vocabulary and phonics",
+  "Reading timer and progress tracking",
+  "Personalized difficulty adjustments as your child improves",
+  "Vocabulary word bank and review activities",
+  "Curated story library and recommendations",
+  "Mobile-optimized audio controls and kid-friendly UI",
+  "Voice commands for navigation and controls",
+  "Read-aloud feedback (speech-to-text coaching)",
+  "Priority support",
+].map((f) => (
+  <li key={f} className="flex items-start gap-2">
+    <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1" />
+    <span>{f}</span>
+  </li>
+))}
                   </ul>
                 </div>
               </article>
