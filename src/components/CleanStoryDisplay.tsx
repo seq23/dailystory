@@ -579,44 +579,6 @@ const handleRestartTimer = () => {
     setShowEndStoryModal(false);
     await initializeStory();
   };
-    if (!isPremium || isLoadingNextPage) return;
-    
-    setIsLoadingNextPage(true);
-    
-    try {
-      // For live generation, regenerate using the context
-      if (liveContext) {
-        const result = await LiveGenerationService.generateNextPage({
-          ...liveContext,
-          currentPage: currentPage,
-          storyContext: story.slice(0, currentPage)
-        });
-        
-        if (!result.error) {
-          // Replace current page
-          const newStory = [...story];
-          newStory[currentPage] = result.content;
-          setStory(newStory);
-          
-          toast({
-            title: "Page Regenerated! ✨",
-            description: "Your story page has been refreshed.",
-            duration: 3000,
-          });
-        }
-      }
-    } catch (error) {
-      console.error('Failed to regenerate page:', error);
-      toast({
-        title: "Regeneration Failed",
-        description: "Please try again in a moment.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoadingNextPage(false);
-    }
-  };
-
   // Generate a concluding page (Premium) without ending the session
   const handleGenerateEndingPage = async () => {
     if (!isPremium || !liveContext || isGeneratingEnding) return;
