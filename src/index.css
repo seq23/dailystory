@@ -573,55 +573,101 @@ All colors MUST be HSL.
   overflow: hidden;
 }
 
-/* Hardcover spread style for text panel */
+/* Hardcover spread style for text panel - Vintage big book */
 .hardcover-spread {
+  /* Semantic tokens for vintage look */
+  --leather: 20 28% 18%;
+  --leather-deep: 18 30% 12%;
+  --leather-gloss: 20 28% 26%;
+  --paper: 42 48% 92%;
+  --paper-deep: 40 42% 86%;
+  --paper-edge: 38 35% 80%;
   position: relative;
-  background: hsl(var(--card));
   color: hsl(var(--card-foreground));
   border: 2px solid hsl(var(--border));
   border-radius: 1.25rem;
-  box-shadow: 0 16px 32px hsl(var(--foreground) / 0.18), 0 4px 12px hsl(var(--foreground) / 0.10);
+  /* Deep cover background with subtle gradient */
+  background:
+    radial-gradient(120% 140% at 50% -10%, hsl(var(--leather-gloss)) 0%, hsl(var(--leather)) 40%, hsl(var(--leather-deep)) 100%);
+  box-shadow: 0 22px 44px hsl(var(--foreground) / 0.22), 0 6px 14px hsl(var(--foreground) / 0.12);
   padding: clamp(1rem, 2vw, 1.5rem);
+  overflow: hidden;
 }
 
-/* Center spine */
+/* Subtle inner vignette on the cover */
+.hardcover-spread::before {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow:
+    inset 0 0 80px hsl(var(--leather-deep) / 0.45),
+    inset 0 0 6px hsl(var(--leather) / 0.25);
+}
+
+/* Center spine / gutter */
 .hardcover-spread::after {
   content: "";
   position: absolute;
-  top: 0;
-  bottom: 0;
+  top: 10px;
+  bottom: 10px;
   left: 50%;
-  width: 2px;
+  width: 3px;
   transform: translateX(-50%);
   background: linear-gradient(
     to bottom,
-    hsl(var(--border)) 0%,
-    hsl(var(--border) / 0.6) 20%,
-    hsl(var(--border) / 0.4) 50%,
-    hsl(var(--border) / 0.6) 80%,
-    hsl(var(--border)) 100%
+    hsl(var(--leather-deep)) 0%,
+    hsl(var(--leather)) 20%,
+    hsl(var(--leather-deep)) 50%,
+    hsl(var(--leather)) 80%,
+    hsl(var(--leather-deep)) 100%
   );
   opacity: 0.6;
+  filter: blur(0.2px);
   pointer-events: none;
 }
 
-/* Inset page border effect */
+/* Inset page with aged paper texture and edge shading */
 .hardcover-spread .page-inset {
-  background: hsl(var(--card));
+  position: relative;
   border: 1px solid hsl(var(--input));
   border-radius: 0.875rem;
-  box-shadow: inset 0 1px 0 hsl(var(--foreground) / 0.04);
-  padding: clamp(0.75rem, 2vw, 1rem);
+  padding: clamp(0.875rem, 2vw, 1.25rem);
+  background:
+    linear-gradient(180deg, hsl(var(--paper)) 0%, hsl(var(--paper-deep)) 100%),
+    url("./assets/ancient-book-bg.jpg");
+  background-size: cover, 600px;
+  background-blend-mode: multiply;
+  box-shadow:
+    inset 0 1px 0 hsl(var(--foreground) / 0.04),
+    0 8px 18px hsl(var(--leather-deep) / 0.35);
+}
+
+/* Page inner vignette and deckle-like edges */
+.hardcover-spread .page-inset::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 120% at 50% 30%, transparent 0%, transparent 60%, hsl(var(--paper-edge) / 0.25) 100%);
+  box-shadow:
+    inset 8px 0 12px -8px hsl(var(--leather-deep) / 0.4),
+    inset -8px 0 12px -8px hsl(var(--leather-deep) / 0.4);
+  mix-blend-mode: multiply;
 }
 
 @media (max-width: 1024px) {
   .hardcover-spread {
     border-width: 1px;
     border-radius: 1rem;
+    box-shadow: 0 16px 32px hsl(var(--foreground) / 0.18), 0 4px 12px hsl(var(--foreground) / 0.10);
   }
   .hardcover-spread::after {
-    opacity: 0.4;
-    width: 1px;
+    opacity: 0.5;
+    width: 2px;
   }
 }
 
