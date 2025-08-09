@@ -10,6 +10,8 @@ import NotFound from "./pages/NotFound";
 import SessionEnded from "./pages/SessionEnded";
 import StylePreview from "./pages/StylePreview";
 import TTSDebug from "./pages/TTSDebug";
+import Pricing from "./pages/Pricing";
+import Upgrade from "./pages/Upgrade";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +27,8 @@ const App = () => {
               <Route path="/" element={<Index />} />
               <Route path="/style-preview" element={<StylePreview />} />
               <Route path="/tts-debug" element={<TTSDebug />} />
+              <Route path="/pricing" element={<Pricing />} />
+              <Route path="/upgrade" element={<Upgrade />} />
               <Route path="/session-ended" element={<SessionEnded onHome={() => { window.history.pushState(null, '', '/'); window.location.reload(); }} onNewStory={() => { window.history.pushState(null, '', '/'); window.location.reload(); }} />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
