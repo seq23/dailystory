@@ -777,7 +777,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                   <div className="xl:order-2 flex flex-col justify-center h-full">
                     <div className="story-container h-full flex items-center">
                       <div 
-                        className="story-content w-full"
+                        className="story-content storybook-frame w-full"
                         data-difficulty={currentDifficulty}
                       >
                         {processTextWithConsistentFlow({

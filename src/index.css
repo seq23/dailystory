@@ -315,13 +315,7 @@ All colors MUST be HSL.
     font-family: 'Noto Sans SC', sans-serif;
   }
 
-  /* Ensure story content uses kid-friendly, non-slanted Chinese font */
-  [lang="zh"] .story-content,
-  [lang="zh"] .story-text,
-  [lang="zh"] .story-display {
-    font-family: 'Noto Sans SC', sans-serif !important;
-    letter-spacing: 0.01em;
-  }
+  /* Story content uses global font (Fredoka). Chinese font reserved for UI only. */
 
   [lang="hi"] {
     font-family: 'Noto Sans Devanagari', 'Kalam', sans-serif;
@@ -548,6 +542,25 @@ All colors MUST be HSL.
 .story-image-container-enhanced {
   height: auto !important;
   min-height: 0 !important;
+}
+
+/* Storybook frame for text panel */
+.storybook-frame {
+  background: hsl(var(--card));
+  color: hsl(var(--card-foreground));
+  border: 2px solid hsl(var(--border));
+  border-radius: 1.25rem;
+  box-shadow: 0 10px 25px hsl(var(--foreground) / 0.12), 0 2px 8px hsl(var(--foreground) / 0.08);
+  padding: clamp(1rem, 2vw, 1.5rem);
+}
+
+@media (max-width: 1024px) {
+  .storybook-frame {
+    border-width: 1px;
+    border-radius: 1rem;
+    box-shadow: 0 6px 16px hsl(var(--foreground) / 0.10), 0 1px 4px hsl(var(--foreground) / 0.06);
+    padding: clamp(0.75rem, 2.5vw, 1rem);
+  }
 }
 
 @keyframes shake {
