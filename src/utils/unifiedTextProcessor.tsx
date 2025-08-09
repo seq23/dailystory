@@ -59,13 +59,27 @@ export const processTextWithConsistentFlow = ({
     
     const finalClassName = `inline ${className} ${highlightClasses}`;
     
-    // Choose the appropriate component based on device type
-    const WordComponent = isMobile ? MobileOptimizedInteractiveWord : InteractiveWord;
-    
+    // Choose the appropriate component based on preference (modal vs tooltip)
+    if (isMobile) {
+      return (
+        <MobileOptimizedInteractiveWord
+          key={`${index}-${word}`}
+          word={word}
+          className={finalClassName}
+          difficulty={difficulty}
+          userInfo={userInfo}
+          isPremium={isPremium}
+          sentenceContext={text}
+          userId={userId}
+          forceModal={true}
+        />
+      );
+    }
+
     return (
-      <WordComponent 
-        key={`${index}-${word}`} 
-        word={word} 
+      <InteractiveWord
+        key={`${index}-${word}`}
+        word={word}
         className={finalClassName}
         difficulty={difficulty}
         userInfo={userInfo}

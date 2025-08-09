@@ -15,6 +15,7 @@ interface MobileOptimizedInteractiveWordProps {
   isPremium?: boolean;
   sentenceContext?: string;
   userId?: string;
+  forceModal?: boolean;
 }
 
 export const MobileOptimizedInteractiveWord = (props: MobileOptimizedInteractiveWordProps) => {
@@ -37,7 +38,7 @@ export const MobileOptimizedInteractiveWord = (props: MobileOptimizedInteractive
   }, [cleanWord, props.userInfo?.name, difficulty, props.word]);
 
   // For mobile devices, use click-to-open modal instead of hover
-  if (isMobileOrTablet) {
+  if (props.forceModal || isMobileOrTablet) {
     const handleClick = () => {
       if (!shouldBeInteractive) return;
       setShowMobileModal(true);

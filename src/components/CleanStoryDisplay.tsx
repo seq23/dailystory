@@ -63,7 +63,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const { toast } = useToast();
   const { isMobile, isTablet, isMobileOrTablet, hasTouchCapability } = useIsMobile();
   const runtimeTouch = typeof window !== 'undefined' && (('ontouchstart' in window) || (navigator.maxTouchPoints > 0));
-  const preferMobileModal = isMobile || (isTablet && (hasTouchCapability || runtimeTouch));
+  const forceDesktopModal = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('desktopModal') === '1';
+  const preferMobileModal = forceDesktopModal || isMobile || (isTablet && (hasTouchCapability || runtimeTouch));
   const { layout, fallbackToClassic } = useReaderLayout();
   
   // Story state

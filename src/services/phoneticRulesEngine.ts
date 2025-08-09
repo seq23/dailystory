@@ -98,6 +98,7 @@ export class PhoneticRulesEngine {
     'jump': ['jum', 'p'],
     'blue': ['bl', 'oo'],
     'high': ['h', 'eye'],
+    'bright': ['br', 'igh', 't'],
     'plays': ['play', 's'],
     
     // Level 1 words
