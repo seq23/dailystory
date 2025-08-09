@@ -113,7 +113,7 @@ export class PhoneticRulesEngine {
     // Vowel teams
     'ue': 'oo', 'oo': 'oo', 'igh': 'eye', 'ee': 'ee',
     // Special helpers
-    'whuh': 'whuh', 'ut': 'ut'
+    'whuh': 'whuh', 'ut': 'ut', 'bounce': 'bownss'
   };
 
   public static getInstance(): PhoneticRulesEngine {

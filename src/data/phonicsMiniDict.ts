@@ -28,7 +28,7 @@ const curated: Record<string, string[]> = {
   'green': ['gr', 'ee', 'n'],
   'likes': ['like', 's'],
   'smiles': ['smiles'],
-  'bounce': ['b', 'ow', 'n', 's'],
+  'bounce': ['bounce'],
   'what': ['whuh', 'ut'],
 
   // Level 1+ selected overrides
