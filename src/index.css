@@ -563,6 +563,69 @@ All colors MUST be HSL.
   }
 }
 
+/* Modern photo card for image panel */
+.modern-photo-card {
+  background: hsl(var(--card));
+  color: hsl(var(--card-foreground));
+  border: 1px solid hsl(var(--border));
+  border-radius: 1rem;
+  box-shadow: 0 12px 28px hsl(var(--foreground) / 0.15), 0 4px 10px hsl(var(--foreground) / 0.08);
+  overflow: hidden;
+}
+
+/* Hardcover spread style for text panel */
+.hardcover-spread {
+  position: relative;
+  background: hsl(var(--card));
+  color: hsl(var(--card-foreground));
+  border: 2px solid hsl(var(--border));
+  border-radius: 1.25rem;
+  box-shadow: 0 16px 32px hsl(var(--foreground) / 0.18), 0 4px 12px hsl(var(--foreground) / 0.10);
+  padding: clamp(1rem, 2vw, 1.5rem);
+}
+
+/* Center spine */
+.hardcover-spread::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  background: linear-gradient(
+    to bottom,
+    hsl(var(--border)) 0%,
+    hsl(var(--border) / 0.6) 20%,
+    hsl(var(--border) / 0.4) 50%,
+    hsl(var(--border) / 0.6) 80%,
+    hsl(var(--border)) 100%
+  );
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Inset page border effect */
+.hardcover-spread .page-inset {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--input));
+  border-radius: 0.875rem;
+  box-shadow: inset 0 1px 0 hsl(var(--foreground) / 0.04);
+  padding: clamp(0.75rem, 2vw, 1rem);
+}
+
+@media (max-width: 1024px) {
+  .hardcover-spread {
+    border-width: 1px;
+    border-radius: 1rem;
+  }
+  .hardcover-spread::after {
+    opacity: 0.4;
+    width: 1px;
+  }
+}
+
+
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
   25% { transform: translateX(-5px); }

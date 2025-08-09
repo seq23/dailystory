@@ -8,6 +8,7 @@ import { FloatingFeedback } from "@/components/FloatingFeedback";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import SessionEnded from "./pages/SessionEnded";
+import StylePreview from "./pages/StylePreview";
 
 const queryClient = new QueryClient();
 
@@ -21,6 +22,7 @@ const App = () => {
             <Sonner />
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/style-preview" element={<StylePreview />} />
               <Route path="/session-ended" element={<SessionEnded onHome={() => { window.history.pushState(null, '', '/'); window.location.reload(); }} onNewStory={() => { window.history.pushState(null, '', '/'); window.location.reload(); }} />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
