@@ -12,13 +12,11 @@ import {
 } from "@/components/ui/sidebar";
 import { Badge } from "@/components/ui/badge";
 import { 
-  BookOpen, 
-  BarChart3, 
-  Settings, 
-  CreditCard, 
-  User, 
-  Library, 
-  Target,
+  BookOpen,
+  Settings,
+  CreditCard,
+  User,
+  Library,
   Crown,
   Sparkles
 } from "lucide-react";
@@ -46,19 +44,6 @@ const sidebarItems = [
     premium: true
   },
   {
-    title: "Reading Progress",
-    url: "progress", 
-    icon: BarChart3,
-    description: "Track your reading journey"
-  },
-  {
-    title: "Learning Goals",
-    url: "goals",
-    icon: Target,
-    description: "Set and achieve reading goals",
-    premium: true
-  },
-  {
     title: "Profile Settings",
     url: "profile",
     icon: User,
@@ -71,10 +56,10 @@ const sidebarItems = [
     description: "Parent controls & reports"
   },
   {
-    title: "Premium Features",
-    url: "subscription",
+    title: "My Account",
+    url: "account",
     icon: CreditCard,
-    description: "Manage subscription"
+    description: "Manage subscription & settings"
   }
 ];
 
@@ -183,7 +168,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
                 Unlock story library, learning goals, and advanced features!
               </p>
               <button 
-                onClick={() => onViewChange("subscription")}
+                onClick={() => onViewChange("account")}
                 className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-sm font-medium py-2 px-3 rounded-md hover:from-yellow-500 hover:to-orange-600 transition-colors"
               >
                 Learn More

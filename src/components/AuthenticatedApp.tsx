@@ -8,15 +8,13 @@ import { PremiumMyStoriesView } from "@/components/PremiumMyStoriesView";
 import { PremiumHeader } from "@/components/PremiumHeader";
 import { PremiumSidebar } from "@/components/PremiumSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { ProgressDashboard } from "@/components/ProgressDashboard";
 import { ParentDashboard } from "@/components/ParentDashboard";
-import { SubscriptionManager } from "@/components/SubscriptionManager";
-import { VocabularyDashboard } from "@/components/VocabularyDashboard";
 import { PremiumStoryLibrary } from "@/components/PremiumStoryLibrary";
 import { SecurityDashboard } from "@/components/SecurityDashboard";
+import { MyAccount } from "@/components/MyAccount";
 import { DismissibleSystemStatus } from "@/components/DismissibleSystemStatus";
 import { useSecurityMonitoring } from "@/hooks/useSecurityMonitoring";
-import { BookOpen, CreditCard } from "lucide-react";
+import { BookOpen } from "lucide-react";
 import type { UserInfo, Grade, LanguageCode, LearningGoal, SessionStats } from "@/types";
 import { AdaptiveEnhancedLoading } from "@/components/AdaptiveEnhancedLoading";
 
@@ -24,7 +22,7 @@ interface AuthenticatedAppProps {
   user: User;
 }
 
-type AppView = "stories" | "library" | "progress" | "goals" | "profile" | "parent" | "subscription";
+type AppView = "stories" | "library" | "profile" | "parent" | "account";
 
 export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
   const [currentView, setCurrentView] = useState<AppView>("stories");
@@ -356,23 +354,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                     </div>
                   )}
 
-                  {currentView === "progress" && userInfo && (
-                    <ProgressDashboard
-                      userInfo={userInfo}
-                      isVisible={true}
-                      onClose={() => {}}
-                      isPremium={isPremium}
-                    />
-                  )}
 
-                  {currentView === "goals" && userInfo && (
-                    <VocabularyDashboard
-                      userInfo={userInfo}
-                      isPremium={isPremium}
-                      onStartThemedSession={() => setCurrentView("stories")}
-                      onStartProgressiveSession={() => setCurrentView("stories")}
-                    />
-                  )}
 
                   {currentView === "profile" && (
                     <PremiumProfileEditor
@@ -392,34 +374,13 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                     />
                   )}
 
-                  {currentView === "subscription" && (
-                    <div className="space-y-6">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-gradient-primary/20 rounded-full">
-                          <CreditCard className="w-6 h-6 text-primary" />
-                        </div>
-                        <div>
-                          <h1 className="text-2xl font-bold text-foreground">Premium Features</h1>
-                          <p className="text-muted-foreground">Manage your subscription and features</p>
-                        </div>
-                      </div>
-                      <SubscriptionManager />
-                      {subscriptionEnd && (
-                        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                          <h3 className="font-semibold text-blue-900 mb-2">Subscription Details</h3>
-                          <div className="text-sm text-blue-700">
-                            <p><strong>Status:</strong> {isPremium ? 'Active' : 'Inactive'}</p>
-                            {subscriptionTier && <p><strong>Plan:</strong> {subscriptionTier}</p>}
-                            {subscriptionEnd && (
-                              <p><strong>Next Billing:</strong> {new Date(subscriptionEnd).toLocaleDateString()}</p>
-                            )}
-                            {devTestMode && (
-                              <p className="text-orange-600 font-medium">⚠️ Developer Test Mode Active</p>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                  {currentView === "account" && (
+                    <MyAccount
+                      isPremium={isPremium}
+                      subscriptionTier={subscriptionTier || undefined}
+                      subscriptionEnd={subscriptionEnd || undefined}
+                      devTestMode={devTestMode}
+                    />
                   )}
                 </>
               )}
