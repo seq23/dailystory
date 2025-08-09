@@ -408,11 +408,6 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
             </TabsContent>
           </Tabs>
 
-          <div className="mt-6 text-center text-sm text-gray-500">
-            <p>{t("loginScreen.guarantees.moneyBack")}</p>
-            <p>{t("loginScreen.guarantees.cancelAnytime")}</p>
-            <p>{t("loginScreen.guarantees.securePayment")}</p>
-          </div>
           
           {/* Back to Home Button */}
           <div className="mt-4 text-center">

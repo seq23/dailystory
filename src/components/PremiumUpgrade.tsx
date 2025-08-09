@@ -203,22 +203,6 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({
           ))}
         </div>
 
-        {/* Money Back Guarantee */}
-        <div className="text-center mb-8">
-          <Card className="inline-block bg-green-50 border-green-200">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                  <Heart className="w-6 h-6 text-green-600" />
-                </div>
-                <div className="text-left">
-                  <h3 className="font-bold text-green-800">30-Day Money-Back Guarantee</h3>
-                  <p className="text-green-700 text-sm">Try risk-free. Cancel anytime if you're not completely satisfied.</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
 
         {/* Back Button */}
         <div className="text-center">

@@ -1,4 +1,4 @@
-import { Check, Crown, Building2, Sparkles, ArrowRight } from "lucide-react";
+import { Check, Crown, Building2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Link } from "react-router-dom";
@@ -134,9 +134,6 @@ export function PricingSection({ compact }: PricingSectionProps) {
                   Upgrade to Premium
                 </Button>
               </Link>
-              <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
-                <Sparkles className="w-3 h-3" /> 30‑day money‑back guarantee
-              </p>
             </CardContent>
           </Card>
 
