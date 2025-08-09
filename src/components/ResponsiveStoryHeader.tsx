@@ -7,6 +7,7 @@ import { Home, TrendingUp, TrendingDown, RefreshCw, Loader2 } from "lucide-react
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import type { DifficultyLevel, UserInfo } from '@/types';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface ResponsiveStoryHeaderProps {
   storyTitle?: string;
@@ -21,6 +22,7 @@ interface ResponsiveStoryHeaderProps {
   changeDirection?: 'increase' | 'decrease' | 'badge';
   canIncrease?: boolean;
   canDecrease?: boolean;
+  onEndSession?: () => void;
 }
 
 export const ResponsiveStoryHeader = ({
@@ -35,7 +37,8 @@ export const ResponsiveStoryHeader = ({
   isChangingDifficulty = false,
   changeDirection,
   canIncrease = true,
-  canDecrease = true
+  canDecrease = true,
+  onEndSession,
 }: ResponsiveStoryHeaderProps) => {
   const { t } = useTranslation();
   const { isMobile, isTablet, isMobileOrTablet } = useIsMobile();
@@ -230,8 +233,8 @@ export const ResponsiveStoryHeader = ({
             )}
           </div>
 
-          {/* Right Section: Level Controls */}
-          <div className="flex-shrink-0">
+          {/* Right Section: Level Controls + End Session */}
+          <div className="flex-shrink-0 flex items-center gap-2">
             {showLevelControls && (
               <div 
                 className={cn(
@@ -329,6 +332,26 @@ export const ResponsiveStoryHeader = ({
                   </Button>
                 )}
               </div>
+            )}
+
+            {onEndSession && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="destructive"
+                      size={isMobile ? "sm" : "default"}
+                      onClick={onEndSession}
+                      aria-label={t("nav.endSession", "End Session")}
+                    >
+                      {t("nav.endSession", "End Session")}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {t("tooltips.endSession", "This will end this session. You will have the option to save this story as is.")}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
           </div>
         </div>

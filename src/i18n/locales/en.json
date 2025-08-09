@@ -524,7 +524,8 @@
     "loading": "Loading...",
     "close": "Close",
     "home": "Home",
-    "newStory": "New Story"
+    "newStory": "New Story",
+    "cancel": "Cancel"
   },
   "auth": {
     "loading": {
@@ -679,12 +680,28 @@
       "freshTitle": "Generate a Fresh Story",
       "freshDesc": "You’ll remain in this session and start a brand‑new live adventure.",
       "closeLabel": "Stay here"
+    },
+    "confirm": {
+      "title": "Are you sure?",
+      "desc": "Continuing will generate a concluding page next, but your session will continue. You’ll be able to save your story afterward.",
+      "continue": "Generate Conclusion",
+      "cancel": "Cancel"
     }
   },
   "nav": {
     "next": "What happens next?",
     "endStory": "End Story",
-    "endSession": "End Session"
+    "endSession": "End Session",
+    "endSessionConfirm": {
+      "title": "End session?",
+      "desc": "This will end this session. You will have the option to save this story as is.",
+      "saveAndEnd": "Save story and end",
+      "endWithoutSaving": "End without saving"
+    }
+  },
+  "tooltips": {
+    "saveDuringEndStory": "Save this story to your Library. You can keep generating pages to create a sequel!",
+    "endSession": "This will end this session. You will have the option to save this story as is."
   },
   "timer": {
     "celebration": {

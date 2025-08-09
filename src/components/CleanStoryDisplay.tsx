@@ -113,6 +113,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [isGeneratingEnding, setIsGeneratingEnding] = useState(false);
   const [showManualCelebration, setShowManualCelebration] = useState(false);
   const [showEndStoryModal, setShowEndStoryModal] = useState(false);
+  const [showConfirmEndStory, setShowConfirmEndStory] = useState(false);
+  const [showEndSessionConfirm, setShowEndSessionConfirm] = useState(false);
   const loaderStartRef = useRef<number>(0);
   const LOADER_MIN_MS = 1600;
 
@@ -589,6 +591,10 @@ const handleRestartTimer = () => {
         setStory(prev => [...prev, result.content]);
         setIsStoryComplete(true);
         setLiveContext(null);
+        // Auto-advance to the newly generated concluding page
+        setCurrentPage(prev => prev + 1);
+        setJustAdvanced(true);
+        setTimeout(() => setJustAdvanced(false), 600);
         setShowEndStoryModal(true);
         toast({
           title: t('endStory.modal.title', 'Your story is complete!'),
@@ -603,7 +609,6 @@ const handleRestartTimer = () => {
       setIsGeneratingEnding(false);
     }
   };
-
   // Manual End Session (Premium): 5s celebration with music then stats
   const handleManualEndSession = () => {
     setShowManualCelebration(true);
@@ -745,6 +750,7 @@ const handleRestartTimer = () => {
           changeDirection={changeDirection}
           canIncrease={currentDifficulty !== 'expert' || expertGradeLevel !== "10th"}
           canDecrease={currentDifficulty !== 'beginner'}
+          onEndSession={() => setShowEndSessionConfirm(true)}
         />
 
       {/* Main Content - Full Width Layout */}
@@ -986,21 +992,6 @@ const handleRestartTimer = () => {
                         </>
                       )}
                     </Button>
-                    <Button
-                      onClick={handleGenerateEndingPage}
-                      disabled={!liveContext || isGeneratingEnding || isStoryComplete || timeRemaining <= 0}
-                      variant="outline"
-                      size="sm"
-                    >
-                        {isGeneratingEnding ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            {t('common.processing', 'Processing...')}
-                          </>
-                        ) : (
-                          t('nav.endStory', 'End Story')
-                        )}
-                    </Button>
                   </div>
                 )}
 
@@ -1133,7 +1124,7 @@ const handleRestartTimer = () => {
                 {isPremium && (
                   <div className="mt-3 flex justify-center gap-3 xl:hidden">
                     <MobileOptimizedButton
-                      onClick={handleGenerateEndingPage}
+                      onClick={() => setShowConfirmEndStory(true)}
                       disabled={!liveContext || isGeneratingEnding || isStoryComplete || timeRemaining <= 0}
                       variant="outline"
                     >
@@ -1147,13 +1138,19 @@ const handleRestartTimer = () => {
                       )}
                     </MobileOptimizedButton>
                     {isStoryComplete && (
-                      <MobileOptimizedButton onClick={handleSaveStoryNow} variant="outline">
-                        Save Story
-                      </MobileOptimizedButton>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button onClick={handleSaveStoryNow} variant="outline" size="sm">
+                              Save Story
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {t('tooltips.saveDuringEndStory', 'Save this story to your Library. You can keep generating pages to create a sequel!')}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     )}
-                    <MobileOptimizedButton onClick={handleManualEndSession} variant="secondary">
-                      End Session
-                    </MobileOptimizedButton>
                   </div>
                 )}
 
@@ -1197,7 +1194,7 @@ const handleRestartTimer = () => {
                 {isPremium && (
                   <div className="hidden xl:flex justify-center gap-3 mt-3">
                     <MobileOptimizedButton
-                      onClick={handleGenerateEndingPage}
+                      onClick={() => setShowConfirmEndStory(true)}
                       disabled={!liveContext || isGeneratingEnding || isStoryComplete || timeRemaining <= 0}
                       variant="outline"
                       size="sm"
@@ -1212,13 +1209,19 @@ const handleRestartTimer = () => {
                       )}
                     </MobileOptimizedButton>
                     {isStoryComplete && (
-                      <MobileOptimizedButton onClick={handleSaveStoryNow} variant="outline" size="sm">
-                        Save Story
-                      </MobileOptimizedButton>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button onClick={handleSaveStoryNow} variant="outline" size="sm">
+                              Save Story
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {t('tooltips.saveDuringEndStory', 'Save this story to your Library. You can keep generating pages to create a sequel!')}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     )}
-                    <MobileOptimizedButton onClick={handleManualEndSession} variant="secondary" size="sm">
-                      End Session
-                    </MobileOptimizedButton>
                   </div>
                 )}
               </div>
@@ -1281,6 +1284,37 @@ const handleRestartTimer = () => {
           onSaveStoryNow={isPremium ? handleSaveStoryNow : undefined}
         />
       )}
+
+      {/* End Story Confirmation (Premium) */}
+      {isPremium && showConfirmEndStory && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center">
+          <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" />
+          <div className="relative z-[111] bg-background border border-border rounded-2xl shadow-2xl w-[92vw] max-w-xl p-6 animate-scale-in" role="dialog" aria-labelledby="endstory-confirm-title" aria-describedby="endstory-confirm-desc">
+            <h3 id="endstory-confirm-title" className="text-xl font-bold mb-2">{t('endStory.confirm.title', 'Are you sure?')}</h3>
+            <p id="endstory-confirm-desc" className="text-sm text-muted-foreground mb-5">{t('endStory.confirm.desc', 'Continuing will generate a concluding page next, but your session will continue. You’ll be able to save your story afterward.')}</p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-end">
+              <Button onClick={() => { setShowConfirmEndStory(false); handleGenerateEndingPage(); }}>{t('endStory.confirm.continue', 'Generate Conclusion')}</Button>
+              <Button variant="ghost" onClick={() => setShowConfirmEndStory(false)}>{t('common.cancel', 'Cancel')}</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* End Session Confirmation */}
+      {showEndSessionConfirm && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center">
+          <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" />
+          <div className="relative z-[111] bg-background border border-border rounded-2xl shadow-2xl w-[92vw] max-w-xl p-6 animate-scale-in" role="dialog" aria-labelledby="endsession-title" aria-describedby="endsession-desc">
+            <h3 id="endsession-title" className="text-xl font-bold mb-2">{t('nav.endSessionConfirm.title', 'End session?')}</h3>
+            <p id="endsession-desc" className="text-sm text-muted-foreground mb-5">{t('nav.endSessionConfirm.desc', 'This will end this session. You will have the option to save this story as is.')}</p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-end">
+              <Button onClick={async () => { await handleSaveStoryNow(); setShowEndSessionConfirm(false); handleEndSession(); }}>{t('nav.endSessionConfirm.saveAndEnd', 'Save story and end')}</Button>
+              <Button variant="destructive" onClick={() => { setShowEndSessionConfirm(false); handleEndSession(); }}>{t('nav.endSessionConfirm.endWithoutSaving', 'End without saving')}</Button>
+              <Button variant="ghost" onClick={() => setShowEndSessionConfirm(false)}>{t('common.cancel', 'Cancel')}</Button>
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* End Story Modal (Premium) */}
       {isPremium && showEndStoryModal && (
@@ -1293,7 +1327,16 @@ const handleRestartTimer = () => {
               <div className="rounded-xl border border-border p-4">
                 <h4 className="font-semibold mb-1">{t('endStory.modal.saveAndGoTitle','Save and go to Library')}</h4>
                 <p className="text-xs text-muted-foreground mb-3">{t('endStory.modal.saveAndGoDesc','You’ll be directed to your Story Library, where this story will join your saved stories.')}</p>
-                <Button className="w-full" onClick={async () => { await handleSaveAndGoToLibrary(); }}>{t('endStory.modal.saveAndGoTitle','Save and go to Library')}</Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button className="w-full" onClick={async () => { await handleSaveAndGoToLibrary(); }}>{t('endStory.modal.saveAndGoTitle','Save and go to Library')}</Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {t('tooltips.saveDuringEndStory', 'Save this story to your Library. You can keep generating pages to create a sequel!')}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
               <div className="rounded-xl border border-border p-4">
                 <h4 className="font-semibold mb-1">{t('endStory.modal.sequelTitle','Start an open‑ended Sequel')}</h4>
