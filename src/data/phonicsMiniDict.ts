@@ -1,7 +1,9 @@
-// Minimal, curated phonics overrides to ensure kid-friendly syllables
-// Keep entries lowercase
-const dict: Record<string, string[]> = {
-  // Level 0 words
+// Minimal, curated phonics overrides merged with auto-generated coverage from vocab sets
+// Keys are lowercase and cleaned (letters only) by the engine during lookup
+import autoBase from '@/data/autoPhonicsFromVocab';
+
+const curated: Record<string, string[]> = {
+  // Level 0 words (selected overrides)
   'hello': ['heh', 'loh'],
   'water': ['wah', 'ter'],
   'happy': ['hap', 'ee'],
@@ -29,7 +31,7 @@ const dict: Record<string, string[]> = {
   'bounce': ['b', 'ow', 'n', 's'],
   'what': ['whuh', 'ut'],
 
-  // Level 1 words
+  // Level 1+ selected overrides
   'animal': ['an', 'ih', 'mul'],
   'garden': ['gar', 'den'],
   'mountain': ['mown', 'tin'],
@@ -44,7 +46,7 @@ const dict: Record<string, string[]> = {
   'different': ['dif', 'er', 'ent'],
   'important': ['im', 'por', 'tant'],
 
-  // Level 2-4 words (including complex ones)
+  // Level 2-4 complex overrides
   'principles': ['prin', 'suh', 'puls'],
   'organization': ['or', 'gan', 'ih', 'zay', 'shun'],
   'development': ['dih', 'vel', 'up', 'ment'],
@@ -70,6 +72,12 @@ const dict: Record<string, string[]> = {
   'illuminate': ['ill', 'loo', 'muh', 'nate'],
   'illumination': ['ill', 'loo', 'muh', 'nay', 'shun'],
   'illuminating': ['ill', 'loo', 'muh', 'nay', 'ting'],
+};
+
+// Merge: auto-generated baseline first, then curated overrides take precedence
+const dict: Record<string, string[]> = {
+  ...autoBase,
+  ...curated,
 };
 
 export default dict;
