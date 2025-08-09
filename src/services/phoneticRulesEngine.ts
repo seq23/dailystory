@@ -98,6 +98,7 @@ export class PhoneticRulesEngine {
     'jump': ['jum', 'p'],
     'blue': ['bl', 'oo'],
     'high': ['h', 'eye'],
+    'plays': ['play', 's'],
     
     // Level 1 words
     'animal': ['an', 'ih', 'mul'],
@@ -284,8 +285,8 @@ export class PhoneticRulesEngine {
     }
 
     try {
-      // Apply phonetic transformations first
-      const transformed = this.applyPhoneticTransformations(word);
+      // For segmentation, avoid transforming the whole word to keep natural chunks
+      const transformed = word;
       
       // Simple vowel-based breaking as robust fallback for ALL languages
       const syllables: string[] = [];
@@ -295,7 +296,7 @@ export class PhoneticRulesEngine {
       // Extended vowel support for multiple languages
       const vowels = 'aeiouáéíóúñüàèìòùâêîôûäëïöüy';
       // Do not split common vowel teams (keeps "sweet" = one syllable, not "swe-et")
-      const vowelTeams = new Set(['aa','ee','ea','ei','ie','oa','oo','ou','ow','oi','oy','ai','ay','au','ue']);
+      const vowelTeams = new Set(['aa','ee','ea','ei','ey','ie','oa','oo','ou','ow','oi','oy','ai','ay','au','ue']);
       
       for (let i = 0; i < transformed.length; i++) {
         const char = transformed[i];
@@ -334,7 +335,26 @@ export class PhoneticRulesEngine {
       }
       
       // Ensure we have at least one syllable
-      const result = syllables.length > 0 ? syllables : [transformed];
+      let result = syllables.length > 0 ? syllables : [transformed];
+
+      // Heuristics for clearer breakdown on tricky single-syllable words
+      if (result.length === 1) {
+        const w = transformed;
+        // Keep igh together and split around it (e.g., bright → br | igh | t)
+        const ighIdx = w.indexOf('igh');
+        if (ighIdx !== -1) {
+          const parts = [w.slice(0, ighIdx), 'igh', w.slice(ighIdx + 3)].filter(Boolean) as string[];
+          console.log('🔧 Heuristic split (igh):', parts);
+          return parts;
+        }
+        // Split simple suffixes off for clarity (plays → play | s, jumped → jump | ed)
+        const suffixMatch = w.match(/^(.+[aeiouy][a-z]*)(s|ed|ing)$/);
+        if (suffixMatch) {
+          const parts = [suffixMatch[1], suffixMatch[2]] as string[];
+          console.log('🔧 Heuristic split (suffix):', parts);
+          return parts;
+        }
+      }
       console.log(`🔤 UNIVERSAL: Syllable breakdown result for "${word}": ${result}`);
       return result;
       
