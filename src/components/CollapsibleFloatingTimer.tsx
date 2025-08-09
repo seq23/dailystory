@@ -21,6 +21,8 @@ interface CollapsibleFloatingTimerProps {
   onIncreaseTime?: () => void; // Premium: increase time (up to 60 minutes)
   onDismiss?: () => void; // Premium: dismiss/hide timer without ending session
   onRestartTimer?: () => void; // Premium: restart a new timed session in-session
+  onKeepReadingUntimed?: () => void; // Premium: keep reading with timer off
+  onSaveStoryNow?: () => void; // Premium: save the current story now
 }
 
 export const CollapsibleFloatingTimer = ({
@@ -81,6 +83,11 @@ const [showChoice, setShowChoice] = useState(false);
 useEffect(() => {
   if (timeRemaining === 0 && !showCelebration && !showChoice) {
     setShowCelebration(true);
+    try {
+      const audio = new Audio('/audio/celebration-chime.mp3');
+      audio.volume = 0.6;
+      audio.play().catch(() => {});
+    } catch {}
     const timeout = setTimeout(() => {
       setShowCelebration(false);
       if (isPremium) {
@@ -88,7 +95,7 @@ useEffect(() => {
       } else {
         onSessionEnded(sessionStats);
       }
-    }, 3000);
+    }, 5000);
     return () => clearTimeout(timeout);
   }
 }, [timeRemaining, showCelebration, showChoice, isPremium, onSessionEnded, sessionStats]);

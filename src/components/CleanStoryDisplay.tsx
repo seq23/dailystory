@@ -31,13 +31,14 @@ import { AdaptiveEnhancedLoading } from "@/components/AdaptiveEnhancedLoading";
 import { cn } from "@/lib/utils";
 import { useReaderLayout } from "@/hooks/useReaderLayout";
 
-import type { UserInfo, SessionStats } from "@/types";
+import type { UserInfo, SessionStats, Story as StoryType } from "@/types";
 import { NetflixStyleStoryService, type NetflixStoryResult } from "@/services/NetflixStyleStoryService";
 import { LiveGenerationService, type LiveGenerationContext, type LivePageResult } from "@/services/LiveGenerationService";
 import { DifficultyManager } from "@/services/difficultyManager";
 import { DiagnosticTool } from "@/utils/diagnostics";
 
 import { SimpleImageService } from "@/services/SimpleImageService";
+import { PremiumStoryManager } from "@/services/premiumStoryManager";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ErrorHandler, ErrorType } from "@/utils/errorHandling";
 import { DiagnosticPanel } from "@/components/DiagnosticPanel";
@@ -109,6 +110,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   // Magic wand state
   const [isGeneratingNewStory, setIsGeneratingNewStory] = useState(false);
   const [isMagicWandAnimating, setIsMagicWandAnimating] = useState(false);
+  const [isGeneratingEnding, setIsGeneratingEnding] = useState(false);
+  const [showManualCelebration, setShowManualCelebration] = useState(false);
   const loaderStartRef = useRef<number>(0);
   const LOADER_MIN_MS = 1600;
 
@@ -368,10 +371,13 @@ useEffect(() => {
       // Navigate to next existing page
       setCurrentPage(currentPage + 1);
     } else {
-      // Story completed - record comprehensive session stats
+      // Last page reached
+      if (isPremium) {
+        toast({ title: "End reached", description: "Use End Story to add a conclusion, or Fresh Story for a new one.", duration: 3000 });
+        return;
+      }
       const timeSpent = Date.now() - sessionStartTime;
       const totalWordsRead = sessionWordsRead;
-      
       const sessionStats: SessionStats = {
         timeSpent,
         wordsRead: totalWordsRead,
@@ -379,16 +385,13 @@ useEffect(() => {
         startTime: sessionStartTime,
         accuracy: 100
       };
-      
-      // Record session for gamification
       recordReadingSession({
         timeSpent,
         wordsRead: totalWordsRead,
         pagesRead: pagesCompleted.size,
         storyCompleted: true,
-        readingSpeed: Math.round((totalWordsRead / timeSpent) * 60000) // words per minute
+        readingSpeed: Math.round((totalWordsRead / timeSpent) * 60000)
       });
-      
       onSessionEnded(sessionStats);
     }
   };
@@ -414,6 +417,7 @@ useEffect(() => {
     setTimeRemaining(prev => Math.max(5 * 60, prev - 5 * 60)); // Reduce by 5 minutes, minimum 5 minutes
   };
 
+  // Manual end session logic exists below
   const handleEndSession = () => {
     const timeSpent = (20 * 60 - timeRemaining) * 1000; // Convert to milliseconds
     const totalWordsRead = sessionWordsRead;
@@ -446,6 +450,36 @@ useEffect(() => {
       description: "You can now read without time limits!",
       duration: 3000,
     });
+  };
+
+  const handleKeepReadingUntimed = () => {
+    if (!isPremium) return;
+    setIsTimerCanceled(true);
+    setIsTimerRunning(false);
+    toast({ title: "Untimed reading", description: "Enjoy reading without the timer.", duration: 2500 });
+  };
+
+  const handleSaveStoryNow = async () => {
+    if (!isPremium || story.length === 0) return;
+    try {
+      // Build Story object
+      const segments = story.map((text) => ({ text }));
+      const wordCount = story.reduce((sum, s) => sum + countWords(s), 0);
+      const estimatedReadingTime = Math.max(1, Math.round(wordCount / 150));
+      const storyObj: StoryType = {
+        id: `story-${Date.now()}`,
+        title: storyTitle || `${userInfo.name}'s Adventure`,
+        segments,
+        difficulty: currentDifficulty,
+        estimatedReadingTime,
+        wordCount,
+      };
+      await PremiumStoryManager.saveStory(storyObj as any, userInfo, isStoryComplete ? ['ended'] : ['in-progress'], false);
+      toast({ title: "Saved", description: "Story saved to your library.", duration: 3000 });
+    } catch (e) {
+      console.error('Save story failed', e);
+      toast({ title: "Save failed", description: "Please try again.", variant: "destructive" });
+    }
   };
 
 const handleExtendTime = () => {
@@ -558,7 +592,43 @@ const handleRestartTimer = () => {
     }
   };
 
-  // Simplified difficulty controls with button animations
+  // Generate a concluding page (Premium) without ending the session
+  const handleGenerateEndingPage = async () => {
+    if (!isPremium || !liveContext || isGeneratingEnding) return;
+    setIsGeneratingEnding(true);
+    try {
+      const result = await LiveGenerationService.generateEndingPage(liveContext);
+      if (result && !result.error) {
+        setStory(prev => [...prev, result.content]);
+        setIsStoryComplete(true);
+        setLiveContext(null);
+        toast({
+          title: "Ending created",
+          description: "A concluding page was added. You can save the story.",
+          duration: 3000,
+        });
+      }
+    } catch (e) {
+      console.error('Failed to generate ending page', e);
+      toast({ title: "Ending failed", description: "Please try again.", variant: "destructive" });
+    } finally {
+      setIsGeneratingEnding(false);
+    }
+  };
+
+  // Manual End Session (Premium): 5s celebration with music then stats
+  const handleManualEndSession = () => {
+    setShowManualCelebration(true);
+    try {
+      const audio = new Audio('/audio/celebration-chime.mp3');
+      audio.volume = 0.6;
+      audio.play().catch(() => {});
+    } catch {}
+    setTimeout(() => {
+      setShowManualCelebration(false);
+      handleEndSession();
+    }, 5000);
+  };
   const handleDifficultyChange = async (direction: 'up' | 'down') => {
     setIsChangingDifficulty(true);
     setChangeDirection(direction === 'up' ? 'increase' : 'decrease');
@@ -928,6 +998,21 @@ const handleRestartTimer = () => {
                         </>
                       )}
                     </Button>
+                    <Button
+                      onClick={handleGenerateEndingPage}
+                      disabled={!liveContext || isGeneratingEnding || isStoryComplete || timeRemaining <= 0}
+                      variant="outline"
+                      size="sm"
+                    >
+                      {isGeneratingEnding ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Ending...
+                        </>
+                      ) : (
+                        'End Story'
+                      )}
+                    </Button>
                   </div>
                 )}
 
@@ -1038,7 +1123,7 @@ const handleRestartTimer = () => {
 
                   <MobileOptimizedButton
                     onClick={handleNext}
-                    disabled={isLoadingNextPage || timeRemaining <= 0 || (!isPremium && currentPage === story.length - 1)}
+                    disabled={isLoadingNextPage || timeRemaining <= 0 || (!isPremium && currentPage === story.length - 1) || (isPremium && isStoryComplete && currentPage === story.length - 1)}
                     className="bg-primary text-primary-foreground"
                   >
                     {isLoadingNextPage ? (
@@ -1049,12 +1134,40 @@ const handleRestartTimer = () => {
                     ) : isPremium && currentPage === story.length - 1 && isStoryComplete ? (
                       'Complete'
                     ) : isPremium && currentPage === story.length - 1 ? (
-                      'Generate Next'
+                      'What happens next?'
                     ) : (
                       'Next'
                     )}
                   </MobileOptimizedButton>
                 </div>
+
+                {/* Premium controls */}
+                {isPremium && (
+                  <div className="mt-3 flex justify-center gap-3 xl:hidden">
+                    <MobileOptimizedButton
+                      onClick={handleGenerateEndingPage}
+                      disabled={!liveContext || isGeneratingEnding || isStoryComplete || timeRemaining <= 0}
+                      variant="outline"
+                    >
+                      {isGeneratingEnding ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Ending...
+                        </>
+                      ) : (
+                        'End Story'
+                      )}
+                    </MobileOptimizedButton>
+                    {isStoryComplete && (
+                      <MobileOptimizedButton onClick={handleSaveStoryNow} variant="outline">
+                        Save Story
+                      </MobileOptimizedButton>
+                    )}
+                    <MobileOptimizedButton onClick={handleManualEndSession} variant="secondary">
+                      End Session
+                    </MobileOptimizedButton>
+                  </div>
+                )}
 
                 {/* Desktop: Centered compact layout */}
                 <div className="hidden xl:flex justify-center items-center gap-4">
@@ -1073,7 +1186,7 @@ const handleRestartTimer = () => {
 
                   <MobileOptimizedButton
                     onClick={handleNext}
-                    disabled={isLoadingNextPage || timeRemaining <= 0 || (!isPremium && currentPage === story.length - 1)}
+                    disabled={isLoadingNextPage || timeRemaining <= 0 || (!isPremium && currentPage === story.length - 1) || (isPremium && isStoryComplete && currentPage === story.length - 1)}
                     className="bg-primary text-primary-foreground"
                     size="sm"
                   >
@@ -1085,12 +1198,41 @@ const handleRestartTimer = () => {
                     ) : isPremium && currentPage === story.length - 1 && isStoryComplete ? (
                       'Complete'
                     ) : isPremium && currentPage === story.length - 1 ? (
-                      'Generate Next'
+                      'What happens next?'
                     ) : (
                       'Next'
                     )}
                   </MobileOptimizedButton>
                 </div>
+
+                {/* Premium controls desktop */}
+                {isPremium && (
+                  <div className="hidden xl:flex justify-center gap-3 mt-3">
+                    <MobileOptimizedButton
+                      onClick={handleGenerateEndingPage}
+                      disabled={!liveContext || isGeneratingEnding || isStoryComplete || timeRemaining <= 0}
+                      variant="outline"
+                      size="sm"
+                    >
+                      {isGeneratingEnding ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Ending...
+                        </>
+                      ) : (
+                        'End Story'
+                      )}
+                    </MobileOptimizedButton>
+                    {isStoryComplete && (
+                      <MobileOptimizedButton onClick={handleSaveStoryNow} variant="outline" size="sm">
+                        Save Story
+                      </MobileOptimizedButton>
+                    )}
+                    <MobileOptimizedButton onClick={handleManualEndSession} variant="secondary" size="sm">
+                      End Session
+                    </MobileOptimizedButton>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -1098,14 +1240,18 @@ const handleRestartTimer = () => {
       </main>
       
 
-      {/* Vocabulary Collector Modal */}
-      <VocabularyCollector
-        userInfo={userInfo}
-        isVisible={showVocabularyCollector}
-        onClose={() => setShowVocabularyCollector(false)}
-        enablePersistence={true}
-      />
-        
+      {/* Manual End Session Celebration Overlay (Premium) */}
+      {isPremium && showManualCelebration && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center">
+          <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" />
+          <div className="relative z-[101] bg-background border border-border rounded-2xl shadow-2xl p-6 text-center animate-scale-in">
+            <div className="text-5xl mb-3">🎉</div>
+            <h3 className="text-xl font-bold text-primary">Great job!</h3>
+            <p className="text-sm text-muted-foreground">You can save your story or just view your stats next.</p>
+          </div>
+        </div>
+      )}
+
       {/* Premium "Show Timer" when dismissed */}
       {isPremium && !isTimerVisible && timeRemaining > 0 && !isTimerCanceled && (
         <div className="fixed bottom-8 left-8 z-40">
@@ -1143,6 +1289,8 @@ const handleRestartTimer = () => {
           onIncreaseTime={isPremium ? handleExtendTime : undefined}
           onDismiss={isPremium ? () => setIsTimerVisible(false) : undefined}
           onRestartTimer={isPremium ? handleRestartTimer : undefined}
+          onKeepReadingUntimed={isPremium ? handleKeepReadingUntimed : undefined}
+          onSaveStoryNow={isPremium ? handleSaveStoryNow : undefined}
         />
       )}
       
