@@ -231,7 +231,7 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
             <div className="space-y-2">
               <Label htmlFor="storyLanguage">Story Language Preference</Label>
               <Select
-                value={formData.storyLanguagePreference || formData.nativeLanguage}
+                value={"en"}
                 onValueChange={(value) => setFormData(prev => ({ ...prev, storyLanguagePreference: value as LanguageCode }))}
               >
                 <SelectTrigger>
@@ -239,14 +239,9 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="en">English Stories</SelectItem>
-                  <SelectItem value="es">Spanish Stories</SelectItem>
-                  <SelectItem value="fr">French Stories</SelectItem>
-                  <SelectItem value="ar">Arabic Stories</SelectItem>
-                  <SelectItem value="zh">Chinese Stories</SelectItem>
-                  <SelectItem value="hi">Hindi Stories</SelectItem>
-                  <SelectItem value="pt">Portuguese Stories</SelectItem>
                 </SelectContent>
               </Select>
+              <p className="text-xs text-muted-foreground">Only English is supported for stories at this time.</p>
             </div>
 
             {/* Special Request removed for premium; now asked per-story at start */}
