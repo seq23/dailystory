@@ -4,10 +4,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import heroImage from "@/assets/hero-image-diverse-clear.jpg";
 import leftPageImage from "@/assets/story-illustration-14.jpg";
-import { Check } from "lucide-react";
+import { Check, RefreshCcw, Wand2, Sparkles } from "lucide-react";
 import ReadAloudCoach from "@/components/ReadAloudCoach";
 import VoiceCommandController from "@/components/VoiceCommandController";
 import { freeFeatures, premiumFeatures, additionalOfferings } from "@/constants/featureLists";
+import MagicRefreshIcon from "@/components/icons/MagicRefreshIcon";
 const sampleText = `Luna and Max found a hidden door in the library. When they pushed it open, a tiny breeze carried the scent of pine trees and warm cookies. “Ready?” Max whispered. Luna nodded, and together they stepped into a world of stories.`;
 
 const sampleSavedStory = {
@@ -205,15 +206,40 @@ const StylePreview: React.FC = () => {
         </article>
       </main>
 
+        {/* Magic Wand Button Options */}
+        <section className="max-w-5xl mx-auto mt-8">
+          <CardHeader>
+            <CardTitle>Magic Wand Button Options</CardTitle>
+            <CardDescription>Pick your favorite style for the New Story action</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="flex flex-col items-center gap-2 p-4 border rounded-lg">
+                <div className="text-sm font-medium">Option A: Magic Refresh</div>
+                <Button variant="default" size="sm" aria-label="Start a fresh story" title="Start a fresh story">
+                  <MagicRefreshIcon className="mr-2" /> New Story
+                </Button>
+              </div>
+              <div className="flex flex-col items-center gap-2 p-4 border rounded-lg">
+                <div className="text-sm font-medium">Option B: Classic Wand</div>
+                <Button variant="secondary" size="sm" aria-label="Start a fresh story" title="Start a fresh story">
+                  <Wand2 className="w-4 h-4 mr-2" /> New Story
+                </Button>
+              </div>
+              <div className="flex flex-col items-center gap-2 p-4 border rounded-lg">
+                <div className="text-sm font-medium">Option C: Refresh + Sparkle</div>
+                <Button variant="fun" size="sm" aria-label="Start a fresh story" title="Start a fresh story">
+                  <RefreshCcw className="w-4 h-4 mr-2" /> <Sparkles className="w-4 h-4 ml-1" />
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+
       {/* Mobile Premium Reading Preview */}
       <section className="max-w-5xl mx-auto mt-8">
         <Card>
-          <CardHeader>
-            <CardTitle>Mobile Premium Reading Preview</CardTitle>
-            <CardDescription>Wand icon in header, arrows under content, and 4-button bottom dock</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="rounded-xl border bg-card overflow-hidden">
               {/* Header with Home + Wand */}
               <div className="flex items-center justify-between px-4 py-3 border-b">
                 <div className="flex items-center gap-2">

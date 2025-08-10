@@ -301,8 +301,8 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
               "hover:from-primary/30 hover:to-primary/40 hover:border-primary/40",
               "shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary/50",
               "group relative overflow-hidden touch-manipulation",
-              isExpanded ? "top-4 right-4" : "top-8 left-1/2 -translate-x-1/2",
-              isMobile && !isExpanded && "w-9 h-9 top-6",
+              isExpanded ? "top-4 right-4" : "bottom-4 left-1/2 -translate-x-1/2",
+              isMobile && !isExpanded && "w-9 h-9",
               // Remove auto-animations, only celebration mode spins
               celebrationMode && "animate-spin [animation-duration:1s] [animation-iteration-count:1]",
               sparkleMode && "ring-2 ring-amber-400/50"

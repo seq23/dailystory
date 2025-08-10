@@ -122,13 +122,14 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [timerEnabled, setTimerEnabled] = useState<boolean>(() => {
     try { return localStorage.getItem('readingTimerEnabled') !== '0'; } catch { return true; }
   });
-  // Magic wand state
-  const [isGeneratingNewStory, setIsGeneratingNewStory] = useState(false);
-  const [isMagicWandAnimating, setIsMagicWandAnimating] = useState(false);
-  const [isGeneratingEnding, setIsGeneratingEnding] = useState(false);
-  const [showManualCelebration, setShowManualCelebration] = useState(false);
-  const [showEndStoryModal, setShowEndStoryModal] = useState(false);
-  const [showConfirmEndStory, setShowConfirmEndStory] = useState(false);
+// Magic wand state
+const [isGeneratingNewStory, setIsGeneratingNewStory] = useState(false);
+const [isMagicWandAnimating, setIsMagicWandAnimating] = useState(false);
+const [wandPulse, setWandPulse] = useState(false);
+const [isGeneratingEnding, setIsGeneratingEnding] = useState(false);
+const [showManualCelebration, setShowManualCelebration] = useState(false);
+const [showEndStoryModal, setShowEndStoryModal] = useState(false);
+const [showConfirmEndStory, setShowConfirmEndStory] = useState(false);
   const [showEndSessionConfirm, setShowEndSessionConfirm] = useState(false);
   const loaderStartRef = useRef<number>(0);
   const LOADER_MIN_MS = 1600;
@@ -262,6 +263,15 @@ useEffect(() => {
   }
 }, [currentPage, story.length, isPremium]);
 
+// Subtle pulse for wand every 3 pages
+useEffect(() => {
+  if (currentPage > 0 && (currentPage + 1) % 3 === 0) {
+    setWandPulse(true);
+    const t = setTimeout(() => setWandPulse(false), 1200);
+    return () => clearTimeout(t);
+  }
+}, [currentPage]);
+
 // Periodic sparkle for Finish Story button (all users)
 const [finishSparkle, setFinishSparkle] = useState(false);
 const [finishPressBurst, setFinishPressBurst] = useState(false);
@@ -272,6 +282,15 @@ useEffect(() => {
   }, 10 * 60 * 1000);
   return () => clearInterval(interval);
 }, []);
+
+// Trigger finish story animation after 10 pages read
+useEffect(() => {
+  if (currentPage + 1 === 10) {
+    setFinishSparkle(true);
+    const t1 = setTimeout(() => setFinishSparkle(false), 2000);
+    return () => clearTimeout(t1);
+  }
+}, [currentPage]);
 
 // Ensure timer UI becomes visible when time ends for premium (to show celebration + choice)
 useEffect(() => {
@@ -967,6 +986,7 @@ const handleRestartTimer = () => {
           isSaving={isSaving}
           highlightSave={highlightSave}
           isPremium={isPremium}
+          wandPulse={wandPulse}
         />
 
       {/* Main Content - Full Width Layout */}
@@ -974,12 +994,32 @@ const handleRestartTimer = () => {
         <div className="w-full max-w-[98vw] mx-auto">
           <Card className="bg-white/95 backdrop-blur-sm shadow-2xl border border-white/70 mobile-text-fixed flex flex-col h-full min-h-0 overflow-hidden">
             <CardContent className="p-2 lg:p-8 h-full flex flex-col min-h-0">
-              {/* Progress Bar */}
+              {/* Progress Bar + Centered Navigation */}
               <div className="mb-4 md:mb-6">
                 <Progress value={progress} className="h-2" />
-                <p className="text-sm text-muted-foreground mt-2 text-center">
-                  Page {currentPage + 1}
-                </p>
+                <div className="mt-2 flex items-center justify-center gap-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handlePrevious}
+                    disabled={currentPage === 0 || timeRemaining <= 0}
+                    aria-label={t('nav.prev','Back')}
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </Button>
+                  <p className="text-sm text-muted-foreground text-center min-w-[96px]">
+                    Page {currentPage + 1} / {Math.max(story.length, 1)}
+                  </p>
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={handleNext}
+                    disabled={isLoadingNextPage || timeRemaining <= 0 || (!isPremium && currentPage === story.length - 1)}
+                    aria-label={t('nav.next','Next')}
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </Button>
+                </div>
               </div>
 
               {layout === "classic" && (
@@ -1238,146 +1278,91 @@ const handleRestartTimer = () => {
 
               {/* Navigation - Responsive Layout */}
               <div id="story-navigation" className="story-navigation">
-                {/* Mobile/Tablet: Slightly more compact layout */}
+                {/* Mobile/Tablet: Slightly more compact layout - moved under progress bar (hidden here) */}
                 {!isPremium && (
-                  <div className="flex justify-center items-center gap-6 xl:hidden">
-                    <MobileOptimizedButton
-                      onClick={handlePrevious}
-                      disabled={currentPage === 0 || timeRemaining <= 0}
-                      variant="outline"
-                    >
-                      Previous
-                    </MobileOptimizedButton>
-
-                    <span className="text-sm font-medium text-muted-foreground px-2">
-                      Page {currentPage + 1}
-                    </span>
-
-                    <MobileOptimizedButton
-                      onClick={handleNext}
-                      disabled={isLoadingNextPage || timeRemaining <= 0 || (!isPremium && currentPage === story.length - 1)}
-                      className="bg-primary text-primary-foreground"
-                    >
-                      {isLoadingNextPage ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          {isPremium ? 'Generating page...' : 'Generating...'}
-                        </>
-                      ) : isPremium && currentPage === story.length - 1 && isStoryComplete ? (
-                        t('nav.next','What happens next?')
-                      ) : isPremium && currentPage === story.length - 1 ? (
-                        t('nav.next','What happens next?')
-                      ) : (
-                        'Next'
-                      )}
-                    </MobileOptimizedButton>
+                  <div className="hidden">
+                    {/* moved */}
                   </div>
                 )}
 
                 {/* Premium controls */}
                 {isPremium && (
                   <div className="mt-3 flex justify-center gap-3 xl:hidden">
-                    <div className={`relative inline-block ${finishPressBurst ? 'animate-scale-in' : ''}`}>
-                      <MobileOptimizedButton
-                        onClick={() => {
-                          setFinishPressBurst(true);
-                          setFinishSparkle(true);
-                          setTimeout(() => setFinishPressBurst(false), 600);
-                          setTimeout(() => setFinishSparkle(false), 1200);
-                          setShowConfirmEndStory(true);
-                        }}
-                        disabled={!liveContext || isGeneratingEnding || isStoryComplete || timeRemaining <= 0}
-                        variant="secondary"
-                      >
-                        {isGeneratingEnding ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            {t('common.processing', 'Processing...')}
-                          </>
-                        ) : (
-                          t('nav.endStory', 'Finish Story')
-                        )}
-                      </MobileOptimizedButton>
-                      <SparkleAnimation isActive={finishSparkle} intensity="medium" isPremium={false} className="pointer-events-none absolute -inset-3" />
-                    </div>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className={`relative inline-block ${finishPressBurst ? 'animate-scale-in' : ''}`}>
+                            <MobileOptimizedButton
+                              onClick={() => {
+                                setFinishPressBurst(true);
+                                setFinishSparkle(true);
+                                setTimeout(() => setFinishPressBurst(false), 600);
+                                setTimeout(() => setFinishSparkle(false), 1200);
+                                setShowConfirmEndStory(true);
+                              }}
+                              disabled={!liveContext || isGeneratingEnding || isStoryComplete || timeRemaining <= 0}
+                              variant="secondary"
+                            >
+                              {isGeneratingEnding ? (
+                                <>
+                                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                  {t('common.processing', 'Processing...')}
+                                </>
+                              ) : (
+                                t('nav.endStory', 'Finish Story')
+                              )}
+                            </MobileOptimizedButton>
+                            <SparkleAnimation isActive={finishSparkle} intensity="medium" isPremium={false} className="pointer-events-none absolute -inset-3" />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>{t('tooltips.finishStory', 'Finish the story with a proper ending')}</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                 )}
 
-                {/* Mobile/Tablet: compact arrow navigation */}
-                <div className="xl:hidden flex justify-center items-center gap-3 mt-3">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handlePrevious}
-                    disabled={currentPage === 0}
-                    aria-label={t('nav.prev','Back')}
-                  >
-                    <ChevronLeft className="w-5 h-5" />
-                  </Button>
-
-
-                  <Button
-                    variant="default"
-                    size="sm"
-                    onClick={handleNext}
-                    disabled={isLoadingNextPage || timeRemaining <= 0 || (!isPremium && currentPage === story.length - 1)}
-                    aria-label={t('nav.next','Next')}
-                  >
-                    <ChevronRight className="w-5 h-5" />
-                  </Button>
+                {/* Mobile/Tablet: compact arrow navigation (moved under progress bar) */}
+                <div className="hidden">
+                  {/* moved */}
                 </div>
 
-                {/* Desktop: Centered compact layout */}
-                <div className="hidden xl:flex justify-center items-center gap-3">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handlePrevious}
-                    disabled={currentPage === 0}
-                    aria-label={t('nav.prev','Back')}
-                  >
-                    <ChevronLeft className="w-5 h-5" />
-                  </Button>
-
-
-                  <Button
-                    variant="default"
-                    size="sm"
-                    onClick={handleNext}
-                    disabled={isLoadingNextPage || timeRemaining <= 0 || (!isPremium && currentPage === story.length - 1)}
-                    aria-label={t('nav.next','Next')}
-                  >
-                    <ChevronRight className="w-5 h-5" />
-                  </Button>
-                </div>
+                {/* Desktop: Centered compact layout (moved under progress bar) */}
+                <div className="hidden" />
 
                 {/* Premium controls desktop */}
                 {isPremium && (
                   <div className="hidden xl:flex justify-center gap-3 mt-3">
-                    <div className={`relative inline-block ${finishPressBurst ? 'animate-scale-in' : ''}`}>
-                      <MobileOptimizedButton
-                        onClick={() => {
-                          setFinishPressBurst(true);
-                          setFinishSparkle(true);
-                          setTimeout(() => setFinishPressBurst(false), 600);
-                          setTimeout(() => setFinishSparkle(false), 1200);
-                          setShowConfirmEndStory(true);
-                        }}
-                        disabled={!liveContext || isGeneratingEnding || isStoryComplete || timeRemaining <= 0}
-                        variant="secondary"
-                        size="sm"
-                      >
-                        {isGeneratingEnding ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            {t('common.processing', 'Processing...')}
-                          </>
-                        ) : (
-                          t('nav.endStory', 'Finish Story')
-                        )}
-                      </MobileOptimizedButton>
-                      <SparkleAnimation isActive={finishSparkle} intensity="medium" isPremium={false} className="pointer-events-none absolute -inset-3" />
-                    </div>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className={`relative inline-block ${finishPressBurst ? 'animate-scale-in' : ''}`}>
+                            <MobileOptimizedButton
+                              onClick={() => {
+                                setFinishPressBurst(true);
+                                setFinishSparkle(true);
+                                setTimeout(() => setFinishPressBurst(false), 600);
+                                setTimeout(() => setFinishSparkle(false), 1200);
+                                setShowConfirmEndStory(true);
+                              }}
+                              disabled={!liveContext || isGeneratingEnding || isStoryComplete || timeRemaining <= 0}
+                              variant="secondary"
+                              size="sm"
+                            >
+                              {isGeneratingEnding ? (
+                                <>
+                                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                  {t('common.processing', 'Processing...')}
+                                </>
+                              ) : (
+                                t('nav.endStory', 'Finish Story')
+                              )}
+                            </MobileOptimizedButton>
+                            <SparkleAnimation isActive={finishSparkle} intensity="medium" isPremium={false} className="pointer-events-none absolute -inset-3" />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>{t('tooltips.finishStory', 'Finish the story with a proper ending')}</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                 )}
               </div>
