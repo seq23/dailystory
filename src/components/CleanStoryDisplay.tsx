@@ -1067,30 +1067,28 @@ const handleRestartTimer = () => {
                 </div>
               </div>
 
-              {!isMobileOrTablet && (
-                <div
-                  id="audio-controls"
-                  className={isMobileOrTablet ? "sr-only" : "mt-2 md:mt-4 flex justify-center gap-4"}
-                  aria-hidden={isMobileOrTablet}
-                >
-                  <ElevenLabsAudio
-                    text={currentStory}
-                    userInfo={userInfo}
-                    isPremium={isPremium}
-                    onUpgrade={onUpgrade}
-                    onWordHighlight={onWordHighlight}
-                    difficulty={currentDifficulty}
-                    currentPage={currentPage}
-                    totalPages={story.length}
-                  />
-                  {!isMobileOrTablet && isAudioPlaying && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-                      Playing Audio
-                    </div>
-                  )}
-                </div>
-              )}
+              <div
+                id="audio-controls"
+                className={isMobileOrTablet ? "sr-only" : "mt-2 md:mt-4 flex justify-center gap-4"}
+                aria-hidden={isMobileOrTablet}
+              >
+                <ElevenLabsAudio
+                  text={currentStory}
+                  userInfo={userInfo}
+                  isPremium={isPremium}
+                  onUpgrade={onUpgrade}
+                  onWordHighlight={onWordHighlight}
+                  difficulty={currentDifficulty}
+                  currentPage={currentPage}
+                  totalPages={story.length}
+                />
+                {!isMobileOrTablet && isAudioPlaying && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                    Playing Audio
+                  </div>
+                )}
+              </div>
 
               {/* Story Content - Enhanced Layout for Desktop Split-Screen */}
               <div className="bg-gradient-card rounded-2xl p-2 md:p-4 lg:p-6 mb-6 flex-1 min-h-0 flex flex-col shadow-xl" 
