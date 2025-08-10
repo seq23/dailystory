@@ -22,6 +22,7 @@ import {
   Clock
 } from "lucide-react";
 import type { UserInfo } from "@/types";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface PremiumSidebarProps {
   currentView: string;
@@ -67,6 +68,8 @@ const sidebarItems = [
 export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium }: PremiumSidebarProps) => {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
+  const { isMobile } = useIsMobile();
+  const effectiveCollapsed = collapsed && !isMobile;
   const [timerEnabled, setTimerEnabled] = useState<boolean>(() => {
     try { return localStorage.getItem('readingTimerEnabled') !== '0'; } catch { return true; }
   });
@@ -100,11 +103,11 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
     window.dispatchEvent(new CustomEvent('readingTimerToggle', { detail: next }));
   };
   return (
-    <Sidebar className={`border-r bg-background/95 backdrop-blur-sm ${collapsed ? "w-16" : "w-64"}`} collapsible="icon">
+    <Sidebar className={`border-r bg-background/95 backdrop-blur-sm ${effectiveCollapsed ? "w-16" : "w-64"}`} collapsible="icon">
       {/* Header */}
       <div className="p-4 border-b">
         <div className="flex items-center gap-3">
-          {!collapsed && (
+          {!effectiveCollapsed && (
             <>
               <div className="p-2 bg-gradient-primary rounded-lg">
                 <BookOpen className="w-6 h-6 text-white" />
@@ -126,7 +129,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
 
       <SidebarContent className="p-2">
         {/* User Welcome */}
-        {!collapsed && (
+        {!effectiveCollapsed && (
           <div className="px-3 py-4 mb-2">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-gradient-primary rounded-full flex items-center justify-center text-white font-semibold">
@@ -142,7 +145,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
 
         {/* Navigation Menu */}
         <SidebarGroup>
-          <SidebarGroupLabel className={collapsed ? "sr-only" : ""}>
+          <SidebarGroupLabel className={effectiveCollapsed ? "sr-only" : ""}>
             Navigation
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -155,7 +158,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
                     disabled={item.premium && !isPremium}
                   >
                     <item.icon className="w-5 h-5 flex-shrink-0" />
-                    {!collapsed && (
+                    {!effectiveCollapsed && (
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="font-medium">{item.title}</span>
@@ -180,7 +183,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
                     className="flex items-center gap-3 w-full transition-colors rounded-lg hover:bg-accent hover:text-accent-foreground"
                   >
                     <Clock className="w-5 h-5 flex-shrink-0" />
-                    {!collapsed && (
+                    {!effectiveCollapsed && (
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="font-medium">{timerEnabled ? 'Hide Timer' : 'Show Timer'}</span>
@@ -198,7 +201,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
         </SidebarGroup>
 
         {/* Premium Features Highlight */}
-        {!collapsed && !isPremium && (
+        {!effectiveCollapsed && !isPremium && (
           <div className="mt-auto p-3">
             <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg p-3">
               <div className="flex items-center gap-2 mb-2">
