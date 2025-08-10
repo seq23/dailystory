@@ -124,8 +124,9 @@ export const ResponsiveStoryHeader = ({
         "sticky top-0"
       )}>
         <div className="safe-area-padding">
-          <div className="flex items-center justify-between px-2 py-1">
-            <div className="flex items-center gap-1">
+          <div className="flex flex-wrap items-center justify-between gap-2 px-2 py-1">
+            {/* Left: Home + New Story (locked) */}
+            <div className="order-1 flex items-center gap-1">
               {onHome && (
                 <TooltipProvider>
                   <Tooltip>
@@ -145,30 +146,82 @@ export const ResponsiveStoryHeader = ({
                 </TooltipProvider>
               )}
 
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="inline-flex">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        disabled
-                        className="min-h-[36px] min-w-[36px] rounded-full p-1"
-                        aria-label={t("tooltips.header.refreshPremium", "Premium only. Refresh this page’s story.")}
-                      >
-                        <Wand className="w-4 h-4" />
-                      </Button>
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">
-                    {t("tooltips.header.refreshPremium", "Premium only. Refresh this page’s story.")}
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              {onNewStory && (
+                <NewStoryCTA
+                  isPremium={false}
+                  iconOnly
+                  onNewStory={onNewStory}
+                  onUpgrade={onUpgrade || (() => {})}
+                  size="sm"
+                  wandPulse={wandPulse}
+                />
+              )}
             </div>
 
+            {/* Center: Difficulty controls (wrap to 2nd row if needed) */}
+            {showLevelControls && (
+              <div
+                className="order-2 flex-1 min-w-[240px] basis-auto flex items-center justify-center gap-1"
+                id="reading-level-controls"
+                data-id="reading-level"
+              >
+                {onDecreaseDifficulty && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onDecreaseDifficulty}
+                    disabled={!canDecrease || isChangingDifficulty}
+                    className={cn(
+                      "min-h-[36px] min-w-[36px] rounded-full p-1",
+                      "transition-all duration-300",
+                      buttonAnimations.decrease ? "animate-scale-in bg-secondary/20 border-secondary" : ""
+                    )}
+                    aria-label={t("storyDisplay.decreaseDifficulty", "Make easier")}
+                  >
+                    {isChangingDifficulty && changeDirection === 'decrease' ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <TrendingDown className="w-4 h-4" />
+                    )}
+                  </Button>
+                )}
+
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    "border px-2 py-1 transition-all duration-300 text-xs",
+                    getDifficultyColor(currentDifficulty),
+                    buttonAnimations.badge ? 'animate-[wiggle_0.5s_ease-in-out] scale-110' : ''
+                  )}
+                >
+                  {getDifficultyLabel(currentDifficulty)}
+                </Badge>
+
+                {onIncreaseDifficulty && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onIncreaseDifficulty}
+                    disabled={!canIncrease || isChangingDifficulty}
+                    className={cn(
+                      "min-h-[36px] min-w-[36px] rounded-full p-1",
+                      "transition-all duration-300",
+                      buttonAnimations.increase ? 'animate-[glow-pulse_0.6s_ease-in-out,_edgeBounce_0.4s_ease-out] border-primary/50 shadow-lg shadow-primary/25' : ''
+                    )}
+                    aria-label={t("storyDisplay.increaseDifficulty", "Make harder")}
+                  >
+                    {isChangingDifficulty && changeDirection === 'increase' ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <TrendingUp className="w-4 h-4" />
+                    )}
+                  </Button>
+                )}
+              </div>
+            )}
+
             {/* Right: Avatar + Free Trial badge */}
-            <div className="flex items-center gap-2">
+            <div className="order-3 flex items-center gap-2">
               <Badge variant="guest">{t("welcomeHero.freeTrial", "Free Trial")}</Badge>
               <Avatar className="h-8 w-8">
                 {hasSelectedAvatar && (
@@ -189,8 +242,9 @@ export const ResponsiveStoryHeader = ({
         "sticky top-0"
       )}>
         <div className="safe-area-padding">
-          <div className="flex items-center justify-between px-2 py-1">
-            <div className="flex items-center gap-1">
+          <div className="flex flex-wrap items-center justify-between gap-2 px-2 py-1">
+            {/* Left: Home + New Story (active) */}
+            <div className="order-1 flex items-center gap-1">
               {onHome && (
                 <TooltipProvider>
                   <Tooltip>
@@ -210,27 +264,82 @@ export const ResponsiveStoryHeader = ({
                 </TooltipProvider>
               )}
 
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={onNewStory}
-                      className="min-h-[36px] min-w-[36px] rounded-full p-1"
-                      aria-label={t("tooltips.header.refresh", "Refresh this page’s story")}
-                    >
-                      <Wand className="w-4 h-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">
-                    {t("tooltips.header.refresh", "Refresh this page’s story")}
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              {onNewStory && (
+                <NewStoryCTA
+                  isPremium
+                  iconOnly
+                  onNewStory={onNewStory}
+                  onUpgrade={onUpgrade || (() => {})}
+                  size="sm"
+                  wandPulse={wandPulse}
+                />
+              )}
             </div>
-            {/* Right: Avatar for parity with guest header */}
-            <div className="flex items-center gap-2">
+
+            {/* Center: Difficulty controls (wrap to 2nd row if needed) */}
+            {showLevelControls && (
+              <div
+                className="order-2 flex-1 min-w-[240px] basis-auto flex items-center justify-center gap-1"
+                id="reading-level-controls"
+                data-id="reading-level"
+              >
+                {onDecreaseDifficulty && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onDecreaseDifficulty}
+                    disabled={!canDecrease || isChangingDifficulty}
+                    className={cn(
+                      "min-h-[36px] min-w-[36px] rounded-full p-1",
+                      "transition-all duration-300",
+                      buttonAnimations.decrease ? "animate-scale-in bg-secondary/20 border-secondary" : ""
+                    )}
+                    aria-label={t("storyDisplay.decreaseDifficulty", "Make easier")}
+                  >
+                    {isChangingDifficulty && changeDirection === 'decrease' ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <TrendingDown className="w-4 h-4" />
+                    )}
+                  </Button>
+                )}
+
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    "border px-2 py-1 transition-all duration-300 text-xs",
+                    getDifficultyColor(currentDifficulty),
+                    buttonAnimations.badge ? 'animate-[wiggle_0.5s_ease-in-out] scale-110' : ''
+                  )}
+                >
+                  {getDifficultyLabel(currentDifficulty)}
+                </Badge>
+
+                {onIncreaseDifficulty && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onIncreaseDifficulty}
+                    disabled={!canIncrease || isChangingDifficulty}
+                    className={cn(
+                      "min-h-[36px] min-w-[36px] rounded-full p-1",
+                      "transition-all duration-300",
+                      buttonAnimations.increase ? 'animate-[glow-pulse_0.6s_ease-in-out,_edgeBounce_0.4s_ease-out] border-primary/50 shadow-lg shadow-primary/25' : ''
+                    )}
+                    aria-label={t("storyDisplay.increaseDifficulty", "Make harder")}
+                  >
+                    {isChangingDifficulty && changeDirection === 'increase' ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <TrendingUp className="w-4 h-4" />
+                    )}
+                  </Button>
+                )}
+              </div>
+            )}
+
+            {/* Right: Avatar */}
+            <div className="order-3 flex items-center gap-2">
               <Avatar className="h-8 w-8">
                 {hasSelectedAvatar && (
                   <AvatarImage src={getAvatarUrl()} alt={userInfo?.name || "Reader"} />
