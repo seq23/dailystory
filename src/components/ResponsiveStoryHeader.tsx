@@ -23,6 +23,9 @@ interface ResponsiveStoryHeaderProps {
   canIncrease?: boolean;
   canDecrease?: boolean;
   onEndSession?: () => void;
+  onSaveStory?: () => void;
+  isSaving?: boolean;
+  highlightSave?: boolean;
 }
 
 export const ResponsiveStoryHeader = ({
@@ -39,6 +42,9 @@ export const ResponsiveStoryHeader = ({
   canIncrease = true,
   canDecrease = true,
   onEndSession,
+  onSaveStory,
+  isSaving = false,
+  highlightSave = false,
 }: ResponsiveStoryHeaderProps) => {
   const { t } = useTranslation();
   const { isMobile, isTablet, isMobileOrTablet } = useIsMobile();
@@ -332,6 +338,36 @@ export const ResponsiveStoryHeader = ({
                   </Button>
                 )}
               </div>
+            )}
+
+            {/* Save Button (Premium) */}
+            {onSaveStory && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="default"
+                      size={isMobile ? "sm" : "default"}
+                      onClick={onSaveStory}
+                      disabled={isSaving}
+                      className={cn(highlightSave && "animate-pulse ring-2 ring-primary ring-offset-2 shadow-[0_0_0_6px_hsl(var(--primary)/0.2)]")}
+                      aria-label={t("nav.save", "Save")}
+                    >
+                      {isSaving ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          {t("common.saving", "Saving...")}
+                        </>
+                      ) : (
+                        t("nav.save", "Save")
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {t("tooltips.save", "Save your story to the Library.")}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
 
             {onEndSession && (

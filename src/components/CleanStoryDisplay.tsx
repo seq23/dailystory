@@ -142,7 +142,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [minDifficulty, setMinDifficulty] = useState<'beginner' | 'easy' | 'medium' | 'hard' | 'expert'>('beginner');
   const [minExpertGrade, setMinExpertGrade] = useState<"6th" | "7th" | "8th" | "9th" | "10th">("6th");
   const [allowDecreaseBelowMin, setAllowDecreaseBelowMin] = useState(false);
-  const [highlightSave, setHighlightSave] = useState(false);
+const [highlightSave, setHighlightSave] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   
   useEffect(() => {
     if (!isPremium) return;
@@ -558,8 +559,9 @@ useEffect(() => {
     toast({ title: "Untimed reading", description: "Enjoy reading without the timer.", duration: 2500 });
   };
 
-  const handleSaveStoryNow = async () => {
-    if (!isPremium || story.length === 0) return;
+const handleSaveStoryNow = async () => {
+    if (!isPremium || story.length === 0 || isSaving) return;
+    setIsSaving(true);
     try {
       // Build Story object
       const segments = story.map((text) => ({ text }));
@@ -579,6 +581,8 @@ useEffect(() => {
     } catch (e) {
       console.error('Save story failed', e);
       toast({ title: "Save failed", description: "Please try again.", variant: "destructive" });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -922,6 +926,9 @@ const handleRestartTimer = () => {
           canIncrease={!lockDifficulty && (currentDifficulty !== 'expert' || expertGradeLevel !== "10th")}
           canDecrease={!lockDifficulty && (allowDecreaseBelowMin || (difficultyLevels.indexOf(currentDifficulty) > difficultyLevels.indexOf(minDifficulty)))}
           onEndSession={() => setShowEndSessionConfirm(true)}
+          onSaveStory={isPremium ? handleSaveStoryNow : undefined}
+          isSaving={isSaving}
+          highlightSave={highlightSave}
         />
 
       {/* Main Content - Full Width Layout */}
@@ -1308,20 +1315,6 @@ const handleRestartTimer = () => {
                         t('nav.createEnding', 'Create my ending')
                       )}
                     </MobileOptimizedButton>
-                    {isStoryComplete && (
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button onClick={handleSaveStoryNow} variant="outline" size="sm" className={cn(highlightSave && "animate-pulse ring-2 ring-primary ring-offset-2 shadow-[0_0_0_6px_hsl(var(--primary)/0.2)]")}>
-                              Save Story
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            {t('tooltips.saveDuringEndStory', 'This will save this story to library.')}
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    )}
                   </div>
                 )}
 
@@ -1379,20 +1372,6 @@ const handleRestartTimer = () => {
                         t('nav.createEnding', 'Create my ending')
                       )}
                     </MobileOptimizedButton>
-                    {isStoryComplete && (
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button onClick={handleSaveStoryNow} variant="outline" size="sm" className={cn(highlightSave && "animate-pulse ring-2 ring-primary ring-offset-2 shadow-[0_0_0_6px_hsl(var(--primary)/0.2)]")}>
-                              Save Story
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            {t('tooltips.saveDuringEndStory', 'This will save this story to library.')}
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    )}
                   </div>
                 )}
               </div>
