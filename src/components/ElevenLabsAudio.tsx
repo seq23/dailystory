@@ -6,6 +6,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Play, Square, Crown, Mic } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { ToastAction } from "@/components/ui/toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { EnhancedAudioService } from "@/services/enhancedAudioService";
 import { VoiceCommandController } from "@/components/VoiceCommandController";
@@ -136,8 +137,13 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
       setShowVoiceModal(true);
       toast({
         title: t("audioReading.voiceCommandsEnabled", "Voice Commands Enabled"),
-        description: t("audioReading.voiceCommandsInstructions", "Press Listen and say 'next page', 'pause', or 'resume'"),
-        duration: 3000,
+        description: "Try: 'next page', 'pause', 'resume', 'read slower'",
+        duration: 7000,
+        action: (
+          <ToastAction altText="Open voice commands help" onClick={() => window.dispatchEvent(new CustomEvent('voice:openHelp'))}>
+            Full list
+          </ToastAction>
+        ),
       });
       return;
     }
@@ -157,8 +163,13 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
       emitStatus('listening');
       toast({
         title: t("audioReading.voiceCommandsEnabled", "Voice Commands Enabled"), 
-        description: t("audioReading.voiceCommandsInstructions", "Try saying 'next page', 'read slower', or 'what does [word] mean?'"),
-        duration: 4000,
+        description: "Try: 'next page', 'pause', 'resume', 'read slower'",
+        duration: 7000,
+        action: (
+          <ToastAction altText="Open voice commands help" onClick={() => window.dispatchEvent(new CustomEvent('voice:openHelp'))}>
+            Full list
+          </ToastAction>
+        ),
       });
     }
   };
