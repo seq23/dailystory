@@ -32,22 +32,50 @@ export const VocabularyCollector = ({ userInfo, isVisible, onClose, enablePersis
   const [ttsService] = useState(() => new UnifiedTTSService());
   const [playingWord, setPlayingWord] = useState<string | null>(null);
 
-  // Load vocabulary from localStorage (only for premium users)
+  // Load vocabulary from localStorage (only for premium users) + migrate legacy key
   useEffect(() => {
     if (!enablePersistence) return;
-    
-    const saved = localStorage.getItem(`vocabulary_${userInfo.name}`);
+
+    const newKey = `vocabulary_${userInfo.name}`;
+    let loaded: VocabularyWord[] = [];
+
+    // Load from new key
+    const saved = localStorage.getItem(newKey);
     if (saved) {
       try {
-        const parsed = JSON.parse(saved).map((word: any) => ({
+        loaded = JSON.parse(saved).map((word: any) => ({
           ...word,
           dateAdded: new Date(word.dateAdded)
         }));
-        setVocabulary(parsed);
       } catch (error) {
         console.error('Error loading vocabulary:', error);
       }
     }
+
+    // Merge legacy collection once
+    try {
+      const migratedFlag = localStorage.getItem(`vocab_migrated_${userInfo.name}`);
+      const legacy = localStorage.getItem('vocabulary_collection');
+      if (legacy && migratedFlag !== '1') {
+        const legacyItems = JSON.parse(legacy).map((word: any) => ({
+          ...word,
+          dateAdded: word.dateAdded ? new Date(word.dateAdded) : new Date()
+        }));
+        const merged = [...loaded];
+        for (const w of legacyItems) {
+          if (!merged.find(m => m.word?.toLowerCase() === w.word?.toLowerCase())) {
+            merged.push(w);
+          }
+        }
+        loaded = merged;
+        localStorage.setItem(newKey, JSON.stringify(loaded));
+        localStorage.setItem(`vocab_migrated_${userInfo.name}`, '1');
+      }
+    } catch (e) {
+      console.warn('Vocabulary legacy migration failed', e);
+    }
+
+    setVocabulary(loaded);
   }, [userInfo.name, enablePersistence]);
 
   // Save vocabulary to localStorage (only for premium users)
@@ -115,13 +143,6 @@ export const VocabularyCollector = ({ userInfo, isVisible, onClose, enablePersis
 
   const { newWords, reviewing, mastered } = getWordsByCategory();
 
-  // Expose addWordToVocabulary globally for InteractiveWord component
-  useEffect(() => {
-    (window as any).addToVocabulary = addWordToVocabulary;
-    return () => {
-      delete (window as any).addToVocabulary;
-    };
-  }, []);
 
   if (!isVisible) return null;
 

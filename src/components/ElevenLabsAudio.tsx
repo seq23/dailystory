@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-import { Play, Square, Crown, Mic } from "lucide-react";
+import { Play, Square, Crown, Mic, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -56,7 +56,10 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
   const { toast, dismiss } = useToast();
   const voiceTipsShownRef = useRef(false);
   const speedMultiplierRef = useRef(1);
-  const emitStatus = (s: 'idle'|'listening'|'processing') => window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: s } }));
+  const [vcStatus, setVcStatus] = useState<'idle'|'listening'|'processing'>('idle');
+  const [vcLevel, setVcLevel] = useState(0);
+  const burstCounterRef = useRef(0);
+  const lastBurstTsRef = useRef(0);
 
   // Enhanced audio service handles free limits internally
   const maxFreePages = 10;
@@ -85,7 +88,24 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
       // Initialize mobile audio on component mount
       audioService.getPlaybackStatus(); // This will trigger mobile audio initialization
     }
-  }, [audioService, isMobileOrTablet]);
+
+  // Expose current user name for vocabulary storage key standardization
+  useEffect(() => {
+    (window as any).__currentUserName = userInfo?.name || 'guest';
+  }, [userInfo?.name]);
+
+  // Listen to voice status/level for mic button live indicators
+  useEffect(() => {
+    const onStatus = (e: any) => setVcStatus((e?.detail?.status || 'idle'));
+    const onLevel = (e: any) => setVcLevel(Math.max(0, Math.min(1, Number(e?.detail?.level ?? 0))));
+    window.addEventListener('voice:status', onStatus as EventListener);
+    window.addEventListener('voice:level', onLevel as EventListener);
+    return () => {
+      window.removeEventListener('voice:status', onStatus as EventListener);
+      window.removeEventListener('voice:level', onLevel as EventListener);
+    };
+  }, []);
+
 
   // Enhanced audio playback using new service
   const playAudio = async () => {
@@ -151,59 +171,22 @@ const toggleVoiceCommands = () => {
     return;
   }
 
+  // If already ON, keep it ON and softly confirm
+  if (voiceCommandsEnabled) {
+    toast({ title: t('audioReading.stillListening', 'Still listening'), duration: 1200 });
+    return;
+  }
+
   const hasWebSpeech = typeof window !== 'undefined' && ((('webkitSpeechRecognition' in window) || ('SpeechRecognition' in window)));
   const useWebSpeech = hasWebSpeech && !hasTouchCapability && !isMobileOrTablet;
 
   if (useWebSpeech) {
-    if (voiceCommandsEnabled) {
-      audioService.stopVoiceCommands();
-      setVoiceCommandsEnabled(false);
-      emitStatus('idle');
-      dismiss();
-      toast({
-        title: t("audioReading.voiceCommandsDisabled", "Voice Commands Disabled"),
-        description: t("audioReading.voiceCommandsOff", "Voice commands are now off"),
-        duration: 2000,
-      });
-    } else {
-      audioService.startVoiceCommands();
-      setVoiceCommandsEnabled(true);
-      emitStatus('listening');
-      if (!voiceTipsShownRef.current) {
-        toast({
-          title: t("audioReading.voiceCommandsEnabled", "Voice Commands Enabled"),
-          description: "Try: 'next page', 'pause', 'resume', 'read slower'",
-          duration: 3500,
-          action: (
-            <ToastAction altText="Open voice commands help" onClick={() => window.dispatchEvent(new CustomEvent('voice:openHelp'))}>
-              Full list
-            </ToastAction>
-          ),
-        });
-        voiceTipsShownRef.current = true;
-      }
-    }
-    return;
-  }
-
-  // Headless Whisper path (no modal)
-  if (voiceCommandsEnabled) {
-    vcRef.current?.stop?.();
-    setVoiceCommandsEnabled(false);
-    emitStatus('idle');
-    dismiss();
-    toast({
-      title: t("audioReading.voiceCommandsDisabled", "Voice Commands Disabled"),
-      description: t("audioReading.voiceCommandsOff", "Voice commands are now off"),
-      duration: 2000,
-    });
-  } else {
-    vcRef.current?.start?.();
+    audioService.startVoiceCommands();
     setVoiceCommandsEnabled(true);
     emitStatus('listening');
     if (!voiceTipsShownRef.current) {
       toast({
-        title: t("audioReading.voiceCommandsEnabled", "Voice Commands Enabled"), 
+        title: t("audioReading.voiceCommandsEnabled", "Voice Commands Enabled"),
         description: "Try: 'next page', 'pause', 'resume', 'read slower'",
         duration: 3500,
         action: (
@@ -214,6 +197,25 @@ const toggleVoiceCommands = () => {
       });
       voiceTipsShownRef.current = true;
     }
+    return;
+  }
+
+  // Headless Whisper path (no modal)
+  vcRef.current?.start?.();
+  setVoiceCommandsEnabled(true);
+  emitStatus('listening');
+  if (!voiceTipsShownRef.current) {
+    toast({
+      title: t("audioReading.voiceCommandsEnabled", "Voice Commands Enabled"), 
+      description: "Try: 'next page', 'pause', 'resume', 'read slower'",
+      duration: 3500,
+      action: (
+        <ToastAction altText="Open voice commands help" onClick={() => window.dispatchEvent(new CustomEvent('voice:openHelp'))}>
+          Full list
+        </ToastAction>
+      ),
+    });
+    voiceTipsShownRef.current = true;
   }
 };
 
@@ -245,7 +247,13 @@ const handleHeadlessCommand = (cmd: string) => {
     toast({ title: t('audioReading.voiceCommandError', 'Voice command error'), description: String(e), variant: 'destructive' });
   } finally {
     if (voiceCommandsEnabled) {
-      setTimeout(() => vcRef.current?.start?.(), 150);
+      const now = Date.now();
+      if (now - lastBurstTsRef.current > 5000) burstCounterRef.current = 0;
+      lastBurstTsRef.current = now;
+      if (burstCounterRef.current < 3) {
+        burstCounterRef.current++;
+        setTimeout(() => vcRef.current?.start?.(), 150);
+      }
     }
   }
 };
@@ -281,9 +289,19 @@ useEffect(() => {
       });
       const definition: string = (!error && data?.definition) ? data.definition : cleanWord;
       await VocabularyTrackingService.logEncounter(cleanWord, definition, difficulty);
-      if (detail.type === 'define') {
+      if (detail.type === 'define' || detail.type === 'explain') {
         toast({ title: cleanWord, description: definition, duration: 4000 });
       } else if (detail.type === 'save') {
+        try {
+          (window as any).addToVocabulary?.({
+            word: cleanWord,
+            definition,
+            difficulty: (difficulty === 'beginner' ? 'beginner' : 'intermediate'),
+            dateAdded: new Date(),
+            timesReviewed: 0,
+            mastered: false,
+          });
+        } catch {}
         toast({ title: t('vocab.saved', 'Saved to Vocabulary'), description: cleanWord, duration: 2000 });
       }
     } catch (err) {
@@ -328,8 +346,17 @@ useEffect(() => {
           variant={voiceCommandsEnabled ? "default" : "outline"}
           size={isMobileOrTablet ? "default" : "sm"}
           className={`gap-2 ${isMobileOrTablet ? 'min-h-[44px] px-4' : ''}`}
+          style={voiceCommandsEnabled && vcStatus === 'listening' ? { boxShadow: `0 0 ${4 + vcLevel * 10}px hsl(var(--primary))`, opacity: 0.9 } : undefined}
         >
-          <Mic className={`w-4 h-4 ${voiceCommandsEnabled ? 'animate-pulse' : ''}`} />
+          <span className="relative inline-flex items-center">
+            <Mic 
+              className={`w-4 h-4 transition-transform ${voiceCommandsEnabled ? '' : ''}`} 
+              style={{ transform: vcStatus === 'listening' ? `scale(${1 + vcLevel * 0.05})` : undefined }}
+            />
+            {vcStatus === 'processing' && (
+              <Loader2 className="w-3.5 h-3.5 absolute -right-3 -top-2 animate-spin text-muted-foreground" />
+            )}
+          </span>
           Voice Commands
         </Button>
       ) : (

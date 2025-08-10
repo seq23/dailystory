@@ -37,17 +37,36 @@ export const setupGamificationGlobals = (addVocabularyWord: () => void, enablePe
   // Set up global vocabulary collection (if not already set)
   if (!(window as any).addToVocabulary) {
     (window as any).addToVocabulary = (vocabularyWord: any) => {
-      // Only persist vocabulary for premium users
-      if (enablePersistence) {
+      if (!enablePersistence) return;
+      try {
+        const userName = (window as any).__currentUserName || localStorage.getItem('user_display_name') || 'guest';
+        const key = `vocabulary_${userName}`;
+
+        // One-time merge from legacy key per user
         try {
-          const stored = localStorage.getItem('vocabulary_collection') || '[]';
-          const collection = JSON.parse(stored);
-          collection.push(vocabularyWord);
-          localStorage.setItem('vocabulary_collection', JSON.stringify(collection));
-          console.log('📝 Added vocabulary word to collection:', vocabularyWord);
-        } catch (error) {
-          console.error('❌ Failed to save vocabulary word:', error);
-        }
+          const migratedFlag = localStorage.getItem(`vocab_migrated_${userName}`);
+          const legacy = localStorage.getItem('vocabulary_collection');
+          if (legacy && migratedFlag !== '1') {
+            const legacyItems = JSON.parse(legacy);
+            const current = JSON.parse(localStorage.getItem(key) || '[]');
+            const merged = Array.isArray(current) ? [...current] : [];
+            for (const w of legacyItems) {
+              if (!merged.find((m: any) => (m?.word || '').toLowerCase() === (w?.word || '').toLowerCase())) {
+                merged.push(w);
+              }
+            }
+            localStorage.setItem(key, JSON.stringify(merged));
+            localStorage.setItem(`vocab_migrated_${userName}`, '1');
+          }
+        } catch {}
+
+        const stored = localStorage.getItem(key) || '[]';
+        const collection = JSON.parse(stored);
+        collection.push(vocabularyWord);
+        localStorage.setItem(key, JSON.stringify(collection));
+        console.log('📝 Added vocabulary word to collection:', { key, vocabularyWord });
+      } catch (error) {
+        console.error('❌ Failed to save vocabulary word:', error);
       }
     };
   }

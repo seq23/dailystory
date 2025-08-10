@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import type { UserInfo } from "@/types";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { VocabularyCollector } from "@/components/VocabularyCollector";
 
 interface PremiumSidebarProps {
   currentView: string;
@@ -73,6 +74,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
   const [timerEnabled, setTimerEnabled] = useState<boolean>(() => {
     try { return localStorage.getItem('readingTimerEnabled') !== '0'; } catch { return true; }
   });
+  const [vocabOpen, setVocabOpen] = useState(false);
 
   useEffect(() => {
     const handler = (e: any) => {
@@ -196,9 +198,22 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               )}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+          {/* Vocabulary entry below Timer (no icon) */}
+          {isPremium && (
+            <div className="mt-2 px-2">
+              <button
+                onClick={() => setVocabOpen(true)}
+                className="w-full text-left px-3 py-2 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors text-sm font-medium"
+              >
+                Vocabulary
+              </button>
+            </div>
+          )}
+
 
         {/* Premium Features Highlight */}
         {!effectiveCollapsed && !isPremium && (
@@ -221,6 +236,14 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
           </div>
         )}
       </SidebarContent>
+
+      {/* Overlay panel so it doesn’t interrupt story */}
+      <VocabularyCollector 
+        userInfo={userInfo} 
+        isVisible={vocabOpen} 
+        onClose={() => setVocabOpen(false)} 
+        enablePersistence={isPremium}
+      />
     </Sidebar>
   );
 };
