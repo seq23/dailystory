@@ -210,16 +210,24 @@ export const ResponsiveStoryHeader = ({
                 </TooltipProvider>
               )}
 
-              {onNewStory && (
-                <NewStoryCTA
-                  isPremium={!!isPremium}
-                  iconOnly
-                  onNewStory={onNewStory}
-                  onUpgrade={onUpgrade || (() => {})}
-                  size="sm"
-                  wandPulse={wandPulse}
-                />
-              )}
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={onNewStory}
+                      className="min-h-[36px] min-w-[36px] rounded-full p-1"
+                      aria-label={t("tooltips.header.refresh", "Refresh this page’s story")}
+                    >
+                      <Wand className="w-4 h-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    {t("tooltips.header.refresh", "Refresh this page’s story")}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
             {/* Right: Avatar for parity with guest header */}
             <div className="flex items-center gap-2">
