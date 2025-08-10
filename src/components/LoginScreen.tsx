@@ -221,6 +221,16 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
               : t("loginScreen.subtitle.join")
             }
           </CardDescription>
+          <div className="mt-2">
+            <a
+              href="/pricing#premium-features"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-primary underline hover:opacity-90"
+            >
+              {t("loginScreen.links.seeFullFeatures", "See full Premium feature list")}
+            </a>
+          </div>
           {userInfo && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4">
               <p className="text-sm text-blue-800">

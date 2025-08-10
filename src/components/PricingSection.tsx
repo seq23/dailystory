@@ -88,7 +88,7 @@ export function PricingSection({ compact }: PricingSectionProps) {
           </Card>
 
           {/* Premium */}
-          <Card className="border-primary/30 shadow-lg">
+          <Card id="premium-features" className="border-primary/30 shadow-lg scroll-mt-24">
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Crown className="w-5 h-5 text-yellow-500" />

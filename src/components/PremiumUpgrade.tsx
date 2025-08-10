@@ -101,6 +101,16 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             Give your child unlimited access to personalized stories and advanced learning features
           </p>
+          <div className="mt-2">
+            <a
+              href="/pricing#premium-features"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-primary underline hover:opacity-90"
+            >
+              See full Premium feature list
+            </a>
+          </div>
         </div>
 
         {/* Benefits Showcase */}
