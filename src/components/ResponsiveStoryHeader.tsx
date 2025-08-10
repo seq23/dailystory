@@ -104,7 +104,9 @@ export const ResponsiveStoryHeader = ({
     return title.substring(0, maxLength - 3) + '...';
   };
 
-  const maxTitleLength = isMobile ? 20 : isTablet ? 30 : 45;
+  const maxTitleLength = !!isPremium
+    ? (isMobile ? 32 : isTablet ? 64 : 80)
+    : (isMobile ? 20 : isTablet ? 40 : 60);
   const displayTitle = storyTitle ? truncateTitle(storyTitle, maxTitleLength) : '';
 
   // Avatar helper function
@@ -367,7 +369,7 @@ export const ResponsiveStoryHeader = ({
           <div className={cn(
             "flex items-center gap-2",
             isMobile && "w-full justify-end flex-nowrap overflow-x-auto",
-            isTablet ? "flex-1 justify-center" : "flex-shrink-0"
+            isTablet ? (!isPremium ? "flex-1 justify-center" : "flex-shrink-0") : "flex-shrink-0"
           )}>
             {showLevelControls && !isPremium && (
               <div 
