@@ -1,0 +1,111 @@
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Mic, Loader2, CheckCircle2 } from "lucide-react";
+
+// Lightweight persistent HUD that listens for custom events:
+//  - 'voice:status' => { status: 'idle'|'listening'|'processing' }
+//  - 'voice:level'  => { level: number 0..1 }
+// Beeps on transitions for clear feedback.
+
+type VoiceStatus = 'idle' | 'listening' | 'processing';
+
+export const VoiceHUD: React.FC = () => {
+  const [status, setStatus] = useState<VoiceStatus>('idle');
+  const [level, setLevel] = useState(0);
+  const prevStatus = useRef<VoiceStatus>('idle');
+
+  // Simple beep synth
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const ensureCtx = async () => {
+    if (!audioContextRef.current) {
+      try {
+        const Ctor = (window as any).AudioContext || (window as any).webkitAudioContext;
+        audioContextRef.current = new Ctor();
+      } catch (e) {
+        console.warn('VoiceHUD: AudioContext not available');
+      }
+    }
+    return audioContextRef.current;
+  };
+  const beep = async (freq = 880, durationMs = 120, vol = 0.05) => {
+    const ctx = await ensureCtx();
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    gain.gain.value = vol;
+    osc.frequency.value = freq;
+    osc.connect(gain).connect(ctx.destination);
+    const now = ctx.currentTime;
+    osc.start(now);
+    osc.stop(now + durationMs / 1000);
+  };
+
+  useEffect(() => {
+    const onStatus = (e: any) => {
+      const next = (e?.detail?.status || 'idle') as VoiceStatus;
+      setStatus(next);
+      // Beep on transitions
+      if (prevStatus.current !== next) {
+        if (next === 'listening') beep(1200, 120, 0.06); // start beep
+        if (next === 'processing') beep(900, 80, 0.05);
+        if (next === 'idle' && prevStatus.current !== 'idle') beep(600, 80, 0.05); // end beep
+      }
+      prevStatus.current = next;
+    };
+    const onLevel = (e: any) => {
+      const l = Math.max(0, Math.min(1, Number(e?.detail?.level ?? 0)));
+      setLevel(l);
+    };
+    window.addEventListener('voice:status', onStatus as EventListener);
+    window.addEventListener('voice:level', onLevel as EventListener);
+    return () => {
+      window.removeEventListener('voice:status', onStatus as EventListener);
+      window.removeEventListener('voice:level', onLevel as EventListener);
+      try { audioContextRef.current?.close(); } catch {}
+      audioContextRef.current = null;
+    };
+  }, []);
+
+  // Hide entirely when idle
+  if (status === 'idle') return null;
+
+  const meterWidth = Math.round(100 * (0.1 + 0.9 * level));
+
+  return (
+    <aside
+      role="status"
+      aria-live="polite"
+      className="fixed left-1/2 -translate-x-1/2 z-40 bottom-24 md:bottom-6 w-[92%] max-w-md"
+    >
+      <div className="rounded-xl border border-border bg-card/95 backdrop-blur shadow-lg p-3 flex items-center gap-3">
+        <div className={`p-2 rounded-lg ${status === 'listening' ? 'bg-primary/10' : 'bg-muted'}`} aria-hidden>
+          <Mic className={`w-5 h-5 ${status === 'listening' ? 'text-primary' : 'text-muted-foreground'}`} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-medium truncate">
+            {status === 'listening' && 'Listening…'}
+            {status === 'processing' && 'Transcribing…'}
+          </div>
+          {status === 'listening' ? (
+            <div className="h-2 mt-1 rounded-full bg-muted overflow-hidden">
+              <div
+                className="h-full rounded-full bg-primary transition-[width] duration-100"
+                style={{ width: `${meterWidth}%` }}
+                aria-label="Microphone level"
+              />
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              Processing your command
+            </div>
+          )}
+        </div>
+        {status === 'processing' && (
+          <CheckCircle2 className="w-5 h-5 text-muted-foreground" aria-hidden />
+        )}
+      </div>
+    </aside>
+  );
+};
+
+export default VoiceHUD;

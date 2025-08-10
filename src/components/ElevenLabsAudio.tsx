@@ -50,6 +50,7 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
   const [audioService] = useState(() => new EnhancedAudioService());
   const [hasPlayedThisPage, setHasPlayedThisPage] = useState(false);
   const { toast } = useToast();
+  const emitStatus = (s: 'idle'|'listening'|'processing') => window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: s } }));
 
   // Enhanced audio service handles free limits internally
   const maxFreePages = 10;
@@ -144,6 +145,7 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
     if (voiceCommandsEnabled) {
       audioService.stopVoiceCommands();
       setVoiceCommandsEnabled(false);
+      emitStatus('idle');
       toast({
         title: t("audioReading.voiceCommandsDisabled", "Voice Commands Disabled"),
         description: t("audioReading.voiceCommandsOff", "Voice commands are now off"),
@@ -152,6 +154,7 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
     } else {
       audioService.startVoiceCommands();
       setVoiceCommandsEnabled(true);
+      emitStatus('listening');
       toast({
         title: t("audioReading.voiceCommandsEnabled", "Voice Commands Enabled"), 
         description: t("audioReading.voiceCommandsInstructions", "Try saying 'next page', 'read slower', or 'what does [word] mean?'"),
