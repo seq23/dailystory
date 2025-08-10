@@ -1018,7 +1018,7 @@ const handleRestartTimer = () => {
           currentDifficulty={currentDifficulty}
           userInfo={userInfo}
           onHome={onHome}
-          onNewStory={onNewStory}
+          onNewStory={handleNewStoryClick}
           onIncreaseDifficulty={() => handleDifficultyChange('up')}
           onDecreaseDifficulty={() => handleDifficultyChange('down')}
           showLevelControls={true}
@@ -1493,6 +1493,14 @@ const handleRestartTimer = () => {
       
       
       {/* Modern Progress Towers - Rebuilt with better design */}
+      {/* Special Request Dialog */}
+      <SpecialRequestDialog
+        open={showSpecialRequestDialog}
+        onOpenChange={setShowSpecialRequestDialog}
+        initialValue={specialRequestDraft}
+        onSubmit={handleSpecialRequestSubmit}
+        isGenerating={isGeneratingNewStory}
+      />
       <ModernProgressTowers
         userId={userInfo?.name}
         userType={isPremium ? 'premium' : 'free'}

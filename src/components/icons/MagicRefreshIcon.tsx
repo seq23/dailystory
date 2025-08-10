@@ -1,5 +1,5 @@
 import * as React from "react";
-import { RefreshCcw, Wand2 } from "lucide-react";
+import { RotateCw, Wand2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface MagicRefreshIconProps extends React.HTMLAttributes<HTMLSpanElement> {
@@ -49,31 +49,21 @@ export const MagicRefreshIcon: React.FC<MagicRefreshIconProps> = ({
   const gapPx = sparkleGapPx ?? Math.max(2, Math.round(size * 0.12));
 
   const ringTransform = `translate(-50%, -50%) rotate(${ringRotate}deg)`;
-  const topMaskStyles = sparkleGap && (sparkleGapAt === 'both' || sparkleGapAt === 'top')
-    ? {
-        WebkitMaskImage: `radial-gradient(circle at 50% 50%, transparent ${gapPx}px, black ${gapPx + 0.5}px)`,
-        maskImage: `radial-gradient(circle at 50% 50%, transparent ${gapPx}px, black ${gapPx + 0.5}px)`,
-      }
-    : undefined;
-  const bottomMaskStyles = sparkleGap && (sparkleGapAt === 'both' || sparkleGapAt === 'bottom')
-    ? {
-        WebkitMaskImage: `radial-gradient(circle at 50% 50%, transparent ${gapPx}px, black ${gapPx + 0.5}px)`,
-        maskImage: `radial-gradient(circle at 50% 50%, transparent ${gapPx}px, black ${gapPx + 0.5}px)`,
-      }
-    : undefined;
+  // Sparkle gap masks removed to simplify icon and avoid visual merging
+
 
   const wandTranslate = `translate(calc(-50% + ${wandOffset?.x ?? 0}px), calc(-50% + ${wandOffset?.y ?? 0}px)) rotate(${wandRotate}deg)`;
 
   return (
     <span
       className={cn("relative inline-block", className)}
-      style={{ width: size, height: size }}
+      style={{ width: size, height: size, color: 'hsl(var(--brand-purple))' }}
       role="img"
       aria-label={ariaLabel}
       {...props}
     >
-      {/* Bottom half: sits under the wand */}
-      <RefreshCcw
+      {/* Circular refresh ring */}
+      <RotateCw
         className={cn(
           "absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
           ringClassName
@@ -85,8 +75,6 @@ export const MagicRefreshIcon: React.FC<MagicRefreshIconProps> = ({
         aria-hidden="true"
         style={{
           transform: ringTransform,
-          clipPath: 'inset(50% 0 0 0)',
-          ...(bottomMaskStyles as React.CSSProperties),
         }}
       />
 
@@ -102,24 +90,6 @@ export const MagicRefreshIcon: React.FC<MagicRefreshIconProps> = ({
         absoluteStrokeWidth={absoluteStrokeWidth}
         style={{ transform: wandTranslate }}
         aria-hidden="true"
-      />
-
-      {/* Top half: sits over the wand */}
-      <RefreshCcw
-        className={cn(
-          "absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
-          ringClassName
-        )}
-        width={ringSize}
-        height={ringSize}
-        strokeWidth={ringStrokeWidth}
-        absoluteStrokeWidth={absoluteStrokeWidth}
-        aria-hidden="true"
-        style={{
-          transform: ringTransform,
-          clipPath: 'inset(0 0 50% 0)',
-          ...(topMaskStyles as React.CSSProperties),
-        }}
       />
 
       <span className="sr-only">{ariaLabel}</span>
