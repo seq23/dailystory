@@ -101,7 +101,7 @@ export function MyAccount({ isPremium, subscriptionTier, subscriptionEnd, devTes
           <Card>
             <CardHeader>
               <CardTitle>Free</CardTitle>
-              <CardDescription>Free trial:</CardDescription>
+              
             </CardHeader>
             <CardContent>
               <ul className="space-y-2">
@@ -126,7 +126,7 @@ export function MyAccount({ isPremium, subscriptionTier, subscriptionEnd, devTes
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <h3 className="font-semibold mb-2">Top Premium</h3>
+                
                 <ul className="space-y-2">
                   {topPremiumFeatures.map((f) => (
                     <li key={f} className="flex items-start gap-2">
