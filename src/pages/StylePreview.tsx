@@ -206,8 +206,9 @@ const StylePreview: React.FC = () => {
         </article>
       </main>
 
-        {/* Magic Wand Button Options */}
-        <section className="max-w-5xl mx-auto mt-8">
+      {/* Magic Wand Button Options */}
+      <section className="max-w-5xl mx-auto mt-8">
+        <Card>
           <CardHeader>
             <CardTitle>Magic Wand Button Options</CardTitle>
             <CardDescription>Pick your favorite style for the New Story action</CardDescription>
@@ -240,6 +241,12 @@ const StylePreview: React.FC = () => {
       {/* Mobile Premium Reading Preview */}
       <section className="max-w-5xl mx-auto mt-8">
         <Card>
+          <CardHeader>
+            <CardTitle>Mobile Premium Reading Preview</CardTitle>
+            <CardDescription>Wand icon in header, arrows under content, and 4-button bottom dock</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="rounded-xl border bg-card overflow-hidden">
               {/* Header with Home + Wand */}
               <div className="flex items-center justify-between px-4 py-3 border-b">
                 <div className="flex items-center gap-2">

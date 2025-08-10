@@ -49,6 +49,7 @@ export const ResponsiveStoryHeader = ({
   isSaving = false,
   highlightSave = false,
   isPremium,
+  wandPulse = false,
 }: ResponsiveStoryHeaderProps) => {
   const { t } = useTranslation();
   const { isMobile, isTablet, isMobileOrTablet } = useIsMobile();
