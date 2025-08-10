@@ -2,7 +2,7 @@ import { Check, Crown, Building2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { freeFeatures, premiumFeatures, enterpriseFeatures } from "@/constants/featureLists";
+import { freeFeatures, premiumFeatures, enterpriseFeatures, additionalOfferings } from "@/constants/featureLists";
 interface PricingSectionProps {
   compact?: boolean; // compact version for homepage
 }
@@ -145,28 +145,42 @@ export function PricingSection({ compact }: PricingSectionProps) {
         </div>
 
         {!compact && (
-          <div className="mt-12">
-            <h2 className="text-2xl font-bold mb-4">Phase 2 Premium Feature Roadmap</h2>
-            <div className="grid gap-6 md:grid-cols-3">
-              {phase2.map((section) => (
-                <Card key={section.title}>
-                  <CardHeader>
-                    <CardTitle className="text-base">{section.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="space-y-2">
-                      {section.items.map((i) => (
-                        <li key={i} className="flex items-start gap-2">
-                          <ArrowRight className="w-4 h-4 text-primary mt-1" />
-                          <span>{i}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
-              ))}
+          <>
+            <div className="mt-12">
+              <h2 className="text-2xl font-bold mb-4">Additional offerings included in Premium</h2>
+              <ul className="grid gap-2 md:grid-cols-2">
+                {additionalOfferings.map((f) => (
+                  <li key={f} className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1" />
+                    <span>{f}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
-          </div>
+
+            <div className="mt-12">
+              <h2 className="text-2xl font-bold mb-4">Phase 2 Premium Feature Roadmap</h2>
+              <div className="grid gap-6 md:grid-cols-3">
+                {phase2.map((section) => (
+                  <Card key={section.title}>
+                    <CardHeader>
+                      <CardTitle className="text-base">{section.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-2">
+                        {section.items.map((i) => (
+                          <li key={i} className="flex items-start gap-2">
+                            <ArrowRight className="w-4 h-4 text-primary mt-1" />
+                            <span>{i}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </>
         )}
       </div>
     </section>
