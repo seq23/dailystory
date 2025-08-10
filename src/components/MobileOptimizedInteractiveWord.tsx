@@ -42,6 +42,7 @@ export const MobileOptimizedInteractiveWord = (props: MobileOptimizedInteractive
   if (props.forceModal || isMobileOrTablet) {
     const handleClick = () => {
       if (!shouldBeInteractive) return;
+      (window as any).__lastSelectedWord = cleanWord;
       setShowMobileModal(true);
     };
 
@@ -114,9 +115,10 @@ export const MobileOptimizedInteractiveWord = (props: MobileOptimizedInteractive
         word: cleanWord,
         definition: '',
         difficulty: normalizedDifficulty,
-        reviewStatus: 'new',
-        context: props.sentenceContext || '',
-        addedAt: new Date().toISOString(),
+        dateAdded: new Date().toISOString(),
+        timesReviewed: 0,
+        mastered: false,
+        storyContext: props.sentenceContext || ''
       };
 
       try {

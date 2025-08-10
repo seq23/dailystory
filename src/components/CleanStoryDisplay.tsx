@@ -11,6 +11,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 // Mobile-Optimized UI Components
 import { CollapsibleFloatingTimer } from "@/components/CollapsibleFloatingTimer";
+import { TimerTogglePill } from "@/components/TimerTogglePill";
 import { MobileActionDock } from "@/components/MobileActionDock";
 
 import { ResponsiveStoryHeader } from "@/components/ResponsiveStoryHeader";
@@ -616,6 +617,10 @@ useEffect(() => {
 
   const handleReduceTime = () => {
     setTimeRemaining(prev => Math.max(5 * 60, prev - 5 * 60)); // Reduce by 5 minutes, minimum 5 minutes
+  };
+  const handleToggleTimerEnabled = () => {
+    const next = !timerEnabled;
+    window.dispatchEvent(new CustomEvent('readingTimerToggle', { detail: next }));
   };
 
   // Bottom dock actions
@@ -1483,6 +1488,13 @@ const handleRestartTimer = () => {
           onSaveStoryNow={isPremium ? handleSaveStoryNow : undefined}
         />
       )}
+
+      {/* Always-visible timer toggle pill */}
+      <TimerTogglePill
+        enabled={timerEnabled}
+        timeRemaining={timeRemaining}
+        onToggle={handleToggleTimerEnabled}
+      />
 
       {/* Mobile Action Dock - Mobile/Tablet */}
       {isMobileOrTablet && (

@@ -118,6 +118,7 @@ export const InteractiveWord = ({
   const wordRef = useRef<HTMLSpanElement>(null);
   const phoneticEngine = PhoneticRulesEngine.getInstance();
   const phoneticSpelling = phoneticEngine.breakIntoSyllables(word).join('-');
+  const cleanWord = word.replace(/[.,!?;:'"()]/g, '').trim();
   const { isMobile } = useIsMobile();
 
   useEffect(() => {
@@ -177,6 +178,7 @@ export const InteractiveWord = ({
   };
 
   const handleMouseEnter = () => {
+    (window as any).__lastSelectedWord = cleanWord;
     if (hideTimeoutRef.current) {
       clearTimeout(hideTimeoutRef.current);
       hideTimeoutRef.current = null;
@@ -859,6 +861,7 @@ export const InteractiveWord = ({
       }}
       onClick={(e) => {
         console.log('🎯 Click on InteractiveWord:', word, 'environment:', window.location.href.includes('preview') ? 'preview' : 'console');
+        (window as any).__lastSelectedWord = cleanWord;
         if (onClick) onClick();
         else handleMouseEnter(); // Fallback to show tooltip
       }}

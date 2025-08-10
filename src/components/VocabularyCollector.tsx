@@ -43,10 +43,23 @@ export const VocabularyCollector = ({ userInfo, isVisible, onClose, enablePersis
     const saved = localStorage.getItem(newKey);
     if (saved) {
       try {
-        loaded = JSON.parse(saved).map((word: any) => ({
-          ...word,
-          dateAdded: new Date(word.dateAdded)
-        }));
+        loaded = JSON.parse(saved).map((word: any) => {
+          const diff = (word?.difficulty || '').toLowerCase();
+          const normalizedDifficulty = (
+            diff === 'beginner' || diff === 'intermediate' || diff === 'advanced'
+          ) ? diff : (diff === 'easy' ? 'beginner' : (diff === 'medium' ? 'intermediate' : 'advanced'));
+          const dateStr = word?.dateAdded || word?.addedAt || new Date().toISOString();
+          return {
+            word: word.word,
+            definition: word.definition || '',
+            translation: word.translation,
+            difficulty: normalizedDifficulty,
+            dateAdded: new Date(dateStr),
+            timesReviewed: typeof word.timesReviewed === 'number' ? word.timesReviewed : 0,
+            mastered: !!word.mastered,
+            storyContext: word.storyContext || word.context || word.sampleSentence || ''
+          } as any;
+        });
       } catch (error) {
         console.error('Error loading vocabulary:', error);
       }
@@ -57,10 +70,23 @@ export const VocabularyCollector = ({ userInfo, isVisible, onClose, enablePersis
       const migratedFlag = localStorage.getItem(`vocab_migrated_${userInfo.name}`);
       const legacy = localStorage.getItem('vocabulary_collection');
       if (legacy && migratedFlag !== '1') {
-        const legacyItems = JSON.parse(legacy).map((word: any) => ({
-          ...word,
-          dateAdded: word.dateAdded ? new Date(word.dateAdded) : new Date()
-        }));
+        const legacyItems = JSON.parse(legacy).map((word: any) => {
+          const diff = (word?.difficulty || '').toLowerCase();
+          const normalizedDifficulty = (
+            diff === 'beginner' || diff === 'intermediate' || diff === 'advanced'
+          ) ? diff : (diff === 'easy' ? 'beginner' : (diff === 'medium' ? 'intermediate' : 'advanced'));
+          const dateStr = word?.dateAdded || word?.addedAt || new Date().toISOString();
+          return {
+            word: word.word,
+            definition: word.definition || '',
+            translation: word.translation,
+            difficulty: normalizedDifficulty,
+            dateAdded: new Date(dateStr),
+            timesReviewed: typeof word.timesReviewed === 'number' ? word.timesReviewed : 0,
+            mastered: !!word.mastered,
+            storyContext: word.storyContext || word.context || word.sampleSentence || ''
+          } as any;
+        });
         const merged = [...loaded];
         for (const w of legacyItems) {
           if (!merged.find(m => m.word?.toLowerCase() === w.word?.toLowerCase())) {

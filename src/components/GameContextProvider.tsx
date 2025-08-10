@@ -41,6 +41,14 @@ export const GameContextProvider: React.FC<GameContextProviderProps> = ({
     return () => cleanupGamificationGlobals();
   }, [gamificationHook.addVocabularyWord, userType]);
 
+  // Expose user name globally for consistent per-user storage keys
+  useEffect(() => {
+    if (userInfo?.name) {
+      (window as any).__currentUserName = userInfo.name;
+      try { localStorage.setItem('user_display_name', userInfo.name); } catch {}
+    }
+  }, [userInfo?.name]);
+
   return (
     <GameContext.Provider value={gamificationHook}>
       {children}

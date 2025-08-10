@@ -60,11 +60,33 @@ export const setupGamificationGlobals = (addVocabularyWord: () => void, enablePe
           }
         } catch {}
 
+        const normalize = (w: any) => {
+          const diff = (w?.difficulty || '').toLowerCase();
+          const normalizedDifficulty = (
+            diff === 'beginner' || diff === 'intermediate' || diff === 'advanced'
+          ) ? diff : (diff === 'easy' ? 'beginner' : (diff === 'medium' ? 'intermediate' : 'advanced'));
+          const dateStr = w?.dateAdded || w?.addedAt || new Date().toISOString();
+          return {
+            word: (w?.word || '').toString(),
+            definition: (w?.definition || '').toString(),
+            translation: w?.translation || undefined,
+            difficulty: normalizedDifficulty,
+            dateAdded: dateStr,
+            timesReviewed: typeof w?.timesReviewed === 'number' ? w.timesReviewed : 0,
+            mastered: !!w?.mastered,
+            storyContext: w?.storyContext || w?.context || w?.sampleSentence || ''
+          };
+        };
+
         const stored = localStorage.getItem(key) || '[]';
         const collection = JSON.parse(stored);
-        collection.push(vocabularyWord);
+        const newItem = normalize(vocabularyWord);
+        const exists = collection.find((m: any) => (m?.word || '').toLowerCase() === newItem.word.toLowerCase());
+        if (!exists) {
+          collection.push(newItem);
+        }
         localStorage.setItem(key, JSON.stringify(collection));
-        console.log('📝 Added vocabulary word to collection:', { key, vocabularyWord });
+        console.log('📝 Added vocabulary word to collection:', { key, vocabularyWord: newItem });
       } catch (error) {
         console.error('❌ Failed to save vocabulary word:', error);
       }
