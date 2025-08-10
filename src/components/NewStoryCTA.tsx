@@ -14,6 +14,8 @@ interface NewStoryCTAProps {
   className?: string;
   size?: "sm" | "md" | "lg";
   wandPulse?: boolean;
+  labelOverride?: string;
+  tooltipText?: string;
 }
 
 const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
@@ -24,9 +26,11 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
   className,
   size = "md",
   wandPulse = false,
+  labelOverride,
+  tooltipText,
 }) => {
   const { t } = useTranslation();
-  const label = t("common.newStory", "New Story");
+  const label = labelOverride ?? t("common.newStory", "New Story");
   const isLocked = !isPremium;
 
   const handleClick = () => {
@@ -76,16 +80,19 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
     </Button>
   );
 
-  if (iconOnly) {
+  const defaultIconOnlyTooltip = isLocked
+    ? t("tooltips.newStoryPremium", "Premium only. Refresh story")
+    : t("tooltips.newStory", "Start a fresh story");
+  const resolvedTooltip = tooltipText ?? (iconOnly ? defaultIconOnlyTooltip : undefined);
+
+  if (resolvedTooltip) {
     return (
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
             <span className="inline-flex">{buttonEl}</span>
           </TooltipTrigger>
-          <TooltipContent side="bottom">
-            {isLocked ? t("tooltips.newStoryPremium", "Premium only. Refresh story") : t("tooltips.newStory", "Start a fresh story")}
-          </TooltipContent>
+          <TooltipContent side="bottom">{resolvedTooltip}</TooltipContent>
         </Tooltip>
       </TooltipProvider>
     );

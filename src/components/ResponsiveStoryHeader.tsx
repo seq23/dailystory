@@ -275,7 +275,7 @@ export const ResponsiveStoryHeader = ({
               "flex items-center",
               isMobileOrTablet ? "gap-1" : "gap-2 ml-4"
             )}>
-              {onHome && !(isPremium && (isTablet || isMobile)) && (
+              {onHome && !isPremium && (
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -302,25 +302,6 @@ export const ResponsiveStoryHeader = ({
                 </TooltipProvider>
               )}
 
-              {/* Desktop premium: End Session button next to Home */}
-              {onEndSession && isPremium && !isMobileOrTablet && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="destructive"
-                        size="default"
-                        onClick={onEndSession}
-                        className="h-12 px-4 rounded-xl"
-                        aria-label={t("nav.endSession", "End Session")}
-                      >
-                        {t("nav.endSession", "End Session")}
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom">{t("tooltips.endSession", "This will end this session. You will have the option to save this story as is.")}</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
 
               {/* Inline avatar + Free Trial badge next to Home (tablet guests) */}
               {!isPremium && isTablet && (
@@ -495,7 +476,7 @@ export const ResponsiveStoryHeader = ({
         {isPremium && (
           <div className={cn(
             "flex items-center flex-nowrap",
-            (isMobile || isTablet) ? "justify-center px-5 pb-3" : "justify-start py-2 overflow-x-auto"
+            (isMobile || isTablet) ? "justify-center px-5 pb-3" : "justify-center py-2 overflow-x-auto"
           )}>
             <div className={cn("flex items-center flex-nowrap", isMobileOrTablet ? "gap-1 sm:gap-2" : "gap-3")}> 
               {(isMobile || isTablet) && (
@@ -520,15 +501,60 @@ export const ResponsiveStoryHeader = ({
                   )}
                 </div>
               )}
+
+              {!isMobileOrTablet && (
+                <div className="flex items-center gap-2">
+                  {onHome && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="default"
+                            onClick={onHome}
+                            className="h-12 px-4 rounded-xl hover:bg-gray-100"
+                            aria-label={t("common.home", "Home")}
+                          >
+                            <Home className="w-5 h-5 mr-2" />
+                            {t("common.home", "Home")}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom">{t("tooltips.home", "Home")}</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+
+                  {onEndSession && isPremium && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="destructive"
+                            size="default"
+                            onClick={onEndSession}
+                            className="h-12 px-4 rounded-xl"
+                            aria-label={t("nav.endSession", "End Session")}
+                          >
+                            {t("nav.endSession", "End Session")}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom">{t("tooltips.endSession", "This will end this session. You will have the option to save this story as is.")}</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                </div>
+              )}
               <div className={cn("flex items-center", isMobileOrTablet ? "gap-1" : "gap-2")}> 
                 {onNewStory && (
                   <NewStoryCTA
                     isPremium={!!isPremium}
-                    iconOnly
+                    iconOnly={isMobileOrTablet}
                     onNewStory={onNewStory}
                     onUpgrade={onUpgrade || (() => {})}
                     size={isMobileOrTablet ? "sm" : "md"}
                     wandPulse={wandPulse}
+                    labelOverride={!isMobileOrTablet ? "Re-write this story" : undefined}
+                    tooltipText={!isMobileOrTablet ? "you will get to update any special requests" : undefined}
                   />
                 )}
                 {onSaveStory && !isMobileOrTablet && (
