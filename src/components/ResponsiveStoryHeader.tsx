@@ -417,7 +417,7 @@ export const ResponsiveStoryHeader = ({
               "flex items-center",
               isMobileOrTablet ? "gap-1" : "gap-2 ml-4"
             )}>
-              {onHome && (
+              {onHome && !(isPremium && isTablet) && (
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -457,18 +457,6 @@ export const ResponsiveStoryHeader = ({
                 </div>
               )}
 
-              {/* Inline avatar + Premium badge next to Home (tablet premium) */}
-              {isPremium && isTablet && (
-                <div className="flex items-center gap-2 ml-1">
-                  <Avatar className="h-7 w-7">
-                    {hasSelectedAvatar && (
-                      <AvatarImage src={getAvatarUrl()} alt={userInfo?.name || "Reader"} />
-                    )}
-                    <AvatarFallback>{userInfo?.name?.charAt(0)?.toUpperCase() || "R"}</AvatarFallback>
-                  </Avatar>
-                  <Badge variant="premium">{t("badges.premium", "Premium")}</Badge>
-                </div>
-              )}
             </div>
           </div>
 
@@ -611,55 +599,7 @@ export const ResponsiveStoryHeader = ({
               </div>
             )}
 
-            {/* Save Button (Premium) */}
-            {onSaveStory && !(isPremium && isMobile) && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="default"
-                      size={isMobile ? "sm" : "default"}
-                      onClick={onSaveStory}
-                      disabled={isSaving}
-                      className={cn(highlightSave && "animate-pulse ring-2 ring-primary ring-offset-2 shadow-[0_0_0_6px_hsl(var(--primary)/0.2)]")}
-                      aria-label={t("nav.save", "Save")}
-                    >
-                      {isSaving ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          {t("common.saving", "Saving...")}
-                        </>
-                      ) : (
-                        t("nav.save", "Save")
-                      )}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">
-                    {t("tooltips.save", "Save your story to the Library.")}
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
 
-            {onEndSession && !(isPremium && isMobile) && !(isTablet && !isPremium) && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="destructive"
-                      size={isMobile ? "sm" : "default"}
-                      onClick={onEndSession}
-                      aria-label={t("nav.endSession", "End Session")}
-                    >
-                      {t("nav.endSession", "End Session")}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">
-                    {t("tooltips.endSession", "This will end this session. You will have the option to save this story as is.")}
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
           </div>
 
         </div>
@@ -669,6 +609,35 @@ export const ResponsiveStoryHeader = ({
             isTablet ? "justify-center px-5 pb-3" : isMobile ? "justify-start px-3 pb-2 overflow-x-auto" : "justify-start py-2 overflow-x-auto"
           )}>
             <div className={cn("flex items-center flex-nowrap", isMobileOrTablet ? "gap-1 sm:gap-2" : "gap-3")}> 
+              {isTablet && (
+                <div className="flex items-center gap-2 mr-2">
+                  {onHome && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size={isMobileOrTablet ? "sm" : "default"}
+                            onClick={onHome}
+                            className="min-h-[44px] min-w-[44px] rounded-full p-2"
+                            aria-label={t("common.home", "Home")}
+                          >
+                            <Home className="w-4 h-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom">{t("tooltips.home", "Home")}</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                  <Avatar className="h-7 w-7">
+                    {hasSelectedAvatar && (
+                      <AvatarImage src={getAvatarUrl()} alt={userInfo?.name || "Reader"} />
+                    )}
+                    <AvatarFallback>{userInfo?.name?.charAt(0)?.toUpperCase() || "R"}</AvatarFallback>
+                  </Avatar>
+                  <Badge variant="premium">{t("badges.premium", "Premium")}</Badge>
+                </div>
+              )}
               {onNewStory && (
                 <NewStoryCTA
                   isPremium={!!isPremium}
