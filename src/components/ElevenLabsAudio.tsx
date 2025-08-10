@@ -110,6 +110,15 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
   }, []);
 
 
+  // Stop voice commands on unmount
+  useEffect(() => {
+    return () => {
+      try { audioService.stopVoiceCommands(); } catch {}
+      try { vcRef.current?.stop?.(); } catch {}
+      try { emitStatus('idle'); } catch {}
+    };
+  }, [audioService]);
+
   // Enhanced audio playback using new service
   const playAudio = async () => {
     if (!isPremium && isAfterFreeLimit) {
@@ -174,9 +183,12 @@ const toggleVoiceCommands = () => {
     return;
   }
 
-  // If already ON, keep it ON and softly confirm
   if (voiceCommandsEnabled) {
-    toast({ title: t('audioReading.stillListening', 'Still listening'), duration: 1200 });
+    // Turn OFF: stop both backends and reset status
+    try { audioService.stopVoiceCommands(); } catch {}
+    try { vcRef.current?.stop?.(); } catch {}
+    setVoiceCommandsEnabled(false);
+    emitStatus('idle');
     return;
   }
 
@@ -209,7 +221,7 @@ const toggleVoiceCommands = () => {
   emitStatus('listening');
   if (!voiceTipsShownRef.current) {
     toast({
-      title: t("audioReading.voiceCommandsEnabled", "Voice Commands Enabled"), 
+      title: t("audioReading.voiceCommandsEnabled", "Voice Commands Enabled"),
       description: "Try: 'next page', 'pause', 'resume', 'read slower'",
       duration: 3500,
       action: (
