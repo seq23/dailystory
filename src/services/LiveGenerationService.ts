@@ -3,7 +3,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import type { UserInfo, DifficultyLevel, ExpertGradeLevel } from '@/types';
-import { getStoryPrompt, getExpertStoryPrompt, formatUserPrompt, calculateDifficultyFromUser } from '@/config/storyPrompts';
+import { getStoryPrompt, getExpertStoryPrompt, formatUserPrompt } from '@/config/storyPrompts';
 import { EnhancedFallbackManager } from '@/constants/enhancedFallbackTemplates';
 import { ErrorHandler } from '@/utils/errorHandling';
 
