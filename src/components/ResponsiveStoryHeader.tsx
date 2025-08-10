@@ -155,11 +155,6 @@ export const ResponsiveStoryHeader = ({
                     {userInfo.name.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                {isMobile && typeof isPremium !== 'undefined' && (
-                  <Badge variant={isPremium ? 'premium' : 'guest'} className="text-[10px] px-2 py-0.5">
-                    {isPremium ? t('badges.premium', 'Premium') : t('badges.guest', 'Guest')}
-                  </Badge>
-                )}
                 {!isMobile && (
                   <div className="text-left">
                     <p className={cn(
@@ -174,13 +169,6 @@ export const ResponsiveStoryHeader = ({
                      )}>
                       {t(`userInfoForm.grades.${userInfo.grade}` as any, userInfo.grade === 'PreK' ? 'Pre-K' : `Grade ${userInfo.grade}`)}
                     </p>
-                    {typeof isPremium !== 'undefined' && (
-                      <div className="mt-1">
-                        <Badge variant={isPremium ? 'premium' : 'guest'} className={cn(isMobile ? 'text-[10px] px-2 py-0.5' : 'text-xs')}>
-                          {isPremium ? t('badges.premium', 'Premium') : t('badges.guest', 'Guest')}
-                        </Badge>
-                      </div>
-                    )}
                   </div>
                 )}
               </div>
@@ -255,12 +243,12 @@ export const ResponsiveStoryHeader = ({
           </div>
 
           {/* Right Section: Level Controls + End Session */}
-          <div className="flex-shrink-0 flex items-center gap-2">
+          <div className={cn("flex-shrink-0 flex items-center gap-2", isMobile && "w-full justify-end flex-wrap")}>
             {showLevelControls && (
               <div 
                 className={cn(
                   "flex items-center reading-level-controls difficulty-controls",
-                  isMobileOrTablet ? "gap-1 sm:gap-2" : "gap-3 bg-gray-50 rounded-xl p-2"
+                  isMobile ? "flex-col gap-2 w-full" : isMobileOrTablet ? "gap-1 sm:gap-2" : "gap-3 bg-gray-50 rounded-xl p-2"
                 )}
                 id="reading-level-controls"
                 data-id="reading-level"

@@ -156,32 +156,6 @@ export const PremiumMyStoriesView = ({ userInfo, isPremium, onSessionEnded }: Pr
         </CardContent>
       </Card>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="border-2 border-dashed border-muted-foreground/25 hover:border-primary/50 transition-colors cursor-pointer" onClick={() => setRequestDialogOpen(true)}>
-          <CardContent className="p-6 text-center">
-            <div className="w-12 h-12 bg-gradient-primary/20 rounded-full flex items-center justify-center mx-auto mb-3">
-              <Plus className="w-6 h-6 text-primary" />
-            </div>
-            <h3 className="font-semibold mb-2">Create New Story</h3>
-            <p className="text-sm text-muted-foreground">
-              Start a fresh adventure with personalized storytelling
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card className="border-2 border-dashed border-muted-foreground/25 hover:border-primary/50 transition-colors">
-          <CardContent className="p-6 text-center">
-            <div className="w-12 h-12 bg-gradient-primary/20 rounded-full flex items-center justify-center mx-auto mb-3">
-              <Star className="w-6 h-6 text-primary" />
-            </div>
-            <h3 className="font-semibold mb-2">Favorite Stories</h3>
-            <p className="text-sm text-muted-foreground">
-              Quick access to your most loved stories
-            </p>
-          </CardContent>
-        </Card>
-      </div>
 
       <Dialog open={requestDialogOpen} onOpenChange={setRequestDialogOpen}>
         <DialogContent>

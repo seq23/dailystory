@@ -210,10 +210,6 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
               Save Current Story
             </Button>
           )}
-          <Button onClick={onStartNewStory}>
-            <Play className="w-4 h-4 mr-2" />
-            Create New Story
-          </Button>
         </div>
       </div>
 

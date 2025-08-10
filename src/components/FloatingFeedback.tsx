@@ -5,10 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { MobileTooltip } from "./MobileTooltip";
 import { FeedbackForm } from "./FeedbackForm";
-
+import { useIsMobile } from "@/hooks/use-mobile";
 export function FloatingFeedback() {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
+  const { isMobile } = useIsMobile();
+  const isReadingSession = typeof document !== "undefined" && document.body.classList.contains("reading-session");
+  if (isMobile && isReadingSession) return null;
 
   return (
     <>

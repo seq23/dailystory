@@ -78,12 +78,6 @@ export const PremiumHeader = ({
               </button>
               <div className="flex items-center gap-2">
                 <p className="hidden sm:block text-sm text-gray-600">Welcome back!</p>
-                {isPremium && (
-                  <Badge variant="premium" className="text-xs">
-                    <Crown className="w-3 h-3 mr-1" />
-                    {devTestMode ? 'DEV' : subscriptionTier || 'Premium'}
-                  </Badge>
-                )}
                 {devTestMode && (
                   <Badge variant="outline" className="border-orange-500 text-orange-600 text-xs">
                     <Bug className="w-3 h-3 mr-1" />
@@ -131,10 +125,19 @@ export const PremiumHeader = ({
               
               <DropdownMenuContent align="end" className="w-56">
                 <div className="px-3 py-2">
-                  <p className="text-sm font-medium">{userInfo.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {userInfo.age} years old • {userInfo.grade === 'PreK' ? 'Pre-K' : `Grade ${userInfo.grade}`}
-                  </p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium">{userInfo.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {userInfo.age} years old • {userInfo.grade === 'PreK' ? 'Pre-K' : `Grade ${userInfo.grade}`}
+                      </p>
+                    </div>
+                    {isPremium && (
+                      <div className="flex items-center text-primary" aria-label="Premium">
+                        <Crown className="w-4 h-4" />
+                      </div>
+                    )}
+                  </div>
                 </div>
                 
                 <DropdownMenuSeparator />

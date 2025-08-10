@@ -85,6 +85,14 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     console.log('📥 CleanStoryDisplay isLoading changed:', isLoading);
   }, [isLoading]);
   
+  // Mark body during reading session to control global UI (e.g., hide feedback on mobile)
+  useEffect(() => {
+    document.body.classList.add('reading-session');
+    return () => {
+      document.body.classList.remove('reading-session');
+    };
+  }, []);
+  
   // Premium live generation state
   const [liveContext, setLiveContext] = useState<LiveGenerationContext | null>(null);
   const [isStoryComplete, setIsStoryComplete] = useState(false);

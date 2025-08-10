@@ -3,7 +3,7 @@ import { WelcomeHero } from "@/components/WelcomeHero";
 import { UserInfoForm } from "@/components/UserInfoForm";
 import { FreeReadingSession } from "@/components/FreeReadingSession";
 import { PremiumUpgrade } from "@/components/PremiumUpgrade";
-import { SecurityDashboard } from "@/components/SecurityDashboard";
+
 import { LoginScreen } from "@/components/LoginScreen";
 import { useSecurityMonitoring } from "@/hooks/useSecurityMonitoring";
 import type { UserInfo } from "@/types";
@@ -66,7 +66,6 @@ export const GuestExperience = () => {
       return (
         <div className="animate-fade-in">
           <WelcomeHero onGetStarted={handleGetStarted} onSignIn={handleCreateAccount} />
-          <SecurityDashboard />
         </div>
       );
     

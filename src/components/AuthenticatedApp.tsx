@@ -10,7 +10,7 @@ import { PremiumSidebar } from "@/components/PremiumSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { ParentDashboard } from "@/components/ParentDashboard";
 import { PremiumStoryLibrary } from "@/components/PremiumStoryLibrary";
-import { SecurityDashboard } from "@/components/SecurityDashboard";
+
 import { MyAccount } from "@/components/MyAccount";
 import { DismissibleSystemStatus } from "@/components/DismissibleSystemStatus";
 import { useSecurityMonitoring } from "@/hooks/useSecurityMonitoring";
@@ -388,7 +388,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
             </main>
           </div>
         </div>
-        <SecurityDashboard />
+        
         <DismissibleSystemStatus className="fixed bottom-4 left-4 w-80 max-h-96 overflow-auto z-40" />
       </SidebarProvider>
     </MobileKeyboardHandler>
