@@ -68,6 +68,9 @@ All colors MUST be HSL.
     --accent: 50 100% 70%;
     --accent-foreground: 50 80% 20%;
 
+    /* Warning/attention color */
+    --warning: 38 92% 50%;
+    --warning-foreground: 38 80% 15%;
     /* Gentle coral destructive */
     --destructive: 15 85% 65%;
     --destructive-foreground: 0 0% 100%;

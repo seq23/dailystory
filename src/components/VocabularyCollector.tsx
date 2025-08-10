@@ -155,9 +155,9 @@ export const VocabularyCollector = ({ userInfo, isVisible, onClose, enablePersis
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-hidden">
-        <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
+    <div className="fixed inset-0 z-50 flex items-stretch justify-center p-0 bg-black/50 xl:items-center xl:p-4">
+      <Card className="w-full h-full rounded-none overflow-hidden xl:w-[min(90vw,42rem)] xl:h-auto xl:rounded-xl">
+        <CardHeader className="sticky top-0 z-20 bg-gradient-to-r from-purple-500 to-pink-500 text-white">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <BookOpen className="w-5 h-5" />
@@ -172,9 +172,9 @@ export const VocabularyCollector = ({ userInfo, isVisible, onClose, enablePersis
           </div>
         </CardHeader>
         
-        <CardContent className="p-0">
+        <CardContent className="p-0 flex flex-col h-full">
           <Tabs defaultValue="new" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-3 bg-card border-b">
               <TabsTrigger value="new" className="flex items-center gap-1">
                 <Plus className="w-3 h-3" />
                 New ({newWords.length})
@@ -189,7 +189,7 @@ export const VocabularyCollector = ({ userInfo, isVisible, onClose, enablePersis
               </TabsTrigger>
             </TabsList>
 
-            <div className="max-h-96 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto xl:max-h-[70vh]">
               <TabsContent value="new" className="p-4 space-y-3">
                 {newWords.length === 0 ? (
                   <div className="text-center text-gray-500 py-8">

@@ -11,6 +11,7 @@ import {
   useSidebar 
 } from "@/components/ui/sidebar";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { 
   BookOpen,
   Settings,
@@ -19,7 +20,8 @@ import {
   Library,
   Crown,
   Sparkles,
-  Clock
+  Clock,
+  Bookmark
 } from "lucide-react";
 import type { UserInfo } from "@/types";
 import { useIsMobile } from "@/hooks/use-mobile";

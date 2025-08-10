@@ -140,10 +140,28 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
       const enabled = !!e.detail;
       try { localStorage.setItem('readingTimerEnabled', enabled ? '1' : '0'); } catch {}
       setTimerEnabled(enabled);
+
+      if (!enabled) {
+        // Pause and persist remaining time for this session
+        try { sessionStorage.setItem('readingTimerPausedSeconds', String(timeRemaining)); } catch {}
+        setIsTimerRunning(false);
+      } else {
+        // Resume from saved time this session, else from default
+        let restored = 0;
+        try { restored = Number(sessionStorage.getItem('readingTimerPausedSeconds') || '0'); } catch {}
+        if (restored && restored >= 5) {
+          setTimeRemaining(restored);
+          try { sessionStorage.removeItem('readingTimerPausedSeconds'); } catch {}
+        } else {
+          setTimeRemaining(initialTimerSeconds);
+        }
+        setIsTimerCanceled(false);
+        setIsTimerRunning(true);
+      }
     };
     window.addEventListener('readingTimerToggle', handler as EventListener);
     return () => window.removeEventListener('readingTimerToggle', handler as EventListener);
-  }, []);
+  }, [timeRemaining, initialTimerSeconds]);
 // Magic wand state
 const [isGeneratingNewStory, setIsGeneratingNewStory] = useState(false);
 const [isMagicWandAnimating, setIsMagicWandAnimating] = useState(false);
@@ -657,6 +675,7 @@ useEffect(() => {
       readingSpeed: Math.round((totalWordsRead / timeSpent) * 60000)
     });
     
+    try { sessionStorage.removeItem('readingTimerPausedSeconds'); } catch {}
     onSessionEnded(sessionStats);
   };
 
