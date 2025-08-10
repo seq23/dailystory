@@ -33,7 +33,7 @@ const Pricing = () => {
       description: desc,
       offers: {
         "@type": "Offer",
-        price: "9.99",
+        price: "10.00",
         priceCurrency: "USD",
         availability: "https://schema.org/InStock"
       }
