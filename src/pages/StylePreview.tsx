@@ -218,8 +218,18 @@ const StylePreview: React.FC = () => {
               <div className="flex flex-col items-center gap-3 p-4 border rounded-lg">
                 <div className="text-sm font-medium">Option A: Magic Refresh (refined)</div>
                 <div className="flex flex-wrap items-center justify-center gap-2">
-                  <Button variant="default" size="sm" aria-label="A1 Balanced – start a fresh story" title="A1 Balanced">
-                    <MagicRefreshIcon className="mr-2" size={20} ringScale={0.92} wandScale={0.58} wandRotate={-12} />
+                  <Button variant="default" size="sm" aria-label="A1 Sparkle-safe – start a fresh story" title="A1 Sparkle-safe">
+                    <MagicRefreshIcon
+                      className="mr-2"
+                      size={20}
+                      ringScale={0.9}
+                      wandScale={0.56}
+                      wandRotate={-12}
+                      ringRotate={30}
+                      sparkleGap
+                      sparkleGapPx={3}
+                      wandOffset={{ x: 0, y: 0 }}
+                    />
                     New Story
                   </Button>
                   <Button variant="secondary" size="sm" aria-label="A2 Compact Wand – start a fresh story" title="A2 Compact Wand">
