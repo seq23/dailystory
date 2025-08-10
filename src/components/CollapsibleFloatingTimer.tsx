@@ -347,7 +347,7 @@ useEffect(() => {
             </Tooltip>
           )}
 
-          {/* X Button - End session (Free) or Dismiss (Premium) */}
+          {/* X Button - Disable timer with tooltip */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -362,9 +362,7 @@ useEffect(() => {
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              {onDismiss
-                ? t("floatingTimer.sequentialTooltips.dismissTimer", "Hide the timer; it keeps running")
-                : t("floatingTimer.sequentialTooltips.endSession", "Click to end your reading session!")}
+              Disable timer (re-enable in My Stories)
             </TooltipContent>
           </Tooltip>
 

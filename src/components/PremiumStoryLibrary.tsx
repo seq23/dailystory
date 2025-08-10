@@ -222,7 +222,13 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
             <CardTitle className="text-lg">Find Your Stories</CardTitle>
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">Reading Timer</span>
-              <Switch checked={timerEnabled} onCheckedChange={(checked) => { setTimerEnabled(checked); try { localStorage.setItem('readingTimerEnabled', checked ? '1' : '0'); } catch {} }} />
+              <Switch checked={timerEnabled} onCheckedChange={(checked) => { 
+                setTimerEnabled(checked); 
+                try { 
+                  localStorage.setItem('readingTimerEnabled', checked ? '1' : '0'); 
+                  if (checked) localStorage.setItem('readingTimerDefaultSeconds', String(20 * 60));
+                } catch {}
+              }} />
             </div>
           </div>
         </CardHeader>

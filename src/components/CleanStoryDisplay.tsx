@@ -114,7 +114,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const isDebug = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1';
 
   // Timer state
-  const [timeRemaining, setTimeRemaining] = useState(20 * 60); // 20 minutes
+  const initialTimerSeconds = (() => { try { const v = Number(localStorage.getItem('readingTimerDefaultSeconds')); return v > 0 ? v : 20 * 60; } catch { return 20 * 60; } })();
+  const [timeRemaining, setTimeRemaining] = useState(initialTimerSeconds); // default 20 minutes
   const [isTimerRunning, setIsTimerRunning] = useState(true); // Start timer immediately
   const [isTimerCanceled, setIsTimerCanceled] = useState(false); // Premium: timer can be canceled
   const [isTimerVisible, setIsTimerVisible] = useState(true); // Premium: timer can be dismissed and shown again
@@ -263,6 +264,7 @@ useEffect(() => {
 
 // Periodic sparkle for Finish Story button (all users)
 const [finishSparkle, setFinishSparkle] = useState(false);
+const [finishPressBurst, setFinishPressBurst] = useState(false);
 useEffect(() => {
   const interval = setInterval(() => {
     setFinishSparkle(true);
@@ -1275,9 +1277,15 @@ const handleRestartTimer = () => {
                 {/* Premium controls */}
                 {isPremium && (
                   <div className="mt-3 flex justify-center gap-3 xl:hidden">
-                    <div className="relative inline-block">
+                    <div className={`relative inline-block ${finishPressBurst ? 'animate-scale-in' : ''}`}>
                       <MobileOptimizedButton
-                        onClick={() => setShowConfirmEndStory(true)}
+                        onClick={() => {
+                          setFinishPressBurst(true);
+                          setFinishSparkle(true);
+                          setTimeout(() => setFinishPressBurst(false), 600);
+                          setTimeout(() => setFinishSparkle(false), 1200);
+                          setShowConfirmEndStory(true);
+                        }}
                         disabled={!liveContext || isGeneratingEnding || isStoryComplete || timeRemaining <= 0}
                         variant="secondary"
                       >
@@ -1346,9 +1354,15 @@ const handleRestartTimer = () => {
                 {/* Premium controls desktop */}
                 {isPremium && (
                   <div className="hidden xl:flex justify-center gap-3 mt-3">
-                    <div className="relative inline-block">
+                    <div className={`relative inline-block ${finishPressBurst ? 'animate-scale-in' : ''}`}>
                       <MobileOptimizedButton
-                        onClick={() => setShowConfirmEndStory(true)}
+                        onClick={() => {
+                          setFinishPressBurst(true);
+                          setFinishSparkle(true);
+                          setTimeout(() => setFinishPressBurst(false), 600);
+                          setTimeout(() => setFinishSparkle(false), 1200);
+                          setShowConfirmEndStory(true);
+                        }}
                         disabled={!liveContext || isGeneratingEnding || isStoryComplete || timeRemaining <= 0}
                         variant="secondary"
                         size="sm"
