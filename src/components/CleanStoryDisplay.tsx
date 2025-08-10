@@ -1414,7 +1414,7 @@ const handleRestartTimer = () => {
           onSessionEnded={handleEndSession}
           isPremium={isPremium}
           onIncreaseTime={isPremium ? handleExtendTime : undefined}
-          onDismiss={() => { try { localStorage.setItem('readingTimerEnabled','0'); } catch {} setTimerEnabled(false); window.dispatchEvent(new CustomEvent('readingTimerToggle', { detail: false })); }}
+          onDismiss={() => { try { localStorage.setItem('readingTimerEnabled','0'); } catch {} setTimerEnabled(false); setIsTimerRunning(false); setIsTimerCanceled(true); setIsTimerVisible(false); window.dispatchEvent(new CustomEvent('readingTimerToggle', { detail: false })); }}
           onRestartTimer={isPremium ? handleRestartTimer : undefined}
           onKeepReadingUntimed={isPremium ? handleKeepReadingUntimed : undefined}
           onSaveStoryNow={isPremium ? handleSaveStoryNow : undefined}

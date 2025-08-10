@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   Sidebar, 
   SidebarContent, 
@@ -70,6 +70,15 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
   const [timerEnabled, setTimerEnabled] = useState<boolean>(() => {
     try { return localStorage.getItem('readingTimerEnabled') !== '0'; } catch { return true; }
   });
+
+  useEffect(() => {
+    const handler = (e: any) => {
+      const enabled = !!(e as CustomEvent).detail;
+      setTimerEnabled(enabled);
+    };
+    window.addEventListener('readingTimerToggle', handler as EventListener);
+    return () => window.removeEventListener('readingTimerToggle', handler as EventListener);
+  }, []);
 
   const isActive = (itemUrl: string) => currentView === itemUrl;
 
