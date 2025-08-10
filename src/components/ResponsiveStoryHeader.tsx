@@ -121,58 +121,18 @@ export const ResponsiveStoryHeader = ({
       <div className={cn(
         isMobileOrTablet ? "safe-area-padding" : "max-w-7xl mx-auto px-6"
       )}>
-        <div className={cn(
-          "flex items-center justify-between",
-          isMobile && "gap-2 px-3 py-1.5",
-          isTablet && "gap-3 px-5 py-2",
-          !isMobileOrTablet && "gap-5 py-3"
-        )}>
+         <div className={cn(
+           "flex items-center justify-between flex-nowrap",
+           isMobile && "gap-2 px-3 py-1.5",
+           isTablet && "gap-3 px-5 py-2",
+           !isMobileOrTablet && "gap-5 py-3"
+         )}>
           {/* Left Section: User Avatar & Action Buttons */}
           <div className={cn(
             "flex-shrink-0 flex items-center",
             isMobileOrTablet ? "gap-2" : "gap-4"
           )}>
-            {/* User Avatar - Prominent Display (hidden for premium since avatar is in profile dropdown) */}
-            {!isPremium && userInfo && (
-              <div className="flex items-center gap-2">
-                <Avatar className={cn(
-                  "border-2 border-white/50 shadow-lg bg-white",
-                  isMobile ? "w-10 h-10" : 
-                  isTablet ? "w-12 h-12" : 
-                  "w-14 h-14"
-                )}>
-                  <AvatarImage 
-                    src={getAvatarUrl()} 
-                    alt={`${userInfo.name}'s avatar`}
-                    className="object-cover"
-                  />
-                  <AvatarFallback className={cn(
-                    "bg-gradient-to-br from-primary to-primary/80 text-white font-bold",
-                    isMobile ? "text-sm" : 
-                    isTablet ? "text-base" : 
-                    "text-lg"
-                  )}>
-                    {userInfo.name.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                {!isMobile && (
-                  <div className="text-left">
-                    <p className={cn(
-                      "font-semibold text-gray-800",
-                      isTablet ? "text-sm" : "text-base"
-                    )}>
-                      {userInfo.name}
-                    </p>
-                    <p className={cn(
-                       "text-gray-600",
-                       isTablet ? "text-xs" : "text-sm"
-                     )}>
-                      {t(`userInfoForm.grades.${userInfo.grade}` as any, userInfo.grade === 'PreK' ? 'Pre-K' : `Grade ${userInfo.grade}`)}
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
+            {/* Avatar removed from subheader per design; handled in profile dropdown */}
             
             {/* Action Buttons */}
             <div className={cn(
@@ -199,31 +159,7 @@ export const ResponsiveStoryHeader = ({
                 </Button>
               )}
               
-              {onNewStory && !isPremium && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size={isMobile ? "sm" : "default"}
-                        onClick={onNewStory}
-                        className={cn(
-                          "h-10 w-10 rounded-full bg-gradient-primary text-white shadow hover-scale",
-                          isMobileOrTablet ? "min-h-[40px] min-w-[40px] p-0" : "p-0"
-                        )}
-                        aria-label={t("common.newStory", "New Story")}
-                      >
-                        <Wand className={cn(
-                          isMobile ? "w-4 h-4" : "w-5 h-5"
-                        )} />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      {t("tooltips.newStory", "Start a fresh story")}
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
+               {/* New Story button moved next to Reading Level controls */}
             </div>
           </div>
 
@@ -242,7 +178,7 @@ export const ResponsiveStoryHeader = ({
           </div>
 
           {/* Right Section: Level Controls + End Session */}
-          <div className={cn("flex-shrink-0 flex items-center gap-2", isMobile && "w-full justify-end flex-wrap")}>
+          <div className={cn("flex-shrink-0 flex items-center gap-2", isMobile && "w-full justify-end flex-nowrap overflow-x-auto")}>
             {showLevelControls && !isPremium && (
               <div 
                 className={cn(
@@ -252,9 +188,34 @@ export const ResponsiveStoryHeader = ({
                 id="reading-level-controls"
                 data-id="reading-level"
               >
-                {/* Level Label - always visible */}
+                {/* New Story Wand + Level Label */}
+                {onNewStory && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size={isMobileOrTablet ? "sm" : "default"}
+                          onClick={onNewStory}
+                          className={cn(
+                            "h-10 w-10 rounded-full bg-gradient-primary text-white shadow hover-scale",
+                            isMobileOrTablet ? "min-h-[40px] min-w-[40px] p-0" : "p-0"
+                          )}
+                          aria-label={t("common.newStory", "New Story")}
+                        >
+                          <Wand className={cn(
+                            isMobileOrTablet ? "w-4 h-4" : "w-5 h-5"
+                          )} />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {t("tooltips.newStory", "Start a fresh story")}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
                 <span className={cn(
-                  "text-xs sm:text-sm text-gray-600",
+                  "text-xs sm:text-sm text-gray-600 whitespace-nowrap",
                   isMobileOrTablet ? "mr-1" : "font-medium px-2"
                 )}>
                   {t("storyDisplay.readingLevel", "Reading Level")}:
@@ -432,7 +393,7 @@ export const ResponsiveStoryHeader = ({
                 >
                   {/* Level Label - always visible */}
                   <span className={cn(
-                    "text-xs sm:text-sm text-gray-600",
+                    "text-xs sm:text-sm text-gray-600 whitespace-nowrap",
                     isMobileOrTablet ? "mr-1" : "font-medium px-2"
                   )}>
                     {t("storyDisplay.readingLevel", "Reading Level")}:
