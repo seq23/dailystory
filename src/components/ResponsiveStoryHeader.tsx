@@ -554,7 +554,7 @@ export const ResponsiveStoryHeader = ({
                     size={isMobileOrTablet ? "sm" : "md"}
                     wandPulse={wandPulse}
                     labelOverride={!isMobileOrTablet ? "Re-write this story" : undefined}
-                    tooltipText={!isMobileOrTablet ? "you will get to update any special requests" : undefined}
+                    tooltipText={isMobileOrTablet ? "Re-write this story" : "you will get to update any special requests"}
                   />
                 )}
                 {onSaveStory && !isMobileOrTablet && (
