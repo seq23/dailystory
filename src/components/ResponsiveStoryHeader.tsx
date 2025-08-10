@@ -252,18 +252,13 @@ export const ResponsiveStoryHeader = ({
                 id="reading-level-controls"
                 data-id="reading-level"
               >
-                {/* Level Label */}
-                {!isMobile && (
-                  <span className={cn(
-                    "text-sm text-gray-600",
-                    isMobileOrTablet ? "mr-1" : "font-medium px-2"
-                  )}>
-                    {isMobileOrTablet 
-                      ? t("storyDisplay.level", "Level")
-                      : t("storyDisplay.readingLevel", "Reading Level")
-                    }:
-                  </span>
-                )}
+                {/* Level Label - always visible */}
+                <span className={cn(
+                  "text-xs sm:text-sm text-gray-600",
+                  isMobileOrTablet ? "mr-1" : "font-medium px-2"
+                )}>
+                  {t("storyDisplay.readingLevel", "Reading Level")}:
+                </span>
 
                 {/* Decrease Difficulty */}
                 {onDecreaseDifficulty && (
@@ -396,17 +391,17 @@ export const ResponsiveStoryHeader = ({
         </div>
         {isPremium && (
           <div className={cn(
-            "flex items-center justify-between",
+            "flex items-center justify-start flex-nowrap overflow-x-auto",
             isMobile ? "px-3 pb-2" : isTablet ? "px-5 pb-3" : "py-2"
           )}>
-            <div className={cn("flex items-center", isMobileOrTablet ? "gap-2" : "gap-3")}> 
+            <div className={cn("flex items-center flex-nowrap", isMobileOrTablet ? "gap-1 sm:gap-2" : "gap-3")}> 
               {onNewStory && (
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
                         variant="ghost"
-                        size={isMobile ? "sm" : "default"}
+                        size={isMobileOrTablet ? "sm" : "default"}
                         onClick={onNewStory}
                         className={cn(
                           "h-10 w-10 rounded-full bg-gradient-primary text-white shadow hover-scale",
@@ -415,7 +410,7 @@ export const ResponsiveStoryHeader = ({
                         aria-label={t("common.newStory", "New Story")}
                       >
                         <Wand className={cn(
-                          isMobile ? "w-4 h-4" : "w-5 h-5"
+                          isMobileOrTablet ? "w-4 h-4" : "w-5 h-5"
                         )} />
                       </Button>
                     </TooltipTrigger>
@@ -429,12 +424,19 @@ export const ResponsiveStoryHeader = ({
               {showLevelControls && (
                 <div 
                   className={cn(
-                    "flex items-center reading-level-controls difficulty-controls",
+                    "flex items-center reading-level-controls difficulty-controls flex-nowrap",
                     isMobileOrTablet ? "gap-1 sm:gap-2" : "gap-3 bg-gray-50 rounded-xl p-2"
                   )}
                   id="reading-level-controls"
                   data-id="reading-level"
                 >
+                  {/* Level Label - always visible */}
+                  <span className={cn(
+                    "text-xs sm:text-sm text-gray-600",
+                    isMobileOrTablet ? "mr-1" : "font-medium px-2"
+                  )}>
+                    {t("storyDisplay.readingLevel", "Reading Level")}:
+                  </span>
                   {onDecreaseDifficulty && (
                     <Button
                       variant="outline"
