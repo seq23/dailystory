@@ -9,20 +9,20 @@ interface PricingSectionProps {
 
 const features = {
   free: [
-    "Netflix-style complete stories",
-    "20-minute reading sessions",
-    "Single profile (no save)",
+    "Limited customization of your story via User Info Form",
+    "Free 20-minute reading sessions with images",
     "Text-to-speech suite: Hear it, Explain it, phonetic breakdown, and precise word-by-word highlighting",
     "Limited audio narration",
+    "In-session achievements, points, badges, and reading streaks",
+    "End-of-session report with milestones",
   ],
   premium: [
+    "Customize your story",
     "Unlimited reading time",
-    "Live story generation",
-    "Multiple child profiles + save progress",
     "Text-to-speech suite: Hear it, Explain it, phonetic breakdown, and precise word-by-word highlighting",
     "Advanced audio narration",
-    "Detailed analytics & achievements",
-    "Custom story prompts",
+    "Achievements, points, badges, and reading streaks",
+    "End-of-session report with milestones",
   ],
   enterprise: [
     "Admin & educator dashboards",

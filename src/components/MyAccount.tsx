@@ -11,18 +11,18 @@ interface MyAccountProps {
 
 const freeFeatures: string[] = [
   "Limited customization of your story via User Info Form",
-  "Free 20-minute reading sessions with Images",
+  "Free 20-minute reading sessions with images",
   "Text-to-speech suite: Hear it, Explain it, phonetic breakdown, and precise word-by-word highlighting",
   "Limited audio narration",
-  "End of session reporting gamification - gain points & unlock milestones within a single session analytics",
+  "In-session achievements, points, badges, and reading streaks",
+  "End-of-session report with milestones",
 ];
 
 const topPremiumFeatures: string[] = [
   "Customize your story",
   "Unlimited reading time",
-  "Advanced audio narration",
-  "Word-by-word highlighting",
   "Text-to-speech suite: Hear it, Explain it, phonetic breakdown, and precise word-by-word highlighting",
+  "Advanced audio narration",
   "Achievements, points, badges, and reading streaks",
   "End-of-session report with milestones",
 ];
@@ -31,9 +31,8 @@ const additionalOfferings: string[] = [
   "Personalized live story generation (Your story doesn't end until you decide!)",
   "Saved stories, favorites, and collections",
   "Multiple child profiles",
-  "Parent dashboard insights and reports",
+  "Parent dashboard with insights and analytics",
   "Learning goals with weekly targets",
-  "Progress dashboard and detailed analytics",
   "Vocabulary tracking and practice quizzes",
   "Comprehension questions after reading",
   "Mini-games to reinforce vocabulary and phonics",
