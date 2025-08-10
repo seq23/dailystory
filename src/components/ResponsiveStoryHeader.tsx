@@ -221,8 +221,15 @@ export const ResponsiveStoryHeader = ({
                 />
               )}
             </div>
-            {/* Right: reserved for future premium indicators (kept minimal for parity) */}
-            <div />
+            {/* Right: Avatar for parity with guest header */}
+            <div className="flex items-center gap-2">
+              <Avatar className="h-8 w-8">
+                {hasSelectedAvatar && (
+                  <AvatarImage src={getAvatarUrl()} alt={userInfo?.name || "Reader"} />
+                )}
+                <AvatarFallback>{userInfo?.name?.charAt(0)?.toUpperCase() || "R"}</AvatarFallback>
+              </Avatar>
+            </div>
           </div>
         </div>
       </header>
