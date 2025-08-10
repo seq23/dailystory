@@ -108,6 +108,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [wordsInteracted, setWordsInteracted] = useState(0);
   const [sessionWordsRead, setSessionWordsRead] = useState(0);
   const [pagesCompleted, setPagesCompleted] = useState<Set<number>>(new Set());
+  const [audioPlayedPage, setAudioPlayedPage] = useState<number | null>(null);
 
   // Debug source badge state
   const [storySource, setStorySource] = useState<'ai' | 'fallback' | 'unknown' | null>(null);
@@ -571,9 +572,14 @@ useEffect(() => {
 
   // Bottom dock actions
   const handleDockPlayAudio = () => {
+    if (!isPremium && audioPlayedPage === currentPage) {
+      toast({ title: t('audioReading.audioUsed', 'Audio used'), description: t('audioReading.audioUsedTooltip', 'Audio used (1x per page for free users)'), duration: 2000 });
+      return;
+    }
     const btn = document.getElementById('elevenlabs-play-toggle') as HTMLButtonElement | null;
     if (btn) {
       btn.click();
+      if (!isPremium) setAudioPlayedPage(currentPage);
       return;
     }
     const el = document.getElementById('audio-controls');
@@ -1421,15 +1427,16 @@ const handleRestartTimer = () => {
         />
       )}
 
-      {/* Mobile Action Dock - Premium Only */}
-      {isPremium && isMobileOrTablet && (
+      {/* Mobile Action Dock - Mobile/Tablet */}
+      {isMobileOrTablet && (
         <MobileActionDock
-          isPremium
+          isPremium={isPremium}
           onPlayAudio={handleDockPlayAudio}
-          onVoiceCommand={handleDockVoiceCommand}
-          onSave={handleSaveStoryNow}
-          onEnd={() => setShowEndSessionConfirm(true)}
+          onVoiceCommand={isPremium ? handleDockVoiceCommand : undefined}
+          onSave={isPremium ? handleSaveStoryNow : undefined}
+          onEnd={isPremium ? () => setShowEndSessionConfirm(true) : undefined}
           isSaving={isSaving}
+          audioDisabled={!isPremium && audioPlayedPage === currentPage}
         />
       )}
 

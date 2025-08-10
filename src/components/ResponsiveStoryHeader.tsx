@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Home, TrendingUp, TrendingDown, Loader2 } from "lucide-react";
+import { Home, TrendingUp, TrendingDown, Loader2, Wand } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import type { DifficultyLevel, UserInfo } from '@/types';
@@ -117,8 +117,59 @@ export const ResponsiveStoryHeader = ({
 
   const hasSelectedAvatar = userInfo?.avatar?.type && userInfo?.avatar?.skinTone;
 
-  if (isPremium && isMobile) {
+  if (!isPremium && isMobile) {
     return (
+      <header className={cn(
+        "w-full bg-white/95 backdrop-blur-sm border-b border-gray-200 z-30",
+        "sticky top-0"
+      )}>
+        <div className="safe-area-padding">
+          <div className="flex items-center gap-1 px-2 py-1">
+            {onHome && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={onHome}
+                      className="min-h-[36px] min-w-[36px] rounded-full p-1"
+                      aria-label={t("common.home", "Home")}
+                    >
+                      <Home className="w-4 h-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">{t("tooltips.home", "Home")}</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="inline-flex">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      disabled
+                      className="min-h-[36px] min-w-[36px] rounded-full p-1"
+                      aria-label={t("tooltips.header.refreshPremium", "Premium only. Refresh this page’s story.")}
+                    >
+                      <Wand className="w-4 h-4" />
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  {t("tooltips.header.refreshPremium", "Premium only. Refresh this page’s story.")}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        </div>
+      </header>
+    );
+  }
+  if (isPremium && isMobile) {
       <header className={cn(
         "w-full bg-white/95 backdrop-blur-sm border-b border-gray-200 z-30",
         "sticky top-0"

@@ -424,6 +424,7 @@
     "dismissTimer": "Dismiss Timer",
     "showTimer": "Show Timer",
     "dismissHint": "Read untimed. Find in left navigation panel",
+    "endNowHint": "End session now",
     "endSession": "End Reading Session",
     "congratulations": "Congratulations!",
     "sessionComplete": "You completed your reading session!",

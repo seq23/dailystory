@@ -283,46 +283,22 @@ useEffect(() => {
             </TooltipContent>
           </Tooltip>
 
-          {/* Increase Time (Premium only) */}
-          {isPremium && onIncreaseTime && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size={isMobile ? "sm" : "default"}
-                  onClick={onIncreaseTime}
-                  disabled={!onIncreaseTime}
-                  className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm"
-                  aria-label={t("floatingTimer.increaseTime", "Increase time by 15 minutes")}
-                  id="timer-increase-button"
-                >
-                  <Plus className="w-4 h-4" />
-                </Button>
-              </TooltipTrigger>
-            <TooltipContent side="bottom">
-              {timeRemaining >= 60 * 60
-                ? t("floatingTimer.maxLimit", "Max Limit")
-                : t("floatingTimer.sequentialTooltips.increaseTime", "Add 15 minutes (max 60)")}
-            </TooltipContent>
-            </Tooltip>
-          )}
-
-          {/* X Button - Disable timer with tooltip */}
+          {/* X Button - End session immediately with warning */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 variant="outline"
                 size={isMobile ? "sm" : "default"}
-                onClick={() => (onDismiss ? onDismiss() : onEndSession())}
+                onClick={() => onEndSession()}
                 className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm"
-                aria-label={onDismiss ? t("floatingTimer.dismissTimer", "Dismiss timer") : t("floatingTimer.endSession", "End Reading Session")}
+                aria-label={t("floatingTimer.endSession", "End Reading Session")}
                 id="timer-dismiss-x-button"
               >
                 <X className="w-4 h-4" />
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
-              {t("floatingTimer.dismissHint", "Read untimed. Find in left navigation panel")}
+              {t("floatingTimer.endNowHint", "End session now")}
             </TooltipContent>
           </Tooltip>
 
