@@ -518,6 +518,8 @@ export const ResponsiveStoryHeader = ({
                       </Tooltip>
                     </TooltipProvider>
                   )}
+                  {isMobile && (
+                  <>
                   <Avatar className="h-7 w-7">
                     {hasSelectedAvatar && (
                       <AvatarImage src={getAvatarUrl()} alt={userInfo?.name || "Reader"} />
@@ -525,6 +527,8 @@ export const ResponsiveStoryHeader = ({
                     <AvatarFallback>{userInfo?.name?.charAt(0)?.toUpperCase() || "R"}</AvatarFallback>
                   </Avatar>
                   <Badge variant="premium">{t("badges.premium", "Premium")}</Badge>
+                  </>
+                  )}
                 </div>
               )}
               {onNewStory && (
