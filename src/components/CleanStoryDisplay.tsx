@@ -122,6 +122,15 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [timerEnabled, setTimerEnabled] = useState<boolean>(() => {
     try { return localStorage.getItem('readingTimerEnabled') !== '0'; } catch { return true; }
   });
+  useEffect(() => {
+    const handler = (e: any) => {
+      const enabled = !!e.detail;
+      try { localStorage.setItem('readingTimerEnabled', enabled ? '1' : '0'); } catch {}
+      setTimerEnabled(enabled);
+    };
+    window.addEventListener('readingTimerToggle', handler as EventListener);
+    return () => window.removeEventListener('readingTimerToggle', handler as EventListener);
+  }, []);
 // Magic wand state
 const [isGeneratingNewStory, setIsGeneratingNewStory] = useState(false);
 const [isMagicWandAnimating, setIsMagicWandAnimating] = useState(false);
@@ -1395,7 +1404,7 @@ const handleRestartTimer = () => {
           onSessionEnded={handleEndSession}
           isPremium={isPremium}
           onIncreaseTime={isPremium ? handleExtendTime : undefined}
-          onDismiss={() => { try { localStorage.setItem('readingTimerEnabled','0'); } catch {} setTimerEnabled(false); }}
+          onDismiss={() => { try { localStorage.setItem('readingTimerEnabled','0'); } catch {} setTimerEnabled(false); window.dispatchEvent(new CustomEvent('readingTimerToggle', { detail: false })); }}
           onRestartTimer={isPremium ? handleRestartTimer : undefined}
           onKeepReadingUntimed={isPremium ? handleKeepReadingUntimed : undefined}
           onSaveStoryNow={isPremium ? handleSaveStoryNow : undefined}

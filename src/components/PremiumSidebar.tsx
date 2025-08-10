@@ -18,7 +18,8 @@ import {
   User,
   Library,
   Crown,
-  Sparkles
+  Sparkles,
+  Clock
 } from "lucide-react";
 import type { UserInfo } from "@/types";
 
@@ -66,6 +67,9 @@ const sidebarItems = [
 export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium }: PremiumSidebarProps) => {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
+  const [timerEnabled, setTimerEnabled] = useState<boolean>(() => {
+    try { return localStorage.getItem('readingTimerEnabled') !== '0'; } catch { return true; }
+  });
 
   const isActive = (itemUrl: string) => currentView === itemUrl;
 
@@ -80,6 +84,12 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
     return `${baseClasses} hover:bg-accent hover:text-accent-foreground`;
   };
 
+  const toggleTimer = () => {
+    const next = !timerEnabled;
+    setTimerEnabled(next);
+    try { localStorage.setItem('readingTimerEnabled', next ? '1' : '0'); } catch {}
+    window.dispatchEvent(new CustomEvent('readingTimerToggle', { detail: next }));
+  };
   return (
     <Sidebar className={`border-r bg-background/95 backdrop-blur-sm ${collapsed ? "w-16" : "w-64"}`} collapsible="icon">
       {/* Header */}
@@ -152,6 +162,28 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+
+              {/* Timer toggle as the last option */}
+              {isPremium && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton 
+                    onClick={toggleTimer}
+                    className="flex items-center gap-3 w-full transition-colors rounded-lg hover:bg-accent hover:text-accent-foreground"
+                  >
+                    <Clock className="w-5 h-5 flex-shrink-0" />
+                    {!collapsed && (
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">{timerEnabled ? 'Hide Timer' : 'Show Timer'}</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {timerEnabled ? 'Hide the floating reading timer' : 'Show the floating reading timer'}
+                        </p>
+                      </div>
+                    )}
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

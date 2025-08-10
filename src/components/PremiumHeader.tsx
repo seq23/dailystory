@@ -24,7 +24,7 @@ import type { UserInfo } from "@/types";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useTranslation } from "react-i18next";
-
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 interface PremiumHeaderProps {
   userInfo: UserInfo;
   isPremium: boolean;
@@ -65,7 +65,14 @@ export const PremiumHeader = ({
         <div className="flex justify-between items-center gap-2 min-w-0">
           {/* Logo and Title */}
           <div className="flex items-center gap-3 min-w-0">
-            <SidebarTrigger className="mr-1" />
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <SidebarTrigger className="mr-1" />
+                </TooltipTrigger>
+                <TooltipContent side="bottom">Open navigation</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             <div className="p-2 bg-gradient-primary rounded-lg">
               <BookOpen className="w-6 h-6 text-white" />
             </div>

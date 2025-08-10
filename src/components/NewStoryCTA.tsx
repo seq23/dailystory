@@ -84,7 +84,7 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>{buttonEl}</TooltipTrigger>
-          <TooltipContent>
+          <TooltipContent side="bottom">
             {isLocked ? t("tooltips.premium", "Premium feature") : t("tooltips.newStory", "Start a fresh story")}
           </TooltipContent>
         </Tooltip>

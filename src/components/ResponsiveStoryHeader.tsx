@@ -126,15 +126,22 @@ export const ResponsiveStoryHeader = ({
         <div className="safe-area-padding">
           <div className="flex items-center gap-1 px-2 py-1">
             {onHome && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onHome}
-                className="min-h-[36px] min-w-[36px] rounded-full p-1"
-                aria-label={t("common.home", "Home")}
-              >
-                <Home className="w-4 h-4" />
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={onHome}
+                      className="min-h-[36px] min-w-[36px] rounded-full p-1"
+                      aria-label={t("common.home", "Home")}
+                    >
+                      <Home className="w-4 h-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">{t("tooltips.home", "Home")}</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
 
             {onNewStory && (
@@ -167,7 +174,7 @@ export const ResponsiveStoryHeader = ({
                       )}
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>{t("tooltips.difficultyDown", "Make this story easier")}</TooltipContent>
+                  <TooltipContent side="bottom">{t("tooltips.difficultyDown", "Make this story easier")}</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             )}
@@ -201,7 +208,7 @@ export const ResponsiveStoryHeader = ({
                       )}
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>{t("tooltips.difficultyUp", "Make this story harder")}</TooltipContent>
+                  <TooltipContent side="bottom">{t("tooltips.difficultyUp", "Make this story harder")}</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             )}
@@ -402,7 +409,7 @@ export const ResponsiveStoryHeader = ({
                       )}
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>
+                  <TooltipContent side="bottom">
                     {t("tooltips.save", "Save your story to the Library.")}
                   </TooltipContent>
                 </Tooltip>
@@ -422,7 +429,7 @@ export const ResponsiveStoryHeader = ({
                       {t("nav.endSession", "End Session")}
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>
+                  <TooltipContent side="bottom">
                     {t("tooltips.endSession", "This will end this session. You will have the option to save this story as is.")}
                   </TooltipContent>
                 </Tooltip>

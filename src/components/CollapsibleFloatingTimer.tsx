@@ -298,7 +298,7 @@ useEffect(() => {
                 {isReading ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
               </Button>
             </TooltipTrigger>
-            <TooltipContent>
+            <TooltipContent side="bottom">
               {t("floatingTimer.sequentialTooltips.startPause", "Click to start/pause your reading timer!")}
             </TooltipContent>
           </Tooltip>
@@ -318,7 +318,7 @@ useEffect(() => {
                 <Minus className="w-4 h-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>
+            <TooltipContent side="bottom">
               {t("floatingTimer.sequentialTooltips.reduceTime", "Reduce time by 5 minutes!")}
             </TooltipContent>
           </Tooltip>
@@ -339,11 +339,11 @@ useEffect(() => {
                   <Plus className="w-4 h-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>
-                {timeRemaining >= 60 * 60
-                  ? t("floatingTimer.maxLimit", "Max Limit")
-                  : t("floatingTimer.sequentialTooltips.increaseTime", "Add 15 minutes (max 60)")}
-              </TooltipContent>
+            <TooltipContent side="bottom">
+              {timeRemaining >= 60 * 60
+                ? t("floatingTimer.maxLimit", "Max Limit")
+                : t("floatingTimer.sequentialTooltips.increaseTime", "Add 15 minutes (max 60)")}
+            </TooltipContent>
             </Tooltip>
           )}
 
@@ -361,8 +361,8 @@ useEffect(() => {
                 <X className="w-4 h-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>
-              Disable timer (re-enable in My Stories)
+            <TooltipContent side="bottom">
+              {t("floatingTimer.hideHint", "Hide timer. You can toggle it from the navigation panel.")}
             </TooltipContent>
           </Tooltip>
 
@@ -380,7 +380,7 @@ useEffect(() => {
                 <ChevronDown className="w-4 h-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>
+            <TooltipContent side="bottom">
               {t("floatingTimer.sequentialTooltips.collapse", "Collapse the timer")}
             </TooltipContent>
           </Tooltip>
