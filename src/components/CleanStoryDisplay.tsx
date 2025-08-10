@@ -135,7 +135,23 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [expertGradeLevel, setExpertGradeLevel] = useState<"6th" | "7th" | "8th" | "9th" | "10th">("6th");
   const difficultyLevels: ('beginner' | 'easy' | 'medium' | 'hard' | 'expert')[] = ['beginner', 'easy', 'medium', 'hard', 'expert'];
   
-  // Define current story for highlighting hook
+  // Premium: parent guardrails and save highlight
+  const [lockDifficulty, setLockDifficulty] = useState(false);
+  const [minDifficulty, setMinDifficulty] = useState<'beginner' | 'easy' | 'medium' | 'hard' | 'expert'>('beginner');
+  const [minExpertGrade, setMinExpertGrade] = useState<"6th" | "7th" | "8th" | "9th" | "10th">("6th");
+  const [highlightSave, setHighlightSave] = useState(false);
+  
+  useEffect(() => {
+    if (!isPremium) return;
+    try {
+      const lock = localStorage.getItem('premium_lock_difficulty') === 'true';
+      const minDiff = (localStorage.getItem('premium_min_difficulty') as any) || 'beginner';
+      const minGrade = (localStorage.getItem('premium_min_expert_grade') as any) || '6th';
+      setLockDifficulty(lock);
+      if (['beginner','easy','medium','hard','expert'].includes(minDiff)) setMinDifficulty(minDiff as any);
+      if (["6th","7th","8th","9th","10th"].includes(minGrade)) setMinExpertGrade(minGrade as any);
+    } catch {}
+  }, [isPremium]);
   const currentStory = story[currentPage] || "";
   
   // Audio highlighting integration
@@ -623,6 +639,29 @@ const handleRestartTimer = () => {
     }, 5000);
   };
   const handleDifficultyChange = async (direction: 'up' | 'down') => {
+    // Respect parent guardrails for premium users
+    if (isPremium) {
+      if (lockDifficulty) {
+        toast({ title: 'Difficulty locked', description: 'A parent has locked the reading level in the Parent Dashboard.', duration: 3000 });
+        return;
+      }
+      const currentIndex = difficultyLevels.indexOf(currentDifficulty);
+      const minIndex = difficultyLevels.indexOf(minDifficulty);
+      if (direction === 'down' && currentIndex <= minIndex) {
+        toast({ title: 'Minimum level reached', description: `Minimum level is set to ${minDifficulty}.`, duration: 3000 });
+        return;
+      }
+      // Expert internal grade guardrail
+      if (currentDifficulty === 'expert' && direction === 'down') {
+        const gradeOrder: ("6th" | "7th" | "8th" | "9th" | "10th")[] = ["6th", "7th", "8th", "9th", "10th"];
+        const currentGradeIndex = gradeOrder.indexOf(expertGradeLevel);
+        const minGradeIndex = gradeOrder.indexOf(minExpertGrade);
+        if (currentGradeIndex <= minGradeIndex) {
+          toast({ title: 'Minimum grade reached', description: `Minimum expert grade is set to ${minExpertGrade}.`, duration: 3000 });
+          return;
+        }
+      }
+    }
     setIsChangingDifficulty(true);
     setChangeDirection(direction === 'up' ? 'increase' : 'decrease');
     
@@ -748,8 +787,8 @@ const handleRestartTimer = () => {
           showLevelControls={true}
           isChangingDifficulty={isChangingDifficulty}
           changeDirection={changeDirection}
-          canIncrease={currentDifficulty !== 'expert' || expertGradeLevel !== "10th"}
-          canDecrease={currentDifficulty !== 'beginner'}
+          canIncrease={!lockDifficulty && (currentDifficulty !== 'expert' || expertGradeLevel !== "10th")}
+          canDecrease={!lockDifficulty && (difficultyLevels.indexOf(currentDifficulty) > difficultyLevels.indexOf(minDifficulty))}
           onEndSession={() => setShowEndSessionConfirm(true)}
         />
 
