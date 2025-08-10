@@ -40,7 +40,7 @@ export const MobileActionDock: React.FC<MobileActionDockProps> = ({
       aria-label={t("common.navigation", "Navigation")}
     >
       <div className="mx-auto max-w-7xl">
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-flow-col auto-cols-max justify-center gap-1">
             <TooltipProvider>
               {/* Audio */}
               <Tooltip>
