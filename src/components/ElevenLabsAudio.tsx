@@ -311,7 +311,7 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
       )}
 
       <Dialog open={showVoiceModal} onOpenChange={setShowVoiceModal}>
-        <DialogContent className="max-w-md left-1/2 -translate-x-1/2 translate-y-0 top-auto bottom-[calc(96px+env(safe-area-inset-bottom))] z-[200] w-[min(92vw,420px)]">
+        <DialogContent className="max-w-md left-1/2 -translate-x-1/2 translate-y-0 top-auto z-[300] w-[min(92vw,480px)] bottom-[calc(88px+env(safe-area-inset-bottom))] sm:bottom-[calc(104px+env(safe-area-inset-bottom))] md:bottom-[calc(152px+env(safe-area-inset-bottom))] lg:bottom-[calc(172px+env(safe-area-inset-bottom))]">
           <DialogHeader>
             <DialogTitle>{t("audioReading.voiceCommands", "Voice Commands")}</DialogTitle>
             <DialogDescription>
