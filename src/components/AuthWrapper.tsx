@@ -11,6 +11,7 @@ export const AuthWrapper = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isPremium, setIsPremium] = useState<boolean | null>(null);
+  const [premiumSafetyTick, setPremiumSafetyTick] = useState(0);
 
   useEffect(() => {
     // 1) Listen for auth changes FIRST (sync-only updates inside handler)
@@ -42,18 +43,21 @@ export const AuthWrapper = () => {
   }, []);
 
   const checkSubscription = async () => {
-    if (!user) {
-      setIsPremium(null);
-      return;
-    }
     try {
+      // Always fetch the freshest session to avoid stale state
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        setIsPremium(false);
+        return;
+      }
+
       // Prefer calling the edge function to ensure Stripe truth, fallback to DB check
       const { data, error } = await supabase.functions.invoke("check-subscription");
       if (!error && data && typeof data.subscribed === "boolean") {
         setIsPremium(!!data.subscribed);
         return;
       }
-    } catch (e) {
+    } catch (_) {
       // ignore and fallback
     }
     try {
