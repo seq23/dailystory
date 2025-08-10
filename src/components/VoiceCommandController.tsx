@@ -36,10 +36,31 @@ export const VoiceCommandController: React.FC<VoiceCommandControllerProps> = ({ 
   const [lastCommand, setLastCommand] = useState<string>("");
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
+  const mimeTypeRef = useRef<string>("audio/webm");
+
+  const getSupportedMimeType = () => {
+    const candidates = [
+      "audio/webm;codecs=opus",
+      "audio/webm",
+      "audio/mp4;codecs=mp4a.40.2",
+      "audio/mp4",
+      "audio/mpeg",
+      "audio/aac",
+      "audio/ogg;codecs=opus",
+      "audio/ogg",
+    ];
+    if (typeof MediaRecorder === "undefined" || !("isTypeSupported" in MediaRecorder)) {
+      return "";
+    }
+    return candidates.find((t) => MediaRecorder.isTypeSupported(t)) || "";
+  };
 
   const startRecording = useCallback(async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const recorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+    const supported = getSupportedMimeType();
+    if (supported) mimeTypeRef.current = supported;
+    const options = supported ? { mimeType: supported } : undefined;
+    const recorder = new MediaRecorder(stream, options as MediaRecorderOptions);
     mediaRecorderRef.current = recorder;
 
     chunksRef.current = [];
@@ -48,20 +69,24 @@ export const VoiceCommandController: React.FC<VoiceCommandControllerProps> = ({ 
     };
 
     recorder.onstop = async () => {
-      const blob = new Blob(chunksRef.current, { type: "audio/webm" });
-      const base64 = await blobToBase64(blob);
-      const { data, error } = await supabase.functions.invoke("voice-to-text", {
-        body: { audio: base64 },
-      });
-      if (error) {
-        console.error(error);
-        return;
+      try {
+        const blob = new Blob(chunksRef.current, { type: mimeTypeRef.current });
+        const base64 = await blobToBase64(blob);
+        const { data, error } = await supabase.functions.invoke("voice-to-text", {
+          body: { audio: base64, mimeType: mimeTypeRef.current },
+        });
+        if (error) {
+          console.error(error);
+          return;
+        }
+        const text: string = (data?.text || "").toLowerCase();
+        const found = KNOWN_COMMANDS.find((c) => text.includes(c));
+        const cmd = found || text.trim();
+        setLastCommand(cmd);
+        onCommand?.(cmd);
+      } catch (err) {
+        console.error("Voice command processing failed", err);
       }
-      const text: string = (data?.text || "").toLowerCase();
-      const found = KNOWN_COMMANDS.find((c) => text.includes(c));
-      const cmd = found || text.trim();
-      setLastCommand(cmd);
-      onCommand?.(cmd);
     };
 
     recorder.start();
