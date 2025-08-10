@@ -200,7 +200,7 @@ useEffect(() => {
                 size={isMobile ? "sm" : "icon"}
                 onClick={(e) => { e.stopPropagation(); onIncreaseTime(); }}
                 className={cn(
-                  "absolute -top-1 -right-1 rounded-full bg-background/95 backdrop-blur-sm",
+                  "absolute top-1 right-1 rounded-full bg-background/95 backdrop-blur-sm",
                   isMobile ? "w-8 h-8" : "w-6 h-6"
                 )}
                 aria-label={t("floatingTimer.increaseTime", "Increase time by 15 minutes")}
@@ -216,7 +216,7 @@ useEffect(() => {
                       variant="outline"
                       size="icon"
                       onClick={(e) => { e.stopPropagation(); onIncreaseTime(); }}
-                      className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-background/95 backdrop-blur-sm"
+                      className="absolute top-1 right-1 w-6 h-6 rounded-full bg-background/95 backdrop-blur-sm"
                       aria-label={t("floatingTimer.increaseTime", "Increase time by 15 minutes")}
                       id="timer-increase-collapsed-button"
                     >
@@ -353,16 +353,16 @@ useEffect(() => {
               <Button
                 variant="outline"
                 size={isMobile ? "sm" : "default"}
-                onClick={() => (isPremium ? onDismiss?.() : onEndSession())}
+                onClick={() => (onDismiss ? onDismiss() : onEndSession())}
                 className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm"
-                aria-label={isPremium ? t("floatingTimer.dismissTimer", "Dismiss timer") : t("floatingTimer.endSession", "End Reading Session")}
+                aria-label={onDismiss ? t("floatingTimer.dismissTimer", "Dismiss timer") : t("floatingTimer.endSession", "End Reading Session")}
                 id="timer-dismiss-x-button"
               >
                 <X className="w-4 h-4" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              {isPremium
+              {onDismiss
                 ? t("floatingTimer.sequentialTooltips.dismissTimer", "Hide the timer; it keeps running")
                 : t("floatingTimer.sequentialTooltips.endSession", "Click to end your reading session!")}
             </TooltipContent>

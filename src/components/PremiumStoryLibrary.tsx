@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Heart, Search, Trash2, Play, BookOpen, Clock, Tag } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import { toast } from '@/hooks/use-toast';
 import { PremiumStoryManager, SavedStory } from '@/services/premiumStoryManager';
 import { DifficultyLevel, Story } from '@/types/index';
@@ -29,6 +30,7 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
   const [selectedDifficulty, setSelectedDifficulty] = useState<DifficultyLevel | 'all'>('all');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<string | null>(null);
+  const [timerEnabled, setTimerEnabled] = useState<boolean>(() => { try { return localStorage.getItem('readingTimerEnabled') !== '0'; } catch { return true; } });
 
   useEffect(() => {
     loadSavedStories();
@@ -216,10 +218,16 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
       {/* Search and Filters */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Find Your Stories</CardTitle>
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <CardTitle className="text-lg">Find Your Stories</CardTitle>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Reading Timer</span>
+              <Switch checked={timerEnabled} onCheckedChange={(checked) => { setTimerEnabled(checked); try { localStorage.setItem('readingTimerEnabled', checked ? '1' : '0'); } catch {} }} />
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-4 items-end">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-end">
             <div className="flex-1">
               <Input
                 placeholder="Search stories by title..."
@@ -229,10 +237,10 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
               />
             </div>
             <Select value={selectedDifficulty} onValueChange={(value) => setSelectedDifficulty(value as DifficultyLevel | 'all')}>
-              <SelectTrigger className="w-40">
+              <SelectTrigger className="w-full sm:w-40">
                 <SelectValue placeholder="Difficulty" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="z-50">
                 <SelectItem value="all">All Levels</SelectItem>
                 <SelectItem value="easy">Easy</SelectItem>
                 <SelectItem value="medium">Medium</SelectItem>
@@ -243,11 +251,12 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
             <Button
               variant={showFavoritesOnly ? "default" : "outline"}
               onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+              className="w-full sm:w-auto"
             >
               <Heart className={`w-4 h-4 mr-2 ${showFavoritesOnly ? 'fill-current' : ''}`} />
               Favorites
             </Button>
-            <Button onClick={handleSearch}>
+            <Button onClick={handleSearch} className="w-full sm:w-auto">
               <Search className="w-4 h-4 mr-2" />
               Search
             </Button>

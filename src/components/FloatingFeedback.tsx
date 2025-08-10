@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MessageCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -10,8 +10,16 @@ export function FloatingFeedback() {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const { isMobile } = useIsMobile();
-  const isReadingSession = typeof document !== "undefined" && document.body.classList.contains("reading-session");
-  if (isReadingSession) return null;
+  const [isReadingSession, setIsReadingSession] = useState(() => typeof document !== "undefined" && document.body.classList.contains("reading-session"));
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const observer = new MutationObserver(() => {
+      setIsReadingSession(document.body.classList.contains("reading-session"));
+    });
+    observer.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
+  if (isMobile && isReadingSession) return null;
 
   return (
     <>

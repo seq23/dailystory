@@ -118,6 +118,9 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [isTimerRunning, setIsTimerRunning] = useState(true); // Start timer immediately
   const [isTimerCanceled, setIsTimerCanceled] = useState(false); // Premium: timer can be canceled
   const [isTimerVisible, setIsTimerVisible] = useState(true); // Premium: timer can be dismissed and shown again
+  const [timerEnabled, setTimerEnabled] = useState<boolean>(() => {
+    try { return localStorage.getItem('readingTimerEnabled') !== '0'; } catch { return true; }
+  });
   // Magic wand state
   const [isGeneratingNewStory, setIsGeneratingNewStory] = useState(false);
   const [isMagicWandAnimating, setIsMagicWandAnimating] = useState(false);
@@ -257,6 +260,16 @@ useEffect(() => {
     setIsMagicWandAnimating(false);
   }
 }, [currentPage, story.length, isPremium]);
+
+// Periodic sparkle for Finish Story button (all users)
+const [finishSparkle, setFinishSparkle] = useState(false);
+useEffect(() => {
+  const interval = setInterval(() => {
+    setFinishSparkle(true);
+    setTimeout(() => setFinishSparkle(false), 2500);
+  }, 10 * 60 * 1000);
+  return () => clearInterval(interval);
+}, []);
 
 // Ensure timer UI becomes visible when time ends for premium (to show celebration + choice)
 useEffect(() => {
@@ -1262,20 +1275,23 @@ const handleRestartTimer = () => {
                 {/* Premium controls */}
                 {isPremium && (
                   <div className="mt-3 flex justify-center gap-3 xl:hidden">
-                    <MobileOptimizedButton
-                      onClick={() => setShowConfirmEndStory(true)}
-                      disabled={!liveContext || isGeneratingEnding || isStoryComplete || timeRemaining <= 0}
-                      variant="outline"
-                    >
-                      {isGeneratingEnding ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          {t('common.processing', 'Processing...')}
-                        </>
-                      ) : (
-                        t('nav.createEnding', 'Create my ending')
-                      )}
-                    </MobileOptimizedButton>
+                    <div className="relative inline-block">
+                      <MobileOptimizedButton
+                        onClick={() => setShowConfirmEndStory(true)}
+                        disabled={!liveContext || isGeneratingEnding || isStoryComplete || timeRemaining <= 0}
+                        variant="secondary"
+                      >
+                        {isGeneratingEnding ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            {t('common.processing', 'Processing...')}
+                          </>
+                        ) : (
+                          t('nav.endStory', 'Finish Story')
+                        )}
+                      </MobileOptimizedButton>
+                      <SparkleAnimation isActive={finishSparkle} intensity="medium" isPremium={false} className="pointer-events-none absolute -inset-3" />
+                    </div>
                   </div>
                 )}
 
@@ -1330,21 +1346,24 @@ const handleRestartTimer = () => {
                 {/* Premium controls desktop */}
                 {isPremium && (
                   <div className="hidden xl:flex justify-center gap-3 mt-3">
-                    <MobileOptimizedButton
-                      onClick={() => setShowConfirmEndStory(true)}
-                      disabled={!liveContext || isGeneratingEnding || isStoryComplete || timeRemaining <= 0}
-                      variant="outline"
-                      size="sm"
-                    >
-                      {isGeneratingEnding ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          {t('common.processing', 'Processing...')}
-                        </>
-                      ) : (
-                        t('nav.createEnding', 'Create my ending')
-                      )}
-                    </MobileOptimizedButton>
+                    <div className="relative inline-block">
+                      <MobileOptimizedButton
+                        onClick={() => setShowConfirmEndStory(true)}
+                        disabled={!liveContext || isGeneratingEnding || isStoryComplete || timeRemaining <= 0}
+                        variant="secondary"
+                        size="sm"
+                      >
+                        {isGeneratingEnding ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            {t('common.processing', 'Processing...')}
+                          </>
+                        ) : (
+                          t('nav.endStory', 'Finish Story')
+                        )}
+                      </MobileOptimizedButton>
+                      <SparkleAnimation isActive={finishSparkle} intensity="medium" isPremium={false} className="pointer-events-none absolute -inset-3" />
+                    </div>
                   </div>
                 )}
               </div>
@@ -1366,32 +1385,8 @@ const handleRestartTimer = () => {
         </div>
       )}
 
-      {/* Premium "Show Timer" when dismissed */}
-      {isPremium && !isTimerVisible && timeRemaining > 0 && !isTimerCanceled && (
-        <div className="fixed bottom-8 left-8 z-40">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsTimerVisible(true)}
-                  aria-label={t("floatingTimer.showTimer", "Show Timer")}
-                >
-                  <Clock className="w-4 h-4 mr-2" />
-                  {t("floatingTimer.showTimer", "Show Timer")}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                {t("floatingTimer.showTimer", "Show Timer")}
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
-      )}
-        
-      {/* Unified Timer for All Users */}
-      {(!isPremium || isTimerVisible) && (
+      {/* Unified Timer for All Users (respects persistent toggle) */}
+      {timerEnabled && (
         <CollapsibleFloatingTimer
           timeRemaining={timeRemaining}
           isReading={isTimerRunning}
@@ -1401,7 +1396,7 @@ const handleRestartTimer = () => {
           onSessionEnded={handleEndSession}
           isPremium={isPremium}
           onIncreaseTime={isPremium ? handleExtendTime : undefined}
-          onDismiss={isPremium ? () => setIsTimerVisible(false) : undefined}
+          onDismiss={() => { try { localStorage.setItem('readingTimerEnabled','0'); } catch {} setTimerEnabled(false); }}
           onRestartTimer={isPremium ? handleRestartTimer : undefined}
           onKeepReadingUntimed={isPremium ? handleKeepReadingUntimed : undefined}
           onSaveStoryNow={isPremium ? handleSaveStoryNow : undefined}

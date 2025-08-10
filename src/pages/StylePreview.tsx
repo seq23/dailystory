@@ -242,9 +242,9 @@ const StylePreview: React.FC = () => {
                   <Button variant="default" size="sm" aria-label="Next">▶</Button>
                 </div>
 
-                {/* Create my ending under arrows (Premium) */}
+                {/* Finish Story under arrows (Premium) */}
                 <div className="mt-3 flex justify-center">
-                  <Button variant="outline" size="sm">Create my ending</Button>
+                  <Button variant="secondary" size="sm">Finish Story</Button>
                 </div>
 
                 {/* Simulated bottom dock */}
