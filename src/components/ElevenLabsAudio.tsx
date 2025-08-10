@@ -10,6 +10,7 @@ import { ToastAction } from "@/components/ui/toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { EnhancedAudioService } from "@/services/enhancedAudioService";
 import { VoiceCommandController } from "@/components/VoiceCommandController";
+import type { VoiceCommandControllerHandle } from "@/components/VoiceCommandController";
 import type { UserInfo } from "@/types";
 
 interface ElevenLabsAudioProps {
@@ -47,7 +48,7 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [voiceCommandsEnabled, setVoiceCommandsEnabled] = useState(false);
-  const [showVoiceModal, setShowVoiceModal] = useState(false);
+  const vcRef = useRef<VoiceCommandControllerHandle | null>(null);
   const [audioService] = useState(() => new EnhancedAudioService());
   const [hasPlayedThisPage, setHasPlayedThisPage] = useState(false);
   const { toast, dismiss } = useToast();
@@ -124,27 +125,31 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
     setIsPlaying(false);
   };
 
-  // Premium voice commands toggle
-  const toggleVoiceCommands = () => {
-    if (!isPremium) {
-      onUpgrade?.();
-      return;
-    }
+// Premium voice commands toggle
+const toggleVoiceCommands = () => {
+  if (!isPremium) {
+    onUpgrade?.();
+    return;
+  }
 
-    const hasWebSpeech = typeof window !== 'undefined' && ((('webkitSpeechRecognition' in window) || ('SpeechRecognition' in window)));
-    const forceModal = hasTouchCapability || isMobileOrTablet || !hasWebSpeech;
-    if (forceModal) {
-      console.log('🎙️ Voice: Using Whisper modal (touch device/tablet or no Web Speech)');
-      // Close any existing tips toast to avoid stacking with modal
+  const hasWebSpeech = typeof window !== 'undefined' && ((('webkitSpeechRecognition' in window) || ('SpeechRecognition' in window)));
+  const useWebSpeech = hasWebSpeech && !hasTouchCapability && !isMobileOrTablet;
+
+  if (useWebSpeech) {
+    if (voiceCommandsEnabled) {
+      audioService.stopVoiceCommands();
+      setVoiceCommandsEnabled(false);
+      emitStatus('idle');
       dismiss();
-      // Force re-open if already open
-      if (showVoiceModal) {
-        setShowVoiceModal(false);
-        setTimeout(() => setShowVoiceModal(true), 0);
-      } else {
-        setShowVoiceModal(true);
-      }
-      // Show tips only once per session
+      toast({
+        title: t("audioReading.voiceCommandsDisabled", "Voice Commands Disabled"),
+        description: t("audioReading.voiceCommandsOff", "Voice commands are now off"),
+        duration: 2000,
+      });
+    } else {
+      audioService.startVoiceCommands();
+      setVoiceCommandsEnabled(true);
+      emitStatus('listening');
       if (!voiceTipsShownRef.current) {
         toast({
           title: t("audioReading.voiceCommandsEnabled", "Voice Commands Enabled"),
@@ -158,39 +163,40 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
         });
         voiceTipsShownRef.current = true;
       }
-      return;
     }
+    return;
+  }
 
-    if (voiceCommandsEnabled) {
-      audioService.stopVoiceCommands();
-      setVoiceCommandsEnabled(false);
-      emitStatus('idle');
-      // Dismiss any lingering tips toast
-      dismiss();
+  // Headless Whisper path (no modal)
+  if (voiceCommandsEnabled) {
+    vcRef.current?.stop?.();
+    setVoiceCommandsEnabled(false);
+    emitStatus('idle');
+    dismiss();
+    toast({
+      title: t("audioReading.voiceCommandsDisabled", "Voice Commands Disabled"),
+      description: t("audioReading.voiceCommandsOff", "Voice commands are now off"),
+      duration: 2000,
+    });
+  } else {
+    vcRef.current?.start?.();
+    setVoiceCommandsEnabled(true);
+    emitStatus('listening');
+    if (!voiceTipsShownRef.current) {
       toast({
-        title: t("audioReading.voiceCommandsDisabled", "Voice Commands Disabled"),
-        description: t("audioReading.voiceCommandsOff", "Voice commands are now off"),
-        duration: 2000,
+        title: t("audioReading.voiceCommandsEnabled", "Voice Commands Enabled"), 
+        description: "Try: 'next page', 'pause', 'resume', 'read slower'",
+        duration: 3500,
+        action: (
+          <ToastAction altText="Open voice commands help" onClick={() => window.dispatchEvent(new CustomEvent('voice:openHelp'))}>
+            Full list
+          </ToastAction>
+        ),
       });
-    } else {
-      audioService.startVoiceCommands();
-      setVoiceCommandsEnabled(true);
-      emitStatus('listening');
-      if (!voiceTipsShownRef.current) {
-        toast({
-          title: t("audioReading.voiceCommandsEnabled", "Voice Commands Enabled"), 
-          description: "Try: 'next page', 'pause', 'resume', 'read slower'",
-          duration: 3500,
-          action: (
-            <ToastAction altText="Open voice commands help" onClick={() => window.dispatchEvent(new CustomEvent('voice:openHelp'))}>
-              Full list
-            </ToastAction>
-          ),
-        });
-        voiceTipsShownRef.current = true;
-      }
+      voiceTipsShownRef.current = true;
     }
-  };
+  }
+};
 
   // Expose imperative methods to parent (e.g., bottom dock)
   useImperativeHandle(ref, () => ({
@@ -200,26 +206,26 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
     get isPlaying() { return isPlaying; }
   }), [isPlaying]);
 
-  const handleModalCommand = (cmd: string) => {
-    try {
-      const result = (audioService as any).processVoiceCommand?.(cmd);
-      console.log('🎙️ Whisper modal command processed:', { cmd, result });
-      if (result && result.recognized && typeof result.action === 'function') {
-        window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: 'processing' } }));
-        try {
-          result.action();
-          toast({ title: t('audioReading.voiceCommandRun', 'Command executed'), description: cmd, duration: 1500 });
-        } finally {
-          window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: 'listening' } }));
-        }
-      } else {
-        toast({ title: t('audioReading.voiceNotRecognized', 'Not recognized'), description: t('audioReading.tryCommand', "Try 'next page' or 'pause'"), duration: 2000 });
+const handleHeadlessCommand = (cmd: string) => {
+  try {
+    const result = (audioService as any).processVoiceCommand?.(cmd);
+    console.log('🎙️ Headless voice command processed:', { cmd, result });
+    if (result && result.recognized && typeof result.action === 'function') {
+      window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: 'processing' } }));
+      try {
+        result.action();
+        toast({ title: t('audioReading.voiceCommandRun', 'Command executed'), description: cmd, duration: 1500 });
+      } finally {
+        window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: 'listening' } }));
       }
-    } catch (e) {
-      console.error('Voice modal processing failed', e);
-      toast({ title: t('audioReading.voiceCommandError', 'Voice command error'), description: String(e), variant: 'destructive' });
+    } else {
+      toast({ title: t('audioReading.voiceNotRecognized', 'Not recognized'), description: t('audioReading.tryCommand', "Try 'next page' or 'pause'"), duration: 2000 });
     }
-  };
+  } catch (e) {
+    console.error('Headless voice processing failed', e);
+    toast({ title: t('audioReading.voiceCommandError', 'Voice command error'), description: String(e), variant: 'destructive' });
+  }
+};
 
   // Enhanced audio service status monitoring with better frequency
   useEffect(() => {
@@ -328,17 +334,8 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
         </TooltipProvider>
       )}
 
-      <Dialog open={showVoiceModal} onOpenChange={setShowVoiceModal}>
-        <DialogContent className="max-w-md left-1/2 -translate-x-1/2 translate-y-0 top-auto z-[300] w-[min(92vw,480px)] bottom-[calc(88px+env(safe-area-inset-bottom))] sm:bottom-[calc(104px+env(safe-area-inset-bottom))] md:bottom-[calc(152px+env(safe-area-inset-bottom))] lg:bottom-[calc(172px+env(safe-area-inset-bottom))]">
-          <DialogHeader>
-            <DialogTitle>{t("audioReading.voiceCommands", "Voice Commands")}</DialogTitle>
-            <DialogDescription>
-              {t("audioReading.voiceCommandsInstructions", "Press Listen and say commands like 'next page', 'pause', or 'resume'.")}
-            </DialogDescription>
-          </DialogHeader>
-          <VoiceCommandController onCommand={handleModalCommand} />
-        </DialogContent>
-      </Dialog>
+{/* Headless voice controller (no UI) */}
+<VoiceCommandController ref={vcRef} headless onCommand={handleHeadlessCommand} />
     </div>
   );
 });
