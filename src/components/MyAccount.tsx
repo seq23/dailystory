@@ -12,8 +12,8 @@ interface MyAccountProps {
 const freeFeatures: string[] = [
   "Limited customization of your story via User Info Form",
   "Free 20-minute reading sessions with Images",
-  "Basic vocabulary highlights",
-  "Standard audio and word tools (word-by-word highlighting, pronunciation help)",
+  "Text-to-speech suite: Hear it, Explain it, phonetic breakdown, and precise word-by-word highlighting",
+  "Limited audio narration",
   "End of session reporting gamification - gain points & unlock milestones within a single session analytics",
 ];
 
@@ -22,7 +22,7 @@ const topPremiumFeatures: string[] = [
   "Unlimited reading time",
   "Advanced audio narration",
   "Word-by-word highlighting",
-  "Text-to-speech tools: Hear it, Explain it, and phonetic breakdown",
+  "Text-to-speech suite: Hear it, Explain it, phonetic breakdown, and precise word-by-word highlighting",
   "Achievements, points, badges, and reading streaks",
   "End-of-session report with milestones",
 ];
