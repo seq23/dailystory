@@ -283,22 +283,50 @@ useEffect(() => {
             </TooltipContent>
           </Tooltip>
 
-          {/* X Button - End session immediately with warning */}
+          {/* Increase Time (+15 min) - Premium only */}
+          {isPremium && onIncreaseTime && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size={isMobile ? "sm" : "default"}
+                  onClick={onIncreaseTime}
+                  className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm"
+                  aria-label={t("floatingTimer.increaseTime", "Add 15 minutes of reading time")}
+                  id="timer-increase-button"
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                {t("floatingTimer.increaseTimeHint", "Add 15 min of reading time")}
+              </TooltipContent>
+            </Tooltip>
+          )}
+
+          {/* X Button - Dismiss timer for premium, end session for guests */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 variant="outline"
                 size={isMobile ? "sm" : "default"}
-                onClick={() => onEndSession()}
+                onClick={() => {
+                  if (isPremium) {
+                    onKeepReadingUntimed?.();
+                    onDismiss?.();
+                  } else {
+                    onEndSession();
+                  }
+                }}
                 className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm"
-                aria-label={t("floatingTimer.endSession", "End Reading Session")}
+                aria-label={isPremium ? t("floatingTimer.dismissTimer", "Dismiss timer for unlimited reading") : t("floatingTimer.endSession", "End Reading Session")}
                 id="timer-dismiss-x-button"
               >
                 <X className="w-4 h-4" />
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
-              {t("floatingTimer.endNowHint", "End session now")}
+              {isPremium ? t("floatingTimer.dismissNowHint", "Dismiss timer for unlimited reading") : t("floatingTimer.endNowHint", "End session now")}
             </TooltipContent>
           </Tooltip>
 
