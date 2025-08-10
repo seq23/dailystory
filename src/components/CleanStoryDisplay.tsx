@@ -706,6 +706,8 @@ const handleRestartTimer = () => {
         toast({ title: t('reader.toasts.difficultyLocked'), duration: 3000 });
         return;
       }
+      const currentIndex = difficultyLevels.indexOf(currentDifficulty);
+      const minIndex = difficultyLevels.indexOf(minDifficulty);
       if (direction === 'down' && currentIndex <= minIndex) {
         toast({ title: t('reader.toasts.minLevelReached', { minDifficulty }), duration: 3000 });
         return;
