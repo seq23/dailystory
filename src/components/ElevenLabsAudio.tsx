@@ -42,7 +42,7 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
   onWordHighlight 
 }: ElevenLabsAudioProps, ref) => {
   const { t } = useTranslation();
-  const { isMobileOrTablet, isCapacitor } = useIsMobile();
+  const { isMobileOrTablet, isCapacitor, hasTouchCapability } = useIsMobile();
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [voiceCommandsEnabled, setVoiceCommandsEnabled] = useState(false);
@@ -130,9 +130,9 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
     }
 
     const hasWebSpeech = typeof window !== 'undefined' && ((('webkitSpeechRecognition' in window) || ('SpeechRecognition' in window)));
-    const forceModal = isMobileOrTablet || !hasWebSpeech;
+    const forceModal = hasTouchCapability || isMobileOrTablet || !hasWebSpeech;
     if (forceModal) {
-      console.log('🎙️ Voice: Using Whisper modal (mobile or no Web Speech)');
+      console.log('🎙️ Voice: Using Whisper modal (touch device/tablet or no Web Speech)');
       setShowVoiceModal(true);
       toast({
         title: t("audioReading.voiceCommandsEnabled", "Voice Commands Enabled"),

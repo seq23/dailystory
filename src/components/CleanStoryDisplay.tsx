@@ -19,7 +19,7 @@ import { GameContextProvider } from "@/components/GameContextProvider";
 
 // Audio and Interactive Components
 import { ElevenLabsAudio } from "@/components/ElevenLabsAudio";
-import { VoiceHUD } from "@/components/VoiceHUD";
+
 import { VocabularyCollector } from "@/components/VocabularyCollector";
 import { processTextWithConsistentFlow } from "@/utils/unifiedTextProcessor";
 import "@/styles/storyDisplay.css";
@@ -1457,9 +1457,6 @@ const handleRestartTimer = () => {
           onSaveStoryNow={isPremium ? handleSaveStoryNow : undefined}
         />
       )}
-
-      {/* Voice HUD */}
-      <VoiceHUD />
 
       {/* Mobile Action Dock - Mobile/Tablet */}
       {isMobileOrTablet && (
