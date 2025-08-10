@@ -46,6 +46,7 @@ import { DiagnosticPanel } from "@/components/DiagnosticPanel";
 import { ApiKeyDiagnostic } from "@/components/ApiKeyDiagnostic";
 import { ParentGuardrailsService } from "@/services/parentGuardrailsService";
 import { supabase } from "@/integrations/supabase/client";
+import { SpecialRequestDialog } from "@/components/SpecialRequestDialog";
 
 interface CleanStoryDisplayProps {
   userInfo: UserInfo;
@@ -140,9 +141,12 @@ const [isGeneratingEnding, setIsGeneratingEnding] = useState(false);
 const [showManualCelebration, setShowManualCelebration] = useState(false);
 const [showEndStoryModal, setShowEndStoryModal] = useState(false);
 const [showConfirmEndStory, setShowConfirmEndStory] = useState(false);
-  const [showEndSessionConfirm, setShowEndSessionConfirm] = useState(false);
-  const loaderStartRef = useRef<number>(0);
-  const LOADER_MIN_MS = 1600;
+const [showEndSessionConfirm, setShowEndSessionConfirm] = useState(false);
+// Premium: edit special requests before starting a new story
+const [showSpecialRequestDialog, setShowSpecialRequestDialog] = useState(false);
+const [specialRequestDraft, setSpecialRequestDraft] = useState(userInfo?.specialRequest || "");
+const loaderStartRef = useRef<number>(0);
+const LOADER_MIN_MS = 1600;
 
   // Debug flag to force loader overlay for quick verification
   const [forceLoaderActive, setForceLoaderActive] = useState(false);
@@ -700,7 +704,7 @@ const handleRestartTimer = () => {
 };
 
   // Magic wand functionality - Generate new story
-  const handleGenerateNewStory = async () => {
+  const handleGenerateNewStory = async (specialRequestOverride?: string) => {
     if (isGeneratingNewStory) return;
     
     setIsGeneratingNewStory(true);
@@ -709,7 +713,7 @@ const handleRestartTimer = () => {
       console.log('🪄 Generating new story...');
       
       if (isPremium) {
-        const effectiveUser = { ...userInfo, difficultyLevel: currentDifficulty, readingAbility: currentDifficulty, expertGradeLevel: currentDifficulty === 'expert' ? expertGradeLevel : undefined } as UserInfo;
+        const effectiveUser = { ...userInfo, specialRequest: specialRequestOverride ?? userInfo.specialRequest, difficultyLevel: currentDifficulty, readingAbility: currentDifficulty, expertGradeLevel: currentDifficulty === 'expert' ? expertGradeLevel : undefined } as UserInfo;
         const first = await LiveGenerationService.generateFirstPage(effectiveUser);
         if ((first as any).error) {
           throw new Error((first as any).error);
@@ -724,7 +728,7 @@ const handleRestartTimer = () => {
         setStoryTitle(`${userInfo.name}'s Live Adventure`);
       } else {
         const originalPageCount = story.length;
-        const result = await NetflixStyleStoryService.generateCompleteStory({ ...userInfo, difficultyLevel: currentDifficulty, readingAbility: currentDifficulty, expertGradeLevel: currentDifficulty === 'expert' ? expertGradeLevel : undefined } as UserInfo);
+        const result = await NetflixStyleStoryService.generateCompleteStory({ ...userInfo, specialRequest: specialRequestOverride ?? userInfo.specialRequest, difficultyLevel: currentDifficulty, readingAbility: currentDifficulty, expertGradeLevel: currentDifficulty === 'expert' ? expertGradeLevel : undefined } as UserInfo);
         
         // For free users, maintain original page count
         const newStory = result.pages.slice(0, originalPageCount || result.pages.length);
@@ -746,6 +750,22 @@ const handleRestartTimer = () => {
       setIsGeneratingNewStory(false);
     }
   };
+  // Open special request dialog for premium users, or generate immediately for free
+  const handleNewStoryClick = () => {
+    if (isPremium) {
+      setSpecialRequestDraft(userInfo?.specialRequest || "");
+      setShowSpecialRequestDialog(true);
+    } else {
+      handleGenerateNewStory();
+    }
+  };
+
+  // Submit special request and start generation
+  const handleSpecialRequestSubmit = (value: string) => {
+    setShowSpecialRequestDialog(false);
+    handleGenerateNewStory(value);
+  };
+
   // End Story follow-up actions (Premium)
 
   const handleStartSequel = () => {
