@@ -176,7 +176,7 @@ const StylePreview: React.FC = () => {
           <CardContent>
             <div className="grid gap-6 md:grid-cols-2">
               <article>
-                <h3 className="font-semibold mb-2">Free trial</h3>
+                
                 <ul className="space-y-2 text-sm">
 {[
   "Limited customization of your story via User Info Form",
@@ -196,7 +196,7 @@ const StylePreview: React.FC = () => {
 
               <article className="space-y-4">
                 <div>
-                  <h3 className="font-semibold mb-2">Top Premium</h3>
+                  
                   <ul className="space-y-2 text-sm">
 {[
   "Customize your story",
