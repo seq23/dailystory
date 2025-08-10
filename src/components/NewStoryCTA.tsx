@@ -2,7 +2,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import MagicRefreshIcon from "@/components/icons/MagicRefreshIcon";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Lock } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 
@@ -49,10 +49,12 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
           ? "min-h-[36px] min-w-[36px] rounded-full p-0 bg-gradient-primary text-primary-foreground"
           : "bg-gradient-primary text-primary-foreground",
         wandPulse && "animate-pulse ring-2 ring-primary/40",
-        isLocked && "opacity-90",
+        isLocked && "opacity-50 cursor-not-allowed",
         className
       )}
       aria-label={isLocked ? `${label} (${t("badges.premium", "Premium")})` : label}
+      disabled={isLocked}
+      aria-disabled={isLocked}
     >
       <span className={cn("relative inline-flex items-center", !iconOnly && "mr-2")}> 
         <MagicRefreshIcon
@@ -69,11 +71,6 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
           ringClassName="text-current"
           wandClassName="text-current"
         />
-        {isLocked && (
-          <span className="absolute -top-1 -right-1 inline-flex h-4 w-4 items-center justify-center rounded-full bg-background/90 border border-border">
-            <Lock className="h-2.5 w-2.5 text-muted-foreground" aria-hidden="true" />
-          </span>
-        )}
       </span>
       {!iconOnly && label}
     </Button>
@@ -83,9 +80,11 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
     return (
       <TooltipProvider>
         <Tooltip>
-          <TooltipTrigger asChild>{buttonEl}</TooltipTrigger>
+          <TooltipTrigger asChild>
+            <span className="inline-flex">{buttonEl}</span>
+          </TooltipTrigger>
           <TooltipContent side="bottom">
-            {isLocked ? t("tooltips.premium", "Premium feature") : t("tooltips.newStory", "Start a fresh story")}
+            {isLocked ? t("tooltips.newStoryPremium", "Premium only. Refresh story") : t("tooltips.newStory", "Start a fresh story")}
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
