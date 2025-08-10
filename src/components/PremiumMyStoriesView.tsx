@@ -71,7 +71,7 @@ export const PremiumMyStoriesView = ({ userInfo, isPremium, onSessionEnded }: Pr
         }}
         onHome={handleBackToLibrary}
         onUpgrade={() => {}}
-        {...(!isPremium ? { onNewStory: handleStartNewStory } : {})}
+        onNewStory={handleStartNewStory}
         // Additional props can be added here when CleanStoryDisplay supports them
       />
     );

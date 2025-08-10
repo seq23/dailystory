@@ -1032,24 +1032,6 @@ const handleRestartTimer = () => {
                   </div>
                   {/* Bottom Half: Text (scrollable) + audio controls */}
                   <div className="flex-[0.42] min-h-0 w-full rounded-2xl shadow-2xl bg-card overflow-hidden flex flex-col relative">
-                    <div id="audio-controls" className="p-3 md:p-4 flex justify-center gap-4 shrink-0">
-                      <ElevenLabsAudio
-                        text={currentStory}
-                        userInfo={userInfo}
-                        isPremium={isPremium}
-                        onUpgrade={onUpgrade}
-                        onWordHighlight={onWordHighlight}
-                        difficulty={currentDifficulty}
-                        currentPage={currentPage}
-                        totalPages={story.length}
-                      />
-                      {isAudioPlaying && (
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-                          Playing Audio
-                        </div>
-                      )}
-                    </div>
                     {isPremium && isLoadingNextPage && currentPage === story.length - 1 && !isStoryComplete && (
                       <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/60 backdrop-blur-sm pointer-events-none">
                         <div className="rounded-xl px-4 py-3 bg-card/90 shadow-lg border border-primary/20 animate-enter">

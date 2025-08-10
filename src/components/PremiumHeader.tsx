@@ -134,7 +134,7 @@ export const PremiumHeader = ({
                 </Button>
               </DropdownMenuTrigger>
               
-              <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuContent align="end" className="w-56 z-50 bg-popover shadow-md">
                 <div className="px-3 py-2">
                   <div className="flex items-center justify-between">
                     <div>
