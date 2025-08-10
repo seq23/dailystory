@@ -8,14 +8,14 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import type { DifficultyLevel, UserInfo } from '@/types';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import MagicRefreshIcon from "@/components/icons/MagicRefreshIcon";
-
+import NewStoryCTA from "@/components/NewStoryCTA";
 interface ResponsiveStoryHeaderProps {
   storyTitle?: string;
   currentDifficulty?: DifficultyLevel;
   userInfo?: UserInfo;
   onHome?: () => void;
   onNewStory?: () => void;
+  onUpgrade?: () => void;
   onIncreaseDifficulty?: () => void;
   onDecreaseDifficulty?: () => void;
   showLevelControls?: boolean;
@@ -37,6 +37,7 @@ export const ResponsiveStoryHeader = ({
   userInfo,
   onHome,
   onNewStory,
+  onUpgrade,
   onIncreaseDifficulty,
   onDecreaseDifficulty,
   showLevelControls = true,
@@ -137,18 +138,14 @@ export const ResponsiveStoryHeader = ({
             )}
 
             {onNewStory && (
-              <Button
-                variant="ghost"
+              <NewStoryCTA
+                isPremium={!!isPremium}
+                iconOnly
+                onNewStory={onNewStory}
+                onUpgrade={onUpgrade || (() => {})}
                 size="sm"
-                onClick={onNewStory}
-                className={cn(
-                  "min-h-[36px] min-w-[36px] rounded-full p-0 bg-gradient-primary text-white",
-                  wandPulse && "animate-pulse ring-2 ring-primary/40"
-                )}
-                aria-label={t("common.newStory", "New Story")}
-              >
-                <MagicRefreshIcon size={16} />
-              </Button>
+                wandPulse={wandPulse}
+              />
             )}
 
             {onDecreaseDifficulty && (
@@ -288,30 +285,15 @@ export const ResponsiveStoryHeader = ({
                 id="reading-level-controls"
                 data-id="reading-level"
               >
-                {/* New Story Wand + Level Label */}
                 {onNewStory && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size={isMobileOrTablet ? "sm" : "default"}
-                          onClick={onNewStory}
-                          className={cn(
-                            "h-10 w-10 rounded-full bg-gradient-primary text-white shadow hover-scale",
-                            isMobileOrTablet ? "min-h-[40px] min-w-[40px] p-0" : "p-0",
-                            wandPulse && "animate-pulse ring-2 ring-primary/40"
-                          )}
-                          aria-label={t("common.newStory", "New Story")}
-                        >
-                          <MagicRefreshIcon size={isMobileOrTablet ? 16 : 20} />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        {t("tooltips.newStory", "Start a fresh story")}
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  <NewStoryCTA
+                    isPremium={false}
+                    iconOnly
+                    onNewStory={onNewStory}
+                    onUpgrade={onUpgrade || (() => {})}
+                    size={isMobileOrTablet ? "sm" : "md"}
+                    wandPulse={wandPulse}
+                  />
                 )}
                 <span className={cn(
                   "text-xs sm:text-sm text-gray-600 whitespace-nowrap",
@@ -456,28 +438,14 @@ export const ResponsiveStoryHeader = ({
           )}>
             <div className={cn("flex items-center flex-nowrap", isMobileOrTablet ? "gap-1 sm:gap-2" : "gap-3")}> 
               {onNewStory && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size={isMobileOrTablet ? "sm" : "default"}
-                          onClick={onNewStory}
-                          className={cn(
-                            "h-10 w-10 rounded-full bg-gradient-primary text-white shadow hover-scale",
-                            isMobileOrTablet ? "min-h-[40px] min-w-[40px] p-0" : "p-0",
-                            wandPulse && "animate-pulse ring-2 ring-primary/40"
-                          )}
-                          aria-label={t("common.newStory", "New Story")}
-                        >
-                          <MagicRefreshIcon size={isMobileOrTablet ? 16 : 20} />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        {t("tooltips.newStory", "Start a fresh story")}
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                <NewStoryCTA
+                  isPremium={!!isPremium}
+                  iconOnly
+                  onNewStory={onNewStory}
+                  onUpgrade={onUpgrade || (() => {})}
+                  size={isMobileOrTablet ? "sm" : "md"}
+                  wandPulse={wandPulse}
+                />
               )}
 
               {showLevelControls && (
