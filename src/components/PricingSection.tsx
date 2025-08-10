@@ -9,11 +9,11 @@ interface PricingSectionProps {
 
 const features = {
   free: [
-    "Limited customization of your story via User Info Form",
+    "Customize your story (Limited)",
     "Free 20-minute reading sessions with images",
     "Text-to-speech suite: Hear it, Explain it, phonetic breakdown, and precise word-by-word highlighting",
-    "Limited audio narration",
-    "In-session achievements, points, badges, and reading streaks",
+    "Audio Narration (Limited)",
+    "Achievements, points, badges, and reading streaks (In session only)",
     "End-of-session report with milestones",
   ],
   premium: [
