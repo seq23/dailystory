@@ -2,11 +2,11 @@ import { Check, Crown, Building2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { freeFeatures, premiumFeatures, enterpriseFeatures } from "@/constants/featureLists";
+import { freeFeatures, premiumFeatures, additionalOfferings, enterpriseFeatures } from "@/constants/featureLists";
 import heroImage from "@/assets/hero-image.jpg";
-import heroAlt from "@/assets/hero-image-diverse.jpg";
 import vocabImg from "@/assets/story-illustration-12.jpg";
-import readingImg from "@/assets/story-illustration-7.jpg";
+import ReadAloudCoach from "@/components/ReadAloudCoach";
+import VoiceCommandController from "@/components/VoiceCommandController";
 
 interface PricingSectionProps {
   compact?: boolean; // compact version for homepage
@@ -101,14 +101,27 @@ export function PricingSection({ compact }: PricingSectionProps) {
                 <div className="text-3xl font-bold">$10</div>
                 <div className="text-muted-foreground">per month</div>
               </div>
-              <ul className="space-y-2 mb-6">
-                {premiumFeatures.map((f) => (
-                  <li key={f} className="flex items-start gap-2">
-                    <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1" />
-                    <span>{f}</span>
-                  </li>
-                ))}
-              </ul>
+              <div className="space-y-4 mb-6">
+                <ul className="space-y-2">
+                  {premiumFeatures.map((f) => (
+                    <li key={f} className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1" />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div>
+                  <h4 className="font-medium text-sm text-muted-foreground">Additional offerings</h4>
+                  <ul className="mt-2 space-y-2">
+                    {additionalOfferings.map((f) => (
+                      <li key={f} className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1" />
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
               <Link to="/auth">
                 <Button className="w-full">Upgrade to Premium</Button>
               </Link>
@@ -116,9 +129,6 @@ export function PricingSection({ compact }: PricingSectionProps) {
           </Card>
         </div>
 
-        {!compact && (
-          <>
-            {/* A closer look at Premium */}
             <div className="mt-12">
               <h2 className="text-2xl font-bold mb-4">A closer look at Premium</h2>
               <div className="grid gap-6 md:grid-cols-2">
@@ -142,37 +152,21 @@ export function PricingSection({ compact }: PricingSectionProps) {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base">Read‑aloud coach</CardTitle>
-                    <CardDescription>Real-time speech feedback and guidance.</CardDescription>
+                    <CardTitle className="text-base">Read‑aloud coach (Premium)</CardTitle>
+                    <CardDescription>Speech‑to‑text feedback preview</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <img
-                      src={readingImg}
-                      alt="Read-aloud coach visualization"
-                      loading="lazy"
-                      className="rounded-md w-full h-32 object-cover"
-                    />
-                    <p className="text-sm text-muted-foreground mt-3">
-                      Practice speaking with instant feedback and word-by-word highlighting to build fluency.
-                    </p>
+                    <ReadAloudCoach />
                   </CardContent>
                 </Card>
 
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base">Voice commands</CardTitle>
-                    <CardDescription>Hands-free controls for reading sessions.</CardDescription>
+                    <CardTitle className="text-base">Voice commands (Premium)</CardTitle>
+                    <CardDescription>Try a command like “Next page”</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <img
-                      src={heroAlt}
-                      alt="Voice commands interface preview"
-                      loading="lazy"
-                      className="rounded-md w-full h-32 object-cover"
-                    />
-                    <p className="text-sm text-muted-foreground mt-3">
-                      Say "next page" or "read it again"—navigate and control the app without touching the screen.
-                    </p>
+                    <VoiceCommandController />
                   </CardContent>
                 </Card>
 
@@ -244,8 +238,6 @@ export function PricingSection({ compact }: PricingSectionProps) {
                 ))}
               </div>
             </div>
-          </>
-        )}
       </div>
     </section>
   );
