@@ -50,8 +50,9 @@ export class EnhancedAudioService {
   private analyser: AnalyserNode | null = null;
   private audioCtx: AudioContext | null = null;
   private levelRAF: number | null = null;
-
-  constructor(customConfig?: Partial<AudioSettings>) {
+  private voiceListening: boolean = false;
+ 
+   constructor(customConfig?: Partial<AudioSettings>) {
     this.config = { ...defaultAudioConfig, ...customConfig };
     this.mobileAudioManager = MobileAudioManager.getInstance();
     this.initializeSpeechRecognition();
@@ -275,13 +276,19 @@ export class EnhancedAudioService {
   startVoiceCommands(): void {
     if (!this.speechRecognition) return;
 
-    this.speechRecognition.start();
+    this.voiceListening = true;
+    try { this.speechRecognition.start(); } catch (e) {
+      console.warn('Voice: start failed', e);
+    }
   }
 
   stopVoiceCommands(): void {
     if (!this.speechRecognition) return;
 
-    this.speechRecognition.stop();
+    this.voiceListening = false;
+    try { this.speechRecognition.stop(); } catch (e) {
+      console.warn('Voice: stop failed', e);
+    }
   }
 
   processVoiceCommand(transcript: string): VoiceCommandResult {
@@ -657,6 +664,11 @@ export class EnhancedAudioService {
         console.log('🎙️ Web Speech ended');
         emitStatus('idle');
         stopMeter();
+        if (this.voiceListening) {
+          setTimeout(() => {
+            try { this.speechRecognition.start(); } catch (e) { console.warn('Voice: restart failed', e); }
+          }, 250);
+        }
       };
       this.speechRecognition.onerror = (e: any) => {
         console.warn('🎙️ Web Speech error', e);
