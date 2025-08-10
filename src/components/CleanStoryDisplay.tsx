@@ -683,18 +683,12 @@ useEffect(() => {
   const handleCancelTimer = () => {
     setIsTimerCanceled(true);
     setIsTimerRunning(false);
-    toast({
-      title: "Timer Stopped",
-      description: "You can now read without time limits!",
-      duration: 3000,
-    });
   };
 
   const handleKeepReadingUntimed = () => {
     if (!isPremium) return;
     setIsTimerCanceled(true);
     setIsTimerRunning(false);
-    toast({ title: "Untimed reading", description: "Enjoy reading without the timer.", duration: 2500 });
   };
 
 const handleSaveStoryNow = async () => {
@@ -728,20 +722,10 @@ const handleExtendTime = () => {
   const extension = 15 * 60; // 15 minutes
   const maxTime = 60 * 60; // 60 minutes max
   if (timeRemaining >= maxTime) {
-    toast({
-      title: "Max time reached",
-      description: "You can use up to 60 minutes per session.",
-      duration: 3000,
-    });
     return;
   }
   const newValue = Math.min(maxTime, timeRemaining + extension);
   setTimeRemaining(newValue);
-  toast({
-    title: newValue === maxTime ? "Extended to 60 minutes" : "Time Extended!",
-    description: newValue === maxTime ? "You've reached the session maximum." : "Added 15 minutes to your reading session.",
-    duration: 3000,
-  });
 };
 
 const handleRestartTimer = () => {
@@ -749,11 +733,6 @@ const handleRestartTimer = () => {
   setIsTimerVisible(true);
   setTimeRemaining(20 * 60);
   setIsTimerRunning(true);
-  toast({
-    title: "New Timer Started",
-    description: "A fresh 20-minute session has begun.",
-    duration: 2500,
-  });
 };
 
   // Magic wand functionality - Generate new story
