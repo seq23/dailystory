@@ -481,6 +481,23 @@
       "message": "🚀 Unlock unlimited storytelling! Your free trial session has ended. Upgrade to Premium for unlimited reading time, advanced features, and personalized reading experiences."
     }
   },
+  "badges": {
+    "premium": "Premium",
+    "guest": "Guest"
+  },
+  "postSession": {
+    "quizTitle": "Comprehension Quiz",
+    "quizDesc": "Quick 3–5 questions based on your story.",
+    "startQuiz": "Start Quiz",
+    "vocabTitle": "Review Vocabulary",
+    "vocabDesc": "See words you encountered and practice.",
+    "reviewVocab": "Review Vocabulary",
+    "gamesTitle": "Play Reading Games",
+    "gamesDesc": "Fun mini‑games from your story",
+    "playGames": "Play Games",
+    "unavailable": "Unavailable: missing story data",
+    "premiumOnly": "Premium feature"
+  },
   "storyDisplay": {
     "readingLevel": "Reading Level",
     "readingProgress": "Reading Progress",

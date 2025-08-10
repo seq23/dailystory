@@ -2,7 +2,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Home, BookOpen, Clock, TrendingUp, Target, BookText, Crown, Sparkles, Star, Volume2 } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import type { UserInfo } from "@/types";
 import { ComprehensionQuiz } from "@/components/ComprehensionQuiz";
@@ -29,7 +29,8 @@ interface SessionEndedProps {
 
 const SessionEnded = ({ onHome, onNewStory, isPremium = false, onUpgrade }: SessionEndedProps) => {
   const { t, i18n } = useTranslation();
-  const location = useLocation();
+const location = useLocation();
+  const navigate = useNavigate();
 
   // Ensure language is properly loaded from localStorage on component mount
   React.useEffect(() => {
@@ -66,21 +67,17 @@ const SessionEnded = ({ onHome, onNewStory, isPremium = false, onUpgrade }: Sess
   const isQuizAllowed = Boolean(userIsPremium && sessionStats && sessionStats.currentDifficulty !== 'beginner');
 
   // Handle navigation based on user type
-  const handleHome = () => {
-    window.history.pushState(null, '', '/');
-    window.location.reload();
+const handleHome = () => {
+    navigate('/');
   };
 
   const handleNewStory = () => {
-    // Both user types now go to the form/profile page via query parameter
-    // This provides a consistent experience where users can review/update their info
-    window.history.pushState(null, '', '/?action=new-story');
-    window.location.reload();
+    // Navigate to home with query for new story without full reload
+    navigate('/?action=new-story');
   };
 
   const handleStartTimed = () => {
-    window.history.pushState(null, '', '/?action=new-story');
-    window.location.reload();
+    navigate('/?action=new-story');
   };
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -88,13 +85,13 @@ const SessionEnded = ({ onHome, onNewStory, isPremium = false, onUpgrade }: Sess
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
-  const getDifficultyLabel = (difficulty: string) => {
+const getDifficultyLabel = (difficulty: string) => {
     switch (difficulty) {
-      case "beginner": return t("storyDisplay.labels.preReader", "Pre‑Reader");
-      case "easy": return t("storyDisplay.labels.beginner", "Beginner");
-      case "medium": return t("storyDisplay.labels.developing", "Developing");
-      case "hard": return t("storyDisplay.labels.independent", "Independent");
-      case "expert": return t("storyDisplay.labels.advanced", "Advanced");
+      case "beginner": return t("readingPreferences.form.labels.options.beginner", "Beginner");
+      case "easy": return t("readingPreferences.form.labels.options.preReader", "Pre‑Reader");
+      case "medium": return t("readingPreferences.form.labels.options.developing", "Developing");
+      case "hard": return t("readingPreferences.form.labels.options.independent", "Independent");
+      case "expert": return t("readingPreferences.form.labels.options.advanced", "Advanced");
       default: return difficulty;
     }
   };
