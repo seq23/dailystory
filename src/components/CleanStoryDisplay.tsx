@@ -955,7 +955,7 @@ const handleRestartTimer = () => {
         />
 
       {/* Main Content - Full Width Layout */}
-      <main className="w-full px-2 md:px-4 lg:px-6 xl:px-8 flex-1 min-h-0">
+      <main className="w-full px-2 md:px-4 lg:px-6 xl:px-8 flex-1 min-h-0 pb-[calc(env(safe-area-inset-bottom)+88px)] md:pb-8">
         <div className="w-full max-w-[98vw] mx-auto">
           <Card className="bg-white/95 backdrop-blur-sm shadow-2xl border border-white/70 mobile-text-fixed flex flex-col h-full min-h-0 overflow-hidden">
             <CardContent className="p-4 lg:p-8 h-full flex flex-col min-h-0">
