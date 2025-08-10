@@ -132,8 +132,8 @@ export const ResponsiveStoryHeader = ({
             "flex-shrink-0 flex items-center",
             isMobileOrTablet ? "gap-2" : "gap-4"
           )}>
-            {/* User Avatar - Prominent Display */}
-            {userInfo && (
+            {/* User Avatar - Prominent Display (hidden for premium since avatar is in profile dropdown) */}
+            {!isPremium && userInfo && (
               <div className="flex items-center gap-2">
                 <Avatar className={cn(
                   "border-2 border-white/50 shadow-lg bg-white",
