@@ -12,6 +12,8 @@ import { EnhancedAudioService } from "@/services/enhancedAudioService";
 import { VoiceCommandController } from "@/components/VoiceCommandController";
 import type { VoiceCommandControllerHandle } from "@/components/VoiceCommandController";
 import type { UserInfo } from "@/types";
+import { supabase } from "@/integrations/supabase/client";
+import { VocabularyTrackingService } from "@/services/vocabularyTrackingService";
 
 interface ElevenLabsAudioProps {
   text: string;
@@ -224,6 +226,10 @@ const handleHeadlessCommand = (cmd: string) => {
   } catch (e) {
     console.error('Headless voice processing failed', e);
     toast({ title: t('audioReading.voiceCommandError', 'Voice command error'), description: String(e), variant: 'destructive' });
+  } finally {
+    if (voiceCommandsEnabled) {
+      setTimeout(() => vcRef.current?.start?.(), 150);
+    }
   }
 };
 
@@ -241,12 +247,36 @@ const handleHeadlessCommand = (cmd: string) => {
     return () => clearInterval(interval);
   }, [audioService, isPlaying]);
 
-  useEffect(() => {
-    return () => {
-      audioService.stopAudio();
-      audioService.stopVoiceCommands();
-    };
-  }, [audioService]);
+// Voice vocabulary events handler
+useEffect(() => {
+  const onVocab = async (evt: Event) => {
+    const { detail } = evt as CustomEvent<{ type: 'define'|'pronounce'|'save'; word: string }>;
+    if (!detail?.word) return;
+    const cleanWord = detail.word.replace(/[.,!?;:'"()]/g, '').trim();
+    try {
+      if (detail.type === 'pronounce') {
+        await audioService.playText({ text: cleanWord, difficulty: 'easy', userInfo, isPremium: false, enableHighlighting: false });
+        return;
+      }
+      const userLang = userInfo?.nativeLanguage || 'en';
+      const { data, error } = await supabase.functions.invoke('word-dictionary', {
+        body: { word: cleanWord, userLevel: difficulty, userLanguage: userLang }
+      });
+      const definition: string = (!error && data?.definition) ? data.definition : cleanWord;
+      await VocabularyTrackingService.logEncounter(cleanWord, definition, difficulty);
+      if (detail.type === 'define') {
+        toast({ title: cleanWord, description: definition, duration: 4000 });
+      } else if (detail.type === 'save') {
+        toast({ title: t('vocab.saved', 'Saved to Vocabulary'), description: cleanWord, duration: 2000 });
+      }
+    } catch (err) {
+      console.error('voice:vocab handler error', err);
+      toast({ title: t('vocab.error', 'Vocabulary error'), description: String(err), variant: 'destructive' });
+    }
+  };
+  window.addEventListener('voice:vocab', onVocab as EventListener);
+  return () => window.removeEventListener('voice:vocab', onVocab as EventListener);
+}, [audioService, userInfo, difficulty, toast, t]);
 
   return (
     <div className="flex items-center gap-2 flex-wrap">
