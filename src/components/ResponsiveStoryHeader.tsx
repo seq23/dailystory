@@ -170,6 +170,7 @@ export const ResponsiveStoryHeader = ({
     );
   }
   if (isPremium && isMobile) {
+    return (
       <header className={cn(
         "w-full bg-white/95 backdrop-blur-sm border-b border-gray-200 z-30",
         "sticky top-0"
