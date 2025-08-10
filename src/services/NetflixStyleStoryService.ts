@@ -140,17 +140,18 @@ export class NetflixStyleStoryService {
           title: data.title
         });
         
-        // Simple validation - just check if content exists
-        if (data.pages.some(page => page && page.trim().length > 0)) {
+        const filteredPages = data.pages.filter((p: string) => p && p.trim().length > 0);
+        
+        if (filteredPages.length > 0) {
           console.log('✅ Story has content - proceeding');
           console.log('🔍 DIAGNOSTIC: Using API-generated content successfully');
           // Mark source as AI
           try {
             (globalThis as any).__LAST_STORY_SOURCE__ = (data as any)?.source || 'ai';
           } catch {}
-          console.log('🧭 STORY_SOURCE', { source: (globalThis as any).__LAST_STORY_SOURCE__, service: 'Netflix', pagesCount: data.pages.length, difficulty: data.difficulty || difficulty });
+          console.log('🧭 STORY_SOURCE', { source: (globalThis as any).__LAST_STORY_SOURCE__, service: 'Netflix', pagesCount: filteredPages.length, difficulty: data.difficulty || difficulty });
           return {
-            pages: data.pages,
+            pages: filteredPages,
             difficulty: data.difficulty || difficulty,
             expertGradeLevel,
             title: data.title || `${userInfo.name}'s Adventure`,

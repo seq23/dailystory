@@ -382,14 +382,14 @@ useEffect(() => {
     }
     
     if (isPremium && !isStoryComplete && currentPage === story.length - 1) {
-      // Premium: generate and auto-advance to the new page
-      setCurrentPage(prev => prev + 1);
+      // Premium: generate next page, append, then advance
       setJustAdvanced(true);
       const result = await generateNextPage();
       if (result && !result.error) {
         setStory(prev => [...prev, result.content]);
         setLiveContext(result.nextContext || null);
         setIsStoryComplete(result.isComplete);
+        setCurrentPage(prev => prev + 1);
       }
       setTimeout(() => setJustAdvanced(false), 600);
     } else if (currentPage < story.length - 1) {
@@ -589,19 +589,25 @@ const handleRestartTimer = () => {
     try {
       console.log('🪄 Generating new story...');
       
-      const originalPageCount = story.length;
-      const result = await NetflixStyleStoryService.generateCompleteStory(userInfo);
-      
-      // For free users, maintain original page count; for premium, use full story
-      const newStory = isPremium ? result.pages : result.pages.slice(0, originalPageCount);
-      
-      setStory(newStory);
-      setCurrentPage(0); // Reset to first page
-      
-      // Reset live generation context for premium users
       if (isPremium) {
-        setLiveContext(null);
-        setIsStoryComplete(false);
+        const first = await LiveGenerationService.generateFirstPage(userInfo);
+        if ((first as any).error) {
+          throw new Error((first as any).error);
+        }
+        setStory([first.content]);
+        setCurrentPage(0); // Reset to first page
+        setLiveContext(first.nextContext || null);
+        setIsStoryComplete(first.isComplete);
+        setStoryTitle(`${userInfo.name}'s Live Adventure`);
+      } else {
+        const originalPageCount = story.length;
+        const result = await NetflixStyleStoryService.generateCompleteStory(userInfo);
+        
+        // For free users, maintain original page count
+        const newStory = result.pages.slice(0, originalPageCount || result.pages.length);
+        
+        setStory(newStory);
+        setCurrentPage(0); // Reset to first page
       }
       
       // Toast notifications removed for smoother experience
@@ -617,7 +623,6 @@ const handleRestartTimer = () => {
       setIsGeneratingNewStory(false);
     }
   };
-
   // End Story follow-up actions (Premium)
 
   const handleStartSequel = () => {
