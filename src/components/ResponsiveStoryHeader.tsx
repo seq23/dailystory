@@ -258,32 +258,6 @@ export const ResponsiveStoryHeader = ({
       </header>
     );
   }
-  if (isPremium && isMobile) {
-    return (
-      <header className={cn(
-        "w-full bg-white/95 backdrop-blur-sm border-b border-gray-200 z-30",
-        "sticky top-0"
-      )}>
-        <div className="safe-area-padding">
-          <div className="flex flex-wrap items-center justify-between gap-2 px-2 py-1">
-            {/* First row (premium mobile): centered title only */}
-
-            <div className="order-2 w-full text-center">
-              {displayTitle && (
-                <h1 className={cn(
-                  "font-semibold truncate",
-                  isMobile ? "text-sm" : isTablet ? "text-base" : "text-xl"
-                )}>
-                  {displayTitle}
-                </h1>
-              )}
-            </div>
-
-          </div>
-        </div>
-      </header>
-    );
-  }
   return (
     <header className={cn(
       "w-full bg-white/95 backdrop-blur-sm border-b border-gray-200 z-30",
@@ -519,17 +493,6 @@ export const ResponsiveStoryHeader = ({
                         <TooltipContent side="bottom">{t("tooltips.home", "Home")}</TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
-                  )}
-                  {isMobile && (
-                  <>
-                  <Avatar className="h-7 w-7">
-                    {hasSelectedAvatar && (
-                      <AvatarImage src={getAvatarUrl()} alt={userInfo?.name || "Reader"} />
-                    )}
-                    <AvatarFallback>{userInfo?.name?.charAt(0)?.toUpperCase() || "R"}</AvatarFallback>
-                  </Avatar>
-                  <Badge variant="premium">{t("badges.premium", "Premium")}</Badge>
-                  </>
                   )}
                 </div>
               )}
