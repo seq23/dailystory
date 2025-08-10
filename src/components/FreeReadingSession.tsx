@@ -29,7 +29,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
       onSessionEnded={onSessionEnded || (() => {})}
       onHome={onHome || (() => {})}
       onUpgrade={onUpgrade}
-      onNewStory={onNewStory || (() => {})}
+      {...(onNewStory ? { onNewStory } : {})}
     />
   );
 };
