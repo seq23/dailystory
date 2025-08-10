@@ -2,37 +2,11 @@ import { Check, Crown, Building2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-
+import { freeFeatures, premiumFeatures, enterpriseFeatures } from "@/constants/featureLists";
 interface PricingSectionProps {
   compact?: boolean; // compact version for homepage
 }
 
-const features = {
-  free: [
-    "Customize your story (Limited)",
-    "Free 20-minute reading sessions with images",
-    "Text-to-speech suite: Hear it, Explain it, phonetic breakdown, and precise word-by-word highlighting",
-    "Audio Narration (Limited)",
-    "Achievements, points, badges, and reading streaks (In session only)",
-    "End-of-session report with milestones",
-  ],
-  premium: [
-    "Customize your story",
-    "Unlimited reading time",
-    "Text-to-speech suite: Hear it, Explain it, phonetic breakdown, and precise word-by-word highlighting",
-    "Advanced audio narration",
-    "Achievements, points, badges, and reading streaks",
-    "End-of-session report with milestones",
-  ],
-  enterprise: [
-    "Admin & educator dashboards",
-    "Classroom & multi-seat licensing",
-    "Curriculum alignment tools",
-    "Assessment & reporting",
-    "Bulk user management",
-    "Priority support & SLAs",
-  ],
-};
 
 const phase2 = [
   {
@@ -94,7 +68,7 @@ export function PricingSection({ compact }: PricingSectionProps) {
                 <div className="text-muted-foreground">Forever</div>
               </div>
               <ul className="space-y-2 mb-6">
-                {features.free.map((f) => (
+                {freeFeatures.map((f) => (
                   <li key={f} className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1" />
                     <span>{f}</span>
@@ -124,7 +98,7 @@ export function PricingSection({ compact }: PricingSectionProps) {
                 <div className="text-muted-foreground">per month</div>
               </div>
               <ul className="space-y-2 mb-6">
-                {features.premium.map((f) => (
+                {premiumFeatures.map((f) => (
                   <li key={f} className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1" />
                     <span>{f}</span>
@@ -154,7 +128,7 @@ export function PricingSection({ compact }: PricingSectionProps) {
                 <div className="text-muted-foreground">Custom pricing</div>
               </div>
               <ul className="space-y-2 mb-6">
-                {features.enterprise.map((f) => (
+                {enterpriseFeatures.map((f) => (
                   <li key={f} className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1" />
                     <span>{f}</span>

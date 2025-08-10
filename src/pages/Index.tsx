@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { AuthWrapper } from "@/components/AuthWrapper";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import PricingSection from "@/components/PricingSection";
 import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const location = useLocation();
+  const isStoryAction = new URLSearchParams(location.search).get('action') === 'new-story';
 
   useEffect(() => {
     let isMounted = true;
@@ -24,7 +26,7 @@ const Index = () => {
   return (
     <div className="homepage">
       <AuthWrapper />
-      {!isAuthenticated && (
+      {(!isAuthenticated && !isStoryAction) && (
         <>
           <div className="mt-6">
             <PricingSection compact />

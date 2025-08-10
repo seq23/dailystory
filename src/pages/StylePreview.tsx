@@ -6,7 +6,7 @@ import leftPageImage from "@/assets/story-illustration-14.jpg";
 import { Check } from "lucide-react";
 import ReadAloudCoach from "@/components/ReadAloudCoach";
 import VoiceCommandController from "@/components/VoiceCommandController";
-
+import { freeFeatures, premiumFeatures, additionalOfferings } from "@/constants/featureLists";
 const sampleText = `Luna and Max found a hidden door in the library. When they pushed it open, a tiny breeze carried the scent of pine trees and warm cookies. “Ready?” Max whispered. Luna nodded, and together they stepped into a world of stories.`;
 
 const StylePreview: React.FC = () => {
@@ -178,14 +178,7 @@ const StylePreview: React.FC = () => {
               <article>
                 
                 <ul className="space-y-2 text-sm">
-{[
-  "Customize your story (Limited)",
-  "Free 20-minute reading sessions with images",
-  "Text-to-speech suite: Hear it, Explain it, phonetic breakdown, and precise word-by-word highlighting",
-  "Audio Narration (Limited)",
-  "Achievements, points, badges, and reading streaks (In session only)",
-  "End-of-session report with milestones",
-].map((f) => (
+{freeFeatures.map((f) => (
   <li key={f} className="flex items-start gap-2">
     <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1" />
     <span>{f}</span>
@@ -198,14 +191,7 @@ const StylePreview: React.FC = () => {
                 <div>
                   
                   <ul className="space-y-2 text-sm">
-{[
-  "Customize your story",
-  "Unlimited reading time",
-  "Text-to-speech suite: Hear it, Explain it, phonetic breakdown, and precise word-by-word highlighting",
-  "Advanced audio narration",
-  "Achievements, points, badges, and reading streaks",
-  "End-of-session report with milestones",
-].map((f) => (
+{premiumFeatures.map((f) => (
   <li key={f} className="flex items-start gap-2">
     <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1" />
     <span>{f}</span>
@@ -217,24 +203,7 @@ const StylePreview: React.FC = () => {
                 <div>
                   <h4 className="font-medium text-sm text-muted-foreground">Additional offerings</h4>
                   <ul className="mt-2 space-y-2 text-sm">
-{[
-  "Personalized live story generation (Your story doesn't end until you decide!)",
-  "Saved stories, favorites, and collections",
-  "Multiple child profiles",
-  "Parent dashboard with insights and analytics",
-  "Learning goals with weekly targets",
-  "Vocabulary tracking and practice quizzes",
-  "Comprehension questions after reading",
-  "Mini-games to reinforce vocabulary and phonics",
-  "Reading timer and progress tracking",
-  "Personalized difficulty adjustments as your child improves",
-  "Vocabulary word bank and review activities",
-  "Curated story library and recommendations",
-  "Mobile-optimized audio controls and kid-friendly UI",
-  "Voice commands for navigation and controls",
-  "Read-aloud feedback (speech-to-text coaching)",
-  "Priority support",
-].map((f) => (
+{additionalOfferings.map((f) => (
   <li key={f} className="flex items-start gap-2">
     <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1" />
     <span>{f}</span>
