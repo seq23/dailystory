@@ -102,9 +102,9 @@ export const defaultAudioConfig: AudioSettings = {
 // Voice command configurations for premium users
 export const voiceCommands = {
   navigation: {
-    'next page': () => console.log('Navigate to next page'),
-    'previous page': () => console.log('Navigate to previous page'),
-    'go back': () => console.log('Go back'),
+    'next page': () => navigate('next'),
+    'previous page': () => navigate('prev'),
+    'go back': () => navigate('prev'),
   },
   
   reading: {
@@ -120,6 +120,18 @@ export const voiceCommands = {
     'save word *': (word: string) => console.log(`Save word: ${word}`),
   },
 };
+
+// Helper used by voice commands to navigate the reader
+function navigate(dir: 'next' | 'prev') {
+  const id = dir === 'next' ? 'reader-next' : 'reader-prev';
+  const btn = document.getElementById(id) as HTMLButtonElement | null;
+  if (btn) {
+    btn.click();
+  } else {
+    window.dispatchEvent(new CustomEvent('reader:navigate', { detail: { direction: dir } }));
+  }
+}
+
 
 // Character voice mapping for emotional consistency
 export const characterVoices = {

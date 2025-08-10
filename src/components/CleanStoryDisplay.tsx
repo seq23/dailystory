@@ -571,6 +571,21 @@ useEffect(() => {
     setCurrentPage(Math.max(0, currentPage - 1));
   };
   
+  useEffect(() => {
+    const onNavigate = (e: Event) => {
+      try {
+        const detail = (e as CustomEvent<{ direction: 'next' | 'prev' }>).detail;
+        if (detail?.direction === 'next') {
+          handleNext();
+        } else if (detail?.direction === 'prev') {
+          handlePrevious();
+        }
+      } catch {}
+    };
+    window.addEventListener('reader:navigate', onNavigate as EventListener);
+    return () => window.removeEventListener('reader:navigate', onNavigate as EventListener);
+  }, [handleNext, handlePrevious]);
+  
   const handleWordInteraction = () => {
     setWordsInteracted(prev => prev + 1);
     updateActivity({ wordsRead: 1 });
@@ -1063,6 +1078,7 @@ const handleRestartTimer = () => {
                 <Progress value={progress} className="h-2" />
                 <div className="mt-2 flex items-center justify-center gap-3">
                   <Button
+                    id="reader-prev"
                     variant="outline"
                     size="sm"
                     onClick={handlePrevious}
@@ -1075,6 +1091,7 @@ const handleRestartTimer = () => {
                     Page {currentPage + 1} / {Math.max(story.length, 1)}
                   </p>
                   <Button
+                    id="reader-next"
                     variant="default"
                     size="sm"
                     onClick={handleNext}

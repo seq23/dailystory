@@ -245,7 +245,7 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
           {isLoading ? t("audioReading.generating", "Generating...") : isPlaying ? t("audioReading.stop", "Stop") : t("audioReading.playAudio", "Play Audio")}
         </Button>
         {shouldShowCrown && (
-          <Crown className="w-4 h-4 absolute -top-1 -right-1 text-yellow-500" />
+          <Crown className="w-4 h-4 absolute -top-1 -right-1 text-[hsl(var(--warning))]" />
         )}
       </div>
 
@@ -310,9 +310,8 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
         </TooltipProvider>
       )}
 
-      {/* Whisper fallback modal for devices without Web Speech */}
       <Dialog open={showVoiceModal} onOpenChange={setShowVoiceModal}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md left-1/2 -translate-x-1/2 translate-y-0 top-auto bottom-[calc(96px+env(safe-area-inset-bottom))] z-[200] w-[min(92vw,420px)]">
           <DialogHeader>
             <DialogTitle>{t("audioReading.voiceCommands", "Voice Commands")}</DialogTitle>
             <DialogDescription>
