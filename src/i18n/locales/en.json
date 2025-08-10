@@ -683,14 +683,14 @@
     },
     "confirm": {
       "title": "Are you sure?",
-      "desc": "Continuing will generate a concluding page next, but your session will continue. You’ll be able to save your story afterward.",
-      "continue": "Generate Conclusion",
-      "cancel": "Cancel"
+      "desc": "This will create a last page to this story. You can then save it in your library but it won't end your session (End session using the red button in the header).",
+      "continue": "Yes, I’m ready for the last page!",
+      "cancel": "No — I’ll keep going"
     }
   },
   "nav": {
     "next": "What happens next?",
-    "endStory": "End Story",
+    "endStory": "Create my ending",
     "endSession": "End Session",
     "endSessionConfirm": {
       "title": "End session?",
@@ -700,7 +700,7 @@
     }
   },
   "tooltips": {
-    "saveDuringEndStory": "Save this story to your Library. You can keep generating pages to create a sequel!",
+    "saveDuringEndStory": "This will save this story to library.",
     "endSession": "This will end this session. You will have the option to save this story as is."
   },
   "timer": {
