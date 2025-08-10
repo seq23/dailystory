@@ -136,8 +136,8 @@ export const ResponsiveStoryHeader = ({
               </Avatar>
             </div>
 
-            {/* All icons on one line; if they don't fit, they wrap to a second row. */}
-            <div className="flex flex-wrap items-center gap-1 pr-16">
+            {/* Icons row (row 2): single line in this order: Home → New Story → difficulty down → level badge → difficulty up */}
+            <div className="mt-8 w-full flex flex-nowrap items-center gap-1 pr-16">
               {onHome && (
                 <TooltipProvider>
                   <Tooltip>
