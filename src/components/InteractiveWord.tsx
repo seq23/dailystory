@@ -11,6 +11,7 @@ import { VocabularyLevelClassifier } from "@/utils/vocabularyLevelClassifier";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getGlobalAddVocabularyWord } from "@/utils/gamificationGlobals";
 import type { UserInfo } from "@/types";
+import { VocabularyTrackingService } from "@/services/vocabularyTrackingService";
 
 interface InteractiveWordProps {
   word: string;
@@ -369,6 +370,13 @@ export const InteractiveWord = ({
       }
       
       console.log('📝 Final definition to use:', definition);
+      
+      // Log vocabulary encounter (authenticated users only)
+      try {
+        await VocabularyTrackingService.logEncounter(cleanWord, definitionToSpeak, wordComplexity);
+      } catch (e) {
+        console.warn('Vocabulary tracking failed', e);
+      }
       
       // Show definition immediately
       toast({

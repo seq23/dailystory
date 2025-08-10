@@ -153,6 +153,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
           gradeLevel: (profile.grade_level as Grade) || 'K',
           nativeLanguage: (profile.native_language as LanguageCode) || 'en',
           readingLevel: profile.reading_level || 'beginner',
+          difficultyLevel: (profile as any).difficulty_level || profile.reading_level || 'beginner',
           interests: profile.interests || [],
           learningGoal: 'improve-english-reading' as LearningGoal,
           avatar: typeof (profile as any).avatar === 'string' ? JSON.parse((profile as any).avatar) : ((profile as any).avatar || { type: 'boy', skinTone: 'medium' }),

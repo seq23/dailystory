@@ -723,5 +723,12 @@
     "celebrationSound": "Celebration chime",
     "loadingStory": "Weaving more story magic…",
     "loadingImage": "Painting illustration…"
+  },
+  "reader": {
+    "toasts": {
+      "difficultyLocked": "Reading level is locked by a parent.",
+      "minLevelReached": "Minimum level is {minDifficulty}.",
+      "minExpertGradeReached": "Minimum expert grade is {minExpertGrade}."
+    }
   }
 }

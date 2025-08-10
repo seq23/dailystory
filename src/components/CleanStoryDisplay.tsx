@@ -43,6 +43,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ErrorHandler, ErrorType } from "@/utils/errorHandling";
 import { DiagnosticPanel } from "@/components/DiagnosticPanel";
 import { ApiKeyDiagnostic } from "@/components/ApiKeyDiagnostic";
+import { ParentGuardrailsService } from "@/services/parentGuardrailsService";
 
 interface CleanStoryDisplayProps {
   userInfo: UserInfo;
@@ -143,14 +144,16 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   
   useEffect(() => {
     if (!isPremium) return;
-    try {
-      const lock = localStorage.getItem('premium_lock_difficulty') === 'true';
-      const minDiff = (localStorage.getItem('premium_min_difficulty') as any) || 'beginner';
-      const minGrade = (localStorage.getItem('premium_min_expert_grade') as any) || '6th';
-      setLockDifficulty(lock);
-      if (['beginner','easy','medium','hard','expert'].includes(minDiff)) setMinDifficulty(minDiff as any);
-      if (["6th","7th","8th","9th","10th"].includes(minGrade)) setMinExpertGrade(minGrade as any);
-    } catch {}
+    (async () => {
+      try {
+        const guardrails = await ParentGuardrailsService.getGuardrails();
+        setLockDifficulty(guardrails.lockDifficulty);
+        setMinDifficulty(guardrails.minDifficulty as any);
+        setMinExpertGrade(guardrails.minExpertGrade as any);
+      } catch (e) {
+        console.error('Failed to load parent guardrails', e);
+      }
+    })();
   }, [isPremium]);
 
   useEffect(() => {
@@ -700,13 +703,11 @@ const handleRestartTimer = () => {
     // Respect parent guardrails for premium users
     if (isPremium) {
       if (lockDifficulty) {
-        toast({ title: 'Difficulty locked', description: 'A parent has locked the reading level in the Parent Dashboard.', duration: 3000 });
+        toast({ title: t('reader.toasts.difficultyLocked'), duration: 3000 });
         return;
       }
-      const currentIndex = difficultyLevels.indexOf(currentDifficulty);
-      const minIndex = difficultyLevels.indexOf(minDifficulty);
       if (direction === 'down' && currentIndex <= minIndex) {
-        toast({ title: 'Minimum level reached', description: `Minimum level is set to ${minDifficulty}.`, duration: 3000 });
+        toast({ title: t('reader.toasts.minLevelReached', { minDifficulty }), duration: 3000 });
         return;
       }
       // Expert internal grade guardrail
@@ -715,7 +716,7 @@ const handleRestartTimer = () => {
         const currentGradeIndex = gradeOrder.indexOf(expertGradeLevel);
         const minGradeIndex = gradeOrder.indexOf(minExpertGrade);
         if (currentGradeIndex <= minGradeIndex) {
-          toast({ title: 'Minimum grade reached', description: `Minimum expert grade is set to ${minExpertGrade}.`, duration: 3000 });
+          toast({ title: t('reader.toasts.minExpertGradeReached', { minExpertGrade }), duration: 3000 });
           return;
         }
       }
