@@ -55,6 +55,7 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
   const [hasPlayedThisPage, setHasPlayedThisPage] = useState(false);
   const { toast, dismiss } = useToast();
   const voiceTipsShownRef = useRef(false);
+  const speedMultiplierRef = useRef(1);
   const emitStatus = (s: 'idle'|'listening'|'processing') => window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: s } }));
 
   // Enhanced audio service handles free limits internally
@@ -63,6 +64,20 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
   const isAfterFreeLimit = currentPage >= maxFreePages;
   const canUseAudio = isPremium || isWithinFreeLimit;
   const shouldShowCrown = !isPremium && (hasPlayedThisPage || isAfterFreeLimit);
+
+  // Speed baseline calculator (mirror of service mapping)
+  const getBaseSpeed = () => {
+    const map: Record<typeof difficulty, number> = {
+      beginner: 0.5,
+      easy: 0.75,
+      medium: 0.85,
+      hard: 0.9,
+      expert: 1.0,
+    } as const;
+    const base = map[difficulty] ?? 0.85;
+    const ageMultiplier = userInfo && (userInfo as any).age && (userInfo as any).age <= 8 ? 0.9 : 1.0;
+    return Math.max(0.4, Math.min(1.2, base * ageMultiplier));
+  };
 
   // Mobile audio initialization
   useEffect(() => {
@@ -87,6 +102,7 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
     setIsLoading(true);
     
     try {
+      const speed = getBaseSpeed() * speedMultiplierRef.current;
       await audioService.playText({
         text,
         difficulty,
@@ -97,7 +113,8 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
           console.log(`🎯 ElevenLabs: Highlighting word ${wordIndex}`);
           onWordHighlight?.(wordIndex);
         },
-        currentPage
+        currentPage,
+        customSpeed: speed,
       });
       
       setIsPlaying(true);

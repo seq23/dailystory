@@ -103,15 +103,47 @@ export const defaultAudioConfig: AudioSettings = {
 export const voiceCommands = {
   navigation: {
     'next page': () => navigate('next'),
+    'go next': () => navigate('next'),
+    'forward': () => navigate('next'),
+    'skip ahead': () => navigate('next'),
+    'next': () => navigate('next'),
+
     'previous page': () => navigate('prev'),
     'go back': () => navigate('prev'),
+    'back': () => navigate('prev'),
+    'go previous': () => navigate('prev'),
+    'previous': () => navigate('prev'),
   },
   
   reading: {
-    'read slower': () => console.log('Decrease speed'),
-    'read faster': () => console.log('Increase speed'),
-    'repeat that': () => console.log('Repeat current section'),
-    'stop reading': () => console.log('Stop audio'),
+    // Playback controls
+    'start reading': () => window.dispatchEvent(new CustomEvent('audio:play')),
+    'play audio': () => window.dispatchEvent(new CustomEvent('audio:play')),
+    'begin reading': () => window.dispatchEvent(new CustomEvent('audio:play')),
+    'read aloud': () => window.dispatchEvent(new CustomEvent('audio:play')),
+
+    'pause': () => window.dispatchEvent(new CustomEvent('audio:pause')),
+    'pause reading': () => window.dispatchEvent(new CustomEvent('audio:pause')),
+
+    'resume': () => window.dispatchEvent(new CustomEvent('audio:resume')),
+    'continue': () => window.dispatchEvent(new CustomEvent('audio:resume')),
+    'continue reading': () => window.dispatchEvent(new CustomEvent('audio:resume')),
+
+    'stop': () => window.dispatchEvent(new CustomEvent('audio:stop')),
+    'stop reading': () => window.dispatchEvent(new CustomEvent('audio:stop')),
+
+    'repeat that': () => window.dispatchEvent(new CustomEvent('audio:repeat')),
+    'repeat': () => window.dispatchEvent(new CustomEvent('audio:repeat')),
+    'say that again': () => window.dispatchEvent(new CustomEvent('audio:repeat')),
+
+    // Speed adjustments (delta)
+    'read slower': () => window.dispatchEvent(new CustomEvent('audio:speed', { detail: { delta: -0.15 } })),
+    'slower': () => window.dispatchEvent(new CustomEvent('audio:speed', { detail: { delta: -0.15 } })),
+    'slow down': () => window.dispatchEvent(new CustomEvent('audio:speed', { detail: { delta: -0.15 } })),
+
+    'read faster': () => window.dispatchEvent(new CustomEvent('audio:speed', { detail: { delta: 0.15 } })),
+    'faster': () => window.dispatchEvent(new CustomEvent('audio:speed', { detail: { delta: 0.15 } })),
+    'speed up': () => window.dispatchEvent(new CustomEvent('audio:speed', { detail: { delta: 0.15 } })),
   },
   
   vocabulary: {

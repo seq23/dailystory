@@ -26,6 +26,9 @@ export class AudioSyncService {
   private progressInterval: NodeJS.Timeout | null = null;
   private syncTimeouts: NodeJS.Timeout[] = [];
   private onStateChange?: (isPlaying: boolean) => void; // Add state change callback
+  private lastVoice: string = 'default';
+  private lastSpeed: number = 1.0;
+  private lastOnWordHighlight?: (wordIndex: number) => void;
   
   // Enhanced timing profiles optimized for eleven_multilingual_v2 model
   private readonly voiceProfiles: Record<string, VoiceTimingProfile> = {
@@ -62,6 +65,9 @@ export class AudioSyncService {
     
     // Store state change callback
     this.onStateChange = onStateChange;
+    this.lastVoice = voice;
+    this.lastSpeed = speed;
+    this.lastOnWordHighlight = onWordHighlight;
     
     // Stop any existing playback
     this.stopAudio();
@@ -316,6 +322,52 @@ export class AudioSyncService {
     } catch (error) {
       console.warn('Mobile audio unlock failed:', error);
     }
+  }
+
+  /**
+   * Pause audio playback
+   */
+  pauseAudio(): void {
+    if (!this.audio) return;
+    if (this.isPlaying) {
+      this.audio.pause();
+      this.isPlaying = false;
+      this.onStateChange?.(false);
+      if (this.progressInterval) {
+        clearInterval(this.progressInterval);
+        this.progressInterval = null;
+      }
+    }
+  }
+
+  /**
+   * Resume audio playback
+   */
+  async resumeAudio(): Promise<void> {
+    if (!this.audio) return;
+    if (!this.isPlaying) {
+      try {
+        await this.audio.play();
+        this.isPlaying = true;
+        this.onStateChange?.(true);
+        // Restart tracking using last known settings
+        this.startProgressTracking(this.lastVoice, this.lastSpeed, this.lastOnWordHighlight);
+      } catch (e) {
+        console.warn('Failed to resume audio', e);
+      }
+    }
+  }
+
+  /**
+   * Seek by a number of seconds (positive or negative)
+   */
+  seekBySeconds(seconds: number): void {
+    if (!this.audio) return;
+    const target = Math.max(0, Math.min(this.audio.currentTime + seconds, this.audio.duration || Infinity));
+    this.audio.currentTime = target;
+    // Update highlighting to match new time
+    const expectedIndex = this.calculateExpectedWordIndex(this.lastVoice, this.lastSpeed, target);
+    this.correctHighlighting(expectedIndex, this.lastOnWordHighlight);
   }
 
   /**

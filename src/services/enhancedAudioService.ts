@@ -17,6 +17,7 @@ export interface AudioPlaybackOptions {
   onWordHighlight?: (wordIndex: number) => void;
   currentPage?: number;
   characterType?: 'narrator' | 'child' | 'adult' | 'elderly' | 'animal';
+  customSpeed?: number; // Optional explicit speed override
 }
 
 export interface PhoneticsOptions {
@@ -82,8 +83,8 @@ export class EnhancedAudioService {
       throw new Error('Page already played - upgrade for unlimited audio');
     }
 
-    // Get adaptive speed based on difficulty and user language
-    const speed = this.getSpeedForDifficulty(difficulty, userInfo);
+    // Get adaptive speed based on difficulty or use explicit override
+    const speed = options.customSpeed ?? this.getSpeedForDifficulty(difficulty, userInfo);
     
     // Get appropriate voice
     const voice = this.getVoiceForUser(userInfo, characterType, isPremium);
@@ -348,6 +349,41 @@ export class EnhancedAudioService {
     if (this.currentAudio) {
       this.currentAudio.playbackRate = newSpeed;
     }
+  }
+
+  pauseAudio(): void {
+    import('./audioSyncService').then(({ audioSyncService }) => {
+      audioSyncService.pauseAudio();
+      this.isPlaying = false;
+    }).catch(() => {
+      if (this.currentAudio) {
+        this.currentAudio.pause();
+        this.isPlaying = false;
+      }
+    });
+  }
+
+  resumeAudio(): void {
+    import('./audioSyncService').then(async ({ audioSyncService }) => {
+      await audioSyncService.resumeAudio();
+      this.isPlaying = true;
+    }).catch(() => {
+      if (this.currentAudio) {
+        this.currentAudio.play().catch(() => {});
+        this.isPlaying = true;
+      }
+    });
+  }
+
+  seekBy(seconds: number): void {
+    import('./audioSyncService').then(({ audioSyncService }) => {
+      audioSyncService.seekBySeconds(seconds);
+    }).catch(() => {
+      if (this.currentAudio) {
+        const target = Math.max(0, Math.min((this.currentAudio.currentTime || 0) + seconds, this.currentAudio.duration || Infinity));
+        this.currentAudio.currentTime = target;
+      }
+    });
   }
 
   getPlaybackStatus(): { isPlaying: boolean; currentTime: number; duration: number } {
