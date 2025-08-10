@@ -264,128 +264,19 @@ export const ResponsiveStoryHeader = ({
       )}>
         <div className="safe-area-padding">
           <div className="flex flex-wrap items-center justify-between gap-2 px-2 py-1">
-            {/* Left: Home + New Story (active) */}
-            <div className="order-1 flex items-center gap-1">
-              {onHome && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={onHome}
-                        className="min-h-[36px] min-w-[36px] rounded-full p-1"
-                        aria-label={t("common.home", "Home")}
-                      >
-                        <Home className="w-4 h-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom">{t("tooltips.home", "Home")}</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
+            {/* First row (premium mobile): centered title only */}
 
-              {onNewStory && (
-                <NewStoryCTA
-                  isPremium
-                  iconOnly
-                  onNewStory={onNewStory}
-                  onUpgrade={onUpgrade || (() => {})}
-                  size="sm"
-                  wandPulse={wandPulse}
-                />
+            <div className="order-2 w-full text-center">
+              {displayTitle && (
+                <h1 className={cn(
+                  "font-semibold truncate",
+                  isMobile ? "text-sm" : isTablet ? "text-base" : "text-xl"
+                )}>
+                  {displayTitle}
+                </h1>
               )}
             </div>
 
-            {/* Center: Difficulty controls (wrap to 2nd row if needed) */}
-            {showLevelControls && (
-              <div
-                className="order-2 flex-1 min-w-[240px] basis-auto flex items-center justify-center gap-1"
-                id="reading-level-controls"
-                data-id="reading-level"
-              >
-                {onDecreaseDifficulty && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={onDecreaseDifficulty}
-                          disabled={!canDecrease || isChangingDifficulty}
-                          className={cn(
-                            "min-h-[36px] min-w-[36px] rounded-full p-1",
-                            "transition-all duration-300",
-                            buttonAnimations.decrease ? "animate-scale-in bg-secondary/20 border-secondary" : ""
-                          )}
-                          aria-label={t("storyDisplay.decreaseDifficulty", "Make easier")}
-                        >
-                          {isChangingDifficulty && changeDirection === 'decrease' ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <TrendingDown className="w-4 h-4" />
-                          )}
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom">
-                        {t("storyDisplay.decreaseDifficulty", "Make easier")}
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
-
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    "border px-2 py-1 transition-all duration-300 text-xs",
-                    getDifficultyColor(currentDifficulty),
-                    buttonAnimations.badge ? 'animate-[wiggle_0.5s_ease-in-out] scale-110' : ''
-                  )}
-                >
-                  {getDifficultyLabel(currentDifficulty)}
-                </Badge>
-
-                {onIncreaseDifficulty && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={onIncreaseDifficulty}
-                          disabled={!canIncrease || isChangingDifficulty}
-                          className={cn(
-                            "min-h-[36px] min-w-[36px] rounded-full p-1",
-                            "transition-all duration-300",
-                            buttonAnimations.increase ? 'animate-[glow-pulse_0.6s_ease-in-out,_edgeBounce_0.4s_ease-out] border-primary/50 shadow-lg shadow-primary/25' : ''
-                          )}
-                          aria-label={t("storyDisplay.increaseDifficulty", "Make harder")}
-                        >
-                          {isChangingDifficulty && changeDirection === 'increase' ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <TrendingUp className="w-4 h-4" />
-                          )}
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom">
-                        {t("storyDisplay.increaseDifficulty", "Make harder")}
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
-              </div>
-            )}
-
-            {/* Right: Avatar */}
-            <div className="order-3 flex items-center gap-2">
-              <Avatar className="h-8 w-8">
-                {hasSelectedAvatar && (
-                  <AvatarImage src={getAvatarUrl()} alt={userInfo?.name || "Reader"} />
-                )}
-                <AvatarFallback>{userInfo?.name?.charAt(0)?.toUpperCase() || "R"}</AvatarFallback>
-              </Avatar>
-            </div>
           </div>
         </div>
       </header>
@@ -417,7 +308,7 @@ export const ResponsiveStoryHeader = ({
               "flex items-center",
               isMobileOrTablet ? "gap-1" : "gap-2 ml-4"
             )}>
-              {onHome && !(isPremium && isTablet) && (
+              {onHome && !(isPremium && (isTablet || isMobile)) && (
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -464,17 +355,15 @@ export const ResponsiveStoryHeader = ({
           <div className="flex-1 min-w-0 text-center">
             {displayTitle && (
               <h1 className={cn(
-                "font-semibold text-gray-900 truncate",
-                isMobile ? "text-sm" : 
-                isTablet ? "text-base" : 
-                "text-xl max-w-md mx-auto"
+                "font-semibold truncate",
+                isMobile ? "text-sm" : isTablet ? "text-base" : "text-xl max-w-md mx-auto"
               )}>
                 {displayTitle}
               </h1>
             )}
           </div>
 
-          {/* Right Section: Level Controls + End Session */}
+          {/* Right Section: Level Controls (icons row only for guests) */}
           <div className={cn(
             "flex items-center gap-2",
             isMobile && "w-full justify-end flex-nowrap overflow-x-auto",
@@ -606,10 +495,10 @@ export const ResponsiveStoryHeader = ({
         {isPremium && (
           <div className={cn(
             "flex items-center flex-nowrap",
-            isTablet ? "justify-center px-5 pb-3" : isMobile ? "justify-start px-3 pb-2 overflow-x-auto" : "justify-start py-2 overflow-x-auto"
+            (isMobile || isTablet) ? "justify-center px-5 pb-3" : "justify-start py-2 overflow-x-auto"
           )}>
             <div className={cn("flex items-center flex-nowrap", isMobileOrTablet ? "gap-1 sm:gap-2" : "gap-3")}> 
-              {isTablet && (
+              {(isMobile || isTablet) && (
                 <div className="flex items-center gap-2 mr-2">
                   {onHome && (
                     <TooltipProvider>
