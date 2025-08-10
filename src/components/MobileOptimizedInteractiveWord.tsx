@@ -6,6 +6,7 @@ import type { UserInfo } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { EnhancedAudioService } from "@/services/enhancedAudioService";
 import { VocabularyLevelClassifier } from "@/utils/vocabularyLevelClassifier";
+import { getGlobalAddVocabularyWord } from "@/utils/gamificationGlobals";
 
 interface MobileOptimizedInteractiveWordProps {
   word: string;
@@ -104,6 +105,34 @@ export const MobileOptimizedInteractiveWord = (props: MobileOptimizedInteractive
       }
     };
 
+    const handleSave = () => {
+      const normalizedDifficulty: 'beginner' | 'intermediate' | 'advanced' =
+        (difficulty === 'beginner' || difficulty === 'easy') ? 'beginner' :
+        (difficulty === 'medium') ? 'intermediate' : 'advanced';
+
+      const vocabularyWord: any = {
+        word: cleanWord,
+        definition: '',
+        difficulty: normalizedDifficulty,
+        reviewStatus: 'new',
+        context: props.sentenceContext || '',
+        addedAt: new Date().toISOString(),
+      };
+
+      try {
+        (window as any).addToVocabulary?.(vocabularyWord);
+      } catch (err) {
+        console.warn('addToVocabulary not available', err);
+      }
+
+      try {
+        const addVocabularyWord = getGlobalAddVocabularyWord();
+        addVocabularyWord && addVocabularyWord();
+      } catch {}
+
+      setShowMobileModal(false);
+    };
+
     return (
       <>
         <span
@@ -120,6 +149,8 @@ export const MobileOptimizedInteractiveWord = (props: MobileOptimizedInteractive
           onHearIt={handleHearIt}
           onExplain={handleExplain}
           onSyllables={handleSyllables}
+          onSave={handleSave}
+          isPremium={props.isPremium}
           userInfo={props.userInfo}
           isPlaying={isPlaying}
           isLoadingWordData={isLoadingWordData}

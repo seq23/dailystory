@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Volume2, HelpCircle, Layers, X } from "lucide-react";
+import { Volume2, HelpCircle, Layers, X, BookmarkPlus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { UserInfo } from "@/types";
 
@@ -12,6 +12,8 @@ interface MobileTTSModalProps {
   onHearIt: () => void;
   onExplain: () => void;
   onSyllables: () => void;
+  onSave?: () => void;
+  isPremium?: boolean;
   userInfo?: UserInfo;
   isPlaying?: boolean;
   isLoadingWordData?: boolean;
@@ -24,6 +26,8 @@ export const MobileTTSModal = ({
   onHearIt,
   onExplain,
   onSyllables,
+  onSave,
+  isPremium,
   userInfo,
   isPlaying = false,
   isLoadingWordData = false,
@@ -87,6 +91,20 @@ export const MobileTTSModal = ({
             <Layers className="mr-3 h-5 w-5" />
             Break into Syllables
           </Button>
+
+          {/* Save Word Button (Premium) */}
+          {isPremium && onSave && (
+            <Button
+              onClick={onSave}
+              disabled={isPlaying || isLoadingWordData}
+              className="w-full h-12 text-lg font-medium"
+              size="lg"
+              variant="outline"
+            >
+              <BookmarkPlus className="mr-3 h-5 w-5" />
+              Save Word
+            </Button>
+          )}
         </div>
       </DialogContent>
     </Dialog>

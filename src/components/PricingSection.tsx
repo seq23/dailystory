@@ -6,7 +6,7 @@ import { freeFeatures, premiumFeatures, additionalOfferings, enterpriseFeatures 
 import heroImage from "@/assets/hero-image.jpg";
 import vocabImg from "@/assets/story-illustration-12.jpg";
 import ReadAloudCoach from "@/components/ReadAloudCoach";
-import VoiceCommandController from "@/components/VoiceCommandController";
+
 
 interface PricingSectionProps {
   compact?: boolean; // compact version for homepage
@@ -160,15 +160,6 @@ export function PricingSection({ compact }: PricingSectionProps) {
                   </CardContent>
                 </Card>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">Voice commands (Premium)</CardTitle>
-                    <CardDescription>Try a command like “Next page”</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <VoiceCommandController />
-                  </CardContent>
-                </Card>
 
                 <Card>
                   <CardHeader>

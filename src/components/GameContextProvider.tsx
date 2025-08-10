@@ -1,6 +1,7 @@
-import React, { createContext, useContext, ReactNode } from 'react';
+import React, { createContext, useContext, ReactNode, useEffect } from 'react';
 import { useGamification } from '@/hooks/useGamification';
 import type { UserInfo } from '@/types';
+import { setupGamificationGlobals, cleanupGamificationGlobals } from '@/utils/gamificationGlobals';
 
 interface GameContextValue {
   userStats: any;
@@ -34,6 +35,11 @@ export const GameContextProvider: React.FC<GameContextProviderProps> = ({
     userType,
     enablePersistence: userType === 'premium'
   });
+
+  useEffect(() => {
+    setupGamificationGlobals(gamificationHook.addVocabularyWord, userType === 'premium');
+    return () => cleanupGamificationGlobals();
+  }, [gamificationHook.addVocabularyWord, userType]);
 
   return (
     <GameContext.Provider value={gamificationHook}>
