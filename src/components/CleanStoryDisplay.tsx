@@ -44,6 +44,7 @@ import { ErrorHandler, ErrorType } from "@/utils/errorHandling";
 import { DiagnosticPanel } from "@/components/DiagnosticPanel";
 import { ApiKeyDiagnostic } from "@/components/ApiKeyDiagnostic";
 import { ParentGuardrailsService } from "@/services/parentGuardrailsService";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CleanStoryDisplayProps {
   userInfo: UserInfo;
@@ -757,33 +758,78 @@ const handleRestartTimer = () => {
       }
     }
     
-    if (newIndex !== currentIndex) {
-      const newDifficulty = difficultyLevels[newIndex];
-      setCurrentDifficulty(newDifficulty);
-      
-      // Store the difficulty choice
-      DifficultyManager.storeDifficulty(userInfo.name || 'guest', newDifficulty, userInfo);
-      
-      // Update live context for premium users
-      if (isPremium && liveContext) {
-        setLiveContext(prev => prev ? {
-          ...prev, 
-          difficulty: newDifficulty,
-          expertGradeLevel: newDifficulty === 'expert' ? newGradeLevel : undefined
-        } : null);
+      if (newIndex !== currentIndex) {
+        const newDifficulty = difficultyLevels[newIndex];
+        setCurrentDifficulty(newDifficulty);
+        
+        // Store the difficulty choice locally
+        DifficultyManager.storeDifficulty(userInfo.name || 'guest', newDifficulty, userInfo);
+        
+        // Persist to Supabase profile and preferences when authenticated
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            await supabase.from('profiles').update({ difficulty_level: newDifficulty }).eq('user_id', user.id);
+            if (newDifficulty === 'expert') {
+              // Save last expert grade for restoration
+              const { data: existing } = await supabase
+                .from('user_preferences')
+                .select('id, reading_preferences')
+                .eq('user_id', user.id)
+                .maybeSingle();
+              const basePrefs = (existing && typeof existing.reading_preferences === 'object') ? (existing.reading_preferences as Record<string, any>) : {};
+              const reading_preferences = { ...basePrefs, lastExpertGrade: newGradeLevel };
+              if (existing?.id) {
+                await supabase.from('user_preferences').update({ reading_preferences }).eq('id', existing.id);
+              } else {
+                await supabase.from('user_preferences').insert([{ user_id: user.id, reading_preferences }]);
+              }
+            }
+          }
+        } catch (e) {
+          console.warn('Could not persist difficulty preference', e);
+        }
+        
+        // Update live context for premium users
+        if (isPremium && liveContext) {
+          setLiveContext(prev => prev ? {
+            ...prev, 
+            difficulty: newDifficulty,
+            expertGradeLevel: newDifficulty === 'expert' ? newGradeLevel : undefined
+          } : null);
+        }
+        
+        // Animate badge change
+        setTimeout(() => setChangeDirection('badge'), 200);
+      } else if (currentDifficulty === 'expert') {
+        // Update live context for expert grade level changes
+        if (isPremium && liveContext) {
+          setLiveContext(prev => prev ? {...prev, expertGradeLevel: newGradeLevel} : null);
+        }
+        // Persist last expert grade
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            const { data: existing } = await supabase
+              .from('user_preferences')
+              .select('id, reading_preferences')
+              .eq('user_id', user.id)
+              .maybeSingle();
+            const basePrefs = (existing && typeof existing.reading_preferences === 'object') ? (existing.reading_preferences as Record<string, any>) : {};
+            const reading_preferences = { ...basePrefs, lastExpertGrade: newGradeLevel };
+            if (existing?.id) {
+              await supabase.from('user_preferences').update({ reading_preferences }).eq('id', existing.id);
+            } else {
+              await supabase.from('user_preferences').insert([{ user_id: user.id, reading_preferences }]);
+            }
+          }
+        } catch (e) {
+          console.warn('Could not persist expert grade preference', e);
+        }
+        
+        // Animate badge change for expert level progression
+        setTimeout(() => setChangeDirection('badge'), 200);
       }
-      
-      // Animate badge change
-      setTimeout(() => setChangeDirection('badge'), 200);
-    } else if (currentDifficulty === 'expert') {
-      // Update live context for expert grade level changes
-      if (isPremium && liveContext) {
-        setLiveContext(prev => prev ? {...prev, expertGradeLevel: newGradeLevel} : null);
-      }
-      
-      // Animate badge change for expert level progression
-      setTimeout(() => setChangeDirection('badge'), 200);
-    }
     
     // Complete animation
     setTimeout(() => {

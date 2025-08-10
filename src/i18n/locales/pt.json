@@ -776,7 +776,28 @@
       "pageTurner": "Leia 10 páginas em uma única sessão",
       "chapterMaster": "Leia 25 páginas em uma única sessão",
       "bookExplorer": "Leia 50 páginas em uma única sessão"
+,
+  "reader": {
+    "toasts": {
+      "difficultyLocked": "Reading level is locked by a parent.",
+      "minLevelReached": "Minimum level is {minDifficulty}.",
+      "minExpertGradeReached": "Minimum expert grade is {minExpertGrade}."
     }
+  },
+  "parent": {
+    "controls": {
+      "title": "Parent Controls",
+      "lockDifficulty": "Lock reading difficulty",
+      "minDifficulty": "Minimum difficulty",
+      "minExpertGrade": "Minimum expert grade (expert mode)",
+      "allowDecreaseBelowMin": "Allow decreasing below minimum (soft)",
+      "save": "Save",
+      "saved": "Settings saved",
+      "error": "Could not save settings"
+    }
+  }
+}
+
   },
   "colors": {
     "red": "Vermelho",

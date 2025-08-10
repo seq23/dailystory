@@ -606,4 +606,24 @@
     "expand": "عرض التقدم",
     "collapse": "إخفاء التقدم"
   }
+,
+  "reader": {
+    "toasts": {
+      "difficultyLocked": "Reading level is locked by a parent.",
+      "minLevelReached": "Minimum level is {minDifficulty}.",
+      "minExpertGradeReached": "Minimum expert grade is {minExpertGrade}."
+    }
+  },
+  "parent": {
+    "controls": {
+      "title": "Parent Controls",
+      "lockDifficulty": "Lock reading difficulty",
+      "minDifficulty": "Minimum difficulty",
+      "minExpertGrade": "Minimum expert grade (expert mode)",
+      "allowDecreaseBelowMin": "Allow decreasing below minimum (soft)",
+      "save": "Save",
+      "saved": "Settings saved",
+      "error": "Could not save settings"
+    }
+  }
 }

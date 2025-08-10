@@ -5,7 +5,12 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { BookOpen, Clock, Target, TrendingUp, Award, Star, Settings, Calendar } from "lucide-react";
-import type { UserInfo } from "@/types";
+import type { UserInfo, DifficultyLevel, ExpertGradeLevel } from "@/types";
+import { useToast } from "@/hooks/use-toast";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { ParentGuardrailsService } from "@/services/parentGuardrailsService";
 
 interface ParentDashboardProps {
   userInfo: UserInfo;
@@ -40,6 +45,30 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
 
   const [weeklyGoal, setWeeklyGoal] = useState(5); // stories per week
   const [dailyTimeGoal, setDailyTimeGoal] = useState(20); // minutes per day
+  const { toast } = useToast();
+  const [saving, setSaving] = useState(false);
+  const [guardrails, setGuardrails] = useState<{ lockDifficulty: boolean; minDifficulty: DifficultyLevel; minExpertGrade: ExpertGradeLevel; allowDecreaseBelowMin: boolean }>({
+    lockDifficulty: false,
+    minDifficulty: 'beginner',
+    minExpertGrade: '6th',
+    allowDecreaseBelowMin: false,
+  });
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const g = await ParentGuardrailsService.getGuardrails();
+        setGuardrails({
+          lockDifficulty: g.lockDifficulty,
+          minDifficulty: g.minDifficulty,
+          minExpertGrade: g.minExpertGrade,
+          allowDecreaseBelowMin: !!g.allowDecreaseBelowMin,
+        });
+      } catch (e) {
+        console.warn('Failed to load guardrails', e);
+      }
+    })();
+  }, []);
 
   const formatTime = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
@@ -58,11 +87,12 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
       
       <CardContent>
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="progress">Progress</TabsTrigger>
             <TabsTrigger value="goals">Goals</TabsTrigger>
             <TabsTrigger value="insights">Insights</TabsTrigger>
+            <TabsTrigger value="controls">Controls</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -279,7 +309,72 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+
+            </TabsContent>
+
+            <TabsContent value="controls" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Parent Controls</CardTitle>
+                  <CardDescription>Set reading guardrails that the reader will follow</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="lockDifficulty" className="text-sm font-medium">Lock reading difficulty</Label>
+                    <Switch id="lockDifficulty" checked={guardrails.lockDifficulty} onCheckedChange={(v) => setGuardrails({ ...guardrails, lockDifficulty: v })} />
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Minimum difficulty</Label>
+                      <Select value={guardrails.minDifficulty} onValueChange={(v) => setGuardrails({ ...guardrails, minDifficulty: v as DifficultyLevel })}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select minimum" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {(['beginner','easy','medium','hard','expert'] as DifficultyLevel[]).map((lvl) => (
+                            <SelectItem key={lvl} value={lvl}>{lvl}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Minimum expert grade (expert mode)</Label>
+                      <Select value={guardrails.minExpertGrade} onValueChange={(v) => setGuardrails({ ...guardrails, minExpertGrade: v as ExpertGradeLevel })}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select minimum grade" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {(["6th","7th","8th","9th","10th"] as ExpertGradeLevel[]).map((g) => (
+                            <SelectItem key={g} value={g}>{g}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="allowDecr" className="text-sm font-medium">Allow decreasing below minimum (soft)</Label>
+                    <Switch id="allowDecr" checked={guardrails.allowDecreaseBelowMin} onCheckedChange={(v) => setGuardrails({ ...guardrails, allowDecreaseBelowMin: v })} />
+                  </div>
+
+                  <div className="flex justify-end">
+                    <Button disabled={saving} onClick={async () => {
+                      try {
+                        setSaving(true);
+                        await ParentGuardrailsService.saveGuardrails(guardrails);
+                        toast({ title: 'Settings saved' });
+                      } catch (e) {
+                        toast({ title: 'Could not save settings', variant: 'destructive' });
+                      } finally {
+                        setSaving(false);
+                      }
+                    }}>Save</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
         </Tabs>
       </CardContent>
     </Card>
