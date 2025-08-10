@@ -11,6 +11,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 // Mobile-Optimized UI Components
 import { CollapsibleFloatingTimer } from "@/components/CollapsibleFloatingTimer";
+import { MobileActionDock } from "@/components/MobileActionDock";
 
 import { ResponsiveStoryHeader } from "@/components/ResponsiveStoryHeader";
 import { ModernProgressTowers } from "@/components/ModernProgressTowers";
@@ -1266,38 +1267,40 @@ const handleRestartTimer = () => {
               {/* Navigation - Responsive Layout */}
               <div id="story-navigation" className="story-navigation">
                 {/* Mobile/Tablet: Slightly more compact layout */}
-                <div className="flex justify-center items-center gap-6 xl:hidden">
-                  <MobileOptimizedButton
-                    onClick={handlePrevious}
-                    disabled={currentPage === 0 || timeRemaining <= 0}
-                    variant="outline"
-                  >
-                    Previous
-                  </MobileOptimizedButton>
+                {!isPremium && (
+                  <div className="flex justify-center items-center gap-6 xl:hidden">
+                    <MobileOptimizedButton
+                      onClick={handlePrevious}
+                      disabled={currentPage === 0 || timeRemaining <= 0}
+                      variant="outline"
+                    >
+                      Previous
+                    </MobileOptimizedButton>
 
-                  <span className="text-sm font-medium text-muted-foreground px-2">
-                    Page {currentPage + 1}
-                  </span>
+                    <span className="text-sm font-medium text-muted-foreground px-2">
+                      Page {currentPage + 1}
+                    </span>
 
-                  <MobileOptimizedButton
-                    onClick={handleNext}
-                    disabled={isLoadingNextPage || timeRemaining <= 0 || (!isPremium && currentPage === story.length - 1)}
-                    className="bg-primary text-primary-foreground"
-                  >
-                    {isLoadingNextPage ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        {isPremium ? 'Generating page...' : 'Generating...'}
-                      </>
-                    ) : isPremium && currentPage === story.length - 1 && isStoryComplete ? (
-                      t('nav.next','What happens next?')
-                    ) : isPremium && currentPage === story.length - 1 ? (
-                      t('nav.next','What happens next?')
-                    ) : (
-                      'Next'
-                    )}
-                  </MobileOptimizedButton>
-                </div>
+                    <MobileOptimizedButton
+                      onClick={handleNext}
+                      disabled={isLoadingNextPage || timeRemaining <= 0 || (!isPremium && currentPage === story.length - 1)}
+                      className="bg-primary text-primary-foreground"
+                    >
+                      {isLoadingNextPage ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          {isPremium ? 'Generating page...' : 'Generating...'}
+                        </>
+                      ) : isPremium && currentPage === story.length - 1 && isStoryComplete ? (
+                        t('nav.next','What happens next?')
+                      ) : isPremium && currentPage === story.length - 1 ? (
+                        t('nav.next','What happens next?')
+                      ) : (
+                        'Next'
+                      )}
+                    </MobileOptimizedButton>
+                  </div>
+                )}
 
                 {/* Premium controls */}
                 {isPremium && (
@@ -1433,6 +1436,20 @@ const handleRestartTimer = () => {
           onRestartTimer={isPremium ? handleRestartTimer : undefined}
           onKeepReadingUntimed={isPremium ? handleKeepReadingUntimed : undefined}
           onSaveStoryNow={isPremium ? handleSaveStoryNow : undefined}
+        />
+      )}
+
+      {/* Mobile Action Dock - Premium Only */}
+      {isPremium && isMobileOrTablet && (
+        <MobileActionDock
+          isPremium
+          onPrev={handlePrevious}
+          onNext={handleNext}
+          onSave={handleSaveStoryNow}
+          onEnd={() => setShowEndSessionConfirm(true)}
+          canPrev={currentPage > 0 && timeRemaining > 0}
+          canNext={!isLoadingNextPage && timeRemaining > 0 && (isPremium || currentPage < story.length - 1)}
+          isSaving={isSaving}
         />
       )}
 

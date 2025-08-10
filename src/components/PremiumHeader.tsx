@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -16,10 +16,13 @@ import {
   Bug, 
   User,
   Settings,
-  ChevronDown
+  ChevronDown,
+  PanelLeft
 } from "lucide-react";
 import type { UserInfo } from "@/types";
-import { SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useTranslation } from "react-i18next";
 
 interface PremiumHeaderProps {
   userInfo: UserInfo;

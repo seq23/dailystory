@@ -350,7 +350,7 @@ export const ResponsiveStoryHeader = ({
             )}
 
             {/* Save Button (Premium) */}
-            {onSaveStory && (
+            {onSaveStory && !(isPremium && isMobile) && (
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -379,7 +379,7 @@ export const ResponsiveStoryHeader = ({
               </TooltipProvider>
             )}
 
-            {onEndSession && (
+            {onEndSession && !(isPremium && isMobile) && (
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
