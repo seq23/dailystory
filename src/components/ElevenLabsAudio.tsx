@@ -175,15 +175,20 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
     try {
       const result = (audioService as any).processVoiceCommand?.(cmd);
       console.log('🎙️ Whisper modal command processed:', { cmd, result });
-      if (!result || result.recognized === false) {
-        toast({
-          title: t("audioReading.voiceNotRecognized", "Not recognized"),
-          description: t("audioReading.tryCommand", "Try 'next page' or 'pause'"),
-          duration: 2000,
-        });
+      if (result && result.recognized && typeof result.action === 'function') {
+        window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: 'processing' } }));
+        try {
+          result.action();
+          toast({ title: t('audioReading.voiceCommandRun', 'Command executed'), description: cmd, duration: 1500 });
+        } finally {
+          window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: 'listening' } }));
+        }
+      } else {
+        toast({ title: t('audioReading.voiceNotRecognized', 'Not recognized'), description: t('audioReading.tryCommand', "Try 'next page' or 'pause'"), duration: 2000 });
       }
     } catch (e) {
       console.error('Voice modal processing failed', e);
+      toast({ title: t('audioReading.voiceCommandError', 'Voice command error'), description: String(e), variant: 'destructive' });
     }
   };
 
