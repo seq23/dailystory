@@ -475,7 +475,7 @@ export const ResponsiveStoryHeader = ({
           )}>
             <div className={cn("flex items-center flex-nowrap", isMobileOrTablet ? "gap-1 sm:gap-2" : "gap-3")}> 
               {(isMobile || isTablet) && (
-                <div className="flex items-center gap-2 mr-2">
+                <div className={cn("flex items-center gap-2", isMobile ? "mr-1" : "mr-2")}>
                   {onHome && (
                     <TooltipProvider>
                       <Tooltip>
@@ -517,12 +517,14 @@ export const ResponsiveStoryHeader = ({
                   data-id="reading-level"
                 >
                   {/* Level Label - always visible */}
-                  <span className={cn(
-                    "text-xs sm:text-sm text-gray-600 whitespace-nowrap",
-                    isMobileOrTablet ? "mr-1" : "font-medium px-2"
-                  )}>
-                    {t("storyDisplay.readingLevel", "Reading Level")}:
-                  </span>
+                  {!isMobile && (
+                    <span className={cn(
+                      "text-xs sm:text-sm text-gray-600 whitespace-nowrap",
+                      isMobileOrTablet ? "mr-1" : "font-medium px-2"
+                    )}>
+                      {t("storyDisplay.readingLevel", "Reading Level")}:
+                    </span>
+                  )}
                   {onDecreaseDifficulty && (
                     <TooltipProvider>
                       <Tooltip>
