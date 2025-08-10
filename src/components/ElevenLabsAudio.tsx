@@ -167,6 +167,7 @@ export const ElevenLabsAudio = ({
     <div className="flex items-center gap-2 flex-wrap">
       <div className="relative">
         <Button
+          id="elevenlabs-play-toggle"
           onClick={isPlaying ? stopAudio : playAudio}
           disabled={isLoading || shouldShowCrown}
           variant="outline"
@@ -190,6 +191,7 @@ export const ElevenLabsAudio = ({
       {/* Premium Voice Commands Button */}
       {isPremium && (
         <Button
+          id="elevenlabs-voice-toggle"
           onClick={toggleVoiceCommands}
           variant={voiceCommandsEnabled ? "default" : "outline"}
           size={isMobileOrTablet ? "default" : "sm"}
