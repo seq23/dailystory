@@ -26,6 +26,7 @@ interface ResponsiveStoryHeaderProps {
   onSaveStory?: () => void;
   isSaving?: boolean;
   highlightSave?: boolean;
+  isPremium?: boolean;
 }
 
 export const ResponsiveStoryHeader = ({
@@ -45,6 +46,7 @@ export const ResponsiveStoryHeader = ({
   onSaveStory,
   isSaving = false,
   highlightSave = false,
+  isPremium,
 }: ResponsiveStoryHeaderProps) => {
   const { t } = useTranslation();
   const { isMobile, isTablet, isMobileOrTablet } = useIsMobile();
@@ -167,6 +169,13 @@ export const ResponsiveStoryHeader = ({
                      )}>
                       {t(`userInfoForm.grades.${userInfo.grade}` as any, userInfo.grade === 'PreK' ? 'Pre-K' : `Grade ${userInfo.grade}`)}
                     </p>
+                    {typeof isPremium !== 'undefined' && (
+                      <div className="mt-1">
+                        <Badge variant={isPremium ? 'premium' : 'guest'} className={cn(isMobile ? 'text-[10px] px-2 py-0.5' : 'text-xs')}>
+                          {isPremium ? t('badges.premium', 'Premium') : t('badges.guest', 'Guest')}
+                        </Badge>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

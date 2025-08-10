@@ -8,6 +8,7 @@ import type { UserInfo } from "@/types";
 import { ComprehensionQuiz } from "@/components/ComprehensionQuiz";
 import { VocabularyDashboard } from "@/components/VocabularyDashboard";
 import { MiniGames } from "@/components/MiniGames";
+import { Badge } from "@/components/ui/badge";
 
 interface ReadingStats {
   wordsRead: number;
@@ -62,6 +63,7 @@ const SessionEnded = ({ onHome, onNewStory, isPremium = false, onUpgrade }: Sess
   const [vocabVisible, setVocabVisible] = React.useState(false);
   const [gamesVisible, setGamesVisible] = React.useState(false);
   const canLaunchActivities = Boolean(userIsPremium && userInfoFromState && storyText);
+  const isQuizAllowed = Boolean(userIsPremium && sessionStats && sessionStats.currentDifficulty !== 'beginner');
 
   // Handle navigation based on user type
   const handleHome = () => {
@@ -128,8 +130,11 @@ const SessionEnded = ({ onHome, onNewStory, isPremium = false, onUpgrade }: Sess
           </div>
           
           <div className="space-y-2">
-            <h1 className="text-2xl font-bold text-gray-800">
+            <h1 className="text-2xl font-bold text-gray-800 flex items-center justify-center gap-2">
               {userIsPremium ? t("sessionEnded.premiumCompleted", "Premium Session Completed!") : t("sessionEnded.completed", "Reading Session Completed!")}
+              <Badge variant={userIsPremium ? 'premium' : 'guest'} className="text-xs">
+                {userIsPremium ? t('badges.premium', 'Premium') : t('badges.guest', 'Guest')}
+              </Badge>
             </h1>
             <p className="text-gray-600">
               {getEncouragementMessage()}
@@ -254,7 +259,7 @@ const SessionEnded = ({ onHome, onNewStory, isPremium = false, onUpgrade }: Sess
                 <Card className="p-4 text-left">
                   <div className="font-semibold mb-1">{t('postSession.quizTitle', 'Comprehension Quiz')}</div>
                   <p className="text-sm text-gray-600 mb-2">{t('postSession.quizDesc', 'Quick 3–5 questions based on your story.')}</p>
-                  <Button disabled={!canLaunchActivities} onClick={() => setQuizVisible(true)} className="w-full">
+                  <Button disabled={!canLaunchActivities || !isQuizAllowed} onClick={() => setQuizVisible(true)} className="w-full">
                     {t('postSession.startQuiz', 'Start Quiz')}
                   </Button>
                   {!canLaunchActivities && (

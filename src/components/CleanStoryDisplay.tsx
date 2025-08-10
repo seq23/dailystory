@@ -929,6 +929,7 @@ const handleRestartTimer = () => {
           onSaveStory={isPremium ? handleSaveStoryNow : undefined}
           isSaving={isSaving}
           highlightSave={highlightSave}
+          isPremium={isPremium}
         />
 
       {/* Main Content - Full Width Layout */}

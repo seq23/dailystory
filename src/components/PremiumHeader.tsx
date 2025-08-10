@@ -76,7 +76,7 @@ export const PremiumHeader = ({
               <div className="flex items-center gap-2">
                 <p className="hidden sm:block text-sm text-gray-600">Welcome back!</p>
                 {isPremium && (
-                  <Badge variant="secondary" className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-none text-xs">
+                  <Badge variant="premium" className="text-xs">
                     <Crown className="w-3 h-3 mr-1" />
                     {devTestMode ? 'DEV' : subscriptionTier || 'Premium'}
                   </Badge>
