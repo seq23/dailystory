@@ -129,7 +129,7 @@ export const MobileActionDock: React.FC<MobileActionDockProps> = ({
                 </TooltipTrigger>
                 <TooltipContent side="top">
                   {!isPremium
-                    ? t("tooltips.dock.endPremium", "Premium only. End session when ready")
+                    ? t("tooltips.dock.endPremium", "PREMIUM ONLY. UNTIMED SESSIONS")
                     : t("tooltips.dock.end", "End the session and view stats")}
                 </TooltipContent>
               </Tooltip>
