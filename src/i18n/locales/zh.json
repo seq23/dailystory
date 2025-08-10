@@ -420,12 +420,21 @@
       "freshTitle": "生成全新故事",
       "freshDesc": "您将留在本次会话中，开始一段全新的实时冒险。",
       "closeLabel": "留在这里"
+    },
+    "confirm": {
+      "title": "创建结尾页面？",
+      "desc": "我们会为本故事添加最后一页来收尾。您可以保存，也可以按“下一页”开始续集。不会结束本次会话。",
+      "continue": "创建我的结尾",
+      "cancel": "继续阅读"
     }
   },
   "nav": {
     "next": "接下来会发生什么？",
-    "endStory": "结束故事",
+    "createEnding": "创建我的结尾",
     "endSession": "结束会话"
+  },
+  "tooltips": {
+    "saveDuringEndStory": "这会把本故事保存到你的库中。"
   },
   "timer": {
     "celebration": { "caption": "太棒了！正在结束本次会话…" },

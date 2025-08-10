@@ -389,12 +389,21 @@
       "freshTitle": "Generar una Historia Nueva",
       "freshDesc": "Permanecerás en esta sesión y comenzarás una aventura completamente nueva.",
       "closeLabel": "Quedarme aquí"
+    },
+    "confirm": {
+      "title": "¿Crear una página final?",
+      "desc": "Añadiremos una última página para cerrar esta historia. Podrás guardarla o pulsar Siguiente para comenzar una secuela. Tu sesión no terminará.",
+      "continue": "Crear mi final",
+      "cancel": "Seguir leyendo"
     }
   },
   "nav": {
     "next": "¿Qué sucede después?",
-    "endStory": "Terminar Historia",
+    "createEnding": "Crear mi final",
     "endSession": "Terminar Sesión"
+  },
+  "tooltips": {
+    "saveDuringEndStory": "Esto guardará esta historia en tu biblioteca."
   },
   "timer": {
     "celebration": { "caption": "¡Trabajo increíble! Terminando tu sesión…" },

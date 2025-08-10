@@ -1212,7 +1212,7 @@ const handleRestartTimer = () => {
                           {t('common.processing', 'Processing...')}
                         </>
                       ) : (
-                        t('nav.endStory', 'End Story')
+                        t('nav.createEnding', 'Create my ending')
                       )}
                     </MobileOptimizedButton>
                     {isStoryComplete && (
@@ -1224,7 +1224,7 @@ const handleRestartTimer = () => {
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>
-                            {t('tooltips.saveDuringEndStory', 'Save this story to your Library. You can keep generating pages to create a sequel!')}
+                            {t('tooltips.saveDuringEndStory', 'This will save this story to library.')}
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
@@ -1283,7 +1283,7 @@ const handleRestartTimer = () => {
                           {t('common.processing', 'Processing...')}
                         </>
                       ) : (
-                        t('nav.endStory', 'End Story')
+                        t('nav.createEnding', 'Create my ending')
                       )}
                     </MobileOptimizedButton>
                     {isStoryComplete && (
@@ -1295,7 +1295,7 @@ const handleRestartTimer = () => {
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>
-                            {t('tooltips.saveDuringEndStory', 'Save this story to your Library. You can keep generating pages to create a sequel!')}
+                            {t('tooltips.saveDuringEndStory', 'This will save this story to library.')}
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
@@ -1368,11 +1368,11 @@ const handleRestartTimer = () => {
         <div className="fixed inset-0 z-[110] flex items-center justify-center">
           <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" />
           <div className="relative z-[111] bg-background border border-border rounded-2xl shadow-2xl w-[92vw] max-w-xl p-6 animate-scale-in" role="dialog" aria-labelledby="endstory-confirm-title" aria-describedby="endstory-confirm-desc">
-            <h3 id="endstory-confirm-title" className="text-xl font-bold mb-2">{t('endStory.confirm.title', 'Are you sure?')}</h3>
-            <p id="endstory-confirm-desc" className="text-sm text-muted-foreground mb-5">{t('endStory.confirm.desc', "This will create a last page to this story. You can then save it in your library but it won't end your session (End session using the red button in the header).")}</p>
+            <h3 id="endstory-confirm-title" className="text-xl font-bold mb-2">{t('endStory.confirm.title', 'Create an ending page?')}</h3>
+            <p id="endstory-confirm-desc" className="text-sm text-muted-foreground mb-5">{t('endStory.confirm.desc', "We’ll add a last page to wrap up this story. You can save it, or press Next to start a sequel. Your session will not end.")}</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-end">
-              <Button onClick={() => { setShowConfirmEndStory(false); handleGenerateEndingPage(); }}>{t('endStory.confirm.continue', "Yes, I’m ready for the last page!")}</Button>
-              <Button variant="ghost" onClick={() => setShowConfirmEndStory(false)}>{t('endStory.confirm.cancel', 'No — I’ll keep going')}</Button>
+              <Button onClick={() => { setShowConfirmEndStory(false); handleGenerateEndingPage(); }}>{t('endStory.confirm.continue', 'Create my ending')}</Button>
+              <Button variant="ghost" onClick={() => setShowConfirmEndStory(false)}>{t('endStory.confirm.cancel', 'Keep reading')}</Button>
             </div>
           </div>
         </div>
