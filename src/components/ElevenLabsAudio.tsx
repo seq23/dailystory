@@ -3,10 +3,12 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Play, Square, Crown, Mic } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { EnhancedAudioService } from "@/services/enhancedAudioService";
+import { VoiceCommandController } from "@/components/VoiceCommandController";
 import type { UserInfo } from "@/types";
 
 interface ElevenLabsAudioProps {
@@ -37,6 +39,7 @@ export const ElevenLabsAudio = ({
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [voiceCommandsEnabled, setVoiceCommandsEnabled] = useState(false);
+  const [showVoiceModal, setShowVoiceModal] = useState(false);
   const [audioService] = useState(() => new EnhancedAudioService());
   const [hasPlayedThisPage, setHasPlayedThisPage] = useState(false);
   const { toast } = useToast();
@@ -118,6 +121,18 @@ export const ElevenLabsAudio = ({
       return;
     }
 
+    const hasWebSpeech = typeof window !== 'undefined' && (('webkitSpeechRecognition' in window) || ('SpeechRecognition' in window));
+    if (!hasWebSpeech) {
+      console.log('🎙️ Voice: Web Speech not available, opening Whisper modal');
+      setShowVoiceModal(true);
+      toast({
+        title: t("audioReading.voiceCommandsEnabled", "Voice Commands Enabled"),
+        description: t("audioReading.voiceCommandsInstructions", "Press Listen and say 'next page', 'pause', or 'resume'"),
+        duration: 3000,
+      });
+      return;
+    }
+
     if (voiceCommandsEnabled) {
       audioService.stopVoiceCommands();
       setVoiceCommandsEnabled(false);
@@ -137,10 +152,21 @@ export const ElevenLabsAudio = ({
     }
   };
 
-  // Reset page play tracking when moving to a new page
-  useEffect(() => {
-    setHasPlayedThisPage(false);
-  }, [currentPage]);
+  const handleModalCommand = (cmd: string) => {
+    try {
+      const result = (audioService as any).processVoiceCommand?.(cmd);
+      console.log('🎙️ Whisper modal command processed:', { cmd, result });
+      if (!result || result.recognized === false) {
+        toast({
+          title: t("audioReading.voiceNotRecognized", "Not recognized"),
+          description: t("audioReading.tryCommand", "Try 'next page' or 'pause'"),
+          duration: 2000,
+        });
+      }
+    } catch (e) {
+      console.error('Voice modal processing failed', e);
+    }
+  };
 
   // Enhanced audio service status monitoring with better frequency
   useEffect(() => {
@@ -248,6 +274,19 @@ export const ElevenLabsAudio = ({
           </Tooltip>
         </TooltipProvider>
       )}
+
+      {/* Whisper fallback modal for devices without Web Speech */}
+      <Dialog open={showVoiceModal} onOpenChange={setShowVoiceModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("audioReading.voiceCommands", "Voice Commands")}</DialogTitle>
+            <DialogDescription>
+              {t("audioReading.voiceCommandsInstructions", "Press Listen and say commands like 'next page', 'pause', or 'resume'.")}
+            </DialogDescription>
+          </DialogHeader>
+          <VoiceCommandController onCommand={handleModalCommand} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -1068,7 +1068,11 @@ const handleRestartTimer = () => {
               </div>
 
               {!isMobileOrTablet && (
-                <div id="audio-controls" className="mt-2 md:mt-4 flex justify-center gap-4">
+                <div
+                  id="audio-controls"
+                  className={isMobileOrTablet ? "sr-only" : "mt-2 md:mt-4 flex justify-center gap-4"}
+                  aria-hidden={isMobileOrTablet}
+                >
                   <ElevenLabsAudio
                     text={currentStory}
                     userInfo={userInfo}
@@ -1079,7 +1083,7 @@ const handleRestartTimer = () => {
                     currentPage={currentPage}
                     totalPages={story.length}
                   />
-                  {isAudioPlaying && (
+                  {!isMobileOrTablet && isAudioPlaying && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
                       Playing Audio
