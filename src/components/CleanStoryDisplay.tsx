@@ -700,7 +700,7 @@ const handleRestartTimer = () => {
         setHighlightSave(true);
         toast({
           title: t('endStory.completed', 'Ending created'),
-          description: t('endStory.completedDesc', 'You can save now or keep going to start a sequel.'),
+          description: t('endStory.completedDesc', 'Remember to save — tap Save in the header to keep this ending. You can also keep reading to start a sequel.'),
           duration: 3000,
         });
       }

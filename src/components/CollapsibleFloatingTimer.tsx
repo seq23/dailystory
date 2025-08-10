@@ -418,7 +418,7 @@ useEffect(() => {
     <div className="bg-background/95 backdrop-blur-md border border-border rounded-2xl shadow-2xl p-4 sm:p-6 w-[90vw] max-w-md animate-scale-in">
       <h3 className="text-lg font-bold mb-2 text-center">{t('timer.expired.title', "Time's up!")}</h3>
       <p className="text-sm text-muted-foreground text-center mb-4">
-        {t('timer.expired.subtitle', 'Would you like to keep reading without a timer, save your story now, or end the session?')}
+        {t('timer.expired.subtitle', 'Would you like to keep reading without a timer, save & end the session, or end without saving?')}
       </p>
       <div className="grid grid-cols-1 gap-2">
         {isPremium && (
@@ -438,11 +438,11 @@ useEffect(() => {
             onClick={async () => {
               await onSaveStoryNow?.();
               setShowChoice(false);
-              try { window.location.href='/?action=library'; } catch {}
+              onSessionEnded(sessionStats);
             }}
             className="w-full"
           >
-            {t('timer.expired.saveNow', 'Save story now')}
+            {t('timer.expired.saveAndEnd', 'Save & end session')}
           </Button>
         )}
         <Button
@@ -450,7 +450,7 @@ useEffect(() => {
           variant="secondary"
           className="w-full"
         >
-          {t('timer.expired.endNow', 'End session')}
+          {t('timer.expired.endNow', 'End without saving')}
         </Button>
       </div>
     </div>
