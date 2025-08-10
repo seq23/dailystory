@@ -33,7 +33,7 @@ const App = () => {
               <Route path="/auth" element={<Auth />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
-              <Route path="/session-ended" element={<SessionEnded onHome={() => { window.history.pushState(null, '', '/'); window.location.reload(); }} onNewStory={() => { window.history.pushState(null, '', '/'); window.location.reload(); }} />} />
+              <Route path="/session-ended" element={<SessionEnded />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <FloatingFeedback />

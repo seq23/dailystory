@@ -20,8 +20,8 @@ interface ReadingStats {
 }
 
 interface SessionEndedProps {
-  onHome: () => void;
-  onNewStory: () => void;
+  onHome?: () => void;
+  onNewStory?: () => void;
   sessionStats?: ReadingStats;
   isPremium?: boolean;
   onUpgrade?: () => void;
