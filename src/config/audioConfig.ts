@@ -115,9 +115,9 @@ export const voiceCommands = {
   },
   
   vocabulary: {
-    'what does * mean': (word: string) => console.log(`Explain word: ${word}`),
-    'how do you say *': (word: string) => console.log(`Pronounce word: ${word}`),
-    'save word *': (word: string) => console.log(`Save word: ${word}`),
+    'what does * mean': (word: string) => window.dispatchEvent(new CustomEvent('voice:vocab', { detail: { type: 'define', word: word?.trim() } })),
+    'how do you say *': (word: string) => window.dispatchEvent(new CustomEvent('voice:vocab', { detail: { type: 'pronounce', word: word?.trim() } })),
+    'save word *': (word: string) => window.dispatchEvent(new CustomEvent('voice:vocab', { detail: { type: 'save', word: word?.trim() } })),
   },
 };
 

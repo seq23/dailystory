@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useRef, useState, forwardRef, useImperativeHandle } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,9 +29,15 @@ const KNOWN_COMMANDS = [
 
 export interface VoiceCommandControllerProps {
   onCommand?: (command: string) => void;
+  headless?: boolean;
 }
 
-export const VoiceCommandController: React.FC<VoiceCommandControllerProps> = ({ onCommand }) => {
+export interface VoiceCommandControllerHandle {
+  start: () => Promise<void>;
+  stop: () => void;
+}
+
+export const VoiceCommandController = forwardRef<VoiceCommandControllerHandle, VoiceCommandControllerProps>(({ onCommand, headless = false }, ref) => {
   const [isRecording, setIsRecording] = useState(false);
   const [status, setStatus] = useState<'idle'|'listening'|'processing'>('idle');
   const [level, setLevel] = useState(0);
@@ -152,16 +158,24 @@ export const VoiceCommandController: React.FC<VoiceCommandControllerProps> = ({ 
     }
   }, [onCommand]);
 
-  const stopRecording = useCallback(() => {
-    try {
-      mediaRecorderRef.current?.stop();
-    } catch (e) {
-      console.warn('stopRecording error', e);
-    }
-  }, []);
+const stopRecording = useCallback(() => {
+  try {
+    mediaRecorderRef.current?.stop();
+  } catch (e) {
+    console.warn('stopRecording error', e);
+  }
+}, []);
 
-  return (
-    <Card>
+useImperativeHandle(ref, () => ({
+  start: startRecording,
+  stop: stopRecording,
+}));
+
+if (headless) return null as any;
+
+return (
+  <Card>
+  
       <CardHeader>
         <CardTitle className="text-base">Voice commands</CardTitle>
         <CardDescription>Say things like “Start reading”, “Next page”</CardDescription>
@@ -211,6 +225,6 @@ export const VoiceCommandController: React.FC<VoiceCommandControllerProps> = ({ 
       </CardContent>
     </Card>
   );
-};
+});
 
 export default VoiceCommandController;
