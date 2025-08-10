@@ -171,24 +171,33 @@ export const ResponsiveStoryHeader = ({
               {showLevelControls && (
                 <>
                   {onDecreaseDifficulty && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={onDecreaseDifficulty}
-                      disabled={!canDecrease || isChangingDifficulty}
-                      className={cn(
-                        "min-h-[36px] min-w-[36px] rounded-full p-1",
-                        "transition-all duration-300",
-                        buttonAnimations.decrease ? "animate-scale-in bg-secondary/20 border-secondary" : ""
-                      )}
-                      aria-label={t("storyDisplay.decreaseDifficulty", "Make easier")}
-                    >
-                      {isChangingDifficulty && changeDirection === 'decrease' ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <TrendingDown className="w-4 h-4" />
-                      )}
-                    </Button>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={onDecreaseDifficulty}
+                            disabled={!canDecrease || isChangingDifficulty}
+                            className={cn(
+                              "min-h-[36px] min-w-[36px] rounded-full p-1",
+                              "transition-all duration-300",
+                              buttonAnimations.decrease ? "animate-scale-in bg-secondary/20 border-secondary" : ""
+                            )}
+                            aria-label={t("storyDisplay.decreaseDifficulty", "Make easier")}
+                          >
+                            {isChangingDifficulty && changeDirection === 'decrease' ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <TrendingDown className="w-4 h-4" />
+                            )}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom">
+                          {t("storyDisplay.decreaseDifficulty", "Make easier")}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   )}
 
                   <Badge
@@ -203,24 +212,33 @@ export const ResponsiveStoryHeader = ({
                   </Badge>
 
                   {onIncreaseDifficulty && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={onIncreaseDifficulty}
-                      disabled={!canIncrease || isChangingDifficulty}
-                      className={cn(
-                        "min-h-[36px] min-w-[36px] rounded-full p-1",
-                        "transition-all duration-300",
-                        buttonAnimations.increase ? 'animate-[glow-pulse_0.6s_ease-in-out,_edgeBounce_0.4s_ease-out] border-primary/50 shadow-lg shadow-primary/25' : ''
-                      )}
-                      aria-label={t("storyDisplay.increaseDifficulty", "Make harder")}
-                    >
-                      {isChangingDifficulty && changeDirection === 'increase' ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <TrendingUp className="w-4 h-4" />
-                      )}
-                    </Button>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={onIncreaseDifficulty}
+                            disabled={!canIncrease || isChangingDifficulty}
+                            className={cn(
+                              "min-h-[36px] min-w-[36px] rounded-full p-1",
+                              "transition-all duration-300",
+                              buttonAnimations.increase ? 'animate-[glow-pulse_0.6s_ease-in-out,_edgeBounce_0.4s_ease-out] border-primary/50 shadow-lg shadow-primary/25' : ''
+                            )}
+                            aria-label={t("storyDisplay.increaseDifficulty", "Make harder")}
+                          >
+                            {isChangingDifficulty && changeDirection === 'increase' ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <TrendingUp className="w-4 h-4" />
+                            )}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom">
+                          {t("storyDisplay.increaseDifficulty", "Make harder")}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   )}
                 </>
               )}
@@ -279,24 +297,33 @@ export const ResponsiveStoryHeader = ({
                 data-id="reading-level"
               >
                 {onDecreaseDifficulty && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={onDecreaseDifficulty}
-                    disabled={!canDecrease || isChangingDifficulty}
-                    className={cn(
-                      "min-h-[36px] min-w-[36px] rounded-full p-1",
-                      "transition-all duration-300",
-                      buttonAnimations.decrease ? "animate-scale-in bg-secondary/20 border-secondary" : ""
-                    )}
-                    aria-label={t("storyDisplay.decreaseDifficulty", "Make easier")}
-                  >
-                    {isChangingDifficulty && changeDirection === 'decrease' ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <TrendingDown className="w-4 h-4" />
-                    )}
-                  </Button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={onDecreaseDifficulty}
+                          disabled={!canDecrease || isChangingDifficulty}
+                          className={cn(
+                            "min-h-[36px] min-w-[36px] rounded-full p-1",
+                            "transition-all duration-300",
+                            buttonAnimations.decrease ? "animate-scale-in bg-secondary/20 border-secondary" : ""
+                          )}
+                          aria-label={t("storyDisplay.decreaseDifficulty", "Make easier")}
+                        >
+                          {isChangingDifficulty && changeDirection === 'decrease' ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <TrendingDown className="w-4 h-4" />
+                          )}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        {t("storyDisplay.decreaseDifficulty", "Make easier")}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 )}
 
                 <Badge
@@ -311,24 +338,33 @@ export const ResponsiveStoryHeader = ({
                 </Badge>
 
                 {onIncreaseDifficulty && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={onIncreaseDifficulty}
-                    disabled={!canIncrease || isChangingDifficulty}
-                    className={cn(
-                      "min-h-[36px] min-w-[36px] rounded-full p-1",
-                      "transition-all duration-300",
-                      buttonAnimations.increase ? 'animate-[glow-pulse_0.6s_ease-in-out,_edgeBounce_0.4s_ease-out] border-primary/50 shadow-lg shadow-primary/25' : ''
-                    )}
-                    aria-label={t("storyDisplay.increaseDifficulty", "Make harder")}
-                  >
-                    {isChangingDifficulty && changeDirection === 'increase' ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <TrendingUp className="w-4 h-4" />
-                    )}
-                  </Button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={onIncreaseDifficulty}
+                          disabled={!canIncrease || isChangingDifficulty}
+                          className={cn(
+                            "min-h-[36px] min-w-[36px] rounded-full p-1",
+                            "transition-all duration-300",
+                            buttonAnimations.increase ? 'animate-[glow-pulse_0.6s_ease-in-out,_edgeBounce_0.4s_ease-out] border-primary/50 shadow-lg shadow-primary/25' : ''
+                          )}
+                          aria-label={t("storyDisplay.increaseDifficulty", "Make harder")}
+                        >
+                          {isChangingDifficulty && changeDirection === 'increase' ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <TrendingUp className="w-4 h-4" />
+                          )}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        {t("storyDisplay.increaseDifficulty", "Make harder")}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 )}
               </div>
             )}
