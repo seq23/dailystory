@@ -52,7 +52,9 @@ export const ComprehensionQuiz = ({
     
     // Generate different types of questions based on user age and difficulty
     const isYoung = userInfo.age < 8;
-    const questionCount = isYoung ? 3 : 5;
+    const readingLevel = (userInfo.readingAbility || userInfo.difficultyLevel || 'easy') as any;
+    const isLowerLevel = readingLevel === 'beginner' || readingLevel === 'easy';
+    const questionCount = isLowerLevel ? 2 : (isYoung ? 3 : 5);
 
     // Question 1: Main character/subject (easy)
     if (sentences.length > 0) {

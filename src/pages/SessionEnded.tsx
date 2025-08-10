@@ -4,6 +4,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Home, BookOpen, Clock, TrendingUp, Target, BookText, Crown, Sparkles, Star, Volume2 } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import type { UserInfo } from "@/types";
+import { ComprehensionQuiz } from "@/components/ComprehensionQuiz";
+import { VocabularyDashboard } from "@/components/VocabularyDashboard";
+import { MiniGames } from "@/components/MiniGames";
 
 interface ReadingStats {
   wordsRead: number;
@@ -50,6 +54,14 @@ const SessionEnded = ({ onHome, onNewStory, isPremium = false, onUpgrade }: Sess
       console.error('Failed to parse stats from URL:', error);
     }
   }
+
+  // Post-session activity data
+  const userInfoFromState = (location.state?.userInfo as UserInfo | undefined);
+  const storyText = (location.state?.storyText as string | undefined);
+  const [quizVisible, setQuizVisible] = React.useState(false);
+  const [vocabVisible, setVocabVisible] = React.useState(false);
+  const [gamesVisible, setGamesVisible] = React.useState(false);
+  const canLaunchActivities = Boolean(userIsPremium && userInfoFromState && storyText);
 
   // Handle navigation based on user type
   const handleHome = () => {
@@ -235,6 +247,65 @@ const SessionEnded = ({ onHome, onNewStory, isPremium = false, onUpgrade }: Sess
             </div>
           )}
           
+          {/* Post-Session Activities */}
+          <div className="space-y-3">
+            {userIsPremium ? (
+              <div className="grid md:grid-cols-3 gap-3">
+                <Card className="p-4 text-left">
+                  <div className="font-semibold mb-1">{t('postSession.quizTitle', 'Comprehension Quiz')}</div>
+                  <p className="text-sm text-gray-600 mb-2">{t('postSession.quizDesc', 'Quick 3–5 questions based on your story.')}</p>
+                  <Button disabled={!canLaunchActivities} onClick={() => setQuizVisible(true)} className="w-full">
+                    {t('postSession.startQuiz', 'Start Quiz')}
+                  </Button>
+                  {!canLaunchActivities && (
+                    <div className="text-xs text-orange-600 mt-2">{t('postSession.unavailable', 'Unavailable: missing story data')}</div>
+                  )}
+                </Card>
+                <Card className="p-4 text-left">
+                  <div className="font-semibold mb-1">{t('postSession.vocabTitle', 'Review Vocabulary')}</div>
+                  <p className="text-sm text-gray-600 mb-2">{t('postSession.vocabDesc', 'See words you encountered and practice.')}</p>
+                  <Button onClick={() => setVocabVisible(true)} className="w-full">
+                    {t('postSession.reviewVocab', 'Review Vocabulary')}
+                  </Button>
+                </Card>
+                <Card className="p-4 text-left">
+                  <div className="font-semibold mb-1">{t('postSession.gamesTitle', 'Play Reading Games')}</div>
+                  <p className="text-sm text-gray-600 mb-2">{t('postSession.gamesDesc', 'Fun mini‑games from your story')}</p>
+                  <Button disabled={!canLaunchActivities} onClick={() => setGamesVisible(true)} className="w-full">
+                    {t('postSession.playGames', 'Play Games')}
+                  </Button>
+                  {!canLaunchActivities && (
+                    <div className="text-xs text-orange-600 mt-2">{t('postSession.unavailable', 'Unavailable: missing story data')}</div>
+                  )}
+                </Card>
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-3 gap-3">
+                <Card className="p-4 text-left opacity-80">
+                  <div className="font-semibold mb-1">{t('postSession.quizTitle', 'Comprehension Quiz')}</div>
+                  <p className="text-sm text-gray-600 mb-2">{t('postSession.premiumOnly', 'Premium feature')}</p>
+                  {onUpgrade && (
+                    <Button onClick={onUpgrade} className="w-full">{t('sessionEnded.premiumBenefits.upgradeToPremium', 'Upgrade to Premium')}</Button>
+                  )}
+                </Card>
+                <Card className="p-4 text-left opacity-80">
+                  <div className="font-semibold mb-1">{t('postSession.vocabTitle', 'Review Vocabulary')}</div>
+                  <p className="text-sm text-gray-600 mb-2">{t('postSession.premiumOnly', 'Premium feature')}</p>
+                  {onUpgrade && (
+                    <Button onClick={onUpgrade} className="w-full">{t('sessionEnded.premiumBenefits.upgradeToPremium', 'Upgrade to Premium')}</Button>
+                  )}
+                </Card>
+                <Card className="p-4 text-left opacity-80">
+                  <div className="font-semibold mb-1">{t('postSession.gamesTitle', 'Play Reading Games')}</div>
+                  <p className="text-sm text-gray-600 mb-2">{t('postSession.premiumOnly', 'Premium feature')}</p>
+                  {onUpgrade && (
+                    <Button onClick={onUpgrade} className="w-full">{t('sessionEnded.premiumBenefits.upgradeToPremium', 'Upgrade to Premium')}</Button>
+                  )}
+                </Card>
+              </div>
+            )}
+          </div>
+
           {/* Action Buttons */}
           <div className="space-y-3 pt-4">
               {userIsPremium && (
@@ -267,6 +338,37 @@ const SessionEnded = ({ onHome, onNewStory, isPremium = false, onUpgrade }: Sess
                 {t("sessionEnded.startNewStory", "Start New Story")}
               </Button>
           </div>
+        {/* Modals */}
+        {quizVisible && userInfoFromState && storyText && (
+          <ComprehensionQuiz
+            userInfo={userInfoFromState}
+            storyText={storyText}
+            isVisible={quizVisible}
+            onComplete={() => setQuizVisible(false)}
+            onClose={() => setQuizVisible(false)}
+          />
+        )}
+        {gamesVisible && userInfoFromState && storyText && (
+          <MiniGames
+            userInfo={userInfoFromState}
+            storyText={storyText}
+            isVisible={gamesVisible}
+            onComplete={() => setGamesVisible(false)}
+            onClose={() => setGamesVisible(false)}
+          />
+        )}
+        {vocabVisible && userInfoFromState && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <Card className="w-full max-w-3xl">
+              <CardContent className="p-4">
+                <div className="flex justify-end">
+                  <Button variant="ghost" onClick={() => setVocabVisible(false)}>✕</Button>
+                </div>
+                <VocabularyDashboard userInfo={userInfoFromState} isPremium={userIsPremium} />
+              </CardContent>
+            </Card>
+          </div>
+        )}
         </CardContent>
       </Card>
     </div>
