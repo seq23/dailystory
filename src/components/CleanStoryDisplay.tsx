@@ -1047,7 +1047,7 @@ const handleRestartTimer = () => {
                 </div>
               </div>
 
-              {layout === "classic" && (
+              {!isMobileOrTablet && (
                 <div id="audio-controls" className="mt-2 md:mt-4 flex justify-center gap-4">
                   <ElevenLabsAudio
                     text={currentStory}
