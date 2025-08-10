@@ -1,29 +1,25 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ChevronLeft, ChevronRight, Save, Square } from "lucide-react";
+import { Volume2, Mic, Save, Square } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 interface MobileActionDockProps {
   isPremium: boolean;
-  onPrev: () => void;
-  onNext: () => void;
+  onPlayAudio?: () => void;
+  onVoiceCommand?: () => void;
   onSave?: () => void;
   onEnd?: () => void;
-  canPrev?: boolean;
-  canNext?: boolean;
   isSaving?: boolean;
   className?: string;
 }
 
 export const MobileActionDock: React.FC<MobileActionDockProps> = ({
   isPremium,
-  onPrev,
-  onNext,
+  onPlayAudio,
+  onVoiceCommand,
   onSave,
   onEnd,
-  canPrev = true,
-  canNext = true,
   isSaving = false,
   className,
 }) => {
@@ -42,53 +38,52 @@ export const MobileActionDock: React.FC<MobileActionDockProps> = ({
       aria-label={t("common.navigation", "Navigation")}
     >
       <div className="mx-auto max-w-7xl">
-        <div className="grid grid-cols-4 gap-2">
-          <Button
-            variant="outline"
-            className="h-12 flex flex-col items-center justify-center gap-0.5 rounded-xl"
-            onClick={onPrev}
-            disabled={!canPrev}
-            aria-label={t("nav.prev", "Back")}
-          >
-            <ChevronLeft className="w-5 h-5" />
-            <span className="text-[11px] leading-none">{t("nav.prev", "Back")}</span>
-          </Button>
-
-          <Button
-            className="h-12 flex flex-col items-center justify-center gap-0.5 rounded-xl"
-            onClick={onNext}
-            disabled={!canNext}
-            aria-label={t("nav.next", "Next")}
-          >
-            <ChevronRight className="w-5 h-5" />
-            <span className="text-[11px] leading-none">{t("nav.next", "Next")}</span>
-          </Button>
-
-          {isPremium && onSave && (
+          <div className="grid grid-cols-4 gap-2">
             <Button
-              variant="secondary"
+              variant="outline"
               className="h-12 flex flex-col items-center justify-center gap-0.5 rounded-xl"
-              onClick={onSave}
-              disabled={isSaving}
-              aria-label={t("nav.save", "Save")}
+              onClick={onPlayAudio}
+              aria-label={t("audioReading.playAudio", "Play audio")}
             >
-              <Save className="w-5 h-5" />
-              <span className="text-[11px] leading-none">{t("nav.save", "Save")}</span>
+              <Volume2 className="w-5 h-5" />
+              <span className="text-[11px] leading-none">{t("audioReading.play", "Audio")}</span>
             </Button>
-          )}
 
-          {isPremium && onEnd && (
             <Button
-              variant="destructive"
+              variant="outline"
               className="h-12 flex flex-col items-center justify-center gap-0.5 rounded-xl"
-              onClick={onEnd}
-              aria-label={t("nav.endSession", "End Session")}
+              onClick={onVoiceCommand}
+              aria-label={t("audioReading.voiceCommands", "Voice")}
             >
-              <Square className="w-5 h-5" />
-              <span className="text-[11px] leading-none">{t("nav.end", "End")}</span>
+              <Mic className="w-5 h-5" />
+              <span className="text-[11px] leading-none">{t("audioReading.voice", "Voice")}</span>
             </Button>
-          )}
-        </div>
+
+            {isPremium && onSave && (
+              <Button
+                variant="secondary"
+                className="h-12 flex flex-col items-center justify-center gap-0.5 rounded-xl"
+                onClick={onSave}
+                disabled={isSaving}
+                aria-label={t("nav.save", "Save")}
+              >
+                <Save className="w-5 h-5" />
+                <span className="text-[11px] leading-none">{t("nav.save", "Save")}</span>
+              </Button>
+            )}
+
+            {isPremium && onEnd && (
+              <Button
+                variant="destructive"
+                className="h-12 flex flex-col items-center justify-center gap-0.5 rounded-xl"
+                onClick={onEnd}
+                aria-label={t("nav.endSession", "End Session")}
+              >
+                <Square className="w-5 h-5" />
+                <span className="text-[11px] leading-none">{t("nav.end", "End")}</span>
+              </Button>
+            )}
+          </div>
       </div>
     </nav>
   );

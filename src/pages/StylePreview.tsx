@@ -205,6 +205,75 @@ const StylePreview: React.FC = () => {
         </article>
       </main>
 
+      {/* Mobile Premium Reading Preview */}
+      <section className="max-w-5xl mx-auto mt-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Mobile Premium Reading Preview</CardTitle>
+            <CardDescription>Wand icon in header, arrows under content, and 4-button bottom dock</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="rounded-xl border bg-card overflow-hidden">
+              {/* Header with Home + Wand */}
+              <div className="flex items-center justify-between px-4 py-3 border-b">
+                <div className="flex items-center gap-2">
+                  <Button variant="ghost" size="sm" aria-label="Home">
+                    Home
+                  </Button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button variant="ghost" size="sm" aria-label="Start a fresh story" title="Start a fresh story">
+                    {/* Wand icon placeholder */}
+                    ✨
+                  </Button>
+                </div>
+              </div>
+
+              {/* Story area */}
+              <div className="p-4">
+                <div className="h-40 rounded-lg bg-muted flex items-center justify-center text-sm text-muted-foreground">
+                  Story content…
+                </div>
+
+                {/* Arrows under display */}
+                <div className="mt-4 flex items-center justify-center gap-6">
+                  <Button variant="outline" size="sm" aria-label="Back">◀</Button>
+                  <div className="text-sm text-muted-foreground">1 / 10</div>
+                  <Button variant="default" size="sm" aria-label="Next">▶</Button>
+                </div>
+
+                {/* Create my ending under arrows (Premium) */}
+                <div className="mt-3 flex justify-center">
+                  <Button variant="outline" size="sm">Create my ending</Button>
+                </div>
+
+                {/* Simulated bottom dock */}
+                <div className="mt-6 rounded-xl border p-3">
+                  <div className="grid grid-cols-4 gap-2 text-center text-xs">
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="w-8 h-8 rounded-lg border flex items-center justify-center">🔊</div>
+                      <span>Audio</span>
+                    </div>
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="w-8 h-8 rounded-lg border flex items-center justify-center">🎤</div>
+                      <span>Voice</span>
+                    </div>
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="w-8 h-8 rounded-lg border flex items-center justify-center">💾</div>
+                      <span>Save</span>
+                    </div>
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="w-8 h-8 rounded-lg border flex items-center justify-center">■</div>
+                      <span>End</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+
       {/* Free vs Premium (Preview) */}
       <section className="max-w-5xl mx-auto mt-8">
         <Card>

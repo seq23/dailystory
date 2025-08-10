@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Home, TrendingUp, TrendingDown, RefreshCw, Loader2 } from "lucide-react";
+import { Home, TrendingUp, TrendingDown, Wand, Loader2 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import type { DifficultyLevel, UserInfo } from '@/types';
@@ -155,6 +155,11 @@ export const ResponsiveStoryHeader = ({
                     {userInfo.name.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
+                {isMobile && typeof isPremium !== 'undefined' && (
+                  <Badge variant={isPremium ? 'premium' : 'guest'} className="text-[10px] px-2 py-0.5">
+                    {isPremium ? t('badges.premium', 'Premium') : t('badges.guest', 'Guest')}
+                  </Badge>
+                )}
                 {!isMobile && (
                   <div className="text-left">
                     <p className={cn(
@@ -207,29 +212,30 @@ export const ResponsiveStoryHeader = ({
               )}
               
               {onNewStory && (
-                <Button
-                  variant="ghost"
-                  size={isMobile ? "sm" : "default"}
-                  onClick={onNewStory}
-                  className={cn(
-                    isMobileOrTablet 
-                      ? "min-h-[44px] rounded-full px-2 py-2" 
-                      : "h-12 px-4 rounded-xl hover:bg-gray-100"
-                  )}
-                  aria-label={t("common.newStory", "New Story")}
-                >
-                  <RefreshCw className={cn(
-                    isMobile ? "w-3 h-3" : "w-5 h-5",
-                    !isMobileOrTablet && "mr-2"
-                  )} />
-                  {!isMobile && (
-                    <span className={cn(
-                      isMobileOrTablet ? "ml-1 text-sm" : ""
-                    )}>
-                      {t("common.newStory", "New Story")}
-                    </span>
-                  )}
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size={isMobile ? "sm" : "default"}
+                        onClick={onNewStory}
+                        className={cn(
+                          isMobileOrTablet 
+                            ? "min-h-[44px] rounded-full px-2 py-2" 
+                            : "h-12 px-4 rounded-xl hover:bg-gray-100"
+                        )}
+                        aria-label={t("common.newStory", "New Story")}
+                      >
+                        <Wand className={cn(
+                          isMobile ? "w-4 h-4" : "w-5 h-5"
+                        )} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {t("tooltips.newStory", "Start a fresh story")}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               )}
             </div>
           </div>

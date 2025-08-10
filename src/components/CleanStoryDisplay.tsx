@@ -3,7 +3,7 @@ import { MobileOptimizedButton } from "@/components/MobileOptimizedButton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Home, RotateCcw, Loader2, Volume2, VolumeX, ChevronUp, ChevronDown, Settings, Plus, RefreshCw, Clock, Wand, Sparkles } from "lucide-react";
+import { BookOpen, Home, RotateCcw, Loader2, Volume2, VolumeX, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Settings, Plus, RefreshCw, Clock, Wand, Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/hooks/use-toast";
 import { SparkleAnimation } from "@/components/SparkleAnimation";
@@ -516,6 +516,19 @@ useEffect(() => {
 
   const handleReduceTime = () => {
     setTimeRemaining(prev => Math.max(5 * 60, prev - 5 * 60)); // Reduce by 5 minutes, minimum 5 minutes
+  };
+
+  // Bottom dock actions
+  const handleDockPlayAudio = () => {
+    const el = document.getElementById('audio-controls');
+    el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    toast({ title: t('audioReading.playAudio', 'Play audio'), description: t('audioReading.useControlsBelow', 'Use the play button in the audio controls below.'), duration: 2000 });
+  };
+
+  const handleDockVoiceCommand = () => {
+    const el = document.getElementById('audio-controls');
+    el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    toast({ title: t('audioReading.voiceCommands', 'Voice Commands'), description: t('audioReading.voiceHint', 'Tap Voice Commands next to Play to start.'), duration: 2500 });
   };
 
   // Manual end session logic exists below
@@ -1443,12 +1456,10 @@ const handleRestartTimer = () => {
       {isPremium && isMobileOrTablet && (
         <MobileActionDock
           isPremium
-          onPrev={handlePrevious}
-          onNext={handleNext}
+          onPlayAudio={handleDockPlayAudio}
+          onVoiceCommand={handleDockVoiceCommand}
           onSave={handleSaveStoryNow}
           onEnd={() => setShowEndSessionConfirm(true)}
-          canPrev={currentPage > 0 && timeRemaining > 0}
-          canNext={!isLoadingNextPage && timeRemaining > 0 && (isPremium || currentPage < story.length - 1)}
           isSaving={isSaving}
         />
       )}
