@@ -83,8 +83,8 @@ export const MobileActionDock: React.FC<MobileActionDockProps> = ({
                 </TooltipTrigger>
                 <TooltipContent side="top">
                   {!isPremium
-                    ? t("tooltips.dock.voicePremium", "Premium only. Voice commands like 'next page'.")
-                    : t("tooltips.dock.voice", "Use voice commands like 'next page' or 'repeat'")}
+                    ? t("tooltips.dock.voicePremium", "Premium only. Voice commands / feedback.")
+                    : t("tooltips.dock.voice", "Use voice commands like 'next page' or 'repeat")}
                 </TooltipContent>
               </Tooltip>
 
