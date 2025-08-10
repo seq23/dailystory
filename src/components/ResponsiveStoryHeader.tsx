@@ -113,6 +113,86 @@ export const ResponsiveStoryHeader = ({
 
   const hasSelectedAvatar = userInfo?.avatar?.type && userInfo?.avatar?.skinTone;
 
+  if (isPremium && isMobile) {
+    return (
+      <header className={cn(
+        "w-full bg-white/95 backdrop-blur-sm border-b border-gray-200 z-30",
+        "sticky top-0"
+      )}>
+        <div className="safe-area-padding">
+          <div className="flex items-center gap-1 px-2 py-1">
+            {onHome && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onHome}
+                className="min-h-[36px] min-w-[36px] rounded-full p-1"
+                aria-label={t("common.home", "Home")}
+              >
+                <Home className="w-4 h-4" />
+              </Button>
+            )}
+
+            {onNewStory && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onNewStory}
+                className="min-h-[36px] min-w-[36px] rounded-full p-0 bg-gradient-primary text-white"
+                aria-label={t("common.newStory", "New Story")}
+              >
+                <Wand className="w-4 h-4" />
+              </Button>
+            )}
+
+            {onDecreaseDifficulty && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onDecreaseDifficulty}
+                disabled={!canDecrease || isChangingDifficulty}
+                className="min-h-[36px] min-w-[36px] rounded-full p-1"
+                aria-label={t("storyDisplay.decreaseDifficulty", "Make easier")}
+              >
+                {isChangingDifficulty && changeDirection === 'decrease' ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <TrendingDown className="w-4 h-4" />
+                )}
+              </Button>
+            )}
+
+            <Badge
+              variant="outline"
+              className={cn(
+                "border px-2 py-1 text-xs",
+                getDifficultyColor(currentDifficulty)
+              )}
+            >
+              {getDifficultyLabel(currentDifficulty)}
+            </Badge>
+
+            {onIncreaseDifficulty && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onIncreaseDifficulty}
+                disabled={!canIncrease || isChangingDifficulty}
+                className="min-h-[36px] min-w-[36px] rounded-full p-1"
+                aria-label={t("storyDisplay.increaseDifficulty", "Make harder")}
+              >
+                {isChangingDifficulty && changeDirection === 'increase' ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <TrendingUp className="w-4 h-4" />
+                )}
+              </Button>
+            )}
+          </div>
+        </div>
+      </header>
+    );
+  }
   return (
     <header className={cn(
       "w-full bg-white/95 backdrop-blur-sm border-b border-gray-200 z-30",

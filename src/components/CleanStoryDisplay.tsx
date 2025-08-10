@@ -958,7 +958,7 @@ const handleRestartTimer = () => {
       <main className="w-full px-2 md:px-4 lg:px-6 xl:px-8 flex-1 min-h-0 pb-[calc(env(safe-area-inset-bottom)+88px)] md:pb-8">
         <div className="w-full max-w-[98vw] mx-auto">
           <Card className="bg-white/95 backdrop-blur-sm shadow-2xl border border-white/70 mobile-text-fixed flex flex-col h-full min-h-0 overflow-hidden">
-            <CardContent className="p-4 lg:p-8 h-full flex flex-col min-h-0">
+            <CardContent className="p-2 lg:p-8 h-full flex flex-col min-h-0">
               {/* Progress Bar */}
               <div className="mb-4 md:mb-6">
                 <Progress value={progress} className="h-2" />
@@ -994,7 +994,7 @@ const handleRestartTimer = () => {
                 {/* Mobile/Tablet: Top-half image, bottom-half text (full-bleed, no gray) */}
                 <div className="xl:hidden flex-1 min-h-0 flex flex-col gap-3">
                   {/* Top Half: Image */}
-                  <div className="relative flex-[0.58] min-h-0 w-full rounded-2xl overflow-hidden shadow-2xl">
+                  <div className="relative flex-[0.62] min-h-0 w-full rounded-2xl overflow-hidden shadow-2xl">
                     {currentImage ? (
                       <>
                         {/* Background fill to avoid cropping/margins */}
@@ -1280,7 +1280,7 @@ const handleRestartTimer = () => {
                 )}
 
                 {/* Mobile/Tablet: compact arrow navigation */}
-                <div className="xl:hidden flex justify-center items-center gap-4 mt-3">
+                <div className="xl:hidden flex justify-center items-center gap-3 mt-3">
                   <Button
                     variant="outline"
                     size="sm"
@@ -1291,9 +1291,6 @@ const handleRestartTimer = () => {
                     <ChevronLeft className="w-5 h-5" />
                   </Button>
 
-                  <span className="text-base font-medium text-muted-foreground px-4">
-                    Page {currentPage + 1}
-                  </span>
 
                   <Button
                     variant="default"
@@ -1307,7 +1304,7 @@ const handleRestartTimer = () => {
                 </div>
 
                 {/* Desktop: Centered compact layout */}
-                <div className="hidden xl:flex justify-center items-center gap-4">
+                <div className="hidden xl:flex justify-center items-center gap-3">
                   <Button
                     variant="outline"
                     size="sm"
@@ -1318,9 +1315,6 @@ const handleRestartTimer = () => {
                     <ChevronLeft className="w-5 h-5" />
                   </Button>
 
-                  <span className="text-base font-medium text-muted-foreground px-4">
-                    Page {currentPage + 1}
-                  </span>
 
                   <Button
                     variant="default"
