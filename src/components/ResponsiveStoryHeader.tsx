@@ -436,6 +436,19 @@ export const ResponsiveStoryHeader = ({
                   {!isMobileOrTablet && t("common.home", "Home")}
                 </Button>
               )}
+
+              {/* Inline avatar + Free Trial badge next to Home (tablet guests) */}
+              {!isPremium && isTablet && (
+                <div className="flex items-center gap-2 ml-1">
+                  <Avatar className="h-7 w-7">
+                    {hasSelectedAvatar && (
+                      <AvatarImage src={getAvatarUrl()} alt={userInfo?.name || "Guest"} />
+                    )}
+                    <AvatarFallback>{userInfo?.name?.charAt(0)?.toUpperCase() || "G"}</AvatarFallback>
+                  </Avatar>
+                  <Badge variant="guest">{t("welcomeHero.freeTrial", "Free Trial")}</Badge>
+                </div>
+              )}
               
                {/* New Story button moved next to Reading Level controls */}
             </div>
