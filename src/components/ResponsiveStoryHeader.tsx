@@ -139,7 +139,7 @@ export const ResponsiveStoryHeader = ({
             </div>
 
             {/* Icons row (row 2): single line in this order: Home → New Story → difficulty down → level badge → difficulty up */}
-            <div className="mt-8 w-full flex flex-nowrap items-center gap-1 pr-16">
+            <div className="mt-8 w-full flex flex-nowrap items-center justify-center gap-1">
               {onHome && (
                 <TooltipProvider>
                   <Tooltip>
@@ -158,15 +158,6 @@ export const ResponsiveStoryHeader = ({
                   </Tooltip>
                 </TooltipProvider>
               )}
-              <div className="flex items-center gap-1">
-                <Avatar className="h-7 w-7">
-                  {hasSelectedAvatar && (
-                    <AvatarImage src={getAvatarUrl()} alt={userInfo?.name || "Guest"} />
-                  )}
-                  <AvatarFallback>{userInfo?.name?.charAt(0)?.toUpperCase() || "G"}</AvatarFallback>
-                </Avatar>
-                <Badge variant="guest">{t("welcomeHero.freeTrial", "Free Trial")}</Badge>
-              </div>
 
               {onNewStory && (
                 <NewStoryCTA
