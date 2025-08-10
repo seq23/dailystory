@@ -400,7 +400,13 @@
   "nav": {
     "next": "¿Qué sucede después?",
     "createEnding": "Crear mi final",
-    "endSession": "Terminar Sesión"
+    "endSession": "Terminar Sesión",
+    "endSessionConfirm": {
+      "title": "¿Terminar sesión?",
+      "desc": "Esto terminará esta sesión. Tendrás la opción de guardar esta historia tal como está.",
+      "saveAndEnd": "Guardar historia y terminar",
+      "endWithoutSaving": "Terminar sin guardar"
+    }
   },
   "tooltips": {
     "saveDuringEndStory": "Esto guardará esta historia en tu biblioteca."
@@ -409,10 +415,10 @@
     "celebration": { "caption": "¡Trabajo increíble! Terminando tu sesión…" },
     "expired": {
       "title": "¡Se acabó el tiempo!",
-      "subtitle": "¿Te gustaría seguir leyendo sin temporizador, guardar tu historia ahora o terminar la sesión?",
+      "subtitle": "¿Te gustaría seguir leyendo sin temporizador, guardar y terminar la sesión, o terminar sin guardar?",
       "keepUntimed": "Seguir sin temporizador",
-      "saveNow": "Guardar historia ahora",
-      "endNow": "Terminar sesión"
+      "saveAndEnd": "Guardar y terminar sesión",
+      "endNow": "Terminar sin guardar"
     }
   },
   "save": {

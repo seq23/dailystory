@@ -452,17 +452,23 @@
   "nav": {
     "next": "Que se passe-t-il ensuite ?",
     "endStory": "Terminer l'histoire",
-    "endSession": "Terminer la session"
+  "endSession": "Terminer la session",
+  "endSessionConfirm": {
+    "title": "Terminer la session ?",
+    "desc": "Cela mettra fin à cette session. Vous pourrez enregistrer cette histoire telle quelle.",
+    "saveAndEnd": "Enregistrer l'histoire et terminer",
+    "endWithoutSaving": "Terminer sans enregistrer"
+  }
   },
   "timer": {
     "celebration": { "caption": "Beau travail ! Nous terminons votre session…" },
-    "expired": {
-      "title": "Le temps est écoulé !",
-      "subtitle": "Souhaitez-vous continuer la lecture sans minuterie, enregistrer votre histoire maintenant ou terminer la session ?",
-      "keepUntimed": "Continuer sans minuterie",
-      "saveNow": "Enregistrer l'histoire maintenant",
-      "endNow": "Terminer la session"
-    }
+  "expired": {
+    "title": "Le temps est écoulé !",
+    "subtitle": "Souhaitez-vous continuer sans minuterie, enregistrer et terminer la session, ou terminer sans enregistrer ?",
+    "keepUntimed": "Continuer sans minuterie",
+    "saveAndEnd": "Enregistrer et terminer la session",
+    "endNow": "Terminer sans enregistrer"
+  }
   },
   "save": {
     "toastSaved": "Enregistré dans votre Bibliothèque d'Histoires",

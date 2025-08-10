@@ -174,7 +174,13 @@
   "nav": {
     "next": "O que acontece depois?",
     "endStory": "Encerrar História",
-    "endSession": "Encerrar Sessão"
+    "endSession": "Encerrar Sessão",
+    "endSessionConfirm": {
+      "title": "Encerrar sessão?",
+      "desc": "Isso encerrará esta sessão. Você poderá salvar esta história como está.",
+      "saveAndEnd": "Salvar história e encerrar",
+      "endWithoutSaving": "Encerrar sem salvar"
+    }
   },
   "timer": {
     "celebration": { "caption": "Trabalho incrível! Finalizando sua sessão…" },

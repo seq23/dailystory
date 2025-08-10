@@ -710,10 +710,10 @@
     },
     "expired": {
       "title": "Time’s up!",
-      "subtitle": "Would you like to keep reading without a timer, save your story now, or end the session?",
+      "subtitle": "Would you like to keep reading without a timer, save & end the session, or end without saving?",
       "keepUntimed": "Keep reading untimed",
-      "saveNow": "Save story now",
-      "endNow": "End session"
+      "saveAndEnd": "Save & end session",
+      "endNow": "End without saving"
     }
   },
   "save": {

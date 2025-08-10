@@ -440,10 +440,10 @@
     "celebration": { "caption": "太棒了！正在结束本次会话…" },
     "expired": {
       "title": "时间到！",
-      "subtitle": "您想在无计时器下继续阅读、现在保存故事，还是结束会话？",
+      "subtitle": "您想在无计时器下继续阅读、保存并结束会话，还是不保存直接结束？",
       "keepUntimed": "无计时继续阅读",
-      "saveNow": "立即保存故事",
-      "endNow": "结束会话"
+      "saveAndEnd": "保存并结束会话",
+      "endNow": "不保存直接结束"
     }
   },
   "save": {
