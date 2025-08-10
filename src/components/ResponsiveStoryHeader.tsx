@@ -311,10 +311,43 @@ export const ResponsiveStoryHeader = ({
                 </TooltipProvider>
               )}
 
+              {/* Desktop premium: End Session button next to Home */}
+              {onEndSession && isPremium && !isMobileOrTablet && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="destructive"
+                        size="default"
+                        onClick={onEndSession}
+                        className="h-12 px-4 rounded-xl"
+                        aria-label={t("nav.endSession", "End Session")}
+                      >
+                        {t("nav.endSession", "End Session")}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">{t("tooltips.endSession", "This will end this session. You will have the option to save this story as is.")}</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+
               {/* Inline avatar + Free Trial badge next to Home (tablet guests) */}
               {!isPremium && isTablet && (
                 <div className="flex items-center gap-2 ml-1">
                   <Avatar className="h-7 w-7">
+                    {hasSelectedAvatar && (
+                      <AvatarImage src={getAvatarUrl()} alt={userInfo?.name || "Guest"} />
+                    )}
+                    <AvatarFallback>{userInfo?.name?.charAt(0)?.toUpperCase() || "G"}</AvatarFallback>
+                  </Avatar>
+                  <Badge variant="guest">{t("welcomeHero.freeTrial", "Free Trial")}</Badge>
+                </div>
+              )}
+
+              {/* Desktop guests: show avatar + Free Trial badge */}
+              {!isPremium && !isMobileOrTablet && (
+                <div className="flex items-center gap-2 ml-1">
+                  <Avatar className="h-8 w-8">
                     {hasSelectedAvatar && (
                       <AvatarImage src={getAvatarUrl()} alt={userInfo?.name || "Guest"} />
                     )}
@@ -496,16 +529,38 @@ export const ResponsiveStoryHeader = ({
                   )}
                 </div>
               )}
-              {onNewStory && (
-                <NewStoryCTA
-                  isPremium={!!isPremium}
-                  iconOnly
-                  onNewStory={onNewStory}
-                  onUpgrade={onUpgrade || (() => {})}
-                  size={isMobileOrTablet ? "sm" : "md"}
-                  wandPulse={wandPulse}
-                />
-              )}
+              <div className={cn("flex items-center", isMobileOrTablet ? "gap-1" : "gap-2")}> 
+                {onNewStory && (
+                  <NewStoryCTA
+                    isPremium={!!isPremium}
+                    iconOnly
+                    onNewStory={onNewStory}
+                    onUpgrade={onUpgrade || (() => {})}
+                    size={isMobileOrTablet ? "sm" : "md"}
+                    wandPulse={wandPulse}
+                  />
+                )}
+                {onSaveStory && !isMobileOrTablet && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={onSaveStory}
+                          variant={highlightSave ? "secondary" : "outline"}
+                          size={isMobileOrTablet ? "sm" : "default"}
+                          disabled={isSaving}
+                          className={cn(isMobileOrTablet ? "min-h-[44px] px-4" : "", highlightSave ? "ring-2 ring-primary/40" : "")}
+                          aria-label={t("nav.save", "Save")}
+                        >
+                          {isSaving && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+                          {t("nav.save", "Save")}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">{t("tooltips.saveDuringEndStory", "This will save this story to library.")}</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+              </div>
 
               {showLevelControls && (
                 <div 

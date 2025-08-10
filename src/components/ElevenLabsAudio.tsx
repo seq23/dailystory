@@ -188,8 +188,8 @@ export const ElevenLabsAudio = ({
         )}
       </div>
 
-      {/* Premium Voice Commands Button */}
-      {isPremium && (
+      {/* Voice Commands Button */}
+      {isPremium ? (
         <Button
           id="elevenlabs-voice-toggle"
           onClick={toggleVoiceCommands}
@@ -200,6 +200,28 @@ export const ElevenLabsAudio = ({
           <Mic className={`w-4 h-4 ${voiceCommandsEnabled ? 'animate-pulse' : ''}`} />
           Voice Commands
         </Button>
+      ) : (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span>
+                <Button
+                  id="elevenlabs-voice-toggle"
+                  disabled
+                  variant="outline"
+                  size={isMobileOrTablet ? "default" : "sm"}
+                  className={`gap-2 ${isMobileOrTablet ? 'min-h-[44px] px-4' : ''}`}
+                >
+                  <Mic className="w-4 h-4" />
+                  Voice Commands
+                </Button>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              Voice Commands are a Premium feature
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       )}
 
       {!isPremium && shouldShowCrown && (
