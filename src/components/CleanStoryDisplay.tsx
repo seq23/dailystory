@@ -989,12 +989,12 @@ const handleRestartTimer = () => {
               )}
 
               {/* Story Content - Enhanced Layout for Desktop Split-Screen */}
-              <div className="bg-gradient-card rounded-2xl p-3 md:p-6 lg:p-8 mb-6 flex-1 min-h-0 flex flex-col shadow-xl" 
+              <div className="bg-gradient-card rounded-2xl p-2 md:p-4 lg:p-6 mb-6 flex-1 min-h-0 flex flex-col shadow-xl" 
                    dir="ltr" lang="en" role="main" aria-label="Story content">
                 {/* Mobile/Tablet: Top-half image, bottom-half text (full-bleed, no gray) */}
                 <div className="xl:hidden flex-1 min-h-0 flex flex-col gap-3">
                   {/* Top Half: Image */}
-                  <div className="relative flex-[0.6] min-h-0 w-full rounded-2xl overflow-hidden shadow-2xl">
+                  <div className="relative flex-[0.58] min-h-0 w-full rounded-2xl overflow-hidden shadow-2xl">
                     {currentImage ? (
                       <>
                         {/* Background fill to avoid cropping/margins */}
@@ -1031,7 +1031,7 @@ const handleRestartTimer = () => {
                     )}
                   </div>
                   {/* Bottom Half: Text (scrollable) + audio controls */}
-                  <div className="flex-[0.4] min-h-0 w-full rounded-2xl shadow-2xl bg-card overflow-hidden flex flex-col relative">
+                  <div className="flex-[0.42] min-h-0 w-full rounded-2xl shadow-2xl bg-card overflow-hidden flex flex-col relative">
                     <div id="audio-controls" className="p-3 md:p-4 flex justify-center gap-4 shrink-0">
                       <ElevenLabsAudio
                         text={currentStory}
@@ -1144,28 +1144,9 @@ const handleRestartTimer = () => {
                     </div>
                   </div>
                 </div>
-                {/* Desktop Audio Controls - moved outside columns for perfect mirroring */}
-                <div className="hidden xl:flex justify-center gap-4 mt-4">
-                  <ElevenLabsAudio
-                    text={currentStory}
-                    userInfo={userInfo}
-                    isPremium={isPremium}
-                    onUpgrade={onUpgrade}
-                    onWordHighlight={onWordHighlight}
-                    difficulty={currentDifficulty}
-                    currentPage={currentPage}
-                    totalPages={story.length}
-                  />
-                  {isAudioPlaying && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-                      Playing Audio
-                    </div>
-                  )}
-                </div>
               </div>
 
-              {/* Magic Wand Buttons Section */}
+               {/* Magic Wand Buttons Section */}
               <div className="mb-6 flex flex-col items-center gap-4">
                 {/* Premium Magic Wand - Below page count */}
 

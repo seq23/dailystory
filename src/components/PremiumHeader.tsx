@@ -17,7 +17,8 @@ import {
   User,
   Settings,
   ChevronDown,
-  PanelLeft
+  PanelLeft,
+  Wand
 } from "lucide-react";
 import type { UserInfo } from "@/types";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
@@ -90,6 +91,16 @@ export const PremiumHeader = ({
 
           {/* User Avatar and Actions */}
           <div className="flex items-center gap-3 shrink-0">
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Fresh Story"
+              onClick={() => (window.location.href = '/?action=new-story')}
+              className="rounded-lg hover:bg-gray-100"
+              title="Fresh Story"
+            >
+              <Wand className="w-5 h-5" />
+            </Button>
             {/* Avatar with Dropdown */}
             <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
               <DropdownMenuTrigger asChild>
