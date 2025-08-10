@@ -50,7 +50,8 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
   const [showVoiceModal, setShowVoiceModal] = useState(false);
   const [audioService] = useState(() => new EnhancedAudioService());
   const [hasPlayedThisPage, setHasPlayedThisPage] = useState(false);
-  const { toast } = useToast();
+  const { toast, dismiss } = useToast();
+  const voiceTipsShownRef = useRef(false);
   const emitStatus = (s: 'idle'|'listening'|'processing') => window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: s } }));
 
   // Enhanced audio service handles free limits internally
@@ -134,17 +135,29 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
     const forceModal = hasTouchCapability || isMobileOrTablet || !hasWebSpeech;
     if (forceModal) {
       console.log('🎙️ Voice: Using Whisper modal (touch device/tablet or no Web Speech)');
-      setShowVoiceModal(true);
-      toast({
-        title: t("audioReading.voiceCommandsEnabled", "Voice Commands Enabled"),
-        description: "Try: 'next page', 'pause', 'resume', 'read slower'",
-        duration: 7000,
-        action: (
-          <ToastAction altText="Open voice commands help" onClick={() => window.dispatchEvent(new CustomEvent('voice:openHelp'))}>
-            Full list
-          </ToastAction>
-        ),
-      });
+      // Close any existing tips toast to avoid stacking with modal
+      dismiss();
+      // Force re-open if already open
+      if (showVoiceModal) {
+        setShowVoiceModal(false);
+        setTimeout(() => setShowVoiceModal(true), 0);
+      } else {
+        setShowVoiceModal(true);
+      }
+      // Show tips only once per session
+      if (!voiceTipsShownRef.current) {
+        toast({
+          title: t("audioReading.voiceCommandsEnabled", "Voice Commands Enabled"),
+          description: "Try: 'next page', 'pause', 'resume', 'read slower'",
+          duration: 3500,
+          action: (
+            <ToastAction altText="Open voice commands help" onClick={() => window.dispatchEvent(new CustomEvent('voice:openHelp'))}>
+              Full list
+            </ToastAction>
+          ),
+        });
+        voiceTipsShownRef.current = true;
+      }
       return;
     }
 
@@ -152,6 +165,8 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
       audioService.stopVoiceCommands();
       setVoiceCommandsEnabled(false);
       emitStatus('idle');
+      // Dismiss any lingering tips toast
+      dismiss();
       toast({
         title: t("audioReading.voiceCommandsDisabled", "Voice Commands Disabled"),
         description: t("audioReading.voiceCommandsOff", "Voice commands are now off"),
@@ -161,16 +176,19 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
       audioService.startVoiceCommands();
       setVoiceCommandsEnabled(true);
       emitStatus('listening');
-      toast({
-        title: t("audioReading.voiceCommandsEnabled", "Voice Commands Enabled"), 
-        description: "Try: 'next page', 'pause', 'resume', 'read slower'",
-        duration: 7000,
-        action: (
-          <ToastAction altText="Open voice commands help" onClick={() => window.dispatchEvent(new CustomEvent('voice:openHelp'))}>
-            Full list
-          </ToastAction>
-        ),
-      });
+      if (!voiceTipsShownRef.current) {
+        toast({
+          title: t("audioReading.voiceCommandsEnabled", "Voice Commands Enabled"), 
+          description: "Try: 'next page', 'pause', 'resume', 'read slower'",
+          duration: 3500,
+          action: (
+            <ToastAction altText="Open voice commands help" onClick={() => window.dispatchEvent(new CustomEvent('voice:openHelp'))}>
+              Full list
+            </ToastAction>
+          ),
+        });
+        voiceTipsShownRef.current = true;
+      }
     }
   };
 

@@ -26,9 +26,10 @@ export const VoiceHUD: React.FC = () => {
     }
     return audioContextRef.current;
   };
-  const beep = async (freq = 880, durationMs = 120, vol = 0.05) => {
+  const beep = async (freq = 880, durationMs = 120, vol = 0.08) => {
     const ctx = await ensureCtx();
     if (!ctx) return;
+    try { await (ctx as any).resume?.(); } catch {}
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     gain.gain.value = vol;
@@ -45,9 +46,9 @@ export const VoiceHUD: React.FC = () => {
       setStatus(next);
       // Beep on transitions
       if (prevStatus.current !== next) {
-        if (next === 'listening') beep(1200, 120, 0.06); // start beep
-        if (next === 'processing') beep(900, 80, 0.05);
-        if (next === 'idle' && prevStatus.current !== 'idle') beep(600, 80, 0.05); // end beep
+        if (next === 'listening') { try { ensureCtx().then(ctx => (ctx as any)?.resume?.()).catch(() => {}); } catch {} beep(1200, 120, 0.08); } // start beep
+        if (next === 'processing') beep(900, 80, 0.07);
+        if (next === 'idle' && prevStatus.current !== 'idle') beep(600, 80, 0.07); // end beep
       }
       prevStatus.current = next;
     };
@@ -65,6 +66,16 @@ export const VoiceHUD: React.FC = () => {
     };
   }, []);
 
+  // One-time resume on first user gesture (helps iOS/tablets)
+  useEffect(() => {
+    const resume = async () => {
+      const ctx = await ensureCtx();
+      try { await (ctx as any)?.resume?.(); } catch {}
+    };
+    window.addEventListener('pointerdown', resume, { once: true, passive: true } as any);
+    return () => window.removeEventListener('pointerdown', resume as any);
+  }, []);
+
   // Hide entirely when idle
   if (status === 'idle') return null;
 
@@ -74,7 +85,7 @@ export const VoiceHUD: React.FC = () => {
     <aside
       role="status"
       aria-live="polite"
-      className="fixed left-1/2 -translate-x-1/2 z-40 bottom-24 md:bottom-6 w-[92%] max-w-md"
+      className="fixed left-1/2 -translate-x-1/2 z-[350] w-[92%] max-w-lg bottom-[calc(88px+env(safe-area-inset-bottom))] sm:bottom-[calc(104px+env(safe-area-inset-bottom))] md:bottom-[calc(152px+env(safe-area-inset-bottom))] lg:bottom-[calc(172px+env(safe-area-inset-bottom))]"
     >
       <div className="rounded-xl border border-border bg-card/95 backdrop-blur shadow-lg p-3 flex items-center gap-3">
         <div className={`p-2 rounded-lg ${status === 'listening' ? 'bg-primary/10' : 'bg-muted'}`} aria-hidden>
