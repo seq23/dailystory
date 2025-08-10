@@ -179,41 +179,68 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
                 </SidebarMenuItem>
               ))}
 
-              {/* Timer toggle as the last option */}
-              {isPremium && (
-                <SidebarMenuItem>
-                  <SidebarMenuButton 
-                    onClick={toggleTimer}
-                    className="flex items-center gap-3 w-full transition-colors rounded-lg hover:bg-accent hover:text-accent-foreground"
-                  >
-                    <Clock className="w-5 h-5 flex-shrink-0" />
-                    {!effectiveCollapsed && (
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{timerEnabled ? 'Hide Timer' : 'Show Timer'}</span>
-                        </div>
-                        <p className="text-xs text-muted-foreground truncate">
-                          {timerEnabled ? 'Hide the floating reading timer' : 'Show the floating reading timer'}
-                        </p>
-                      </div>
-                    )}
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
 
-          {/* Vocabulary entry below Timer (no icon) */}
           {isPremium && (
-            <div className="mt-2 px-2">
-              <button
-                onClick={() => setVocabOpen(true)}
-                className="w-full text-left px-3 py-2 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors text-sm font-medium"
-              >
-                Vocabulary
-              </button>
-            </div>
+            <SidebarGroup>
+              <SidebarGroupLabel className={effectiveCollapsed ? "sr-only" : ""}>
+                Reading tools
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      onClick={() => { if (effectiveCollapsed) toggleTimer(); }}
+                      className="flex items-center gap-3 w-full justify-between transition-colors rounded-lg hover:bg-accent hover:text-accent-foreground"
+                      aria-label="Toggle reading timer visibility"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Clock className="w-5 h-5 flex-shrink-0" />
+                        {!effectiveCollapsed && (
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">{timerEnabled ? 'Hide Timer' : 'Show Timer'}</span>
+                            </div>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {timerEnabled ? 'Hide the floating reading timer' : 'Show the floating reading timer'}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                      {!effectiveCollapsed && (
+                        <Switch
+                          checked={timerEnabled}
+                          onCheckedChange={() => toggleTimer()}
+                          onClick={(e) => e.stopPropagation()}
+                          aria-label={timerEnabled ? 'Hide timer' : 'Show timer'}
+                        />
+                      )}
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      onClick={() => setVocabOpen(true)}
+                      className="flex items-center gap-3 w-full transition-colors rounded-lg hover:bg-accent hover:text-accent-foreground"
+                    >
+                      <Bookmark className="w-5 h-5 flex-shrink-0" />
+                      {!effectiveCollapsed && (
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">My Vocabulary</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground truncate">
+                            View and manage your saved words
+                          </p>
+                        </div>
+                      )}
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
           )}
 
 
