@@ -96,7 +96,7 @@ export function PricingSection({ compact }: PricingSectionProps) {
               <ul className="space-y-2 mb-6">
                 {features.free.map((f) => (
                   <li key={f} className="flex items-start gap-2">
-                    <Check className="w-4 h-4 text-green-600 mt-1" />
+                    <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1" />
                     <span>{f}</span>
                   </li>
                 ))}
@@ -126,7 +126,7 @@ export function PricingSection({ compact }: PricingSectionProps) {
               <ul className="space-y-2 mb-6">
                 {features.premium.map((f) => (
                   <li key={f} className="flex items-start gap-2">
-                    <Check className="w-4 h-4 text-green-600 mt-1" />
+                    <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1" />
                     <span>{f}</span>
                   </li>
                 ))}
@@ -156,7 +156,7 @@ export function PricingSection({ compact }: PricingSectionProps) {
               <ul className="space-y-2 mb-6">
                 {features.enterprise.map((f) => (
                   <li key={f} className="flex items-start gap-2">
-                    <Check className="w-4 h-4 text-green-600 mt-1" />
+                    <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1" />
                     <span>{f}</span>
                   </li>
                 ))}
