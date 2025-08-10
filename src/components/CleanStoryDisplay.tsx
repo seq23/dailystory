@@ -141,6 +141,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [lockDifficulty, setLockDifficulty] = useState(false);
   const [minDifficulty, setMinDifficulty] = useState<'beginner' | 'easy' | 'medium' | 'hard' | 'expert'>('beginner');
   const [minExpertGrade, setMinExpertGrade] = useState<"6th" | "7th" | "8th" | "9th" | "10th">("6th");
+  const [allowDecreaseBelowMin, setAllowDecreaseBelowMin] = useState(false);
   const [highlightSave, setHighlightSave] = useState(false);
   
   useEffect(() => {
@@ -151,6 +152,25 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         setLockDifficulty(guardrails.lockDifficulty);
         setMinDifficulty(guardrails.minDifficulty as any);
         setMinExpertGrade(guardrails.minExpertGrade as any);
+        setAllowDecreaseBelowMin(!!guardrails.allowDecreaseBelowMin);
+
+        // Hard lock: clamp up immediately and persist if below min
+        if (guardrails.lockDifficulty) {
+          const currentIndex = difficultyLevels.indexOf(currentDifficulty);
+          const minIndex = difficultyLevels.indexOf(guardrails.minDifficulty as any);
+          if (currentIndex < minIndex) {
+            const newDifficulty = guardrails.minDifficulty as any;
+            setCurrentDifficulty(newDifficulty);
+            try {
+              const { data: { user } } = await supabase.auth.getUser();
+              if (user) {
+                await supabase.from('profiles').update({ difficulty_level: newDifficulty }).eq('user_id', user.id);
+              }
+            } catch (e) {
+              console.warn('Failed to persist clamped difficulty', e);
+            }
+          }
+        }
       } catch (e) {
         console.error('Failed to load parent guardrails', e);
       }
@@ -710,8 +730,13 @@ const handleRestartTimer = () => {
       const currentIndex = difficultyLevels.indexOf(currentDifficulty);
       const minIndex = difficultyLevels.indexOf(minDifficulty);
       if (direction === 'down' && currentIndex <= minIndex) {
-        toast({ title: t('reader.toasts.minLevelReached', { minDifficulty }), duration: 3000 });
-        return;
+        if (allowDecreaseBelowMin) {
+          // Allow decrease with an explanatory toast
+          toast({ title: t('reader.toasts.minBelowAllowed', 'Going below the set minimum for this session'), duration: 3000 });
+        } else {
+          toast({ title: t('reader.toasts.minLevelReached', { minDifficulty }), duration: 3000 });
+          return;
+        }
       }
       // Expert internal grade guardrail
       if (currentDifficulty === 'expert' && direction === 'down') {
@@ -895,7 +920,7 @@ const handleRestartTimer = () => {
           isChangingDifficulty={isChangingDifficulty}
           changeDirection={changeDirection}
           canIncrease={!lockDifficulty && (currentDifficulty !== 'expert' || expertGradeLevel !== "10th")}
-          canDecrease={!lockDifficulty && (difficultyLevels.indexOf(currentDifficulty) > difficultyLevels.indexOf(minDifficulty))}
+          canDecrease={!lockDifficulty && (allowDecreaseBelowMin || (difficultyLevels.indexOf(currentDifficulty) > difficultyLevels.indexOf(minDifficulty)))}
           onEndSession={() => setShowEndSessionConfirm(true)}
         />
 

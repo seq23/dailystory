@@ -76,10 +76,11 @@ const SessionEnded = ({ onHome, onNewStory, isPremium = false, onUpgrade }: Sess
 
   const getDifficultyLabel = (difficulty: string) => {
     switch (difficulty) {
-      case "easy": return t("storyDisplay.difficultyLabels.easy", "Pre-K - 1st Grade");
-      case "medium": return t("storyDisplay.difficultyLabels.medium", "2nd - 3rd Grade");
-      case "hard": return t("storyDisplay.difficultyLabels.hard", "4th - 5th Grade");
-      case "expert": return t("storyDisplay.difficultyLabels.expert", "6th Grade+");
+      case "beginner": return "Pre‑Reader";
+      case "easy": return "Beginner";
+      case "medium": return "Developing";
+      case "hard": return "Independent";
+      case "expert": return "Advanced";
       default: return difficulty;
     }
   };

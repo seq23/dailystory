@@ -66,13 +66,13 @@ export const ResponsiveStoryHeader = ({
 
   const getDifficultyLabel = (difficulty: string) => {
     const labels = {
-      beginner: t("storyDisplay.beginner", "Beginner"),
-      easy: t("storyDisplay.easy", "Easy"),
-      medium: t("storyDisplay.medium", "Medium"),
-      hard: t("storyDisplay.hard", "Hard"),
-      expert: t("storyDisplay.expert", "Expert")
+      beginner: t("storyDisplay.labels.preReader", "Pre‑Reader"),
+      easy: t("storyDisplay.labels.beginner", "Beginner"),
+      medium: t("storyDisplay.labels.developing", "Developing"),
+      hard: t("storyDisplay.labels.independent", "Independent"),
+      expert: t("storyDisplay.labels.advanced", "Advanced")
     };
-    return labels[difficulty as keyof typeof labels] || labels.easy;
+    return (labels as any)[difficulty] || labels.easy;
   };
 
   const getDifficultyColor = (difficulty: string) => {
