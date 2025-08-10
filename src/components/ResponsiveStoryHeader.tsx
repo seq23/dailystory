@@ -156,6 +156,15 @@ export const ResponsiveStoryHeader = ({
                   </Tooltip>
                 </TooltipProvider>
               )}
+              <div className="flex items-center gap-1">
+                <Avatar className="h-7 w-7">
+                  {hasSelectedAvatar && (
+                    <AvatarImage src={getAvatarUrl()} alt={userInfo?.name || "Guest"} />
+                  )}
+                  <AvatarFallback>{userInfo?.name?.charAt(0)?.toUpperCase() || "G"}</AvatarFallback>
+                </Avatar>
+                <Badge variant="guest">{t("welcomeHero.freeTrial", "Free Trial")}</Badge>
+              </div>
 
               {onNewStory && (
                 <NewStoryCTA
@@ -167,7 +176,6 @@ export const ResponsiveStoryHeader = ({
                   wandPulse={wandPulse}
                 />
               )}
-
               {showLevelControls && (
                 <>
                   {onDecreaseDifficulty && (
