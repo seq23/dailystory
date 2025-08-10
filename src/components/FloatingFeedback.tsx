@@ -11,7 +11,7 @@ export function FloatingFeedback() {
   const [isOpen, setIsOpen] = useState(false);
   const { isMobile } = useIsMobile();
   const isReadingSession = typeof document !== "undefined" && document.body.classList.contains("reading-session");
-  if (isMobile && isReadingSession) return null;
+  if (isReadingSession) return null;
 
   return (
     <>

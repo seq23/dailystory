@@ -1279,6 +1279,33 @@ const handleRestartTimer = () => {
                   </div>
                 )}
 
+                {/* Mobile/Tablet: compact arrow navigation */}
+                <div className="xl:hidden flex justify-center items-center gap-4 mt-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handlePrevious}
+                    disabled={currentPage === 0}
+                    aria-label={t('nav.prev','Back')}
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </Button>
+
+                  <span className="text-base font-medium text-muted-foreground px-4">
+                    Page {currentPage + 1}
+                  </span>
+
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={handleNext}
+                    disabled={isLoadingNextPage || timeRemaining <= 0 || (!isPremium && currentPage === story.length - 1)}
+                    aria-label={t('nav.next','Next')}
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </Button>
+                </div>
+
                 {/* Desktop: Centered compact layout */}
                 <div className="hidden xl:flex justify-center items-center gap-4">
                   <Button

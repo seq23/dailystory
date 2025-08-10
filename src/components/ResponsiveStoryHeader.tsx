@@ -123,9 +123,9 @@ export const ResponsiveStoryHeader = ({
       )}>
         <div className={cn(
           "flex items-center justify-between",
-          isMobile && "gap-2 px-4 py-2",
-          isTablet && "gap-3 px-6 py-3",
-          !isMobileOrTablet && "gap-6 py-4"
+          isMobile && "gap-2 px-3 py-1.5",
+          isTablet && "gap-3 px-5 py-2",
+          !isMobileOrTablet && "gap-5 py-3"
         )}>
           {/* Left Section: User Avatar & Action Buttons */}
           <div className={cn(
@@ -208,9 +208,8 @@ export const ResponsiveStoryHeader = ({
                         size={isMobile ? "sm" : "default"}
                         onClick={onNewStory}
                         className={cn(
-                          isMobileOrTablet 
-                            ? "min-h-[44px] rounded-full px-2 py-2" 
-                            : "h-12 px-4 rounded-xl hover:bg-gray-100"
+                          "h-10 w-10 rounded-full bg-gradient-primary text-white shadow hover-scale",
+                          isMobileOrTablet ? "min-h-[40px] min-w-[40px] p-0" : "p-0"
                         )}
                         aria-label={t("common.newStory", "New Story")}
                       >
@@ -245,158 +244,102 @@ export const ResponsiveStoryHeader = ({
           {/* Right Section: Level Controls + End Session */}
           <div className={cn("flex-shrink-0 flex items-center gap-2", isMobile && "w-full justify-end flex-wrap")}>
             {showLevelControls && (
-              isMobile ? (
-                <div 
-                  className={cn("flex items-center gap-3 w-full justify-end")}
-                  id="reading-level-controls"
-                  data-id="reading-level"
-                >
-                  <div className="flex flex-col gap-1">
-                    {onDecreaseDifficulty && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={onDecreaseDifficulty}
-                        disabled={!canDecrease || isChangingDifficulty}
-                        className="min-h-[36px] min-w-[36px] rounded-full p-2"
-                        aria-label={t("storyDisplay.decreaseDifficulty", "Make easier")}
-                      >
-                        {isChangingDifficulty && changeDirection === 'decrease' ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <TrendingDown className="w-4 h-4" />
-                        )}
-                      </Button>
-                    )}
-                    {onIncreaseDifficulty && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={onIncreaseDifficulty}
-                        disabled={!canIncrease || isChangingDifficulty}
-                        className="min-h-[36px] min-w-[36px] rounded-full p-2"
-                        aria-label={t("storyDisplay.increaseDifficulty", "Make harder")}
-                      >
-                        {isChangingDifficulty && changeDirection === 'increase' ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <TrendingUp className="w-4 h-4" />
-                        )}
-                      </Button>
-                    )}
-                  </div>
-                  <Badge 
-                    variant="outline" 
+              <div 
+                className={cn(
+                  "flex items-center reading-level-controls difficulty-controls",
+                  isMobileOrTablet ? "gap-1 sm:gap-2" : "gap-3 bg-gray-50 rounded-xl p-2"
+                )}
+                id="reading-level-controls"
+                data-id="reading-level"
+              >
+                {/* Level Label */}
+                {!isMobile && (
+                  <span className={cn(
+                    "text-sm text-gray-600",
+                    isMobileOrTablet ? "mr-1" : "font-medium px-2"
+                  )}>
+                    {isMobileOrTablet 
+                      ? t("storyDisplay.level", "Level")
+                      : t("storyDisplay.readingLevel", "Reading Level")
+                    }:
+                  </span>
+                )}
+
+                {/* Decrease Difficulty */}
+                {onDecreaseDifficulty && (
+                  <Button
+                    variant="outline"
+                    size={isMobileOrTablet ? "sm" : "default"}
+                    onClick={onDecreaseDifficulty}
+                    disabled={!canDecrease || isChangingDifficulty}
                     className={cn(
-                      "border px-2 py-1 transition-all duration-300",
-                      "text-sm",
-                      getDifficultyColor(currentDifficulty),
-                      buttonAnimations.badge 
-                        ? 'animate-[wiggle_0.5s_ease-in-out] scale-110' 
+                      isMobileOrTablet 
+                        ? "min-h-[44px] min-w-[44px] rounded-full p-2"
+                        : "h-10 w-10 rounded-lg hover:bg-red-50 hover:border-red-200",
+                      "transition-all duration-300",
+                      buttonAnimations.decrease 
+                        ? 'animate-scale-in bg-secondary/20 border-secondary' 
                         : ''
                     )}
+                    aria-label={t("storyDisplay.decreaseDifficulty", "Make easier")}
                   >
-                    {getDifficultyLabel(currentDifficulty)}
-                  </Badge>
-                </div>
-              ) : (
-                <div 
+                    {isChangingDifficulty && changeDirection === 'decrease' ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <TrendingDown className={cn(
+                        "w-4 h-4",
+                        !isMobileOrTablet && "text-red-600"
+                      )} />
+                    )}
+                  </Button>
+                )}
+
+                {/* Current Difficulty Badge */}
+                <Badge 
+                  variant="outline" 
                   className={cn(
-                    "flex items-center reading-level-controls difficulty-controls",
-                    isMobileOrTablet ? "gap-1 sm:gap-2" : "gap-3 bg-gray-50 rounded-xl p-2"
+                    "border px-2 py-1 transition-all duration-300",
+                    isMobile ? "text-xs" : 
+                    isMobileOrTablet ? "text-sm" :
+                    "px-4 py-2 text-sm font-medium border-2 rounded-lg",
+                    getDifficultyColor(currentDifficulty),
+                    buttonAnimations.badge 
+                      ? 'animate-[wiggle_0.5s_ease-in-out] scale-110' 
+                      : ''
                   )}
-                  id="reading-level-controls"
-                  data-id="reading-level"
                 >
-                  {/* Level Label */}
-                  {!isMobile && (
-                    <span className={cn(
-                      "text-sm text-gray-600",
-                      isMobileOrTablet ? "mr-1" : "font-medium px-2"
-                    )}>
-                      {isMobileOrTablet 
-                        ? t("storyDisplay.level", "Level")
-                        : t("storyDisplay.readingLevel", "Reading Level")
-                      }:
-                    </span>
-                  )}
+                  {getDifficultyLabel(currentDifficulty)}
+                </Badge>
 
-                  {/* Decrease Difficulty */}
-                  {onDecreaseDifficulty && (
-                    <Button
-                      variant="outline"
-                      size={isMobileOrTablet ? "sm" : "default"}
-                      onClick={onDecreaseDifficulty}
-                      disabled={!canDecrease || isChangingDifficulty}
-                      className={cn(
-                        isMobileOrTablet 
-                          ? "min-h-[44px] min-w-[44px] rounded-full p-2"
-                          : "h-10 w-10 rounded-lg hover:bg-red-50 hover:border-red-200",
-                        "transition-all duration-300",
-                        buttonAnimations.decrease 
-                          ? 'animate-scale-in bg-secondary/20 border-secondary' 
-                          : ''
-                      )}
-                      aria-label={t("storyDisplay.decreaseDifficulty", "Make easier")}
-                    >
-                      {isChangingDifficulty && changeDirection === 'decrease' ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <TrendingDown className={cn(
-                          "w-4 h-4",
-                          !isMobileOrTablet && "text-red-600"
-                        )} />
-                      )}
-                    </Button>
-                  )}
-
-                  {/* Current Difficulty Badge */}
-                  <Badge 
-                    variant="outline" 
+                {/* Increase Difficulty */}
+                {onIncreaseDifficulty && (
+                  <Button
+                    variant="outline"
+                    size={isMobileOrTablet ? "sm" : "default"}
+                    onClick={onIncreaseDifficulty}
+                    disabled={!canIncrease || isChangingDifficulty}
                     className={cn(
-                      "border px-2 py-1 transition-all duration-300",
-                      isMobile ? "text-xs" : 
-                      isMobileOrTablet ? "text-sm" :
-                      "px-4 py-2 text-sm font-medium border-2 rounded-lg",
-                      getDifficultyColor(currentDifficulty),
-                      buttonAnimations.badge 
-                        ? 'animate-[wiggle_0.5s_ease-in-out] scale-110' 
+                      isMobileOrTablet 
+                        ? "min-h-[44px] min-w-[44px] rounded-full p-2"
+                        : "h-10 w-10 rounded-lg hover:bg-green-50 hover:border-green-200",
+                      "transition-all duration-300",
+                      buttonAnimations.increase 
+                        ? 'animate-[glow-pulse_0.6s_ease-in-out,_edgeBounce_0.4s_ease-out] border-primary/50 shadow-lg shadow-primary/25' 
                         : ''
                     )}
+                    aria-label={t("storyDisplay.increaseDifficulty", "Make harder")}
                   >
-                    {getDifficultyLabel(currentDifficulty)}
-                  </Badge>
-
-                  {/* Increase Difficulty */}
-                  {onIncreaseDifficulty && (
-                    <Button
-                      variant="outline"
-                      size={isMobileOrTablet ? "sm" : "default"}
-                      onClick={onIncreaseDifficulty}
-                      disabled={!canIncrease || isChangingDifficulty}
-                      className={cn(
-                        isMobileOrTablet 
-                          ? "min-h-[44px] min-w-[44px] rounded-full p-2"
-                          : "h-10 w-10 rounded-lg hover:bg-green-50 hover:border-green-200",
-                        "transition-all duration-300",
-                        buttonAnimations.increase 
-                          ? 'animate-[glow-pulse_0.6s_ease-in-out,_edgeBounce_0.4s_ease-out] border-primary/50 shadow-lg shadow-primary/25' 
-                          : ''
-                      )}
-                      aria-label={t("storyDisplay.increaseDifficulty", "Make harder")}
-                    >
-                      {isChangingDifficulty && changeDirection === 'increase' ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <TrendingUp className={cn(
-                          "w-4 h-4",
-                          !isMobileOrTablet && "text-green-600"
-                        )} />
-                      )}
-                    </Button>
-                  )}
-                </div>
-              )
+                    {isChangingDifficulty && changeDirection === 'increase' ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <TrendingUp className={cn(
+                        "w-4 h-4",
+                        !isMobileOrTablet && "text-green-600"
+                      )} />
+                    )}
+                  </Button>
+                )}
+              </div>
             )}
 
             {/* Save Button (Premium) */}
@@ -449,6 +392,7 @@ export const ResponsiveStoryHeader = ({
               </TooltipProvider>
             )}
           </div>
+
         </div>
       </div>
     </header>
