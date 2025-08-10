@@ -30,31 +30,9 @@ export const InteractiveAudioReading = ({
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Voice selection using same logic as ElevenLabsAudio
-  const getVoiceForUser = (userInfo: UserInfo) => {
-    const age = userInfo.age;
-    const isGirl = userInfo.avatar?.type === 'girl';
-    const isNativeEnglishSpeaker = userInfo.nativeLanguage === 'en';
-    
-    if (!isNativeEnglishSpeaker) {
-      // Use multilingual voices for non-native speakers
-      if (age <= 8) {
-        return isGirl ? "EXAVITQu4vr4xnSDxMaL" : "TX3LPaxmHKxFdv7VOQHJ"; // Sarah or Liam
-      } else if (age <= 12) {
-        return isGirl ? "XB0fDUnXU5powFXDhCwa" : "N2lVS1w4EtoT3dr4eOWO"; // Charlotte or Callum
-      } else {
-        return isGirl ? "9BWtsMINqrJLrRacOk9x" : "CwhRBWXzGAHq8TQ4Fs17"; // Aria or Roger
-      }
-    } else {
-      // Use most natural voices for native English speakers
-      if (age <= 8) {
-        return isGirl ? "EXAVITQu4vr4xnSDxMaL" : "TX3LPaxmHKxFdv7VOQHJ"; // Sarah or Liam
-      } else if (age <= 12) {
-        return isGirl ? "cgSgspJ2msm6clMCkdW9" : "nPczCjzI2devNBz1zQrb"; // Jessica or Brian (very natural)
-      } else {
-        return isGirl ? "cgSgspJ2msm6clMCkdW9" : "onwK4e9ZLuTAKqWW03F9"; // Jessica or Daniel (most natural)
-      }
-    }
+  // Unified voice: Charlotte (ElevenLabs)
+  const getVoiceForUser = (_userInfo: UserInfo) => {
+    return "XB0fDUnXU5powFXDhCwa"; // Charlotte
   };
 
   useEffect(() => {
@@ -99,14 +77,13 @@ export const InteractiveAudioReading = ({
 
       // Use ElevenLabs TTS for consistent high-quality audio
       const voice = getVoiceForUser(userInfo);
-      const isNativeEnglishSpeaker = userInfo.nativeLanguage === 'en';
-      const model = isNativeEnglishSpeaker ? "eleven_turbo_v2" : "eleven_multilingual_v2";
+      const model = "eleven_multilingual_v2";
       
       const response = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/elevenlabs-tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          text: text.slice(0, 1000), // Limit text length
+          text: text.slice(0, 3000), // Limit text length
           voice: voice,
           model: model
         })

@@ -27,6 +27,16 @@ export interface AppConfig {
     projectUrl: string;
     anonKey: string;
   };
+  features: {
+    comprehension: {
+      inlineChecksEnabled: boolean;
+      inlineCheckEveryNPages: number;
+      minLevelForFullQuiz: 'medium' | 'hard' | 'expert';
+    };
+    postSessionActivities: {
+      enabled: boolean;
+    };
+  };
 }
 
 export const APP_CONFIG: AppConfig = {
@@ -54,6 +64,16 @@ export const APP_CONFIG: AppConfig = {
   supabase: {
     projectUrl: 'https://cpzeuogomaixamrtnnmj.supabase.co',
     anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino'
+  },
+  features: {
+    comprehension: {
+      inlineChecksEnabled: false,
+      inlineCheckEveryNPages: 3,
+      minLevelForFullQuiz: 'medium'
+    },
+    postSessionActivities: {
+      enabled: true
+    }
   }
 };
 

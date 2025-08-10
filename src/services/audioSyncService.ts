@@ -75,7 +75,7 @@ export class AudioSyncService {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          text: text.slice(0, 1000),
+          text: text.slice(0, 3000),
           voice: voice,
           model: model
         })

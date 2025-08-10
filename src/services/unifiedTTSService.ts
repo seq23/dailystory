@@ -26,7 +26,7 @@ export class UnifiedTTSService {
 
   constructor(config: Partial<TTSServiceConfig> = {}) {
     this.config = {
-      preferredProvider: 'openai',
+      preferredProvider: 'elevenlabs',
       fallbackToWebSpeech: true,
       mobileOptimized: true,
       cacheEnabled: true,
@@ -163,26 +163,9 @@ export class UnifiedTTSService {
   }
 
   private mapToElevenLabsVoice(voice?: string, userInfo?: any): string {
-    // Map to ElevenLabs voice IDs based on user preferences
-    const voiceMap: Record<string, string> = {
-      'child-friendly': 'pNInz6obpgDQGcFmaJgB', // Adam (child-friendly)
-      'young-girl': 'EXAVITQu4vr4xnSDxMaL', // Bella (young female)
-      'young-boy': 'VR6AewLTigWG4xSOukaG', // Josh (young male)
-      'default': 'pNInz6obpgDQGcFmaJgB'
-    };
-
-    if (voice && voiceMap[voice]) {
-      return voiceMap[voice];
-    }
-
-    // Select based on user info
-    if (userInfo?.gender === 'girl') {
-      return voiceMap['young-girl'];
-    } else if (userInfo?.gender === 'boy') {
-      return voiceMap['young-boy'];
-    }
-
-    return voiceMap['default'];
+    // Unified default voice across the app: Charlotte (friendly, clear)
+    // ElevenLabs Voice ID for Charlotte
+    return 'XB0fDUnXU5powFXDhCwa';
   }
 
   private async playAudio(audioUrl: string): Promise<void> {
@@ -279,7 +262,7 @@ export class UnifiedTTSService {
   // Static factory methods for common configurations
   static createForChildren(config?: Partial<TTSServiceConfig>): UnifiedTTSService {
     return new UnifiedTTSService({
-      preferredProvider: 'openai',
+      preferredProvider: 'elevenlabs',
       fallbackToWebSpeech: true,
       mobileOptimized: true,
       cacheEnabled: true,
