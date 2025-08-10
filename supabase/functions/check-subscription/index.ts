@@ -29,18 +29,8 @@ serve(async (req) => {
     logStep("Function started");
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) {
-      logStep("STRIPE_SECRET_KEY not configured, returning unsubscribed state");
-      // If Stripe is not configured yet, return default unsubscribed state
-      return new Response(JSON.stringify({ 
-        subscribed: false, 
-        message: "Stripe not configured yet" 
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
-    }
-    logStep("Stripe key verified");
+    const stripeConfigured = !!stripeKey;
+    logStep(stripeConfigured ? "Stripe key verified" : "Stripe key NOT configured");
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("No authorization header provided");
@@ -55,7 +45,58 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
+    // Check for manual override before touching Stripe
+    const { data: subRow, error: subErr } = await supabaseClient
+      .from("subscribers")
+      .select("override_premium, override_tier, override_end, stripe_customer_id")
+      .eq("email", user.email)
+      .maybeSingle();
+
+    if (subErr) {
+      logStep("Supabase subscribers fetch error", { message: subErr.message });
+    }
+
+    const overrideActive = subRow?.override_premium === true &&
+      (!subRow.override_end || new Date(subRow.override_end) > new Date());
+
+    if (overrideActive) {
+      const response = {
+        subscribed: true,
+        subscription_tier: subRow?.override_tier ?? "Premium",
+        subscription_end: subRow?.override_end ?? null,
+      };
+
+      // Persist authoritative state so UI fallbacks remain consistent
+      await supabaseClient.from("subscribers").upsert({
+        email: user.email,
+        user_id: user.id,
+        stripe_customer_id: subRow?.stripe_customer_id ?? null,
+        subscribed: true,
+        subscription_tier: response.subscription_tier,
+        subscription_end: response.subscription_end,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'email' });
+
+      logStep("Manual override active, returning premium", response);
+      return new Response(JSON.stringify(response), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
+    // If Stripe is not configured and no override, return unsubscribed
+    if (!stripeConfigured) {
+      logStep("Stripe not configured and no override; returning unsubscribed");
+      return new Response(JSON.stringify({
+        subscribed: false,
+        message: "Stripe not configured yet"
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
+    const stripe = new Stripe(stripeKey as string, { apiVersion: "2023-10-16" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     
     if (customers.data.length === 0) {
