@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import heroImage from "@/assets/hero-image-diverse-clear.jpg";
 import leftPageImage from "@/assets/story-illustration-14.jpg";
@@ -9,6 +10,44 @@ import VoiceCommandController from "@/components/VoiceCommandController";
 import { freeFeatures, premiumFeatures, additionalOfferings } from "@/constants/featureLists";
 const sampleText = `Luna and Max found a hidden door in the library. When they pushed it open, a tiny breeze carried the scent of pine trees and warm cookies. “Ready?” Max whispered. Luna nodded, and together they stepped into a world of stories.`;
 
+const sampleSavedStory = {
+  id: "demo-1",
+  title: "Luna’s Adventure Story #3",
+  difficulty: "medium",
+  estimatedReadingTime: 6,
+  wordCount: 430,
+  content: {
+    id: "demo-1",
+    title: "Luna’s Adventure Story #3",
+    difficulty: "medium",
+    estimatedReadingTime: 6,
+    wordCount: 430,
+    segments: [
+      {
+        text:
+          "Luna and Max found a hidden door in the library. When they pushed it open, a tiny breeze carried the scent of pine trees and warm cookies. “Ready?” Max whispered. Luna nodded, and together they stepped into a world of stories.",
+      },
+    ],
+  },
+  createdAt: new Date(),
+};
+
+const getFriendlyDifficultyLabel = (d: string) => {
+  switch (d) {
+    case "beginner":
+      return "Pre‑Reader";
+    case "easy":
+      return "Beginner";
+    case "medium":
+      return "Developing";
+    case "hard":
+      return "Independent";
+    case "expert":
+      return "Advanced";
+    default:
+      return d;
+  }
+};
 const StylePreview: React.FC = () => {
   useEffect(() => {
     document.title = "Reader Style Preview | Time2Read";
@@ -240,6 +279,81 @@ const StylePreview: React.FC = () => {
                   </CardContent>
                 </Card>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+
+      {/* Saved Story Preview */}
+      <section className="max-w-5xl mx-auto mt-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Saved Story Preview</CardTitle>
+            <CardDescription>How a saved story looks in two common layouts</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-6 md:grid-cols-2">
+              {/* Modern Card */}
+              <article>
+                <Card className="h-full">
+                  <CardHeader>
+                    <CardTitle className="text-base">Modern Card</CardTitle>
+                    <CardDescription>Image-forward with quick metadata</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <figure className="modern-photo-card overflow-hidden">
+                      <img
+                        src={heroImage}
+                        alt="Saved story illustration — modern card layout preview"
+                        loading="lazy"
+                        width={600}
+                        height={400}
+                        className="w-full h-40 object-cover"
+                      />
+                    </figure>
+                    <div className="mt-3">
+                      <h3 className="font-semibold">{sampleSavedStory.title}</h3>
+                      <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                        <Badge variant="secondary">
+                          {getFriendlyDifficultyLabel(sampleSavedStory.difficulty)}
+                        </Badge>
+                        <span>• {sampleSavedStory.estimatedReadingTime} min</span>
+                        <span>• {sampleSavedStory.wordCount} words</span>
+                      </div>
+                      <p className="mt-3 text-sm text-muted-foreground line-clamp-3">
+                        {sampleSavedStory.content.segments[0].text}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </article>
+
+              {/* Classic Storybook */}
+              <article>
+                <Card className="h-full">
+                  <CardHeader>
+                    <CardTitle className="text-base">Classic Storybook</CardTitle>
+                    <CardDescription>Text-first with a simple frame</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="storybook-frame">
+                      <div className="mb-2">
+                        <h3 className="font-semibold">{sampleSavedStory.title}</h3>
+                        <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                          <Badge variant="secondary">
+                            {getFriendlyDifficultyLabel(sampleSavedStory.difficulty)}
+                          </Badge>
+                          <span>• {sampleSavedStory.estimatedReadingTime} min</span>
+                          <span>• {sampleSavedStory.wordCount} words</span>
+                        </div>
+                      </div>
+                      <div className="story-content" data-difficulty={sampleSavedStory.difficulty}>
+                        {sampleSavedStory.content.segments[0].text}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </article>
             </div>
           </CardContent>
         </Card>
