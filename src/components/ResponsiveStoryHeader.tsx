@@ -418,23 +418,30 @@ export const ResponsiveStoryHeader = ({
               isMobileOrTablet ? "gap-1" : "gap-2 ml-4"
             )}>
               {onHome && (
-                <Button
-                  variant="ghost"
-                  size={isMobile ? "sm" : "default"}
-                  onClick={onHome}
-                  className={cn(
-                    isMobileOrTablet 
-                      ? "min-h-[44px] min-w-[44px] rounded-full p-2" 
-                      : "h-12 px-4 rounded-xl hover:bg-gray-100"
-                  )}
-                  aria-label={t("common.home", "Home")}
-                >
-                  <Home className={cn(
-                    isMobile ? "w-4 h-4" : "w-5 h-5",
-                    !isMobileOrTablet && "mr-2"
-                  )} />
-                  {!isMobileOrTablet && t("common.home", "Home")}
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size={isMobile ? "sm" : "default"}
+                        onClick={onHome}
+                        className={cn(
+                          isMobileOrTablet 
+                            ? "min-h-[44px] min-w-[44px] rounded-full p-2" 
+                            : "h-12 px-4 rounded-xl hover:bg-gray-100"
+                        )}
+                        aria-label={t("common.home", "Home")}
+                      >
+                        <Home className={cn(
+                          isMobile ? "w-4 h-4" : "w-5 h-5",
+                          !isMobileOrTablet && "mr-2"
+                        )} />
+                        {!isMobileOrTablet && t("common.home", "Home")}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">{t("tooltips.home", "Home")}</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               )}
 
               {/* Inline avatar + Free Trial badge next to Home (tablet guests) */}
