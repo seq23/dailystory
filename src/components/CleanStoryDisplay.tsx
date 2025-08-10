@@ -110,6 +110,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [sessionWordsRead, setSessionWordsRead] = useState(0);
   const [pagesCompleted, setPagesCompleted] = useState<Set<number>>(new Set());
   const [audioPlayedPage, setAudioPlayedPage] = useState<number | null>(null);
+  const elevenAudioRef = useRef<any>(null);
 
   // Debug source badge state
   const [storySource, setStorySource] = useState<'ai' | 'fallback' | 'unknown' | null>(null);
@@ -580,18 +581,25 @@ useEffect(() => {
       toast({ title: t('audioReading.audioUsed', 'Audio used'), description: t('audioReading.audioUsedTooltip', 'Audio used (1x per page for free users)'), duration: 2000 });
       return;
     }
-    const btn = document.getElementById('elevenlabs-play-toggle') as HTMLButtonElement | null;
-    if (btn) {
-      btn.click();
-      if (!isPremium) setAudioPlayedPage(currentPage);
+    if (elevenAudioRef.current) {
+      const playing = !!elevenAudioRef.current.isPlaying;
+      if (playing) {
+        elevenAudioRef.current.stop?.();
+      } else {
+        elevenAudioRef.current.play?.();
+        if (!isPremium) setAudioPlayedPage(currentPage);
+      }
       return;
     }
-    const el = document.getElementById('audio-controls');
-    el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    toast({ title: t('audioReading.playAudio', 'Play audio'), description: t('audioReading.useControlsBelow', 'Use the play button in the audio controls below.'), duration: 2000 });
+    const btn = document.getElementById('elevenlabs-play-toggle') as HTMLButtonElement | null;
+    btn?.click();
   };
 
   const handleDockVoiceCommand = () => {
+    if (elevenAudioRef.current?.toggleVoiceCommands) {
+      elevenAudioRef.current.toggleVoiceCommands();
+      return;
+    }
     const btn = document.getElementById('elevenlabs-voice-toggle') as HTMLButtonElement | null;
     if (btn) {
       btn.click();
@@ -599,7 +607,6 @@ useEffect(() => {
     }
     const el = document.getElementById('audio-controls');
     el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    toast({ title: t('audioReading.voiceCommands', 'Voice Commands'), description: t('audioReading.voiceHint', 'Tap Voice Commands next to Play to start.'), duration: 2500 });
   };
 
   // Manual end session logic exists below

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,7 +23,14 @@ interface ElevenLabsAudioProps {
   onWordHighlight?: (wordIndex: number) => void;
 }
 
-export const ElevenLabsAudio = ({ 
+export interface ElevenLabsAudioHandle {
+  play: () => Promise<void> | void;
+  stop: () => void;
+  toggleVoiceCommands: () => void;
+  isPlaying: boolean;
+}
+
+export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudioProps>(({ 
   text, 
   userInfo, 
   isPremium = false, 
@@ -33,7 +40,7 @@ export const ElevenLabsAudio = ({
   isExtendedPage = false,
   difficulty = 'easy',
   onWordHighlight 
-}: ElevenLabsAudioProps) => {
+}: ElevenLabsAudioProps, ref) => {
   const { t } = useTranslation();
   const { isMobileOrTablet, isCapacitor } = useIsMobile();
   const [isPlaying, setIsPlaying] = useState(false);
@@ -121,9 +128,10 @@ export const ElevenLabsAudio = ({
       return;
     }
 
-    const hasWebSpeech = typeof window !== 'undefined' && (('webkitSpeechRecognition' in window) || ('SpeechRecognition' in window));
-    if (!hasWebSpeech) {
-      console.log('🎙️ Voice: Web Speech not available, opening Whisper modal');
+    const hasWebSpeech = typeof window !== 'undefined' && ((('webkitSpeechRecognition' in window) || ('SpeechRecognition' in window)));
+    const forceModal = isMobileOrTablet || !hasWebSpeech;
+    if (forceModal) {
+      console.log('🎙️ Voice: Using Whisper modal (mobile or no Web Speech)');
       setShowVoiceModal(true);
       toast({
         title: t("audioReading.voiceCommandsEnabled", "Voice Commands Enabled"),
@@ -151,6 +159,14 @@ export const ElevenLabsAudio = ({
       });
     }
   };
+
+  // Expose imperative methods to parent (e.g., bottom dock)
+  useImperativeHandle(ref, () => ({
+    play: playAudio,
+    stop: stopAudio,
+    toggleVoiceCommands,
+    get isPlaying() { return isPlaying; }
+  }), [isPlaying]);
 
   const handleModalCommand = (cmd: string) => {
     try {
@@ -289,4 +305,4 @@ export const ElevenLabsAudio = ({
       </Dialog>
     </div>
   );
-};
+});
