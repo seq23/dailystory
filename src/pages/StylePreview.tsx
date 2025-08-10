@@ -215,11 +215,30 @@ const StylePreview: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-3">
-              <div className="flex flex-col items-center gap-2 p-4 border rounded-lg">
-                <div className="text-sm font-medium">Option A: Magic Refresh</div>
-                <Button variant="default" size="sm" aria-label="Start a fresh story" title="Start a fresh story">
-                  <MagicRefreshIcon className="mr-2" /> New Story
-                </Button>
+              <div className="flex flex-col items-center gap-3 p-4 border rounded-lg">
+                <div className="text-sm font-medium">Option A: Magic Refresh (refined)</div>
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  <Button variant="default" size="sm" aria-label="A1 Balanced – start a fresh story" title="A1 Balanced">
+                    <MagicRefreshIcon className="mr-2" size={20} ringScale={0.92} wandScale={0.58} wandRotate={-12} />
+                    New Story
+                  </Button>
+                  <Button variant="secondary" size="sm" aria-label="A2 Compact Wand – start a fresh story" title="A2 Compact Wand">
+                    <MagicRefreshIcon className="mr-2" size={20} ringScale={0.94} wandScale={0.5} wandRotate={-15} />
+                    New Story
+                  </Button>
+                  <Button variant="fun" size="sm" aria-label="A3 Duotone – start a fresh story" title="A3 Duotone">
+                    <MagicRefreshIcon
+                      className="mr-2"
+                      size={20}
+                      ringScale={0.9}
+                      wandScale={0.56}
+                      wandRotate={-10}
+                      ringClassName="text-[hsl(var(--primary))]"
+                      wandClassName="text-[hsl(var(--foreground))]"
+                    />
+                    New Story
+                  </Button>
+                </div>
               </div>
               <div className="flex flex-col items-center gap-2 p-4 border rounded-lg">
                 <div className="text-sm font-medium">Option B: Classic Wand</div>
