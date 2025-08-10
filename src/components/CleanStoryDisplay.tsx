@@ -1160,33 +1160,6 @@ const handleRestartTimer = () => {
               {/* Magic Wand Buttons Section */}
               <div className="mb-6 flex flex-col items-center gap-4">
                 {/* Premium Magic Wand - Below page count */}
-                {isPremium && (
-                  <div className="flex items-center gap-2">
-                    <Button
-                      id="magic-wand-premium"
-                      data-id="magic-wand"
-                      onClick={handleGenerateNewStory}
-                      disabled={isGeneratingNewStory}
-                      variant="outline"
-                      size="sm"
-                      className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 border-purple-300/30 hover:from-purple-500/20 hover:to-blue-500/20 transition-all duration-300"
-                    >
-                      {isGeneratingNewStory ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          <Sparkles className="w-3 h-3 absolute top-1 right-1 text-purple-400 animate-pulse" />
-                          Creating magic...
-                        </>
-                      ) : (
-                        <>
-                          <Wand className="w-4 h-4 mr-2 animate-bounce" />
-                          <Sparkles className="w-3 h-3 absolute top-1 right-1 text-purple-400 animate-pulse" />
-                          Fresh Story
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                )}
 
                 {/* Free User Magic Wand - DRAMATICALLY ENHANCED for MAXIMUM visibility */}
                 {!isPremium && currentPage === story.length - 1 && timeRemaining > 0 && (
@@ -1337,38 +1310,29 @@ const handleRestartTimer = () => {
 
                 {/* Desktop: Centered compact layout */}
                 <div className="hidden xl:flex justify-center items-center gap-4">
-                  <MobileOptimizedButton
-                    onClick={handlePrevious}
-                    disabled={currentPage === 0}
+                  <Button
                     variant="outline"
                     size="sm"
+                    onClick={handlePrevious}
+                    disabled={currentPage === 0}
+                    aria-label={t('nav.prev','Back')}
                   >
-                    Previous
-                  </MobileOptimizedButton>
+                    <ChevronLeft className="w-5 h-5" />
+                  </Button>
 
                   <span className="text-base font-medium text-muted-foreground px-4">
                     Page {currentPage + 1}
                   </span>
 
-                  <MobileOptimizedButton
+                  <Button
+                    variant="default"
+                    size="sm"
                     onClick={handleNext}
                     disabled={isLoadingNextPage || timeRemaining <= 0 || (!isPremium && currentPage === story.length - 1)}
-                    className="bg-primary text-primary-foreground"
-                    size="sm"
+                    aria-label={t('nav.next','Next')}
                   >
-                    {isLoadingNextPage ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        {isPremium ? 'Generating page...' : 'Generating...'}
-                      </>
-                    ) : isPremium && currentPage === story.length - 1 && isStoryComplete ? (
-                      t('nav.next','What happens next?')
-                    ) : isPremium && currentPage === story.length - 1 ? (
-                      t('nav.next','What happens next?')
-                    ) : (
-                      'Next'
-                    )}
-                  </MobileOptimizedButton>
+                    <ChevronRight className="w-5 h-5" />
+                  </Button>
                 </div>
 
                 {/* Premium controls desktop */}
