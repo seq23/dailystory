@@ -423,6 +423,7 @@
     "collapse": "Collapse timer",
     "dismissTimer": "Dismiss Timer",
     "showTimer": "Show Timer",
+    "dismissHint": "Read untimed. Re-enable timer in the Left Navigation panel.",
     "endSession": "End Reading Session",
     "congratulations": "Congratulations!",
     "sessionComplete": "You completed your reading session!",

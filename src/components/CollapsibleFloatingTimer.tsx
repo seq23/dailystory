@@ -322,7 +322,7 @@ useEffect(() => {
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
-              {t("floatingTimer.dismissHint", "Dismiss Timer. Keep reading without a timer. You can turn it back on from the navigation panel.")}
+              {t("floatingTimer.dismissHint", "Read untimed. Re-enable timer in the Left Navigation panel.")}
             </TooltipContent>
           </Tooltip>
 
