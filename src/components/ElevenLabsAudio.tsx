@@ -60,6 +60,8 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
   const [vcLevel, setVcLevel] = useState(0);
   const burstCounterRef = useRef(0);
   const lastBurstTsRef = useRef(0);
+  const emitStatus = (s: 'idle'|'listening'|'processing') =>
+    window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: s } }));
 
   // Enhanced audio service handles free limits internally
   const maxFreePages = 10;
@@ -88,6 +90,7 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
       // Initialize mobile audio on component mount
       audioService.getPlaybackStatus(); // This will trigger mobile audio initialization
     }
+  }, [audioService, isMobileOrTablet]);
 
   // Expose current user name for vocabulary storage key standardization
   useEffect(() => {
@@ -275,7 +278,7 @@ const handleHeadlessCommand = (cmd: string) => {
 // Voice vocabulary events handler
 useEffect(() => {
   const onVocab = async (evt: Event) => {
-    const { detail } = evt as CustomEvent<{ type: 'define'|'pronounce'|'save'; word: string }>;
+    const { detail } = evt as CustomEvent<{ type: 'define'|'explain'|'pronounce'|'save'; word: string }>;
     if (!detail?.word) return;
     const cleanWord = detail.word.replace(/[.,!?;:'"()]/g, '').trim();
     try {
@@ -345,7 +348,7 @@ useEffect(() => {
           onClick={toggleVoiceCommands}
           variant={voiceCommandsEnabled ? "default" : "outline"}
           size={isMobileOrTablet ? "default" : "sm"}
-          className={`gap-2 ${isMobileOrTablet ? 'min-h-[44px] px-4' : ''}`}
+          className={`gap-2 ${isMobileOrTablet ? 'min-h-[44px] px-4' : ''} ${voiceCommandsEnabled ? 'bg-[hsl(var(--warning))] text-white hover:bg-[hsl(var(--warning))]/90' : ''}`}
           style={voiceCommandsEnabled && vcStatus === 'listening' ? { boxShadow: `0 0 ${4 + vcLevel * 10}px hsl(var(--primary))`, opacity: 0.9 } : undefined}
         >
           <span className="relative inline-flex items-center">

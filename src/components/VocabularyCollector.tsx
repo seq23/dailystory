@@ -143,6 +143,14 @@ export const VocabularyCollector = ({ userInfo, isVisible, onClose, enablePersis
 
   const { newWords, reviewing, mastered } = getWordsByCategory();
 
+  // Expose addWordToVocabulary globally for voice/interactive usage
+  useEffect(() => {
+    (window as any).addToVocabulary = addWordToVocabulary;
+    return () => {
+      delete (window as any).addToVocabulary;
+    };
+  }, [addWordToVocabulary]);
+
 
   if (!isVisible) return null;
 
