@@ -161,7 +161,19 @@ export class DifficultyManager {
     const userId = userInfo.name || 'guest';
     const profile = this.suggestDifficulty(userInfo);
     
-    // FIRST PRIORITY: User's explicit readingAbility choice (complete user control)
+    // FIRST PRIORITY: User's explicit selection (complete user control)
+    if (userInfo.difficultyLevel) {
+      console.log(`🎯 DifficultyManager: Using user's explicit difficultyLevel ${userInfo.difficultyLevel} for ${userId}`);
+      return {
+        difficulty: userInfo.difficultyLevel,
+        isStored: false,
+        profile: {
+          ...profile,
+          suggestedDifficulty: userInfo.difficultyLevel,
+          reasoning: ["Using user's explicit difficulty choice", ...profile.reasoning]
+        }
+      };
+    }
     if (userInfo.readingAbility) {
       console.log(`🎯 DifficultyManager: Using user's explicit readingAbility ${userInfo.readingAbility} for ${userId}`);
       return {

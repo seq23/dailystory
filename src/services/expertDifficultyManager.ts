@@ -174,9 +174,22 @@ export class ExpertDifficultyManager {
    */
   private static getStoredProgress(userId: string): ExpertProgressData | null {
     try {
-      const stored = sessionStorage.getItem(`${this.STORAGE_KEY}_${userId}`);
-      if (stored) {
-        return JSON.parse(stored);
+      const key = `${this.STORAGE_KEY}_${userId}`;
+      // Prefer persistent storage
+      const localStored = localStorage.getItem(key);
+      if (localStored) {
+        return JSON.parse(localStored);
+      }
+      // Migrate from sessionStorage if present
+      const legacyStored = sessionStorage.getItem(key);
+      if (legacyStored) {
+        const data = JSON.parse(legacyStored);
+        try {
+          localStorage.setItem(key, legacyStored);
+          sessionStorage.removeItem(key);
+          console.log('🔄 ExpertDifficultyManager: Migrated progress to localStorage for', userId);
+        } catch {}
+        return data;
       }
     } catch (error) {
       console.warn('⚠️ ExpertDifficultyManager: Failed to load stored progress:', error);
@@ -189,7 +202,9 @@ export class ExpertDifficultyManager {
    */
   private static storeProgress(userId: string, progressData: ExpertProgressData): void {
     try {
-      sessionStorage.setItem(`${this.STORAGE_KEY}_${userId}`, JSON.stringify(progressData));
+      const key = `${this.STORAGE_KEY}_${userId}`;
+      localStorage.setItem(key, JSON.stringify(progressData));
+      try { sessionStorage.removeItem(key); } catch {}
     } catch (error) {
       console.warn('⚠️ ExpertDifficultyManager: Failed to store progress:', error);
     }
@@ -209,7 +224,9 @@ export class ExpertDifficultyManager {
    */
   static resetProgress(userInfo: UserInfo): void {
     const userId = userInfo.name || 'guest';
-    sessionStorage.removeItem(`${this.STORAGE_KEY}_${userId}`);
+    const key = `${this.STORAGE_KEY}_${userId}`;
+    try { localStorage.removeItem(key); } catch {}
+    try { sessionStorage.removeItem(key); } catch {}
     console.log(`🔄 ExpertDifficultyManager: Reset progress for ${userId}`);
   }
 

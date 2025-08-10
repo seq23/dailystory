@@ -7,8 +7,6 @@ import { getStoryPrompt, getExpertStoryPrompt, formatUserPrompt, calculateDiffic
 import { EnhancedFallbackManager } from '@/constants/enhancedFallbackTemplates';
 import { ErrorHandler } from '@/utils/errorHandling';
 import { InputSanitizer } from '@/utils/inputSanitizer';
-import { DifficultyManager } from '@/services/difficultyManager';
-import { ExpertDifficultyManager } from '@/services/expertDifficultyManager';
 import { DiagnosticTool } from '@/utils/diagnostics';
 
 export interface NetflixStoryResult {
@@ -37,17 +35,16 @@ export class NetflixStyleStoryService {
     try {
       console.log('🎬 Netflix-Style: Generating complete story for', userInfo.name);
       
-      // Use DifficultyManager for consistent difficulty calculation
-      const difficultyResult = DifficultyManager.getFinalDifficulty(userInfo);
-      const difficulty = difficultyResult.difficulty;
-      console.log(`🎯 Netflix-Style: Using difficulty ${difficulty} for ${userInfo.name}`);
+      // Use user-selected difficulty only (no automatic overrides)
+      const difficulty: DifficultyLevel = (userInfo.difficultyLevel || userInfo.readingAbility || 'beginner') as DifficultyLevel;
+      console.log(`🎯 Netflix-Style: Using user-selected difficulty ${difficulty} for ${userInfo.name}`);
       
-      // Get expert grade level if using expert difficulty
+      // Expert: use provided grade when available; default to 6th for free users
       let expertGradeLevel: ExpertGradeLevel | undefined;
       let promptConfig: any;
       
       if (difficulty === 'expert') {
-        expertGradeLevel = await ExpertDifficultyManager.getExpertGradeLevel(userInfo);
+        expertGradeLevel = (userInfo.expertGradeLevel || '6th') as ExpertGradeLevel;
         promptConfig = getExpertStoryPrompt(expertGradeLevel);
         console.log(`📚 Netflix-Style: Using expert grade ${expertGradeLevel} for ${userInfo.name}`);
       } else {

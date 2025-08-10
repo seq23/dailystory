@@ -6,7 +6,7 @@ import type { UserInfo, DifficultyLevel, ExpertGradeLevel } from '@/types';
 import { getStoryPrompt, getExpertStoryPrompt, formatUserPrompt, calculateDifficultyFromUser } from '@/config/storyPrompts';
 import { EnhancedFallbackManager } from '@/constants/enhancedFallbackTemplates';
 import { ErrorHandler } from '@/utils/errorHandling';
-import { DifficultyManager } from '@/services/difficultyManager';
+
 import { ExpertDifficultyManager } from '@/services/expertDifficultyManager';
 
 export interface LiveGenerationContext {
@@ -35,19 +35,19 @@ export class LiveGenerationService {
     try {
       console.log('🚀 Live Generation: Starting first page for', userInfo.name);
       
-      // Use DifficultyManager for consistent difficulty calculation
-      const difficultyResult = DifficultyManager.getFinalDifficulty(userInfo);
-      const difficulty = difficultyResult.difficulty;
-      console.log(`🎯 Live Generation: Using difficulty ${difficulty} for ${userInfo.name}`);
+      // Use user-selected difficulty only (no automatic overrides)
+      const difficulty: DifficultyLevel = (userInfo.difficultyLevel || userInfo.readingAbility || 'beginner') as DifficultyLevel;
+      console.log(`🎯 Live Generation: Using user-selected difficulty ${difficulty} for ${userInfo.name}`);
       
-      // Get expert grade level if using expert difficulty
+      // Premium Expert: adaptive grade selection
       let expertGradeLevel: ExpertGradeLevel | undefined;
       let promptConfig: any;
       
       if (difficulty === 'expert') {
+        // Premium expert progression: adaptive grade selection
         expertGradeLevel = await ExpertDifficultyManager.getExpertGradeLevel(userInfo);
         promptConfig = getExpertStoryPrompt(expertGradeLevel);
-        console.log(`📚 Live Generation: Using expert grade ${expertGradeLevel} for ${userInfo.name}`);
+        console.log(`📚 Live Generation: Using adaptive expert grade ${expertGradeLevel} for ${userInfo.name}`);
       } else {
         promptConfig = getStoryPrompt(difficulty);
       }

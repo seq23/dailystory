@@ -244,10 +244,16 @@ useEffect(() => {
     }
     
     try {
+      const effectiveUser = {
+        ...userInfo,
+        difficultyLevel: currentDifficulty,
+        readingAbility: currentDifficulty,
+        expertGradeLevel: currentDifficulty === 'expert' ? expertGradeLevel : undefined,
+      } as UserInfo;
       if (isPremium) {
         // Premium: Live generation - start with first page
         console.log('🎯 Premium user: Starting live generation');
-        const result = await LiveGenerationService.generateFirstPage(userInfo);
+        const result = await LiveGenerationService.generateFirstPage(effectiveUser);
         
         if (result.error) {
           setError(result.error);
@@ -256,6 +262,10 @@ useEffect(() => {
         
         setStory([result.content]);
         setLiveContext(result.nextContext || null);
+        // Sync UI with adaptive expert grade if returned
+        if (result.nextContext?.expertGradeLevel) {
+          setExpertGradeLevel(result.nextContext.expertGradeLevel);
+        }
         setIsStoryComplete(result.isComplete);
         setStoryTitle(`${userInfo.name}'s Live Adventure`);
         const srcPremium = (window as any).__LAST_STORY_SOURCE__ || 'unknown';
@@ -270,7 +280,7 @@ useEffect(() => {
           difficulty: userInfo.difficultyLevel,
           timestamp: new Date().toISOString()
         });
-        const result = await NetflixStyleStoryService.generateCompleteStory(userInfo);
+        const result = await NetflixStyleStoryService.generateCompleteStory(effectiveUser);
         
         console.log('🔍 DIAGNOSTIC: NetflixStyleStoryService result received', {
           hasError: !!result.error,
@@ -405,7 +415,7 @@ useEffect(() => {
             const newContext: LiveGenerationContext = {
               userInfo,
               difficulty: currentDifficulty,
-              expertGradeLevel: currentDifficulty === 'expert' ? expertGradeLevel : undefined,
+              expertGradeLevel: currentDifficulty === 'expert' ? (liveContext?.expertGradeLevel || expertGradeLevel) : undefined,
               storyContext: [...story],
               currentPage: story.length,
               totalExpectedPages: Math.max(story.length + 1, 6),
@@ -590,18 +600,22 @@ const handleRestartTimer = () => {
       console.log('🪄 Generating new story...');
       
       if (isPremium) {
-        const first = await LiveGenerationService.generateFirstPage(userInfo);
+        const effectiveUser = { ...userInfo, difficultyLevel: currentDifficulty, readingAbility: currentDifficulty, expertGradeLevel: currentDifficulty === 'expert' ? expertGradeLevel : undefined } as UserInfo;
+        const first = await LiveGenerationService.generateFirstPage(effectiveUser);
         if ((first as any).error) {
           throw new Error((first as any).error);
         }
         setStory([first.content]);
         setCurrentPage(0); // Reset to first page
         setLiveContext(first.nextContext || null);
+        if (first.nextContext?.expertGradeLevel) {
+          setExpertGradeLevel(first.nextContext.expertGradeLevel);
+        }
         setIsStoryComplete(first.isComplete);
         setStoryTitle(`${userInfo.name}'s Live Adventure`);
       } else {
         const originalPageCount = story.length;
-        const result = await NetflixStyleStoryService.generateCompleteStory(userInfo);
+        const result = await NetflixStyleStoryService.generateCompleteStory({ ...userInfo, difficultyLevel: currentDifficulty, readingAbility: currentDifficulty, expertGradeLevel: currentDifficulty === 'expert' ? expertGradeLevel : undefined } as UserInfo);
         
         // For free users, maintain original page count
         const newStory = result.pages.slice(0, originalPageCount || result.pages.length);
@@ -629,7 +643,7 @@ const handleRestartTimer = () => {
     const newContext: LiveGenerationContext = {
       userInfo,
       difficulty: currentDifficulty,
-      expertGradeLevel: currentDifficulty === 'expert' ? expertGradeLevel : undefined,
+      expertGradeLevel: currentDifficulty === 'expert' ? (liveContext?.expertGradeLevel || expertGradeLevel) : undefined,
       storyContext: [...story],
       currentPage: story.length,
       totalExpectedPages: Math.max(story.length + 1, 6),
