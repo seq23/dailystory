@@ -408,15 +408,32 @@ useEffect(() => {
       <p className="text-sm text-muted-foreground" role="status" aria-live="polite">
         {t('timer.celebration.caption', 'Amazing work! Wrapping up your session…')}
       </p>
+      <div className="mt-4 flex items-center justify-center gap-2">
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() => {
+            setShowCelebration(false);
+            if (isPremium) {
+              setShowChoice(true);
+            } else {
+              onSessionEnded(sessionStats);
+            }
+          }}
+        >
+          {t('timer.celebration.skip', 'Skip')}
+        </Button>
+      </div>
     </div>
   </div>
 )}
 
 {/* Post-celebration choice for premium users */}
 {showChoice && (
-  <div className="absolute inset-0 flex items-center justify-center">
-    <div className="bg-background/95 backdrop-blur-md border border-border rounded-2xl shadow-2xl p-4 sm:p-6 w-[90vw] max-w-md animate-scale-in">
-      <h3 className="text-lg font-bold mb-2 text-center">{t('timer.expired.title', "Time's up!")}</h3>
+  <div className="fixed inset-0 z-[105] flex items-center justify-center" role="dialog" aria-labelledby="timer-choice-title">
+    <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" />
+    <div className="relative z-[106] bg-background/95 backdrop-blur-md border border-border rounded-2xl shadow-2xl p-4 sm:p-6 w-[90vw] max-w-md animate-scale-in">
+      <h3 id="timer-choice-title" className="text-lg font-bold mb-2 text-center">{t('timer.expired.title', "Time's up!")}</h3>
       <p className="text-sm text-muted-foreground text-center mb-4">
         {t('timer.expired.subtitle', 'Would you like to keep reading without a timer, save & end the session, or end without saving?')}
       </p>

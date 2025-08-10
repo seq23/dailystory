@@ -2,6 +2,7 @@ import { Check, CreditCard, Crown } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { SubscriptionManager } from "@/components/SubscriptionManager";
 import { freeFeatures, premiumFeatures as topPremiumFeatures, additionalOfferings } from "@/constants/featureLists";
+import { Badge } from "@/components/ui/badge";
 interface MyAccountProps {
   isPremium: boolean;
   subscriptionTier?: string;
@@ -19,7 +20,12 @@ export function MyAccount({ isPremium, subscriptionTier, subscriptionEnd, devTes
           <CreditCard className="w-6 h-6 text-primary" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-foreground">My Account</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-foreground">My Account</h1>
+            <Badge variant={isPremium ? 'premium' : 'guest'} className="text-xs">
+              {isPremium ? 'Premium' : 'Guest'}
+            </Badge>
+          </div>
           <p className="text-muted-foreground">Manage your subscription and account settings</p>
         </div>
       </div>

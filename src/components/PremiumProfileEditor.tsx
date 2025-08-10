@@ -77,9 +77,7 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
             <p className="text-muted-foreground">Customize your reading experience</p>
           </div>
         </div>
-        <Badge variant="secondary" className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white">
-          Premium
-        </Badge>
+        <Badge variant="premium">Premium</Badge>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
