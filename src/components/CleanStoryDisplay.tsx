@@ -577,10 +577,10 @@ const handleSaveStoryNow = async () => {
       };
       await PremiumStoryManager.saveStory(storyObj as any, userInfo, isStoryComplete ? ['ended'] : ['in-progress'], false);
       setHighlightSave(false);
-      toast({ title: "Saved", description: "Story saved to your library.", duration: 3000 });
+      toast({ title: t('save.toastSaved', 'Saved to your Story Library'), duration: 3000 });
     } catch (e) {
       console.error('Save story failed', e);
-      toast({ title: "Save failed", description: "Please try again.", variant: "destructive" });
+      toast({ title: t('save.toastError', "We couldn’t save your story. Please try again."), variant: "destructive" });
     } finally {
       setIsSaving(false);
     }

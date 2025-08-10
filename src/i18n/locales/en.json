@@ -692,6 +692,7 @@
     "next": "What happens next?",
     "endStory": "Create my ending",
     "endSession": "End Session",
+    "save": "Save",
     "endSessionConfirm": {
       "title": "End session?",
       "desc": "This will end this session. You will have the option to save this story as is.",
