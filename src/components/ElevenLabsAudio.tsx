@@ -219,10 +219,10 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
         <Button
           id="elevenlabs-play-toggle"
           onClick={isPlaying ? stopAudio : playAudio}
-          disabled={isLoading || shouldShowCrown}
+          disabled={isLoading || (!isPlaying && shouldShowCrown)}
           variant="outline"
           size={isMobileOrTablet ? "default" : "sm"}
-          className={`gap-2 ${isMobileOrTablet ? 'min-h-[44px] px-4' : ''} ${shouldShowCrown ? 'opacity-50' : ''}`} // iOS/Android touch target size
+          className={`gap-2 ${isMobileOrTablet ? 'min-h-[44px] px-4' : ''} ${shouldShowCrown && !isPlaying ? 'opacity-50' : ''}`} // iOS/Android touch target size
         >
           {isLoading ? (
             <div className="w-4 h-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />

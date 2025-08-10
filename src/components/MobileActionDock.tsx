@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { Volume2, Mic, Save, Square } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
 interface MobileActionDockProps {
   isPremium: boolean;
   onPlayAudio?: () => void;
@@ -12,6 +13,7 @@ interface MobileActionDockProps {
   onEnd?: () => void;
   isSaving?: boolean;
   audioDisabled?: boolean;
+  isAudioPlaying?: boolean;
   className?: string;
 }
 
@@ -23,6 +25,7 @@ export const MobileActionDock: React.FC<MobileActionDockProps> = ({
   onEnd,
   isSaving = false,
   audioDisabled = false,
+  isAudioPlaying = false,
   className,
 }) => {
   const { t } = useTranslation();
@@ -50,18 +53,24 @@ export const MobileActionDock: React.FC<MobileActionDockProps> = ({
                       variant="outline"
                       className="h-12 flex flex-col items-center justify-center gap-0.5 rounded-xl"
                       onClick={onPlayAudio}
-                      disabled={audioDisabled}
-                      aria-label={t("audioReading.playAudio", "Play audio")}
+                      disabled={audioDisabled && !isAudioPlaying}
+                      aria-label={isAudioPlaying ? t("audioReading.stop", "Stop") : t("audioReading.playAudio", "Play audio")}
                     >
-                      <Volume2 className="w-5 h-5" />
-                      <span className="text-[11px] leading-none">{t("audioReading.play", "Audio")}</span>
+                      {isAudioPlaying ? (
+                        <Square className="w-5 h-5" />
+                      ) : (
+                        <Volume2 className="w-5 h-5" />
+                      )}
+                      <span className="text-[11px] leading-none">{isAudioPlaying ? t("audioReading.stop", "Stop") : t("audioReading.play", "Audio")}</span>
                     </Button>
                   </span>
                 </TooltipTrigger>
                 <TooltipContent side="top">
-                  {audioDisabled
-                    ? t("audioReading.audioUsedTooltip", "Audio used (1x per page for free users)")
-                    : t("tooltips.dock.play", "Play the current page with narration")}
+                  {isAudioPlaying
+                    ? t("tooltips.dock.stop", "Stop playback")
+                    : audioDisabled
+                      ? t("audioReading.audioUsedTooltip", "Audio used (1x per page for free users)")
+                      : t("tooltips.dock.play", "Play the current page with narration")}
                 </TooltipContent>
               </Tooltip>
 

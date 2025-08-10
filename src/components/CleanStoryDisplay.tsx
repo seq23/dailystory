@@ -113,6 +113,15 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [audioPlayedPage, setAudioPlayedPage] = useState<number | null>(null);
   const elevenAudioRef = useRef<any>(null);
 
+  // Keep local audio state in sync with ElevenLabsAudio
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const playing = !!elevenAudioRef.current?.isPlaying;
+      setIsAudioPlaying(prev => (prev !== playing ? playing : prev));
+    }, 500);
+    return () => clearInterval(interval);
+  }, []);
+
   // Debug source badge state
   const [storySource, setStorySource] = useState<'ai' | 'fallback' | 'unknown' | null>(null);
   const isDebug = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1';
@@ -578,7 +587,7 @@ useEffect(() => {
 
   // Bottom dock actions
   const handleDockPlayAudio = () => {
-    if (!isPremium && audioPlayedPage === currentPage) {
+    if (!isPremium && audioPlayedPage === currentPage && !isAudioPlaying) {
       toast({ title: t('audioReading.audioUsed', 'Audio used'), description: t('audioReading.audioUsedTooltip', 'Audio used (1x per page for free users)'), duration: 2000 });
       return;
     }
@@ -586,8 +595,10 @@ useEffect(() => {
       const playing = !!elevenAudioRef.current.isPlaying;
       if (playing) {
         elevenAudioRef.current.stop?.();
+        setIsAudioPlaying(false);
       } else {
         elevenAudioRef.current.play?.();
+        setIsAudioPlaying(true);
         if (!isPremium) setAudioPlayedPage(currentPage);
       }
       return;
@@ -1467,7 +1478,8 @@ const handleRestartTimer = () => {
           onSave={isPremium ? handleSaveStoryNow : undefined}
           onEnd={isPremium ? () => setShowEndSessionConfirm(true) : undefined}
           isSaving={isSaving}
-          audioDisabled={!isPremium && audioPlayedPage === currentPage}
+          isAudioPlaying={isAudioPlaying}
+          audioDisabled={!isPremium && audioPlayedPage === currentPage && !isAudioPlaying}
         />
       )}
 
