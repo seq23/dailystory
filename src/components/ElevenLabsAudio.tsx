@@ -298,15 +298,15 @@ useEffect(() => {
     const { detail } = evt as CustomEvent<{ type: 'define'|'explain'|'pronounce'|'save'; word: string }>;
     if (!detail?.word) return;
     const raw = detail.word.replace(/[.,!?;:'"()]/g, '').trim();
-    const resolveWord = (w: string | undefined) => {
-      const pronouns = ['this', 'this word', 'that', 'that word', 'it', 'this one'];
-      const lw = (w || '').toLowerCase();
-      if (pronouns.includes(lw)) {
-        const ctx = (window as any).__lastSelectedWord || (window as any).__currentHighlightedWord;
-        return typeof ctx === 'string' && ctx.trim().length > 0 ? ctx : '';
-      }
-      return w || '';
-    };
+      const resolveWord = (w: string | undefined) => {
+        const pronouns = ['this', 'this word', 'that', 'that word', 'it', 'this one'];
+        const lw = (w || '').toLowerCase();
+        if (pronouns.includes(lw)) {
+          const ctx = (window as any).__hoveredWord || (window as any).__lastSelectedWord || (window as any).__currentHighlightedWord;
+          return typeof ctx === 'string' && ctx.trim().length > 0 ? ctx : '';
+        }
+        return w || '';
+      };
     const resolved = resolveWord(raw);
     if (!resolved) {
       toast({ title: t('vocab.selectWord', 'Select a word first'), description: t('vocab.tapWordHint', 'Tap a word or start audio highlighting, then ask again.'), duration: 2500 });

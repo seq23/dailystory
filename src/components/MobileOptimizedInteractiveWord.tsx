@@ -140,6 +140,8 @@ export const MobileOptimizedInteractiveWord = (props: MobileOptimizedInteractive
       <>
         <span
           onClick={handleClick}
+          onMouseEnter={() => { if (shouldBeInteractive) (window as any).__hoveredWord = cleanWord; }}
+          onMouseLeave={() => { if ((window as any).__hoveredWord === cleanWord) (window as any).__hoveredWord = ''; }}
           className={`${props.className} inline ${shouldBeInteractive ? 'cursor-pointer underline decoration-dotted decoration-2 underline-offset-2 hover:decoration-primary' : ''}`}
           style={{ fontSize: 'inherit', lineHeight: 'inherit', display: 'inline' }}
         >
