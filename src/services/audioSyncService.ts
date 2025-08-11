@@ -30,6 +30,7 @@ export class AudioSyncService {
   private lastSpeed: number = 1.0;
   private lastOnWordHighlight?: (wordIndex: number) => void;
   private storyLengthMultiplier: number = 1.0;
+  private durationScale: number = 1.0;
   
   // Enhanced timing profiles optimized for eleven_multilingual_v2 model
   private readonly voiceProfiles: Record<string, VoiceTimingProfile> = {
@@ -129,6 +130,16 @@ export class AudioSyncService {
         this.audio.addEventListener('error', reject, { once: true });
         this.audio.load();
       });
+
+      // Compute global duration scale to align highlighting with actual audio length
+      const profile = this.voiceProfiles[voice] || this.voiceProfiles['default'];
+      let totalExpected = 0;
+      for (const w of this.words) {
+        totalExpected += this.calculateWordDurationUnscaled(w, profile, speed);
+      }
+      const targetMs = Math.max(500, (this.audio!.duration * 1000) - 200);
+      this.durationScale = Math.min(1.6, Math.max(0.8, targetMs / Math.max(1, totalExpected)));
+      console.log(`⏱️ Highlight scaling: words=${this.words.length}, target=${Math.round(targetMs)}ms, sum=${Math.round(totalExpected)}ms, scale=${this.durationScale.toFixed(3)}`);
 
       // Setup playback event handlers
       this.setupAudioEventHandlers(voice, speed, onWordHighlight, onSyncError);
@@ -298,7 +309,31 @@ export class AudioSyncService {
 
     // Slow down highlighting slightly for longer stories
     duration *= this.storyLengthMultiplier;
+
+    // Apply global scaling to match actual audio duration
+    duration *= this.durationScale;
     
+    return duration;
+  }
+
+  // Calculate duration without applying global scaling (used to compute scale factor)
+  private calculateWordDurationUnscaled(word: string, profile: VoiceTimingProfile, speed: number): number {
+    let duration = profile.baseWordInterval;
+
+    duration += word.length * 10;
+
+    if (/[.!?]/.test(word)) {
+      duration *= profile.pauseMultiplier;
+    } else if (/[,;:]/.test(word)) {
+      duration *= 1.2;
+    }
+
+    duration *= profile.speedMultiplier;
+    duration /= speed;
+
+    // Keep story multiplier so distribution stays similar for long stories
+    duration *= this.storyLengthMultiplier;
+
     return duration;
   }
 
