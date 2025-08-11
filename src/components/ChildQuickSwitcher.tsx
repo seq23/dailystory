@@ -12,11 +12,10 @@ interface ChildQuickSwitcherProps {
   className?: string;
 }
 
-function getFirstName(fullName?: string | null) {
+function getInitial(fullName?: string | null) {
   if (!fullName) return "";
   const first = fullName.trim().split(/\s+/)[0] || "";
-  // Trim very long first names to avoid overflow
-  return first.length > 8 ? first.slice(0, 8) + "…" : first;
+  return first.charAt(0).toUpperCase();
 }
 
 export function ChildQuickSwitcher({ className }: ChildQuickSwitcherProps) {
@@ -25,7 +24,8 @@ export function ChildQuickSwitcher({ className }: ChildQuickSwitcherProps) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
 
-  const activeLabel = useMemo(() => getFirstName(activeChild?.display_name), [activeChild?.display_name]);
+  const activeInitial = useMemo(() => getInitial(activeChild?.display_name), [activeChild?.display_name]);
+  const activeFullName = activeChild?.display_name || "";
 
   const handleSelect = async (id: string) => {
     try {
@@ -56,14 +56,14 @@ export function ChildQuickSwitcher({ className }: ChildQuickSwitcherProps) {
                 {hasChildren ? (
                   <button
                     type="button"
-                    aria-label={t('header.quickChildSwitcher.readingAs', { defaultValue: 'Reading as' }) + (activeLabel ? `: ${activeLabel}` : '')}
+                    aria-label={t('header.quickChildSwitcher.readingAs', { defaultValue: 'Reading as' }) + (activeFullName ? `: ${activeFullName}` : '')}
                     className={cn(
                       "h-9 w-9 rounded-full inline-flex items-center justify-center text-xs font-semibold ring-2",
                       "ring-primary/70 bg-primary text-primary-foreground hover:bg-primary/90 transition",
                       loading && "opacity-70",
                     )}
                   >
-                    {activeLabel ? activeLabel : "–"}
+                    {activeInitial || "–"}
                   </button>
                 ) : (
                   <button
@@ -83,7 +83,7 @@ export function ChildQuickSwitcher({ className }: ChildQuickSwitcherProps) {
             <TooltipContent sideOffset={8}>
               <span>
                 {t('header.quickChildSwitcher.readingAs', { defaultValue: 'Reading as' })}
-                {activeLabel ? `: ${activeLabel}` : ''}
+                {activeFullName ? `: ${activeFullName}` : ''}
               </span>
             </TooltipContent>
           </Tooltip>
@@ -92,7 +92,7 @@ export function ChildQuickSwitcher({ className }: ChildQuickSwitcherProps) {
             <PopoverContent className="w-64 max-h-[75vh] md:max-h-[65vh] overflow-auto z-[60] bg-popover shadow-md">
               <div className="flex flex-col">
                 {children.map((c) => {
-                  const first = getFirstName(c.display_name);
+                  
                   const isActive = c.id === activeChildId;
                   return (
                     <button
@@ -106,7 +106,7 @@ export function ChildQuickSwitcher({ className }: ChildQuickSwitcherProps) {
                     >
                       <div className="flex items-center justify-between gap-2">
                         <div className="min-w-0">
-                          <div className="truncate font-medium">{c.display_name || first || c.id}</div>
+                          <div className="truncate font-medium">{c.display_name || c.id}</div>
                           {/* Optional secondary info: grade */}
                           {c.grade_level ? (
                             <div className="text-xs text-muted-foreground truncate">{String(c.grade_level)}</div>
