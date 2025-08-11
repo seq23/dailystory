@@ -1155,24 +1155,9 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
   // Enhanced mobile detection for tablets and phones
   const { isMobileOrTablet: isMobileDevice } = useIsMobile(); 
 
-  // Get voice based on user avatar and difficulty level
+  // Unified global voice: Charlotte
   const getVoiceForUser = () => {
-    if (!props.userInfo) return "EXAVITQu4vr4xnSDxMaL"; // Default Sarah
-    
-    const isGirl = props.userInfo.avatar?.type === 'girl';
-    
-    switch (props.difficulty) {
-      case 'easy':
-        return isGirl ? "EXAVITQu4vr4xnSDxMaL" : "TX3LPaxmHKxFdv7VOQHJ"; // Sarah or Liam
-      case 'medium':
-        return isGirl ? "XB0fDUnXU5powFXDhCwa" : "N2lVS1w4EtoT3dr4eOWO"; // Charlotte or Callum
-      case 'hard':
-        return isGirl ? "9BWtsMINqrJLrRacOk9x" : "CwhRBWXzGAHq8TQ4Fs17"; // Aria or Roger
-      case 'expert':
-        return isGirl ? "cgSgspJ2msm6clMCkdW9" : "onwK4e9ZLuTAKqWW03F9"; // Jessica or Daniel
-      default:
-        return isGirl ? "EXAVITQu4vr4xnSDxMaL" : "TX3LPaxmHKxFdv7VOQHJ"; // Sarah or Liam
-    }
+    return "XB0fDUnXU5powFXDhCwa"; // Charlotte
   };
 
   // Mobile-optimized TTS pronunciation

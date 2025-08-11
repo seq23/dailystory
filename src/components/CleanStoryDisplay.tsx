@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import { useToast } from "@/hooks/use-toast";
 import { SparkleAnimation } from "@/components/SparkleAnimation";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 // Mobile-Optimized UI Components
 import { CollapsibleFloatingTimer } from "@/components/CollapsibleFloatingTimer";
@@ -17,6 +18,7 @@ import { MobileActionDock } from "@/components/MobileActionDock";
 import { ResponsiveStoryHeader } from "@/components/ResponsiveStoryHeader";
 import { ModernProgressTowers } from "@/components/ModernProgressTowers";
 import { GameContextProvider } from "@/components/GameContextProvider";
+import ReadAloudCoach from "@/components/ReadAloudCoach";
 
 // Audio and Interactive Components
 import { AudioControls } from "@/components/AudioControls";
@@ -1168,11 +1170,27 @@ const handleRestartTimer = () => {
                 className={isMobileOrTablet ? "sr-only" : "mt-2 md:mt-4 flex justify-center gap-4"}
                 aria-hidden={isMobileOrTablet}
               >
-                <AudioControls
-                  text={currentStory}
-                  contentHash={contentHash}
-                  onPlayingChange={setIsAudioPlaying}
-                />
+                <div className="flex items-center gap-4">
+                  <AudioControls
+                    text={currentStory}
+                    contentHash={contentHash}
+                    onPlayingChange={setIsAudioPlaying}
+                  />
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="secondary" size="lg" aria-label="Open read-aloud coach">
+                        Coach
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-xl">
+                      <DialogHeader>
+                        <DialogTitle>Read‑aloud coach</DialogTitle>
+                      </DialogHeader>
+                      {/* @ts-ignore */}
+                      <ReadAloudCoach targetText={currentStory} />
+                    </DialogContent>
+                  </Dialog>
+                </div>
                 {!isMobileOrTablet && isAudioPlaying && (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
