@@ -56,6 +56,56 @@ export class EnhancedAudioService {
   private recognitionActive: boolean = false;
   private recognitionStarting: boolean = false;
   private restartTimer: number | null = null;
+
+  // Voice UI helpers and mic meter controls
+  private emitVoiceStatus(status: 'idle' | 'listening' | 'processing') {
+    try { window.dispatchEvent(new CustomEvent('voice:status', { detail: { status } })); } catch {}
+  }
+  private emitVoiceLevel(level: number) {
+    try { window.dispatchEvent(new CustomEvent('voice:level', { detail: { level } })); } catch {}
+  }
+  private stopMicMeter() {
+    try {
+      if (this.levelRAF) { cancelAnimationFrame(this.levelRAF); this.levelRAF = null; }
+      this.analyser = null as any;
+      try { this.audioCtx?.close(); } catch {}
+      this.audioCtx = null;
+      if (this.micStream) {
+        try { this.micStream.getTracks().forEach(t => t.stop()); } catch {}
+        this.micStream = null;
+      }
+      this.emitVoiceLevel(0);
+    } catch {}
+  }
+  private async startMicMeter() {
+    try {
+      if (!navigator.mediaDevices?.getUserMedia) return;
+      this.micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const Ctor: any = (window as any).AudioContext || (window as any).webkitAudioContext;
+      this.audioCtx = new Ctor();
+      const source = this.audioCtx.createMediaStreamSource(this.micStream);
+      this.analyser = this.audioCtx.createAnalyser();
+      this.analyser.fftSize = 512;
+      source.connect(this.analyser);
+      const data = new Uint8Array(this.analyser.frequencyBinCount);
+      const loop = () => {
+        if (!this.analyser) return;
+        this.analyser.getByteTimeDomainData(data);
+        let peak = 0;
+        for (let i = 0; i < data.length; i++) {
+          const v = (data[i] - 128) / 128;
+          const a = Math.abs(v);
+          if (a > peak) peak = a;
+        }
+        const level = Math.min(1, Math.max(0, peak * 1.6));
+        this.emitVoiceLevel(level);
+        this.levelRAF = requestAnimationFrame(loop);
+      };
+      loop();
+    } catch (err) {
+      console.warn('Voice: mic meter unavailable', err);
+    }
+  }
  
    constructor(customConfig?: Partial<AudioSettings>) {
     this.config = { ...defaultAudioConfig, ...customConfig };
@@ -293,6 +343,14 @@ export class EnhancedAudioService {
     } catch (e) {
       console.warn('Voice: start failed', e);
     }
+    // Fallback: some environments never fire onstart/onend; flip UI to listening
+    window.setTimeout(() => {
+      if (this.voiceListening && !this.recognitionActive) {
+        this.recognitionStarting = false;
+        this.emitVoiceStatus('listening');
+        try { this.startMicMeter(); } catch {}
+      }
+    }, 800);
   }
 
   stopVoiceCommands(): void {
@@ -664,58 +722,7 @@ export class EnhancedAudioService {
       this.speechRecognition.interimResults = false;
       this.speechRecognition.lang = 'en-US';
 
-      const emitStatus = (status: 'idle' | 'listening' | 'processing') => {
-        window.dispatchEvent(new CustomEvent('voice:status', { detail: { status } }));
-      };
-      const emitLevel = (level: number) => {
-        window.dispatchEvent(new CustomEvent('voice:level', { detail: { level } }));
-      };
-
-      const stopMeter = () => {
-        if (this.levelRAF) {
-          cancelAnimationFrame(this.levelRAF);
-          this.levelRAF = null;
-        }
-        try { this.analyser = null; } catch {}
-        try { this.audioCtx?.close(); } catch {}
-        this.audioCtx = null;
-        if (this.micStream) {
-          this.micStream.getTracks().forEach(t => t.stop());
-          this.micStream = null;
-        }
-        emitLevel(0);
-      };
-
-      const startMeter = async () => {
-        try {
-          if (!navigator.mediaDevices?.getUserMedia) return;
-          this.micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          this.audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-          const source = this.audioCtx.createMediaStreamSource(this.micStream);
-          this.analyser = this.audioCtx.createAnalyser();
-          this.analyser.fftSize = 512;
-          source.connect(this.analyser);
-          const data = new Uint8Array(this.analyser.frequencyBinCount);
-          const loop = () => {
-            if (!this.analyser) return;
-            this.analyser.getByteTimeDomainData(data);
-            // Compute peak level 0..1
-            let peak = 0;
-            for (let i = 0; i < data.length; i++) {
-              const v = (data[i] - 128) / 128;
-              const a = Math.abs(v);
-              if (a > peak) peak = a;
-            }
-            // Slight smoothing and floor for visibility
-            const level = Math.min(1, Math.max(0, peak * 1.6));
-            emitLevel(level);
-            this.levelRAF = requestAnimationFrame(loop);
-          };
-          loop();
-        } catch (err) {
-          console.warn('Voice: mic meter unavailable', err);
-        }
-      };
+      // Helper functions moved to class methods: emitVoiceStatus/emitVoiceLevel/startMicMeter/stopMicMeter
 
       this.speechRecognition.onstart = () => {
         // Guard: if user toggled OFF or service not supposed to listen, abort immediately
@@ -725,22 +732,22 @@ export class EnhancedAudioService {
           try { this.speechRecognition.stop(); } catch {}
           this.recognitionActive = false;
           this.recognitionStarting = false;
-          emitStatus('idle');
-          stopMeter();
+          this.emitVoiceStatus('idle');
+          this.stopMicMeter();
           return;
         }
         console.log('🎙️ Web Speech started');
         this.recognitionActive = true;
         this.recognitionStarting = false;
-        emitStatus('listening');
-        startMeter();
+        this.emitVoiceStatus('listening');
+        this.startMicMeter();
       };
       this.speechRecognition.onend = () => {
         console.log('🎙️ Web Speech ended');
         this.recognitionActive = false;
         this.recognitionStarting = false;
-        emitStatus('idle');
-        stopMeter();
+        this.emitVoiceStatus('idle');
+        this.stopMicMeter();
         const userDisabled = (window as any).__t2r_vc_user_disabled === true;
         if (this.voiceListening && !userDisabled) {
           if (this.restartTimer) {
@@ -765,8 +772,8 @@ export class EnhancedAudioService {
         console.warn('🎙️ Web Speech error', e);
         this.recognitionActive = false;
         this.recognitionStarting = false;
-        emitStatus('idle');
-        stopMeter();
+        this.emitVoiceStatus('idle');
+        this.stopMicMeter();
         const userDisabled = (window as any).__t2r_vc_user_disabled === true;
         if (this.voiceListening && !userDisabled) {
           if (this.restartTimer) {
@@ -791,18 +798,18 @@ export class EnhancedAudioService {
       this.speechRecognition.onresult = (event: any) => {
         const userDisabled = (window as any).__t2r_vc_user_disabled === true;
         if (!this.voiceListening || userDisabled) {
-          emitStatus('idle');
+          this.emitVoiceStatus('idle');
           return;
         }
         const transcript = event.results[event.results.length - 1][0].transcript;
         console.log('🎙️ Heard:', transcript);
-        emitStatus('processing');
+        this.emitVoiceStatus('processing');
         const result = this.processVoiceCommand(transcript);
         if (result.recognized && result.action) {
           try { result.action(); } catch {}
         }
         // Return to listening after handling
-        emitStatus('listening');
+        this.emitVoiceStatus('listening');
       };
     }
   }

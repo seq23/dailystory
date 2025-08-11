@@ -386,7 +386,7 @@ useEffect(() => {
     const cleanWord = resolved;
     try {
       if (detail.type === 'pronounce') {
-        await audioService.playText({ text: cleanWord, difficulty: 'easy', userInfo, isPremium, enableHighlighting: false });
+        await audioService.playText({ text: cleanWord, difficulty: 'easy', userInfo: { ...userInfo, nativeLanguage: 'en' }, isPremium, enableHighlighting: false });
         return;
       }
       const userLang = userInfo?.nativeLanguage || 'en';
