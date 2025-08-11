@@ -59,7 +59,7 @@ export function ChildQuickSwitcher({ className }: ChildQuickSwitcherProps) {
                     aria-label={t('header.quickChildSwitcher.readingAs', { defaultValue: 'Reading as' }) + (activeLabel ? `: ${activeLabel}` : '')}
                     className={cn(
                       "h-9 w-9 rounded-full inline-flex items-center justify-center text-xs font-semibold ring-2",
-                      "ring-primary/60 bg-accent text-accent-foreground hover:bg-accent/80 transition",
+                      "ring-primary/70 bg-primary text-primary-foreground hover:bg-primary/90 transition",
                       loading && "opacity-70",
                     )}
                   >
@@ -89,7 +89,7 @@ export function ChildQuickSwitcher({ className }: ChildQuickSwitcherProps) {
           </Tooltip>
 
           {hasChildren && (
-            <PopoverContent className="w-64 max-h-64 overflow-auto z-50 bg-popover shadow-md">
+            <PopoverContent className="w-64 max-h-[75vh] md:max-h-[65vh] overflow-auto z-[60] bg-popover shadow-md">
               <div className="flex flex-col">
                 {children.map((c) => {
                   const first = getFirstName(c.display_name);
@@ -101,7 +101,7 @@ export function ChildQuickSwitcher({ className }: ChildQuickSwitcherProps) {
                       className={cn(
                         "w-full text-left px-3 py-2 rounded-md transition",
                         "hover:bg-muted/60",
-                        isActive ? "bg-accent text-accent-foreground" : "",
+                        isActive ? "bg-primary/10" : "",
                       )}
                     >
                       <div className="flex items-center justify-between gap-2">
