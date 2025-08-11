@@ -132,11 +132,26 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
         audioService.startVoiceCommands();
         setVoiceCommandsEnabled(true);
         voiceEnabledRef.current = true;
-        emitStatus('listening');
         restoredRef.current = true;
       }
     } catch {}
   }, [isPremium, audioService]);
+
+  useEffect(() => {
+    if (voiceCommandsEnabled && vcStatus === 'listening' && !voiceTipsShownRef.current) {
+      toast({
+        title: t("audioReading.voiceCommandsEnabled", "Voice Commands Enabled"),
+        description: "Try: 'next page', 'pause', 'resume', 'read slower'",
+        duration: 3500,
+        action: (
+          <ToastAction altText="Open voice commands help" onClick={() => window.dispatchEvent(new CustomEvent('voice:openHelp'))}>
+            Full list
+          </ToastAction>
+        ),
+      });
+      voiceTipsShownRef.current = true;
+    }
+  }, [voiceCommandsEnabled, vcStatus, toast, t]);
 
   // Enhanced audio playback using new service
   const playAudio = async () => {
@@ -238,20 +253,6 @@ const toggleVoiceCommands = () => {
     voiceEnabledRef.current = true;
     try { sessionStorage.setItem('t2r_voice_commands', '1'); } catch {}
     ;(window as any).__t2r_vc_user_disabled = false;
-    emitStatus('listening');
-    if (!voiceTipsShownRef.current) {
-      toast({
-        title: t("audioReading.voiceCommandsEnabled", "Voice Commands Enabled"),
-        description: "Try: 'next page', 'pause', 'resume', 'read slower'",
-        duration: 3500,
-        action: (
-          <ToastAction altText="Open voice commands help" onClick={() => window.dispatchEvent(new CustomEvent('voice:openHelp'))}>
-            Full list
-          </ToastAction>
-        ),
-      });
-      voiceTipsShownRef.current = true;
-    }
     return;
   }
 
@@ -259,20 +260,6 @@ const toggleVoiceCommands = () => {
   vcRef.current?.start?.();
   setVoiceCommandsEnabled(true);
   voiceEnabledRef.current = true;
-  emitStatus('listening');
-  if (!voiceTipsShownRef.current) {
-    toast({
-      title: t("audioReading.voiceCommandsEnabled", "Voice Commands Enabled"),
-      description: "Try: 'next page', 'pause', 'resume', 'read slower'",
-      duration: 3500,
-      action: (
-        <ToastAction altText="Open voice commands help" onClick={() => window.dispatchEvent(new CustomEvent('voice:openHelp'))}>
-          Full list
-        </ToastAction>
-      ),
-    });
-    voiceTipsShownRef.current = true;
-  }
 };
 
   // Expose imperative methods to parent (e.g., bottom dock)
