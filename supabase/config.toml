@@ -24,3 +24,6 @@ verify_jwt = false
 
 [functions.correct-spelling]
 verify_jwt = false
+
+[functions.elevenlabs-agent-signed-url]
+verify_jwt = false
