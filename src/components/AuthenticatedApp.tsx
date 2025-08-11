@@ -59,6 +59,18 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
     }
   }, []);
 
+  // Listen for global navigation to Parent Controls (from Profile editor etc.)
+  useEffect(() => {
+    const handler = () => {
+      setIsEditingProfile(false);
+      setCurrentView("parent");
+      // Hint Parent Dashboard to open controls via hash
+      try { window.location.hash = 'parent-controls'; } catch {}
+    };
+    window.addEventListener('open-parent-controls', handler as EventListener);
+    return () => window.removeEventListener('open-parent-controls', handler as EventListener);
+  }, []);
+
   useEffect(() => {
     loadUserProfile();
     checkSubscription();

@@ -79,10 +79,25 @@ export const PremiumMyStoriesView = ({ userInfo, isPremium, onSessionEnded }: Pr
   };
 
   if (currentView === 'reading') {
+    const normalizeGrade = (g: any): any => {
+      if (!g) return g;
+      const map: Record<string, any> = {
+        'Pre-K': 'PreK',
+        'K': 'K',
+        '1': '1st',
+        '2': '2nd',
+        '3': '3rd',
+        '4': '4th',
+        '5': '5th',
+        '6': '6th+',
+      };
+      return map[String(g)] || g;
+    };
+
     const effectiveUserInfo: UserInfo = (activeChild ? {
       ...userInfo,
       name: activeChild.display_name || userInfo.name,
-      grade: (activeChild.grade_level as any) || userInfo.grade,
+      grade: normalizeGrade((activeChild.grade_level as any)) || userInfo.grade,
       storyLanguagePreference: (activeChild.story_language_preference as any) || userInfo.storyLanguagePreference,
       avatar: (activeChild.avatar as any) || userInfo.avatar,
       specialRequest,

@@ -58,7 +58,7 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
     minExpertGrade: '6th',
     allowDecreaseBelowMin: false,
   });
-  const [activeTab, setActiveTab] = useState<'overview' | 'progress' | 'goals' | 'insights' | 'controls' | 'quizzes'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'progress' | 'goals' | 'insights' | 'controls' | 'quizzes'>('controls');
   const [quizScores, setQuizScores] = useState<number[]>([]);
 
   useEffect(() => {

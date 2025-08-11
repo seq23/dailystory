@@ -163,6 +163,19 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="pt-2 border-t">
+              <p className="text-xs text-muted-foreground mb-2">Multiple kids? Manage child profiles and set an active child for stories.</p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  window.dispatchEvent(new Event('open-parent-controls'));
+                }}
+              >
+                Manage Children
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
