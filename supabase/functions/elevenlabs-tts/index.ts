@@ -34,13 +34,18 @@ serve(async (req) => {
       throw new Error('ElevenLabs API key not configured');
     }
 
-    // Generate speech using ElevenLabs API with enhanced multilingual support
-    const apiUrl = `https://api.elevenlabs.io/v1/text-to-speech/${voice || '9BWtsMINqrJLrRacOk9x'}`;
+    // Generate speech using ElevenLabs API with enhanced defaults (Charlotte, Turbo v2.5)
+    const DEFAULT_VOICE = 'XB0fDUnXU5powFXDhCwa'; // Charlotte
+    const DEFAULT_MODEL = 'eleven_turbo_v2_5';
+    const effectiveVoice = (voice && String(voice).trim().length > 0) ? voice : DEFAULT_VOICE;
+    const effectiveModel = (model && String(model).trim().length > 0) ? model : DEFAULT_MODEL;
+
+    const apiUrl = `https://api.elevenlabs.io/v1/text-to-speech/${effectiveVoice}`;
     console.log('Making request to ElevenLabs:', apiUrl);
     
     const requestBody = {
-      text: text.slice(0, 1000), // Limit text length
-      model_id: model || 'eleven_multilingual_v2', // Use multilingual model for better French support
+      text: String(text).slice(0, 1000), // Limit text length
+      model_id: effectiveModel, // Low-latency, high quality
       voice_settings: {
         stability: 0.5,
         similarity_boost: 0.8,

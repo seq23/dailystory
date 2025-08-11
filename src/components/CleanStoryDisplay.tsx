@@ -19,7 +19,8 @@ import { ModernProgressTowers } from "@/components/ModernProgressTowers";
 import { GameContextProvider } from "@/components/GameContextProvider";
 
 // Audio and Interactive Components
-import { ElevenLabsAudio } from "@/components/ElevenLabsAudio";
+import { AudioControls } from "@/components/AudioControls";
+import { SimpleAudioEngine } from "@/services/SimpleAudioEngine";
 
 import { VocabularyCollector } from "@/components/VocabularyCollector";
 import { processTextWithConsistentFlow } from "@/utils/unifiedTextProcessor";
@@ -115,28 +116,16 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [sessionWordsRead, setSessionWordsRead] = useState(0);
   const [pagesCompleted, setPagesCompleted] = useState<Set<number>>(new Set());
   const [audioPlayedPage, setAudioPlayedPage] = useState<number | null>(null);
-  const elevenAudioRef = useRef<any>(null);
+// SimpleAudioEngine status sync
+useEffect(() => {
+  const interval = setInterval(() => {
+    const status = SimpleAudioEngine.getInstance().getStatus();
+    setIsAudioPlaying(prev => (prev !== status.isPlaying ? status.isPlaying : prev));
+  }, 500);
+  return () => clearInterval(interval);
+}, []);
 
-  // Keep local audio state in sync with ElevenLabsAudio
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const playing = !!elevenAudioRef.current?.isPlaying;
-      setIsAudioPlaying(prev => (prev !== playing ? playing : prev));
-    }, 500);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Voice command -> audio control bridge
-  useEffect(() => {
-    const onPlay = () => { try { elevenAudioRef.current?.play?.(); } catch (e) { console.warn('audio:play failed', e); } };
-    const onStop = () => { try { elevenAudioRef.current?.stop?.(); } catch (e) { console.warn('audio:stop failed', e); } };
-    window.addEventListener('audio:play', onPlay as EventListener);
-    window.addEventListener('audio:stop', onStop as EventListener);
-    return () => {
-      window.removeEventListener('audio:play', onPlay as EventListener);
-      window.removeEventListener('audio:stop', onStop as EventListener);
-    };
-  }, []);
+// Voice command bridge moved below after currentStory/contentHash are defined
 
   // Debug source badge state
   const [storySource, setStorySource] = useState<'ai' | 'fallback' | 'unknown' | null>(null);
@@ -1145,16 +1134,10 @@ const handleRestartTimer = () => {
                 className={isMobileOrTablet ? "sr-only" : "mt-2 md:mt-4 flex justify-center gap-4"}
                 aria-hidden={isMobileOrTablet}
               >
-                <ElevenLabsAudio
-                  ref={elevenAudioRef}
+                <AudioControls
                   text={currentStory}
-                  userInfo={userInfo}
-                  isPremium={isPremium}
-                  onUpgrade={onUpgrade}
-                  onWordHighlight={onWordHighlight}
-                  difficulty={currentDifficulty}
-                  currentPage={currentPage}
-                  totalPages={story.length}
+                  contentHash={contentHash}
+                  onPlayingChange={setIsAudioPlaying}
                 />
                 {!isMobileOrTablet && isAudioPlaying && (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
