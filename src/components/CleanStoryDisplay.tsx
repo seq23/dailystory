@@ -268,6 +268,54 @@ const [highlightSave, setHighlightSave] = useState(false);
     isAudioPlaying
   );
 
+  // Voice command -> audio control bridge (now safe: after currentStory/contentHash)
+  useEffect(() => {
+    const engine = SimpleAudioEngine.getInstance();
+    const onPlay = () => { try { engine.playText({ text: currentStory, contentHash }); } catch (e) { console.warn('audio:play failed', e); } };
+    const onStop = () => { try { engine.stop(); } catch (e) { console.warn('audio:stop failed', e); } };
+    window.addEventListener('audio:play', onPlay as EventListener);
+    window.addEventListener('audio:stop', onStop as EventListener);
+    return () => {
+      window.removeEventListener('audio:play', onPlay as EventListener);
+      window.removeEventListener('audio:stop', onStop as EventListener);
+    };
+  }, [currentStory, contentHash]);
+
+  // Simple timed word highlighting while audio is playing (heuristic pacing)
+  const wordsRef = useRef<string[]>([]);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    wordsRef.current = (currentStory || '').split(/\s+/).filter(Boolean);
+  }, [currentStory]);
+
+  useEffect(() => {
+    if (!isAudioPlaying) {
+      onWordHighlight(-1);
+      if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+      return;
+    }
+
+    let idx = 0;
+    const total = wordsRef.current.length;
+    if (total === 0) return;
+    onWordHighlight(0);
+
+    const baseMs = 320; // ~187 WPM
+    timerRef.current = setInterval(() => {
+      idx += 1;
+      if (idx >= total) {
+        if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+        return;
+      }
+      onWordHighlight(idx);
+    }, baseMs);
+
+    return () => {
+      if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+    };
+  }, [isAudioPlaying, currentStory]);
+
   // Gamification integration
   const {
     userStats,
