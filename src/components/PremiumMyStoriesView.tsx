@@ -19,6 +19,7 @@ import CleanStoryDisplay from "@/components/CleanStoryDisplay";
 import type { UserInfo, Story, SessionStats } from "@/types";
 import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { useChildProfiles } from "@/hooks/useChildProfiles";
 
 interface PremiumMyStoriesViewProps {
   userInfo: UserInfo;

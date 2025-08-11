@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MobileOptimizedButton } from '@/components/MobileOptimizedButton';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { BookOpen, Star, TrendingUp, Plus } from 'lucide-react';
+import { BookOpen, Star, TrendingUp } from 'lucide-react';
 import { MobileOptimizedInteractiveWord } from '@/components/MobileOptimizedInteractiveWord';
 import { useIsMobile } from '@/hooks/use-mobile';
 import type { UserInfo } from '@/types';
@@ -106,15 +106,11 @@ export const VocabularyCollector = ({ userInfo, isVisible, onClose, enablePersis
   // Save vocabulary to localStorage (only for premium users)
   useEffect(() => {
     if (!enablePersistence) return;
-    if (vocabulary.length > 0) {
-      localStorage.setItem(`vocabulary_${userInfo.name}`, JSON.stringify(vocabulary));
-    }
+    localStorage.setItem(`vocabulary_${userInfo.name}`, JSON.stringify(vocabulary));
   }, [vocabulary, userInfo.name, enablePersistence]);
 
   const addWordToVocabulary = (word: VocabularyWord) => {
-    // Only add to collection for premium users
     if (!enablePersistence) return;
-    
     setVocabulary(prev => {
       const exists = prev.find(w => w.word.toLowerCase() === word.word.toLowerCase());
       if (exists) return prev;
@@ -141,6 +137,7 @@ export const VocabularyCollector = ({ userInfo, isVisible, onClose, enablePersis
         : w
     ));
   };
+
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case 'beginner': return 'bg-green-100 text-green-800 border-green-200';
@@ -169,7 +166,6 @@ export const VocabularyCollector = ({ userInfo, isVisible, onClose, enablePersis
     };
   }, [addWordToVocabulary]);
 
-
   if (!isVisible) return null;
 
   return (
@@ -191,127 +187,45 @@ export const VocabularyCollector = ({ userInfo, isVisible, onClose, enablePersis
         </CardHeader>
         
         <CardContent className="p-0 flex flex-col h-full">
-          {isMobileOrTablet ? (
-            <>
-              <div className="p-4 border-b bg-card">
-                <Select value={activeTab} onValueChange={(v) => setActiveTab(v as 'new' | 'reviewing' | 'mastered')}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent className="z-[60] bg-background">
-                    <SelectItem value="new">New ({newWords.length})</SelectItem>
-                    <SelectItem value="reviewing">Reviewing ({reviewing.length})</SelectItem>
-                    <SelectItem value="mastered">Mastered ({mastered.length})</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+          {/* Unified selector for all breakpoints */}
+          <div className="p-4 border-b bg-card">
+            <Select value={activeTab} onValueChange={(v) => setActiveTab(v as 'new' | 'reviewing' | 'mastered')}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent className="z-[60] bg-background">
+                <SelectItem value="new">New ({newWords.length})</SelectItem>
+                <SelectItem value="reviewing">Reviewing ({reviewing.length})</SelectItem>
+                <SelectItem value="mastered">Mastered ({mastered.length})</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-              <div className="flex-1 overflow-y-auto xl:max-h-[70vh] p-4 space-y-3">
-                {((activeTab === 'new' ? newWords : activeTab === 'reviewing' ? reviewing : mastered).length === 0) ? (
-                  <div className="text-center text-gray-500 py-8">
-                    {activeTab === 'new' ? (
-                      <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                    ) : activeTab === 'reviewing' ? (
-                      <TrendingUp className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                    ) : (
-                      <Star className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                    )}
-                    <p>{activeTab === 'new' ? 'No new words yet!' : activeTab === 'reviewing' ? 'No words to review!' : 'No mastered words yet!'}</p>
-                  </div>
+          <div className="flex-1 overflow-y-auto xl:max-h-[70vh] p-4 space-y-3">
+            {((activeTab === 'new' ? newWords : activeTab === 'reviewing' ? reviewing : mastered).length === 0) ? (
+              <div className="text-center text-gray-500 py-8">
+                {activeTab === 'new' ? (
+                  <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                ) : activeTab === 'reviewing' ? (
+                  <TrendingUp className="w-12 h-12 mx-auto mb-3 opacity-50" />
                 ) : (
-                  (activeTab === 'new' ? newWords : activeTab === 'reviewing' ? reviewing : mastered).map((word) => (
-                    <WordCard 
-                      key={word.word}
-                      word={word}
-                      userInfo={userInfo}
-                      getDifficultyColor={getDifficultyColor}
-                      category={activeTab}
-                      onMoveToReview={moveToReview}
-                    />
-                  ))
+                  <Star className="w-12 h-12 mx-auto mb-3 opacity-50" />
                 )}
+                <p>{activeTab === 'new' ? 'No new words yet!' : activeTab === 'reviewing' ? 'No words to review!' : 'No mastered words yet!'}</p>
               </div>
-            </>
-          ) : (
-            <Tabs defaultValue="new" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 bg-card border-b">
-                <TabsTrigger value="new" className="flex items-center gap-1">
-                  <Plus className="w-3 h-3" />
-                  New ({newWords.length})
-                </TabsTrigger>
-                <TabsTrigger value="reviewing" className="flex items-center gap-1">
-                  <TrendingUp className="w-3 h-3" />
-                  Reviewing ({reviewing.length})
-                </TabsTrigger>
-                <TabsTrigger value="mastered" className="flex items-center gap-1">
-                  <Star className="w-3 h-3" />
-                  Mastered ({mastered.length})
-                </TabsTrigger>
-              </TabsList>
-
-              <div className="flex-1 overflow-y-auto xl:max-h-[70vh]">
-                <TabsContent value="new" className="p-4 space-y-3">
-                  {newWords.length === 0 ? (
-                    <div className="text-center text-gray-500 py-8">
-                      <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                      <p>No new words yet!</p>
-                      <p className="text-sm">Click on words in stories to add them here.</p>
-                    </div>
-                  ) : (
-                    newWords.map((word) => (
-                      <WordCard 
-                        key={word.word} 
-                        word={word}
-                        userInfo={userInfo}
-                        getDifficultyColor={getDifficultyColor}
-                        category="new"
-                        onMoveToReview={moveToReview}
-                      />
-                    ))
-                  )}
-                </TabsContent>
-
-                <TabsContent value="reviewing" className="p-4 space-y-3">
-                  {reviewing.length === 0 ? (
-                    <div className="text-center text-gray-500 py-8">
-                      <TrendingUp className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                      <p>No words to review!</p>
-                    </div>
-                  ) : (
-                    reviewing.map((word) => (
-                      <WordCard 
-                        key={word.word} 
-                        word={word}
-                        userInfo={userInfo}
-                        getDifficultyColor={getDifficultyColor}
-                        category="reviewing"
-                      />
-                    ))
-                  )}
-                </TabsContent>
-
-                <TabsContent value="mastered" className="p-4 space-y-3">
-                  {mastered.length === 0 ? (
-                    <div className="text-center text-gray-500 py-8">
-                      <Star className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                      <p>No mastered words yet!</p>
-                      <p className="text-sm">Keep reviewing to master your vocabulary.</p>
-                    </div>
-                  ) : (
-                    mastered.map((word) => (
-                      <WordCard 
-                        key={word.word} 
-                        word={word}
-                        userInfo={userInfo}
-                        getDifficultyColor={getDifficultyColor}
-                        category="mastered"
-                      />
-                    ))
-                  )}
-                </TabsContent>
-              </div>
-            </Tabs>
-          )}
+            ) : (
+              (activeTab === 'new' ? newWords : activeTab === 'reviewing' ? reviewing : mastered).map((word) => (
+                <WordCard 
+                  key={word.word}
+                  word={word}
+                  userInfo={userInfo}
+                  getDifficultyColor={getDifficultyColor}
+                  category={activeTab}
+                  onMoveToReview={moveToReview}
+                />
+              ))
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>
