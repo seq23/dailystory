@@ -36,9 +36,9 @@ export class AudioSyncService {
   private readonly voiceProfiles: Record<string, VoiceTimingProfile> = {
     // Charlotte - primary voice for all users, optimized for eleven_multilingual_v2
     'XB0fDUnXU5powFXDhCwa': {
-      baseWordInterval: 165, // Slightly slower to match multilingual model natural pauses
+      baseWordInterval: 180, // Slightly slower to match Charlotte's natural pacing
       speedMultiplier: 1.0,
-      pauseMultiplier: 1.4   // Enhanced pause for better sync with eleven_multilingual_v2
+      pauseMultiplier: 1.45   // Slightly longer sentence pauses
     },
     // Legacy voice profiles (for fallback scenarios)
     'cgSgspJ2msm6clMCkdW9': {
@@ -137,8 +137,8 @@ export class AudioSyncService {
       for (const w of this.words) {
         totalExpected += this.calculateWordDurationUnscaled(w, profile, speed);
       }
-      const targetMs = Math.max(500, (this.audio!.duration * 1000) - 200);
-      this.durationScale = Math.min(1.6, Math.max(0.8, targetMs / Math.max(1, totalExpected)));
+      const targetMs = Math.max(500, (this.audio!.duration * 1000));
+      this.durationScale = Math.min(3.0, Math.max(0.6, targetMs / Math.max(1, totalExpected)));
       console.log(`⏱️ Highlight scaling: words=${this.words.length}, target=${Math.round(targetMs)}ms, sum=${Math.round(totalExpected)}ms, scale=${this.durationScale.toFixed(3)}`);
 
       // Setup playback event handlers
@@ -270,21 +270,30 @@ export class AudioSyncService {
   private calculateExpectedWordIndex(voice: string, speed: number, currentTimeSeconds: number): number {
     const profile = this.voiceProfiles[voice] || this.voiceProfiles['default'];
     const currentTimeMs = currentTimeSeconds * 1000;
-    
+
+    // Duration-based index (sums modeled word durations)
     let totalTime = 0;
-    let wordIndex = 0;
-    
+    let durationBasedIndex = 0;
     for (const word of this.words) {
       const wordDuration = this.calculateWordDuration(word, profile, speed);
       totalTime += wordDuration;
-      
-      if (totalTime > currentTimeMs) {
-        return wordIndex;
-      }
-      wordIndex++;
+      if (totalTime > currentTimeMs) break;
+      durationBasedIndex++;
     }
-    
-    return Math.min(wordIndex, this.words.length - 1);
+
+    // Proportional index based on overall audio progress
+    const durationSec = this.audio?.duration || 0;
+    if (durationSec <= 0) {
+      return Math.min(durationBasedIndex, this.words.length - 1);
+    }
+    const proportionalIndex = Math.floor(
+      Math.min(1, Math.max(0, currentTimeSeconds / durationSec)) * this.words.length
+    );
+
+    // Blend: favor proportional mapping more for long stories
+    const w = this.words.length > 800 ? 0.7 : this.words.length > 400 ? 0.6 : 0.45;
+    const blended = Math.round((1 - w) * durationBasedIndex + w * proportionalIndex);
+    return Math.max(0, Math.min(blended, this.words.length - 1));
   }
 
   /**
