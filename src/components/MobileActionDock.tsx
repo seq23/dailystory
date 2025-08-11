@@ -121,7 +121,7 @@ export const MobileActionDock: React.FC<MobileActionDockProps> = ({
                       variant="outline"
                       className="h-12 flex flex-col items-center justify-center gap-0.5 rounded-xl"
                       onClick={onCoach}
-                      disabled={!onCoach}
+                      disabled={!isPremium || !onCoach}
                       aria-label={t("audioReading.readingCoach", "Coach")}
                     >
                       <GraduationCap className="w-5 h-5" />
@@ -130,7 +130,9 @@ export const MobileActionDock: React.FC<MobileActionDockProps> = ({
                   </span>
                 </TooltipTrigger>
                 <TooltipContent side="top">
-                  {t("tooltips.dock.coach", "Practice reading and get feedback")}
+                  {!isPremium
+                    ? t("tooltips.dock.coachPremium", "Premium only. Practice reading and get feedback")
+                    : t("tooltips.dock.coach", "Practice reading and get feedback")}
                 </TooltipContent>
               </Tooltip>
 
