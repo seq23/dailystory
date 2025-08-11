@@ -225,6 +225,7 @@ const toggleVoiceCommands = () => {
     try { sessionStorage.setItem('t2r_voice_commands', '0'); } catch {}
     ;(window as any).__t2r_vc_user_disabled = true;
     emitStatus('idle');
+    setVcStatus('idle');
     return;
   }
 
@@ -426,10 +427,10 @@ useEffect(() => {
         <Button
           id="elevenlabs-voice-toggle"
           onClick={toggleVoiceCommands}
-          variant={voiceCommandsEnabled ? "default" : "outline"}
+          variant="outline"
           size={isMobileOrTablet ? "default" : "sm"}
-          className={`gap-2 ${isMobileOrTablet ? 'min-h-[44px] px-4' : ''} ${vcStatus === 'listening' ? 'bg-[hsl(var(--warning))] text-white hover:bg-[hsl(var(--warning))]/90' : ''}`}
-          style={vcStatus === 'listening' ? { boxShadow: `0 0 ${4 + vcLevel * 10}px hsl(var(--primary))`, opacity: 0.9 } : undefined}
+          className={`gap-2 ${isMobileOrTablet ? 'min-h-[44px] px-4' : ''} ${voiceCommandsEnabled && vcStatus === 'listening' ? 'bg-[hsl(var(--warning))] text-white hover:bg-[hsl(var(--warning))]/90' : ''}`}
+          style={voiceCommandsEnabled && vcStatus === 'listening' ? { boxShadow: `0 0 ${4 + vcLevel * 10}px hsl(var(--primary))`, opacity: 0.9 } : undefined}
         >
           <span className="relative inline-flex items-center">
             <Mic 

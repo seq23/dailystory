@@ -337,6 +337,7 @@ export class EnhancedAudioService {
 
     // Only attempt to stop if we were starting or active
     if (this.recognitionActive || this.recognitionStarting) {
+      try { this.speechRecognition.abort?.(); } catch {}
       try { this.speechRecognition.stop(); } catch (e) {
         console.warn('Voice: stop failed', e);
       }
