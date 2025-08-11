@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { TimerToggleItem } from "@/components/ui/timer-toggle-item";
+
 import { 
   BookOpen,
   Settings,
@@ -222,9 +222,6 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
                             <div className="flex items-center gap-2">
                               <span className="font-medium">{timerEnabled ? 'Hide Timer' : 'Show Timer'}</span>
                             </div>
-                            <p className="text-xs text-muted-foreground truncate">
-                              {timerEnabled ? 'Hide the floating reading timer' : 'Show the floating reading timer'}
-                            </p>
                           </div>
                         </div>
                         <Switch
