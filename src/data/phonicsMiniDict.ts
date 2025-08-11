@@ -12,6 +12,17 @@ const curated: Record<string, string[]> = {
   'school': ['skool'],
   'sweet': ['sweet'],
   'children': ['chil', 'dren'],
+  // Irregular plurals (kid-friendly)
+  'men': ['men'],
+  'women': ['wih', 'min'],
+  'people': ['pee', 'pul'],
+  'mice': ['mice'],
+  'geese': ['geese'],
+  'teeth': ['teeth'],
+  'feet': ['feet'],
+  'lice': ['lice'],
+  // Helpful base forms
+  'puppy': ['pup', 'py'],
 
   // Single-syllable helper breakdowns for clarity
   'jump': ['jum', 'p'],
@@ -39,6 +50,7 @@ const curated: Record<string, string[]> = {
   'character': ['kar', 'ik', 'ter'],
   'favorite': ['fay', 'vor', 'it'],
   'flowers': ['flow', 'ers'],
+  'hero': ['he', 'ro'],
   'wonderful': ['wun', 'der', 'ful'],
   'beautiful': ['byoo', 'ti', 'ful'],
   'together': ['toh', 'get', 'her'],

@@ -105,7 +105,7 @@ export class PhoneticRulesEngine {
     'uf': 'uff', 'af': 'aff', 'ay': 'ay', 'oh': 'oh', 'ey': 'ee',
     'ow': 'ow', 'oy': 'oy', 'aw': 'aw', 'sk': 'sk', 'ch': 'ch',
     'j': 'j', 'f': 'f', 'k': 'k', 'kw': 'kw', 'n': 'n', 'r': 'r',
-    'm': 'm', 'ing': 'ing', 'd': 'd',
+    'm': 'm', 'ing': 'ing', 'd': 'd', 'es': 'iz',
     // Added helpers for clearer segmented pronunciation
     'p': 'p', 'b': 'b', 't': 't', 'v': 'v', 's': 's', 'z': 'z', 'h': 'h', 'l': 'l', 'w': 'w', 'y': 'y', 'g': 'guh',
     // Common clusters (use gentle schwa for better articulation when isolated)
@@ -145,6 +145,13 @@ export class PhoneticRulesEngine {
     if (this.knownSyllables[cleanWord]) {
       console.log(`✅ UNIVERSAL: Found in known syllables: ${this.knownSyllables[cleanWord]}`);
       return this.knownSyllables[cleanWord];
+    }
+
+    // Plural-aware handling for kid-friendly breakdowns
+    const pluralAware = this.tryPluralAware(cleanWord);
+    if (pluralAware) {
+      console.log(`🧩 Plural-aware breakdown: ${pluralAware}`);
+      return pluralAware;
     }
 
     // Apply rule-based syllable breaking (works for all languages)
@@ -301,6 +308,46 @@ export class PhoneticRulesEngine {
       pronunciations,
       appliedRules
     };
+  }
+  /**
+   * Plural-aware detection and kid-friendly chunking for English plurals
+   * Handles -s, -es (sibilants, -o words), and -ies -> base + s
+   * Returns null when not confidently a plural.
+   */
+  private tryPluralAware(word: string): string[] | null {
+    if (!word || word.length < 3) return null;
+    const hasVowel = (s: string) => /[aeiouy]/.test(s);
+
+    // -ies -> base+y + s (puppies -> puppy + s)
+    if (word.endsWith('ies') && word.length > 4) {
+      const stem = word.slice(0, -3) + 'y';
+      if (hasVowel(stem)) {
+        const base = this.knownSyllables[stem] || this.applyRuleBasedBreaking(stem);
+        return [...base, 's'];
+      }
+    }
+
+    // -es after sibilant or -o words (boxes, buses, heroes)
+    if (word.endsWith('es') && word.length > 3) {
+      const stem = word.slice(0, -2);
+      const sibilant = /(s|x|z|ch|sh)$/.test(stem);
+      const endsWithO = /o$/.test(stem);
+      if (sibilant || endsWithO) {
+        const base = this.knownSyllables[stem] || this.applyRuleBasedBreaking(stem);
+        return [...base, 'es'];
+      }
+    }
+
+    // Simple -s plural (cats, dogs)
+    if (word.endsWith('s') && !word.endsWith('ss')) {
+      const stem = word.slice(0, -1);
+      if (stem.length >= 3 && hasVowel(stem)) {
+        const base = this.knownSyllables[stem] || this.applyRuleBasedBreaking(stem);
+        return [...base, 's'];
+      }
+    }
+
+    return null;
   }
 
   /**
