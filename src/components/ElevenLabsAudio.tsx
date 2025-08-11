@@ -52,6 +52,8 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
   const [voiceCommandsEnabled, setVoiceCommandsEnabled] = useState(false);
   const vcRef = useRef<VoiceCommandControllerHandle | null>(null);
   const restoredRef = useRef(false);
+  const voiceEnabledRef = useRef(false);
+  const restartTimeoutRef = useRef<number | null>(null);
   const [audioService] = useState(() => new EnhancedAudioService());
   const [hasPlayedThisPage, setHasPlayedThisPage] = useState(false);
   const { toast, dismiss } = useToast();
@@ -208,6 +210,11 @@ const toggleVoiceCommands = () => {
     try { audioService.stopVoiceCommands(); } catch {}
     try { vcRef.current?.stop?.(); } catch {}
     setVoiceCommandsEnabled(false);
+    voiceEnabledRef.current = false;
+    if (restartTimeoutRef.current) {
+      clearTimeout(restartTimeoutRef.current);
+      restartTimeoutRef.current = null;
+    }
     try { sessionStorage.setItem('t2r_voice_commands', '0'); } catch {}
     ;(window as any).__t2r_vc_user_disabled = true;
     emitStatus('idle');
@@ -220,6 +227,7 @@ const toggleVoiceCommands = () => {
   if (useWebSpeech) {
     audioService.startVoiceCommands();
     setVoiceCommandsEnabled(true);
+    voiceEnabledRef.current = true;
     try { sessionStorage.setItem('t2r_voice_commands', '1'); } catch {}
     ;(window as any).__t2r_vc_user_disabled = false;
     emitStatus('listening');
@@ -242,6 +250,7 @@ const toggleVoiceCommands = () => {
   // Headless Whisper path (no modal)
   vcRef.current?.start?.();
   setVoiceCommandsEnabled(true);
+  voiceEnabledRef.current = true;
   emitStatus('listening');
   if (!voiceTipsShownRef.current) {
     toast({
@@ -284,13 +293,19 @@ const handleHeadlessCommand = (cmd: string) => {
   } catch (e) {
     console.error('Headless voice processing failed', e);
     toast({ title: t('audioReading.voiceCommandError', 'Voice command error'), description: String(e), variant: 'destructive' });
-  } finally {
-     if (voiceCommandsEnabled) {
-       setTimeout(() => {
-         try { vcRef.current?.start?.(); } catch (e) { console.warn('Headless restart failed', e); }
-       }, 250);
-     }
-  }
+   } finally {
+      if (voiceEnabledRef.current && !(window as any).__t2r_vc_user_disabled) {
+        if (restartTimeoutRef.current) {
+          clearTimeout(restartTimeoutRef.current);
+          restartTimeoutRef.current = null;
+        }
+        restartTimeoutRef.current = window.setTimeout(() => {
+          if (voiceEnabledRef.current && !(window as any).__t2r_vc_user_disabled) {
+            try { vcRef.current?.start?.(); } catch (e) { console.warn('Headless restart failed', e); }
+          }
+        }, 250);
+      }
+   }
 };
 
   // Enhanced audio service status monitoring with better frequency
