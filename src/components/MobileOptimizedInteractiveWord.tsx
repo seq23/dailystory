@@ -5,7 +5,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import type { UserInfo } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { PhoneticRulesEngine } from "@/services/phoneticRulesEngine";
-import { charlotteTTS } from "@/services/charlotteTTS";
+import { EnhancedAudioService } from "@/services/enhancedAudioService";
 import { VocabularyLevelClassifier } from "@/utils/vocabularyLevelClassifier";
 import { getGlobalAddVocabularyWord } from "@/utils/gamificationGlobals";
 import { VocabularyTrackingService } from "@/services/vocabularyTrackingService";
@@ -27,6 +27,7 @@ export const MobileOptimizedInteractiveWord = (props: MobileOptimizedInteractive
   const [showMobileModal, setShowMobileModal] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoadingWordData, setIsLoadingWordData] = useState(false);
+  const [enhancedAudio] = useState(() => new EnhancedAudioService());
   // unified TTS via ElevenLabs edge function; no local audio service needed
 
   const difficulty = props.difficulty || "easy";
@@ -74,7 +75,13 @@ export const MobileOptimizedInteractiveWord = (props: MobileOptimizedInteractive
       if (isPlaying) return;
       setIsPlaying(true);
       try {
-        await charlotteTTS.speak(cleanWord);
+        await enhancedAudio.playText({
+          text: cleanWord,
+          difficulty: 'easy',
+          userInfo: props.userInfo!,
+          isPremium: !!props.isPremium,
+          enableHighlighting: false,
+        });
       } catch (e) {
         console.error('Mobile HearIt failed', e);
       } finally {
@@ -92,7 +99,13 @@ export const MobileOptimizedInteractiveWord = (props: MobileOptimizedInteractive
         });
         const definition: string = (!error && data?.definition) ? data.definition : cleanWord;
 
-        await charlotteTTS.speak(definition);
+        await enhancedAudio.playText({
+          text: definition,
+          difficulty: 'easy',
+          userInfo: props.userInfo!,
+          isPremium: !!props.isPremium,
+          enableHighlighting: false,
+        });
       } catch (e) {
         console.error('Mobile Explain failed', e);
       } finally {
@@ -114,7 +127,13 @@ export const MobileOptimizedInteractiveWord = (props: MobileOptimizedInteractive
         const adjusted = toAudioFriendly(cleanWord, raw);
         const syllText = adjusted.join(', ');
 
-        await charlotteTTS.speak(syllText);
+        await enhancedAudio.playText({
+          text: syllText,
+          difficulty: 'easy',
+          userInfo: props.userInfo!,
+          isPremium: !!props.isPremium,
+          enableHighlighting: false,
+        });
         setIsPlaying(false);
       } catch (e) {
         console.error('Mobile Syllables failed', e);

@@ -243,7 +243,13 @@ export const InteractiveWord = ({
     setIsPlaying(true);
     try {
       const cleanWordOnly = word.replace(/[.,!?;:'"()]/g, '').trim();
-      await charlotteTTS.speak(cleanWordOnly);
+      await enhancedAudioService.playText({
+        text: cleanWordOnly,
+        difficulty: 'easy',
+        userInfo: userInfo!,
+        isPremium: isPremium,
+        enableHighlighting: false,
+      });
     } catch (error) {
       console.error('Error pronouncing word:', error);
     } finally {
@@ -331,20 +337,24 @@ export const InteractiveWord = ({
         duration: 5000,
       });
       
-      // Speak definition using Charlotte for consistency and multilingual support
+      // Speak definition using EnhancedAudioService for multilingual support
       try {
-        await charlotteTTS.speak(definitionToSpeak);
+        await enhancedAudioService.playText({
+          text: definitionToSpeak,
+          difficulty: 'easy',
+          userInfo: userInfo!,
+          isPremium: isPremium,
+          enableHighlighting: false,
+        });
       } catch (error) {
-        console.warn('Definition TTS failed with Charlotte, falling back to browser speech if available', error);
+        console.warn('Definition TTS failed, falling back to browser speech if available', error);
         if ('speechSynthesis' in window) {
           try {
             const utterance = new SpeechSynthesisUtterance(definitionToSpeak);
             utterance.rate = 0.7;
             utterance.pitch = 1.0;
             utterance.volume = 1.0;
-            if (userNativeLanguage !== 'en') {
-              utterance.lang = userNativeLanguage;
-            }
+            if (userNativeLanguage !== 'en') utterance.lang = userNativeLanguage;
             utterance.onend = () => setIsPlaying(false);
             utterance.onerror = () => setIsPlaying(false);
             window.speechSynthesis.speak(utterance);
