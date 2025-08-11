@@ -48,20 +48,6 @@ useEffect(() => {
     try { if (agentId) localStorage.setItem('eleven_agent_id', agentId); } catch {}
   }, [agentId]);
 
-  useEffect(() => {
-    const startHandler = () => { if (!connected && !connecting) start(); };
-    const stopHandler = () => { if (connected) stop(); };
-    const toggleHandler = () => { if (connected) { stop(); } else if (!connecting) { start(); } };
-
-    window.addEventListener('voice:start', startHandler as EventListener);
-    window.addEventListener('voice:stop', stopHandler as EventListener);
-    window.addEventListener('voice:toggle', toggleHandler as EventListener);
-    return () => {
-      window.removeEventListener('voice:start', startHandler as EventListener);
-      window.removeEventListener('voice:stop', stopHandler as EventListener);
-      window.removeEventListener('voice:toggle', toggleHandler as EventListener);
-    };
-  }, [connected, connecting, start, stop]);
   const start = useCallback(async () => {
     setConnecting(true);
     try {
@@ -101,6 +87,21 @@ useEffect(() => {
     try { await (conversation as any).endSession(); } catch {}
     setConnected(false);
   }, [conversation]);
+
+  useEffect(() => {
+    const startHandler = () => { if (!connected && !connecting) start(); };
+    const stopHandler = () => { if (connected) stop(); };
+    const toggleHandler = () => { if (connected) { stop(); } else if (!connecting) { start(); } };
+
+    window.addEventListener('voice:start', startHandler as EventListener);
+    window.addEventListener('voice:stop', stopHandler as EventListener);
+    window.addEventListener('voice:toggle', toggleHandler as EventListener);
+    return () => {
+      window.removeEventListener('voice:start', startHandler as EventListener);
+      window.removeEventListener('voice:stop', stopHandler as EventListener);
+      window.removeEventListener('voice:toggle', toggleHandler as EventListener);
+    };
+  }, [connected, connecting, start, stop]);
 
   return (
     <div className="flex items-center gap-2">
