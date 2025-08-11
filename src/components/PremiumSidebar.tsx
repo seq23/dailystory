@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { TimerToggleItem } from "@/components/ui/timer-toggle-item";
 import { 
   BookOpen,
   Settings,
@@ -212,7 +213,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
                     ) : (
                       <SidebarMenuButton
                         onClick={() => toggleTimer()}
-                        className="flex items-center gap-3 w-full justify-between transition-colors rounded-lg hover:bg-accent hover:text-accent-foreground min-w-[220px] overflow-visible z-30"
+                        className="flex items-center gap-3 w-full justify-between rounded-full border border-border bg-card hover:bg-accent hover:text-accent-foreground px-3 py-2 min-w-[220px] overflow-visible z-50"
                         aria-label="Toggle reading timer visibility"
                       >
                         <div className="flex items-center gap-3">
