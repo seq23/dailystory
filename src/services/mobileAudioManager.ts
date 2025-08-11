@@ -16,6 +16,7 @@ export class MobileAudioManager {
   private audioElement: HTMLAudioElement | null = null;
   private preloadedAudio = new Map<string, string>();
   private networkMonitor: any = null;
+  private wasPausedByVisibility = false;
 
   public static getInstance(): MobileAudioManager {
     if (!MobileAudioManager.instance) {
@@ -98,7 +99,11 @@ export class MobileAudioManager {
     // Handle phone calls and other interruptions
     document.addEventListener('visibilitychange', () => {
       if (document.hidden && this.audioElement && !this.audioElement.paused) {
+        this.wasPausedByVisibility = true;
         this.audioElement.pause();
+      } else if (!document.hidden && this.audioElement && this.wasPausedByVisibility) {
+        this.wasPausedByVisibility = false;
+        this.audioElement.play().catch(console.error);
       }
     });
 

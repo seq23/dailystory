@@ -69,7 +69,7 @@ export const processTextWithConsistentFlow = ({
         isPremium={isPremium}
         sentenceContext={text}
         userId={userId}
-        forceModal={true}
+        forceModal={isMobile}
       />
     );
   }).filter(Boolean);

@@ -119,6 +119,18 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
     };
   }, [audioService]);
 
+  // Restore voice command state from session
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem('t2r_voice_commands');
+      if (isPremium && saved === '1') {
+        audioService.startVoiceCommands();
+        setVoiceCommandsEnabled(true);
+        emitStatus('listening');
+      }
+    } catch {}
+  }, [isPremium, audioService]);
+
   // Enhanced audio playback using new service
   const playAudio = async () => {
     if (!isPremium && isAfterFreeLimit) {
@@ -193,6 +205,7 @@ const toggleVoiceCommands = () => {
     try { audioService.stopVoiceCommands(); } catch {}
     try { vcRef.current?.stop?.(); } catch {}
     setVoiceCommandsEnabled(false);
+    try { sessionStorage.setItem('t2r_voice_commands', '0'); } catch {}
     emitStatus('idle');
     return;
   }
@@ -203,6 +216,7 @@ const toggleVoiceCommands = () => {
   if (useWebSpeech) {
     audioService.startVoiceCommands();
     setVoiceCommandsEnabled(true);
+    try { sessionStorage.setItem('t2r_voice_commands', '1'); } catch {}
     emitStatus('listening');
     if (!voiceTipsShownRef.current) {
       toast({
