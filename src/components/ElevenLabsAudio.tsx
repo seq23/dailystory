@@ -51,6 +51,7 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
   const [isLoading, setIsLoading] = useState(false);
   const [voiceCommandsEnabled, setVoiceCommandsEnabled] = useState(false);
   const vcRef = useRef<VoiceCommandControllerHandle | null>(null);
+  const restoredRef = useRef(false);
   const [audioService] = useState(() => new EnhancedAudioService());
   const [hasPlayedThisPage, setHasPlayedThisPage] = useState(false);
   const { toast, dismiss } = useToast();
@@ -123,10 +124,12 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
   useEffect(() => {
     try {
       const saved = sessionStorage.getItem('t2r_voice_commands');
-      if (isPremium && saved === '1') {
+      const userDisabled = (window as any).__t2r_vc_user_disabled === true;
+      if (isPremium && saved === '1' && !userDisabled && !restoredRef.current) {
         audioService.startVoiceCommands();
         setVoiceCommandsEnabled(true);
         emitStatus('listening');
+        restoredRef.current = true;
       }
     } catch {}
   }, [isPremium, audioService]);
@@ -206,6 +209,7 @@ const toggleVoiceCommands = () => {
     try { vcRef.current?.stop?.(); } catch {}
     setVoiceCommandsEnabled(false);
     try { sessionStorage.setItem('t2r_voice_commands', '0'); } catch {}
+    ;(window as any).__t2r_vc_user_disabled = true;
     emitStatus('idle');
     return;
   }
@@ -217,6 +221,7 @@ const toggleVoiceCommands = () => {
     audioService.startVoiceCommands();
     setVoiceCommandsEnabled(true);
     try { sessionStorage.setItem('t2r_voice_commands', '1'); } catch {}
+    ;(window as any).__t2r_vc_user_disabled = false;
     emitStatus('listening');
     if (!voiceTipsShownRef.current) {
       toast({
