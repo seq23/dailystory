@@ -898,8 +898,8 @@ const handleRestartTimer = () => {
           return;
         }
       }
-      // Expert internal grade guardrail
-      if (currentDifficulty === 'expert' && direction === 'down') {
+      // Expert internal grade guardrail only applies when minimum is set to Expert
+      if (currentDifficulty === 'expert' && direction === 'down' && minDifficulty === 'expert') {
         const gradeOrder: ("6th" | "7th" | "8th" | "9th" | "10th")[] = ["6th", "7th", "8th", "9th", "10th"];
         const currentGradeIndex = gradeOrder.indexOf(expertGradeLevel);
         const minGradeIndex = gradeOrder.indexOf(minExpertGrade);

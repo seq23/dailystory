@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { ParentGuardrailsService } from "@/services/parentGuardrailsService";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ParentDashboardProps {
   userInfo: UserInfo;
@@ -53,6 +54,8 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
     minExpertGrade: '6th',
     allowDecreaseBelowMin: false,
   });
+  const [activeTab, setActiveTab] = useState<'overview' | 'progress' | 'goals' | 'insights' | 'controls' | 'quizzes'>('overview');
+  const [quizScores, setQuizScores] = useState<number[]>([]);
 
   useEffect(() => {
     (async () => {
@@ -66,6 +69,31 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
         });
       } catch (e) {
         console.warn('Failed to load guardrails', e);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const { data, error } = await supabase
+          .from('reading_sessions')
+          .select('comprehension_score')
+          .eq('user_id', user.id)
+          .order('started_at', { ascending: false })
+          .limit(20);
+        if (error) {
+          console.warn('Failed to load quiz results', error);
+          return;
+        }
+        const scores = (data || [])
+          .map((r: any) => r.comprehension_score)
+          .filter((n: any) => typeof n === 'number' && n >= 0 && n <= 100);
+        setQuizScores(scores);
+      } catch (e) {
+        console.warn('Quiz fetch error', e);
       }
     })();
   }, []);
@@ -86,16 +114,26 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
       </CardHeader>
       
       <CardContent>
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="progress">Progress</TabsTrigger>
-            <TabsTrigger value="goals">Goals</TabsTrigger>
-            <TabsTrigger value="insights">Insights</TabsTrigger>
-            <TabsTrigger value="controls">Controls</TabsTrigger>
-          </TabsList>
+        {/* Section selector - dropdown across devices */}
+        <div className="w-full flex justify-end mb-4">
+          <Select value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder="Select section" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="overview">Overview</SelectItem>
+              <SelectItem value="progress">Progress</SelectItem>
+              <SelectItem value="goals">Goals</SelectItem>
+              <SelectItem value="insights">Insights</SelectItem>
+              <SelectItem value="controls">Controls</SelectItem>
+              <SelectItem value="quizzes">Quizzes</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-          <TabsContent value="overview" className="space-y-6">
+        {/* Overview */}
+        {activeTab === 'overview' && (
+          <div className="space-y-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <Card>
                 <CardContent className="p-4 text-center">
@@ -104,7 +142,7 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                   <div className="text-sm text-muted-foreground">Stories Read</div>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardContent className="p-4 text-center">
                   <Clock className="w-8 h-8 text-green-500 mx-auto mb-2" />
@@ -112,7 +150,7 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                   <div className="text-sm text-muted-foreground">Reading Time</div>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardContent className="p-4 text-center">
                   <Star className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
@@ -120,7 +158,7 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                   <div className="text-sm text-muted-foreground">Words Learned</div>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardContent className="p-4 text-center">
                   <Award className="w-8 h-8 text-purple-500 mx-auto mb-2" />
@@ -172,9 +210,12 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
+          </div>
+        )}
 
-          <TabsContent value="progress" className="space-y-6">
+        {/* Progress */}
+        {activeTab === 'progress' && (
+          <div className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Weekly Reading Progress</CardTitle>
@@ -214,9 +255,12 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+          </div>
+        )}
 
-          <TabsContent value="goals" className="space-y-6">
+        {/* Goals */}
+        {activeTab === 'goals' && (
+          <div className="space-y-6">
             <div className="grid md:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
@@ -282,9 +326,12 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
+          </div>
+        )}
 
-          <TabsContent value="insights" className="space-y-6">
+        {/* Insights */}
+        {activeTab === 'insights' && (
+          <div className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Learning Insights</CardTitle>
@@ -309,73 +356,132 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                 </div>
               </CardContent>
             </Card>
+          </div>
+        )}
 
-            </TabsContent>
+        {/* Controls */}
+        {activeTab === 'controls' && (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Parent Controls</CardTitle>
+                <CardDescription>Set reading guardrails that the reader will follow</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="lockDifficulty" className="text-sm font-medium">Lock reading difficulty</Label>
+                  <Switch id="lockDifficulty" checked={guardrails.lockDifficulty} onCheckedChange={(v) => setGuardrails({ ...guardrails, lockDifficulty: v })} />
+                </div>
 
-            <TabsContent value="controls" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Parent Controls</CardTitle>
-                  <CardDescription>Set reading guardrails that the reader will follow</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="lockDifficulty" className="text-sm font-medium">Lock reading difficulty</Label>
-                    <Switch id="lockDifficulty" checked={guardrails.lockDifficulty} onCheckedChange={(v) => setGuardrails({ ...guardrails, lockDifficulty: v })} />
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium">Minimum difficulty</Label>
-                      <Select value={guardrails.minDifficulty} onValueChange={(v) => setGuardrails({ ...guardrails, minDifficulty: v as DifficultyLevel })}>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Minimum level</Label>
+                  {(() => {
+                    const selected = guardrails.minDifficulty === 'expert' ? `expert:${guardrails.minExpertGrade}` : guardrails.minDifficulty;
+                    return (
+                      <Select
+                        value={selected}
+                        onValueChange={(v) => {
+                          if (v.startsWith('expert:')) {
+                            const grade = v.split(':')[1] as ExpertGradeLevel;
+                            setGuardrails({ ...guardrails, minDifficulty: 'expert', minExpertGrade: grade });
+                          } else {
+                            setGuardrails({ ...guardrails, minDifficulty: v as DifficultyLevel, minExpertGrade: '6th' });
+                          }
+                        }}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Select minimum" />
                         </SelectTrigger>
                         <SelectContent>
-                          {(['beginner','easy','medium','hard','expert'] as DifficultyLevel[]).map((lvl) => (
-                            <SelectItem key={lvl} value={lvl}>{lvl}</SelectItem>
-                          ))}
+                          <SelectItem value="beginner">Pre-Reader</SelectItem>
+                          <SelectItem value="easy">Beginner</SelectItem>
+                          <SelectItem value="medium">Developing</SelectItem>
+                          <SelectItem value="hard">Independent</SelectItem>
+                          <SelectItem value="expert:6th">Advanced — 6th</SelectItem>
+                          <SelectItem value="expert:7th">Advanced — 7th</SelectItem>
+                          <SelectItem value="expert:8th">Advanced — 8th</SelectItem>
+                          <SelectItem value="expert:9th">Advanced — 9th</SelectItem>
+                          <SelectItem value="expert:10th">Advanced — 10th</SelectItem>
                         </SelectContent>
                       </Select>
+                    );
+                  })()}
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="allowDecr" className="text-sm font-medium">Allow decreasing below minimum (soft)</Label>
+                  <Switch id="allowDecr" checked={guardrails.allowDecreaseBelowMin} onCheckedChange={(v) => setGuardrails({ ...guardrails, allowDecreaseBelowMin: v })} />
+                </div>
+
+                <div className="flex justify-end">
+                  <Button disabled={saving} onClick={async () => {
+                    try {
+                      setSaving(true);
+                      await ParentGuardrailsService.saveGuardrails(guardrails);
+                      toast({ title: 'Settings saved' });
+                    } catch (e) {
+                      toast({ title: 'Could not save settings', variant: 'destructive' });
+                    } finally {
+                      setSaving(false);
+                    }
+                  }}>Save</Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Quizzes */}
+        {activeTab === 'quizzes' && (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Quiz Results</CardTitle>
+                <CardDescription>Comprehension scores from recent reading sessions</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {quizScores.length === 0 ? (
+                  <div className="text-sm text-muted-foreground">No quiz results yet.</div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <Card>
+                        <CardContent className="p-4 text-center">
+                          <div className="text-xs text-muted-foreground">Average Score</div>
+                          <div className="text-2xl font-bold">{Math.round(quizScores.reduce((a, b) => a + b, 0) / quizScores.length)}%</div>
+                        </CardContent>
+                      </Card>
+                      <Card>
+                        <CardContent className="p-4 text-center">
+                          <div className="text-xs text-muted-foreground">Best Score</div>
+                          <div className="text-2xl font-bold">{Math.max(...quizScores)}%</div>
+                        </CardContent>
+                      </Card>
+                      <Card>
+                        <CardContent className="p-4 text-center">
+                          <div className="text-xs text-muted-foreground">Attempts</div>
+                          <div className="text-2xl font-bold">{quizScores.length}</div>
+                        </CardContent>
+                      </Card>
                     </div>
 
                     <div className="space-y-2">
-                      <Label className="text-sm font-medium">Minimum expert grade (expert mode)</Label>
-                      <Select value={guardrails.minExpertGrade} onValueChange={(v) => setGuardrails({ ...guardrails, minExpertGrade: v as ExpertGradeLevel })}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select minimum grade" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {(["6th","7th","8th","9th","10th"] as ExpertGradeLevel[]).map((g) => (
-                            <SelectItem key={g} value={g}>{g}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div className="text-sm font-medium">Recent scores</div>
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                        {quizScores.slice(0, 10).map((s, idx) => (
+                          <div key={idx} className="p-2 rounded border flex items-center justify-between">
+                            <span className="text-xs">#{idx + 1}</span>
+                            <span className="font-medium">{s}%</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
-
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="allowDecr" className="text-sm font-medium">Allow decreasing below minimum (soft)</Label>
-                    <Switch id="allowDecr" checked={guardrails.allowDecreaseBelowMin} onCheckedChange={(v) => setGuardrails({ ...guardrails, allowDecreaseBelowMin: v })} />
-                  </div>
-
-                  <div className="flex justify-end">
-                    <Button disabled={saving} onClick={async () => {
-                      try {
-                        setSaving(true);
-                        await ParentGuardrailsService.saveGuardrails(guardrails);
-                        toast({ title: 'Settings saved' });
-                      } catch (e) {
-                        toast({ title: 'Could not save settings', variant: 'destructive' });
-                      } finally {
-                        setSaving(false);
-                      }
-                    }}>Save</Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-        </Tabs>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
