@@ -1,13 +1,13 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useConversation } from '@11labs/react';
 import { supabase } from '@/integrations/supabase/client';
 import { SimpleAudioEngine } from '@/services/SimpleAudioEngine';
 
 interface VoiceCommandsProps {
-  agentId?: string; // If not provided, we allow user to enter one
+  agentId?: string; // If provided, will override the backend default
 }
 
 const CHARLOTTE = 'XB0fDUnXU5powFXDhCwa';
@@ -43,19 +43,17 @@ export const VoiceCommands: React.FC<VoiceCommandsProps> = ({ agentId: initialAg
     onError: (e) => console.error('VoiceCommands error', e),
   });
 
-  // Persist agentId
+  // Persist any explicitly set agentId (still supported for advanced override)
   useEffect(() => {
     try { if (agentId) localStorage.setItem('eleven_agent_id', agentId); } catch {}
   }, [agentId]);
 
   const start = useCallback(async () => {
-    if (!agentId) {
-      toast({ title: 'Missing agentId', description: 'Enter your ElevenLabs agent ID first.', variant: 'destructive' });
-      return;
-    }
     setConnecting(true);
     try {
-      const { data, error } = await supabase.functions.invoke('elevenlabs-agent-signed-url', { body: { agentId } });
+      // If an agentId is present, pass it; otherwise let the backend use the default from secrets
+      const body = agentId ? { agentId } : {};
+      const { data, error } = await supabase.functions.invoke('elevenlabs-agent-signed-url', { body });
       if (error) throw new Error(error.message || 'Failed to get signed URL');
       const url = (data as any)?.signed_url || (data as any)?.url || (data as any)?.signedUrl;
       if (!url) throw new Error('No signed URL returned');
@@ -77,14 +75,7 @@ export const VoiceCommands: React.FC<VoiceCommandsProps> = ({ agentId: initialAg
 
   return (
     <div className="flex items-center gap-2">
-      {!initialAgentId && (
-        <Input
-          placeholder="Enter ElevenLabs agentId"
-          value={agentId}
-          onChange={(e) => setAgentId(e.target.value)}
-          className="w-64"
-        />
-      )}
+      {/* Input removed: backend will use the default agent from Supabase secrets */}
       {!connected ? (
         <Button onClick={start} disabled={connecting}>{connecting ? 'Connecting…' : 'Start Voice'}</Button>
       ) : (

@@ -1,3 +1,4 @@
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -13,6 +14,8 @@ serve(async (req) => {
 
   try {
     const ELEVENLABS_API_KEY = Deno.env.get("ELEVENLABS_API_KEY");
+    const DEFAULT_AGENT_ID = Deno.env.get("ELEVENLABS_AGENT_ID") || "";
+
     if (!ELEVENLABS_API_KEY) {
       throw new Error("ELEVENLABS_API_KEY is not set");
     }
@@ -29,8 +32,12 @@ serve(async (req) => {
       agentId = String(url.searchParams.get("agentId") || "").trim();
     }
 
+    // Fallback to the default from secrets if not provided
     if (!agentId) {
-      throw new Error("agentId is required");
+      if (!DEFAULT_AGENT_ID) {
+        throw new Error("agentId is required (no override provided and ELEVENLABS_AGENT_ID is not set)");
+      }
+      agentId = DEFAULT_AGENT_ID;
     }
 
     const endpoint = `https://api.elevenlabs.io/v1/convai/conversation/get_signed_url?agent_id=${encodeURIComponent(agentId)}`;
