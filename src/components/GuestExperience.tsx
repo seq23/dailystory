@@ -30,6 +30,14 @@ export const GuestExperience = () => {
     }
   }, []);
 
+  // Ensure reading timer is always enabled for guest sessions
+  useEffect(() => {
+    if (currentState === "reading") {
+      try { localStorage.setItem('readingTimerEnabled','1'); } catch {}
+      try { window.dispatchEvent(new CustomEvent('readingTimerToggle', { detail: true })); } catch {}
+    }
+  }, [currentState]);
+
   const handleGetStarted = () => {
     setCurrentState("form");
   };

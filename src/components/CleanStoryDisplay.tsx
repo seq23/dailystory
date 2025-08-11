@@ -154,6 +154,27 @@ useEffect(() => {
     }
   }, [isPremium]);
 
+  // Force timer ON for guest users and correct any persisted OFF state
+  useEffect(() => {
+    if (!isPremium) {
+      try { localStorage.setItem('readingTimerEnabled','1'); } catch {}
+      if (!timerEnabled) {
+        setTimerEnabled(true);
+        try { window.dispatchEvent(new CustomEvent('readingTimerToggle', { detail: true })); } catch {}
+      }
+    }
+  }, [isPremium, timerEnabled]);
+
+  // Guard against any attempts to disable the timer for guests
+  useEffect(() => {
+    if (!isPremium && !timerEnabled) {
+      console.warn('[Timer] Guest sessions must keep timer enabled. Re-enabling.');
+      try { localStorage.setItem('readingTimerEnabled','1'); } catch {}
+      setTimerEnabled(true);
+      try { window.dispatchEvent(new CustomEvent('readingTimerToggle', { detail: true })); } catch {}
+    }
+  }, [isPremium, timerEnabled]);
+
   useEffect(() => {
     const handler = (e: any) => {
       const enabled = !!e.detail;
@@ -1613,8 +1634,8 @@ const handleRestartTimer = () => {
         </div>
       )}
 
-      {/* Unified Timer for All Users (respects persistent toggle) */}
-      {timerEnabled && (
+      {/* Unified Timer for All Users (guest always on) */}
+      {(!isPremium || timerEnabled) && (
         <CollapsibleFloatingTimer
           timeRemaining={timeRemaining}
           isReading={isTimerRunning}
