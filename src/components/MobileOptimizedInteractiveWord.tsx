@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { EnhancedAudioService } from "@/services/enhancedAudioService";
 import { VocabularyLevelClassifier } from "@/utils/vocabularyLevelClassifier";
 import { getGlobalAddVocabularyWord } from "@/utils/gamificationGlobals";
+import { VocabularyTrackingService } from "@/services/vocabularyTrackingService";
 
 interface MobileOptimizedInteractiveWordProps {
   word: string;
@@ -41,9 +42,30 @@ export const MobileOptimizedInteractiveWord = (props: MobileOptimizedInteractive
 
   // For mobile devices, use click-to-open modal instead of hover
   if (props.forceModal || isMobileOrTablet) {
-    const handleClick = () => {
+    const handleClick = async () => {
       if (!shouldBeInteractive) return;
       (window as any).__lastSelectedWord = cleanWord;
+      // Auto-save on click
+      try {
+        await VocabularyTrackingService.logEncounter(cleanWord, cleanWord, difficulty);
+      } catch {}
+      try {
+        const normalizedDifficulty: 'beginner' | 'intermediate' | 'advanced' =
+          (difficulty === 'beginner' || difficulty === 'easy') ? 'beginner' :
+          (difficulty === 'medium') ? 'intermediate' : 'advanced';
+        const vocabularyWord: any = {
+          word: cleanWord,
+          definition: '',
+          difficulty: normalizedDifficulty,
+          dateAdded: new Date().toISOString(),
+          timesReviewed: 0,
+          mastered: false,
+          storyContext: props.sentenceContext || ''
+        };
+        (window as any).addToVocabulary?.(vocabularyWord);
+        const addVocabularyWord = getGlobalAddVocabularyWord();
+        addVocabularyWord && addVocabularyWord();
+      } catch {}
       setShowMobileModal(true);
     };
 
