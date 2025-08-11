@@ -23,6 +23,7 @@ import ReadAloudCoach from "@/components/ReadAloudCoach";
 // Audio and Interactive Components
 import { ElevenLabsAudio, type ElevenLabsAudioHandle } from "@/components/ElevenLabsAudio";
 import { PhoneticRulesEngine } from "@/services/phoneticRulesEngine";
+import { charlotteTTS } from "@/services/charlotteTTS";
 
 import { VocabularyCollector } from "@/components/VocabularyCollector";
 import { processTextWithConsistentFlow } from "@/utils/unifiedTextProcessor";
@@ -290,21 +291,7 @@ useEffect(() => {
     const CHARLOTTE = 'XB0fDUnXU5powFXDhCwa';
 
     const playTTS = async (text: string) => {
-      if (!text || !text.trim()) return;
-      const resp = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/elevenlabs-tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, voice: CHARLOTTE, model: 'eleven_turbo_v2_5' })
-      });
-      if (!resp.ok) throw new Error('TTS failed');
-      const blob = await resp.blob();
-      const url = URL.createObjectURL(blob);
-      const audio = new Audio(url);
-      await new Promise<void>((resolve) => {
-        audio.onended = () => { try { URL.revokeObjectURL(url); } catch {}; resolve(); };
-        audio.onerror = () => { try { URL.revokeObjectURL(url); } catch {}; resolve(); };
-        audio.play().catch(() => resolve());
-      });
+      await charlotteTTS.speak(text);
     };
 
     const getDefinition = async (w: string): Promise<string> => {

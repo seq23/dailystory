@@ -5,6 +5,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import type { UserInfo } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { PhoneticRulesEngine } from "@/services/phoneticRulesEngine";
+import { charlotteTTS } from "@/services/charlotteTTS";
 import { VocabularyLevelClassifier } from "@/utils/vocabularyLevelClassifier";
 import { getGlobalAddVocabularyWord } from "@/utils/gamificationGlobals";
 import { VocabularyTrackingService } from "@/services/vocabularyTrackingService";
@@ -73,20 +74,10 @@ export const MobileOptimizedInteractiveWord = (props: MobileOptimizedInteractive
       if (isPlaying) return;
       setIsPlaying(true);
       try {
-        const response = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/elevenlabs-tts', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: cleanWord, voice: "XB0fDUnXU5powFXDhCwa", model: 'eleven_turbo_v2_5' })
-        });
-        if (!response.ok) throw new Error('TTS failed');
-        const audioBlob = await response.blob();
-        const url = URL.createObjectURL(audioBlob);
-        const audio = new Audio(url);
-        audio.onended = () => { setIsPlaying(false); URL.revokeObjectURL(url); };
-        audio.onerror = () => setIsPlaying(false);
-        await audio.play();
+        await charlotteTTS.speak(cleanWord);
       } catch (e) {
         console.error('Mobile HearIt failed', e);
+      } finally {
         setIsPlaying(false);
       }
     };
@@ -101,18 +92,7 @@ export const MobileOptimizedInteractiveWord = (props: MobileOptimizedInteractive
         });
         const definition: string = (!error && data?.definition) ? data.definition : cleanWord;
 
-        const response = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/elevenlabs-tts', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: definition, voice: "XB0fDUnXU5powFXDhCwa", model: 'eleven_multilingual_v2' })
-        });
-        if (response.ok) {
-          const audioBlob = await response.blob();
-          const url = URL.createObjectURL(audioBlob);
-          const audio = new Audio(url);
-          audio.onended = () => { URL.revokeObjectURL(url); };
-          await audio.play();
-        }
+        await charlotteTTS.speak(definition);
       } catch (e) {
         console.error('Mobile Explain failed', e);
       } finally {
@@ -134,18 +114,8 @@ export const MobileOptimizedInteractiveWord = (props: MobileOptimizedInteractive
         const adjusted = toAudioFriendly(cleanWord, raw);
         const syllText = adjusted.join(', ');
 
-        const response = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/elevenlabs-tts', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: syllText, voice: 'XB0fDUnXU5powFXDhCwa', model: 'eleven_turbo_v2_5' })
-        });
-        if (!response.ok) throw new Error('TTS failed');
-        const audioBlob = await response.blob();
-        const url = URL.createObjectURL(audioBlob);
-        const audio = new Audio(url);
-        audio.onended = () => { setIsPlaying(false); URL.revokeObjectURL(url); };
-        audio.onerror = () => setIsPlaying(false);
-        await audio.play();
+        await charlotteTTS.speak(syllText);
+        setIsPlaying(false);
       } catch (e) {
         console.error('Mobile Syllables failed', e);
         setIsPlaying(false);

@@ -7,6 +7,7 @@ import { contextualPronunciation } from './contextualPronunciation';
 import { phoneticRulesEngine } from './phoneticRulesEngine';
 import type { UserInfo } from '@/types';
 import { MobileAudioManager } from '@/services/mobileAudioManager';
+import { charlotteTTS } from './charlotteTTS';
 
 export interface AudioPlaybackOptions {
   text: string;
@@ -182,34 +183,23 @@ export class EnhancedAudioService {
         });
       }
 
-      // Break word into syllables and play each with pauses - now available to all users
+      // Break word into syllables and play in one paced utterance via Charlotte
       const syllables = await phoneticRulesEngine.breakIntoSyllablesAsync(word);
-      
-      console.log(`🔤 Playing phonetic breakdown for "${word}":`, syllables);
-      
+      const toAudioFriendly = (original: string, sylls: string[]) => {
+        const w = (original || '').toLowerCase();
+        if (w.endsWith('ies') && w.length > 4) return [w.slice(0, -3) + 'y', 's'];
+        if (w.endsWith('es') && w.length > 3) return [w.slice(0, -2), 'es'];
+        if (w.endsWith('s') && !w.endsWith('ss') && w.length > 3) return [w.slice(0, -1), 's'];
+        return sylls;
+      };
+      const adjusted = toAudioFriendly(word, syllables);
+      const syllText = adjusted.join(', ');
+
       // Stop any existing audio first
       this.stopAudio();
-      
-      for (let i = 0; i < syllables.length; i++) {
-        console.log(`🔤 Playing syllable ${i + 1}/${syllables.length}: "${syllables[i]}"`);
-        
-        try {
-          // Use direct browser speech for phonetic breakdown to avoid conflicts
-          await this.playPhoneticSyllable(syllables[i], userInfo);
-
-          // Longer pause between syllables for clarity
-          if (i < syllables.length - 1) {
-            console.log(`⏸️ Pausing 1200ms before next syllable...`);
-            await this.delay(1200); // Increased pause for clearer separation
-          }
-        } catch (syllableError) {
-          console.error(`❌ Error playing syllable "${syllables[i]}":`, syllableError);
-          // Continue with remaining syllables instead of stopping completely
-          continue;
-        }
-      }
-      
+      await charlotteTTS.speak(syllText);
       console.log(`✅ Phonetic breakdown completed for "${word}"`);
+
     } catch (error) {
       console.error('Phonetic breakdown failed:', error);
       // Fallback to simple pronunciation
