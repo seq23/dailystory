@@ -44,9 +44,9 @@ export const AudioControls: React.FC<AudioControlsProps> = ({ text, contentHash,
   return (
     <div className="flex items-center gap-3">
       {!isPlaying ? (
-        <Button size="lg" variant="default" onClick={onPlay} aria-label="Play narration">
+        <Button size="lg" variant="default" onClick={onPlay} aria-label="Read to me">
           <Play className="w-5 h-5 mr-2" />
-          Play
+          Read to Me
         </Button>
       ) : (
         <Button size="lg" variant="destructive" onClick={onStop} aria-label="Stop narration">

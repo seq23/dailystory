@@ -59,7 +59,7 @@ export const VoiceCommands: React.FC<VoiceCommandsProps> = ({ agentId: initialAg
       if (!url) throw new Error('No signed URL returned');
       const id = await (conversation as any).startSession({ url });
       console.log('Started ElevenLabs conversation:', id);
-      toast({ title: 'Voice connected', description: 'Say a command: "play", "stop", "next", "previous".' });
+      toast({ title: 'Voice connected', description: 'Say: "read", "stop", "next", "back".' });
     } catch (e: any) {
       console.error('Start voice failed', e);
       toast({ title: 'Voice error', description: e?.message || 'Could not start voice session', variant: 'destructive' });
@@ -77,9 +77,9 @@ export const VoiceCommands: React.FC<VoiceCommandsProps> = ({ agentId: initialAg
     <div className="flex items-center gap-2">
       {/* Input removed: backend will use the default agent from Supabase secrets */}
       {!connected ? (
-        <Button onClick={start} disabled={connecting}>{connecting ? 'Connecting…' : 'Start Voice'}</Button>
+        <Button onClick={start} disabled={connecting}>{connecting ? 'Connecting…' : 'Talk to Buddy'}</Button>
       ) : (
-        <Button variant="secondary" onClick={stop}>End Voice</Button>
+        <Button variant="secondary" onClick={stop}>Stop Talking</Button>
       )}
     </div>
   );

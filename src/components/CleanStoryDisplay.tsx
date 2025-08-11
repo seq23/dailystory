@@ -1181,13 +1181,13 @@ const handleRestartTimer = () => {
                   <VoiceCommands />
                   <Dialog>
                     <DialogTrigger asChild>
-                      <Button variant="secondary" size="lg" aria-label="Open read-aloud coach">
-                        Coach
+                      <Button variant="secondary" size="lg" aria-label="Open Help Me Read">
+                        Help Me Read
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-xl">
                       <DialogHeader>
-                        <DialogTitle>Read‑aloud coach</DialogTitle>
+                        <DialogTitle>Help Me Read</DialogTitle>
                       </DialogHeader>
                       {/* @ts-ignore */}
                       <ReadAloudCoach targetText={currentStory} />

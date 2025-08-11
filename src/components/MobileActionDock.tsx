@@ -67,7 +67,7 @@ export const MobileActionDock: React.FC<MobileActionDockProps> = ({
                       className="h-12 flex flex-col items-center justify-center gap-0.5 rounded-xl"
                       onClick={onPlayAudio}
                       disabled={audioDisabled && !isAudioPlaying}
-                      aria-label={isAudioPlaying ? t("audioReading.stop", "Stop") : t("audioReading.playAudio", "Play audio")}
+                      aria-label={isAudioPlaying ? t("audioReading.stop", "Stop") : t("audioReading.playAudio", "Read to me")}
                     >
                       {isAudioPlaying ? (
                         <Square className="w-5 h-5" />
@@ -83,7 +83,7 @@ export const MobileActionDock: React.FC<MobileActionDockProps> = ({
                     ? t("tooltips.dock.stop", "Stop playback")
                     : audioDisabled
                       ? t("audioReading.audioUsedTooltip", "Audio used (1x per page for free users)")
-                      : t("tooltips.dock.play", "Play the current page with narration")}
+                      : t("tooltips.dock.play", "Read this page to me")}
                 </TooltipContent>
               </Tooltip>
 
