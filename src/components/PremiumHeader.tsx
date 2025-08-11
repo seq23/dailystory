@@ -25,7 +25,7 @@ import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useTranslation } from "react-i18next";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { ChildSwitcher } from "@/components/ChildSwitcher";
+import { ChildQuickSwitcher } from "@/components/ChildQuickSwitcher";
 interface PremiumHeaderProps {
   userInfo: UserInfo;
   isPremium: boolean;
@@ -100,8 +100,8 @@ export const PremiumHeader = ({
           {/* User Avatar and Actions */}
           <div className="flex items-center gap-3 shrink-0">
             {/* Quick child switcher (desktop) */}
-            <div className="hidden md:block w-48">
-              <ChildSwitcher />
+            <div className="hidden md:block">
+              <ChildQuickSwitcher />
             </div>
 
             {/* Avatar with Dropdown */}
