@@ -350,40 +350,12 @@ useEffect(() => {
     return () => window.removeEventListener('voice:wordHelp', handler as EventListener);
   }, [userInfo?.nativeLanguage, currentDifficulty, currentHighlightedWord, currentStory]);
 
-  // Simple timed word highlighting while audio is playing (heuristic pacing)
+  // Words cache for vocabulary/voice helpers
   const wordsRef = useRef<string[]>([]);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     wordsRef.current = (currentStory || '').split(/\s+/).filter(Boolean);
   }, [currentStory]);
-
-  useEffect(() => {
-    if (!isAudioPlaying) {
-      onWordHighlight(-1);
-      if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
-      return;
-    }
-
-    let idx = 0;
-    const total = wordsRef.current.length;
-    if (total === 0) return;
-    onWordHighlight(0);
-
-    const baseMs = 320; // ~187 WPM
-    timerRef.current = setInterval(() => {
-      idx += 1;
-      if (idx >= total) {
-        if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
-        return;
-      }
-      onWordHighlight(idx);
-    }, baseMs);
-
-    return () => {
-      if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
-    };
-  }, [isAudioPlaying, currentStory]);
 
   // Gamification integration
   const {
@@ -758,19 +730,22 @@ useEffect(() => {
   };
 
   // Bottom dock actions
-  const handleDockPlayAudio = () => {
-    const engine = SimpleAudioEngine.getInstance();
+  const handleDockPlayAudio = async () => {
     if (!isPremium && audioPlayedPage === currentPage && !isAudioPlaying) {
       toast({ title: t('audioReading.audioUsed','Audio used'), description: t('audioReading.audioUsedTooltip','Audio used (1x per page for free users)'), duration: 2000 });
       return;
     }
-    if (engine.isPlaying()) {
-      engine.stop();
+    if (audioRef.current?.isPlaying) {
+      try { audioRef.current.stop(); } catch {}
       setIsAudioPlaying(false);
     } else {
-      engine.playText({ text: currentStory, contentHash });
-      setIsAudioPlaying(true);
-      if (!isPremium) setAudioPlayedPage(currentPage);
+      try {
+        await audioRef.current?.play?.();
+        setIsAudioPlaying(true);
+        if (!isPremium) setAudioPlayedPage(currentPage);
+      } catch (e) {
+        console.warn('Dock play failed', e);
+      }
     }
   };
 
@@ -1241,12 +1216,18 @@ const handleRestartTimer = () => {
                 aria-hidden={isMobileOrTablet}
               >
                 <div className="flex items-center gap-4">
-                  <AudioControls
+                  <ElevenLabsAudio
+                    ref={audioRef}
                     text={currentStory}
+                    userInfo={userInfo}
+                    isPremium={isPremium}
+                    onUpgrade={onUpgrade}
+                    currentPage={currentPage}
+                    totalPages={story.length}
+                    difficulty={currentDifficulty}
+                    onWordHighlight={onWordHighlight}
                     contentHash={contentHash}
-                    onPlayingChange={setIsAudioPlaying}
                   />
-                  <VoiceCommands />
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button variant="secondary" size="lg" aria-label="Open Help Me Read">
