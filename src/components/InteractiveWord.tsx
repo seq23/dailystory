@@ -178,6 +178,7 @@ export const InteractiveWord = ({
   };
 
   const handleMouseEnter = () => {
+    (window as any).__hoveredWord = cleanWord;
     (window as any).__lastSelectedWord = cleanWord;
     if (hideTimeoutRef.current) {
       clearTimeout(hideTimeoutRef.current);
@@ -254,6 +255,7 @@ export const InteractiveWord = ({
   };
 
   const handleMouseLeave = () => {
+    (window as any).__hoveredWord = undefined;
     hideTimeoutRef.current = setTimeout(() => {
       setShowTooltip(false);
     }, 200); // 200ms delay before hiding

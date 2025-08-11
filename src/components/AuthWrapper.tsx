@@ -13,6 +13,11 @@ export const AuthWrapper = () => {
   const [isPremium, setIsPremium] = useState<boolean | null>(null);
   const [premiumSafetyTick, setPremiumSafetyTick] = useState(0);
 
+  // Expose premium status globally for voice features and events
+  useEffect(() => {
+    (window as any).__IS_PREMIUM = isPremium === true;
+  }, [isPremium]);
+
   useEffect(() => {
     // 1) Listen for auth changes FIRST (sync-only updates inside handler)
     const {
