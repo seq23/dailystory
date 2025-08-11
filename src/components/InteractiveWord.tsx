@@ -4,6 +4,7 @@ import { PhoneticRulesEngine } from "@/services/phoneticRulesEngine";
 import { Volume2, HelpCircle, Languages, BookOpen, Lightbulb, Plus, Crown, Layers } from "lucide-react";
 import { UnifiedTTSService } from "@/services/unifiedTTSService";
 import { EnhancedAudioService } from "@/services/enhancedAudioService";
+import { charlotteTTS } from "@/services/charlotteTTS";
 import { useToast } from "@/hooks/use-toast";
 import { contextualPronunciation } from "@/services/contextualPronunciation";
 import { supabase } from "@/integrations/supabase/client";
@@ -239,47 +240,13 @@ export const InteractiveWord = ({
   const handlePronounce = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (isPlaying) return;
-    
     setIsPlaying(true);
     try {
-      const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
-
-      // Always use ElevenLabs for high-quality English pronunciation
-      const voice = getVoiceForUser(userInfo);
-      const model = "eleven_turbo_v2"; // English pronunciation
-      console.log('TTS: Using ElevenLabs for Hear It (English)');
-      
-      const response = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/elevenlabs-tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text: cleanWord,
-          voice,
-          model
-        })
-      });
-
-      if (response.ok) {
-        const audioBlob = await response.blob();
-        const audioUrl = URL.createObjectURL(audioBlob);
-        const audio = new Audio(audioUrl);
-        
-        if (isMobileOrTablet) {
-          audio.preload = 'metadata';
-        }
-        
-        audio.onended = () => {
-          setIsPlaying(false);
-          URL.revokeObjectURL(audioUrl);
-        };
-        
-        audio.onerror = () => setIsPlaying(false);
-        await audio.play();
-      } else {
-        throw new Error('ElevenLabs TTS failed');
-      }
+      const cleanWordOnly = word.replace(/[.,!?;:'"()]/g, '').trim();
+      await charlotteTTS.speak(cleanWordOnly);
     } catch (error) {
       console.error('Error pronouncing word:', error);
+    } finally {
       setIsPlaying(false);
     }
   };
@@ -364,49 +331,26 @@ export const InteractiveWord = ({
         duration: 5000,
       });
       
-      // Use ElevenLabs for consistent high-quality TTS
+      // Speak definition using Charlotte for consistency and multilingual support
       try {
-        const voice = getVoiceForUser(userInfo);
-        const model = isNativeEnglishSpeaker ? "eleven_turbo_v2" : "eleven_multilingual_v2";
-        
-        const response = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/elevenlabs-tts', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            text: definitionToSpeak,
-            voice: voice,
-            model: model
-          })
-        });
-
-        if (response.ok) {
-          const audioBlob = await response.blob();
-          const audioUrl = URL.createObjectURL(audioBlob);
-          const audio = new Audio(audioUrl);
-          
-          // Mobile-specific audio configuration
-          if (isMobileOrTablet) {
-            audio.preload = 'metadata';
-          }
-          
-          audio.onended = () => {
-            setIsPlaying(false);
-            URL.revokeObjectURL(audioUrl);
-          };
-          
-          audio.onerror = () => {
-            console.warn('ElevenLabs audio failed, falling back to browser speech');
-            fallbackToBrowserSpeech();
-          };
-          
-           await audio.play();
-         } else {
-           throw new Error('ElevenLabs TTS failed');
-         }
-       } catch (error) {
-         console.warn('ElevenLabs failed, using browser speech fallback:', error);
-         fallbackToBrowserSpeech();
-       }
+        await charlotteTTS.speak(definitionToSpeak);
+      } catch (error) {
+        console.warn('Definition TTS failed with Charlotte, falling back to browser speech if available', error);
+        if ('speechSynthesis' in window) {
+          try {
+            const utterance = new SpeechSynthesisUtterance(definitionToSpeak);
+            utterance.rate = 0.7;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+            if (userNativeLanguage !== 'en') {
+              utterance.lang = userNativeLanguage;
+            }
+            utterance.onend = () => setIsPlaying(false);
+            utterance.onerror = () => setIsPlaying(false);
+            window.speechSynthesis.speak(utterance);
+          } catch {}
+        }
+      }
        
        function fallbackToBrowserSpeech() {
         if ('speechSynthesis' in window) {

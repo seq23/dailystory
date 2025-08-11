@@ -168,6 +168,18 @@ useEffect(() => {
     }
   }, [voiceCommandsEnabled, vcStatus, toast, t]);
 
+  // Reset free-play flag when page or content changes
+  useEffect(() => {
+    setHasPlayedThisPage(false);
+  }, [currentPage, contentHash]);
+
+  // Support global voice:toggle events (from mobile dock or elsewhere)
+  useEffect(() => {
+    const handler = () => toggleVoiceCommands();
+    window.addEventListener('voice:toggle', handler as EventListener);
+    return () => window.removeEventListener('voice:toggle', handler as EventListener);
+  }, []);
+
   // Enhanced audio playback using new service
   const playAudio = async () => {
     if (!isPremium && isAfterFreeLimit) {

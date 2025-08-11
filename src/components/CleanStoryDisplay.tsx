@@ -267,6 +267,11 @@ const [highlightSave, setHighlightSave] = useState(false);
     try { (window as any).__pageContentHash = contentHash; } catch {}
     try { (window as any).__pageContentString = currentStory; } catch {}
   }, [contentHash, currentStory]);
+
+  // Reset free-tier audio flag when navigating to a new page or content changes
+  useEffect(() => {
+    setAudioPlayedPage(null);
+  }, [currentPage, contentHash]);
   
   // Audio highlighting integration
   const { onWordHighlight, currentHighlightedWord, clearHighlighting } = useWordHighlighting(
@@ -752,7 +757,7 @@ useEffect(() => {
   };
 
 const handleDockVoiceCommand = () => {
-  try { window.dispatchEvent(new CustomEvent('voice:toggle')); } catch {}
+  try { audioRef.current?.toggleVoiceCommands?.(); } catch (e) { console.warn('Dock voice toggle failed', e); }
 };
 
 const handleDockCoach = () => {
