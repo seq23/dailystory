@@ -1563,7 +1563,7 @@ const handleRestartTimer = () => {
 
 
       {/* Mobile Action Dock - Mobile/Tablet */}
-      {isMobileOrTablet && (
+      { (isMobileOrTablet || hasTouchCapability) && (
         <MobileActionDock
           isPremium={isPremium}
           onPlayAudio={handleDockPlayAudio}
