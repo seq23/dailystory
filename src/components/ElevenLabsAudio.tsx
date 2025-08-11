@@ -14,6 +14,7 @@ import type { VoiceCommandControllerHandle } from "@/components/VoiceCommandCont
 import type { UserInfo } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { VocabularyTrackingService } from "@/services/vocabularyTrackingService";
+import { tokenizeForHighlighting } from "@/utils/tokenize";
 
 interface ElevenLabsAudioProps {
   text: string;
@@ -100,6 +101,12 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
     (window as any).__currentUserName = userInfo?.name || 'guest';
   }, [userInfo?.name]);
 
+  // Stop audio on text or page change to avoid stale playback
+  useEffect(() => {
+    try { audioService.stopAudio(); } catch {}
+    setIsPlaying(false);
+  }, [text, currentPage, audioService]);
+
   // Listen to voice status/level for mic button live indicators
   useEffect(() => {
     const onStatus = (e: any) => setVcStatus((e?.detail?.status || 'idle'));
@@ -179,8 +186,8 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
       onWordHighlight: (wordIndex: number) => {
         console.log(`🎯 ElevenLabs: Highlighting word ${wordIndex}`);
         try {
-          const tokens = text.split(/\s+/).map(w => w.replace(/[.,!?;:'"()]/g, '').trim()).filter(Boolean);
-          const w = tokens[wordIndex];
+          const { wordsOnly } = tokenizeForHighlighting(text);
+          const w = wordsOnly[wordIndex];
           if (w) (window as any).__currentHighlightedWord = w;
         } catch {}
         onWordHighlight?.(wordIndex);
@@ -401,7 +408,9 @@ useEffect(() => {
           disabled={isLoading || (!isPlaying && shouldShowCrown)}
           variant="outline"
           size={isMobileOrTablet ? "default" : "sm"}
-          className={`gap-2 ${isMobileOrTablet ? 'min-h-[44px] px-4' : ''} ${shouldShowCrown && !isPlaying ? 'opacity-50' : ''}`} // iOS/Android touch target size
+          className={`gap-2 ${isMobileOrTablet ? 'min-h-[44px] px-4' : ''} ${shouldShowCrown && !isPlaying ? 'opacity-50' : ''}`}
+          aria-live="polite"
+          aria-pressed={isPlaying}
         >
           {isLoading ? (
             <div className="w-4 h-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />

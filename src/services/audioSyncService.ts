@@ -1,4 +1,5 @@
 import type { UserInfo } from '@/types';
+import { tokenizeForHighlighting, hashText } from '@/utils/tokenize';
 
 interface AudioSyncOptions {
   text: string;
@@ -31,6 +32,12 @@ export class AudioSyncService {
   private lastOnWordHighlight?: (wordIndex: number) => void;
   private storyLengthMultiplier: number = 1.0;
   private durationScale: number = 1.0;
+  
+  // Session and request guards
+  private sessionIdCounter = 0;
+  private activeSessionId = 0;
+  private activeContentHash = '';
+  private fetchAbortController: AbortController | null = null;
   
   // Enhanced timing profiles optimized for eleven_multilingual_v2 model
   private readonly voiceProfiles: Record<string, VoiceTimingProfile> = {
@@ -65,17 +72,28 @@ export class AudioSyncService {
   async playText(options: AudioSyncOptions & { onStateChange?: (isPlaying: boolean) => void }): Promise<void> {
     const { text, voice, model, speed, onWordHighlight, onSyncError, onStateChange } = options;
     
+    // New session guards
+    this.activeSessionId = ++this.sessionIdCounter;
+    const localSessionId = this.activeSessionId;
+    this.activeContentHash = hashText(text);
+    const localContentHash = this.activeContentHash;
+    
     // Store state change callback
     this.onStateChange = onStateChange;
     this.lastVoice = voice;
     this.lastSpeed = speed;
     this.lastOnWordHighlight = onWordHighlight;
     
-    // Stop any existing playback
+    // Stop any existing playback and in-flight requests
     this.stopAudio();
+    if (this.fetchAbortController) {
+      try { this.fetchAbortController.abort(); } catch {}
+    }
+    this.fetchAbortController = new AbortController();
     
-    // Prepare words for highlighting
-    this.words = text.split(/(\s+)/).filter(word => word.trim().length > 0);
+    // Prepare words for highlighting using unified tokenizer
+    const tokenization = tokenizeForHighlighting(text);
+    this.words = tokenization.wordsOnly;
 
     // Compute story-length multiplier to slow highlighting for longer texts
     const wordCount = this.words.length;
@@ -101,14 +119,24 @@ export class AudioSyncService {
           text: text.slice(0, 3000),
           voice: voice,
           model: model
-        })
+        }),
+        signal: this.fetchAbortController.signal
       });
+
+      // If session changed during fetch, abort silently
+      if (this.activeSessionId !== localSessionId || this.activeContentHash !== localContentHash) {
+        throw new Error('stale-session');
+      }
 
       if (!response.ok) {
         throw new Error('Failed to generate audio');
       }
 
       const audioBlob = await response.blob();
+      // Guard again after heavy work
+      if (this.activeSessionId !== localSessionId || this.activeContentHash !== localContentHash) {
+        throw new Error('stale-session');
+      }
       const audioUrl = URL.createObjectURL(audioBlob);
       
       this.audio = new Audio(audioUrl);
@@ -126,9 +154,14 @@ export class AudioSyncService {
       await new Promise((resolve, reject) => {
         if (!this.audio) return reject('Audio not initialized');
         
-        this.audio.addEventListener('loadedmetadata', resolve, { once: true });
-        this.audio.addEventListener('error', reject, { once: true });
-        this.audio.load();
+        const done = (fn: Function) => (evt: any) => {
+          // Ignore if stale
+          if (this.activeSessionId !== localSessionId || this.activeContentHash !== localContentHash) return;
+          fn(evt);
+        };
+        this.audio!.addEventListener('loadedmetadata', done(resolve) as any, { once: true });
+        this.audio!.addEventListener('error', done(reject) as any, { once: true });
+        this.audio!.load();
       });
 
       // Compute global duration scale to align highlighting with actual audio length
@@ -141,18 +174,29 @@ export class AudioSyncService {
       this.durationScale = Math.min(3.0, Math.max(0.6, targetMs / Math.max(1, totalExpected)));
       console.log(`⏱️ Highlight scaling: words=${this.words.length}, target=${Math.round(targetMs)}ms, sum=${Math.round(totalExpected)}ms, scale=${this.durationScale.toFixed(3)}`);
 
-      // Setup playback event handlers
-      this.setupAudioEventHandlers(voice, speed, onWordHighlight, onSyncError);
+      // Setup playback event handlers with session guard
+      this.setupAudioEventHandlers(voice, speed, onWordHighlight, onSyncError, localSessionId, localContentHash);
       
-      // Start playback
+      // Start playback (guard on start)
       await this.audio.play();
+      if (this.activeSessionId !== localSessionId || this.activeContentHash !== localContentHash) {
+        // Stop immediately if stale
+        this.audio.pause();
+        this.onStateChange?.(false);
+        return;
+      }
       this.isPlaying = true;
       this.onStateChange?.(true); // Notify state change
       
       // Start real-time progress tracking
-      this.startProgressTracking(voice, speed, onWordHighlight);
+      this.startProgressTracking(voice, speed, onWordHighlight, localSessionId, localContentHash);
       
-    } catch (error) {
+    } catch (error: any) {
+      if (error?.name === 'AbortError' || String(error?.message).includes('stale-session')) {
+        console.log('🛑 Audio request aborted due to navigation or new session');
+        // Do not call onSyncError for expected aborts
+        return;
+      }
       console.error('Audio sync service error:', error);
       this.isPlaying = false;
       this.onStateChange?.(false); // Notify state change
@@ -168,11 +212,16 @@ export class AudioSyncService {
     voice: string, 
     speed: number, 
     onWordHighlight?: (wordIndex: number) => void,
-    onSyncError?: () => void
+    onSyncError?: () => void,
+    sessionId?: number,
+    contentHash?: string
   ): void {
     if (!this.audio) return;
 
+    const isStale = () => this.activeSessionId !== sessionId || this.activeContentHash !== contentHash;
+
     this.audio.onended = () => {
+      if (isStale()) return;
       console.log('🏁 Audio playback ended, clearing highlights');
       onWordHighlight?.(-1); // Clear highlighting immediately
       this.isPlaying = false;
@@ -181,6 +230,7 @@ export class AudioSyncService {
     };
 
     this.audio.onerror = () => {
+      if (isStale()) return;
       console.error('Audio playback error');
       this.isPlaying = false;
       this.onStateChange?.(false); // Notify state change
@@ -190,7 +240,7 @@ export class AudioSyncService {
 
     // Monitor for significant sync drift and auto-correct
     this.audio.ontimeupdate = () => {
-      if (!this.audio || !this.isPlaying) return;
+      if (!this.audio || !this.isPlaying || isStale()) return;
       
       const currentTime = this.audio.currentTime;
       const expectedWordIndex = this.calculateExpectedWordIndex(voice, speed, currentTime);
@@ -209,9 +259,13 @@ export class AudioSyncService {
   private startProgressTracking(
     voice: string, 
     speed: number, 
-    onWordHighlight?: (wordIndex: number) => void
+    onWordHighlight?: (wordIndex: number) => void,
+    sessionId?: number,
+    contentHash?: string
   ): void {
     if (!this.audio) return;
+
+    const isStale = () => this.activeSessionId !== sessionId || this.activeContentHash !== contentHash;
 
     const profile = this.voiceProfiles[voice] || this.voiceProfiles['default'];
     let nextWordTime = 0;
@@ -219,7 +273,7 @@ export class AudioSyncService {
     let lastSyncCheck = 0;
 
     const trackProgress = () => {
-      if (!this.audio || !this.isPlaying) return;
+      if (!this.audio || !this.isPlaying || isStale()) return;
 
       const currentTime = this.audio.currentTime * 1000; // Convert to milliseconds
       
@@ -236,7 +290,7 @@ export class AudioSyncService {
       
       // Check if it's time for the next word
       if (currentTime >= nextWordTime && wordIndex < this.words.length) {
-        this.highlightWord(wordIndex, onWordHighlight);
+        this.highlightWord(wordIndex, onWordHighlight, isStale);
         
         // Calculate next word timing with text length adjustment
         const word = this.words[wordIndex];
@@ -256,7 +310,7 @@ export class AudioSyncService {
       
       // Ensure last word stays highlighted until audio ends
       if (wordIndex >= this.words.length && this.audio.currentTime < this.audio.duration - 0.1) {
-        this.highlightWord(this.words.length - 1, onWordHighlight);
+        this.highlightWord(this.words.length - 1, onWordHighlight, isStale);
       }
     };
 
@@ -349,7 +403,8 @@ export class AudioSyncService {
   /**
    * Highlight a specific word and update tracking
    */
-  private highlightWord(wordIndex: number, onWordHighlight?: (wordIndex: number) => void): void {
+  private highlightWord(wordIndex: number, onWordHighlight?: (wordIndex: number) => void, isStale?: () => boolean): void {
+    if (isStale && isStale()) return;
     this.currentWordIndex = wordIndex;
     onWordHighlight?.(wordIndex);
     console.log(`🎯 Highlighting word ${wordIndex}: "${this.words[wordIndex]}"`);
@@ -440,6 +495,12 @@ export class AudioSyncService {
     const wasPlaying = this.isPlaying;
     this.isPlaying = false;
     this.currentWordIndex = -1;
+    
+    // Abort any in-flight TTS requests
+    if (this.fetchAbortController) {
+      try { this.fetchAbortController.abort(); } catch {}
+      this.fetchAbortController = null;
+    }
     
     // Notify state change if we were playing
     if (wasPlaying) {

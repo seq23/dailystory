@@ -1,5 +1,6 @@
 import { MobileOptimizedInteractiveWord } from "@/components/MobileOptimizedInteractiveWord";
 import type { UserInfo } from "@/types";
+import { tokenizeForHighlighting } from "@/utils/tokenize";
 
 interface TextProcessorOptions {
   text: string;
@@ -11,6 +12,7 @@ interface TextProcessorOptions {
   highlightedWordIndex?: number;
   isMobile?: boolean;
 }
+
 
 /**
  * Unified text processor that handles both mobile and desktop rendering
@@ -26,27 +28,22 @@ export const processTextWithConsistentFlow = ({
   highlightedWordIndex,
   isMobile = false
 }: TextProcessorOptions): React.ReactNode[] => {
-  // Split text by spaces but preserve punctuation attached to words
-  const words = text.split(/(\s+)/);
+  // Tokenize once for consistent mapping across audio and UI
+  const { tokens, isWhitespace, wordOnlyIndexByTokenIndex } = tokenizeForHighlighting(text);
   
-  // Create array of only actual words (not whitespace) with their indices
-  const wordOnlyArray = words
-    .map((word, originalIndex) => ({ word, originalIndex }))
-    .filter(item => item.word.trim().length > 0);
-  
-  return words.map((word, index) => {
+  return tokens.map((token, index) => {
     // If it's just whitespace, return as plain text to maintain natural flow
-    if (/^\s+$/.test(word)) {
-      return word;
+    if (isWhitespace[index]) {
+      return token;
     }
     
     // If it's empty, skip
-    if (!word.trim()) {
+    if (!token.trim()) {
       return null;
     }
 
-    // Find the word-only index for this word
-    const wordOnlyIndex = wordOnlyArray.findIndex(item => item.originalIndex === index);
+    // Word-only index for this token
+    const wordOnlyIndex = wordOnlyIndexByTokenIndex[index];
     const isHighlighted = highlightedWordIndex !== undefined && 
                          highlightedWordIndex !== -1 && 
                          highlightedWordIndex === wordOnlyIndex;
@@ -61,8 +58,8 @@ export const processTextWithConsistentFlow = ({
     // Always use modal (no hover tooltips across devices)
     return (
       <MobileOptimizedInteractiveWord
-        key={`${index}-${word}`}
-        word={word}
+        key={`${index}-${token}`}
+        word={token}
         className={finalClassName}
         difficulty={difficulty}
         userInfo={userInfo}
