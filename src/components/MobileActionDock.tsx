@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Volume2, Mic, Save, Square } from "lucide-react";
+import { Volume2, Mic, Save, Square, GraduationCap } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -9,6 +9,7 @@ interface MobileActionDockProps {
   isPremium: boolean;
   onPlayAudio?: () => void;
   onVoiceCommand?: () => void;
+  onCoach?: () => void;
   onSave?: () => void;
   onEnd?: () => void;
   isSaving?: boolean;
@@ -21,6 +22,7 @@ export const MobileActionDock: React.FC<MobileActionDockProps> = ({
   isPremium,
   onPlayAudio,
   onVoiceCommand,
+  onCoach,
   onSave,
   onEnd,
   isSaving = false,
@@ -74,7 +76,7 @@ export const MobileActionDock: React.FC<MobileActionDockProps> = ({
                       ) : (
                         <Volume2 className="w-5 h-5" />
                       )}
-                      <span className="text-[11px] leading-none">{isAudioPlaying ? t("audioReading.stop", "Stop") : t("audioReading.play", "Audio")}</span>
+                      <span className="text-[11px] leading-none">{isAudioPlaying ? t("audioReading.stop", "Stop") : t("audioReading.play", "Read")}</span>
                     </Button>
                   </span>
                 </TooltipTrigger>
@@ -97,10 +99,10 @@ export const MobileActionDock: React.FC<MobileActionDockProps> = ({
                       style={vcStatus === 'listening' ? { boxShadow: `0 0 ${4 + vcLevel * 10}px hsl(var(--primary))`, opacity: 0.95 } : undefined}
                       onClick={onVoiceCommand}
                       disabled={!isPremium || !onVoiceCommand}
-                      aria-label={t("audioReading.voiceCommands", "Voice")}
+                      aria-label={t("audioReading.voiceCommands", "Buddy")}
                     >
                       <Mic className="w-5 h-5 transition-transform" style={{ transform: vcStatus === 'listening' ? `scale(${1 + vcLevel * 0.05})` : undefined }} />
-                      <span className="text-[11px] leading-none">{t("audioReading.voice", "Voice")}</span>
+                      <span className="text-[11px] leading-none">{t("audioReading.voice", "Buddy")}</span>
                     </Button>
                   </span>
                 </TooltipTrigger>
@@ -108,6 +110,27 @@ export const MobileActionDock: React.FC<MobileActionDockProps> = ({
                   {!isPremium
                     ? t("tooltips.dock.voicePremium", "Premium only. Voice commands / feedback.")
                     : t("tooltips.dock.voice", "Use voice commands like 'next page' or 'repeat")}
+                </TooltipContent>
+              </Tooltip>
+
+              {/* Coach */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="inline-flex">
+                    <Button
+                      variant="outline"
+                      className="h-12 flex flex-col items-center justify-center gap-0.5 rounded-xl"
+                      onClick={onCoach}
+                      disabled={!onCoach}
+                      aria-label={t("audioReading.readingCoach", "Coach")}
+                    >
+                      <GraduationCap className="w-5 h-5" />
+                      <span className="text-[11px] leading-none">{t("audioReading.coach", "Coach")}</span>
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  {t("tooltips.dock.coach", "Practice reading and get feedback")}
                 </TooltipContent>
               </Tooltip>
 
