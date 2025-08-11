@@ -167,34 +167,42 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
 
     setIsLoading(true);
     
-    try {
-      const speed = getBaseSpeed() * speedMultiplierRef.current;
-      await audioService.playText({
-        text,
-        difficulty,
-        userInfo,
-        isPremium,
-        enableHighlighting: onWordHighlight !== undefined,
-        onWordHighlight: (wordIndex: number) => {
-          console.log(`🎯 ElevenLabs: Highlighting word ${wordIndex}`);
-          try {
-            const tokens = text.split(/\s+/).map(w => w.replace(/[.,!?;:'"()]/g, '').trim()).filter(Boolean);
-            const w = tokens[wordIndex];
-            if (w) (window as any).__currentHighlightedWord = w;
-          } catch {}
-          onWordHighlight?.(wordIndex);
-        },
-        currentPage,
-        customSpeed: speed,
-      });
-      
-      setIsPlaying(true);
-      
-      // Mark page as played for free users
-      if (!isPremium) {
-        setHasPlayedThisPage(true);
-      }
-    } catch (error) {
+  try {
+    const speed = getBaseSpeed() * speedMultiplierRef.current;
+    const playSnapshot = { text, page: currentPage };
+    await audioService.playText({
+      text,
+      difficulty,
+      userInfo,
+      isPremium,
+      enableHighlighting: onWordHighlight !== undefined,
+      onWordHighlight: (wordIndex: number) => {
+        console.log(`🎯 ElevenLabs: Highlighting word ${wordIndex}`);
+        try {
+          const tokens = text.split(/\s+/).map(w => w.replace(/[.,!?;:'"()]/g, '').trim()).filter(Boolean);
+          const w = tokens[wordIndex];
+          if (w) (window as any).__currentHighlightedWord = w;
+        } catch {}
+        onWordHighlight?.(wordIndex);
+      },
+      currentPage,
+      customSpeed: speed,
+    });
+
+    // Guard: if page or text changed before/while audio loaded, stop and bail
+    if (playSnapshot.page !== currentPage || playSnapshot.text !== text) {
+      console.warn('🛑 TTS aborted due to page/text change during load');
+      try { audioService.stopAudio(); } catch {}
+      return;
+    }
+
+    setIsPlaying(true);
+
+    // Mark page as played for free users
+    if (!isPremium) {
+      setHasPlayedThisPage(true);
+    }
+  } catch (error) {
       console.error('Enhanced audio playback error:', error);
       
       toast({

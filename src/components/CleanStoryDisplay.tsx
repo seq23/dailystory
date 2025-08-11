@@ -511,7 +511,8 @@ useEffect(() => {
   };
 
   const handleNext = async () => {
-    // Stop audio when navigating
+    // Stop audio when navigating (ensure audio service halts)
+    try { elevenAudioRef.current?.stop?.(); } catch {}
     setIsAudioPlaying(false);
     clearHighlighting();
 
@@ -608,7 +609,8 @@ useEffect(() => {
   };
   
   const handlePrevious = () => {
-    // Stop audio when navigating
+    // Stop audio when navigating (ensure audio service halts)
+    try { elevenAudioRef.current?.stop?.(); } catch {}
     setIsAudioPlaying(false);
     clearHighlighting();
     setCurrentPage(Math.max(0, currentPage - 1));
