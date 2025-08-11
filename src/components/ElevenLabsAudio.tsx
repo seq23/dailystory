@@ -128,8 +128,10 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
       const saved = sessionStorage.getItem('t2r_voice_commands');
       const userDisabled = (window as any).__t2r_vc_user_disabled === true;
       if (isPremium && saved === '1' && !userDisabled && !restoredRef.current) {
+        (window as any).__t2r_vc_user_disabled = false;
         audioService.startVoiceCommands();
         setVoiceCommandsEnabled(true);
+        voiceEnabledRef.current = true;
         emitStatus('listening');
         restoredRef.current = true;
       }

@@ -73,6 +73,16 @@ export const VoiceCommandController = forwardRef<VoiceCommandControllerHandle, V
 
   const startRecording = useCallback(async () => {
     try {
+      // Respect global disable flag and avoid double-starts
+      if ((window as any).__t2r_vc_user_disabled === true) {
+        console.log('Headless VC: start ignored (user disabled)');
+        return;
+      }
+      if (mediaRecorderRef.current && (mediaRecorderRef.current.state === 'recording')) {
+        console.log('Headless VC: already recording');
+        return;
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
       streamRef.current = stream;
 

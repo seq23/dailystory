@@ -51,6 +51,10 @@ export class EnhancedAudioService {
   private audioCtx: AudioContext | null = null;
   private levelRAF: number | null = null;
   private voiceListening: boolean = false;
+  // Guards for Web Speech lifecycle
+  private recognitionActive: boolean = false;
+  private recognitionStarting: boolean = false;
+  private restartTimer: number | null = null;
  
    constructor(customConfig?: Partial<AudioSettings>) {
     this.config = { ...defaultAudioConfig, ...customConfig };
@@ -276,8 +280,27 @@ export class EnhancedAudioService {
   startVoiceCommands(): void {
     if (!this.speechRecognition) return;
 
+    // Respect global user-disabled flag
+    if ((window as any).__t2r_vc_user_disabled === true) {
+      console.log('Voice: start ignored because user disabled flag is set');
+      return;
+    }
+
+    // If already active or in the process of starting, just mark listening and bail
+    if (this.recognitionActive || this.recognitionStarting) {
+      this.voiceListening = true;
+      return;
+    }
+
     this.voiceListening = true;
-    try { this.speechRecognition.start(); } catch (e) {
+    this.recognitionStarting = true;
+    if (this.restartTimer) {
+      clearTimeout(this.restartTimer);
+      this.restartTimer = null;
+    }
+    try {
+      this.speechRecognition.start();
+    } catch (e) {
       console.warn('Voice: start failed', e);
     }
   }
@@ -286,9 +309,18 @@ export class EnhancedAudioService {
     if (!this.speechRecognition) return;
 
     this.voiceListening = false;
-    try { this.speechRecognition.stop(); } catch (e) {
-      console.warn('Voice: stop failed', e);
+    (window as any).__t2r_vc_user_disabled = true;
+    if (this.restartTimer) {
+      clearTimeout(this.restartTimer);
+      this.restartTimer = null;
     }
+    // Only attempt to stop if we were starting or active
+    if (this.recognitionActive || this.recognitionStarting) {
+      try { this.speechRecognition.stop(); } catch (e) {
+        console.warn('Voice: stop failed', e);
+      }
+    }
+    this.recognitionStarting = false;
   }
 
   processVoiceCommand(transcript: string): VoiceCommandResult {
@@ -657,23 +689,62 @@ export class EnhancedAudioService {
 
       this.speechRecognition.onstart = () => {
         console.log('🎙️ Web Speech started');
+        this.recognitionActive = true;
+        this.recognitionStarting = false;
         emitStatus('listening');
         startMeter();
       };
       this.speechRecognition.onend = () => {
         console.log('🎙️ Web Speech ended');
+        this.recognitionActive = false;
+        this.recognitionStarting = false;
         emitStatus('idle');
         stopMeter();
-        if (this.voiceListening) {
-          setTimeout(() => {
-            try { this.speechRecognition.start(); } catch (e) { console.warn('Voice: restart failed', e); }
+        const userDisabled = (window as any).__t2r_vc_user_disabled === true;
+        if (this.voiceListening && !userDisabled) {
+          if (this.restartTimer) {
+            clearTimeout(this.restartTimer);
+            this.restartTimer = null;
+          }
+          this.restartTimer = window.setTimeout(() => {
+            const disabled = (window as any).__t2r_vc_user_disabled === true;
+            if (this.voiceListening && !disabled && !this.recognitionActive && !this.recognitionStarting) {
+              try {
+                this.recognitionStarting = true;
+                this.speechRecognition.start();
+              } catch (e) {
+                console.warn('Voice: restart failed', e);
+                this.recognitionStarting = false;
+              }
+            }
           }, 250);
         }
       };
       this.speechRecognition.onerror = (e: any) => {
         console.warn('🎙️ Web Speech error', e);
+        this.recognitionActive = false;
+        this.recognitionStarting = false;
         emitStatus('idle');
         stopMeter();
+        const userDisabled = (window as any).__t2r_vc_user_disabled === true;
+        if (this.voiceListening && !userDisabled) {
+          if (this.restartTimer) {
+            clearTimeout(this.restartTimer);
+            this.restartTimer = null;
+          }
+          this.restartTimer = window.setTimeout(() => {
+            const disabled = (window as any).__t2r_vc_user_disabled === true;
+            if (this.voiceListening && !disabled && !this.recognitionActive && !this.recognitionStarting) {
+              try {
+                this.recognitionStarting = true;
+                this.speechRecognition.start();
+              } catch (err) {
+                console.warn('Voice: restart failed', err);
+                this.recognitionStarting = false;
+              }
+            }
+          }, 250);
+        }
       };
 
       this.speechRecognition.onresult = (event: any) => {
@@ -695,6 +766,15 @@ export class EnhancedAudioService {
   }
 
   // === Public Utility Methods ===
+
+  getVoiceCommandStatus(): { voiceListening: boolean; recognitionActive: boolean; recognitionStarting: boolean; userDisabled: boolean } {
+    return {
+      voiceListening: this.voiceListening,
+      recognitionActive: this.recognitionActive,
+      recognitionStarting: this.recognitionStarting,
+      userDisabled: (window as any).__t2r_vc_user_disabled === true
+    };
+  }
 
   clearCache(): void {
     this.audioCache.clear();
