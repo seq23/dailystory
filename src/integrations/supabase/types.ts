@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      child_profiles: {
+        Row: {
+          avatar: Json | null
+          created_at: string
+          date_of_birth: string | null
+          display_name: string
+          grade_level: string | null
+          id: string
+          parent_user_id: string
+          story_language_preference: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar?: Json | null
+          created_at?: string
+          date_of_birth?: string | null
+          display_name: string
+          grade_level?: string | null
+          id?: string
+          parent_user_id: string
+          story_language_preference?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar?: Json | null
+          created_at?: string
+          date_of_birth?: string | null
+          display_name?: string
+          grade_level?: string | null
+          id?: string
+          parent_user_id?: string
+          story_language_preference?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       feedback: {
         Row: {
           category: string
@@ -112,6 +148,7 @@ export type Database = {
       }
       reading_sessions: {
         Row: {
+          child_profile_id: string | null
           completed_at: string | null
           comprehension_score: number | null
           created_at: string
@@ -124,6 +161,7 @@ export type Database = {
           words_read: number | null
         }
         Insert: {
+          child_profile_id?: string | null
           completed_at?: string | null
           comprehension_score?: number | null
           created_at?: string
@@ -136,6 +174,7 @@ export type Database = {
           words_read?: number | null
         }
         Update: {
+          child_profile_id?: string | null
           completed_at?: string | null
           comprehension_score?: number | null
           created_at?: string
@@ -148,6 +187,13 @@ export type Database = {
           words_read?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_reading_sessions_child"
+            columns: ["child_profile_id"]
+            isOneToOne: false
+            referencedRelation: "child_profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "reading_sessions_story_id_fkey"
             columns: ["story_id"]
@@ -396,6 +442,7 @@ export type Database = {
       }
       user_preferences: {
         Row: {
+          active_child_id: string | null
           age: number | null
           avatar_skin_tone: string | null
           avatar_type: string | null
@@ -416,6 +463,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          active_child_id?: string | null
           age?: number | null
           avatar_skin_tone?: string | null
           avatar_type?: string | null
@@ -436,6 +484,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          active_child_id?: string | null
           age?: number | null
           avatar_skin_tone?: string | null
           avatar_type?: string | null
@@ -455,7 +504,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_active_child"
+            columns: ["active_child_id"]
+            isOneToOne: false
+            referencedRelation: "child_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       vocabulary_progress: {
         Row: {
