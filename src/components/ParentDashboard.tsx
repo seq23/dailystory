@@ -14,6 +14,7 @@ import { ParentGuardrailsService } from "@/services/parentGuardrailsService";
 import { supabase } from "@/integrations/supabase/client";
 import { ChildSwitcher } from "@/components/ChildSwitcher";
 import { ChildManager } from "@/components/ChildManager";
+import { useTranslation } from "react-i18next";
 
 interface ParentDashboardProps {
   userInfo: UserInfo;
@@ -34,6 +35,7 @@ interface ReadingStats {
 }
 
 export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboardProps) => {
+  const { t } = useTranslation();
   const [stats, setStats] = useState<ReadingStats>({
     totalReadingTime: 240, // minutes
     storiesCompleted: 12,
@@ -367,8 +369,8 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
             {/* Active Child Selector */}
             <Card>
               <CardHeader>
-                <CardTitle>Child selection</CardTitle>
-                <CardDescription>Choose which child this dashboard controls</CardDescription>
+                <CardTitle>{t('parent.children.title')}</CardTitle>
+                <CardDescription>{t('parent.children.description')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <ChildSwitcher />
@@ -378,8 +380,8 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
             {/* Child Profiles Manager */}
             <Card>
               <CardHeader>
-                <CardTitle>Child profiles</CardTitle>
-                <CardDescription>Add, edit, or remove child profiles</CardDescription>
+                <CardTitle>{t('parent.manager.title')}</CardTitle>
+                <CardDescription>{t('parent.manager.description')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <ChildManager />

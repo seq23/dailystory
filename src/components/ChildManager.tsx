@@ -6,13 +6,15 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useChildProfiles } from "@/hooks/useChildProfiles";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 const gradeOptions = ["Pre-K", "K", "1", "2", "3", "4", "5", "6", "7", "8"];
 const langOptions = ["en", "es", "fr", "zh"];
 
 export function ChildManager() {
-  const { children, addChild, updateChild, deleteChild, refresh } = useChildProfiles();
+  const { children, addChild, updateChild, deleteChild } = useChildProfiles();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const [form, setForm] = useState({ name: "", grade: "", lang: "en" });
   const [saving, setSaving] = useState(false);
@@ -27,9 +29,9 @@ export function ChildManager() {
     try {
       await addChild({ display_name: form.name.trim(), grade_level: form.grade || null, story_language_preference: form.lang });
       setForm({ name: "", grade: "", lang: "en" });
-      toast({ title: "Child added" });
+      toast({ title: t('parent.manager.toasts.added') });
     } catch (e: any) {
-      toast({ title: e?.message || "Failed to add child", variant: "destructive" });
+      toast({ title: e?.message || t('parent.manager.toasts.failedAdd'), variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -48,9 +50,9 @@ export function ChildManager() {
     try {
       await updateChild(editingId, { display_name: editDraft.name.trim(), grade_level: editDraft.grade || null, story_language_preference: editDraft.lang });
       setEditingId(null);
-      toast({ title: "Saved changes" });
+      toast({ title: t('parent.manager.toasts.saved') });
     } catch (e: any) {
-      toast({ title: e?.message || "Failed to save", variant: "destructive" });
+      toast({ title: e?.message || t('parent.manager.toasts.failedSave'), variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -60,9 +62,9 @@ export function ChildManager() {
     setSaving(true);
     try {
       await deleteChild(id);
-      toast({ title: "Deleted child" });
+      toast({ title: t('parent.manager.toasts.deleted') });
     } catch (e: any) {
-      toast({ title: e?.message || "Failed to delete", variant: "destructive" });
+      toast({ title: e?.message || t('parent.manager.toasts.failedDelete'), variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -72,19 +74,19 @@ export function ChildManager() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Add a child</CardTitle>
-          <CardDescription>Create a profile to personalize reading</CardDescription>
+          <CardTitle>{t('parent.manager.addTitle')}</CardTitle>
+          <CardDescription>{t('parent.manager.addDescription')}</CardDescription>
         </CardHeader>
         <CardContent className="grid md:grid-cols-3 gap-3">
           <div>
-            <Label>Name</Label>
+            <Label>{t('parent.manager.labels.name')}</Label>
             <Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="e.g., Sam" />
           </div>
           <div>
-            <Label>Grade</Label>
+            <Label>{t('parent.manager.labels.grade')}</Label>
             <Select value={form.grade} onValueChange={(v) => setForm((f) => ({ ...f, grade: v }))}>
               <SelectTrigger>
-                <SelectValue placeholder="Select grade" />
+                <SelectValue placeholder={t('parent.manager.labels.grade')} />
               </SelectTrigger>
               <SelectContent>
                 {gradeOptions.map((g) => (
@@ -94,10 +96,10 @@ export function ChildManager() {
             </Select>
           </div>
           <div>
-            <Label>Language</Label>
+            <Label>{t('parent.manager.labels.language')}</Label>
             <Select value={form.lang} onValueChange={(v) => setForm((f) => ({ ...f, lang: v }))}>
               <SelectTrigger>
-                <SelectValue placeholder="Select language" />
+                <SelectValue placeholder={t('parent.manager.labels.language')} />
               </SelectTrigger>
               <SelectContent>
                 {langOptions.map((l) => (
@@ -107,19 +109,19 @@ export function ChildManager() {
             </Select>
           </div>
           <div className="md:col-span-3 flex justify-end">
-            <Button disabled={!isValid || saving} onClick={handleAdd}>Add</Button>
+            <Button disabled={!isValid || saving} onClick={handleAdd}>{t('parent.manager.actions.add')}</Button>
           </div>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Manage children</CardTitle>
-          <CardDescription>Edit or remove profiles</CardDescription>
+          <CardTitle>{t('parent.manager.manageTitle')}</CardTitle>
+          <CardDescription>{t('parent.manager.manageDescription')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           {children.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No child profiles yet.</p>
+            <p className="text-sm text-muted-foreground">{t('parent.manager.empty')}</p>
           ) : (
             children.map((c) => (
               <div key={c.id} className="grid md:grid-cols-4 items-center gap-3 border rounded-md p-3">
@@ -132,7 +134,7 @@ export function ChildManager() {
                     />
                     <Select value={editDraft.grade} onValueChange={(v) => setEditDraft((d) => ({ ...d, grade: v }))}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Grade" />
+                        <SelectValue placeholder={t('parent.manager.labels.grade')} />
                       </SelectTrigger>
                       <SelectContent>
                         {gradeOptions.map((g) => (
@@ -142,7 +144,7 @@ export function ChildManager() {
                     </Select>
                     <Select value={editDraft.lang} onValueChange={(v) => setEditDraft((d) => ({ ...d, lang: v }))}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Language" />
+                        <SelectValue placeholder={t('parent.manager.labels.language')} />
                       </SelectTrigger>
                       <SelectContent>
                         {langOptions.map((l) => (
@@ -151,8 +153,8 @@ export function ChildManager() {
                       </SelectContent>
                     </Select>
                     <div className="flex gap-2 justify-end">
-                      <Button variant="outline" onClick={() => setEditingId(null)}>Cancel</Button>
-                      <Button disabled={saving} onClick={handleSaveEdit}>Save</Button>
+                      <Button variant="outline" onClick={() => setEditingId(null)}>{t('parent.manager.actions.cancel')}</Button>
+                      <Button disabled={saving} onClick={handleSaveEdit}>{t('parent.manager.actions.save')}</Button>
                     </div>
                   </>
                 ) : (
@@ -161,8 +163,8 @@ export function ChildManager() {
                     <div className="text-sm text-muted-foreground">{c.grade_level || "—"}</div>
                     <div className="text-sm text-muted-foreground">{c.story_language_preference || "en"}</div>
                     <div className="flex gap-2 justify-end">
-                      <Button variant="outline" onClick={() => startEdit(c.id)}>Edit</Button>
-                      <Button variant="destructive" onClick={() => handleDelete(c.id)}>Delete</Button>
+                      <Button variant="outline" onClick={() => startEdit(c.id)}>{t('parent.manager.actions.edit')}</Button>
+                      <Button variant="destructive" onClick={() => handleDelete(c.id)}>{t('parent.manager.actions.delete')}</Button>
                     </div>
                   </>
                 )}

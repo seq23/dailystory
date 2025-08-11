@@ -61,15 +61,32 @@ export function useChildProfiles() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not signed in');
-      const upsert: TablesInsert<'user_preferences'> = {
-        user_id: user.id,
-        active_child_id: childId,
-        updated_at: new Date().toISOString(),
-      } as any;
-      const { error } = await supabase
+
+      // Check if preferences row exists for this user
+      const { data: existing, error: fetchErr } = await supabase
         .from('user_preferences')
-        .upsert(upsert, { onConflict: 'user_id' });
-      if (error) throw error;
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (fetchErr) throw fetchErr;
+
+      if (existing?.id) {
+        const { error } = await supabase
+          .from('user_preferences')
+          .update({ active_child_id: childId })
+          .eq('id', existing.id);
+        if (error) throw error;
+      } else {
+        const insertPayload: TablesInsert<'user_preferences'> = {
+          user_id: user.id,
+          active_child_id: childId,
+        } as any;
+        const { error } = await supabase
+          .from('user_preferences')
+          .insert(insertPayload);
+        if (error) throw error;
+      }
+
       setActiveChildId(childId);
     } catch (e: any) {
       setError(e?.message || 'Could not set active child');

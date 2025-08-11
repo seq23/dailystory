@@ -3,6 +3,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useChildProfiles } from "@/hooks/useChildProfiles";
+import { useTranslation } from "react-i18next";
 
 interface ChildSwitcherProps {
   className?: string;
@@ -11,22 +12,23 @@ interface ChildSwitcherProps {
 export function ChildSwitcher({ className }: ChildSwitcherProps) {
   const { children, activeChildId, setActiveChild, loading, error } = useChildProfiles();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const onChange = async (value: string) => {
     try {
       await setActiveChild(value || null);
-      toast({ title: "Active child updated" });
+      toast({ title: t('parent.children.updated') });
     } catch (e: any) {
-      toast({ title: e?.message || "Failed to update", variant: "destructive" });
+      toast({ title: e?.message || t('parent.manager.toasts.failedSave'), variant: "destructive" });
     }
   };
 
   return (
     <div className={className}>
-      <Label className="mb-2 block text-sm font-medium">Active child</Label>
+      <Label className="mb-2 block text-sm font-medium">{t('parent.children.activeLabel')}</Label>
       <Select value={activeChildId ?? ""} onValueChange={onChange}>
         <SelectTrigger className="w-full">
-          <SelectValue placeholder={loading ? "Loading..." : children.length ? "Select child" : "No children yet"} />
+          <SelectValue placeholder={loading ? t('parent.children.loading') : (children.length ? t('parent.children.selectChild') : t('parent.children.noChildren'))} />
         </SelectTrigger>
         <SelectContent>
           {children.map((c) => (

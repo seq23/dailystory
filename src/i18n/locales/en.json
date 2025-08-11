@@ -761,6 +761,44 @@
       "save": "Save",
       "saved": "Settings saved",
       "error": "Could not save settings"
+    },
+    "children": {
+      "title": "Child selection",
+      "description": "Choose which child this dashboard controls",
+      "activeLabel": "Active child",
+      "loading": "Loading...",
+      "selectChild": "Select child",
+      "noChildren": "No children yet",
+      "updated": "Active child updated"
+    },
+    "manager": {
+      "title": "Child profiles",
+      "description": "Add, edit, or remove child profiles",
+      "addTitle": "Add a child",
+      "addDescription": "Create a profile to personalize reading",
+      "labels": {
+        "name": "Name",
+        "grade": "Grade",
+        "language": "Language"
+      },
+      "actions": {
+        "add": "Add",
+        "cancel": "Cancel",
+        "save": "Save",
+        "edit": "Edit",
+        "delete": "Delete"
+      },
+      "manageTitle": "Manage children",
+      "manageDescription": "Edit or remove profiles",
+      "empty": "No child profiles yet.",
+      "toasts": {
+        "added": "Child added",
+        "failedAdd": "Failed to add child",
+        "saved": "Saved changes",
+        "failedSave": "Failed to save",
+        "deleted": "Deleted child",
+        "failedDelete": "Failed to delete"
+      }
     }
   }
 }
