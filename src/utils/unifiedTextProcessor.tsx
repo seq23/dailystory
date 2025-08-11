@@ -1,4 +1,5 @@
 import { MobileOptimizedInteractiveWord } from "@/components/MobileOptimizedInteractiveWord";
+import { InteractiveWord } from "@/components/InteractiveWord";
 import type { UserInfo } from "@/types";
 import { tokenizeForHighlighting } from "@/utils/tokenize";
 
@@ -55,9 +56,25 @@ export const processTextWithConsistentFlow = ({
     
     const finalClassName = `inline ${className} ${highlightClasses}`;
     
-    // Always use modal (no hover tooltips across devices)
+    // Use mobile-optimized modal on mobile/tablet; desktop uses hover tooltips
+    if (isMobile) {
+      return (
+        <MobileOptimizedInteractiveWord
+          key={`${index}-${token}`}
+          word={token}
+          className={finalClassName}
+          difficulty={difficulty}
+          userInfo={userInfo}
+          isPremium={isPremium}
+          sentenceContext={text}
+          userId={userId}
+          forceModal={true}
+        />
+      );
+    }
+
     return (
-      <MobileOptimizedInteractiveWord
+      <InteractiveWord
         key={`${index}-${token}`}
         word={token}
         className={finalClassName}
@@ -66,7 +83,6 @@ export const processTextWithConsistentFlow = ({
         isPremium={isPremium}
         sentenceContext={text}
         userId={userId}
-        forceModal={true}
       />
     );
   }).filter(Boolean);

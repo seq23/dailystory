@@ -438,12 +438,34 @@ export class EnhancedAudioService {
     });
   }
 
-  getPlaybackStatus(): { isPlaying: boolean; currentTime: number; duration: number } {
-    return {
-      isPlaying: this.isPlaying,
-      currentTime: this.currentAudio?.currentTime || 0,
-      duration: this.currentAudio?.duration || 0
-    };
+  getPlaybackStatus(): { isPlaying: boolean; currentTime: number; duration: number; contentHash?: string; currentWordIndex?: number; totalWords?: number } {
+    try {
+      // Prefer status from the sync service when available
+      // Use dynamic import to avoid bundling if not needed
+      const syncStatus = (window as any).__t2r_sync_status || null;
+      // Lazy query the real service to get hash and indices
+      // Note: This import is non-blocking for callers; failures fall back gracefully
+      import('./audioSyncService').then(({ audioSyncService }) => {
+        const st = audioSyncService.getPlaybackStatus();
+        (window as any).__t2r_sync_status = st; // cache a snapshot for UI polling
+      }).catch(() => {});
+
+      const cached = (window as any).__t2r_sync_status;
+      return {
+        isPlaying: this.isPlaying,
+        currentTime: this.currentAudio?.currentTime || 0,
+        duration: this.currentAudio?.duration || 0,
+        contentHash: cached?.contentHash,
+        currentWordIndex: cached?.currentWordIndex,
+        totalWords: cached?.totalWords,
+      };
+    } catch {
+      return {
+        isPlaying: this.isPlaying,
+        currentTime: this.currentAudio?.currentTime || 0,
+        duration: this.currentAudio?.duration || 0,
+      };
+    }
   }
 
   // === Private Helper Methods ===

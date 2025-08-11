@@ -110,9 +110,10 @@ useEffect(() => {
   try { audioService.stopAudio(); } catch {}
   setIsPlaying(false);
   setIsStabilizing(true);
-  const to = window.setTimeout(() => setIsStabilizing(false), 300);
+  const delay = isMobileOrTablet ? 800 : 400;
+  const to = window.setTimeout(() => setIsStabilizing(false), delay);
   return () => clearTimeout(to);
-}, [text, currentPage, contentHash, audioService]);
+}, [text, currentPage, contentHash, audioService, isMobileOrTablet]);
 
   // Listen to voice status/level for mic button live indicators
   useEffect(() => {
