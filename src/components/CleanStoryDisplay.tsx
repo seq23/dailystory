@@ -21,10 +21,8 @@ import { GameContextProvider } from "@/components/GameContextProvider";
 import ReadAloudCoach from "@/components/ReadAloudCoach";
 
 // Audio and Interactive Components
-import { AudioControls } from "@/components/AudioControls";
-import { SimpleAudioEngine } from "@/services/SimpleAudioEngine";
+import { ElevenLabsAudio, type ElevenLabsAudioHandle } from "@/components/ElevenLabsAudio";
 import { PhoneticRulesEngine } from "@/services/phoneticRulesEngine";
-import VoiceCommands from "@/components/VoiceCommands";
 
 import { VocabularyCollector } from "@/components/VocabularyCollector";
 import { processTextWithConsistentFlow } from "@/utils/unifiedTextProcessor";
@@ -120,11 +118,12 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [sessionWordsRead, setSessionWordsRead] = useState(0);
   const [pagesCompleted, setPagesCompleted] = useState<Set<number>>(new Set());
   const [audioPlayedPage, setAudioPlayedPage] = useState<number | null>(null);
-// SimpleAudioEngine status sync
+// Enhanced audio status sync via ElevenLabsAudio ref
+const audioRef = useRef<ElevenLabsAudioHandle | null>(null);
 useEffect(() => {
   const interval = setInterval(() => {
-    const status = SimpleAudioEngine.getInstance().getStatus();
-    setIsAudioPlaying(prev => (prev !== status.isPlaying ? status.isPlaying : prev));
+    const playing = !!audioRef.current?.isPlaying;
+    setIsAudioPlaying(prev => (prev !== playing ? playing : prev));
   }, 500);
   return () => clearInterval(interval);
 }, []);
@@ -274,18 +273,17 @@ const [highlightSave, setHighlightSave] = useState(false);
     isAudioPlaying
   );
 
-  // Voice command -> audio control bridge (now safe: after currentStory/contentHash)
-  useEffect(() => {
-    const engine = SimpleAudioEngine.getInstance();
-    const onPlay = () => { try { engine.playText({ text: currentStory, contentHash }); } catch (e) { console.warn('audio:play failed', e); } };
-    const onStop = () => { try { engine.stop(); } catch (e) { console.warn('audio:stop failed', e); } };
-    window.addEventListener('audio:play', onPlay as EventListener);
-    window.addEventListener('audio:stop', onStop as EventListener);
-    return () => {
-      window.removeEventListener('audio:play', onPlay as EventListener);
-      window.removeEventListener('audio:stop', onStop as EventListener);
-    };
-  }, [currentStory, contentHash]);
+// Voice command -> audio control bridge (now using ElevenLabsAudio)
+useEffect(() => {
+  const onPlay = () => { try { audioRef.current?.play?.(); } catch (e) { console.warn('audio:play failed', e); } };
+  const onStop = () => { try { audioRef.current?.stop?.(); } catch (e) { console.warn('audio:stop failed', e); } };
+  window.addEventListener('audio:play', onPlay as EventListener);
+  window.addEventListener('audio:stop', onStop as EventListener);
+  return () => {
+    window.removeEventListener('audio:play', onPlay as EventListener);
+    window.removeEventListener('audio:stop', onStop as EventListener);
+  };
+}, [currentStory, contentHash]);
 
   // Voice word help: on "What is this word?" play Hear it -> Explain it -> Syllables (Charlotte)
   useEffect(() => {
@@ -323,7 +321,7 @@ const [highlightSave, setHighlightSave] = useState(false);
     const handler = async () => {
       try {
         // Stop any narration first
-        SimpleAudioEngine.getInstance().stop();
+        try { audioRef.current?.stop?.(); } catch {}
 
         // Resolve target word: hovered -> lastSelected -> highlighted
         let target: string = (window as any).__hoveredWord || (window as any).__lastSelectedWord || '';
@@ -626,7 +624,7 @@ useEffect(() => {
 
   const handleNext = async () => {
     // Stop audio when navigating (ensure audio halts)
-    try { SimpleAudioEngine.getInstance().stop(); } catch {}
+    try { audioRef.current?.stop?.(); } catch {}
     setIsAudioPlaying(false);
     clearHighlighting();
 
@@ -724,7 +722,7 @@ useEffect(() => {
   
   const handlePrevious = () => {
     // Stop audio when navigating (ensure audio service halts)
-    try { SimpleAudioEngine.getInstance().stop(); } catch {}
+    try { audioRef.current?.stop?.(); } catch {}
     setIsAudioPlaying(false);
     clearHighlighting();
     setCurrentPage(Math.max(0, currentPage - 1));
