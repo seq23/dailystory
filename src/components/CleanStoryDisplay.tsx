@@ -23,6 +23,7 @@ import ReadAloudCoach from "@/components/ReadAloudCoach";
 // Audio and Interactive Components
 import { AudioControls } from "@/components/AudioControls";
 import { SimpleAudioEngine } from "@/services/SimpleAudioEngine";
+import { PhoneticRulesEngine } from "@/services/phoneticRulesEngine";
 import VoiceCommands from "@/components/VoiceCommands";
 
 import { VocabularyCollector } from "@/components/VocabularyCollector";
@@ -285,6 +286,71 @@ const [highlightSave, setHighlightSave] = useState(false);
       window.removeEventListener('audio:stop', onStop as EventListener);
     };
   }, [currentStory, contentHash]);
+
+  // Voice word help: on "What is this word?" play Hear it -> Explain it -> Syllables (Charlotte)
+  useEffect(() => {
+    const CHARLOTTE = 'XB0fDUnXU5powFXDhCwa';
+
+    const playTTS = async (text: string) => {
+      if (!text || !text.trim()) return;
+      const resp = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/elevenlabs-tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, voice: CHARLOTTE, model: 'eleven_turbo_v2_5' })
+      });
+      if (!resp.ok) throw new Error('TTS failed');
+      const blob = await resp.blob();
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      await new Promise<void>((resolve) => {
+        audio.onended = () => { try { URL.revokeObjectURL(url); } catch {}; resolve(); };
+        audio.onerror = () => { try { URL.revokeObjectURL(url); } catch {}; resolve(); };
+        audio.play().catch(() => resolve());
+      });
+    };
+
+    const getDefinition = async (w: string): Promise<string> => {
+      try {
+        const userLang = userInfo?.nativeLanguage || 'en';
+        const { data, error } = await supabase.functions.invoke('word-dictionary', {
+          body: { word: w, userLevel: currentDifficulty, userLanguage: userLang }
+        });
+        if (!error && (data as any)?.definition) return (data as any).definition as string;
+      } catch {}
+      return w;
+    };
+
+    const handler = async () => {
+      try {
+        // Stop any narration first
+        SimpleAudioEngine.getInstance().stop();
+
+        // Resolve target word: hovered -> lastSelected -> highlighted
+        let target: string = (window as any).__hoveredWord || (window as any).__lastSelectedWord || '';
+        if ((!target || !target.trim()) && typeof currentHighlightedWord === 'number' && currentHighlightedWord >= 0) {
+          const words = wordsRef.current || [];
+          target = words[currentHighlightedWord] || '';
+        }
+        target = (target || '').toString().replace(/[.,!?;:'"()]/g, '').trim();
+        if (!target) return;
+
+        // 1) Hear it
+        await playTTS(target);
+        // 2) Explain it (definition)
+        const def = await getDefinition(target);
+        await playTTS(def);
+        // 3) Syllables
+        const sylls = await PhoneticRulesEngine.getInstance().breakIntoSyllablesAsync(target);
+        const syllText = sylls.join(', ');
+        await playTTS(syllText);
+      } catch (e) {
+        console.warn('voice:wordHelp sequence failed', e);
+      }
+    };
+
+    window.addEventListener('voice:wordHelp', handler as EventListener);
+    return () => window.removeEventListener('voice:wordHelp', handler as EventListener);
+  }, [userInfo?.nativeLanguage, currentDifficulty, currentHighlightedWord, currentStory]);
 
   // Simple timed word highlighting while audio is playing (heuristic pacing)
   const wordsRef = useRef<string[]>([]);

@@ -31,6 +31,7 @@ export const VoiceCommands: React.FC<VoiceCommandsProps> = ({ agentId: initialAg
     stop: async () => { engine.stop(); return 'ok'; },
     next: async () => { window.dispatchEvent(new CustomEvent('reader:navigate', { detail: { direction: 'next' } })); return 'ok'; },
     previous: async () => { window.dispatchEvent(new CustomEvent('reader:navigate', { detail: { direction: 'prev' } })); return 'ok'; },
+    wordHelp: async (params?: any) => { window.dispatchEvent(new CustomEvent('voice:wordHelp', { detail: params || null })); return 'ok'; },
   }), [engine]);
 
   const conversation = useConversation({

@@ -151,10 +151,10 @@ export const voiceCommands = {
     'how do you say *': (word: string) => window.dispatchEvent(new CustomEvent('voice:vocab', { detail: { type: 'pronounce', word: word?.trim() } })),
     'save word *': (word: string) => window.dispatchEvent(new CustomEvent('voice:vocab', { detail: { type: 'save', word: word?.trim() } })),
     // Fixed-phrase pronoun variants (use hovered/selected/highlighted)
-    'what is this word': (_: string) => window.dispatchEvent(new CustomEvent('voice:vocab', { detail: { type: 'pronounce', word: 'this word' } })),
-    'what is that word': (_: string) => window.dispatchEvent(new CustomEvent('voice:vocab', { detail: { type: 'pronounce', word: 'that word' } })),
-    'what is this': (_: string) => window.dispatchEvent(new CustomEvent('voice:vocab', { detail: { type: 'pronounce', word: 'this' } })),
-    'what is that': (_: string) => window.dispatchEvent(new CustomEvent('voice:vocab', { detail: { type: 'define', word: 'that' } })),
+    'what is this word': (_: string) => window.dispatchEvent(new CustomEvent('voice:wordHelp')),
+    'what is that word': (_: string) => window.dispatchEvent(new CustomEvent('voice:wordHelp')),
+    'what is this': (_: string) => window.dispatchEvent(new CustomEvent('voice:wordHelp')),
+    'what is that': (_: string) => window.dispatchEvent(new CustomEvent('voice:wordHelp')),
   },
 };
 
