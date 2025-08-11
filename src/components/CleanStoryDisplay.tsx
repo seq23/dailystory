@@ -57,6 +57,7 @@ interface CleanStoryDisplayProps {
   onHome: () => void;
   onUpgrade: () => void;
   onNewStory?: () => void;
+  readingAsName?: string;
 }
 
 const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
@@ -65,7 +66,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   onSessionEnded,
   onHome,
   onUpgrade,
-  onNewStory
+  onNewStory,
+  readingAsName
 }) => {
   const { t } = useTranslation();
   const { toast } = useToast();

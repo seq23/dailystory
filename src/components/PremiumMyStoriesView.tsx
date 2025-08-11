@@ -20,6 +20,7 @@ import type { UserInfo, Story, SessionStats } from "@/types";
 import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { voiceCommands } from "@/config/audioConfig";
+import { useChildProfiles } from "@/hooks/useChildProfiles";
 
 interface PremiumMyStoriesViewProps {
   userInfo: UserInfo;
@@ -34,6 +35,7 @@ export const PremiumMyStoriesView = ({ userInfo, isPremium, onSessionEnded }: Pr
   const [requestDialogOpen, setRequestDialogOpen] = useState(false);
   const [specialRequest, setSpecialRequest] = useState("");
   const [showVoiceHelp, setShowVoiceHelp] = useState(false);
+  const { activeChild } = useChildProfiles();
 
   // Check if user has read stories before to prevent auto-tutorial
   useEffect(() => {
@@ -77,9 +79,22 @@ export const PremiumMyStoriesView = ({ userInfo, isPremium, onSessionEnded }: Pr
   };
 
   if (currentView === 'reading') {
+    const effectiveUserInfo: UserInfo = (activeChild ? {
+      ...userInfo,
+      name: activeChild.display_name || userInfo.name,
+      grade: (activeChild.grade_level as any) || userInfo.grade,
+      storyLanguagePreference: (activeChild.story_language_preference as any) || userInfo.storyLanguagePreference,
+      avatar: (activeChild.avatar as any) || userInfo.avatar,
+      specialRequest,
+    } : { ...userInfo, specialRequest });
+
+    const readingAsName = activeChild?.display_name && activeChild.display_name !== userInfo.name
+      ? activeChild.display_name
+      : undefined;
+
     return (
       <CleanStoryDisplay
-        userInfo={{ ...userInfo, specialRequest }}
+        userInfo={effectiveUserInfo}
         isPremium={isPremium}
         onSessionEnded={(stats) => {
           setCurrentView('library');
@@ -88,7 +103,7 @@ export const PremiumMyStoriesView = ({ userInfo, isPremium, onSessionEnded }: Pr
         onHome={handleBackToLibrary}
         onUpgrade={() => {}}
         onNewStory={handleStartNewStory}
-        // Additional props can be added here when CleanStoryDisplay supports them
+        readingAsName={readingAsName}
       />
     );
   }

@@ -800,5 +800,8 @@
         "failedDelete": "Failed to delete"
       }
     }
+  },
+  "reading": {
+    "asChild": "Reading as {{name}}"
   }
 }
