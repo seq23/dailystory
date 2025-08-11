@@ -23,6 +23,7 @@ import ReadAloudCoach from "@/components/ReadAloudCoach";
 // Audio and Interactive Components
 import { AudioControls } from "@/components/AudioControls";
 import { SimpleAudioEngine } from "@/services/SimpleAudioEngine";
+import VoiceCommands from "@/components/VoiceCommands";
 
 import { VocabularyCollector } from "@/components/VocabularyCollector";
 import { processTextWithConsistentFlow } from "@/utils/unifiedTextProcessor";
@@ -262,7 +263,8 @@ const [highlightSave, setHighlightSave] = useState(false);
 
   useEffect(() => {
     try { (window as any).__pageContentHash = contentHash; } catch {}
-  }, [contentHash]);
+    try { (window as any).__pageContentString = currentStory; } catch {}
+  }, [contentHash, currentStory]);
   
   // Audio highlighting integration
   const { onWordHighlight, currentHighlightedWord, clearHighlighting } = useWordHighlighting(
@@ -1176,6 +1178,7 @@ const handleRestartTimer = () => {
                     contentHash={contentHash}
                     onPlayingChange={setIsAudioPlaying}
                   />
+                  <VoiceCommands />
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button variant="secondary" size="lg" aria-label="Open read-aloud coach">
