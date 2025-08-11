@@ -189,6 +189,7 @@ const [showManualCelebration, setShowManualCelebration] = useState(false);
 const [showEndStoryModal, setShowEndStoryModal] = useState(false);
 const [showConfirmEndStory, setShowConfirmEndStory] = useState(false);
 const [showEndSessionConfirm, setShowEndSessionConfirm] = useState(false);
+const [showCoach, setShowCoach] = useState(false);
 // Premium: edit special requests before starting a new story
 const [showSpecialRequestDialog, setShowSpecialRequestDialog] = useState(false);
 const [specialRequestDraft, setSpecialRequestDraft] = useState(userInfo?.specialRequest || "");
@@ -709,10 +710,13 @@ useEffect(() => {
     }
   };
 
-  const handleDockVoiceCommand = () => {
-    const el = document.getElementById('audio-controls');
-    el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  };
+const handleDockVoiceCommand = () => {
+  try { window.dispatchEvent(new CustomEvent('voice:toggle')); } catch {}
+};
+
+const handleDockCoach = () => {
+  setShowCoach(true);
+};
 
   // Manual end session logic exists below
   const handleEndSession = () => {
@@ -1563,20 +1567,31 @@ const handleRestartTimer = () => {
 
 
       {/* Mobile Action Dock - Mobile/Tablet */}
-      { (isMobileOrTablet || hasTouchCapability) && (
-        <MobileActionDock
-          isPremium={isPremium}
-          onPlayAudio={handleDockPlayAudio}
-          onVoiceCommand={isPremium ? handleDockVoiceCommand : undefined}
-          onSave={isPremium ? handleSaveStoryNow : undefined}
-          onEnd={isPremium ? () => setShowEndSessionConfirm(true) : undefined}
-          isSaving={isSaving}
-          isAudioPlaying={isAudioPlaying}
-          audioDisabled={!isPremium && audioPlayedPage === currentPage && !isAudioPlaying}
-        />
+{ (isMobileOrTablet || hasTouchCapability) && (
+        <>
+          <MobileActionDock
+            isPremium={isPremium}
+            onPlayAudio={handleDockPlayAudio}
+            onVoiceCommand={isPremium ? handleDockVoiceCommand : undefined}
+            onCoach={handleDockCoach}
+            onSave={isPremium ? handleSaveStoryNow : undefined}
+            onEnd={isPremium ? () => setShowEndSessionConfirm(true) : undefined}
+            isSaving={isSaving}
+            isAudioPlaying={isAudioPlaying}
+            audioDisabled={!isPremium && audioPlayedPage === currentPage && !isAudioPlaying}
+          />
+        </>
       )}
 
-      {/* End Story Confirmation (Premium) */}
+      <Dialog open={showCoach} onOpenChange={setShowCoach}>
+        <DialogContent className="sm:max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Help Me Read</DialogTitle>
+          </DialogHeader>
+          {/* @ts-ignore */}
+          <ReadAloudCoach targetText={currentStory} />
+        </DialogContent>
+      </Dialog>
       {isPremium && showConfirmEndStory && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center">
           <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" />

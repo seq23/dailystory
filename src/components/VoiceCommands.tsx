@@ -38,16 +38,30 @@ export const VoiceCommands: React.FC<VoiceCommandsProps> = ({ agentId: initialAg
     overrides: {
       tts: { voiceId: CHARLOTTE },
     },
-    onConnect: () => { setConnected(true); try { window.dispatchEvent(new CustomEvent('voice:status', { detail: 'connected' })); } catch {} },
-    onDisconnect: () => { setConnected(false); try { window.dispatchEvent(new CustomEvent('voice:status', { detail: 'disconnected' })); } catch {} },
-    onError: (e) => { console.error('VoiceCommands error', e); try { window.dispatchEvent(new CustomEvent('voice:status', { detail: 'error' })); } catch {} },
+onConnect: () => { setConnected(true); try { window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: 'listening' } })); } catch {} },
+    onDisconnect: () => { setConnected(false); try { window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: 'idle' } })); } catch {} },
+    onError: (e) => { console.error('VoiceCommands error', e); try { window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: 'idle' } })); } catch {} },
   });
 
   // Persist any explicitly set agentId (still supported for advanced override)
-  useEffect(() => {
+useEffect(() => {
     try { if (agentId) localStorage.setItem('eleven_agent_id', agentId); } catch {}
   }, [agentId]);
 
+  useEffect(() => {
+    const startHandler = () => { if (!connected && !connecting) start(); };
+    const stopHandler = () => { if (connected) stop(); };
+    const toggleHandler = () => { if (connected) { stop(); } else if (!connecting) { start(); } };
+
+    window.addEventListener('voice:start', startHandler as EventListener);
+    window.addEventListener('voice:stop', stopHandler as EventListener);
+    window.addEventListener('voice:toggle', toggleHandler as EventListener);
+    return () => {
+      window.removeEventListener('voice:start', startHandler as EventListener);
+      window.removeEventListener('voice:stop', stopHandler as EventListener);
+      window.removeEventListener('voice:toggle', toggleHandler as EventListener);
+    };
+  }, [connected, connecting, start, stop]);
   const start = useCallback(async () => {
     setConnecting(true);
     try {
@@ -69,15 +83,15 @@ export const VoiceCommands: React.FC<VoiceCommandsProps> = ({ agentId: initialAg
       const url = (data as any)?.signed_url || (data as any)?.url || (data as any)?.signedUrl;
       if (!url || !/^wss?:\/\//.test(url)) throw new Error('Invalid signed URL returned');
 
-      try { window.dispatchEvent(new CustomEvent('voice:status', { detail: 'connecting' })); } catch {}
+      try { window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: 'processing' } })); } catch {}
       const id = await (conversation as any).startSession({ url });
       console.log('Started ElevenLabs conversation:', id);
       toast({ title: 'Voice connected', description: 'Say: "read", "stop", "next", "back".' });
-      try { window.dispatchEvent(new CustomEvent('voice:status', { detail: 'connected' })); } catch {}
+      try { window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: 'listening' } })); } catch {}
     } catch (e: any) {
       console.error('Start voice failed', e);
       toast({ title: 'Voice error', description: e?.message || 'Could not start voice session', variant: 'destructive' });
-      try { window.dispatchEvent(new CustomEvent('voice:status', { detail: 'error' })); } catch {}
+      try { window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: 'idle' } })); } catch {}
     } finally {
       setConnecting(false);
     }
