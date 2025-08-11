@@ -268,6 +268,10 @@ const [highlightSave, setHighlightSave] = useState(false);
   }, [highlightSave]);
   const currentStory = story[currentPage] || "";
   const contentHash = hashText(currentStory);
+
+  useEffect(() => {
+    try { (window as any).__pageContentHash = contentHash; } catch {}
+  }, [contentHash]);
   
   // Audio highlighting integration
   const { onWordHighlight, currentHighlightedWord, clearHighlighting } = useWordHighlighting(

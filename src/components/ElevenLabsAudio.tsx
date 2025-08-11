@@ -330,7 +330,7 @@ const handleHeadlessCommand = (cmd: string) => {
    }
 };
 
-  // Enhanced audio service status monitoring with better frequency
+  // Enhanced audio service status monitoring with better frequency + hash guard
   useEffect(() => {
     const checkStatus = () => {
       const status = audioService.getPlaybackStatus();
@@ -338,11 +338,17 @@ const handleHeadlessCommand = (cmd: string) => {
         console.log(`🔄 Audio state sync: ${isPlaying} → ${status.isPlaying}`);
         setIsPlaying(status.isPlaying);
       }
+      // Hard guard: if audio content hash mismatches current UI, stop immediately
+      const audioHash = (status as any).contentHash;
+      if (status.isPlaying && contentHash && audioHash && audioHash !== contentHash) {
+        console.warn('🛑 Audio/UI content hash mismatch, stopping playback');
+        stopAudio();
+      }
     };
 
-    const interval = setInterval(checkStatus, 500); // Check more frequently
+    const interval = setInterval(checkStatus, 300);
     return () => clearInterval(interval);
-  }, [audioService, isPlaying]);
+  }, [audioService, isPlaying, contentHash]);
 
 // Voice vocabulary events handler
 useEffect(() => {

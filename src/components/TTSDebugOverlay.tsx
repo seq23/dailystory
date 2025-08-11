@@ -21,7 +21,9 @@ export const TTSDebugOverlay: React.FC = () => {
       <div className="font-medium">TTS Debug</div>
       <div>playing: {String(status.isPlaying)}</div>
       <div>word: {status.currentWordIndex} / {status.totalWords}</div>
-      <div>hash: {status.contentHash ? String(status.contentHash).slice(0, 10) : '-'}</div>
+      <div>hash(audio): {status.contentHash ? String(status.contentHash).slice(0, 10) : '-'}</div>
+      <div>hash(ui): {typeof window !== 'undefined' && (window as any).__pageContentHash ? String((window as any).__pageContentHash).slice(0,10) : '-'}</div>
+      <div>mismatch: {typeof window !== 'undefined' && status.contentHash && (window as any).__pageContentHash && status.contentHash !== (window as any).__pageContentHash ? 'YES' : 'no'}</div>
     </div>
   );
 };
