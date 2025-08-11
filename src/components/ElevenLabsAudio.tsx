@@ -15,6 +15,7 @@ import type { UserInfo } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { VocabularyTrackingService } from "@/services/vocabularyTrackingService";
 import { tokenizeForHighlighting } from "@/utils/tokenize";
+import TTSDebugOverlay from "@/components/TTSDebugOverlay";
 
 interface ElevenLabsAudioProps {
   text: string;
@@ -498,6 +499,9 @@ useEffect(() => {
 
 {/* Headless voice controller (no UI) */}
 <VoiceCommandController ref={vcRef} headless onCommand={handleHeadlessCommand} />
+{typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('ttsdebug') === '1' && (
+  <TTSDebugOverlay />
+)}
     </div>
   );
 });
