@@ -345,6 +345,7 @@ const WordCard = ({
           userInfo={userInfo}
           difficulty={modalDifficulty as any}
           sentenceContext={word.storyContext || ''}
+          wordAlreadySaved
         />
         <Badge className={getDifficultyColor(word.difficulty)}>
           {word.difficulty}

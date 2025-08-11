@@ -17,6 +17,7 @@ interface MobileOptimizedInteractiveWordProps {
   sentenceContext?: string;
   userId?: string;
   forceModal?: boolean;
+  wordAlreadySaved?: boolean;
 }
 
 export const MobileOptimizedInteractiveWord = (props: MobileOptimizedInteractiveWordProps) => {
@@ -156,6 +157,7 @@ export const MobileOptimizedInteractiveWord = (props: MobileOptimizedInteractive
           userInfo={props.userInfo}
           isPlaying={isPlaying}
           isLoadingWordData={isLoadingWordData}
+          isSaved={!!props.wordAlreadySaved}
         />
       </>
     );

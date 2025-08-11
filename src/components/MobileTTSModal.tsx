@@ -17,6 +17,7 @@ interface MobileTTSModalProps {
   userInfo?: UserInfo;
   isPlaying?: boolean;
   isLoadingWordData?: boolean;
+  isSaved?: boolean;
 }
 
 export const MobileTTSModal = ({
@@ -31,6 +32,7 @@ export const MobileTTSModal = ({
   userInfo,
   isPlaying = false,
   isLoadingWordData = false,
+  isSaved = false,
 }: MobileTTSModalProps) => {
   const { t } = useTranslation();
   
@@ -92,19 +94,34 @@ export const MobileTTSModal = ({
             Break into Syllables
           </Button>
 
-          {/* Save Word Button (Premium) */}
-          {isPremium && onSave && (
-            <Button
-              onClick={onSave}
-              disabled={isPlaying || isLoadingWordData}
-              className="w-full h-12 text-lg font-medium"
-              size="lg"
-              variant="outline"
-            >
-              <BookmarkPlus className="mr-3 h-5 w-5" />
-              Save Word
-            </Button>
+          {/* Save Word Button (Premium/Saved) */}
+          {(isPremium || isSaved) && (
+            isSaved ? (
+              <Button
+                disabled
+                className="w-full h-12 text-lg font-medium"
+                size="lg"
+                variant="outline"
+              >
+                <BookmarkPlus className="mr-3 h-5 w-5" />
+                Saved
+              </Button>
+            ) : (
+              onSave && (
+                <Button
+                  onClick={onSave}
+                  disabled={isPlaying || isLoadingWordData}
+                  className="w-full h-12 text-lg font-medium"
+                  size="lg"
+                  variant="outline"
+                >
+                  <BookmarkPlus className="mr-3 h-5 w-5" />
+                  Save Word
+                </Button>
+              )
+            )
           )}
+
         </div>
       </DialogContent>
     </Dialog>
