@@ -285,7 +285,9 @@ const toggleVoiceCommands = () => {
   }
 
   const hasWebSpeech = typeof window !== 'undefined' && ((('webkitSpeechRecognition' in window) || ('SpeechRecognition' in window)));
-  const useWebSpeech = hasWebSpeech && !hasTouchCapability && !isMobileOrTablet;
+  const pointerFine = typeof window !== 'undefined' && typeof window.matchMedia === 'function' ? window.matchMedia('(pointer: fine)').matches : false;
+  const isHybridDesktop = hasTouchCapability && !isMobileOrTablet && pointerFine;
+  const useWebSpeech = hasWebSpeech && !isMobileOrTablet && (pointerFine || !hasTouchCapability);
 
   if (useWebSpeech) {
     audioService.startVoiceCommands();

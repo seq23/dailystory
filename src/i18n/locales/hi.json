@@ -647,5 +647,11 @@
       "saved": "Settings saved",
       "error": "Could not save settings"
     }
+  },
+  "interactiveWord": {
+    "hearIt": "सुनो",
+    "explain": "समझाएं",
+    "loading": "लोड हो रहा है..."
   }
 }
+

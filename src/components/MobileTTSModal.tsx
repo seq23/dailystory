@@ -67,7 +67,7 @@ export const MobileTTSModal = ({
             size="lg"
           >
             <Volume2 className="mr-3 h-5 w-5" />
-            {isPlaying ? "Playing..." : "Hear It"}
+            {isPlaying ? "Playing..." : t('interactiveWord.hearIt', 'Hear It')}
           </Button>
 
           {/* Explain Button */}
@@ -79,7 +79,7 @@ export const MobileTTSModal = ({
             variant="secondary"
           >
             <HelpCircle className="mr-3 h-5 w-5" />
-            {isLoadingWordData ? "Loading..." : "Explain"}
+            {isLoadingWordData ? t('interactiveWord.loading', 'Loading...') : t('interactiveWord.explain', 'Explain')}
           </Button>
 
           {/* Syllables Button */}
