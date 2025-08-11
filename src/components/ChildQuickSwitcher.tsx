@@ -58,7 +58,7 @@ export function ChildQuickSwitcher({ className }: ChildQuickSwitcherProps) {
                     type="button"
                     aria-label={t('header.quickChildSwitcher.readingAs', { defaultValue: 'Reading as' }) + (activeFullName ? `: ${activeFullName}` : '')}
                     className={cn(
-                      "h-9 w-9 rounded-full inline-flex items-center justify-center text-xs font-semibold ring-2",
+                      "h-9 w-9 rounded-full inline-flex items-center justify-center text-lg md:text-xl font-bold leading-none ring-2 select-none tracking-tight",
                       "ring-primary/70 bg-primary text-primary-foreground hover:bg-primary/90 transition",
                       loading && "opacity-70",
                     )}
