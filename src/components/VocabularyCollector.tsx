@@ -31,8 +31,6 @@ interface VocabularyCollectorProps {
 export const VocabularyCollector = ({ userInfo, isVisible, onClose, enablePersistence = true }: VocabularyCollectorProps) => {
   const { t } = useTranslation();
   const [vocabulary, setVocabulary] = useState<VocabularyWord[]>([]);
-  const [ttsService] = useState(() => new UnifiedTTSService());
-  const [playingWord, setPlayingWord] = useState<string | null>(null);
 
   // Load vocabulary from localStorage (only for premium users) + migrate legacy key
   useEffect(() => {
@@ -144,22 +142,6 @@ export const VocabularyCollector = ({ userInfo, isVisible, onClose, enablePersis
         : w
     ));
   };
-  const playPronunciation = async (word: string) => {
-    if (playingWord) return;
-    
-    setPlayingWord(word);
-    try {
-      await ttsService.speakText(word, { 
-        voice: userInfo.nativeLanguage === 'en' ? 'alloy' : 'nova',
-        speed: userInfo.nativeLanguage === 'en' ? 1.0 : 0.8
-      });
-    } catch (error) {
-      console.error('Pronunciation error:', error);
-    } finally {
-      setPlayingWord(null);
-    }
-  };
-
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case 'beginner': return 'bg-green-100 text-green-800 border-green-200';
@@ -339,91 +321,45 @@ export const VocabularyCollector = ({ userInfo, isVisible, onClose, enablePersis
 
 interface WordCardProps {
   word: VocabularyWord;
-  playingWord: string | null;
-  onPlay: (word: string) => void;
-  onReview: (word: string) => void;
-  onRemove: (word: string) => void;
+  userInfo: UserInfo;
   getDifficultyColor: (difficulty: string) => string;
-  showMasteredBadge?: boolean;
+  category: 'new' | 'reviewing' | 'mastered';
+  onMoveToReview?: (word: string) => void;
 }
 
 const WordCard = ({ 
-  word, 
-  playingWord, 
-  onPlay, 
-  onReview, 
-  onRemove, 
-  getDifficultyColor, 
-  showMasteredBadge 
+  word,
+  userInfo,
+  getDifficultyColor,
+  category,
+  onMoveToReview
 }: WordCardProps) => {
-  const { t } = useTranslation();
+  const modalDifficulty = word.difficulty === 'beginner' ? 'easy' : word.difficulty === 'intermediate' ? 'medium' : 'hard';
 
   return (
-    <div className="border rounded-lg p-3 bg-white hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between mb-2">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="font-semibold text-lg">{word.word}</h3>
-            <Badge className={getDifficultyColor(word.difficulty)}>
-              {word.difficulty}
-            </Badge>
-            {showMasteredBadge && (
-              <Badge className="bg-green-100 text-green-800 border-green-200">
-                <Star className="w-3 h-3 mr-1" />
-                Mastered
-              </Badge>
-            )}
-          </div>
-          <p className="text-gray-600 text-sm mb-1">{word.definition}</p>
-          {word.translation && (
-            <p className="text-blue-600 text-sm italic">{word.translation}</p>
-          )}
-          {word.storyContext && (
-            <p className="text-gray-500 text-xs mt-1">
-              Context: "{word.storyContext}"
-            </p>
-          )}
-        </div>
+    <div className="border rounded-lg p-3 bg-background hover:shadow-md transition-shadow">
+      <div className="flex items-center gap-2">
+        <MobileOptimizedInteractiveWord
+          word={word.word}
+          forceModal
+          userInfo={userInfo}
+          difficulty={modalDifficulty as any}
+          sentenceContext={word.storyContext || ''}
+        />
+        <Badge className={getDifficultyColor(word.difficulty)}>
+          {word.difficulty}
+        </Badge>
       </div>
-      
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <MobileOptimizedButton
-            size="sm"
-            variant="outline"
-            onClick={() => onPlay(word.word)}
-            disabled={playingWord === word.word}
-            className="text-xs"
-          >
-            <Volume2 className="w-3 h-3 mr-1" />
-            {playingWord === word.word ? 'Playing...' : 'Hear'}
-          </MobileOptimizedButton>
-          
-          {!word.mastered && (
-            <MobileOptimizedButton
-              size="sm"
-              variant="outline"
-              onClick={() => onReview(word.word)}
-              className="text-xs"
-            >
-              <TrendingUp className="w-3 h-3 mr-1" />
-              Review
-            </MobileOptimizedButton>
-          )}
-        </div>
-        
-        <div className="flex items-center gap-2 text-xs text-gray-500">
-          <span>Reviewed {word.timesReviewed}x</span>
-          <MobileOptimizedButton
-            size="sm"
-            variant="ghost"
-            onClick={() => onRemove(word.word)}
-            className="text-red-500 hover:text-red-700 h-6 w-6 p-0"
-          >
-            <Trash2 className="w-3 h-3" />
+      {word.storyContext && (
+        <p className="text-muted-foreground text-sm mt-1">"{word.storyContext}"</p>
+      )}
+      {category === 'new' && (
+        <div className="mt-2">
+          <MobileOptimizedButton size="sm" variant="outline" onClick={() => onMoveToReview?.(word.word)}>
+            Move to Review
           </MobileOptimizedButton>
         </div>
-      </div>
+      )}
     </div>
   );
 };
