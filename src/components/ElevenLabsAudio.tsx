@@ -159,7 +159,7 @@ useEffect(() => {
         description: "Try: 'next page', 'pause', 'resume', 'read slower'",
         duration: 3500,
         action: (
-          <ToastAction altText="Open voice commands help" onClick={() => window.dispatchEvent(new CustomEvent('voice:openHelp'))}>
+          <ToastAction altText="Open voice commands help" onClick={() => { window.location.href = '/pricing#voice'; }}>
             Full list
           </ToastAction>
         ),

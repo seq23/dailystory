@@ -6,6 +6,7 @@ import { freeFeatures, premiumFeatures, additionalOfferings, enterpriseFeatures 
 import heroImage from "@/assets/hero-image.jpg";
 import vocabImg from "@/assets/story-illustration-12.jpg";
 import ReadAloudCoach from "@/components/ReadAloudCoach";
+import { VoiceCommandsHelp } from "@/components/VoiceCommandsHelp";
 
 
 interface PricingSectionProps {
@@ -178,6 +179,10 @@ export function PricingSection({ compact }: PricingSectionProps) {
                     </p>
                   </CardContent>
                 </Card>
+              </div>
+
+              <div className="mt-10">
+                <VoiceCommandsHelp />
               </div>
             </div>
 

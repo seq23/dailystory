@@ -9,6 +9,7 @@ import { EnhancedAudioService } from "@/services/enhancedAudioService";
 import { VocabularyLevelClassifier } from "@/utils/vocabularyLevelClassifier";
 import { getGlobalAddVocabularyWord } from "@/utils/gamificationGlobals";
 import { VocabularyTrackingService } from "@/services/vocabularyTrackingService";
+import { useToast } from "@/hooks/use-toast";
 
 interface MobileOptimizedInteractiveWordProps {
   word: string;
@@ -28,7 +29,7 @@ export const MobileOptimizedInteractiveWord = (props: MobileOptimizedInteractive
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoadingWordData, setIsLoadingWordData] = useState(false);
   const [enhancedAudio] = useState(() => new EnhancedAudioService());
-  // unified TTS via ElevenLabs edge function; no local audio service needed
+  const { toast } = useToast();
 
   const difficulty = props.difficulty || "easy";
   const cleanWord = useMemo(() => props.word.replace(/[.,!?;:'"()]/g, ''), [props.word]);
@@ -93,7 +94,7 @@ export const MobileOptimizedInteractiveWord = (props: MobileOptimizedInteractive
         await enhancedAudio.playText({
           text: cleanWord,
           difficulty: 'easy',
-          userInfo: props.userInfo!,
+          userInfo: { ...(props.userInfo as UserInfo), nativeLanguage: 'en' } as UserInfo,
           isPremium: !!props.isPremium,
           enableHighlighting: false,
         });
@@ -183,6 +184,7 @@ export const MobileOptimizedInteractiveWord = (props: MobileOptimizedInteractive
       } catch {}
 
       setShowMobileModal(false);
+      toast({ title: 'Saved to Vocabulary', description: cleanWord, duration: 1800 });
     };
 
     return (
@@ -209,7 +211,7 @@ export const MobileOptimizedInteractiveWord = (props: MobileOptimizedInteractive
                 await enhancedAudio.playText({
                   text: cleanWord,
                   difficulty: 'easy',
-                  userInfo: props.userInfo!,
+                  userInfo: { ...(props.userInfo as UserInfo), nativeLanguage: 'en' } as UserInfo,
                   isPremium: !!props.isPremium,
                   enableHighlighting: false,
                 });

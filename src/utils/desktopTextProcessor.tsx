@@ -44,7 +44,7 @@ export const processTextForDesktop = (
         isPremium={isPremium}
         sentenceContext={text}
         userId={userId}
-        forceModal={true}
+        forceModal={false}
       />
     );
   }).filter(Boolean);

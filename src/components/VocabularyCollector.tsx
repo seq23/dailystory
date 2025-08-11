@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MobileOptimizedButton } from '@/components/MobileOptimizedButton';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BookOpen, Star, TrendingUp, Plus } from 'lucide-react';
 import { MobileOptimizedInteractiveWord } from '@/components/MobileOptimizedInteractiveWord';

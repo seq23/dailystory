@@ -310,17 +310,6 @@ const getDifficultyLabel = (difficulty: string) => {
 
           {/* Action Buttons */}
           <div className="space-y-3 pt-4">
-              {userIsPremium && (
-                <Button
-                  onClick={handleStartTimed}
-                  className="w-full bg-primary text-primary-foreground font-medium py-3"
-                  size="lg"
-                >
-                  <Clock className="w-5 h-5 mr-2" />
-                  {t("sessionEnded.startAnotherTimed", "Start Another Timed Session")}
-                </Button>
-              )}
-
               <Button
                 onClick={handleHome}
                 className="w-full bg-amber-500 hover:bg-amber-600 text-white font-medium py-3"
@@ -328,16 +317,6 @@ const getDifficultyLabel = (difficulty: string) => {
               >
                 <Home className="w-5 h-5 mr-2" />
                 {t("sessionEnded.goToHome", "Go to Home")}
-              </Button>
-              
-              <Button
-                onClick={handleNewStory}
-                variant="outline"
-                className="w-full border-2 border-amber-300 text-amber-700 hover:bg-amber-50 font-medium py-3"
-                size="lg"
-              >
-                <BookOpen className="w-5 h-5 mr-2" />
-                {t("sessionEnded.startNewStory", "Start New Story")}
               </Button>
           </div>
         {/* Modals */}

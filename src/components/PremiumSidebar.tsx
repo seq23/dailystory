@@ -26,6 +26,7 @@ import {
 import type { UserInfo } from "@/types";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { VocabularyCollector } from "@/components/VocabularyCollector";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface PremiumSidebarProps {
   currentView: string;
@@ -191,14 +192,31 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
               <SidebarGroupContent>
                 <SidebarMenu>
                   <SidebarMenuItem>
-                    <SidebarMenuButton
-                      onClick={() => toggleTimer()}
-                      className="flex items-center gap-3 w-full justify-between transition-colors rounded-lg hover:bg-accent hover:text-accent-foreground"
-                      aria-label="Toggle reading timer visibility"
-                    >
-                      <div className="flex items-center gap-3">
-                        <Clock className="w-5 h-5 flex-shrink-0" />
-                        {!effectiveCollapsed && (
+                    {effectiveCollapsed ? (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <SidebarMenuButton
+                              onClick={() => toggleTimer()}
+                              className="flex items-center gap-3 w-full justify-between transition-colors rounded-lg hover:bg-accent hover:text-accent-foreground min-w-[220px] overflow-visible z-30"
+                              aria-label="Toggle reading timer visibility"
+                            >
+                              <Clock className="w-5 h-5 flex-shrink-0" />
+                            </SidebarMenuButton>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            Timer: {timerEnabled ? 'On' : 'Off'}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    ) : (
+                      <SidebarMenuButton
+                        onClick={() => toggleTimer()}
+                        className="flex items-center gap-3 w-full justify-between transition-colors rounded-lg hover:bg-accent hover:text-accent-foreground min-w-[220px] overflow-visible z-30"
+                        aria-label="Toggle reading timer visibility"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Clock className="w-5 h-5 flex-shrink-0" />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
                               <span className="font-medium">{timerEnabled ? 'Hide Timer' : 'Show Timer'}</span>
@@ -207,17 +225,15 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
                               {timerEnabled ? 'Hide the floating reading timer' : 'Show the floating reading timer'}
                             </p>
                           </div>
-                        )}
-                      </div>
-                      {!effectiveCollapsed && (
+                        </div>
                         <Switch
                           checked={timerEnabled}
                           onCheckedChange={() => toggleTimer()}
                           onClick={(e) => e.stopPropagation()}
                           aria-label={timerEnabled ? 'Hide timer' : 'Show timer'}
                         />
-                      )}
-                    </SidebarMenuButton>
+                      </SidebarMenuButton>
+                    )}
                   </SidebarMenuItem>
 
                   <SidebarMenuItem>

@@ -19,8 +19,6 @@ import CleanStoryDisplay from "@/components/CleanStoryDisplay";
 import type { UserInfo, Story, SessionStats } from "@/types";
 import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { voiceCommands } from "@/config/audioConfig";
-import { useChildProfiles } from "@/hooks/useChildProfiles";
 
 interface PremiumMyStoriesViewProps {
   userInfo: UserInfo;
@@ -34,7 +32,6 @@ export const PremiumMyStoriesView = ({ userInfo, isPremium, onSessionEnded }: Pr
   const [showTutorial, setShowTutorial] = useState(false);
   const [requestDialogOpen, setRequestDialogOpen] = useState(false);
   const [specialRequest, setSpecialRequest] = useState("");
-  const [showVoiceHelp, setShowVoiceHelp] = useState(false);
   const { activeChild } = useChildProfiles();
 
   // Check if user has read stories before to prevent auto-tutorial
@@ -47,18 +44,6 @@ export const PremiumMyStoriesView = ({ userInfo, isPremium, onSessionEnded }: Pr
     console.log('🧭 PremiumMyStoriesView currentView:', currentView);
   }, [currentView]);
 
-  useEffect(() => {
-    const openHelp = (_e?: Event) => {
-      if (currentView !== 'library') {
-        setCurrentView('library');
-        setTimeout(() => setShowVoiceHelp(true), 0);
-      } else {
-        setShowVoiceHelp(true);
-      }
-    };
-    window.addEventListener('voice:openHelp', openHelp as EventListener);
-    return () => window.removeEventListener('voice:openHelp', openHelp as EventListener);
-  }, [currentView]);
 
   const handleLoadStory = (story: Story) => {
     setCurrentStory(story);
@@ -138,9 +123,6 @@ export const PremiumMyStoriesView = ({ userInfo, isPremium, onSessionEnded }: Pr
         </div>
         
         <div className="flex items-center gap-2">
-          <Button variant="link" className="text-sm" onClick={() => setShowVoiceHelp(true)}>
-            Voice commands
-          </Button>
           <Button 
             onClick={() => setRequestDialogOpen(true)}
             className="bg-gradient-primary hover:bg-gradient-primary/90"
@@ -232,29 +214,6 @@ export const PremiumMyStoriesView = ({ userInfo, isPremium, onSessionEnded }: Pr
               Start Story
             </Button>
           </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      {/* Voice Commands Help */}
-      <Dialog open={showVoiceHelp} onOpenChange={setShowVoiceHelp}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Voice Commands</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            {Object.entries(voiceCommands).map(([category, cmds]) => (
-              <div key={category}>
-                <h3 className="text-sm font-medium capitalize text-muted-foreground">{category}</h3>
-                <ul className="mt-2 space-y-1">
-                  {Object.keys(cmds as Record<string, unknown>).map((phrase) => (
-                    <li key={phrase} className="text-sm text-foreground">• {phrase.replace('*', '[word]')}</li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-          <div className="pt-2 text-xs text-muted-foreground">
-            Examples: “what does [word] mean”, “how do you say [word]”, “save word [word]”
-          </div>
         </DialogContent>
       </Dialog>
     </div>

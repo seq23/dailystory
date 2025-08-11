@@ -7,6 +7,7 @@ import { MobileOptimizedButton } from "@/components/MobileOptimizedButton";
 import { BookOpen, Sparkles, Heart, Globe, Crown, Users } from "lucide-react";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from "@/components/ui/carousel";
 import { APP_CONFIG } from "@/constants/app";
+import { Link } from "react-router-dom";
 import heroImage from "@/assets/hero-image-diverse-clear.jpg";
 import logoImage from "@/assets/time2read-logo.png";
 import carouselImage1 from "@/assets/carousel-1-car-reading.jpg";
@@ -299,9 +300,14 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
             </h2>
 
             {/* Subtitle */}
-            <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-white/90 mb-6 md:mb-8 max-w-2xl mx-auto leading-relaxed drop-shadow-md px-2">
+            <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-white/90 mb-4 md:mb-6 max-w-2xl mx-auto leading-relaxed drop-shadow-md px-2">
               {t("welcomeHero.subtitle")}
             </p>
+            <div className="mb-6">
+              <Link to="/pricing" className="inline-flex items-center px-4 py-2 rounded-md bg-white/20 border border-white/30 text-white hover:bg-white/30 transition-colors text-sm md:text-base">
+                Plans & Pricing
+              </Link>
+            </div>
 
             {/* Features */}
             <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 md:gap-6 mb-8 md:mb-10 px-2">

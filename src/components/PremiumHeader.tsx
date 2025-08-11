@@ -99,7 +99,10 @@ export const PremiumHeader = ({
 
           {/* User Avatar and Actions */}
           <div className="flex items-center gap-3 shrink-0">
-            {/* Quick child switcher (desktop) */}
+            {/* Quick child switcher (mobile + desktop) */}
+            <div className="md:hidden">
+              <ChildQuickSwitcher />
+            </div>
             <div className="hidden md:block">
               <ChildQuickSwitcher />
             </div>

@@ -904,6 +904,7 @@ const handleRestartTimer = () => {
 
   // Submit special request and start generation
   const handleSpecialRequestSubmit = (value: string) => {
+    setSpecialRequestDraft(value);
     setShowSpecialRequestDialog(false);
     handleGenerateNewStory(value);
   };
@@ -1176,11 +1177,6 @@ const handleRestartTimer = () => {
           wandPulse={wandPulse}
         />
 
-        {readingAsName ? (
-          <div className="px-4 md:px-6 xl:px-8 -mt-2 mb-2 text-xs text-muted-foreground">
-            {t('reading.asChild', { name: readingAsName })}
-          </div>
-        ) : null}
 
         {/* Main Content - Full Width Layout */}
         <main className="w-full px-2 md:px-4 lg:px-6 xl:px-8 flex-1 min-h-0 pb-[calc(env(safe-area-inset-bottom)+88px)] md:pb-8">
@@ -1202,7 +1198,7 @@ const handleRestartTimer = () => {
                     <ChevronLeft className="w-5 h-5" />
                   </Button>
                   <p className="text-sm text-muted-foreground text-center min-w-[96px]">
-                    Page {currentPage + 1} / {Math.max(story.length, 1)}
+                    Page {currentPage + 1}
                   </p>
                   <Button
                     id="reader-next"

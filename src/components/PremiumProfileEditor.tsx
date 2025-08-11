@@ -10,6 +10,7 @@ import { AvatarPicker } from "@/components/ui/avatar-picker";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { User, Save, CheckCircle, BookOpen, Sparkles } from "lucide-react";
+import { ChildSwitcher } from "@/components/ChildSwitcher";
 import type { UserInfo, Grade, LanguageCode, DifficultyLevel } from "@/types";
 import { DifficultyManager } from "@/services/difficultyManager";
 
@@ -166,15 +167,7 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
 
             <div className="pt-2 border-t">
               <p className="text-xs text-muted-foreground mb-2">Multiple kids? Manage child profiles and set an active child for stories.</p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  window.dispatchEvent(new Event('open-parent-controls'));
-                }}
-              >
-                Manage Children
-              </Button>
+              <ChildSwitcher />
             </div>
           </CardContent>
         </Card>
