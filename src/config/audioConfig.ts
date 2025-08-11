@@ -155,6 +155,16 @@ export const voiceCommands = {
     'what is that word': (_: string) => window.dispatchEvent(new CustomEvent('voice:wordHelp')),
     'what is this': (_: string) => window.dispatchEvent(new CustomEvent('voice:wordHelp')),
     'what is that': (_: string) => window.dispatchEvent(new CustomEvent('voice:wordHelp')),
+    // Common variants and contractions
+    "what’s this word": (_: string) => window.dispatchEvent(new CustomEvent('voice:wordHelp')),
+    'whats this word': (_: string) => window.dispatchEvent(new CustomEvent('voice:wordHelp')),
+    "what’s this": (_: string) => window.dispatchEvent(new CustomEvent('voice:wordHelp')),
+    'whats this': (_: string) => window.dispatchEvent(new CustomEvent('voice:wordHelp')),
+    'explain this word': (_: string) => window.dispatchEvent(new CustomEvent('voice:wordHelp')),
+    'define this word': (_: string) => window.dispatchEvent(new CustomEvent('voice:wordHelp')),
+    'say this word': (_: string) => window.dispatchEvent(new CustomEvent('voice:wordHelp')),
+    'break down this word': (_: string) => window.dispatchEvent(new CustomEvent('voice:wordHelp')),
+    'what is the word': (_: string) => window.dispatchEvent(new CustomEvent('voice:wordHelp')),
   },
 };
 

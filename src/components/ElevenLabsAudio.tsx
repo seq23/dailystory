@@ -290,18 +290,24 @@ const toggleVoiceCommands = () => {
   const useWebSpeech = hasWebSpeech && !isMobileOrTablet && (pointerFine || !hasTouchCapability);
 
   if (useWebSpeech) {
-    audioService.startVoiceCommands();
-    setVoiceCommandsEnabled(true);
-    voiceEnabledRef.current = true;
     try { sessionStorage.setItem('t2r_voice_commands', '1'); } catch {}
     ;(window as any).__t2r_vc_user_disabled = false;
+    setVoiceCommandsEnabled(true);
+    voiceEnabledRef.current = true;
+    emitStatus('listening');
+    setVcStatus('listening');
+    audioService.startVoiceCommands();
     return;
   }
 
   // Headless Whisper path (no modal)
-  vcRef.current?.start?.();
+  try { sessionStorage.setItem('t2r_voice_commands', '1'); } catch {}
+  ;(window as any).__t2r_vc_user_disabled = false;
   setVoiceCommandsEnabled(true);
   voiceEnabledRef.current = true;
+  emitStatus('listening');
+  setVcStatus('listening');
+  vcRef.current?.start?.();
 };
 
   // Expose imperative methods to parent (e.g., bottom dock)
@@ -453,7 +459,7 @@ useEffect(() => {
           ) : (
             <Play className="w-4 h-4" />
           )}
-          {isLoading ? t("audioReading.generating", "Generating...") : isPlaying ? t("audioReading.stop", "Stop") : t("audioReading.playAudio", "Play Audio")}
+          {isLoading ? t("audioReading.generating", "Generating...") : isPlaying ? (isMobileOrTablet ? t("audioReading.stop", "Stop") : "Stop Reading") : (isMobileOrTablet ? t("audioReading.playAudio", "Play Audio") : "Read Story")}
         </Button>
         {shouldShowCrown && (
           <Crown className="w-4 h-4 absolute -top-1 -right-1 text-[hsl(var(--warning))]" />
@@ -479,7 +485,7 @@ useEffect(() => {
               <Loader2 className="w-3.5 h-3.5 absolute -right-3 -top-2 animate-spin text-muted-foreground" />
             )}
           </span>
-          Voice Commands
+          {vcStatus === 'listening' ? 'Stop Talking' : 'Talk to Buddy'}
         </Button>
       ) : (
         <TooltipProvider>
