@@ -506,8 +506,8 @@ useEffect(() => {
   };
 
   const handleNext = async () => {
-    // Stop audio when navigating (ensure audio service halts)
-    try { elevenAudioRef.current?.stop?.(); } catch {}
+    // Stop audio when navigating (ensure audio halts)
+    try { SimpleAudioEngine.getInstance().stop(); } catch {}
     setIsAudioPlaying(false);
     clearHighlighting();
 
@@ -605,7 +605,7 @@ useEffect(() => {
   
   const handlePrevious = () => {
     // Stop audio when navigating (ensure audio service halts)
-    try { elevenAudioRef.current?.stop?.(); } catch {}
+    try { SimpleAudioEngine.getInstance().stop(); } catch {}
     setIsAudioPlaying(false);
     clearHighlighting();
     setCurrentPage(Math.max(0, currentPage - 1));
@@ -642,36 +642,22 @@ useEffect(() => {
 
   // Bottom dock actions
   const handleDockPlayAudio = () => {
+    const engine = SimpleAudioEngine.getInstance();
     if (!isPremium && audioPlayedPage === currentPage && !isAudioPlaying) {
-      toast({ title: t('audioReading.audioUsed', 'Audio used'), description: t('audioReading.audioUsedTooltip', 'Audio used (1x per page for free users)'), duration: 2000 });
+      toast({ title: t('audioReading.audioUsed','Audio used'), description: t('audioReading.audioUsedTooltip','Audio used (1x per page for free users)'), duration: 2000 });
       return;
     }
-    if (elevenAudioRef.current) {
-      const playing = !!elevenAudioRef.current.isPlaying;
-      if (playing) {
-        elevenAudioRef.current.stop?.();
-        setIsAudioPlaying(false);
-      } else {
-        elevenAudioRef.current.play?.();
-        setIsAudioPlaying(true);
-        if (!isPremium) setAudioPlayedPage(currentPage);
-      }
-      return;
+    if (engine.isPlaying()) {
+      engine.stop();
+      setIsAudioPlaying(false);
+    } else {
+      engine.playText({ text: currentStory, contentHash });
+      setIsAudioPlaying(true);
+      if (!isPremium) setAudioPlayedPage(currentPage);
     }
-    const btn = document.getElementById('elevenlabs-play-toggle') as HTMLButtonElement | null;
-    btn?.click();
   };
 
   const handleDockVoiceCommand = () => {
-    if (elevenAudioRef.current?.toggleVoiceCommands) {
-      elevenAudioRef.current.toggleVoiceCommands();
-      return;
-    }
-    const btn = document.getElementById('elevenlabs-voice-toggle') as HTMLButtonElement | null;
-    if (btn) {
-      btn.click();
-      return;
-    }
     const el = document.getElementById('audio-controls');
     el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
