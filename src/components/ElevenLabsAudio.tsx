@@ -324,21 +324,32 @@ useEffect(() => {
       });
       const definition: string = (!error && data?.definition) ? data.definition : cleanWord;
       await VocabularyTrackingService.logEncounter(cleanWord, definition, difficulty);
-      if (detail.type === 'define' || detail.type === 'explain') {
-        toast({ title: cleanWord, description: definition, duration: 4000 });
-      } else if (detail.type === 'save') {
-        try {
-          (window as any).addToVocabulary?.({
-            word: cleanWord,
-            definition,
-            difficulty: (difficulty === 'beginner' ? 'beginner' : 'intermediate'),
-            dateAdded: new Date().toISOString(),
-            timesReviewed: 0,
-            mastered: false,
-          });
-        } catch {}
-        toast({ title: t('vocab.saved', 'Saved to Vocabulary'), description: cleanWord, duration: 2000 });
-      }
+        if (detail.type === 'define' || detail.type === 'explain') {
+          toast({ title: cleanWord, description: definition, duration: 4000 });
+          try {
+            await audioService.playText({
+              text: definition,
+              difficulty: 'easy',
+              userInfo,
+              isPremium,
+              enableHighlighting: false
+            });
+          } catch (e) {
+            console.warn('Definition TTS failed', e);
+          }
+        } else if (detail.type === 'save') {
+          try {
+            (window as any).addToVocabulary?.({
+              word: cleanWord,
+              definition,
+              difficulty: (difficulty === 'beginner' ? 'beginner' : 'intermediate'),
+              dateAdded: new Date().toISOString(),
+              timesReviewed: 0,
+              mastered: false,
+            });
+          } catch {}
+          toast({ title: t('vocab.saved', 'Saved to Vocabulary'), description: cleanWord, duration: 2000 });
+        }
     } catch (err) {
       console.error('voice:vocab handler error', err);
       toast({ title: t('vocab.error', 'Vocabulary error'), description: String(err), variant: 'destructive' });
