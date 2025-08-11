@@ -14,7 +14,7 @@ import Pricing from "./pages/Pricing";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Auth from "./pages/Auth";
-import { VoiceHUD } from "@/components/VoiceHUD";
+
 
 const queryClient = new QueryClient();
 
@@ -26,7 +26,7 @@ const App = () => {
           <BrowserRouter>
             <Toaster />
             <Sonner />
-            <VoiceHUD />
+            
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/style-preview" element={<StylePreview />} />
