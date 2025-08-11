@@ -192,7 +192,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
                 <SidebarMenu>
                   <SidebarMenuItem>
                     <SidebarMenuButton
-                      onClick={() => { if (effectiveCollapsed) toggleTimer(); }}
+                      onClick={() => toggleTimer()}
                       className="flex items-center gap-3 w-full justify-between transition-colors rounded-lg hover:bg-accent hover:text-accent-foreground"
                       aria-label="Toggle reading timer visibility"
                     >

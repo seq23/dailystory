@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Volume2, Mic, Save, Square } from "lucide-react";
@@ -29,6 +29,19 @@ export const MobileActionDock: React.FC<MobileActionDockProps> = ({
   className,
 }) => {
   const { t } = useTranslation();
+
+  const [vcStatus, setVcStatus] = useState<'idle'|'listening'|'processing'>('idle');
+  const [vcLevel, setVcLevel] = useState(0);
+  useEffect(() => {
+    const onStatus = (e: any) => setVcStatus((e?.detail?.status || 'idle'));
+    const onLevel = (e: any) => setVcLevel(Math.max(0, Math.min(1, Number(e?.detail?.level ?? 0))));
+    window.addEventListener('voice:status', onStatus as EventListener);
+    window.addEventListener('voice:level', onLevel as EventListener);
+    return () => {
+      window.removeEventListener('voice:status', onStatus as EventListener);
+      window.removeEventListener('voice:level', onLevel as EventListener);
+    };
+  }, []);
 
   return (
     <nav
@@ -80,12 +93,13 @@ export const MobileActionDock: React.FC<MobileActionDockProps> = ({
                   <span className="inline-flex">
                     <Button
                       variant="outline"
-                      className="h-12 flex flex-col items-center justify-center gap-0.5 rounded-xl"
+                      className={`h-12 flex flex-col items-center justify-center gap-0.5 rounded-xl ${vcStatus === 'listening' ? 'bg-[hsl(var(--warning))] text-white hover:bg-[hsl(var(--warning))]/90' : ''}`}
+                      style={vcStatus === 'listening' ? { boxShadow: `0 0 ${4 + vcLevel * 10}px hsl(var(--primary))`, opacity: 0.95 } : undefined}
                       onClick={onVoiceCommand}
                       disabled={!isPremium || !onVoiceCommand}
                       aria-label={t("audioReading.voiceCommands", "Voice")}
                     >
-                      <Mic className="w-5 h-5" />
+                      <Mic className="w-5 h-5 transition-transform" style={{ transform: vcStatus === 'listening' ? `scale(${1 + vcLevel * 0.05})` : undefined }} />
                       <span className="text-[11px] leading-none">{t("audioReading.voice", "Voice")}</span>
                     </Button>
                   </span>

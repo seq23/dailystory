@@ -380,12 +380,12 @@ useEffect(() => {
           onClick={toggleVoiceCommands}
           variant={voiceCommandsEnabled ? "default" : "outline"}
           size={isMobileOrTablet ? "default" : "sm"}
-          className={`gap-2 ${isMobileOrTablet ? 'min-h-[44px] px-4' : ''} ${voiceCommandsEnabled ? 'bg-[hsl(var(--warning))] text-white hover:bg-[hsl(var(--warning))]/90' : ''}`}
-          style={voiceCommandsEnabled && vcStatus === 'listening' ? { boxShadow: `0 0 ${4 + vcLevel * 10}px hsl(var(--primary))`, opacity: 0.9 } : undefined}
+          className={`gap-2 ${isMobileOrTablet ? 'min-h-[44px] px-4' : ''} ${vcStatus === 'listening' ? 'bg-[hsl(var(--warning))] text-white hover:bg-[hsl(var(--warning))]/90' : ''}`}
+          style={vcStatus === 'listening' ? { boxShadow: `0 0 ${4 + vcLevel * 10}px hsl(var(--primary))`, opacity: 0.9 } : undefined}
         >
           <span className="relative inline-flex items-center">
             <Mic 
-              className={`w-4 h-4 transition-transform ${voiceCommandsEnabled ? '' : ''}`} 
+              className={`w-4 h-4 transition-transform`} 
               style={{ transform: vcStatus === 'listening' ? `scale(${1 + vcLevel * 0.05})` : undefined }}
             />
             {vcStatus === 'processing' && (

@@ -136,6 +136,16 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [timerEnabled, setTimerEnabled] = useState<boolean>(() => {
     try { return localStorage.getItem('readingTimerEnabled') !== '0'; } catch { return true; }
   });
+
+  // Ensure timer defaults ON at session start for premium users
+  useEffect(() => {
+    if (isPremium) {
+      try { localStorage.setItem('readingTimerEnabled','1'); } catch {}
+      setTimerEnabled(true);
+      try { window.dispatchEvent(new CustomEvent('readingTimerToggle', { detail: true })); } catch {}
+    }
+  }, [isPremium]);
+
   useEffect(() => {
     const handler = (e: any) => {
       const enabled = !!e.detail;
