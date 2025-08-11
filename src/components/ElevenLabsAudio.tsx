@@ -266,15 +266,11 @@ const handleHeadlessCommand = (cmd: string) => {
     console.error('Headless voice processing failed', e);
     toast({ title: t('audioReading.voiceCommandError', 'Voice command error'), description: String(e), variant: 'destructive' });
   } finally {
-    if (voiceCommandsEnabled) {
-      const now = Date.now();
-      if (now - lastBurstTsRef.current > 5000) burstCounterRef.current = 0;
-      lastBurstTsRef.current = now;
-      if (burstCounterRef.current < 3) {
-        burstCounterRef.current++;
-        setTimeout(() => vcRef.current?.start?.(), 150);
-      }
-    }
+     if (voiceCommandsEnabled) {
+       setTimeout(() => {
+         try { vcRef.current?.start?.(); } catch (e) { console.warn('Headless restart failed', e); }
+       }, 250);
+     }
   }
 };
 
