@@ -12,6 +12,7 @@ export const VoiceHUD: React.FC = () => {
   const [status, setStatus] = useState<VoiceStatus>('idle');
   const [level, setLevel] = useState(0);
   const prevStatus = useRef<VoiceStatus>('idle');
+  const lastBeepAt = useRef<number>(0);
 
   // Simple beep synth
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -46,9 +47,12 @@ export const VoiceHUD: React.FC = () => {
       setStatus(next);
       // Beep on transitions
       if (prevStatus.current !== next) {
-        if (next === 'listening') { try { ensureCtx().then(ctx => (ctx as any)?.resume?.()).catch(() => {}); } catch {} beep(1200, 120, 0.08); } // start beep
-        if (next === 'processing') beep(900, 80, 0.07);
-        if (next === 'idle' && prevStatus.current !== 'idle') beep(600, 80, 0.07); // end beep
+        const now = Date.now();
+        if (now - lastBeepAt.current > 600) {
+          if (next === 'listening') { try { ensureCtx().then(ctx => (ctx as any)?.resume?.()).catch(() => {}); } catch {} beep(1200, 120, 0.06); }
+          if (next === 'idle' && prevStatus.current !== 'idle') beep(600, 90, 0.05);
+          lastBeepAt.current = now;
+        }
       }
       prevStatus.current = next;
     };
