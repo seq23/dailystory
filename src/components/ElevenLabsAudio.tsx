@@ -183,60 +183,66 @@ useEffect(() => {
   // Enhanced audio playback using new service
   const playAudio = async () => {
     if (!isPremium && isAfterFreeLimit) {
-      // Don't play, just show upgrade UI
       return;
     }
 
     if (!isPremium && hasPlayedThisPage) {
-      // Don't play second time on same page for free users
       return;
     }
 
     setIsLoading(true);
-    
-  try {
-    if (isStabilizing) {
-      console.log('⏳ Stabilizing page/text, delaying play');
-      return;
-    }
-    const speed = getBaseSpeed() * speedMultiplierRef.current;
-    const playSnapshot = { text, page: currentPage, contentHash };
-    await audioService.playText({
-      text,
-      difficulty,
-      userInfo,
-      isPremium,
-      enableHighlighting: onWordHighlight !== undefined,
-      onWordHighlight: (wordIndex: number) => {
-        console.log(`🎯 ElevenLabs: Highlighting word ${wordIndex}`);
-        try {
-          const { wordsOnly } = tokenizeForHighlighting(text);
-          const w = wordsOnly[wordIndex];
-          if (w) (window as any).__currentHighlightedWord = w;
-        } catch {}
-        onWordHighlight?.(wordIndex);
-      },
-      currentPage,
-      customSpeed: speed,
-    });
 
-    // Guard: if page or text changed before/while audio loaded, stop and bail
-    if (playSnapshot.page !== currentPage || playSnapshot.text !== text || playSnapshot.contentHash !== contentHash) {
-      console.warn('🛑 TTS aborted due to page/text/hash change during load');
-      try { audioService.stopAudio(); } catch {}
-      toast({ title: t('audioReading.pageChanged', 'Page changed'), description: t('audioReading.refreshAudio', 'Audio refreshed for the new page.'), duration: 1800 });
-      return;
-    }
+    try {
+      // Pre-roll: wait briefly for layout/text stabilization and full page text
+      const minWords = 12;
+      const maxWaitMs = 1500;
+      const start = Date.now();
+      const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-    setIsPlaying(true);
+      let attempts = 0;
+      while ((isStabilizing || (text || '').split(/\s+/).filter(Boolean).length < minWords) && (Date.now() - start) < maxWaitMs) {
+        attempts++;
+        await wait(200);
+      }
 
-    // Mark page as played for free users
-    if (!isPremium) {
-      setHasPlayedThisPage(true);
-    }
-  } catch (error) {
+      const speed = getBaseSpeed() * speedMultiplierRef.current;
+      const playSnapshot = { text, page: currentPage, contentHash };
+
+      await audioService.playText({
+        text,
+        difficulty,
+        userInfo,
+        isPremium,
+        enableHighlighting: onWordHighlight !== undefined,
+        onWordHighlight: (wordIndex: number) => {
+          console.log(`🎯 ElevenLabs: Highlighting word ${wordIndex}`);
+          try {
+            const { wordsOnly } = tokenizeForHighlighting(text);
+            const w = wordsOnly[wordIndex];
+            if (w) (window as any).__currentHighlightedWord = w;
+          } catch {}
+          onWordHighlight?.(wordIndex);
+        },
+        currentPage,
+        customSpeed: speed,
+      });
+
+      // Guard: if page or text changed during load, stop and bail
+      if (playSnapshot.page !== currentPage || playSnapshot.text !== text || playSnapshot.contentHash !== contentHash) {
+        console.warn('🛑 TTS aborted due to page/text/hash change during load');
+        try { audioService.stopAudio(); } catch {}
+        toast({ title: t('audioReading.pageChanged', 'Page changed'), description: t('audioReading.refreshAudio', 'Audio refreshed for the new page.'), duration: 1800 });
+        return;
+      }
+
+      setIsPlaying(true);
+
+      if (!isPremium) {
+        setHasPlayedThisPage(true);
+      }
+    } catch (error) {
       console.error('Enhanced audio playback error:', error);
-      
+
       toast({
         title: t("audioReading.audioError", "Audio Error"),
         description: isMobileOrTablet ? 
@@ -500,7 +506,7 @@ useEffect(() => {
                   className={`gap-2 ${isMobileOrTablet ? 'min-h-[44px] px-4' : ''}`}
                 >
                   <Mic className="w-4 h-4" />
-                  Voice Commands
+                  Talk to Buddy
                 </Button>
               </span>
             </TooltipTrigger>
