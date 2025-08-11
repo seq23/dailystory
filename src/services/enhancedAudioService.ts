@@ -483,13 +483,8 @@ export class EnhancedAudioService {
   }
 
   private getVoiceForUser(userInfo: UserInfo, characterType: string = 'narrator', isPremium: boolean = false): string {
-    // Use character-specific voices for premium users
-    if (isPremium && this.config.premium.characterVoiceConsistency) {
-      return characterVoices[characterType as keyof typeof characterVoices] || characterVoices.narrator;
-    }
-
-    // Standardized voice selection - Charlotte for all languages and ages (matches perfect French experience)
-    return "XB0fDUnXU5powFXDhCwa"; // Charlotte - perfect voice and pace for all users
+    // Override: Always use Charlotte for a consistent experience across all users/devices
+    return "XB0fDUnXU5powFXDhCwa"; // Charlotte
   }
 
   private async generateAudio(text: string, voice: string, userInfo: UserInfo, isPremium: boolean): Promise<string> {

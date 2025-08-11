@@ -29,6 +29,7 @@ export class AudioSyncService {
   private lastVoice: string = 'default';
   private lastSpeed: number = 1.0;
   private lastOnWordHighlight?: (wordIndex: number) => void;
+  private storyLengthMultiplier: number = 1.0;
   
   // Enhanced timing profiles optimized for eleven_multilingual_v2 model
   private readonly voiceProfiles: Record<string, VoiceTimingProfile> = {
@@ -74,6 +75,21 @@ export class AudioSyncService {
     
     // Prepare words for highlighting
     this.words = text.split(/(\s+)/).filter(word => word.trim().length > 0);
+
+    // Compute story-length multiplier to slow highlighting for longer texts
+    const wordCount = this.words.length;
+    // Keep short stories unchanged, scale up progressively for longer stories
+    if (wordCount > 1200) {
+      this.storyLengthMultiplier = 1.25;
+    } else if (wordCount > 800) {
+      this.storyLengthMultiplier = 1.18;
+    } else if (wordCount > 500) {
+      this.storyLengthMultiplier = 1.12;
+    } else if (wordCount > 300) {
+      this.storyLengthMultiplier = 1.07;
+    } else {
+      this.storyLengthMultiplier = 1.0;
+    }
     
     try {
       // Generate audio from ElevenLabs
@@ -279,6 +295,9 @@ export class AudioSyncService {
     // Apply voice-specific and user speed adjustments
     duration *= profile.speedMultiplier;
     duration /= speed; // User speed adjustment
+
+    // Slow down highlighting slightly for longer stories
+    duration *= this.storyLengthMultiplier;
     
     return duration;
   }

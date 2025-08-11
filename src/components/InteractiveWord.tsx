@@ -147,34 +147,9 @@ export const InteractiveWord = ({
   const shouldHighlight = wordDifficulty.shouldHighlight;
   const wordComplexity = wordDifficulty.complexity;
 
-  // Enhanced voice selection for natural pronunciation - friendly female voices
+  // Unified voice selection: Always use Charlotte across the app
   const getVoiceForUser = (userInfo?: UserInfo) => {
-    if (!userInfo) return "cgSgspJ2msm6clMCkdW9"; // Default Jessica voice (very natural and friendly)
-    
-    const age = userInfo.age;
-    const isGirl = userInfo.avatar?.type === 'girl';
-    const isNativeEnglishSpeaker = userInfo.nativeLanguage === 'en';
-    
-    // Prioritize friendly, natural female voices for better user experience
-    if (!isNativeEnglishSpeaker) {
-      // Use clear, friendly multilingual voices for non-native speakers
-      if (age <= 8) {
-        return "EXAVITQu4vr4xnSDxMaL"; // Sarah - warm and clear for children
-      } else if (age <= 12) {
-        return "XB0fDUnXU5powFXDhCwa"; // Charlotte - clear and friendly
-      } else {
-        return "9BWtsMINqrJLrRacOk9x"; // Aria - sophisticated and clear
-      }
-    } else {
-      // Use most natural, friendly voices for native English speakers
-      if (age <= 8) {
-        return "EXAVITQu4vr4xnSDxMaL"; // Sarah - perfect for young children
-      } else if (age <= 12) {
-        return "cgSgspJ2msm6clMCkdW9"; // Jessica - very natural and friendly
-      } else {
-        return isGirl ? "cgSgspJ2msm6clMCkdW9" : "XB0fDUnXU5powFXDhCwa"; // Jessica or Charlotte - both very natural
-      }
-    }
+    return "XB0fDUnXU5powFXDhCwa"; // Charlotte
   };
 
   const handleMouseEnter = () => {
