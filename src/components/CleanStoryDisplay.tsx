@@ -1091,8 +1091,14 @@ const handleRestartTimer = () => {
           wandPulse={wandPulse}
         />
 
-      {/* Main Content - Full Width Layout */}
-      <main className="w-full px-2 md:px-4 lg:px-6 xl:px-8 flex-1 min-h-0 pb-[calc(env(safe-area-inset-bottom)+88px)] md:pb-8">
+        {readingAsName ? (
+          <div className="px-4 md:px-6 xl:px-8 -mt-2 mb-2 text-xs text-muted-foreground">
+            {t('reading.asChild', { name: readingAsName })}
+          </div>
+        ) : null}
+
+        {/* Main Content - Full Width Layout */}
+        <main className="w-full px-2 md:px-4 lg:px-6 xl:px-8 flex-1 min-h-0 pb-[calc(env(safe-area-inset-bottom)+88px)] md:pb-8">
         <div className="w-full max-w-[98vw] mx-auto">
           <Card className="bg-white/95 backdrop-blur-sm shadow-2xl border border-white/70 mobile-text-fixed flex flex-col h-full min-h-0 overflow-hidden">
             <CardContent className="p-2 lg:p-8 h-full flex flex-col min-h-0">
