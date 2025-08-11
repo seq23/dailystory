@@ -56,6 +56,20 @@ export function useChildProfiles() {
     load();
   }, [load]);
 
+  // Sync active child across components via CustomEvent
+  useEffect(() => {
+    const handler = (e: Event) => {
+      try {
+        const detail = (e as CustomEvent<{ id: string | null }>).detail;
+        setActiveChildId(detail?.id ?? null);
+      } catch {}
+    };
+    window.addEventListener('active-child-changed', handler as EventListener);
+    return () => {
+      window.removeEventListener('active-child-changed', handler as EventListener);
+    };
+  }, []);
+
   const setActiveChild = useCallback(async (childId: string | null) => {
     setError(null);
     try {
@@ -88,6 +102,7 @@ export function useChildProfiles() {
       }
 
       setActiveChildId(childId);
+      window.dispatchEvent(new CustomEvent('active-child-changed', { detail: { id: childId } }));
     } catch (e: any) {
       setError(e?.message || 'Could not set active child');
       throw e;
