@@ -49,6 +49,7 @@ export const VoiceCommandController = forwardRef<VoiceCommandControllerHandle, V
   const analyserRef = useRef<AnalyserNode | null>(null);
   const rafRef = useRef<number | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
+  const userStoppedRef = useRef<boolean>(false);
 
   const emitStatus = (s: 'idle'|'listening'|'processing') => window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: s } }));
   const emitLevel = (l: number) => window.dispatchEvent(new CustomEvent('voice:level', { detail: { level: l } }));
@@ -119,12 +120,24 @@ export const VoiceCommandController = forwardRef<VoiceCommandControllerHandle, V
 
       recorder.onstop = async () => {
         try {
-          setStatus('processing'); emitStatus('processing');
-          // Cleanup meter loop while we process transcription
+          const wasManual = userStoppedRef.current === true;
+          // Cleanup meter loop either way
           if (rafRef.current) cancelAnimationFrame(rafRef.current);
           rafRef.current = null;
-          if (audioContextRef.current) { try { await audioContextRef.current.close(); } catch {} }
+          try { if (audioContextRef.current) await audioContextRef.current.close(); } catch {}
           analyserRef.current = null; audioContextRef.current = null;
+
+          if (wasManual) {
+            // User explicitly toggled OFF: skip transcription entirely
+            setIsRecording(false);
+            setStatus('idle'); emitStatus('idle'); emitLevel(0);
+            try { streamRef.current?.getTracks().forEach(t => t.stop()); } catch {}
+            streamRef.current = null;
+            userStoppedRef.current = false;
+            return;
+          }
+
+          setStatus('processing'); emitStatus('processing');
 
           const blob = new Blob(chunksRef.current, { type: mimeTypeRef.current });
           const base64 = await blobToBase64(blob);
@@ -144,9 +157,10 @@ export const VoiceCommandController = forwardRef<VoiceCommandControllerHandle, V
           console.error("Voice command processing failed", err);
         } finally {
           setIsRecording(false);
-          setStatus('idle'); emitStatus('idle');
+          setStatus('idle'); emitStatus('idle'); emitLevel(0);
           try { streamRef.current?.getTracks().forEach(t => t.stop()); } catch {}
           streamRef.current = null;
+          userStoppedRef.current = false;
         }
       };
 
@@ -159,6 +173,12 @@ export const VoiceCommandController = forwardRef<VoiceCommandControllerHandle, V
   }, [onCommand]);
 
 const stopRecording = useCallback(() => {
+  userStoppedRef.current = true;
+  try { emitStatus('idle'); emitLevel(0); } catch {}
+  try { if (rafRef.current) cancelAnimationFrame(rafRef.current); } catch {}
+  rafRef.current = null;
+  try { audioContextRef.current?.close(); } catch {}
+  analyserRef.current = null;
   try {
     mediaRecorderRef.current?.stop();
   } catch (e) {

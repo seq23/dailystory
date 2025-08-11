@@ -123,6 +123,18 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     return () => clearInterval(interval);
   }, []);
 
+  // Voice command -> audio control bridge
+  useEffect(() => {
+    const onPlay = () => { try { elevenAudioRef.current?.play?.(); } catch (e) { console.warn('audio:play failed', e); } };
+    const onStop = () => { try { elevenAudioRef.current?.stop?.(); } catch (e) { console.warn('audio:stop failed', e); } };
+    window.addEventListener('audio:play', onPlay as EventListener);
+    window.addEventListener('audio:stop', onStop as EventListener);
+    return () => {
+      window.removeEventListener('audio:play', onPlay as EventListener);
+      window.removeEventListener('audio:stop', onStop as EventListener);
+    };
+  }, []);
+
   // Debug source badge state
   const [storySource, setStorySource] = useState<'ai' | 'fallback' | 'unknown' | null>(null);
   const isDebug = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1';
