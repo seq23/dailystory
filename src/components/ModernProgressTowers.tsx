@@ -212,7 +212,7 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
           "fixed top-1/2 right-4 transform -translate-y-1/2 z-40",
           "transition-all duration-500 ease-out",
           isMobile && "scale-75 right-1",
-          isTablet && !isExpanded && "scale-90 right-2",
+          isTablet && "scale-75 right-1",
           className
         )}
         onMouseEnter={handleMouseEnter}
