@@ -4,7 +4,7 @@ import { MobileTTSModal } from "./MobileTTSModal";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { UserInfo } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
-import { EnhancedAudioService } from "@/services/enhancedAudioService";
+import { PhoneticRulesEngine } from "@/services/phoneticRulesEngine";
 import { VocabularyLevelClassifier } from "@/utils/vocabularyLevelClassifier";
 import { getGlobalAddVocabularyWord } from "@/utils/gamificationGlobals";
 import { VocabularyTrackingService } from "@/services/vocabularyTrackingService";
@@ -26,7 +26,7 @@ export const MobileOptimizedInteractiveWord = (props: MobileOptimizedInteractive
   const [showMobileModal, setShowMobileModal] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoadingWordData, setIsLoadingWordData] = useState(false);
-  const audioService = useMemo(() => new EnhancedAudioService(), []);
+  // unified TTS via ElevenLabs edge function; no local audio service needed
 
   const difficulty = props.difficulty || "easy";
   const cleanWord = useMemo(() => props.word.replace(/[.,!?;:'"()]/g, ''), [props.word]);
@@ -76,7 +76,7 @@ export const MobileOptimizedInteractiveWord = (props: MobileOptimizedInteractive
         const response = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/elevenlabs-tts', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: cleanWord, voice: "XB0fDUnXU5powFXDhCwa", model: 'eleven_turbo_v2' })
+          body: JSON.stringify({ text: cleanWord, voice: "XB0fDUnXU5powFXDhCwa", model: 'eleven_turbo_v2_5' })
         });
         if (!response.ok) throw new Error('TTS failed');
         const audioBlob = await response.blob();
@@ -121,11 +121,34 @@ export const MobileOptimizedInteractiveWord = (props: MobileOptimizedInteractive
     };
 
     const handleSyllables = async () => {
-      if (!props.userInfo) return;
       try {
-        await audioService.playPhoneticBreakdown({ word: cleanWord, userInfo: props.userInfo });
+        setIsPlaying(true);
+        const raw = await PhoneticRulesEngine.getInstance().breakIntoSyllablesAsync(cleanWord);
+        const toAudioFriendly = (original: string, sylls: string[]) => {
+          const w = (original || '').toLowerCase();
+          if (w.endsWith('ies') && w.length > 4) return [w.slice(0, -3) + 'y', 's'];
+          if (w.endsWith('es') && w.length > 3) return [w.slice(0, -2), 'es'];
+          if (w.endsWith('s') && !w.endsWith('ss') && w.length > 3) return [w.slice(0, -1), 's'];
+          return sylls;
+        };
+        const adjusted = toAudioFriendly(cleanWord, raw);
+        const syllText = adjusted.join(', ');
+
+        const response = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/elevenlabs-tts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: syllText, voice: 'XB0fDUnXU5powFXDhCwa', model: 'eleven_turbo_v2_5' })
+        });
+        if (!response.ok) throw new Error('TTS failed');
+        const audioBlob = await response.blob();
+        const url = URL.createObjectURL(audioBlob);
+        const audio = new Audio(url);
+        audio.onended = () => { setIsPlaying(false); URL.revokeObjectURL(url); };
+        audio.onerror = () => setIsPlaying(false);
+        await audio.play();
       } catch (e) {
         console.error('Mobile Syllables failed', e);
+        setIsPlaying(false);
       }
     };
 

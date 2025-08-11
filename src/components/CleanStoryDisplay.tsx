@@ -285,7 +285,7 @@ useEffect(() => {
   };
 }, [currentStory, contentHash]);
 
-  // Voice word help: on "What is this word?" play Hear it -> Explain it -> Syllables (Charlotte)
+  // Voice word help: on "What is this word?" play Hear it -> Explain it -> Syllables (Charlotte) and auto-resume narration
   useEffect(() => {
     const CHARLOTTE = 'XB0fDUnXU5powFXDhCwa';
 
@@ -318,7 +318,16 @@ useEffect(() => {
       return w;
     };
 
+    const toAudioFriendlySyllables = (original: string, sylls: string[]) => {
+      const w = (original || '').toLowerCase();
+      if (w.endsWith('ies') && w.length > 4) return [w.slice(0, -3) + 'y', 's'];
+      if (w.endsWith('es') && w.length > 3) return [w.slice(0, -2), 'es'];
+      if (w.endsWith('s') && !w.endsWith('ss') && w.length > 3) return [w.slice(0, -1), 's'];
+      return sylls;
+    };
+
     const handler = async () => {
+      const wasPlaying = !!audioRef.current?.isPlaying;
       try {
         // Stop any narration first
         try { audioRef.current?.stop?.(); } catch {}
@@ -337,12 +346,18 @@ useEffect(() => {
         // 2) Explain it (definition)
         const def = await getDefinition(target);
         await playTTS(def);
-        // 3) Syllables
-        const sylls = await PhoneticRulesEngine.getInstance().breakIntoSyllablesAsync(target);
-        const syllText = sylls.join(', ');
+        // 3) Syllables (comma-separated for clean pacing)
+        const raw = await PhoneticRulesEngine.getInstance().breakIntoSyllablesAsync(target);
+        const adjusted = toAudioFriendlySyllables(target, raw);
+        const syllText = adjusted.join(', ');
         await playTTS(syllText);
       } catch (e) {
         console.warn('voice:wordHelp sequence failed', e);
+      } finally {
+        // Auto-resume narration if it was playing before the help flow
+        if (wasPlaying) {
+          try { await audioRef.current?.play?.(); } catch {}
+        }
       }
     };
 
