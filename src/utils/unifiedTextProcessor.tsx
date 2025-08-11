@@ -1,5 +1,4 @@
 import { MobileOptimizedInteractiveWord } from "@/components/MobileOptimizedInteractiveWord";
-import { InteractiveWord } from "@/components/InteractiveWord";
 import type { UserInfo } from "@/types";
 import { tokenizeForHighlighting } from "@/utils/tokenize";
 
@@ -74,7 +73,7 @@ export const processTextWithConsistentFlow = ({
     }
 
     return (
-      <InteractiveWord
+      <MobileOptimizedInteractiveWord
         key={`${index}-${token}`}
         word={token}
         className={finalClassName}
@@ -83,6 +82,7 @@ export const processTextWithConsistentFlow = ({
         isPremium={isPremium}
         sentenceContext={text}
         userId={userId}
+        forceModal={true}
       />
     );
   }).filter(Boolean);

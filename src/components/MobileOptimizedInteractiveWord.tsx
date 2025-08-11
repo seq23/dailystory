@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { InteractiveWord } from "./InteractiveWord";
 import { MobileTTSModal } from "./MobileTTSModal";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -32,6 +32,21 @@ export const MobileOptimizedInteractiveWord = (props: MobileOptimizedInteractive
 
   const difficulty = props.difficulty || "easy";
   const cleanWord = useMemo(() => props.word.replace(/[.,!?;:'"()]/g, ''), [props.word]);
+
+  // Voice commands status and hover sequencing (desktop only)
+  const [vcStatus, setVcStatus] = useState<'idle' | 'listening' | 'processing'>('idle');
+  const hoverTimerRef = useRef<number | null>(null);
+  const lastTriggerRef = useRef<number>(0);
+  const cancelRef = useRef<boolean>(false);
+  const COOLDOWN_MS = 3500;
+  const DWELL_MS = 400;
+
+  useEffect(() => {
+    const onStatus = (e: any) => setVcStatus(e?.detail?.status || 'idle');
+    window.addEventListener('voice:status', onStatus as EventListener);
+    return () => window.removeEventListener('voice:status', onStatus as EventListener);
+  }, []);
+
 
   // Level rules: 0-1 (beginner/easy) underline all; 2-4 (medium/hard/expert) only significant words
   const shouldBeInteractive = useMemo(() => {
@@ -174,8 +189,76 @@ export const MobileOptimizedInteractiveWord = (props: MobileOptimizedInteractive
       <>
         <span
           onClick={handleClick}
-          onMouseEnter={() => { if (shouldBeInteractive) (window as any).__hoveredWord = cleanWord; }}
-          onMouseLeave={() => { if ((window as any).__hoveredWord === cleanWord) (window as any).__hoveredWord = ''; }}
+          onMouseEnter={() => {
+            if (!shouldBeInteractive) return;
+            (window as any).__hoveredWord = cleanWord;
+            if (isMobileOrTablet) return; // no hover on touch devices
+            const now = Date.now();
+            if (vcStatus !== 'listening') return;
+            if (now - lastTriggerRef.current < COOLDOWN_MS) return;
+            if (isPlaying || isLoadingWordData) return;
+            cancelRef.current = false;
+            if (hoverTimerRef.current) window.clearTimeout(hoverTimerRef.current);
+            hoverTimerRef.current = window.setTimeout(async () => {
+              if (cancelRef.current) return;
+              lastTriggerRef.current = Date.now();
+              // Safe guard: don't overlap with user-initiated playback
+              if (isPlaying || isLoadingWordData) return;
+              try {
+                // 1) Pronounce word
+                await enhancedAudio.playText({
+                  text: cleanWord,
+                  difficulty: 'easy',
+                  userInfo: props.userInfo!,
+                  isPremium: !!props.isPremium,
+                  enableHighlighting: false,
+                });
+                if (cancelRef.current) return;
+                // 2) Definition
+                const userLang = props.userInfo?.nativeLanguage || 'en';
+                const { data, error } = await supabase.functions.invoke('word-dictionary', {
+                  body: { word: cleanWord, userLevel: difficulty, userLanguage: userLang }
+                });
+                const definition: string = (!error && data?.definition) ? data.definition : cleanWord;
+                await enhancedAudio.playText({
+                  text: definition,
+                  difficulty: 'easy',
+                  userInfo: props.userInfo!,
+                  isPremium: !!props.isPremium,
+                  enableHighlighting: false,
+                });
+                if (cancelRef.current) return;
+                // 3) Syllables
+                const raw = await PhoneticRulesEngine.getInstance().breakIntoSyllablesAsync(cleanWord);
+                const toAudioFriendly = (original: string, sylls: string[]) => {
+                  const w = (original || '').toLowerCase();
+                  if (w.endsWith('ies') && w.length > 4) return [w.slice(0, -3) + 'y', 's'];
+                  if (w.endsWith('es') && w.length > 3) return [w.slice(0, -2), 'es'];
+                  if (w.endsWith('s') && !w.endsWith('ss') && w.length > 3) return [w.slice(0, -1), 's'];
+                  return sylls;
+                };
+                const adjusted = toAudioFriendly(cleanWord, raw);
+                const syllText = adjusted.join(', ');
+                await enhancedAudio.playText({
+                  text: syllText,
+                  difficulty: 'easy',
+                  userInfo: props.userInfo!,
+                  isPremium: !!props.isPremium,
+                  enableHighlighting: false,
+                });
+              } catch (e) {
+                console.warn('Hover sequence failed', e);
+              }
+            }, DWELL_MS) as unknown as number;
+          }}
+          onMouseLeave={() => {
+            if ((window as any).__hoveredWord === cleanWord) (window as any).__hoveredWord = '';
+            cancelRef.current = true;
+            if (hoverTimerRef.current) {
+              window.clearTimeout(hoverTimerRef.current);
+              hoverTimerRef.current = null;
+            }
+          }}
           className={`${props.className} inline ${shouldBeInteractive ? 'cursor-pointer underline decoration-dotted decoration-2 underline-offset-2 hover:decoration-primary' : ''}`}
           style={{ fontSize: 'inherit', lineHeight: 'inherit', display: 'inline' }}
         >

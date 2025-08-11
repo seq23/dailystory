@@ -1,7 +1,7 @@
-import { InteractiveWord } from "@/components/InteractiveWord";
+import { MobileOptimizedInteractiveWord } from "@/components/MobileOptimizedInteractiveWord";
 import type { UserInfo } from "@/types";
 
-// Desktop-specific text processor that uses the original InteractiveWord component
+// Desktop-specific text processor that uses the MobileOptimizedInteractiveWord with modal behavior
 export const processTextForDesktop = (
   text: string, 
   className: string = "", 
@@ -35,7 +35,7 @@ export const processTextForDesktop = (
     const isHighlighted = highlightedWordIndex !== undefined && highlightedWordIndex !== -1 && highlightedWordIndex === wordOnlyIndex;
     
     return (
-      <InteractiveWord 
+      <MobileOptimizedInteractiveWord 
         key={`${index}-${word}`} 
         word={word} 
         className={`${className} ${isHighlighted ? 'bg-yellow-200/80 dark:bg-yellow-800/60 animate-pulse transition-all duration-500 shadow-md rounded-sm' : 'transition-all duration-300'}`}
@@ -44,6 +44,7 @@ export const processTextForDesktop = (
         isPremium={isPremium}
         sentenceContext={text}
         userId={userId}
+        forceModal={true}
       />
     );
   }).filter(Boolean);
