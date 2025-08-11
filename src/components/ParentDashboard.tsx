@@ -12,6 +12,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { ParentGuardrailsService } from "@/services/parentGuardrailsService";
 import { supabase } from "@/integrations/supabase/client";
+import { ChildSwitcher } from "@/components/ChildSwitcher";
+import { ChildManager } from "@/components/ChildManager";
 
 interface ParentDashboardProps {
   userInfo: UserInfo;
@@ -362,6 +364,29 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
         {/* Controls */}
         {activeTab === 'controls' && (
           <div className="space-y-6">
+            {/* Active Child Selector */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Child selection</CardTitle>
+                <CardDescription>Choose which child this dashboard controls</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ChildSwitcher />
+              </CardContent>
+            </Card>
+
+            {/* Child Profiles Manager */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Child profiles</CardTitle>
+                <CardDescription>Add, edit, or remove child profiles</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ChildManager />
+              </CardContent>
+            </Card>
+
+            {/* Existing Guardrails Controls */}
             <Card>
               <CardHeader>
                 <CardTitle>Parent Controls</CardTitle>
