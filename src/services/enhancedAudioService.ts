@@ -308,18 +308,40 @@ export class EnhancedAudioService {
   stopVoiceCommands(): void {
     if (!this.speechRecognition) return;
 
+    // User explicitly turned OFF voice commands
     this.voiceListening = false;
     (window as any).__t2r_vc_user_disabled = true;
+
+    // Cancel any pending restarts
     if (this.restartTimer) {
       clearTimeout(this.restartTimer);
       this.restartTimer = null;
     }
+
+    // Immediately update UI and stop any mic meter/streams
+    try {
+      if (this.levelRAF) {
+        cancelAnimationFrame(this.levelRAF);
+        this.levelRAF = null;
+      }
+      this.analyser = null as any;
+      try { this.audioCtx?.close(); } catch {}
+      this.audioCtx = null;
+      if (this.micStream) {
+        try { this.micStream.getTracks().forEach(t => t.stop()); } catch {}
+        this.micStream = null;
+      }
+      window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: 'idle' } }));
+      window.dispatchEvent(new CustomEvent('voice:level', { detail: { level: 0 } }));
+    } catch {}
+
     // Only attempt to stop if we were starting or active
     if (this.recognitionActive || this.recognitionStarting) {
       try { this.speechRecognition.stop(); } catch (e) {
         console.warn('Voice: stop failed', e);
       }
     }
+    this.recognitionActive = false;
     this.recognitionStarting = false;
   }
 

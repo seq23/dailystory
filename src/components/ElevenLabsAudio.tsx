@@ -202,6 +202,11 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
 
 // Premium voice commands toggle
 const toggleVoiceCommands = () => {
+  // Debounce rapid taps to avoid race conditions
+  const now = Date.now();
+  if (now - (lastBurstTsRef.current || 0) < 350) return;
+  lastBurstTsRef.current = now;
+
   if (!isPremium) {
     onUpgrade?.();
     return;
