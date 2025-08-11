@@ -27,6 +27,7 @@ interface ElevenLabsAudioProps {
   isExtendedPage?: boolean; // True if this page was added beyond the original 10
   difficulty?: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert';
   onWordHighlight?: (wordIndex: number) => void;
+  contentHash?: string;
 }
 
 export interface ElevenLabsAudioHandle {
@@ -45,13 +46,15 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
   totalPages = 1,
   isExtendedPage = false,
   difficulty = 'easy',
-  onWordHighlight 
+  onWordHighlight,
+  contentHash
 }: ElevenLabsAudioProps, ref) => {
   const { t } = useTranslation();
   const { isMobileOrTablet, isCapacitor, hasTouchCapability } = useIsMobile();
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [voiceCommandsEnabled, setVoiceCommandsEnabled] = useState(false);
+  const [isStabilizing, setIsStabilizing] = useState(false);
   const vcRef = useRef<VoiceCommandControllerHandle | null>(null);
   const restoredRef = useRef(false);
   const voiceEnabledRef = useRef(false);
@@ -102,11 +105,14 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
     (window as any).__currentUserName = userInfo?.name || 'guest';
   }, [userInfo?.name]);
 
-  // Stop audio on text or page change to avoid stale playback
-  useEffect(() => {
-    try { audioService.stopAudio(); } catch {}
-    setIsPlaying(false);
-  }, [text, currentPage, audioService]);
+// Stop audio on text or page change to avoid stale playback and apply brief stabilization
+useEffect(() => {
+  try { audioService.stopAudio(); } catch {}
+  setIsPlaying(false);
+  setIsStabilizing(true);
+  const to = window.setTimeout(() => setIsStabilizing(false), 300);
+  return () => clearTimeout(to);
+}, [text, currentPage, contentHash, audioService]);
 
   // Listen to voice status/level for mic button live indicators
   useEffect(() => {
@@ -176,8 +182,12 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
     setIsLoading(true);
     
   try {
+    if (isStabilizing) {
+      console.log('⏳ Stabilizing page/text, delaying play');
+      return;
+    }
     const speed = getBaseSpeed() * speedMultiplierRef.current;
-    const playSnapshot = { text, page: currentPage };
+    const playSnapshot = { text, page: currentPage, contentHash };
     await audioService.playText({
       text,
       difficulty,
@@ -198,9 +208,10 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
     });
 
     // Guard: if page or text changed before/while audio loaded, stop and bail
-    if (playSnapshot.page !== currentPage || playSnapshot.text !== text) {
-      console.warn('🛑 TTS aborted due to page/text change during load');
+    if (playSnapshot.page !== currentPage || playSnapshot.text !== text || playSnapshot.contentHash !== contentHash) {
+      console.warn('🛑 TTS aborted due to page/text/hash change during load');
       try { audioService.stopAudio(); } catch {}
+      toast({ title: t('audioReading.pageChanged', 'Page changed'), description: t('audioReading.refreshAudio', 'Audio refreshed for the new page.'), duration: 1800 });
       return;
     }
 
@@ -406,12 +417,13 @@ useEffect(() => {
         <Button
           id="elevenlabs-play-toggle"
           onClick={isPlaying ? stopAudio : playAudio}
-          disabled={isLoading || (!isPlaying && shouldShowCrown)}
+          disabled={isLoading || isStabilizing || (!isPlaying && shouldShowCrown)}
           variant="outline"
           size={isMobileOrTablet ? "default" : "sm"}
           className={`gap-2 ${isMobileOrTablet ? 'min-h-[44px] px-4' : ''} ${shouldShowCrown && !isPlaying ? 'opacity-50' : ''}`}
           aria-live="polite"
           aria-pressed={isPlaying}
+          title={isStabilizing ? 'Stabilizing page…' : undefined}
         >
           {isLoading ? (
             <div className="w-4 h-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />

@@ -4,13 +4,13 @@ import { audioSyncService } from "@/services/audioSyncService";
 // Small, non-intrusive debug HUD for TTS highlighting & playback
 // Enable via query param: ?ttsdebug=1
 export const TTSDebugOverlay: React.FC = () => {
-  const [status, setStatus] = useState({ isPlaying: false, currentWordIndex: -1, totalWords: 0 });
+  const [status, setStatus] = useState({ isPlaying: false, currentWordIndex: -1, totalWords: 0, contentHash: '' });
 
   useEffect(() => {
     const iv = setInterval(() => {
       try {
         const st = audioSyncService.getPlaybackStatus();
-        setStatus(st);
+        setStatus(st as any);
       } catch {}
     }, 500);
     return () => clearInterval(iv);
@@ -21,6 +21,7 @@ export const TTSDebugOverlay: React.FC = () => {
       <div className="font-medium">TTS Debug</div>
       <div>playing: {String(status.isPlaying)}</div>
       <div>word: {status.currentWordIndex} / {status.totalWords}</div>
+      <div>hash: {status.contentHash ? String(status.contentHash).slice(0, 10) : '-'}</div>
     </div>
   );
 };

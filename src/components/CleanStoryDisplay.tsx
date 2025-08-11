@@ -23,6 +23,7 @@ import { ElevenLabsAudio } from "@/components/ElevenLabsAudio";
 
 import { VocabularyCollector } from "@/components/VocabularyCollector";
 import { processTextWithConsistentFlow } from "@/utils/unifiedTextProcessor";
+import { hashText } from "@/utils/tokenize";
 import "@/styles/storyDisplay.css";
 // import { processTextForDesktop } from "@/utils/desktopTextProcessor";
 import { useWordHighlighting } from "@/hooks/useWordHighlighting";
@@ -266,13 +267,14 @@ const [highlightSave, setHighlightSave] = useState(false);
     return () => clearTimeout(timer);
   }, [highlightSave]);
   const currentStory = story[currentPage] || "";
+  const contentHash = hashText(currentStory);
   
   // Audio highlighting integration
   const { onWordHighlight, currentHighlightedWord, clearHighlighting } = useWordHighlighting(
     currentStory, 
     isAudioPlaying
   );
-  
+
   // Gamification integration
   const {
     userStats,

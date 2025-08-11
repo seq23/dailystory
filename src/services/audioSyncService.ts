@@ -538,11 +538,12 @@ export class AudioSyncService {
   /**
    * Get current playback status
    */
-  getPlaybackStatus(): { isPlaying: boolean; currentWordIndex: number; totalWords: number } {
+  getPlaybackStatus(): { isPlaying: boolean; currentWordIndex: number; totalWords: number; contentHash: string } {
     return {
       isPlaying: this.isPlaying,
       currentWordIndex: this.currentWordIndex,
-      totalWords: this.words.length
+      totalWords: this.words.length,
+      contentHash: this.activeContentHash
     };
   }
 
