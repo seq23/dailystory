@@ -711,6 +711,17 @@ export class EnhancedAudioService {
       };
 
       this.speechRecognition.onstart = () => {
+        // Guard: if user toggled OFF or service not supposed to listen, abort immediately
+        const userDisabled = (window as any).__t2r_vc_user_disabled === true;
+        if (!this.voiceListening || userDisabled) {
+          try { this.speechRecognition.abort?.(); } catch {}
+          try { this.speechRecognition.stop(); } catch {}
+          this.recognitionActive = false;
+          this.recognitionStarting = false;
+          emitStatus('idle');
+          stopMeter();
+          return;
+        }
         console.log('🎙️ Web Speech started');
         this.recognitionActive = true;
         this.recognitionStarting = false;
@@ -771,6 +782,11 @@ export class EnhancedAudioService {
       };
 
       this.speechRecognition.onresult = (event: any) => {
+        const userDisabled = (window as any).__t2r_vc_user_disabled === true;
+        if (!this.voiceListening || userDisabled) {
+          emitStatus('idle');
+          return;
+        }
         const transcript = event.results[event.results.length - 1][0].transcript;
         console.log('🎙️ Heard:', transcript);
         emitStatus('processing');

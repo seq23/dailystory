@@ -213,19 +213,19 @@ const toggleVoiceCommands = () => {
   }
 
   if (voiceCommandsEnabled) {
-    // Turn OFF: stop both backends and reset status
-    try { audioService.stopVoiceCommands(); } catch {}
-    try { vcRef.current?.stop?.(); } catch {}
-    setVoiceCommandsEnabled(false);
+    // Turn OFF: set flags first to prevent any late onstart from flipping UI back
+    try { sessionStorage.setItem('t2r_voice_commands', '0'); } catch {}
+    ;(window as any).__t2r_vc_user_disabled = true;
     voiceEnabledRef.current = false;
+    setVoiceCommandsEnabled(false);
+    emitStatus('idle');
+    setVcStatus('idle');
     if (restartTimeoutRef.current) {
       clearTimeout(restartTimeoutRef.current);
       restartTimeoutRef.current = null;
     }
-    try { sessionStorage.setItem('t2r_voice_commands', '0'); } catch {}
-    ;(window as any).__t2r_vc_user_disabled = true;
-    emitStatus('idle');
-    setVcStatus('idle');
+    try { vcRef.current?.stop?.(); } catch {}
+    try { audioService.stopVoiceCommands(); } catch {}
     return;
   }
 
