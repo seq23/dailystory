@@ -1722,6 +1722,8 @@ const handleRestartTimer = () => {
                         className={cn(
                           "relative z-20 transform transition-all duration-500",
                           finishPressBurst && "animate-scale-in",
+                          // Gentle periodic pulse in steady state (every ~24s for 2s)
+                          !isGeneratingEnding && "animate-[pulse_2s_ease-in-out_24s_infinite]",
                           // Apply the same dramatic effects as free session while generating
                           isGeneratingEnding && [
                             "animate-bounce",
@@ -1744,7 +1746,7 @@ const handleRestartTimer = () => {
                           <>
                             <Loader2 className="w-6 h-6 mr-3 animate-spin" />
                             <Sparkles className="w-5 h-5 absolute top-2 right-2 animate-pulse" />
-                            {"Creating Magic..."}
+                            {t('common.creatingMagic', 'Creating magic...')}
                           </>
                         ) : (
                           <>
@@ -1874,11 +1876,13 @@ const handleRestartTimer = () => {
                               }}
                               disabled={!liveContext || isGeneratingEnding || timeRemaining <= 0}
                               variant="hero"
+                              aria-busy={isGeneratingEnding}
+                              className={cn(!isGeneratingEnding && "animate-[pulse_2s_ease-in-out_24s_infinite]")}
                             >
                               {isGeneratingEnding ? (
                                 <>
                                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                  {t('common.processing', 'Processing...')}
+                                  {t('common.creatingMagic', 'Creating magic...')}
                                 </>
                               ) : (
                                 t('nav.endStory', 'Finish Story')
@@ -1919,11 +1923,13 @@ const handleRestartTimer = () => {
                               disabled={!liveContext || isGeneratingEnding || timeRemaining <= 0}
                               variant="hero"
                               size="sm"
+                              aria-busy={isGeneratingEnding}
+                              className={cn(!isGeneratingEnding && "animate-[pulse_2s_ease-in-out_24s_infinite]")}
                             >
                               {isGeneratingEnding ? (
                                 <>
                                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                  {t('common.processing', 'Processing...')}
+                                  {t('common.creatingMagic', 'Creating magic...')}
                                 </>
                               ) : (
                                 t('nav.endStory', 'Finish Story')

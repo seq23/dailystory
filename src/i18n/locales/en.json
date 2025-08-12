@@ -541,6 +541,7 @@
   },
   "common": {
     "loading": "Loading...",
+    "creatingMagic": "Creating magic...",
     "close": "Close",
     "home": "Home",
     "newStory": "New Story",
