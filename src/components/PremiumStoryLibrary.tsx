@@ -36,6 +36,7 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
   const isDeck = isMobile || isTablet;
   const pageSize = isMobile ? 6 : isTablet ? 8 : 12;
   const [page, setPage] = useState(1);
+  const [emblaRef] = useEmblaCarousel({ align: 'start', dragFree: false, loop: false });
 
   useEffect(() => {
     loadSavedStories();
@@ -230,7 +231,7 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
           </div>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-end">
+          <div className="flex flex-col lg:flex-row gap-3 lg:gap-4 items-stretch lg:items-end">
             <div className="flex-1">
               <Input
                 placeholder="Search stories by title..."
@@ -240,7 +241,7 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
               />
             </div>
             <Select value={selectedDifficulty} onValueChange={(value) => setSelectedDifficulty(value as DifficultyLevel | 'all')}>
-              <SelectTrigger className="w-full sm:w-40">
+              <SelectTrigger className="w-full lg:w-40">
                 <SelectValue placeholder="Difficulty" />
               </SelectTrigger>
               <SelectContent className="z-50">
@@ -254,12 +255,12 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
             <Button
               variant={showFavoritesOnly ? "default" : "outline"}
               onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-              className="w-full sm:w-auto"
+              className="w-full lg:w-auto"
             >
               <Heart className={`w-4 h-4 mr-2 ${showFavoritesOnly ? 'fill-current' : ''}`} />
               Favorites
             </Button>
-            <Button onClick={handleSearch} className="w-full sm:w-auto">
+            <Button onClick={handleSearch} className="w-full lg:w-auto">
               <Search className="w-4 h-4 mr-2" />
               Search
             </Button>
@@ -282,16 +283,12 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
-          {(() => {
-            const totalPages = Math.max(1, Math.ceil(savedStories.length / pageSize));
-            const start = (page - 1) * pageSize;
-            const end = start + pageSize;
-            const displayedStories = savedStories.slice(start, end);
-            return (
-              <>
-                {displayedStories.map((story) => (
-                  <Card key={story.id} className="hover:shadow-lg transition-shadow">
+        {isDeck ? (
+          <div className="overflow-hidden" ref={emblaRef}>
+            <div className="flex gap-4">
+              {savedStories.map((story) => (
+                <div key={story.id} className="basis-[88%] md:basis-[70%] shrink-0">
+                  <Card className="hover:shadow-lg transition-shadow">
                     <CardHeader>
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
@@ -304,6 +301,7 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
                           variant="ghost"
                           size="sm"
                           onClick={() => handleToggleFavorite(story.id)}
+                          aria-label={story.isFavorite ? 'Unfavorite' : 'Favorite'}
                         >
                           <Heart 
                             className={`w-4 h-4 ${
@@ -315,10 +313,10 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
                         </Button>
                       </div>
                     </CardHeader>
-                    
+
                     <CardContent>
                       <div className="space-y-3">
-                        <div className="flex items-center gap-2 flex-wrap">
+                        <div className="flex items-center gap-3 flex-wrap">
                           <Badge className={getDifficultyColor(story.difficulty)}>
                             {story.difficulty}
                           </Badge>
@@ -331,37 +329,21 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
                             {story.wordCount} words
                           </div>
                         </div>
-                        
-                        {story.tags.length > 0 && (
-                          <div className="hidden sm:flex flex-wrap gap-1">
-                            {story.tags.slice(0, 3).map((tag, index) => (
-                              <Badge key={index} variant="secondary" className="text-xs">
-                                <Tag className="w-2 h-2 mr-1" />
-                                {tag}
-                              </Badge>
-                            ))}
-                            {story.tags.length > 3 && (
-                              <Badge variant="secondary" className="text-xs">
-                                +{story.tags.length - 3} more
-                              </Badge>
-                            )}
-                          </div>
-                        )}
                       </div>
                     </CardContent>
-    
-                    <CardFooter className="flex justify-between">
+
+                    <CardFooter className="flex items-center gap-2">
                       <Button 
                         onClick={() => onLoadStory(story.content)}
-                        className="flex-1 mr-2"
+                        className="flex-1"
                       >
                         <Play className="w-4 h-4 mr-2" />
                         Read Story
                       </Button>
-                      
+
                       <Dialog open={deleteDialogOpen === story.id} onOpenChange={(open) => setDeleteDialogOpen(open ? story.id : null)}>
                         <DialogTrigger asChild>
-                          <Button variant="outline" size="sm">
+                          <Button variant="outline" size="icon" aria-label="Delete story">
                             <Trash2 className="w-4 h-4" />
                           </Button>
                         </DialogTrigger>
@@ -390,21 +372,136 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
                       </Dialog>
                     </CardFooter>
                   </Card>
-                ))}
-                {/* Pagination Controls */}
-                <div className="col-span-full flex items-center justify-center gap-2 mt-2">
-                  <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
-                    Prev
-                  </Button>
-                  <span className="text-sm text-muted-foreground">Page {page} of {Math.max(1, Math.ceil(savedStories.length / pageSize))}</span>
-                  <Button variant="outline" size="sm" disabled={page >= Math.ceil(savedStories.length / pageSize)} onClick={() => setPage((p) => Math.min(Math.ceil(savedStories.length / pageSize), p + 1))}>
-                    Next
-                  </Button>
                 </div>
-              </>
-            );
-          })()}
-        </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+            {(() => {
+              const totalPages = Math.max(1, Math.ceil(savedStories.length / pageSize));
+              const start = (page - 1) * pageSize;
+              const end = start + pageSize;
+              const displayedStories = savedStories.slice(start, end);
+              return (
+                <>
+                  {displayedStories.map((story) => (
+                    <Card key={story.id} className="hover:shadow-lg transition-shadow">
+                      <CardHeader>
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <CardTitle className="text-base sm:text-lg line-clamp-2">{story.title}</CardTitle>
+                            <CardDescription className="mt-1 text-xs sm:text-sm">
+                              {formatDate(story.createdAt)}
+                            </CardDescription>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleToggleFavorite(story.id)}
+                          >
+                            <Heart 
+                              className={`w-4 h-4 ${
+                                story.isFavorite 
+                                  ? 'fill-red-500 text-red-500' 
+                                  : 'text-muted-foreground hover:text-red-500'
+                              }`} 
+                            />
+                          </Button>
+                        </div>
+                      </CardHeader>
+                      
+                      <CardContent>
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <Badge className={getDifficultyColor(story.difficulty)}>
+                              {story.difficulty}
+                            </Badge>
+                            <div className="flex items-center text-xs sm:text-sm text-muted-foreground">
+                              <Clock className="w-3 h-3 mr-1" />
+                              {story.estimatedReadingTime}m
+                            </div>
+                            <div className="flex items-center text-xs sm:text-sm text-muted-foreground">
+                              <BookOpen className="w-3 h-3 mr-1" />
+                              {story.wordCount} words
+                            </div>
+                          </div>
+                          
+                          {story.tags.length > 0 && (
+                            <div className="hidden sm:flex flex-wrap gap-1">
+                              {story.tags.slice(0, 3).map((tag, index) => (
+                                <Badge key={index} variant="secondary" className="text-xs">
+                                  <Tag className="w-2 h-2 mr-1" />
+                                  {tag}
+                                </Badge>
+                              ))}
+                              {story.tags.length > 3 && (
+                                <Badge variant="secondary" className="text-xs">
+                                  +{story.tags.length - 3} more
+                                </Badge>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+          
+                      <CardFooter className="flex justify-between">
+                        <Button 
+                          onClick={() => onLoadStory(story.content)}
+                          className="flex-1 mr-2"
+                        >
+                          <Play className="w-4 h-4 mr-2" />
+                          Read Story
+                        </Button>
+                        
+                        <Dialog open={deleteDialogOpen === story.id} onOpenChange={(open) => setDeleteDialogOpen(open ? story.id : null)}>
+                          <DialogTrigger asChild>
+                            <Button variant="outline" size="sm">
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Delete Story</DialogTitle>
+                              <DialogDescription>
+                                Are you sure you want to delete "{story.title}"? This action cannot be undone.
+                              </DialogDescription>
+                            </DialogHeader>
+                            <DialogFooter>
+                              <Button 
+                                variant="outline" 
+                                onClick={() => setDeleteDialogOpen(null)}
+                              >
+                                Cancel
+                              </Button>
+                              <Button 
+                                variant="destructive" 
+                                onClick={() => handleDeleteStory(story.id)}
+                              >
+                                Delete
+                              </Button>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
+                      </CardFooter>
+                    </Card>
+                  ))}
+                  {/* Pagination Controls */}
+                  <div className="col-span-full flex items-center justify-center gap-2 mt-2">
+                    <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
+                      Prev
+                    </Button>
+                    <span className="text-sm text-muted-foreground">Page {page} of {Math.max(1, Math.ceil(savedStories.length / pageSize))}</span>
+                    <Button variant="outline" size="sm" disabled={page >= Math.ceil(savedStories.length / pageSize)} onClick={() => setPage((p) => Math.min(Math.ceil(savedStories.length / pageSize), p + 1))}>
+                      Next
+                    </Button>
+                  </div>
+                </>
+              );
+            })()}
+          </div>
+        )}
+
       )}
     </div>
   );
