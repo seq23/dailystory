@@ -1691,9 +1691,9 @@ const handleRestartTimer = () => {
                 {/* Premium Magic Wand - Below page count */}
                 {isPremium && finishCTAExpanded && (
                   <div className="text-center relative">
-                    <p className="text-lg font-bold mb-4 px-4 py-2 rounded-full animate-pulse" aria-live="polite">
+                    <p className="text-lg font-bold mb-4 px-4 py-2 rounded-full animate-pulse leading-tight" aria-live="polite">
                       <span className="inline-flex items-center gap-2">
-                        <FriendlyUpArrowIcon className="w-6 h-6 text-destructive" />
+                        <FriendlyUpArrowIcon size={22} className="text-destructive shrink-0 align-middle -translate-y-[1px]" />
                         {"Here's how this one ends! Don't forget to save 😊"}
                       </span>
                     </p>
@@ -1757,8 +1757,12 @@ const handleRestartTimer = () => {
                     <p className="text-sm mt-3 opacity-80">
                       {"Want more? Go to the next page to add new parts to this story!"}
                     </p>
+                  </div>
+                )}
 
-                    {/* Sparkle animation container */}
+                {/* Free User Magic Wand - visible only for free users on last page with time left */}
+                {!isPremium && currentPage === story.length - 1 && timeRemaining > 0 && (
+                  <div className="text-center relative">
                     <div className="relative">
                       <SparkleAnimation 
                         isActive={isMagicWandAnimating} 
@@ -1827,7 +1831,7 @@ const handleRestartTimer = () => {
                     </div>
                     
                     {/* Upgrade prompt under button */}
-                    <p className="text-sm text-gray-600 mt-3">
+                    <p className="text-sm text-muted-foreground mt-3">
                       <button type="button" onClick={onUpgrade} className="story-link">Upgrade</button> to premium for unlimited stories and to craft your perfect ending.
                     </p>
                   </div>
