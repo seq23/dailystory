@@ -48,11 +48,11 @@ export function ChildQuickSwitcher({ className, size = 'md' }: ChildQuickSwitche
                   onClick={openParentControls}
                   aria-label={t('header.quickChildSwitcher.readingAs', { defaultValue: 'Reading as' }) + (activeFullName ? `: ${activeFullName}` : '')}
                       className={cn(
-                        "rounded-full inline-flex items-center justify-center font-black leading-none ring-2 select-none tracking-tight",
+                        "rounded-full inline-flex items-center justify-center font-black leading-none ring-2 ring-offset-2 ring-offset-background select-none tracking-tight drop-shadow-sm z-10",
                         size === "sm"
-                          ? "h-8 w-8 text-[1.7rem]"
-                          : "h-8 w-8 md:h-9 md:w-9 text-[1.8rem] md:text-[1.75rem]",
-                        "ring-primary/70 bg-primary text-primary-foreground hover:bg-primary/90 transition",
+                          ? "h-9 w-9 md:h-8 md:w-8 text-[1.55rem] md:text-[1.7rem]"
+                          : "h-9 w-9 md:h-9 md:w-9 text-[1.6rem] md:text-[1.7rem]",
+                        "ring-background bg-primary text-primary-foreground hover:bg-primary/90 transition",
                         loading && "opacity-70",
                       )}
                 >
