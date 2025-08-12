@@ -548,13 +548,14 @@ export const ResponsiveStoryHeader = ({
                 {onNewStory && (
                   <NewStoryCTA
                     isPremium={!!isPremium}
-                    iconOnly={isMobileOrTablet}
+                    iconOnly={isMobile}
                     onNewStory={onNewStory}
                     onUpgrade={onUpgrade || (() => {})}
                     size={isMobileOrTablet ? "sm" : "md"}
                     wandPulse={wandPulse}
-                    labelOverride={!isMobileOrTablet ? "Re-write this story" : undefined}
-                    tooltipText={isMobileOrTablet ? "Re-write this story" : "you will get to update any special requests"}
+                    labelOverride={isMobile ? undefined : "Re-write this story"}
+                    tooltipText={isMobile ? "Re-write this story" : "you will get to update any special requests"}
+                    className={!isMobile ? "rounded-full px-6" : undefined}
                   />
                 )}
                 {onSaveStory && !isMobileOrTablet && (

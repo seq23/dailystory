@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import NewStoryCTA from "@/components/NewStoryCTA";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { 
@@ -161,13 +162,16 @@ useEffect(() => {
         </div>
         
         <div className="flex items-center gap-2">
-          <Button 
-            onClick={() => setRequestDialogOpen(true)}
-            className="bg-gradient-primary hover:bg-gradient-primary/90"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            New Story
-          </Button>
+          <NewStoryCTA
+            isPremium={isPremium}
+            iconOnly={false}
+            onNewStory={() => setRequestDialogOpen(true)}
+            onUpgrade={() => {}}
+            className="rounded-full px-6 hover-scale pulse"
+            size="md"
+            wandPulse
+            labelOverride="New Story"
+          />
         </div>
       </div>
 

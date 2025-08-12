@@ -53,13 +53,13 @@ const sidebarItems = [
   {
     title: "Profile Settings",
     url: "profile",
-    icon: User,
+    icon: Settings,
     description: "Edit your reading profile"
   },
   {
     title: "Parent Dashboard",
     url: "parent",
-    icon: Settings,
+    icon: User,
     description: "Parent controls & reports"
   },
   {

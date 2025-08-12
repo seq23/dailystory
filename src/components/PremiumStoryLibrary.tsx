@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Heart, Search, Trash2, Play, BookOpen, Clock, Tag } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 import { toast } from '@/hooks/use-toast';
 import { PremiumStoryManager, SavedStory } from '@/services/premiumStoryManager';
@@ -30,7 +31,9 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
   const [selectedDifficulty, setSelectedDifficulty] = useState<DifficultyLevel | 'all'>('all');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<string | null>(null);
-  
+  const { isMobile, isTablet } = useIsMobile();
+  const pageSize = isMobile ? 6 : isTablet ? 8 : 12;
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     loadSavedStories();
@@ -41,6 +44,7 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
       setLoading(true);
       const stories = await PremiumStoryManager.getSavedStories('created_at');
       setSavedStories(stories);
+      setPage(1);
     } catch (error) {
       console.error('Error loading saved stories:', error);
       toast({
@@ -73,6 +77,7 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
 
       const stories = await PremiumStoryManager.searchStories(searchQuery, filters);
       setSavedStories(stories);
+      setPage(1);
     } catch (error) {
       console.error('Error searching stories:', error);
       toast({
@@ -275,108 +280,128 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {savedStories.map((story) => (
-            <Card key={story.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <CardTitle className="text-lg line-clamp-2">{story.title}</CardTitle>
-                    <CardDescription className="mt-1">
-                      {formatDate(story.createdAt)}
-                    </CardDescription>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleToggleFavorite(story.id)}
-                  >
-                    <Heart 
-                      className={`w-4 h-4 ${
-                        story.isFavorite 
-                          ? 'fill-red-500 text-red-500' 
-                          : 'text-muted-foreground hover:text-red-500'
-                      }`} 
-                    />
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+          {(() => {
+            const totalPages = Math.max(1, Math.ceil(savedStories.length / pageSize));
+            const start = (page - 1) * pageSize;
+            const end = start + pageSize;
+            const displayedStories = savedStories.slice(start, end);
+            return (
+              <>
+                {displayedStories.map((story) => (
+                  <Card key={story.id} className="hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <CardTitle className="text-base sm:text-lg line-clamp-2">{story.title}</CardTitle>
+                          <CardDescription className="mt-1 text-xs sm:text-sm">
+                            {formatDate(story.createdAt)}
+                          </CardDescription>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleToggleFavorite(story.id)}
+                        >
+                          <Heart 
+                            className={`w-4 h-4 ${
+                              story.isFavorite 
+                                ? 'fill-red-500 text-red-500' 
+                                : 'text-muted-foreground hover:text-red-500'
+                            }`} 
+                          />
+                        </Button>
+                      </div>
+                    </CardHeader>
+                    
+                    <CardContent>
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge className={getDifficultyColor(story.difficulty)}>
+                            {story.difficulty}
+                          </Badge>
+                          <div className="flex items-center text-xs sm:text-sm text-muted-foreground">
+                            <Clock className="w-3 h-3 mr-1" />
+                            {story.estimatedReadingTime}m
+                          </div>
+                          <div className="flex items-center text-xs sm:text-sm text-muted-foreground">
+                            <BookOpen className="w-3 h-3 mr-1" />
+                            {story.wordCount} words
+                          </div>
+                        </div>
+                        
+                        {story.tags.length > 0 && (
+                          <div className="hidden sm:flex flex-wrap gap-1">
+                            {story.tags.slice(0, 3).map((tag, index) => (
+                              <Badge key={index} variant="secondary" className="text-xs">
+                                <Tag className="w-2 h-2 mr-1" />
+                                {tag}
+                              </Badge>
+                            ))}
+                            {story.tags.length > 3 && (
+                              <Badge variant="secondary" className="text-xs">
+                                +{story.tags.length - 3} more
+                              </Badge>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+    
+                    <CardFooter className="flex justify-between">
+                      <Button 
+                        onClick={() => onLoadStory(story.content)}
+                        className="flex-1 mr-2"
+                      >
+                        <Play className="w-4 h-4 mr-2" />
+                        Read Story
+                      </Button>
+                      
+                      <Dialog open={deleteDialogOpen === story.id} onOpenChange={(open) => setDeleteDialogOpen(open ? story.id : null)}>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" size="sm">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Delete Story</DialogTitle>
+                            <DialogDescription>
+                              Are you sure you want to delete "{story.title}"? This action cannot be undone.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <DialogFooter>
+                            <Button 
+                              variant="outline" 
+                              onClick={() => setDeleteDialogOpen(null)}
+                            >
+                              Cancel
+                            </Button>
+                            <Button 
+                              variant="destructive" 
+                              onClick={() => handleDeleteStory(story.id)}
+                            >
+                              Delete
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                    </CardFooter>
+                  </Card>
+                ))}
+                {/* Pagination Controls */}
+                <div className="col-span-full flex items-center justify-center gap-2 mt-2">
+                  <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
+                    Prev
+                  </Button>
+                  <span className="text-sm text-muted-foreground">Page {page} of {Math.max(1, Math.ceil(savedStories.length / pageSize))}</span>
+                  <Button variant="outline" size="sm" disabled={page >= Math.ceil(savedStories.length / pageSize)} onClick={() => setPage((p) => Math.min(Math.ceil(savedStories.length / pageSize), p + 1))}>
+                    Next
                   </Button>
                 </div>
-              </CardHeader>
-              
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <Badge className={getDifficultyColor(story.difficulty)}>
-                      {story.difficulty}
-                    </Badge>
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <Clock className="w-3 h-3 mr-1" />
-                      {story.estimatedReadingTime}m
-                    </div>
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <BookOpen className="w-3 h-3 mr-1" />
-                      {story.wordCount} words
-                    </div>
-                  </div>
-                  
-                  {story.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      {story.tags.slice(0, 3).map((tag, index) => (
-                        <Badge key={index} variant="secondary" className="text-xs">
-                          <Tag className="w-2 h-2 mr-1" />
-                          {tag}
-                        </Badge>
-                      ))}
-                      {story.tags.length > 3 && (
-                        <Badge variant="secondary" className="text-xs">
-                          +{story.tags.length - 3} more
-                        </Badge>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-
-              <CardFooter className="flex justify-between">
-                <Button 
-                  onClick={() => onLoadStory(story.content)}
-                  className="flex-1 mr-2"
-                >
-                  <Play className="w-4 h-4 mr-2" />
-                  Read Story
-                </Button>
-                
-                <Dialog open={deleteDialogOpen === story.id} onOpenChange={(open) => setDeleteDialogOpen(open ? story.id : null)}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Delete Story</DialogTitle>
-                      <DialogDescription>
-                        Are you sure you want to delete "{story.title}"? This action cannot be undone.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                      <Button 
-                        variant="outline" 
-                        onClick={() => setDeleteDialogOpen(null)}
-                      >
-                        Cancel
-                      </Button>
-                      <Button 
-                        variant="destructive" 
-                        onClick={() => handleDeleteStory(story.id)}
-                      >
-                        Delete
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-              </CardFooter>
-            </Card>
-          ))}
+              </>
+            );
+          })()}
         </div>
       )}
     </div>
