@@ -118,28 +118,13 @@ export const VoiceHUD: React.FC = () => {
       className="fixed left-1/2 -translate-x-1/2 z-[350] w-[92%] max-w-lg bottom-[calc(88px+env(safe-area-inset-bottom))] sm:bottom-[calc(104px+env(safe-area-inset-bottom))] md:bottom-[calc(152px+env(safe-area-inset-bottom))] lg:bottom-[calc(172px+env(safe-area-inset-bottom))]"
     >
       {collapsed ? (
-        <div className="rounded-full border border-border bg-card/95 backdrop-blur shadow-lg px-3 py-2 flex items-center gap-2">
-          <Mic className={`w-4 h-4 ${status === 'listening' ? 'text-primary' : 'text-muted-foreground'}`} aria-hidden />
-          <div className="text-xs font-medium">
-            {status === 'listening' ? 'Listening' : 'Transcribing'}
-          </div>
-          <div className="ml-auto flex items-center gap-1.5">
-            <button
-              aria-label="Expand voice HUD"
-              className="p-1.5 rounded-md hover:bg-muted text-muted-foreground"
-              onClick={toggleCollapse}
-            >
-              <ChevronUp className="w-4 h-4" />
-            </button>
-            <button
-              aria-label="Stop listening"
-              className="p-1.5 rounded-md hover:bg-muted text-muted-foreground"
-              onClick={handleStop}
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
+        <button
+          aria-label="Expand voice HUD"
+          className="rounded-full border border-border bg-card/95 backdrop-blur shadow-lg w-11 h-11 flex items-center justify-center active:scale-[0.98]"
+          onClick={toggleCollapse}
+        >
+          <Mic className={`w-5 h-5 ${status === 'listening' ? 'text-primary' : 'text-muted-foreground'}`} aria-hidden />
+        </button>
       ) : (
         <div className="rounded-xl border border-border bg-card/95 backdrop-blur shadow-lg p-3 flex items-center gap-3">
           <div className={`p-2 rounded-lg ${status === 'listening' ? 'bg-primary/10' : 'bg-muted'}`} aria-hidden>
