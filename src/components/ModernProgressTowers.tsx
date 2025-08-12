@@ -239,13 +239,36 @@ className={cn(
           "transition-all duration-500 ease-out",
           isMobile && "scale-75 right-1",
           isTablet && "scale-75 right-1",
-          !enabled && "hidden",
           className
         )}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
         {/* Main container */}
+        {!enabled && (
+          <button
+            onClick={() => {
+              try { localStorage.setItem('progressTowersEnabled', '1'); } catch {}
+              setEnabled(true);
+              window.dispatchEvent(new CustomEvent('progressTowersToggle', { detail: true }));
+            }}
+            className={cn(
+              "absolute flex items-center justify-center",
+              "w-12 h-12 rounded-full backdrop-blur-sm border transition-all duration-300",
+              "bg-gradient-to-br from-primary/20 to-primary/30 border-primary/30",
+              "hover:from-primary/30 hover:to-primary/40 hover:border-primary/40",
+              "shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary/50",
+              "group relative overflow-hidden touch-manipulation",
+              "bottom-4 left-1/2 -translate-x-1/2",
+              isMobile && "w-9 h-9"
+            )}
+            aria-label="Show progress towers"
+            title="Show progress towers"
+          >
+            <Trophy className="w-5 h-5 text-primary group-hover:text-primary/80" />
+          </button>
+        )}
+
         <div className={cn(
           "relative overflow-hidden rounded-2xl backdrop-blur-lg",
           "bg-gradient-to-br from-white/90 via-white/80 to-white/70",
@@ -255,7 +278,8 @@ className={cn(
           isMobile && !isExpanded && "w-14 p-2",
           isTablet && !isExpanded && "w-16 p-3",
           celebrationMode && "animate-pulse ring-4 ring-amber-400/50",
-          sparkleMode && "relative overflow-visible"
+          sparkleMode && "relative overflow-visible",
+          !enabled && "hidden"
         )}>
           
           {/* Background effects */}
