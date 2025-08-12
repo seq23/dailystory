@@ -135,7 +135,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
   return (
     <Sidebar className={`border-r bg-background/95 backdrop-blur-sm ${effectiveCollapsed ? "w-16" : "w-64"}`} collapsible="icon">
       {/* Header */}
-      <div className={`border-b relative overflow-visible ${effectiveCollapsed ? "p-2" : "p-4"}`}>
+      <div className={`border-b relative overflow-visible z-20 ${effectiveCollapsed ? "p-2" : "p-4"}`}>
         <div className="flex items-center gap-3">
           {!effectiveCollapsed && (
             <>
@@ -163,7 +163,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
               }}
               size="icon"
               variant="secondary"
-              className={`absolute rounded-full shadow-sm ${isMobile ? "top-2 right-2 h-8 w-8" : effectiveCollapsed ? "top-1 right-1 h-6 w-6" : "top-2 right-2 h-8 w-8"}`}
+              className={`absolute z-50 rounded-full shadow-sm ${isMobile ? "top-2 right-2 h-8 w-8" : effectiveCollapsed ? "top-1 right-1 h-5 w-5" : "top-2 right-2 h-8 w-8"}`}
             >
               {isMobile ? (
                 <X className="h-4 w-4" />
@@ -244,7 +244,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
                           <TooltipTrigger asChild>
                             <SidebarMenuButton
                               onClick={() => toggleTimer()}
-                              className="flex items-center gap-3 w-full justify-between transition-colors rounded-lg hover:bg-accent hover:text-accent-foreground min-w-[220px] overflow-visible z-30"
+                              className="flex items-center w-full justify-center transition-colors rounded-lg hover:bg-accent hover:text-accent-foreground"
                               aria-label="Toggle reading timer visibility"
                             >
                               <Clock className="w-5 h-5 flex-shrink-0" />
@@ -288,7 +288,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
                             <SidebarMenuButton
                               onClick={() => toggleTowers()
                               }
-                              className="flex items-center gap-3 w-full justify-between transition-colors rounded-lg hover:bg-accent hover:text-accent-foreground min-w-[220px] overflow-visible z-30"
+                              className="flex items-center w-full justify-center transition-colors rounded-lg hover:bg-accent hover:text-accent-foreground"
                               aria-label="Toggle progress towers visibility"
                             >
                               <Trophy className="w-5 h-5 flex-shrink-0" />
