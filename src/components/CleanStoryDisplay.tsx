@@ -1583,7 +1583,7 @@ const handleRestartTimer = () => {
                {/* Magic Wand Buttons Section */}
               <div className="mb-6 flex flex-col items-center gap-4">
                 {/* Premium Magic Wand - Below page count */}
-                {isPremium && currentPage === story.length - 1 && timeRemaining > 0 && (
+                {isPremium && !isStoryComplete && (
                   <div className="text-center relative">
                     <p className="text-lg font-bold mb-4 px-4 py-2 rounded-full animate-pulse">
                       {"Don't forget to save to your library!"}
@@ -1605,6 +1605,7 @@ const handleRestartTimer = () => {
                           setTimeout(() => setFinishSparkle(false), 1200);
                           setShowConfirmEndStory(true);
                         }}
+                        disabled={!liveContext || isGeneratingEnding || isStoryComplete || timeRemaining <= 0}
                         variant="hero"
                         size="xl"
                         className={cn(
@@ -1720,7 +1721,7 @@ const handleRestartTimer = () => {
                 )}
 
                 {/* Premium controls */}
-                {isPremium && !(currentPage === story.length - 1 && timeRemaining > 0) && (
+                {isPremium && isStoryComplete && (
                   <div className="mt-3 flex justify-center gap-3 xl:hidden">
                     <TooltipProvider>
                       <Tooltip>
@@ -1764,7 +1765,7 @@ const handleRestartTimer = () => {
                 <div className="hidden" />
 
                 {/* Premium controls desktop */}
-                {isPremium && !(currentPage === story.length - 1 && timeRemaining > 0) && (
+                {isPremium && isStoryComplete && (
                   <div className="hidden xl:flex justify-center gap-3 mt-3">
                     <TooltipProvider>
                       <Tooltip>
