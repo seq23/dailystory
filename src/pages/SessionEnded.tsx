@@ -375,17 +375,14 @@ const getDifficultyLabel = (difficulty: string) => {
           />
         )}
         {vocabVisible && userInfoFromState && (
-          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <Card className="w-full max-w-3xl">
-              <CardContent className="p-4">
-                <div className="flex justify-end">
-                  <Button variant="ghost" onClick={() => setVocabVisible(false)}>✕</Button>
-                </div>
-                <VocabularyCollector userInfo={userInfoFromState} isVisible={vocabVisible} onClose={() => setVocabVisible(false)} enablePersistence={userIsPremium} />
-              </CardContent>
-            </Card>
-          </div>
+          <VocabularyCollector
+            userInfo={userInfoFromState}
+            isVisible={vocabVisible}
+            onClose={() => setVocabVisible(false)}
+            enablePersistence={userIsPremium}
+          />
         )}
+
         </CardContent>
       </Card>
     </div>
