@@ -1592,7 +1592,7 @@ const handleRestartTimer = () => {
                       "text-lg font-bold mb-4 px-4 py-2 rounded-full",
                       isMagicWandAnimating && "animate-pulse text-gradient-primary bg-gradient-to-r from-purple-500/20 to-blue-500/20"
                     )}>
-                      🌟 Generate New Story Now! 🌟
+                      ⏳ Time’s up on this story.
                     </p>
                     
                     {/* Sparkle animation container */}
@@ -1657,18 +1657,16 @@ const handleRestartTimer = () => {
                                 <Sparkles className="w-3 h-3 absolute bottom-1 right-1 text-green-300 animate-ping" />
                               </>
                             )}
-                            ✨ Generate Fresh Story! ✨
+                            Get the next story
                           </>
                         )}
                       </Button>
                     </div>
                     
-                    {/* Additional attention-grabbing text */}
-                    {isMagicWandAnimating && (
-                      <p className="text-sm text-purple-600 mt-3 animate-pulse font-semibold">
-                        🎯 Click the magic wand for unlimited new adventures! 🎯
-                      </p>
-                    )}
+                    {/* Upgrade prompt under button */}
+                    <p className="text-sm text-gray-600 mt-3">
+                      <button type="button" onClick={onUpgrade} className="story-link">Upgrade</button> to get unlimited stories and create endings to your stories.
+                    </p>
                   </div>
                 )}
               </div>
