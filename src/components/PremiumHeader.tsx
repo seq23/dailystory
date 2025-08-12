@@ -10,15 +10,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { 
-  BookOpen, 
+  Clock, 
   LogOut, 
   Crown, 
   Bug, 
   User,
   Settings,
-  ChevronDown,
-  PanelLeft,
-  Wand
+  ChevronDown
 } from "lucide-react";
 import type { UserInfo } from "@/types";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
@@ -93,8 +91,17 @@ export const PremiumHeader = ({
                 <TooltipContent side="bottom">Open navigation</TooltipContent>
               </Tooltip>
             </TooltipProvider>
+            {/* Desktop/Tablet trigger to the LEFT of the logo */}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <SidebarTrigger aria-label="Toggle navigation" className="hidden md:inline-flex mr-2" />
+                </TooltipTrigger>
+                <TooltipContent side="bottom">Open navigation</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             <div className="p-2 bg-gradient-primary rounded-lg">
-              <BookOpen className="w-6 h-6 text-white" />
+              <Clock className="w-6 h-6 text-white" />
             </div>
             <div>
               <button
