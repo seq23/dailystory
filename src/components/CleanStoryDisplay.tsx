@@ -1690,8 +1690,11 @@ const handleRestartTimer = () => {
                 {/* Premium Magic Wand - Below page count */}
                 {isPremium && finishCTAExpanded && (
                   <div className="text-center relative">
-                    <p className="text-lg font-bold mb-4 px-4 py-2 rounded-full animate-pulse">
-                      {"Don't forget to save to your library!"}
+                    <p className="text-lg font-bold mb-4 px-4 py-2 rounded-full animate-pulse" aria-live="polite">
+                      <span className="inline-flex items-center gap-2">
+                        <ChevronUp className="w-5 h-5" aria-hidden="true" />
+                        {"Here is your story ending! Don't forget to save your completed story."}
+                      </span>
                     </p>
 
                     <div className="relative">
@@ -1884,7 +1887,7 @@ const handleRestartTimer = () => {
                             <SparkleAnimation isActive={finishSparkle} intensity="medium" isPremium={false} className="pointer-events-none absolute -inset-3" />
                           </div>
                         </TooltipTrigger>
-                        <TooltipContent>{t('tooltips.finishStory', 'Finish the story with a proper ending')}</TooltipContent>
+                        <TooltipContent>{t('tooltips.finishStory', 'Ready to end this story? Click to see how it ends!')}</TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
                   </div>
@@ -1931,7 +1934,7 @@ const handleRestartTimer = () => {
                             <SparkleAnimation isActive={finishSparkle} intensity="medium" isPremium={false} className="pointer-events-none absolute -inset-3" />
                           </div>
                         </TooltipTrigger>
-                        <TooltipContent>{t('tooltips.finishStory', 'Finish the story with a proper ending')}</TooltipContent>
+                        <TooltipContent>{t('tooltips.finishStory', 'Ready to end this story? Click to see how it ends!')}</TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
                   </div>
