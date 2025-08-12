@@ -78,20 +78,7 @@ export const PremiumHeader = ({
   const hasSelectedAvatar = userInfo.avatar?.type && userInfo.avatar?.skinTone;
 
   return (
-    <header ref={headerRef} className="relative bg-white/95 backdrop-blur-sm shadow-sm border-b sticky top-0 z-50">
-      {/* Desktop/Tablet: absolute left-aligned sidebar trigger on card (white) background */}
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <SidebarTrigger
-              aria-label="Toggle navigation"
-              className="hidden md:flex absolute top-1/2 -translate-y-1/2 z-50 h-9 w-9 rounded-full bg-card text-foreground border border-border shadow-sm"
-              style={{ left: 'max(0px, env(safe-area-inset-left))' }}
-            />
-          </TooltipTrigger>
-          <TooltipContent side="bottom">Open navigation</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+    <header ref={headerRef} className="bg-white/95 backdrop-blur-sm shadow-sm border-b sticky top-0 z-50">
       <div className="container mx-auto px-4 pr-[env(safe-area-inset-right)] py-3">
         <div className="flex justify-between items-center gap-2 min-w-0">
           {/* Logo and Title */}
@@ -100,6 +87,15 @@ export const PremiumHeader = ({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <SidebarTrigger className="mr-1 md:hidden" />
+                </TooltipTrigger>
+                <TooltipContent side="bottom">Open navigation</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            {/* Desktop/Tablet trigger to the LEFT of the logo */}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <SidebarTrigger aria-label="Toggle navigation" className="hidden md:inline-flex mr-2" />
                 </TooltipTrigger>
                 <TooltipContent side="bottom">Open navigation</TooltipContent>
               </Tooltip>
