@@ -1746,7 +1746,7 @@ const handleRestartTimer = () => {
                                 <Sparkles className="w-3 h-3 absolute bottom-1 right-1 text-green-300 animate-ping" />
                               </>
                             )}
-                            Get the next story
+                            Get the next story!
                           </>
                         )}
                       </Button>
@@ -1754,7 +1754,7 @@ const handleRestartTimer = () => {
                     
                     {/* Upgrade prompt under button */}
                     <p className="text-sm text-gray-600 mt-3">
-                      <button type="button" onClick={onUpgrade} className="story-link">Upgrade</button> to get unlimited stories and create endings to your stories.
+                      <button type="button" onClick={onUpgrade} className="story-link">Upgrade</button> to premium for unlimited stories and to craft your perfect ending.
                     </p>
                   </div>
                 )}
