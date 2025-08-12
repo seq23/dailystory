@@ -1416,37 +1416,20 @@ const handleRestartTimer = () => {
                     onWordHighlight={onWordHighlight}
                     contentHash={contentHash}
                   />
-                  {isPremium ? (
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button variant="secondary" size="lg" aria-label="Open Help Me Read">
-                          Help Me Read
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="sm:max-w-xl">
-                        <DialogHeader>
-                          <DialogTitle>Help Me Read</DialogTitle>
-                        </DialogHeader>
-                        {/* @ts-ignore */}
-                        <ReadAloudCoach targetText={currentStory} isPremium={isPremium} language={userInfo?.nativeLanguage || 'en'} onUpgrade={onUpgrade} />
-                      </DialogContent>
-                    </Dialog>
-                  ) : (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="inline-flex">
-                            <Button variant="secondary" size="lg" aria-label="Coach (Premium)" disabled>
-                              Help Me Read
-                            </Button>
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent side="top">
-                          {t('tooltips.dock.coachPremium', 'Premium only. Practice reading and get feedback.')}
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  )}
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="secondary" size="lg" aria-label="Open Help Me Read">
+                        Help Me Read
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-xl">
+                      <DialogHeader>
+                        <DialogTitle>Help Me Read</DialogTitle>
+                      </DialogHeader>
+                      {/* @ts-ignore */}
+                      <ReadAloudCoach targetText={currentStory} isPremium={isPremium} language={userInfo?.nativeLanguage || 'en'} onUpgrade={onUpgrade} />
+                    </DialogContent>
+                  </Dialog>
 
                 </div>
                 {!isMobileOrTablet && isAudioPlaying && (
@@ -1824,7 +1807,7 @@ const handleRestartTimer = () => {
             isPremium={isPremium}
             onPlayAudio={handleDockPlayAudio}
             onVoiceCommand={isPremium ? handleDockVoiceCommand : undefined}
-            onCoach={isPremium ? handleDockCoach : undefined}
+            onCoach={handleDockCoach}
             onSave={isPremium ? handleSaveStoryNow : undefined}
             onEnd={isPremium ? () => setShowEndSessionConfirm(true) : undefined}
             isSaving={isSaving}
@@ -1834,17 +1817,15 @@ const handleRestartTimer = () => {
         </>
       )}
 
-      {isPremium && (
-        <Dialog open={showCoach} onOpenChange={setShowCoach}>
-          <DialogContent className="sm:max-w-xl">
-            <DialogHeader>
-              <DialogTitle>Help Me Read</DialogTitle>
-            </DialogHeader>
-            {/* @ts-ignore */}
-            <ReadAloudCoach targetText={currentStory} isPremium={isPremium} language={userInfo?.nativeLanguage || 'en'} onUpgrade={onUpgrade} />
-          </DialogContent>
-        </Dialog>
-      )}
+      <Dialog open={showCoach} onOpenChange={setShowCoach}>
+        <DialogContent className="sm:max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Help Me Read</DialogTitle>
+          </DialogHeader>
+          {/* @ts-ignore */}
+          <ReadAloudCoach targetText={currentStory} isPremium={isPremium} language={userInfo?.nativeLanguage || 'en'} onUpgrade={onUpgrade} />
+        </DialogContent>
+      </Dialog>
 
       {isPremium && showConfirmEndStory && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center">
