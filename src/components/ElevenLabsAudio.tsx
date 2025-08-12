@@ -70,6 +70,7 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
   const lastBurstTsRef = useRef(0);
   const mismatchSinceRef = useRef<number | null>(null);
   const audioRetryRef = useRef<boolean>(false);
+  const lastTapRef = useRef<number>(0);
   const emitStatus = (s: 'idle'|'listening'|'processing') =>
     window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: s } }));
 
@@ -213,17 +214,24 @@ useEffect(() => {
 
     setIsLoading(true);
 
-    try {
-      // Pre-roll: on desktop wait briefly for text stabilization; on mobile/tablet, start immediately to keep user gesture
-      const minWords = isMobileOrTablet ? 0 : 12;
-      const maxWaitMs = isMobileOrTablet ? 0 : 1500;
-      const start = Date.now();
-      const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    // Debounce rapid taps and reset retry flag
+    const now = Date.now();
+    if (now - (lastTapRef.current || 0) < 350) { setIsLoading(false); return; }
+    lastTapRef.current = now;
+    audioRetryRef.current = false;
 
-      let attempts = 0;
-      while (!isMobileOrTablet && (isStabilizing || (text || '').split(/\s+/).filter(Boolean).length < minWords) && (Date.now() - start) < maxWaitMs) {
-        attempts++;
-        await wait(200);
+    try {
+      // Pre-roll: wait on mobile/tablet to ensure UI/content stabilizes; on desktop wait for stabilization or until max
+      const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+      if (isMobileOrTablet) {
+        await wait(1200);
+      } else {
+        const minWords = 12;
+        const maxWaitMs = 1500;
+        const start = Date.now();
+        while ((isStabilizing || (text || '').split(/\s+/).filter(Boolean).length < minWords) && (Date.now() - start) < maxWaitMs) {
+          await wait(200);
+        }
       }
 
       const speed = getBaseSpeed() * speedMultiplierRef.current;
@@ -392,35 +400,30 @@ const handleHeadlessCommand = (cmd: string) => {
         console.log(`🔄 Audio state sync: ${isPlaying} → ${status.isPlaying}`);
         setIsPlaying(status.isPlaying);
       }
-      // Relaxed guard: confirm mismatch persists before stopping
+      // Confirm mismatch persists before stopping; never ignore on mobile/tablet
       const audioHash = (status as any).contentHash;
       const uiHash = (typeof window !== 'undefined' && (window as any).__pageContentHash) || contentHash;
       if (status.isPlaying && audioHash && uiHash && audioHash !== uiHash) {
         const now = Date.now();
         if (mismatchSinceRef.current == null) mismatchSinceRef.current = now;
         const elapsed = now - (mismatchSinceRef.current || 0);
-        // On mobile/tablet, ignore transient or persistent mismatches to avoid disruptive stops
-        if (isMobileOrTablet) {
-          if (elapsed > 800) {
-            console.warn('⚠️ Audio/UI content hash mismatch on mobile/tablet (ignored).');
-            mismatchSinceRef.current = null; // reset so we don't spam
-          }
-          return; // never auto-stop on mobile/tablet
-        }
-        // Desktop: require a longer, confirmed mismatch before stopping
-        if (elapsed > 1200) {
-          console.warn('🛑 Audio/UI content hash mismatch (confirmed), stopping playback');
+        if (elapsed > 1000) {
+          console.warn('🛑 Audio/UI content hash mismatch (confirmed), stopping and retrying if possible');
           mismatchSinceRef.current = null;
           stopAudio();
+          if (!audioRetryRef.current) {
+            audioRetryRef.current = true;
+            setTimeout(() => { try { (async () => { await playAudio(); })(); } catch {} }, 350);
+          }
         }
       } else {
         mismatchSinceRef.current = null;
       }
     };
 
-    const interval = setInterval(checkStatus, 300);
+    const interval = setInterval(checkStatus, 250);
     return () => clearInterval(interval);
-  }, [audioService, isPlaying, contentHash, isMobileOrTablet]);
+  }, [audioService, isPlaying, contentHash, currentPage, text]);
 
 // Voice vocabulary events handler
 useEffect(() => {
