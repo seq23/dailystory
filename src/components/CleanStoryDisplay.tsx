@@ -583,11 +583,19 @@ useEffect(() => {
 const [finishSparkle, setFinishSparkle] = useState(false);
 const [finishPressBurst, setFinishPressBurst] = useState(false);
 useEffect(() => {
-  const interval = setInterval(() => {
-    setFinishSparkle(true);
-    setTimeout(() => setFinishSparkle(false), 2500);
-  }, 10 * 60 * 1000);
-  return () => clearInterval(interval);
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+  const scheduleNext = () => {
+    const delay = 22000 + Math.random() * 8000; // 22–30s randomized
+    timeoutId = setTimeout(() => {
+      setFinishSparkle(true);
+      setTimeout(() => setFinishSparkle(false), 2000);
+      scheduleNext();
+    }, delay);
+  };
+  scheduleNext();
+  return () => {
+    if (timeoutId) clearTimeout(timeoutId);
+  };
 }, []);
 
 // Dramatic burst overlay trigger when ending generation completes
@@ -1701,7 +1709,7 @@ const handleRestartTimer = () => {
 
                     <div className="relative">
                       <SparkleAnimation 
-                        isActive={finishSparkle} 
+                        isActive={true} 
                         intensity="high" 
                         className="absolute inset-0 pointer-events-none z-10" 
                       />
@@ -1722,10 +1730,7 @@ const handleRestartTimer = () => {
                         className={cn(
                           "relative z-20 transform transition-all duration-500",
                           finishPressBurst && "animate-scale-in",
-                          // Gentle periodic pulse in steady state (every ~24s for 2s)
-                          !isGeneratingEnding && "animate-[pulse_2s_ease-in-out_24s_infinite]",
-                          // Apply the same dramatic effects as free session while generating
-                          isGeneratingEnding && [
+                          [
                             "animate-bounce",
                             "animate-pulse",
                             "scale-125",
@@ -1752,6 +1757,7 @@ const handleRestartTimer = () => {
                           <>
                             <Sparkles className="w-5 h-5 mr-2" />
                             {"Finish Story!"}
+                            <Sparkles className="w-5 h-5 absolute top-2 right-2 animate-pulse" />
                           </>
                         )}
                       </Button>
@@ -1877,7 +1883,7 @@ const handleRestartTimer = () => {
                               disabled={!liveContext || isGeneratingEnding || timeRemaining <= 0}
                               variant="hero"
                               aria-busy={isGeneratingEnding}
-                              className={cn(!isGeneratingEnding && "animate-[pulse_2s_ease-in-out_24s_infinite]")}
+                              className={cn(!isGeneratingEnding && "animate-[pulse_2s_ease-in-out_14s_infinite]")}
                             >
                               {isGeneratingEnding ? (
                                 <>
@@ -1924,7 +1930,7 @@ const handleRestartTimer = () => {
                               variant="hero"
                               size="sm"
                               aria-busy={isGeneratingEnding}
-                              className={cn(!isGeneratingEnding && "animate-[pulse_2s_ease-in-out_24s_infinite]")}
+                              className={cn(!isGeneratingEnding && "animate-[pulse_2s_ease-in-out_14s_infinite]")}
                             >
                               {isGeneratingEnding ? (
                                 <>
