@@ -201,6 +201,24 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
+              {effectiveCollapsed && (
+                <SidebarMenuItem className="my-1">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <SidebarMenuButton
+                          onClick={() => toggleSidebar()}
+                          className="justify-center gap-0 mx-auto h-10 w-10 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-primary"
+                          aria-label="Open navigation"
+                        >
+                          <ChevronRight className="w-5 h-5" />
+                        </SidebarMenuButton>
+                      </TooltipTrigger>
+                      <TooltipContent>Open navigation</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </SidebarMenuItem>
+              )}
               {sidebarItems.map((item) => (
                 <SidebarMenuItem key={item.url} className={effectiveCollapsed ? "my-1" : ""}>
                   <SidebarMenuButton 
