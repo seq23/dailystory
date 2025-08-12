@@ -135,7 +135,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
   return (
     <Sidebar className={`border-r bg-background/95 backdrop-blur-sm ${effectiveCollapsed ? "w-16" : "w-64"}`} collapsible="icon">
       {/* Header */}
-      <div className="p-4 border-b relative">
+      <div className={`border-b relative overflow-visible ${effectiveCollapsed ? "p-2" : "p-4"}`}>
         <div className="flex items-center gap-3">
           {!effectiveCollapsed && (
             <>
@@ -163,7 +163,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
               }}
               size="icon"
               variant="secondary"
-              className="absolute top-2 right-2 rounded-full shadow-sm ring-1 ring-border h-8 w-8"
+              className={`absolute rounded-full shadow-sm ${isMobile ? "top-2 right-2 h-8 w-8" : effectiveCollapsed ? "top-1 right-1 h-6 w-6" : "top-2 right-2 h-8 w-8"}`}
             >
               {isMobile ? (
                 <X className="h-4 w-4" />

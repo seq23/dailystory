@@ -49,7 +49,9 @@ export function ChildQuickSwitcher({ className, size = 'md' }: ChildQuickSwitche
                   aria-label={t('header.quickChildSwitcher.readingAs', { defaultValue: 'Reading as' }) + (activeFullName ? `: ${activeFullName}` : '')}
                       className={cn(
                         "rounded-full inline-flex items-center justify-center font-black leading-none ring-2 select-none tracking-tight",
-                        size === "sm" ? "h-7 w-7 text-[1.85rem]" : "h-9 w-9 text-[1.6rem] md:text-[1.75rem]",
+                        size === "sm"
+                          ? "h-8 w-8 text-[1.7rem]"
+                          : "h-8 w-8 md:h-9 md:w-9 text-[1.8rem] md:text-[1.75rem]",
                         "ring-primary/70 bg-primary text-primary-foreground hover:bg-primary/90 transition",
                         loading && "opacity-70",
                       )}
