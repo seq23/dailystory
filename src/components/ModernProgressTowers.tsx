@@ -5,6 +5,7 @@ import { AchievementPopup } from '@/components/ui/achievement-popup';
 import { useGamification } from '@/hooks/useGamification';
 import { useTranslation } from 'react-i18next';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Button } from '@/components/ui/button';
 import { 
   BookOpen, 
   FileText, 
@@ -13,7 +14,8 @@ import {
   ChevronLeft, 
   ChevronRight,
   Trophy,
-  Sparkles
+  Sparkles,
+  X
 } from 'lucide-react';
 
 interface ModernProgressTowersProps {
@@ -54,8 +56,22 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
   const [animatingTowers, setAnimatingTowers] = useState<Record<string, boolean>>({});
   const [celebrationMode, setCelebrationMode] = useState(false);
   const [sparkleMode, setSparkleMode] = useState(false);
+  const [enabled, setEnabled] = useState<boolean>(() => {
+    try { return localStorage.getItem('progressTowersEnabled') !== '0'; } catch { return true; }
+  });
   
   const autoCollapseRef = useRef<NodeJS.Timeout>();
+
+  // Sync visibility with global toggle events
+  useEffect(() => {
+    const handler = (e: any) => {
+      const next = !!(e as CustomEvent).detail;
+      setEnabled(next);
+      try { console.info('[ProgressTowers] enabled:', next); } catch {}
+    };
+    window.addEventListener('progressTowersToggle', handler as EventListener);
+    return () => window.removeEventListener('progressTowersToggle', handler as EventListener);
+  }, []);
 
   const { 
     userStats, 
@@ -205,6 +221,13 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
     }
   };
 
+  // Dismiss only when expanded
+  const handleDismiss = () => {
+    try { localStorage.setItem('progressTowersEnabled', '0'); } catch {}
+    setEnabled(false);
+    window.dispatchEvent(new CustomEvent('progressTowersToggle', { detail: false }));
+  };
+
   return (
     <>
       <div
@@ -213,6 +236,7 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
           "transition-all duration-500 ease-out",
           isMobile && "scale-75 right-1",
           isTablet && "scale-75 right-1",
+          !enabled && "hidden",
           className
         )}
         onMouseEnter={handleMouseEnter}
@@ -369,6 +393,14 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
                       : t('progress.subtitle', 'Keep climbing higher!')
                     }
                   </p>
+                </div>
+
+                {/* Dismiss button (expanded only) */}
+                <div className="absolute top-3 right-16">
+                  <Button variant="ghost" size="sm" onClick={handleDismiss} aria-label="Dismiss progress towers">
+                    <X className="w-4 h-4 mr-1" />
+                    Dismiss
+                  </Button>
                 </div>
 
                 {/* Progress towers grid */}

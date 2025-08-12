@@ -22,7 +22,8 @@ import {
   Crown,
   Sparkles,
   Clock,
-  Bookmark
+  Bookmark,
+  Trophy
 } from "lucide-react";
 import type { UserInfo } from "@/types";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -78,6 +79,9 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
   const [timerEnabled, setTimerEnabled] = useState<boolean>(() => {
     try { return localStorage.getItem('readingTimerEnabled') !== '0'; } catch { return true; }
   });
+  const [towersEnabled, setTowersEnabled] = useState<boolean>(() => {
+    try { return localStorage.getItem('progressTowersEnabled') !== '0'; } catch { return true; }
+  });
   const [vocabOpen, setVocabOpen] = useState(false);
 
   useEffect(() => {
@@ -87,6 +91,15 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
     };
     window.addEventListener('readingTimerToggle', handler as EventListener);
     return () => window.removeEventListener('readingTimerToggle', handler as EventListener);
+  }, []);
+
+  useEffect(() => {
+    const handler = (e: any) => {
+      const enabled = !!(e as CustomEvent).detail;
+      setTowersEnabled(enabled);
+    };
+    window.addEventListener('progressTowersToggle', handler as EventListener);
+    return () => window.removeEventListener('progressTowersToggle', handler as EventListener);
   }, []);
 
   const isActive = (itemUrl: string) => currentView === itemUrl;
@@ -107,6 +120,13 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
     setTimerEnabled(next);
     try { localStorage.setItem('readingTimerEnabled', next ? '1' : '0'); } catch {}
     window.dispatchEvent(new CustomEvent('readingTimerToggle', { detail: next }));
+  };
+
+  const toggleTowers = () => {
+    const next = !towersEnabled;
+    setTowersEnabled(next);
+    try { localStorage.setItem('progressTowersEnabled', next ? '1' : '0'); } catch {}
+    window.dispatchEvent(new CustomEvent('progressTowersToggle', { detail: next }));
   };
   return (
     <Sidebar className={`border-r bg-background/95 backdrop-blur-sm ${effectiveCollapsed ? "w-16" : "w-64"}`} collapsible="icon">
@@ -229,6 +249,50 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
                           onCheckedChange={() => toggleTimer()}
                           onClick={(e) => e.stopPropagation()}
                           aria-label={timerEnabled ? 'Hide timer' : 'Show timer'}
+                        />
+                      </SidebarMenuButton>
+                    )}
+                  </SidebarMenuItem>
+
+                  {/* Progress Towers toggle */}
+                  <SidebarMenuItem>
+                    {effectiveCollapsed ? (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <SidebarMenuButton
+                              onClick={() => toggleTowers()
+                              }
+                              className="flex items-center gap-3 w-full justify-between transition-colors rounded-lg hover:bg-accent hover:text-accent-foreground min-w-[220px] overflow-visible z-30"
+                              aria-label="Toggle progress towers visibility"
+                            >
+                              <Trophy className="w-5 h-5 flex-shrink-0" />
+                            </SidebarMenuButton>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            Progress Towers: {towersEnabled ? 'On' : 'Off'}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    ) : (
+                      <SidebarMenuButton
+                        onClick={() => toggleTowers()}
+                        className="flex items-center gap-3 w-full justify-between rounded-full border border-border bg-card hover:bg-accent hover:text-accent-foreground px-3 py-2 min-w-[220px] overflow-visible z-50"
+                        aria-label="Toggle progress towers visibility"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Trophy className="w-5 h-5 flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">{towersEnabled ? 'Hide Progress Towers' : 'Show Progress Towers'}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <Switch
+                          checked={towersEnabled}
+                          onCheckedChange={() => toggleTowers()}
+                          onClick={(e) => e.stopPropagation()}
+                          aria-label={towersEnabled ? 'Hide progress towers' : 'Show progress towers'}
                         />
                       </SidebarMenuButton>
                     )}

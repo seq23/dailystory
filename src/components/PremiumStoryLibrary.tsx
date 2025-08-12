@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Heart, Search, Trash2, Play, BookOpen, Clock, Tag } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import useEmblaCarousel from 'embla-carousel-react';
 
 import { toast } from '@/hooks/use-toast';
 import { PremiumStoryManager, SavedStory } from '@/services/premiumStoryManager';
@@ -32,6 +33,7 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<string | null>(null);
   const { isMobile, isTablet } = useIsMobile();
+  const isDeck = isMobile || isTablet;
   const pageSize = isMobile ? 6 : isTablet ? 8 : 12;
   const [page, setPage] = useState(1);
 
