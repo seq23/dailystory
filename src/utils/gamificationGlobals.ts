@@ -92,6 +92,29 @@ export const setupGamificationGlobals = (addVocabularyWord: () => void, enablePe
       }
     };
   }
+
+  // Fallback global markWordReviewed to persist reviews even if collector is not mounted
+  if (!(window as any).markWordReviewed) {
+    (window as any).markWordReviewed = (word: string) => {
+      if (!enablePersistence) return;
+      try {
+        const userName = (window as any).__currentUserName || localStorage.getItem('user_display_name') || 'guest';
+        const key = `vocabulary_${userName}`;
+        const stored = localStorage.getItem(key) || '[]';
+        const collection = JSON.parse(stored);
+        const idx = collection.findIndex((m: any) => (m?.word || '').toLowerCase() === (word || '').toLowerCase());
+        if (idx >= 0) {
+          const current = collection[idx];
+          const newTimes = (current?.timesReviewed || 0) + 1;
+          collection[idx] = { ...current, timesReviewed: newTimes, mastered: newTimes >= 4 };
+          localStorage.setItem(key, JSON.stringify(collection));
+          console.log('✅ Marked word reviewed:', { word, newTimes });
+        }
+      } catch (e) {
+        console.warn('Failed to mark word reviewed globally', e);
+      }
+    };
+  }
 };
 
 export const getGlobalAddVocabularyWord = (): (() => void) | null => {

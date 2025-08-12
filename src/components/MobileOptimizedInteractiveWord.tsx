@@ -30,6 +30,7 @@ export const MobileOptimizedInteractiveWord = (props: MobileOptimizedInteractive
   const [isLoadingWordData, setIsLoadingWordData] = useState(false);
   const [enhancedAudio] = useState(() => new EnhancedAudioService());
   const { toast } = useToast();
+  const [hasCountedReview, setHasCountedReview] = useState(false);
 
   const difficulty = props.difficulty || "easy";
   const cleanWord = useMemo(() => props.word.replace(/[.,!?;:'"()]/g, ''), [props.word]);
@@ -76,34 +77,42 @@ export const MobileOptimizedInteractiveWord = (props: MobileOptimizedInteractive
     return shouldHighlight;
   }, [cleanWord, props.userInfo?.name, difficulty, props.word]);
 
-  // For mobile devices, use click-to-open modal instead of hover
-  if (props.forceModal || isMobileOrTablet) {
-    const handleClick = async () => {
-      if (!shouldBeInteractive) return;
-      (window as any).__lastSelectedWord = cleanWord;
-      // Auto-save on click
-      try {
-        await VocabularyTrackingService.logEncounter(cleanWord, cleanWord, difficulty);
-      } catch {}
-      try {
-        const normalizedDifficulty: 'beginner' | 'intermediate' | 'advanced' =
-          (difficulty === 'beginner' || difficulty === 'easy') ? 'beginner' :
-          (difficulty === 'medium') ? 'intermediate' : 'advanced';
-        const vocabularyWord: any = {
-          word: cleanWord,
-          definition: '',
-          difficulty: normalizedDifficulty,
-          dateAdded: new Date().toISOString(),
-          timesReviewed: 0,
-          mastered: false,
-          storyContext: props.sentenceContext || ''
-        };
-        (window as any).addToVocabulary?.(vocabularyWord);
-        const addVocabularyWord = getGlobalAddVocabularyWord();
-        addVocabularyWord && addVocabularyWord();
-      } catch {}
-      setShowMobileModal(true);
-    };
+// For mobile devices, use click-to-open modal instead of hover
+if (props.forceModal || isMobileOrTablet) {
+  const markReviewedOnce = () => {
+    if (!hasCountedReview) {
+      try { (window as any).markWordReviewed?.(cleanWord); } catch {}
+      setHasCountedReview(true);
+    }
+  };
+
+  const handleClick = async () => {
+    if (!shouldBeInteractive) return;
+    (window as any).__lastSelectedWord = cleanWord;
+    setHasCountedReview(false);
+    // Auto-save on click
+    try {
+      await VocabularyTrackingService.logEncounter(cleanWord, cleanWord, difficulty);
+    } catch {}
+    try {
+      const normalizedDifficulty: 'beginner' | 'intermediate' | 'advanced' =
+        (difficulty === 'beginner' || difficulty === 'easy') ? 'beginner' :
+        (difficulty === 'medium') ? 'intermediate' : 'advanced';
+      const vocabularyWord: any = {
+        word: cleanWord,
+        definition: '',
+        difficulty: normalizedDifficulty,
+        dateAdded: new Date().toISOString(),
+        timesReviewed: 0,
+        mastered: false,
+        storyContext: props.sentenceContext || ''
+      };
+      (window as any).addToVocabulary?.(vocabularyWord);
+      const addVocabularyWord = getGlobalAddVocabularyWord();
+      addVocabularyWord && addVocabularyWord();
+    } catch {}
+    setShowMobileModal(true);
+  };
 
     const handleHearIt = async () => {
       if (isPlaying) return;
@@ -118,9 +127,10 @@ export const MobileOptimizedInteractiveWord = (props: MobileOptimizedInteractive
         });
       } catch (e) {
         console.error('Mobile HearIt failed', e);
-      } finally {
-        setIsPlaying(false);
-      }
+    } finally {
+      setIsPlaying(false);
+      markReviewedOnce();
+    }
     };
 
     const handleExplain = async () => {
@@ -142,9 +152,10 @@ export const MobileOptimizedInteractiveWord = (props: MobileOptimizedInteractive
         });
       } catch (e) {
         console.error('Mobile Explain failed', e);
-      } finally {
-        setIsLoadingWordData(false);
-      }
+    } finally {
+      setIsLoadingWordData(false);
+      markReviewedOnce();
+    }
     };
 
     const handleSyllables = async () => {
@@ -172,6 +183,8 @@ export const MobileOptimizedInteractiveWord = (props: MobileOptimizedInteractive
       } catch (e) {
         console.error('Mobile Syllables failed', e);
         setIsPlaying(false);
+      } finally {
+        markReviewedOnce();
       }
     };
 

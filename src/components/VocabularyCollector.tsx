@@ -123,11 +123,13 @@ export const VocabularyCollector = ({ userInfo, isVisible, onClose, enablePersis
   };
 
   const markAsReviewed = (word: string) => {
-    setVocabulary(prev => prev.map(w => 
-      w.word === word 
-        ? { ...w, timesReviewed: w.timesReviewed + 1, mastered: w.timesReviewed >= 4 }
-        : w
-    ));
+    setVocabulary(prev => prev.map(w => {
+      if (w.word === word) {
+        const newTimes = (w.timesReviewed || 0) + 1;
+        return { ...w, timesReviewed: newTimes, mastered: newTimes >= 4 };
+      }
+      return w;
+    }));
   };
 
   const moveToReview = (word: string) => {
@@ -161,8 +163,12 @@ export const VocabularyCollector = ({ userInfo, isVisible, onClose, enablePersis
   // Expose addWordToVocabulary globally for voice/interactive usage
   useEffect(() => {
     (window as any).addToVocabulary = addWordToVocabulary;
+    (window as any).markWordReviewed = (w: string) => {
+      try { markAsReviewed(w); } catch {}
+    };
     return () => {
       delete (window as any).addToVocabulary;
+      delete (window as any).markWordReviewed;
     };
   }, [addWordToVocabulary]);
 
@@ -191,12 +197,12 @@ export const VocabularyCollector = ({ userInfo, isVisible, onClose, enablePersis
           <div className="p-4 border-b bg-card">
             <Select value={activeTab} onValueChange={(v) => setActiveTab(v as 'new' | 'reviewing' | 'mastered')}>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select category" />
+                <SelectValue placeholder={t('vocabulary.tabs.placeholder', 'Select category')} />
               </SelectTrigger>
               <SelectContent className="z-[60] bg-background">
-                <SelectItem value="new">New ({newWords.length})</SelectItem>
-                <SelectItem value="reviewing">Reviewing ({reviewing.length})</SelectItem>
-                <SelectItem value="mastered">Mastered ({mastered.length})</SelectItem>
+                <SelectItem value="new">{t('vocabulary.tabs.new', 'New')} ({newWords.length})</SelectItem>
+                <SelectItem value="reviewing">{t('vocabulary.tabs.reviewing', 'Reviewing')} ({reviewing.length})</SelectItem>
+                <SelectItem value="mastered">{t('vocabulary.tabs.mastered', 'Mastered')} ({mastered.length})</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -211,7 +217,7 @@ export const VocabularyCollector = ({ userInfo, isVisible, onClose, enablePersis
                 ) : (
                   <Star className="w-12 h-12 mx-auto mb-3 opacity-50" />
                 )}
-                <p>{activeTab === 'new' ? 'No new words yet!' : activeTab === 'reviewing' ? 'No words to review!' : 'No mastered words yet!'}</p>
+                <p>{activeTab === 'new' ? t('vocabulary.empty.new', 'No new words yet!') : activeTab === 'reviewing' ? t('vocabulary.empty.reviewing', 'No words to review!') : t('vocabulary.empty.mastered', 'No mastered words yet!')}</p>
               </div>
             ) : (
               (activeTab === 'new' ? newWords : activeTab === 'reviewing' ? reviewing : mastered).map((word) => (
@@ -222,6 +228,7 @@ export const VocabularyCollector = ({ userInfo, isVisible, onClose, enablePersis
                   getDifficultyColor={getDifficultyColor}
                   category={activeTab}
                   onMoveToReview={moveToReview}
+                  onMarkReviewed={markAsReviewed}
                 />
               ))
             )}
@@ -238,6 +245,7 @@ interface WordCardProps {
   getDifficultyColor: (difficulty: string) => string;
   category: 'new' | 'reviewing' | 'mastered';
   onMoveToReview?: (word: string) => void;
+  onMarkReviewed?: (word: string) => void;
 }
 
 const WordCard = ({ 
@@ -245,8 +253,10 @@ const WordCard = ({
   userInfo,
   getDifficultyColor,
   category,
-  onMoveToReview
+  onMoveToReview,
+  onMarkReviewed
 }: WordCardProps) => {
+  const { t } = useTranslation();
   const modalDifficulty = word.difficulty === 'beginner' ? 'easy' : word.difficulty === 'intermediate' ? 'medium' : 'hard';
 
   return (
@@ -270,7 +280,14 @@ const WordCard = ({
       {category === 'new' && (
         <div className="mt-2">
           <MobileOptimizedButton size="sm" variant="outline" onClick={() => onMoveToReview?.(word.word)}>
-            Move to Review
+            {t('vocabulary.actions.moveToReview', 'Move to Review')}
+          </MobileOptimizedButton>
+        </div>
+      )}
+      {category === 'reviewing' && (
+        <div className="mt-2 flex gap-2">
+          <MobileOptimizedButton size="sm" variant="default" onClick={() => onMarkReviewed?.(word.word)}>
+            {t('vocabulary.actions.markReviewed', 'Mark as Reviewed')}
           </MobileOptimizedButton>
         </div>
       )}

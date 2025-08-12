@@ -121,6 +121,7 @@ export const InteractiveWord = ({
   const phoneticSpelling = phoneticEngine.breakIntoSyllables(word).join('-');
   const cleanWord = word.replace(/[.,!?;:'"()]/g, '').trim();
   const { isMobile } = useIsMobile();
+  const reviewCountedRef = useRef(false);
 
   useEffect(() => {
     // Initialize Unified TTS service
@@ -156,6 +157,7 @@ export const InteractiveWord = ({
   const handleMouseEnter = () => {
     (window as any).__hoveredWord = cleanWord;
     (window as any).__lastSelectedWord = cleanWord;
+    reviewCountedRef.current = false;
     if (hideTimeoutRef.current) {
       clearTimeout(hideTimeoutRef.current);
       hideTimeoutRef.current = null;
@@ -281,6 +283,14 @@ export const InteractiveWord = ({
     } catch (error) {
       console.error('❌ Failed to track vocabulary word:', error);
     }
+
+    // Mark as reviewed once per tooltip open
+    try {
+      if (!reviewCountedRef.current) {
+        (window as any).markWordReviewed?.(cleanWord);
+        reviewCountedRef.current = true;
+      }
+    } catch {}
     
     setIsLoadingWordData(true);
     setIsPlaying(true);
