@@ -25,13 +25,6 @@ const Index = () => {
   return (
     <div className="homepage">
       <AuthWrapper />
-      {(!isAuthenticated && !isStoryAction) && (
-        <> 
-          <div className="mt-6 text-center">
-            <Link to="/pricing" className="story-link text-sm">See all plans and roadmap →</Link>
-          </div>
-        </>
-      )}
     </div>
   );
 };

@@ -303,11 +303,6 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
             <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-white/90 mb-4 md:mb-6 max-w-2xl mx-auto leading-relaxed drop-shadow-md px-2">
               {t("welcomeHero.subtitle")}
             </p>
-            <div className="mb-6">
-              <Link to="/pricing" className="inline-flex items-center px-4 py-2 rounded-md bg-white/20 border border-white/30 text-white hover:bg-white/30 transition-colors text-sm md:text-base">
-                Plans & Pricing
-              </Link>
-            </div>
 
             {/* Features */}
             <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 md:gap-6 mb-8 md:mb-10 px-2">
@@ -328,16 +323,16 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
               </div>
             </div>
 
-            {/* CTA Button - Free Trial/Guest Users */}
+            {/* CTA Button - Guest Users */}
             <MobileTooltip
               content={
                 <div>
                   <div className="flex items-center gap-2 p-2">
                     <Users className="w-4 h-4 text-green-600" />
-                    <span className="font-medium">Free Trial & Guest Users</span>
+                    <span className="font-medium">Guest Users</span>
                   </div>
                   <p className="text-xs text-gray-600 mt-1">
-                    Try our platform with basic stories and limited time. No signup required!
+                    Start a guest session — no signup required!
                   </p>
                 </div>
               }
@@ -347,15 +342,14 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                 variant="hero" 
                 size="xl" 
                 onClick={onGetStarted}
-                className={`relative hover:scale-105 shadow-glow transition-all duration-300 hover:shadow-2xl hover:shadow-primary/50 group overflow-hidden ${
+                className={`relative rounded-full bg-gradient-to-r from-[hsl(var(--primary))] via-[hsl(var(--brand-purple))] to-[hsl(var(--accent))] text-white hover:scale-105 shadow-glow transition-all duration-300 hover:shadow-2xl hover:shadow-primary/50 group overflow-hidden ${
                   isShaking ? 'animate-bounce-gentle' : ''
                 } hover:animate-none`}
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 via-pink-400/20 to-blue-400/20 animate-pulse group-hover:animate-none"></div>
+                <div className="absolute inset-0 bg-white/10/20 animate-pulse group-hover:animate-none"></div>
                 <Users className="w-6 h-6 relative z-10 animate-pulse group-hover:animate-none" />
                 <span className="relative z-10 text-center break-words leading-tight">
                   <span className="block sm:inline">{t("welcomeHero.ctaButtonNew") || "Create Your First Story"}</span>
-                  <span className="block sm:inline sm:ml-1 text-xs sm:text-sm opacity-90">- {t("welcomeHero.freeTrial") || "Free Trial"}</span>
                 </span>
                 <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </MobileOptimizedButton>
@@ -375,6 +369,9 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
             <div className="flex flex-col items-center md:items-start">
               <div className="font-semibold text-white/90 mb-1">{t("welcomeHero.footer.companyName")}</div>
               <div className="text-xs">{t("welcomeHero.footer.description")}</div>
+              <div className="mt-2">
+                <a href="/pricing" className="story-link text-sm">Plans & Pricing →</a>
+              </div>
             </div>
             
             <div className="flex flex-col md:flex-row items-center gap-4 text-xs">
