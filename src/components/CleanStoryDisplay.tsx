@@ -873,7 +873,7 @@ const initializeStory = async () => {
         try {
           const cacheId = isPremium ? ((await supabase.auth.getUser()).data.user?.id || userInfo.name || 'premium') : 'guest';
           const images = story.map((s, idx) => ({ url: nextMap[idx], prompt: (s || '').slice(0, 120) }));
-          StorySessionCache.updatePages(cacheId, story, undefined as any, images as any);
+          StorySessionCache.updatePages(cacheId, story, currentPage, images as any);
         } catch {}
       }
     } catch (e) {
