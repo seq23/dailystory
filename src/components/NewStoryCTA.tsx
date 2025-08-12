@@ -58,6 +58,85 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
     }
   }, [isPremium, iconOnly]);
 
+  // Idle sparkle nudge after periods of inactivity (desktop/tab visible, premium only)
+  const lastActivityRef = React.useRef<number>(Date.now());
+  const idleSparkleCountRef = React.useRef<number>(0);
+  const idleTimersRef = React.useRef<{ idle?: number; sparkle?: number }>({});
+
+  React.useEffect(() => {
+    if (!isPremium || iconOnly) return;
+
+    let reduceMotion = false;
+    try {
+      reduceMotion = !!window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+    } catch {}
+    if (reduceMotion) return;
+
+    const scheduleIdle = (delay: number) => {
+      if (document.visibilityState !== "visible") return;
+      if (idleSparkleCountRef.current >= 3) return;
+      idleTimersRef.current.idle = window.setTimeout(() => {
+        const now = Date.now();
+        const idleFor = now - lastActivityRef.current;
+        if (idleFor >= delay - 50 && document.visibilityState === "visible") {
+          setShowSparkle(true);
+          idleSparkleCountRef.current += 1;
+          idleTimersRef.current.sparkle = window.setTimeout(() => {
+            setShowSparkle(false);
+            if (idleSparkleCountRef.current < 3) {
+              scheduleIdle(60000);
+            }
+          }, 1200);
+        } else {
+          scheduleIdle(25000);
+        }
+      }, delay);
+    };
+
+    const reset = () => {
+      if (idleTimersRef.current.idle) {
+        clearTimeout(idleTimersRef.current.idle);
+        idleTimersRef.current.idle = undefined;
+      }
+      scheduleIdle(25000);
+    };
+
+    const onActivity = () => {
+      lastActivityRef.current = Date.now();
+      reset();
+    };
+
+    const activityEvents: (keyof WindowEventMap)[] = [
+      "mousemove",
+      "keydown",
+      "pointerdown",
+      "scroll",
+      "touchstart",
+    ];
+    activityEvents.forEach((e) => window.addEventListener(e, onActivity, { passive: true }));
+
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") {
+        reset();
+      } else {
+        if (idleTimersRef.current.idle) {
+          clearTimeout(idleTimersRef.current.idle);
+          idleTimersRef.current.idle = undefined;
+        }
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+
+    scheduleIdle(25000);
+
+    return () => {
+      activityEvents.forEach((e) => window.removeEventListener(e, onActivity));
+      document.removeEventListener("visibilitychange", onVisibility);
+      if (idleTimersRef.current.idle) clearTimeout(idleTimersRef.current.idle);
+      if (idleTimersRef.current.sparkle) clearTimeout(idleTimersRef.current.sparkle);
+    };
+  }, [isPremium, iconOnly]);
+
   const handleClick = () => {
     if (isLocked) {
       onUpgrade?.();
@@ -106,8 +185,25 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
         {!iconOnly && label}
       </Button>
       {!iconOnly && showCoach && (
-        <span className="absolute -top-2 right-0 translate-y-[-50%] rounded-full bg-primary/90 text-primary-foreground text-xs px-2 py-0.5 shadow-sm">
-          {t("labels.startHere", "Start here")}
+        <span className="absolute top-1/2 -translate-y-1/2 left-0 -translate-x-[calc(100%+12px)] hidden md:flex items-center gap-2 pointer-events-none z-20 motion-safe:animate-enter">
+          <span className="rounded-full bg-primary/90 text-primary-foreground text-xs font-semibold px-2.5 py-1 shadow-sm">
+            {t("labels.startHere", "Start here!")}
+          </span>
+          <svg
+            className="h-10 w-[72px] text-destructive"
+            viewBox="0 0 72 40"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path
+              d="M2,28 C 24,46 44,46 66,28"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="3"
+              strokeLinecap="round"
+            />
+            <polygon points="66,28 54,22 56,31" fill="currentColor" />
+          </svg>
         </span>
       )}
       <SparkleAnimation
