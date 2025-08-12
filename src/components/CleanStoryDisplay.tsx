@@ -838,6 +838,11 @@ const initializeStory = async () => {
           ...prev,
           [currentPage]: result.url
         }));
+        try {
+          const cacheId = isPremium ? ((await supabase.auth.getUser()).data.user?.id || userInfo.name || 'premium') : 'guest';
+          const images = story.map((s, idx) => ({ url: idx === currentPage ? result.url : pageImages[idx], prompt: (s || '').slice(0, 120) }));
+          StorySessionCache.updatePages(cacheId, story, currentPage, images as any);
+        } catch {}
       }
       
     } catch (error) {
@@ -1081,7 +1086,7 @@ const handleSaveStoryNow = async () => {
     setIsSaving(true);
     try {
       // Build Story object
-      const segments = story.map((text) => ({ text }));
+      const segments = story.map((text, idx) => ({ text, illustration: pageImages[idx] }));
       const wordCount = story.reduce((sum, s) => sum + countWords(s), 0);
       const estimatedReadingTime = Math.max(1, Math.round(wordCount / 150));
       const storyObj: StoryType = {
@@ -1584,7 +1589,19 @@ const handleRestartTimer = () => {
                       </>
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                        <Button
+                          onClick={isPremium ? generateImageForCurrentPage : onUpgrade}
+                          disabled={isGeneratingImage}
+                          size="lg"
+                          aria-label={isPremium ? 'Generate illustration' : 'Unlock illustrations'}
+                        >
+                          {isGeneratingImage ? (
+                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                          ) : (
+                            <Wand className="w-4 h-4 mr-2" />
+                          )}
+                          {isPremium ? 'Generate illustration' : 'Unlock illustrations'}
+                        </Button>
                       </div>
                     )}
                   </div>
@@ -1646,7 +1663,23 @@ const handleRestartTimer = () => {
                               <p className="text-sm text-muted-foreground">Creating illustration...</p>
                             </div>
                           </div>
-                        ) : null}
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Button
+                              onClick={isPremium ? generateImageForCurrentPage : onUpgrade}
+                              disabled={isGeneratingImage}
+                              size="lg"
+                              aria-label={isPremium ? 'Generate illustration' : 'Unlock illustrations'}
+                            >
+                              {isGeneratingImage ? (
+                                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                              ) : (
+                                <Wand className="w-4 h-4 mr-2" />
+                              )}
+                              {isPremium ? 'Generate illustration' : 'Unlock illustrations'}
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
