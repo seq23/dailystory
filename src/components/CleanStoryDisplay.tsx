@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { SparkleAnimation } from "@/components/SparkleAnimation";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { FriendlyUpArrowIcon } from "@/components/icons/FriendlyUpArrowIcon";
 
 // Mobile-Optimized UI Components
 import { CollapsibleFloatingTimer } from "@/components/CollapsibleFloatingTimer";
@@ -1692,8 +1693,8 @@ const handleRestartTimer = () => {
                   <div className="text-center relative">
                     <p className="text-lg font-bold mb-4 px-4 py-2 rounded-full animate-pulse" aria-live="polite">
                       <span className="inline-flex items-center gap-2">
-                        <ChevronUp className="w-5 h-5" aria-hidden="true" />
-                        {"Here is your story ending! Don't forget to save your completed story."}
+                        <FriendlyUpArrowIcon className="w-6 h-6 text-destructive" />
+                        {"Here's how this one ends! Don't forget to save 😊"}
                       </span>
                     </p>
 
@@ -1754,22 +1755,9 @@ const handleRestartTimer = () => {
                     </div>
 
                     <p className="text-sm mt-3 opacity-80">
-                      {"You can always keep going for more parts to this story!"}
+                      {"Want more? Go to the next page to add new parts to this story!"}
                     </p>
-                  </div>
-                )}
 
-                {/* Free User Magic Wand - DRAMATICALLY ENHANCED for MAXIMUM visibility */}
-                {!isPremium && currentPage === story.length - 1 && timeRemaining > 0 && (
-                  <div className="text-center relative">
-                    {/* Urgent messaging with flashing colors */}
-                    <p className={cn(
-                      "text-lg font-bold mb-4 px-4 py-2 rounded-full",
-                      isMagicWandAnimating && "animate-pulse text-gradient-primary bg-gradient-to-r from-purple-500/20 to-blue-500/20"
-                    )}>
-                      ⏳ Time’s up on this story.
-                    </p>
-                    
                     {/* Sparkle animation container */}
                     <div className="relative">
                       <SparkleAnimation 
