@@ -3,7 +3,7 @@ import { MobileOptimizedButton } from "@/components/MobileOptimizedButton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Home, RotateCcw, Loader2, Volume2, VolumeX, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Settings, Plus, RefreshCw, Clock, Wand, Sparkles } from "lucide-react";
+import { BookOpen, Home, RotateCcw, Loader2, Volume2, VolumeX, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Settings, Plus, RefreshCw, Clock, Wand, Sparkles, GraduationCap } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/hooks/use-toast";
 import { SparkleAnimation } from "@/components/SparkleAnimation";
@@ -1514,6 +1514,7 @@ const handleRestartTimer = () => {
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button variant="secondary" size="lg" aria-label="Open Help Me Read">
+                        <GraduationCap className="w-4 h-4 mr-2" />
                         Help Me Read
                       </Button>
                     </DialogTrigger>
