@@ -1175,23 +1175,63 @@ const handleRestartTimer = () => {
   setIsTimerRunning(true);
 };
 
+  // Fetch persistent teacher words (per active child) for the current user
+  const fetchTeacherWordsCsv = async (): Promise<string | null> => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+      const { data, error } = await supabase
+        .from('user_preferences')
+        .select('story_preferences, active_child_id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (error) {
+        console.warn('Failed to load teacher words', error);
+        return null;
+      }
+      const storyPrefs = (data as any)?.story_preferences || {};
+      const activeChildId = (data as any)?.active_child_id || 'default';
+      const lists = storyPrefs?.teacherWordLists || {};
+      let arr: any = lists?.[activeChildId];
+      if (!Array.isArray(arr) || arr.length === 0) arr = lists?.['default'];
+      if (!Array.isArray(arr) || arr.length === 0) return null;
+      const cleaned = (arr as any[])
+        .map((w) => typeof w === 'string' ? w.trim() : '')
+        .filter(Boolean)
+        .slice(0, 20);
+      return cleaned.length ? cleaned.join(', ') : null;
+    } catch (e) {
+      console.warn('Teacher words fetch error', e);
+      return null;
+    }
+  };
+
   // Magic wand functionality - Generate new story
   const handleGenerateNewStory = async (specialRequestOverride?: string) => {
     if (isGeneratingNewStory) return;
-    
     setIsGeneratingNewStory(true);
-    
     try {
       console.log('🪄 Generating new story...');
-      
       if (isPremium) {
-        const effectiveUser = { ...userInfo, specialRequest: specialRequestOverride ?? userInfo.specialRequest, difficultyLevel: currentDifficulty, readingAbility: currentDifficulty, expertGradeLevel: currentDifficulty === 'expert' ? expertGradeLevel : undefined } as UserInfo;
+        // Merge per-story request with persistent teacher word list (premium only)
+        let combinedSpecial = (specialRequestOverride ?? userInfo.specialRequest ?? '') as string;
+        const teacherCsv = await fetchTeacherWordsCsv();
+        if (teacherCsv) {
+          combinedSpecial = `${combinedSpecial ? combinedSpecial + '\n' : ''}Teacher words: ${teacherCsv}`;
+        }
+        const effectiveUser = {
+          ...userInfo,
+          specialRequest: combinedSpecial,
+          difficultyLevel: currentDifficulty,
+          readingAbility: currentDifficulty,
+          expertGradeLevel: currentDifficulty === 'expert' ? expertGradeLevel : undefined,
+        } as UserInfo;
         const first = await LiveGenerationService.generateFirstPage(effectiveUser);
         if ((first as any).error) {
           throw new Error((first as any).error);
         }
         setStory([first.content]);
-        setCurrentPage(0); // Reset to first page
+        setCurrentPage(0);
         setLiveContext(first.nextContext || null);
         if (first.nextContext?.expertGradeLevel) {
           setExpertGradeLevel(first.nextContext.expertGradeLevel);
@@ -1200,24 +1240,20 @@ const handleRestartTimer = () => {
         setStoryTitle(`${userInfo.name}'s Live Adventure`);
       } else {
         const originalPageCount = story.length;
-        const result = await NetflixStyleStoryService.generateCompleteStory({ ...userInfo, specialRequest: specialRequestOverride ?? userInfo.specialRequest, difficultyLevel: currentDifficulty, readingAbility: currentDifficulty, expertGradeLevel: currentDifficulty === 'expert' ? expertGradeLevel : undefined } as UserInfo);
-        
-        // For free users, maintain original page count
+        const result = await NetflixStyleStoryService.generateCompleteStory({
+          ...userInfo,
+          specialRequest: specialRequestOverride ?? userInfo.specialRequest,
+          difficultyLevel: currentDifficulty,
+          readingAbility: currentDifficulty,
+          expertGradeLevel: currentDifficulty === 'expert' ? expertGradeLevel : undefined,
+        } as UserInfo);
         const newStory = result.pages.slice(0, originalPageCount || result.pages.length);
-        
         setStory(newStory);
-        setCurrentPage(0); // Reset to first page
+        setCurrentPage(0);
       }
-      
-      // Toast notifications removed for smoother experience
-      
     } catch (error) {
       console.error('Failed to generate new story:', error);
-      toast({
-        title: "Magic Failed",
-        description: "Please try again in a moment.",
-        variant: "destructive",
-      });
+      toast({ title: 'Magic Failed', description: 'Please try again in a moment.', variant: 'destructive' });
     } finally {
       setIsGeneratingNewStory(false);
     }

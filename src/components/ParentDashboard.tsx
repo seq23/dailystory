@@ -15,7 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ChildSwitcher } from "@/components/ChildSwitcher";
 import { ChildManager } from "@/components/ChildManager";
 import { useTranslation } from "react-i18next";
-
+import { TagInput } from "@/components/ui/tag-input";
 interface ParentDashboardProps {
   userInfo: UserInfo;
   isVisible: boolean;
@@ -60,7 +60,14 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
   });
   const [activeTab, setActiveTab] = useState<'overview' | 'progress' | 'goals' | 'insights' | 'controls' | 'quizzes'>('controls');
   const [quizScores, setQuizScores] = useState<number[]>([]);
-
+  // Premium: Teacher word list (per child)
+  const [teacherWords, setTeacherWords] = useState<string>("");
+  const [twLoading, setTwLoading] = useState<boolean>(false);
+  const [twSaving, setTwSaving] = useState<boolean>(false);
+  const [prefsRowId, setPrefsRowId] = useState<string | null>(null);
+  const [activeChildId, setActiveChildId] = useState<string | null>(null);
+  const [storyPrefs, setStoryPrefs] = useState<any>({});
+  const [isPremiumUser, setIsPremiumUser] = useState<boolean>(false);
   useEffect(() => {
     (async () => {
       try {
@@ -102,12 +109,93 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
     })();
   }, []);
 
-  const formatTime = (minutes: number) => {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
-  };
+  // Load premium teacher word list and active child
+  useEffect(() => {
+    (async () => {
+      try {
+        setTwLoading(true);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) { setIsPremiumUser(false); return; }
+        const { data, error } = await supabase
+          .from('user_preferences')
+          .select('id, active_child_id, story_preferences, is_premium')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        if (error) { console.warn('Prefs fetch failed', error); return; }
+        setPrefsRowId((data as any)?.id ?? null);
+        setActiveChildId((data as any)?.active_child_id ?? null);
+        setIsPremiumUser(!!(data as any)?.is_premium);
+        const sp = ((data as any)?.story_preferences) || {};
+        setStoryPrefs(sp);
+        const lists = sp?.teacherWordLists || {};
+        const key = ((data as any)?.active_child_id) || 'default';
+        const arr: string[] = Array.isArray(lists[key]) ? lists[key] : (Array.isArray(lists['default']) ? lists['default'] : []);
+        const cleaned = arr.map((w) => (typeof w === 'string' ? w.trim() : '')).filter(Boolean).slice(0, 50);
+        setTeacherWords(cleaned.join(', '));
+      } finally {
+        setTwLoading(false);
+      }
+    })();
+  }, []);
 
+  // Listen for active child changes and reload list
+  useEffect(() => {
+    const handler = () => {
+      // Re-run loader
+      (async () => {
+        try {
+          setTwLoading(true);
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) return;
+          const { data } = await supabase
+            .from('user_preferences')
+            .select('id, active_child_id, story_preferences, is_premium')
+            .eq('user_id', user.id)
+            .maybeSingle();
+          setPrefsRowId((data as any)?.id ?? null);
+          setActiveChildId((data as any)?.active_child_id ?? null);
+          setIsPremiumUser(!!(data as any)?.is_premium);
+          const sp = ((data as any)?.story_preferences) || {};
+          setStoryPrefs(sp);
+          const lists = sp?.teacherWordLists || {};
+          const key = ((data as any)?.active_child_id) || 'default';
+          const arr: string[] = Array.isArray(lists[key]) ? lists[key] : (Array.isArray(lists['default']) ? lists['default'] : []);
+          const cleaned = arr.map((w) => (typeof w === 'string' ? w.trim() : '')).filter(Boolean).slice(0, 50);
+          setTeacherWords(cleaned.join(', '));
+        } finally {
+          setTwLoading(false);
+        }
+      })();
+    };
+    window.addEventListener('active-child-changed', handler);
+    return () => window.removeEventListener('active-child-changed', handler);
+  }, []);
+
+  const saveTeacherWords = async () => {
+    try {
+      setTwSaving(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const key = activeChildId || 'default';
+      const arr = (teacherWords || '')
+        .split(',')
+        .map((w) => w.trim())
+        .filter(Boolean);
+      const capped = arr.slice(0, 50);
+      const nextPrefs = { ...storyPrefs, teacherWordLists: { ...(storyPrefs?.teacherWordLists || {}), [key]: capped } };
+      if (prefsRowId) {
+        await supabase.from('user_preferences').update({ story_preferences: nextPrefs }).eq('id', prefsRowId);
+      } else {
+        await supabase.from('user_preferences').insert({ user_id: user.id, story_preferences: nextPrefs });
+      }
+      setStoryPrefs(nextPrefs);
+      toast({ title: 'Saved word list' });
+    } catch (e) {
+      toast({ title: 'Could not save word list', variant: 'destructive' });
+    } finally {
+      setTwSaving(false);
+    }
+  };
   return (
     <Card className="w-full max-w-6xl mx-auto">
       <CardHeader className="flex flex-row items-center justify-between">
