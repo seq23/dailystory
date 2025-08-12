@@ -140,6 +140,9 @@ export class AudioSyncService {
       const audioUrl = URL.createObjectURL(audioBlob);
       
       this.audio = new Audio(audioUrl);
+      // Ensure inline playback on iOS Safari and mobile browsers
+      try { (this.audio as any).playsInline = true; } catch {}
+      try { this.audio.setAttribute?.('playsinline', 'true'); } catch {}
       
       // Mobile-specific audio setup
       if (this.isMobile()) {

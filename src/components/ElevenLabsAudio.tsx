@@ -194,14 +194,14 @@ useEffect(() => {
     setIsLoading(true);
 
     try {
-      // Pre-roll: wait briefly for layout/text stabilization and full page text
-      const minWords = 12;
-      const maxWaitMs = 1500;
+      // Pre-roll: on desktop wait briefly for text stabilization; on mobile/tablet, start immediately to keep user gesture
+      const minWords = isMobileOrTablet ? 0 : 12;
+      const maxWaitMs = isMobileOrTablet ? 0 : 1500;
       const start = Date.now();
       const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
       let attempts = 0;
-      while ((isStabilizing || (text || '').split(/\s+/).filter(Boolean).length < minWords) && (Date.now() - start) < maxWaitMs) {
+      while (!isMobileOrTablet && (isStabilizing || (text || '').split(/\s+/).filter(Boolean).length < minWords) && (Date.now() - start) < maxWaitMs) {
         attempts++;
         await wait(200);
       }
