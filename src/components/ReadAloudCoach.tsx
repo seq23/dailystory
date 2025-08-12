@@ -360,32 +360,35 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
 
   return (
     <Card>
-        <CardHeader>
-          <CardTitle className="text-base">{t('coach.title','Read‑aloud coach')}</CardTitle>
-          <CardDescription>{t('coach.subtitle','Kids read aloud; get instant feedback')}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {/* Target sentence and navigation */}
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={prevSentence} disabled={idx === 0} aria-label={t('coach.prevSentence','Previous sentence')}>
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-            <Button variant="ghost" size="icon" onClick={nextSentence} disabled={idx >= sentences.length - 1} aria-label={t('coach.nextSentence','Next sentence')}>
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-          </div>
-          {!isPremium && (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Lock className="w-3 h-3" /> {dailyUsed}/{DAILY_FREE_LIMIT} {t('coach.today','today')}
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-base">{t('coach.title','Read‑aloud coach')}</CardTitle>
+              <CardDescription className="text-xs">{t('coach.subtitle','Kids read aloud; get instant feedback')}</CardDescription>
             </div>
-          )}
-        </div>
-
-        <p className="text-sm text-muted-foreground">{t('coach.target','Target:')} {currentSentence}</p>
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="icon" onClick={prevSentence} disabled={idx === 0} aria-label={t('coach.prevSentence','Previous sentence')}>
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={nextSentence} disabled={idx >= sentences.length - 1} aria-label={t('coach.nextSentence','Next sentence')}>
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+              {!isPremium && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground pl-1">
+                  <Lock className="w-3 h-3" /> {dailyUsed}/{DAILY_FREE_LIMIT} {t('coach.today','today')}
+                </div>
+              )}
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3 pt-2">
+          <div className="text-center px-3 py-2">
+            <div className="font-semibold leading-snug text-xl sm:text-2xl md:text-3xl">{currentSentence}</div>
+            <div className="text-xs text-muted-foreground mt-1">{t('coach.targetLabel','Target')}</div>
+          </div>
 
         {/* Controls */}
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center justify-center gap-3">
           {!isRecording ? (
             <Button size="sm" onClick={startRecording} className="gap-2" disabled={limitReached || attempts >= MAX_ATTEMPTS_PER_SENTENCE}>
               <Mic className="w-4 h-4" /> {t('coach.start','Start')}
