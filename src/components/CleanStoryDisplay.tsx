@@ -159,6 +159,9 @@ useEffect(() => {
   // Image state
   const [pageImages, setPageImages] = useState<Record<number, string>>({});
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [isBatchGenerating, setIsBatchGenerating] = useState(false);
+  const [batchDone, setBatchDone] = useState(0);
+  const [batchTotal, setBatchTotal] = useState(0);
   
   // Audio and Interactive Features state
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
@@ -852,6 +855,46 @@ const initializeStory = async () => {
     }
   };
 
+  // Generate illustration for any page index (batch-safe, no UI spinner)
+  const generateImageForIndex = async (index: number) => {
+    if (pageImages[index]) return;
+    try {
+      const storyText = story[index];
+      const result = await SimpleImageService.generateStoryImage(
+        storyText,
+        userInfo,
+        index + 1,
+        story.length
+      );
+      if (result.success && result.url) {
+        const nextMap = { ...pageImages, [index]: result.url } as Record<number, string>;
+        setPageImages(nextMap);
+        try {
+          const cacheId = isPremium ? ((await supabase.auth.getUser()).data.user?.id || userInfo.name || 'premium') : 'guest';
+          const images = story.map((s, idx) => ({ url: nextMap[idx], prompt: (s || '').slice(0, 120) }));
+          StorySessionCache.updatePages(cacheId, story, undefined as any, images as any);
+        } catch {}
+      }
+    } catch (e) {
+      console.warn('Batch image generation failed for page', index, e);
+    }
+  };
+
+  const handleBatchGenerateImages = async () => {
+    if (!isPremium || isBatchGenerating || !story.length) return;
+    const missing = story.map((_, i) => i).filter(i => !pageImages[i]);
+    if (!missing.length) return;
+    setIsBatchGenerating(true);
+    setBatchDone(0);
+    setBatchTotal(missing.length);
+    for (const idx of missing) {
+      await generateImageForIndex(idx);
+      setBatchDone((d) => d + 1);
+    }
+    setIsBatchGenerating(false);
+    try { toast({ title: 'Illustrations ready', duration: 3000 }); } catch {}
+  };
+
   const countWords = (text: string) => {
     const matches = text?.trim().match(/\S+/g);
     return matches ? matches.length : 0;
@@ -1405,6 +1448,20 @@ const handleRestartTimer = () => {
   const currentImage = pageImages[currentPage];
   const isShortPage = countWords(currentStory) <= 8;
 
+  // Prefetch next images for smoother navigation
+  useEffect(() => {
+    const toPrefetch: string[] = [];
+    const next1 = currentPage + 1;
+    const next2 = currentPage + 2;
+    [next1, next2].forEach(i => {
+      if (i >= 0 && i < story.length) {
+        const url = pageImages[i];
+        if (url) toPrefetch.push(url);
+      }
+    });
+    toPrefetch.forEach((u) => { const img = new Image(); (img as any).decoding = 'async'; (img as any).loading = 'eager'; img.src = u; });
+  }, [currentPage, pageImages, story.length]);
+
   if (isLoading || forceLoaderActive) {
     return (
       <AdaptiveEnhancedLoading isPremium={isPremium} userName={userInfo.name} />
@@ -1558,6 +1615,19 @@ const handleRestartTimer = () => {
                 <div className="xl:hidden flex-1 min-h-0 flex flex-col gap-3">
                   {/* Top Half: Image */}
                   <div className="relative flex-[0.62] min-h-0 w-full rounded-2xl overflow-hidden shadow-2xl">
+                    {isPremium && (Object.keys(pageImages).length < story.length) && !isBatchGenerating && (
+                      <div className="absolute top-3 right-3 z-20">
+                        <Button size="sm" variant="secondary" onClick={handleBatchGenerateImages} aria-label="Generate all illustrations">
+                          <Sparkles className="w-4 h-4 mr-1" />
+                          Generate all
+                        </Button>
+                      </div>
+                    )}
+                    {isBatchGenerating && (
+                      <div className="absolute top-3 right-3 z-20 rounded-md bg-card/90 border px-2 py-1 text-xs">
+                        {batchDone}/{batchTotal}
+                      </div>
+                    )}
                     {currentImage ? (
                       <>
                         {/* Background fill to avoid cropping/margins */}
@@ -1643,6 +1713,19 @@ const handleRestartTimer = () => {
                   {layout !== 'classic' && (
                     <div className="xl:order-1 h-full min-h-0">
                       <div className="w-full h-full rounded-2xl overflow-hidden shadow-2xl">
+                        {isPremium && (Object.keys(pageImages).length < story.length) && !isBatchGenerating && (
+                          <div className="absolute top-3 right-3 z-20">
+                            <Button size="sm" variant="secondary" onClick={handleBatchGenerateImages} aria-label="Generate all illustrations">
+                              <Sparkles className="w-4 h-4 mr-1" />
+                              Generate all
+                            </Button>
+                          </div>
+                        )}
+                        {isBatchGenerating && (
+                          <div className="absolute top-3 right-3 z-20 rounded-md bg-card/90 border px-2 py-1 text-xs">
+                            {batchDone}/{batchTotal}
+                          </div>
+                        )}
                         {currentImage ? (
                           <img 
                             src={currentImage} 
