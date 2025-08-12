@@ -69,6 +69,7 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
   const burstCounterRef = useRef(0);
   const lastBurstTsRef = useRef(0);
   const mismatchSinceRef = useRef<number | null>(null);
+  const audioRetryRef = useRef<boolean>(false);
   const emitStatus = (s: 'idle'|'listening'|'processing') =>
     window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: s } }));
 
