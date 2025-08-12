@@ -45,6 +45,7 @@ export const CollapsibleFloatingTimer = ({
   const [isCollapsed, setIsCollapsed] = useState(false); // NOT auto-collapsed - consistent for all users
   const [showCelebration, setShowCelebration] = useState(false);
   const [showChoice, setShowChoice] = useState(false);
+  const [expiredAcknowledged, setExpiredAcknowledged] = useState(false); // Prevent re-trigger loop at 0s
   // Celebration sound mute preference
   const [muted, setMuted] = useState<boolean>(() => {
     try { return localStorage.getItem('celebrationMuted') === '1'; } catch { return false; }
@@ -92,7 +93,7 @@ export const CollapsibleFloatingTimer = ({
 
 // Handle timer completion
 useEffect(() => {
-  if (timeRemaining === 0 && !showCelebration && !showChoice) {
+  if (timeRemaining === 0 && !expiredAcknowledged && !showCelebration && !showChoice) {
     setShowCelebration(true);
     try {
       if (!muted) {
@@ -111,15 +112,16 @@ useEffect(() => {
     }, 5000);
     return () => clearTimeout(timeout);
   }
-}, [timeRemaining, showCelebration, showChoice, isPremium, onSessionEnded, sessionStats, muted]);
+}, [timeRemaining, showCelebration, showChoice, isPremium, onSessionEnded, sessionStats, muted, expiredAcknowledged]);
 
 // Reset choice/celebration when timer is restarted
 useEffect(() => {
-  if (timeRemaining > 0 && (showCelebration || showChoice)) {
+  if (timeRemaining > 0 && (showCelebration || showChoice || expiredAcknowledged)) {
     setShowCelebration(false);
     setShowChoice(false);
+    setExpiredAcknowledged(false);
   }
-}, [timeRemaining]);
+}, [timeRemaining, showCelebration, showChoice, expiredAcknowledged]);
 
   // Responsive positioning
   const getPositionClasses = () => {
@@ -404,6 +406,7 @@ useEffect(() => {
           <Button
             onClick={() => {
               onKeepReadingUntimed?.();
+              setExpiredAcknowledged(true);
               setShowChoice(false);
             }}
             variant="outline"
