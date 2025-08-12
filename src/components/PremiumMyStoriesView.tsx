@@ -167,7 +167,7 @@ useEffect(() => {
             iconOnly={false}
             onNewStory={() => setRequestDialogOpen(true)}
             onUpgrade={() => {}}
-            className="rounded-full px-6 hover-scale"
+            className="rounded-full pl-2 pr-3 sm:pl-3 sm:pr-4 md:px-6 hover-scale justify-start text-left shrink-0"
             size="md"
             wandPulse
             labelOverride="New Story"

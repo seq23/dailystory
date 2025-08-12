@@ -76,6 +76,26 @@ export const ResponsiveStoryHeader = ({
     }
   }, [isChangingDifficulty, changeDirection]);
 
+  // Auto-compact actions on tablet when space is constrained
+  const actionsRef = React.useRef<HTMLDivElement>(null);
+  const [forceIconOnly, setForceIconOnly] = useState(false);
+  useEffect(() => {
+    const el = actionsRef.current;
+    if (!el || !isTablet) { setForceIconOnly(false); return; }
+    const check = () => {
+      try { setForceIconOnly(el.scrollWidth > el.clientWidth + 2); } catch {}
+    };
+    check();
+    const ro = new ResizeObserver(() => check());
+    ro.observe(el);
+    const onResize = () => check();
+    window.addEventListener('resize', onResize);
+    return () => {
+      try { ro.disconnect(); } catch {}
+      window.removeEventListener('resize', onResize);
+    };
+  }, [isTablet]);
+
   const getDifficultyLabel = (difficulty: string) => {
     const labels = {
       beginner: t("storyDisplay.labels.preReader", "Pre‑Reader"),
@@ -526,11 +546,11 @@ export const ResponsiveStoryHeader = ({
 
                 </div>
               )}
-              <div className={cn("flex items-center", isMobileOrTablet ? "gap-1" : "gap-2")}> 
+              <div ref={actionsRef} className={cn("flex items-center", isMobileOrTablet ? "gap-1" : "gap-2")}> 
                 {onNewStory && (
                   <NewStoryCTA
                     isPremium={!!isPremium}
-                    iconOnly={isMobile}
+                    iconOnly={isMobile || (isTablet && forceIconOnly)}
                     onNewStory={onNewStory}
                     onUpgrade={onUpgrade || (() => {})}
                     size={isMobileOrTablet ? "sm" : "md"}
