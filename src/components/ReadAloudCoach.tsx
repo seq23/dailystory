@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Mic, StopCircle, Volume2, RotateCcw, ChevronLeft, ChevronRight, Lock } from "lucide-react";
 import { charlotteTTS } from "@/services/charlotteTTS";
 import type { UserInfo } from "@/types";
+import { useTranslation } from "react-i18next";
 
 interface ReadAloudCoachProps {
   targetText?: string;
@@ -44,16 +45,17 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
   language = "en",
   onUpgrade,
 }) => {
+  const { t } = useTranslation();
   // Language gate
   if (language && language.toLowerCase() !== "en") {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Read‑aloud coach</CardTitle>
-          <CardDescription>English only for now</CardDescription>
+          <CardTitle className="text-base">{t('coach.title','Read‑aloud coach')}</CardTitle>
+          <CardDescription>{t('coach.englishOnlyShort','English only for now')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">This coach is available for English stories only.</p>
+          <p className="text-sm text-muted-foreground">{t('coach.englishOnlyLong','This coach is available for English stories only.')}</p>
         </CardContent>
       </Card>
     );
@@ -118,6 +120,28 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
     } catch {}
   }, [isPremium]);
 
+  const getSeenKey = () => `t2r_coach_seen_${getDailyKey()}`;
+  const hasCountedSentence = (s: string) => {
+    try {
+      const raw = localStorage.getItem(getSeenKey());
+      const arr = raw ? JSON.parse(raw) : [];
+      return Array.isArray(arr) && arr.includes(s);
+    } catch { return false; }
+  };
+  const markSentenceCounted = (s: string) => {
+    try {
+      const key = getSeenKey();
+      const raw = localStorage.getItem(key);
+      const arr = raw ? JSON.parse(raw) : [];
+      if (Array.isArray(arr)) {
+        if (!arr.includes(s)) arr.push(s);
+        localStorage.setItem(key, JSON.stringify(arr));
+      } else {
+        localStorage.setItem(key, JSON.stringify([s]));
+      }
+    } catch {}
+  };
+
   useEffect(() => {
     loadDailyCount();
   }, [loadDailyCount]);
@@ -174,9 +198,9 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
     const minutes = Math.max(0.001, durationMs / 60000);
     const wpm = Math.round(saidWords.length / minutes);
     let pace = "";
-    if (wpm < 70) pace = "Try a little faster";
-    else if (wpm > 120) pace = "Try a little slower";
-    else pace = "Nice pace";
+    if (wpm < 70) pace = t('coach.paceFaster','Try a little faster');
+    else if (wpm > 120) pace = t('coach.paceSlower','Try a little slower');
+    else pace = t('coach.paceNice','Nice pace');
 
     // Top content words (up to 3) that were missed
     // Exclude stopwords and simple proper names (capitalized in original text)
@@ -199,6 +223,12 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
   const startRecording = useCallback(async () => {
     if (limitReached) return;
     if (attempts >= MAX_ATTEMPTS_PER_SENTENCE) return;
+
+    const sentenceToCount = sentences[idx] || "";
+    if (!isPremium && sentenceToCount && !hasCountedSentence(sentenceToCount)) {
+      markSentenceCounted(sentenceToCount);
+      incDailyCount();
+    }
 
     pauseStoryIfPlaying();
 
@@ -238,11 +268,6 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
 
         const nextAttempts = attempts + 1;
         setAttempts(nextAttempts);
-
-        // Count toward daily only after an attempt completes
-        if (nextAttempts >= 1) {
-          incDailyCount();
-        }
 
         // Auto-resume story audio after feedback
         setTimeout(resumeStoryIfNeeded, 450);
@@ -308,7 +333,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
     if (ok) {
       // Celebrate quickly and remove from list
       setTopWords((prev) => prev.filter((x) => x !== w));
-      try { await charlotteTTS.speak("Great!" ); } catch {}
+      try { await charlotteTTS.speak(t('coach.great','Great!') ); } catch {}
     }
   };
 
@@ -335,39 +360,39 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="text-base">Read‑aloud coach</CardTitle>
-        <CardDescription>Kids read aloud; get instant feedback</CardDescription>
+        <CardHeader>
+          <CardTitle className="text-base">{t('coach.title','Read‑aloud coach')}</CardTitle>
+          <CardDescription>{t('coach.subtitle','Kids read aloud; get instant feedback')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
         {/* Target sentence and navigation */}
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={prevSentence} disabled={idx === 0} aria-label="Previous sentence">
+            <Button variant="ghost" size="icon" onClick={prevSentence} disabled={idx === 0} aria-label={t('coach.prevSentence','Previous sentence')}>
               <ChevronLeft className="w-4 h-4" />
             </Button>
-            <Button variant="ghost" size="icon" onClick={nextSentence} disabled={idx >= sentences.length - 1} aria-label="Next sentence">
+            <Button variant="ghost" size="icon" onClick={nextSentence} disabled={idx >= sentences.length - 1} aria-label={t('coach.nextSentence','Next sentence')}>
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
           {!isPremium && (
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Lock className="w-3 h-3" /> {dailyUsed}/{DAILY_FREE_LIMIT} today
+              <Lock className="w-3 h-3" /> {dailyUsed}/{DAILY_FREE_LIMIT} {t('coach.today','today')}
             </div>
           )}
         </div>
 
-        <p className="text-sm text-muted-foreground">Target: {currentSentence}</p>
+        <p className="text-sm text-muted-foreground">{t('coach.target','Target:')} {currentSentence}</p>
 
         {/* Controls */}
         <div className="flex flex-wrap items-center gap-3">
           {!isRecording ? (
             <Button size="sm" onClick={startRecording} className="gap-2" disabled={limitReached || attempts >= MAX_ATTEMPTS_PER_SENTENCE}>
-              <Mic className="w-4 h-4" /> Start
+              <Mic className="w-4 h-4" /> {t('coach.start','Start')}
             </Button>
           ) : (
             <Button size="sm" variant="destructive" onClick={stopRecording} className="gap-2">
-              <StopCircle className="w-4 h-4" /> Stop
+              <StopCircle className="w-4 h-4" /> {t('coach.stop','Stop')}
             </Button>
           )}
 
@@ -375,15 +400,15 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
             size="sm"
             variant="secondary"
             className="gap-2"
-            onClick={() => { setTranscript(""); setPassed(null); setPaceTip(""); setTopWords([]); setAttempts(0); setWordTries({}); }}
-            disabled={isRecording}
+            onClick={() => { setTranscript(""); setPassed(null); setPaceTip(""); setTopWords([]); setWordTries({}); }}
+            disabled={isRecording || attempts >= MAX_ATTEMPTS_PER_SENTENCE}
           >
-            <RotateCcw className="w-4 h-4" /> Try again
+            <RotateCcw className="w-4 h-4" /> {t('coach.tryAgain','Try again')}
           </Button>
 
           {!isPremium && limitReached && (
             <Button size="sm" variant="outline" onClick={onUpgrade || (() => { window.location.href = '/pricing'; })}>
-              Daily limit reached — Upgrade
+              {t('coach.limitReached','Daily limit reached — Upgrade')}
             </Button>
           )}
         </div>
@@ -392,18 +417,18 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
         {transcript && (
           <div className="text-sm space-y-2">
             <div>
-              <div className="font-medium">You said:</div>
+              <div className="font-medium">{t('coach.youSaid','You said:')}</div>
               <p className="text-muted-foreground mt-1">{transcript}</p>
             </div>
             {passed !== null && (
               <div className="text-sm">
-                <div className="font-medium">Feedback:</div>
+                <div className="font-medium">{t('coach.feedback','Feedback:')}</div>
                 {passed ? (
-                  <p className="text-green-600 dark:text-green-400">Great job! You matched the sentence.</p>
+                  <p className="text-green-600 dark:text-green-400">{t('coach.pass','Great job! You matched the sentence.')}</p>
                 ) : (
-                  <p className="text-amber-600 dark:text-amber-400">Almost there—let's fix a few words.</p>
+                  <p className="text-amber-600 dark:text-amber-400">{t('coach.almost','Almost there—let\'s fix a few words.')}</p>
                 )}
-                {paceTip && <p className="text-muted-foreground mt-1">Pace tip: {paceTip}</p>}
+                {paceTip && <p className="text-muted-foreground mt-1">{t('coach.paceTip','Pace tip:')} {paceTip}</p>}
               </div>
             )}
           </div>
@@ -412,17 +437,17 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
         {/* Top words coaching (only on fail) */}
         {passed === false && topWords.length > 0 && (
           <div className="text-sm space-y-2">
-            <div className="font-medium">Top 3 words to practice:</div>
+            <div className="font-medium">{t('coach.topWords','Top 3 words to practice:')}</div>
             <div className="flex flex-col gap-2">
               {topWords.map((w) => (
                 <div key={w} className="flex items-center justify-between gap-2">
                   <span className="text-muted-foreground">{w}</span>
                   <div className="flex items-center gap-2">
                     <Button size="sm" variant="secondary" className="gap-1" onClick={() => charlotteTTS.speak(w)}>
-                      <Volume2 className="w-3 h-3" /> Hear it
+                      <Volume2 className="w-3 h-3" /> {t('coach.hearIt','Hear it')}
                     </Button>
                     <Button size="sm" className="gap-1" onClick={() => onSayWithMe(w)} disabled={(wordTries[w] || 0) >= WORD_MICRO_ATTEMPTS}>
-                      Say it with me ({(wordTries[w] || 0)}/{WORD_MICRO_ATTEMPTS})
+                      {t('coach.sayWithMe','Say it with me')} ({(wordTries[w] || 0)}/{WORD_MICRO_ATTEMPTS})
                     </Button>
                   </div>
                 </div>
@@ -432,7 +457,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
         )}
 
         {/* Privacy note */}
-        <p className="text-xs text-muted-foreground">We don’t store recordings. Audio is discarded after feedback.</p>
+        <p className="text-xs text-muted-foreground">{t('coach.privacy','We don’t store recordings. Audio is discarded after feedback.')}</p>
       </CardContent>
     </Card>
   );
