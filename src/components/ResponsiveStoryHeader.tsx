@@ -538,6 +538,7 @@ export const ResponsiveStoryHeader = ({
                     labelOverride={isMobile ? undefined : "Re-write this story"}
                     tooltipText={isMobile ? "Re-write this story" : "you will get to update any special requests"}
                     className={!isMobile ? "rounded-full px-6" : undefined}
+                    showCoachOnSignIn={false}
                   />
                 )}
                 {onSaveStory && !isMobileOrTablet && (

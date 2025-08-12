@@ -17,6 +17,7 @@ interface NewStoryCTAProps {
   wandPulse?: boolean;
   labelOverride?: string;
   tooltipText?: string;
+  showCoachOnSignIn?: boolean; // show coach only on premium home sign-in
 }
 
 const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
@@ -29,6 +30,7 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
   wandPulse = false,
   labelOverride,
   tooltipText,
+  showCoachOnSignIn = true,
 }) => {
   const { t } = useTranslation();
   const label = labelOverride ?? t("common.newStory", "New Story");
@@ -41,7 +43,7 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
   const [iconPx, setIconPx] = React.useState<number>(baseIcon);
   const timersRef = React.useRef<{ coach?: number; sparkle?: number }>({});
   React.useEffect(() => {
-    if (!isPremium) return;
+    if (!isPremium || !showCoachOnSignIn) return;
     try {
       const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
       setShowCoach(true);
@@ -55,7 +57,7 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
       if (timersRef.current.coach) clearTimeout(timersRef.current.coach);
       if (timersRef.current.sparkle) clearTimeout(timersRef.current.sparkle);
     };
-  }, [isPremium]);
+  }, [isPremium, showCoachOnSignIn]);
 
   // Idle sparkle nudge after periods of inactivity (desktop/tab visible, premium only)
   const lastActivityRef = React.useRef<number>(Date.now());
@@ -204,7 +206,7 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
           </span>
         ) : (
           <span className="relative inline-grid grid-cols-[auto,1fr] items-center w-full min-w-0">
-            <span className="col-span-1 flex items-center justify-center pr-1 md:pr-2" style={{ width: iconPx }}>
+            <span className="col-span-1 flex items-center justify-start md:justify-center pr-1 md:pr-2" style={{ width: iconPx }}>
               <MagicRefreshIcon
                 size={iconPx}
                 ringScale={0.92}
@@ -220,7 +222,7 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
                 wandClassName="text-current"
               />
             </span>
-            <span className="col-span-1 min-w-0 text-left whitespace-nowrap">{label}</span>
+            <span className="col-span-1 min-w-0 text-left whitespace-nowrap text-xs sm:text-sm">{label}</span>
           </span>
         )}
       </Button>
