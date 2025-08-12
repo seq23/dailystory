@@ -54,6 +54,8 @@ import { ApiKeyDiagnostic } from "@/components/ApiKeyDiagnostic";
 import { ParentGuardrailsService } from "@/services/parentGuardrailsService";
 import { supabase } from "@/integrations/supabase/client";
 import { SpecialRequestDialog } from "@/components/SpecialRequestDialog";
+import { StorySessionCache } from "@/services/storySessionCache";
+import { guestSession } from "@/utils/guestSession";
 
 interface CleanStoryDisplayProps {
   userInfo: UserInfo;
@@ -165,15 +167,28 @@ useEffect(() => {
     }
   }, [isPremium, timerEnabled]);
 
-  // Guard against any attempts to disable the timer for guests
-  useEffect(() => {
-    if (!isPremium && !timerEnabled) {
-      console.warn('[Timer] Guest sessions must keep timer enabled. Re-enabling.');
-      try { localStorage.setItem('readingTimerEnabled','1'); } catch {}
-      setTimerEnabled(true);
-      try { window.dispatchEvent(new CustomEvent('readingTimerToggle', { detail: true })); } catch {}
-    }
-  }, [isPremium, timerEnabled]);
+// Guard against any attempts to disable the timer for guests
+useEffect(() => {
+  if (!isPremium && !timerEnabled) {
+    console.warn('[Timer] Guest sessions must keep timer enabled. Re-enabling.');
+    try { localStorage.setItem('readingTimerEnabled','1'); } catch {}
+    setTimerEnabled(true);
+    try { window.dispatchEvent(new CustomEvent('readingTimerToggle', { detail: true })); } catch {}
+  }
+}, [isPremium, timerEnabled]);
+
+// Guest timer: resume or set end timestamp
+useEffect(() => {
+  if (isPremium) return;
+  const now = Date.now();
+  const endTs = guestSession.getTimerEndTs();
+  if (endTs && endTs > now) {
+    const remaining = Math.max(0, Math.floor((endTs - now) / 1000));
+    setTimeRemaining(remaining);
+  } else {
+    guestSession.saveTimerEndTs(now + timeRemaining * 1000);
+  }
+}, []);
 
   useEffect(() => {
     const handler = (e: any) => {
@@ -416,22 +431,40 @@ useEffect(() => {
     }
   }, [currentPage, story, pageImages, layout]);
 
-  // Timer countdown effect
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isTimerRunning && timeRemaining > 0 && !isTimerCanceled) {
-      interval = setInterval(() => {
-        setTimeRemaining(prev => {
-          if (prev <= 1) {
-            setIsTimerRunning(false);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [isTimerRunning, timeRemaining, isTimerCanceled]);
+// Timer countdown effect
+useEffect(() => {
+  let interval: NodeJS.Timeout;
+  if (isTimerRunning && timeRemaining > 0 && !isTimerCanceled) {
+    interval = setInterval(() => {
+      setTimeRemaining(prev => {
+        if (prev <= 1) {
+          setIsTimerRunning(false);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }
+  return () => clearInterval(interval);
+}, [isTimerRunning, timeRemaining, isTimerCanceled]);
+
+// Persist guest timer remaining periodically and clear on end
+const timeRef = useRef(timeRemaining);
+useEffect(() => { timeRef.current = timeRemaining; }, [timeRemaining]);
+useEffect(() => {
+  if (isPremium) return;
+  const iv = setInterval(() => {
+    try { guestSession.saveRemaining(timeRef.current); } catch {}
+  }, 5000);
+  return () => clearInterval(iv);
+}, [isPremium]);
+
+useEffect(() => {
+  if (!isPremium && timeRemaining === 0) {
+    try { guestSession.clearAll(); } catch {}
+    try { StorySessionCache.clearCachedSession('guest'); } catch {}
+  }
+}, [isPremium, timeRemaining]);
 
 // Magic wand DRAMATIC animation effect for free users on last page - CONTINUOUS until clicked
 useEffect(() => {
@@ -480,95 +513,121 @@ useEffect(() => {
 }, [isPremium, timeRemaining, isTimerVisible]);
 
 
-  const initializeStory = async () => {
-    console.log('🚀 initializeStory start', { isPremium, userName: userInfo?.name });
-    setIsLoading(true);
-    loaderStartRef.current = Date.now();
-    setError(null);
-    
-    // Run diagnostics for free users to identify API issues
-    if (!isPremium) {
-      await DiagnosticTool.runFullDiagnostic();
-    }
-    
-    try {
-      const effectiveUser = {
-        ...userInfo,
-        difficultyLevel: currentDifficulty,
-        readingAbility: currentDifficulty,
-        expertGradeLevel: currentDifficulty === 'expert' ? expertGradeLevel : undefined,
-      } as UserInfo;
-      if (isPremium) {
-        // Premium: Live generation - start with first page
-        console.log('🎯 Premium user: Starting live generation');
-        const result = await LiveGenerationService.generateFirstPage(effectiveUser);
-        
-        if (result.error) {
-          setError(result.error);
-          return;
-        }
-        
-        setStory([result.content]);
-        setLiveContext(result.nextContext || null);
-        // Sync UI with adaptive expert grade if returned
-        if (result.nextContext?.expertGradeLevel) {
-          setExpertGradeLevel(result.nextContext.expertGradeLevel);
-        }
-        setIsStoryComplete(result.isComplete);
-        setStoryTitle(`${userInfo.name}'s Live Adventure`);
-        const srcPremium = (window as any).__LAST_STORY_SOURCE__ || 'unknown';
-        console.log('🧭 UI SOURCE', { source: srcPremium, tier: 'premium' });
-        setStorySource(srcPremium);
-        
-      } else {
-        // Free: Netflix-style - generate complete story upfront
-        console.log('🎬 Free user: Generating complete story', { isPremium, userInfo });
-        console.log('🔍 DIAGNOSTIC: CleanStoryDisplay calling NetflixStyleStoryService', {
-          userName: userInfo.name,
-          difficulty: userInfo.difficultyLevel,
-          timestamp: new Date().toISOString()
-        });
-        const result = await NetflixStyleStoryService.generateCompleteStory(effectiveUser);
-        
-        console.log('🔍 DIAGNOSTIC: NetflixStyleStoryService result received', {
-          hasError: !!result.error,
-          pagesCount: result.pages?.length,
-          title: result.title,
-          sampleContent: result.pages?.[0]?.substring(0, 50)
-        });
-
-        if (result.error) {
-          console.error('🔍 DIAGNOSTIC: Story generation returned error', result.error);
-          setError(result.error);
-          return;
-        }
-        
-        console.log('🔍 DIAGNOSTIC: Setting story in CleanStoryDisplay', {
-          pagesCount: result.pages.length,
-          firstPage: result.pages[0]?.substring(0, 100)
-        });
-        setStory(result.pages);
-        setStoryTitle(result.title);
-        setIsStoryComplete(true);
-        const srcFree = (window as any).__LAST_STORY_SOURCE__ || 'unknown';
-        console.log('🧭 UI SOURCE', { source: srcFree, tier: 'free' });
-        setStorySource(srcFree as any);
+const initializeStory = async () => {
+  console.log('🚀 initializeStory start', { isPremium, userName: userInfo?.name });
+  setIsLoading(true);
+  loaderStartRef.current = Date.now();
+  setError(null);
+  
+  // Run diagnostics for free users to identify API issues
+  if (!isPremium) {
+    await DiagnosticTool.runFullDiagnostic();
+  }
+  
+  try {
+    const effectiveUser = {
+      ...userInfo,
+      difficultyLevel: currentDifficulty,
+      readingAbility: currentDifficulty,
+      expertGradeLevel: currentDifficulty === 'expert' ? expertGradeLevel : undefined,
+    } as UserInfo;
+    if (isPremium) {
+      // Premium: Live generation - start with first page
+      console.log('🎯 Premium user: Starting live generation');
+      const result = await LiveGenerationService.generateFirstPage(effectiveUser);
+      
+      if (result.error) {
+        setError(result.error);
+        return;
       }
       
-    } catch (error) {
-      console.error('Story initialization failed:', error);
-      setError('Failed to create your story. Please try again.');
-    } finally {
-      const elapsed = Date.now() - loaderStartRef.current;
-      const remaining = Math.max(0, LOADER_MIN_MS - elapsed);
-      console.log('✅ initializeStory finished', { elapsed, remaining, LOADER_MIN_MS });
-      if (remaining > 0) {
-        setTimeout(() => setIsLoading(false), remaining);
-      } else {
-        setIsLoading(false);
+      setStory([result.content]);
+      setLiveContext(result.nextContext || null);
+      // Sync UI with adaptive expert grade if returned
+      if (result.nextContext?.expertGradeLevel) {
+        setExpertGradeLevel(result.nextContext.expertGradeLevel);
       }
+      setIsStoryComplete(result.isComplete);
+      setStoryTitle(`${userInfo.name}'s Live Adventure`);
+      const srcPremium = (window as any).__LAST_STORY_SOURCE__ || 'unknown';
+      console.log('🧭 UI SOURCE', { source: srcPremium, tier: 'premium' });
+      setStorySource(srcPremium);
+      
+    } else {
+      // Free: try to restore from cache first
+      try {
+        const cached = StorySessionCache.getCachedStorySession('guest');
+        if (cached && cached.pages?.length) {
+          console.log('♻️ Restoring guest story from cache');
+          setStory(cached.pages);
+          setCurrentPage(Math.min(cached.currentPage || 0, Math.max(0, cached.pages.length - 1)));
+          setStoryTitle(`${userInfo.name}'s Adventure`);
+          setIsStoryComplete(true);
+          setStorySource('unknown');
+          return; // Early return; finally will handle loader timing
+        }
+      } catch (e) { console.warn('Failed to restore cached guest session', e); }
+
+      // Free: Netflix-style - generate complete story upfront
+      console.log('🎬 Free user: Generating complete story', { isPremium, userInfo });
+      console.log('🔍 DIAGNOSTIC: CleanStoryDisplay calling NetflixStyleStoryService', {
+        userName: userInfo.name,
+        difficulty: userInfo.difficultyLevel,
+        timestamp: new Date().toISOString()
+      });
+      const result = await NetflixStyleStoryService.generateCompleteStory(effectiveUser);
+      
+      console.log('🔍 DIAGNOSTIC: NetflixStyleStoryService result received', {
+        hasError: !!result.error,
+        pagesCount: result.pages?.length,
+        title: result.title,
+        sampleContent: result.pages?.[0]?.substring(0, 50)
+      });
+
+      if (result.error) {
+        console.error('🔍 DIAGNOSTIC: Story generation returned error', result.error);
+        setError(result.error);
+        return;
+      }
+      
+      console.log('🔍 DIAGNOSTIC: Setting story in CleanStoryDisplay', {
+        pagesCount: result.pages.length,
+        firstPage: result.pages[0]?.substring(0, 100)
+      });
+      setStory(result.pages);
+      setStoryTitle(result.title);
+      setIsStoryComplete(true);
+      const srcFree = (window as any).__LAST_STORY_SOURCE__ || 'unknown';
+      console.log('🧭 UI SOURCE', { source: srcFree, tier: 'free' });
+      setStorySource(srcFree as any);
+
+      // Persist guest story for refresh-resume
+      try {
+        StorySessionCache.cacheStorySession(
+          'guest',
+          currentDifficulty as any,
+          result.pages,
+          result.pages.map(() => ({ prompt: '' })),
+          0,
+          { isPremium: false, sessionStartTime }
+        );
+      } catch (e) { console.warn('Story cache failed', e); }
     }
-  };
+    
+  } catch (error) {
+    console.error('Story initialization failed:', error);
+    setError('Failed to create your story. Please try again.');
+  } finally {
+    const elapsed = Date.now() - loaderStartRef.current;
+    const remaining = Math.max(0, LOADER_MIN_MS - elapsed);
+    console.log('✅ initializeStory finished', { elapsed, remaining, LOADER_MIN_MS });
+    if (remaining > 0) {
+      setTimeout(() => setIsLoading(false), remaining);
+    } else {
+      setIsLoading(false);
+    }
+  }
+};
 
   const generateNextPage = async (): Promise<LivePageResult | undefined> => {
     if (!isPremium || !liveContext || isLoadingNextPage) return;
@@ -719,7 +778,7 @@ useEffect(() => {
       onSessionEnded(sessionStats);
     }
   };
-  
+
   const handlePrevious = () => {
     // Stop audio when navigating (ensure audio service halts)
     try { audioRef.current?.stop?.(); } catch {}
@@ -727,7 +786,7 @@ useEffect(() => {
     clearHighlighting();
     setCurrentPage(Math.max(0, currentPage - 1));
   };
-  
+
   useEffect(() => {
     const onNavigate = (e: Event) => {
       try {
@@ -742,6 +801,13 @@ useEffect(() => {
     window.addEventListener('reader:navigate', onNavigate as EventListener);
     return () => window.removeEventListener('reader:navigate', onNavigate as EventListener);
   }, [handleNext, handlePrevious]);
+
+useEffect(() => {
+  // Persist current page for guest sessions
+  if (!isPremium && story.length > 0) {
+    try { StorySessionCache.updateCurrentPage('guest', currentPage); } catch {}
+  }
+}, [currentPage, isPremium, story.length]);
   
   const handleWordInteraction = () => {
     setWordsInteracted(prev => prev + 1);

@@ -7,6 +7,8 @@ import { PremiumUpgrade } from "@/components/PremiumUpgrade";
 import { LoginScreen } from "@/components/LoginScreen";
 import { useSecurityMonitoring } from "@/hooks/useSecurityMonitoring";
 import type { UserInfo } from "@/types";
+import { guestSession } from "@/utils/guestSession";
+import { StorySessionCache } from "@/services/storySessionCache";
 
 type GuestState = "welcome" | "form" | "reading" | "upgrade" | "login";
 
@@ -17,18 +19,43 @@ export const GuestExperience = () => {
   // Initialize security monitoring for guests
   useSecurityMonitoring();
 
-  // Check for query parameters on component mount
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const action = urlParams.get('action');
-    
-    if (action === 'new-story') {
-      // User came from session ended page wanting to start new story
-      setCurrentState("form");
-      // Clean up the URL
-      window.history.replaceState({}, '', '/');
+// Check for query parameters on component mount and attempt auto-resume
+useEffect(() => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const action = urlParams.get('action');
+  
+  if (action === 'new-story') {
+    // User came from session ended page wanting to start new story
+    setCurrentState("form");
+    // Clean up the URL
+    window.history.replaceState({}, '', '/');
+    // Clear any previous guest session
+    try { guestSession.clearAll(); } catch {}
+    try { StorySessionCache.clearCachedSession('guest'); } catch {}
+    return;
+  }
+
+  // Auto-resume guest session if active and timer not expired
+  try {
+    if (guestSession.isActive()) {
+      const endTs = guestSession.getTimerEndTs();
+      const now = Date.now();
+      if (endTs && endTs > now) {
+        const info = guestSession.getUserInfo();
+        if (info) {
+          setUserInfo(info);
+          setCurrentState("reading");
+          try { localStorage.setItem('readingTimerEnabled','1'); } catch {}
+          try { window.dispatchEvent(new CustomEvent('readingTimerToggle', { detail: true })); } catch {}
+          return;
+        }
+      }
+      // Expired or invalid -> clear
+      guestSession.clearAll();
+      StorySessionCache.clearCachedSession('guest');
     }
-  }, []);
+  } catch {}
+}, []);
 
   // Ensure reading timer is always enabled for guest sessions
   useEffect(() => {
@@ -42,15 +69,19 @@ export const GuestExperience = () => {
     setCurrentState("form");
   };
 
-  const handleFormSubmit = (info: UserInfo) => {
-    setUserInfo(info);
-    setCurrentState("reading");
-  };
+const handleFormSubmit = (info: UserInfo) => {
+  setUserInfo(info);
+  try { guestSession.setActive(true); guestSession.saveUserInfo(info); } catch {}
+  try { StorySessionCache.clearCachedSession('guest'); } catch {}
+  setCurrentState("reading");
+};
 
-  const handleBackToWelcome = () => {
-    setCurrentState("welcome");
-    setUserInfo(null);
-  };
+const handleBackToWelcome = () => {
+  setCurrentState("welcome");
+  setUserInfo(null);
+  try { guestSession.clearAll(); } catch {}
+  try { StorySessionCache.clearCachedSession('guest'); } catch {}
+};
 
   const handleUpgrade = () => {
     setCurrentState("login");
@@ -98,10 +129,12 @@ export const GuestExperience = () => {
             onHome={() => setCurrentState("welcome")}
             onNewStory={() => setCurrentState("form")}
             isPremium={false}
-            onSessionEnded={(stats) => {
-              // Navigate to SessionEnded page with stats
-              window.location.href = `/session-ended?stats=${encodeURIComponent(JSON.stringify({...stats, isPremium: false}))}`
-            }}
+onSessionEnded={(stats) => {
+  // Clear guest session and navigate to SessionEnded page with stats
+  try { guestSession.clearAll(); } catch {}
+  try { StorySessionCache.clearCachedSession('guest'); } catch {}
+  window.location.href = `/session-ended?stats=${encodeURIComponent(JSON.stringify({...stats, isPremium: false}))}`
+}}
           />
         </div>
       ) : null;
