@@ -803,5 +803,32 @@
   },
   "reading": {
     "asChild": "Reading as {{name}}"
+  },
+  "coach": {
+    "title": "Read‑aloud coach",
+    "englishOnlyShort": "English only for now",
+    "englishOnlyLong": "This coach is available for English stories only.",
+    "subtitle": "Kids read aloud; get instant feedback",
+    "prevSentence": "Previous sentence",
+    "nextSentence": "Next sentence",
+    "today": "today",
+    "target": "Target:",
+    "start": "Start",
+    "stop": "Stop",
+    "tryAgain": "Try again",
+    "limitReached": "Daily limit reached — Upgrade",
+    "youSaid": "You said:",
+    "feedback": "Feedback:",
+    "pass": "Great job! You matched the sentence.",
+    "almost": "Almost there—let's fix a few words.",
+    "paceTip": "Pace tip:",
+    "topWords": "Top 3 words to practice:",
+    "hearIt": "Hear it",
+    "sayWithMe": "Say it with me",
+    "privacy": "We don’t store recordings. Audio is discarded after feedback.",
+    "paceFaster": "Try a little faster",
+    "paceSlower": "Try a little slower",
+    "paceNice": "Nice pace",
+    "great": "Great!"
   }
 }

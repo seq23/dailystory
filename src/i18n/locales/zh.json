@@ -674,5 +674,32 @@
       "saved": "Settings saved",
       "error": "Could not save settings"
     }
+  },
+  "coach": {
+    "title": "朗读教练",
+    "englishOnlyShort": "目前仅支持英文",
+    "englishOnlyLong": "此教练目前仅适用于英文故事。",
+    "subtitle": "孩子大声朗读；即时反馈",
+    "prevSentence": "上一句",
+    "nextSentence": "下一句",
+    "today": "今天",
+    "target": "目标：",
+    "start": "开始",
+    "stop": "停止",
+    "tryAgain": "再试一次",
+    "limitReached": "已达每日上限 — 升级",
+    "youSaid": "你说：",
+    "feedback": "反馈：",
+    "pass": "太棒了！你和句子匹配了。",
+    "almost": "快成功了——我们来修正几个词。",
+    "paceTip": "语速提示：",
+    "topWords": "练习的3个词：",
+    "hearIt": "听发音",
+    "sayWithMe": "跟我读",
+    "privacy": "我们不保存录音。反馈后会删除音频。",
+    "paceFaster": "读快一点",
+    "paceSlower": "读慢一点",
+    "paceNice": "语速合适",
+    "great": "太好了！"
   }
 }

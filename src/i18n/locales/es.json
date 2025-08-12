@@ -715,5 +715,32 @@
       "saved": "Settings saved",
       "error": "Could not save settings"
     }
+  },
+  "coach": {
+    "title": "Entrenador de lectura en voz alta",
+    "englishOnlyShort": "Solo inglés por ahora",
+    "englishOnlyLong": "Este entrenador está disponible solo para historias en inglés.",
+    "subtitle": "Los niños leen en voz alta; reciben retroalimentación al instante",
+    "prevSentence": "Frase anterior",
+    "nextSentence": "Siguiente frase",
+    "today": "hoy",
+    "target": "Objetivo:",
+    "start": "Comenzar",
+    "stop": "Detener",
+    "tryAgain": "Intentar de nuevo",
+    "limitReached": "Límite diario alcanzado — Actualiza",
+    "youSaid": "Dijiste:",
+    "feedback": "Comentarios:",
+    "pass": "¡Buen trabajo! Coincidiste la oración.",
+    "almost": "Casi — arreglemos algunas palabras.",
+    "paceTip": "Consejo de ritmo:",
+    "topWords": "3 palabras para practicar:",
+    "hearIt": "Escúchalo",
+    "sayWithMe": "Dilo conmigo",
+    "privacy": "No guardamos grabaciones. El audio se descarta después de la retroalimentación.",
+    "paceFaster": "Intenta un poco más rápido",
+    "paceSlower": "Intenta un poco más lento",
+    "paceNice": "Buen ritmo",
+    "great": "¡Genial!"
   }
 }

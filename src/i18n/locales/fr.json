@@ -706,5 +706,32 @@
       "saved": "Settings saved",
       "error": "Could not save settings"
     }
+  },
+  "coach": {
+    "title": "Coach de lecture à voix haute",
+    "englishOnlyShort": "Anglais uniquement pour le moment",
+    "englishOnlyLong": "Ce coach est disponible uniquement pour les histoires en anglais.",
+    "subtitle": "Les enfants lisent à voix haute; retour immédiat",
+    "prevSentence": "Phrase précédente",
+    "nextSentence": "Phrase suivante",
+    "today": "aujourd’hui",
+    "target": "Phrase cible :",
+    "start": "Démarrer",
+    "stop": "Arrêter",
+    "tryAgain": "Réessayer",
+    "limitReached": "Limite quotidienne atteinte — Passer en Premium",
+    "youSaid": "Tu as dit :",
+    "feedback": "Retour :",
+    "pass": "Bravo ! Tu as bien reproduit la phrase.",
+    "almost": "Presque — corrigeons quelques mots.",
+    "paceTip": "Conseil de rythme :",
+    "topWords": "3 mots à pratiquer :",
+    "hearIt": "Écouter",
+    "sayWithMe": "Dis-le avec moi",
+    "privacy": "Nous n’enregistrons pas les audios. Ils sont supprimés après le retour.",
+    "paceFaster": "Un peu plus vite",
+    "paceSlower": "Un peu plus lentement",
+    "paceNice": "Bon rythme",
+    "great": "Super !"
   }
 }

@@ -861,5 +861,32 @@
     "storyComplete": "História completa!",
     "expand": "Ver Progresso",
     "collapse": "Ocultar Progresso"
+  },
+  "coach": {
+    "title": "Treinador de leitura em voz alta",
+    "englishOnlyShort": "Apenas inglês por enquanto",
+    "englishOnlyLong": "Este treinador está disponível apenas para histórias em inglês.",
+    "subtitle": "As crianças leem em voz alta; feedback instantâneo",
+    "prevSentence": "Frase anterior",
+    "nextSentence": "Próxima frase",
+    "today": "hoje",
+    "target": "Alvo:",
+    "start": "Iniciar",
+    "stop": "Parar",
+    "tryAgain": "Tentar novamente",
+    "limitReached": "Limite diário atingido — Atualize",
+    "youSaid": "Você disse:",
+    "feedback": "Feedback:",
+    "pass": "Ótimo! Você acompanhou a frase.",
+    "almost": "Quase lá — vamos corrigir algumas palavras.",
+    "paceTip": "Dica de ritmo:",
+    "topWords": "3 palavras para praticar:",
+    "hearIt": "Ouvir",
+    "sayWithMe": "Diga comigo",
+    "privacy": "Não armazenamos gravações. O áudio é descartado após o feedback.",
+    "paceFaster": "Tente um pouco mais rápido",
+    "paceSlower": "Tente um pouco mais devagar",
+    "paceNice": "Bom ritmo",
+    "great": "Ótimo!"
   }
 }
