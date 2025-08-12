@@ -142,7 +142,8 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
     const update = () => {
       const h = el.getBoundingClientRect().height;
       if (h && !Number.isNaN(h)) {
-        setIconPx(Math.max(16, Math.floor(h * 0.92)));
+        const factor = h <= 44 ? 0.8 : 0.92;
+        setIconPx(Math.max(16, Math.floor(h * factor)));
       }
     };
     update();
@@ -173,7 +174,8 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
             ? "min-h-[36px] min-w-[36px] rounded-full p-0 bg-gradient-primary text-primary-foreground"
             : "bg-gradient-primary text-primary-foreground rounded-full",
           !iconOnly && "hover-scale",
-          !iconOnly && "px-3 md:px-4",
+          !iconOnly && "px-2 md:px-4",
+          !iconOnly && "justify-start",
           wandPulse && "ring-2 ring-primary/40",
           isLocked && "opacity-50 cursor-not-allowed",
           className
