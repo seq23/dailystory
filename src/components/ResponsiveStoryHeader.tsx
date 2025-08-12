@@ -77,21 +77,28 @@ export const ResponsiveStoryHeader = ({
   }, [isChangingDifficulty, changeDirection]);
 
   // Auto-compact actions on tablet when space is constrained
+  const headerRowRef = React.useRef<HTMLDivElement>(null);
   const actionsRef = React.useRef<HTMLDivElement>(null);
   const [forceIconOnly, setForceIconOnly] = useState(false);
   useEffect(() => {
-    const el = actionsRef.current;
-    if (!el || !isTablet) { setForceIconOnly(false); return; }
+    if (!isTablet) { setForceIconOnly(false); return; }
+    const els = [headerRowRef.current, actionsRef.current].filter(Boolean) as HTMLElement[];
     const check = () => {
-      try { setForceIconOnly(el.scrollWidth > el.clientWidth + 2); } catch {}
+      try {
+        const constrained = els.some(el => el.scrollWidth > el.clientWidth + 2);
+        setForceIconOnly(constrained);
+      } catch {}
     };
     check();
-    const ro = new ResizeObserver(() => check());
-    ro.observe(el);
+    const ros = els.map(el => {
+      const ro = new ResizeObserver(() => check());
+      ro.observe(el);
+      return ro;
+    });
     const onResize = () => check();
     window.addEventListener('resize', onResize);
     return () => {
-      try { ro.disconnect(); } catch {}
+      ros.forEach(ro => { try { ro.disconnect(); } catch {} });
       window.removeEventListener('resize', onResize);
     };
   }, [isTablet]);
@@ -277,12 +284,12 @@ export const ResponsiveStoryHeader = ({
       <div className={cn(
         isMobileOrTablet ? "safe-area-padding" : "max-w-7xl mx-auto px-6"
       )}>
-         <div className={cn(
-           "flex items-center justify-between flex-nowrap",
-           isMobile && "gap-2 px-3 py-1.5",
-           isTablet && "gap-3 px-5 py-2",
-           !isMobileOrTablet && "gap-5 py-3"
-         )}>
+         <div ref={headerRowRef} className={cn(
+            "flex items-center justify-between flex-nowrap",
+            isMobile && "gap-2 px-3 py-1.5",
+            isTablet && "gap-3 px-5 py-2",
+            !isMobileOrTablet && "gap-5 py-3"
+          )}>
           {/* Left Section: User Avatar & Action Buttons */}
           <div className={cn(
             "flex-shrink-0 flex items-center",
