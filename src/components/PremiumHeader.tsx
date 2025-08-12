@@ -46,6 +46,9 @@ export const PremiumHeader = ({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const headerRef = useRef<HTMLElement | null>(null);
 
+  const { open, openMobile, isMobile } = useSidebar();
+  const isSidebarOpen = isMobile ? openMobile : open;
+
   // Set CSS var for header height so sidebar can offset on tablets
   useEffect(() => {
     const el = headerRef.current;
@@ -86,18 +89,18 @@ export const PremiumHeader = ({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <SidebarTrigger className="mr-1 md:hidden" />
+                  <SidebarTrigger aria-label={isSidebarOpen ? "Close navigation" : "Open navigation"} className="mr-1 md:hidden" />
                 </TooltipTrigger>
-                <TooltipContent side="bottom">Open navigation</TooltipContent>
+                 <TooltipContent side="bottom">{isSidebarOpen ? 'Close navigation' : 'Open navigation'}</TooltipContent>
               </Tooltip>
             </TooltipProvider>
             {/* Desktop/Tablet trigger to the LEFT of the logo */}
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <SidebarTrigger aria-label="Toggle navigation" className="hidden md:inline-flex mr-2" />
+                  <SidebarTrigger aria-label={isSidebarOpen ? "Close navigation" : "Open navigation"} className="hidden md:inline-flex mr-2" />
                 </TooltipTrigger>
-                <TooltipContent side="bottom">Open navigation</TooltipContent>
+                <TooltipContent side="bottom">{isSidebarOpen ? 'Close navigation' : 'Open navigation'}</TooltipContent>
               </Tooltip>
             </TooltipProvider>
             <div className="p-2 bg-gradient-primary rounded-lg">
