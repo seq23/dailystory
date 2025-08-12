@@ -233,9 +233,9 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
       <div
 className={cn(
           "fixed right-4 transform z-40",
-          isExpanded ? "top-1/2 -translate-y-1/2" : "top-[62%] -translate-y-1/2",
-          !isExpanded && isMobile && "top-[72%]",
-          !isExpanded && isTablet && "top-[66%]",
+          isExpanded ? "top-1/2 -translate-y-1/2" : "top-[70%] -translate-y-1/2",
+          !isExpanded && isTablet && "top-[74%] -translate-y-1/2",
+          !isExpanded && isMobile && "top-[78%] -translate-y-1/2",
           "transition-all duration-500 ease-out",
           isMobile && "scale-75 right-1",
           isTablet && "scale-75 right-1",
