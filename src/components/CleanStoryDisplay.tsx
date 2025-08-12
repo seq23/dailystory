@@ -995,6 +995,9 @@ const initializeStory = async () => {
         storyCompleted: true,
         readingSpeed: Math.round((totalWordsRead / timeSpent) * 60000)
       });
+      // Persist essentials for SessionEnded fallback across reloads
+      try { sessionStorage.setItem('last_user_info', JSON.stringify(userInfo)); } catch {}
+      try { sessionStorage.setItem('last_story_text', story.join(' ')); } catch {}
       onSessionEnded(sessionStats);
     }
   };
@@ -1110,6 +1113,9 @@ const handleDockCoach = () => {
     });
     
     try { sessionStorage.removeItem('readingTimerPausedSeconds'); } catch {}
+    // Persist essentials for SessionEnded fallback across reloads
+    try { sessionStorage.setItem('last_user_info', JSON.stringify(userInfo)); } catch {}
+    try { sessionStorage.setItem('last_story_text', story.join(' ')); } catch {}
     onSessionEnded(sessionStats);
   };
 

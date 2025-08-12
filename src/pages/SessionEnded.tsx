@@ -9,6 +9,7 @@ import { ComprehensionQuiz } from "@/components/ComprehensionQuiz";
 import { VocabularyDashboard } from "@/components/VocabularyDashboard";
 import { MiniGames } from "@/components/MiniGames";
 import { Badge } from "@/components/ui/badge";
+import { StorySessionCache } from "@/services/storySessionCache";
 
 interface ReadingStats {
   wordsRead: number;
@@ -57,14 +58,48 @@ const location = useLocation();
     }
   }
 
-  // Post-session activity data
-  const userInfoFromState = (location.state?.userInfo as UserInfo | undefined);
-  const storyText = (location.state?.storyText as string | undefined);
+  // Post-session activity data (with fallbacks)
+  let userInfoFromState = (location.state?.userInfo as UserInfo | undefined);
+  let storyText = (location.state?.storyText as string | undefined);
+  
+  // Fallback: sessionStorage persisted at session end
+  try {
+    if (!userInfoFromState) {
+      const ui = sessionStorage.getItem('last_user_info');
+      if (ui) userInfoFromState = JSON.parse(ui) as UserInfo;
+    }
+  } catch (e) {
+    console.warn('Failed to parse last_user_info', e);
+  }
+  try {
+    if (!storyText) {
+      const st = sessionStorage.getItem('last_story_text');
+      if (st) storyText = st;
+    }
+  } catch {}
+
+  // Fallback: cached story pages (best-effort)
+  try {
+    if (!storyText) {
+      const cacheId = userIsPremium ? (localStorage.getItem('user_display_name') || 'premium') : 'guest';
+      const cached = StorySessionCache.getCachedStorySession(cacheId);
+      if (cached?.pages?.length) {
+        storyText = cached.pages.join(' ');
+      }
+    }
+  } catch {}
+
   const [quizVisible, setQuizVisible] = React.useState(false);
   const [vocabVisible, setVocabVisible] = React.useState(false);
   const [gamesVisible, setGamesVisible] = React.useState(false);
   const canLaunchActivities = Boolean(userIsPremium && userInfoFromState && storyText);
   const isQuizAllowed = Boolean(userIsPremium && sessionStats && sessionStats.currentDifficulty !== 'beginner');
+
+  // Clear ephemeral fallbacks post-mount
+  React.useEffect(() => {
+    try { sessionStorage.removeItem('last_user_info'); } catch {}
+    try { sessionStorage.removeItem('last_story_text'); } catch {}
+  }, []);
 
   // Handle navigation based on user type
 const handleHome = () => {
