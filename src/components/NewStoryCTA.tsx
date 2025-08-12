@@ -166,23 +166,45 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
         disabled={isLocked}
         aria-disabled={isLocked}
       >
-        <span className={cn("relative inline-flex items-center", !iconOnly && "mr-1 md:mr-2")}>
-          <MagicRefreshIcon
-            size={iconSize}
-            ringScale={0.92}
-            wandScale={0.58}
-            wandRotate={-12}
-            ringRotate={0}
-            ringStrokeWidth={2}
-            wandStrokeWidth={2}
-            absoluteStrokeWidth
-            sparkleGap
-            ariaLabel={label}
-            ringClassName="text-current"
-            wandClassName="text-current"
-          />
-        </span>
-        {!iconOnly && label}
+        {iconOnly ? (
+          <span className={cn("relative inline-flex items-center")}
+          >
+            <MagicRefreshIcon
+              size={iconSize}
+              ringScale={0.92}
+              wandScale={0.58}
+              wandRotate={-12}
+              ringRotate={0}
+              ringStrokeWidth={2}
+              wandStrokeWidth={2}
+              absoluteStrokeWidth
+              sparkleGap
+              ariaLabel={label}
+              ringClassName="text-current"
+              wandClassName="text-current"
+            />
+          </span>
+        ) : (
+          <span className="relative inline-grid grid-cols-2 items-center w-full">
+            <span className="col-span-1 flex items-center justify-center pr-2">
+              <MagicRefreshIcon
+                size={iconSize}
+                ringScale={0.92}
+                wandScale={0.58}
+                wandRotate={-12}
+                ringRotate={0}
+                ringStrokeWidth={2}
+                wandStrokeWidth={2}
+                absoluteStrokeWidth
+                sparkleGap
+                ariaLabel={label}
+                ringClassName="text-current"
+                wandClassName="text-current"
+              />
+            </span>
+            <span className="col-span-1 text-left truncate">{label}</span>
+          </span>
+        )}
       </Button>
       {showCoach && (
         <span className="absolute top-1/2 -translate-y-1/2 left-0 -translate-x-[calc(100%+8px)] flex items-center gap-1.5 md:gap-2 pointer-events-none z-30 motion-safe:animate-enter">
