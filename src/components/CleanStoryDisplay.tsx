@@ -295,6 +295,17 @@ const [specialRequestDraft, setSpecialRequestDraft] = useState(userInfo?.special
 const loaderStartRef = useRef<number>(0);
 const LOADER_MIN_MS = 1600;
 
+// Expanded Finish CTA state: show expanded only on the ending page just generated
+const [finishCTAExpanded, setFinishCTAExpanded] = useState(false);
+const finishExpandedOnPageRef = useRef<number | null>(null);
+// Collapse expanded CTA when user navigates away from the ending page
+useEffect(() => {
+  if (!finishCTAExpanded) return;
+  if (finishExpandedOnPageRef.current != null && currentPage !== finishExpandedOnPageRef.current) {
+    setFinishCTAExpanded(false);
+  }
+}, [currentPage, finishCTAExpanded]);
+
   // Debug flag to force loader overlay for quick verification
   const [forceLoaderActive, setForceLoaderActive] = useState(false);
   useEffect(() => {
@@ -1201,10 +1212,19 @@ const handleRestartTimer = () => {
         setStory(prev => [...prev, result.content]);
         setIsStoryComplete(true);
         setLiveContext(null);
+
+        // Determine the index of the newly added ending page
+        const endingPageIndex = story.length; // new last index after append
+
         // Auto-advance to the newly generated concluding page
         setCurrentPage(prev => prev + 1);
         setJustAdvanced(true);
         setTimeout(() => setJustAdvanced(false), 600);
+
+        // Show expanded "Finish Story" CTA on the ending page only
+        finishExpandedOnPageRef.current = endingPageIndex;
+        setFinishCTAExpanded(true);
+
         setHighlightSave(true);
         toast({
           title: t('endStory.completed', 'Ending created'),
@@ -1673,7 +1693,7 @@ const handleRestartTimer = () => {
                {/* Magic Wand Buttons Section */}/
               <div className="mb-6 flex flex-col items-center gap-4">
                 {/* Premium Magic Wand - Below page count */}
-                {isPremium && !isStoryComplete && (
+                {isPremium && finishCTAExpanded && (
                   <div className="text-center relative">
                     <p className="text-lg font-bold mb-4 px-4 py-2 rounded-full animate-pulse">
                       {"Don't forget to save to your library!"}
@@ -1838,7 +1858,7 @@ const handleRestartTimer = () => {
                 )}
 
                 {/* Premium controls */}
-                {isPremium && isStoryComplete && (
+                {isPremium && !finishCTAExpanded && (
                   <div className="mt-3 flex justify-center gap-3 xl:hidden">
                     <TooltipProvider>
                       <Tooltip>
@@ -1852,7 +1872,7 @@ const handleRestartTimer = () => {
                                 setTimeout(() => setFinishSparkle(false), 1200);
                                 setShowConfirmEndStory(true);
                               }}
-                              disabled={!liveContext || isGeneratingEnding || isStoryComplete || timeRemaining <= 0}
+                              disabled={!liveContext || isGeneratingEnding || timeRemaining <= 0}
                               variant="secondary"
                             >
                               {isGeneratingEnding ? (
@@ -1882,7 +1902,7 @@ const handleRestartTimer = () => {
                 <div className="hidden" />
 
                 {/* Premium controls desktop */}
-                {isPremium && isStoryComplete && (
+                {isPremium && !finishCTAExpanded && (
                   <div className="hidden xl:flex justify-center gap-3 mt-3">
                     <TooltipProvider>
                       <Tooltip>
@@ -1896,7 +1916,7 @@ const handleRestartTimer = () => {
                                 setTimeout(() => setFinishSparkle(false), 1200);
                                 setShowConfirmEndStory(true);
                               }}
-                              disabled={!liveContext || isGeneratingEnding || isStoryComplete || timeRemaining <= 0}
+                              disabled={!liveContext || isGeneratingEnding || timeRemaining <= 0}
                               variant="secondary"
                               size="sm"
                             >
