@@ -535,6 +535,17 @@ useEffect(() => {
   return () => clearInterval(interval);
 }, []);
 
+// Dramatic burst overlay trigger when ending generation completes
+const [showEndingBurst, setShowEndingBurst] = useState(false);
+const prevIsGeneratingEndingRef = useRef(isGeneratingEnding);
+useEffect(() => {
+  if (prevIsGeneratingEndingRef.current && !isGeneratingEnding && isPremium) {
+    setShowEndingBurst(true);
+    const t = setTimeout(() => setShowEndingBurst(false), 1400);
+    return () => clearTimeout(t);
+  }
+  prevIsGeneratingEndingRef.current = isGeneratingEnding;
+}, [isGeneratingEnding, isPremium]);
 // Trigger finish story animation after 10 pages read
 useEffect(() => {
   if (currentPage + 1 === 10) {
@@ -1580,7 +1591,18 @@ const handleRestartTimer = () => {
                 </div>
               </div>
 
-               {/* Magic Wand Buttons Section */}
+              {/* Ending burst/glow overlay after final page generation */}
+              {showEndingBurst && (
+                <div className="fixed inset-0 z-50 pointer-events-none">
+                  <div className="absolute inset-0 bg-background/40 animate-fade-out" />
+                  <SparkleAnimation isActive intensity="high" className="absolute inset-0" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-64 h-64 rounded-full bg-gradient-to-r from-purple-600/40 to-blue-600/40 blur-3xl glow-purple animate-enter" />
+                  </div>
+                </div>
+              )}
+
+               {/* Magic Wand Buttons Section */}/
               <div className="mb-6 flex flex-col items-center gap-4">
                 {/* Premium Magic Wand - Below page count */}
                 {isPremium && !isStoryComplete && (
@@ -1608,13 +1630,40 @@ const handleRestartTimer = () => {
                         disabled={!liveContext || isGeneratingEnding || isStoryComplete || timeRemaining <= 0}
                         variant="hero"
                         size="xl"
+                        aria-busy={isGeneratingEnding}
                         className={cn(
                           "relative z-20 transform transition-all duration-500",
-                          finishPressBurst && "animate-scale-in"
+                          finishPressBurst && "animate-scale-in",
+                          // Apply the same dramatic effects as free session while generating
+                          isGeneratingEnding && [
+                            "animate-bounce",
+                            "animate-pulse",
+                            "scale-125",
+                            "shadow-2xl",
+                            "shadow-purple-500/50",
+                            "border-4",
+                            "border-purple-400/60",
+                            "bg-gradient-to-r",
+                            "from-purple-600/90",
+                            "to-blue-600/90",
+                            "hover:from-purple-700",
+                            "hover:to-blue-700",
+                            "glow-purple"
+                          ].join(" ")
                         )}
                       >
-                        <Sparkles className="w-5 h-5 mr-2" />
-                        {"Finish Story!"}
+                        {isGeneratingEnding ? (
+                          <>
+                            <Loader2 className="w-6 h-6 mr-3 animate-spin" />
+                            <Sparkles className="w-5 h-5 absolute top-2 right-2 animate-pulse" />
+                            {"Creating Magic..."}
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="w-5 h-5 mr-2" />
+                            {"Finish Story!"}
+                          </>
+                        )}
                       </Button>
                     </div>
 
