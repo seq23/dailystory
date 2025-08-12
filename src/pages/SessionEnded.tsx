@@ -6,7 +6,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import type { UserInfo } from "@/types";
 import { ComprehensionQuiz } from "@/components/ComprehensionQuiz";
-import { VocabularyDashboard } from "@/components/VocabularyDashboard";
+import { VocabularyCollector } from "@/components/VocabularyCollector";
 import { MiniGames } from "@/components/MiniGames";
 import { Badge } from "@/components/ui/badge";
 import { StorySessionCache } from "@/services/storySessionCache";
@@ -57,6 +57,12 @@ const location = useLocation();
       console.error('Failed to parse stats from URL:', error);
     }
   }
+
+  // Harden premium detection with global flag from AuthWrapper
+  try {
+    const globalPremium = (window as any).__IS_PREMIUM === true;
+    if (globalPremium) userIsPremium = true;
+  } catch {}
 
   // Post-session activity data (with fallbacks)
   let userInfoFromState = (location.state?.userInfo as UserInfo | undefined);
@@ -296,7 +302,7 @@ const getDifficultyLabel = (difficulty: string) => {
                 <Card className="p-4 text-left">
                   <div className="font-semibold mb-1">{t('postSession.vocabTitle', 'Review Vocabulary')}</div>
                   <p className="text-sm text-gray-600 mb-2">{t('postSession.vocabDesc', 'See words you encountered and practice.')}</p>
-                  <Button onClick={() => setVocabVisible(true)} className="w-full">
+                  <Button disabled={!userInfoFromState} onClick={() => setVocabVisible(true)} className="w-full">
                     {t('postSession.reviewVocab', 'Review Vocabulary')}
                   </Button>
                 </Card>
@@ -375,7 +381,7 @@ const getDifficultyLabel = (difficulty: string) => {
                 <div className="flex justify-end">
                   <Button variant="ghost" onClick={() => setVocabVisible(false)}>✕</Button>
                 </div>
-                <VocabularyDashboard userInfo={userInfoFromState} isPremium={userIsPremium} />
+                <VocabularyCollector userInfo={userInfoFromState} isVisible={vocabVisible} onClose={() => setVocabVisible(false)} enablePersistence={userIsPremium} />
               </CardContent>
             </Card>
           </div>

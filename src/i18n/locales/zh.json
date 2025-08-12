@@ -703,4 +703,37 @@
     "paceNice": "语速合适",
     "great": "太好了！"
   }
+,
+  "postSession": {
+    "quizTitle": "Comprehension Quiz",
+    "quizDesc": "Quick 3–5 questions based on your story.",
+    "startQuiz": "Start Quiz",
+    "vocabTitle": "Review Vocabulary",
+    "vocabDesc": "See words you encountered and practice.",
+    "reviewVocab": "Review Vocabulary",
+    "gamesTitle": "Play Reading Games",
+    "gamesDesc": "Fun mini‑games from your story",
+    "playGames": "Play Games",
+    "unavailable": "Unavailable: missing story data",
+    "premiumOnly": "Premium feature"
+  },
+  "vocabulary": {
+    "title": "My Vocabulary Collection",
+    "tabs": {
+      "placeholder": "Select category",
+      "new": "New",
+      "reviewing": "Reviewing",
+      "mastered": "Mastered"
+    },
+    "empty": {
+      "new": "No new words yet!",
+      "reviewing": "No words to review!",
+      "mastered": "No mastered words yet!"
+    },
+    "actions": {
+      "moveToReview": "Move to Review",
+      "markReviewed": "Mark as Reviewed"
+    }
+  }
 }
+
