@@ -154,7 +154,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
             </>
           )}
           
-          {isPremium && (
+          {isMobile && (
             <Button
               aria-label={isMobile ? "Close navigation" : state === "expanded" ? "Collapse sidebar" : "Expand sidebar"}
               onClick={(e) => {

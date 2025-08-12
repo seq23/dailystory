@@ -88,7 +88,7 @@ export const PremiumHeader = ({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <SidebarTrigger className="mr-1 md:hidden" />
+                  <SidebarTrigger className="mr-1" />
                 </TooltipTrigger>
                 <TooltipContent side="bottom">Open navigation</TooltipContent>
               </Tooltip>
