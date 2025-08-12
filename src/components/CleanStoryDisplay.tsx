@@ -1234,11 +1234,6 @@ const handleRestartTimer = () => {
         setFinishCTAExpanded(true);
 
         setHighlightSave(true);
-        toast({
-          title: t('endStory.completed', 'Ending created'),
-          description: t('endStory.completedDesc', 'Remember to save — tap Save in the header to keep this ending. You can also keep reading to start a sequel.'),
-          duration: 3000,
-        });
       }
     } catch (e) {
       console.error('Failed to generate ending page', e);
