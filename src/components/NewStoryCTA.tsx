@@ -41,9 +41,9 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
     if (!isPremium) return;
     try {
       const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
-      const seen = sessionStorage.getItem("newstory_cta_seen");
+      const seen = sessionStorage.getItem("newstory_cta_seen_v2");
       if (!seen) {
-        sessionStorage.setItem("newstory_cta_seen", "1");
+        sessionStorage.setItem("newstory_cta_seen_v2", "1");
         setShowCoach(true);
         if (!reduceMotion) setShowSparkle(true);
         const coachTimer = setTimeout(() => setShowCoach(false), 6000);
@@ -148,7 +148,7 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
   const iconSize = size === "sm" ? 20 : size === "lg" ? 34 : 28;
 
   const buttonEl = (
-    <span className="relative inline-flex">
+    <span className="relative inline-flex overflow-visible">
       <Button
         onClick={handleClick}
         variant={iconOnly ? "ghost" : "fun"}
@@ -191,42 +191,42 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
           </span>
           {/* Mobile/Tablet arrow */}
           <svg
-            className="h-8 w-[56px] md:hidden text-destructive drop-shadow-sm"
-            viewBox="0 0 90 48"
+            className="h-8 w-[64px] md:hidden text-destructive drop-shadow-sm overflow-visible"
+            viewBox="0 0 120 60"
             aria-hidden="true"
             focusable="false"
           >
             <defs>
-              <marker id="arrowhead-sm" markerWidth="8" markerHeight="8" refX="5" refY="4" orient="auto" markerUnits="strokeWidth">
-                <path d="M0,0 L8,4 L0,8 Z" fill="currentColor" />
+              <marker id="arrowhead-sm" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto" markerUnits="strokeWidth">
+                <path d="M0,0 L6,3 L0,6 Z" fill="currentColor" />
               </marker>
             </defs>
             <path
-              d="M6,34 C 30,50 54,50 78,34"
+              d="M8,40 C 42,62 76,62 108,40"
               fill="none"
               stroke="currentColor"
-              strokeWidth="3.5"
+              strokeWidth="3.2"
               strokeLinecap="round"
               markerEnd="url(#arrowhead-sm)"
             />
           </svg>
           {/* Desktop arrow */}
           <svg
-            className="hidden md:block h-10 w-[84px] text-destructive drop-shadow-sm"
-            viewBox="0 0 110 56"
+            className="hidden md:block h-10 w-[96px] text-destructive drop-shadow-sm overflow-visible"
+            viewBox="0 0 140 72"
             aria-hidden="true"
             focusable="false"
           >
             <defs>
-              <marker id="arrowhead-lg" markerWidth="10" markerHeight="10" refX="6" refY="5" orient="auto" markerUnits="strokeWidth">
-                <path d="M0,0 L10,5 L0,10 Z" fill="currentColor" />
+              <marker id="arrowhead-lg" markerWidth="8" markerHeight="8" refX="5" refY="4" orient="auto" markerUnits="strokeWidth">
+                <path d="M0,0 L8,4 L0,8 Z" fill="currentColor" />
               </marker>
             </defs>
             <path
-              d="M8,38 C 40,60 72,60 104,38"
+              d="M10,48 C 54,72 98,72 132,48"
               fill="none"
               stroke="currentColor"
-              strokeWidth="4.5"
+              strokeWidth="4.0"
               strokeLinecap="round"
               markerEnd="url(#arrowhead-lg)"
             />
