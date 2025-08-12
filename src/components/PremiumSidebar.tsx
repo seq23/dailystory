@@ -76,7 +76,7 @@ const sidebarItems = [
 ];
 
 export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium }: PremiumSidebarProps) => {
-  const { state, toggleSidebar } = useSidebar();
+  const { state, toggleSidebar, setOpen, setOpenMobile } = useSidebar();
   const collapsed = state === "collapsed";
   const { isMobile } = useIsMobile();
   const effectiveCollapsed = collapsed && !isMobile;
@@ -332,12 +332,43 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
                   </SidebarMenuItem>
 
                   <SidebarMenuItem>
-                    <SidebarMenuButton
-                      onClick={() => setVocabOpen(true)}
-                      className={`${"flex items-center gap-3 w-full transition-colors rounded-lg hover:bg-accent hover:text-accent-foreground"} ${effectiveCollapsed ? "justify-center gap-0 h-10 w-10 mx-auto" : ""}`}
-                    >
-                      <Bookmark className="w-5 h-5 flex-shrink-0" />
-                      {!effectiveCollapsed && (
+                    {effectiveCollapsed ? (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <SidebarMenuButton
+                              onClick={() => {
+                                if (isMobile) {
+                                  try { setOpenMobile(false); } catch {}
+                                } else if (state === "collapsed") {
+                                  try { setOpen(true); } catch {}
+                                }
+                                setVocabOpen(true);
+                              }}
+                              className="flex items-center justify-center transition-colors rounded-lg hover:bg-accent hover:text-accent-foreground h-10 w-10 mx-auto"
+                              aria-label="Open My Vocabulary"
+                            >
+                              <Bookmark className="w-5 h-5 flex-shrink-0" />
+                            </SidebarMenuButton>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            My Vocabulary
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    ) : (
+                      <SidebarMenuButton
+                        onClick={() => {
+                          if (isMobile) {
+                            try { setOpenMobile(false); } catch {}
+                          } else if (state === "collapsed") {
+                            try { setOpen(true); } catch {}
+                          }
+                          setVocabOpen(true);
+                        }}
+                        className="flex items-center gap-3 w-full transition-colors rounded-lg hover:bg-accent hover:text-accent-foreground"
+                      >
+                        <Bookmark className="w-5 h-5 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <span className="font-medium">My Vocabulary</span>
@@ -346,8 +377,8 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
                             View and manage your saved words
                           </p>
                         </div>
-                      )}
-                    </SidebarMenuButton>
+                      </SidebarMenuButton>
+                    )}
                   </SidebarMenuItem>
                 </SidebarMenu>
               </SidebarGroupContent>
