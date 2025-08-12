@@ -162,6 +162,7 @@ useEffect(() => {
   const [isBatchGenerating, setIsBatchGenerating] = useState(false);
   const [batchDone, setBatchDone] = useState(0);
   const [batchTotal, setBatchTotal] = useState(0);
+  const preloadedUrlsRef = useRef<Set<string>>(new Set());
   
   // Audio and Interactive Features state
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
@@ -1448,18 +1449,48 @@ const handleRestartTimer = () => {
   const currentImage = pageImages[currentPage];
   const isShortPage = countWords(currentStory) <= 8;
 
-  // Prefetch next images for smoother navigation
+  // Aggressive prefetch: progressively preload many upcoming images without blocking UI
   useEffect(() => {
-    const toPrefetch: string[] = [];
-    const next1 = currentPage + 1;
-    const next2 = currentPage + 2;
-    [next1, next2].forEach(i => {
-      if (i >= 0 && i < story.length) {
-        const url = pageImages[i];
-        if (url) toPrefetch.push(url);
-      }
-    });
-    toPrefetch.forEach((u) => { const img = new Image(); (img as any).decoding = 'async'; (img as any).loading = 'eager'; img.src = u; });
+    const urls: string[] = [];
+    // Prefer forward direction, then backward few pages
+    for (let i = currentPage + 1; i < story.length; i++) {
+      const url = pageImages[i];
+      if (url && !preloadedUrlsRef.current.has(url)) urls.push(url);
+    }
+    for (let i = Math.max(0, currentPage - 2); i < currentPage; i++) {
+      const url = pageImages[i];
+      if (url && !preloadedUrlsRef.current.has(url)) urls.push(url);
+    }
+
+    if (!urls.length) return;
+
+    let cancelled = false;
+    let idx = 0;
+
+    const pump = () => {
+      if (cancelled) return;
+      const batch = urls.slice(idx, idx + 4); // small batches
+      batch.forEach((u) => {
+        try {
+          const img = new Image();
+          (img as any).decoding = 'async';
+          (img as any).loading = 'eager';
+          img.src = u;
+          preloadedUrlsRef.current.add(u);
+        } catch {}
+      });
+      idx += 4;
+      if (idx < urls.length) setTimeout(pump, 60); // gentle pacing
+    };
+
+    const schedule = (cb: () => void) => {
+      const ric = (window as any).requestIdleCallback;
+      if (typeof ric === 'function') ric(() => cb());
+      else setTimeout(cb, 0);
+    };
+
+    schedule(pump);
+    return () => { cancelled = true; };
   }, [currentPage, pageImages, story.length]);
 
   if (isLoading || forceLoaderActive) {
