@@ -1583,6 +1583,45 @@ const handleRestartTimer = () => {
                {/* Magic Wand Buttons Section */}
               <div className="mb-6 flex flex-col items-center gap-4">
                 {/* Premium Magic Wand - Below page count */}
+                {isPremium && currentPage === story.length - 1 && timeRemaining > 0 && (
+                  <div className="text-center relative">
+                    <p className="text-lg font-bold mb-4 px-4 py-2 rounded-full animate-pulse">
+                      {"Don't forget to save to your library!"}
+                    </p>
+
+                    <div className="relative">
+                      <SparkleAnimation 
+                        isActive={finishSparkle} 
+                        intensity="high" 
+                        className="absolute inset-0 pointer-events-none z-10" 
+                      />
+
+                      <Button
+                        data-id="finish-story-hero-premium"
+                        onClick={() => {
+                          setFinishPressBurst(true);
+                          setFinishSparkle(true);
+                          setTimeout(() => setFinishPressBurst(false), 600);
+                          setTimeout(() => setFinishSparkle(false), 1200);
+                          setShowConfirmEndStory(true);
+                        }}
+                        variant="hero"
+                        size="xl"
+                        className={cn(
+                          "relative z-20 transform transition-all duration-500",
+                          finishPressBurst && "animate-scale-in"
+                        )}
+                      >
+                        <Sparkles className="w-5 h-5 mr-2" />
+                        {"Finish Story!"}
+                      </Button>
+                    </div>
+
+                    <p className="text-sm mt-3 opacity-80">
+                      {"You can always keep going for more parts to this story!"}
+                    </p>
+                  </div>
+                )}
 
                 {/* Free User Magic Wand - DRAMATICALLY ENHANCED for MAXIMUM visibility */}
                 {!isPremium && currentPage === story.length - 1 && timeRemaining > 0 && (
@@ -1681,7 +1720,7 @@ const handleRestartTimer = () => {
                 )}
 
                 {/* Premium controls */}
-                {isPremium && (
+                {isPremium && !(currentPage === story.length - 1 && timeRemaining > 0) && (
                   <div className="mt-3 flex justify-center gap-3 xl:hidden">
                     <TooltipProvider>
                       <Tooltip>
@@ -1725,7 +1764,7 @@ const handleRestartTimer = () => {
                 <div className="hidden" />
 
                 {/* Premium controls desktop */}
-                {isPremium && (
+                {isPremium && !(currentPage === story.length - 1 && timeRemaining > 0) && (
                   <div className="hidden xl:flex justify-center gap-3 mt-3">
                     <TooltipProvider>
                       <Tooltip>
