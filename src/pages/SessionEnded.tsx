@@ -95,10 +95,12 @@ const location = useLocation();
   const canLaunchActivities = Boolean(userIsPremium && userInfoFromState && storyText);
   const isQuizAllowed = Boolean(userIsPremium && sessionStats && sessionStats.currentDifficulty !== 'beginner');
 
-  // Clear ephemeral fallbacks post-mount
+  // Clear ephemeral fallbacks on unmount (avoid StrictMode double-render issues)
   React.useEffect(() => {
-    try { sessionStorage.removeItem('last_user_info'); } catch {}
-    try { sessionStorage.removeItem('last_story_text'); } catch {}
+    return () => {
+      try { sessionStorage.removeItem('last_user_info'); } catch {}
+      try { sessionStorage.removeItem('last_story_text'); } catch {}
+    };
   }, []);
 
   // Handle navigation based on user type
