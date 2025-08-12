@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -5,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Shuffle, CheckCircle, XCircle, Star, Target, RotateCcw } from 'lucide-react';
 import type { UserInfo } from '@/types';
+import { saveGameSession } from '@/hooks/useActivityPersistence';
+import { useToast } from '@/components/ui/use-toast';
 
 interface MiniGameProps {
   userInfo: UserInfo;
@@ -41,16 +44,21 @@ interface SequenceGame {
 type Game = WordMatchGame | EmotionGame | SequenceGame;
 
 export const MiniGames = ({ userInfo, storyText, isVisible, onComplete, onClose }: MiniGameProps) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const { toast } = useToast();
   const [currentGame, setCurrentGame] = useState<Game | null>(null);
   const [score, setScore] = useState(0);
   const [gamesCompleted, setGamesCompleted] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [gameComplete, setGameComplete] = useState(false);
+  const [typesPlayed, setTypesPlayed] = useState<GameType[]>([]);
+  const [startedAt, setStartedAt] = useState<number | null>(null);
 
   useEffect(() => {
     if (isVisible) {
+      setStartedAt(Date.now());
+      setTypesPlayed([]);
       generateRandomGame();
     }
   }, [isVisible, storyText]);
@@ -66,6 +74,7 @@ export const MiniGames = ({ userInfo, storyText, isVisible, onComplete, onClose 
     setCurrentGame(game);
     setSelectedAnswer(null);
     setShowResult(false);
+    setTypesPlayed(prev => (prev.includes(randomType) ? prev : [...prev, randomType]));
   };
 
   const generateGameByType = (type: GameType): Game => {
@@ -180,10 +189,40 @@ export const MiniGames = ({ userInfo, storyText, isVisible, onComplete, onClose 
     setScore(0);
     setGamesCompleted(0);
     setGameComplete(false);
+    setTypesPlayed([]);
+    setStartedAt(Date.now());
     generateRandomGame();
   };
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
+    const durationSeconds = startedAt ? Math.max(0, Math.round((Date.now() - startedAt) / 1000)) : null;
+
+    try {
+      const details = {
+        roundsPlayed: gamesCompleted,
+        typesPlayed,
+      };
+      const result = await saveGameSession({
+        score,
+        maxScore: 3,
+        storyText: storyText || '',
+        language: i18n.language || 'en',
+        gameType: 'mixed',
+        durationSeconds: durationSeconds ?? undefined,
+        userInfo,
+        details,
+      });
+
+      if (result.method === 'supabase') {
+        toast({ title: t('postSession.saved', 'Progress saved'), description: t('postSession.savedCloud', 'Saved to your account'), });
+      } else {
+        toast({ title: t('postSession.savedLocally', 'Saved locally'), description: t('postSession.savedQueue', 'Will sync when logged in'), });
+      }
+    } catch (e: any) {
+      console.warn('[games] save failed', e);
+      toast({ title: t('postSession.saveFailed', 'Could not save'), description: e?.message || 'Unknown error' });
+    }
+
     onComplete(score);
     onClose();
   };

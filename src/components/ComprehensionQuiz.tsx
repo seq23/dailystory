@@ -5,6 +5,8 @@ import { MobileOptimizedButton } from '@/components/MobileOptimizedButton';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle, XCircle, Star, ArrowRight, RotateCcw } from 'lucide-react';
 import type { UserInfo } from '@/types';
+import { saveQuizAttempt } from '@/hooks/useActivityPersistence';
+import { useToast } from '@/components/ui/use-toast';
 
 interface Question {
   id: string;
@@ -30,7 +32,8 @@ export const ComprehensionQuiz = ({
   onComplete, 
   onClose 
 }: ComprehensionQuizProps) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const { toast } = useToast();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
@@ -198,7 +201,33 @@ export const ComprehensionQuiz = ({
     setQuizComplete(false);
   };
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
+    // Persist the attempt before closing
+    try {
+      const details = {
+        answers,
+        questions: questions.map(q => ({ id: q.id, type: q.type })),
+      };
+      const result = await saveQuizAttempt({
+        score,
+        totalQuestions: questions.length,
+        storyText: storyText || '',
+        language: i18n.language || 'en',
+        userInfo,
+        mode: 'offline',
+        details,
+      });
+
+      if (result.method === 'supabase') {
+        toast({ title: t('postSession.saved', 'Progress saved'), description: t('postSession.savedCloud', 'Saved to your account'), });
+      } else {
+        toast({ title: t('postSession.savedLocally', 'Saved locally'), description: t('postSession.savedQueue', 'Will sync when logged in'), });
+      }
+    } catch (e: any) {
+      console.warn('[quiz] save failed', e);
+      toast({ title: t('postSession.saveFailed', 'Could not save'), description: e?.message || 'Unknown error' });
+    }
+
     onComplete(score, questions.length);
     onClose();
   };

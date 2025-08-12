@@ -83,6 +83,51 @@ export type Database = {
         }
         Relationships: []
       }
+      game_sessions: {
+        Row: {
+          child_profile_id: string | null
+          created_at: string
+          details: Json
+          duration_seconds: number | null
+          game_type: string
+          id: string
+          language: string
+          max_score: number
+          score: number
+          story_id: string | null
+          story_title: string | null
+          user_id: string
+        }
+        Insert: {
+          child_profile_id?: string | null
+          created_at?: string
+          details?: Json
+          duration_seconds?: number | null
+          game_type: string
+          id?: string
+          language?: string
+          max_score?: number
+          score?: number
+          story_id?: string | null
+          story_title?: string | null
+          user_id: string
+        }
+        Update: {
+          child_profile_id?: string | null
+          created_at?: string
+          details?: Json
+          duration_seconds?: number | null
+          game_type?: string
+          id?: string
+          language?: string
+          max_score?: number
+          score?: number
+          story_id?: string | null
+          story_title?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar: Json | null
@@ -142,6 +187,51 @@ export type Database = {
           special_request?: string | null
           story_language_preference?: string | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      quiz_attempts: {
+        Row: {
+          child_profile_id: string | null
+          created_at: string
+          details: Json
+          id: string
+          language: string
+          mode: string
+          score: number
+          story_id: string | null
+          story_signature: string | null
+          story_title: string | null
+          total_questions: number
+          user_id: string
+        }
+        Insert: {
+          child_profile_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          language?: string
+          mode?: string
+          score?: number
+          story_id?: string | null
+          story_signature?: string | null
+          story_title?: string | null
+          total_questions?: number
+          user_id: string
+        }
+        Update: {
+          child_profile_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          language?: string
+          mode?: string
+          score?: number
+          story_id?: string | null
+          story_signature?: string | null
+          story_title?: string | null
+          total_questions?: number
           user_id?: string
         }
         Relationships: []
