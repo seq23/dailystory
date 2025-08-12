@@ -1873,7 +1873,7 @@ const handleRestartTimer = () => {
                                 setShowConfirmEndStory(true);
                               }}
                               disabled={!liveContext || isGeneratingEnding || timeRemaining <= 0}
-                              variant="secondary"
+                              variant="hero"
                             >
                               {isGeneratingEnding ? (
                                 <>
@@ -1917,7 +1917,7 @@ const handleRestartTimer = () => {
                                 setShowConfirmEndStory(true);
                               }}
                               disabled={!liveContext || isGeneratingEnding || timeRemaining <= 0}
-                              variant="secondary"
+                              variant="hero"
                               size="sm"
                             >
                               {isGeneratingEnding ? (
