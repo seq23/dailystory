@@ -42,6 +42,14 @@ const curated: Record<string, string[]> = {
   'bounce': ['bounce'],
   'what': ['whuh', 'ut'],
 
+  // Kid-friendly curated fixes
+  'tree': ['tr', 'ee'],
+  'trees': ['tr', 'ee', 's'],
+  'soccer': ['soc', 'cer'],
+  'apple': ['ap', 'ple'],
+  'better': ['bet', 'ter'],
+  'butter': ['but', 'ter'],
+  'bottle': ['bot', 'tle'],
   // Level 1+ selected overrides
   'animal': ['an', 'ih', 'mul'],
   'garden': ['gar', 'den'],

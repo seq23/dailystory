@@ -87,6 +87,7 @@ useEffect(() => {
   const stop = useCallback(async () => {
     try { await (conversation as any).endSession(); } catch {}
     setConnected(false);
+    try { window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: 'idle' } })); } catch {}
   }, [conversation]);
 
   useEffect(() => {

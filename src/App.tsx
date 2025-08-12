@@ -14,7 +14,7 @@ import Pricing from "./pages/Pricing";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Auth from "./pages/Auth";
-// VoiceHUD removed
+import VoiceHUD from "./components/VoiceHUD";
 const queryClient = new QueryClient();
 
 const App = () => {
@@ -37,7 +37,7 @@ const App = () => {
               <Route path="/session-ended" element={<SessionEnded />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
-            {/* VoiceHUD removed */}
+            <VoiceHUD />
             <FloatingFeedback />
           </BrowserRouter>
         </MobileWrapper>

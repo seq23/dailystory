@@ -428,6 +428,29 @@ export class PhoneticRulesEngine {
           console.log('🔧 Heuristic split (suffix):', parts);
           return parts;
         }
+        // VCCV and double-consonant split (soccer → soc | cer), protect common digraphs
+        const protect = ['th','sh','ch','ck','ph','wh','gh'];
+        for (let i = 1; i < w.length - 2; i++) {
+          const a = w[i]; const b = w[i+1];
+          const left = w.slice(0, i+1); const right = w.slice(i+1);
+          if (/[aeiouy]/.test(w[i-1]) && /[bcdfghjklmnpqrstvwxyz]{2}/.test(a + b) && /[aeiouy]/.test(w[i+2])) {
+            const pair = (a + b).toLowerCase();
+            if (!protect.includes(pair)) {
+              const parts = [left, right];
+              console.log('🔧 Heuristic split (VCCV):', parts);
+              return parts;
+            }
+          }
+        }
+        // Vowel-team with trailing -s: trees → tr | ee | s
+        if (/^([bcdfghjklmnpqrstvwxyz]{1,2})?(ee|oo)(s)$/.test(w)) {
+          const m = w.match(/^([bcdfghjklmnpqrstvwxyz]{1,2})?(ee|oo)(s)$/)!;
+          const onset = (m[1] || '').toString();
+          const team = m[2]; const sfx = m[3];
+          const parts = [onset, team, sfx].filter(Boolean) as string[];
+          console.log('🔧 Heuristic split (team+s):', parts);
+          return parts;
+        }
         // Split around vowel teams for readability (good → g | oo | d, play → pl | ay)
         const teams = ['oo','ee','ay','ai','oi','oy','ow','ou','ea','ie','ue','oa','ey'];
         for (const team of teams) {
@@ -448,6 +471,13 @@ export class PhoneticRulesEngine {
           const nucleus = longMap[vowel] || vowel;
           const parts = [onset, nucleus, cons].filter(Boolean) as string[];
           console.log('🔧 Heuristic split (silent-e):', parts);
+          return parts;
+        }
+        // Final sanity: if still one large chunk and >=6 letters, split into 2-3 kid-friendly parts
+        if (w.length >= 6) {
+          const mid = Math.floor(w.length / 2);
+          const parts = [w.slice(0, mid), w.slice(mid)];
+          console.log('🔧 Heuristic split (fallback-chunk):', parts);
           return parts;
         }
       }
