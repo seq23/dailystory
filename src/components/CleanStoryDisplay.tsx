@@ -557,9 +557,9 @@ useEffect(() => {
         } else {
           let id = userInfo.name || 'premium';
           try { const { data: { user } } = await supabase.auth.getUser(); if (user?.id) id = user.id; } catch {}
+          // Keep story/session cache intact so users can keep reading untimed
           sessionStorage.removeItem(`premium.timer.endTs.${id}`);
           sessionStorage.removeItem(`premium.timer.remaining.${id}`);
-          StorySessionCache.clearCachedSession(id);
         }
       } catch {}
     })();
@@ -1448,6 +1448,7 @@ const handleRestartTimer = () => {
   const progress = story.length > 0 ? ((currentPage + 1) / story.length) * 100 : 0;
   const currentImage = pageImages[currentPage];
   const isShortPage = countWords(currentStory) <= 8;
+  const controlsBlocked = (!isPremium && timeRemaining <= 0) || (isPremium && timerEnabled && !isTimerCanceled && timeRemaining <= 0);
 
   // Aggressive prefetch: progressively preload many upcoming images without blocking UI
   useEffect(() => {
@@ -1565,7 +1566,7 @@ const handleRestartTimer = () => {
                     variant="outline"
                     size="sm"
                     onClick={handlePrevious}
-                    disabled={currentPage === 0 || timeRemaining <= 0}
+                    disabled={currentPage === 0 || controlsBlocked}
                     aria-label={t('nav.prev','Back')}
                   >
                     <ChevronLeft className="w-5 h-5" />
@@ -1578,7 +1579,7 @@ const handleRestartTimer = () => {
                     variant="default"
                     size="sm"
                     onClick={handleNext}
-                    disabled={isLoadingNextPage || timeRemaining <= 0 || (!isPremium && currentPage === story.length - 1)}
+                    disabled={isLoadingNextPage || controlsBlocked || (!isPremium && currentPage === story.length - 1)}
                     aria-label={t('nav.next','Next')}
                   >
                     <ChevronRight className="w-5 h-5" />
@@ -1863,20 +1864,20 @@ const handleRestartTimer = () => {
                         className="absolute inset-0 pointer-events-none z-10" 
                       />
 
-                      <Button
-                        data-id="finish-story-hero-premium"
-                        onClick={() => {
-                          setFinishPressBurst(true);
-                          setFinishSparkle(true);
-                          setTimeout(() => setFinishPressBurst(false), 600);
-                          setTimeout(() => setFinishSparkle(false), 1200);
-                          setShowConfirmEndStory(true);
-                        }}
-                        disabled={!liveContext || isGeneratingEnding || isStoryComplete || timeRemaining <= 0}
-                        variant="hero"
-                        size="xl"
-                        aria-busy={isGeneratingEnding}
-                        className={cn(
+                       <Button
+                         data-id="finish-story-hero-premium"
+                         onClick={() => {
+                           setFinishPressBurst(true);
+                           setFinishSparkle(true);
+                           setTimeout(() => setFinishPressBurst(false), 600);
+                           setTimeout(() => setFinishSparkle(false), 1200);
+                           setShowConfirmEndStory(true);
+                         }}
+                         disabled={!liveContext || isGeneratingEnding || isStoryComplete || controlsBlocked}
+                         variant="hero"
+                         size="xl"
+                         aria-busy={isGeneratingEnding}
+                         className={cn(
                           "relative z-20 transform transition-all duration-500",
                           finishPressBurst && "animate-scale-in",
                           [
@@ -2013,14 +2014,14 @@ const handleRestartTimer = () => {
                         <TooltipTrigger asChild>
                           <div className={`relative inline-block ${finishPressBurst ? 'animate-scale-in' : ''}`}>
                             <MobileOptimizedButton
-                              onClick={() => {
-                                setFinishPressBurst(true);
-                                setFinishSparkle(true);
-                                setTimeout(() => setFinishPressBurst(false), 600);
-                                setTimeout(() => setFinishSparkle(false), 1200);
-                                setShowConfirmEndStory(true);
-                              }}
-                              disabled={isGeneratingEnding || timeRemaining <= 0 || (lastEndingPageIndex !== null ? currentPage <= lastEndingPageIndex : !liveContext)}
+                               onClick={() => {
+                                 setFinishPressBurst(true);
+                                 setFinishSparkle(true);
+                                 setTimeout(() => setFinishPressBurst(false), 600);
+                                 setTimeout(() => setFinishSparkle(false), 1200);
+                                 setShowConfirmEndStory(true);
+                               }}
+                               disabled={isGeneratingEnding || controlsBlocked || (lastEndingPageIndex !== null ? currentPage <= lastEndingPageIndex : !liveContext)}
                               variant="hero"
                               aria-busy={isGeneratingEnding}
                               className={cn(finishFlashCycle && !isGeneratingEnding && "ring-2 ring-primary/60 animate-pulse")}
@@ -2059,14 +2060,14 @@ const handleRestartTimer = () => {
                         <TooltipTrigger asChild>
                           <div className={`relative inline-block ${finishPressBurst ? 'animate-scale-in' : ''}`}>
                             <MobileOptimizedButton
-                              onClick={() => {
-                                setFinishPressBurst(true);
-                                setFinishSparkle(true);
-                                setTimeout(() => setFinishPressBurst(false), 600);
-                                setTimeout(() => setFinishSparkle(false), 1200);
-                                setShowConfirmEndStory(true);
-                              }}
-                              disabled={isGeneratingEnding || timeRemaining <= 0 || (lastEndingPageIndex !== null ? currentPage <= lastEndingPageIndex : !liveContext)}
+                               onClick={() => {
+                                 setFinishPressBurst(true);
+                                 setFinishSparkle(true);
+                                 setTimeout(() => setFinishPressBurst(false), 600);
+                                 setTimeout(() => setFinishSparkle(false), 1200);
+                                 setShowConfirmEndStory(true);
+                               }}
+                               disabled={isGeneratingEnding || controlsBlocked || (lastEndingPageIndex !== null ? currentPage <= lastEndingPageIndex : !liveContext)}
                               variant="hero"
                               size="sm"
                               aria-busy={isGeneratingEnding}
