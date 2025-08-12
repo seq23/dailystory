@@ -1526,6 +1526,16 @@ const handleRestartTimer = () => {
                       <ReadAloudCoach targetText={currentStory} isPremium={isPremium} language={userInfo?.nativeLanguage || 'en'} onUpgrade={onUpgrade} />
                     </DialogContent>
                   </Dialog>
+                  {isPremium && (
+                    <Button onClick={handleSaveStoryNow} size="lg" variant={highlightSave ? "secondary" : "outline"} disabled={isSaving} aria-label={t('nav.save','Save')} className={cn(highlightSave ? 'ring-2 ring-primary/40' : '')}>
+                      {isSaving ? (
+                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      ) : (
+                        <Save className="w-4 h-4 mr-2" />
+                      )}
+                      {t('nav.save','Save')}
+                    </Button>
+                  )}
 
                 </div>
                 {!isMobileOrTablet && isAudioPlaying && (

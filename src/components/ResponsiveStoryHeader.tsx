@@ -524,24 +524,6 @@ export const ResponsiveStoryHeader = ({
                     </TooltipProvider>
                   )}
 
-                  {onEndSession && isPremium && (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="destructive"
-                            size="default"
-                            onClick={onEndSession}
-                            className="h-12 px-4 rounded-xl"
-                            aria-label={t("nav.endSession", "End Session")}
-                          >
-                            {t("nav.endSession", "End Session")}
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom">{t("tooltips.endSession", "This will end this session. You will have the option to save this story as is.")}</TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  )}
                 </div>
               )}
               <div className={cn("flex items-center", isMobileOrTablet ? "gap-1" : "gap-2")}> 
@@ -691,6 +673,26 @@ export const ResponsiveStoryHeader = ({
                       </Tooltip>
                     </TooltipProvider>
                   )}
+                </div>
+              )}
+              {!isMobileOrTablet && onEndSession && (
+                <div className="flex items-center gap-2 order-last">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="destructive"
+                          size="default"
+                          onClick={onEndSession}
+                          className="h-12 px-4 rounded-xl"
+                          aria-label={t("nav.endSession", "End Session")}
+                        >
+                          {t("nav.endSession", "End Session")}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">{t("tooltips.endSession", "This will end this session. You will have the option to save this story as is.")}</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               )}
             </div>
