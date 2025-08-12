@@ -10,6 +10,7 @@ import { Plus } from "lucide-react";
 
 interface ChildQuickSwitcherProps {
   className?: string;
+  size?: 'sm' | 'md';
 }
 
 function getInitial(fullName?: string | null) {
@@ -18,7 +19,7 @@ function getInitial(fullName?: string | null) {
   return first.charAt(0).toUpperCase();
 }
 
-export function ChildQuickSwitcher({ className }: ChildQuickSwitcherProps) {
+export function ChildQuickSwitcher({ className, size = 'md' }: ChildQuickSwitcherProps) {
   const { children, activeChild, loading } = useChildProfiles();
   
   const { t } = useTranslation();
@@ -47,7 +48,8 @@ export function ChildQuickSwitcher({ className }: ChildQuickSwitcherProps) {
                   onClick={openParentControls}
                   aria-label={t('header.quickChildSwitcher.readingAs', { defaultValue: 'Reading as' }) + (activeFullName ? `: ${activeFullName}` : '')}
                   className={cn(
-                    "h-9 w-9 rounded-full inline-flex items-center justify-center text-lg md:text-xl font-bold leading-none ring-2 select-none tracking-tight",
+                    "rounded-full inline-flex items-center justify-center font-black leading-none ring-2 select-none tracking-tight",
+                    size === "sm" ? "h-7 w-7 text-[1.1rem]" : "h-9 w-9 text-[1.6rem] md:text-[1.75rem]",
                     "ring-primary/70 bg-primary text-primary-foreground hover:bg-primary/90 transition",
                     loading && "opacity-70",
                   )}
@@ -59,7 +61,8 @@ export function ChildQuickSwitcher({ className }: ChildQuickSwitcherProps) {
                   type="button"
                   onClick={openParentControls}
                   className={cn(
-                    "h-9 w-9 rounded-full inline-flex items-center justify-center text-xs font-semibold",
+                    "rounded-full inline-flex items-center justify-center font-semibold",
+                    size === "sm" ? "h-7 w-7" : "h-9 w-9",
                     "border border-dashed text-muted-foreground hover:bg-muted/20 transition",
                   )}
                   aria-label={t('header.quickChildSwitcher.add', { defaultValue: 'Add child' })}

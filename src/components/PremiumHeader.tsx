@@ -99,84 +99,80 @@ export const PremiumHeader = ({
 
           {/* User Avatar and Actions */}
           <div className="flex items-center gap-3 shrink-0">
-            {/* Quick child switcher (mobile + desktop) */}
-            <div className="md:hidden">
-              <ChildQuickSwitcher />
-            </div>
-            <div className="hidden md:block">
-              <ChildQuickSwitcher />
-            </div>
 
-            {/* Avatar with Dropdown */}
-            <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
-              <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors shrink-0"
-                >
-                  <Avatar className="w-8 h-8">
-                    <AvatarImage 
-                      src={getAvatarUrl()} 
-                      alt={userInfo.name}
-                      onError={(e) => {
-                        console.log('🎭 Avatar image failed to load:', getAvatarUrl());
-                        console.log('🎭 Image error event:', e);
-                      }}
-                      onLoad={() => {
-                        console.log('🎭 Avatar image loaded successfully:', getAvatarUrl());
-                      }}
-                    />
-                    <AvatarFallback className="bg-gradient-primary text-white text-sm font-semibold">
-                      {hasSelectedAvatar ? "" : userInfo.name.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="text-left hidden sm:block">
-                    <p className="text-sm font-medium text-gray-800">{userInfo.name}</p>
-                    <p className="text-xs text-gray-600">
-                      {userInfo.grade === 'PreK' ? 'Pre-K' : `Grade ${userInfo.grade}`}
-                    </p>
-                  </div>
-                  <ChevronDown className="w-4 h-4 text-gray-500" />
-                </Button>
-              </DropdownMenuTrigger>
-              
-              <DropdownMenuContent align="end" className="w-56 z-50 bg-popover shadow-md">
-                <div className="px-3 py-2">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium">{userInfo.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {userInfo.age} years old • {userInfo.grade === 'PreK' ? 'Pre-K' : `Grade ${userInfo.grade}`}
+            {/* Avatar with Dropdown + Child badge overlay */}
+            <div className="relative">
+              <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    className="relative z-10 flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors shrink-0"
+                  >
+                    <Avatar className="w-8 h-8">
+                      <AvatarImage 
+                        src={getAvatarUrl()} 
+                        alt={userInfo.name}
+                        onError={(e) => {
+                          console.log('🎭 Avatar image failed to load:', getAvatarUrl());
+                          console.log('🎭 Image error event:', e);
+                        }}
+                        onLoad={() => {
+                          console.log('🎭 Avatar image loaded successfully:', getAvatarUrl());
+                        }}
+                      />
+                      <AvatarFallback className="bg-gradient-primary text-white text-sm font-semibold">
+                        {hasSelectedAvatar ? "" : userInfo.name.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="text-left hidden sm:block">
+                      <p className="text-sm font-medium text-gray-800">{userInfo.name}</p>
+                      <p className="text-xs text-gray-600">
+                        {userInfo.grade === 'PreK' ? 'Pre-K' : `Grade ${userInfo.grade}`}
                       </p>
                     </div>
-                    {isPremium && (
-                      <div className="flex items-center text-primary" aria-label="Premium">
-                        <Crown className="w-4 h-4" />
+                    <ChevronDown className="w-4 h-4 text-gray-500" />
+                  </Button>
+                </DropdownMenuTrigger>
+                
+                <DropdownMenuContent align="end" className="w-56 z-50 bg-popover shadow-md">
+                  <div className="px-3 py-2">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium">{userInfo.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {userInfo.age} years old • {userInfo.grade === 'PreK' ? 'Pre-K' : `Grade ${userInfo.grade}`}
+                        </p>
                       </div>
-                    )}
+                      {isPremium && (
+                        <div className="flex items-center text-primary" aria-label="Premium">
+                          <Crown className="w-4 h-4" />
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-                
-                <DropdownMenuSeparator />
-                
-                <DropdownMenuItem onClick={onProfileClick} className="cursor-pointer">
-                  <User className="w-4 h-4 mr-2" />
-                  Edit Profile
-                </DropdownMenuItem>
-                
-                <DropdownMenuItem onClick={onToggleDevMode} className="cursor-pointer">
-                  <Bug className="w-4 h-4 mr-2" />
-                  {devTestMode ? 'Disable' : 'Enable'} Test Mode
-                </DropdownMenuItem>
-                
-                <DropdownMenuSeparator />
-                
-                <DropdownMenuItem onClick={onSignOut} className="cursor-pointer text-red-600">
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Sign Out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  
+                  <DropdownMenuSeparator />
+                  
+                  <DropdownMenuItem onClick={onProfileClick} className="cursor-pointer">
+                    <User className="w-4 h-4 mr-2" />
+                    Edit Profile
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuItem onClick={onToggleDevMode} className="cursor-pointer">
+                    <Bug className="w-4 h-4 mr-2" />
+                    {devTestMode ? 'Disable' : 'Enable'} Test Mode
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuSeparator />
+                  
+                  <DropdownMenuItem onClick={onSignOut} className="cursor-pointer text-red-600">
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <ChildQuickSwitcher className="absolute -bottom-1 -right-1 z-0" size="sm" />
+            </div>
           </div>
         </div>
       </div>
