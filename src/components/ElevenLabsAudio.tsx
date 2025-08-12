@@ -114,7 +114,7 @@ useEffect(() => {
   const delay = isMobileOrTablet ? 800 : 400;
   const to = window.setTimeout(() => setIsStabilizing(false), delay);
   return () => clearTimeout(to);
-}, [text, currentPage, contentHash, audioService, isMobileOrTablet]);
+}, [text, currentPage, audioService, isMobileOrTablet]);
 
   // Listen to voice status/level for mic button live indicators
   useEffect(() => {
