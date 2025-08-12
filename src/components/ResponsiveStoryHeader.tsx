@@ -83,22 +83,42 @@ export const ResponsiveStoryHeader = ({
   useEffect(() => {
     if (!isTablet) { setForceIconOnly(false); return; }
     const els = [headerRowRef.current, actionsRef.current].filter(Boolean) as HTMLElement[];
+
+    // Detect sidebar state (expanded/collapsed) without requiring context
+    const sidebarEl = document.querySelector('div.peer[data-state]') as HTMLElement | null;
+
     const check = () => {
       try {
         const constrained = els.some(el => el.scrollWidth > el.clientWidth + 2);
-        setForceIconOnly(constrained);
+        const isSidebarExpanded = !!(sidebarEl && sidebarEl.getAttribute('data-state') === 'expanded');
+        const active = constrained || (isTablet && isSidebarExpanded);
+        setForceIconOnly(active);
+        // Lightweight console signal for verification
+        console.info('[Header] compact mode:', { constrained, isSidebarExpanded, active });
       } catch {}
     };
+
     check();
+
     const ros = els.map(el => {
       const ro = new ResizeObserver(() => check());
       ro.observe(el);
       return ro;
     });
+
+    // Observe sidebar attribute changes (expanded/collapsed)
+    let mo: MutationObserver | null = null;
+    if (sidebarEl) {
+      mo = new MutationObserver(() => check());
+      try { mo.observe(sidebarEl, { attributes: true, attributeFilter: ['data-state', 'style'] }); } catch {}
+    }
+
     const onResize = () => check();
     window.addEventListener('resize', onResize);
+
     return () => {
       ros.forEach(ro => { try { ro.disconnect(); } catch {} });
+      if (mo) { try { mo.disconnect(); } catch {} }
       window.removeEventListener('resize', onResize);
     };
   }, [isTablet]);
