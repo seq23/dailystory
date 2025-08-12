@@ -231,8 +231,11 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
   return (
     <>
       <div
-        className={cn(
-          "fixed top-1/2 right-4 transform -translate-y-1/2 z-40",
+className={cn(
+          "fixed right-4 transform z-40",
+          isExpanded ? "top-1/2 -translate-y-1/2" : "top-[62%] -translate-y-1/2",
+          !isExpanded && isMobile && "top-[72%]",
+          !isExpanded && isTablet && "top-[66%]",
           "transition-all duration-500 ease-out",
           isMobile && "scale-75 right-1",
           isTablet && "scale-75 right-1",
@@ -396,7 +399,7 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
                 </div>
 
                 {/* Dismiss button (expanded only) */}
-                <div className="absolute top-4 right-[4.5rem] z-10">
+                <div className="absolute top-4 right-16 z-10">
                   <Button variant="ghost" size="sm" onClick={handleDismiss} aria-label="Dismiss progress towers" className="h-8">
                     <X className="w-4 h-4 mr-1" />
                     Dismiss
