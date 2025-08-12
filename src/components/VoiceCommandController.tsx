@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState, forwardRef, useImperativeHandle } from "react";
+import React, { useCallback, useRef, useState, forwardRef, useImperativeHandle, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -50,6 +50,10 @@ export const VoiceCommandController = forwardRef<VoiceCommandControllerHandle, V
   const rafRef = useRef<number | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const userStoppedRef = useRef<boolean>(false);
+  const startedTalkingRef = useRef<boolean>(false);
+  const silenceSinceRef = useRef<number | null>(null);
+  const startedAtRef = useRef<number | null>(null);
+  const maxTimerRef = useRef<number | null>(null);
 
   const emitStatus = (s: 'idle'|'listening'|'processing') => window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: s } }));
   const emitLevel = (l: number) => window.dispatchEvent(new CustomEvent('voice:level', { detail: { level: l } }));
@@ -110,6 +114,22 @@ export const VoiceCommandController = forwardRef<VoiceCommandControllerHandle, V
           const lvl = Math.max(0, Math.min(1, rms * 2));
           setLevel(lvl);
           emitLevel(lvl);
+
+          // Simple VAD: detect when user started speaking, then stop after ~800ms of silence
+          const threshold = 0.06;
+          const now = performance.now();
+          if (lvl > threshold) {
+            startedTalkingRef.current = true;
+            silenceSinceRef.current = null;
+          } else if (startedTalkingRef.current) {
+            if (silenceSinceRef.current == null) {
+              silenceSinceRef.current = now;
+            } else if (now - silenceSinceRef.current > 800) {
+              // Enough silence detected after speech -> stop
+              try { stopRecording(); } catch {}
+            }
+          }
+
           rafRef.current = requestAnimationFrame(tick);
         };
         rafRef.current = requestAnimationFrame(tick);
@@ -177,6 +197,15 @@ export const VoiceCommandController = forwardRef<VoiceCommandControllerHandle, V
       recorder.start();
       setIsRecording(true);
       setStatus('listening'); emitStatus('listening');
+
+      // Initialize endpointing bookkeeping
+      startedTalkingRef.current = false;
+      silenceSinceRef.current = null;
+      startedAtRef.current = performance.now();
+      if (maxTimerRef.current) { try { clearTimeout(maxTimerRef.current); } catch {} }
+      maxTimerRef.current = window.setTimeout(() => {
+        try { if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') stopRecording(); } catch {}
+      }, 7000);
     } catch (e) {
       console.error('Failed to start recording', e);
     }
@@ -187,6 +216,11 @@ const stopRecording = useCallback(() => {
   try { emitStatus('idle'); emitLevel(0); } catch {}
   try { if (rafRef.current) cancelAnimationFrame(rafRef.current); } catch {}
   rafRef.current = null;
+  if (maxTimerRef.current) { try { clearTimeout(maxTimerRef.current); } catch {} }
+  maxTimerRef.current = null;
+  startedTalkingRef.current = false;
+  silenceSinceRef.current = null;
+  startedAtRef.current = null;
   try { audioContextRef.current?.close(); } catch {}
   analyserRef.current = null;
   try {
@@ -200,6 +234,13 @@ useImperativeHandle(ref, () => ({
   start: startRecording,
   stop: stopRecording,
 }));
+
+// Global hard stop listener (from HUD X or ESC)
+useEffect(() => {
+  const onStop = () => stopRecording();
+  window.addEventListener('voice:stop', onStop as EventListener);
+  return () => window.removeEventListener('voice:stop', onStop as EventListener);
+}, [stopRecording]);
 
 if (headless) return null as any;
 
