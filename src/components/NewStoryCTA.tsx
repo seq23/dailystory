@@ -36,27 +36,37 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
 
   const [showSparkle, setShowSparkle] = React.useState(false);
   const [showCoach, setShowCoach] = React.useState(false);
-
+  const SEEN_KEY = "newstory_cta_seen_v3";
+  const prevPremiumRef = React.useRef<boolean>(isPremium);
+  const btnRef = React.useRef<HTMLButtonElement>(null);
+  const baseIcon = size === "sm" ? 20 : size === "lg" ? 34 : 28;
+  const [iconPx, setIconPx] = React.useState<number>(baseIcon);
+  const timersRef = React.useRef<{ coach?: number; sparkle?: number }>({});
   React.useEffect(() => {
     if (!isPremium) return;
     try {
       const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
-      const seen = sessionStorage.getItem("newstory_cta_seen_v2");
+      const justBecamePremium = !prevPremiumRef.current && isPremium;
+      if (justBecamePremium) {
+        sessionStorage.removeItem(SEEN_KEY);
+      }
+      const seen = sessionStorage.getItem(SEEN_KEY);
       if (!seen) {
-        sessionStorage.setItem("newstory_cta_seen_v2", "1");
+        sessionStorage.setItem(SEEN_KEY, "1");
         setShowCoach(true);
         if (!reduceMotion) setShowSparkle(true);
-        const coachTimer = setTimeout(() => setShowCoach(false), 6000);
-        const sparkleTimer = setTimeout(() => setShowSparkle(false), 2000);
-        return () => {
-          clearTimeout(coachTimer);
-          clearTimeout(sparkleTimer);
-        };
+        timersRef.current.coach = window.setTimeout(() => setShowCoach(false), 7000);
+        timersRef.current.sparkle = window.setTimeout(() => setShowSparkle(false), 2000);
       }
+      prevPremiumRef.current = isPremium;
+      return () => {
+        if (timersRef.current.coach) clearTimeout(timersRef.current.coach);
+        if (timersRef.current.sparkle) clearTimeout(timersRef.current.sparkle);
+      };
     } catch {
       // no-op
     }
-  }, [isPremium, iconOnly]);
+  }, [isPremium]);
 
   // Idle sparkle nudge after periods of inactivity (desktop/tab visible, premium only)
   const lastActivityRef = React.useRef<number>(Date.now());
@@ -137,6 +147,21 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
     };
   }, [isPremium, iconOnly]);
 
+  React.useLayoutEffect(() => {
+    const el = btnRef.current;
+    if (!el) return;
+    const update = () => {
+      const h = el.getBoundingClientRect().height;
+      if (h && !Number.isNaN(h)) {
+        setIconPx(Math.max(16, Math.floor(h * 0.92)));
+      }
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [size]);
+
   const handleClick = () => {
     if (isLocked) {
       onUpgrade?.();
@@ -145,11 +170,12 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
     }
   };
 
-  const iconSize = size === "sm" ? 20 : size === "lg" ? 34 : 28;
+  
 
   const buttonEl = (
     <span className="relative inline-flex overflow-visible">
       <Button
+        ref={btnRef}
         onClick={handleClick}
         variant={iconOnly ? "ghost" : "fun"}
         size={iconOnly ? "sm" : "default"}
@@ -170,7 +196,7 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
           <span className={cn("relative inline-flex items-center")}
           >
             <MagicRefreshIcon
-              size={iconSize}
+              size={iconPx}
               ringScale={0.92}
               wandScale={0.58}
               wandRotate={-12}
@@ -185,10 +211,10 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
             />
           </span>
         ) : (
-          <span className="relative inline-grid grid-cols-2 items-center w-full">
-            <span className="col-span-1 flex items-center justify-center pr-2">
+          <span className="relative inline-grid grid-cols-2 items-center w-full min-w-0">
+            <span className="col-span-1 flex items-center justify-center pr-1 md:pr-2">
               <MagicRefreshIcon
-                size={iconSize}
+                size={iconPx}
                 ringScale={0.92}
                 wandScale={0.58}
                 wandRotate={-12}
@@ -202,7 +228,7 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
                 wandClassName="text-current"
               />
             </span>
-            <span className="col-span-1 text-left truncate">{label}</span>
+            <span className="col-span-1 min-w-0 text-left truncate">{label}</span>
           </span>
         )}
       </Button>

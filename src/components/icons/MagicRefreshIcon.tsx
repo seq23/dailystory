@@ -68,14 +68,14 @@ export const MagicRefreshIcon: React.FC<MagicRefreshIconProps> = ({
           "absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
           ringClassName
         )}
-        width={ringSize}
-        height={ringSize}
+        style={{
+          width: ringSize,
+          height: ringSize,
+          transform: ringTransform,
+        }}
         strokeWidth={ringStrokeWidth}
         absoluteStrokeWidth={absoluteStrokeWidth}
         aria-hidden="true"
-        style={{
-          transform: ringTransform,
-        }}
       />
 
       {/* Wand */}
@@ -84,11 +84,9 @@ export const MagicRefreshIcon: React.FC<MagicRefreshIconProps> = ({
           "absolute left-1/2 top-1/2",
           wandClassName
         )}
-        width={wandSize}
-        height={wandSize}
+        style={{ width: wandSize, height: wandSize, transform: wandTranslate }}
         strokeWidth={wandStrokeWidth}
         absoluteStrokeWidth={absoluteStrokeWidth}
-        style={{ transform: wandTranslate }}
         aria-hidden="true"
       />
 
