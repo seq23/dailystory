@@ -157,11 +157,11 @@ useEffect(() => {
     if (voiceCommandsEnabled && vcStatus === 'listening' && !voiceTipsShownRef.current) {
       toast({
         title: t("audioReading.voiceCommandsEnabled", "Voice Commands Enabled"),
-        description: "Try: 'next page', 'pause', 'continue', 'read slower'",
+        description: t("audioReading.voiceCommandsHint", "Try: 'next page', 'pause', 'continue', 'read slower'"),
         duration: 3500,
         action: (
-          <ToastAction altText="Open voice commands help" onClick={() => { window.location.href = '/pricing#voice'; }}>
-            Full list
+          <ToastAction altText={t('audioReading.openVoiceHelp','Open voice commands help')} onClick={() => { window.location.href = '/pricing#voice'; }}>
+            {t('audioReading.fullList','Full list')}
           </ToastAction>
         ),
       });

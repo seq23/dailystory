@@ -9,18 +9,20 @@ export function VoiceCommandsHelp() {
           <CardTitle className="text-base">Voice Commands</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-6 md:grid-cols-3">
-            {Object.entries(voiceCommands).map(([category, cmds]) => (
-              <div key={category}>
-                <h3 className="font-medium capitalize mb-2 text-muted-foreground">{category}</h3>
-                <ul className="space-y-1">
-                  {Object.keys(cmds as Record<string, unknown>).map((phrase) => (
-                    <li key={phrase} className="text-sm">• {phrase.replace('*', '[word]')}</li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+      <div className="grid gap-6 md:grid-cols-3">
+        {Object.entries(voiceCommands).map(([category, cmds]) => (
+          <div key={category}>
+            <h3 className="font-medium capitalize mb-2 text-muted-foreground">{category}</h3>
+            <ul className="space-y-1">
+              {Object.keys(cmds as Record<string, unknown>)
+                .filter((phrase) => phrase !== 'resume')
+                .map((phrase) => (
+                  <li key={phrase} className="text-sm">• {phrase.replace('*', '[word]')}</li>
+                ))}
+            </ul>
           </div>
+        ))}
+      </div>
         </CardContent>
       </Card>
     </section>
