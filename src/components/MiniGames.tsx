@@ -17,7 +17,7 @@ interface MiniGameProps {
   onClose: () => void;
 }
 
-type GameType = 'word-match' | 'character-emotion' | 'sequence';
+type GameType = 'word-match' | 'character-emotion';
 
 interface WordMatchGame {
   type: 'word-match';
@@ -34,14 +34,8 @@ interface EmotionGame {
   correctIndex: number;
 }
 
-interface SequenceGame {
-  type: 'sequence';
-  events: string[];
-  shuffledEvents: string[];
-  correctOrder: number[];
-}
+type Game = WordMatchGame | EmotionGame;
 
-type Game = WordMatchGame | EmotionGame | SequenceGame;
 
 export const MiniGames = ({ userInfo, storyText, isVisible, onComplete, onClose }: MiniGameProps) => {
   const { t, i18n } = useTranslation();
@@ -65,10 +59,6 @@ export const MiniGames = ({ userInfo, storyText, isVisible, onComplete, onClose 
 
   const generateRandomGame = () => {
     const gameTypes: GameType[] = ['word-match', 'character-emotion'];
-    if (userInfo.age >= 7) {
-      gameTypes.push('sequence');
-    }
-    
     const randomType = gameTypes[Math.floor(Math.random() * gameTypes.length)];
     const game = generateGameByType(randomType);
     setCurrentGame(game);
@@ -83,8 +73,6 @@ export const MiniGames = ({ userInfo, storyText, isVisible, onComplete, onClose 
         return generateWordMatchGame();
       case 'character-emotion':
         return generateEmotionGame();
-      case 'sequence':
-        return generateSequenceGame();
       default:
         return generateWordMatchGame();
     }
@@ -92,24 +80,48 @@ export const MiniGames = ({ userInfo, storyText, isVisible, onComplete, onClose 
 
   const generateWordMatchGame = (): WordMatchGame => {
     const words = extractWordsFromStory();
-    const targetWord = words[Math.floor(Math.random() * words.length)];
-    
-    const definitions = [
-      `A ${targetWord.length <= 4 ? 'short' : 'longer'} word from the story`,
-      'Something you eat',
+    const uniqueWords = Array.from(new Set(words));
+    const targetWord = uniqueWords[Math.floor(Math.random() * uniqueWords.length)] || 'story';
+
+    const lower = targetWord.toLowerCase();
+    const isVerb = /(ing|ed)$/.test(lower);
+    const isAdverb = /ly$/.test(lower);
+    const isName = /^[A-Z]/.test(targetWord);
+
+    const correctDefinition = isVerb
+      ? 'An action word (verb)'
+      : isAdverb
+      ? 'A describing word (adverb)'
+      : isName
+      ? 'A name of a person or place'
+      : 'A thing or idea (noun)';
+
+    const distractorsPool = [
       'A color',
-      'An animal'
+      'Something you eat',
+      'An animal',
+      'A place',
+      'A feeling',
+      'A number',
+    ].filter((d) => d !== correctDefinition);
+
+    const options = [
+      correctDefinition,
+      ...distractorsPool.sort(() => Math.random() - 0.5).slice(0, 3),
     ];
-    
-    const correctIndex = 0;
-    const shuffledDefinitions = [...definitions];
-    
+
+    const shuffled = options
+      .map((opt, idx) => ({ opt, idx }))
+      .sort(() => Math.random() - 0.5);
+
+    const correctIndex = shuffled.findIndex((x) => x.idx === 0);
+
     return {
       type: 'word-match',
       word: targetWord,
-      options: shuffledDefinitions,
-      correctDefinition: definitions[0],
-      correctIndex
+      options: shuffled.map((x) => x.opt),
+      correctDefinition,
+      correctIndex,
     };
   };
 
@@ -132,31 +144,18 @@ export const MiniGames = ({ userInfo, storyText, isVisible, onComplete, onClose 
     };
   };
 
-  const generateSequenceGame = (): SequenceGame => {
-    const events = [
-      'The story began',
-      'The character met someone new',
-      'They went on an adventure',
-      'The story ended happily'
-    ];
-    
-    const shuffledEvents = [...events].sort(() => Math.random() - 0.5);
-    const correctOrder = events.map(event => shuffledEvents.indexOf(event));
-    
-    return {
-      type: 'sequence',
-      events,
-      shuffledEvents,
-      correctOrder
-    };
-  };
 
   const extractWordsFromStory = (): string[] => {
-    return storyText
+    const stop = new Set([
+      'the','and','that','with','this','from','they','them','then','have','were','your','their','about','there','which','would','could','should','because','into','until','while','after','before','once','when','what','where','who','will','been','being','also','very','really','just'
+    ]);
+    const raw = storyText
       .split(/\s+/)
-      .map(word => word.replace(/[.,!?;:'"()]/g, ''))
-      .filter(word => word.length > 3 && word.length < 8)
-      .slice(0, 10);
+      .map((word) => word.replace(/[.,!?;:'"()]/g, ''))
+      .filter((w) => w)
+      .slice(0, 200);
+    const filtered = raw.filter((w) => w.length > 3 && w.length < 12 && !stop.has(w.toLowerCase()));
+    return Array.from(new Set(filtered)).slice(0, 20);
   };
 
   const handleAnswerSelect = (index: number) => {
@@ -167,7 +166,7 @@ export const MiniGames = ({ userInfo, storyText, isVisible, onComplete, onClose 
   const handleSubmitAnswer = () => {
     if (selectedAnswer === null || !currentGame) return;
 
-    const isCorrect = currentGame.type === 'sequence' ? false : selectedAnswer === currentGame.correctIndex;
+    const isCorrect = selectedAnswer === currentGame.correctIndex;
     if (isCorrect) {
       setScore(score + 1);
     }
@@ -256,7 +255,6 @@ export const MiniGames = ({ userInfo, storyText, isVisible, onComplete, onClose 
                 <Badge className="mb-2">
                   {currentGame.type === 'word-match' && 'Word Match'}
                   {currentGame.type === 'character-emotion' && 'Emotion Game'}
-                  {currentGame.type === 'sequence' && 'Story Order'}
                 </Badge>
               </div>
 
@@ -350,7 +348,7 @@ export const MiniGames = ({ userInfo, storyText, isVisible, onComplete, onClose 
               {showResult && (
                 <div className="text-center">
                   <div className="text-lg mb-2">
-                    {currentGame.type !== 'sequence' && selectedAnswer === currentGame.correctIndex ? (
+                    {selectedAnswer === currentGame.correctIndex ? (
                       <span className="text-green-600 font-bold">✓ Correct!</span>
                     ) : (
                       <span className="text-red-600 font-bold">✗ Try again next time!</span>

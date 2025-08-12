@@ -189,3 +189,63 @@ export async function saveGameSession({
   console.log("[games] saved to supabase");
   return { persisted: true, method: "supabase" };
 }
+
+export async function syncLocalActivityToSupabase(): Promise<{ quizzesSynced: number; gamesSynced: number; error?: string }> {
+  try {
+    const { data: userData } = await supabase.auth.getUser();
+    const userId = userData?.user?.id;
+    if (!userId) {
+      return { quizzesSynced: 0, gamesSynced: 0 };
+    }
+
+    // Sync quizzes
+    const localQuizzes = getLocalArray<any>(LOCAL_QUIZ_KEY);
+    let quizzesSynced = 0;
+    if (localQuizzes.length > 0) {
+      const rows = localQuizzes.map((p: any) => ({
+        user_id: userId,
+        story_signature: p.story_signature ?? p.details?.story_signature ?? null,
+        story_title: p.story_title ?? null,
+        language: p.language ?? 'en',
+        mode: p.mode ?? 'offline',
+        score: p.score ?? 0,
+        total_questions: p.total_questions ?? 0,
+        details: p.details ?? {},
+      }));
+      const { error } = await supabase.from('quiz_attempts').insert(rows);
+      if (!error) {
+        quizzesSynced = rows.length;
+        setLocalArray(LOCAL_QUIZ_KEY, []);
+      } else {
+        return { quizzesSynced, gamesSynced: 0, error: error.message };
+      }
+    }
+
+    // Sync games
+    const localGames = getLocalArray<any>(LOCAL_GAME_KEY);
+    let gamesSynced = 0;
+    if (localGames.length > 0) {
+      const rows = localGames.map((p: any) => ({
+        user_id: userId,
+        story_title: p.story_title ?? null,
+        language: p.language ?? 'en',
+        game_type: p.game_type ?? 'mixed',
+        score: p.score ?? 0,
+        max_score: p.max_score ?? 0,
+        duration_seconds: p.duration_seconds ?? null,
+        details: p.details ?? {},
+      }));
+      const { error } = await supabase.from('game_sessions').insert(rows);
+      if (!error) {
+        gamesSynced = rows.length;
+        setLocalArray(LOCAL_GAME_KEY, []);
+      } else {
+        return { quizzesSynced, gamesSynced, error: error.message };
+      }
+    }
+
+    return { quizzesSynced, gamesSynced };
+  } catch (e: any) {
+    return { quizzesSynced: 0, gamesSynced: 0, error: e?.message || 'Unknown error' };
+  }
+}
