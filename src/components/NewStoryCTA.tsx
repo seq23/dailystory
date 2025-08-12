@@ -38,7 +38,7 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
   const [showCoach, setShowCoach] = React.useState(false);
 
   React.useEffect(() => {
-    if (!isPremium || iconOnly) return;
+    if (!isPremium) return;
     try {
       const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
       const seen = sessionStorage.getItem("newstory_cta_seen");
@@ -46,8 +46,8 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
         sessionStorage.setItem("newstory_cta_seen", "1");
         setShowCoach(true);
         if (!reduceMotion) setShowSparkle(true);
-        const coachTimer = setTimeout(() => setShowCoach(false), 3000);
-        const sparkleTimer = setTimeout(() => setShowSparkle(false), 1200);
+        const coachTimer = setTimeout(() => setShowCoach(false), 6000);
+        const sparkleTimer = setTimeout(() => setShowSparkle(false), 2000);
         return () => {
           clearTimeout(coachTimer);
           clearTimeout(sparkleTimer);
@@ -64,7 +64,7 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
   const idleTimersRef = React.useRef<{ idle?: number; sparkle?: number }>({});
 
   React.useEffect(() => {
-    if (!isPremium || iconOnly) return;
+    if (!isPremium) return;
 
     let reduceMotion = false;
     try {
@@ -145,7 +145,7 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
     }
   };
 
-  const iconSize = size === "sm" ? 16 : size === "lg" ? 22 : 18;
+  const iconSize = size === "sm" ? 20 : size === "lg" ? 34 : 28;
 
   const buttonEl = (
     <span className="relative inline-flex">
@@ -166,7 +166,7 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
         disabled={isLocked}
         aria-disabled={isLocked}
       >
-        <span className={cn("relative inline-flex items-center", !iconOnly && "mr-2")}>
+        <span className={cn("relative inline-flex items-center", !iconOnly && "mr-1 md:mr-2")}>
           <MagicRefreshIcon
             size={iconSize}
             ringScale={0.92}
@@ -184,25 +184,52 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
         </span>
         {!iconOnly && label}
       </Button>
-      {!iconOnly && showCoach && (
-        <span className="absolute top-1/2 -translate-y-1/2 left-0 -translate-x-[calc(100%+12px)] hidden md:flex items-center gap-2 pointer-events-none z-20 motion-safe:animate-enter">
-          <span className="rounded-full bg-primary/90 text-primary-foreground text-xs font-semibold px-2.5 py-1 shadow-sm">
+      {showCoach && (
+        <span className="absolute top-1/2 -translate-y-1/2 left-0 -translate-x-[calc(100%+8px)] flex items-center gap-1.5 md:gap-2 pointer-events-none z-30 motion-safe:animate-enter">
+          <span className="rounded-full bg-primary/90 text-primary-foreground text-[10px] md:text-xs font-semibold px-2 py-0.5 md:px-2.5 md:py-1 shadow-sm">
             {t("labels.startHere", "Start here!")}
           </span>
+          {/* Mobile/Tablet arrow */}
           <svg
-            className="h-10 w-[72px] text-destructive"
-            viewBox="0 0 72 40"
+            className="h-8 w-[56px] md:hidden text-destructive drop-shadow-sm"
+            viewBox="0 0 90 48"
             aria-hidden="true"
             focusable="false"
           >
+            <defs>
+              <marker id="arrowhead-sm" markerWidth="8" markerHeight="8" refX="5" refY="4" orient="auto" markerUnits="strokeWidth">
+                <path d="M0,0 L8,4 L0,8 Z" fill="currentColor" />
+              </marker>
+            </defs>
             <path
-              d="M2,28 C 24,46 44,46 66,28"
+              d="M6,34 C 30,50 54,50 78,34"
               fill="none"
               stroke="currentColor"
-              strokeWidth="3"
+              strokeWidth="3.5"
               strokeLinecap="round"
+              markerEnd="url(#arrowhead-sm)"
             />
-            <polygon points="66,28 54,22 56,31" fill="currentColor" />
+          </svg>
+          {/* Desktop arrow */}
+          <svg
+            className="hidden md:block h-10 w-[84px] text-destructive drop-shadow-sm"
+            viewBox="0 0 110 56"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <defs>
+              <marker id="arrowhead-lg" markerWidth="10" markerHeight="10" refX="6" refY="5" orient="auto" markerUnits="strokeWidth">
+                <path d="M0,0 L10,5 L0,10 Z" fill="currentColor" />
+              </marker>
+            </defs>
+            <path
+              d="M8,38 C 40,60 72,60 104,38"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="4.5"
+              strokeLinecap="round"
+              markerEnd="url(#arrowhead-lg)"
+            />
           </svg>
         </span>
       )}
