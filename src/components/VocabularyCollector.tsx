@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MobileOptimizedButton } from '@/components/MobileOptimizedButton';
@@ -169,7 +168,7 @@ export const VocabularyCollector = ({ userInfo, isVisible, onClose, enablePersis
 
   if (!isVisible) return null;
 
-  const modal = (
+  return (
     <div className="fixed inset-0 z-50 flex items-stretch justify-center p-0 bg-black/50 xl:items-center xl:p-4">
       <Card className="w-full h-full rounded-none overflow-hidden xl:w-[min(90vw,42rem)] xl:h-auto xl:rounded-xl">
         <CardHeader className="sticky top-0 z-20 bg-gradient-to-r from-purple-500 to-pink-500 text-white">
@@ -231,8 +230,6 @@ export const VocabularyCollector = ({ userInfo, isVisible, onClose, enablePersis
       </Card>
     </div>
   );
-
-  return createPortal(modal, document.body);
 };
 
 interface WordCardProps {
