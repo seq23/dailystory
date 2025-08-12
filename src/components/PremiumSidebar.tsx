@@ -174,6 +174,27 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
               )}
             </Button>
           )}
+
+          {!isMobile && !effectiveCollapsed && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    aria-label="Close navigation"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleSidebar();
+                    }}
+                    size="icon"
+                    className="hidden md:flex absolute z-50 top-2 right-2 h-8 w-8 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Close navigation</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
           
         </div>
       </div>
@@ -208,7 +229,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
                       <TooltipTrigger asChild>
                         <SidebarMenuButton
                           onClick={() => toggleSidebar()}
-                          className="justify-center gap-0 mx-auto h-10 w-10 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-primary"
+                          className="justify-center gap-0 mx-auto h-10 w-10 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-primary"
                           aria-label="Open navigation"
                         >
                           <ChevronRight className="w-5 h-5" />
