@@ -174,12 +174,31 @@ useEffect(() => {
     setHasPlayedThisPage(false);
   }, [currentPage, contentHash]);
 
-  // Support global voice:toggle events (from mobile dock or elsewhere)
+  // Support global voice events (toggle and hard stop)
   useEffect(() => {
-    const handler = () => toggleVoiceCommands();
-    window.addEventListener('voice:toggle', handler as EventListener);
-    return () => window.removeEventListener('voice:toggle', handler as EventListener);
-  }, []);
+    const toggleHandler = () => toggleVoiceCommands();
+    const stopHandler = () => {
+      if (voiceCommandsEnabled) {
+        try { sessionStorage.setItem('t2r_voice_commands', '0'); } catch {}
+        ;(window as any).__t2r_vc_user_disabled = true;
+        ;(window as any).__t2r_voice_force_off = true;
+        voiceEnabledRef.current = false;
+        setVoiceCommandsEnabled(false);
+        emitStatus('idle');
+        setVcStatus('idle');
+        setVcLevel(0);
+        try { window.dispatchEvent(new CustomEvent('voice:level', { detail: { level: 0 } })); } catch {}
+        try { vcRef.current?.stop?.(); } catch {}
+        try { audioService.stopVoiceCommands(); } catch {}
+      }
+    };
+    window.addEventListener('voice:toggle', toggleHandler as EventListener);
+    window.addEventListener('voice:stop', stopHandler as EventListener);
+    return () => {
+      window.removeEventListener('voice:toggle', toggleHandler as EventListener);
+      window.removeEventListener('voice:stop', stopHandler as EventListener);
+    };
+  }, [voiceCommandsEnabled, audioService]);
 
   // Enhanced audio playback using new service
   const playAudio = async () => {
