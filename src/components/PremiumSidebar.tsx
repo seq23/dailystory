@@ -198,6 +198,28 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
           
         </div>
       </div>
+        {!isMobile && effectiveCollapsed && (
+          <div className="hidden md:flex w-full items-center justify-center pt-1">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    aria-label="Open navigation"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleSidebar();
+                    }}
+                    size="icon"
+                    className="h-10 w-10 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Open navigation</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        )}
 
       <SidebarContent className="p-2">
         {/* User Welcome */}
@@ -222,24 +244,6 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {effectiveCollapsed && (
-                <SidebarMenuItem className="my-1">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <SidebarMenuButton
-                          onClick={() => toggleSidebar()}
-                          className="justify-center gap-0 mx-auto h-10 w-10 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-primary"
-                          aria-label="Open navigation"
-                        >
-                          <ChevronRight className="w-5 h-5" />
-                        </SidebarMenuButton>
-                      </TooltipTrigger>
-                      <TooltipContent>Open navigation</TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </SidebarMenuItem>
-              )}
               {sidebarItems.map((item) => (
                 <SidebarMenuItem key={item.url} className={effectiveCollapsed ? "my-1" : ""}>
                   <SidebarMenuButton 
@@ -295,11 +299,13 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
                         </Tooltip>
                       </TooltipProvider>
                     ) : (
-                      <SidebarMenuButton
-                        onClick={() => toggleTimer()}
-                        className="flex items-center gap-3 w-full justify-between rounded-full border border-border bg-card hover:bg-accent hover:text-accent-foreground px-3 py-2 min-w-[220px]"
-                        aria-label="Toggle reading timer visibility"
-                      >
+                      <SidebarMenuButton asChild>
+                        <div
+                          role="button"
+                          onClick={() => toggleTimer()}
+                          className="flex items-center gap-3 w-full justify-between rounded-full border border-border bg-card hover:bg-accent hover:text-accent-foreground px-3 py-2 min-w-[220px]"
+                          aria-label="Toggle reading timer visibility"
+                        >
                         <div className="flex items-center gap-3">
                           <Clock className="w-5 h-5 flex-shrink-0" />
                           <div className="flex-1 min-w-0">
@@ -314,6 +320,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
                           onClick={(e) => e.stopPropagation()}
                           aria-label={timerEnabled ? 'Hide timer' : 'Show timer'}
                         />
+                      </div>
                       </SidebarMenuButton>
                     )}
                   </SidebarMenuItem>
@@ -339,11 +346,13 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
                         </Tooltip>
                       </TooltipProvider>
                     ) : (
-                      <SidebarMenuButton
-                        onClick={() => toggleTowers()}
-                        className="flex items-center gap-3 w-full justify-between rounded-full border border-border bg-card hover:bg-accent hover:text-accent-foreground px-3 py-2 min-w-[220px]"
-                        aria-label="Toggle progress towers visibility"
-                      >
+                      <SidebarMenuButton asChild>
+                        <div
+                          role="button"
+                          onClick={() => toggleTowers()}
+                          className="flex items-center gap-3 w-full justify-between rounded-full border border-border bg-card hover:bg-accent hover:text-accent-foreground px-3 py-2 min-w-[220px]"
+                          aria-label="Toggle progress towers visibility"
+                        >
                         <div className="flex items-center gap-3">
                           <Trophy className="w-5 h-5 flex-shrink-0" />
                           <div className="flex-1 min-w-0">
@@ -358,6 +367,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
                           onClick={(e) => e.stopPropagation()}
                           aria-label={towersEnabled ? 'Hide progress towers' : 'Show progress towers'}
                         />
+                      </div>
                       </SidebarMenuButton>
                     )}
                   </SidebarMenuItem>
