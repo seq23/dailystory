@@ -118,6 +118,8 @@ export const voiceCommands = {
   reading: {
     // Playback controls
     'start reading': () => window.dispatchEvent(new CustomEvent('audio:play')),
+    'read to me': () => window.dispatchEvent(new CustomEvent('audio:play')),
+    'play': () => window.dispatchEvent(new CustomEvent('audio:play')),
     'play audio': () => window.dispatchEvent(new CustomEvent('audio:play')),
     'begin reading': () => window.dispatchEvent(new CustomEvent('audio:play')),
     'read aloud': () => window.dispatchEvent(new CustomEvent('audio:play')),
@@ -127,6 +129,7 @@ export const voiceCommands = {
 
     'resume': () => window.dispatchEvent(new CustomEvent('audio:resume')),
     'continue': () => window.dispatchEvent(new CustomEvent('audio:resume')),
+    'keep reading': () => window.dispatchEvent(new CustomEvent('audio:resume')),
     'continue reading': () => window.dispatchEvent(new CustomEvent('audio:resume')),
 
     'stop': () => window.dispatchEvent(new CustomEvent('audio:stop')),
@@ -134,6 +137,9 @@ export const voiceCommands = {
 
     'repeat that': () => window.dispatchEvent(new CustomEvent('audio:repeat')),
     'repeat': () => window.dispatchEvent(new CustomEvent('audio:repeat')),
+    'read it again': () => window.dispatchEvent(new CustomEvent('audio:repeat')),
+    'start over': () => window.dispatchEvent(new CustomEvent('audio:repeat')),
+    'from the beginning': () => window.dispatchEvent(new CustomEvent('audio:repeat')),
     'say that again': () => window.dispatchEvent(new CustomEvent('audio:repeat')),
 
     // Speed adjustments (delta)

@@ -68,6 +68,7 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
   const [vcLevel, setVcLevel] = useState(0);
   const burstCounterRef = useRef(0);
   const lastBurstTsRef = useRef(0);
+  const mismatchSinceRef = useRef<number | null>(null);
   const emitStatus = (s: 'idle'|'listening'|'processing') =>
     window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: s } }));
 
@@ -156,7 +157,7 @@ useEffect(() => {
     if (voiceCommandsEnabled && vcStatus === 'listening' && !voiceTipsShownRef.current) {
       toast({
         title: t("audioReading.voiceCommandsEnabled", "Voice Commands Enabled"),
-        description: "Try: 'next page', 'pause', 'resume', 'read slower'",
+        description: "Try: 'next page', 'pause', 'continue', 'read slower'",
         duration: 3500,
         action: (
           <ToastAction altText="Open voice commands help" onClick={() => { window.location.href = '/pricing#voice'; }}>
@@ -365,11 +366,18 @@ const handleHeadlessCommand = (cmd: string) => {
         console.log(`🔄 Audio state sync: ${isPlaying} → ${status.isPlaying}`);
         setIsPlaying(status.isPlaying);
       }
-      // Hard guard: if audio content hash mismatches current UI, stop immediately
+      // Relaxed guard: confirm mismatch persists before stopping
       const audioHash = (status as any).contentHash;
       if (status.isPlaying && contentHash && audioHash && audioHash !== contentHash) {
-        console.warn('🛑 Audio/UI content hash mismatch, stopping playback');
-        stopAudio();
+        const now = Date.now();
+        if (mismatchSinceRef.current == null) mismatchSinceRef.current = now;
+        if (now - (mismatchSinceRef.current || 0) > 600) {
+          console.warn('🛑 Audio/UI content hash mismatch (confirmed), stopping playback');
+          mismatchSinceRef.current = null;
+          stopAudio();
+        }
+      } else {
+        mismatchSinceRef.current = null;
       }
     };
 
@@ -443,6 +451,40 @@ useEffect(() => {
   window.addEventListener('voice:vocab', onVocab as EventListener);
   return () => window.removeEventListener('voice:vocab', onVocab as EventListener);
 }, [audioService, userInfo, difficulty, toast, t]);
+
+// Voice command playback controls
+useEffect(() => {
+  const onPause = () => {
+    try { (audioService as any).pauseAudio?.(); } catch {}
+    setIsPlaying(false);
+  };
+  const onResume = async () => {
+    try { await (audioService as any).resumeAudio?.(); setIsPlaying(true); }
+    catch { try { await playAudio(); } catch {} }
+  };
+  const onRepeat = async () => {
+    try { stopAudio(); await playAudio(); } catch {}
+  };
+  const onSpeed = async (evt: Event) => {
+    const e = evt as CustomEvent<{ delta?: number }>;
+    const delta = Number(e?.detail?.delta ?? 0);
+    const next = Math.max(0.6, Math.min(1.3, speedMultiplierRef.current + delta));
+    speedMultiplierRef.current = next;
+    if (isPlaying) {
+      try { stopAudio(); await playAudio(); } catch {}
+    }
+  };
+  window.addEventListener('audio:pause', onPause as EventListener);
+  window.addEventListener('audio:resume', onResume as EventListener);
+  window.addEventListener('audio:repeat', onRepeat as EventListener);
+  window.addEventListener('audio:speed', onSpeed as EventListener);
+  return () => {
+    window.removeEventListener('audio:pause', onPause as EventListener);
+    window.removeEventListener('audio:resume', onResume as EventListener);
+    window.removeEventListener('audio:repeat', onRepeat as EventListener);
+    window.removeEventListener('audio:speed', onSpeed as EventListener);
+  };
+}, [audioService, isPlaying, playAudio]);
 
   return (
     <div className="flex items-center gap-2 flex-wrap">

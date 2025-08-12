@@ -28,6 +28,7 @@ import { charlotteTTS } from "@/services/charlotteTTS";
 import { VocabularyCollector } from "@/components/VocabularyCollector";
 import { processTextWithConsistentFlow } from "@/utils/unifiedTextProcessor";
 import { hashText } from "@/utils/tokenize";
+import { defaultAudioConfig } from "@/config/audioConfig";
 import "@/styles/storyDisplay.css";
 // import { processTextForDesktop } from "@/utils/desktopTextProcessor";
 import { useWordHighlighting } from "@/hooks/useWordHighlighting";
@@ -314,7 +315,9 @@ const [highlightSave, setHighlightSave] = useState(false);
     return () => clearTimeout(timer);
   }, [highlightSave]);
   const currentStory = story[currentPage] || "";
-  const contentHash = hashText(currentStory);
+  const effectiveLimit = isPremium ? defaultAudioConfig.quality.maxTextLength.premium : defaultAudioConfig.quality.maxTextLength.free;
+  const effectiveAudioText = (currentStory || "").slice(0, effectiveLimit);
+  const contentHash = hashText(effectiveAudioText);
 
   useEffect(() => {
     try { (window as any).__pageContentHash = contentHash; } catch {}
