@@ -135,7 +135,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
   return (
     <Sidebar className={`border-r bg-background/95 backdrop-blur-sm ${effectiveCollapsed ? "w-16" : "w-64"}`} collapsible="icon">
       {/* Header */}
-      <div className={`border-b relative overflow-visible z-30 ${effectiveCollapsed ? "p-2" : "p-4"}`}>
+      <div className={`border-b relative overflow-visible z-30 ${effectiveCollapsed ? "px-2 pt-2 pb-3" : "p-4"}`}>
         <div className="flex items-center gap-3">
           {!effectiveCollapsed && (
             <>
@@ -163,14 +163,14 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
               }}
               size="icon"
               variant="secondary"
-              className={`absolute z-50 rounded-full shadow-sm ${isMobile ? "top-2 right-2 h-8 w-8" : effectiveCollapsed ? "top-1 right-1 h-5 w-5" : "top-2 right-2 h-8 w-8"}`}
+              className={`absolute z-50 rounded-full shadow-sm ${isMobile ? "top-2 right-2 h-8 w-8" : effectiveCollapsed ? "top-1 right-1 h-4 w-4" : "top-2 right-2 h-8 w-8"}`}
             >
               {isMobile ? (
                 <X className="h-4 w-4" />
               ) : state === "expanded" ? (
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className={effectiveCollapsed ? "h-3.5 w-3.5" : "h-4 w-4"} />
               ) : (
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className={effectiveCollapsed ? "h-3.5 w-3.5" : "h-4 w-4"} />
               )}
             </Button>
           )}
