@@ -196,6 +196,13 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
       setTwSaving(false);
     }
   };
+
+  const formatTime = (minutes: number) => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+  };
+
   return (
     <Card className="w-full max-w-6xl mx-auto">
       <CardHeader className="flex flex-row items-center justify-between">
@@ -473,6 +480,34 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
               </CardHeader>
               <CardContent>
                 <ChildManager />
+              </CardContent>
+            </Card>
+
+            {/* Teacher word list (per child) - Premium */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Teacher word list (per child)</CardTitle>
+                <CardDescription>Words here guide the AI to include them in premium live stories.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {!isPremiumUser && (
+                  <div className="text-sm text-muted-foreground">Premium feature — upgrade to enable.</div>
+                )}
+                <TagInput
+                  value={teacherWords}
+                  onChange={setTeacherWords}
+                  placeholder="Add a word, then press Enter"
+                  disabled={!isPremiumUser || twLoading || twSaving}
+                />
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" disabled={twLoading || twSaving} onClick={() => setTeacherWords(teacherWords)}>
+                    Reset
+                  </Button>
+                  <Button onClick={saveTeacherWords} disabled={!isPremiumUser || twLoading || twSaving}>
+                    {twSaving ? 'Saving...' : 'Save list'}
+                  </Button>
+                </div>
+                <div className="text-xs text-muted-foreground">Applies to: {activeChildId ? `Child ${activeChildId}` : 'Default'} • Max 50 stored; up to 20 used per story.</div>
               </CardContent>
             </Card>
 
