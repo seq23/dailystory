@@ -57,6 +57,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { SpecialRequestDialog } from "@/components/SpecialRequestDialog";
 import { StorySessionCache } from "@/services/storySessionCache";
 import { guestSession } from "@/utils/guestSession";
+import { APP_CONFIG } from "@/config/appConfig";
 
 interface CleanStoryDisplayProps {
   userInfo: UserInfo;
@@ -106,6 +107,49 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     };
   }, []);
   
+// Handle session clearing and disable auto-resume when flagged in config
+useEffect(() => {
+  (async () => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const allowOverride = APP_CONFIG.features.resumeOnRefresh.allowUrlOverride;
+      const viaUrl = allowOverride && params.get('resume') === '1';
+      const resumeEnabled = isPremium
+        ? (APP_CONFIG.features.resumeOnRefresh.premium || viaUrl)
+        : (APP_CONFIG.features.resumeOnRefresh.guest || viaUrl);
+
+      // Safety: clear session via URL
+      if (params.get('clearSession') === '1') {
+        if (!isPremium) {
+          try { guestSession.clearAll(); } catch {}
+          try { StorySessionCache.clearCachedSession('guest'); } catch {}
+        } else {
+          let id = userInfo.name || 'premium';
+          try { const { data: { user } } = await supabase.auth.getUser(); if (user?.id) id = user.id; } catch {}
+          try { sessionStorage.removeItem(`premium.timer.endTs.${id}`); } catch {}
+          try { sessionStorage.removeItem(`premium.timer.remaining.${id}`); } catch {}
+          try { StorySessionCache.clearCachedSession(id); } catch {}
+        }
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+
+      // If resume is disabled, proactively clear any cached session to avoid loops
+      if (!resumeEnabled) {
+        if (!isPremium) {
+          try { guestSession.clearAll(); } catch {}
+          try { StorySessionCache.clearCachedSession('guest'); } catch {}
+        } else {
+          let id = userInfo.name || 'premium';
+          try { const { data: { user } } = await supabase.auth.getUser(); if (user?.id) id = user.id; } catch {}
+          try { sessionStorage.removeItem(`premium.timer.endTs.${id}`); } catch {}
+          try { sessionStorage.removeItem(`premium.timer.remaining.${id}`); } catch {}
+          try { StorySessionCache.clearCachedSession(id); } catch {}
+        }
+      }
+    } catch {}
+  })();
+}, [isPremium, userInfo?.name]);
+
   // Premium live generation state
   const [liveContext, setLiveContext] = useState<LiveGenerationContext | null>(null);
   const [isStoryComplete, setIsStoryComplete] = useState(false);
@@ -582,31 +626,44 @@ const initializeStory = async () => {
       expertGradeLevel: currentDifficulty === 'expert' ? expertGradeLevel : undefined,
     } as UserInfo;
     if (isPremium) {
-      // Premium: restore from cache if available
+      // Premium: restore from cache if available (guarded by feature flag)
       try {
+        const params = new URLSearchParams(window.location.search);
+        const allowOverride = APP_CONFIG.features.resumeOnRefresh.allowUrlOverride;
+        const viaUrl = allowOverride && params.get('resume') === '1';
+        const resumeEnabled = APP_CONFIG.features.resumeOnRefresh.premium || viaUrl;
+
         let cacheId = userInfo.name || 'premium';
         try { const { data: { user } } = await supabase.auth.getUser(); if (user?.id) cacheId = user.id; } catch {}
-        const cached = StorySessionCache.getCachedStorySession(cacheId);
-        if (cached && cached.pages?.length) {
-          console.log('♻️ Restoring premium story from cache');
-          setStory(cached.pages);
-          setCurrentPage(Math.min(cached.currentPage || 0, Math.max(0, cached.pages.length - 1)));
-          setIsStoryComplete(!!cached.isComplete);
-          setStoryTitle(`${userInfo.name}'s Live Adventure`);
-          const ctx: LiveGenerationContext = {
-            userInfo: effectiveUser,
-            difficulty: currentDifficulty,
-            expertGradeLevel: currentDifficulty === 'expert' ? expertGradeLevel : undefined,
-            storyContext: [...cached.pages],
-            currentPage: cached.currentPage || 0,
-            totalExpectedPages: Math.max(cached.pages.length + 1, 6),
-            characters: [userInfo.name, userInfo.favoriteAnimal || 'friend'],
-            openEnded: true,
-          };
-          setLiveContext(ctx);
-          const srcPremium = (window as any).__LAST_STORY_SOURCE__ || 'cached';
-          setStorySource(srcPremium);
-          return; // Early return
+
+        if (resumeEnabled) {
+          const cached = StorySessionCache.getCachedStorySession(cacheId);
+          if (cached && cached.pages?.length) {
+            console.log('♻️ Restoring premium story from cache');
+            setStory(cached.pages);
+            setCurrentPage(Math.min(cached.currentPage || 0, Math.max(0, cached.pages.length - 1)));
+            setIsStoryComplete(!!cached.isComplete);
+            setStoryTitle(`${userInfo.name}'s Live Adventure`);
+            const ctx: LiveGenerationContext = {
+              userInfo: effectiveUser,
+              difficulty: currentDifficulty,
+              expertGradeLevel: currentDifficulty === 'expert' ? expertGradeLevel : undefined,
+              storyContext: [...cached.pages],
+              currentPage: cached.currentPage || 0,
+              totalExpectedPages: Math.max(cached.pages.length + 1, 6),
+              characters: [userInfo.name, userInfo.favoriteAnimal || 'friend'],
+              openEnded: true,
+            };
+            setLiveContext(ctx);
+            const srcPremium = (window as any).__LAST_STORY_SOURCE__ || 'cached';
+            setStorySource(srcPremium);
+            return; // Early return
+          }
+        } else {
+          // Proactively clear any cached session to avoid loops
+          try { sessionStorage.removeItem(`premium.timer.endTs.${cacheId}`); } catch {}
+          try { sessionStorage.removeItem(`premium.timer.remaining.${cacheId}`); } catch {}
+          try { StorySessionCache.clearCachedSession(cacheId); } catch {}
         }
       } catch (e) { console.warn('Failed to restore premium cached session', e); }
 
@@ -646,17 +703,28 @@ const initializeStory = async () => {
       } catch (e) { console.warn('Story cache failed (premium start)', e); }
       
     } else {
-      // Free: try to restore from cache first
+      // Free: try to restore from cache first (guarded by feature flag)
       try {
-        const cached = StorySessionCache.getCachedStorySession('guest');
-        if (cached && cached.pages?.length) {
-          console.log('♻️ Restoring guest story from cache');
-          setStory(cached.pages);
-          setCurrentPage(Math.min(cached.currentPage || 0, Math.max(0, cached.pages.length - 1)));
-          setStoryTitle(`${userInfo.name}'s Adventure`);
-          setIsStoryComplete(true);
-          setStorySource('unknown');
-          return; // Early return; finally will handle loader timing
+        const params = new URLSearchParams(window.location.search);
+        const allowOverride = APP_CONFIG.features.resumeOnRefresh.allowUrlOverride;
+        const viaUrl = allowOverride && params.get('resume') === '1';
+        const resumeEnabled = APP_CONFIG.features.resumeOnRefresh.guest || viaUrl;
+
+        if (resumeEnabled) {
+          const cached = StorySessionCache.getCachedStorySession('guest');
+          if (cached && cached.pages?.length) {
+            console.log('♻️ Restoring guest story from cache');
+            setStory(cached.pages);
+            setCurrentPage(Math.min(cached.currentPage || 0, Math.max(0, cached.pages.length - 1)));
+            setStoryTitle(`${userInfo.name}'s Adventure`);
+            setIsStoryComplete(true);
+            setStorySource('unknown');
+            return; // Early return; finally will handle loader timing
+          }
+        } else {
+          // Proactively clear any cached guest session to avoid loops
+          try { StorySessionCache.clearCachedSession('guest'); } catch {}
+          try { guestSession.clearAll(); } catch {}
         }
       } catch (e) { console.warn('Failed to restore cached guest session', e); }
 

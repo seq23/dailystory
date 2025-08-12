@@ -9,6 +9,7 @@ import { useSecurityMonitoring } from "@/hooks/useSecurityMonitoring";
 import type { UserInfo } from "@/types";
 import { guestSession } from "@/utils/guestSession";
 import { StorySessionCache } from "@/services/storySessionCache";
+import { APP_CONFIG } from "@/config/appConfig";
 
 type GuestState = "welcome" | "form" | "reading" | "upgrade" | "login";
 
@@ -23,6 +24,14 @@ export const GuestExperience = () => {
 useEffect(() => {
   const urlParams = new URLSearchParams(window.location.search);
   const action = urlParams.get('action');
+
+  // Safety: allow clearing any cached sessions via URL
+  if (urlParams.get('clearSession') === '1') {
+    try { guestSession.clearAll(); } catch {}
+    try { StorySessionCache.clearCachedSession('guest'); } catch {}
+    // Clean URL
+    window.history.replaceState({}, '', '/');
+  }
   
   if (action === 'new-story') {
     // User came from session ended page wanting to start new story
@@ -34,6 +43,13 @@ useEffect(() => {
     try { StorySessionCache.clearCachedSession('guest'); } catch {}
     return;
   }
+
+  // Auto-resume guest session if enabled in config
+  const allowOverride = APP_CONFIG.features.resumeOnRefresh.allowUrlOverride;
+  const viaUrl = allowOverride && urlParams.get('resume') === '1';
+  const enableResume = APP_CONFIG.features.resumeOnRefresh.guest || viaUrl;
+
+  if (!enableResume) return;
 
   // Auto-resume guest session if active and timer not expired
   try {

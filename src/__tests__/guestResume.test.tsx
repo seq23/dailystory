@@ -11,6 +11,7 @@ vi.mock("@/components/CleanStoryDisplay", () => ({
 import { StorySessionCache } from "@/services/storySessionCache";
 import { guestSession } from "@/utils/guestSession";
 import { GuestExperience } from "@/components/GuestExperience";
+import { APP_CONFIG } from "@/config/appConfig";
 
 const baseUser = { name: "Guest", age: 7, difficultyLevel: "beginner", nativeLanguage: "en" } as any;
 
@@ -18,11 +19,15 @@ describe("Guest resume on refresh", () => {
   beforeEach(() => {
     localStorage.clear();
     sessionStorage.clear();
+    // Enable guest resume only for this test suite
+    APP_CONFIG.features.resumeOnRefresh.guest = true;
   });
 
-  afterEach(() => {
-    cleanup();
-  });
+afterEach(() => {
+  cleanup();
+  // Reset flag after tests
+  APP_CONFIG.features.resumeOnRefresh.guest = false;
+});
 
   it("resumes reading when guest session active and timer not expired", () => {
     // Prepare guest session

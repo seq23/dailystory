@@ -22,6 +22,7 @@ import type { UserInfo, Story, SessionStats } from "@/types";
 import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useChildProfiles } from "@/hooks/useChildProfiles";
+import { APP_CONFIG } from "@/config/appConfig";
 
 interface PremiumMyStoriesViewProps {
   userInfo: UserInfo;
@@ -47,20 +48,39 @@ export const PremiumMyStoriesView = ({ userInfo, isPremium, onSessionEnded }: Pr
     console.log('🧭 PremiumMyStoriesView currentView:', currentView);
   }, [currentView]);
 
-  // Auto-resume reading if a cached premium session exists and timer not expired
-  useEffect(() => {
-    (async () => {
-      try {
-        let id = userInfo.name || 'premium';
-        try { const { data: { user } } = await supabase.auth.getUser(); if (user?.id) id = user.id; } catch {}
-        const cached = StorySessionCache.getCachedStorySession(id);
-        const endRaw = Number(sessionStorage.getItem(`premium.timer.endTs.${id}`) || '0');
-        if (cached && cached.pages?.length && endRaw > Date.now()) {
-          setCurrentView('reading');
-        }
-      } catch {}
-    })();
-  }, [userInfo?.name]);
+// Auto-resume reading if allowed and a cached premium session exists and timer not expired
+useEffect(() => {
+  (async () => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const allowOverride = APP_CONFIG.features.resumeOnRefresh.allowUrlOverride;
+      const viaUrl = allowOverride && urlParams.get('resume') === '1';
+      const enableResume = APP_CONFIG.features.resumeOnRefresh.premium || viaUrl;
+
+      let id = userInfo.name || 'premium';
+      try { const { data: { user } } = await supabase.auth.getUser(); if (user?.id) id = user.id; } catch {}
+
+      // Safety: clear session via URL
+      if (urlParams.get('clearSession') === '1') {
+        try {
+          sessionStorage.removeItem(`premium.timer.endTs.${id}`);
+          sessionStorage.removeItem(`premium.timer.remaining.${id}`);
+          StorySessionCache.clearCachedSession(id);
+        } catch {}
+        window.history.replaceState({}, '', window.location.pathname);
+        return;
+      }
+
+      if (!enableResume) return;
+
+      const cached = StorySessionCache.getCachedStorySession(id);
+      const endRaw = Number(sessionStorage.getItem(`premium.timer.endTs.${id}`) || '0');
+      if (cached && cached.pages?.length && endRaw > Date.now()) {
+        setCurrentView('reading');
+      }
+    } catch {}
+  })();
+}, [userInfo?.name]);
 
 
   const handleLoadStory = (story: Story) => {

@@ -36,6 +36,11 @@ export interface AppConfig {
     postSessionActivities: {
       enabled: boolean;
     };
+    resumeOnRefresh: {
+      premium: boolean;
+      guest: boolean;
+      allowUrlOverride: boolean;
+    };
   };
 }
 
@@ -73,6 +78,11 @@ export const APP_CONFIG: AppConfig = {
     },
     postSessionActivities: {
       enabled: true
+    },
+    resumeOnRefresh: {
+      premium: false,
+      guest: false,
+      allowUrlOverride: true
     }
   }
 };
