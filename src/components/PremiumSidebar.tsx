@@ -196,10 +196,8 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
             </TooltipProvider>
           )}
           
-        </div>
-      </div>
-        {!isMobile && effectiveCollapsed && (
-          <div className="hidden md:flex w-full items-center justify-center pt-1">
+          {/* Collapsed desktop/tablet: Open navigation button in header top-right */}
+          {!isMobile && effectiveCollapsed && (
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -210,16 +208,18 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
                       toggleSidebar();
                     }}
                     size="icon"
-                    className="h-10 w-10 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-primary"
+                    className="hidden md:flex absolute z-50 top-2 right-2 h-8 w-8 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-primary"
                   >
-                    <ChevronRight className="h-5 w-5" />
+                    <ChevronRight className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>Open navigation</TooltipContent>
               </Tooltip>
             </TooltipProvider>
-          </div>
-        )}
+          )}
+          
+        </div>
+      </div>
 
       <SidebarContent className="p-2">
         {/* User Welcome */}
