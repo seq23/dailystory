@@ -747,16 +747,30 @@ export const InteractiveWord = ({
 
   // Determine if word should be interactive based on level rules
   const shouldBeInteractive = () => {
-    const cleanWord = word.toLowerCase().replace(/[.,!?;:'"()]/g, '');
+    const lw = word.toLowerCase().replace(/[.,!?;:'"()]/g, '');
+    if (!lw) return false;
     // Never make the user's name interactive
-    if (userInfo?.name && cleanWord === userInfo.name.toLowerCase()) {
+    if (userInfo?.name && lw === userInfo.name.toLowerCase()) {
       return false;
     }
-    // Level 0-1: underline all words (beginner/easy)
-    if (difficulty === 'beginner' || difficulty === 'easy') {
-      return cleanWord.length > 0;
+
+    // Exclude common family terms/honorifics and proper nouns
+    const excluded = new Set([
+      'mom','dad','mama','papa','mommy','daddy','mr','mrs','ms','miss','sir','maam','ma\'am',
+      'grandma','grandpa','aunt','uncle','brother','sister'
+    ]);
+    if (excluded.has(lw)) return false;
+
+    const trimmedOriginal = word.replace(/[.,!?;:'"()]/g, '');
+    const isAllCaps = trimmedOriginal === trimmedOriginal.toUpperCase();
+    const isProperNoun = /^[A-Z][a-z]+$/.test(trimmedOriginal) && trimmedOriginal !== 'I';
+    if (isProperNoun && !isAllCaps) return false;
+
+    // Level rules
+    if (difficulty === 'beginner') {
+      return lw.length > 0;
     }
-    // Level 2-4: underline only significant words by classifier
+    // For easy and above: only significant words by classifier
     return shouldHighlight;
   };
 

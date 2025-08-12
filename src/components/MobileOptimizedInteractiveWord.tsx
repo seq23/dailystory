@@ -50,10 +50,28 @@ export const MobileOptimizedInteractiveWord = (props: MobileOptimizedInteractive
 
 
   // Level rules: 0-1 (beginner/easy) underline all; 2-4 (medium/hard/expert) only significant words
+  // Level rules and importance filtering: Level 0 (beginner) = all words; others = important words only
   const shouldBeInteractive = useMemo(() => {
     const lw = cleanWord.toLowerCase();
+    if (!lw) return false;
+
+    // Exclusions: user's name, family terms/honorifics, proper nouns
     if (props.userInfo?.name && lw === props.userInfo.name.toLowerCase()) return false;
-    if (difficulty === "beginner" || difficulty === "easy") return lw.length > 0;
+
+    const excluded = new Set([
+      'mom','dad','mama','papa','mommy','daddy','mr','mrs','ms','miss','sir','maam','ma\'am',
+      'grandma','grandpa','aunt','uncle','brother','sister'
+    ]);
+    if (excluded.has(lw)) return false;
+
+    const trimmedOriginal = (props.word || '').replace(/[.,!?;:'"()]/g, '');
+    const isAllCaps = trimmedOriginal === trimmedOriginal.toUpperCase();
+    const isProperNoun = /^[A-Z][a-z]+$/.test(trimmedOriginal) && trimmedOriginal !== 'I';
+    if (isProperNoun && !isAllCaps) return false;
+
+    // Level rules: beginner = all words; easy+ = classifier-based important words
+    if (difficulty === 'beginner') return true;
+
     const { shouldHighlight } = VocabularyLevelClassifier.getWordDifficulty(props.word, difficulty);
     return shouldHighlight;
   }, [cleanWord, props.userInfo?.name, difficulty, props.word]);
