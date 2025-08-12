@@ -9,7 +9,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 export function FloatingFeedback() {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
-  const { isMobile } = useIsMobile();
+  const { isMobile, isTablet } = useIsMobile();
   const [isReadingSession, setIsReadingSession] = useState(() => typeof document !== "undefined" && document.body.classList.contains("reading-session"));
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -19,7 +19,7 @@ export function FloatingFeedback() {
     observer.observe(document.body, { attributes: true, attributeFilter: ["class"] });
     return () => observer.disconnect();
   }, []);
-  if (isMobile && isReadingSession) return null;
+  if ((isMobile || isTablet) && isReadingSession) return null;
 
   return (
     <>
