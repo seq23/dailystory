@@ -282,6 +282,8 @@ const toggleVoiceCommands = () => {
     setVoiceCommandsEnabled(false);
     emitStatus('idle');
     setVcStatus('idle');
+    setVcLevel(0);
+    try { window.dispatchEvent(new CustomEvent('voice:level', { detail: { level: 0 } })); } catch {}
     if (restartTimeoutRef.current) {
       clearTimeout(restartTimeoutRef.current);
       restartTimeoutRef.current = null;
