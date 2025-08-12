@@ -368,10 +368,21 @@ const handleHeadlessCommand = (cmd: string) => {
       }
       // Relaxed guard: confirm mismatch persists before stopping
       const audioHash = (status as any).contentHash;
-      if (status.isPlaying && contentHash && audioHash && audioHash !== contentHash) {
+      const uiHash = (typeof window !== 'undefined' && (window as any).__pageContentHash) || contentHash;
+      if (status.isPlaying && audioHash && uiHash && audioHash !== uiHash) {
         const now = Date.now();
         if (mismatchSinceRef.current == null) mismatchSinceRef.current = now;
-        if (now - (mismatchSinceRef.current || 0) > 600) {
+        const elapsed = now - (mismatchSinceRef.current || 0);
+        // On mobile/tablet, ignore transient or persistent mismatches to avoid disruptive stops
+        if (isMobileOrTablet) {
+          if (elapsed > 800) {
+            console.warn('⚠️ Audio/UI content hash mismatch on mobile/tablet (ignored).');
+            mismatchSinceRef.current = null; // reset so we don't spam
+          }
+          return; // never auto-stop on mobile/tablet
+        }
+        // Desktop: require a longer, confirmed mismatch before stopping
+        if (elapsed > 1200) {
           console.warn('🛑 Audio/UI content hash mismatch (confirmed), stopping playback');
           mismatchSinceRef.current = null;
           stopAudio();
@@ -383,7 +394,7 @@ const handleHeadlessCommand = (cmd: string) => {
 
     const interval = setInterval(checkStatus, 300);
     return () => clearInterval(interval);
-  }, [audioService, isPlaying, contentHash]);
+  }, [audioService, isPlaying, contentHash, isMobileOrTablet]);
 
 // Voice vocabulary events handler
 useEffect(() => {
