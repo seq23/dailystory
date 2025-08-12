@@ -396,8 +396,8 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
                 </div>
 
                 {/* Dismiss button (expanded only) */}
-                <div className="absolute top-3 right-16">
-                  <Button variant="ghost" size="sm" onClick={handleDismiss} aria-label="Dismiss progress towers">
+                <div className="absolute top-4 right-[4.5rem] z-10">
+                  <Button variant="ghost" size="sm" onClick={handleDismiss} aria-label="Dismiss progress towers" className="h-8">
                     <X className="w-4 h-4 mr-1" />
                     Dismiss
                   </Button>
