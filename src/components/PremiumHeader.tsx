@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -46,6 +46,25 @@ export const PremiumHeader = ({
   onProfileClick 
 }: PremiumHeaderProps) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const headerRef = useRef<HTMLElement | null>(null);
+
+  // Set CSS var for header height so sidebar can offset on tablets
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+    const setVar = () => {
+      const h = el.getBoundingClientRect().height;
+      document.documentElement.style.setProperty('--app-header-height', `${h}px`);
+    };
+    setVar();
+    const ro = new ResizeObserver(() => setVar());
+    ro.observe(el);
+    window.addEventListener('resize', setVar);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', setVar);
+    };
+  }, []);
 
   const getAvatarUrl = () => {
     if (userInfo.avatar?.type && userInfo.avatar?.skinTone) {
@@ -61,7 +80,7 @@ export const PremiumHeader = ({
   const hasSelectedAvatar = userInfo.avatar?.type && userInfo.avatar?.skinTone;
 
   return (
-    <header className="bg-white/95 backdrop-blur-sm shadow-sm border-b sticky top-0 z-50">
+    <header ref={headerRef} className="bg-white/95 backdrop-blur-sm shadow-sm border-b sticky top-0 z-50">
       <div className="container mx-auto px-4 pr-[env(safe-area-inset-right)] py-3">
         <div className="flex justify-between items-center gap-2 min-w-0">
           {/* Logo and Title */}

@@ -133,7 +133,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
     window.dispatchEvent(new CustomEvent('progressTowersToggle', { detail: next }));
   };
   return (
-    <Sidebar className={`border-r bg-background/95 backdrop-blur-sm ${effectiveCollapsed ? "w-16" : "w-64"}`} collapsible="icon">
+    <Sidebar className={`border-r bg-background/95 backdrop-blur-sm ${effectiveCollapsed ? "w-16 md:top-[var(--app-header-height)] md:h-[calc(100svh-var(--app-header-height))]" : "w-64"}`} collapsible="icon">
       {/* Header */}
       <div className={`border-b relative overflow-visible z-30 ${effectiveCollapsed ? "px-2 pt-2 pb-3" : "p-4"}`}>
         <div className="flex items-center gap-3">
@@ -202,10 +202,10 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
           <SidebarGroupContent>
             <SidebarMenu>
               {sidebarItems.map((item) => (
-                <SidebarMenuItem key={item.url}>
+                <SidebarMenuItem key={item.url} className={effectiveCollapsed ? "my-1" : ""}>
                   <SidebarMenuButton 
                     onClick={() => onViewChange(item.url)}
-                    className={getNavClasses(item)}
+                    className={`${getNavClasses(item)} ${effectiveCollapsed ? "justify-center gap-0 mx-auto h-10 w-10 rounded-md" : ""}`}
                     disabled={item.premium && !isPremium}
                   >
                     <item.icon className="w-5 h-5 flex-shrink-0" />
@@ -244,7 +244,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
                           <TooltipTrigger asChild>
                             <SidebarMenuButton
                               onClick={() => toggleTimer()}
-                              className="flex items-center w-full justify-center transition-colors rounded-lg hover:bg-accent hover:text-accent-foreground"
+                              className="flex items-center justify-center transition-colors rounded-lg hover:bg-accent hover:text-accent-foreground h-10 w-10 mx-auto"
                               aria-label="Toggle reading timer visibility"
                             >
                               <Clock className="w-5 h-5 flex-shrink-0" />
@@ -288,7 +288,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
                             <SidebarMenuButton
                               onClick={() => toggleTowers()
                               }
-                              className="flex items-center w-full justify-center transition-colors rounded-lg hover:bg-accent hover:text-accent-foreground"
+                              className="flex items-center justify-center transition-colors rounded-lg hover:bg-accent hover:text-accent-foreground h-10 w-10 mx-auto"
                               aria-label="Toggle progress towers visibility"
                             >
                               <Trophy className="w-5 h-5 flex-shrink-0" />
@@ -326,7 +326,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       onClick={() => setVocabOpen(true)}
-                      className="flex items-center gap-3 w-full transition-colors rounded-lg hover:bg-accent hover:text-accent-foreground"
+                      className={`${"flex items-center gap-3 w-full transition-colors rounded-lg hover:bg-accent hover:text-accent-foreground"} ${effectiveCollapsed ? "justify-center gap-0 h-10 w-10 mx-auto" : ""}`}
                     >
                       <Bookmark className="w-5 h-5 flex-shrink-0" />
                       {!effectiveCollapsed && (
