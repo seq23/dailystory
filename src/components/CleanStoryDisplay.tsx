@@ -1428,7 +1428,7 @@ const handleRestartTimer = () => {
                           <DialogTitle>Help Me Read</DialogTitle>
                         </DialogHeader>
                         {/* @ts-ignore */}
-                        <ReadAloudCoach targetText={currentStory} />
+                        <ReadAloudCoach targetText={currentStory} isPremium={isPremium} language={userInfo?.nativeLanguage || 'en'} onUpgrade={onUpgrade} />
                       </DialogContent>
                     </Dialog>
                   ) : (
@@ -1841,7 +1841,7 @@ const handleRestartTimer = () => {
               <DialogTitle>Help Me Read</DialogTitle>
             </DialogHeader>
             {/* @ts-ignore */}
-            <ReadAloudCoach targetText={currentStory} />
+            <ReadAloudCoach targetText={currentStory} isPremium={isPremium} language={userInfo?.nativeLanguage || 'en'} onUpgrade={onUpgrade} />
           </DialogContent>
         </Dialog>
       )}
