@@ -202,6 +202,7 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
   const handleToggle = () => {
     const newExpanded = !isExpanded;
     setIsExpanded(newExpanded);
+    try { console.info('[ProgressTowers] toggle, isExpanded:', newExpanded); } catch {}
     if (newExpanded) {
       scheduleAutoCollapse();
     }
@@ -225,6 +226,7 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
   const handleDismiss = () => {
     try { localStorage.setItem('progressTowersEnabled', '0'); } catch {}
     setEnabled(false);
+    try { console.info('[ProgressTowers] dismissed'); } catch {}
     window.dispatchEvent(new CustomEvent('progressTowersToggle', { detail: false }));
   };
 
@@ -250,6 +252,7 @@ className={cn(
             onClick={() => {
               try { localStorage.setItem('progressTowersEnabled', '1'); } catch {}
               setEnabled(true);
+              try { console.info('[ProgressTowers] re-enabled via trophy'); } catch {}
               window.dispatchEvent(new CustomEvent('progressTowersToggle', { detail: true }));
             }}
             className={cn(
@@ -274,9 +277,9 @@ className={cn(
           "bg-gradient-to-br from-white/90 via-white/80 to-white/70",
           "border border-white/20 shadow-2xl",
           "transition-all duration-500 ease-out",
-          isExpanded ? "w-80 p-6" : "w-20 p-4",
-          isMobile && !isExpanded && "w-14 p-2",
-          isTablet && !isExpanded && "w-16 p-3",
+          isExpanded ? "w-80 p-6" : "w-20 pt-8 pb-4 px-4",
+          isMobile && !isExpanded && "w-14 pt-7 pb-2 px-2",
+          isTablet && !isExpanded && "w-16 pt-7 pb-3 px-3",
           celebrationMode && "animate-pulse ring-4 ring-amber-400/50",
           sparkleMode && "relative overflow-visible",
           !enabled && "hidden"
@@ -352,7 +355,7 @@ className={cn(
               "hover:from-primary/30 hover:to-primary/40 hover:border-primary/40",
               "shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary/50",
               "group relative overflow-hidden touch-manipulation",
-              isExpanded ? "top-4 right-4" : "bottom-4 left-1/2 -translate-x-1/2",
+              isExpanded ? "top-4 right-4" : "top-5 left-1/2 -translate-x-1/2",
               isMobile && !isExpanded && "w-9 h-9",
               // Remove auto-animations, only celebration mode spins
               celebrationMode && "animate-spin [animation-duration:1s] [animation-iteration-count:1]",
@@ -396,6 +399,16 @@ className={cn(
             )}
           </button>
 
+          {/* Dismiss button (expanded only, pinned to container top-right) */}
+          {isExpanded && (
+            <div className="absolute top-4 right-16 z-20">
+              <Button variant="ghost" size="sm" onClick={handleDismiss} aria-label="Dismiss progress towers" className="h-8">
+                <X className="w-4 h-4 mr-1" />
+                Dismiss
+              </Button>
+            </div>
+          )}
+
           {/* Content */}
           <div className={cn(
             "transition-all duration-500",
@@ -420,14 +433,6 @@ className={cn(
                       : t('progress.subtitle', 'Keep climbing higher!')
                     }
                   </p>
-                </div>
-
-                {/* Dismiss button (expanded only) */}
-                <div className="absolute top-4 right-16 z-10">
-                  <Button variant="ghost" size="sm" onClick={handleDismiss} aria-label="Dismiss progress towers" className="h-8">
-                    <X className="w-4 h-4 mr-1" />
-                    Dismiss
-                  </Button>
                 </div>
 
                 {/* Progress towers grid */}
