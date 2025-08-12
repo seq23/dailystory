@@ -171,7 +171,7 @@ export const PremiumHeader = ({
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <ChildQuickSwitcher className="absolute bottom-[-9px] -left-2 z-20 md:-bottom-1 md:-left-2" size="sm" />
+              <ChildQuickSwitcher className="absolute bottom-[-10px] -left-2 z-0 md:-bottom-1 md:-left-2" size="sm" />
             </div>
           </div>
         </div>

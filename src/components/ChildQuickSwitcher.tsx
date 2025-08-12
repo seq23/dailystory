@@ -50,7 +50,7 @@ export function ChildQuickSwitcher({ className, size = 'md' }: ChildQuickSwitche
                       className={cn(
                         "rounded-full inline-flex items-center justify-center font-black leading-none ring-2 ring-offset-1 ring-offset-background select-none tracking-tight drop-shadow-sm z-10",
                         size === "sm"
-                          ? "h-8 w-8 text-[1.68rem] leading-[0.9]"
+                          ? "h-8 w-8 text-[1.9rem] leading-[0.82]"
                           : "h-9 w-9 md:h-9 md:w-9 text-[1.6rem] md:text-[1.7rem]",
                         "ring-background bg-primary text-primary-foreground hover:bg-primary/90 transition",
                         loading && "opacity-70",

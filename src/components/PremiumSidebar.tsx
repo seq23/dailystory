@@ -135,7 +135,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
   return (
     <Sidebar className={`border-r bg-background/95 backdrop-blur-sm ${effectiveCollapsed ? "w-16" : "w-64"}`} collapsible="icon">
       {/* Header */}
-      <div className={`border-b relative overflow-visible z-20 ${effectiveCollapsed ? "p-2" : "p-4"}`}>
+      <div className={`border-b relative overflow-visible z-30 ${effectiveCollapsed ? "p-2" : "p-4"}`}>
         <div className="flex items-center gap-3">
           {!effectiveCollapsed && (
             <>
@@ -258,7 +258,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
                     ) : (
                       <SidebarMenuButton
                         onClick={() => toggleTimer()}
-                        className="flex items-center gap-3 w-full justify-between rounded-full border border-border bg-card hover:bg-accent hover:text-accent-foreground px-3 py-2 min-w-[220px] overflow-visible z-50"
+                        className="flex items-center gap-3 w-full justify-between rounded-full border border-border bg-card hover:bg-accent hover:text-accent-foreground px-3 py-2 min-w-[220px]"
                         aria-label="Toggle reading timer visibility"
                       >
                         <div className="flex items-center gap-3">
@@ -302,7 +302,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
                     ) : (
                       <SidebarMenuButton
                         onClick={() => toggleTowers()}
-                        className="flex items-center gap-3 w-full justify-between rounded-full border border-border bg-card hover:bg-accent hover:text-accent-foreground px-3 py-2 min-w-[220px] overflow-visible z-50"
+                        className="flex items-center gap-3 w-full justify-between rounded-full border border-border bg-card hover:bg-accent hover:text-accent-foreground px-3 py-2 min-w-[220px]"
                         aria-label="Toggle progress towers visibility"
                       >
                         <div className="flex items-center gap-3">
