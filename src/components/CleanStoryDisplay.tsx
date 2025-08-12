@@ -153,6 +153,7 @@ useEffect(() => {
   // Premium live generation state
   const [liveContext, setLiveContext] = useState<LiveGenerationContext | null>(null);
   const [isStoryComplete, setIsStoryComplete] = useState(false);
+  const [lastEndingPageIndex, setLastEndingPageIndex] = useState<number | null>(null);
   
   // Image state
   const [pageImages, setPageImages] = useState<Record<number, string>>({});
@@ -579,24 +580,10 @@ useEffect(() => {
   }
 }, [currentPage]);
 
-// Periodic sparkle for Finish Story button (all users)
+// Finish button feedback: state
 const [finishSparkle, setFinishSparkle] = useState(false);
 const [finishPressBurst, setFinishPressBurst] = useState(false);
-useEffect(() => {
-  let timeoutId: ReturnType<typeof setTimeout> | null = null;
-  const scheduleNext = () => {
-    const delay = 22000 + Math.random() * 8000; // 22–30s randomized
-    timeoutId = setTimeout(() => {
-      setFinishSparkle(true);
-      setTimeout(() => setFinishSparkle(false), 2000);
-      scheduleNext();
-    }, delay);
-  };
-  scheduleNext();
-  return () => {
-    if (timeoutId) clearTimeout(timeoutId);
-  };
-}, []);
+const [finishFlashCycle, setFinishFlashCycle] = useState(false);
 
 // Dramatic burst overlay trigger when ending generation completes
 const [showEndingBurst, setShowEndingBurst] = useState(false);
@@ -609,14 +596,18 @@ useEffect(() => {
   }
   prevIsGeneratingEndingRef.current = isGeneratingEnding;
 }, [isGeneratingEnding, isPremium]);
-// Trigger finish story animation after 10 pages read
+// Trigger finish story flash + sparkle every 5 completed pages
 useEffect(() => {
-  if (currentPage + 1 === 10) {
+  const completed = pagesCompleted.size;
+  if (completed > 0 && completed % 5 === 0) {
     setFinishSparkle(true);
+    setFinishFlashCycle(true);
     const t1 = setTimeout(() => setFinishSparkle(false), 2000);
-    return () => clearTimeout(t1);
+    const t2 = setTimeout(() => setFinishFlashCycle(false), 2000);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
   }
-}, [currentPage]);
+  return;
+}, [pagesCompleted]);
 
 // Ensure timer UI becomes visible when time ends for premium (to show celebration + choice)
 useEffect(() => {
@@ -1223,6 +1214,7 @@ const handleRestartTimer = () => {
 
         // Determine the index of the newly added ending page
         const endingPageIndex = story.length; // new last index after append
+        setLastEndingPageIndex(endingPageIndex);
 
         // Auto-advance to the newly generated concluding page
         setCurrentPage(prev => prev + 1);
@@ -1693,7 +1685,7 @@ const handleRestartTimer = () => {
                 </div>
               )}
 
-               {/* Magic Wand Buttons Section */}/
+               {/* Magic Wand Buttons Section */}
               <div className="mb-6 flex flex-col items-center gap-4">
                 {/* Premium Magic Wand - Below page count */}
                 {isPremium && finishCTAExpanded && (
@@ -1875,10 +1867,10 @@ const handleRestartTimer = () => {
                                 setTimeout(() => setFinishSparkle(false), 1200);
                                 setShowConfirmEndStory(true);
                               }}
-                              disabled={!liveContext || isGeneratingEnding || timeRemaining <= 0}
+                              disabled={isGeneratingEnding || timeRemaining <= 0 || (lastEndingPageIndex !== null ? currentPage <= lastEndingPageIndex : !liveContext)}
                               variant="hero"
                               aria-busy={isGeneratingEnding}
-                              className={cn(!isGeneratingEnding && "animate-[pulse_2s_ease-in-out_14s_infinite]")}
+                              className={cn(finishFlashCycle && !isGeneratingEnding && "ring-2 ring-primary/60 animate-pulse")}
                             >
                               {isGeneratingEnding ? (
                                 <>
@@ -1921,11 +1913,11 @@ const handleRestartTimer = () => {
                                 setTimeout(() => setFinishSparkle(false), 1200);
                                 setShowConfirmEndStory(true);
                               }}
-                              disabled={!liveContext || isGeneratingEnding || timeRemaining <= 0}
+                              disabled={isGeneratingEnding || timeRemaining <= 0 || (lastEndingPageIndex !== null ? currentPage <= lastEndingPageIndex : !liveContext)}
                               variant="hero"
                               size="sm"
                               aria-busy={isGeneratingEnding}
-                              className={cn(!isGeneratingEnding && "animate-[pulse_2s_ease-in-out_14s_infinite]")}
+                              className={cn(finishFlashCycle && !isGeneratingEnding && "ring-2 ring-primary/60 animate-pulse")}
                             >
                               {isGeneratingEnding ? (
                                 <>
