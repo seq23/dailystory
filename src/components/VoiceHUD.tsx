@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Mic, Loader2, CheckCircle2 } from "lucide-react";
-
+import { useIsMobile } from "@/hooks/use-mobile";
 // Lightweight persistent HUD that listens for custom events:
 //  - 'voice:status' => { status: 'idle'|'listening'|'processing' }
 //  - 'voice:level'  => { level: number 0..1 }
@@ -9,6 +9,7 @@ import { Mic, Loader2, CheckCircle2 } from "lucide-react";
 type VoiceStatus = 'idle' | 'listening' | 'processing';
 
 export const VoiceHUD: React.FC = () => {
+  const { isMobileOrTablet } = useIsMobile();
   const [status, setStatus] = useState<VoiceStatus>('idle');
   const [level, setLevel] = useState(0);
   const prevStatus = useRef<VoiceStatus>('idle');
@@ -42,6 +43,7 @@ export const VoiceHUD: React.FC = () => {
   };
 
   useEffect(() => {
+    if (!isMobileOrTablet) return;
     const onStatus = (e: any) => {
       const next = (e?.detail?.status || 'idle') as VoiceStatus;
       setStatus(next);
@@ -68,20 +70,22 @@ export const VoiceHUD: React.FC = () => {
       try { audioContextRef.current?.close(); } catch {}
       audioContextRef.current = null;
     };
-  }, []);
+  }, [isMobileOrTablet]);
 
   // One-time resume on first user gesture (helps iOS/tablets)
   useEffect(() => {
+    if (!isMobileOrTablet) return;
     const resume = async () => {
       const ctx = await ensureCtx();
       try { await (ctx as any)?.resume?.(); } catch {}
     };
     window.addEventListener('pointerdown', resume, { once: true, passive: true } as any);
     return () => window.removeEventListener('pointerdown', resume as any);
-  }, []);
+  }, [isMobileOrTablet]);
 
-  // Hide entirely when idle
-  if (status === 'idle') return null;
+// Hide on desktop and when idle
+if (!isMobileOrTablet) return null;
+if (status === 'idle') return null;
 
   const meterWidth = Math.round(100 * (0.1 + 0.9 * level));
 
