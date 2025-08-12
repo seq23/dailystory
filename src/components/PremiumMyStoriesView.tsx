@@ -15,6 +15,8 @@ import {
   Filter
 } from "lucide-react";
 import { PremiumStoryLibrary } from "@/components/PremiumStoryLibrary";
+import { supabase } from "@/integrations/supabase/client";
+import { StorySessionCache } from "@/services/storySessionCache";
 import CleanStoryDisplay from "@/components/CleanStoryDisplay";
 import type { UserInfo, Story, SessionStats } from "@/types";
 import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle } from "@/components/ui/dialog";
@@ -44,6 +46,21 @@ export const PremiumMyStoriesView = ({ userInfo, isPremium, onSessionEnded }: Pr
   useEffect(() => {
     console.log('🧭 PremiumMyStoriesView currentView:', currentView);
   }, [currentView]);
+
+  // Auto-resume reading if a cached premium session exists and timer not expired
+  useEffect(() => {
+    (async () => {
+      try {
+        let id = userInfo.name || 'premium';
+        try { const { data: { user } } = await supabase.auth.getUser(); if (user?.id) id = user.id; } catch {}
+        const cached = StorySessionCache.getCachedStorySession(id);
+        const endRaw = Number(sessionStorage.getItem(`premium.timer.endTs.${id}`) || '0');
+        if (cached && cached.pages?.length && endRaw > Date.now()) {
+          setCurrentView('reading');
+        }
+      } catch {}
+    })();
+  }, [userInfo?.name]);
 
 
   const handleLoadStory = (story: Story) => {

@@ -138,6 +138,45 @@ export class StorySessionCache {
   }
 
   /**
+   * Update pages (and optionally currentPage) in cached session
+   */
+  static updatePages(
+    userId: string,
+    pages: string[],
+    currentPage?: number,
+    images: Array<{url?: string; prompt: string}> = []
+  ): void {
+    const cacheKey = this.getCacheKey(userId);
+    try {
+      const existing = this.getCachedStorySession(userId);
+      const session: CachedStorySession = existing ? {
+        ...existing,
+        pages,
+        images: images.length ? images : existing.images,
+        currentPage: typeof currentPage === 'number' ? currentPage : existing.currentPage,
+        metadata: {
+          ...existing.metadata,
+          wordCount: pages.join(' ').split(' ').length,
+        },
+        timestamp: Date.now(),
+      } : {
+        id: this.generateSessionId(userId, 'beginner' as any),
+        userId,
+        difficulty: 'beginner' as any,
+        pages,
+        images,
+        currentPage: currentPage || 0,
+        timestamp: Date.now(),
+        isComplete: false,
+        metadata: { wordCount: pages.join(' ').split(' ').length, sessionStartTime: Date.now(), timeSpent: 0, isPremium: false }
+      };
+      sessionStorage.setItem(cacheKey, JSON.stringify(session));
+    } catch (error) {
+      console.warn('Failed to update pages in cache:', error);
+    }
+  }
+
+  /**
    * Mark session as complete
    */
   static markSessionComplete(userId: string): void {

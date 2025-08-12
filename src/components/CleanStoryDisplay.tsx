@@ -190,6 +190,23 @@ useEffect(() => {
   }
 }, []);
 
+// Premium timer: resume or set end timestamp
+useEffect(() => {
+  if (!isPremium) return;
+  (async () => {
+    let id = userInfo.name || 'premium';
+    try { const { data: { user } } = await supabase.auth.getUser(); if (user?.id) id = user.id; } catch {}
+    const now = Date.now();
+    let endRaw = 0;
+    try { endRaw = Number(sessionStorage.getItem(`premium.timer.endTs.${id}`) || '0'); } catch {}
+    if (endRaw && endRaw > now) {
+      setTimeRemaining(Math.max(0, Math.floor((endRaw - now) / 1000)));
+    } else if (timerEnabled) {
+      try { sessionStorage.setItem(`premium.timer.endTs.${id}`, String(now + timeRemaining * 1000)); } catch {}
+    }
+  })();
+}, [isPremium]);
+
   useEffect(() => {
     const handler = (e: any) => {
       const enabled = !!e.detail;
@@ -448,21 +465,40 @@ useEffect(() => {
   return () => clearInterval(interval);
 }, [isTimerRunning, timeRemaining, isTimerCanceled]);
 
-// Persist guest timer remaining periodically and clear on end
+// Persist timer remaining periodically for both tiers
 const timeRef = useRef(timeRemaining);
 useEffect(() => { timeRef.current = timeRemaining; }, [timeRemaining]);
 useEffect(() => {
-  if (isPremium) return;
-  const iv = setInterval(() => {
-    try { guestSession.saveRemaining(timeRef.current); } catch {}
+  const iv = setInterval(async () => {
+    try {
+      if (!isPremium) {
+        guestSession.saveRemaining(timeRef.current);
+      } else {
+        let id = userInfo.name || 'premium';
+        try { const { data: { user } } = await supabase.auth.getUser(); if (user?.id) id = user.id; } catch {}
+        sessionStorage.setItem(`premium.timer.remaining.${id}`, String(timeRef.current));
+      }
+    } catch {}
   }, 5000);
   return () => clearInterval(iv);
-}, [isPremium]);
+}, [isPremium, userInfo.name]);
 
 useEffect(() => {
-  if (!isPremium && timeRemaining === 0) {
-    try { guestSession.clearAll(); } catch {}
-    try { StorySessionCache.clearCachedSession('guest'); } catch {}
+  if (timeRemaining === 0) {
+    (async () => {
+      try {
+        if (!isPremium) {
+          guestSession.clearAll();
+          StorySessionCache.clearCachedSession('guest');
+        } else {
+          let id = userInfo.name || 'premium';
+          try { const { data: { user } } = await supabase.auth.getUser(); if (user?.id) id = user.id; } catch {}
+          sessionStorage.removeItem(`premium.timer.endTs.${id}`);
+          sessionStorage.removeItem(`premium.timer.remaining.${id}`);
+          StorySessionCache.clearCachedSession(id);
+        }
+      } catch {}
+    })();
   }
 }, [isPremium, timeRemaining]);
 
@@ -532,6 +568,34 @@ const initializeStory = async () => {
       expertGradeLevel: currentDifficulty === 'expert' ? expertGradeLevel : undefined,
     } as UserInfo;
     if (isPremium) {
+      // Premium: restore from cache if available
+      try {
+        let cacheId = userInfo.name || 'premium';
+        try { const { data: { user } } = await supabase.auth.getUser(); if (user?.id) cacheId = user.id; } catch {}
+        const cached = StorySessionCache.getCachedStorySession(cacheId);
+        if (cached && cached.pages?.length) {
+          console.log('♻️ Restoring premium story from cache');
+          setStory(cached.pages);
+          setCurrentPage(Math.min(cached.currentPage || 0, Math.max(0, cached.pages.length - 1)));
+          setIsStoryComplete(!!cached.isComplete);
+          setStoryTitle(`${userInfo.name}'s Live Adventure`);
+          const ctx: LiveGenerationContext = {
+            userInfo: effectiveUser,
+            difficulty: currentDifficulty,
+            expertGradeLevel: currentDifficulty === 'expert' ? expertGradeLevel : undefined,
+            storyContext: [...cached.pages],
+            currentPage: cached.currentPage || 0,
+            totalExpectedPages: Math.max(cached.pages.length + 1, 6),
+            characters: [userInfo.name, userInfo.favoriteAnimal || 'friend'],
+            openEnded: true,
+          };
+          setLiveContext(ctx);
+          const srcPremium = (window as any).__LAST_STORY_SOURCE__ || 'cached';
+          setStorySource(srcPremium);
+          return; // Early return
+        }
+      } catch (e) { console.warn('Failed to restore premium cached session', e); }
+
       // Premium: Live generation - start with first page
       console.log('🎯 Premium user: Starting live generation');
       const result = await LiveGenerationService.generateFirstPage(effectiveUser);
@@ -552,6 +616,20 @@ const initializeStory = async () => {
       const srcPremium = (window as any).__LAST_STORY_SOURCE__ || 'unknown';
       console.log('🧭 UI SOURCE', { source: srcPremium, tier: 'premium' });
       setStorySource(srcPremium);
+      
+      // Persist premium story start
+      try {
+        let cacheId = userInfo.name || 'premium';
+        try { const { data: { user } } = await supabase.auth.getUser(); if (user?.id) cacheId = user.id; } catch {}
+        StorySessionCache.cacheStorySession(
+          cacheId,
+          currentDifficulty as any,
+          [result.content],
+          [{ prompt: '' }],
+          0,
+          { isPremium: true, sessionStartTime }
+        );
+      } catch (e) { console.warn('Story cache failed (premium start)', e); }
       
     } else {
       // Free: try to restore from cache first
@@ -787,27 +865,44 @@ const initializeStory = async () => {
     setCurrentPage(Math.max(0, currentPage - 1));
   };
 
-  useEffect(() => {
-    const onNavigate = (e: Event) => {
+useEffect(() => {
+  // Persist current page for both tiers
+  if (story.length > 0) {
+    (async () => {
       try {
-        const detail = (e as CustomEvent<{ direction: 'next' | 'prev' }>).detail;
-        if (detail?.direction === 'next') {
-          handleNext();
-        } else if (detail?.direction === 'prev') {
-          handlePrevious();
-        }
+        const cacheId = isPremium ? ((await supabase.auth.getUser()).data.user?.id || userInfo.name || 'premium') : 'guest';
+        StorySessionCache.updateCurrentPage(cacheId, currentPage);
       } catch {}
-    };
-    window.addEventListener('reader:navigate', onNavigate as EventListener);
-    return () => window.removeEventListener('reader:navigate', onNavigate as EventListener);
-  }, [handleNext, handlePrevious]);
+    })();
+  }
+}, [currentPage, isPremium, story.length, userInfo.name]);
 
 useEffect(() => {
-  // Persist current page for guest sessions
-  if (!isPremium && story.length > 0) {
-    try { StorySessionCache.updateCurrentPage('guest', currentPage); } catch {}
+  const onNavigate = (e: Event) => {
+    try {
+      const detail = (e as CustomEvent<{ direction: 'next' | 'prev' }>).detail;
+      if (detail?.direction === 'next') {
+        handleNext();
+      } else if (detail?.direction === 'prev') {
+        handlePrevious();
+      }
+    } catch {}
+  };
+  window.addEventListener('reader:navigate', onNavigate as EventListener);
+  return () => window.removeEventListener('reader:navigate', onNavigate as EventListener);
+}, [handleNext, handlePrevious]);
+
+useEffect(() => {
+  // Persist full pages array for resume
+  if (story.length > 0) {
+    (async () => {
+      try {
+        const id = isPremium ? ((await supabase.auth.getUser()).data.user?.id || userInfo.name || 'premium') : 'guest';
+        StorySessionCache.updatePages(id, story, currentPage);
+      } catch {}
+    })();
   }
-}, [currentPage, isPremium, story.length]);
+}, [story, currentPage, isPremium, userInfo.name]);
   
   const handleWordInteraction = () => {
     setWordsInteracted(prev => prev + 1);
