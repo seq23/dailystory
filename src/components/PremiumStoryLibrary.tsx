@@ -282,8 +282,7 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
             </Button>
           </CardContent>
         </Card>
-      ) : (
-        {isDeck ? (
+) : isDeck ? (
           <div className="overflow-hidden" ref={emblaRef}>
             <div className="flex gap-4">
               {savedStories.map((story) => (
@@ -500,8 +499,6 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
               );
             })()}
           </div>
-        )}
-
       )}
     </div>
   );
