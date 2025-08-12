@@ -36,8 +36,6 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
 
   const [showSparkle, setShowSparkle] = React.useState(false);
   const [showCoach, setShowCoach] = React.useState(false);
-  const SEEN_KEY = "newstory_cta_seen_v3";
-  const prevPremiumRef = React.useRef<boolean>(isPremium);
   const btnRef = React.useRef<HTMLButtonElement>(null);
   const baseIcon = size === "sm" ? 20 : size === "lg" ? 34 : 28;
   const [iconPx, setIconPx] = React.useState<number>(baseIcon);
@@ -46,26 +44,17 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
     if (!isPremium) return;
     try {
       const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
-      const justBecamePremium = !prevPremiumRef.current && isPremium;
-      if (justBecamePremium) {
-        sessionStorage.removeItem(SEEN_KEY);
-      }
-      const seen = sessionStorage.getItem(SEEN_KEY);
-      if (!seen) {
-        sessionStorage.setItem(SEEN_KEY, "1");
-        setShowCoach(true);
-        if (!reduceMotion) setShowSparkle(true);
-        timersRef.current.coach = window.setTimeout(() => setShowCoach(false), 7000);
-        timersRef.current.sparkle = window.setTimeout(() => setShowSparkle(false), 2000);
-      }
-      prevPremiumRef.current = isPremium;
-      return () => {
-        if (timersRef.current.coach) clearTimeout(timersRef.current.coach);
-        if (timersRef.current.sparkle) clearTimeout(timersRef.current.sparkle);
-      };
+      setShowCoach(true);
+      if (!reduceMotion) setShowSparkle(true);
+      timersRef.current.coach = window.setTimeout(() => setShowCoach(false), 7000);
+      timersRef.current.sparkle = window.setTimeout(() => setShowSparkle(false), 2000);
     } catch {
       // no-op
     }
+    return () => {
+      if (timersRef.current.coach) clearTimeout(timersRef.current.coach);
+      if (timersRef.current.sparkle) clearTimeout(timersRef.current.sparkle);
+    };
   }, [isPremium]);
 
   // Idle sparkle nudge after periods of inactivity (desktop/tab visible, premium only)
@@ -184,6 +173,7 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
             ? "min-h-[36px] min-w-[36px] rounded-full p-0 bg-gradient-primary text-primary-foreground"
             : "bg-gradient-primary text-primary-foreground rounded-full",
           !iconOnly && "hover-scale",
+          !iconOnly && "px-3 md:px-4",
           wandPulse && "ring-2 ring-primary/40",
           isLocked && "opacity-50 cursor-not-allowed",
           className
@@ -211,8 +201,8 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
             />
           </span>
         ) : (
-          <span className="relative inline-grid grid-cols-2 items-center w-full min-w-0">
-            <span className="col-span-1 flex items-center justify-center pr-1 md:pr-2">
+          <span className="relative inline-grid grid-cols-[auto,1fr] items-center w-full min-w-0">
+            <span className="col-span-1 flex items-center justify-center pr-1 md:pr-2" style={{ width: iconPx }}>
               <MagicRefreshIcon
                 size={iconPx}
                 ringScale={0.92}
@@ -228,7 +218,7 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
                 wandClassName="text-current"
               />
             </span>
-            <span className="col-span-1 min-w-0 text-left truncate">{label}</span>
+            <span className="col-span-1 min-w-0 text-left whitespace-nowrap">{label}</span>
           </span>
         )}
       </Button>
