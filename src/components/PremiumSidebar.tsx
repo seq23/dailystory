@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
 
 import { 
   BookOpen,
@@ -23,7 +24,10 @@ import {
   Sparkles,
   Clock,
   Bookmark,
-  Trophy
+  Trophy,
+  X,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import type { UserInfo } from "@/types";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -72,7 +76,7 @@ const sidebarItems = [
 ];
 
 export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium }: PremiumSidebarProps) => {
-  const { state } = useSidebar();
+  const { state, toggleSidebar } = useSidebar();
   const collapsed = state === "collapsed";
   const { isMobile } = useIsMobile();
   const effectiveCollapsed = collapsed && !isMobile;
@@ -131,7 +135,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
   return (
     <Sidebar className={`border-r bg-background/95 backdrop-blur-sm ${effectiveCollapsed ? "w-16" : "w-64"}`} collapsible="icon">
       {/* Header */}
-      <div className="p-4 border-b">
+      <div className="p-4 border-b relative">
         <div className="flex items-center gap-3">
           {!effectiveCollapsed && (
             <>
@@ -148,6 +152,27 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
                 )}
               </div>
             </>
+          )}
+          
+          {isPremium && (
+            <Button
+              aria-label={isMobile ? "Close navigation" : state === "expanded" ? "Collapse sidebar" : "Expand sidebar"}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleSidebar();
+              }}
+              size="icon"
+              variant="secondary"
+              className="absolute top-2 right-2 rounded-full shadow-sm ring-1 ring-border h-8 w-8"
+            >
+              {isMobile ? (
+                <X className="h-4 w-4" />
+              ) : state === "expanded" ? (
+                <ChevronLeft className="h-4 w-4" />
+              ) : (
+                <ChevronRight className="h-4 w-4" />
+              )}
+            </Button>
           )}
           
         </div>
