@@ -74,8 +74,8 @@ export const VoiceCommandController = forwardRef<VoiceCommandControllerHandle, V
   const startRecording = useCallback(async () => {
     try {
       // Respect global disable flag and avoid double-starts
-      if ((window as any).__t2r_vc_user_disabled === true) {
-        console.log('Headless VC: start ignored (user disabled)');
+      if ((window as any).__t2r_vc_user_disabled === true || (window as any).__t2r_voice_force_off === true) {
+        console.log('Headless VC: start ignored (user disabled/forced off)');
         return;
       }
       if (mediaRecorderRef.current && (mediaRecorderRef.current.state === 'recording')) {

@@ -278,12 +278,14 @@ const toggleVoiceCommands = () => {
     // Turn OFF: set flags first to prevent any late onstart from flipping UI back
     try { sessionStorage.setItem('t2r_voice_commands', '0'); } catch {}
     ;(window as any).__t2r_vc_user_disabled = true;
+    ;(window as any).__t2r_voice_force_off = true;
     voiceEnabledRef.current = false;
     setVoiceCommandsEnabled(false);
     emitStatus('idle');
     setVcStatus('idle');
     setVcLevel(0);
     try { window.dispatchEvent(new CustomEvent('voice:level', { detail: { level: 0 } })); } catch {}
+    try { window.dispatchEvent(new CustomEvent('voice:stop')); } catch {}
     if (restartTimeoutRef.current) {
       clearTimeout(restartTimeoutRef.current);
       restartTimeoutRef.current = null;
@@ -301,6 +303,7 @@ const toggleVoiceCommands = () => {
   if (useWebSpeech) {
     try { sessionStorage.setItem('t2r_voice_commands', '1'); } catch {}
     ;(window as any).__t2r_vc_user_disabled = false;
+    ;(window as any).__t2r_voice_force_off = false;
     setVoiceCommandsEnabled(true);
     voiceEnabledRef.current = true;
     emitStatus('listening');
@@ -312,6 +315,7 @@ const toggleVoiceCommands = () => {
   // Headless Whisper path (no modal)
   try { sessionStorage.setItem('t2r_voice_commands', '1'); } catch {}
   ;(window as any).__t2r_vc_user_disabled = false;
+  ;(window as any).__t2r_voice_force_off = false;
   setVoiceCommandsEnabled(true);
   voiceEnabledRef.current = true;
   emitStatus('listening');

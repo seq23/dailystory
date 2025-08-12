@@ -320,9 +320,9 @@ export class EnhancedAudioService {
   startVoiceCommands(): void {
     if (!this.speechRecognition) return;
 
-    // Respect global user-disabled flag
-    if ((window as any).__t2r_vc_user_disabled === true) {
-      console.log('Voice: start ignored because user disabled flag is set');
+    // Respect global user-disabled flag and global force-off flag
+    if ((window as any).__t2r_vc_user_disabled === true || (window as any).__t2r_voice_force_off === true) {
+      console.log('Voice: start ignored because user disabled/forced off flag is set');
       return;
     }
 
@@ -359,6 +359,7 @@ export class EnhancedAudioService {
     // User explicitly turned OFF voice commands
     this.voiceListening = false;
     (window as any).__t2r_vc_user_disabled = true;
+    (window as any).__t2r_voice_force_off = true;
 
     // Cancel any pending restarts
     if (this.restartTimer) {
@@ -727,7 +728,8 @@ export class EnhancedAudioService {
       this.speechRecognition.onstart = () => {
         // Guard: if user toggled OFF or service not supposed to listen, abort immediately
         const userDisabled = (window as any).__t2r_vc_user_disabled === true;
-        if (!this.voiceListening || userDisabled) {
+        const forcedOff = (window as any).__t2r_voice_force_off === true;
+        if (!this.voiceListening || userDisabled || forcedOff) {
           try { this.speechRecognition.abort?.(); } catch {}
           try { this.speechRecognition.stop(); } catch {}
           this.recognitionActive = false;
@@ -749,14 +751,16 @@ export class EnhancedAudioService {
         this.emitVoiceStatus('idle');
         this.stopMicMeter();
         const userDisabled = (window as any).__t2r_vc_user_disabled === true;
-        if (this.voiceListening && !userDisabled) {
+        const forcedOff = (window as any).__t2r_voice_force_off === true;
+        if (this.voiceListening && !userDisabled && !forcedOff) {
           if (this.restartTimer) {
             clearTimeout(this.restartTimer);
             this.restartTimer = null;
           }
           this.restartTimer = window.setTimeout(() => {
             const disabled = (window as any).__t2r_vc_user_disabled === true;
-            if (this.voiceListening && !disabled && !this.recognitionActive && !this.recognitionStarting) {
+            const force = (window as any).__t2r_voice_force_off === true;
+            if (this.voiceListening && !disabled && !force && !this.recognitionActive && !this.recognitionStarting) {
               try {
                 this.recognitionStarting = true;
                 this.speechRecognition.start();
@@ -775,14 +779,16 @@ export class EnhancedAudioService {
         this.emitVoiceStatus('idle');
         this.stopMicMeter();
         const userDisabled = (window as any).__t2r_vc_user_disabled === true;
-        if (this.voiceListening && !userDisabled) {
+        const forcedOff = (window as any).__t2r_voice_force_off === true;
+        if (this.voiceListening && !userDisabled && !forcedOff) {
           if (this.restartTimer) {
             clearTimeout(this.restartTimer);
             this.restartTimer = null;
           }
           this.restartTimer = window.setTimeout(() => {
             const disabled = (window as any).__t2r_vc_user_disabled === true;
-            if (this.voiceListening && !disabled && !this.recognitionActive && !this.recognitionStarting) {
+            const force = (window as any).__t2r_voice_force_off === true;
+            if (this.voiceListening && !disabled && !force && !this.recognitionActive && !this.recognitionStarting) {
               try {
                 this.recognitionStarting = true;
                 this.speechRecognition.start();
@@ -797,7 +803,8 @@ export class EnhancedAudioService {
 
       this.speechRecognition.onresult = (event: any) => {
         const userDisabled = (window as any).__t2r_vc_user_disabled === true;
-        if (!this.voiceListening || userDisabled) {
+        const forcedOff = (window as any).__t2r_voice_force_off === true;
+        if (!this.voiceListening || userDisabled || forcedOff) {
           this.emitVoiceStatus('idle');
           return;
         }
