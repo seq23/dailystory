@@ -16,6 +16,16 @@ if (!(global as any).btoa) {
   (global as any).btoa = (str: string) => (globalThis as any).Buffer.from(str, 'binary').toString('base64');
 }
 
+// Polyfill URL.createObjectURL/revokeObjectURL for tests
+if (typeof globalThis.URL === 'undefined') {
+  (globalThis as any).URL = {} as any;
+}
+if (!(globalThis as any).URL.createObjectURL) {
+  (globalThis as any).URL.createObjectURL = vi.fn(() => 'blob:mock-url');
+}
+if (!(globalThis as any).URL.revokeObjectURL) {
+  (globalThis as any).URL.revokeObjectURL = vi.fn();
+}
 // Minimal SpeechSynthesisUtterance mock
 if (typeof (globalThis as any).SpeechSynthesisUtterance === 'undefined') {
   class MockUtterance {
