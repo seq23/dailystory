@@ -43,11 +43,17 @@ if (typeof window !== 'undefined' && !(window as any).speechSynthesis) {
       if (this._lastUtterance && this._lastUtterance.onend) {
         try { this._lastUtterance.onend(); } catch {}
       }
+      this._lastUtterance = null;
     }),
     speak: vi.fn(function (this: any, utterance?: any) {
       this._lastUtterance = utterance;
       this.speaking = true;
       try { utterance?.onstart?.(); } catch {}
+      // Auto-complete to simulate end of speech in tests
+      queueMicrotask(() => {
+        try { utterance?.onend?.(); } catch {}
+        this.speaking = false;
+      });
     }),
     getVoices: () => [
       { name: 'Test EN', lang: 'en-US' },
