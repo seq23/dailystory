@@ -17,6 +17,7 @@ import { ChildManager } from "@/components/ChildManager";
 import { useTranslation } from "react-i18next";
 import { TagInput } from "@/components/ui/tag-input";
 import EnhancedSubscriptionManager from "@/services/enhancedSubscriptionManager";
+import { useChildProfiles } from "@/hooks/useChildProfiles";
 interface ParentDashboardProps {
   userInfo: UserInfo;
   isVisible: boolean;
@@ -69,6 +70,7 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
   const [activeChildId, setActiveChildId] = useState<string | null>(null);
   const [storyPrefs, setStoryPrefs] = useState<any>({});
 const [isPremiumUser, setIsPremiumUser] = useState<boolean>(false);
+const { activeChild } = useChildProfiles();
 useEffect(() => {
   let mounted = true;
   (async () => {
@@ -522,7 +524,7 @@ setIsPremiumUser(prev => prev || !!(data as any)?.is_premium);
                     {twSaving ? 'Saving...' : 'Save list'}
                   </Button>
                 </div>
-                <div className="text-xs text-muted-foreground">Applies to: {activeChildId ? `Child ${activeChildId}` : 'Default'} • Max 50 stored; up to 20 used per story.</div>
+                <div className="text-xs text-muted-foreground">Applies to: {activeChild ? activeChild.display_name : 'Default'} • Max 50 stored; up to 20 used per story.</div>
               </CardContent>
             </Card>
 
