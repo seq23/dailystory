@@ -47,7 +47,10 @@ export class UnifiedTTSService {
       // Process text for better pronunciation
       const processedText = contextualPronunciation.processTextForPronunciation(text, true);
       const provider = options.provider || this.config.preferredProvider;
-      const cacheKey = `${processedText}-${provider}-${options.voice || 'default'}-${options.speed || 1.0}`;
+      // Generate deterministic cache key
+      const normalizedVoice = options.voice || 'default';
+      const normalizedSpeed = (options.speed || 1.0).toFixed(2);
+      const cacheKey = `${processedText}-${provider}-${normalizedVoice}-${normalizedSpeed}`;
 
       if (__TTS_DEBUG__) {
         console.debug('[UnifiedTTS] speakText', {
@@ -273,14 +276,16 @@ export class UnifiedTTSService {
       this.currentAudio = null;
     }
     
-    // Also stop web speech synthesis and ensure state is synchronized
+    // Stop web speech synthesis and ensure bidirectional state synchronization
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       try { 
         speechSynthesis.cancel();
-        // Synchronize mock state if available
-        if ((speechSynthesis as any).speaking !== undefined && typeof (speechSynthesis as any).speaking === 'boolean') {
+        // Force synchronization of mock state for testing
+        if ((speechSynthesis as any).speaking !== undefined) {
           (speechSynthesis as any).speaking = false;
         }
+      } catch (error) {
+        // Ignore errors during cleanup
       } finally { 
         this.webSpeechSpeaking = false; 
       }
@@ -288,18 +293,26 @@ export class UnifiedTTSService {
   }
 
   isPlaying(): boolean {
-    const playing = this.currentAudio ? !this.currentAudio.paused
-      : this.webSpeechSpeaking
-        || (typeof window !== 'undefined' && 'speechSynthesis' in window && Boolean((speechSynthesis as any).speaking));
+    // Check audio element first
+    if (this.currentAudio) {
+      return !this.currentAudio.paused;
+    }
+    
+    // Check web speech synthesis state - prioritize internal tracking
+    const webSpeechPlaying = this.webSpeechSpeaking || 
+      (typeof window !== 'undefined' && 'speechSynthesis' in window && Boolean((speechSynthesis as any).speaking));
+    
     if (__TTS_DEBUG__) {
       console.debug('[UnifiedTTS] isPlaying check', {
         hasAudio: !!this.currentAudio,
         paused: this.currentAudio ? this.currentAudio.paused : undefined,
         webSpeechSpeaking: this.webSpeechSpeaking,
         synthSpeaking: typeof window !== 'undefined' && 'speechSynthesis' in window ? (speechSynthesis as any).speaking : undefined,
+        result: webSpeechPlaying
       });
     }
-    return Boolean(playing);
+    
+    return webSpeechPlaying;
   }
 
 

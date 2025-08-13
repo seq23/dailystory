@@ -16,14 +16,18 @@ const createMockSpeechSynthesis = () => {
   let mockSpeaking = false;
   let lastUtterance: any = null;
 
-  return {
+  const mockSynthesis = {
     get speaking() { return mockSpeaking; },
-    set speaking(value: boolean) { mockSpeaking = value; },
+    set speaking(value: boolean) { 
+      mockSpeaking = value; 
+    },
     
     cancel: vi.fn(() => {
       mockSpeaking = false;
       if (lastUtterance?.onend) {
-        try { lastUtterance.onend(); } catch {}
+        try { 
+          setTimeout(() => lastUtterance.onend(), 0); 
+        } catch {}
       }
       lastUtterance = null;
     }),
@@ -32,15 +36,19 @@ const createMockSpeechSynthesis = () => {
       lastUtterance = utterance;
       mockSpeaking = true;
       if (utterance?.onstart) {
-        try { utterance.onstart(); } catch {}
+        try { 
+          setTimeout(() => utterance.onstart(), 0); 
+        } catch {}
       }
-      // Synchronous completion for deterministic testing
+      // Asynchronous completion with proper state management
       setTimeout(() => {
-        if (utterance?.onend) {
-          try { utterance.onend(); } catch {}
+        if (lastUtterance === utterance && utterance?.onend) {
+          try { 
+            utterance.onend(); 
+            mockSpeaking = false;
+          } catch {}
         }
-        mockSpeaking = false;
-      }, 0);
+      }, 10);
     }),
     
     getVoices: () => [{ name: 'Test EN', lang: 'en-US' }],
@@ -49,10 +57,13 @@ const createMockSpeechSynthesis = () => {
       lastUtterance = null;
     }
   };
+
+  return mockSynthesis;
 };
 
 const createMockAudio = () => {
-  return function MockAudio(this: any) {
+  return function MockAudio(this: any, src?: string) {
+    this.src = src || '';
     this.paused = true;
     this.currentTime = 0;
     this.volume = 1;
@@ -61,8 +72,16 @@ const createMockAudio = () => {
     this.onerror = null;
     this._listeners = {} as Record<string, Function[]>;
     
-    this.play = vi.fn(() => {
+    this.play = vi.fn(async () => {
       this.paused = false;
+      // Simulate async playback with proper timing
+      await new Promise(resolve => setTimeout(resolve, 1));
+      if (this.onended) {
+        setTimeout(() => {
+          this.paused = true;
+          this.onended?.();
+        }, 10);
+      }
       return Promise.resolve();
     });
     
@@ -136,30 +155,34 @@ vi.mock('@/services/contextualPronunciation', () => ({
 describe('UnifiedTTSService', () => {
   let tts: UnifiedTTSService;
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    // Clear all mocks first
+    vi.clearAllMocks();
+    
     // Create fresh mock instances for each test
     mockInvoke = createMockInvoke();
     mockSpeechSynthesis = createMockSpeechSynthesis();
     mockProcessTextForPronunciation = vi.fn((text: string) => text);
 
-    // Setup window mocks with fresh instances
+    // Setup window mocks with fresh instances - ensure they're available before service creation
     if (typeof window !== 'undefined') {
       (window as any).speechSynthesis = mockSpeechSynthesis;
       (window as any).Audio = createMockAudio();
     }
 
-    // Clear all mocks
-    vi.clearAllMocks();
-
-    // Create fresh service instance with testing reset
+    // Create fresh service instance with testing configuration
     tts = new UnifiedTTSService({ 
       mobileOptimized: false, 
       fallbackToWebSpeech: true, 
       cacheEnabled: true 
     });
     
-    // Reset all internal state
+    // Reset all internal state and ensure clean state
     (tts as any)._resetForTesting();
+    mockSpeechSynthesis._reset();
+    
+    // Allow for any async operations to complete
+    await new Promise(resolve => setTimeout(resolve, 1));
   });
 
   describe('Audio Generation', () => {
@@ -188,19 +211,28 @@ describe('UnifiedTTSService', () => {
     });
 
     it('caches generated audio using spy-based verification', async () => {
+      // Set up spies before any operations
       const generateAudioSpy = vi.spyOn(tts as any, 'generateAudio');
       const playAudioSpy = vi.spyOn(tts as any, 'playAudio').mockResolvedValue(undefined);
       
-      const options = { provider: 'openai' as const, voice: 'nova', speed: 1 };
+      // Use exact same options to ensure consistent cache key generation
+      const options = { provider: 'openai' as const, voice: 'nova', speed: 1.00 };
+      const text = 'cache test';
+      
+      // Verify initial state
+      expect(tts.getCacheSize()).toBe(0);
       
       // First call should generate audio
-      await tts.speakText('cache test', options);
+      await tts.speakText(text, options);
       expect(generateAudioSpy).toHaveBeenCalledTimes(1);
       expect(tts.getCacheSize()).toBe(1);
       
-      // Second call with same parameters should use cache - verify no additional generation
-      await tts.speakText('cache test', options);
-      expect(generateAudioSpy).toHaveBeenCalledTimes(1); // Still only 1 call
+      // Reset spy call count and verify second call uses cache
+      generateAudioSpy.mockClear();
+      
+      // Second call with identical parameters should use cache
+      await tts.speakText(text, options);
+      expect(generateAudioSpy).toHaveBeenCalledTimes(0); // No additional generation calls
       expect(tts.getCacheSize()).toBe(1); // Cache size should remain 1
       
       // But playAudio should be called both times
@@ -243,7 +275,7 @@ describe('UnifiedTTSService', () => {
       expect((tts as any).currentAudio).toBeNull();
     });
 
-    it('tracks playing state correctly with synchronized mocks', () => {
+    it('tracks playing state correctly with synchronized mocks', async () => {
       // Verify initial state
       expect(tts.isPlaying()).toBe(false);
       expect(mockSpeechSynthesis.speaking).toBe(false);
@@ -254,6 +286,9 @@ describe('UnifiedTTSService', () => {
       
       // Stop audio should reset both service and mock state
       tts.stopCurrentAudio();
+      
+      // Allow async operations to complete
+      await new Promise(resolve => setTimeout(resolve, 5));
       
       // Verify both service and mock state are reset
       expect(mockSpeechSynthesis.speaking).toBe(false);
@@ -382,10 +417,11 @@ describe('UnifiedTTSService', () => {
       const generateAudioSpy = vi.spyOn(tts as any, 'generateAudio');
       const playAudioSpy = vi.spyOn(tts as any, 'playAudio').mockResolvedValue(undefined);
       
-      const options = { provider: 'openai' as const };
+      const options = { provider: 'openai' as const, speed: 1.0 };
+      const text = 'cache clear test';
       
       // Generate and cache audio
-      await tts.speakText('cache clear test', options);
+      await tts.speakText(text, options);
       expect(generateAudioSpy).toHaveBeenCalledTimes(1);
       expect(tts.getCacheSize()).toBe(1);
       
@@ -393,9 +429,12 @@ describe('UnifiedTTSService', () => {
       tts.clearCache();
       expect(tts.getCacheSize()).toBe(0);
       
+      // Reset spy for clean count
+      generateAudioSpy.mockClear();
+      
       // Should regenerate after cache clear
-      await tts.speakText('cache clear test', options);
-      expect(generateAudioSpy).toHaveBeenCalledTimes(2);
+      await tts.speakText(text, options);
+      expect(generateAudioSpy).toHaveBeenCalledTimes(1);
       
       generateAudioSpy.mockRestore();
       playAudioSpy.mockRestore();
@@ -477,7 +516,7 @@ describe('UnifiedTTSService', () => {
       expect(tts.getCacheSize()).toBe(0);
     });
 
-    it('synchronizes web speech speaking state properly', () => {
+    it('synchronizes web speech speaking state properly', async () => {
       // Initial state
       expect(tts.isPlaying()).toBe(false);
       expect((tts as any).webSpeechSpeaking).toBe(false);
@@ -485,12 +524,19 @@ describe('UnifiedTTSService', () => {
       // Simulate fallback to web speech
       (tts as any).fallbackToWebSpeech('test', {});
       
+      // Allow async speech synthesis to start
+      await new Promise(resolve => setTimeout(resolve, 5));
+      
       // Should update internal tracking
       expect((tts as any).webSpeechSpeaking).toBe(true);
       expect(tts.isPlaying()).toBe(true);
       
       // Stop should reset both
       tts.stopCurrentAudio();
+      
+      // Allow async operations to complete
+      await new Promise(resolve => setTimeout(resolve, 5));
+      
       expect((tts as any).webSpeechSpeaking).toBe(false);
       expect(tts.isPlaying()).toBe(false);
     });
