@@ -1,4 +1,4 @@
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { vi, describe, it, expect, beforeEach, beforeAll } from 'vitest';
 import { UnifiedTTSService } from '@/services/unifiedTTSService';
 
 const base64Mp3 = 'SUQzBAAAAAAA'; // tiny placeholder for base64 mp3
@@ -15,6 +15,59 @@ vi.mock('@/integrations/supabase/client', () => ({
     functions: { invoke: mockInvoke as any }
   }
 }));
+
+// Local safety polyfills (in case global setup isn't applied)
+beforeAll(() => {
+  if (typeof (globalThis as any).SpeechSynthesisUtterance === 'undefined') {
+    class MockUtterance {
+      text: string;
+      rate = 1;
+      pitch = 1;
+      voice: any = null;
+      onstart?: () => void;
+      onend?: () => void;
+      onerror?: (e?: any) => void;
+      constructor(text: string) { this.text = text; }
+    }
+    ;(globalThis as any).SpeechSynthesisUtterance = MockUtterance as any;
+  }
+  if (typeof window !== 'undefined' && !(window as any).speechSynthesis) {
+    const synth: any = {
+      speaking: false,
+      _lastUtterance: null as any,
+      cancel: vi.fn(function (this: any) {
+        this.speaking = false;
+        if (this._lastUtterance && this._lastUtterance.onend) {
+          try { this._lastUtterance.onend(); } catch {}
+        }
+        this._lastUtterance = null;
+      }),
+      speak: vi.fn(function (this: any, utterance?: any) {
+        this._lastUtterance = utterance;
+        this.speaking = true;
+        try { utterance?.onstart?.(); } catch {}
+        queueMicrotask(() => {
+          try { utterance?.onend?.(); } catch {}
+          this.speaking = false;
+        });
+      }),
+      getVoices: () => [{ name: 'Test EN', lang: 'en-US' }],
+    };
+    (window as any).speechSynthesis = synth as any;
+  }
+  if (typeof window !== 'undefined' && !(window as any).Audio) {
+    (window as any).Audio = function (this: any) {
+      this.paused = true;
+      this.currentTime = 0;
+      this.volume = 1;
+      this._listeners = {} as Record<string, Function[]>;
+      this.play = vi.fn(() => { this.paused = false; return Promise.resolve(); });
+      this.pause = vi.fn(() => { this.paused = true; (this._listeners['pause'] || []).forEach((fn: any) => fn()); });
+      this.addEventListener = (ev: string, fn: any) => { (this._listeners[ev] ||= []).push(fn); };
+      this.removeEventListener = (ev: string, fn: any) => { this._listeners[ev] = (this._listeners[ev] || []).filter((f: any) => f !== fn); };
+    } as any;
+  }
+});
 
 describe('UnifiedTTSService', () => {
   let tts: UnifiedTTSService;
