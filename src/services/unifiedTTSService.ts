@@ -273,9 +273,17 @@ export class UnifiedTTSService {
       this.currentAudio = null;
     }
     
-    // Also stop web speech synthesis
+    // Also stop web speech synthesis and ensure state is synchronized
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      try { speechSynthesis.cancel(); } finally { this.webSpeechSpeaking = false; }
+      try { 
+        speechSynthesis.cancel();
+        // Synchronize mock state if available
+        if ((speechSynthesis as any).speaking !== undefined && typeof (speechSynthesis as any).speaking === 'boolean') {
+          (speechSynthesis as any).speaking = false;
+        }
+      } finally { 
+        this.webSpeechSpeaking = false; 
+      }
     }
   }
 

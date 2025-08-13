@@ -196,10 +196,12 @@ describe('UnifiedTTSService', () => {
       // First call should generate audio
       await tts.speakText('cache test', options);
       expect(generateAudioSpy).toHaveBeenCalledTimes(1);
+      expect(tts.getCacheSize()).toBe(1);
       
-      // Second call with same parameters should use cache
+      // Second call with same parameters should use cache - verify no additional generation
       await tts.speakText('cache test', options);
-      expect(generateAudioSpy).toHaveBeenCalledTimes(1); // No additional calls
+      expect(generateAudioSpy).toHaveBeenCalledTimes(1); // Still only 1 call
+      expect(tts.getCacheSize()).toBe(1); // Cache size should remain 1
       
       // But playAudio should be called both times
       expect(playAudioSpy).toHaveBeenCalledTimes(2);
@@ -252,8 +254,10 @@ describe('UnifiedTTSService', () => {
       
       // Stop audio should reset both service and mock state
       tts.stopCurrentAudio();
-      expect(tts.isPlaying()).toBe(false);
+      
+      // Verify both service and mock state are reset
       expect(mockSpeechSynthesis.speaking).toBe(false);
+      expect(tts.isPlaying()).toBe(false);
     });
 
     it('tracks playing state with audio element', () => {
