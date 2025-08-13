@@ -16,6 +16,7 @@ import { ChildSwitcher } from "@/components/ChildSwitcher";
 import { ChildManager } from "@/components/ChildManager";
 import { useTranslation } from "react-i18next";
 import { TagInput } from "@/components/ui/tag-input";
+import EnhancedSubscriptionManager from "@/services/enhancedSubscriptionManager";
 interface ParentDashboardProps {
   userInfo: UserInfo;
   isVisible: boolean;
@@ -67,7 +68,21 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
   const [prefsRowId, setPrefsRowId] = useState<string | null>(null);
   const [activeChildId, setActiveChildId] = useState<string | null>(null);
   const [storyPrefs, setStoryPrefs] = useState<any>({});
-  const [isPremiumUser, setIsPremiumUser] = useState<boolean>(false);
+const [isPremiumUser, setIsPremiumUser] = useState<boolean>(false);
+useEffect(() => {
+  let mounted = true;
+  (async () => {
+    try {
+      const winPremium = (window as any)?.__IS_PREMIUM;
+      const enhanced = await EnhancedSubscriptionManager.isPremiumUser().catch(() => false);
+      const val = Boolean(typeof winPremium !== 'undefined' ? winPremium : enhanced);
+      if (mounted) setIsPremiumUser(val);
+    } catch {
+      if (mounted) setIsPremiumUser(Boolean((window as any)?.__IS_PREMIUM) || false);
+    }
+  })();
+  return () => { mounted = false; };
+}, []);
   useEffect(() => {
     (async () => {
       try {
@@ -124,7 +139,7 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
         if (error) { console.warn('Prefs fetch failed', error); return; }
         setPrefsRowId((data as any)?.id ?? null);
         setActiveChildId((data as any)?.active_child_id ?? null);
-        setIsPremiumUser(!!(data as any)?.is_premium);
+setIsPremiumUser(prev => prev || !!(data as any)?.is_premium);
         const sp = ((data as any)?.story_preferences) || {};
         setStoryPrefs(sp);
         const lists = sp?.teacherWordLists || {};
@@ -154,7 +169,7 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
             .maybeSingle();
           setPrefsRowId((data as any)?.id ?? null);
           setActiveChildId((data as any)?.active_child_id ?? null);
-          setIsPremiumUser(!!(data as any)?.is_premium);
+          setIsPremiumUser(prev => prev || !!(data as any)?.is_premium);
           const sp = ((data as any)?.story_preferences) || {};
           setStoryPrefs(sp);
           const lists = sp?.teacherWordLists || {};
