@@ -1,6 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
 import { contextualPronunciation } from "./contextualPronunciation";
 
+const __TTS_DEBUG__ = (globalThis as any).__TTS_DEBUG__ === true;
+
 export type TTSVoice = 'alloy' | 'echo' | 'fable' | 'onyx' | 'nova' | 'shimmer';
 export type TTSProvider = 'openai' | 'elevenlabs' | 'browser';
 
@@ -46,15 +48,31 @@ export class UnifiedTTSService {
       const processedText = contextualPronunciation.processTextForPronunciation(text, true);
       const provider = options.provider || this.config.preferredProvider;
       const cacheKey = `${processedText}-${provider}-${options.voice || 'default'}-${options.speed || 1.0}`;
+
+      if (__TTS_DEBUG__) {
+        console.debug('[UnifiedTTS] speakText', {
+          text: processedText,
+          provider,
+          cacheKey,
+          cacheSize: this.audioCache.size,
+          cacheEnabled: this.config.cacheEnabled,
+        });
+      }
       
       let audioUrl = this.config.cacheEnabled ? this.audioCache.get(cacheKey) : null;
+      if (__TTS_DEBUG__) {
+        console.debug('[UnifiedTTS] cache lookup', { hit: !!audioUrl });
+      }
       
       if (!audioUrl) {
+        if (__TTS_DEBUG__) console.debug('[UnifiedTTS] generating audio', { provider });
         audioUrl = await this.generateAudio(processedText, provider, options);
         if (this.config.cacheEnabled && audioUrl) {
           this.audioCache.set(cacheKey, audioUrl);
+          if (__TTS_DEBUG__) console.debug('[UnifiedTTS] cache set', { cacheKey, cacheSize: this.audioCache.size });
         }
       }
+
 
       if (audioUrl) {
         await this.playAudio(audioUrl);
@@ -109,6 +127,7 @@ export class UnifiedTTSService {
   }
 
   private async generateOpenAIAudio(text: string, options: UnifiedTTSOptions): Promise<string> {
+    if (__TTS_DEBUG__) console.debug('[UnifiedTTS] OpenAI TTS invoke', { voice: this.mapToOpenAIVoice(options.voice, options.userInfo), speed: options.speed || 0.7 });
     const { data, error } = await supabase.functions.invoke('openai-tts', {
       body: {
         text,
@@ -123,10 +142,14 @@ export class UnifiedTTSService {
     // Convert base64 to blob
     const audioBuffer = Uint8Array.from(atob(data.audioContent), c => c.charCodeAt(0));
     const audioBlob = new Blob([audioBuffer], { type: 'audio/mpeg' });
-    return URL.createObjectURL(audioBlob);
+    const url = URL.createObjectURL(audioBlob);
+    if (__TTS_DEBUG__) console.debug('[UnifiedTTS] OpenAI TTS URL created', { urlPrefix: url.slice(0, 16) });
+    return url;
   }
 
+
   private async generateElevenLabsAudio(text: string, options: UnifiedTTSOptions): Promise<string> {
+    if (__TTS_DEBUG__) console.debug('[UnifiedTTS] ElevenLabs TTS invoke', { voice: this.mapToElevenLabsVoice(options.voice, options.userInfo) });
     const { data, error } = await supabase.functions.invoke('elevenlabs-tts', {
       body: {
         text,
@@ -140,8 +163,11 @@ export class UnifiedTTSService {
 
     // Convert array buffer to blob
     const audioBlob = new Blob([new Uint8Array(data)], { type: 'audio/mpeg' });
-    return URL.createObjectURL(audioBlob);
+    const url = URL.createObjectURL(audioBlob);
+    if (__TTS_DEBUG__) console.debug('[UnifiedTTS] ElevenLabs TTS URL created', { urlPrefix: url.slice(0, 16) });
+    return url;
   }
+
 
   private mapToOpenAIVoice(voice?: string | TTSVoice, userInfo?: any): TTSVoice {
     if (voice && ['alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer'].includes(voice)) {
@@ -172,21 +198,25 @@ export class UnifiedTTSService {
   private async playAudio(audioUrl: string): Promise<void> {
     return new Promise((resolve, reject) => {
       this.stopCurrentAudio();
+      if (__TTS_DEBUG__) console.debug('[UnifiedTTS] playAudio start', { audioUrl: audioUrl.slice(0, 16) });
       
       this.currentAudio = new Audio(audioUrl);
       this.currentAudio.preload = 'auto';
       
       this.currentAudio.onended = () => {
+        if (__TTS_DEBUG__) console.debug('[UnifiedTTS] playAudio ended');
         resolve();
       };
       
       this.currentAudio.onerror = () => {
+        if (__TTS_DEBUG__) console.debug('[UnifiedTTS] playAudio error');
         reject(new Error('Audio playback failed'));
       };
       
       this.currentAudio.play().catch(reject);
     });
   }
+
 
   private fallbackToWebSpeech(text: string, options: UnifiedTTSOptions): void {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
@@ -250,20 +280,31 @@ export class UnifiedTTSService {
   }
 
   isPlaying(): boolean {
-    if (this.currentAudio) {
-      return !this.currentAudio.paused;
+    const playing = this.currentAudio ? !this.currentAudio.paused
+      : this.webSpeechSpeaking
+        || (typeof window !== 'undefined' && 'speechSynthesis' in window && Boolean((speechSynthesis as any).speaking));
+    if (__TTS_DEBUG__) {
+      console.debug('[UnifiedTTS] isPlaying check', {
+        hasAudio: !!this.currentAudio,
+        paused: this.currentAudio ? this.currentAudio.paused : undefined,
+        webSpeechSpeaking: this.webSpeechSpeaking,
+        synthSpeaking: typeof window !== 'undefined' && 'speechSynthesis' in window ? (speechSynthesis as any).speaking : undefined,
+      });
     }
-    if (this.webSpeechSpeaking) return true;
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      return Boolean((speechSynthesis as any).speaking);
-    }
-    return false;
+    return Boolean(playing);
   }
+
 
   clearCache(): void {
     this.audioCache.forEach(url => URL.revokeObjectURL(url));
     this.audioCache.clear();
+    if (__TTS_DEBUG__) console.debug('[UnifiedTTS] cache cleared');
   }
+
+  getCacheSize(): number {
+    return this.audioCache.size;
+  }
+
 
   // Static factory methods for common configurations
   static createForChildren(config?: Partial<TTSServiceConfig>): UnifiedTTSService {

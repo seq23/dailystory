@@ -47,6 +47,7 @@ vi.mock('@/integrations/supabase/client', () => ({
 
 // Import after mocks
 import { UnifiedTTSService } from '@/services/unifiedTTSService';
+;(globalThis as any).__TTS_DEBUG__ = true;
 
 // Local safety polyfills (robust)
 beforeAll(() => {
@@ -126,12 +127,19 @@ describe('UnifiedTTSService', () => {
     });
 
     it('caches generated audio', async () => {
+      const genSpy = vi.spyOn(UnifiedTTSService.prototype as any, 'generateAudio');
+      const playSpy = vi.spyOn(tts as any, 'playAudio').mockResolvedValue(undefined as any);
       const opts = { provider: 'openai' as const, voice: 'nova', speed: 1 };
       await tts.speakText('cache me', opts);
-      const calls = hoisted.mockInvoke.mock.calls.length;
+      expect(genSpy).toHaveBeenCalledTimes(1);
+      const cacheSizeAfterFirst = (tts as any).getCacheSize ? (tts as any).getCacheSize() : (tts as any).audioCache?.size;
+      expect(cacheSizeAfterFirst).toBeGreaterThanOrEqual(1);
       await tts.speakText('cache me', opts);
-      expect(hoisted.mockInvoke.mock.calls.length).toBe(calls);
+      expect(genSpy).toHaveBeenCalledTimes(1);
+      playSpy.mockRestore();
+      genSpy.mockRestore();
     });
+
   });
 
   describe('Audio Playback', () => {
@@ -148,15 +156,16 @@ describe('UnifiedTTSService', () => {
     });
 
     it('tracks playing state correctly', async () => {
-      (window as any).speechSynthesis.cancel();
+      tts.stopCurrentAudio();
       await Promise.resolve();
       expect(!!tts.isPlaying()).toBe(false);
       (window as any).speechSynthesis.speaking = true;
       expect(tts.isPlaying()).toBe(true);
-      (window as any).speechSynthesis.cancel();
-      await new Promise((r) => setTimeout(r, 0));
+      tts.stopCurrentAudio();
+      await Promise.resolve();
       expect(tts.isPlaying()).toBe(false);
     });
+
   });
 
   describe('Word Explanations', () => {
