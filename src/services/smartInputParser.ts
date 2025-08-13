@@ -58,7 +58,7 @@ export class SmartInputParser {
       ).length;
       
       result.summary.highConfidenceTags = result.parsedTags.filter(
-        tag => tag.confidence >= 0.8
+        tag => tag.confidence >= 0.9
       ).length;
 
     } catch (error) {
@@ -94,7 +94,7 @@ export class SmartInputParser {
       const cachedCorrection = this.spellCache.get(cleanTag);
       
       let corrected = cleanTag;
-      let confidence = 1.0;
+      let confidence = 0.9;
 
       if (cachedCorrection) {
         corrected = cachedCorrection;
@@ -198,7 +198,7 @@ export class SmartInputParser {
           confidence: 0.9
         };
       } else {
-        return { corrected: tag, confidence: 0.9 };
+        return { corrected: tag, confidence: 0.7 };
       }
 
     } catch (error) {

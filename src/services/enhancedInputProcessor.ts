@@ -159,7 +159,7 @@ export class EnhancedInputProcessor {
         const parseResult = await SmartInputParser.parseTaggedInput([trimmed], userInfo);
         
         for (const tag of parseResult.parsedTags) {
-          if (tag.confidence > 0.6) {
+          if (tag.confidence >= 0.7) {
             // EnhancedInputProcessor handles categorization internally
             elements.push(this.convertToStoryElement(tag.corrected));
           }
