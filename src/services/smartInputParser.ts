@@ -5,7 +5,6 @@ export interface ParsedTag {
   corrected: string;
   confidence: number;
   isPlural: boolean;
-  category?: 'animal' | 'food' | 'object' | 'person' | 'place' | 'other';
 }
 
 export interface SmartParsingResult {
@@ -23,7 +22,6 @@ export interface SmartParsingResult {
 export class SmartInputParser {
   private static readonly CACHE_SIZE = 100;
   private static spellCache = new Map<string, string>();
-  private static categoryCache = new Map<string, string>();
 
   /**
    * Parse an array of user input tags, correcting spelling and extracting context
@@ -72,8 +70,7 @@ export class SmartInputParser {
         original: tag,
         corrected: tag,
         confidence: 0.5,
-        isPlural: tag.endsWith('s'),
-        category: 'other'
+        isPlural: tag.endsWith('s')
       }));
     }
 
@@ -118,14 +115,12 @@ export class SmartInputParser {
 
       // Analyze word properties
       const isPlural = this.detectPlural(corrected);
-      const category = await this.categorizeWord(corrected);
 
       return {
         original: tag,
         corrected,
         confidence,
-        isPlural,
-        category
+        isPlural
       };
 
     } catch (error) {
@@ -135,9 +130,8 @@ export class SmartInputParser {
       return {
         original: tag,
         corrected: cleanTag,
-        confidence: 0.3,
-        isPlural: cleanTag.endsWith('s'),
-        category: 'other'
+        confidence: 0.5,
+        isPlural: cleanTag.endsWith('s')
       };
     }
   }
@@ -168,10 +162,10 @@ export class SmartInputParser {
         });
 
         if (!translationError && translationData?.success && translationData?.isTranslated) {
-          console.log(`✅ Translation successful: "${tag}" → "${translationData.translatedText}" (confidence: ${translationData.confidence})`);
+          console.log(`✅ Translation successful: "${tag}" → "${translationData.translatedText}"`);
           return {
             corrected: translationData.translatedText,
-            confidence: translationData.confidence || 0.8
+            confidence: 0.9
           };
         } else if (translationError) {
           console.warn(`❌ Translation failed for "${tag}":`, translationError);
@@ -195,21 +189,17 @@ export class SmartInputParser {
         return this.fallbackSpellingCorrection(tag);
       }
 
-      // Add confidence threshold to prevent over-correction
-      const confidence = data?.confidence || 0.8;
       const correctedText = data?.correctedText || tag;
       
-      // Only use correction if confidence is high enough and correction makes sense
-      if (confidence < 0.6 || correctedText.length < tag.length * 0.5) {
-        console.log(`⚠️ Low confidence correction for "${tag}" (${confidence}), keeping original`);
-        return { corrected: tag, confidence: 0.5 };
+      if (data?.hadErrors) {
+        console.log(`✅ Spelling correction: "${tag}" → "${correctedText}"`);
+        return {
+          corrected: correctedText,
+          confidence: 0.9
+        };
+      } else {
+        return { corrected: tag, confidence: 0.9 };
       }
-
-      console.log(`✅ Spelling correction: "${tag}" → "${correctedText}" (confidence: ${confidence})`);
-      return {
-        corrected: correctedText,
-        confidence: confidence
-      };
 
     } catch (error) {
       console.warn('Tag processing error:', error);
@@ -266,7 +256,7 @@ export class SmartInputParser {
     
     const lowercaseTag = tag.toLowerCase();
     if (commonCorrections[lowercaseTag]) {
-      return { corrected: commonCorrections[lowercaseTag], confidence: 0.9 };
+      return { corrected: commonCorrections[lowercaseTag], confidence: 0.7 };
     }
     
     return { corrected: tag, confidence: 0.5 };
@@ -303,104 +293,6 @@ export class SmartInputParser {
     return pluralIndicators.some(pattern => pattern.test(word));
   }
 
-  /**
-   * Categorize a word into common story element types
-   */
-  private static async categorizeWord(
-    word: string
-  ): Promise<ParsedTag['category']> {
-    // Check cache first
-    const cached = this.categoryCache.get(word);
-    if (cached) {
-      return cached as ParsedTag['category'];
-    }
-
-    try {
-      // Use simple categorization patterns
-      const categories = {
-        animal: [
-          'dog', 'cat', 'bird', 'fish', 'horse', 'cow', 'pig', 'sheep', 'lion', 'tiger', 
-          'elephant', 'bear', 'wolf', 'fox', 'rabbit', 'mouse', 'duck', 'chicken',
-          'dogs', 'cats', 'birds', 'fish', 'horses', 'cows', 'pigs', 'sheep', 'lions', 'tigers'
-        ],
-        food: [
-          'apple', 'banana', 'bread', 'milk', 'cheese', 'pizza', 'cake', 'cookie',
-          'chocolate', 'candy', 'ice cream', 'juice', 'water', 'sandwich',
-          'apples', 'bananas', 'cookies', 'candies'
-        ],
-        person: [
-          'mom', 'dad', 'sister', 'brother', 'friend', 'teacher', 'doctor', 'nurse',
-          'firefighter', 'police', 'chef', 'farmer', 'pilot', 'princess', 'prince',
-          'parents', 'friends', 'teachers', 'doctors'
-        ],
-        place: [
-          'home', 'school', 'park', 'beach', 'forest', 'mountain', 'city', 'farm',
-          'library', 'store', 'hospital', 'restaurant', 'playground',
-          'homes', 'schools', 'parks', 'beaches', 'forests', 'mountains', 'cities', 'farms'
-        ],
-        object: [
-          'ball', 'toy', 'book', 'car', 'bike', 'boat', 'plane', 'train',
-          'computer', 'phone', 'chair', 'table', 'bed', 'door', 'window',
-          'balls', 'toys', 'books', 'cars', 'bikes', 'boats', 'planes', 'trains'
-        ]
-      };
-
-      for (const [category, words] of Object.entries(categories)) {
-        if (words.includes(word.toLowerCase())) {
-          // Cache the result
-          if (this.categoryCache.size >= this.CACHE_SIZE) {
-            const firstKey = this.categoryCache.keys().next().value;
-            this.categoryCache.delete(firstKey);
-          }
-          this.categoryCache.set(word, category);
-          return category as ParsedTag['category'];
-        }
-      }
-
-      return 'other';
-
-    } catch (error) {
-      console.warn('Word categorization error:', error);
-      return 'other';
-    }
-  }
-
-  /**
-   * Extract story elements for generation
-   */
-  static extractStoryElements(parsedTags: ParsedTag[]): {
-    characters: string[];
-    objects: string[];
-    settings: string[];
-    themes: string[];
-  } {
-    const characters: string[] = [];
-    const objects: string[] = [];
-    const settings: string[] = [];
-    const themes: string[] = [];
-
-    parsedTags.forEach(tag => {
-      const word = tag.corrected;
-      
-      switch (tag.category) {
-        case 'animal':
-        case 'person':
-          characters.push(word);
-          break;
-        case 'place':
-          settings.push(word);
-          break;
-        case 'object':
-        case 'food':
-          objects.push(word);
-          break;
-        default:
-          themes.push(word);
-      }
-    });
-
-    return { characters, objects, settings, themes };
-  }
 
   /**
    * Generate processing report for debugging
@@ -421,7 +313,7 @@ export class SmartInputParser {
     report += `Tag Details:\n`;
     parsedTags.forEach(tag => {
       const correctionNote = tag.original !== tag.corrected ? ` → ${tag.corrected}` : '';
-      report += `- ${tag.original}${correctionNote} (${tag.category}, confidence: ${tag.confidence.toFixed(2)})\n`;
+      report += `- ${tag.original}${correctionNote} (confidence: ${tag.confidence.toFixed(2)})\n`;
     });
 
     return report;

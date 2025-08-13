@@ -155,12 +155,13 @@ export class EnhancedInputProcessor {
         const trimmed = part.trim();
         if (trimmed.length === 0) continue;
 
-        // Use SmartInputParser to analyze the request part
+        // Use SmartInputParser to clean and correct the input
         const parseResult = await SmartInputParser.parseTaggedInput([trimmed], userInfo);
         
         for (const tag of parseResult.parsedTags) {
           if (tag.confidence > 0.6) {
-            elements.push(this.convertToStoryElement(tag.corrected, tag.category));
+            // EnhancedInputProcessor handles categorization internally
+            elements.push(this.convertToStoryElement(tag.corrected));
           }
         }
       }
@@ -174,19 +175,28 @@ export class EnhancedInputProcessor {
   }
 
   /**
-   * Convert parsed tag to story element
+   * Convert word to story element with internal categorization
    */
-  private static convertToStoryElement(word: string, category?: string): string {
-    const elementMappings = {
-      'animal': `adventures with ${word} companions`,
-      'food': `sharing ${word} in the story`,
-      'place': `exploring ${word} locations`,
-      'person': `meeting helpful ${word} characters`,
-      'object': `discovering magical ${word} items`,
-      'other': `incorporating ${word} themes`
-    };
-
-    return elementMappings[category || 'other'] || `featuring ${word}`;
+  private static convertToStoryElement(word: string): string {
+    // Simple categorization for story elements
+    const animals = ['dog', 'cat', 'bird', 'fish', 'horse', 'lion', 'tiger', 'elephant', 'bear', 'fox', 'rabbit'];
+    const people = ['mom', 'dad', 'sister', 'brother', 'friend', 'teacher', 'doctor', 'princess', 'prince'];
+    const places = ['home', 'school', 'park', 'beach', 'forest', 'mountain', 'city', 'farm', 'library'];
+    const foods = ['apple', 'banana', 'bread', 'cake', 'cookie', 'chocolate', 'candy', 'pizza'];
+    
+    const lowerWord = word.toLowerCase();
+    
+    if (animals.some(animal => lowerWord.includes(animal))) {
+      return `a friendly ${word}`;
+    } else if (people.some(person => lowerWord.includes(person))) {
+      return `a kind ${word}`;
+    } else if (places.some(place => lowerWord.includes(place))) {
+      return `the magical ${word}`;
+    } else if (foods.some(food => lowerWord.includes(food))) {
+      return `delicious ${word}`;
+    } else {
+      return word.includes(' ') ? word : `something about ${word}`;
+    }
   }
 
   /**

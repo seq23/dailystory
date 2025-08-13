@@ -176,7 +176,7 @@ export class UserInputDistributor {
           // Multiple animals detected - use smart parsing for additional variety
           const parseResult = await SmartInputParser.parseTaggedInput(animalTags, userInfo);
           parseResult.parsedTags.forEach(tag => {
-            if (tag.category === 'animal' || this.isAnimalWord(tag.corrected)) {
+            if (this.isAnimalWord(tag.corrected)) {
               animals.add(tag.corrected.toLowerCase());
             }
           });
@@ -240,7 +240,7 @@ export class UserInputDistributor {
           // Multiple foods detected - use smart parsing
           const parseResult = await SmartInputParser.parseTaggedInput(foodTags, userInfo);
           parseResult.parsedTags.forEach(tag => {
-            if (tag.category === 'food' || this.isFoodWord(tag.corrected)) {
+            if (this.isFoodWord(tag.corrected)) {
               foods.add(tag.corrected.toLowerCase());
             }
           });
