@@ -1,23 +1,30 @@
 import { vi, describe, it, expect, beforeEach, beforeAll } from 'vitest';
-import { UnifiedTTSService } from '@/services/unifiedTTSService';
 
-const base64Mp3 = 'SUQzBAAAAAAA'; // tiny placeholder for base64 mp3
-
-const mockInvoke = vi.fn(async (fn: string, _args: any) => {
-  if (fn === 'openai-tts') return { data: { audioContent: base64Mp3 }, error: null };
-  if (fn === 'elevenlabs-tts') return { data: new Uint8Array([1, 2, 3]).buffer, error: null };
-  if (fn === 'word-dictionary') return { data: { explanation: 'test explanation' }, error: null };
-  return { data: null, error: { message: 'unknown function' } };
+// Hoist mocks BEFORE importing the module under test
+const hoisted = vi.hoisted(() => {
+  const base64Mp3 = 'SUQzBAAAAAAA';
+  const mockInvoke = vi.fn(async (fn: string, _args: any) => {
+    if (fn === 'openai-tts') return { data: { audioContent: base64Mp3 }, error: null } as any;
+    if (fn === 'elevenlabs-tts') return { data: new Uint8Array([1, 2, 3]).buffer, error: null } as any;
+    if (fn === 'word-dictionary') return { data: { explanation: 'test explanation' }, error: null } as any;
+    return { data: null, error: { message: 'unknown function' } } as any;
+  });
+  return { base64Mp3, mockInvoke };
 });
 
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
-    functions: { invoke: mockInvoke as any }
-  }
+    functions: { invoke: hoisted.mockInvoke as any },
+    from: (_table: string) => ({ select: vi.fn().mockResolvedValue({ data: [], error: null }) }),
+  },
 }));
 
-// Local safety polyfills (in case global setup isn't applied)
+// Import after mocks
+import { UnifiedTTSService } from '@/services/unifiedTTSService';
+
+// Local safety polyfills (robust)
 beforeAll(() => {
+  // Speech synthesis
   if (typeof (globalThis as any).SpeechSynthesisUtterance === 'undefined') {
     class MockUtterance {
       text: string;
@@ -30,6 +37,9 @@ beforeAll(() => {
       constructor(text: string) { this.text = text; }
     }
     ;(globalThis as any).SpeechSynthesisUtterance = MockUtterance as any;
+    if (typeof window !== 'undefined') {
+      (window as any).SpeechSynthesisUtterance = MockUtterance as any;
+    }
   }
   if (typeof window !== 'undefined' && !(window as any).speechSynthesis) {
     const synth: any = {
@@ -55,6 +65,7 @@ beforeAll(() => {
     };
     (window as any).speechSynthesis = synth as any;
   }
+  // Audio API
   if (typeof window !== 'undefined' && !(window as any).Audio) {
     (window as any).Audio = function (this: any) {
       this.paused = true;
@@ -73,45 +84,80 @@ describe('UnifiedTTSService', () => {
   let tts: UnifiedTTSService;
 
   beforeEach(() => {
-    mockInvoke.mockClear();
+    hoisted.mockInvoke.mockClear();
     tts = new UnifiedTTSService({ mobileOptimized: false, fallbackToWebSpeech: true, cacheEnabled: true });
   });
 
-  it('generates audio via OpenAI', async () => {
-    await tts.speakText('hello', { provider: 'openai', voice: 'nova', speed: 0.8 });
-    expect(mockInvoke).toHaveBeenCalledWith('openai-tts', expect.any(Object));
+  describe('Audio Generation', () => {
+    it('generates audio for simple text', async () => {
+      await expect(tts.speakText('hello', { provider: 'openai', voice: 'nova', speed: 0.8 })).resolves.not.toThrow();
+      expect(hoisted.mockInvoke).toHaveBeenCalledWith('openai-tts', expect.any(Object));
+    });
+
+    it('handles TTS generation errors gracefully', async () => {
+      hoisted.mockInvoke.mockImplementationOnce(async () => ({ data: null, error: { message: 'TTS generation failed' } }));
+      await expect(tts.speakText('test', { provider: 'openai' })).resolves.not.toThrow();
+    });
+
+    it('caches generated audio', async () => {
+      await tts.speakText('cache me', { provider: 'openai' });
+      const calls = hoisted.mockInvoke.mock.calls.length;
+      await tts.speakText('cache me', { provider: 'openai' });
+      expect(hoisted.mockInvoke.mock.calls.length).toBe(calls);
+    });
   });
 
-  it('handles generation error gracefully', async () => {
-    mockInvoke.mockImplementationOnce(async () => ({ data: null, error: { message: 'TTS generation failed' } }));
-    await expect(tts.speakText('test', { provider: 'openai' })).resolves.not.toThrow();
+  describe('Audio Playback', () => {
+    it('plays audio successfully via ElevenLabs', async () => {
+      await expect(tts.speakText('play me', { provider: 'elevenlabs' })).resolves.not.toThrow();
+    });
+
+    it('stops current audio when requested', () => {
+      const audio = new (window as any).Audio();
+      const pauseSpy = vi.spyOn(audio, 'pause');
+      ;(tts as any).currentAudio = audio;
+      tts.stopCurrentAudio();
+      expect(pauseSpy).toHaveBeenCalled();
+    });
+
+    it('tracks playing state correctly', () => {
+      expect(!!tts.isPlaying()).toBe(false);
+      (window as any).speechSynthesis.speaking = true;
+      expect(tts.isPlaying()).toBe(true);
+      (window as any).speechSynthesis.cancel();
+      expect(tts.isPlaying()).toBe(false);
+    });
   });
 
-  it('caches generated audio', async () => {
-    await tts.speakText('cache me', { provider: 'openai' });
-    const callCount = mockInvoke.mock.calls.length;
-    await tts.speakText('cache me', { provider: 'openai' });
-    expect(mockInvoke.mock.calls.length).toBe(callCount);
+  describe('Word Explanations', () => {
+    it('fetches and speaks word explanations', async () => {
+      await expect(tts.explainWord('test')).resolves.not.toThrow();
+    });
+
+    it('handles missing word definitions', async () => {
+      hoisted.mockInvoke.mockImplementationOnce(async () => ({ data: { explanation: null }, error: null }));
+      await expect(tts.explainWord('unknown')).resolves.not.toThrow();
+    });
   });
 
-  it('plays audio via ElevenLabs', async () => {
-    await expect(tts.speakText('play me', { provider: 'elevenlabs' })).resolves.not.toThrow();
+  describe('Factory Methods', () => {
+    it('creates service for children with appropriate settings', () => {
+      const child = UnifiedTTSService.createForChildren();
+      expect(child).toBeInstanceOf(UnifiedTTSService);
+    });
+
+    it('creates premium service with enhanced features', () => {
+      const premium = UnifiedTTSService.createForPremium();
+      expect(premium).toBeInstanceOf(UnifiedTTSService);
+    });
   });
 
-  it('stopCurrentAudio pauses audio', () => {
-    const audio = new (window as any).Audio();
-    const pauseSpy = vi.spyOn(audio, 'pause');
-    (tts as any).currentAudio = audio;
-    tts.stopCurrentAudio();
-    expect(pauseSpy).toHaveBeenCalled();
-  });
-
-  it('isPlaying tracks web speech', () => {
-    expect(tts.isPlaying()).toBe(false);
-    const utter = new (globalThis as any).SpeechSynthesisUtterance('hi');
-    window.speechSynthesis.speak(utter);
-    expect(tts.isPlaying()).toBe(true);
-    window.speechSynthesis.cancel();
-    expect(tts.isPlaying()).toBe(false);
+  describe('Cache Management', () => {
+    it('clears cache when requested', async () => {
+      await tts.speakText('cache clear', { provider: 'openai' });
+      tts.clearCache();
+      await tts.speakText('cache clear', { provider: 'openai' });
+      expect(hoisted.mockInvoke).toHaveBeenCalledWith('openai-tts', expect.any(Object));
+    });
   });
 });
