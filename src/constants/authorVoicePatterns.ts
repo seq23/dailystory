@@ -25,19 +25,31 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
         "In the light of the moon, {userName} saw...",
         "On Monday, {userName} ate through one {food}...",
         "A small {animal} sat on a leaf...",
-        "The very {adjective} {userName} was ready..."
+        "The very {adjective} {userName} was ready...",
+        "Early in the {setting}, a {adjective} {animal} peeked out...",
+        "Under a {color} sky, {userName} found a {object}...",
+        "{userName} followed a {color} trail through the {setting}...",
+        "One {color} {object} led to another, and another..."
       ],
       transitions: [
         "But {pronoun} was still hungry.",
         "The next day was Sunday again.",
         "Pop! Out came {userName}...",
-        "Now {pronoun} wasn't {adjective} any more."
+        "Now {pronoun} wasn't {adjective} any more.",
+        "Soon, the {animal} showed a new path.",
+        "Step by step, the {setting} changed colors.",
+        "And then a friendly {animal} waved hello.",
+        "Little by little, {userName} learned more."
       ],
       closings: [
         "And {userName} was a beautiful {animal}!",
         "What a beautiful {animal} {pronoun} had become!",
         "Now {pronoun} was no longer hungry.",
-        "The end of a perfect day."
+        "The end of a perfect day.",
+        "The {setting} grew quiet as stars appeared.",
+        "{userName} smiled at the gentle night sky.",
+        "Everything felt calm, bright, and new.",
+        "Tomorrow, {userName} would explore again."
       ]
     },
     characteristics: ["simple repetition", "nature themes", "transformation", "growth"],
