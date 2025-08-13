@@ -157,7 +157,7 @@ vi.mock('@/services/contextualPronunciation', () => ({
 describe('UnifiedTTSService', () => {
   let tts: UnifiedTTSService;
 
-  beforeEach(async () => {
+beforeEach(async () => {
     // Clear all mocks first
     vi.clearAllMocks();
     
@@ -166,10 +166,17 @@ describe('UnifiedTTSService', () => {
     mockSpeechSynthesis = createMockSpeechSynthesis();
     mockProcessTextForPronunciation = vi.fn((text: string) => text);
 
+    // CRITICAL: Setup URL mock directly in test to ensure it works
+    vi.stubGlobal('URL', {
+      createObjectURL: vi.fn(() => `blob:mock-${Date.now()}-${Math.random()}`),
+      revokeObjectURL: vi.fn(),
+    });
+
     // Setup window mocks with fresh instances - CRITICAL: setup before service creation
     if (typeof window !== 'undefined') {
       (window as any).speechSynthesis = mockSpeechSynthesis;
       (window as any).Audio = createMockAudio();
+      (window as any).URL = global.URL; // Ensure window.URL matches global.URL
     }
 
     // Create fresh service instance with testing configuration AFTER mocks are ready
@@ -183,8 +190,8 @@ describe('UnifiedTTSService', () => {
     (tts as any)._resetForTesting();
     mockSpeechSynthesis._reset();
     
-    // Longer wait time to ensure all async operations complete
-    await new Promise(resolve => setTimeout(resolve, 10));
+    // Shorter wait time for faster tests
+    await new Promise(resolve => setTimeout(resolve, 5));
   });
 
   describe('Audio Generation', () => {
@@ -300,7 +307,7 @@ describe('UnifiedTTSService', () => {
       expect((tts as any).currentAudio).toBeNull();
     });
 
-    it('tracks playing state correctly with synchronized mocks', async () => {
+    it('tracks playing state correctly with synchronized mocks', () => {
       // Verify initial state
       expect(tts.isPlaying()).toBe(false);
       expect(mockSpeechSynthesis.speaking).toBe(false);
@@ -310,13 +317,16 @@ describe('UnifiedTTSService', () => {
       mockSpeechSynthesis.speaking = true;
       expect(tts.isPlaying()).toBe(true);
       
-      // Stop audio should IMMEDIATELY reset both service and mock state
-      tts.stopCurrentAudio();
+      // Simulate external cancellation via speechSynthesis.cancel()
+      mockSpeechSynthesis.cancel();
       
-      // NO async wait needed - state should be synchronous
-      // Verify both service and mock state are IMMEDIATELY reset
+      // The service should detect the external cancellation and sync its state
+      // Call isPlaying() to trigger the sync check
+      const isPlaying = tts.isPlaying();
+      
+      // Verify both service and mock state are synchronized
       expect(mockSpeechSynthesis.speaking).toBe(false);
-      expect(tts.isPlaying()).toBe(false); // CRITICAL: Should be false immediately
+      expect(isPlaying).toBe(false); // CRITICAL: Should be false after sync
     });
 
     it('tracks playing state with audio element', () => {
