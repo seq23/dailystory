@@ -347,60 +347,34 @@ export const InteractiveWord = ({
         duration: 5000,
       });
       
-      // Speak definition using EnhancedAudioService for multilingual support
-      try {
-        await enhancedAudioService.playText({
-          text: definitionToSpeak,
-          difficulty: 'easy',
-          userInfo: userInfo!,
-          isPremium: isPremium,
-          enableHighlighting: false,
-        });
-      } catch (error) {
-        console.warn('Definition TTS failed, falling back to browser speech if available', error);
-        if ('speechSynthesis' in window) {
-          try {
-            const utterance = new SpeechSynthesisUtterance(definitionToSpeak);
-            utterance.rate = 0.7;
-            utterance.pitch = 1.0;
-            utterance.volume = 1.0;
-            if (userNativeLanguage !== 'en') utterance.lang = userNativeLanguage;
-            utterance.onend = () => setIsPlaying(false);
-            utterance.onerror = () => setIsPlaying(false);
-            window.speechSynthesis.speak(utterance);
-          } catch {}
-        }
-      }
-       
-       function fallbackToBrowserSpeech() {
-        if ('speechSynthesis' in window) {
-          try {
-            const utterance = new SpeechSynthesisUtterance(definitionToSpeak);
-            utterance.rate = 0.7;
-            utterance.pitch = 1.0;
-            utterance.volume = 1.0;
-            
-            if (userNativeLanguage !== 'en') {
-              utterance.lang = userNativeLanguage;
-              const voices = speechSynthesis.getVoices();
-              const languageCode = userNativeLanguage.substring(0, 2);
-              const nativeVoice = voices.find(voice => 
-                voice.lang.toLowerCase().startsWith(languageCode.toLowerCase())
-              );
-              if (nativeVoice) utterance.voice = nativeVoice;
-            }
-            
-            utterance.onend = () => setIsPlaying(false);
-            utterance.onerror = () => setIsPlaying(false);
-            
-            speechSynthesis.speak(utterance);
-          } catch (audioError) {
-            console.error('Browser speech also failed:', audioError);
-            setIsPlaying(false);
+      // Use browser's native speech synthesis directly for free, reliable multilingual support
+      if ('speechSynthesis' in window) {
+        try {
+          const utterance = new SpeechSynthesisUtterance(definitionToSpeak);
+          utterance.rate = 0.7;
+          utterance.pitch = 1.0;
+          utterance.volume = 1.0;
+          
+          if (userNativeLanguage !== 'en') {
+            utterance.lang = userNativeLanguage;
+            const voices = speechSynthesis.getVoices();
+            const languageCode = userNativeLanguage.substring(0, 2);
+            const nativeVoice = voices.find(voice => 
+              voice.lang.toLowerCase().startsWith(languageCode.toLowerCase())
+            );
+            if (nativeVoice) utterance.voice = nativeVoice;
           }
-        } else {
+          
+          utterance.onend = () => setIsPlaying(false);
+          utterance.onerror = () => setIsPlaying(false);
+          
+          speechSynthesis.speak(utterance);
+        } catch (audioError) {
+          console.error('Browser speech failed:', audioError);
           setIsPlaying(false);
         }
+      } else {
+        setIsPlaying(false);
       }
       
     } catch (error) {
