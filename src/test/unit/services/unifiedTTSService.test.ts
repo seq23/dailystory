@@ -98,8 +98,23 @@ describe('UnifiedTTSService', () => {
   let tts: UnifiedTTSService;
 
   beforeEach(() => {
+    // Reset all mocks completely
     hoisted.mockInvoke.mockClear();
+    vi.clearAllMocks();
+    
+    // Reset speech synthesis mock state
+    const mockSynth = (window as any).speechSynthesis;
+    if (mockSynth) {
+      mockSynth.speaking = false;
+      mockSynth._lastUtterance = null;
+    }
+    
+    // Create fresh TTS service instance
     tts = new UnifiedTTSService({ mobileOptimized: false, fallbackToWebSpeech: true, cacheEnabled: true });
+    
+    // Clear any internal service state
+    tts.stopCurrentAudio();
+    tts.clearCache();
   });
 
   describe('Audio Generation', () => {
