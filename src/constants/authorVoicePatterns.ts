@@ -65,19 +65,31 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
         "{userName} was having a really bad day.",
         "'I do NOT want to!' said {userName}.",
         "{userName} and {friend} were best friends.",
-        "There was a big problem today."
+        "There was a big problem today.",
+        "{userName} found it hard to explain.",
+        "{friend} had a different idea today.",
+        "A small misunderstanding started at the {setting}.",
+        "Something felt off, and {userName} knew it."
       ],
       transitions: [
         "But then {friend} said something important.",
         "'Wait!' shouted {userName}.",
         "That was not what {pronoun} expected at all.",
-        "Friends can help each other."
+        "Friends can help each other.",
+        "They took a deep breath and tried again.",
+        "{friend} listened carefully this time.",
+        "Using kind words changed everything.",
+        "Working together made the problem smaller."
       ],
       closings: [
         "And they both laughed and laughed.",
         "That is what friends are for.",
         "Tomorrow would be even better.",
-        "Being different makes friendship special."
+        "Being different makes friendship special.",
+        "They solved it with patience and care.",
+        "Different ideas can still fit together.",
+        "They promised to listen first next time.",
+        "And that felt like real friendship."
       ]
     },
     characteristics: ["emotional honesty", "friendship", "simple dialogue", "problem solving"],
@@ -310,19 +322,31 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
         "{userName} had been looking forward to this day...",
         "It all started when {userName} decided to...",
         "Nobody understood {userName} the way...",
-        "Things never went the way {userName} planned..."
+        "Things never went the way {userName} planned...",
+        "First period had already gone sideways.",
+        "{userName} thought today would be simple—until it wasn't.",
+        "It began with a tiny mistake and a big laugh.",
+        "The plan looked perfect on paper."
       ],
       transitions: [
         "But then something unexpected happened.",
         "That's when {userName} got a brilliant idea.",
         "Of course, things didn't go smoothly.",
-        "As usual, life was more complicated than..."
+        "As usual, life was more complicated than...",
+        "So {userName} made a quick change and kept going.",
+        "Of course, {friend} had another opinion.",
+        "They had to ask for help—and that was okay.",
+        "A clever workaround saved the day."
       ],
       closings: [
         "And {userName} learned that growing up means...",
         "Sometimes the best adventures are unexpected.",
         "Life with family is never boring.",
-        "And {userName} couldn't wait for tomorrow."
+        "And {userName} couldn't wait for tomorrow.",
+        "It wasn't perfect, but it was real.",
+        "{userName} learned that courage looks ordinary up close.",
+        "Family jokes made the tough parts lighter.",
+        "Tomorrow had room for better choices."
       ]
     },
     characteristics: ["realistic", "family life", "humor", "relatability"],
