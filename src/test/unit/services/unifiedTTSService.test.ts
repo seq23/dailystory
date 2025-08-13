@@ -212,10 +212,21 @@ describe('UnifiedTTSService', () => {
       expect(mockSpeechSynthesis.speak).toHaveBeenCalled(); // Should fallback
     });
 
-    it('caches generated audio using spy-based verification', async () => {
-      // Create spies IMMEDIATELY before any operations
+    it('caches generated audio without playback interference', async () => {
+      // Mock Audio constructor to avoid interference with cache mechanism
+      const mockAudioPlay = vi.fn().mockResolvedValue(undefined);
+      const originalAudio = (window as any).Audio;
+      (window as any).Audio = function(src?: string) {
+        this.src = src || '';
+        this.paused = true;
+        this.play = mockAudioPlay;
+        this.pause = vi.fn();
+        this.addEventListener = vi.fn();
+        this.removeEventListener = vi.fn();
+      };
+      
+      // Create spy only on generateAudio to avoid interfering with the cache mechanism
       const generateAudioSpy = vi.spyOn(tts as any, 'generateAudio');
-      const playAudioSpy = vi.spyOn(tts as any, 'playAudio').mockResolvedValue(undefined);
       
       // Use exact same options with normalized values to ensure consistent cache key generation
       const options = { provider: 'openai' as const, voice: 'nova', speed: 1.0 };
@@ -224,7 +235,7 @@ describe('UnifiedTTSService', () => {
       // Verify initial state
       expect(tts.getCacheSize()).toBe(0);
       
-      // First call should generate audio
+      // First call should generate audio and cache it
       await tts.speakText(text, options);
       expect(generateAudioSpy).toHaveBeenCalledTimes(1);
       expect(tts.getCacheSize()).toBe(1);
@@ -237,16 +248,28 @@ describe('UnifiedTTSService', () => {
       expect(generateAudioSpy).toHaveBeenCalledTimes(0); // CRITICAL: Should be 0, not 1
       expect(tts.getCacheSize()).toBe(1); // Cache size should remain 1
       
-      // But playAudio should be called both times
-      expect(playAudioSpy).toHaveBeenCalledTimes(2);
+      // Audio should be played both times
+      expect(mockAudioPlay).toHaveBeenCalledTimes(2);
       
+      // Restore mocks
       generateAudioSpy.mockRestore();
-      playAudioSpy.mockRestore();
+      (window as any).Audio = originalAudio;
     });
 
     it('generates different cache keys for different parameters', async () => {
+      // Mock Audio constructor to avoid interference
+      const mockAudioPlay = vi.fn().mockResolvedValue(undefined);
+      const originalAudio = (window as any).Audio;
+      (window as any).Audio = function(src?: string) {
+        this.src = src || '';
+        this.paused = true;
+        this.play = mockAudioPlay;
+        this.pause = vi.fn();
+        this.addEventListener = vi.fn();
+        this.removeEventListener = vi.fn();
+      };
+      
       const generateAudioSpy = vi.spyOn(tts as any, 'generateAudio');
-      const playAudioSpy = vi.spyOn(tts as any, 'playAudio').mockResolvedValue(undefined);
       
       await tts.speakText('same text', { provider: 'openai', voice: 'nova' });
       await tts.speakText('same text', { provider: 'openai', voice: 'alloy' });
@@ -254,7 +277,7 @@ describe('UnifiedTTSService', () => {
       expect(generateAudioSpy).toHaveBeenCalledTimes(2); // Different voices = different cache keys
       
       generateAudioSpy.mockRestore();
-      playAudioSpy.mockRestore();
+      (window as any).Audio = originalAudio;
     });
   });
 
@@ -415,9 +438,20 @@ describe('UnifiedTTSService', () => {
 
   describe('Cache Management', () => {
     it('clears cache and regenerates audio', async () => {
-      // Setup spies IMMEDIATELY before any operations
+      // Mock Audio constructor to avoid interference
+      const mockAudioPlay = vi.fn().mockResolvedValue(undefined);
+      const originalAudio = (window as any).Audio;
+      (window as any).Audio = function(src?: string) {
+        this.src = src || '';
+        this.paused = true;
+        this.play = mockAudioPlay;
+        this.pause = vi.fn();
+        this.addEventListener = vi.fn();
+        this.removeEventListener = vi.fn();
+      };
+      
+      // Setup spy only on generateAudio to avoid interference with cache mechanism
       const generateAudioSpy = vi.spyOn(tts as any, 'generateAudio');
-      const playAudioSpy = vi.spyOn(tts as any, 'playAudio').mockResolvedValue(undefined);
       
       const options = { provider: 'openai' as const, speed: 1.0 };
       const text = 'cache clear test';
@@ -439,7 +473,7 @@ describe('UnifiedTTSService', () => {
       expect(generateAudioSpy).toHaveBeenCalledTimes(1); // Should be exactly 1, not 2
       
       generateAudioSpy.mockRestore();
-      playAudioSpy.mockRestore();
+      (window as any).Audio = originalAudio;
     });
 
     it('revokes object URLs when clearing cache', () => {
