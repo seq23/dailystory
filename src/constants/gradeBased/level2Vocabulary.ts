@@ -20,11 +20,17 @@ export const LEVEL_2_VOCABULARY = new Set([
   // Add 2nd Grade Dolch Sight Words (46 words)
   ...DOLCH_2ND_GRADE_VOCABULARY
 ]);
+export const LEVEL_2_VOCABULARY_NORMALIZED: Set<string> = new Set(
+  Array.from(LEVEL_2_VOCABULARY).map((w) => w.toLowerCase().replace(/[^\w\s]/g, ''))
+);
 
-export function isLevel2Word(word: string): boolean {
-  return LEVEL_2_VOCABULARY.has(word.toLowerCase());
+function normalizeToken(token: string): string {
+  return token.toLowerCase().replace(/[^\w\s]/g, '');
 }
 
+export function isLevel2Word(word: string): boolean {
+  return LEVEL_2_VOCABULARY_NORMALIZED.has(normalizeToken(word));
+}
 export function validateLevel2Sentence(sentence: string, userName?: string, userInputWords: string[] = []): { 
   isValid: boolean; 
   invalidWords: string[];
@@ -51,7 +57,7 @@ export function validateLevel2Sentence(sentence: string, userName?: string, user
       return false;
     }
     
-    return !LEVEL_2_VOCABULARY.has(word);
+    return !LEVEL_2_VOCABULARY_NORMALIZED.has(word);
   });
   
   return {
