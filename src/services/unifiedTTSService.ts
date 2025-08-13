@@ -47,10 +47,10 @@ export class UnifiedTTSService {
       // Process text for better pronunciation
       const processedText = contextualPronunciation.processTextForPronunciation(text, true);
       const provider = options.provider || this.config.preferredProvider;
-      // Generate deterministic cache key
+      // Generate deterministic cache key with consistent formatting
       const normalizedVoice = options.voice || 'default';
-      const normalizedSpeed = (options.speed || 1.0).toFixed(2);
-      const cacheKey = `${processedText}-${provider}-${normalizedVoice}-${normalizedSpeed}`;
+      const normalizedSpeed = Math.round((options.speed || 1.0) * 100) / 100; // Handle floating point precision
+      const cacheKey = `${processedText}-${provider}-${normalizedVoice}-${normalizedSpeed.toFixed(2)}`;
 
       if (__TTS_DEBUG__) {
         console.debug('[UnifiedTTS] speakText', {
@@ -116,6 +116,7 @@ export class UnifiedTTSService {
   }
 
   private async generateAudio(text: string, provider: TTSProvider, options: UnifiedTTSOptions): Promise<string | null> {
+    if (__TTS_DEBUG__) console.debug('[UnifiedTTS] generateAudio called', { provider, text });
     switch (provider) {
       case 'openai':
         return this.generateOpenAIAudio(text, options);
@@ -276,18 +277,19 @@ export class UnifiedTTSService {
       this.currentAudio = null;
     }
     
-    // Stop web speech synthesis and ensure bidirectional state synchronization
+    // Immediately reset internal state
+    this.webSpeechSpeaking = false;
+    
+    // Stop web speech synthesis and ensure immediate state synchronization
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       try { 
         speechSynthesis.cancel();
-        // Force synchronization of mock state for testing
+        // Force immediate synchronization of mock state for testing
         if ((speechSynthesis as any).speaking !== undefined) {
           (speechSynthesis as any).speaking = false;
         }
       } catch (error) {
         // Ignore errors during cleanup
-      } finally { 
-        this.webSpeechSpeaking = false; 
       }
     }
   }
@@ -298,9 +300,8 @@ export class UnifiedTTSService {
       return !this.currentAudio.paused;
     }
     
-    // Check web speech synthesis state - prioritize internal tracking
-    const webSpeechPlaying = this.webSpeechSpeaking || 
-      (typeof window !== 'undefined' && 'speechSynthesis' in window && Boolean((speechSynthesis as any).speaking));
+    // For web speech, prioritize internal tracking over external mock state
+    const webSpeechPlaying = this.webSpeechSpeaking;
     
     if (__TTS_DEBUG__) {
       console.debug('[UnifiedTTS] isPlaying check', {

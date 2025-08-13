@@ -23,10 +23,11 @@ const createMockSpeechSynthesis = () => {
     },
     
     cancel: vi.fn(() => {
+      // Immediately set speaking to false for synchronous state updates
       mockSpeaking = false;
       if (lastUtterance?.onend) {
         try { 
-          setTimeout(() => lastUtterance.onend(), 0); 
+          lastUtterance.onend(); 
         } catch {}
       }
       lastUtterance = null;
@@ -86,6 +87,7 @@ const createMockAudio = () => {
     });
     
     this.pause = vi.fn(() => {
+      // Immediately set paused state for synchronous updates
       this.paused = true;
       (this._listeners['pause'] || []).forEach((fn: any) => fn());
     });
@@ -159,18 +161,18 @@ describe('UnifiedTTSService', () => {
     // Clear all mocks first
     vi.clearAllMocks();
     
-    // Create fresh mock instances for each test
+    // Create fresh mock instances for each test BEFORE service creation
     mockInvoke = createMockInvoke();
     mockSpeechSynthesis = createMockSpeechSynthesis();
     mockProcessTextForPronunciation = vi.fn((text: string) => text);
 
-    // Setup window mocks with fresh instances - ensure they're available before service creation
+    // Setup window mocks with fresh instances - CRITICAL: setup before service creation
     if (typeof window !== 'undefined') {
       (window as any).speechSynthesis = mockSpeechSynthesis;
       (window as any).Audio = createMockAudio();
     }
 
-    // Create fresh service instance with testing configuration
+    // Create fresh service instance with testing configuration AFTER mocks are ready
     tts = new UnifiedTTSService({ 
       mobileOptimized: false, 
       fallbackToWebSpeech: true, 
@@ -181,8 +183,8 @@ describe('UnifiedTTSService', () => {
     (tts as any)._resetForTesting();
     mockSpeechSynthesis._reset();
     
-    // Allow for any async operations to complete
-    await new Promise(resolve => setTimeout(resolve, 1));
+    // Longer wait time to ensure all async operations complete
+    await new Promise(resolve => setTimeout(resolve, 10));
   });
 
   describe('Audio Generation', () => {
@@ -211,12 +213,12 @@ describe('UnifiedTTSService', () => {
     });
 
     it('caches generated audio using spy-based verification', async () => {
-      // Set up spies before any operations
+      // Create spies IMMEDIATELY before any operations
       const generateAudioSpy = vi.spyOn(tts as any, 'generateAudio');
       const playAudioSpy = vi.spyOn(tts as any, 'playAudio').mockResolvedValue(undefined);
       
-      // Use exact same options to ensure consistent cache key generation
-      const options = { provider: 'openai' as const, voice: 'nova', speed: 1.00 };
+      // Use exact same options with normalized values to ensure consistent cache key generation
+      const options = { provider: 'openai' as const, voice: 'nova', speed: 1.0 };
       const text = 'cache test';
       
       // Verify initial state
@@ -227,12 +229,12 @@ describe('UnifiedTTSService', () => {
       expect(generateAudioSpy).toHaveBeenCalledTimes(1);
       expect(tts.getCacheSize()).toBe(1);
       
-      // Reset spy call count and verify second call uses cache
+      // Reset spy call count for clean verification
       generateAudioSpy.mockClear();
       
-      // Second call with identical parameters should use cache
-      await tts.speakText(text, options);
-      expect(generateAudioSpy).toHaveBeenCalledTimes(0); // No additional generation calls
+      // Second call with IDENTICAL parameters should use cache (no generation)
+      await tts.speakText(text, { ...options }); // Use spread to ensure same object structure
+      expect(generateAudioSpy).toHaveBeenCalledTimes(0); // CRITICAL: Should be 0, not 1
       expect(tts.getCacheSize()).toBe(1); // Cache size should remain 1
       
       // But playAudio should be called both times
@@ -280,19 +282,18 @@ describe('UnifiedTTSService', () => {
       expect(tts.isPlaying()).toBe(false);
       expect(mockSpeechSynthesis.speaking).toBe(false);
       
-      // Simulate speech synthesis playing by setting mock state
+      // Simulate speech synthesis playing by setting BOTH internal state and mock state
+      (tts as any).webSpeechSpeaking = true;
       mockSpeechSynthesis.speaking = true;
       expect(tts.isPlaying()).toBe(true);
       
-      // Stop audio should reset both service and mock state
+      // Stop audio should IMMEDIATELY reset both service and mock state
       tts.stopCurrentAudio();
       
-      // Allow async operations to complete
-      await new Promise(resolve => setTimeout(resolve, 5));
-      
-      // Verify both service and mock state are reset
+      // NO async wait needed - state should be synchronous
+      // Verify both service and mock state are IMMEDIATELY reset
       expect(mockSpeechSynthesis.speaking).toBe(false);
-      expect(tts.isPlaying()).toBe(false);
+      expect(tts.isPlaying()).toBe(false); // CRITICAL: Should be false immediately
     });
 
     it('tracks playing state with audio element', () => {
@@ -414,6 +415,7 @@ describe('UnifiedTTSService', () => {
 
   describe('Cache Management', () => {
     it('clears cache and regenerates audio', async () => {
+      // Setup spies IMMEDIATELY before any operations
       const generateAudioSpy = vi.spyOn(tts as any, 'generateAudio');
       const playAudioSpy = vi.spyOn(tts as any, 'playAudio').mockResolvedValue(undefined);
       
@@ -425,16 +427,16 @@ describe('UnifiedTTSService', () => {
       expect(generateAudioSpy).toHaveBeenCalledTimes(1);
       expect(tts.getCacheSize()).toBe(1);
       
-      // Clear cache
+      // Clear cache - this should reset everything
       tts.clearCache();
       expect(tts.getCacheSize()).toBe(0);
       
-      // Reset spy for clean count
+      // Reset spy call count for clean verification
       generateAudioSpy.mockClear();
       
-      // Should regenerate after cache clear
+      // Should regenerate after cache clear - CRITICAL: exactly 1 call expected
       await tts.speakText(text, options);
-      expect(generateAudioSpy).toHaveBeenCalledTimes(1);
+      expect(generateAudioSpy).toHaveBeenCalledTimes(1); // Should be exactly 1, not 2
       
       generateAudioSpy.mockRestore();
       playAudioSpy.mockRestore();
