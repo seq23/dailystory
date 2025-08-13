@@ -1,5 +1,18 @@
 import { vi, describe, it, expect, beforeEach, beforeAll } from 'vitest';
 
+// Suite-local polyfill for URL.createObjectURL/revokeObjectURL
+(() => {
+  if (!(globalThis as any).URL) {
+    (globalThis as any).URL = {} as any;
+  }
+  if (typeof (globalThis as any).URL.createObjectURL !== 'function') {
+    (globalThis as any).URL.createObjectURL = vi.fn(() => 'blob:mock-url');
+  }
+  if (typeof (globalThis as any).URL.revokeObjectURL !== 'function') {
+    (globalThis as any).URL.revokeObjectURL = vi.fn();
+  }
+})();
+
 // Hoist mocks BEFORE importing the module under test
 const hoisted = vi.hoisted(() => {
   const base64Mp3 = 'SUQzBAAAAAAA';
@@ -100,9 +113,10 @@ describe('UnifiedTTSService', () => {
     });
 
     it('caches generated audio', async () => {
-      await tts.speakText('cache me', { provider: 'openai' });
+      const opts = { provider: 'openai' as const, voice: 'nova', speed: 1 };
+      await tts.speakText('cache me', opts);
       const calls = hoisted.mockInvoke.mock.calls.length;
-      await tts.speakText('cache me', { provider: 'openai' });
+      await tts.speakText('cache me', opts);
       expect(hoisted.mockInvoke.mock.calls.length).toBe(calls);
     });
   });
@@ -120,11 +134,12 @@ describe('UnifiedTTSService', () => {
       expect(pauseSpy).toHaveBeenCalled();
     });
 
-    it('tracks playing state correctly', () => {
+    it('tracks playing state correctly', async () => {
       expect(!!tts.isPlaying()).toBe(false);
       (window as any).speechSynthesis.speaking = true;
       expect(tts.isPlaying()).toBe(true);
       (window as any).speechSynthesis.cancel();
+      await new Promise((r) => setTimeout(r, 0));
       expect(tts.isPlaying()).toBe(false);
     });
   });
