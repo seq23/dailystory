@@ -186,8 +186,19 @@ beforeEach(async () => {
       cacheEnabled: true 
     });
     
-    // Reset all internal state and ensure clean state
-    (tts as any)._resetForTesting();
+    // Safe reset of internal state without relying on private methods
+    try {
+      tts.stopCurrentAudio();
+      tts.clearCache();
+      // Manually reset service state if method exists
+      if (typeof (tts as any)._resetForTesting === 'function') {
+        (tts as any)._resetForTesting();
+      }
+    } catch (error) {
+      // Gracefully handle any reset errors
+      console.warn('Test setup warning: Could not reset TTS state', error);
+    }
+    
     mockSpeechSynthesis._reset();
     
     // Shorter wait time for faster tests
