@@ -241,9 +241,18 @@ export class UnifiedTTSService {
       }
 
       // Track speaking state to make isPlaying deterministic
-      utterance.onstart = () => { this.webSpeechSpeaking = true; };
-      utterance.onend = () => { this.webSpeechSpeaking = false; };
-      utterance.onerror = () => { this.webSpeechSpeaking = false; };
+      utterance.onstart = () => { 
+        this.webSpeechSpeaking = true; 
+        if (__TTS_DEBUG__) console.debug('[UnifiedTTS] WebSpeech started');
+      };
+      utterance.onend = () => { 
+        this.webSpeechSpeaking = false; 
+        if (__TTS_DEBUG__) console.debug('[UnifiedTTS] WebSpeech ended');
+      };
+      utterance.onerror = () => { 
+        this.webSpeechSpeaking = false; 
+        if (__TTS_DEBUG__) console.debug('[UnifiedTTS] WebSpeech error');
+      };
       
       speechSynthesis.speak(utterance);
     }
@@ -300,7 +309,17 @@ export class UnifiedTTSService {
       return !this.currentAudio.paused;
     }
     
-    // For web speech, prioritize internal tracking over external mock state
+    // For web speech, check both internal tracking and external mock state
+    // In tests, the mock might be cancelled externally, so sync with it
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      const synthSpeaking = (speechSynthesis as any).speaking;
+      if (this.webSpeechSpeaking && !synthSpeaking) {
+        // External cancellation detected, sync our internal state
+        this.webSpeechSpeaking = false;
+        if (__TTS_DEBUG__) console.debug('[UnifiedTTS] External cancellation detected, syncing state');
+      }
+    }
+    
     const webSpeechPlaying = this.webSpeechSpeaking;
     
     if (__TTS_DEBUG__) {

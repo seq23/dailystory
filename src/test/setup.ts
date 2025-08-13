@@ -16,28 +16,49 @@ if (!(global as any).btoa) {
   (global as any).btoa = (str: string) => (globalThis as any).Buffer.from(str, 'binary').toString('base64');
 }
 
-// Polyfill URL.createObjectURL/revokeObjectURL for tests
+// Robust URL.createObjectURL/revokeObjectURL polyfill for tests
 (() => {
+  const createMockURL = () => vi.fn(() => `blob:mock-url-${Date.now()}-${Math.random()}`);
+  const createMockRevoke = () => vi.fn();
+
   const ensureURLPolyfill = (URLObj: any) => {
     if (!URLObj) return;
     if (typeof URLObj.createObjectURL !== 'function') {
-      URLObj.createObjectURL = vi.fn(() => 'blob:mock-url');
+      URLObj.createObjectURL = createMockURL();
     }
     if (typeof URLObj.revokeObjectURL !== 'function') {
-      URLObj.revokeObjectURL = vi.fn();
+      URLObj.revokeObjectURL = createMockRevoke();
     }
   };
 
+  // Ensure globalThis.URL exists and is properly mocked
   if (typeof globalThis.URL === 'undefined') {
-    (globalThis as any).URL = {} as any;
+    (globalThis as any).URL = {
+      createObjectURL: createMockURL(),
+      revokeObjectURL: createMockRevoke(),
+    };
+  } else {
+    ensureURLPolyfill((globalThis as any).URL);
   }
-  ensureURLPolyfill((globalThis as any).URL);
 
+  // Ensure window.URL exists and is properly mocked
   if (typeof window !== 'undefined') {
     if (!(window as any).URL) {
-      (window as any).URL = (globalThis as any).URL;
+      (window as any).URL = {
+        createObjectURL: createMockURL(),
+        revokeObjectURL: createMockRevoke(),
+      };
+    } else {
+      ensureURLPolyfill((window as any).URL);
     }
-    ensureURLPolyfill((window as any).URL);
+  }
+
+  // Also ensure global URL is available for Node.js environment
+  if (typeof global !== 'undefined' && !(global as any).URL) {
+    (global as any).URL = {
+      createObjectURL: createMockURL(),
+      revokeObjectURL: createMockRevoke(),
+    };
   }
 })();
 // Minimal SpeechSynthesisUtterance mock
@@ -63,9 +84,13 @@ if (typeof window !== 'undefined' && !(window as any).speechSynthesis) {
     speaking: false,
     _lastUtterance: null as any,
     cancel: vi.fn(function (this: any) {
+      // Immediately set speaking to false for synchronous state changes
       this.speaking = false;
       if (this._lastUtterance && this._lastUtterance.onend) {
-        try { this._lastUtterance.onend(); } catch {}
+        try { 
+          // Call onend immediately for synchronous behavior in tests
+          this._lastUtterance.onend(); 
+        } catch {}
       }
       this._lastUtterance = null;
     }),
