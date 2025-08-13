@@ -71,6 +71,7 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
   const [storyPrefs, setStoryPrefs] = useState<any>({});
 const [isPremiumUser, setIsPremiumUser] = useState<boolean>(false);
 const { activeChild } = useChildProfiles();
+const teacherWordCount = (teacherWords || '').split(',').map((w) => w.trim()).filter(Boolean).length;
 useEffect(() => {
   let mounted = true;
   (async () => {
@@ -516,14 +517,19 @@ setIsPremiumUser(prev => prev || !!(data as any)?.is_premium);
                   placeholder="Add a word, then press Enter"
                   disabled={!isPremiumUser || twLoading || twSaving}
                 />
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" disabled={twLoading || twSaving} onClick={() => setTeacherWords(teacherWords)}>
-                    Reset
-                  </Button>
-                  <Button onClick={saveTeacherWords} disabled={!isPremiumUser || twLoading || twSaving}>
-                    {twSaving ? 'Saving...' : 'Save list'}
-                  </Button>
-                </div>
+<div className="flex items-center justify-between gap-2 flex-wrap">
+  <div className="text-xs text-muted-foreground">
+    {teacherWordCount}/50 words • Changes apply after you Save.
+  </div>
+  <div className="flex gap-2">
+    <Button variant="outline" disabled={!isPremiumUser || twLoading || twSaving} onClick={() => setTeacherWords('')}>
+      Clear list
+    </Button>
+    <Button onClick={saveTeacherWords} disabled={!isPremiumUser || twLoading || twSaving}>
+      {twSaving ? 'Saving...' : 'Save list'}
+    </Button>
+  </div>
+</div>
                 <div className="text-xs text-muted-foreground">Applies to: {activeChild ? activeChild.display_name : 'Default'} • Max 50 stored; up to 20 used per story.</div>
               </CardContent>
             </Card>
