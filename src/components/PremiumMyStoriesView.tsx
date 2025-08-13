@@ -20,8 +20,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { StorySessionCache } from "@/services/storySessionCache";
 import CleanStoryDisplay from "@/components/CleanStoryDisplay";
 import type { UserInfo, Story, SessionStats } from "@/types";
-import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
+import { SpecialRequestDialog } from "@/components/SpecialRequestDialog";
 import { useChildProfiles } from "@/hooks/useChildProfiles";
 import { APP_CONFIG } from "@/config/appConfig";
 
@@ -232,32 +231,19 @@ useEffect(() => {
       </Card>
 
 
-      <Dialog open={requestDialogOpen} onOpenChange={setRequestDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Any special requests for this new story?</DialogTitle>
-          </DialogHeader>
-          <Textarea
-            placeholder="Optional: themes, characters, settings (e.g., space cats, time travel, treasure maps)"
-            value={specialRequest}
-            onChange={(e) => setSpecialRequest(e.target.value)}
-            rows={4}
-          />
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setRequestDialogOpen(false)}>Cancel</Button>
-            <Button
-              onClick={() => {
-                setRequestDialogOpen(false);
-                setCurrentStory(null);
-                setCurrentView('reading');
-                localStorage.setItem(`user_${userInfo.name}_has_read_stories`, 'true');
-              }}
-            >
-              Start Story
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <SpecialRequestDialog
+        open={requestDialogOpen}
+        onOpenChange={setRequestDialogOpen}
+        initialValue={specialRequest}
+        onSubmit={(composed) => {
+          setSpecialRequest(composed);
+          setRequestDialogOpen(false);
+          setCurrentStory(null);
+          setCurrentView('reading');
+          localStorage.setItem(`user_${userInfo.name}_has_read_stories`, 'true');
+        }}
+        isGenerating={false}
+      />
     </div>
   );
 };
