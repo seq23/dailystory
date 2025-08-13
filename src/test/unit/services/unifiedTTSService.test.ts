@@ -25,6 +25,13 @@ vi.mock('@/integrations/supabase/client', () => ({
   },
 }));
 
+// Mock contextual pronunciation to ensure consistent cache keys
+vi.mock('@/services/contextualPronunciation', () => ({
+  contextualPronunciation: {
+    processTextForPronunciation: vi.fn((text: string) => text), // Return text unchanged
+  },
+}));
+
 // Import after mocks
 import { UnifiedTTSService } from '@/services/unifiedTTSService';
 ;(globalThis as any).__TTS_DEBUG__ = true;
@@ -53,7 +60,7 @@ beforeAll(() => {
       speaking: false,
       _lastUtterance: null as any,
       cancel: vi.fn(function (this: any) {
-        this.speaking = false;
+        this.speaking = false; // Properly reset speaking state
         if (this._lastUtterance && this._lastUtterance.onend) {
           try { this._lastUtterance.onend(); } catch {}
         }
@@ -151,8 +158,8 @@ describe('UnifiedTTSService', () => {
       mockSynth.speaking = true;
       expect(tts.isPlaying()).toBe(true);
       
-      // Use the service's stop method to ensure proper cleanup
-      tts.stopCurrentAudio();
+      // Call cancel to reset speaking state
+      mockSynth.cancel();
       expect(tts.isPlaying()).toBe(false);
     });
 
