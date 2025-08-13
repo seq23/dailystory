@@ -1,30 +1,10 @@
 import { vi, describe, it, expect, beforeEach, beforeAll } from 'vitest';
 
-// Suite-local polyfill for URL.createObjectURL/revokeObjectURL
-(() => {
-  // Ensure a robust URL polyfill is available on both globalThis and window
-  const ensureURLPolyfill = (URLObj: any) => {
-    if (!URLObj) return;
-    if (typeof URLObj.createObjectURL !== 'function') {
-      URLObj.createObjectURL = vi.fn(() => 'blob:mock-url');
-    }
-    if (typeof URLObj.revokeObjectURL !== 'function') {
-      URLObj.revokeObjectURL = vi.fn();
-    }
-  };
-
-  if (!(globalThis as any).URL) {
-    (globalThis as any).URL = {} as any;
-  }
-  ensureURLPolyfill((globalThis as any).URL);
-
-  if (typeof window !== 'undefined') {
-    if (!(window as any).URL) {
-      (window as any).URL = (globalThis as any).URL;
-    }
-    ensureURLPolyfill((window as any).URL);
-  }
-})();
+// Global URL polyfill using vi.stubGlobal for proper module-level access
+vi.stubGlobal('URL', {
+  createObjectURL: vi.fn(() => 'blob:mock-url'),
+  revokeObjectURL: vi.fn(),
+});
 
 // Hoist mocks BEFORE importing the module under test
 const hoisted = vi.hoisted(() => {
@@ -127,17 +107,20 @@ describe('UnifiedTTSService', () => {
     });
 
     it('caches generated audio', async () => {
-      const genSpy = vi.spyOn(UnifiedTTSService.prototype as any, 'generateAudio');
       const playSpy = vi.spyOn(tts as any, 'playAudio').mockResolvedValue(undefined as any);
       const opts = { provider: 'openai' as const, voice: 'nova', speed: 1 };
+      
+      // First call should generate audio
+      const initialCalls = hoisted.mockInvoke.mock.calls.length;
       await tts.speakText('cache me', opts);
-      expect(genSpy).toHaveBeenCalledTimes(1);
-      const cacheSizeAfterFirst = (tts as any).getCacheSize ? (tts as any).getCacheSize() : (tts as any).audioCache?.size;
-      expect(cacheSizeAfterFirst).toBeGreaterThanOrEqual(1);
+      expect(hoisted.mockInvoke.mock.calls.length).toBe(initialCalls + 1);
+      
+      // Second call with same text and options should use cache
+      const afterFirstCall = hoisted.mockInvoke.mock.calls.length;
       await tts.speakText('cache me', opts);
-      expect(genSpy).toHaveBeenCalledTimes(1);
+      expect(hoisted.mockInvoke.mock.calls.length).toBe(afterFirstCall); // No new calls
+      
       playSpy.mockRestore();
-      genSpy.mockRestore();
     });
 
   });
@@ -156,13 +139,20 @@ describe('UnifiedTTSService', () => {
     });
 
     it('tracks playing state correctly', async () => {
+      // Reset mock state completely
+      const mockSynth = (window as any).speechSynthesis;
+      mockSynth.speaking = false;
       tts.stopCurrentAudio();
-      await Promise.resolve();
-      expect(!!tts.isPlaying()).toBe(false);
-      (window as any).speechSynthesis.speaking = true;
+      
+      // Verify initial state
+      expect(tts.isPlaying()).toBe(false);
+      
+      // Simulate speech synthesis playing
+      mockSynth.speaking = true;
       expect(tts.isPlaying()).toBe(true);
+      
+      // Use the service's stop method to ensure proper cleanup
       tts.stopCurrentAudio();
-      await Promise.resolve();
       expect(tts.isPlaying()).toBe(false);
     });
 
