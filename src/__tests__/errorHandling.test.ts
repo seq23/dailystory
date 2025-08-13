@@ -5,7 +5,7 @@ import { SecurityLogger } from '@/utils/security';
 describe('errorHandling', () => {
   let logSpy: ReturnType<typeof vi.spyOn>;
   beforeEach(() => {
-    logSpy = vi.spyOn(SecurityLogger, 'log').mockImplementation(() => {} as any);
+    logSpy = vi.spyOn(SecurityLogger, 'log').mockImplementation(() => undefined as any);
   });
   afterEach(() => {
     logSpy.mockRestore();
@@ -50,11 +50,15 @@ describe('errorHandling', () => {
 
   it('handleErrors decorator wraps and rethrows as AppError', async () => {
     class Demo {
-      @handleErrors
       async run() {
         throw new Error('boom');
       }
     }
+    const proto: any = Demo.prototype;
+    const desc = Object.getOwnPropertyDescriptor(proto, 'run')!;
+    const wrappedDesc = handleErrors(proto, 'run', desc);
+    Object.defineProperty(proto, 'run', wrappedDesc);
+
     const d = new Demo();
     await expect(d.run()).rejects.toMatchObject({ type: ErrorType.UNKNOWN, message: 'boom' });
   });
