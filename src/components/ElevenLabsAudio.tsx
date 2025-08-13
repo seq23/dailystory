@@ -108,15 +108,16 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
     (window as any).__currentUserName = userInfo?.name || 'guest';
   }, [userInfo?.name]);
 
-// Stop audio on text or page change to avoid stale playback and apply brief stabilization
+// Stop audio on text or page change to avoid stale playback and apply 3-second stabilization
 useEffect(() => {
   try { audioSyncService.stopAudio(); } catch {}
   setIsPlaying(false);
   setIsStabilizing(true);
-  const delay = isMobileOrTablet ? 800 : 400;
+  // Implement full 3-second stabilization as requested
+  const delay = 3000; // 3 seconds for all devices
   const to = window.setTimeout(() => setIsStabilizing(false), delay);
   return () => clearTimeout(to);
-}, [text, currentPage, isMobileOrTablet]);
+}, [text, currentPage]);
 
   // Listen to voice status/level for mic button live indicators
   useEffect(() => {
@@ -221,17 +222,22 @@ useEffect(() => {
     audioRetryRef.current = false;
 
     try {
-      // Pre-roll: wait on mobile/tablet to ensure UI/content stabilizes; on desktop wait for stabilization or until max
-      const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
-      if (isMobileOrTablet) {
-        await wait(1200);
-      } else {
-        const minWords = 12;
-        const maxWaitMs = 1500;
-        const start = Date.now();
-        while ((isStabilizing || (text || '').split(/\s+/).filter(Boolean).length < minWords) && (Date.now() - start) < maxWaitMs) {
-          await wait(200);
+      // Enhanced 3-second stabilization with visual feedback
+      if (isStabilizing) {
+        console.log('🕐 Audio playback waiting for 3-second stabilization...');
+        toast({
+          title: t("audioReading.stabilizing", "Preparing audio..."),
+          description: t("audioReading.stabilizingDesc", "Please wait while we prepare the best reading experience."),
+          duration: 2000,
+        });
+        
+        // Wait for stabilization to complete
+        while (isStabilizing) {
+          await new Promise(r => setTimeout(r, 100));
         }
+        
+        // Additional small delay to ensure everything is ready
+        await new Promise(r => setTimeout(r, 200));
       }
 
       const speed = getBaseSpeed() * speedMultiplierRef.current;
@@ -399,7 +405,7 @@ const handleHeadlessCommand = (cmd: string) => {
         console.log(`🔄 Audio state sync: ${isPlaying} → ${status.isPlaying}`);
         setIsPlaying(status.isPlaying);
       }
-      // Confirm mismatch persists before stopping; never ignore on mobile/tablet
+      // Enhanced hash mismatch handling that doesn't count against free user limits
       const audioHash = (status as any).contentHash;
       const uiHash = (typeof window !== 'undefined' && (window as any).__pageContentHash) || contentHash;
       if (status.isPlaying && audioHash && uiHash && audioHash !== uiHash) {
@@ -407,12 +413,25 @@ const handleHeadlessCommand = (cmd: string) => {
         if (mismatchSinceRef.current == null) mismatchSinceRef.current = now;
         const elapsed = now - (mismatchSinceRef.current || 0);
         if (elapsed > 1000) {
-          console.warn('🛑 Audio/UI content hash mismatch (confirmed), stopping and retrying if possible');
+          console.warn('🛑 Audio/UI content hash mismatch (confirmed), stopping and giving free user another chance');
           mismatchSinceRef.current = null;
+          
+          // For free users, reset hasPlayedThisPage so hash mismatch doesn't count against their limit
+          if (!isPremium) {
+            setHasPlayedThisPage(false);
+            console.log('🔄 Free user: Hash mismatch - giving another chance to play this page');
+          }
+          
           stopAudio();
           if (!audioRetryRef.current) {
             audioRetryRef.current = true;
-            setTimeout(() => { try { (async () => { await playAudio(); })(); } catch {} }, 350);
+            setTimeout(() => { 
+              try { 
+                (async () => { 
+                  await playAudio(); 
+                })(); 
+              } catch {} 
+            }, 500);
           }
         }
       } else {

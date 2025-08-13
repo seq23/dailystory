@@ -191,45 +191,13 @@ export class AudioSyncService {
     } catch (error: any) {
       if (error?.name === 'AbortError' || String(error?.message).includes('stale-session')) {
         console.log('🛑 Audio request aborted due to navigation or new session');
-        // Do not call onSyncError for expected aborts
         return;
       }
-      console.error('Audio generation error, falling back to browser speech:', error);
+      console.error('ElevenLabs TTS failed, falling back to browser speech:', error);
       
       // Fallback to browser speech with word highlighting
-      const processedText = contextualPronunciation.processTextForPronunciation(text, true);
-      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-        const utterance = new SpeechSynthesisUtterance(processedText);
-        utterance.rate = speed * 0.8;
-        utterance.pitch = 1.1;
-        
-        if (onWordHighlight) {
-          // Start basic fallback highlighting
-          let wordIndex = 0;
-          const highlightInterval = setInterval(() => {
-            if (wordIndex < this.words.length && speechSynthesis.speaking) {
-              onWordHighlight(wordIndex);
-              wordIndex++;
-            } else {
-              clearInterval(highlightInterval);
-              if (onWordHighlight) onWordHighlight(-1);
-            }
-          }, Math.max(200 / speed, 100));
-        }
-        
-        speechSynthesis.speak(utterance);
-        this.isPlaying = true;
-        this.onStateChange?.(true);
-        
-        utterance.onend = () => {
-          this.isPlaying = false;
-          this.onStateChange?.(false);
-          if (onWordHighlight) {
-            onWordHighlight(-1);
-          }
-        };
-      }
-      return;
+      this.fallbackToWebSpeech(text, onWordHighlight, speed);
+      onStateChange?.(true);
     }
   }
 
@@ -573,6 +541,59 @@ export class AudioSyncService {
       totalWords: this.words.length,
       contentHash: this.activeContentHash
     };
+  }
+
+  /**
+   * Browser speech fallback with basic word highlighting
+   */
+  private fallbackToWebSpeech(text: string, onWordHighlight?: (wordIndex: number) => void, speed: number = 0.85): void {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = Math.max(0.1, Math.min(2.0, speed));
+      utterance.pitch = 1.1; // Child-friendly higher pitch
+      
+      // Try to find a child-friendly voice
+      const voices = speechSynthesis.getVoices();
+      const preferredVoice = voices.find(voice => 
+        voice.name.toLowerCase().includes('child') ||
+        voice.name.toLowerCase().includes('kid') ||
+        voice.name.toLowerCase().includes('young') ||
+        voice.name.toLowerCase().includes('female')
+      );
+      
+      if (preferredVoice) {
+        utterance.voice = preferredVoice;
+      }
+
+      // Set up basic word highlighting for browser speech
+      if (onWordHighlight && this.words.length > 0) {
+        const wordDuration = 60000 / (120 * speed); // Approximate 120 WPM baseline
+        
+        let wordIndex = 0;
+        const highlightInterval = setInterval(() => {
+          if (wordIndex < this.words.length && this.isPlaying) {
+            onWordHighlight(wordIndex);
+            this.currentWordIndex = wordIndex;
+            wordIndex++;
+          } else {
+            clearInterval(highlightInterval);
+          }
+        }, wordDuration);
+        
+        utterance.onend = () => {
+          clearInterval(highlightInterval);
+          this.isPlaying = false;
+        };
+        
+        utterance.onerror = () => {
+          clearInterval(highlightInterval);
+          this.isPlaying = false;
+        };
+      }
+      
+      this.isPlaying = true;
+      speechSynthesis.speak(utterance);
+    }
   }
 
   /**

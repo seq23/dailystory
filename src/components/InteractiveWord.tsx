@@ -238,7 +238,12 @@ export const InteractiveWord = ({
     setIsPlaying(true);
     try {
       const cleanWordOnly = word.replace(/[.,!?;:'"()]/g, '').trim();
-      await audioEngine.playText({ text: cleanWordOnly });
+      const processedWord = contextualPronunciation.processTextForPronunciation(cleanWordOnly, false);
+      await audioEngine.playText({
+        text: processedWord,
+        voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
+        contentHash: processedWord
+      });
     } catch (error) {
       console.error('Error pronouncing word:', error);
     } finally {
@@ -979,7 +984,11 @@ export const InteractiveWord = ({
                     const phoneticEngine = PhoneticRulesEngine.getInstance();
                     const syllables = phoneticEngine.breakIntoSyllables(word);
                     const syllableText = syllables.join(' - ');
-                    await audioEngine.playText({ text: syllableText });
+                    await audioEngine.playText({
+                      text: syllableText,
+                      voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
+                      contentHash: syllableText
+                    });
                     // Removed unnecessary phonetic breakdown status toast
                  } catch (error) {
                    console.error('Phonetic breakdown error:', error);
@@ -1674,7 +1683,11 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
       const phoneticEngine = PhoneticRulesEngine.getInstance();
       const syllables = phoneticEngine.breakIntoSyllables(props.word);
       const syllableText = syllables.join(' - ');
-      await audioEngine.playText({ text: syllableText });
+      await audioEngine.playText({
+        text: syllableText,
+        voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
+        contentHash: syllableText
+      });
       
       // Track vocabulary learning for all users
       console.log('🎯 Phonetic: Adding to vocabulary for word:', props.word);

@@ -33,6 +33,8 @@ import { defaultAudioConfig } from "@/config/audioConfig";
 import "@/styles/storyDisplay.css";
 // import { processTextForDesktop } from "@/utils/desktopTextProcessor";
 import { useWordHighlighting } from "@/hooks/useWordHighlighting";
+import { VoiceCommandController } from '@/components/VoiceCommandController';
+import { VoiceHoverController } from '@/components/VoiceHoverController';
 import { useGamification } from "@/hooks/useGamification";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getMobileTextConfig, getMobileStoryContainer } from "@/utils/mobileTextOptimizations";
@@ -1086,6 +1088,32 @@ useEffect(() => {
 
 const handleDockVoiceCommand = () => {
   try { audioRef.current?.toggleVoiceCommands?.(); } catch (e) { console.warn('Dock voice toggle failed', e); }
+};
+
+// Voice command handler for headless controller
+const handleVoiceCommand = (command: string) => {
+  console.log('🎙️ Voice command received:', command);
+  
+  const cmd = command.toLowerCase().trim();
+  
+  if (cmd.includes('start reading') || cmd.includes('read') || cmd.includes('play')) {
+    handleDockPlayAudio();
+  } else if (cmd.includes('pause') || cmd.includes('stop')) {
+    try { audioRef.current?.stop?.(); } catch (e) { console.warn('Voice pause failed', e); }
+  } else if (cmd.includes('next page') || cmd.includes('next')) {
+    handleNext();
+  } else if (cmd.includes('previous page') || cmd.includes('previous') || cmd.includes('back')) {
+    handlePrevious();
+  } else if (cmd.includes('increase font') || cmd.includes('bigger text')) {
+    // Font size adjustment logic would go here
+    console.log('Font size increase requested');
+  } else if (cmd.includes('decrease font') || cmd.includes('smaller text')) {
+    // Font size adjustment logic would go here
+    console.log('Font size decrease requested');
+  } else if (cmd.includes('open settings') || cmd.includes('settings')) {
+    // Settings logic would go here
+    console.log('Settings requested');
+  }
 };
 
 const handleDockCoach = () => {
@@ -2250,6 +2278,10 @@ const handleRestartTimer = () => {
         }}
         className="fixed"
       />
+      
+      {/* Voice Command System */}
+      <VoiceCommandController headless={true} onCommand={handleVoiceCommand} />
+      <VoiceHoverController />
       </div>
     </ErrorBoundary>
     </GameContextProvider>
