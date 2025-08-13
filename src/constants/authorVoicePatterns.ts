@@ -1,5 +1,6 @@
 // Story Voice Patterns - Different narrative styles mapped by age groups
 import type { DifficultyLevel, UserInfo } from "@/types";
+import { resolveMicroPlaceholders } from "@/utils/placeholderResolver";
 
 export interface AuthorVoice {
   name: string;
@@ -394,8 +395,8 @@ export function applyAuthorVoice(
   
   // Extract variables from content for pattern substitution
   const variables = extractContentVariables(content);
-  const styledPattern = substitutePatternVariables(pattern, variables);
-  
+  const styledPattern = substitutePatternVariables(pattern, variables, content);
+
   // Apply voice characteristics naturally based on position
   switch (position) {
     case 'opening':
@@ -435,7 +436,10 @@ function extractContentVariables(content: string): Record<string, string> {
   
   // Extract potential names (capitalized words not at sentence start)
   const nameMatch = content.match(/\b[A-Z][a-z]+\b/g);
-  if (nameMatch) variables.name = nameMatch[0];
+  if (nameMatch) {
+    variables.name = nameMatch[0];
+    variables.userName = nameMatch[0];
+  }
   
   // Extract basic descriptors
   if (content.includes('beautiful')) variables.adjective = 'beautiful';
@@ -446,19 +450,14 @@ function extractContentVariables(content: string): Record<string, string> {
 }
 
 /**
- * Substitute pattern variables with extracted content
+ * Substitute pattern variables using resolver with safe fallbacks
  */
-function substitutePatternVariables(pattern: string, variables: Record<string, string>): string {
-  let result = pattern;
-  
-  Object.entries(variables).forEach(([key, value]) => {
-    result = result.replace(new RegExp(`\\{${key}\\}`, 'g'), value);
-  });
-  
-  // Remove unsubstituted variables to keep pattern clean
-  result = result.replace(/\{[^}]+\}/g, '');
-  
-  return result.trim();
+function substitutePatternVariables(
+  pattern: string,
+  variables: Record<string, string>,
+  sourceContent?: string
+): string {
+  return resolveMicroPlaceholders(pattern, { seed: variables, pageText: sourceContent });
 }
 
 /**
