@@ -5,7 +5,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import type { UserInfo } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { PhoneticRulesEngine } from "@/services/phoneticRulesEngine";
-import { EnhancedAudioService } from "@/services/enhancedAudioService";
+import { SimpleAudioEngine } from "@/services/SimpleAudioEngine";
 import { VocabularyLevelClassifier } from "@/utils/vocabularyLevelClassifier";
 import { getGlobalAddVocabularyWord } from "@/utils/gamificationGlobals";
 import { VocabularyTrackingService } from "@/services/vocabularyTrackingService";
@@ -28,7 +28,7 @@ export const MobileOptimizedInteractiveWord = (props: MobileOptimizedInteractive
   const [showMobileModal, setShowMobileModal] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoadingWordData, setIsLoadingWordData] = useState(false);
-  const [enhancedAudio] = useState(() => new EnhancedAudioService());
+  const audioEngine = SimpleAudioEngine.getInstance();
   const { toast } = useToast();
   const [hasCountedReview, setHasCountedReview] = useState(false);
 
@@ -269,13 +269,7 @@ if (props.forceModal || isMobileOrTablet) {
               if (isPlaying || isLoadingWordData) return;
               try {
                 // 1) Pronounce word
-                await enhancedAudio.playText({
-                  text: cleanWord,
-                  difficulty: 'easy',
-                  userInfo: { ...(props.userInfo as UserInfo), nativeLanguage: 'en' } as UserInfo,
-                  isPremium: !!props.isPremium,
-                  enableHighlighting: false,
-                });
+                await audioEngine.playText({ text: cleanWord });
                 if (cancelRef.current) return;
                 // 2) Definition
                 const userLang = props.userInfo?.nativeLanguage || 'en';
@@ -283,13 +277,7 @@ if (props.forceModal || isMobileOrTablet) {
                   body: { word: cleanWord, userLevel: difficulty, userLanguage: userLang }
                 });
                 const definition: string = (!error && data?.definition) ? data.definition : cleanWord;
-                await enhancedAudio.playText({
-                  text: definition,
-                  difficulty: 'easy',
-                  userInfo: props.userInfo!,
-                  isPremium: !!props.isPremium,
-                  enableHighlighting: false,
-                });
+                await audioEngine.playText({ text: definition });
                 if (cancelRef.current) return;
                 // 3) Syllables
                 const raw = await PhoneticRulesEngine.getInstance().breakIntoSyllablesAsync(cleanWord);
@@ -302,13 +290,7 @@ if (props.forceModal || isMobileOrTablet) {
                 };
                 const adjusted = toAudioFriendly(cleanWord, raw);
                 const syllText = adjusted.join(', ');
-                await enhancedAudio.playText({
-                  text: syllText,
-                  difficulty: 'easy',
-                  userInfo: props.userInfo!,
-                  isPremium: !!props.isPremium,
-                  enableHighlighting: false,
-                });
+                await audioEngine.playText({ text: syllText });
               } catch (e) {
                 console.warn('Hover sequence failed', e);
               }

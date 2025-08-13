@@ -24,7 +24,7 @@ import ReadAloudCoach from "@/components/ReadAloudCoach";
 // Audio and Interactive Components
 import { ElevenLabsAudio, type ElevenLabsAudioHandle } from "@/components/ElevenLabsAudio";
 import { PhoneticRulesEngine } from "@/services/phoneticRulesEngine";
-import { charlotteTTS } from "@/services/charlotteTTS";
+import { SimpleAudioEngine } from "@/services/SimpleAudioEngine";
 
 import { VocabularyCollector } from "@/components/VocabularyCollector";
 import { processTextWithConsistentFlow } from "@/utils/unifiedTextProcessor";
@@ -413,7 +413,8 @@ useEffect(() => {
     const CHARLOTTE = 'XB0fDUnXU5powFXDhCwa';
 
     const playTTS = async (text: string) => {
-      await charlotteTTS.speak(text);
+      const audioEngine = SimpleAudioEngine.getInstance();
+      await audioEngine.playText({ text });
     };
 
     const getDefinition = async (w: string): Promise<string> => {

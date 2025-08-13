@@ -1,13 +1,16 @@
 import type { UserInfo } from '@/types';
 import { tokenizeForHighlighting, hashText } from '@/utils/tokenize';
+import { fetchElevenLabsAudioArrayBuffer } from '@/services/simpleElevenLabsTTS';
+import { contextualPronunciation } from './contextualPronunciation';
 
 interface AudioSyncOptions {
   text: string;
-  voice: string;
-  model: string;
-  speed: number;
+  voice?: string;
+  model?: string;
+  speed?: number;
+  userInfo?: UserInfo;
   onWordHighlight?: (wordIndex: number) => void;
-  onSyncError?: () => void;
+  onError?: (error: Error) => void;
 }
 
 interface VoiceTimingProfile {
@@ -70,7 +73,7 @@ export class AudioSyncService {
    * Play text with synchronized word highlighting
    */
   async playText(options: AudioSyncOptions & { onStateChange?: (isPlaying: boolean) => void }): Promise<void> {
-    const { text, voice, model, speed, onWordHighlight, onSyncError, onStateChange } = options;
+    const { text, voice = 'XB0fDUnXU5powFXDhCwa', model = 'eleven_turbo_v2_5', speed = 1.0, onWordHighlight, onError, onStateChange } = options;
     
     // New session guards
     this.activeSessionId = ++this.sessionIdCounter;
@@ -111,28 +114,19 @@ export class AudioSyncService {
     }
     
     try {
-      // Generate audio from ElevenLabs
-      const response = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/elevenlabs-tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text: text.slice(0, 3000),
-          voice: voice,
-          model: model
-        }),
-        signal: this.fetchAbortController.signal
-      });
+      // Generate audio with ElevenLabs
+      const arrayBuffer = await fetchElevenLabsAudioArrayBuffer(
+        text.slice(0, 3000),
+        voice,
+        model
+      );
 
       // If session changed during fetch, abort silently
       if (this.activeSessionId !== localSessionId || this.activeContentHash !== localContentHash) {
         throw new Error('stale-session');
       }
 
-      if (!response.ok) {
-        throw new Error('Failed to generate audio');
-      }
-
-      const audioBlob = await response.blob();
+      const audioBlob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
       // Guard again after heavy work
       if (this.activeSessionId !== localSessionId || this.activeContentHash !== localContentHash) {
         throw new Error('stale-session');
@@ -200,11 +194,17 @@ export class AudioSyncService {
         // Do not call onSyncError for expected aborts
         return;
       }
-      console.error('Audio sync service error:', error);
-      this.isPlaying = false;
-      this.onStateChange?.(false); // Notify state change
-      onSyncError?.();
-      throw error;
+      console.error('Audio generation error, falling back to browser speech:', error);
+      
+      // Fallback to browser speech with word highlighting
+      this.fallbackToWebSpeech(text, { 
+        text, 
+        onWordHighlight, 
+        onError,
+        userInfo: options.userInfo,
+        speed
+      });
+      return;
     }
   }
 

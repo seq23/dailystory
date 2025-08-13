@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { phoneticRulesEngine } from '@/services/phoneticRulesEngine';
-import { EnhancedAudioService } from '@/services/enhancedAudioService';
+import { SimpleAudioEngine } from '@/services/SimpleAudioEngine';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -12,7 +12,7 @@ const TTSDebug: React.FC = () => {
   const [syllables, setSyllables] = useState<string[]>([]);
   const [source, setSource] = useState<'override' | 'heuristic' | null>(null);
   const [pronunciations, setPronunciations] = useState<string[] | null>(null);
-  const audio = useMemo(() => new EnhancedAudioService(), []);
+  const audio = SimpleAudioEngine.getInstance();
 
   useEffect(() => {
     // SEO basics for the page

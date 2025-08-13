@@ -1,4 +1,5 @@
 import { fetchElevenLabsAudioArrayBuffer } from '@/services/simpleElevenLabsTTS';
+import { contextualPronunciation } from './contextualPronunciation';
 
 export type PlayOptions = {
   text: string;
@@ -23,6 +24,7 @@ export class SimpleAudioEngine {
   private playing = false;
   private currentHash: string | null = null;
   private inflight?: AbortController;
+  private webSpeechSpeaking = false;
 
   private ensureAudio() {
     if (!this.audio) {
@@ -44,24 +46,67 @@ export class SimpleAudioEngine {
     // Guard against UI/content mismatch
     this.currentHash = contentHash || null;
 
-    // Generate audio
-    this.inflight = new AbortController();
-    const signal = this.inflight.signal;
+    try {
+      // Generate audio with ElevenLabs
+      this.inflight = new AbortController();
+      const signal = this.inflight.signal;
 
-    const arrayBuffer = await fetchElevenLabsAudioArrayBuffer(text, voiceId, modelId);
-    if (signal.aborted) return; // canceled by a newer call
+      const arrayBuffer = await fetchElevenLabsAudioArrayBuffer(text, voiceId, modelId);
+      if (signal.aborted) return; // canceled by a newer call
 
-    const blob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
-    const url = URL.createObjectURL(blob);
+      const blob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
+      const url = URL.createObjectURL(blob);
 
-    const audio = this.ensureAudio();
-    try { audio.pause(); } catch {}
-    if (this.currentUrl) URL.revokeObjectURL(this.currentUrl);
-    this.currentUrl = url;
-    audio.src = url;
+      const audio = this.ensureAudio();
+      try { audio.pause(); } catch {}
+      if (this.currentUrl) URL.revokeObjectURL(this.currentUrl);
+      this.currentUrl = url;
+      audio.src = url;
 
-    await audio.play();
-    this.playing = true;
+      await audio.play();
+      this.playing = true;
+    } catch (error) {
+      console.error('ElevenLabs failed, falling back to browser speech:', error);
+      // Fallback to browser speech
+      this.fallbackToWebSpeech(text);
+    }
+  }
+
+  private fallbackToWebSpeech(text: string): void {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      const processedText = contextualPronunciation.processTextForPronunciation(text, true);
+      const utterance = new SpeechSynthesisUtterance(processedText);
+      utterance.rate = 0.8;
+      utterance.pitch = 1.1; // Child-friendly higher pitch
+      
+      // Try to find a child-friendly voice
+      const voices = speechSynthesis.getVoices();
+      const preferredVoice = voices.find(voice => 
+        voice.name.toLowerCase().includes('child') ||
+        voice.name.toLowerCase().includes('kid') ||
+        voice.name.toLowerCase().includes('young') ||
+        voice.name.toLowerCase().includes('female')
+      );
+      
+      if (preferredVoice) {
+        utterance.voice = preferredVoice;
+      }
+
+      this.webSpeechSpeaking = true;
+      this.playing = true;
+      
+      utterance.onend = () => {
+        this.webSpeechSpeaking = false;
+        this.playing = false;
+      };
+      
+      utterance.onerror = () => {
+        this.webSpeechSpeaking = false;
+        this.playing = false;
+      };
+      
+      speechSynthesis.speak(utterance);
+    }
   }
 
   stop() {
@@ -77,10 +122,19 @@ export class SimpleAudioEngine {
       try { URL.revokeObjectURL(this.currentUrl); } catch {}
       this.currentUrl = null;
     }
+    
+    // Stop browser speech
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      try { speechSynthesis.cancel(); } catch {}
+    }
+    this.webSpeechSpeaking = false;
     this.playing = false;
   }
 
-  isPlaying() { return this.playing; }
+  isPlaying() { 
+    // Check both audio element and web speech
+    return this.playing || this.webSpeechSpeaking; 
+  }
 
   getStatus() {
     return { isPlaying: this.playing, contentHash: this.currentHash };

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { Mic, StopCircle, Volume2, RotateCcw, ChevronLeft, ChevronRight, Lock } from "lucide-react";
-import { charlotteTTS } from "@/services/charlotteTTS";
+import { SimpleAudioEngine } from "@/services/SimpleAudioEngine";
 import type { UserInfo } from "@/types";
 import { useTranslation } from "react-i18next";
 
@@ -333,7 +333,10 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
     if (ok) {
       // Celebrate quickly and remove from list
       setTopWords((prev) => prev.filter((x) => x !== w));
-      try { await charlotteTTS.speak(t('coach.great','Great!') ); } catch {}
+      try { 
+        const audioEngine = SimpleAudioEngine.getInstance();
+        await audioEngine.playText({ text: t('coach.great','Great!') }); 
+      } catch {}
     }
   };
 
@@ -446,7 +449,10 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
                 <div key={w} className="flex items-center justify-between gap-2">
                   <span className="text-muted-foreground">{w}</span>
                   <div className="flex items-center gap-2">
-                    <Button size="sm" variant="secondary" className="gap-1" onClick={() => charlotteTTS.speak(w)}>
+                    <Button size="sm" variant="secondary" className="gap-1" onClick={() => {
+                      const audioEngine = SimpleAudioEngine.getInstance();
+                      audioEngine.playText({ text: w });
+                    }}>
                       <Volume2 className="w-3 h-3" /> {t('coach.hearIt','Hear it')}
                     </Button>
                     <Button size="sm" className="gap-1" onClick={() => onSayWithMe(w)} disabled={(wordTries[w] || 0) >= WORD_MICRO_ATTEMPTS}>

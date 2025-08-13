@@ -8,7 +8,7 @@ import { Play, Square, Crown, Mic, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { EnhancedAudioService } from "@/services/enhancedAudioService";
+import { audioSyncService } from "@/services/audioSyncService";
 import { VoiceCommandController } from "@/components/VoiceCommandController";
 import type { VoiceCommandControllerHandle } from "@/components/VoiceCommandController";
 import type { UserInfo } from "@/types";
@@ -59,7 +59,7 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
   const restoredRef = useRef(false);
   const voiceEnabledRef = useRef(false);
   const restartTimeoutRef = useRef<number | null>(null);
-  const [audioService] = useState(() => new EnhancedAudioService());
+  // Use audioSyncService for enhanced word highlighting
   const [hasPlayedThisPage, setHasPlayedThisPage] = useState(false);
   const { toast, dismiss } = useToast();
   const voiceTipsShownRef = useRef(false);

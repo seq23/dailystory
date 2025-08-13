@@ -2,9 +2,8 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { PhoneticRulesEngine } from "@/services/phoneticRulesEngine";
 import { Volume2, HelpCircle, Languages, BookOpen, Lightbulb, Plus, Crown, Layers } from "lucide-react";
-import { UnifiedTTSService } from "@/services/unifiedTTSService";
-import { EnhancedAudioService } from "@/services/enhancedAudioService";
-import { charlotteTTS } from "@/services/charlotteTTS";
+import { SimpleAudioEngine } from "@/services/SimpleAudioEngine";
+import { PhoneticRulesEngine } from "@/services/phoneticRulesEngine";
 import { useToast } from "@/hooks/use-toast";
 import { contextualPronunciation } from "@/services/contextualPronunciation";
 import { supabase } from "@/integrations/supabase/client";
@@ -107,8 +106,7 @@ export const InteractiveWord = ({
   const [isPlaying, setIsPlaying] = useState(false);
   const [wordData, setWordData] = useState<any>(null);
   const [isLoadingWordData, setIsLoadingWordData] = useState(false);
-  const [ttsService, setTtsService] = useState<any>(null);
-  const [enhancedAudioService] = useState(() => new EnhancedAudioService());
+  const audioEngine = SimpleAudioEngine.getInstance();
   const [isPlayingPhonetics, setIsPlayingPhonetics] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState<{
     vertical: 'top' | 'bottom';
@@ -123,11 +121,7 @@ export const InteractiveWord = ({
   const { isMobile } = useIsMobile();
   const reviewCountedRef = useRef(false);
 
-  useEffect(() => {
-    // Initialize Unified TTS service
-    const service = new UnifiedTTSService({ mobileOptimized: isMobile });
-    setTtsService(service);
-  }, [isMobile]);
+  // Remove TTS service initialization - using SimpleAudioEngine instead
 
   // Determine if user is a native English speaker
   const isNativeEnglishSpeaker = userInfo?.nativeLanguage === "en";
@@ -594,27 +588,16 @@ export const InteractiveWord = ({
         // Try playing the actual translation audio
         let audioPlayed = false;
 
-        // First try OpenAI TTS
-        if (ttsService) {
-          try {
-            // Removed unnecessary high quality audio status toast
-            
-            await ttsService.speakText(translationText, {
-              voice: 'nova',
-              speed: 0.7
-            });
-            
-            audioPlayed = true;
-            
-            // Removed unnecessary audio complete toast
-            
-          } catch (ttsError) {
-            toast({
-              title: "⚠️ High Quality Audio Failed",
-              description: "Trying backup audio method...",
-              duration: 2000,
-            });
-          }
+        // Use SimpleAudioEngine for all audio
+        try {
+          await audioEngine.playText({ text: translationText });
+          audioPlayed = true;
+        } catch (ttsError) {
+          toast({
+            title: "⚠️ High Quality Audio Failed",
+            description: "Trying backup audio method...",
+            duration: 2000,
+          });
         }
 
         // If OpenAI TTS failed, try browser speech
@@ -1058,7 +1041,7 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
   const [isPlayingMobile, setIsPlayingMobile] = useState(false);
   const [mobileWordData, setMobileWordData] = useState<any>(null);
   const [isLoadingMobile, setIsLoadingMobile] = useState(false);
-  const [enhancedAudioService] = useState(() => new EnhancedAudioService());
+  const audioEngine = SimpleAudioEngine.getInstance();
   const [isPlayingPhonetics, setIsPlayingPhonetics] = useState(false);
   // Use global gamification system instead of local hook for mobile
   const getAddVocabularyWordMobile = () => {
@@ -1682,7 +1665,7 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
   const handlePhoneticBreakdown = async () => {
     console.log('🔤 Phonetic breakdown clicked for word:', props.word);
     console.log('🔤 UserInfo available:', !!props.userInfo);
-    console.log('🔤 Enhanced audio service available:', !!enhancedAudioService);
+    console.log('🔤 Audio engine available:', !!audioEngine);
     
     if (!props.userInfo) {
       console.error('❌ Phonetic: No user info available');
