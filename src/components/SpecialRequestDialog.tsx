@@ -36,7 +36,7 @@ export const SpecialRequestDialog: React.FC<SpecialRequestDialogProps> = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent aria-label="Update special requests before generating a new story">
         <DialogHeader>
-          <DialogTitle>Re-write this story</DialogTitle>
+          <DialogTitle>Add your magic!</DialogTitle>
           <DialogDescription>
             Update any special requests. These guide the AI when creating your next page-by-page story.
           </DialogDescription>
