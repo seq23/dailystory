@@ -305,6 +305,14 @@ export class UnifiedTTSService {
     return this.audioCache.size;
   }
 
+  // Testing utility method to reset all internal state
+  _resetForTesting(): void {
+    this.stopCurrentAudio();
+    this.clearCache();
+    this.audioInitialized = false;
+    this.webSpeechSpeaking = false;
+  }
+
 
   // Static factory methods for common configurations
   static createForChildren(config?: Partial<TTSServiceConfig>): UnifiedTTSService {
