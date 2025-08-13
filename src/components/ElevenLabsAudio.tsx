@@ -99,9 +99,9 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
   useEffect(() => {
     if (isMobileOrTablet) {
       // Initialize mobile audio on component mount
-      audioService.getPlaybackStatus(); // This will trigger mobile audio initialization
+      audioSyncService.getPlaybackStatus(); // This will trigger mobile audio initialization
     }
-  }, [audioService, isMobileOrTablet]);
+  }, [isMobileOrTablet]);
 
   // Expose current user name for vocabulary storage key standardization
   useEffect(() => {
@@ -110,13 +110,13 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
 
 // Stop audio on text or page change to avoid stale playback and apply brief stabilization
 useEffect(() => {
-  try { audioService.stopAudio(); } catch {}
+  try { audioSyncService.stopAudio(); } catch {}
   setIsPlaying(false);
   setIsStabilizing(true);
   const delay = isMobileOrTablet ? 800 : 400;
   const to = window.setTimeout(() => setIsStabilizing(false), delay);
   return () => clearTimeout(to);
-}, [text, currentPage, audioService, isMobileOrTablet]);
+}, [text, currentPage, isMobileOrTablet]);
 
   // Listen to voice status/level for mic button live indicators
   useEffect(() => {
@@ -134,11 +134,11 @@ useEffect(() => {
   // Stop voice commands on unmount
   useEffect(() => {
     return () => {
-      try { audioService.stopVoiceCommands(); } catch {}
+      try { audioSyncService.stopAudio(); } catch {}
       try { vcRef.current?.stop?.(); } catch {}
       try { emitStatus('idle'); } catch {}
     };
-  }, [audioService]);
+  }, []);
 
   // Restore voice command state from session
   useEffect(() => {
@@ -147,13 +147,13 @@ useEffect(() => {
       const userDisabled = (window as any).__t2r_vc_user_disabled === true;
       if (isPremium && saved === '1' && !userDisabled && !restoredRef.current) {
         (window as any).__t2r_vc_user_disabled = false;
-        audioService.startVoiceCommands();
+        // Voice commands not supported by audioSyncService
         setVoiceCommandsEnabled(true);
         voiceEnabledRef.current = true;
         restoredRef.current = true;
       }
     } catch {}
-  }, [isPremium, audioService]);
+  }, [isPremium]);
 
   useEffect(() => {
     if (voiceCommandsEnabled && vcStatus === 'listening' && !voiceTipsShownRef.current) {
@@ -191,7 +191,7 @@ useEffect(() => {
         setVcLevel(0);
         try { window.dispatchEvent(new CustomEvent('voice:level', { detail: { level: 0 } })); } catch {}
         try { vcRef.current?.stop?.(); } catch {}
-        try { audioService.stopVoiceCommands(); } catch {}
+        // Voice commands not available in audioSyncService
       }
     };
     window.addEventListener('voice:toggle', toggleHandler as EventListener);
@@ -200,7 +200,7 @@ useEffect(() => {
       window.removeEventListener('voice:toggle', toggleHandler as EventListener);
       window.removeEventListener('voice:stop', stopHandler as EventListener);
     };
-  }, [voiceCommandsEnabled, audioService]);
+  }, [voiceCommandsEnabled]);
 
   // Enhanced audio playback using new service
   const playAudio = async () => {
@@ -237,12 +237,12 @@ useEffect(() => {
       const speed = getBaseSpeed() * speedMultiplierRef.current;
       const playSnapshot = { text, page: currentPage, contentHash };
 
-      await audioService.playText({
+      await audioSyncService.playText({
         text,
-        difficulty,
+        voice: 'XB0fDUnXU5powFXDhCwa', // Charlotte voice
+        model: 'eleven_turbo_v2_5',
+        speed,
         userInfo,
-        isPremium,
-        enableHighlighting: onWordHighlight !== undefined,
         onWordHighlight: (wordIndex: number) => {
           console.log(`🎯 ElevenLabs: Highlighting word ${wordIndex}`);
           try {
@@ -251,15 +251,13 @@ useEffect(() => {
             if (w) (window as any).__currentHighlightedWord = w;
           } catch {}
           onWordHighlight?.(wordIndex);
-        },
-        currentPage,
-        customSpeed: speed,
+        }
       });
 
       // Guard: if page or text changed during load, stop and bail
       if (playSnapshot.page !== currentPage || playSnapshot.text !== text || playSnapshot.contentHash !== contentHash) {
         console.warn('🛑 TTS aborted due to page/text/hash change during load');
-        try { audioService.stopAudio(); } catch {}
+        try { audioSyncService.stopAudio(); } catch {}
         toast({ title: t('audioReading.pageChanged', 'Page changed'), description: t('audioReading.refreshAudio', 'Audio refreshed for the new page.'), duration: 1800 });
         return;
       }
@@ -286,7 +284,7 @@ useEffect(() => {
 
 
   const stopAudio = () => {
-    audioService.stopAudio();
+    audioSyncService.stopAudio();
     setIsPlaying(false);
   };
 
@@ -319,7 +317,7 @@ const toggleVoiceCommands = () => {
       restartTimeoutRef.current = null;
     }
     try { vcRef.current?.stop?.(); } catch {}
-    try { audioService.stopVoiceCommands(); } catch {}
+    // Voice commands not available in audioSyncService
     return;
   }
 
@@ -336,7 +334,7 @@ const toggleVoiceCommands = () => {
     voiceEnabledRef.current = true;
     emitStatus('listening');
     setVcStatus('listening');
-    audioService.startVoiceCommands();
+    // Voice commands not available in audioSyncService
     return;
   }
 
@@ -361,7 +359,8 @@ const toggleVoiceCommands = () => {
 
 const handleHeadlessCommand = (cmd: string) => {
   try {
-    const result = (audioService as any).processVoiceCommand?.(cmd);
+    // Voice command processing not available in audioSyncService
+    const result = null;
     console.log('🎙️ Headless voice command processed:', { cmd, result });
     if (result && result.recognized && typeof result.action === 'function') {
       window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: 'processing' } }));
@@ -395,7 +394,7 @@ const handleHeadlessCommand = (cmd: string) => {
   // Enhanced audio service status monitoring with better frequency + hash guard
   useEffect(() => {
     const checkStatus = () => {
-      const status = audioService.getPlaybackStatus();
+      const status = audioSyncService.getPlaybackStatus();
       if (status.isPlaying !== isPlaying) {
         console.log(`🔄 Audio state sync: ${isPlaying} → ${status.isPlaying}`);
         setIsPlaying(status.isPlaying);
@@ -423,7 +422,7 @@ const handleHeadlessCommand = (cmd: string) => {
 
     const interval = setInterval(checkStatus, 250);
     return () => clearInterval(interval);
-  }, [audioService, isPlaying, contentHash, currentPage, text]);
+  }, [isPlaying, contentHash, currentPage, text]);
 
 // Voice vocabulary events handler
 useEffect(() => {
@@ -448,7 +447,9 @@ useEffect(() => {
     const cleanWord = resolved;
     try {
       if (detail.type === 'pronounce') {
-        await audioService.playText({ text: cleanWord, difficulty: 'easy', userInfo: { ...userInfo, nativeLanguage: 'en' }, isPremium, enableHighlighting: false });
+        // Use SimpleAudioEngine for word pronunciation
+        const { SimpleAudioEngine } = await import('@/services/SimpleAudioEngine');
+        await SimpleAudioEngine.getInstance().playText({ text: cleanWord });
         return;
       }
       const userLang = userInfo?.nativeLanguage || 'en';
@@ -460,13 +461,9 @@ useEffect(() => {
         if (detail.type === 'define' || detail.type === 'explain') {
           toast({ title: cleanWord, description: definition, duration: 4000 });
           try {
-            await audioService.playText({
-              text: definition,
-              difficulty: 'easy',
-              userInfo,
-              isPremium,
-              enableHighlighting: false
-            });
+            // Use SimpleAudioEngine for definitions
+            const { SimpleAudioEngine } = await import('@/services/SimpleAudioEngine');
+            await SimpleAudioEngine.getInstance().playText({ text: definition });
           } catch (e) {
             console.warn('Definition TTS failed', e);
           }
@@ -490,16 +487,16 @@ useEffect(() => {
   };
   window.addEventListener('voice:vocab', onVocab as EventListener);
   return () => window.removeEventListener('voice:vocab', onVocab as EventListener);
-}, [audioService, userInfo, difficulty, toast, t]);
+}, [userInfo, difficulty, toast, t]);
 
 // Voice command playback controls
 useEffect(() => {
   const onPause = () => {
-    try { (audioService as any).pauseAudio?.(); } catch {}
+    try { audioSyncService.pauseAudio(); } catch {}
     setIsPlaying(false);
   };
   const onResume = async () => {
-    try { await (audioService as any).resumeAudio?.(); setIsPlaying(true); }
+    try { await audioSyncService.resumeAudio(); setIsPlaying(true); }
     catch { try { await playAudio(); } catch {} }
   };
   const onRepeat = async () => {
@@ -524,7 +521,7 @@ useEffect(() => {
     window.removeEventListener('audio:repeat', onRepeat as EventListener);
     window.removeEventListener('audio:speed', onSpeed as EventListener);
   };
-}, [audioService, isPlaying, playAudio]);
+}, [isPlaying, playAudio]);
 
   return (
     <div className="flex items-center gap-2 flex-wrap">

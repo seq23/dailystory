@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { PhoneticRulesEngine } from "@/services/phoneticRulesEngine";
 import { Volume2, HelpCircle, Languages, BookOpen, Lightbulb, Plus, Crown, Layers } from "lucide-react";
 import { SimpleAudioEngine } from "@/services/SimpleAudioEngine";
 import { PhoneticRulesEngine } from "@/services/phoneticRulesEngine";
@@ -239,13 +238,7 @@ export const InteractiveWord = ({
     setIsPlaying(true);
     try {
       const cleanWordOnly = word.replace(/[.,!?;:'"()]/g, '').trim();
-      await enhancedAudioService.playText({
-        text: cleanWordOnly,
-        difficulty: 'easy',
-        userInfo: userInfo!,
-        isPremium: isPremium,
-        enableHighlighting: false,
-      });
+      await audioEngine.playText({ text: cleanWordOnly });
     } catch (error) {
       console.error('Error pronouncing word:', error);
     } finally {
@@ -982,11 +975,11 @@ export const InteractiveWord = ({
                   console.log('🔤 DESKTOP PHONETIC BUTTON CLICKED for word:', word);
                   setIsPlayingPhonetics(true);
                   try {
-                    await enhancedAudioService.playPhoneticBreakdown({
-                     word: word,
-                     userInfo: userInfo!,
-                     showSyllables: true
-                   });
+                    // Get syllables and play them
+                    const phoneticEngine = PhoneticRulesEngine.getInstance();
+                    const syllables = phoneticEngine.breakIntoSyllables(word);
+                    const syllableText = syllables.join(' - ');
+                    await audioEngine.playText({ text: syllableText });
                     // Removed unnecessary phonetic breakdown status toast
                  } catch (error) {
                    console.error('Phonetic breakdown error:', error);
@@ -1677,11 +1670,11 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
     
     try {
       console.log('🔤 Calling enhancedAudioService.playPhoneticBreakdown...');
-      await enhancedAudioService.playPhoneticBreakdown({
-        word: props.word,
-        userInfo: props.userInfo,
-        showSyllables: true
-      });
+      // Get syllables and play them
+      const phoneticEngine = PhoneticRulesEngine.getInstance();
+      const syllables = phoneticEngine.breakIntoSyllables(props.word);
+      const syllableText = syllables.join(' - ');
+      await audioEngine.playText({ text: syllableText });
       
       // Track vocabulary learning for all users
       console.log('🎯 Phonetic: Adding to vocabulary for word:', props.word);

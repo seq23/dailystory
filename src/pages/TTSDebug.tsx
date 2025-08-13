@@ -36,7 +36,10 @@ const TTSDebug: React.FC = () => {
   };
 
   const handlePlay = async () => {
-    await audio.playPhoneticBreakdown({ word, userInfo: debugUser, showSyllables: true });
+    // Get syllables and play them using SimpleAudioEngine
+    const syllableInfo = phoneticRulesEngine.getDebugInfo(word);
+    const syllableText = syllables.join(' - ');
+    await audio.playText({ text: syllableText });
   };
 
   const samples = ['what', 'green', 'chase', 'good', 'bounce', 'smiles', 'illuminate', 'illumination', 'illuminating'];

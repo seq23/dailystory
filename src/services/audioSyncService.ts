@@ -172,7 +172,7 @@ export class AudioSyncService {
       console.log(`⏱️ Highlight scaling: words=${this.words.length}, target=${Math.round(targetMs)}ms, sum=${Math.round(totalExpected)}ms, scale=${this.durationScale.toFixed(3)}`);
 
       // Setup playback event handlers with session guard
-      this.setupAudioEventHandlers(voice, speed, onWordHighlight, onSyncError, localSessionId, localContentHash);
+      this.setupAudioEventHandlers(voice, speed, onWordHighlight, onError, localSessionId, localContentHash);
       
       // Start playback (guard on start)
       await this.audio.play();
@@ -197,13 +197,38 @@ export class AudioSyncService {
       console.error('Audio generation error, falling back to browser speech:', error);
       
       // Fallback to browser speech with word highlighting
-      this.fallbackToWebSpeech(text, { 
-        text, 
-        onWordHighlight, 
-        onError,
-        userInfo: options.userInfo,
-        speed
-      });
+      const processedText = contextualPronunciation.processTextForPronunciation(text, true);
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(processedText);
+        utterance.rate = speed * 0.8;
+        utterance.pitch = 1.1;
+        
+        if (onWordHighlight) {
+          // Start basic fallback highlighting
+          let wordIndex = 0;
+          const highlightInterval = setInterval(() => {
+            if (wordIndex < this.words.length && speechSynthesis.speaking) {
+              onWordHighlight(wordIndex);
+              wordIndex++;
+            } else {
+              clearInterval(highlightInterval);
+              if (onWordHighlight) onWordHighlight(-1);
+            }
+          }, Math.max(200 / speed, 100));
+        }
+        
+        speechSynthesis.speak(utterance);
+        this.isPlaying = true;
+        this.onStateChange?.(true);
+        
+        utterance.onend = () => {
+          this.isPlaying = false;
+          this.onStateChange?.(false);
+          if (onWordHighlight) {
+            onWordHighlight(-1);
+          }
+        };
+      }
       return;
     }
   }
@@ -215,7 +240,7 @@ export class AudioSyncService {
     voice: string, 
     speed: number, 
     onWordHighlight?: (wordIndex: number) => void,
-    onSyncError?: () => void,
+    onError?: (error: Error) => void,
     sessionId?: number,
     contentHash?: string
   ): void {
@@ -237,7 +262,7 @@ export class AudioSyncService {
       console.error('Audio playback error');
       this.isPlaying = false;
       this.onStateChange?.(false); // Notify state change
-      onSyncError?.();
+      onError?.(new Error('Audio playback error'));
       this.stopAudio();
     };
 
