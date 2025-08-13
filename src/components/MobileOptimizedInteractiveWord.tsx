@@ -192,7 +192,7 @@ if (props.forceModal || isMobileOrTablet) {
     const handleSyllables = async () => {
       try {
         setIsPlaying(true);
-        const raw = await PhoneticRulesEngine.getInstance().breakIntoSyllablesAsync(cleanWord);
+        const raw = PhoneticRulesEngine.getInstance().breakIntoSyllables(cleanWord);
         const toAudioFriendly = (original: string, sylls: string[]) => {
           const w = (original || '').toLowerCase();
           if (w.endsWith('ies') && w.length > 4) return [w.slice(0, -3) + 'y', 's'];
@@ -269,7 +269,10 @@ if (props.forceModal || isMobileOrTablet) {
               if (isPlaying || isLoadingWordData) return;
               try {
                 // 1) Pronounce word
-                await audioEngine.playText({ text: cleanWord });
+                await audioEngine.playText({ 
+                  text: cleanWord,
+                  voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
+                });
                 if (cancelRef.current) return;
                 // 2) Definition
                 const userLang = props.userInfo?.nativeLanguage || 'en';
@@ -277,10 +280,13 @@ if (props.forceModal || isMobileOrTablet) {
                   body: { word: cleanWord, userLevel: difficulty, userLanguage: userLang }
                 });
                 const definition: string = (!error && data?.definition) ? data.definition : cleanWord;
-                await audioEngine.playText({ text: definition });
+                await audioEngine.playText({ 
+                  text: definition,
+                  voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
+                });
                 if (cancelRef.current) return;
                 // 3) Syllables
-                const raw = await PhoneticRulesEngine.getInstance().breakIntoSyllablesAsync(cleanWord);
+                const raw = PhoneticRulesEngine.getInstance().breakIntoSyllables(cleanWord);
                 const toAudioFriendly = (original: string, sylls: string[]) => {
                   const w = (original || '').toLowerCase();
                   if (w.endsWith('ies') && w.length > 4) return [w.slice(0, -3) + 'y', 's'];
@@ -290,7 +296,10 @@ if (props.forceModal || isMobileOrTablet) {
                 };
                 const adjusted = toAudioFriendly(cleanWord, raw);
                 const syllText = adjusted.join(', ');
-                await audioEngine.playText({ text: syllText });
+                await audioEngine.playText({ 
+                  text: syllText,
+                  voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
+                });
               } catch (e) {
                 console.warn('Hover sequence failed', e);
               }

@@ -25,7 +25,11 @@ export const VoiceCommands: React.FC<VoiceCommandsProps> = ({ agentId: initialAg
       const text = (window as any).__lastNarrationText || (window as any).__pageContentString || '';
       const hash = (window as any).__pageContentHash || undefined;
       if (!text) return 'no_text';
-      await engine.playText({ text, contentHash: hash });
+      await engine.playText({ 
+        text, 
+        contentHash: hash,
+        voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
+      });
       return 'ok';
     },
     stop: async () => { engine.stop(); return 'ok'; },

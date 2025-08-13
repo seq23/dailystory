@@ -588,7 +588,10 @@ export const InteractiveWord = ({
 
         // Use SimpleAudioEngine for all audio
         try {
-          await audioEngine.playText({ text: translationText });
+          await audioEngine.playText({ 
+            text: translationText,
+            voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
+          });
           audioPlayed = true;
         } catch (ttsError) {
           toast({
@@ -1678,7 +1681,7 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
     console.log('🔤 Starting phonetic breakdown for:', props.word);
     
     try {
-      console.log('🔤 Calling enhancedAudioService.playPhoneticBreakdown...');
+      console.log('🔤 Starting syllable playback with SimpleAudioEngine...');
       // Get syllables and play them
       const phoneticEngine = PhoneticRulesEngine.getInstance();
       const syllables = phoneticEngine.breakIntoSyllables(props.word);

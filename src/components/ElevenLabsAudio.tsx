@@ -468,7 +468,10 @@ useEffect(() => {
       if (detail.type === 'pronounce') {
         // Use SimpleAudioEngine for word pronunciation
         const { SimpleAudioEngine } = await import('@/services/SimpleAudioEngine');
-        await SimpleAudioEngine.getInstance().playText({ text: cleanWord });
+        await SimpleAudioEngine.getInstance().playText({ 
+          text: cleanWord,
+          voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
+        });
         return;
       }
       const userLang = userInfo?.nativeLanguage || 'en';
@@ -482,7 +485,10 @@ useEffect(() => {
           try {
             // Use SimpleAudioEngine for definitions
             const { SimpleAudioEngine } = await import('@/services/SimpleAudioEngine');
-            await SimpleAudioEngine.getInstance().playText({ text: definition });
+            await SimpleAudioEngine.getInstance().playText({ 
+              text: definition,
+              voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
+            });
           } catch (e) {
             console.warn('Definition TTS failed', e);
           }

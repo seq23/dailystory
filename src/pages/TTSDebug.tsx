@@ -39,7 +39,10 @@ const TTSDebug: React.FC = () => {
     // Get syllables and play them using SimpleAudioEngine
     const syllableInfo = phoneticRulesEngine.getDebugInfo(word);
     const syllableText = syllables.join(' - ');
-    await audio.playText({ text: syllableText });
+    await audio.playText({ 
+      text: syllableText,
+      voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
+    });
   };
 
   const samples = ['what', 'green', 'chase', 'good', 'bounce', 'smiles', 'illuminate', 'illumination', 'illuminating'];

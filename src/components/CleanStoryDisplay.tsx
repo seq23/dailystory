@@ -416,7 +416,10 @@ useEffect(() => {
 
     const playTTS = async (text: string) => {
       const audioEngine = SimpleAudioEngine.getInstance();
-      await audioEngine.playText({ text });
+      await audioEngine.playText({ 
+        text,
+        voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
+      });
     };
 
     const getDefinition = async (w: string): Promise<string> => {

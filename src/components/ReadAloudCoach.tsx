@@ -335,7 +335,10 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
       setTopWords((prev) => prev.filter((x) => x !== w));
       try { 
         const audioEngine = SimpleAudioEngine.getInstance();
-        await audioEngine.playText({ text: t('coach.great','Great!') }); 
+        await audioEngine.playText({ 
+          text: t('coach.great','Great!'),
+          voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
+        });
       } catch {}
     }
   };
@@ -451,7 +454,10 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
                   <div className="flex items-center gap-2">
                     <Button size="sm" variant="secondary" className="gap-1" onClick={() => {
                       const audioEngine = SimpleAudioEngine.getInstance();
-                      audioEngine.playText({ text: w });
+                      audioEngine.playText({ 
+                        text: w,
+                        voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
+                      });
                     }}>
                       <Volume2 className="w-3 h-3" /> {t('coach.hearIt','Hear it')}
                     </Button>

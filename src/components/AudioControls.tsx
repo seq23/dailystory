@@ -38,7 +38,11 @@ export const AudioControls: React.FC<AudioControlsProps> = ({ text, contentHash,
       if (isMobileOrTablet) {
         await new Promise((r) => setTimeout(r, 1200));
       }
-      await engine.playText({ text, contentHash: uiHash });
+      await engine.playText({ 
+        text, 
+        contentHash: uiHash,
+        voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
+      });
       setIsPlaying(true);
       onPlayingChange?.(true);
 
