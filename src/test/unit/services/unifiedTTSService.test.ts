@@ -2,14 +2,27 @@ import { vi, describe, it, expect, beforeEach, beforeAll } from 'vitest';
 
 // Suite-local polyfill for URL.createObjectURL/revokeObjectURL
 (() => {
+  // Ensure a robust URL polyfill is available on both globalThis and window
+  const ensureURLPolyfill = (URLObj: any) => {
+    if (!URLObj) return;
+    if (typeof URLObj.createObjectURL !== 'function') {
+      URLObj.createObjectURL = vi.fn(() => 'blob:mock-url');
+    }
+    if (typeof URLObj.revokeObjectURL !== 'function') {
+      URLObj.revokeObjectURL = vi.fn();
+    }
+  };
+
   if (!(globalThis as any).URL) {
     (globalThis as any).URL = {} as any;
   }
-  if (typeof (globalThis as any).URL.createObjectURL !== 'function') {
-    (globalThis as any).URL.createObjectURL = vi.fn(() => 'blob:mock-url');
-  }
-  if (typeof (globalThis as any).URL.revokeObjectURL !== 'function') {
-    (globalThis as any).URL.revokeObjectURL = vi.fn();
+  ensureURLPolyfill((globalThis as any).URL);
+
+  if (typeof window !== 'undefined') {
+    if (!(window as any).URL) {
+      (window as any).URL = (globalThis as any).URL;
+    }
+    ensureURLPolyfill((window as any).URL);
   }
 })();
 
@@ -135,6 +148,8 @@ describe('UnifiedTTSService', () => {
     });
 
     it('tracks playing state correctly', async () => {
+      (window as any).speechSynthesis.cancel();
+      await Promise.resolve();
       expect(!!tts.isPlaying()).toBe(false);
       (window as any).speechSynthesis.speaking = true;
       expect(tts.isPlaying()).toBe(true);

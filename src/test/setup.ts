@@ -17,15 +17,29 @@ if (!(global as any).btoa) {
 }
 
 // Polyfill URL.createObjectURL/revokeObjectURL for tests
-if (typeof globalThis.URL === 'undefined') {
-  (globalThis as any).URL = {} as any;
-}
-if (!(globalThis as any).URL.createObjectURL) {
-  (globalThis as any).URL.createObjectURL = vi.fn(() => 'blob:mock-url');
-}
-if (!(globalThis as any).URL.revokeObjectURL) {
-  (globalThis as any).URL.revokeObjectURL = vi.fn();
-}
+(() => {
+  const ensureURLPolyfill = (URLObj: any) => {
+    if (!URLObj) return;
+    if (typeof URLObj.createObjectURL !== 'function') {
+      URLObj.createObjectURL = vi.fn(() => 'blob:mock-url');
+    }
+    if (typeof URLObj.revokeObjectURL !== 'function') {
+      URLObj.revokeObjectURL = vi.fn();
+    }
+  };
+
+  if (typeof globalThis.URL === 'undefined') {
+    (globalThis as any).URL = {} as any;
+  }
+  ensureURLPolyfill((globalThis as any).URL);
+
+  if (typeof window !== 'undefined') {
+    if (!(window as any).URL) {
+      (window as any).URL = (globalThis as any).URL;
+    }
+    ensureURLPolyfill((window as any).URL);
+  }
+})();
 // Minimal SpeechSynthesisUtterance mock
 if (typeof (globalThis as any).SpeechSynthesisUtterance === 'undefined') {
   class MockUtterance {
