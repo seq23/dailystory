@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom';
+import '@/i18n/config';
 
 // Mock fetch by default to avoid hitting external APIs in tests
 import { vi } from 'vitest';
@@ -83,7 +84,7 @@ if (typeof window !== 'undefined' && !(window as any).Audio) {
 }
 
 // Mock AudioContext to satisfy mobile audio initialization
-if (typeof window !== 'undefined' && !(window as any).AudioContext) {
+if (typeof window !== 'undefined') {
   class MockAudioContext {
     state = 'running';
     resume = vi.fn(async () => { this.state = 'running'; });
