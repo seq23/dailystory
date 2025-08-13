@@ -4,6 +4,12 @@ Unit/Integration (Vitest)
 - Run: npx vitest run
 - Watch: npx vitest
 
+Coverage (Vitest)
+- Install provider: npm i -D @vitest/coverage-v8
+- Run with coverage: npx vitest run --coverage
+- Open HTML report: open coverage/index.html (or serve coverage dir)
+- Thresholds enforced in vite.config.ts: L/S/F 85%, B 80%
+
 E2E (Playwright)
 - Install browsers: npx playwright install --with-deps
 - Run all: npx playwright test

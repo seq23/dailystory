@@ -7,7 +7,7 @@ This file tracks system + user prompts and quality tasks.
   - Comprehensive testing: Vitest (unit/integration) — Existing, expanding
   - Comprehensive testing: Playwright (E2E) — Initial smoke added
   - Network stubs for external services (Supabase, TTS, images) — Partial
-  - Coverage thresholds and reporting — TODO
+  - Coverage thresholds and reporting — Configured (Vitest V8)
   - CI pipeline for tests — TODO
 
 - User prompts
