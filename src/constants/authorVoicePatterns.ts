@@ -12,6 +12,7 @@ export interface AuthorVoice {
     closings: string[];
   };
   characteristics: string[];
+  preferredThemes?: string[];
 }
 
 export const AUTHOR_VOICES: Record<string, AuthorVoice> = {

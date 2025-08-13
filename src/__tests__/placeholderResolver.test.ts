@@ -36,10 +36,10 @@ describe("placeholderResolver - micro tokens", () => {
   it("fills micro tokens using user info, seed, and fallbacks", () => {
     const user = makeUser({ avatar: { type: "boy", skinTone: "light" } });
     const pattern = "{userName} and {friend} ate {food} in the {setting}. {pronoun} felt very {adjective}.";
-    const out = resolveMicroPlaceholders(pattern, { userInfo: user, seed: { userName: "Avery", adjective: "brave" }, pageText: "The fox ran in the forest." });
+    const out = resolveMicroPlaceholders(pattern, { userInfo: user, seed: { userName: "Avery", adjective: "brave" }, pageText: "The foxes ran in the forest." });
     expect(out).toMatch(/Avery/);
     expect(out).toMatch(/(Sam|Alex|Riley|Taylor|Jordan|Casey)/);
-    expect(out).toMatch(/(pancakes|apple|sandwich|cookie|pizza|noodles)/);
+    expect(out).toMatch(/pancakes|apple|sandwich|cookie|pizza|noodles/);
     expect(out).toMatch(/forest|park|garden|classroom|kitchen|playground/);
     expect(out).toContain("he"); // pronoun for boy
     expect(out).toContain("brave");
@@ -49,7 +49,7 @@ describe("placeholderResolver - micro tokens", () => {
   it("uses neutral they/them when gender not specified", () => {
     const user = makeUser({ avatar: { type: "prefer-not-to-answer", skinTone: "olive" } });
     const out = resolveMicroPlaceholders("{pronoun} explores.", { userInfo: user });
-    expect(out).toBe("they explores.");
+    expect(out).toBe("they explore.");
   });
 
   it("strips unresolved tokens cleanly", () => {

@@ -8,6 +8,8 @@ import { EnhancedFallbackManager } from '@/constants/enhancedFallbackTemplates';
 import { ErrorHandler } from '@/utils/errorHandling';
 import { InputSanitizer } from '@/utils/inputSanitizer';
 import { DiagnosticTool } from '@/utils/diagnostics';
+import { getAuthorVoiceForUser, applyAuthorVoice } from '@/constants/authorVoicePatterns';
+import { APP_CONFIG } from '@/config/appConfig';
 
 export interface NetflixStoryResult {
   pages: string[];
@@ -147,8 +149,24 @@ export class NetflixStyleStoryService {
             (globalThis as any).__LAST_STORY_SOURCE__ = (data as any)?.source || 'ai';
           } catch {}
           console.log('🧭 STORY_SOURCE', { source: (globalThis as any).__LAST_STORY_SOURCE__, service: 'Netflix', pagesCount: filteredPages.length, difficulty: data.difficulty || difficulty });
+
+          // Optional author voice post-processing
+          let pagesOut = filteredPages;
+          try {
+            if ((APP_CONFIG as any)?.features?.authorVoice?.deepeningEnabled) {
+              const voice = getAuthorVoiceForUser(userInfo, difficulty);
+              const applyOn = (APP_CONFIG as any).features.authorVoice.applyOn;
+              pagesOut = filteredPages.map((p: string, idx: number) => {
+                const isFirst = idx === 0;
+                const isLast = idx === filteredPages.length - 1;
+                const position = isFirst ? applyOn.first : isLast ? applyOn.last : applyOn.middle;
+                return applyAuthorVoice(p, voice, position);
+              });
+            }
+          } catch {}
+
           return {
-            pages: filteredPages,
+            pages: pagesOut,
             difficulty: data.difficulty || difficulty,
             expertGradeLevel,
             title: data.title || `${userInfo.name}'s Adventure`,
@@ -197,8 +215,24 @@ export class NetflixStyleStoryService {
         (globalThis as any).__LAST_STORY_SOURCE__ = 'fallback';
       } catch {}
       console.log('🧭 STORY_SOURCE', { source: (globalThis as any).__LAST_STORY_SOURCE__, service: 'Netflix', pagesCount: pages.length, difficulty });
+
+      // Optional author voice post-processing for fallback pages
+      let pagesOut = pages;
+      try {
+        if ((APP_CONFIG as any)?.features?.authorVoice?.deepeningEnabled) {
+          const voice = getAuthorVoiceForUser(userInfo, difficulty);
+          const applyOn = (APP_CONFIG as any).features.authorVoice.applyOn;
+          pagesOut = pages.map((p: string, idx: number) => {
+            const isFirst = idx === 0;
+            const isLast = idx === pages.length - 1;
+            const position = isFirst ? applyOn.first : isLast ? applyOn.last : applyOn.middle;
+            return applyAuthorVoice(p, voice, position);
+          });
+        }
+      } catch {}
+
       return {
-        pages,
+        pages: pagesOut,
         difficulty,
         title: `${userInfo.name}'s ${difficulty.charAt(0).toUpperCase() + difficulty.slice(1)} Adventure`,
         isComplete: true

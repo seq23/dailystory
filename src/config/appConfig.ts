@@ -41,6 +41,12 @@ export interface AppConfig {
       guest: boolean;
       allowUrlOverride: boolean;
     };
+    authorVoice: {
+      deepeningEnabled: boolean;
+      applyOn: { first: 'opening' | 'transition' | 'closing'; middle: 'opening' | 'transition' | 'closing'; last: 'opening' | 'transition' | 'closing' };
+      grammarTweaks: { theyAgreement: boolean };
+      placeholderTweaks: { pluralAnimalDetection: boolean; pancakesPluralPreference: boolean };
+    };
   };
 }
 
@@ -83,6 +89,12 @@ export const APP_CONFIG: AppConfig = {
       premium: false,
       guest: false,
       allowUrlOverride: true
+    },
+    authorVoice: {
+      deepeningEnabled: true,
+      applyOn: { first: 'opening', middle: 'transition', last: 'closing' },
+      grammarTweaks: { theyAgreement: true },
+      placeholderTweaks: { pluralAnimalDetection: true, pancakesPluralPreference: true }
     }
   }
 };

@@ -4,6 +4,7 @@
 import type { UserInfo, DifficultyLevel, LanguageCode } from '../types';
 import { InputEnhancementEngine } from './inputEnhancementEngine';
 import { SmartInputParser } from './smartInputParser';
+import { extractThemeIntent } from '@/utils/themeIntent';
 
 interface CulturalContext {
   language: LanguageCode;
@@ -47,7 +48,10 @@ export class EnhancedInputProcessor {
     
     // Create interest-driven story themes
     const interestThemes = this.generateInterestThemes(userInfo);
-    
+
+    // Merge theme intent extraction
+    const themeIntent = extractThemeIntent(userInfo);
+
     // Learn from user preferences
     this.learnUserPreferences(userInfo, baseEnhanced);
 
@@ -67,7 +71,7 @@ export class EnhancedInputProcessor {
         ...culturalContext.culturalElements
       ],
       skillBasedTraits: skillTraits,
-      interestThemes: interestThemes
+      interestThemes: Array.from(new Set([...(interestThemes || []), ...(themeIntent.themes || [])]))
     };
   }
 

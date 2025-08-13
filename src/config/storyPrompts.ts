@@ -2,6 +2,9 @@
 // Easy to update and modify without code changes
 
 import type { DifficultyLevel, ExpertGradeLevel, UserInfo } from '@/types';
+import { resolveAllPlaceholders } from '@/utils/placeholderResolver';
+import { extractThemeIntent } from '@/utils/themeIntent';
+import { APP_CONFIG } from '@/config/appConfig';
 
 export interface StoryPromptConfig {
   difficulty: DifficultyLevel;
@@ -440,20 +443,26 @@ export function formatUserPrompt(template: string, userInfo: UserInfo): string {
     console.error('❌ formatUserPrompt: Invalid template provided', template);
     return 'Create a fun story for {userName}.';
   }
-  
   if (!userInfo) {
     console.error('❌ formatUserPrompt: No userInfo provided');
     return template;
   }
-  
-  return template
-    .replace(/{userName}/g, userInfo.name || 'Child')
-    .replace(/{age}/g, (userInfo.age || 6).toString())
-    .replace(/{favoriteAnimal}/g, userInfo.favoriteAnimal || 'animals')
-    .replace(/{favoriteColor}/g, userInfo.favoriteColor || 'bright colors')
-    .replace(/{hobbies}/g, userInfo.hobbies || 'playing')
-    .replace(/{favoriteFood}/g, userInfo.favoriteFood || 'delicious food')
-    .replace(/{specialRequest}/g, userInfo.specialRequest || '');
+
+  // Resolve canonical + micro placeholders in template
+  let base = resolveAllPlaceholders(template, { userInfo });
+
+  // Optionally hint themes when author voice deepening is enabled
+  try {
+    if ((APP_CONFIG as any)?.features?.authorVoice?.deepeningEnabled) {
+      const ti = extractThemeIntent(userInfo);
+      if (ti.themes && ti.themes.length) {
+        const hint = `Prefer focusing on these themes: ${ti.themes.slice(0, 3).join(', ')}.`;
+        base = `${base}\n\n${hint}`;
+      }
+    }
+  } catch {}
+
+  return base;
 }
 
 export function calculateDifficultyFromUser(userInfo: UserInfo): DifficultyLevel {

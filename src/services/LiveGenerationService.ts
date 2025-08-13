@@ -6,8 +6,9 @@ import type { UserInfo, DifficultyLevel, ExpertGradeLevel } from '@/types';
 import { getStoryPrompt, getExpertStoryPrompt, formatUserPrompt } from '@/config/storyPrompts';
 import { EnhancedFallbackManager } from '@/constants/enhancedFallbackTemplates';
 import { ErrorHandler } from '@/utils/errorHandling';
-
 import { ExpertDifficultyManager } from '@/services/expertDifficultyManager';
+import { getAuthorVoiceForUser, applyAuthorVoice } from '@/constants/authorVoicePatterns';
+import { APP_CONFIG } from '@/config/appConfig';
 
 export interface LiveGenerationContext {
   userInfo: UserInfo;
@@ -113,8 +114,17 @@ export class LiveGenerationService {
       } catch {}
       console.log('🧭 PAGE_SOURCE', { page: 1, source: (globalThis as any).__LAST_PAGE_SOURCE__, service: 'Live' });
       
+      let contentOut = content;
+      try {
+        if ((APP_CONFIG as any)?.features?.authorVoice?.deepeningEnabled) {
+          const voice = getAuthorVoiceForUser(userInfo, difficulty);
+          const applyOn = (APP_CONFIG as any).features.authorVoice.applyOn;
+          contentOut = applyAuthorVoice(content, voice, applyOn.first);
+        }
+      } catch {}
+
       return {
-        content,
+        content: contentOut,
         isComplete: false,
         nextContext: context
       };
@@ -203,8 +213,18 @@ export class LiveGenerationService {
       } catch {}
       console.log('🧭 PAGE_SOURCE', { page: nextPageNumber, source: (globalThis as any).__LAST_PAGE_SOURCE__, service: 'Live' });
       
+      let contentOut = content;
+      try {
+        if ((APP_CONFIG as any)?.features?.authorVoice?.deepeningEnabled) {
+          const voice = getAuthorVoiceForUser(context.userInfo, context.difficulty);
+          const applyOn = (APP_CONFIG as any).features.authorVoice.applyOn;
+          const position = shouldConclude ? applyOn.last : applyOn.middle;
+          contentOut = applyAuthorVoice(content, voice, position);
+        }
+      } catch {}
+
       return {
-        content,
+        content: contentOut,
         isComplete: shouldConclude,
         nextContext: shouldConclude ? undefined : updatedContext
       };
@@ -277,8 +297,17 @@ export class LiveGenerationService {
         (globalThis as any).__LAST_STORY_SOURCE__ = (globalThis as any).__LAST_PAGE_SOURCE__;
       } catch {}
 
+      let contentOut = content;
+      try {
+        if ((APP_CONFIG as any)?.features?.authorVoice?.deepeningEnabled) {
+          const voice = getAuthorVoiceForUser(context.userInfo, context.difficulty);
+          const applyOn = (APP_CONFIG as any).features.authorVoice.applyOn;
+          contentOut = applyAuthorVoice(content, voice, applyOn.last);
+        }
+      } catch {}
+
       return {
-        content,
+        content: contentOut,
         isComplete: true,
         nextContext: undefined
       };
