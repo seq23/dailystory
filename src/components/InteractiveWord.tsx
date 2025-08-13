@@ -347,34 +347,63 @@ export const InteractiveWord = ({
         duration: 5000,
       });
       
-      // Use browser's native speech synthesis directly for free, reliable multilingual support
-      if ('speechSynthesis' in window) {
+      // Language-specific audio: Charlotte for English speakers, native browser speech for others
+      if (userNativeLanguage === 'en') {
+        // Use Charlotte's voice for English speakers
         try {
-          const utterance = new SpeechSynthesisUtterance(definitionToSpeak);
-          utterance.rate = 0.7;
-          utterance.pitch = 1.0;
-          utterance.volume = 1.0;
-          
-          if (userNativeLanguage !== 'en') {
+          const { SimpleAudioEngine } = await import('@/services/SimpleAudioEngine');
+          await SimpleAudioEngine.getInstance().playText({
+            text: definitionToSpeak,
+            voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
+            modelId: 'eleven_turbo_v2_5'
+          });
+          setIsPlaying(false);
+        } catch (error) {
+          console.error('Charlotte TTS failed, falling back to browser speech:', error);
+          // Fallback to browser speech for English speakers if Charlotte fails
+          if ('speechSynthesis' in window) {
+            try {
+              const utterance = new SpeechSynthesisUtterance(definitionToSpeak);
+              utterance.rate = 0.7;
+              utterance.pitch = 1.0;
+              utterance.volume = 1.0;
+              utterance.onend = () => setIsPlaying(false);
+              utterance.onerror = () => setIsPlaying(false);
+              speechSynthesis.speak(utterance);
+            } catch {
+              setIsPlaying(false);
+            }
+          } else {
+            setIsPlaying(false);
+          }
+        }
+      } else {
+        // Use native browser speech for non-English speakers
+        if ('speechSynthesis' in window) {
+          try {
+            const utterance = new SpeechSynthesisUtterance(definitionToSpeak);
+            utterance.rate = 0.7;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
             utterance.lang = userNativeLanguage;
+            
             const voices = speechSynthesis.getVoices();
             const languageCode = userNativeLanguage.substring(0, 2);
             const nativeVoice = voices.find(voice => 
               voice.lang.toLowerCase().startsWith(languageCode.toLowerCase())
             );
             if (nativeVoice) utterance.voice = nativeVoice;
+            
+            utterance.onend = () => setIsPlaying(false);
+            utterance.onerror = () => setIsPlaying(false);
+            speechSynthesis.speak(utterance);
+          } catch (audioError) {
+            console.error('Browser speech failed:', audioError);
+            setIsPlaying(false);
           }
-          
-          utterance.onend = () => setIsPlaying(false);
-          utterance.onerror = () => setIsPlaying(false);
-          
-          speechSynthesis.speak(utterance);
-        } catch (audioError) {
-          console.error('Browser speech failed:', audioError);
+        } else {
           setIsPlaying(false);
         }
-      } else {
-        setIsPlaying(false);
       }
       
     } catch (error) {

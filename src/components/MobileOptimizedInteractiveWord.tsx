@@ -118,19 +118,18 @@ if (props.forceModal || isMobileOrTablet) {
       if (isPlaying) return;
       setIsPlaying(true);
       try {
-        await enhancedAudio.playText({
+        const { SimpleAudioEngine } = await import('@/services/SimpleAudioEngine');
+        await SimpleAudioEngine.getInstance().playText({
           text: cleanWord,
-          difficulty: 'easy',
-          userInfo: { ...(props.userInfo as UserInfo), nativeLanguage: 'en' } as UserInfo,
-          isPremium: !!props.isPremium,
-          enableHighlighting: false,
+          voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
+          modelId: 'eleven_turbo_v2_5'
         });
       } catch (e) {
         console.error('Mobile HearIt failed', e);
-    } finally {
-      setIsPlaying(false);
-      markReviewedOnce();
-    }
+      } finally {
+        setIsPlaying(false);
+        markReviewedOnce();
+      }
     };
 
     const handleExplain = async () => {
@@ -143,19 +142,51 @@ if (props.forceModal || isMobileOrTablet) {
         });
         const definition: string = (!error && data?.definition) ? data.definition : cleanWord;
 
-        await enhancedAudio.playText({
-          text: definition,
-          difficulty: 'easy',
-          userInfo: props.userInfo!,
-          isPremium: !!props.isPremium,
-          enableHighlighting: false,
-        });
+        // Language-specific audio: Charlotte for English speakers, native browser speech for others
+        if (userLang === 'en') {
+          // Use Charlotte's voice for English speakers
+          try {
+            const { SimpleAudioEngine } = await import('@/services/SimpleAudioEngine');
+            await SimpleAudioEngine.getInstance().playText({
+              text: definition,
+              voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
+              modelId: 'eleven_turbo_v2_5'
+            });
+          } catch (error) {
+            console.error('Charlotte TTS failed, falling back to browser speech:', error);
+            // Fallback to browser speech for English speakers if Charlotte fails
+            if ('speechSynthesis' in window) {
+              const utterance = new SpeechSynthesisUtterance(definition);
+              utterance.rate = 0.7;
+              utterance.pitch = 1.0;
+              utterance.volume = 1.0;
+              speechSynthesis.speak(utterance);
+            }
+          }
+        } else {
+          // Use native browser speech for non-English speakers
+          if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(definition);
+            utterance.rate = 0.7;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+            utterance.lang = userLang;
+            
+            const voices = speechSynthesis.getVoices();
+            const languageCode = userLang.substring(0, 2);
+            const nativeVoice = voices.find(voice => 
+              voice.lang.toLowerCase().startsWith(languageCode.toLowerCase())
+            );
+            if (nativeVoice) utterance.voice = nativeVoice;
+            speechSynthesis.speak(utterance);
+          }
+        }
       } catch (e) {
         console.error('Mobile Explain failed', e);
-    } finally {
-      setIsLoadingWordData(false);
-      markReviewedOnce();
-    }
+      } finally {
+        setIsLoadingWordData(false);
+        markReviewedOnce();
+      }
     };
 
     const handleSyllables = async () => {
@@ -172,12 +203,11 @@ if (props.forceModal || isMobileOrTablet) {
         const adjusted = toAudioFriendly(cleanWord, raw);
         const syllText = adjusted.join(', ');
 
-        await enhancedAudio.playText({
+        const { SimpleAudioEngine } = await import('@/services/SimpleAudioEngine');
+        await SimpleAudioEngine.getInstance().playText({
           text: syllText,
-          difficulty: 'easy',
-          userInfo: props.userInfo!,
-          isPremium: !!props.isPremium,
-          enableHighlighting: false,
+          voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
+          modelId: 'eleven_turbo_v2_5'
         });
         setIsPlaying(false);
       } catch (e) {
