@@ -40,7 +40,8 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
         "The end of a perfect day."
       ]
     },
-    characteristics: ["simple repetition", "nature themes", "transformation", "growth"]
+    characteristics: ["simple repetition", "nature themes", "transformation", "growth"],
+    preferredThemes: ["nature", "growth", "curiosity", "discovery"]
   },
 
   bluePattern: {
@@ -67,7 +68,8 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
         "Being different makes friendship special."
       ]
     },
-    characteristics: ["emotional honesty", "friendship", "simple dialogue", "problem solving"]
+    characteristics: ["emotional honesty", "friendship", "simple dialogue", "problem solving"],
+    preferredThemes: ["friendship", "kindness", "empathy", "problem-solving"]
   },
 
   greenPattern: {
@@ -94,7 +96,8 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
         "And that is that about that!"
       ]
     },
-    characteristics: ["rhythm", "rhyme", "wordplay", "exuberance"]
+    characteristics: ["rhythm", "rhyme", "wordplay", "exuberance"],
+    preferredThemes: ["creativity", "playfulness", "curiosity"]
   },
 
   simpleYellowPattern: {
@@ -310,7 +313,8 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
         "And {userName} couldn't wait for tomorrow."
       ]
     },
-    characteristics: ["realistic", "family life", "humor", "relatability"]
+    characteristics: ["realistic", "family life", "humor", "relatability"],
+    preferredThemes: ["family", "adventure", "humor", "resilience"]
   }
 };
 

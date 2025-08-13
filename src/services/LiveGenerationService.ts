@@ -63,7 +63,17 @@ export class LiveGenerationService {
       - Focus on quality storytelling over exact word counts`;
       
       // Use configured prompts from storyPrompts.ts only
-      const userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, userInfo);
+let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, userInfo);
+
+      // Append author voice preferred themes as a gentle hint
+      try {
+        if ((APP_CONFIG as any)?.features?.authorVoice?.deepeningEnabled) {
+          const voice = getAuthorVoiceForUser(userInfo, difficulty);
+          if (voice?.preferredThemes?.length) {
+            userPrompt = `${userPrompt}\n\nPrefer themes: ${voice.preferredThemes.slice(0, 3).join(', ')}.`;
+          }
+        }
+      } catch {}
       
       const { data, error } = await supabase.functions.invoke('generate-adaptive-story', {
         body: {
@@ -164,7 +174,16 @@ export class LiveGenerationService {
       ${context.storyContext.join('\n\n')}`;
       
       // Use configured prompts from storyPrompts.ts only - append page context
-      const baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.userInfo);
+let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.userInfo);
+      // Append author voice preferred themes as a gentle hint
+      try {
+        if ((APP_CONFIG as any)?.features?.authorVoice?.deepeningEnabled) {
+          const voice = getAuthorVoiceForUser(context.userInfo, context.difficulty);
+          if (voice?.preferredThemes?.length) {
+            baseUserPrompt = `${baseUserPrompt}\n\nPrefer themes: ${voice.preferredThemes.slice(0, 3).join(', ')}.`;
+          }
+        }
+      } catch {}
       const userPrompt = `${baseUserPrompt} This is page ${nextPageNumber}. ${shouldConclude ? 'Bring the story to a satisfying and uplifting conclusion.' : 'Keep momentum and end with an engaging teaser for what happens next.'}`;
       
       const { data, error } = await supabase.functions.invoke('generate-adaptive-story', {
@@ -260,7 +279,16 @@ export class LiveGenerationService {
       Previous story context:
       ${context.storyContext.join('\n\n')}`;
 
-      const baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.userInfo);
+let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.userInfo);
+      // Append author voice preferred themes as a gentle hint
+      try {
+        if ((APP_CONFIG as any)?.features?.authorVoice?.deepeningEnabled) {
+          const voice = getAuthorVoiceForUser(context.userInfo, context.difficulty);
+          if (voice?.preferredThemes?.length) {
+            baseUserPrompt = `${baseUserPrompt}\n\nPrefer themes: ${voice.preferredThemes.slice(0, 3).join(', ')}.`;
+          }
+        }
+      } catch {}
       const userPrompt = `${baseUserPrompt} Create a concluding page that ties the adventure together warmly and clearly indicates the story has reached a nice ending.`;
 
       const { data, error } = await supabase.functions.invoke('generate-adaptive-story', {

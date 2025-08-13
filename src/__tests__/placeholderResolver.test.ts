@@ -56,6 +56,17 @@ describe("placeholderResolver - micro tokens", () => {
     const out = resolveMicroPlaceholders("Start {unknown} end.");
     expect(out).toBe("Start end.");
   });
+
+  it("prefers plural pancakes when favoriteFood is pancakes", () => {
+    const user = makeUser({ favoriteFood: "pancakes" });
+    const out = resolveMicroPlaceholders("We ate {food}.", { userInfo: user });
+    expect(out).toContain("pancakes");
+  });
+
+  it("singularizes plural animals from page text (mice -> mouse)", () => {
+    const out = resolveMicroPlaceholders("A {animal} ran.", { pageText: "We saw mice and deer near the field." });
+    expect(out).toContain("mouse");
+  });
 });
 
 describe("placeholderResolver - resolveAll", () => {

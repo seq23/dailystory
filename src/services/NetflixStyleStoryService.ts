@@ -63,7 +63,7 @@ export class NetflixStyleStoryService {
       const safeRequest = InputSanitizer.sanitizeStoryInput(userInfo.specialRequest || '');
       
       // Use configured prompts from storyPrompts.ts only
-      const userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, {
+let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, {
         ...userInfo,
         name: safeName,
         favoriteAnimal: safeAnimal,
@@ -72,6 +72,16 @@ export class NetflixStyleStoryService {
         favoriteFood: safeFood,
         specialRequest: safeRequest
       });
+
+      // Append author voice preferred themes as a gentle hint
+      try {
+        if ((APP_CONFIG as any)?.features?.authorVoice?.deepeningEnabled) {
+          const voice = getAuthorVoiceForUser(userInfo, difficulty);
+          if (voice?.preferredThemes?.length) {
+            userPrompt = `${userPrompt}\n\nPrefer themes: ${voice.preferredThemes.slice(0, 3).join(', ')}.`;
+          }
+        }
+      } catch {}
       
       console.log('🎬 Calling OpenAI with simple prompts...');
       console.log('🔍 DIAGNOSTIC: About to call supabase.functions.invoke', {
