@@ -52,8 +52,16 @@ export const LEVEL_3_VOCABULARY = new Set([
   'require', 'demand', 'insist', 'persuade', 'convince', 'influence', 'inspire', 'motivate', 'encourage'
 ]);
 
+export const LEVEL_3_VOCABULARY_NORMALIZED: Set<string> = new Set(
+  Array.from(LEVEL_3_VOCABULARY).map((w) => w.toLowerCase().replace(/[^\w\s]/g, ''))
+);
+
+function normalizeToken(token: string): string {
+  return token.toLowerCase().replace(/[^\w\s]/g, '');
+}
+
 export function isLevel3Word(word: string): boolean {
-  return LEVEL_3_VOCABULARY.has(word.toLowerCase());
+  return LEVEL_3_VOCABULARY_NORMALIZED.has(normalizeToken(word));
 }
 
 export function validateLevel3Sentence(sentence: string, userName?: string): { 
@@ -71,7 +79,7 @@ export function validateLevel3Sentence(sentence: string, userName?: string): {
     if (userNameLower && word === userNameLower) {
       return false;
     }
-    return !LEVEL_3_VOCABULARY.has(word);
+    return !LEVEL_3_VOCABULARY_NORMALIZED.has(word);
   });
   
   return {

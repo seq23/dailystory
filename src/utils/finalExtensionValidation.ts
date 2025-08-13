@@ -44,6 +44,19 @@ export function runFinalExtensionValidation() {
     console.log(`  Level ${grade}: ${summary.compliant}/${summary.total} (${percentage}%) ✅`);
   }
   
+  // Advisory coverage summary
+  const byGrade: Record<number, { count: number; sum: number }> = { 0:{count:0,sum:0},1:{count:0,sum:0},2:{count:0,sum:0},3:{count:0,sum:0},4:{count:0,sum:0} } as any;
+  (testResults as any).results?.forEach((r: any) => {
+    byGrade[r.gradeLevel].count++;
+    byGrade[r.gradeLevel].sum += r.coverage || 0;
+  });
+  console.log('\n📈 Advisory coverage (avg by level):');
+  for (let grade = 0; grade <= 4; grade++) {
+    const g = byGrade[grade];
+    const avg = g.count ? Math.round((g.sum / g.count) * 100) : 100;
+    console.log(`  Level ${grade}: ~${avg}%`);
+  }
+  
   // 3. Verify universal access for levels 1-4
   console.log('\n🌍 Testing universal access (free vs premium should be same for levels 1-4):');
   

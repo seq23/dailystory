@@ -5,14 +5,10 @@ import { UserInfo, DifficultyLevel } from '@/types';
 import { 
   GradeLevel, 
   difficultyToGradeLevel,
-  validateSentence,
-  getVocabularySet,
-  LEVEL_0_VOCABULARY,
-  LEVEL_1_VOCABULARY,
-  LEVEL_2_VOCABULARY,
-  LEVEL_3_VOCABULARY
-  // LEVEL_4_VOCABULARY removed - Expert uses grade-based system
+  getVocabularySet
+  // validateSentence removed in advisory mode
 } from '@/constants/gradeBased';
+import { computeCoverage } from '@/utils/vocabCoverage';
 
 export interface ExtensionContext {
   currentPages: string[];
@@ -188,24 +184,20 @@ export class EnhancedPageExtensionManager {
       const pageNumber = currentPageCount + i + 1;
       const newPage = this.generateContextAwarePage(context, pageNumber);
       
-      // Validate vocabulary compliance
-      const validationResult = validateSentence(newPage, gradeLevel);
-      if (validationResult.isValid) {
-        newPages.push(newPage);
-        // Update context with new vocabulary
-        const newWords = newPage.toLowerCase().split(/\s+/);
-        newWords.forEach(word => context.vocabularyUsed.add(word.replace(/[.,!?]/g, '')));
-      } else {
-        // Fallback to simpler page using only Dolch Pre-Primer vocabulary
-        const userName = context.characterNames[0] || 'Sam';
-        const simplePage = `${userName} can play. ${userName} is happy.`;
-        newPages.push(simplePage);
-      }
+      // Advisory-only: always accept the generated page; compute coverage for metrics later
+      newPages.push(newPage);
+      // Update context with new vocabulary
+      const newWords = newPage.toLowerCase().split(/\s+/);
+      newWords.forEach(word => context.vocabularyUsed.add(word.replace(/[.,!?]/g, '')));
     }
 
-    // Calculate quality metrics
+    // Calculate quality metrics (advisory coverage)
     const continuityScore = this.calculateContinuityScore(pages, newPages, context);
-    const vocabularyCompliant = newPages.every(page => validateSentence(page, gradeLevel).isValid);
+    const avgCoverage = newPages.length
+      ? newPages.map(p => computeCoverage(p, gradeLevel, { userName: userInfo?.name }).coverage)
+          .reduce((a, b) => a + b, 0) / newPages.length
+      : 1;
+    const vocabularyCompliant = avgCoverage >= 0.6; // advisory threshold
     const storyArcComplete = this.assessStoryCompletion(pages, newPages, context);
 
     return {
@@ -258,11 +250,10 @@ export class EnhancedPageExtensionManager {
       score += 0.25;
     }
 
-    // Check vocabulary level consistency
-    const vocabulary = Array.from(getVocabularySet(context.gradeLevel));
-    const newWords = newText.split(/\s+/).map(w => w.replace(/[.,!?]/g, ''));
-    const compliantWords = newWords.filter(word => vocabulary.includes(word.toLowerCase()));
-    if (compliantWords.length / newWords.length > 0.8) {
+    // Check vocabulary level consistency using coverage
+    const pageCoverages = newPages.map(p => computeCoverage(p, context.gradeLevel).coverage);
+    const avgCoverage = pageCoverages.length ? pageCoverages.reduce((a,b)=>a+b,0)/pageCoverages.length : 1;
+    if (avgCoverage > 0.6) {
       score += 0.25;
     }
 

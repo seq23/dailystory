@@ -20,8 +20,16 @@ export const LEVEL_1_VOCABULARY = new Set([
   ...DOLCH_1ST_GRADE_VOCABULARY
 ]);
 
+export const LEVEL_1_VOCABULARY_NORMALIZED: Set<string> = new Set(
+  Array.from(LEVEL_1_VOCABULARY).map((w) => w.toLowerCase().replace(/[^\w\s]/g, ''))
+);
+
+function normalizeToken(token: string): string {
+  return token.toLowerCase().replace(/[^\w\s]/g, '');
+}
+
 export function isLevel1Word(word: string): boolean {
-  return LEVEL_1_VOCABULARY.has(word.toLowerCase());
+  return LEVEL_1_VOCABULARY_NORMALIZED.has(normalizeToken(word));
 }
 
 export function validateLevel1Sentence(sentence: string, userName?: string, userInputWords: string[] = []): { 
@@ -50,7 +58,7 @@ export function validateLevel1Sentence(sentence: string, userName?: string, user
       return false;
     }
     
-    return !LEVEL_1_VOCABULARY.has(word);
+    return !LEVEL_1_VOCABULARY_NORMALIZED.has(word);
   });
   
   return {

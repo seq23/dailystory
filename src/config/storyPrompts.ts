@@ -65,7 +65,9 @@ Keep content positive, warm, age-appropriate, and engaging for ages 3–5.
 
 Variation
 
-Internally select a random story seed (1–10,000) to vary details for uniqueness. Do not mention or describe the seed.`,
+Internally select a random story seed (1–10,000) to vary details for uniqueness. Do not mention or describe the seed.
+
+If specialRequest includes a line like "Target vocabulary: word1, word2, ...", try to use those words naturally at least once (don’t force it). If no specialRequest is provided, prefer grade-level vocabulary choices by default.`,
     maxLength: 30,
     expectedPages: 5
   },
@@ -115,7 +117,7 @@ REQUIREMENTS:
 - Use correct grammar and punctuation.
 
 FORMAT: Page 1: [10-17 words]. Page 2: [10-17 words]. Continue for 6 pages.`,
-    userPromptTemplate: `Create a delightful story for a child aged 5-7 named {userName}. Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}, and {specialRequest} as surface-level inputs integrated naturally as story elements and relationships. The story must be exactly 6 pages, 10-17 words per page, 60-100 words total, with simple sentences using basic conjunctions and preferring 1-2 sentences per page. Use Dolch Pre-Primer + Primer + 1st Grade words as a foundation. Follow the internal author style guidance to shape the story (without mentioning style names) and keep a joyful, positive tone. Before writing, internally imagine a random "story seed" between 1 and 10,000 to vary setting, events, and details so each story is unique, even with identical inputs. Do not mention the seed.`,
+    userPromptTemplate: `Create a delightful story for a child aged 5-7 named {userName}. Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}, and {specialRequest} as surface-level inputs integrated naturally as story elements and relationships. The story must be exactly 6 pages, 10-17 words per page, 60-100 words total, with simple sentences using basic conjunctions and preferring 1-2 sentences per page. Use Dolch Pre-Primer + Primer + 1st Grade words as a foundation. Follow the internal author style guidance to shape the story (without mentioning style names) and keep a joyful, positive tone. Before writing, internally imagine a random "story seed" between 1 and 10,000 to vary setting, events, and details so each story is unique, even with identical inputs. Do not mention the seed. If specialRequest includes a line like "Target vocabulary: word1, word2, ...", try to use those words naturally at least once (don’t force it). If no specialRequest is provided, prefer grade-level vocabulary choices by default.`,
     maxLength: 100,
     expectedPages: 6
   },
@@ -148,7 +150,7 @@ REQUIREMENTS:
 - Use correct grammar and punctuation.
 
 FORMAT: 20-43 words per page`,
-    userPromptTemplate: `Create an engaging story for a child aged 7-9 named {userName}. Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}, and {specialRequest} as meaningful character traits and development elements: the favorite animal reflects personality traits, colors become meaningful symbols, hobbies showcase talents and interests, and foods connect to family or cultural background. The story must be exactly 9 pages, 20-43 words per page, 180-387 words total, using complex sentences with descriptive language and 2-3 sentences per page. Use Dolch Pre-Primer + Primer + 1st Grade + 2nd Grade words as a foundation. Follow the internal author style guidance to shape the story (without mentioning style names), including mild conflicts with positive resolution. Before writing, internally imagine a random "story seed" between 1 and 10,000 to vary setting, events, and details so each story is unique, even with identical inputs. Do not mention the seed.`,
+    userPromptTemplate: `Create an engaging story for a child aged 7-9 named {userName}. Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}, and {specialRequest} as meaningful character traits and development elements: the favorite animal reflects personality traits, colors become meaningful symbols, hobbies showcase talents and interests, and foods connect to family or cultural background. The story must be exactly 9 pages, 20-43 words per page, 180-387 words total, using complex sentences with descriptive language and 2-3 sentences per page. Use Dolch Pre-Primer + Primer + 1st Grade + 2nd Grade words as a foundation. Follow the internal author style guidance to shape the story (without mentioning style names), including mild conflicts with positive resolution. Before writing, internally imagine a random "story seed" between 1 and 10,000 to vary setting, events, and details so each story is unique, even with identical inputs. Do not mention the seed. If specialRequest includes a line like "Target vocabulary: word1, word2, ...", try to use those words naturally at least once (don’t force it). If no specialRequest is provided, prefer grade-level vocabulary choices by default.`,
     maxLength: 387,
     expectedPages: 9
   },

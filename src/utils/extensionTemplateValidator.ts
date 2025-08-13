@@ -10,6 +10,7 @@ interface ExtensionTestResult {
   template: string;
   isValid: boolean;
   invalidWords: string[];
+  coverage: number;
 }
 
 export class ExtensionTemplateValidator {
@@ -41,12 +42,17 @@ export class ExtensionTemplateValidator {
         // Validate against grade level vocabulary
         const validation = validateSentence(processedTemplate, grade as GradeLevel, userName);
         
+        // Advisory coverage metric
+        const { computeCoverage } = require('@/utils/vocabCoverage');
+        const coverage = computeCoverage(processedTemplate, grade as GradeLevel, { userName }).coverage;
+        
         const result: ExtensionTestResult = {
           gradeLevel: grade as GradeLevel,
           templateIndex: index,
           template: processedTemplate,
           isValid: validation.isValid,
-          invalidWords: validation.invalidWords
+          invalidWords: validation.invalidWords,
+          coverage
         };
         
         results.push(result);
@@ -74,23 +80,28 @@ export class ExtensionTemplateValidator {
       ''
     ];
 
-    // Summary by grade level
+    // Summary by grade level with advisory coverage
     report.push('📊 Grade Level Summary:');
     for (let grade = 0; grade <= 4; grade++) {
       const summary = testResults.summary[grade as GradeLevel];
+      const gradeResults = testResults.results.filter(r => r.gradeLevel === (grade as GradeLevel));
+      const avgCoverage = gradeResults.length
+        ? Math.round((gradeResults.reduce((a, r) => a + r.coverage, 0) / gradeResults.length) * 100)
+        : 100;
       const percentage = Math.round((summary.compliant / summary.total) * 100);
-      report.push(`  Level ${grade}: ${summary.compliant}/${summary.total} (${percentage}%) compliant`);
+      report.push(`  Level ${grade}: ${summary.compliant}/${summary.total} (${percentage}%) compliant | avg coverage: ${avgCoverage}%`);
     }
     report.push('');
 
-    // Detailed violations
+    // Detailed violations (advisory)
     const violations = testResults.results.filter(r => !r.isValid);
     if (violations.length > 0) {
-      report.push('🚨 Vocabulary Violations Found:');
+      report.push('🚨 Vocabulary Violations Found (advisory only):');
       violations.forEach((violation, index) => {
         report.push(`${index + 1}. Level ${violation.gradeLevel}, Template ${violation.templateIndex}:`);
         report.push(`   "${violation.template}"`);
         report.push(`   Invalid words: ${violation.invalidWords.join(', ')}`);
+        report.push(`   Coverage: ${Math.round(violation.coverage * 100)}%`);
         report.push('');
       });
     } else {
@@ -145,13 +156,16 @@ export class ExtensionTemplateValidator {
     templates.forEach((template, index) => {
       const processedTemplate = template.replace(/{userName}/g, userName);
       const validation = validateSentence(processedTemplate, gradeLevel, userName);
+      const { computeCoverage } = require('@/utils/vocabCoverage');
+      const coverage = computeCoverage(processedTemplate, gradeLevel, { userName }).coverage;
       
       results.push({
         gradeLevel,
         templateIndex: index,
         template: processedTemplate,
         isValid: validation.isValid,
-        invalidWords: validation.invalidWords
+        invalidWords: validation.invalidWords,
+        coverage
       });
     });
 
