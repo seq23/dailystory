@@ -23,6 +23,7 @@ export class UnifiedTTSService {
   private currentAudio: HTMLAudioElement | null = null;
   private config: TTSServiceConfig;
   private audioInitialized = false;
+  private webSpeechSpeaking = false;
 
   constructor(config: Partial<TTSServiceConfig> = {}) {
     this.config = {
@@ -204,6 +205,11 @@ export class UnifiedTTSService {
       if (preferredVoice) {
         utterance.voice = preferredVoice;
       }
+
+      // Track speaking state to make isPlaying deterministic
+      utterance.onstart = () => { this.webSpeechSpeaking = true; };
+      utterance.onend = () => { this.webSpeechSpeaking = false; };
+      utterance.onerror = () => { this.webSpeechSpeaking = false; };
       
       speechSynthesis.speak(utterance);
     }
@@ -239,17 +245,17 @@ export class UnifiedTTSService {
     
     // Also stop web speech synthesis
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      speechSynthesis.cancel();
+      try { speechSynthesis.cancel(); } finally { this.webSpeechSpeaking = false; }
     }
   }
 
   isPlaying(): boolean {
-    // Explicit boolean checks to avoid undefined returns
     if (this.currentAudio) {
       return !this.currentAudio.paused;
     }
-    if (typeof window !== 'undefined' && speechSynthesis) {
-      return speechSynthesis.speaking;
+    if (this.webSpeechSpeaking) return true;
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      return Boolean((speechSynthesis as any).speaking);
     }
     return false;
   }

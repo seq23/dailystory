@@ -10,8 +10,9 @@ if (!(global as any).fetch) {
 // Minimal speechSynthesis mock for components/services relying on it
 if (typeof window !== 'undefined' && !(window as any).speechSynthesis) {
   (window as any).speechSynthesis = {
-    cancel: vi.fn(),
-    speak: vi.fn(),
+    speaking: false,
+    cancel: vi.fn(function (this: any) { this.speaking = false; }),
+    speak: vi.fn(function (_utterance?: any) { this.speaking = true; }),
     getVoices: () => [{ name: 'Test EN', lang: 'en-US' }],
   } as any;
 }
