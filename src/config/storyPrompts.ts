@@ -60,7 +60,7 @@ Randomness: seed={seed} (generate if null, return as meta.seed)`,
     systemPrompt: `Generate ONE PAGE of a picture book story for early readers aged 5-7.
 
 RULES:
-- One sentence per page, NO page numbers/formatting
+- 1-2 sentences per page, Use "Page X:" markers to separate each page of content
 - 3-6 letter words, 4-8 word sentences (max 12 words)
 - Simple present/past tense, subject-verb-object structure
 - Story continues infinitely unless user requests ending
@@ -83,7 +83,7 @@ Randomness: seed={seed} (generate if null, return as meta.seed)`,
     systemPrompt: `Generate ONE PAGE of a chapter book story for developing readers aged 7-9.
 
 RULES:
-- 1-2 sentences per page, NO page numbers/formatting
+- 2-3 sentences per page, Use "Page X:" markers to separate each page of content
 - 3-7 letter words, 5-12 word sentences (max 15 words)
 - Past/present tense, varied sentence structures
 - Story continues infinitely unless user requests ending
@@ -106,7 +106,7 @@ Randomness: seed={seed} (generate if null, return as meta.seed)`,
     systemPrompt: `Generate ONE PAGE of an intermediate story for confident readers aged 9-11.
 
 RULES:
-- 2-3 sentences per page, NO page numbers/formatting
+- 3-4 sentences per page, Use "Page X:" markers to separate each page of content
 - 4-9 letter words, varied sentence lengths (max 20 words)
 - Multiple tenses, complex sentence structures
 - Story continues infinitely unless user requests ending
@@ -129,7 +129,7 @@ Randomness: seed={seed} (generate if null, return as meta.seed)`,
     systemPrompt: `Generate ONE PAGE of an advanced story for skilled readers aged 11-13.
 
 RULES:
-- 3-4 sentences per page, NO page numbers/formatting
+- 4-5 sentences per page, Use "Page X:" markers to separate each page of content
 - Advanced vocabulary, varied sentence complexity
 - Multiple tenses, sophisticated structures
 - Story continues infinitely unless user requests ending
