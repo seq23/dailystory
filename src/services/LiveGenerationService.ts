@@ -96,8 +96,9 @@ let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, userInfo);
         return this.generateEnhancedFallbackFirstPage(userInfo, difficulty, 'api_error');
       }
 
-      // Extract first page from the pages array
-      const content = (data.pages[0] || '').trim();
+      // Extract first page from the pages array and strip any page markers
+      const rawContent = (data.pages[0] || '').trim();
+      const content = rawContent.replace(/^Page\s*\d+\s*:\s*/i, '').replace(/^Page\s*\d+\s*/i, '').trim();
       
       // Simple validation - just check if content exists and has reasonable length
       if (!content || content.length < 10) {
@@ -208,8 +209,9 @@ let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.u
         return this.generateEnhancedFallbackNextPage(context, nextPageNumber, shouldConclude, 'api_error');
       }
 
-      // Extract first page from the pages array
-      const content = (data.pages[0] || '').trim();
+      // Extract first page from the pages array and strip any page markers
+      const rawContent = (data.pages[0] || '').trim();
+      const content = rawContent.replace(/^Page\s*\d+\s*:\s*/i, '').replace(/^Page\s*\d+\s*/i, '').trim();
       
       // Simple validation - just check if content exists and has reasonable length
       if (!content || content.length < 10) {
@@ -314,7 +316,9 @@ let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.u
         return this.generateEnhancedFallbackNextPage(context, nextPageNumber, true, 'api_error_conclusion');
       }
 
-      const content = (data.pages[0] || '').trim();
+      // Strip page markers from ending page content
+      const rawContent = (data.pages[0] || '').trim();
+      const content = rawContent.replace(/^Page\s*\d+\s*:\s*/i, '').replace(/^Page\s*\d+\s*/i, '').trim();
       if (!content || content.length < 10) {
         return this.generateEnhancedFallbackNextPage(context, nextPageNumber, true, 'content_too_short_conclusion');
       }

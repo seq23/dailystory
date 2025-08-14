@@ -28,8 +28,11 @@ export const processTextWithConsistentFlow = ({
   highlightedWordIndex,
   isMobile = false
 }: TextProcessorOptions): React.ReactNode[] => {
+  // Strip page markers as safety net before processing
+  const cleanText = text.replace(/^Page\s*\d+\s*:\s*/i, '').replace(/^Page\s*\d+\s*/i, '').trim();
+  
   // Tokenize once for consistent mapping across audio and UI
-  const { tokens, isWhitespace, wordOnlyIndexByTokenIndex } = tokenizeForHighlighting(text);
+  const { tokens, isWhitespace, wordOnlyIndexByTokenIndex } = tokenizeForHighlighting(cleanText);
   
   return tokens.map((token, index) => {
     // If it's just whitespace, return as plain text to maintain natural flow
@@ -65,7 +68,7 @@ export const processTextWithConsistentFlow = ({
           difficulty={difficulty}
           userInfo={userInfo}
           isPremium={isPremium}
-          sentenceContext={text}
+          sentenceContext={cleanText}
           userId={userId}
           forceModal={true}
         />
@@ -80,7 +83,7 @@ export const processTextWithConsistentFlow = ({
         difficulty={difficulty}
         userInfo={userInfo}
         isPremium={isPremium}
-        sentenceContext={text}
+        sentenceContext={cleanText}
         userId={userId}
         forceModal={true}
       />

@@ -604,14 +604,22 @@ serve(async (req) => {
     // Parse story into pages with improved logic
     let pages = [] as string[];
     
-    // Strategy A: Explicit "Page N" sections (with or without colon), supporting multiple languages
-    if (/(?:Page|Página|Pagina|Seite)\s*\d+/i.test(preprocessed)) {
-      // Prefer extracting content after each Page label
+    // Strategy A: Primary "Page X:" format handling (optimized for consistent markers)
+    if (/Page\s*\d+\s*:/i.test(preprocessed)) {
+      // Optimized regex for "Page X:" format - primary strategy
+      const matches = Array.from(preprocessed.matchAll(/(?:^|\r?\n)Page\s*(\d+)\s*:\s*(?:\r?\n)*([\s\S]*?)(?=(?:\r?\n)*Page\s*\d+\s*:|$)/gi));
+      if (matches.length > 0) {
+        pages = matches.map(m => m[2].trim()).filter(Boolean);
+        console.log(`📖 Parsed ${pages.length} pages using Page X: format`);
+      }
+    }
+    
+    // Strategy B: Fallback for other page marker formats
+    if (pages.length === 0 && /(?:Page|Página|Pagina|Seite)\s*\d+/i.test(preprocessed)) {
       const matches = Array.from(preprocessed.matchAll(/(?:^|\r?\n)(?:Page|Página|Pagina|Seite)\s*\d+\s*(?::|-)?\s*(?:\r?\n)+([\s\S]*?)(?=(?:\r?\n)+(?:Page|Página|Pagina|Seite)\s*\d+|$)/gi));
       if (matches.length > 0) {
         pages = matches.map(m => m[1].trim()).filter(Boolean);
       } else {
-        // Fallback split on generic Page labels
         pages = preprocessed.split(/(?:^|\r?\n)(?:Page|Página|Pagina|Seite)\s*\d+\s*(?::|-)?\s*/gi)
           .map(s => s.trim())
           .filter(Boolean);
@@ -673,14 +681,23 @@ serve(async (req) => {
       }
     }
 
+    // Strip page markers from content before returning
+    const cleanPages = pages.map(page => {
+      return page
+        .replace(/^Page\s*\d+\s*:\s*/i, '') // Remove "Page X:" at start
+        .replace(/^Page\s*\d+\s*/i, '') // Remove "Page X" at start
+        .replace(/\n\s*Page\s*\d+\s*:\s*/gi, '\n') // Remove mid-text markers
+        .replace(/\n\s*Page\s*\d+\s*/gi, '\n') // Remove mid-text markers
+        .trim();
+    }).filter(page => page.length > 0);
 
     const userName = config?.userName || 'the child';
-    console.log(`Generated story for ${userName}`);
+    console.log(`Generated story for ${userName} with ${cleanPages.length} clean pages`);
 
-    console.log('EDGE SOURCE=ai', { readingLevel, pagesCount: pages.length });
+    console.log('EDGE SOURCE=ai', { readingLevel, pagesCount: cleanPages.length });
     return new Response(JSON.stringify({
       source: 'ai',
-      pages,
+      pages: cleanPages,
       difficulty: readingLevel || 'easy',
       title: `${userName}'s Story`,
       isComplete: true

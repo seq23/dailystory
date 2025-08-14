@@ -10,8 +10,10 @@ export const processTextForPhonetics = (
   userId?: string, // Add userId parameter
   highlightedWordIndex?: number // Add highlighted word index
 ): React.ReactNode[] => {
-  // Split text by spaces but preserve punctuation attached to words
-  const words = text.split(/(\s+)/);
+  // Strip page markers as safety net
+  const cleanText = text.replace(/^Page\s*\d+\s*:\s*/i, '').replace(/^Page\s*\d+\s*/i, '').trim();
+  // Split cleaned text by spaces but preserve punctuation attached to words
+  const words = cleanText.split(/(\s+)/);
   
   // Create array of only actual words (not whitespace) with their indices
   const wordOnlyArray = words
@@ -49,7 +51,7 @@ export const processTextForPhonetics = (
         difficulty={difficulty}
         userInfo={userInfo}
         isPremium={isPremium}
-        sentenceContext={text}
+        sentenceContext={cleanText}
         userId={userId}
         forceModal={false}
       />

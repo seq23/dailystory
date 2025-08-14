@@ -151,7 +151,12 @@ let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, {
         
         const filteredPages = data.pages.filter((p: string) => p && p.trim().length > 0);
         
-        if (filteredPages.length > 0) {
+        // Strip any remaining page markers as safety net
+        const cleanPages = filteredPages.map(page => 
+          page.replace(/^Page\s*\d+\s*:\s*/i, '').replace(/^Page\s*\d+\s*/i, '').trim()
+        );
+        
+        if (cleanPages.length > 0) {
           console.log('✅ Story has content - proceeding');
           console.log('🔍 DIAGNOSTIC: Using API-generated content successfully');
           // Mark source as AI
@@ -161,14 +166,14 @@ let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, {
           console.log('🧭 STORY_SOURCE', { source: (globalThis as any).__LAST_STORY_SOURCE__, service: 'Netflix', pagesCount: filteredPages.length, difficulty: data.difficulty || difficulty });
 
           // Optional author voice post-processing
-          let pagesOut = filteredPages;
+          let pagesOut = cleanPages;
           try {
             if ((APP_CONFIG as any)?.features?.authorVoice?.deepeningEnabled) {
               const voice = getColorVoiceForUser(userInfo, difficulty);
               const applyOn = (APP_CONFIG as any).features.authorVoice.applyOn;
-              pagesOut = filteredPages.map((p: string, idx: number) => {
+              pagesOut = cleanPages.map((p: string, idx: number) => {
                 const isFirst = idx === 0;
-                const isLast = idx === filteredPages.length - 1;
+                const isLast = idx === cleanPages.length - 1;
                 const position = isFirst ? applyOn.first : isLast ? applyOn.last : applyOn.middle;
                 return applyAuthorVoice(p, voice, position);
               });
