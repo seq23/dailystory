@@ -130,7 +130,7 @@ Extract rich visual and narrative elements that will help create a compelling, d
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        max_completion_tokens: 500,
+        max_completion_tokens: 800,
         response_format: { type: "json_object" }
       }),
     });

@@ -118,35 +118,45 @@ export const DIFFICULTY_STYLE_MAPPING = {
     prompt: '2D digital illustration (cartoon/children\'s book style), whimsical fantasy scene, soft painted style with magical glow effects and sparkles, medium shot child centered with magical elements floating around',
     complexity: 'low',
     colorPalette: 'warm browns, soft blues, magical golden sparkles',
-    detailLevel: 'child-friendly proportions (larger head/eyes, rounded soft features)'
+    detailLevel: 'child-friendly proportions (larger head/eyes, rounded soft features)',
+    rendering: 'Soft painted style with magical glow effects and sparkles',
+    brandSuffix: 'whimsical fantasy children\'s book illustration, magical atmosphere, safe wholesome content for young children'
   },
   'easy': {
     name: 'Playful & Colorful', 
-    prompt: 'cheerful children\'s book illustration with playful characters and vibrant, engaging colors. Moderate detail level with clear visual storytelling',
+    prompt: '2D digital illustration (dynamic action style)',
     complexity: 'moderate',
-    colorPalette: 'bright rainbow colors, cheerful tones',
-    detailLevel: 'moderate'
+    colorPalette: 'warm wood tones; energetic joy and movement',
+    detailLevel: 'moderate',
+    rendering: 'Clean bright style with motion blur and energy lines',
+    brandSuffix: 'with bright natural window lighting, energetic movement and joy, clean contemporary bedroom setting, contemporary children\'s book art style, diverse and inclusive, safe wholesome content, high quality professional artwork'
   },
   'medium': {
     name: 'Rich & Engaging',
-    prompt: 'professional children\'s book illustration with rich colors, engaging characters, and good detail balance. Sophisticated but age-appropriate artistic style',
+    prompt: '2D digital illustration (children\'s book/contemporary cartoon style)',
     complexity: 'balanced',
-    colorPalette: 'rich harmonious colors, sophisticated palette',
-    detailLevel: 'detailed'
+    colorPalette: 'Warm, serene, nurturing; accents with golden lighting',
+    detailLevel: 'detailed',
+    rendering: 'Soft cel-shading with gentle gradients; clean line art with subtle texture',
+    brandSuffix: 'contemporary children\'s book illustration style, diverse representation, soft rounded features, warm and inviting atmosphere, safe and wholesome, high quality detailed artwork, perfect for young readers, gentle expressions and body language'
   },
   'hard': {
     name: 'Artistic & Sophisticated',
-    prompt: 'high-quality artistic illustration with sophisticated composition, nuanced colors, and rich environmental details. Advanced visual storytelling techniques',
+    prompt: '2D digital illustration (sophisticated artistic style)',
     complexity: 'high',
     colorPalette: 'nuanced color gradients, artistic palette',
-    detailLevel: 'highly detailed'
+    detailLevel: 'highly detailed',
+    rendering: 'Advanced digital painting techniques with nuanced lighting, refined textures, and sophisticated color blending',
+    brandSuffix: 'high-quality artistic illustration with sophisticated composition, nuanced colors, and rich environmental details. Advanced visual storytelling techniques, professional children\'s book art, diverse representation, refined artistic quality, age-appropriate sophistication, museum-level illustration standards'
   },
   'expert': {
     name: 'Masterful & Complex',
-    prompt: 'masterful illustration with complex artistic techniques, sophisticated lighting, intricate details, and advanced composition. Museum-quality children\'s art',
+    prompt: '2D digital illustration (masterful artistic technique)',
     complexity: 'very high',
     colorPalette: 'complex color theory, professional artist palette',
-    detailLevel: 'intricate and complex'
+    detailLevel: 'intricate and complex',
+    rendering: 'Complex artistic techniques with intricate details, sophisticated lighting systems, and advanced composition methods',
+    brandSuffix: 'masterful illustration with complex artistic techniques, sophisticated lighting, intricate details, and advanced composition. Museum-quality children\'s art, diverse representation, exceptional artistic craftsmanship, professional illustration excellence, sophisticated visual storytelling mastery'
   }
 } as const;
 

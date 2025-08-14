@@ -462,8 +462,10 @@ export class AdvancedStoryAnalyzer {
     const settingDesc = this.buildSettingDescription(analysis.setting);
     const moodDesc = this.buildMoodDescription(analysis);
     
-    // Combine scene content + style framework + character consistency
-    const mainPrompt = `${styleFramework.prompt}. ${characterDesc} ${analysis.mainAction} in ${settingDesc}. ${moodDesc}. ${analysis.composition}, ${analysis.perspective}.`;
+    // Combine scene content + style framework + character consistency + rendering + brand suffix
+    const renderingStyle = styleFramework.rendering ? ` ${styleFramework.rendering}.` : '';
+    const brandSuffix = styleFramework.brandSuffix ? ` ${styleFramework.brandSuffix}` : '';
+    const mainPrompt = `${styleFramework.prompt}. ${characterDesc} ${analysis.mainAction} in ${settingDesc}. ${moodDesc}. ${analysis.composition}, ${analysis.perspective}.${renderingStyle}${brandSuffix}`;
     
     const styleModifiers = [
       styleFramework.prompt,
