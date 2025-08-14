@@ -391,7 +391,7 @@ export function getExpertStoryPrompt(gradeLevel: ExpertGradeLevel) {
 }
 
 export function formatUserPrompt(template: string, userInfo: Partial<UserInfo>): string {
-  return resolveAllPlaceholders(template, userInfo);
+  return resolveAllPlaceholders(template, { userInfo: userInfo as UserInfo });
 }
 
 export default STORY_PROMPTS;
