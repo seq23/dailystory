@@ -200,7 +200,7 @@ export class SimpleImageService {
       console.log(`🎨 Enhanced Prompt: ${positivePrompt.substring(0, 100)}...`);
 
       const result = finalConfig.provider === 'runware'
-        ? await this.generateWithRunware(positivePrompt, finalConfig, negativePrompt)
+        ? await this.generateWithRunware(positivePrompt, finalConfig, negativePrompt, userInfo, pageNumber)
         : await this.generateWithDALLE(positivePrompt, finalConfig);
 
       if (result.success) {
@@ -220,7 +220,7 @@ export class SimpleImageService {
     }
   }
 
-  private static async generateWithRunware(prompt: string, config: ImageGenerationConfig, negativePrompt?: string): Promise<ImageResult> {
+  private static async generateWithRunware(prompt: string, config: ImageGenerationConfig, negativePrompt?: string, userInfo?: UserInfo, pageNumber?: number): Promise<ImageResult> {
     try {
       console.log('🎨 Calling Supabase Edge Function for Runware image generation');
 
@@ -232,7 +232,16 @@ export class SimpleImageService {
         numberResults: 1,
         outputFormat: APP_CONFIG.images.runware.outputFormat,
         steps: APP_CONFIG.images.runware.steps,
-        CFGScale: APP_CONFIG.images.runware.CFGScale
+        CFGScale: APP_CONFIG.images.runware.CFGScale,
+        // Character consistency parameters (only if userInfo provided)
+        ...(userInfo && {
+          characterName: userInfo.name,
+          characterDescription: `${userInfo.age} year old ${userInfo.avatar.type}`,
+          skinTone: userInfo.avatar.skinTone,
+          avatarType: userInfo.avatar.type,
+          storyTheme: userInfo.favoriteColor,
+          pageIndex: (pageNumber || 1) - 1
+        })
       };
 
       if (negativePrompt) {
