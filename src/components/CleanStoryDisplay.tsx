@@ -1996,8 +1996,8 @@ const handleRestartTimer = () => {
                   </div>
                 )}
 
-                {/* Free User Magic Wand - visible on page 6 OR when reaching the end of displayed story */}
-                {!isPremium && ((currentPage === 5 && displayedStory.length > 5) || (currentPage === displayedStory.length - 1 && displayedStory.length === 6)) && timeRemaining > 0 && (
+                {/* Free User Magic Wand - visible only for free users on page 6 with time left */}
+                {!isPremium && currentPage === 5 && displayedStory.length > 5 && timeRemaining > 0 && (
                   <div className="text-center relative">
                     <div className="relative">
                       <SparkleAnimation 
