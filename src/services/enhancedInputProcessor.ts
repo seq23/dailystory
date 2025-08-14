@@ -3,8 +3,9 @@
 
 import type { UserInfo, DifficultyLevel, LanguageCode } from '../types';
 import { InputEnhancementEngine } from './inputEnhancementEngine';
-import { SmartInputParser } from './smartInputParser';
 import { extractThemeIntent } from '@/utils/themeIntent';
+import { InputSanitizer } from '@/utils/inputSanitizer';
+import { validateThemeBatch } from '@/utils/themeValidation';
 
 interface CulturalContext {
   language: LanguageCode;
@@ -138,7 +139,7 @@ export class EnhancedInputProcessor {
   }
 
   /**
-   * Process special requests with advanced natural language understanding
+   * Process special requests with sanitization and validation
    */
   private static async processSpecialRequestsAdvanced(userInfo: UserInfo): Promise<string[]> {
     if (!userInfo.specialRequest || userInfo.specialRequest.trim().length === 0) {
@@ -150,25 +151,37 @@ export class EnhancedInputProcessor {
     try {
       // Parse the special request for multiple elements
       const requestParts = userInfo.specialRequest.split(/[,;.]/);
+      const sanitizedParts: string[] = [];
       
+      // Sanitize each part
       for (const part of requestParts) {
         const trimmed = part.trim();
         if (trimmed.length === 0) continue;
-
-        // Use SmartInputParser to clean and correct the input
-        const parseResult = await SmartInputParser.parseTaggedInput([trimmed], userInfo);
         
-        for (const tag of parseResult.parsedTags) {
-          if (tag.confidence >= 0.7) {
-            // EnhancedInputProcessor handles categorization internally
-            elements.push(this.convertToStoryElement(tag.corrected));
-          }
-        }
+        const sanitized = InputSanitizer.sanitizeThemeInput(trimmed);
+        if (sanitized) sanitizedParts.push(sanitized);
       }
+      
+      // Validate themes in batch
+      const validation = validateThemeBatch(sanitizedParts);
+      
+      // Use only valid themes
+      for (const validTheme of validation.validThemes) {
+        elements.push(this.convertToStoryElement(validTheme));
+      }
+      
+      // Log rejections for monitoring
+      if (validation.rejectedThemes.length > 0) {
+        console.warn('Rejected themes for safety:', validation.rejectedThemes);
+      }
+      
     } catch (error) {
       console.warn('Advanced special request processing failed:', error);
-      // Fallback to simple processing
-      elements.push(`special interest in ${userInfo.specialRequest}`);
+      // Fallback to simple processing with sanitization
+      const sanitized = InputSanitizer.sanitizeThemeInput(userInfo.specialRequest);
+      if (sanitized) {
+        elements.push(`special interest in ${sanitized}`);
+      }
     }
 
     return elements;

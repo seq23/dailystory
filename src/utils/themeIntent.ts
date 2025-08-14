@@ -2,6 +2,8 @@
 // Derives thematic intent from user info and special requests
 
 import type { UserInfo } from '@/types';
+import { InputSanitizer } from './inputSanitizer';
+import { validateTheme } from './themeValidation';
 
 export interface ThemeIntent {
   themes: string[];
@@ -50,21 +52,36 @@ export function extractThemeIntent(userInfo: UserInfo): ThemeIntent {
     // Parse lines like: theme: courage and kindness; themes: friendship, discovery; tone: playful, gentle
     const themeMatch = sr.match(/themes?\s*:\s*([^\n;]+)/);
     if (themeMatch) {
-      const parts = themeMatch[1].split(/[,/]|and|&/).map(s => s.trim()).filter(Boolean);
-      for (const p of parts) {
-        const n = normalizeTheme(p) || p;
-        if (!themes.includes(n)) themes.push(n);
+      const rawThemes = themeMatch[1].split(/[,/]|and|&/).map(s => s.trim()).filter(Boolean);
+      
+      // Sanitize and validate each theme individually
+      for (const rawTheme of rawThemes) {
+        const sanitized = InputSanitizer.sanitizeThemeInput(rawTheme);
+        if (sanitized) {
+          const validation = validateTheme(sanitized);
+          if (validation.valid) {
+            const normalized = normalizeTheme(validation.sanitized) || validation.sanitized;
+            if (!themes.includes(normalized)) themes.push(normalized);
+          }
+        }
       }
     }
+    
     const toneMatch = sr.match(/tone\s*:\s*([^\n;]+)/);
     if (toneMatch) {
-      const parts = toneMatch[1].split(/[,/]|and|&/).map(s => s.trim()).filter(Boolean);
-      for (const p of parts) {
-        if (!tone.includes(p)) tone.push(p);
+      const rawTones = toneMatch[1].split(/[,/]|and|&/).map(s => s.trim()).filter(Boolean);
+      for (const rawTone of rawTones) {
+        const sanitized = InputSanitizer.sanitizeThemeInput(rawTone);
+        if (sanitized && !tone.includes(sanitized)) tone.push(sanitized);
       }
     }
-    // Collect remaining keywords
-    keywords.push(...sr.split(/[^a-z]+/).filter(Boolean));
+    
+    // Collect remaining keywords (sanitized)
+    const rawKeywords = sr.split(/[^a-z]+/).filter(Boolean);
+    for (const keyword of rawKeywords) {
+      const sanitized = InputSanitizer.sanitizeThemeInput(keyword);
+      if (sanitized) keywords.push(sanitized);
+    }
   }
 
   // Add from hobbies/animal/color/food as soft signals
@@ -89,8 +106,32 @@ export function extractThemeIntent(userInfo: UserInfo): ThemeIntent {
 export function extractThemeIntentWithValidation(userInfo: UserInfo): ThemeIntent & { validation: any } {
   const intent = extractThemeIntent(userInfo);
   
+  // Real validation using Zod schema
+  const allThemes = [...intent.themes, ...intent.tone, ...intent.keywords];
+  const validationResults = allThemes.map(theme => ({
+    theme,
+    result: validateTheme(theme)
+  }));
+  
+  const rejectedThemes = validationResults
+    .filter(v => !v.result.valid)
+    .map(v => ({
+      theme: v.theme,
+      reason: v.result.errors.join(', '),
+      coppaViolation: v.result.coppaViolation
+    }));
+  
+  const warnings = validationResults
+    .flatMap(v => v.result.warnings)
+    .filter(Boolean);
+  
   return {
     ...intent,
-    validation: { themes: intent.themes, rejectedThemes: [], warnings: [] }
+    validation: { 
+      themes: intent.themes, 
+      rejectedThemes, 
+      warnings,
+      coppaCompliant: !rejectedThemes.some(r => r.coppaViolation)
+    }
   };
 }

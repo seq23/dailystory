@@ -45,6 +45,23 @@ export class InputSanitizer {
   }
 
   /**
+   * Sanitize theme input for validation
+   */
+  static sanitizeThemeInput(input: string): string {
+    if (!input || typeof input !== 'string') return '';
+    
+    // First sanitize with DOMPurify
+    const cleaned = DOMPurify.sanitize(input.trim(), this.config);
+    
+    // Additional theme-specific cleaning
+    return cleaned
+      .replace(/[<>\"']/g, '') // Remove remaining dangerous characters
+      .replace(/\s+/g, ' ') // Normalize whitespace
+      .trim()
+      .slice(0, 50); // Limit length
+  }
+
+  /**
    * Validate and sanitize file names or IDs
    */
   static sanitizeIdentifier(input: string): string {

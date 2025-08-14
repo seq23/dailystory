@@ -31,40 +31,42 @@ describe("themeIntent", () => {
     expect(ti.themes).toEqual(expect.arrayContaining(["discovery"]));
   });
 
-  it("includes all themes without filtering", () => {
+  it("filters inappropriate themes for safety", () => {
     const youngUser = makeUser({ 
       age: 4, 
       specialRequest: "theme: monsters and friendship" 
     });
     const ti = extractThemeIntent(youngUser);
     
-    // Should include all themes - adaptation handled in prompts
+    // Should filter out inappropriate themes but keep safe ones
     expect(ti.themes).toContain("friendship");
-    expect(ti.themes).toContain("monsters");
+    expect(ti.themes).not.toContain("monsters"); // Filtered out as inappropriate
   });
 
   it("includes validation information when requested", () => {
     const user = makeUser({ 
       age: 6, 
-      specialRequest: "theme: mystery and danger" 
+      specialRequest: "theme: mystery and dangerous" 
     });
     const tiWithValidation = extractThemeIntentWithValidation(user);
     
     expect(tiWithValidation.validation).toBeDefined();
-    expect(tiWithValidation.validation.rejectedThemes).toEqual([]);
+    expect(tiWithValidation.validation.rejectedThemes.length).toBeGreaterThan(0);
     expect(tiWithValidation.themes).toContain("mystery");
-    expect(tiWithValidation.themes).toContain("danger");
+    expect(tiWithValidation.themes).not.toContain("dangerous"); // Should be filtered
   });
 
-  it("handles complex theme requests without filtering", () => {
+  it("handles complex theme requests with appropriate filtering", () => {
     const user = makeUser({ 
       age: 10, 
       specialRequest: "theme: friendship, romance, monsters, adventure; tone: exciting" 
     });
     const ti = extractThemeIntent(user);
     
-    // Should include all themes - adaptation handled in prompts
-    expect(ti.themes).toEqual(expect.arrayContaining(["friendship", "adventure", "romance", "monsters"]));
+    // Should filter inappropriate themes but keep safe ones
+    expect(ti.themes).toEqual(expect.arrayContaining(["friendship", "adventure"]));
+    expect(ti.themes).not.toContain("romance"); // Filtered for children
+    expect(ti.themes).not.toContain("monsters"); // Filtered as potentially scary
     expect(ti.tone).toContain("exciting");
   });
 });
