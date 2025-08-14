@@ -3,7 +3,7 @@
  * Provides soft style guidance without overfitting
  */
 
-import { COLOR_VOICES, type ColorVoice } from "@/constants/authorVoicePatterns";
+import { COLOR_VOICES, type ColorVoice, getColorVoiceForUser } from "@/constants/authorVoicePatterns";
 import type { DifficultyLevel, UserInfo } from "@/types";
 
 export interface StyleInjectionResult {
@@ -14,15 +14,7 @@ export interface StyleInjectionResult {
 }
 
 /**
- * Get color voice for user based on age and difficulty
- */
-export function getColorVoiceForUser(userInfo: UserInfo, difficulty: DifficultyLevel): ColorVoice {
-  const colorKey = getColorKeyForDifficulty(difficulty);
-  return COLOR_VOICES[colorKey] || COLOR_VOICES.red;
-}
-
-/**
- * Map difficulty levels to color keys
+ * Map difficulty levels to color keys (internal helper)
  */
 function getColorKeyForDifficulty(difficulty: DifficultyLevel): string {
   const difficultyColorMap: Record<DifficultyLevel, string> = {
