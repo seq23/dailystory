@@ -618,16 +618,25 @@ serve(async (req) => {
       }
     }
     
-    // Strategy B: Beginner (Level 0) special handling – one sentence per page blocks
+    // Strategy B: Beginner (Level 0) special handling – one sentence per page
     if (pages.length === 0 && readingLevel === 'beginner') {
-      // Try splitting into 5 blocks separated by blank lines, then strip any leading 'Page N' labels
+      // First try splitting into blocks by double newlines
       const blocks = preprocessed.split(/\r?\n\s*\r?\n/)
         .map(b => b.replace(/^Page\s*\d+\s*(?::|-)?\s*/i, '').trim())
         .filter(Boolean);
+      
       if (blocks.length >= 5) {
         pages = blocks.slice(0, 5);
-      } else if (blocks.length > 0) {
+      } else if (blocks.length > 1) {
         pages = blocks;
+      } else {
+        // For single-line content, split on sentence boundaries for beginners
+        const sentences = preprocessed.split(/(?<=[.!?])\s+/)
+          .map(s => s.trim())
+          .filter(Boolean);
+        if (sentences.length > 1) {
+          pages = sentences.slice(0, 8); // Limit to 8 pages max for beginners
+        }
       }
     }
     
