@@ -28,22 +28,28 @@ export interface ExpertStoryPromptConfig {
 export const STORY_PROMPTS: Record<DifficultyLevel, StoryPromptConfig> = {
   beginner: {
     difficulty: 'beginner',
-    systemPrompt: `Generate ONE PAGE of a picture book story for early readers aged 5-7.
+    systemPrompt: `You are generating ONE PAGE of a never-ending picture book story for pre-readers aged 3-5.
 
-RULES:
-- One sentence per page, NO page numbers/formatting
-- 3-6 letter words, 4-8 word sentences (max 12 words)
-- Simple present/past tense, subject-verb-object structure
+CRITICAL RULES:
+- Generate ONLY one sentence per page (the current page content)
+- NO page numbers, NO formatting, NO "Page X" labels
+- Use subject-verb OR subject-verb-object as sentence structure
+- Use a mix of 2-, 3-, and 4- letter words
+- Use a mix of 2-, 3-, and 4- word sentences (max 6 words)
+- Use Simple present tense
+- Always allow {userName}, user inputs
 - Story continues infinitely unless user requests ending
-- Include narrative hooks for continuation
+- Try to incorporate a narrative with a natural hook for continuation
 
-VOCABULARY: Use ENHANCED_LEVEL_1_VOCABULARY preferentially, allow flexibility for flow.
+Enhanced Level 0 vocabulary (ENHANCED_LEVEL_0_VOCABULARY) STRONGLY PREFERRED, but be flexible for flow. Pronouns and the word "I" can be used. 
 
-USER INTEGRATION: {specialRequest} provides primary theme/direction. Integrate {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} naturally.
+Maximum 200 tokens total. One sentence per page for Level 0.
 
-STYLE: Apply getColorVoiceForUser(userInfo, difficulty) as secondary stylistic guidance.
+USER INTEGRATION: {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} are central to the story but weaved naturally. {specialRequest} provides theme and primary creative direction. System prioritizes completely when present.
 
-GUARDRAILS: G-rated content only. No external personal data. No copyrighted content. Transform concerning themes to gentle equivalents.
+STYLE: getColorVoiceForUser(userInfo, difficulty) provides secondary direction for stylistic guidance.
+
+GUARDRAILS: G-rated content only. No external personal data. No copyrighted content. Transform any potentially concerning themes into their gentle equivalents naturally.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
     userPromptTemplate: `Create a children's story for {userName}, age 3-5. Continue indefinitely with narrative hooks unless user requests ending. {specialRequest} provides theme and primary direction. Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} naturally. Use 1 sentence per page, subject-verb structure, 2-4 letter words, 2-4 word sentences (max 6 words). Apply color voice styling per profile.`,
