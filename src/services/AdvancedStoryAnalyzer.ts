@@ -4,6 +4,7 @@
 import type { UserInfo, DifficultyLevel } from '@/types';
 import { CharacterConsistencyCache, type SceneCharacterData } from './CharacterConsistencyCache';
 import { DIFFICULTY_STYLE_MAPPING } from '@/config/appConfig';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface StoryAnalysis {
   // Core content analysis
@@ -31,6 +32,38 @@ export interface StoryAnalysis {
   
   // Previous context for continuity
   previousElements?: string[];
+  
+  // AI enhancement tracking
+  aiEnhanced?: boolean;
+  enhancementSource?: 'static' | 'ai' | 'hybrid';
+}
+
+export interface AIStoryElements {
+  characters: {
+    primary: string[];
+    relationships: string[];
+  };
+  scene: {
+    setting: string;
+    atmosphere: string;
+    lighting: string;
+    weather: string;
+  };
+  action: {
+    mainActivity: string;
+    emotion: string;
+    intensity: string;
+  };
+  visual: {
+    colors: string[];
+    objects: string[];
+    perspective: string;
+    composition: string;
+  };
+  context: {
+    storyProgression: string;
+    thematicElements: string[];
+  };
 }
 
 export interface EnhancedImagePrompt {
@@ -42,6 +75,8 @@ export interface EnhancedImagePrompt {
 }
 
 export class AdvancedStoryAnalyzer {
+  private static aiEnhancementCache: Map<string, { analysis: StoryAnalysis; timestamp: number }> = new Map();
+  private static readonly CACHE_DURATION_MS = 5 * 60 * 1000; // 5 minutes
   private static readonly CHARACTER_PATTERNS = [
     /\b([A-Z][a-z]+)\b(?:\s+(?:said|asked|walked|ran|jumped|smiled|laughed|cried|helped|found|saw|went|came|looked|felt|thought|knew|wanted|needed|liked|loved))/gi,
     /\b(?:the\s+)?([a-z]+(?:\s+[a-z]+)?)\s+(?:character|person|child|boy|girl|friend|teacher|parent|family)/gi
@@ -105,7 +140,108 @@ export class AdvancedStoryAnalyzer {
       perspective: this.determinePerspective(cleanText, pageNumber),
       storyProgression: this.determineStoryProgression(pageNumber, totalPages),
       intensity: this.determineIntensity(cleanText),
-      previousElements: previousAnalysis?.objects || []
+      previousElements: previousAnalysis?.objects || [],
+      aiEnhanced: false,
+      enhancementSource: 'static'
+    };
+  }
+
+  static async enhanceAnalysisWithAI(
+    storyText: string,
+    pageNumber: number,
+    totalPages: number,
+    difficultyLevel: DifficultyLevel,
+    sessionId: string,
+    userInfo?: UserInfo,
+    previousAnalysis?: StoryAnalysis
+  ): Promise<StoryAnalysis> {
+    const cacheKey = `${sessionId}_${pageNumber}_${storyText.substring(0, 50)}`;
+    
+    // Check cache first
+    const cached = this.aiEnhancementCache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < this.CACHE_DURATION_MS) {
+      console.log(`🧠 Using cached AI analysis for page ${pageNumber}`);
+      return cached.analysis;
+    }
+
+    // Get static analysis first
+    const staticAnalysis = this.analyzeStoryContent(storyText, pageNumber, totalPages, previousAnalysis);
+    
+    // Determine if AI enhancement is needed
+    if (!this.shouldEnhanceWithAI(staticAnalysis, storyText, difficultyLevel)) {
+      console.log(`🧠 Static analysis sufficient for page ${pageNumber}`);
+      return staticAnalysis;
+    }
+
+    try {
+      console.log(`🧠 Enhancing analysis with AI for ${difficultyLevel} level, page ${pageNumber}`);
+      
+      const { data, error } = await supabase.functions.invoke('extract-story-elements', {
+        body: {
+          storyText,
+          pageNumber,
+          totalPages,
+          difficultyLevel,
+          sessionId,
+          userInfo
+        }
+      });
+
+      if (error || !data?.success) {
+        console.warn('🧠 AI enhancement failed, using static analysis:', error);
+        return staticAnalysis;
+      }
+
+      const aiElements: AIStoryElements = data.elements;
+      const enhancedAnalysis = this.mergeAIWithStatic(staticAnalysis, aiElements);
+      
+      // Cache the result
+      this.aiEnhancementCache.set(cacheKey, {
+        analysis: enhancedAnalysis,
+        timestamp: Date.now()
+      });
+
+      console.log(`🧠 AI enhancement complete: enriched ${enhancedAnalysis.colors.length} colors, ${enhancedAnalysis.objects.length} objects`);
+      return enhancedAnalysis;
+
+    } catch (error) {
+      console.warn('🧠 AI enhancement error, using static fallback:', error);
+      return staticAnalysis;
+    }
+  }
+
+  private static shouldEnhanceWithAI(staticAnalysis: StoryAnalysis, storyText: string, difficultyLevel: DifficultyLevel): boolean {
+    // Always enhance for medium and above difficulty levels
+    if (['medium', 'hard', 'expert'].includes(difficultyLevel)) {
+      return true;
+    }
+
+    // For easy level, enhance if static analysis is lacking
+    const lacksVisualDetails = staticAnalysis.colors.length < 2 || staticAnalysis.objects.length < 2;
+    const hasComplexLanguage = storyText.length > 100 || /[A-Z][a-z]+\s+(said|asked|thought|wondered|felt)/.test(storyText);
+    
+    return lacksVisualDetails || hasComplexLanguage;
+  }
+
+  private static mergeAIWithStatic(staticAnalysis: StoryAnalysis, aiElements: AIStoryElements): StoryAnalysis {
+    return {
+      ...staticAnalysis,
+      primaryCharacters: [...new Set([...staticAnalysis.primaryCharacters, ...aiElements.characters.primary])],
+      mainAction: aiElements.action.mainActivity || staticAnalysis.mainAction,
+      emotions: [...new Set([...staticAnalysis.emotions, aiElements.action.emotion])],
+      objects: [...new Set([...staticAnalysis.objects, ...aiElements.visual.objects])],
+      setting: {
+        location: aiElements.scene.setting || staticAnalysis.setting.location,
+        timeOfDay: staticAnalysis.setting.timeOfDay,
+        weather: aiElements.scene.weather || staticAnalysis.setting.weather,
+        season: staticAnalysis.setting.season
+      },
+      colors: [...new Set([...staticAnalysis.colors, ...aiElements.visual.colors])],
+      mood: aiElements.scene.atmosphere || staticAnalysis.mood,
+      composition: aiElements.visual.composition || staticAnalysis.composition,
+      perspective: aiElements.visual.perspective || staticAnalysis.perspective,
+      aiEnhanced: true,
+      enhancementSource: 'hybrid'
     };
   }
 

@@ -30,3 +30,6 @@ verify_jwt = false
 
 [functions.extract-visual-keywords]
 verify_jwt = false
+
+[functions.extract-story-elements]
+verify_jwt = false

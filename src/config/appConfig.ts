@@ -47,6 +47,12 @@ export interface AppConfig {
       grammarTweaks: { theyAgreement: boolean };
       placeholderTweaks: { pluralAnimalDetection: boolean; pancakesPluralPreference: boolean };
     };
+    aiImageEnhancement: {
+      enabled: boolean;
+      costTrackingEnabled: boolean;
+      maxDailyCostUSD: number;
+      enhanceOnlyWhenNeeded: boolean;
+    };
   };
 }
 
@@ -95,6 +101,12 @@ export const APP_CONFIG: AppConfig = {
       applyOn: { first: 'opening', middle: 'transition', last: 'closing' },
       grammarTweaks: { theyAgreement: true },
       placeholderTweaks: { pluralAnimalDetection: true, pancakesPluralPreference: true }
+    },
+    aiImageEnhancement: {
+      enabled: true,
+      costTrackingEnabled: true,
+      maxDailyCostUSD: 0.50,
+      enhanceOnlyWhenNeeded: true
     }
   }
 };

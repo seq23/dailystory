@@ -178,11 +178,16 @@ export class SimpleImageService {
         negativePrompt = 'scary, dark, violent, inappropriate, adult content, realistic photography, photorealistic';
         
       } else {
-        // Advanced analysis for higher difficulty levels
-        const storyAnalysis = AdvancedStoryAnalyzer.analyzeStoryContent(
-          storyText, 
-          pageNumber, 
-          totalPages
+        // AI-Enhanced analysis for levels 1-4
+        console.log(`🎨 Level ${difficultyLevel}: Using AI-enhanced story analysis`);
+        
+        const storyAnalysis = await AdvancedStoryAnalyzer.enhanceAnalysisWithAI(
+          storyText,
+          pageNumber,
+          totalPages,
+          difficultyLevel,
+          sessionId,
+          userInfo
         );
 
         const enhancedPrompt = AdvancedStoryAnalyzer.generateEnhancedPrompt(
