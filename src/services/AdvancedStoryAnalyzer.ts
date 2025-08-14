@@ -228,7 +228,7 @@ export class AdvancedStoryAnalyzer {
       ...staticAnalysis,
       primaryCharacters: [...new Set([...staticAnalysis.primaryCharacters, ...aiElements.characters.primary])],
       mainAction: aiElements.action.mainActivity || staticAnalysis.mainAction,
-      emotions: [...new Set([...staticAnalysis.emotions, aiElements.action.emotion])],
+      emotions: [...new Set([...staticAnalysis.emotions, aiElements.action.emotion].filter(Boolean))],
       objects: [...new Set([...staticAnalysis.objects, ...aiElements.visual.objects])],
       setting: {
         location: aiElements.scene.setting || staticAnalysis.setting.location,

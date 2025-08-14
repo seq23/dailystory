@@ -144,15 +144,22 @@ Extract rich visual and narrative elements that will help create a compelling, d
     const data = await response.json();
     
     if (!data.choices?.[0]?.message?.content) {
+      console.error('No content received from OpenAI:', data);
       throw new Error('No content received from OpenAI');
     }
 
     let extractedElements: ExtractedStoryElements;
     try {
-      extractedElements = JSON.parse(data.choices[0].message.content);
+      const content = data.choices[0].message.content.trim();
+      extractedElements = JSON.parse(content);
+      
+      // Validate the structure
+      if (!extractedElements.characters || !extractedElements.scene || !extractedElements.visual) {
+        throw new Error('Invalid AI response structure');
+      }
     } catch (parseError) {
       console.error('Failed to parse OpenAI response:', data.choices[0].message.content);
-      throw new Error('Failed to parse AI response');
+      throw new Error(`Failed to parse AI response: ${parseError.message}`);
     }
 
     console.log(`📖 Successfully extracted story elements: ${extractedElements.characters.primary.join(', ')} in ${extractedElements.scene.setting}`);
