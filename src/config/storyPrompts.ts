@@ -10,8 +10,8 @@ export interface StoryPromptConfig {
   difficulty: DifficultyLevel;
   systemPrompt: string;
   userPromptTemplate: string;
-  maxLength: number;
-  expectedPages: number;
+  maxLength?: number; // Optional for unlimited stories
+  expectedPages?: number; // Optional for unlimited stories
 }
 
 export interface ExpertStoryPromptConfig {
@@ -26,32 +26,21 @@ export interface ExpertStoryPromptConfig {
 export const STORY_PROMPTS: Record<DifficultyLevel, StoryPromptConfig> = {
   beginner: {
     difficulty: 'beginner',
-    systemPrompt: `You are a Level 0 story writer for ages 3-5 years old. Here are three author styles to guide your writing (never mention these styles):
+    systemPrompt: `Create continuing picture book story for pre-reader child aged 3-5. Story continues until user stops or limit reached. The narrative allows pauses and continuation prompts, and it supports returning for subsequent parts.
 
-SIMPLE YELLOW AUTHOR - Calming Style. 2-4 words. Ultra-simple words and structure for beginners. "Moon shines." / "{userName} yawns." / "Good night."
+PRIMARY THEME SOURCE: {specialRequest} dictates themes, characters, settings, style, educational focus and other creative elements. System prioritizes completely when present.
 
-SIMPLE ORANGE AUTHOR - Silly Style. 2-4 words. Ultra-simple silly animal words for beginners that sometimes rhyme. "I see Bears play." / "What fun!" / "The best day!"
+SECONDARY STYLE INSPIRATION: DYNAMIC COLOR VOICE INJECTION - getColorVoiceForUser(userInfo, difficulty) provides stylistic guidance only when specialRequest lacks direction.
 
-SIMPLE SILVER AUTHOR - Pride and Encouragement Style. 2-4 words. Ultra-simple growth words for beginners. "Look! {userName}!" / "Try now." / "All done! So good!"
+User Input Integration: {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} central to story with direct mentions. Missing inputs auto-generate age appropriate alternatives.
 
-STRICT REQUIREMENTS:
-* Exactly 5 pages
-* Maximum of 6 words per page  
-* Maximum of 30 words total across entire story
-* Include user inputs at least once per story
-* PRIMARY VOCABULARY: Use Enhanced Level 0 vocabulary (100 words total)
-* STRONG PREFERENCES: Strong preference for rhyming patterns and repetition.
-* FLEXIBILITY: Words outside of the PRIMARY VOCABULARY can be used when needed for natural flow.
-* EXCEPTION: Always allow user's name and their favorite color/animal/food/hobby.
-* All content must be age appropriate for children 3-5.
+Story Rules: Enhanced Level 0 vocabulary preferred but flexible for flow. Mix of 2-4 letter words and 2-4 word sentences preferred. 1 sentence per page. Simple present tense. Continuing narrative structure. Always allow {userName} and all user inputs.
 
-FORMAT: One sentence per page.`,
-    userPromptTemplate: `Write a joyful, easy-to-read story for a pre-reader named {userName}. Include {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}, or {specialRequest} as clear, distinct story elements, using at least one user input at least once. The story should be fun to read aloud and visually engaging as a picture book.
+Guardrails: G-rated. No personal data. No copyrighted content.
 
-Format & Structure
-
-Exactly 5 pages, one complete sentence per page.
-Max 8 words per page; max 40 words total.
+Randomness: seed={seed} (generate if null, return as meta.seed)`,
+    userPromptTemplate: `Create a continuing story for {userName}, age 3-5. The story can continue indefinitely with {specialRequest} as the primary creative direction. Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} naturally. Use simple vocabulary and 1 sentence per page format for easy reading.`,
+  },
 Prioritize 2-3 word sentences for maximum readability - aim for 60% 2-word sentences, 25% 3-word sentences, 15% longer sentences for variety.
 Examples of preferred sentence lengths:
 2 words: "{userName} runs." / "Ball goes." / "Cat sleeps."
@@ -71,8 +60,6 @@ Variation
 Internally select a random story seed (1–10,000) to vary details for uniqueness. Do not mention or describe the seed.
 
 If specialRequest includes a line like "Target vocabulary: word1, word2, ...", try to use those words naturally at least once (don’t force it). If no specialRequest is provided, prefer grade-level vocabulary choices by default.`,
-    maxLength: 30,
-    expectedPages: 5
   },
   
   easy: {
