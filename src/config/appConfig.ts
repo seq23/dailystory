@@ -102,11 +102,11 @@ export const APP_CONFIG: AppConfig = {
 // Style framework by difficulty level - Phase 1 Implementation
 export const DIFFICULTY_STYLE_MAPPING = {
   'beginner': {
-    name: 'Simple & Warm',
-    prompt: 'simple children\'s book illustration with bold, clear shapes and bright, warm colors. Minimal details, large friendly elements, very safe and comforting visual style',
+    name: 'Magical Level 0',
+    prompt: '2D digital illustration (cartoon/children\'s book style), whimsical fantasy scene, soft painted style with magical glow effects and sparkles, medium shot child centered with magical elements floating around',
     complexity: 'low',
-    colorPalette: 'primary colors, high contrast',
-    detailLevel: 'minimal'
+    colorPalette: 'warm browns, soft blues, magical golden sparkles',
+    detailLevel: 'child-friendly proportions (larger head/eyes, rounded soft features)'
   },
   'easy': {
     name: 'Playful & Colorful', 

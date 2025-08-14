@@ -3,9 +3,10 @@
 
 import type { UserInfo, DifficultyLevel } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
-import { APP_CONFIG, IMAGE_STYLES, type ImageStyle } from '@/config/appConfig';
+import { APP_CONFIG, IMAGE_STYLES, DIFFICULTY_STYLE_MAPPING, type ImageStyle } from '@/config/appConfig';
 import { ErrorHandler, ErrorType } from '@/utils/errorHandling';
 import { AdvancedStoryAnalyzer } from './AdvancedStoryAnalyzer';
+import { DirectContentExtractor } from './DirectContentExtractor';
 
 export interface ImageGenerationConfig {
   provider: 'runware' | 'dalle';
@@ -149,29 +150,52 @@ export class SimpleImageService {
 
       console.log(`🎨 Enhanced Image: Creating image for page ${pageNumber}/${totalPages} (${difficultyLevel})`);
 
-      // Phase 2 & 3: Use enhanced story analysis with character consistency and style
-      const storyAnalysis = AdvancedStoryAnalyzer.analyzeStoryContent(
-        storyText, 
-        pageNumber, 
-        totalPages
-      );
+      let positivePrompt: string;
+      let negativePrompt: string;
 
-      const enhancedPrompt = AdvancedStoryAnalyzer.generateEnhancedPrompt(
-        storyAnalysis,
-        userInfo,
-        difficultyLevel,
-        sessionId,
-        finalConfig.style
-      );
+      if (difficultyLevel === 'beginner') {
+        // Level 0 bypass: Use DirectContentExtractor for simple 2-4 word sentences
+        console.log('🎨 Level 0: Using simplified content extraction');
+        
+        const pageContent = DirectContentExtractor.extractPageContent(storyText);
+        const baseStyle = DIFFICULTY_STYLE_MAPPING['beginner'].prompt;
+        const brandSuffix = "with magical sparkles and floating creatures, warm cozy indoor lighting, whimsical fantasy atmosphere, contemporary children's book art style, diverse and inclusive, safe wholesome content, high quality professional artwork";
+        
+        // Build scene-specific prompt
+        const sceneElements = [];
+        if (pageContent.subject) sceneElements.push(`showing a friendly ${pageContent.subject}`);
+        if (pageContent.action) sceneElements.push(`${pageContent.action}`);
+        if (pageContent.object) sceneElements.push(`with ${pageContent.object}`);
+        if (pageContent.location) sceneElements.push(`in a ${pageContent.location}`);
+        
+        positivePrompt = [baseStyle, ...sceneElements, brandSuffix].join(' ');
+        negativePrompt = 'scary, dark, violent, inappropriate, adult content, realistic photography, photorealistic';
+        
+      } else {
+        // Advanced analysis for higher difficulty levels
+        const storyAnalysis = AdvancedStoryAnalyzer.analyzeStoryContent(
+          storyText, 
+          pageNumber, 
+          totalPages
+        );
 
-      const positivePrompt = [
-        enhancedPrompt.mainPrompt,
-        ...enhancedPrompt.styleModifiers,
-        ...enhancedPrompt.compositionHints,
-        ...enhancedPrompt.colorPalette
-      ].join(', ');
+        const enhancedPrompt = AdvancedStoryAnalyzer.generateEnhancedPrompt(
+          storyAnalysis,
+          userInfo,
+          difficultyLevel,
+          sessionId,
+          finalConfig.style
+        );
 
-      const negativePrompt = enhancedPrompt.negativePrompt.join(', ');
+        positivePrompt = [
+          enhancedPrompt.mainPrompt,
+          ...enhancedPrompt.styleModifiers,
+          ...enhancedPrompt.compositionHints,
+          ...enhancedPrompt.colorPalette
+        ].join(', ');
+
+        negativePrompt = enhancedPrompt.negativePrompt.join(', ');
+      }
 
       console.log(`🎨 Enhanced Prompt: ${positivePrompt.substring(0, 100)}...`);
 
