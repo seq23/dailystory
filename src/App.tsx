@@ -14,6 +14,7 @@ import Pricing from "./pages/Pricing";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Auth from "./pages/Auth";
+import PromptTesting from "./pages/PromptTesting";
 import VoiceHUD from "./components/VoiceHUD";
 const queryClient = new QueryClient();
 
@@ -34,6 +35,7 @@ const App = () => {
               <Route path="/auth" element={<Auth />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
+              <Route path="/prompt-testing" element={<PromptTesting />} />
               <Route path="/session-ended" element={<SessionEnded />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
