@@ -184,7 +184,7 @@ FORMAT: Page 1: [5-6 sentences]. Each subsequent page should maintain similar le
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
-    userPromptTemplate: `Create a sophisticated 800-900 word story for {userName} (age {age}) that explores identity, purpose, and complex relationships. They are deeply interested in {hobbies} and find personal meaning in {favoriteAnimal} and {favoriteColor}, with a special connection to {favoriteFood}. Weave these elements as foundational themes across exactly 12 pages, using 6th grade vocabulary and complex sentence structures. {specialRequest} provides the primary creative direction. Apply color voice styling per user profile. Before writing, internally imagine a random "story seed" between 1 and 10,000 to vary setting, events, and details so each story is unique. Do not mention the seed.`,
+    userPromptTemplate: `Create a sophisticated 800-900 word story for {userName} (age {age}) that explores identity, purpose, and complex relationships. Weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} naturally into the story as subtle nods using 6th grade vocabulary and complex sentence structures. {specialRequest} provides the primary creative direction. Refer to color voice styling per user profile as needed. Use an internal random "story seed" (1–10,000) to vary setting, events, and details so each story is unique. Do not mention the seed.`,
     maxLength: 900,
     expectedPages: 12,
     wordCount: "800-900 words"
@@ -223,7 +223,7 @@ FORMAT: Page 1: [6-7 sentences]. Each subsequent page should maintain similar le
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
-    userPromptTemplate: `Create a sophisticated 900-1100 word story for {userName} (age {age}) exploring identity, purpose, and complex relationships with 7th grade complexity. They find deep meaning in {hobbies} and connect personally with {favoriteAnimal} and {favoriteColor}, with a special relationship to {favoriteFood}. {specialRequest} provides the primary creative direction. Apply color voice styling per user profile. Address themes of growing up, finding your place, and understanding yourself. Before writing, internally imagine a random "story seed" between 1 and 10,000 to vary setting, events, and details so each story is unique. Do not mention the seed.`,
+    userPromptTemplate: `Create a sophisticated 900-1100 word story for {userName} (age {age}) exploring identity, purpose, and complex relationships with 7th grade complexity. Weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} naturally into the story as subtle nods. {specialRequest} provides the primary creative direction. Refer to color voice styling per user profile as needed. Address themes of growing up, finding your place, and understanding yourself. Use an internal random "story seed" (1–10,000) to vary setting, events, and details so each story is unique. Do not mention the seed.`,
     maxLength: 1100,
     expectedPages: 13,
     wordCount: "900-1100 words"
@@ -262,7 +262,7 @@ FORMAT: Page 1: [6-8 sentences]. Each subsequent page should maintain similar le
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
-    userPromptTemplate: `Create a sophisticated 1000-1200 word story for {userName} (age {age}) with 8th grade complexity, exploring identity, purpose, and complex relationships. They are passionate about {hobbies} and find deep personal connections with {favoriteAnimal} and {favoriteColor}, with meaningful ties to {favoriteFood}. {specialRequest} provides the primary creative direction. Apply color voice styling per user profile. Address themes of growing up, moral complexity, and finding one's place in the world. Before writing, internally imagine a random "story seed" between 1 and 10,000 to vary setting, events, and details so each story is unique. Do not mention the seed.`,
+    userPromptTemplate: `Create a sophisticated 1000-1200 word story for {userName} (age {age}) with 8th grade complexity, exploring identity, purpose, and complex relationships. Weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} naturally into the story as subtle nods. {specialRequest} provides the primary creative direction. Refer to color voice styling per user profile as needed. Address themes of growing up, moral complexity, and finding one's place in the world. Use an internal random "story seed" (1–10,000) to vary setting, events, and details so each story is unique. Do not mention the seed.`,
     maxLength: 1200,
     expectedPages: 14,
     wordCount: "1000-1200 words"
@@ -301,7 +301,7 @@ FORMAT: Page 1: [7-8 sentences]. Each subsequent page should maintain similar le
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
-    userPromptTemplate: `Create a sophisticated 1100-1300 word story for {userName} (age {age}) with 9th grade complexity, exploring identity, purpose, and complex relationships with philosophical depth. They find profound meaning in {hobbies} and deep personal connections with {favoriteAnimal} and {favoriteColor}, alongside meaningful ties to {favoriteFood}. {specialRequest} provides the primary creative direction. Apply color voice styling per user profile. Address themes of self-discovery, moral complexity, and understanding one's place in society. Before writing, internally imagine a random "story seed" between 1 and 10,000 to vary setting, events, and details so each story is unique. Do not mention the seed.`,
+    userPromptTemplate: `Create a sophisticated 1100-1300 word story for {userName} (age {age}) with 9th grade complexity, exploring identity, purpose, and complex relationships with philosophical depth. Weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} naturally into the story as subtle nods. {specialRequest} provides the primary creative direction. Refer to color voice styling per user profile as needed. Address themes of self-discovery, moral complexity, and understanding one's place in society. Use an internal random "story seed" (1–10,000) to vary setting, events, and details so each story is unique. Do not mention the seed.`,
     maxLength: 1300,
     expectedPages: 15,
     wordCount: "1100-1300 words"
@@ -340,7 +340,7 @@ FORMAT: Page 1: [7-9 sentences]. Each subsequent page should maintain similar le
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
-    userPromptTemplate: `Create a sophisticated 1200-1400 word story for {userName} (age {age}) with 10th grade complexity, exploring identity, purpose, and complex relationships with philosophical and social depth. They are deeply passionate about {hobbies} and find profound personal connections with {favoriteAnimal} and {favoriteColor}, alongside meaningful relationships with {favoriteFood}. {specialRequest} provides the primary creative direction. Apply color voice styling per user profile. Address themes of self-discovery, moral complexity, social awareness, and understanding one's place in the world. Before writing, internally imagine a random "story seed" between 1 and 10,000 to vary setting, events, and details so each story is unique. Do not mention the seed.`,
+    userPromptTemplate: `Create a sophisticated 1200-1400 word story for {userName} (age {age}) with 10th grade complexity, exploring identity, purpose, and complex relationships with philosophical and social depth. Weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} naturally into the story as subtle nods. {specialRequest} provides the primary creative direction. Refer to color voice styling per user profile as needed.  Address themes of self-discovery, moral complexity, social awareness, and understanding one's place in the world. Use an internal random "story seed" (1–10,000) to vary setting, events, and details so each story is unique. Do not mention the seed.`,
     maxLength: 1400,
     expectedPages: 16,
     wordCount: "1200-1400 words"
