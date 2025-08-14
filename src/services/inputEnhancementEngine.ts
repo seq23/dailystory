@@ -1,5 +1,5 @@
 import type { UserInfo, DifficultyLevel, LanguageCode } from '../types';
-import { SmartInputParser } from './smartInputParser';
+import { validateTheme } from '@/utils/themeValidation';
 
 interface EnhancedInput {
   originalInput: string;

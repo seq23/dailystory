@@ -1,7 +1,7 @@
 // Intelligent user input distribution system for natural story flow
 import { UserInfo, DifficultyLevel } from "@/types";
 import { NameFormatter } from "@/utils/nameFormatter";
-import { SmartInputParser } from "@/services/smartInputParser";
+import { validateTheme } from "@/utils/themeValidation";
 
 export interface DistributionContext {
   pageIndex: number;
@@ -173,11 +173,11 @@ export class UserInputDistributor {
       try {
         const animalTags = userInfo.favoriteAnimal.split(/[,\s]+/).filter(tag => tag.trim().length > 0);
         if (animalTags.length > 1) {
-          // Multiple animals detected - use smart parsing for additional variety
-          const parseResult = await SmartInputParser.parseTaggedInput(animalTags, userInfo);
-          parseResult.parsedTags.forEach(tag => {
-            if (this.isAnimalWord(tag.corrected)) {
-              animals.add(tag.corrected.toLowerCase());
+          // Multiple animals detected - validate and add each
+          animalTags.forEach(tag => {
+            const validation = validateTheme(tag.trim());
+            if (validation.valid && this.isAnimalWord(validation.sanitized)) {
+              animals.add(validation.sanitized.toLowerCase());
             }
           });
         }
@@ -232,16 +232,16 @@ export class UserInputDistributor {
   private static async extractFoods(userInfo: UserInfo): Promise<string[]> {
     const foods = new Set<string>();
     
-    // Parse favorite food input using SmartInputParser  
+    // Parse favorite food input with validation
     if (userInfo.favoriteFood) {
       try {
         const foodTags = userInfo.favoriteFood.split(/[,\s]+/).filter(tag => tag.trim().length > 0);
         if (foodTags.length > 1) {
-          // Multiple foods detected - use smart parsing
-          const parseResult = await SmartInputParser.parseTaggedInput(foodTags, userInfo);
-          parseResult.parsedTags.forEach(tag => {
-            if (this.isFoodWord(tag.corrected)) {
-              foods.add(tag.corrected.toLowerCase());
+          // Multiple foods detected - validate and add each
+          foodTags.forEach(tag => {
+            const validation = validateTheme(tag.trim());
+            if (validation.valid && this.isFoodWord(validation.sanitized)) {
+              foods.add(validation.sanitized.toLowerCase());
             }
           });
         } else {

@@ -18,7 +18,7 @@ import { ContentSecurity, SecurityLogger } from "@/utils/security";
 import { InputSanitizer } from "@/utils/inputSanitizer";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { SmartInputParser } from "@/services/smartInputParser";
+import { validateTheme } from "@/utils/themeValidation";
 import type { UserInfo, Grade, LanguageCode, LearningGoal } from "@/types";
 
 export type { UserInfo } from "@/types";
@@ -141,22 +141,18 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
           age: formData.age 
         });
           
-          // Use SmartInputParser for processing (includes translation)
-          const result = await SmartInputParser.parseTaggedInput(
-            [sanitizedValue],
-            formData,
-            true // mobile optimized
-          );
-
-          if (result.parsedTags.length > 0) {
-            const processedTag = result.parsedTags[0];
+          // Use theme validation for processing
+          const validationResult = validateTheme(sanitizedValue);
+          
+          if (validationResult.valid) {
+            const processedTag = { corrected: validationResult.sanitized, confidence: 1.0 };
             
             // If translation/correction occurred, show feedback and update form
-            if (processedTag.original !== processedTag.corrected) {
-              console.log(`✅ Translation completed: "${processedTag.original}" → "${processedTag.corrected}"`);
+            if (sanitizedValue !== processedTag.corrected) {
+              console.log(`✅ Processing completed: "${sanitizedValue}" → "${processedTag.corrected}"`);
               setTranslations(prev => ({ 
                 ...prev, 
-                [field as string]: `${processedTag.original} → ${processedTag.corrected}` 
+                [field as string]: `${sanitizedValue} → ${processedTag.corrected}` 
               }));
               
               // Update the form data with the processed (corrected/translated) value
@@ -167,7 +163,7 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
                 setTranslations(prev => ({ ...prev, [field as string]: '' }));
               }, 3000);
             } else {
-              console.log(`ℹ️ No translation needed for: "${processedTag.original}"`);
+              console.log(`ℹ️ No processing needed for: "${sanitizedValue}"`);
               // Clear any existing translation for this field
               setTranslations(prev => ({ ...prev, [field as string]: '' }));
             }

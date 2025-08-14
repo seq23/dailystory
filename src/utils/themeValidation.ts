@@ -5,7 +5,7 @@ import { InputSanitizer } from './inputSanitizer';
 const BLACKLISTED_THEMES = [
   // Violence/adult content
   'violence', 'violent', 'fight', 'fighting', 'war', 'weapon', 'gun', 'sword', 'blood', 'death', 'kill', 'murder',
-  'scary', 'horror', 'terror', 'nightmare', 'demon', 'devil', 'ghost', 'zombie', 'vampire',
+  'scary', 'horror', 'terror', 'nightmare', 'demon', 'devil', 'ghost', 'zombie', 'vampire', 'monsters', 'monster',
   
   // Adult themes
   'romance', 'dating', 'kiss', 'kissing', 'love', 'boyfriend', 'girlfriend', 'wedding', 'marriage',
@@ -39,28 +39,22 @@ const PERSONAL_INFO_PATTERNS = [
   /\b(school|classroom|teacher|principal)\s+\w+/i
 ];
 
-// Zod schema for theme validation
-export const ThemeSchema = z.object({
-  theme: z.string()
-    .min(1, "Theme cannot be empty")
-    .max(50, "Theme too long (max 50 characters)")
-    .refine((val) => {
-      const sanitized = InputSanitizer.sanitizeThemeInput(val);
-      return sanitized === val;
-    }, "Theme contains invalid characters")
-    .refine((val) => {
-      return !BLACKLISTED_THEMES.some(blocked => 
-        val.toLowerCase().includes(blocked.toLowerCase())
-      );
-    }, "Theme contains inappropriate content for children")
-    .refine((val) => {
-      return !PERSONAL_INFO_PATTERNS.some(pattern => pattern.test(val));
-    }, "Theme contains personal information (COPPA violation)")
-});
+// Zod schema for theme validation - validates strings directly
+export const ThemeSchema = z.string()
+  .min(1, "Theme cannot be empty")
+  .max(50, "Theme too long (max 50 characters)")
+  .refine((val) => {
+    return !BLACKLISTED_THEMES.some(blocked => 
+      val.toLowerCase().includes(blocked.toLowerCase())
+    );
+  }, "Theme contains inappropriate content for children")
+  .refine((val) => {
+    return !PERSONAL_INFO_PATTERNS.some(pattern => pattern.test(val));
+  }, "Theme contains personal information (COPPA violation)");
 
 // Batch validation schema
 export const ThemeBatchSchema = z.object({
-  themes: z.array(ThemeSchema.shape.theme).max(10, "Too many themes (max 10)")
+  themes: z.array(ThemeSchema).max(10, "Too many themes (max 10)")
 });
 
 export interface ValidationResult {
@@ -91,12 +85,12 @@ export function validateTheme(theme: string): ValidationResult {
   };
 
   try {
-    // First sanitize the input
+    // First sanitize the input once
     const sanitized = InputSanitizer.sanitizeThemeInput(theme);
     result.sanitized = sanitized;
 
-    // Then validate with Zod
-    const validation = ThemeSchema.safeParse({ theme: sanitized });
+    // Then validate with Zod (no additional sanitization in schema)
+    const validation = ThemeSchema.safeParse(sanitized);
     
     if (validation.success) {
       result.valid = true;
