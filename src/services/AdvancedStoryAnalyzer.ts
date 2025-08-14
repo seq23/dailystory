@@ -497,7 +497,20 @@ export class AdvancedStoryAnalyzer {
       'poor quality',
       'blurry',
       'distorted faces',
-      'inconsistent character appearance'
+      'inconsistent character appearance',
+      'extra limbs',
+      'multiple arms',
+      'multiple legs',
+      'three legs',
+      'extra hands',
+      'deformed anatomy',
+      'malformed body parts',
+      'incorrect anatomy',
+      'distorted proportions',
+      'anatomical errors',
+      'inconsistent limb count',
+      'body part duplication',
+      'malformed characters'
     ];
     
     return {

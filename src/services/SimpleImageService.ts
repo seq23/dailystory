@@ -246,7 +246,7 @@ export class SimpleImageService {
         if (pageContent.location) sceneElements.push(`in a ${pageContent.location}`);
         
         positivePrompt = [baseStyle, ...sceneElements, brandSuffix].join(' ');
-        negativePrompt = 'scary, dark, violent, inappropriate, adult content, realistic photography, photorealistic';
+        negativePrompt = 'scary, dark, violent, inappropriate, adult content, realistic photography, photorealistic, extra limbs, multiple arms, multiple legs, three legs, extra hands, deformed anatomy, malformed body parts, incorrect anatomy, anatomical errors';
         
       } else {
         // AI-Enhanced analysis for levels 1-4
