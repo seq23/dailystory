@@ -723,16 +723,26 @@ serve(async (req) => {
     const userName = fallbackConfig?.userName || 'the child';
     
     // Get fallback pages using Enhanced Template Library logic
-    const fallbackPages = getEnhancedFallbackPages(fallbackReadingLevel, {
+    const rawFallbackPages = getEnhancedFallbackPages(fallbackReadingLevel, {
       name: userName,
       avatar: fallbackConfig?.avatar,
       interests: fallbackConfig?.interests || []
     });
 
-    console.log('EDGE SOURCE=fallback', { readingLevel: fallbackReadingLevel, pagesCount: fallbackPages.length });
+    // Strip page markers from fallback pages too
+    const cleanFallbackPages = rawFallbackPages.map(page => {
+      return page
+        .replace(/^Page\s*\d+\s*:\s*/i, '') // Remove "Page X:" at start
+        .replace(/^Page\s*\d+\s*/i, '') // Remove "Page X" at start
+        .replace(/\n\s*Page\s*\d+\s*:\s*/gi, '\n') // Remove mid-text markers
+        .replace(/\n\s*Page\s*\d+\s*/gi, '\n') // Remove mid-text markers
+        .trim();
+    }).filter(page => page.length > 0);
+
+    console.log('EDGE SOURCE=fallback', { readingLevel: fallbackReadingLevel, pagesCount: cleanFallbackPages.length });
     const fallbackStory = {
       source: 'fallback',
-      pages: fallbackPages,
+      pages: cleanFallbackPages,
       difficulty: fallbackReadingLevel || 'easy',
       title: `${userName}'s Story`,
       isComplete: true

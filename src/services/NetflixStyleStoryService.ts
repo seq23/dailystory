@@ -163,7 +163,7 @@ let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, {
           try {
             (globalThis as any).__LAST_STORY_SOURCE__ = (data as any)?.source || 'ai';
           } catch {}
-          console.log('🧭 STORY_SOURCE', { source: (globalThis as any).__LAST_STORY_SOURCE__, service: 'Netflix', pagesCount: filteredPages.length, difficulty: data.difficulty || difficulty });
+          console.log('🧭 STORY_SOURCE', { source: (globalThis as any).__LAST_STORY_SOURCE__, service: 'Netflix', pagesCount: cleanPages.length, difficulty: data.difficulty || difficulty });
 
           // Optional author voice post-processing
           let pagesOut = cleanPages;
