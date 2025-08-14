@@ -175,7 +175,7 @@ let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, {
                 const isFirst = idx === 0;
                 const isLast = idx === cleanPages.length - 1;
                 const position = isFirst ? applyOn.first : isLast ? applyOn.last : applyOn.middle;
-                return applyAuthorVoice(p, voice, position);
+                return applyAuthorVoice(p, voice, position, userInfo, difficulty);
               });
             }
           } catch {}
@@ -245,7 +245,7 @@ let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, {
             const isFirst = idx === 0;
             const isLast = idx === pages.length - 1;
             const position = isFirst ? applyOn.first : isLast ? applyOn.last : applyOn.middle;
-            return applyAuthorVoice(p, voice, position);
+            return applyAuthorVoice(p, voice, position, userInfo, difficulty);
           });
         }
       } catch {}

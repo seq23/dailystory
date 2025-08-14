@@ -761,8 +761,14 @@ export function getAuthorVoiceForDifficulty(difficulty: DifficultyLevel): ColorV
 export function applyAuthorVoice(
   content: string,
   voice: ColorVoice,
-  position: 'opening' | 'transition' | 'closing'
+  position: 'opening' | 'transition' | 'closing',
+  userInfo?: UserInfo,
+  difficulty?: DifficultyLevel
 ): string {
+  // Skip author voice entirely for beginner difficulty
+  if (difficulty === 'beginner') {
+    return content;
+  }
   // If content is already author-voice styled or very short, return as is
   if (content.length < 20 || isAlreadyStyledContent(content, voice)) {
     return content;
@@ -773,7 +779,7 @@ export function applyAuthorVoice(
   
   // Extract variables from content for pattern substitution
   const variables = extractContentVariables(content);
-  const styledPattern = substitutePatternVariables(pattern, variables, content);
+  const styledPattern = substitutePatternVariables(pattern, variables, content, userInfo);
 
   // Apply voice characteristics naturally based on position
   switch (position) {
@@ -833,10 +839,12 @@ function extractContentVariables(content: string): Record<string, string> {
 function substitutePatternVariables(
   pattern: string,
   variables: Record<string, string>,
-  sourceContent?: string
+  sourceContent?: string,
+  userInfo?: UserInfo
 ): string {
   try {
-    return resolveMicroPlaceholders(pattern, variables);
+    const microContext = { userInfo, seed: variables };
+    return resolveMicroPlaceholders(pattern, microContext);
   } catch (error) {
     console.warn('Pattern substitution failed:', error);
     return pattern.replace(/\{[^}]+\}/g, '___');

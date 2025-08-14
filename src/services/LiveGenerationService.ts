@@ -130,7 +130,7 @@ let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, userInfo);
         if ((APP_CONFIG as any)?.features?.authorVoice?.deepeningEnabled) {
           const voice = getColorVoiceForUser(userInfo, difficulty);
           const applyOn = (APP_CONFIG as any).features.authorVoice.applyOn;
-          contentOut = applyAuthorVoice(content, voice, applyOn.first);
+          contentOut = applyAuthorVoice(content, voice, applyOn.first, userInfo, difficulty);
         }
       } catch {}
 
@@ -240,7 +240,7 @@ let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.u
           const voice = getColorVoiceForUser(context.userInfo, context.difficulty);
           const applyOn = (APP_CONFIG as any).features.authorVoice.applyOn;
           const position = shouldConclude ? applyOn.last : applyOn.middle;
-          contentOut = applyAuthorVoice(content, voice, position);
+          contentOut = applyAuthorVoice(content, voice, position, context.userInfo, context.difficulty);
         }
       } catch {}
 
@@ -334,7 +334,7 @@ let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.u
         if ((APP_CONFIG as any)?.features?.authorVoice?.deepeningEnabled) {
           const voice = getColorVoiceForUser(context.userInfo, context.difficulty);
           const applyOn = (APP_CONFIG as any).features.authorVoice.applyOn;
-          contentOut = applyAuthorVoice(content, voice, applyOn.last);
+          contentOut = applyAuthorVoice(content, voice, applyOn.last, context.userInfo, context.difficulty);
         }
       } catch {}
 
