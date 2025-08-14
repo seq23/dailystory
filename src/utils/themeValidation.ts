@@ -5,14 +5,24 @@ import { InputSanitizer } from './inputSanitizer';
 const BLACKLISTED_THEMES = [
   // Violence/adult content
   'violence', 'violent', 'fight', 'fighting', 'war', 'weapon', 'gun', 'sword', 'blood', 'death', 'kill', 'murder',
-  'scary', 'horror', 'terror', 'nightmare', 'demon', 'devil', 'ghost', 'zombie', 'vampire', 'monsters', 'monster',
+  'scary', 'horror', 'terror', 'nightmare', 'demon', 'devil', 'ghost', 'zombie', 'vampire', 'assault', 'abuse', 'rape', 'torture', 'suicide',
   
   // Adult themes
   'romance', 'dating', 'kiss', 'kissing', 'love', 'boyfriend', 'girlfriend', 'wedding', 'marriage',
-  'alcohol', 'beer', 'wine', 'drink', 'drunk', 'smoking', 'drugs', 'gambling',
   
-  // Inappropriate content
-  'naked', 'nude', 'sex', 'sexual', 'inappropriate', 'adult', 'mature',
+  // Alcohol and drugs
+  'alcohol', 'beer', 'wine', 'drink', 'drunk', 'smoking', 'drugs', 'cocaine', 'heroin', 'marijuana', 'weed', 'meth', 'ecstasy', 'lsd', 'crack',
+  'dealer', 'trafficking', 'addict', 'addiction', 'overdose', 'rehab', 'cigarette', 'tobacco', 'vaping', 'vape', 'joint', 'high', 'stoned',
+  
+  // Gambling
+  'gambling', 'casino', 'betting', 'poker', 'slots',
+  
+  // Sexual content
+  'naked', 'nude', 'sex', 'sexual', 'sexy', 'seductive', 'erotic', 'porn', 'pornography', 'prostitute', 'strip', 'stripper',
+  'breast', 'genitals', 'penis', 'vagina', 'orgasm', 'masturbate', 'horny', 'lust', 'arousal', 'seduce', 'flirt', 'intimate', 'passion',
+  
+  // General inappropriate content
+  'inappropriate', 'adult', 'mature',
   
   // Dangerous activities
   'danger', 'dangerous', 'risky', 'unsafe', 'poison', 'toxic', 'fire', 'explosion'
