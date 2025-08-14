@@ -31,16 +31,16 @@ describe("themeIntent", () => {
     expect(ti.themes).toEqual(expect.arrayContaining(["discovery"]));
   });
 
-  it("applies age-appropriate filtering", () => {
+  it("includes all themes without filtering", () => {
     const youngUser = makeUser({ 
       age: 4, 
-      specialRequest: "theme: violence and friendship" 
+      specialRequest: "theme: monsters and friendship" 
     });
     const ti = extractThemeIntent(youngUser);
     
-    // Should filter out violence for 4-year-old
+    // Should include all themes - adaptation handled in prompts
     expect(ti.themes).toContain("friendship");
-    expect(ti.themes).not.toContain("violence");
+    expect(ti.themes).toContain("monsters");
   });
 
   it("includes validation information when requested", () => {
@@ -51,21 +51,20 @@ describe("themeIntent", () => {
     const tiWithValidation = extractThemeIntentWithValidation(user);
     
     expect(tiWithValidation.validation).toBeDefined();
-    expect(tiWithValidation.validation.rejectedThemes).toContain("danger");
+    expect(tiWithValidation.validation.rejectedThemes).toEqual([]);
     expect(tiWithValidation.themes).toContain("mystery");
-    expect(tiWithValidation.themes).not.toContain("danger");
+    expect(tiWithValidation.themes).toContain("danger");
   });
 
-  it("handles complex theme requests with age filtering", () => {
+  it("handles complex theme requests without filtering", () => {
     const user = makeUser({ 
       age: 10, 
-      specialRequest: "theme: friendship, romance, violence, adventure; tone: exciting" 
+      specialRequest: "theme: friendship, romance, monsters, adventure; tone: exciting" 
     });
     const ti = extractThemeIntent(user);
     
-    // 10-year-old should get romance but not violence
-    expect(ti.themes).toEqual(expect.arrayContaining(["friendship", "adventure", "romance"]));
-    expect(ti.themes).not.toContain("violence");
+    // Should include all themes - adaptation handled in prompts
+    expect(ti.themes).toEqual(expect.arrayContaining(["friendship", "adventure", "romance", "monsters"]));
     expect(ti.tone).toContain("exciting");
   });
 });

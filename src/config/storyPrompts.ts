@@ -4,7 +4,7 @@
 import type { DifficultyLevel, ExpertGradeLevel, UserInfo } from '@/types';
 import { resolveAllPlaceholders } from '@/utils/placeholderResolver';
 import { extractThemeIntent } from '@/utils/themeIntent';
-import { validateThemesForAge } from '@/utils/ageThemeValidation';
+
 import { getTokenLimitForDifficulty } from '@/utils/tokenLimitValidator';
 import { APP_CONFIG } from '@/config/appConfig';
 
@@ -44,7 +44,7 @@ USER INTEGRATION: {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood},
 
 STYLE: getColorVoiceForUser(userInfo, difficulty) provides secondary direction for stylistic guidance.
 
-GUARDRAILS: G-rated content only. Age-appropriate themes for 3-5 year olds. No external personal data. No copyrighted content. Themes must be suitable for preschoolers - focus on friendship, kindness, family, nature, discovery, creativity, learning.
+GUARDRAILS: G-rated content only. Age-appropriate themes for 3-5 year olds. No external personal data. No copyrighted content. For potentially scary themes (monsters, dragons, etc.), make them friendly, silly, and helpful rather than frightening. Focus on themes like friendship, kindness, family, nature, discovery, creativity, learning.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
     userPromptTemplate: `Create a continuing story for {userName}, age 3-5. The story continues indefinitely unless user requests an ending, with narrative hooks for continuation. {specialRequest} provides the primary creative direction. Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} naturally. Use simple vocabulary and 1 sentence per page format for easy reading. Apply color voice styling per user profile.`,

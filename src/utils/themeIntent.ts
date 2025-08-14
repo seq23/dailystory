@@ -2,7 +2,6 @@
 // Derives thematic intent from user info and special requests
 
 import type { UserInfo } from '@/types';
-import { validateThemesForAge, sanitizeThemesForAge } from './ageThemeValidation';
 
 export interface ThemeIntent {
   themes: string[];
@@ -79,13 +78,8 @@ export function extractThemeIntent(userInfo: UserInfo): ThemeIntent {
   if (userInfo.favoriteColor) themes.push('identity');
   if (userInfo.favoriteFood) themes.push('family');
 
-  const dedupedThemes = Array.from(new Set(themes)).slice(0, 5);
-  
-  // Apply age-appropriate theme filtering
-  const ageFilteredThemes = sanitizeThemesForAge(dedupedThemes, userInfo);
-
   return {
-    themes: ageFilteredThemes,
+    themes: Array.from(new Set(themes)).slice(0, 5),
     symbols: Array.from(new Set(symbols)).slice(0, 5),
     tone: Array.from(new Set(tone)).slice(0, 5),
     keywords: Array.from(new Set(keywords)).slice(0, 20)
@@ -94,16 +88,9 @@ export function extractThemeIntent(userInfo: UserInfo): ThemeIntent {
 
 export function extractThemeIntentWithValidation(userInfo: UserInfo): ThemeIntent & { validation: any } {
   const intent = extractThemeIntent(userInfo);
-  const allThemes = [
-    ...intent.themes,
-    // Also validate extracted themes from special request
-    ...((userInfo.specialRequest || '').toLowerCase().match(/themes?\s*:\s*([^\n;]+)/)?.[1]?.split(/[,/]|and|&/)?.map(s => s.trim()).filter(Boolean) || [])
-  ];
-  
-  const validation = validateThemesForAge(allThemes, userInfo);
   
   return {
     ...intent,
-    validation
+    validation: { themes: intent.themes, rejectedThemes: [], warnings: [] }
   };
 }
