@@ -1,7 +1,9 @@
 // Advanced Story Content Analysis for Enhanced Image Generation
-// Provides sophisticated parsing of story content for accurate visual representation
+// Phase 2 & 3: Upgraded with character consistency and style integration
 
-import type { UserInfo } from '@/types';
+import type { UserInfo, DifficultyLevel } from '@/types';
+import { CharacterConsistencyCache, type SceneCharacterData } from './CharacterConsistencyCache';
+import { DIFFICULTY_STYLE_MAPPING } from '@/config/appConfig';
 
 export interface StoryAnalysis {
   // Core content analysis
@@ -300,18 +302,37 @@ export class AdvancedStoryAnalyzer {
   static generateEnhancedPrompt(
     analysis: StoryAnalysis, 
     userInfo: UserInfo,
+    difficultyLevel: DifficultyLevel,
+    sessionId: string,
     style: string = 'children-book-illustration'
   ): EnhancedImagePrompt {
-    const characterDesc = this.buildCharacterDescription(userInfo);
+    // Phase 2: Get character consistency data
+    const sceneCharacterData = CharacterConsistencyCache.buildSceneCharacterData(
+      sessionId,
+      userInfo, 
+      difficultyLevel,
+      {
+        emotion: analysis.emotions[0] || 'peaceful',
+        action: analysis.mainAction,
+        setting: analysis.setting.location,
+        lighting: `${analysis.setting.timeOfDay} lighting`,
+        perspective: analysis.perspective
+      }
+    );
+
+    // Phase 3: Apply style framework based on difficulty
+    const styleFramework = DIFFICULTY_STYLE_MAPPING[difficultyLevel];
+    const characterDesc = CharacterConsistencyCache.generateCharacterPrompt(sceneCharacterData);
     const settingDesc = this.buildSettingDescription(analysis.setting);
     const moodDesc = this.buildMoodDescription(analysis);
     
-    const mainPrompt = `A beautiful ${style} showing ${characterDesc} ${analysis.mainAction} in ${settingDesc}. ${moodDesc}. ${analysis.composition}, ${analysis.perspective}.`;
+    // Combine scene content + style framework + character consistency
+    const mainPrompt = `${styleFramework.prompt}. ${characterDesc} ${analysis.mainAction} in ${settingDesc}. ${moodDesc}. ${analysis.composition}, ${analysis.perspective}.`;
     
     const styleModifiers = [
-      'high quality digital art',
-      'professional children\'s book illustration',
-      'warm and inviting lighting',
+      styleFramework.prompt,
+      `${styleFramework.complexity} complexity level`,
+      `${styleFramework.detailLevel} visual details`,
       'safe and appropriate for children',
       'engaging and educational'
     ];
@@ -320,23 +341,25 @@ export class AdvancedStoryAnalyzer {
       analysis.composition,
       analysis.perspective,
       `${analysis.intensity} energy level`,
-      `${analysis.storyProgression} story moment`
+      `${analysis.storyProgression} story moment`,
+      `${styleFramework.complexity} artistic complexity`
     ];
     
     const colorPalette = analysis.colors.length > 0 
       ? analysis.colors.map(c => `rich ${c} tones`)
-      : ['warm harmonious colors'];
+      : [styleFramework.colorPalette];
     
     const negativePrompt = [
       'scary content',
-      'inappropriate imagery',
+      'inappropriate imagery', 
       'dark themes',
       'violence',
       'adult content',
       'disturbing elements',
       'poor quality',
       'blurry',
-      'distorted faces'
+      'distorted faces',
+      'inconsistent character appearance'
     ];
     
     return {

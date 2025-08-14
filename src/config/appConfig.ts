@@ -99,9 +99,48 @@ export const APP_CONFIG: AppConfig = {
   }
 };
 
+// Style framework by difficulty level - Phase 1 Implementation
+export const DIFFICULTY_STYLE_MAPPING = {
+  'beginner': {
+    name: 'Simple & Warm',
+    prompt: 'simple children\'s book illustration with bold, clear shapes and bright, warm colors. Minimal details, large friendly elements, very safe and comforting visual style',
+    complexity: 'low',
+    colorPalette: 'primary colors, high contrast',
+    detailLevel: 'minimal'
+  },
+  'easy': {
+    name: 'Playful & Colorful', 
+    prompt: 'cheerful children\'s book illustration with playful characters and vibrant, engaging colors. Moderate detail level with clear visual storytelling',
+    complexity: 'moderate',
+    colorPalette: 'bright rainbow colors, cheerful tones',
+    detailLevel: 'moderate'
+  },
+  'medium': {
+    name: 'Rich & Engaging',
+    prompt: 'professional children\'s book illustration with rich colors, engaging characters, and good detail balance. Sophisticated but age-appropriate artistic style',
+    complexity: 'balanced',
+    colorPalette: 'rich harmonious colors, sophisticated palette',
+    detailLevel: 'detailed'
+  },
+  'hard': {
+    name: 'Artistic & Sophisticated',
+    prompt: 'high-quality artistic illustration with sophisticated composition, nuanced colors, and rich environmental details. Advanced visual storytelling techniques',
+    complexity: 'high',
+    colorPalette: 'nuanced color gradients, artistic palette',
+    detailLevel: 'highly detailed'
+  },
+  'expert': {
+    name: 'Masterful & Complex',
+    prompt: 'masterful illustration with complex artistic techniques, sophisticated lighting, intricate details, and advanced composition. Museum-quality children\'s art',
+    complexity: 'very high',
+    colorPalette: 'complex color theory, professional artist palette',
+    detailLevel: 'intricate and complex'
+  }
+} as const;
+
 export const IMAGE_STYLES = {
   'children-book-illustration': 'professional children\'s book illustration, vibrant colors, friendly atmosphere',
-  'cartoon': 'colorful cartoon style, playful and engaging',
+  'cartoon': 'colorful cartoon style, playful and engaging', 
   'watercolor': 'soft watercolor painting, gentle and artistic',
   'digital-art': 'high-quality digital art, detailed and polished'
 } as const;

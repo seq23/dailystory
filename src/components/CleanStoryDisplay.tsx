@@ -169,6 +169,9 @@ useEffect(() => {
   const [batchTotal, setBatchTotal] = useState(0);
   const preloadedUrlsRef = useRef<Set<string>>(new Set());
   
+  // Character consistency session ID
+  const [characterSessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substring(2)}`);;
+  
   // Audio and Interactive Features state
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [showVocabularyCollector, setShowVocabularyCollector] = useState(false);
@@ -842,6 +845,8 @@ const initializeStory = async () => {
       const result = await SimpleImageService.generateStoryImage(
         storyText, 
         userInfo, 
+        currentDifficulty,
+        characterSessionId,
         currentPage + 1,
         displayedStory.length
       );
@@ -873,6 +878,8 @@ const initializeStory = async () => {
       const result = await SimpleImageService.generateStoryImage(
         storyText,
         userInfo,
+        currentDifficulty,
+        characterSessionId,
         index + 1,
         story.length
       );

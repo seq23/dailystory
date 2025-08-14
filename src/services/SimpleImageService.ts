@@ -1,11 +1,11 @@
 // Simple Image Service using Runware AI
 // Clean, minimal image generation with easy provider switching
 
-import type { UserInfo } from '@/types';
+import type { UserInfo, DifficultyLevel } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 import { APP_CONFIG, IMAGE_STYLES, type ImageStyle } from '@/config/appConfig';
 import { ErrorHandler, ErrorType } from '@/utils/errorHandling';
-import { DirectContentExtractor } from './DirectContentExtractor';
+import { AdvancedStoryAnalyzer } from './AdvancedStoryAnalyzer';
 
 export interface ImageGenerationConfig {
   provider: 'runware' | 'dalle';
@@ -134,6 +134,8 @@ export class SimpleImageService {
   static async generateStoryImage(
     storyText: string,
     userInfo: UserInfo,
+    difficultyLevel: DifficultyLevel,
+    sessionId: string,
     pageNumber: number = 1,
     totalPages: number = 10,
     config: Partial<ImageGenerationConfig> = {}
@@ -145,19 +147,37 @@ export class SimpleImageService {
     try {
       const finalConfig = await this.applyDegradationIfNeeded(userKey, mergedConfig);
 
-      console.log(`🎨 Direct Image: Creating image for page ${pageNumber}/${totalPages}`);
+      console.log(`🎨 Enhanced Image: Creating image for page ${pageNumber}/${totalPages} (${difficultyLevel})`);
 
-      // Extract page content directly
-      const directPrompt = DirectContentExtractor.createSimplePrompt(storyText, userInfo);
+      // Phase 2 & 3: Use enhanced story analysis with character consistency and style
+      const storyAnalysis = AdvancedStoryAnalyzer.analyzeStoryContent(
+        storyText, 
+        pageNumber, 
+        totalPages
+      );
 
-      const negativePrompt = [
-        'scary', 'dark', 'violent', 'inappropriate', 'adult content', 'disturbing',
-        'blurry', 'low quality', 'distorted', 'text', 'words', 'letters'
+      const enhancedPrompt = AdvancedStoryAnalyzer.generateEnhancedPrompt(
+        storyAnalysis,
+        userInfo,
+        difficultyLevel,
+        sessionId,
+        finalConfig.style
+      );
+
+      const positivePrompt = [
+        enhancedPrompt.mainPrompt,
+        ...enhancedPrompt.styleModifiers,
+        ...enhancedPrompt.compositionHints,
+        ...enhancedPrompt.colorPalette
       ].join(', ');
 
+      const negativePrompt = enhancedPrompt.negativePrompt.join(', ');
+
+      console.log(`🎨 Enhanced Prompt: ${positivePrompt.substring(0, 100)}...`);
+
       const result = finalConfig.provider === 'runware'
-        ? await this.generateWithRunware(directPrompt, finalConfig, negativePrompt)
-        : await this.generateWithDALLE(directPrompt, finalConfig);
+        ? await this.generateWithRunware(positivePrompt, finalConfig, negativePrompt)
+        : await this.generateWithDALLE(positivePrompt, finalConfig);
 
       if (result.success) {
         this.recordUsage(userKey);
@@ -165,7 +185,7 @@ export class SimpleImageService {
 
       return result;
     } catch (error) {
-      console.error('🎨 Direct Image: Generation failed:', error);
+      console.error('🎨 Enhanced Image: Generation failed:', error);
       return {
         url: '',
         success: false,
