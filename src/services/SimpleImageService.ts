@@ -159,7 +159,7 @@ export class SimpleImageService {
         
         const pageContent = DirectContentExtractor.extractPageContent(storyText);
         const baseStyle = DIFFICULTY_STYLE_MAPPING['beginner'].prompt;
-        const brandSuffix = "with magical sparkles and floating creatures, warm cozy indoor lighting, whimsical fantasy atmosphere, contemporary children's book art style, diverse and inclusive, safe wholesome content, high quality professional artwork";
+        const brandSuffix = "with magical sparkles and floating creatures, warm magical lighting, whimsical fantasy atmosphere, contemporary children's book art style, diverse and inclusive, safe wholesome content, high quality professional artwork";
         
         // Build scene-specific prompt
         const sceneElements = [];
