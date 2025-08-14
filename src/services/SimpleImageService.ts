@@ -97,13 +97,13 @@ export class SimpleImageService {
     return cached;
   }
 
-  private static cacheFinalPrompt(cacheKey: string, positivePrompt: string, negativePrompt: string, characterData?: any) {
+  private static cacheFinalPrompt(cacheKey: string, positivePrompt: string, negativePrompt: string, characterData?: any, baseSeed?: number) {
     const cached: CachedPrompt = {
       positivePrompt,
       negativePrompt,
       timestamp: Date.now(),
       characterData,
-      baseSeed: Math.floor(Math.random() * 1000000)
+      baseSeed: baseSeed || Math.floor(Math.random() * 1000000)
     };
     
     this.finalPromptCache.set(cacheKey, cached);
@@ -287,12 +287,12 @@ export class SimpleImageService {
         negativePrompt = enhancedPrompt.negativePrompt.join(', ');
       }
 
-      // Cache the final prompts for future use
-      this.cacheFinalPrompt(cacheKey, positivePrompt, negativePrompt, userInfo);
+      // Generate base seed and cache final prompts for future use
+      const baseSeed = Math.floor(Math.random() * 1000000);
+      this.cacheFinalPrompt(cacheKey, positivePrompt, negativePrompt, userInfo, baseSeed);
       
       console.log(`🎨 Enhanced Prompt: ${positivePrompt.substring(0, 100)}...`);
 
-      const baseSeed = Math.floor(Math.random() * 1000000);
       const variedSeed = this.generateVariedSeed(baseSeed, pageNumber);
       
       const result = finalConfig.provider === 'runware'
