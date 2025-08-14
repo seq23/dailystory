@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { MobileOptimizedButton } from "@/components/MobileOptimizedButton";
 import { Card } from "@/components/ui/card";
@@ -19,6 +19,7 @@ import { InputSanitizer } from "@/utils/inputSanitizer";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { validateTheme } from "@/utils/themeValidation";
+import { spellcheckService } from "@/services/spellcheckService";
 import type { UserInfo, Grade, LanguageCode, LearningGoal } from "@/types";
 
 export type { UserInfo } from "@/types";
@@ -63,10 +64,61 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
   const [isProcessingInputs, setIsProcessingInputs] = useState(false);
   const [translations, setTranslations] = useState<Record<string, string>>({});
   const [translationLoading, setTranslationLoading] = useState<Record<string, boolean>>({});
+  const [spellcheckSuggestions, setSpellcheckSuggestions] = useState<{[key: string]: string}>({});
+  const [spellcheckLoading, setSpellcheckLoading] = useState<{[key: string]: boolean}>({});
+  const [spellcheckTimeouts, setSpellcheckTimeouts] = useState<{[key: string]: NodeJS.Timeout}>({});
   
   // Track optional fields for free users (only 1 allowed)
   const [selectedOptionalField, setSelectedOptionalField] = useState<string | null>(null);
   const [showReadingLevelDetails, setShowReadingLevelDetails] = useState(false);
+
+  // Spellcheck function with debouncing
+  const performSpellcheck = async (field: string, text: string) => {
+    if (!spellcheckService.shouldCheck(text)) {
+      return;
+    }
+
+    setSpellcheckLoading(prev => ({ ...prev, [field]: true }));
+
+    try {
+      const result = await spellcheckService.checkSpelling(
+        text,
+        formData.grade || 'K',
+        'user_form_input'
+      );
+
+      if (result.hadErrors && result.correctedText !== text) {
+        setSpellcheckSuggestions(prev => ({
+          ...prev,
+          [field]: result.correctedText
+        }));
+      } else {
+        // Clear suggestion if text is already correct
+        setSpellcheckSuggestions(prev => {
+          const updated = { ...prev };
+          delete updated[field];
+          return updated;
+        });
+      }
+    } catch (error) {
+      console.warn('Spellcheck failed for field:', field, error);
+    } finally {
+      setSpellcheckLoading(prev => ({ ...prev, [field]: false }));
+    }
+  };
+
+  // Accept spellcheck suggestion
+  const acceptSpellcheckSuggestion = (field: string) => {
+    const suggestion = spellcheckSuggestions[field];
+    if (suggestion) {
+      setFormData(prev => ({ ...prev, [field]: suggestion }));
+      setSpellcheckSuggestions(prev => {
+        const updated = { ...prev };
+        delete updated[field];
+        return updated;
+      });
+    }
+  };
 
   // Enhanced content filtering with grade-aware security and multilingual support
   const contentFilter = (text: string): { hasInappropriateContent: boolean; reason?: string } => {
@@ -105,6 +157,31 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
       } else if (isPremium && optionalFields.includes(field as string) && value.trim()) {
         // Premium users can fill all fields without restriction
         setSelectedOptionalField(null); // Clear any previous restriction tracking
+      }
+      
+      // Clear spellcheck suggestion when user starts typing
+      if (spellcheckSuggestions[field]) {
+        setSpellcheckSuggestions(prev => {
+          const updated = { ...prev };
+          delete updated[field];
+          return updated;
+        });
+      }
+
+      // Setup debounced spellcheck for text fields
+      const spellcheckFields = ['name', 'hobbies', 'favoriteAnimal', 'favoriteFood', 'specialRequest'];
+      if (spellcheckFields.includes(field) && value.length > 2) {
+        // Clear existing timeout
+        if (spellcheckTimeouts[field]) {
+          clearTimeout(spellcheckTimeouts[field]);
+        }
+
+        // Set new timeout for spellcheck
+        const timeout = setTimeout(() => {
+          performSpellcheck(field, value);
+        }, 500);
+
+        setSpellcheckTimeouts(prev => ({ ...prev, [field]: timeout }));
       }
       
       // Sanitize input with enhanced protection
@@ -298,6 +375,15 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
     i18n.changeLanguage(newLanguage);
   };
 
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(spellcheckTimeouts).forEach(timeout => {
+        if (timeout) clearTimeout(timeout);
+      });
+    };
+  }, [spellcheckTimeouts]);
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4 sm:p-6">
       {/* Subtle background decoration */}
@@ -372,14 +458,32 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
                 <Label htmlFor="name" className="text-sm font-medium">
                   {t("userInfoForm.fields.name.label")} <span className="text-destructive">*</span>
                 </Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => handleInputChange("name", e.target.value)}
-                  placeholder={t("userInfoForm.fields.name.placeholder")}
-                  className="h-10 bg-background border border-input focus:border-primary focus:ring-1 focus:ring-primary"
-                  autoComplete="given-name"
-                />
+                <div className="relative">
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => handleInputChange("name", e.target.value)}
+                    placeholder={t("userInfoForm.fields.name.placeholder")}
+                    className="h-10 bg-background border border-input focus:border-primary focus:ring-1 focus:ring-primary pr-8"
+                    autoComplete="given-name"
+                  />
+                  {spellcheckLoading.name && (
+                    <Loader2 className="absolute right-2 top-2.5 h-4 w-4 animate-spin text-muted-foreground" />
+                  )}
+                </div>
+                {spellcheckSuggestions.name && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-muted-foreground">Did you mean:</span>
+                    <button
+                      type="button"
+                      onClick={() => acceptSpellcheckSuggestion('name')}
+                      className="text-primary hover:text-primary/80 underline font-medium"
+                    >
+                      {spellcheckSuggestions.name}
+                    </button>
+                    <CheckCircle className="h-3 w-3 text-primary" />
+                  </div>
+                )}
               </div>
 
               {/* Age */}
@@ -572,7 +676,23 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
                     className="bg-background"
                     disabled={!isPremium && selectedOptionalField && selectedOptionalField !== 'favoriteAnimal'}
                   />
+                  {spellcheckLoading.favoriteAnimal && (
+                    <Loader2 className="absolute right-2 top-2.5 h-4 w-4 animate-spin text-muted-foreground" />
+                  )}
                 </div>
+                {spellcheckSuggestions.favoriteAnimal && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-muted-foreground">Did you mean:</span>
+                    <button
+                      type="button"
+                      onClick={() => acceptSpellcheckSuggestion('favoriteAnimal')}
+                      className="text-primary hover:text-primary/80 underline font-medium"
+                    >
+                      {spellcheckSuggestions.favoriteAnimal}
+                    </button>
+                    <CheckCircle className="h-3 w-3 text-primary" />
+                  </div>
+                )}
                 {translations.favoriteAnimal && (
                   <div className="text-xs text-primary">{translations.favoriteAnimal}</div>
                 )}
@@ -595,7 +715,23 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
                     className="bg-background"
                     disabled={!isPremium && selectedOptionalField && selectedOptionalField !== 'favoriteFood'}
                   />
+                  {spellcheckLoading.favoriteFood && (
+                    <Loader2 className="absolute right-2 top-2.5 h-4 w-4 animate-spin text-muted-foreground" />
+                  )}
                 </div>
+                {spellcheckSuggestions.favoriteFood && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-muted-foreground">Did you mean:</span>
+                    <button
+                      type="button"
+                      onClick={() => acceptSpellcheckSuggestion('favoriteFood')}
+                      className="text-primary hover:text-primary/80 underline font-medium"
+                    >
+                      {spellcheckSuggestions.favoriteFood}
+                    </button>
+                    <CheckCircle className="h-3 w-3 text-primary" />
+                  </div>
+                )}
                 {translations.favoriteFood && (
                   <div className="text-xs text-primary">{translations.favoriteFood}</div>
                 )}
@@ -618,7 +754,23 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
                     className="bg-background"
                     disabled={!isPremium && selectedOptionalField && selectedOptionalField !== 'hobbies'}
                   />
+                  {spellcheckLoading.hobbies && (
+                    <Loader2 className="absolute right-2 top-2.5 h-4 w-4 animate-spin text-muted-foreground" />
+                  )}
                 </div>
+                {spellcheckSuggestions.hobbies && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-muted-foreground">Did you mean:</span>
+                    <button
+                      type="button"
+                      onClick={() => acceptSpellcheckSuggestion('hobbies')}
+                      className="text-primary hover:text-primary/80 underline font-medium"
+                    >
+                      {spellcheckSuggestions.hobbies}
+                    </button>
+                    <CheckCircle className="h-3 w-3 text-primary" />
+                  </div>
+                )}
                 {translations.hobbies && (
                   <div className="text-xs text-primary">{translations.hobbies}</div>
                 )}
@@ -638,13 +790,26 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
                     onChange={(val) => handleInputChange("specialRequest", val)}
                     onBlur={(val) => handleInputChange("specialRequest", val)}
                     placeholder={t("userInfoForm.fields.specialRequest.placeholder")}
-                    className="bg-background"
+                    className="bg-background pr-8"
                     disabled={!isPremium && selectedOptionalField && selectedOptionalField !== 'specialRequest'}
                   />
-                  {translationLoading.specialRequest && (
+                  {(translationLoading.specialRequest || spellcheckLoading.specialRequest) && (
                     <Loader2 className="absolute right-3 top-3 w-4 h-4 animate-spin text-primary" />
                   )}
                 </div>
+                {spellcheckSuggestions.specialRequest && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-muted-foreground">Did you mean:</span>
+                    <button
+                      type="button"
+                      onClick={() => acceptSpellcheckSuggestion('specialRequest')}
+                      className="text-primary hover:text-primary/80 underline font-medium"
+                    >
+                      {spellcheckSuggestions.specialRequest}
+                    </button>
+                    <CheckCircle className="h-3 w-3 text-primary" />
+                  </div>
+                )}
                 {translations.specialRequest && (
                   <div className="text-xs text-primary">{translations.specialRequest}</div>
                 )}
