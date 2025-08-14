@@ -28,28 +28,22 @@ export interface ExpertStoryPromptConfig {
 export const STORY_PROMPTS: Record<DifficultyLevel, StoryPromptConfig> = {
   beginner: {
     difficulty: 'beginner',
-    systemPrompt: ` You are generating ONE PAGE of a never-ending picture book story for pre-readers aged 3-5.
+    systemPrompt: `Generate ONE PAGE of a picture book story for early readers aged 5-7.
 
-CRITICAL RULES:
-- Generate ONLY one sentence per page (the current page content)
-- NO page numbers, NO formatting, NO "Page X" labels
-- Use subject-verb OR subject-verb-object as sentence structure
-- Use a mix of 2-, 3-, and 4- letter words
-- Use a mix of 2-, 3-, and 4- word sentences (max 6 words)
-- Use Simple present tense
-- Always allow {userName}, user inputs
+RULES:
+- One sentence per page, NO page numbers/formatting
+- 3-6 letter words, 4-8 word sentences (max 12 words)
+- Simple present/past tense, subject-verb-object structure
 - Story continues infinitely unless user requests ending
-- Try to incorporate a narrative with a natural hook for continuation
+- Include narrative hooks for continuation
 
-Enhanced Level 0 vocabulary (ENHANCED_LEVEL_0_VOCABULARY) STRONGLY PREFERRED, but be flexible for flow. Pronouns and the word "I" can be used. 
+VOCABULARY: Use ENHANCED_LEVEL_1_VOCABULARY preferentially, allow flexibility for flow.
 
-Maximum 200 tokens total. One sentence per page for Level 0.
+USER INTEGRATION: {specialRequest} provides primary theme/direction. Integrate {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} naturally.
 
-USER INTEGRATION: {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} are central to the story but weaved naturally. {specialRequest} provides theme and primary creative direction. System prioritizes completely when present.
+STYLE: Apply getColorVoiceForUser(userInfo, difficulty) as secondary stylistic guidance.
 
-STYLE: getColorVoiceForUser(userInfo, difficulty) provides secondary direction for stylistic guidance.
-
-GUARDRAILS: G-rated content only. No external personal data. No copyrighted content. Transform any potentially concerning themes into their gentle equivalents naturally.
+GUARDRAILS: G-rated content only. No external personal data. No copyrighted content. Transform concerning themes to gentle equivalents.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
     userPromptTemplate: `Create a children's story for {userName}, age 3-5. Continue indefinitely with narrative hooks unless user requests ending. {specialRequest} provides theme and primary direction. Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} naturally. Use 1 sentence per page, subject-verb structure, 2-4 letter words, 2-4 word sentences (max 6 words). Apply color voice styling per profile.`,
@@ -57,26 +51,22 @@ Randomness: seed={seed} (generate if null, return as meta.seed)`,
 
   easy: {
     difficulty: 'easy',
-    systemPrompt: `You are generating ONE PAGE of a never-ending picture book story for early readers aged 5-7.
+    systemPrompt: `Generate ONE PAGE of a picture book story for early readers aged 5-7.
 
-CRITICAL RULES:
-- Generate EXACTLY ONE PAGE of story content
-- Story continues indefinitely unless user explicitly requests an ending
-- Each page should have natural continuation hooks for next page
-- Maximum 2-3 sentences per page
-- Include vivid, age-appropriate descriptions
+RULES:
+- One sentence per page, NO page numbers/formatting
+- 3-6 letter words, 4-8 word sentences (max 12 words)
+- Simple present/past tense, subject-verb-object structure
+- Story continues infinitely unless user requests ending
+- Include narrative hooks for continuation
 
-Enhanced Level 1 vocabulary (ENHANCED_LEVEL_1_VOCABULARY) preferred, flexible for flow. Aim for simple sentence structures with grade-appropriate complexity.
+VOCABULARY: Use ENHANCED_LEVEL_1_VOCABULARY preferentially, allow flexibility for flow.
 
-Maximum 300 tokens total. 2-3 sentences per page.
+USER INTEGRATION: {specialRequest} provides primary theme/direction. Integrate {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} naturally.
 
-USER INTEGRATION: Incorporate {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} naturally into the narrative. Generate age-appropriate alternatives for any missing user inputs.
+STYLE: Apply getColorVoiceForUser(userInfo, difficulty) as secondary stylistic guidance.
 
-SPECIAL REQUEST PRIORITY: {specialRequest} provides theme and primary creative direction. System prioritizes completely when present.
-
-AUTHOR VOICE: Apply styling from getColorVoiceForUser(userInfo, difficulty) for narrative tone and pacing. Author voice is secondary to {specialRequest} when themes conflict.
-
-GUARDRAILS: G-rated content only. Age-appropriate themes for 5-7 year olds. No external personal data. No copyrighted content. Themes should be suitable for early readers - friendship, teamwork, problem-solving, but avoid complex conflict or romance.
+GUARDRAILS: G-rated content only. No external personal data. No copyrighted content. Transform concerning themes to gentle equivalents.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
     userPromptTemplate: `Create a continuing story for {userName}, age 5-7. The story continues indefinitely unless user requests an ending, with narrative hooks for continuation. {specialRequest} provides the primary creative direction. Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} naturally. Use simple vocabulary with 2-3 sentences per page for developing readers. Apply color voice styling per user profile.`,
@@ -84,26 +74,22 @@ Randomness: seed={seed} (generate if null, return as meta.seed)`,
 
   medium: {
     difficulty: 'medium',
-    systemPrompt: `You are creating an engaging children's book story for intermediate readers aged 7-9.
+    systemPrompt: `Generate ONE PAGE of a chapter book story for developing readers aged 7-9.
 
-CRITICAL RULES:
-- Generate natural story continuation that flows with narrative rhythm
-- Story continues indefinitely unless user explicitly requests an ending
-- Each continuation should have natural hooks for next continuation
-- Follow the story's natural pacing - whether 50 words or 300 words as needed
-- Include descriptive language and simple dialogue
+RULES:
+- 1-2 sentences per page, NO page numbers/formatting
+- 3-7 letter words, 5-12 word sentences (max 15 words)
+- Past/present tense, varied sentence structures
+- Story continues infinitely unless user requests ending
+- Include narrative hooks and mild tension
 
-Enhanced Level 2 vocabulary (ENHANCED_LEVEL_2_VOCABULARY) preferred, flexible for flow. Aim for intermediate sentence structures with expanding complexity.
+VOCABULARY: Use ENHANCED_LEVEL_2_VOCABULARY preferentially, allow flexibility.
 
-Maximum 400 tokens total. Natural story flow with appropriate pacing.
+USER INTEGRATION: {specialRequest} provides primary theme/direction. Integrate {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} naturally.
 
-USER INTEGRATION: Weave {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} meaningfully into plot development. Generate age-appropriate alternatives for any missing user inputs.
+STYLE: Apply getColorVoiceForUser(userInfo, difficulty) as secondary stylistic guidance.
 
-SPECIAL REQUEST PRIORITY: {specialRequest} provides theme and primary creative direction. System prioritizes completely when present.
-
-AUTHOR VOICE: Apply styling from getColorVoiceForUser(userInfo, difficulty) for narrative voice and character development. Author voice is secondary to {specialRequest} when themes conflict.
-
-GUARDRAILS: G-rated content only. Age-appropriate themes for 7-9 year olds. No external personal data. No copyrighted content. Themes can include mild adventure, mystery, and growing-up, but avoid romance or complex conflict.
+GUARDRAILS: Age-appropriate content. Simple challenges/mild conflict okay. No copyrighted content. Transform concerning themes naturally.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
     userPromptTemplate: `Create an engaging story continuation for {userName}, age 7-9. The story continues indefinitely with natural flow unless user requests an ending. {specialRequest} provides the primary creative direction. Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} meaningfully into the narrative. Let the story dictate its own natural length and pacing. Apply color voice styling per user profile.`,
@@ -111,26 +97,22 @@ Randomness: seed={seed} (generate if null, return as meta.seed)`,
 
   hard: {
     difficulty: 'hard',
-    systemPrompt: `You are creating an engaging children's book story for advanced readers aged 9-12.
+    systemPrompt: `Generate ONE PAGE of an intermediate story for confident readers aged 9-11.
 
-CRITICAL RULES:
-- Generate natural story continuation that follows organic narrative flow
-- Story continues indefinitely unless user explicitly requests an ending
-- Each continuation should have compelling hooks for next continuation
-- Allow story to breathe naturally - no artificial length constraints
-- Include sophisticated descriptions, dialogue, and plot complexity
+RULES:
+- 2-3 sentences per page, NO page numbers/formatting
+- 4-9 letter words, varied sentence lengths (max 20 words)
+- Multiple tenses, complex sentence structures
+- Story continues infinitely unless user requests ending
+- Include narrative tension and character development
 
-Enhanced Level 3 vocabulary (ENHANCED_LEVEL_3_VOCABULARY) preferred, flexible for flow. Aim for advanced sentence structures with literary sophistication.
+VOCABULARY: Use ENHANCED_LEVEL_3_VOCABULARY preferentially, allow flexibility.
 
-Maximum 600 tokens total. Natural narrative flow with sophisticated pacing.
+USER INTEGRATION: {specialRequest} provides primary theme/direction. Integrate {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} naturally.
 
-USER INTEGRATION: Incorporate {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as integral story elements that drive character motivation and plot development. Generate age-appropriate alternatives for any missing user inputs.
+STYLE: Apply getColorVoiceForUser(userInfo, difficulty) as secondary stylistic guidance.
 
-SPECIAL REQUEST PRIORITY: {specialRequest} provides theme and primary creative direction. System prioritizes completely when present.
-
-AUTHOR VOICE: Apply styling from getColorVoiceForUser(userInfo, difficulty) for sophisticated narrative voice, pacing, and literary techniques. Author voice is secondary to {specialRequest} when themes conflict.
-
-GUARDRAILS: Age-appropriate content for 9-12 year olds. No external personal data. No copyrighted content. Themes can include friendship, identity, belonging, mild conflict, and age-appropriate romance, but avoid mature themes.
+GUARDRAILS: Age-appropriate content. Moderate challenges/conflict okay. No copyrighted content. Avoid intense themes.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
     userPromptTemplate: `Create an engaging story continuation for {userName}, age 9-12. The story continues indefinitely with natural rhythm unless user requests an ending. {specialRequest} provides the primary creative direction. Integrate {userName}'s preferences ({favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}) as meaningful story elements. Let the narrative flow organically with sophisticated techniques. Apply color voice styling per user profile.`,
@@ -138,26 +120,22 @@ Randomness: seed={seed} (generate if null, return as meta.seed)`,
 
   expert: {
     difficulty: 'expert',
-    systemPrompt: `You are creating an engaging young adult novel for expert readers aged 12-15.
+    systemPrompt: `Generate ONE PAGE of an advanced story for skilled readers aged 11-13.
 
-CRITICAL RULES:
-- Generate natural story continuation with organic narrative development
-- Story continues indefinitely unless user explicitly requests an ending
-- Each continuation should have compelling hooks with thematic depth
-- Follow story's natural rhythm and pacing requirements
-- Include advanced narrative techniques and character psychology
+RULES:
+- 3-4 sentences per page, NO page numbers/formatting
+- Advanced vocabulary, varied sentence complexity
+- Multiple tenses, sophisticated structures
+- Story continues infinitely unless user requests ending
+- Include complex themes, character development, narrative tension
 
-Encourage broad, sophisticated vocabulary use with literary complexity and nuanced expression appropriate for young adult readers.
+VOCABULARY: Use ENHANCED_LEVEL_4_VOCABULARY preferentially, allow flexibility.
 
-Maximum 800 tokens total. Literary pacing with thematic depth.
+USER INTEGRATION: {specialRequest} provides primary theme/direction. Integrate {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} naturally.
 
-USER INTEGRATION: Transform {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} into symbolic elements that enhance thematic resonance and character complexity. Generate age-appropriate alternatives for any missing user inputs.
+STYLE: Apply getColorVoiceForUser(userInfo, difficulty) as secondary stylistic guidance.
 
-SPECIAL REQUEST PRIORITY: {specialRequest} provides theme and primary creative direction. System prioritizes completely when present.
-
-AUTHOR VOICE: Apply styling from getColorVoiceForUser(userInfo, difficulty) for literary sophistication, thematic depth, and advanced narrative techniques. Author voice is secondary to {specialRequest} when themes conflict.
-
-GUARDRAILS: Age-appropriate content for 12-15 year olds with mature themes handled sensitively. No external personal data. No copyrighted content. Themes can include complex identity, moral complexity, and social awareness, but avoid inappropriate content.
+GUARDRAILS: Age-appropriate content. Complex themes okay. No copyrighted content. Avoid inappropriate material.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
     userPromptTemplate: `Create an engaging story continuation for {userName}, age 12-15. The story continues indefinitely with natural thematic flow unless user requests an ending. {specialRequest} provides the primary creative direction. Transform {userName}'s preferences ({favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}) into meaningful symbolic elements. Let the story develop at its natural pace with sophisticated literary techniques. Apply color voice styling per user profile.`,
@@ -278,7 +256,7 @@ FORMAT: Page 1: [6-8 sentences]. Each subsequent page should maintain similar le
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
-    userPromptTemplate: `Create a sophisticated 1000-1200 word story for {userName} (age {age}) exploring complex themes of identity, belonging, and purpose with 8th grade complexity. They are passionate about {hobbies} and find deep meaning in {favoriteAnimal} and {favoriteColor}, with a meaningful connection to {favoriteFood}. {specialRequest} provides the primary creative direction. Apply color voice styling per user profile. Address themes of social awareness, moral complexity, and understanding your place in the world. Before writing, internally imagine a random "story seed" between 1 and 10,000 to vary setting, events, and details so each story is unique. Do not mention the seed.`,
+    userPromptTemplate: `Create a sophisticated 1000-1200 word story for {userName} (age {age}) with 8th grade complexity, exploring identity, purpose, and complex relationships. They are passionate about {hobbies} and find deep personal connections with {favoriteAnimal} and {favoriteColor}, with meaningful ties to {favoriteFood}. {specialRequest} provides the primary creative direction. Apply color voice styling per user profile. Address themes of growing up, moral complexity, and finding one's place in the world. Before writing, internally imagine a random "story seed" between 1 and 10,000 to vary setting, events, and details so each story is unique. Do not mention the seed.`,
     maxLength: 1200,
     expectedPages: 14,
     wordCount: "1000-1200 words"
@@ -307,17 +285,17 @@ GUARDRAILS: Age-appropriate content for 9th grade level with mature themes handl
 
 Create sophisticated stories with 9th grade reading complexity:
 - 1100-1300 words total across entire story
-- Advanced vocabulary and complex syntax
-- Sophisticated themes and character psychology
-- Abstract philosophical concepts
-- Rich literary depth and emotional complexity
+- Advanced vocabulary with literary sophistication
+- Complex themes and philosophical depth
+- Multi-layered character development and relationships
+- Rich narrative techniques and emotional complexity
 
-FORMAT: Page 1: [7-9 sentences]. Each subsequent page should maintain similar length and complexity.
+FORMAT: Page 1: [7-8 sentences]. Each subsequent page should maintain similar length and complexity.
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
-    userPromptTemplate: `Create a sophisticated 1100-1300 word story for {userName} (age {age}) exploring complex themes of identity, ethics, and human nature with 9th grade complexity. They are deeply engaged with {hobbies} and find profound meaning in {favoriteAnimal} and {favoriteColor}, with a significant connection to {favoriteFood}. {specialRequest} provides the primary creative direction. Apply color voice styling per user profile. Address themes of moral complexity, social responsibility, and understanding different perspectives. Before writing, internally imagine a random "story seed" between 1 and 10,000 to vary setting, events, and details so each story is unique. Do not mention the seed.`,
+    userPromptTemplate: `Create a sophisticated 1100-1300 word story for {userName} (age {age}) with 9th grade complexity, exploring identity, purpose, and complex relationships with philosophical depth. They find profound meaning in {hobbies} and deep personal connections with {favoriteAnimal} and {favoriteColor}, alongside meaningful ties to {favoriteFood}. {specialRequest} provides the primary creative direction. Apply color voice styling per user profile. Address themes of self-discovery, moral complexity, and understanding one's place in society. Before writing, internally imagine a random "story seed" between 1 and 10,000 to vary setting, events, and details so each story is unique. Do not mention the seed.`,
     maxLength: 1300,
     expectedPages: 15,
     wordCount: "1100-1300 words"
@@ -346,23 +324,24 @@ GUARDRAILS: Age-appropriate content for 10th grade level with mature themes hand
 
 Create sophisticated stories with 10th grade reading complexity:
 - 1200-1400 words total across entire story
-- Sophisticated vocabulary and complex literary techniques
-- Multi-layered themes and deep character development
-- Abstract philosophical and ethical concepts
-- Rich literary sophistication and emotional depth
+- Sophisticated vocabulary and literary sophistication
+- Complex themes with philosophical and social depth
+- Advanced character development and relationship dynamics
+- Rich narrative complexity and emotional sophistication
 
-FORMAT: Page 1: [8-10 sentences]. Each subsequent page should maintain similar length and complexity.
+FORMAT: Page 1: [7-9 sentences]. Each subsequent page should maintain similar length and complexity.
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
-    userPromptTemplate: `Create a sophisticated 1200-1400 word story for {userName} (age {age}) exploring complex themes of identity, philosophy, and human condition with 10th grade complexity. They are intellectually engaged with {hobbies} and find deep symbolic meaning in {favoriteAnimal} and {favoriteColor}, with a profound connection to {favoriteFood}. {specialRequest} provides the primary creative direction. Apply color voice styling per user profile. Address themes of philosophical depth, ethical complexity, and understanding the human experience. Before writing, internally imagine a random "story seed" between 1 and 10,000 to vary setting, events, and details so each story is unique. Do not mention the seed.`,
+    userPromptTemplate: `Create a sophisticated 1200-1400 word story for {userName} (age {age}) with 10th grade complexity, exploring identity, purpose, and complex relationships with philosophical and social depth. They are deeply passionate about {hobbies} and find profound personal connections with {favoriteAnimal} and {favoriteColor}, alongside meaningful relationships with {favoriteFood}. {specialRequest} provides the primary creative direction. Apply color voice styling per user profile. Address themes of self-discovery, moral complexity, social awareness, and understanding one's place in the world. Before writing, internally imagine a random "story seed" between 1 and 10,000 to vary setting, events, and details so each story is unique. Do not mention the seed.`,
     maxLength: 1400,
     expectedPages: 16,
     wordCount: "1200-1400 words"
   }
 };
 
+// Utility functions for prompt management
 export function getStoryPrompt(difficulty: DifficultyLevel): StoryPromptConfig {
   return STORY_PROMPTS[difficulty];
 }
@@ -372,7 +351,18 @@ export function getExpertStoryPrompt(gradeLevel: ExpertGradeLevel): ExpertStoryP
 }
 
 export function formatUserPrompt(template: string, userInfo: Partial<UserInfo>): string {
-  return resolveAllPlaceholders(template, { userInfo: userInfo as UserInfo });
+  // Start with basic placeholder resolution
+  let prompt = resolveAllPlaceholders(template, { userInfo: userInfo as UserInfo });
+  
+  // Extract theme intent for more sophisticated prompting
+  if (userInfo as UserInfo) {
+    const themeIntent = extractThemeIntent(userInfo as UserInfo);
+    
+    // Add theme intent to the prompt if available
+    if (themeIntent && themeIntent.themes.length > 0) {
+      prompt += ` Theme intent: ${themeIntent.themes.join(', ')}`;
+    }
+  }
+  
+  return prompt;
 }
-
-export default STORY_PROMPTS;
