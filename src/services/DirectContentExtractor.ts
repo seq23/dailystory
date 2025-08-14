@@ -39,8 +39,8 @@ export class DirectContentExtractor {
   private static readonly SIMPLE_OBJECTS = [
     'ball', 'toy', 'book', 'tree', 'house', 'car', 'bike', 'flower', 'cake', 'apple',
     'chair', 'table', 'bed', 'door', 'window', 'box', 'bag', 'hat', 'shoe', 'coat',
-    'lion', 'tiger', 'wolf', 'deer', 'fox', 'owl', 'butterfly', 'bee', 'frog', 'snake',
-    'elephant', 'giraffe', 'monkey', 'bear', 'grass', 'rock', 'stick', 'leaf', 'branch', 'bush'
+    'sun', 'moon', 'star', 'cloud', 'sky', 'rainbow', 'light', 'shadow',
+    'grass', 'rock', 'stick', 'leaf', 'branch', 'bush', 'sand', 'water', 'pond'
   ];
 
   private static readonly SIMPLE_LOCATIONS = [
