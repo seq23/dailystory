@@ -57,7 +57,7 @@ export class LiveGenerationService {
       IMPORTANT: You are generating the FIRST PAGE only of a multi-page story. 
       - Create an engaging opening that establishes the character and setting
       - End with a hook that makes the reader want to continue
-      - This is page 1 of ${promptConfig.expectedPages || 6} pages
+      - This is page 1 of ${promptConfig.expectedPages || 'an unlimited'} ${promptConfig.expectedPages ? 'pages' : 'story'}
       - Keep the content appropriate for the difficulty level
       - Return ONLY the page content, no page numbers or formatting
       - Focus on quality storytelling over exact word counts`;
@@ -112,9 +112,9 @@ let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, userInfo);
         expertGradeLevel,
         storyContext: [content],
         currentPage: 1,
-        totalExpectedPages: promptConfig.expectedPages || 6,
+        totalExpectedPages: promptConfig.expectedPages || 999, // Use high number for unlimited stories
         characters: [userInfo.name, userInfo.favoriteAnimal || 'friend'],
-        openEnded: true
+        openEnded: !promptConfig.expectedPages // Open-ended if no expected pages set
       };
 
       console.log('🚀 Live Generation: First page generated and validated successfully');
