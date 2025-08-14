@@ -26,7 +26,6 @@ interface CachedPrompt {
   negativePrompt: string;
   timestamp: number;
   characterData?: any;
-  baseSeed: number;
 }
 
 export class SimpleImageService {
@@ -97,13 +96,12 @@ export class SimpleImageService {
     return cached;
   }
 
-  private static cacheFinalPrompt(cacheKey: string, positivePrompt: string, negativePrompt: string, characterData?: any, baseSeed?: number) {
+  private static cacheFinalPrompt(cacheKey: string, positivePrompt: string, negativePrompt: string, characterData?: any) {
     const cached: CachedPrompt = {
       positivePrompt,
       negativePrompt,
       timestamp: Date.now(),
-      characterData,
-      baseSeed: baseSeed || Math.floor(Math.random() * 1000000)
+      characterData
     };
     
     this.finalPromptCache.set(cacheKey, cached);
@@ -115,10 +113,6 @@ export class SimpleImageService {
     }
   }
 
-  private static generateVariedSeed(baseSeed: number, pageNumber: number): number {
-    // Generate consistent but varied seeds based on base seed + page
-    return baseSeed + (pageNumber * 1337) + Math.floor(Date.now() / 3600000); // Changes hourly
-  }
 
   private static async throttleAndQueue(userKey: string) {
     // Concurrency control (polling-based, simple and robust)
@@ -209,15 +203,13 @@ export class SimpleImageService {
       if (cachedPrompt) {
         console.log(`🎨 Cache HIT: Using cached prompts for page ${pageNumber}/${totalPages} (${difficultyLevel})`);
         
-        const variedSeed = this.generateVariedSeed(cachedPrompt.baseSeed, pageNumber);
         const result = finalConfig.provider === 'runware'
           ? await this.generateWithRunware(
               cachedPrompt.positivePrompt, 
               finalConfig, 
               cachedPrompt.negativePrompt, 
               userInfo, 
-              pageNumber,
-              variedSeed
+              pageNumber
             )
           : await this.generateWithDALLE(cachedPrompt.positivePrompt, finalConfig);
 
@@ -287,16 +279,13 @@ export class SimpleImageService {
         negativePrompt = enhancedPrompt.negativePrompt.join(', ');
       }
 
-      // Generate base seed and cache final prompts for future use
-      const baseSeed = Math.floor(Math.random() * 1000000);
-      this.cacheFinalPrompt(cacheKey, positivePrompt, negativePrompt, userInfo, baseSeed);
+      // Cache final prompts for future use
+      this.cacheFinalPrompt(cacheKey, positivePrompt, negativePrompt, userInfo);
       
       console.log(`🎨 Enhanced Prompt: ${positivePrompt.substring(0, 100)}...`);
 
-      const variedSeed = this.generateVariedSeed(baseSeed, pageNumber);
-      
       const result = finalConfig.provider === 'runware'
-        ? await this.generateWithRunware(positivePrompt, finalConfig, negativePrompt, userInfo, pageNumber, variedSeed)
+        ? await this.generateWithRunware(positivePrompt, finalConfig, negativePrompt, userInfo, pageNumber)
         : await this.generateWithDALLE(positivePrompt, finalConfig);
 
       if (result.success) {
@@ -316,7 +305,7 @@ export class SimpleImageService {
     }
   }
 
-  private static async generateWithRunware(prompt: string, config: ImageGenerationConfig, negativePrompt?: string, userInfo?: UserInfo, pageNumber?: number, seed?: number): Promise<ImageResult> {
+  private static async generateWithRunware(prompt: string, config: ImageGenerationConfig, negativePrompt?: string, userInfo?: UserInfo, pageNumber?: number): Promise<ImageResult> {
     try {
       console.log('🎨 Calling Supabase Edge Function for Runware image generation');
 
@@ -329,7 +318,6 @@ export class SimpleImageService {
         outputFormat: APP_CONFIG.images.runware.outputFormat,
         steps: APP_CONFIG.images.runware.steps,
         CFGScale: APP_CONFIG.images.runware.CFGScale,
-        ...(seed && { seed }),
         // Character consistency parameters (only if userInfo provided)
         ...(userInfo && {
           characterName: userInfo.name,
