@@ -17,6 +17,13 @@ interface ExtractionRequest {
     location?: string;
     descriptor?: string;
   };
+  storyContext?: {
+    previousPages?: string[];
+    characterInfo?: {
+      name: string;
+      traits?: any;
+    };
+  };
 }
 
 interface EnhancedKeywords {
@@ -34,7 +41,7 @@ serve(async (req) => {
   }
 
   try {
-    const { pageText, existingContent }: ExtractionRequest = await req.json();
+    const { pageText, existingContent, storyContext }: ExtractionRequest = await req.json();
 
     if (!openAIApiKey) {
       throw new Error('OpenAI API key not configured');
@@ -42,17 +49,26 @@ serve(async (req) => {
 
     console.log(`🎯 Extracting visual keywords from: "${pageText}"`);
     console.log(`📋 Existing content:`, existingContent);
+    if (storyContext) {
+      console.log(`📖 Story context:`, storyContext);
+    }
 
     const systemPrompt = `You are a visual keyword extractor for children's book illustrations. Your job is to identify visual elements that would help an artist create a picture.
 
 Given a sentence from a children's story and what has already been extracted, identify ADDITIONAL visual keywords that would enhance the illustration.
 
+IMPORTANT: You have access to story context from previous pages. Use this to understand character continuity and pronoun references:
+- "They" often refers to characters mentioned in previous pages
+- Character traits (like colors, clothing, appearance) should be consistent with what was established earlier
+- Relationships between characters should be maintained
+
 Focus on:
 - Colors (red, blue, sparkly, bright, etc.)
-- Objects/items not already identified
+- Objects/items not already identified  
 - Visual descriptors (big, small, fluffy, shiny, etc.)
 - Atmospheric elements (sunny, magical, cozy, etc.)
 - Setting details for better context
+- Character consistency and relationships
 
 Return ONLY a JSON object with these arrays (empty arrays if nothing found):
 {
@@ -66,6 +82,18 @@ Return ONLY a JSON object with these arrays (empty arrays if nothing found):
 
 Be conservative - only include elements that would genuinely improve the visual representation.`;
 
+    let contextInfo = '';
+    if (storyContext?.previousPages && storyContext.previousPages.length > 0) {
+      contextInfo = `\n\nStory Context from Previous Pages:
+${storyContext.previousPages.map((page, i) => `Page ${i + 1}: "${page}"`).join('\n')}`;
+    }
+    if (storyContext?.characterInfo) {
+      contextInfo += `\n\nMain Character: ${storyContext.characterInfo.name}`;
+      if (storyContext.characterInfo.traits) {
+        contextInfo += `\nCharacter Traits: ${JSON.stringify(storyContext.characterInfo.traits)}`;
+      }
+    }
+
     const userPrompt = `Text: "${pageText}"
 
 Already extracted:
@@ -73,9 +101,9 @@ Already extracted:
 - Action: ${existingContent.action}
 - Object: ${existingContent.object || 'none'}
 - Location: ${existingContent.location || 'none'}
-- Descriptor: ${existingContent.descriptor || 'none'}
+- Descriptor: ${existingContent.descriptor || 'none'}${contextInfo}
 
-What additional visual keywords would help create a better illustration?`;
+What additional visual keywords would help create a better illustration? Consider character continuity and relationships from the story context.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -84,7 +112,7 @@ What additional visual keywords would help create a better illustration?`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-5-mini-2025-08-07',
+        model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }

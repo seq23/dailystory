@@ -24,22 +24,28 @@ export class DirectContentExtractor {
   
   private static readonly SIMPLE_SUBJECTS = [
     'cat', 'dog', 'bird', 'fish', 'bear', 'rabbit', 'mouse', 'elephant', 'lion', 'tiger',
+    'wolf', 'deer', 'fox', 'owl', 'butterfly', 'bee', 'frog', 'snake', 'giraffe', 'monkey',
     'sally', 'tom', 'sam', 'alex', 'emma', 'jack', 'lily', 'ben', 'zoe', 'max',
-    'boy', 'girl', 'child', 'friend', 'family', 'mom', 'dad', 'teacher'
+    'boy', 'girl', 'child', 'friend', 'family', 'mom', 'dad', 'teacher',
+    'they', 'he', 'she', 'it', 'we', 'you'
   ];
 
   private static readonly SIMPLE_ACTIONS = [
     'runs', 'walks', 'jumps', 'plays', 'sees', 'finds', 'goes', 'comes', 'sits', 'stands',
-    'looks', 'smiles', 'laughs', 'helps', 'reads', 'eats', 'sleeps', 'wakes', 'calls', 'says'
+    'looks', 'smiles', 'laughs', 'helps', 'reads', 'eats', 'sleeps', 'wakes', 'calls', 'says',
+    'run', 'walk', 'jump', 'play', 'see', 'go', 'come', 'sit', 'stand', 'look', 'eat', 'sleep', 'swim'
   ];
 
   private static readonly SIMPLE_OBJECTS = [
     'ball', 'toy', 'book', 'tree', 'house', 'car', 'bike', 'flower', 'cake', 'apple',
-    'chair', 'table', 'bed', 'door', 'window', 'box', 'bag', 'hat', 'shoe', 'coat'
+    'chair', 'table', 'bed', 'door', 'window', 'box', 'bag', 'hat', 'shoe', 'coat',
+    'lion', 'tiger', 'wolf', 'deer', 'fox', 'owl', 'butterfly', 'bee', 'frog', 'snake',
+    'elephant', 'giraffe', 'monkey', 'bear', 'grass', 'rock', 'stick', 'leaf', 'branch', 'bush'
   ];
 
   private static readonly SIMPLE_LOCATIONS = [
-    'park', 'home', 'school', 'garden', 'forest', 'beach', 'yard', 'room', 'kitchen', 'outside'
+    'park', 'home', 'school', 'garden', 'forest', 'beach', 'yard', 'room', 'kitchen', 'outside',
+    'grass', 'field', 'woods', 'lake', 'river', 'mountain', 'hill'
   ];
 
   static extractPageContent(pageText: string): PageContent {
@@ -151,7 +157,11 @@ export class DirectContentExtractor {
   }
 
   private static findDescriptor(words: string[]): string | undefined {
-    const descriptors = ['big', 'small', 'fast', 'slow', 'happy', 'sad', 'red', 'blue', 'green', 'yellow', 'little', 'old', 'new', 'good', 'nice', 'funny'];
+    const descriptors = [
+      'big', 'small', 'fast', 'slow', 'happy', 'sad', 'red', 'blue', 'green', 'yellow', 'little', 'old', 'new', 'good', 'nice', 'funny',
+      'purple', 'orange', 'pink', 'brown', 'black', 'white', 'gray', 'silver', 'gold',
+      'tall', 'short', 'soft', 'hard', 'smooth', 'rough', 'fun', 'scary', 'bright', 'dark', 'loud', 'quiet'
+    ];
     
     for (const word of words) {
       const cleanWord = word.toLowerCase().replace(/[.,!?]/, '');
@@ -230,12 +240,19 @@ export class DirectContentExtractor {
     return subject;
   }
 
-  static async enhancePageContent(pageText: string): Promise<PageContent> {
+  static async enhancePageContent(
+    pageText: string, 
+    storyContext?: {
+      previousPages?: string[];
+      characterInfo?: { name: string; traits?: any; };
+    }
+  ): Promise<PageContent> {
     // First try basic extraction
     const basicContent = this.extractPageContent(pageText);
     
-    // Check cache first
-    const cacheKey = `${pageText}-enhanced`;
+    // Check cache first (include context in cache key)
+    const contextKey = storyContext ? JSON.stringify(storyContext) : 'no-context';
+    const cacheKey = `${pageText}-${contextKey}-enhanced`;
     const cached = this.aiCache.get(cacheKey);
     if (cached) {
       console.log(`🎯 Using cached enhanced content for: "${pageText}"`);
@@ -252,7 +269,7 @@ export class DirectContentExtractor {
     
     try {
       console.log(`🤖 Enhancing with AI: "${pageText}"`);
-      const enhanced = await this.enhanceWithAI(pageText, basicContent);
+      const enhanced = await this.enhanceWithAI(pageText, basicContent, storyContext);
       
       // Cache the result
       this.aiCache.set(cacheKey, enhanced);
@@ -274,13 +291,21 @@ export class DirectContentExtractor {
     return hasMinimalVisuals || hasColorWords || hasDetailWords;
   }
 
-  private static async enhanceWithAI(pageText: string, basicContent: PageContent): Promise<PageContent> {
+  private static async enhanceWithAI(
+    pageText: string, 
+    basicContent: PageContent,
+    storyContext?: {
+      previousPages?: string[];
+      characterInfo?: { name: string; traits?: any; };
+    }
+  ): Promise<PageContent> {
     const { supabase } = await import('@/integrations/supabase/client');
     
     const { data, error } = await supabase.functions.invoke('extract-visual-keywords', {
       body: {
         pageText,
-        existingContent: basicContent
+        existingContent: basicContent,
+        storyContext
       }
     });
 
@@ -325,8 +350,15 @@ export class DirectContentExtractor {
     return prompt.visualPrompt;
   }
 
-  static async createEnhancedPrompt(pageText: string, userInfo: UserInfo): Promise<string> {
-    const content = await this.enhancePageContent(pageText);
+  static async createEnhancedPrompt(
+    pageText: string, 
+    userInfo: UserInfo,
+    storyContext?: {
+      previousPages?: string[];
+      characterInfo?: { name: string; traits?: any; };
+    }
+  ): Promise<string> {
+    const content = await this.enhancePageContent(pageText, storyContext);
     const prompt = this.generateDirectPrompt(content, userInfo);
     
     console.log(`🎯 Enhanced Content: "${pageText}" → "${prompt.visualPrompt}"`);
