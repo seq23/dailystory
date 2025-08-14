@@ -52,7 +52,7 @@ STYLE: getColorVoiceForUser(userInfo, difficulty) provides secondary direction f
 GUARDRAILS: G-rated content only. No external personal data. No copyrighted content. Transform any potentially concerning themes into their gentle equivalents naturally.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
-    userPromptTemplate: `Create a continuing story for {userName}, age 3-5. The story continues indefinitely unless user requests an ending, with narrative hooks for continuation. {specialRequest} provides the primary creative direction. Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} naturally. Use simple vocabulary and 1 sentence per page format for easy reading. Apply color voice styling per user profile.`,
+    userPromptTemplate: `Create a children's story for {userName}, age 3-5. Continue indefinitely with narrative hooks unless user requests ending. {specialRequest} provides theme and primary direction. Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} naturally. Use 1 sentence per page, subject-verb structure, 2-4 letter words, 2-4 word sentences (max 6 words). Apply color voice styling per profile.`,
   },
 
   easy: {
