@@ -129,7 +129,7 @@ export const DIFFICULTY_STYLE_MAPPING = {
     colorPalette: 'warm wood tones; energetic joy and movement',
     detailLevel: 'moderate',
     rendering: 'Clean bright style with motion blur and energy lines',
-    brandSuffix: 'with bright natural window lighting, energetic movement and joy, clean contemporary bedroom setting, contemporary children\'s book art style, diverse and inclusive, safe wholesome content, high quality professional artwork'
+    brandSuffix: 'with bright natural window lighting, energetic movement and joy, contemporary children\'s book art style, diverse and inclusive, safe wholesome content, high quality professional artwork'
   },
   'medium': {
     name: 'Rich & Engaging',
