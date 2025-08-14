@@ -360,7 +360,11 @@ let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.u
     try {
       // Use enhanced fallback system
       const fallbackStory = EnhancedFallbackManager.getFallbackTemplate(difficulty, userInfo, 0);
-      const pages = fallbackStory.split('\n\n').filter(page => page.trim().length > 0);
+      const rawPages = fallbackStory.split('\n\n').filter(page => page.trim().length > 0);
+      // Strip page markers from fallback pages as safety net
+      const pages = rawPages.map(page => 
+        page.replace(/^Page\s*\d+\s*:\s*/i, '').replace(/^Page\s*\d+\s*/i, '').trim()
+      ).filter(page => page.length > 0);
       const content = pages[0] || `${userInfo.name} began a wonderful adventure.`;
       
       const context: LiveGenerationContext = {
@@ -387,7 +391,8 @@ let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.u
       console.error('🚀 Enhanced fallback failed:', error);
       // Emergency fallback using Enhanced Template Library
       const emergencyFallback = EnhancedFallbackManager.getFallbackTemplate(difficulty, userInfo, 0);
-      const content = emergencyFallback.split('\n\n')[0] || `${userInfo.name} began a wonderful adventure.`;
+      const rawContent = emergencyFallback.split('\n\n')[0] || `${userInfo.name} began a wonderful adventure.`;
+      const content = rawContent.replace(/^Page\s*\d+\s*:\s*/i, '').replace(/^Page\s*\d+\s*/i, '').trim();
       const context: LiveGenerationContext = {
         userInfo,
         difficulty,
@@ -416,7 +421,11 @@ let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.u
     try {
       // Use enhanced fallback system for continuation (187 templates available)
       const fallbackStory = EnhancedFallbackManager.getFallbackTemplate(context.difficulty, context.userInfo, pageNumber - 1, context.storyContext);
-      const pages = fallbackStory.split('\n\n').filter(page => page.trim().length > 0);
+      const rawPages = fallbackStory.split('\n\n').filter(page => page.trim().length > 0);
+      // Strip page markers from fallback pages as safety net
+      const pages = rawPages.map(page => 
+        page.replace(/^Page\s*\d+\s*:\s*/i, '').replace(/^Page\s*\d+\s*/i, '').trim()
+      ).filter(page => page.length > 0);
       
       let content: string;
       if (pages.length > pageNumber - 1) {
@@ -424,7 +433,10 @@ let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.u
       } else {
         // Use Enhanced Template Library for missing pages
         const fallbackTemplate = EnhancedFallbackManager.getFallbackTemplate(context.difficulty, context.userInfo, pageNumber - 1, context.storyContext);
-        const fallbackPages = fallbackTemplate.split('\n\n').filter(page => page.trim().length > 0);
+        const rawFallbackPages = fallbackTemplate.split('\n\n').filter(page => page.trim().length > 0);
+        const fallbackPages = rawFallbackPages.map(page => 
+          page.replace(/^Page\s*\d+\s*:\s*/i, '').replace(/^Page\s*\d+\s*/i, '').trim()
+        ).filter(page => page.length > 0);
         content = fallbackPages[Math.min(pageNumber - 1, fallbackPages.length - 1)] || 
           (isLastPage ? `${context.userInfo.name} felt happy about the wonderful adventure. The end!` : `${context.userInfo.name} continued the exciting journey.`);
       }
@@ -450,7 +462,10 @@ let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.u
       console.error('🚀 Enhanced fallback failed:', error);
       // Emergency fallback using Enhanced Template Library
       const emergencyFallback = EnhancedFallbackManager.getFallbackTemplate(context.difficulty, context.userInfo, pageNumber - 1, context.storyContext);
-      const emergencyPages = emergencyFallback.split('\n\n').filter(page => page.trim().length > 0);
+      const rawEmergencyPages = emergencyFallback.split('\n\n').filter(page => page.trim().length > 0);
+      const emergencyPages = rawEmergencyPages.map(page => 
+        page.replace(/^Page\s*\d+\s*:\s*/i, '').replace(/^Page\s*\d+\s*/i, '').trim()
+      ).filter(page => page.length > 0);
       const content = emergencyPages[Math.min(pageNumber - 1, emergencyPages.length - 1)] || 
         (isLastPage ? `${context.userInfo.name} had a great day. The end.` : `${context.userInfo.name} continued the adventure.`);
       

@@ -225,7 +225,11 @@ let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, {
     try {
       // Use the sophisticated enhanced fallback system with 187 templates
       const fallbackStory = EnhancedFallbackManager.getFallbackTemplate(difficulty, userInfo, 0);
-      const pages = fallbackStory.split('\n\n').filter(page => page.trim().length > 0);
+      const rawPages = fallbackStory.split('\n\n').filter(page => page.trim().length > 0);
+      // Strip page markers from fallback pages as safety net
+      const pages = rawPages.map(page => 
+        page.replace(/^Page\s*\d+\s*:\s*/i, '').replace(/^Page\s*\d+\s*/i, '').trim()
+      ).filter(page => page.length > 0);
       try {
         (globalThis as any).__LAST_STORY_SOURCE__ = 'fallback';
       } catch {}
