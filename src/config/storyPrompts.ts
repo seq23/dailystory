@@ -178,7 +178,7 @@ Create sophisticated stories with 6th grade reading complexity:
 - Abstract concepts and moral complexity
 - Rich narrative layers and emotional depth
 
-FORMAT: Page 1: [5-6 sentences]. Continue for exactly 12 pages.
+FORMAT: Page 1: [5-6 sentences]. Each subsequent page should maintain similar length and complexity.
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
@@ -217,7 +217,7 @@ Create sophisticated stories with 7th grade reading complexity:
 - Moral complexity and abstract concepts
 - Rich emotional and intellectual depth
 
-FORMAT: Page 1: [6-7 sentences]. Continue for exactly 13 pages.
+FORMAT: Page 1: [6-7 sentences]. Each subsequent page should maintain similar length and complexity.
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
@@ -256,7 +256,7 @@ Create sophisticated stories with 8th grade reading complexity:
 - Abstract concepts and philosophical depth
 - Rich narrative complexity and emotional sophistication
 
-FORMAT: Page 1: [6-8 sentences]. Continue for exactly 14 pages.
+FORMAT: Page 1: [6-8 sentences]. Each subsequent page should maintain similar length and complexity.
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
@@ -295,7 +295,7 @@ Create sophisticated stories with 9th grade reading complexity:
 - Abstract philosophical concepts
 - Rich literary depth and emotional complexity
 
-FORMAT: Page 1: [7-9 sentences]. Continue for exactly 15 pages.
+FORMAT: Page 1: [7-9 sentences]. Each subsequent page should maintain similar length and complexity.
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
@@ -334,7 +334,7 @@ Create sophisticated stories with 10th grade reading complexity:
 - Abstract philosophical and ethical concepts
 - Rich literary sophistication and emotional depth
 
-FORMAT: Page 1: [8-10 sentences]. Continue for exactly 16 pages.
+FORMAT: Page 1: [8-10 sentences]. Each subsequent page should maintain similar length and complexity.
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
