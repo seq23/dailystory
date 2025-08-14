@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { EnhancedFallbackTemplateSystem } from '@/constants/enhancedFallbackTemplates';
+import { EnhancedFallbackManager } from '@/constants/enhancedFallbackTemplates';
 import { validateLevel2Sentence } from '@/constants/gradeBased/level2Vocabulary';
 import { computeCoverage } from '@/utils/vocabCoverage';
 import { estimateTokenCount } from '@/utils/tokenLimitValidator';
@@ -24,7 +24,7 @@ describe('Fallback Quality Tests', () => {
   describe('Level 0 (Beginner) Fallbacks', () => {
     it('generates one sentence per page for Level 0', () => {
       const user = makeUser({ age: 4 });
-      const fallback = EnhancedFallbackTemplateSystem.generateFallbackPage(
+      const fallback = EnhancedFallbackManager.getFallbackTemplate(
         'beginner', user, 0
       );
       
@@ -35,7 +35,7 @@ describe('Fallback Quality Tests', () => {
 
     it('uses simple vocabulary for Level 0', () => {
       const user = makeUser({ age: 4 });
-      const fallback = EnhancedFallbackTemplateSystem.generateFallbackPage(
+      const fallback = EnhancedFallbackManager.getFallbackTemplate(
         'beginner', user, 0
       );
       
@@ -51,7 +51,7 @@ describe('Fallback Quality Tests', () => {
 
     it('integrates user information naturally', () => {
       const user = makeUser({ name: "Alex", favoriteAnimal: "cat" });
-      const fallback = EnhancedFallbackTemplateService.generateFallbackPage(
+      const fallback = EnhancedFallbackManager.getFallbackTemplate(
         'beginner', user, 0
       );
       
@@ -63,7 +63,7 @@ describe('Fallback Quality Tests', () => {
   describe('Level 1 (Easy) Fallbacks', () => {
     it('maintains appropriate complexity for early readers', () => {
       const user = makeUser({ age: 6 });
-      const fallback = EnhancedFallbackTemplateService.generateFallbackPage(
+      const fallback = EnhancedFallbackManager.getFallbackTemplate(
         'easy', user, 0
       );
       
@@ -77,7 +77,7 @@ describe('Fallback Quality Tests', () => {
 
     it('uses vocabulary appropriate for early readers', () => {
       const user = makeUser({ age: 6 });
-      const fallback = EnhancedFallbackTemplateService.generateFallbackPage(
+      const fallback = EnhancedFallbackManager.getFallbackTemplate(
         'easy', user, 0
       );
       
@@ -90,7 +90,7 @@ describe('Fallback Quality Tests', () => {
   describe('Level 2 (Medium) Fallbacks', () => {
     it('provides appropriate complexity for intermediate readers', () => {
       const user = makeUser({ age: 8 });
-      const fallback = EnhancedFallbackTemplateService.generateFallbackPage(
+      const fallback = EnhancedFallbackManager.getFallbackTemplate(
         'medium', user, 0
       );
       
@@ -105,7 +105,7 @@ describe('Fallback Quality Tests', () => {
 
     it('validates Level 2 vocabulary when applicable', () => {
       const user = makeUser({ age: 8 });
-      const fallback = EnhancedFallbackTemplateService.generateFallbackPage(
+      const fallback = EnhancedFallbackManager.getFallbackTemplate(
         'medium', user, 0
       );
       
@@ -125,7 +125,7 @@ describe('Fallback Quality Tests', () => {
         favoriteFood: "ice cream"
       });
       
-      const fallback = EnhancedFallbackTemplateService.generateFallbackPage(
+      const fallback = EnhancedFallbackManager.getFallbackTemplate(
         'medium', user, 0
       );
       
@@ -149,7 +149,7 @@ describe('Fallback Quality Tests', () => {
         hobbies: undefined
       });
       
-      const fallback = EnhancedFallbackTemplateService.generateFallbackPage(
+      const fallback = EnhancedFallbackManager.getFallbackTemplate(
         'easy', user, 0
       );
       
@@ -164,13 +164,13 @@ describe('Fallback Quality Tests', () => {
     it('provides natural story progression across pages', () => {
       const user = makeUser({ age: 7 });
       
-      const page1 = EnhancedFallbackTemplateService.generateFallbackPage(
+      const page1 = EnhancedFallbackManager.getFallbackTemplate(
         'easy', user, 0
       );
-      const page2 = EnhancedFallbackTemplateService.generateFallbackPage(
+      const page2 = EnhancedFallbackManager.getFallbackTemplate(
         'easy', user, 1
       );
-      const page3 = EnhancedFallbackTemplateService.generateFallbackPage(
+      const page3 = EnhancedFallbackManager.getFallbackTemplate(
         'easy', user, 2
       );
       
@@ -187,10 +187,10 @@ describe('Fallback Quality Tests', () => {
     it('maintains theme consistency across difficulty levels', () => {
       const user = makeUser({ specialRequest: "theme: friendship" });
       
-      const beginnerPage = EnhancedFallbackTemplateService.generateFallbackPage(
+      const beginnerPage = EnhancedFallbackManager.getFallbackTemplate(
         'beginner', user, 0
       );
-      const easyPage = EnhancedFallbackTemplateService.generateFallbackPage(
+      const easyPage = EnhancedFallbackManager.getFallbackTemplate(
         'easy', user, 0
       );
       
@@ -210,7 +210,7 @@ describe('Fallback Quality Tests', () => {
         ['beginner', 'easy', 'medium', 'hard', 'expert'];
       
       for (const difficulty of difficulties) {
-        const fallback = EnhancedFallbackTemplateService.generateFallbackPage(
+        const fallback = EnhancedFallbackManager.getFallbackTemplate(
           difficulty, user, 0
         );
         
@@ -235,7 +235,7 @@ describe('Fallback Quality Tests', () => {
         specialRequest: undefined
       };
       
-      const fallback = EnhancedFallbackTemplateService.generateFallbackPage(
+      const fallback = EnhancedFallbackManager.getFallbackTemplate(
         'beginner', minimalUser, 0
       );
       
