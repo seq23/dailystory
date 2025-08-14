@@ -522,10 +522,10 @@ serve(async (req) => {
     const systemPrompt = config?.systemPrompt || `You are a children's story writer. Create an engaging story for ${readingLevel} level readers.`;
     const userPrompt = config?.userPrompt || `Create a unique story for ${config?.userName || 'the child'}.`;
 
-    const maxTokens = readingLevel === 'beginner' ? 150 : 
-                     readingLevel === 'easy' ? 250 : 
-                     readingLevel === 'medium' ? 400 : 
-                     readingLevel === 'hard' ? 500 : 600; // expert
+    const maxTokens = readingLevel === 'beginner' ? 200 : 
+                     readingLevel === 'easy' ? 400 : 
+                     readingLevel === 'medium' ? 600 : 
+                     readingLevel === 'hard' ? 800 : 1200; // expert
 
     console.log('📖 Story Generation Request:', {
       readingLevel,

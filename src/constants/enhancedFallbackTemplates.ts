@@ -13,6 +13,8 @@ export interface EnhancedFallbackTemplate {
   climax: string[];
   resolution: string[];
   contextualContinuations: string[];
+  continuationPoints: string[]; // NEW: Story continuation hooks
+  nextStorySeeds: string[];     // NEW: Ideas for next story
 }
 
 // Import all templates from the grade-based system including new Level 0
@@ -40,7 +42,9 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
       development: template.slice(2, 3),
       climax: template.slice(3, 4),
       resolution: template.slice(4, 5),
-      contextualContinuations: []
+      contextualContinuations: [],
+      continuationPoints: ["What happens next?", "Where will they go?"],
+      nextStorySeeds: ["Another adventure begins", "A new friend appears"]
     })),
     // Convert Level 0 extensions (universal access)
     ...LEVEL_0_EXTENSIONS.map(template => ({
@@ -48,7 +52,9 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
       development: template.slice(2, 3),
       climax: template.slice(3, 4),
       resolution: template.slice(4, 5),
-      contextualContinuations: []
+      contextualContinuations: [],
+      continuationPoints: ["What happens next?", "Where will they go?"],
+      nextStorySeeds: ["Another adventure begins", "A new friend appears"]
     })),
     // Original enhanced fallback
     {
@@ -72,7 +78,9 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
         "The {animal} is happy.",
         "It is a good day."
       ],
-      contextualContinuations: []
+      contextualContinuations: [],
+      continuationPoints: ["What happens next?", "Where will they go?"],
+      nextStorySeeds: ["Another adventure begins", "A new friend appears"]
     }
   ],
   // EASY: Level 1 templates (40) + Level 1 extensions (5) + enhanced fallbacks (2) = 47 templates  
@@ -83,7 +91,9 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
       development: template.slice(2, 3),
       climax: template.slice(3, 4),
       resolution: template.slice(4, 5),
-      contextualContinuations: []
+      contextualContinuations: [],
+      continuationPoints: ["What adventure comes next?", "Who will they meet?"],
+      nextStorySeeds: ["A new challenge appears", "An exciting discovery awaits"]
     })),
     // Convert Level 1 extensions
     ...LEVEL_1_EXTENSIONS.map(template => ({
@@ -91,7 +101,9 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
       development: template.slice(2, 3),
       climax: template.slice(3, 4),
       resolution: template.slice(4, 5),
-      contextualContinuations: []
+      contextualContinuations: [],
+      continuationPoints: ["What adventure comes next?", "Who will they meet?"],
+      nextStorySeeds: ["A new challenge appears", "An exciting discovery awaits"]
     })),
     // Original enhanced fallbacks
     {
@@ -115,7 +127,9 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
         "{userName} and {animal} are happy.",
         "They are good friends now."
       ],
-      contextualContinuations: []
+      contextualContinuations: [],
+      continuationPoints: ["What adventure comes next?", "Who will they meet?"],
+      nextStorySeeds: ["A new challenge appears", "An exciting discovery awaits"]
     },
     {
       setup: [
@@ -138,7 +152,9 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
         "{userName} shares it with {animal}.",
         "They both feel very happy."
       ],
-      contextualContinuations: []
+      contextualContinuations: [],
+      continuationPoints: ["What mystery will unfold next?", "Where will this magic lead?"],
+      nextStorySeeds: ["A deeper mystery emerges", "New magical elements appear"]
     }
   ],
 
@@ -150,7 +166,9 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
       development: template.slice(2, 3),
       climax: template.slice(3, 4),
       resolution: template.slice(4, 5),
-      contextualContinuations: []
+      contextualContinuations: [],
+      continuationPoints: ["What deeper mysteries await?", "How will this journey continue?"],
+      nextStorySeeds: ["A greater challenge emerges", "Hidden secrets are revealed"]
     })),
     // Convert Level 2 extensions
     ...LEVEL_2_EXTENSIONS.map(template => ({
@@ -158,7 +176,9 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
       development: template.slice(2, 3),
       climax: template.slice(3, 4),
       resolution: template.slice(4, 5),
-      contextualContinuations: []
+      contextualContinuations: [],
+      continuationPoints: ["What deeper mysteries await?", "How will this journey continue?"],
+      nextStorySeeds: ["A greater challenge emerges", "Hidden secrets are revealed"]
     })),
     // Original enhanced fallbacks
     {
@@ -182,7 +202,9 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
         "The tree regains its beautiful, vibrant glow completely.",
         "The forest celebrates their act of kindness and wisdom."
       ],
-      contextualContinuations: []
+      contextualContinuations: [],
+      continuationPoints: ["What deeper mysteries await?", "How will this journey continue?"],
+      nextStorySeeds: ["A greater challenge emerges", "Hidden secrets are revealed"]
     },
     {
       setup: [
@@ -205,7 +227,9 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
         "Everyone appreciates {userName}'s authentic contribution to the celebration.",
         "The experience teaches them about confidence and community belonging."
       ],
-      contextualContinuations: []
+      contextualContinuations: [],
+      continuationPoints: ["What new celebrations await?", "Which friends will they meet next?"],
+      nextStorySeeds: ["Another celebration begins", "New traditions are discovered"]
     }
   ],
 
@@ -217,7 +241,9 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
       development: template.slice(2, 3),
       climax: template.slice(3, 4),
       resolution: template.slice(4, 5),
-      contextualContinuations: []
+      contextualContinuations: [],
+      continuationPoints: ["What moral complexities will emerge?", "How will leadership be tested?"],
+      nextStorySeeds: ["Greater responsibilities await", "Complex ethical dilemmas arise"]
     })),
     // Convert Level 3 extensions
     ...LEVEL_3_EXTENSIONS.map(template => ({
@@ -225,7 +251,9 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
       development: template.slice(2, 3),
       climax: template.slice(3, 4),
       resolution: template.slice(4, 5),
-      contextualContinuations: []
+      contextualContinuations: [],
+      continuationPoints: ["What moral complexities will emerge?", "How will leadership be tested?"],
+      nextStorySeeds: ["Greater responsibilities await", "Complex ethical dilemmas arise"]
     })),
     // Original enhanced fallback
     {
@@ -249,7 +277,9 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
         "{userName} learned that true leadership means serving others with wisdom and compassion.",
         "The village thrived, and {userName} became known for their character and moral strength."
       ],
-      contextualContinuations: []
+      contextualContinuations: [],
+      continuationPoints: ["What moral complexities will emerge?", "How will leadership be tested?"],
+      nextStorySeeds: ["Greater responsibilities await", "Complex ethical dilemmas arise"]
     }
   ],
 
@@ -261,7 +291,9 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
       development: template.slice(2, 3),
       climax: template.slice(3, 4),
       resolution: template.slice(4, 5),
-      contextualContinuations: []
+      contextualContinuations: [],
+      continuationPoints: ["What philosophical depths await exploration?", "How will wisdom manifest?"],
+      nextStorySeeds: ["Deeper philosophical questions emerge", "Abstract concepts take concrete form"]
     })),
     // Convert Level 4 extensions
     ...LEVEL_4_EXTENSIONS.map(template => ({
@@ -269,7 +301,9 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
       development: template.slice(2, 3),
       climax: template.slice(3, 4),
       resolution: template.slice(4, 5),
-      contextualContinuations: []
+      contextualContinuations: [],
+      continuationPoints: ["What philosophical depths await exploration?", "How will wisdom manifest?"],
+      nextStorySeeds: ["Deeper philosophical questions emerge", "Abstract concepts take concrete form"]
     })),
     {
       setup: [
@@ -292,19 +326,23 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
         "They learned that wisdom comes from embracing paradox while maintaining commitment to truth and justice.",
         "This intellectual and spiritual growth transformed {userName} into a bridge between different ways of thinking."
       ],
-      contextualContinuations: []
+      contextualContinuations: [],
+      continuationPoints: ["What philosophical depths await exploration?", "How will wisdom manifest?"],
+      nextStorySeeds: ["Deeper philosophical questions emerge", "Abstract concepts take concrete form"]
     }
   ]
 };
 
 /**
- * Enhanced fallback template selector with session management
+ * Enhanced fallback template selector with session management and continuation support
  */
 export class EnhancedFallbackManager {
   private static usedTemplates: Map<string, Set<number>> = new Map();
+  private static storyContext: Map<string, { characters: string[], themes: string[], plotElements: string[] }> = new Map();
 
   /**
    * Get an enhanced fallback template for the given difficulty and context
+   * Now supports story continuation with consistent narrative elements
    */
   static getFallbackTemplate(
     difficulty: DifficultyLevel,
@@ -344,6 +382,9 @@ export class EnhancedFallbackManager {
     
     usedSet.add(templateIndex);
     const selectedTemplate = templates[templateIndex];
+
+    // Initialize or update story context for continuation
+    this.updateStoryContext(sessionKey, selectedTemplate, userInfo, pageIndex);
 
     // Generate context-aware fallback using story arc structure
     return this.generateContextAwareFallback(
@@ -545,9 +586,57 @@ export class EnhancedFallbackManager {
   }
 
   /**
+   * Update story context for continuation support
+   */
+  private static updateStoryContext(
+    sessionKey: string,
+    template: EnhancedFallbackTemplate,
+    userInfo: UserInfo,
+    pageIndex: number
+  ): void {
+    if (!this.storyContext.has(sessionKey)) {
+      this.storyContext.set(sessionKey, {
+        characters: [userInfo.favoriteAnimal || 'friend'],
+        themes: ['friendship', 'adventure'],
+        plotElements: template.continuationPoints || []
+      });
+    }
+    
+    // Update context with new story elements
+    const context = this.storyContext.get(sessionKey)!;
+    if (template.nextStorySeeds && template.nextStorySeeds.length > 0) {
+      context.plotElements.push(...template.nextStorySeeds);
+    }
+  }
+
+  /**
+   * Get continuation content for ongoing stories
+   */
+  static getContinuationContent(
+    difficulty: DifficultyLevel,
+    userInfo: UserInfo,
+    pageIndex: number
+  ): string {
+    const sessionKey = `${difficulty}-${userInfo.name || 'guest'}`;
+    const context = this.storyContext.get(sessionKey);
+    
+    if (!context || !context.plotElements.length) {
+      // Fall back to regular template if no continuation context
+      return this.getFallbackTemplate(difficulty, userInfo, pageIndex);
+    }
+    
+    // Use stored plot elements for continuation
+    const plotElement = context.plotElements[pageIndex % context.plotElements.length];
+    const name = NameFormatter.capitalize(userInfo.name || 'Alex');
+    
+    return `${name} ${plotElement.toLowerCase()}.`;
+  }
+
+  /**
    * Clear session data for testing or reset
    */
   static clearSession(): void {
     this.usedTemplates.clear();
+    this.storyContext.clear();
   }
 }
