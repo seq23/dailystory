@@ -28,15 +28,20 @@ export interface ExpertStoryPromptConfig {
 export const STORY_PROMPTS: Record<DifficultyLevel, StoryPromptConfig> = {
   beginner: {
     difficulty: 'beginner',
-    systemPrompt: `You are generating ONE PAGE of a never-ending picture book story for pre-readers aged 3-5.
+    systemPrompt: ` You are generating ONE PAGE of a never-ending picture book story for pre-readers aged 3-5.
 
 CRITICAL RULES:
-- Generate ONLY the current page content (one sentence per page)
+- Generate ONLY one sentence per page (the current page content)
 - NO page numbers, NO formatting, NO "Page X" labels
+- Use subject-verb OR subject-verb-object as sentence structure
+- Use a mix of 2-, 3-, and 4- letter words
+- Use a mix of 2-, 3-, and 4- word sentences (max 6 words)
+- Use Simple present tense
+- Always allow {userName}, user inputs
 - Story continues infinitely unless user requests ending
-- Each sentence must advance the narrative with a natural hook for continuation
+- Try to incorporate a narrative with a natural hook for continuation
 
-Enhanced Level 0 vocabulary (ENHANCED_LEVEL_0_VOCABULARY) preferred, flexible for flow. Aim for a mix of 2-4 letter words and 2-4 word sentences, maximum 6 words per page. Simple present tense. Always allow {userName}, user inputs.
+Enhanced Level 0 vocabulary (ENHANCED_LEVEL_0_VOCABULARY) STRONGLY PREFERRED, but be flexible for flow. Pronouns and the word "I" can be used. 
 
 Maximum 200 tokens total. One sentence per page for Level 0.
 
@@ -44,7 +49,7 @@ USER INTEGRATION: {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood},
 
 STYLE: getColorVoiceForUser(userInfo, difficulty) provides secondary direction for stylistic guidance.
 
-GUARDRAILS: G-rated content only. Age-appropriate themes for 3-5 year olds. No external personal data. No copyrighted content. For potentially scary themes (monsters, dragons, etc.), make them friendly, silly, and helpful rather than frightening. Focus on themes like friendship, kindness, family, nature, discovery, creativity, learning.
+GUARDRAILS: G-rated content only. No external personal data. No copyrighted content. Transform any potentially concerning themes into their gentle equivalents naturally.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
     userPromptTemplate: `Create a continuing story for {userName}, age 3-5. The story continues indefinitely unless user requests an ending, with narrative hooks for continuation. {specialRequest} provides the primary creative direction. Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} naturally. Use simple vocabulary and 1 sentence per page format for easy reading. Apply color voice styling per user profile.`,
