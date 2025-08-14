@@ -92,6 +92,9 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   // Story state
   const [story, setStory] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
+  
+  // For free users, limit displayed pages to 6 maximum
+  const displayedStory = !isPremium ? story.slice(0, 6) : story;
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingNextPage, setIsLoadingNextPage] = useState(false);
   const [justAdvanced, setJustAdvanced] = useState(false);
@@ -377,7 +380,7 @@ const [highlightSave, setHighlightSave] = useState(false);
     const timer = setTimeout(() => setHighlightSave(false), 8000);
     return () => clearTimeout(timer);
   }, [highlightSave]);
-  const currentStory = story[currentPage] || "";
+  const currentStory = displayedStory[currentPage] || "";
   const effectiveLimit = isPremium ? defaultAudioConfig.quality.maxTextLength.premium : defaultAudioConfig.quality.maxTextLength.free;
   const effectiveAudioText = (currentStory || "").slice(0, effectiveLimit);
   const contentHash = hashText(effectiveAudioText);
@@ -572,9 +575,9 @@ useEffect(() => {
   }
 }, [isPremium, timeRemaining]);
 
-// Magic wand DRAMATIC animation effect for free users on last page - CONTINUOUS until clicked
+// Magic wand DRAMATIC animation effect for free users on page 6 - CONTINUOUS until clicked
 useEffect(() => {
-  if (!isPremium && currentPage === story.length - 1 && story.length > 0) {
+  if (!isPremium && currentPage === 5 && displayedStory.length > 5) { // Show on page 6 (index 5)
     setIsMagicWandAnimating(true);
     // NO TIMEOUT - Keep animating until user clicks!
   } else {
@@ -835,12 +838,12 @@ const initializeStory = async () => {
     setIsGeneratingImage(true);
     
     try {
-      const storyText = story[currentPage];
+      const storyText = displayedStory[currentPage];
       const result = await SimpleImageService.generateStoryImage(
         storyText, 
         userInfo, 
         currentPage + 1,
-        story.length
+        displayedStory.length
       );
       
       if (result.success && result.url) {
@@ -914,8 +917,8 @@ const initializeStory = async () => {
     clearHighlighting();
 
     // Count words for the page we're leaving (once per page)
-    if (story[currentPage] && !pagesCompleted.has(currentPage)) {
-      const pageWordCount = countWords(story[currentPage]);
+    if (displayedStory[currentPage] && !pagesCompleted.has(currentPage)) {
+      const pageWordCount = countWords(displayedStory[currentPage]);
       setSessionWordsRead(prev => prev + pageWordCount);
       setPagesCompleted(prev => {
         const next = new Set(prev);
@@ -936,7 +939,7 @@ const initializeStory = async () => {
         setCurrentPage(prev => prev + 1);
       }
       setTimeout(() => setJustAdvanced(false), 600);
-    } else if (currentPage < story.length - 1) {
+    } else if (currentPage < displayedStory.length - 1) {
       // Navigate to next existing page
       setCurrentPage(currentPage + 1);
     } else {
@@ -1003,7 +1006,7 @@ const initializeStory = async () => {
       });
       // Persist essentials for SessionEnded fallback across reloads
       try { sessionStorage.setItem('last_user_info', JSON.stringify(userInfo)); } catch {}
-      try { sessionStorage.setItem('last_story_text', story.join(' ')); } catch {}
+      try { sessionStorage.setItem('last_story_text', story.join(' ')); } catch {} // Keep full story for upgrades
       onSessionEnded(sessionStats);
     }
   };
@@ -1140,14 +1143,14 @@ const handleDockCoach = () => {
       timeSpent,
       wordsRead: totalWordsRead,
       pagesRead: pagesCompleted.size,
-      storyCompleted: currentPage === story.length - 1,
+      storyCompleted: currentPage === displayedStory.length - 1,
       readingSpeed: Math.round((totalWordsRead / timeSpent) * 60000)
     });
     
     try { sessionStorage.removeItem('readingTimerPausedSeconds'); } catch {}
     // Persist essentials for SessionEnded fallback across reloads
     try { sessionStorage.setItem('last_user_info', JSON.stringify(userInfo)); } catch {}
-    try { sessionStorage.setItem('last_story_text', story.join(' ')); } catch {}
+    try { sessionStorage.setItem('last_story_text', story.join(' ')); } catch {} // Keep full story for upgrades
     onSessionEnded(sessionStats);
   };
 
@@ -1653,7 +1656,7 @@ const handleRestartTimer = () => {
                     variant="default"
                     size="sm"
                     onClick={handleNext}
-                    disabled={isLoadingNextPage || controlsBlocked || (!isPremium && currentPage === story.length - 1)}
+                    disabled={isLoadingNextPage || controlsBlocked || (!isPremium && currentPage >= 5)}
                     aria-label={t('nav.next','Next')}
                   >
                     <ChevronRight className="w-5 h-5" />
@@ -1739,7 +1742,7 @@ const handleRestartTimer = () => {
                         {/* Background fill to avoid cropping/margins */}
                         <img
                           src={currentImage}
-                          alt={`Story illustration for page ${currentPage + 1}: ${story[currentPage]?.substring(0, 100)}...`}
+          alt={`Story illustration for page ${currentPage + 1}: ${displayedStory[currentPage]?.substring(0, 100)}...`}
                           className="absolute inset-0 h-full w-full object-cover blur-md scale-110 brightness-[1.05]"
                           loading="lazy"
                           decoding="async"
@@ -1752,7 +1755,7 @@ const handleRestartTimer = () => {
                         {/* Foreground clean image, never cropped */}
                         <img
                           src={currentImage}
-                          alt={`Story illustration for page ${currentPage + 1}: ${story[currentPage]?.substring(0, 100)}...`}
+          alt={`Story illustration for page ${currentPage + 1}: ${displayedStory[currentPage]?.substring(0, 100)}...`}
                           className="relative z-10 h-full w-full object-contain"
                           loading="lazy"
                           decoding="async"
@@ -1783,7 +1786,7 @@ const handleRestartTimer = () => {
                   </div>
                   {/* Bottom Half: Text (scrollable) + audio controls */}
                   <div className="flex-[0.42] min-h-0 w-full rounded-2xl shadow-2xl bg-card overflow-hidden flex flex-col relative">
-                    {isPremium && isLoadingNextPage && currentPage === story.length - 1 && !isStoryComplete && (
+                    {isPremium && isLoadingNextPage && currentPage === displayedStory.length - 1 && !isStoryComplete && (
                       <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/60 backdrop-blur-sm pointer-events-none">
                         <div className="rounded-xl px-4 py-3 bg-card/90 shadow-lg border border-primary/20 animate-enter">
                           <div className="flex items-center gap-2">
@@ -1835,7 +1838,7 @@ const handleRestartTimer = () => {
                         {currentImage ? (
                           <img 
                             src={currentImage} 
-                            alt={`Story illustration for page ${currentPage + 1}: ${story[currentPage]?.substring(0, 100)}...`}
+                            alt={`Story illustration for page ${currentPage + 1}: ${displayedStory[currentPage]?.substring(0, 100)}...`}
                             className="w-full h-full object-cover"
                             loading="lazy"
                             decoding="async"
@@ -1876,7 +1879,7 @@ const handleRestartTimer = () => {
                   {/* Text Content - RIGHT SIDE - Equal size on desktop */}
                   <div className="xl:order-2 flex flex-col h-full min-h-0">
                     <div className="w-full h-full min-h-0 rounded-2xl overflow-hidden shadow-2xl bg-card relative">
-                      {isPremium && isLoadingNextPage && currentPage === story.length - 1 && !isStoryComplete && (
+                      {isPremium && isLoadingNextPage && currentPage === displayedStory.length - 1 && !isStoryComplete && (
                         <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/60 backdrop-blur-sm pointer-events-none">
                           <div className="rounded-xl px-4 py-3 bg-card/90 shadow-lg border border-primary/20 animate-enter">
                             <div className="flex items-center gap-2">
@@ -1993,8 +1996,8 @@ const handleRestartTimer = () => {
                   </div>
                 )}
 
-                {/* Free User Magic Wand - visible only for free users on last page with time left */}
-                {!isPremium && currentPage === story.length - 1 && timeRemaining > 0 && (
+                {/* Free User Magic Wand - visible only for free users on page 6 with time left */}
+                {!isPremium && currentPage === 5 && displayedStory.length > 5 && timeRemaining > 0 && (
                   <div className="text-center relative">
                     <div className="relative">
                       <SparkleAnimation 
