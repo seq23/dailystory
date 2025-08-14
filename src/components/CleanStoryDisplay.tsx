@@ -583,7 +583,7 @@ useEffect(() => {
   } else {
     setIsMagicWandAnimating(false);
   }
-}, [currentPage, story.length, isPremium]);
+}, [currentPage, displayedStory.length, isPremium]);
 
 // Subtle pulse for wand every 3 pages
 useEffect(() => {
@@ -1656,7 +1656,7 @@ const handleRestartTimer = () => {
                     variant="default"
                     size="sm"
                     onClick={handleNext}
-                    disabled={isLoadingNextPage || controlsBlocked || (!isPremium && currentPage >= 5)}
+                    disabled={isLoadingNextPage || controlsBlocked || currentPage >= displayedStory.length - 1}
                     aria-label={t('nav.next','Next')}
                   >
                     <ChevronRight className="w-5 h-5" />
@@ -1996,8 +1996,8 @@ const handleRestartTimer = () => {
                   </div>
                 )}
 
-                {/* Free User Magic Wand - visible only for free users on page 6 with time left */}
-                {!isPremium && currentPage === 5 && displayedStory.length > 5 && timeRemaining > 0 && (
+                {/* Free User Magic Wand - visible on page 6 OR when reaching the end of displayed story */}
+                {!isPremium && ((currentPage === 5 && displayedStory.length > 5) || (currentPage === displayedStory.length - 1 && displayedStory.length === 6)) && timeRemaining > 0 && (
                   <div className="text-center relative">
                     <div className="relative">
                       <SparkleAnimation 
