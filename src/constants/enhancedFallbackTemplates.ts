@@ -406,26 +406,7 @@ export class EnhancedFallbackManager {
     pageIndex: number,
     existingStory?: string[]
   ): string {
-    // For Level 0 (beginner), return complete story instead of single page
-    if (difficulty === 'beginner' && pageIndex === 0) {
-      // Return complete 5-page story by combining all template parts
-      const allPages = [
-        ...template.setup,
-        ...template.development, 
-        ...template.climax,
-        ...template.resolution
-      ];
-      
-      // Process all pages and return as complete story
-      const processedPages = allPages.map(page => this.processTemplate(page, userInfo, difficulty));
-      
-      // Validate all pages
-      processedPages.forEach((page, idx) => this.validateTemplateProcessing(page, idx));
-      
-      return processedPages.join('\n\n');
-    }
-    
-    // For other difficulties or subsequent pages, use single page logic
+    // Use single page logic for all difficulties including Level 0
     const position = this.determineStoryPosition(pageIndex, 10);
     const arcTemplates = template[position];
     
