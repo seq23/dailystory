@@ -32,7 +32,7 @@ export const STORY_PROMPTS: Record<DifficultyLevel, StoryPromptConfig> = {
 
 CRITICAL RULES:
 - Generate ONLY one sentence per page (the current page content)
-- NO page numbers, NO formatting, NO "Page X" labels
+- Use "Page X:" markers to separate each page of content
 - Use subject-verb OR subject-verb-object as sentence structure
 - Use a mix of 2-, 3-, and 4- letter words
 - Use a mix of 2-, 3-, and 4- word sentences (max 6 words)
