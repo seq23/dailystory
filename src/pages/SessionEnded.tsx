@@ -241,35 +241,35 @@ const getDifficultyLabel = (difficulty: string) => {
                <div className="space-y-2 text-sm text-amber-600">
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4" />
-                    <span>{t("sessionEnded.premiumBenefits.unlimitedSessions", "Unlimited reading sessions")}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Volume2 className="w-4 h-4" />
-                    <span>{t("sessionEnded.premiumBenefits.customDifficulty", "Custom story difficulty adjustment")}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <BookOpen className="w-4 h-4" />
-                    <span>{t("sessionEnded.premiumBenefits.extendedLibrary", "Extended story library with more topics")}</span>
+                    <span>{t("sessionEnded.premiumBenefits.unlimitedTime", "Unlimited reading time")}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <TrendingUp className="w-4 h-4" />
-                    <span>{t("sessionEnded.premiumBenefits.advancedTracking", "Advanced progress tracking & analytics")}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4" />
-                    <span>{t("sessionEnded.premiumBenefits.liveGeneration", "Live page-by-page story generation")}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Star className="w-4 h-4" />
-                    <span>{t("sessionEnded.premiumBenefits.saveProfiles", "Save multiple profiles and avatars")}</span>
+                    <span>{t("sessionEnded.premiumBenefits.personalizedDifficulty", "Personalized difficulty adjustments as your child improves")}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <BookOpen className="w-4 h-4" />
-                    <span>{t("sessionEnded.premiumBenefits.vocabulary", "Vocabulary builder and achievements")}</span>
+                    <span>{t("sessionEnded.premiumBenefits.curatedLibrary", "Curated story library and recommendations")}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4" />
+                    <span>{t("sessionEnded.premiumBenefits.parentDashboard", "Parent dashboard with insights and analytics")}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4" />
+                    <span>{t("sessionEnded.premiumBenefits.liveStoryGeneration", "Personalized live story generation (Your story doesn't end until you decide!)")}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4" />
+                    <span>{t("sessionEnded.premiumBenefits.multipleProfiles", "Multiple child profiles")}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="w-4 h-4" />
+                    <span>{t("sessionEnded.premiumBenefits.vocabularyTracking", "Vocabulary tracking and practice quizzes")}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Volume2 className="w-4 h-4" />
-                    <span>{t("sessionEnded.premiumBenefits.multilingual", "Multi-language stories and audio support")}</span>
+                    <span>{t("sessionEnded.premiumBenefits.readAloudFeedback", "Read-aloud feedback (speech-to-text coaching)")}</span>
                   </div>
                 </div>
               {onUpgrade && (
