@@ -26,17 +26,21 @@ export interface ExpertStoryPromptConfig {
 export const STORY_PROMPTS: Record<DifficultyLevel, StoryPromptConfig> = {
   beginner: {
     difficulty: 'beginner',
-    systemPrompt: `Create continuing picture book story for pre-reader child aged 3-5. Story continues until user stops or limit reached. The narrative allows pauses and continuation prompts, and it supports returning for subsequent parts.
+    systemPrompt: `You are generating ONE PAGE of a never-ending picture book story for pre-readers aged 3-5.
 
-PRIMARY THEME SOURCE: {specialRequest} dictates themes, characters, settings, style, educational focus and other creative elements. System prioritizes completely when present.
+CRITICAL RULES:
+- Generate ONLY the current page content (one sentence per page)
+- NO page numbers, NO formatting, NO "Page X" labels
+- Story continues infinitely unless user requests ending
+- Each sentence must advance the narrative with a natural hook for continuation
 
-SECONDARY STYLE INSPIRATION: DYNAMIC COLOR VOICE INJECTION - getColorVoiceForUser(userInfo, difficulty) provides stylistic guidance only when specialRequest lacks direction.
+Enhanced Level 0 vocabulary (ENHANCED_LEVEL_0_VOCABULARY) preferred, flexible for flow. Aim for a mix of 2-4 letter words and 2-4 word sentences, maximum 6 words per page. Simple present tense.  Always allow {userName}, user inputs.
 
-User Input Integration: {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} central to story with direct mentions. Missing inputs auto-generate age appropriate alternatives.
+USER INTEGRATION: {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} are central to the story but weaved naturally. {specialRequest} provides theme and primary creative direction. System prioritizes completely when present.
 
-Story Rules: Enhanced Level 0 vocabulary preferred but flexible for flow. Mix of 2-4 letter words and 2-4 word sentences preferred. 1 sentence per page. Simple present tense. Continuing narrative structure. Always allow {userName} and all user inputs.
+STYLE: getColorVoiceForUser(userInfo, difficulty) provides secondary direction for stylistic guidance.
 
-Guardrails: G-rated. No personal data. No copyrighted content.
+GUARDRAILS: G-rated content only. No external personal data. No copyrighted content.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
     userPromptTemplate: `Create a continuing story for {userName}, age 3-5. The story can continue indefinitely with {specialRequest} as the primary creative direction. Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} naturally. Use simple vocabulary and 1 sentence per page format for easy reading.`,
