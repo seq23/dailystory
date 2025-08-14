@@ -99,6 +99,18 @@ All colors MUST be HSL.
     /* Custom animation timings */
     --animation-bounce-slow: bounce 1.5s infinite;
 
+    /* Author Voice Colors - 10 unique colors for author styles */
+    --color-red: 15 85% 65%;
+    --color-yellow: 50 100% 70%;
+    --color-green: 120 70% 50%;
+    --color-purple: 271 80% 57%;
+    --color-orange: 38 92% 50%;
+    --color-pink: 340 75% 65%;
+    --color-navy-blue: 220 80% 25%;
+    --color-copper: 30 75% 35%;
+    --color-slate-gray: 210 15% 40%;
+    --color-teal: 180 75% 40%;
+
     --radius: 1rem;
     
     /* Touch target sizes for mobile accessibility - WCAG AA compliant */

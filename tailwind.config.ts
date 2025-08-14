@@ -82,7 +82,18 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				// Author Voice Colors for the 10-author system
+				'author-red': 'hsl(var(--color-red))',
+				'author-yellow': 'hsl(var(--color-yellow))',
+				'author-green': 'hsl(var(--color-green))',
+				'author-purple': 'hsl(var(--color-purple))',
+				'author-orange': 'hsl(var(--color-orange))',
+				'author-pink': 'hsl(var(--color-pink))',
+				'author-navy-blue': 'hsl(var(--color-navy-blue))',
+				'author-copper': 'hsl(var(--color-copper))',
+				'author-slate-gray': 'hsl(var(--color-slate-gray))',
+				'author-teal': 'hsl(var(--color-teal))'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
