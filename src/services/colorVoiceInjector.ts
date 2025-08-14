@@ -3,7 +3,7 @@
  * Provides soft style guidance without overfitting
  */
 
-import { COLOR_VOICES, type ColorVoice, getColorVoiceForUser } from "@/constants/authorVoicePatterns";
+import { COLOR_VOICES, type ColorVoice, getColorVoiceForUser, getAuthorVoiceForDifficulty } from "@/constants/authorVoicePatterns";
 import type { DifficultyLevel, UserInfo } from "@/types";
 
 export interface StyleInjectionResult {
@@ -13,20 +13,6 @@ export interface StyleInjectionResult {
   voiceCharacteristics: string[];
 }
 
-/**
- * Map difficulty levels to color keys (internal helper)
- */
-function getColorKeyForDifficulty(difficulty: DifficultyLevel): string {
-  const difficultyColorMap: Record<DifficultyLevel, string> = {
-    'beginner': 'red',
-    'easy': 'yellow', 
-    'medium': 'green',
-    'hard': 'purple',
-    'expert': 'orange'
-  };
-  
-  return difficultyColorMap[difficulty] || 'red';
-}
 
 /**
  * Inject selected color style into system prompt at runtime
@@ -121,8 +107,7 @@ function insertPromptSection(prompt: string, injection: string, position: number
  * Get style summary for a difficulty level (backward compatibility)
  */
 export function getStyleSummaryForDifficulty(difficulty: DifficultyLevel): string {
-  const colorKey = getColorKeyForDifficulty(difficulty);
-  const voice = COLOR_VOICES[colorKey];
+  const voice = getAuthorVoiceForDifficulty(difficulty);
   return voice?.styleSummary || "General storytelling style";
 }
 
@@ -130,8 +115,7 @@ export function getStyleSummaryForDifficulty(difficulty: DifficultyLevel): strin
  * Get rotating sample micro-lines for a difficulty level
  */
 export function getRotatingSampleLines(difficulty: DifficultyLevel, count: number = 3): string[] {
-  const colorKey = getColorKeyForDifficulty(difficulty);
-  const voice = COLOR_VOICES[colorKey];
+  const voice = getAuthorVoiceForDifficulty(difficulty);
   
   if (!voice?.sampleMicroLines) {
     return [];
