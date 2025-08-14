@@ -696,7 +696,8 @@ export const COLOR_VOICES: Record<string, ColorVoice> = {
   }
 };
 
-// Age-based color mapping
+// DEPRECATED: Age-based color mapping (kept for reference/analytics)
+// All colors are now available for all ages with age-contextual application via system prompts
 export const AGE_COLOR_MAPPING: Record<string, string[]> = {
   "3-5": ["red", "yellow"],
   "5-7": ["green", "purple"],
@@ -705,7 +706,8 @@ export const AGE_COLOR_MAPPING: Record<string, string[]> = {
   "11-15": ["slate-gray", "teal"]
 };
 
-// Difficulty-based color mapping
+// DEPRECATED: Difficulty-based color mapping (kept for reference/analytics)
+// All colors are now available for all difficulty levels with content-appropriate application
 export const DIFFICULTY_COLOR_MAPPING: Record<DifficultyLevel, string[]> = {
   beginner: ["red", "yellow"],
   easy: ["green", "purple"],
@@ -714,44 +716,29 @@ export const DIFFICULTY_COLOR_MAPPING: Record<DifficultyLevel, string[]> = {
   expert: ["slate-gray", "teal"]
 };
 
+// All available color voice keys for random selection
+const ALL_COLOR_KEYS = Object.keys(COLOR_VOICES) as (keyof typeof COLOR_VOICES)[];
+
 /**
- * Get appropriate color voice for user age and difficulty level
+ * Get appropriate color voice for user (now selects from all colors)
+ * Age-appropriateness is handled by system prompts, not color restrictions
  */
 export function getColorVoiceForUser(userInfo: UserInfo, difficulty: DifficultyLevel): ColorVoice {
-  const age = userInfo.age;
-  
-  // Find age-appropriate colors
-  let ageAppropriateColors: string[] = [];
-  
-  if (age <= 5) ageAppropriateColors = AGE_COLOR_MAPPING["3-5"];
-  else if (age <= 7) ageAppropriateColors = AGE_COLOR_MAPPING["5-7"];
-  else if (age <= 9) ageAppropriateColors = AGE_COLOR_MAPPING["7-9"];
-  else if (age <= 11) ageAppropriateColors = AGE_COLOR_MAPPING["9-11"];
-  else ageAppropriateColors = AGE_COLOR_MAPPING["11-15"];
-  
-  // Get difficulty-appropriate colors
-  const difficultyColors = DIFFICULTY_COLOR_MAPPING[difficulty];
-  
-  // Find intersection of age-appropriate and difficulty-appropriate colors
-  const appropriateColors = ageAppropriateColors.filter(color => 
-    difficultyColors.includes(color)
-  );
-  
-  // If no intersection, prioritize age-appropriateness
-  const finalColors = appropriateColors.length > 0 ? appropriateColors : ageAppropriateColors;
-  
-  // Select random color from appropriate list
-  const selectedColor = finalColors[Math.floor(Math.random() * finalColors.length)];
+  // Select random color from all available voices
+  // System prompts will handle age-appropriate content adaptation
+  const selectedColor = ALL_COLOR_KEYS[Math.floor(Math.random() * ALL_COLOR_KEYS.length)];
   
   return COLOR_VOICES[selectedColor];
 }
 
 /**
- * Get appropriate story style for difficulty level (backward compatibility)
+ * Get appropriate story style for difficulty level (now selects from all colors)
+ * Content difficulty is handled by system prompts, not color restrictions
  */
 export function getAuthorVoiceForDifficulty(difficulty: DifficultyLevel): ColorVoice {
-  const availableColors = DIFFICULTY_COLOR_MAPPING[difficulty];
-  const selectedColor = availableColors[Math.floor(Math.random() * availableColors.length)];
+  // Select random color from all available voices
+  // System prompts will handle difficulty-appropriate content adaptation
+  const selectedColor = ALL_COLOR_KEYS[Math.floor(Math.random() * ALL_COLOR_KEYS.length)];
   return COLOR_VOICES[selectedColor];
 }
 
