@@ -8,7 +8,7 @@ import { EnhancedFallbackManager } from '@/constants/enhancedFallbackTemplates';
 import { ErrorHandler } from '@/utils/errorHandling';
 import { InputSanitizer } from '@/utils/inputSanitizer';
 import { DiagnosticTool } from '@/utils/diagnostics';
-import { getAuthorVoiceForUser, applyAuthorVoice } from '@/constants/authorVoicePatterns';
+import { getColorVoiceForUser, applyAuthorVoice } from '@/constants/authorVoicePatterns';
 import { APP_CONFIG } from '@/config/appConfig';
 
 export interface NetflixStoryResult {
@@ -76,7 +76,7 @@ let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, {
       // Append author voice preferred themes as a gentle hint
       try {
         if ((APP_CONFIG as any)?.features?.authorVoice?.deepeningEnabled) {
-          const voice = getAuthorVoiceForUser(userInfo, difficulty);
+          const voice = getColorVoiceForUser(userInfo, difficulty);
           if (voice?.preferredThemes?.length) {
             userPrompt = `${userPrompt}\n\nPrefer themes: ${voice.preferredThemes.slice(0, 3).join(', ')}.`;
           }
@@ -164,7 +164,7 @@ let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, {
           let pagesOut = filteredPages;
           try {
             if ((APP_CONFIG as any)?.features?.authorVoice?.deepeningEnabled) {
-              const voice = getAuthorVoiceForUser(userInfo, difficulty);
+              const voice = getColorVoiceForUser(userInfo, difficulty);
               const applyOn = (APP_CONFIG as any).features.authorVoice.applyOn;
               pagesOut = filteredPages.map((p: string, idx: number) => {
                 const isFirst = idx === 0;
@@ -230,7 +230,7 @@ let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, {
       let pagesOut = pages;
       try {
         if ((APP_CONFIG as any)?.features?.authorVoice?.deepeningEnabled) {
-          const voice = getAuthorVoiceForUser(userInfo, difficulty);
+          const voice = getColorVoiceForUser(userInfo, difficulty);
           const applyOn = (APP_CONFIG as any).features.authorVoice.applyOn;
           pagesOut = pages.map((p: string, idx: number) => {
             const isFirst = idx === 0;

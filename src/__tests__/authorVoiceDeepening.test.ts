@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { applyAuthorVoice, getAuthorVoiceForUser } from "@/constants/authorVoicePatterns";
+import { applyAuthorVoice, getColorVoiceForUser } from "@/constants/authorVoicePatterns";
 import type { UserInfo } from "@/types";
 
 const user: UserInfo = {
@@ -19,7 +19,7 @@ const user: UserInfo = {
 
 describe("authorVoiceDeepening", () => {
   it("applies voice pattern without leaking placeholders", () => {
-    const voice = getAuthorVoiceForUser(user, "medium");
+    const voice = getColorVoiceForUser(user, "medium");
     const content = "Avery walked to the park. It was a sunny day.";
     const out = applyAuthorVoice(content, voice, "opening");
     expect(out.length).toBeGreaterThan(0);

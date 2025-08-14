@@ -7,7 +7,7 @@ import { getStoryPrompt, getExpertStoryPrompt, formatUserPrompt } from '@/config
 import { EnhancedFallbackManager } from '@/constants/enhancedFallbackTemplates';
 import { ErrorHandler } from '@/utils/errorHandling';
 import { ExpertDifficultyManager } from '@/services/expertDifficultyManager';
-import { getAuthorVoiceForUser, applyAuthorVoice } from '@/constants/authorVoicePatterns';
+import { getColorVoiceForUser, applyAuthorVoice } from '@/constants/authorVoicePatterns';
 import { APP_CONFIG } from '@/config/appConfig';
 
 export interface LiveGenerationContext {
@@ -68,7 +68,7 @@ let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, userInfo);
       // Append author voice preferred themes as a gentle hint
       try {
         if ((APP_CONFIG as any)?.features?.authorVoice?.deepeningEnabled) {
-          const voice = getAuthorVoiceForUser(userInfo, difficulty);
+          const voice = getColorVoiceForUser(userInfo, difficulty);
           if (voice?.preferredThemes?.length) {
             userPrompt = `${userPrompt}\n\nPrefer themes: ${voice.preferredThemes.slice(0, 3).join(', ')}.`;
           }
@@ -127,7 +127,7 @@ let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, userInfo);
       let contentOut = content;
       try {
         if ((APP_CONFIG as any)?.features?.authorVoice?.deepeningEnabled) {
-          const voice = getAuthorVoiceForUser(userInfo, difficulty);
+          const voice = getColorVoiceForUser(userInfo, difficulty);
           const applyOn = (APP_CONFIG as any).features.authorVoice.applyOn;
           contentOut = applyAuthorVoice(content, voice, applyOn.first);
         }
@@ -178,7 +178,7 @@ let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.u
       // Append author voice preferred themes as a gentle hint
       try {
         if ((APP_CONFIG as any)?.features?.authorVoice?.deepeningEnabled) {
-          const voice = getAuthorVoiceForUser(context.userInfo, context.difficulty);
+          const voice = getColorVoiceForUser(context.userInfo, context.difficulty);
           if (voice?.preferredThemes?.length) {
             baseUserPrompt = `${baseUserPrompt}\n\nPrefer themes: ${voice.preferredThemes.slice(0, 3).join(', ')}.`;
           }
@@ -235,7 +235,7 @@ let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.u
       let contentOut = content;
       try {
         if ((APP_CONFIG as any)?.features?.authorVoice?.deepeningEnabled) {
-          const voice = getAuthorVoiceForUser(context.userInfo, context.difficulty);
+          const voice = getColorVoiceForUser(context.userInfo, context.difficulty);
           const applyOn = (APP_CONFIG as any).features.authorVoice.applyOn;
           const position = shouldConclude ? applyOn.last : applyOn.middle;
           contentOut = applyAuthorVoice(content, voice, position);
@@ -283,7 +283,7 @@ let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.u
       // Append author voice preferred themes as a gentle hint
       try {
         if ((APP_CONFIG as any)?.features?.authorVoice?.deepeningEnabled) {
-          const voice = getAuthorVoiceForUser(context.userInfo, context.difficulty);
+          const voice = getColorVoiceForUser(context.userInfo, context.difficulty);
           if (voice?.preferredThemes?.length) {
             baseUserPrompt = `${baseUserPrompt}\n\nPrefer themes: ${voice.preferredThemes.slice(0, 3).join(', ')}.`;
           }
@@ -328,7 +328,7 @@ let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.u
       let contentOut = content;
       try {
         if ((APP_CONFIG as any)?.features?.authorVoice?.deepeningEnabled) {
-          const voice = getAuthorVoiceForUser(context.userInfo, context.difficulty);
+          const voice = getColorVoiceForUser(context.userInfo, context.difficulty);
           const applyOn = (APP_CONFIG as any).features.authorVoice.applyOn;
           contentOut = applyAuthorVoice(content, voice, applyOn.last);
         }

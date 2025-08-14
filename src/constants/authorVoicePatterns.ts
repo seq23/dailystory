@@ -1,8 +1,8 @@
-// Story Voice Patterns - 10 Author Styles for Educational Reading
+// Color-Based Story Voice Patterns for Never-Ending Stories
 import type { DifficultyLevel, UserInfo } from "@/types";
 import { resolveMicroPlaceholders } from "@/utils/placeholderResolver";
 
-export interface AuthorVoice {
+export interface ColorVoice {
   name: string;
   description: string;
   ageRange: string;
@@ -13,11 +13,13 @@ export interface AuthorVoice {
   };
   characteristics: string[];
   preferredThemes?: string[];
+  styleSummary: string;
+  sampleMicroLines: string[];
 }
 
-export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
-  ericCarleRed: {
-    name: "Eric Carle Style",
+export const COLOR_VOICES: Record<string, ColorVoice> = {
+  red: {
+    name: "Red Voice",
     description: "Simple, rhythmic text with bright imagery and nature themes. Growth and transformation stories.",
     ageRange: "3-5",
     patterns: {
@@ -39,7 +41,28 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
         "Soon, the {animal} showed a new path.",
         "Step by step, everything changed colors.",
         "And then a friendly {animal} waved hello.",
-        "Little by little, {userName} learned more."
+        "Little by little, {userName} learned more.",
+        "The sun painted new patterns on leaves.",
+        "A gentle breeze carried sweet scents.",
+        "Slowly, the world grew brighter around {pronoun}.",
+        "Each step brought a new discovery.",
+        "The garden seemed to whisper secrets.",
+        "Colors danced before {userName}'s eyes.",
+        "Something magical was about to happen.",
+        "The earth felt warm beneath {pronoun} feet.",
+        "A new season was beginning to bloom.",
+        "Petals floated down like tiny wishes.",
+        "The morning dew sparkled like diamonds.",
+        "Every flower seemed to nod hello.",
+        "Time moved as slowly as honey.",
+        "Nature held {userName} in its gentle arms.",
+        "The world pulsed with quiet life.",
+        "Another wonderful day was unfolding.",
+        "Peace settled over the growing garden.",
+        "The cycle of life continued its dance.",
+        "Everything felt perfectly in place.",
+        "A new chapter was ready to begin.",
+        "The rhythm of growth never stopped."
       ],
       closings: [
         "And {userName} was a beautiful {animal}!",
@@ -53,11 +76,18 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
       ]
     },
     characteristics: ["simple repetition", "nature themes", "transformation", "growth"],
-    preferredThemes: ["nature", "growth", "curiosity", "discovery"]
+    preferredThemes: ["nature", "growth", "curiosity", "discovery"],
+    styleSummary: "Gentle, nature-focused voice with simple rhythmic patterns. Emphasizes growth, transformation, and curiosity through bright natural imagery.",
+    sampleMicroLines: [
+      "Step by step, everything changed colors.",
+      "The garden seemed to whisper secrets.",
+      "Pop! Out came something wonderful...",
+      "Little by little, {userName} learned more."
+    ]
   },
 
-  sandraBoyntonYellow: {
-    name: "Sandra Boynton Style", 
+  yellow: {
+    name: "Yellow Voice", 
     description: "Playful, rhyming stories with humor and charm, often featuring anthropomorphic animals.",
     ageRange: "3-5",
     patterns: {
@@ -79,7 +109,28 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
         "Round and round and giggle around!",
         "Oink and moo and cock-a-doodle-doo!",
         "Time for snacks and silly snorts!",
-        "More giggles, more wiggles!"
+        "More giggles, more wiggles!",
+        "Bounce bounce bounce to the silly song!",
+        "Wiggle your {body part}, shake your {body part}!",
+        "Hip hip hooray for playtime!",
+        "Tickle tickle goes the fuzzy {animal}!",
+        "Zoom zoom zoom around the yard!",
+        "Splish splash splash in the puddles!",
+        "Clap clap clap with happy hands!",
+        "Silly sounds and silly faces!",
+        "Jump jump jump like a bouncy ball!",
+        "Peek-a-boo! I see you too!",
+        "Waddle like a happy duck!",
+        "Giggle snorts and snorty giggles!",
+        "Twirl and whirl and spin around!",
+        "Fuzzy wuzzy wasn't fuzzy, was {pronoun}?",
+        "Beep beep goes the busy bee!",
+        "Silly silly silly billy!",
+        "Dance party in the barnyard!",
+        "Wobbly wobbly like jelly!",
+        "Ring around the rosie time!",
+        "Giggles echoed everywhere!",
+        "What a wonderfully wacky day!"
       ],
       closings: [
         "The end! (But not really the end.)",
@@ -93,11 +144,18 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
       ]
     },
     characteristics: ["silly", "bouncy", "animals", "humor", "rhyming"],
-    preferredThemes: ["animals", "friendship", "playfulness", "humor"]
+    preferredThemes: ["animals", "friendship", "playfulness", "humor"],
+    styleSummary: "Playful, bouncy voice with silly rhymes and humor. Features anthropomorphic animals and repetitive, joyful language.",
+    sampleMicroLines: [
+      "But wait! There's more fun to be had!",
+      "Round and round and giggle around!",
+      "Bounce bounce bounce to the silly song!",
+      "What a wonderfully wacky day!"
+    ]
   },
 
-  moWillemsGreen: {
-    name: "Mo Willems Style",
+  green: {
+    name: "Green Voice",
     description: "Minimalist dialogue, expressive illustrations, and humor that resonates with both kids and adults.",
     ageRange: "5-7",
     patterns: {
@@ -119,7 +177,28 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
         "They took a deep breath and tried again.",
         "Maybe there was another way to think about this.",
         "'{userName},' said the wise friend, 'listen carefully.'",
-        "And then... everything changed."
+        "And then... everything changed.",
+        "Feelings are complicated sometimes.",
+        "'{userName}, what do you think we should do?'",
+        "That made {userName} stop and think.",
+        "Maybe they could figure this out together.",
+        "The big problem suddenly seemed smaller.",
+        "'Oh!' said {userName}. 'I understand now!'",
+        "Sometimes friends see things differently.",
+        "That gave {userName} a new idea to try.",
+        "'{userName},' said {friend}, 'I have an idea.'",
+        "They looked at each other and smiled.",
+        "The answer was simpler than they thought.",
+        "Maybe the real problem was something else.",
+        "'{userName}, can you help me understand?'",
+        "That's when everything started to make sense.",
+        "They decided to be brave together.",
+        "The feeling in {pronoun} chest was getting better.",
+        "Maybe being different wasn't so bad after all.",
+        "'{userName}, you're really good at this!'",
+        "And that's when {pronoun} realized something important.",
+        "Friends make everything better, don't they?",
+        "The hard part was almost over."
       ],
       closings: [
         "And they both laughed and laughed.",
@@ -133,11 +212,18 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
       ]
     },
     characteristics: ["emotional honesty", "friendship", "simple dialogue", "problem solving"],
-    preferredThemes: ["friendship", "kindness", "empathy", "problem-solving"]
+    preferredThemes: ["friendship", "kindness", "empathy", "problem-solving"],
+    styleSummary: "Emotionally honest voice with simple dialogue and problem-solving focus. Emphasizes friendship, feelings, and working through challenges together.",
+    sampleMicroLines: [
+      "But then something important happened.",
+      "Maybe there was another way to think about this.",
+      "And then... everything changed.",
+      "Friends make everything better, don't they?"
+    ]
   },
 
-  arnoldLobelPurple: {
-    name: "Arnold Lobel Style",
+  purple: {
+    name: "Purple Voice",
     description: "Gentle, whimsical tales with friendship and moral undertones.",
     ageRange: "5-7",
     patterns: {
@@ -159,7 +245,27 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
         "Friends can help each other in surprising ways.",
         "They discovered that working together was better.",
         "The two friends learned something valuable.",
-        "And so they set off on their gentle adventure."
+        "And so they set off on their gentle adventure.",
+        "The afternoon sun painted everything golden.",
+        "They walked slowly, savoring each moment.",
+        "A gentle breeze carried the scent of flowers.",
+        "The season whispered promises of change.",
+        "Hand in hand, they explored the quiet path.",
+        "Time seemed to slow down just for them.",
+        "Nature welcomed their peaceful friendship.",
+        "They shared stories as soft as morning light.",
+        "Each step brought a new small wonder.",
+        "The world felt safe and full of kindness.",
+        "Their friendship bloomed like spring flowers.",
+        "Together they discovered hidden treasures.",
+        "The forest held its breath in gentle reverence.",
+        "They moved with the unhurried grace of seasons.",
+        "Simple moments became precious memories.",
+        "Their hearts were as light as autumn leaves.",
+        "The path ahead sparkled with possibility.",
+        "They learned the wisdom of going slowly.",
+        "Peace settled around them like a warm blanket.",
+        "The day unfolded like a gentle story."
       ],
       closings: [
         "And so their friendship grew even stronger.",
@@ -173,11 +279,18 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
       ]
     },
     characteristics: ["gentle wisdom", "friendship", "seasonal themes", "quiet adventures"],
-    preferredThemes: ["friendship", "nature", "seasons", "quiet wisdom"]
+    preferredThemes: ["friendship", "nature", "seasons", "quiet wisdom"],
+    styleSummary: "Gentle, whimsical voice with friendship and seasonal themes. Emphasizes quiet wisdom, shared adventures, and the beauty of simple moments.",
+    sampleMicroLines: [
+      "Together, they decided to try something new.",
+      "The afternoon sun painted everything golden.",
+      "Time seemed to slow down just for them.",
+      "Simple moments became precious memories."
+    ]
   },
 
-  beverlyClearyOrange: {
-    name: "Beverly Cleary Style",
+  orange: {
+    name: "Orange Voice",
     description: "Relatable everyday adventures, realistic dialogue, and themes of friendship, family, and school life.",
     ageRange: "7-9",
     patterns: {
@@ -199,7 +312,27 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
         "So {userName} made a quick change and kept going.",
         "Of course, {friend} had a different opinion.",
         "They had to ask for help—and that was okay.",
-        "A clever solution saved the day."
+        "A clever solution saved the day.",
+        "Mom called from the kitchen with perfect timing.",
+        "The mess looked worse than it actually was.",
+        "Somehow, the disaster turned into something better.",
+        "{userName} remembered what Dad always said.",
+        "The phone rang at exactly the right moment.",
+        "It was one of those days when everything goes wrong.",
+        "But {userName} had dealt with worse before.",
+        "A quick text to {friend} changed everything.",
+        "The homework could wait—this was more important.",
+        "Sometimes the best plans are no plans at all.",
+        "Family dinner conversations never go as expected.",
+        "The real test was how {userName} handled it.",
+        "Mom's advice from last week suddenly made sense.",
+        "It was time to try a completely different approach.",
+        "The clock on the wall seemed to tick louder.",
+        "This was definitely going to be a good story later.",
+        "At least it wasn't as bad as last Tuesday.",
+        "The important thing was that everyone was okay.",
+        "Some days you just have to laugh at the chaos.",
+        "Tomorrow would definitely be a fresh start."
       ],
       closings: [
         "And {userName} learned that growing up means making mistakes.",
@@ -213,11 +346,18 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
       ]
     },
     characteristics: ["realistic", "family life", "humor", "relatability", "everyday adventures"],
-    preferredThemes: ["family", "school", "humor", "resilience", "growing up"]
+    preferredThemes: ["family", "school", "humor", "resilience", "growing up"],
+    styleSummary: "Realistic, relatable voice focusing on everyday family and school adventures. Emphasizes humor, resilience, and the ordinary magic of growing up.",
+    sampleMicroLines: [
+      "Of course, things didn't go smoothly.",
+      "As usual, life was more complicated than expected.",
+      "Mom called from the kitchen with perfect timing.",
+      "Tomorrow would definitely be a fresh start."
+    ]
   },
 
-  roaldDahlPink: {
-    name: "Roald Dahl Style",
+  pink: {
+    name: "Pink Voice",
     description: "Imaginative, often dark humor, quirky characters, and playful language.",
     ageRange: "7-9",
     patterns: {
@@ -253,11 +393,18 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
       ]
     },
     characteristics: ["imaginative", "quirky", "playful language", "empowerment", "mischief"],
-    preferredThemes: ["magic", "empowerment", "overcoming bullies", "imagination"]
+    preferredThemes: ["magic", "empowerment", "overcoming bullies", "imagination"],
+    styleSummary: "Imaginative, mischievous voice with quirky characters and playful language. Emphasizes empowerment, magic, and turning the tables on bullies.",
+    sampleMicroLines: [
+      "But then, something absolutely extraordinary happened!",
+      "The most wonderfully wicked idea popped into {userName}'s head!",
+      "What happened next was simply astounding!",
+      "And from that day forward, {userName} was never underestimated again!"
+    ]
   },
 
-  rickRiordanNavyBlue: {
-    name: "Rick Riordan Style",
+  "navy-blue": {
+    name: "Navy Blue Voice",
     description: "Fast-paced adventures with witty banter, quest structures, and mythological elements blended into modern settings.",
     ageRange: "9-11",
     patterns: {
@@ -293,11 +440,18 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
       ]
     },
     characteristics: ["fast-paced", "heroic quests", "witty dialogue", "modern mythology", "coming of age"],
-    preferredThemes: ["adventure", "mythology", "friendship", "courage", "identity"]
+    preferredThemes: ["adventure", "mythology", "friendship", "courage", "identity"],
+    styleSummary: "Fast-paced adventure voice with heroic quests and witty dialogue. Blends modern settings with mythological elements and coming-of-age themes.",
+    sampleMicroLines: [
+      "That's when {userName} realized this wasn't going to be easy.",
+      "Time slowed down as {userName} focused {pronoun} power.",
+      "The fate of both worlds hung in the balance.",
+      "Sometimes saving the world is just another Tuesday."
+    ]
   },
 
-  jkRowlingCopper: {
-    name: "J.K. Rowling Style",
+  copper: {
+    name: "Copper Voice",
     description: "Richly imagined fantasy worlds, layered plots, and a balance of mystery, action, and character growth.",
     ageRange: "9-11",
     patterns: {
@@ -319,7 +473,27 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
         "Together with {friends}, {userName} devised a clever plan.",
         "The prophecy spoke of a chosen one, and {userName} was beginning to understand.",
         "Dark forces were gathering, but {userName} was not alone.",
-        "The final confrontation would test everything {userName} had learned."
+        "The final confrontation would test everything {userName} had learned.",
+        "Ancient magic hummed in the very stones of the castle.",
+        "The portrait whispered secrets of ages past.",
+        "Candlelight flickered across dusty spell books.",
+        "Something stirred in the depths of the forbidden forest.",
+        "The map revealed passages that shouldn't exist.",
+        "A door appeared where none had been before.",
+        "The mirror showed not reflection, but truth.",
+        "Footsteps echoed in corridors that time forgot.",
+        "The sorting hat murmured words of warning.",
+        "Stars aligned in patterns that defied explanation.",
+        "The wand chose its wizard, as wands often do.",
+        "Legacy and destiny intertwined like golden threads.",
+        "The library held more than books within its walls.",
+        "Ghosts drifted through walls with urgent messages.",
+        "The great hall fell silent as power awakened.",
+        "Spells crackled through the air like captured lightning.",
+        "The headmaster's eyes twinkled with hidden knowledge.",
+        "Time itself seemed to bend around the ancient magic.",
+        "The phoenix song carried hope on gilded wings.",
+        "Courage and friendship proved stronger than dark magic."
       ],
       closings: [
         "And {userName} understood that the greatest magic of all was {love/friendship}.",
@@ -333,11 +507,18 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
       ]
     },
     characteristics: ["rich world-building", "mystery", "character growth", "magical realism", "friendship"],
-    preferredThemes: ["magic", "friendship", "good vs evil", "identity", "courage"]
+    preferredThemes: ["magic", "friendship", "good vs evil", "identity", "courage"],
+    styleSummary: "Rich, magical voice with layered mysteries and character growth. Emphasizes the balance between magic and friendship, with deep world-building elements.",
+    sampleMicroLines: [
+      "The mystery deepened as {userName} uncovered ancient secrets.",
+      "Ancient magic hummed in the very stones of the castle.",
+      "The wand chose its wizard, as wands often do.",
+      "Courage and friendship proved stronger than dark magic."
+    ]
   },
 
-  suzanneCollinsSlateGray: {
-    name: "Suzanne Collins Style",
+  "slate-gray": {
+    name: "Slate Gray Voice",
     description: "Tense, action-driven narratives with high stakes and themes of survival, sacrifice, and societal conflict.",
     ageRange: "11-15",
     patterns: {
@@ -373,11 +554,18 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
       ]
     },
     characteristics: ["high stakes", "survival themes", "social commentary", "complex morality", "coming of age"],
-    preferredThemes: ["survival", "justice", "sacrifice", "rebellion", "hope"]
+    preferredThemes: ["survival", "justice", "sacrifice", "rebellion", "hope"],
+    styleSummary: "Intense, high-stakes voice with survival themes and complex morality. Emphasizes sacrifice, justice, and the cost of freedom in times of conflict.",
+    sampleMicroLines: [
+      "But {userName} had learned to adapt, to survive.",
+      "The stakes were higher than {userName} had ever imagined.",
+      "Sacrifice was the only currency that mattered now.",
+      "And {userName} realized that winning wasn't about defeating enemies—it was about saving souls."
+    ]
   },
 
-  madeleinelengleTeal: {
-    name: "Madeleine L'Engle Style",
+  teal: {
+    name: "Teal Voice",
     description: "Philosophical, imaginative stories blending science, faith, and coming-of-age themes.",
     ageRange: "11-15",
     patterns: {
@@ -413,67 +601,74 @@ export const AUTHOR_VOICES: Record<string, AuthorVoice> = {
       ]
     },
     characteristics: ["philosophical", "scientific", "spiritual", "cosmic scope", "deep themes"],
-    preferredThemes: ["love", "science", "faith", "family", "cosmic adventure"]
+    preferredThemes: ["love", "science", "faith", "family", "cosmic adventure"],
+    styleSummary: "Philosophical, cosmic voice blending science and spirituality. Emphasizes love as a universal force, deep themes, and the interconnectedness of all existence.",
+    sampleMicroLines: [
+      "The journey through space and time had only just begun.",
+      "Faith and science, {userName} discovered, were not enemies but allies.",
+      "Tessering required not just courage, but absolute trust in love.",
+      "And {userName} understood that love was the fabric that held the universe together."
+    ]
   }
 };
 
-// Age-based style mapping for the 10 author system
-export const AGE_AUTHOR_MAPPING: Record<string, string[]> = {
-  "3-5": ["ericCarleRed", "sandraBoyntonYellow"],
-  "5-7": ["moWillemsGreen", "arnoldLobelPurple"],
-  "7-9": ["beverlyClearyOrange", "roaldDahlPink"],
-  "9-11": ["rickRiordanNavyBlue", "jkRowlingCopper"],
-  "11-15": ["suzanneCollinsSlateGray", "madeleinelengleTeal"]
+// Age-based color mapping
+export const AGE_COLOR_MAPPING: Record<string, string[]> = {
+  "3-5": ["red", "yellow"],
+  "5-7": ["green", "purple"],
+  "7-9": ["orange", "pink"],
+  "9-11": ["navy-blue", "copper"],
+  "11-15": ["slate-gray", "teal"]
 };
 
-// Difficulty-based style mapping
-export const DIFFICULTY_VOICE_MAPPING: Record<DifficultyLevel, string[]> = {
-  beginner: ["ericCarleRed", "sandraBoyntonYellow"],
-  easy: ["moWillemsGreen", "arnoldLobelPurple"],
-  medium: ["beverlyClearyOrange", "roaldDahlPink"],
-  hard: ["rickRiordanNavyBlue", "jkRowlingCopper"],
-  expert: ["suzanneCollinsSlateGray", "madeleinelengleTeal"]
+// Difficulty-based color mapping
+export const DIFFICULTY_COLOR_MAPPING: Record<DifficultyLevel, string[]> = {
+  beginner: ["red", "yellow"],
+  easy: ["green", "purple"],
+  medium: ["orange", "pink"],
+  hard: ["navy-blue", "copper"],
+  expert: ["slate-gray", "teal"]
 };
 
 /**
- * Get appropriate story style for user age and difficulty level
+ * Get appropriate color voice for user age and difficulty level
  */
-export function getAuthorVoiceForUser(userInfo: UserInfo, difficulty: DifficultyLevel): AuthorVoice {
+export function getColorVoiceForUser(userInfo: UserInfo, difficulty: DifficultyLevel): ColorVoice {
   const age = userInfo.age;
   
-  // Find age-appropriate patterns
-  let ageAppropriateAuthors: string[] = [];
+  // Find age-appropriate colors
+  let ageAppropriateColors: string[] = [];
   
-  if (age <= 5) ageAppropriateAuthors = AGE_AUTHOR_MAPPING["3-5"];
-  else if (age <= 7) ageAppropriateAuthors = AGE_AUTHOR_MAPPING["5-7"];
-  else if (age <= 9) ageAppropriateAuthors = AGE_AUTHOR_MAPPING["7-9"];
-  else if (age <= 11) ageAppropriateAuthors = AGE_AUTHOR_MAPPING["9-11"];
-  else ageAppropriateAuthors = AGE_AUTHOR_MAPPING["11-15"];
+  if (age <= 5) ageAppropriateColors = AGE_COLOR_MAPPING["3-5"];
+  else if (age <= 7) ageAppropriateColors = AGE_COLOR_MAPPING["5-7"];
+  else if (age <= 9) ageAppropriateColors = AGE_COLOR_MAPPING["7-9"];
+  else if (age <= 11) ageAppropriateColors = AGE_COLOR_MAPPING["9-11"];
+  else ageAppropriateColors = AGE_COLOR_MAPPING["11-15"];
   
-  // Get difficulty-appropriate patterns
-  const difficultyAuthors = DIFFICULTY_VOICE_MAPPING[difficulty];
+  // Get difficulty-appropriate colors
+  const difficultyColors = DIFFICULTY_COLOR_MAPPING[difficulty];
   
-  // Find intersection of age-appropriate and difficulty-appropriate patterns
-  const appropriateAuthors = ageAppropriateAuthors.filter(author => 
-    difficultyAuthors.includes(author)
+  // Find intersection of age-appropriate and difficulty-appropriate colors
+  const appropriateColors = ageAppropriateColors.filter(color => 
+    difficultyColors.includes(color)
   );
   
   // If no intersection, prioritize age-appropriateness
-  const finalAuthors = appropriateAuthors.length > 0 ? appropriateAuthors : ageAppropriateAuthors;
+  const finalColors = appropriateColors.length > 0 ? appropriateColors : ageAppropriateColors;
   
-  // Select random pattern from appropriate list
-  const selectedAuthor = finalAuthors[Math.floor(Math.random() * finalAuthors.length)];
+  // Select random color from appropriate list
+  const selectedColor = finalColors[Math.floor(Math.random() * finalColors.length)];
   
-  return AUTHOR_VOICES[selectedAuthor];
+  return COLOR_VOICES[selectedColor];
 }
 
 /**
  * Get appropriate story style for difficulty level (backward compatibility)
  */
-export function getAuthorVoiceForDifficulty(difficulty: DifficultyLevel): AuthorVoice {
-  const availableVoices = DIFFICULTY_VOICE_MAPPING[difficulty];
-  const selectedVoice = availableVoices[Math.floor(Math.random() * availableVoices.length)];
-  return AUTHOR_VOICES[selectedVoice];
+export function getAuthorVoiceForDifficulty(difficulty: DifficultyLevel): ColorVoice {
+  const availableColors = DIFFICULTY_COLOR_MAPPING[difficulty];
+  const selectedColor = availableColors[Math.floor(Math.random() * availableColors.length)];
+  return COLOR_VOICES[selectedColor];
 }
 
 /**
@@ -481,7 +676,7 @@ export function getAuthorVoiceForDifficulty(difficulty: DifficultyLevel): Author
  */
 export function applyAuthorVoice(
   content: string,
-  voice: AuthorVoice,
+  voice: ColorVoice,
   position: 'opening' | 'transition' | 'closing'
 ): string {
   // If content is already author-voice styled or very short, return as is
@@ -512,7 +707,7 @@ export function applyAuthorVoice(
 /**
  * Check if content already has story style styling
  */
-function isAlreadyStyledContent(content: string, voice: AuthorVoice): boolean {
+function isAlreadyStyledContent(content: string, voice: ColorVoice): boolean {
   const voiceIndicators = [
     ...voice.patterns.openings,
     ...voice.patterns.transitions, 
@@ -567,7 +762,7 @@ function substitutePatternVariables(
 /**
  * Apply opening enhancement with voice characteristics
  */
-function enhanceOpeningWithVoice(content: string, styledPattern: string, voice: AuthorVoice): string {
+function enhanceOpeningWithVoice(content: string, styledPattern: string, voice: ColorVoice): string {
   if (voice.characteristics.includes('rhythmic') || voice.characteristics.includes('repetition')) {
     return `${styledPattern} ${content}`;
   }
@@ -577,7 +772,7 @@ function enhanceOpeningWithVoice(content: string, styledPattern: string, voice: 
 /**
  * Apply closing enhancement with voice characteristics
  */
-function enhanceClosingWithVoice(content: string, styledPattern: string, voice: AuthorVoice): string {
+function enhanceClosingWithVoice(content: string, styledPattern: string, voice: ColorVoice): string {
   if (voice.characteristics.includes('gentle') || voice.characteristics.includes('wisdom')) {
     return `${content} ${styledPattern}`;
   }
@@ -587,7 +782,7 @@ function enhanceClosingWithVoice(content: string, styledPattern: string, voice: 
 /**
  * Apply transition enhancement with voice characteristics
  */
-function enhanceTransitionWithVoice(content: string, styledPattern: string, voice: AuthorVoice): string {
+function enhanceTransitionWithVoice(content: string, styledPattern: string, voice: ColorVoice): string {
   if (voice.characteristics.includes('fast-paced') || voice.characteristics.includes('action')) {
     return `${styledPattern} ${content}`;
   }
