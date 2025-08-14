@@ -154,16 +154,22 @@ export class SimpleImageService {
       let negativePrompt: string;
 
       if (difficultyLevel === 'beginner') {
-        // Level 0 bypass: Use DirectContentExtractor for simple 2-4 word sentences
-        console.log('🎨 Level 0: Using simplified content extraction');
+        // Level 0 enhanced: Use AI-enhanced DirectContentExtractor for richer visuals
+        console.log('🎨 Level 0: Using AI-enhanced content extraction');
         
-        const pageContent = DirectContentExtractor.extractPageContent(storyText);
+        const pageContent = await DirectContentExtractor.enhancePageContent(storyText);
         const baseStyle = DIFFICULTY_STYLE_MAPPING['beginner'].prompt;
         const brandSuffix = "with magical sparkles and floating creatures, warm magical lighting, whimsical fantasy atmosphere, contemporary children's book art style, diverse and inclusive, safe wholesome content, high quality professional artwork";
         
-        // Build scene-specific prompt
+        // Build scene-specific prompt with enhanced details
         const sceneElements = [];
-        if (pageContent.subject) sceneElements.push(`showing a friendly ${pageContent.subject}`);
+        
+        // Add subject with descriptors
+        const subjectWithDescriptor = pageContent.descriptor 
+          ? `${pageContent.descriptor} ${pageContent.subject}`
+          : `friendly ${pageContent.subject}`;
+        sceneElements.push(`showing a ${subjectWithDescriptor}`);
+        
         if (pageContent.action) sceneElements.push(`${pageContent.action}`);
         if (pageContent.object) sceneElements.push(`with ${pageContent.object}`);
         if (pageContent.location) sceneElements.push(`in a ${pageContent.location}`);

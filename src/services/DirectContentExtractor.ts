@@ -19,6 +19,9 @@ export interface DirectImagePrompt {
 }
 
 export class DirectContentExtractor {
+  private static aiCache = new Map<string, PageContent>();
+  private static readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+  
   private static readonly SIMPLE_SUBJECTS = [
     'cat', 'dog', 'bird', 'fish', 'bear', 'rabbit', 'mouse', 'elephant', 'lion', 'tiger',
     'sally', 'tom', 'sam', 'alex', 'emma', 'jack', 'lily', 'ben', 'zoe', 'max',
@@ -224,11 +227,106 @@ export class DirectContentExtractor {
     return subject;
   }
 
+  static async enhancePageContent(pageText: string): Promise<PageContent> {
+    // First try basic extraction
+    const basicContent = this.extractPageContent(pageText);
+    
+    // Check cache first
+    const cacheKey = `${pageText}-enhanced`;
+    const cached = this.aiCache.get(cacheKey);
+    if (cached) {
+      console.log(`🎯 Using cached enhanced content for: "${pageText}"`);
+      return cached;
+    }
+    
+    // Only call AI if basic extraction seems incomplete
+    const needsEnhancement = this.shouldEnhanceWithAI(basicContent, pageText);
+    
+    if (!needsEnhancement) {
+      console.log(`📝 Basic extraction sufficient: "${pageText}"`);
+      return basicContent;
+    }
+    
+    try {
+      console.log(`🤖 Enhancing with AI: "${pageText}"`);
+      const enhanced = await this.enhanceWithAI(pageText, basicContent);
+      
+      // Cache the result
+      this.aiCache.set(cacheKey, enhanced);
+      setTimeout(() => this.aiCache.delete(cacheKey), this.CACHE_DURATION);
+      
+      return enhanced;
+    } catch (error) {
+      console.warn(`⚠️ AI enhancement failed, using basic content:`, error);
+      return basicContent;
+    }
+  }
+
+  private static shouldEnhanceWithAI(content: PageContent, pageText: string): boolean {
+    // Use AI if we're missing key visual elements
+    const hasMinimalVisuals = !content.descriptor && !content.object;
+    const hasColorWords = /\b(red|blue|green|yellow|pink|purple|orange|black|white|bright|dark|colorful)\b/i.test(pageText);
+    const hasDetailWords = /\b(big|small|little|tiny|huge|beautiful|pretty|magical|sparkly|shiny)\b/i.test(pageText);
+    
+    return hasMinimalVisuals || hasColorWords || hasDetailWords;
+  }
+
+  private static async enhanceWithAI(pageText: string, basicContent: PageContent): Promise<PageContent> {
+    const { supabase } = await import('@/integrations/supabase/client');
+    
+    const { data, error } = await supabase.functions.invoke('extract-visual-keywords', {
+      body: {
+        pageText,
+        existingContent: basicContent
+      }
+    });
+
+    if (error) {
+      throw new Error(`AI enhancement failed: ${error.message}`);
+    }
+
+    const { enhancedKeywords } = data;
+    
+    // Merge AI keywords with basic content
+    const enhanced = { ...basicContent };
+    
+    // Add the first descriptor if we don't have one
+    if (!enhanced.descriptor && enhancedKeywords.descriptors.length > 0) {
+      enhanced.descriptor = enhancedKeywords.descriptors[0];
+    }
+    
+    // Add the first object if we don't have one
+    if (!enhanced.object && enhancedKeywords.objects.length > 0) {
+      enhanced.object = enhancedKeywords.objects[0];
+    }
+    
+    // Add atmosphere and colors to descriptor
+    const atmosphereWords = [...enhancedKeywords.colors, ...enhancedKeywords.atmosphere].slice(0, 2);
+    if (atmosphereWords.length > 0) {
+      const additionalDescriptors = atmosphereWords.join(' ');
+      enhanced.descriptor = enhanced.descriptor 
+        ? `${enhanced.descriptor} ${additionalDescriptors}` 
+        : additionalDescriptors;
+    }
+    
+    console.log(`✨ Enhanced content: "${pageText}" →`, enhanced);
+    return enhanced;
+  }
+
   static createSimplePrompt(pageText: string, userInfo: UserInfo): string {
     const content = this.extractPageContent(pageText);
     const prompt = this.generateDirectPrompt(content, userInfo);
     
     console.log(`📝 Direct Content: "${pageText}" → "${prompt.visualPrompt}"`);
+    
+    return prompt.visualPrompt;
+  }
+
+  static async createEnhancedPrompt(pageText: string, userInfo: UserInfo): Promise<string> {
+    const content = await this.enhancePageContent(pageText);
+    const prompt = this.generateDirectPrompt(content, userInfo);
+    
+    console.log(`🎯 Enhanced Content: "${pageText}" → "${prompt.visualPrompt}"`);
     
     return prompt.visualPrompt;
   }
