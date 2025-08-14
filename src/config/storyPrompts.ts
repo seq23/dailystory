@@ -4,6 +4,8 @@
 import type { DifficultyLevel, ExpertGradeLevel, UserInfo } from '@/types';
 import { resolveAllPlaceholders } from '@/utils/placeholderResolver';
 import { extractThemeIntent } from '@/utils/themeIntent';
+import { validateThemesForAge } from '@/utils/ageThemeValidation';
+import { getTokenLimitForDifficulty } from '@/utils/tokenLimitValidator';
 import { APP_CONFIG } from '@/config/appConfig';
 
 export interface StoryPromptConfig {
@@ -34,13 +36,15 @@ CRITICAL RULES:
 - Story continues infinitely unless user requests ending
 - Each sentence must advance the narrative with a natural hook for continuation
 
-Enhanced Level 0 vocabulary (ENHANCED_LEVEL_0_VOCABULARY) preferred, flexible for flow. Aim for a mix of 2-4 letter words and 2-4 word sentences, maximum 6 words per page. Simple present tense.  Always allow {userName}, user inputs.
+Enhanced Level 0 vocabulary (ENHANCED_LEVEL_0_VOCABULARY) preferred, flexible for flow. Aim for a mix of 2-4 letter words and 2-4 word sentences, maximum 6 words per page. Simple present tense. Always allow {userName}, user inputs.
+
+Maximum 200 tokens total. One sentence per page for Level 0.
 
 USER INTEGRATION: {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} are central to the story but weaved naturally. {specialRequest} provides theme and primary creative direction. System prioritizes completely when present.
 
 STYLE: getColorVoiceForUser(userInfo, difficulty) provides secondary direction for stylistic guidance.
 
-GUARDRAILS: G-rated content only. No external personal data. No copyrighted content.
+GUARDRAILS: G-rated content only. Age-appropriate themes for 3-5 year olds. No external personal data. No copyrighted content. Themes must be suitable for preschoolers - focus on friendship, kindness, family, nature, discovery, creativity, learning.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
     userPromptTemplate: `Create a continuing story for {userName}, age 3-5. The story continues indefinitely unless user requests an ending, with narrative hooks for continuation. {specialRequest} provides the primary creative direction. Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} naturally. Use simple vocabulary and 1 sentence per page format for easy reading. Apply color voice styling per user profile.`,
@@ -59,13 +63,15 @@ CRITICAL RULES:
 
 Enhanced Level 1 vocabulary (ENHANCED_LEVEL_1_VOCABULARY) preferred, flexible for flow. Aim for simple sentence structures with grade-appropriate complexity.
 
+Maximum 300 tokens total. 2-3 sentences per page.
+
 USER INTEGRATION: Incorporate {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} naturally into the narrative. Generate age-appropriate alternatives for any missing user inputs.
 
 SPECIAL REQUEST PRIORITY: {specialRequest} provides theme and primary creative direction. System prioritizes completely when present.
 
 AUTHOR VOICE: Apply styling from getColorVoiceForUser(userInfo, difficulty) for narrative tone and pacing. Author voice is secondary to {specialRequest} when themes conflict.
 
-GUARDRAILS: G-rated content only. No external personal data. No copyrighted content.
+GUARDRAILS: G-rated content only. Age-appropriate themes for 5-7 year olds. No external personal data. No copyrighted content. Themes should be suitable for early readers - friendship, teamwork, problem-solving, but avoid complex conflict or romance.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
     userPromptTemplate: `Create a continuing story for {userName}, age 5-7. The story continues indefinitely unless user requests an ending, with narrative hooks for continuation. {specialRequest} provides the primary creative direction. Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} naturally. Use simple vocabulary with 2-3 sentences per page for developing readers. Apply color voice styling per user profile.`,
@@ -84,13 +90,15 @@ CRITICAL RULES:
 
 Enhanced Level 2 vocabulary (ENHANCED_LEVEL_2_VOCABULARY) preferred, flexible for flow. Aim for intermediate sentence structures with expanding complexity.
 
+Maximum 400 tokens total. Natural story flow with appropriate pacing.
+
 USER INTEGRATION: Weave {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} meaningfully into plot development. Generate age-appropriate alternatives for any missing user inputs.
 
 SPECIAL REQUEST PRIORITY: {specialRequest} provides theme and primary creative direction. System prioritizes completely when present.
 
 AUTHOR VOICE: Apply styling from getColorVoiceForUser(userInfo, difficulty) for narrative voice and character development. Author voice is secondary to {specialRequest} when themes conflict.
 
-GUARDRAILS: G-rated content only. No external personal data. No copyrighted content.
+GUARDRAILS: G-rated content only. Age-appropriate themes for 7-9 year olds. No external personal data. No copyrighted content. Themes can include mild adventure, mystery, and growing-up, but avoid romance or complex conflict.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
     userPromptTemplate: `Create an engaging story continuation for {userName}, age 7-9. The story continues indefinitely with natural flow unless user requests an ending. {specialRequest} provides the primary creative direction. Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} meaningfully into the narrative. Let the story dictate its own natural length and pacing. Apply color voice styling per user profile.`,
@@ -109,13 +117,15 @@ CRITICAL RULES:
 
 Enhanced Level 3 vocabulary (ENHANCED_LEVEL_3_VOCABULARY) preferred, flexible for flow. Aim for advanced sentence structures with literary sophistication.
 
+Maximum 600 tokens total. Natural narrative flow with sophisticated pacing.
+
 USER INTEGRATION: Incorporate {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as integral story elements that drive character motivation and plot development. Generate age-appropriate alternatives for any missing user inputs.
 
 SPECIAL REQUEST PRIORITY: {specialRequest} provides theme and primary creative direction. System prioritizes completely when present.
 
 AUTHOR VOICE: Apply styling from getColorVoiceForUser(userInfo, difficulty) for sophisticated narrative voice, pacing, and literary techniques. Author voice is secondary to {specialRequest} when themes conflict.
 
-GUARDRAILS: Age-appropriate content for 9-12 year olds. No external personal data. No copyrighted content.
+GUARDRAILS: Age-appropriate content for 9-12 year olds. No external personal data. No copyrighted content. Themes can include friendship, identity, belonging, mild conflict, and age-appropriate romance, but avoid mature themes.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
     userPromptTemplate: `Create an engaging story continuation for {userName}, age 9-12. The story continues indefinitely with natural rhythm unless user requests an ending. {specialRequest} provides the primary creative direction. Integrate {userName}'s preferences ({favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}) as meaningful story elements. Let the narrative flow organically with sophisticated techniques. Apply color voice styling per user profile.`,
@@ -134,13 +144,15 @@ CRITICAL RULES:
 
 Encourage broad, sophisticated vocabulary use with literary complexity and nuanced expression appropriate for young adult readers.
 
+Maximum 800 tokens total. Literary pacing with thematic depth.
+
 USER INTEGRATION: Transform {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} into symbolic elements that enhance thematic resonance and character complexity. Generate age-appropriate alternatives for any missing user inputs.
 
 SPECIAL REQUEST PRIORITY: {specialRequest} provides theme and primary creative direction. System prioritizes completely when present.
 
 AUTHOR VOICE: Apply styling from getColorVoiceForUser(userInfo, difficulty) for literary sophistication, thematic depth, and advanced narrative techniques. Author voice is secondary to {specialRequest} when themes conflict.
 
-GUARDRAILS: Age-appropriate content for 12-15 year olds with mature themes handled sensitively. No external personal data. No copyrighted content.
+GUARDRAILS: Age-appropriate content for 12-15 year olds with mature themes handled sensitively. No external personal data. No copyrighted content. Themes can include complex identity, moral complexity, and social awareness, but avoid inappropriate content.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
     userPromptTemplate: `Create an engaging story continuation for {userName}, age 12-15. The story continues indefinitely with natural thematic flow unless user requests an ending. {specialRequest} provides the primary creative direction. Transform {userName}'s preferences ({favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}) into meaningful symbolic elements. Let the story develop at its natural pace with sophisticated literary techniques. Apply color voice styling per user profile.`,
