@@ -163,14 +163,15 @@ export class DirectContentExtractor {
       'tall', 'short', 'soft', 'hard', 'smooth', 'rough', 'fun', 'scary', 'bright', 'dark', 'loud', 'quiet'
     ];
     
+    const foundDescriptors: string[] = [];
     for (const word of words) {
       const cleanWord = word.toLowerCase().replace(/[.,!?]/, '');
       if (descriptors.includes(cleanWord)) {
-        return cleanWord;
+        foundDescriptors.push(cleanWord);
       }
     }
     
-    return undefined;
+    return foundDescriptors.length > 0 ? foundDescriptors.join(', ') : undefined;
   }
 
   static generateDirectPrompt(
