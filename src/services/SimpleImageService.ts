@@ -230,7 +230,7 @@ export class SimpleImageService {
         
         const pageContent = await DirectContentExtractor.enhancePageContent(storyText);
         const baseStyle = DIFFICULTY_STYLE_MAPPING['beginner'].prompt;
-        const brandSuffix = "with magical sparkles and floating creatures, warm magical lighting, whimsical fantasy atmosphere, contemporary children's book art style, diverse and inclusive, safe wholesome content, high quality professional artwork";
+        const brandSuffix = "with natural lighting, cheerful atmosphere, contemporary children's book art style, diverse and inclusive, safe wholesome content, high quality professional artwork";
         
         // Build scene-specific prompt with enhanced details
         const sceneElements = [];
@@ -246,7 +246,7 @@ export class SimpleImageService {
         if (pageContent.location) sceneElements.push(`in a ${pageContent.location}`);
         
         positivePrompt = [baseStyle, ...sceneElements, brandSuffix].join(' ');
-        negativePrompt = 'scary, dark, violent, inappropriate, adult content, realistic photography, photorealistic, extra limbs, multiple arms, multiple legs, three legs, extra hands, deformed anatomy, malformed body parts, incorrect anatomy, anatomical errors';
+        negativePrompt = 'scary, dark, violent, inappropriate, adult content, realistic photography, photorealistic, text, words, letters, titles, names, character names, speech bubbles, captions, labels, extra limbs, multiple arms, multiple legs, three legs, extra hands, deformed anatomy, malformed body parts, incorrect anatomy, anatomical errors';
         
       } else {
         // AI-Enhanced analysis for levels 1-4
