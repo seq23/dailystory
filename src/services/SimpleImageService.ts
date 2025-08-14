@@ -21,12 +21,6 @@ export interface ImageResult {
   error?: string;
 }
 
-interface CachedPrompt {
-  positivePrompt: string;
-  negativePrompt: string;
-  timestamp: number;
-  characterData?: any;
-}
 
 export class SimpleImageService {
   private static readonly DEFAULT_CONFIG: ImageGenerationConfig = {
@@ -40,9 +34,6 @@ export class SimpleImageService {
   private static inFlightPerUser: Record<string, number> = {};
   private static recentTimestampsPerUser: Record<string, number[]> = {};
   
-  // Smart final prompt caching
-  private static finalPromptCache: Map<string, CachedPrompt> = new Map();
-  private static readonly CACHE_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
 
   // Tunables
   private static readonly CONCURRENCY_LIMIT = 3; // per user
@@ -77,41 +68,6 @@ export class SimpleImageService {
     try { localStorage.setItem(this.getUsageKey(userKey), JSON.stringify(usage)); } catch {}
   }
 
-  // Final prompt cache management
-  private static getFinalPromptCacheKey(storyText: string, difficultyLevel: DifficultyLevel, pageNumber: number, sessionId: string): string {
-    const textSample = storyText.replace(/\s+/g, ' ').trim().slice(0, 100);
-    return `${textSample}_${difficultyLevel}_${pageNumber}_${sessionId}`;
-  }
-
-  private static getCachedFinalPrompt(cacheKey: string): CachedPrompt | null {
-    const cached = this.finalPromptCache.get(cacheKey);
-    if (!cached) return null;
-    
-    const isExpired = Date.now() - cached.timestamp > this.CACHE_DURATION_MS;
-    if (isExpired) {
-      this.finalPromptCache.delete(cacheKey);
-      return null;
-    }
-    
-    return cached;
-  }
-
-  private static cacheFinalPrompt(cacheKey: string, positivePrompt: string, negativePrompt: string, characterData?: any) {
-    const cached: CachedPrompt = {
-      positivePrompt,
-      negativePrompt,
-      timestamp: Date.now(),
-      characterData
-    };
-    
-    this.finalPromptCache.set(cacheKey, cached);
-    
-    // LRU eviction if cache grows too large
-    if (this.finalPromptCache.size > 500) {
-      const oldestKey = this.finalPromptCache.keys().next().value;
-      if (oldestKey) this.finalPromptCache.delete(oldestKey);
-    }
-  }
 
 
   private static async throttleAndQueue(userKey: string) {
@@ -196,30 +152,7 @@ export class SimpleImageService {
     try {
       const finalConfig = await this.applyDegradationIfNeeded(userKey, mergedConfig);
 
-      // Check final prompt cache first
-      const cacheKey = this.getFinalPromptCacheKey(storyText, difficultyLevel, pageNumber, sessionId);
-      const cachedPrompt = this.getCachedFinalPrompt(cacheKey);
-      
-      if (cachedPrompt) {
-        console.log(`🎨 Cache HIT: Using cached prompts for page ${pageNumber}/${totalPages} (${difficultyLevel})`);
-        
-        const result = finalConfig.provider === 'runware'
-          ? await this.generateWithRunware(
-              cachedPrompt.positivePrompt, 
-              finalConfig, 
-              cachedPrompt.negativePrompt, 
-              userInfo, 
-              pageNumber
-            )
-          : await this.generateWithDALLE(cachedPrompt.positivePrompt, finalConfig);
-
-        if (result.success) {
-          this.recordUsage(userKey);
-        }
-        return result;
-      }
-
-      console.log(`🎨 Cache MISS: Generating new prompts for page ${pageNumber}/${totalPages} (${difficultyLevel})`);
+      console.log(`🎨 Generating fresh prompts for page ${pageNumber}/${totalPages} (${difficultyLevel})`);
 
       let positivePrompt: string;
       let negativePrompt: string;
@@ -279,8 +212,6 @@ export class SimpleImageService {
         negativePrompt = enhancedPrompt.negativePrompt.join(', ');
       }
 
-      // Cache final prompts for future use
-      this.cacheFinalPrompt(cacheKey, positivePrompt, negativePrompt, userInfo);
       
       console.log(`🎨 Enhanced Prompt: ${positivePrompt.substring(0, 100)}...`);
 
@@ -400,18 +331,4 @@ export class SimpleImageService {
     ];
   }
 
-  // Debug and monitoring utilities
-  static getFinalPromptCacheStats() {
-    return {
-      size: this.finalPromptCache.size,
-      keys: Array.from(this.finalPromptCache.keys()).slice(0, 5), // First 5 keys for debugging
-      oldestEntry: Math.min(...Array.from(this.finalPromptCache.values()).map(v => v.timestamp))
-    };
-  }
-
-  static clearFinalPromptCache() {
-    const previousSize = this.finalPromptCache.size;
-    this.finalPromptCache.clear();
-    console.log(`🎨 Cleared final prompt cache (${previousSize} entries)`);
-  }
 }
