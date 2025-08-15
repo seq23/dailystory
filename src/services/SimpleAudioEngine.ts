@@ -31,9 +31,25 @@ export class SimpleAudioEngine {
       this.audio = new Audio();
       this.audio.preload = 'auto';
       this.audio.crossOrigin = 'anonymous';
-      this.audio.addEventListener('ended', () => { this.playing = false; });
-      this.audio.addEventListener('pause', () => { this.playing = false; });
-      this.audio.addEventListener('play', () => { this.playing = true; });
+      this.audio.addEventListener('ended', () => { 
+        this.playing = false; 
+        // Emit state change event
+        window.dispatchEvent(new CustomEvent('audio:statechange', { 
+          detail: { isPlaying: false } 
+        }));
+      });
+      this.audio.addEventListener('pause', () => { 
+        this.playing = false;
+        window.dispatchEvent(new CustomEvent('audio:statechange', { 
+          detail: { isPlaying: false } 
+        }));
+      });
+      this.audio.addEventListener('play', () => { 
+        this.playing = true;
+        window.dispatchEvent(new CustomEvent('audio:statechange', { 
+          detail: { isPlaying: true } 
+        }));
+      });
     }
     return this.audio;
   }

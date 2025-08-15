@@ -418,51 +418,31 @@ const handleHeadlessCommand = (cmd: string) => {
    }
 };
 
-  // Enhanced audio service status monitoring with better frequency + hash guard
+  // Event-driven audio state monitoring instead of polling
   useEffect(() => {
-    const checkStatus = () => {
-      const status = audioSyncService.getPlaybackStatus();
-      if (status.isPlaying !== isPlaying) {
-        console.log(`🔄 Audio state sync: ${isPlaying} → ${status.isPlaying}`);
-        setIsPlaying(status.isPlaying);
-      }
-      // Enhanced hash mismatch handling that doesn't count against free user limits
-      const audioHash = (status as any).contentHash;
-      const uiHash = (typeof window !== 'undefined' && (window as any).__pageContentHash) || contentHash;
-      if (status.isPlaying && audioHash && uiHash && audioHash !== uiHash) {
-        const now = Date.now();
-        if (mismatchSinceRef.current == null) mismatchSinceRef.current = now;
-        const elapsed = now - (mismatchSinceRef.current || 0);
-        if (elapsed > 1000) {
-          console.warn('🛑 Audio/UI content hash mismatch (confirmed), stopping and giving free user another chance');
-          mismatchSinceRef.current = null;
-          
-          // For free users, reset hasPlayedThisPage so hash mismatch doesn't count against their limit
-          if (!isPremium) {
-            setHasPlayedThisPage(false);
-            console.log('🔄 Free user: Hash mismatch - giving another chance to play this page');
-          }
-          
-          stopAudio();
-          if (!audioRetryRef.current) {
-            audioRetryRef.current = true;
-            setTimeout(() => { 
-              try { 
-                (async () => { 
-                  await playAudio(); 
-                })(); 
-              } catch {} 
-            }, 500);
-          }
-        }
-      } else {
-        mismatchSinceRef.current = null;
+    const handleAudioStateChange = (event: CustomEvent) => {
+      const newIsPlaying = event.detail.isPlaying;
+      if (newIsPlaying !== isPlaying) {
+        console.log(`🔄 Audio state sync: ${isPlaying} → ${newIsPlaying}`);
+        setIsPlaying(newIsPlaying);
+        onAudioStateChange?.(newIsPlaying);
       }
     };
 
-    const interval = setInterval(checkStatus, 250);
-    return () => clearInterval(interval);
-  }, [isPlaying, contentHash, currentPage, text]);
+    // Listen for audio state changes from audioSyncService
+    window.addEventListener('audio:statechange', handleAudioStateChange as EventListener);
+    
+    // Also check current status on mount
+    const status = audioSyncService.getPlaybackStatus();
+    if (status.isPlaying !== isPlaying) {
+      setIsPlaying(status.isPlaying);
+      onAudioStateChange?.(status.isPlaying);
+    }
+
+    return () => {
+      window.removeEventListener('audio:statechange', handleAudioStateChange as EventListener);
+    };
+  }, [isPlaying, onAudioStateChange]);
 
 // Voice vocabulary events handler
 useEffect(() => {

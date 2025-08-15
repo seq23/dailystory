@@ -75,6 +75,14 @@ export class AudioSyncService {
   async playText(options: AudioSyncOptions & { onStateChange?: (isPlaying: boolean) => void }): Promise<void> {
     const { text, voice = 'XB0fDUnXU5powFXDhCwa', model = 'eleven_turbo_v2_5', speed = 1.0, onWordHighlight, onError, onStateChange } = options;
     
+    // Stop any active voice commands first (mutual exclusion)
+    try {
+      window.dispatchEvent(new CustomEvent('voice:stop'));
+      await new Promise(r => setTimeout(r, 200)); // Brief pause for voice cleanup
+    } catch (e) {
+      console.warn('Failed to stop voice commands:', e);
+    }
+    
     // New session guards
     this.activeSessionId = ++this.sessionIdCounter;
     const localSessionId = this.activeSessionId;
@@ -100,15 +108,15 @@ export class AudioSyncService {
 
     // Compute story-length multiplier to slow highlighting for longer texts
     const wordCount = this.words.length;
-    // Keep short stories unchanged, scale up progressively for longer stories
+    // Reduced story length scaling for better mobile performance
     if (wordCount > 1200) {
-      this.storyLengthMultiplier = 1.25;
+      this.storyLengthMultiplier = 1.3; // Cap at 1.3x instead of 2x
     } else if (wordCount > 800) {
-      this.storyLengthMultiplier = 1.18;
+      this.storyLengthMultiplier = 1.2;
     } else if (wordCount > 500) {
-      this.storyLengthMultiplier = 1.12;
+      this.storyLengthMultiplier = 1.1;
     } else if (wordCount > 300) {
-      this.storyLengthMultiplier = 1.07;
+      this.storyLengthMultiplier = 1.05;
     } else {
       this.storyLengthMultiplier = 1.0;
     }
@@ -173,9 +181,9 @@ export class AudioSyncService {
       }
       const targetMs = Math.max(500, (this.audio!.duration * 1000));
       
-      // Enhanced mobile scaling - slower highlighting for better sync
-      const mobileMultiplier = this.isMobile() ? 1.15 : 1.0;
-      this.durationScale = Math.min(3.0, Math.max(0.6, (targetMs / Math.max(1, totalExpected)) * mobileMultiplier));
+      // Reduced mobile scaling for faster highlighting
+      const mobileMultiplier = this.isMobile() ? 1.05 : 1.0;
+      this.durationScale = Math.min(1.5, Math.max(0.6, (targetMs / Math.max(1, totalExpected)) * mobileMultiplier));
       console.log(`⏱️ Highlight scaling: words=${this.words.length}, target=${Math.round(targetMs)}ms, sum=${Math.round(totalExpected)}ms, scale=${this.durationScale.toFixed(3)}, mobile=${this.isMobile()}`);
 
       // Setup playback event handlers with session guard
@@ -191,6 +199,10 @@ export class AudioSyncService {
       }
       this.isPlaying = true;
       this.onStateChange?.(true); // Notify state change
+      // Emit global event for all audio components
+      window.dispatchEvent(new CustomEvent('audio:statechange', { 
+        detail: { isPlaying: true } 
+      }));
       
       // Start real-time progress tracking
       this.startProgressTracking(voice, speed, onWordHighlight, localSessionId, localContentHash);
@@ -229,6 +241,10 @@ export class AudioSyncService {
       onWordHighlight?.(-1); // Clear highlighting immediately
       this.isPlaying = false;
       this.onStateChange?.(false); // Notify state change
+      // Emit global event for all audio components
+      window.dispatchEvent(new CustomEvent('audio:statechange', { 
+        detail: { isPlaying: false } 
+      }));
       this.stopAudio();
     };
 
@@ -280,8 +296,9 @@ export class AudioSyncService {
 
       const currentTime = this.audio.currentTime * 1000; // Convert to milliseconds
       
-      // Real-time sync monitoring every 500ms
-      if (currentTime - lastSyncCheck > 500 && wordIndex > 0) {
+      // Increased sync frequency for mobile - every 200ms
+      const syncInterval = this.isMobile() ? 200 : 500;
+      if (currentTime - lastSyncCheck > syncInterval && wordIndex > 0) {
         const expectedIndex = this.calculateExpectedWordIndex(voice, speed, this.audio.currentTime);
         if (Math.abs(expectedIndex - wordIndex) > 1) {
           console.log(`🔄 Real-time sync correction: expected ${expectedIndex}, current ${wordIndex}`);
@@ -317,8 +334,9 @@ export class AudioSyncService {
       }
     };
 
-    // More frequent tracking for better precision
-    this.progressInterval = setInterval(trackProgress, 80);
+    // Mobile optimized tracking frequency
+    const trackingInterval = this.isMobile() ? 100 : 80;
+    this.progressInterval = setInterval(trackProgress, trackingInterval);
   }
 
   /**

@@ -77,6 +77,19 @@ export const VoiceCommandController = forwardRef<VoiceCommandControllerHandle, V
 
   const startRecording = useCallback(async () => {
     try {
+      // Implement mutual exclusion with audio playback
+      try {
+        const { audioSyncService } = await import('@/services/audioSyncService');
+        const status = audioSyncService.getPlaybackStatus();
+        if (status.isPlaying) {
+          console.log('🛑 Voice: Audio is playing, stopping it first');
+          audioSyncService.stopAudio();
+          await new Promise(r => setTimeout(r, 500)); // Wait for audio cleanup
+        }
+      } catch (e) {
+        console.warn('Failed to check/stop audio:', e);
+      }
+      
       // Respect global disable flag and avoid double-starts
       if ((window as any).__t2r_vc_user_disabled === true || (window as any).__t2r_voice_force_off === true) {
         console.log('Headless VC: start ignored (user disabled/forced off)');
@@ -87,18 +100,22 @@ export const VoiceCommandController = forwardRef<VoiceCommandControllerHandle, V
         return;
       }
 
-      // Enhanced mobile/tablet microphone access
+      // Mobile-specific microphone constraints for better reliability
       const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      const constraints = {
+      const constraints = isMobileDevice ? {
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
           autoGainControl: true,
-          ...(isMobileDevice && {
-            sampleRate: 48000, // Higher sample rate for mobile
-            channelCount: 1,
-            latency: 0.1 // Lower latency for mobile
-          })
+          channelCount: 1,
+          sampleRate: 16000, // Lower sample rate for mobile stability
+          latency: 0.1
+        }
+      } : {
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
         }
       };
       

@@ -16,65 +16,79 @@ export const AudioControls: React.FC<AudioControlsProps> = ({ text, contentHash,
   const lastTapRef = useRef<number>(0);
   const retriedRef = useRef<boolean>(false);
 
+  // Event-driven state updates instead of polling
   useEffect(() => {
-    const iv = setInterval(() => {
-      const st = SimpleAudioEngine.getInstance().getStatus();
-      setIsPlaying(prev => (prev !== st.isPlaying ? st.isPlaying : prev));
-      if (onPlayingChange) onPlayingChange(st.isPlaying);
-    }, 400);
-    return () => clearInterval(iv);
+    const handleAudioStateChange = (event: CustomEvent) => {
+      const isPlayingNow = event.detail.isPlaying;
+      setIsPlaying(isPlayingNow);
+      if (onPlayingChange) onPlayingChange(isPlayingNow);
+    };
+
+    window.addEventListener('audio:statechange', handleAudioStateChange as EventListener);
+    return () => {
+      window.removeEventListener('audio:statechange', handleAudioStateChange as EventListener);
+    };
   }, [onPlayingChange]);
 
   const onPlay = async () => {
     const now = Date.now();
     if (now - (lastTapRef.current || 0) < 350) return; // debounce rapid taps
     lastTapRef.current = now;
-    retriedRef.current = false;
+
+    // Lock content hash during audio preparation
+    const uiHash = (typeof window !== 'undefined' && (window as any).__pageContentHash) || contentHash;
+    if (typeof window !== 'undefined') {
+      (window as any).__audioHashLocked = uiHash;
+    }
 
     const engine = SimpleAudioEngine.getInstance();
     try {
-      // Ensure UI/content hash is stable and enforce mobile/tablet pre-wait
-      const uiHash = (typeof window !== 'undefined' && (window as any).__pageContentHash) || contentHash;
+      // Reduced mobile delay - remove the problematic 1200ms wait
       if (isMobileOrTablet) {
-        await new Promise((r) => setTimeout(r, 1200));
+        await new Promise((r) => setTimeout(r, 300)); // Minimal 300ms delay
       }
+      
       await engine.playText({ 
         text, 
         contentHash: uiHash,
         voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
       });
+      
+      // Immediate state update without polling
       setIsPlaying(true);
       onPlayingChange?.(true);
-
-      // Post-start verification on mobile/tablet to catch any late mismatch
-      if (isMobileOrTablet) {
-        setTimeout(() => {
-          const st = SimpleAudioEngine.getInstance().getStatus();
-          const latestUiHash = (typeof window !== 'undefined' && (window as any).__pageContentHash) || contentHash;
-          if (st.isPlaying && st.contentHash && latestUiHash && st.contentHash !== latestUiHash) {
-            console.warn('🛑 Audio/UI hash mismatch detected on mobile, stopping and retrying once');
-            engine.stop();
-            if (!retriedRef.current) {
-              retriedRef.current = true;
-              setTimeout(() => { onPlay(); }, 350);
-            } else {
-              setIsPlaying(false);
-              onPlayingChange?.(false);
-            }
-          }
-        }, 1000);
-      }
+      
+      // Emit state change event for other components
+      window.dispatchEvent(new CustomEvent('audio:statechange', { 
+        detail: { isPlaying: true } 
+      }));
+      
     } catch (e) {
       console.error('Play failed', e);
       setIsPlaying(false);
       onPlayingChange?.(false);
+      window.dispatchEvent(new CustomEvent('audio:statechange', { 
+        detail: { isPlaying: false } 
+      }));
+    } finally {
+      // Unlock hash after audio starts
+      if (typeof window !== 'undefined') {
+        delete (window as any).__audioHashLocked;
+      }
     }
   };
   const onStop = () => {
     const engine = SimpleAudioEngine.getInstance();
     engine.stop();
+    
+    // Immediate state update
     setIsPlaying(false);
     onPlayingChange?.(false);
+    
+    // Emit state change event for other components
+    window.dispatchEvent(new CustomEvent('audio:statechange', { 
+      detail: { isPlaying: false } 
+    }));
   };
 
   return (
