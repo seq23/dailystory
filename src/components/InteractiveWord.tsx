@@ -5,6 +5,7 @@ import { SimpleAudioEngine } from "@/services/SimpleAudioEngine";
 import { PhoneticRulesEngine } from "@/services/phoneticRulesEngine";
 import { useToast } from "@/hooks/use-toast";
 import { contextualPronunciation } from "@/services/contextualPronunciation";
+import { safeBase64Decode } from '@/utils/base64Decoder';
 import { supabase } from "@/integrations/supabase/client";
 import { VocabularyLevelClassifier } from "@/utils/vocabularyLevelClassifier";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -1234,13 +1235,8 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
           response.data.byteOffset + response.data.byteLength
         );
       } else if (typeof response.data === 'string') {
-        // Base64 encoded data - decode it
-        const binaryString = atob(response.data);
-        const bytes = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-          bytes[i] = binaryString.charCodeAt(i);
-        }
-        audioData = bytes.buffer;
+        // Base64 encoded data - decode it with UTF-8 safe decoder
+        audioData = safeBase64Decode(response.data);
       } else {
         console.error('Unexpected data type:', typeof response.data, response.data);
         throw new Error('Unexpected audio data format: ' + typeof response.data);

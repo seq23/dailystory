@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { withTimeout, TIMEOUT_CONFIGS } from '@/utils/networkTimeout';
+import { safeBase64Decode } from '@/utils/base64Decoder';
 
 /**
  * Enhanced ElevenLabs TTS client with improved reliability and error handling
@@ -137,13 +138,8 @@ export class EnhancedElevenLabsTTS {
         } else if (data instanceof Uint8Array) {
           audioData = data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
         } else if (typeof data === 'string') {
-          // Handle base64 encoded response
-          const binary = atob(data);
-          const bytes = new Uint8Array(binary.length);
-          for (let i = 0; i < binary.length; i++) {
-            bytes[i] = binary.charCodeAt(i);
-          }
-          audioData = bytes.buffer;
+          // Handle base64 encoded response with UTF-8 safe decoder
+          audioData = safeBase64Decode(data);
         } else if (data && typeof data.arrayBuffer === 'function') {
           audioData = await data.arrayBuffer();
         } else {
