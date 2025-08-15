@@ -1776,17 +1776,17 @@ const handleRestartTimer = () => {
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center">
                         <Button
-                          onClick={isPremium ? generateImageForCurrentPage : onUpgrade}
+                          onClick={generateImageForCurrentPage}
                           disabled={isGeneratingImage}
                           size="lg"
-                          aria-label={isPremium ? 'Generate illustration' : 'Unlock illustrations'}
+                          aria-label="Generate illustration"
                         >
                           {isGeneratingImage ? (
                             <Loader2 className="w-4 h-4 animate-spin mr-2" />
                           ) : (
                             <Wand className="w-4 h-4 mr-2" />
                           )}
-                          {isPremium ? 'Generate illustration' : 'Unlock illustrations'}
+                          Generate illustration
                         </Button>
                       </div>
                     )}
