@@ -1663,7 +1663,7 @@ const handleRestartTimer = () => {
                     variant="default"
                     size="sm"
                     onClick={handleNext}
-                    disabled={isLoadingNextPage || controlsBlocked || currentPage >= displayedStory.length - 1}
+                    disabled={isLoadingNextPage || controlsBlocked || (!isPremium && currentPage >= 5)}
                     aria-label={t('nav.next','Next')}
                   >
                     <ChevronRight className="w-5 h-5" />

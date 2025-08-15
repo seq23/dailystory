@@ -253,10 +253,14 @@ if (props.forceModal || isMobileOrTablet) {
         <span
           onClick={handleClick}
           onTouchStart={(e) => {
-            // Enhanced touch handling for better mobile experience
+            // Enhanced touch handling - single tap opens modal
             e.stopPropagation();
             if (!shouldBeInteractive) return;
             handleClick();
+          }}
+          onTouchEnd={(e) => {
+            // Prevent click on touch devices
+            e.preventDefault();
           }}
           onMouseEnter={() => {
             if (!shouldBeInteractive) return;
@@ -271,43 +275,28 @@ if (props.forceModal || isMobileOrTablet) {
             hoverTimerRef.current = window.setTimeout(async () => {
               if (cancelRef.current) return;
               lastTriggerRef.current = Date.now();
-              // Safe guard: don't overlap with user-initiated playback
+              // Enhanced voice command sequence: word + definition
               if (isPlaying || isLoadingWordData) return;
               try {
-                // 1) Pronounce word
+                // 1) Pronounce word with Charlotte voice
                 await audioEngine.playText({ 
                   text: cleanWord,
                   voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
                 });
                 if (cancelRef.current) return;
-                // 2) Definition
+                
+                // 2) Speak definition with Charlotte voice
                 const userLang = props.userInfo?.nativeLanguage || 'en';
                 const { data, error } = await supabase.functions.invoke('word-dictionary', {
                   body: { word: cleanWord, userLevel: difficulty, userLanguage: userLang }
                 });
-                const definition: string = (!error && data?.definition) ? data.definition : cleanWord;
+                const definition: string = (!error && data?.definition) ? data.definition : `${cleanWord} is a word in this story`;
                 await audioEngine.playText({ 
                   text: definition,
                   voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
                 });
-                if (cancelRef.current) return;
-                // 3) Syllables
-                const raw = PhoneticRulesEngine.getInstance().breakIntoSyllables(cleanWord);
-                const toAudioFriendly = (original: string, sylls: string[]) => {
-                  const w = (original || '').toLowerCase();
-                  if (w.endsWith('ies') && w.length > 4) return [w.slice(0, -3) + 'y', 's'];
-                  if (w.endsWith('es') && w.length > 3) return [w.slice(0, -2), 'es'];
-                  if (w.endsWith('s') && !w.endsWith('ss') && w.length > 3) return [w.slice(0, -1), 's'];
-                  return sylls;
-                };
-                const adjusted = toAudioFriendly(cleanWord, raw);
-                const syllText = adjusted.join(', ');
-                await audioEngine.playText({ 
-                  text: syllText,
-                  voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
-                });
               } catch (e) {
-                console.warn('Hover sequence failed', e);
+                console.warn('Voice command sequence failed', e);
               }
             }, DWELL_MS) as unknown as number;
           }}
