@@ -38,6 +38,12 @@ serve(async (req) => {
       throw new Error('Runware API key not configured')
     }
 
+    // Validate prompt length and add fallback if needed
+    if (!positivePrompt || positivePrompt.trim().length < 10) {
+      console.log("Empty or insufficient prompt detected, using fallback");
+      positivePrompt = "A beautiful children's book illustration showing a friendly character in a colorful, cheerful scene";
+    }
+
     // Build consistent character description for all images
     let enhancedPrompt = positivePrompt;
     
