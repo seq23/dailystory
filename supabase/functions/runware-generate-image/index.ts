@@ -86,7 +86,7 @@ serve(async (req) => {
       
       // Intelligent truncation: keep core content, trim style suffixes
       const coreContent = enhancedPrompt.substring(0, 2000);
-      const qualitySuffix = ", high quality children's book illustration, vibrant colors, professional artwork, inclusive and diverse, text-free";
+      const qualitySuffix = ", high quality children's book art, vibrant colors, text-free";
       enhancedPrompt = coreContent + qualitySuffix;
       
       console.log(`Truncated prompt to ${enhancedPrompt.length} characters`);
