@@ -74,12 +74,9 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
   const emitStatus = (s: 'idle'|'listening'|'processing') =>
     window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: s } }));
 
-  // Enhanced audio service handles free limits internally
-  const maxFreePages = 10;
-  const isWithinFreeLimit = currentPage < maxFreePages;
-  const isAfterFreeLimit = currentPage >= maxFreePages;
-  const canUseAudio = isPremium || isWithinFreeLimit;
-  const shouldShowCrown = !isPremium && (hasPlayedThisPage || isAfterFreeLimit);
+  // Per-page audio access for free users (no hard cap)
+  const canUseAudio = isPremium || !hasPlayedThisPage;
+  const shouldShowCrown = !isPremium && hasPlayedThisPage;
 
   // Speed baseline calculator (mirror of service mapping)
   const getBaseSpeed = () => {
@@ -205,10 +202,6 @@ useEffect(() => {
 
   // Enhanced audio playback using new service
   const playAudio = async () => {
-    if (!isPremium && isAfterFreeLimit) {
-      return;
-    }
-
     if (!isPremium && hasPlayedThisPage) {
       return;
     }
@@ -636,10 +629,7 @@ useEffect(() => {
             </TooltipTrigger>
             <TooltipContent>
               <p>
-                {isAfterFreeLimit 
-                  ? "More than 10 audio plays require Premium upgrade" 
-                  : "Upgrade to Premium for unlimited audio plays per page"
-                }
+                Upgrade to Premium for unlimited audio plays per page
               </p>
             </TooltipContent>
           </Tooltip>
