@@ -70,24 +70,24 @@ serve(async (req) => {
       // Create highly specific character description for all skin tones
       let characterConsistency;
       if (skinTone === 'dark') {
-        characterConsistency = `${genderDesc} named ${characterName} with ${consistentSkinTone}, beautiful African/African American features, realistic representation, same character throughout`;
+        characterConsistency = `${genderDesc} named ${characterName} with ${consistentSkinTone}, beautiful African/African American features, realistic representation, consistent character design, same facial features, matching proportions`;
       } else {
-        characterConsistency = `${genderDesc} named ${characterName} with ${consistentSkinTone}, same character appearance throughout the story`;
+        characterConsistency = `${genderDesc} named ${characterName} with ${consistentSkinTone}, consistent character design, same facial features, matching proportions`;
       }
       
       // Enhanced prompt with better representation and copyright awareness
       if (skinTone === 'dark') {
         enhancedPrompt = `A vibrant, realistic children's book illustration depicting ${characterConsistency} in the scene: ${positivePrompt}. 
         
-        COPYRIGHT SAFE: If the prompt mentions copyrighted characters (Godzilla, Pokemon, Disney characters, etc.), create original alternatives that capture the spirit without copyright violation. For example, instead of "Godzilla" create "friendly giant lizard creature", instead of "Pokemon" create "magical animal companion".
+        original art style, no copyrighted characters, unique design
         
         CRITICAL: The character ${characterName} must have beautiful dark skin tone with African/African American features, realistic and accurate representation, vibrant colors, detailed but child-appropriate, warm and welcoming children's book art style, diverse and inclusive, high quality, safe for children, NO TEXT OR WORDS IN IMAGE`;
       } else {
         enhancedPrompt = `A beautiful children's book illustration depicting ${characterConsistency} in the scene: ${positivePrompt}. 
         
-        COPYRIGHT SAFE: If the prompt mentions copyrighted characters (Godzilla, Pokemon, Disney characters, etc.), create original alternatives that capture the spirit without copyright violation. For example, instead of "Godzilla" create "friendly giant lizard creature", instead of "Pokemon" create "magical animal companion".
+        original art style, no copyrighted characters, unique design
         
-        CRITICAL: The character ${characterName} must always have the same ${consistentSkinTone} and appear as the same ${genderDesc} in every image. Consistent character design, warm and welcoming children's book art style, high quality, safe for children, NO TEXT OR WORDS IN IMAGE`;
+        CRITICAL: The character ${characterName} must always have the same ${consistentSkinTone} and appear as the same ${genderDesc} in every image. consistent character design, same facial features, matching proportions, warm and welcoming children's book art style, high quality, safe for children, NO TEXT OR WORDS IN IMAGE`;
       }
       
       console.log(`Generating enhanced image ${pageIndex + 1} for ${characterName} (${genderDesc} with ${consistentSkinTone})`);
@@ -109,7 +109,7 @@ serve(async (req) => {
     }
 
     // SMART TEXT RULES: Enhanced negative prompt allowing environmental text but preventing story overlays
-    const defaultNegativePrompt = "large title text, story text overlays, sentences from the story written across the image, speech bubbles, dialogue text, narration text, large prominent text, story quotes, chapter titles, book text overlays, captions, subtitles, story sentences, blurry, low quality, distorted, scary, inappropriate, adult content, violence, weapons, dark themes, inconsistent character, different character, wrong skin tone, inaccurate skin color, whitewashed, wrong gender, pale when should be dark, light when should be dark, ugly, malformed, deformed, bad anatomy, poor composition, amateur art, copyrighted characters, trademarked content, Godzilla, Pokemon, Disney characters, brand logos, commercial characters";
+    const defaultNegativePrompt = "bad anatomy, blurry, low quality, distorted, watermark, text, signature, cropped, ugly, deformed";
     
     // Combine default negative prompt with any additional negative prompt
     const finalNegativePrompt = negativePrompt 
