@@ -198,7 +198,7 @@ export class SimpleImageService {
       console.log(`🔧 Simple optimizations: ${optimizations.join(', ')}`);
     }
     
-    const negativePrompt = 'scary, dark, violent, inappropriate, adult content, realistic photography, photorealistic, text, words, letters, titles, names, character names, speech bubbles, captions, labels, extra limbs, multiple arms, multiple legs, three legs, extra hands, deformed anatomy, malformed body parts, incorrect anatomy, anatomical errors';
+    const negativePrompt = 'scary, violent, inappropriate, adult content, text, words, speech bubbles, extra limbs, bad anatomy';
     
     return { positivePrompt: optimizedPrompt, negativePrompt };
   }
@@ -237,7 +237,7 @@ export class SimpleImageService {
           );
           
           const baseStyle = DIFFICULTY_STYLE_MAPPING['beginner'].prompt;
-          const brandSuffix = "with natural lighting, cheerful atmosphere, contemporary children's book art style, diverse and inclusive, safe wholesome content, high quality professional artwork";
+          const brandSuffix = "natural lighting, children's book art, high quality";
           
           const sceneElements = [];
           const subjectWithDescriptor = pageContent.descriptor 
@@ -250,7 +250,7 @@ export class SimpleImageService {
           if (pageContent.location) sceneElements.push(`in a ${pageContent.location}`);
           
           positivePrompt = [baseStyle, ...sceneElements, brandSuffix].join(' ');
-          negativePrompt = 'scary, dark, violent, inappropriate, adult content, realistic photography, photorealistic, text, words, letters, titles, names, character names, speech bubbles, captions, labels, extra limbs, multiple arms, multiple legs, three legs, extra hands, deformed anatomy, malformed body parts, incorrect anatomy, anatomical errors';
+          negativePrompt = 'scary, violent, inappropriate, adult content, text, words, speech bubbles, extra limbs, bad anatomy';
           
         } else {
           // Levels 1-4: Try AI-enhanced story analysis with timeout

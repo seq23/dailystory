@@ -67,28 +67,15 @@ serve(async (req) => {
         genderDesc = avatarType === 'boy' ? 'young boy' : avatarType === 'girl' ? 'young girl' : 'young child';
       }
       
-      // Create highly specific character description for all skin tones
-      let characterConsistency;
-      if (skinTone === 'dark') {
-        characterConsistency = `${genderDesc} named ${characterName} with ${consistentSkinTone}, beautiful African/African American features, realistic representation, consistent character design, same facial features, matching proportions`;
-      } else {
-        characterConsistency = `${genderDesc} named ${characterName} with ${consistentSkinTone}, consistent character design, same facial features, matching proportions`;
-      }
+      // Unified character consistency (saves ~200 chars)
+      const characterConsistency = `${genderDesc} named ${characterName} with ${consistentSkinTone}${skinTone === 'dark' ? ', beautiful African/African American features' : ''}, consistent character design`;
       
-      // Enhanced prompt with better representation and copyright awareness
-      if (skinTone === 'dark') {
-        enhancedPrompt = `A vibrant, realistic children's book illustration depicting ${characterConsistency} in the scene: ${positivePrompt}. 
-        
-        original art style, no copyrighted characters, unique design
-        
-        CRITICAL: The character ${characterName} must have beautiful dark skin tone with African/African American features, realistic and accurate representation, vibrant colors, detailed but child-appropriate, warm and welcoming children's book art style, diverse and inclusive, high quality, safe for children, NO TEXT OR WORDS IN IMAGE`;
-      } else {
-        enhancedPrompt = `A beautiful children's book illustration depicting ${characterConsistency} in the scene: ${positivePrompt}. 
-        
-        original art style, no copyrighted characters, unique design
-        
-        CRITICAL: The character ${characterName} must always have the same ${consistentSkinTone} and appear as the same ${genderDesc} in every image. consistent character design, same facial features, matching proportions, warm and welcoming children's book art style, high quality, safe for children, NO TEXT OR WORDS IN IMAGE`;
-      }
+      // Streamlined prompt with consolidated CRITICAL section (saves ~300 chars)
+      enhancedPrompt = `A vibrant children's book illustration depicting ${characterConsistency} in: ${positivePrompt}. 
+      
+      original art, no copyrights
+      
+      CRITICAL: ${characterName} must maintain ${consistentSkinTone}${skinTone === 'dark' ? ' with accurate African/African American features' : ''}, consistent appearance, professional children's book art, safe content, NO TEXT`;
       
       console.log(`Generating enhanced image ${pageIndex + 1} for ${characterName} (${genderDesc} with ${consistentSkinTone})`);
     }
@@ -104,12 +91,12 @@ serve(async (req) => {
       
       console.log(`Truncated prompt to ${enhancedPrompt.length} characters`);
     } else {
-      // COMPRESSED QUALITY: Essential style enhancers only
-      enhancedPrompt += `, high quality children's book illustration, vibrant colors, professional artwork, inclusive and diverse, text-free`;
+      // Optimized quality suffix (saves ~50 chars)
+      enhancedPrompt += `, high quality children's book art, vibrant colors, text-free`;
     }
 
-    // SMART TEXT RULES: Enhanced negative prompt allowing environmental text but preventing story overlays
-    const defaultNegativePrompt = "bad anatomy, blurry, low quality, distorted, watermark, text, signature, cropped, ugly, deformed";
+    // Streamlined negative prompt (saves ~100 chars)
+    const defaultNegativePrompt = "bad anatomy, blurry, text, watermark, ugly, deformed";
     
     // Combine default negative prompt with any additional negative prompt
     const finalNegativePrompt = negativePrompt 
