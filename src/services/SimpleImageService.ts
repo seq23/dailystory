@@ -198,7 +198,7 @@ export class SimpleImageService {
       console.log(`🔧 Simple optimizations: ${optimizations.join(', ')}`);
     }
     
-    const negativePrompt = 'scary, violent, inappropriate, adult content, text, words, speech bubbles, extra limbs, bad anatomy';
+    const negativePrompt = 'bad anatomy, blurry, text, watermark, ugly, deformed';
     
     return { positivePrompt: optimizedPrompt, negativePrompt };
   }
@@ -237,7 +237,7 @@ export class SimpleImageService {
           );
           
           const baseStyle = DIFFICULTY_STYLE_MAPPING['beginner'].prompt;
-          const brandSuffix = "natural lighting, children's book art, high quality";
+          const brandSuffix = "children's book art, vibrant colors";
           
           const sceneElements = [];
           const subjectWithDescriptor = pageContent.descriptor 
@@ -250,7 +250,7 @@ export class SimpleImageService {
           if (pageContent.location) sceneElements.push(`in a ${pageContent.location}`);
           
           positivePrompt = [baseStyle, ...sceneElements, brandSuffix].join(' ');
-          negativePrompt = 'scary, violent, inappropriate, adult content, text, words, speech bubbles, extra limbs, bad anatomy';
+          negativePrompt = 'bad anatomy, blurry, text, watermark, ugly, deformed';
           
         } else {
           // Levels 1-4: Try AI-enhanced story analysis with timeout
