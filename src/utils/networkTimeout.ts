@@ -67,5 +67,5 @@ export const TIMEOUT_CONFIGS = {
   IMAGE_GENERATION: { timeout: 15000, retries: 1, retryDelay: 1000 },
   TTS_REQUEST: { timeout: 10000, retries: 1, retryDelay: 500 },
   API_CALL: { timeout: 8000, retries: 1, retryDelay: 1000 },
-  AI_ENHANCEMENT: { timeout: 3000, retries: 0 }
+  AI_ENHANCEMENT: { timeout: 8000, retries: 1, retryDelay: 1000 }
 } as const;
