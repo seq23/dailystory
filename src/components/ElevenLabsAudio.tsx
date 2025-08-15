@@ -28,6 +28,7 @@ interface ElevenLabsAudioProps {
   difficulty?: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert';
   onWordHighlight?: (wordIndex: number) => void;
   contentHash?: string;
+  onAudioStateChange?: (isPlaying: boolean) => void;
 }
 
 export interface ElevenLabsAudioHandle {
@@ -47,7 +48,8 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
   isExtendedPage = false,
   difficulty = 'easy',
   onWordHighlight,
-  contentHash
+  contentHash,
+  onAudioStateChange
 }: ElevenLabsAudioProps, ref) => {
   const { t } = useTranslation();
   const { isMobileOrTablet, isCapacitor, hasTouchCapability } = useIsMobile();
@@ -105,16 +107,25 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
     (window as any).__currentUserName = userInfo?.name || 'guest';
   }, [userInfo?.name]);
 
-// Stop audio on text or page change to avoid stale playback and apply 3-second stabilization
+// Stop audio on text or page change to avoid stale playback and apply stabilization
 useEffect(() => {
-  try { audioSyncService.stopAudio(); } catch {}
+  // Immediate state update
   setIsPlaying(false);
+  setIsLoading(false);
+  
+  // Stop audio service
+  try { 
+    audioSyncService.stopAudio(); 
+  } catch (error) {
+    console.warn('Error stopping audio on page change:', error);
+  }
+  
   setIsStabilizing(true);
-  // Implement full 3-second stabilization as requested
-  const delay = 3000; // 3 seconds for all devices
+  // Enhanced stabilization: longer for mobile/tablet
+  const delay = isMobileOrTablet ? 4000 : 3000; // 4s mobile, 3s desktop
   const to = window.setTimeout(() => setIsStabilizing(false), delay);
   return () => clearTimeout(to);
-}, [text, currentPage]);
+}, [text, currentPage, isMobileOrTablet]);
 
   // Listen to voice status/level for mic button live indicators
   useEffect(() => {
@@ -250,6 +261,12 @@ useEffect(() => {
             if (w) (window as any).__currentHighlightedWord = w;
           } catch {}
           onWordHighlight?.(wordIndex);
+        },
+        onStateChange: (isPlayingNow: boolean) => {
+          // Direct state callback from audio service for immediate UI updates
+          setIsPlaying(isPlayingNow);
+          // Also notify parent component
+          onAudioStateChange?.(isPlayingNow);
         }
       });
 
@@ -283,8 +300,19 @@ useEffect(() => {
 
 
   const stopAudio = () => {
-    audioSyncService.stopAudio();
+    // Immediate state update for responsive UI
     setIsPlaying(false);
+    setIsLoading(false);
+    
+    // Notify parent component immediately
+    onAudioStateChange?.(false);
+    
+    // Then cleanup audio service
+    try {
+      audioSyncService.stopAudio();
+    } catch (error) {
+      console.warn('Error stopping audio:', error);
+    }
   };
 
 // Premium voice commands toggle

@@ -495,19 +495,29 @@ export class AudioSyncService {
    * Stop audio and clear all highlighting
    */
   stopAudio(): void {
+    // CRITICAL: Synchronously update playing state FIRST for immediate UI feedback
     const wasPlaying = this.isPlaying;
     this.isPlaying = false;
+    
+    // Immediately notify state change for responsive stop button
+    if (wasPlaying && this.onStateChange) {
+      this.onStateChange(false);
+    }
+    
+    // Clear highlighting immediately
     this.currentWordIndex = -1;
+    if (this.lastOnWordHighlight) {
+      try {
+        this.lastOnWordHighlight(-1);
+      } catch (error) {
+        console.warn('Error clearing word highlight:', error);
+      }
+    }
     
     // Abort any in-flight TTS requests
     if (this.fetchAbortController) {
       try { this.fetchAbortController.abort(); } catch {}
       this.fetchAbortController = null;
-    }
-    
-    // Notify state change if we were playing
-    if (wasPlaying) {
-      this.onStateChange?.(false);
     }
     
     // Clear progress tracking
@@ -522,18 +532,25 @@ export class AudioSyncService {
     
     // Stop and cleanup audio
     if (this.audio) {
-      this.audio.pause();
-      this.audio.currentTime = 0;
       try {
-        URL.revokeObjectURL(this.audio.src);
-      } catch (e) {
-        console.warn('Failed to revoke audio URL:', e);
+        this.audio.pause();
+        this.audio.currentTime = 0;
+        this.audio.removeAttribute('src');
+        this.audio.load(); // Force reset
+        
+        const src = this.audio.src;
+        if (src && src.startsWith('blob:')) {
+          URL.revokeObjectURL(src);
+        }
+      } catch (error) {
+        console.warn('Audio cleanup error:', error);
       }
       this.audio = null;
     }
     
-    // Clear words array to prevent stale references
+    // Clear words array and session state
     this.words = [];
+    this.activeContentHash = '';
     
     console.log('🧹 Audio sync service completely cleaned up');
   }

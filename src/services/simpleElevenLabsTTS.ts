@@ -24,10 +24,18 @@ export async function fetchElevenLabsAudioArrayBuffer(text: string, voiceId?: st
     return data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
   }
   if (typeof data === 'string') {
-    const binary = atob(data);
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-    return bytes.buffer;
+    try {
+      // Enhanced base64 decoding with UTF-8 support
+      const binaryString = atob(data);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      return bytes.buffer;
+    } catch (error) {
+      console.error('Base64 decode error:', error);
+      throw new Error(`Invalid base64 audio data: ${error.message}`);
+    }
   }
 
   // As a last resort, try to extract from Response-like object

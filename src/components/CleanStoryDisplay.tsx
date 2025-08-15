@@ -180,15 +180,13 @@ useEffect(() => {
   const [sessionWordsRead, setSessionWordsRead] = useState(0);
   const [pagesCompleted, setPagesCompleted] = useState<Set<number>>(new Set());
   const [audioPlayedPage, setAudioPlayedPage] = useState<number | null>(null);
-// Enhanced audio status sync via ElevenLabsAudio ref
+// Enhanced audio status sync via ElevenLabsAudio ref - removed polling for direct callbacks
 const audioRef = useRef<ElevenLabsAudioHandle | null>(null);
-useEffect(() => {
-  const interval = setInterval(() => {
-    const playing = !!audioRef.current?.isPlaying;
-    setIsAudioPlaying(prev => (prev !== playing ? playing : prev));
-  }, 500);
-  return () => clearInterval(interval);
-}, []);
+
+// Audio state sync through direct callbacks (no polling)
+const handleAudioStateChange = (playing: boolean) => {
+  setIsAudioPlaying(playing);
+};
 
 // Voice command bridge moved below after currentStory/contentHash are defined
 
@@ -1079,22 +1077,30 @@ useEffect(() => {
     setTimeRemaining(prev => Math.max(5 * 60, prev - 5 * 60)); // Reduce by 5 minutes, minimum 5 minutes
   };
 
-  // Bottom dock actions
+  // Bottom dock actions - enhanced with immediate state updates
   const handleDockPlayAudio = async () => {
     if (!isPremium && audioPlayedPage === currentPage && !isAudioPlaying) {
       toast({ title: t('audioReading.audioUsed','Audio used'), description: t('audioReading.audioUsedTooltip','Audio used (1x per page for free users)'), duration: 2000 });
       return;
     }
+    
     if (audioRef.current?.isPlaying) {
-      try { audioRef.current.stop(); } catch {}
+      // Immediate UI feedback before async operation
       setIsAudioPlaying(false);
+      try { 
+        audioRef.current.stop(); 
+      } catch (error) {
+        console.warn('Dock stop failed:', error);
+      }
     } else {
       try {
         await audioRef.current?.play?.();
+        // State will be updated via callback, but ensure it's set for immediate feedback
         setIsAudioPlaying(true);
         if (!isPremium) setAudioPlayedPage(currentPage);
-      } catch (e) {
-        console.warn('Dock play failed', e);
+      } catch (error) {
+        console.warn('Dock play failed:', error);
+        setIsAudioPlaying(false); // Reset on error
       }
     }
   };
@@ -1677,17 +1683,18 @@ const handleRestartTimer = () => {
                 aria-hidden={isMobileOrTablet}
               >
                 <div className="flex items-center gap-4">
-                  <ElevenLabsAudio
-                    ref={audioRef}
-                    text={currentStory}
-                    userInfo={userInfo}
-                    isPremium={isPremium}
-                    onUpgrade={onUpgrade}
-                    currentPage={currentPage}
-                    totalPages={story.length}
-                    difficulty={currentDifficulty}
-                    onWordHighlight={onWordHighlight}
-                    contentHash={contentHash}
+                <ElevenLabsAudio
+                  ref={audioRef}
+                  text={currentStory}
+                  userInfo={userInfo}
+                  isPremium={isPremium}
+                  onUpgrade={onUpgrade}
+                  currentPage={currentPage}
+                  totalPages={story.length}
+                  difficulty={currentDifficulty}
+                  onWordHighlight={onWordHighlight}
+                  contentHash={contentHash}
+                  onAudioStateChange={handleAudioStateChange}
                   />
                   <Dialog>
                     <DialogTrigger asChild>
