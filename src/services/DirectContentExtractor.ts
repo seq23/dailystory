@@ -211,14 +211,8 @@ export class DirectContentExtractor {
       visualScene += ` in ${content.location}`;
     }
     
-    // Add environmental continuity from visual state
-    let environmentalContext = '';
-    if (sessionId) {
-      const { StoryVisualStateManager } = require('./storyVisualState');
-      environmentalContext = StoryVisualStateManager.getSettingForPrompt(sessionId);
-    }
-    
-    const visualPrompt = `A ${style} showing ${visualScene}${environmentalContext}. Bright, cheerful, safe for children.`;
+    // Simplified prompt - environmental context now handled server-side
+    const visualPrompt = `A ${style} showing ${visualScene}. Bright, cheerful, safe for children.`;
     
     const negativePrompt = [
       'scary', 'dark', 'violent', 'inappropriate', 'adult content', 'disturbing',

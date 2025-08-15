@@ -213,6 +213,7 @@ export class SimpleImageService {
     return { positivePrompt: optimizedPrompt, negativePrompt };
   }
 
+  // OPTIMIZED: Ultra-fast server-side processing
   static async generateStoryImage(
     storyText: string,
     userInfo: UserInfo,
@@ -229,115 +230,28 @@ export class SimpleImageService {
     try {
       const finalConfig = await this.applyDegradationIfNeeded(userKey, mergedConfig);
 
-      console.log(`🎨 Generating prompts for page ${pageNumber}/${totalPages} (${difficultyLevel})`);
+      console.log(`🚀 Ultra-fast generation for page ${pageNumber}/${totalPages}: "${storyText}"`);
 
-      let positivePrompt: string;
-      let negativePrompt: string;
-      let aiMethodUsed = false;
+      // NEW: Direct server-side processing with all visual logic moved to edge function
+      let result = await this.generateWithRunware(storyText, finalConfig, undefined, userInfo, pageNumber, sessionId);
 
-      // Try AI enhancement first with 3-second timeout for all difficulty levels
-      try {
-        console.log(`🤖 Attempting AI enhancement (3s timeout) for: "${storyText}"`);
-        
-        if (difficultyLevel === 'beginner') {
-          // Level 0: Try AI-enhanced DirectContentExtractor with timeout
-          const pageContent = await withTimeout(
-            () => DirectContentExtractor.enhancePageContent(storyText, { 
-              characterInfo: { name: userInfo.name },
-              sessionId 
-            }),
-            TIMEOUT_CONFIGS.AI_ENHANCEMENT
-          );
-          
-          const baseStyle = DIFFICULTY_STYLE_MAPPING['beginner'].prompt;
-          const brandSuffix = "children's book art, vibrant colors";
-          
-          // Import visual state manager
-          const { StoryVisualStateManager } = await import('./storyVisualState');
-          
-          const sceneElements = [];
-          const subjectWithDescriptor = pageContent.descriptor 
-            ? `${pageContent.descriptor} ${pageContent.subject}`
-            : `friendly ${pageContent.subject}`;
-          sceneElements.push(`showing a ${subjectWithDescriptor}`);
-          
-          if (pageContent.action) sceneElements.push(`${pageContent.action}`);
-          if (pageContent.object) sceneElements.push(`with ${pageContent.object}`);
-          if (pageContent.location) sceneElements.push(`in a ${pageContent.location}`);
-          
-          // Add environmental continuity
-          const environmentalContext = StoryVisualStateManager.getSettingForPrompt(sessionId);
-          
-          positivePrompt = [baseStyle, ...sceneElements, environmentalContext, brandSuffix].join(' ');
-          negativePrompt = 'bad anatomy, blurry, text, watermark, ugly, deformed';
-          
-        } else {
-          // Levels 1-4: Try AI-enhanced story analysis with timeout
-          const storyAnalysis = await withTimeout(
-            () => AdvancedStoryAnalyzer.enhanceAnalysisWithAI(
-              storyText,
-              pageNumber,
-              totalPages,
-              difficultyLevel,
-              sessionId,
-              userInfo
-            ),
-            TIMEOUT_CONFIGS.AI_ENHANCEMENT
-          );
-
-          const enhancedPrompt = AdvancedStoryAnalyzer.generateEnhancedPrompt(
-            storyAnalysis,
-            userInfo,
-            difficultyLevel,
-            sessionId,
-            finalConfig.style
-          );
-
-          positivePrompt = [
-            enhancedPrompt.mainPrompt,
-            ...enhancedPrompt.styleModifiers,
-            ...enhancedPrompt.compositionHints,
-            ...enhancedPrompt.colorPalette
-          ].join(', ');
-
-          negativePrompt = enhancedPrompt.negativePrompt.join(', ');
-        }
-        
-        aiMethodUsed = true;
-        console.log(`✅ AI enhancement successful for: "${storyText}"`);
-        
-      } catch (error) {
-        // AI enhancement failed or timed out - fallback to simple rule-based extraction
-        console.log(`⚠️ AI enhancement failed/timed out, using simple fallback:`, error instanceof Error ? error.message : error);
-        
-        const simpleResult = this.generateSimplePrompt(storyText, userInfo, difficultyLevel, sessionId);
-        positivePrompt = simpleResult.positivePrompt;
-        negativePrompt = simpleResult.negativePrompt;
-        aiMethodUsed = false;
-      }
-
-      console.log(`🎨 ${aiMethodUsed ? 'AI-Enhanced' : 'Simple'} Prompt: ${positivePrompt.substring(0, 100)}...`);
-
-      // Try Runware first (primary provider)
-      console.log('🎯 Attempting image generation with Runware (primary)...');
-      let result = await this.generateWithRunware(positivePrompt, finalConfig, negativePrompt, userInfo, pageNumber, sessionId);
-
-      // If Runware fails, fallback to OpenAI
+      // If Runware fails, fallback to OpenAI with simplified prompt
       if (!result.success) {
         console.log('⚠️ Runware failed, falling back to OpenAI...');
-        result = await this.generateWithOpenAI(positivePrompt, finalConfig, negativePrompt, userInfo, pageNumber);
+        const simplePrompt = `Children's book illustration: ${userInfo.name} ${storyText}. Bright, cheerful, safe for children.`;
+        result = await this.generateWithOpenAI(simplePrompt, finalConfig, undefined, userInfo, pageNumber);
       }
 
       if (result.success) {
         this.recordUsage(userKey);
-        console.log(`✅ Image generated successfully with ${result.provider || 'unknown'} provider (${aiMethodUsed ? 'AI-enhanced' : 'simple'} prompt)`);
+        console.log(`✅ Ultra-fast generation successful with ${result.provider} (server-side processing)`);
       } else {
         console.error('❌ All image providers failed:', result.error);
       }
       
       return result;
     } catch (error) {
-      console.error('🎨 Image generation failed:', error);
+      console.error('🚀 Ultra-fast generation failed:', error);
       return {
         url: '',
         success: false,
@@ -350,51 +264,23 @@ export class SimpleImageService {
 
   private static async generateWithRunware(prompt: string, config: ImageGenerationConfig, negativePrompt?: string, userInfo?: UserInfo, pageNumber?: number, sessionId?: string): Promise<ImageResult> {
     try {
-      console.log('🎨 Calling Supabase Edge Function for Runware image generation');
+      console.log('🎨 Ultra-fast Runware generation - server-side processing');
 
-      // Import visual state manager for seed consistency
-      const { StoryVisualStateManager } = await import('./storyVisualState');
-      
-      // Get or create story state for consistency
-      let characterSeed: number | undefined;
       const defaultRunware = APP_CONFIG.images.runware;
       
-      if (sessionId && userInfo) {
-        // Get existing character seed for consistency
-        characterSeed = StoryVisualStateManager.getCharacterSeed(sessionId, userInfo.name);
-        
-        // Lock Runware parameters on first use
-        StoryVisualStateManager.lockRunwareParameters(sessionId, {
-          cfgScale: defaultRunware.CFGScale,
-          model: defaultRunware.model,
-          steps: defaultRunware.steps,
-          scheduler: "FlowMatchEulerDiscreteScheduler"
-        });
-      }
-
-      // Get locked parameters if session exists
-      const runwareParams = sessionId ? StoryVisualStateManager.getRunwareContext(sessionId) : null;
-      
+      // NEW: Ultra-simplified body for server-side processing
       const body: any = {
-        positivePrompt: prompt,
+        pageText: prompt, // Send raw page text for server-side processing
+        sessionId,
+        userInfo,
+        pageNumber,
         width: config.width,
         height: config.height,
-        model: runwareParams?.model || defaultRunware.model,
+        model: defaultRunware.model,
         numberResults: 1,
         outputFormat: defaultRunware.outputFormat,
-        steps: runwareParams?.steps || defaultRunware.steps,
-        CFGScale: runwareParams?.cfgScale || defaultRunware.CFGScale,
-        scheduler: runwareParams?.scheduler || "FlowMatchEulerDiscreteScheduler",
-        // Character consistency parameters with seed
-        ...(userInfo && {
-          characterName: userInfo.name,
-          characterDescription: `${userInfo.age} year old ${userInfo.avatar.type}`,
-          skinTone: userInfo.avatar.skinTone,
-          avatarType: userInfo.avatar.type,
-          storyTheme: userInfo.favoriteColor,
-          pageIndex: (pageNumber || 1) - 1,
-          ...(characterSeed && { seed: characterSeed })
-        })
+        CFGScale: defaultRunware.CFGScale,
+        scheduler: "FlowMatchEulerDiscreteScheduler"
       };
 
       if (negativePrompt) {
@@ -411,22 +297,6 @@ export class SimpleImageService {
 
       if (!data?.success) {
         throw new Error(data?.error || 'Image generation failed');
-      }
-
-      // Store seed for character consistency on successful generation
-      if (sessionId && userInfo && data.seed && !characterSeed) {
-        StoryVisualStateManager.updateCharacterWithSeed(
-          sessionId,
-          userInfo.name,
-          `${userInfo.age} year old ${userInfo.avatar.type}`,
-          data.seed,
-          pageNumber || 1
-        );
-      }
-      
-      // Track successful prompt for future reference
-      if (sessionId && userInfo) {
-        StoryVisualStateManager.addSuccessfulPrompt(sessionId, userInfo.name, prompt);
       }
 
       return {
