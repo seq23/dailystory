@@ -301,7 +301,8 @@ export const InteractiveWord = ({
           body: { 
             word: cleanWord, 
             userLevel: difficulty,
-            userLanguage: userNativeLanguage
+            userLanguage: userNativeLanguage,
+            sentenceContext: sentenceContext
           }
         });
         

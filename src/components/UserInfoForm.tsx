@@ -20,6 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { validateTheme } from "@/utils/themeValidation";
 import { spellcheckService } from "@/services/spellcheckService";
+import { supabase } from "@/integrations/supabase/client";
 import type { UserInfo, Grade, LanguageCode, LearningGoal } from "@/types";
 
 export type { UserInfo } from "@/types";
@@ -211,42 +212,61 @@ export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFo
         setTranslationLoading(prev => ({ ...prev, [field as string]: true }));
         
         try {
-        console.log(`🔄 Real-time translation triggered for ${field}: "${sanitizedValue}"`);
-        console.log(`📋 User info:`, { 
-          nativeLanguage: formData.nativeLanguage, 
-          grade: formData.grade,
-          age: formData.age 
-        });
+          console.log(`🔄 Real-time translation triggered for ${field}: "${sanitizedValue}"`);
+          console.log(`📋 User info:`, { 
+            nativeLanguage: formData.nativeLanguage, 
+            grade: formData.grade,
+            age: formData.age 
+          });
           
-          // Use theme validation for processing
-          const validationResult = validateTheme(sanitizedValue);
-          
-          if (validationResult.valid) {
-            const processedTag = { corrected: validationResult.sanitized, confidence: 1.0 };
-            
-            // If translation/correction occurred, show feedback and update form
-            if (sanitizedValue !== processedTag.corrected) {
-              console.log(`✅ Processing completed: "${sanitizedValue}" → "${processedTag.corrected}"`);
-              setTranslations(prev => ({ 
-                ...prev, 
-                [field as string]: `${sanitizedValue} → ${processedTag.corrected}` 
-              }));
+          // First translate if needed (non-English user input)
+          let processedValue = sanitizedValue;
+          if (formData.nativeLanguage !== 'en' && sanitizedValue.trim()) {
+            try {
+              console.log(`🌍 Translating from ${formData.nativeLanguage} to English:`, sanitizedValue);
+              const { data: translationData, error: translationError } = await supabase.functions.invoke('translate-to-english', {
+                body: { 
+                  text: sanitizedValue,
+                  sourceLanguage: formData.nativeLanguage
+                }
+              });
               
-              // Update the form data with the processed (corrected/translated) value
-              setFormData(prev => ({ ...prev, [field]: processedTag.corrected }));
-              
-              // Clear translation feedback after 3 seconds
-              setTimeout(() => {
-                setTranslations(prev => ({ ...prev, [field as string]: '' }));
-              }, 3000);
-            } else {
-              console.log(`ℹ️ No processing needed for: "${sanitizedValue}"`);
-              // Clear any existing translation for this field
-              setTranslations(prev => ({ ...prev, [field as string]: '' }));
+              if (!translationError && translationData?.translatedText) {
+                processedValue = translationData.translatedText;
+                console.log(`✅ Translation completed: "${sanitizedValue}" → "${processedValue}"`);
+                
+                // Show translation feedback
+                setTranslations(prev => ({ 
+                  ...prev, 
+                  [field as string]: `${sanitizedValue} → ${processedValue}` 
+                }));
+                
+                // Clear translation feedback after 4 seconds
+                setTimeout(() => {
+                  setTranslations(prev => ({ ...prev, [field as string]: '' }));
+                }, 4000);
+              } else {
+                console.warn('Translation failed, using original value:', translationError);
+              }
+            } catch (translationError) {
+              console.error('Translation API error:', translationError);
+              // Continue with original value if translation fails
             }
           }
+          
+          // Then validate the (possibly translated) value
+          const validationResult = validateTheme(processedValue);
+          
+          if (validationResult.valid) {
+            // Update the form data with the processed (translated and validated) value
+            setFormData(prev => ({ ...prev, [field]: validationResult.sanitized }));
+          } else {
+            console.log(`⚠️ Validation failed for: "${processedValue}"`);
+            // If validation fails, revert to original sanitized value
+            setFormData(prev => ({ ...prev, [field]: sanitizedValue }));
+          }
         } catch (error) {
-          console.error(`❌ Translation error for "${sanitizedValue}":`, error);
+          console.error(`❌ Processing error for "${sanitizedValue}":`, error);
           // Continue with original value if processing fails
         } finally {
           setTranslationLoading(prev => ({ ...prev, [field as string]: false }));

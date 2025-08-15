@@ -367,20 +367,20 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
   return (
     <Card>
         <CardHeader className="pb-2">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
               <CardTitle className="text-base">{t('coach.title','Read‑aloud coach')}</CardTitle>
               <CardDescription className="text-xs">{t('coach.subtitle','Kids read aloud; get instant feedback')}</CardDescription>
             </div>
-            <div className="flex items-center gap-1">
-              <Button variant="ghost" size="icon" onClick={prevSentence} disabled={idx === 0} aria-label={t('coach.prevSentence','Previous sentence')}>
+            <div className="flex items-center gap-1 w-full sm:w-auto justify-between sm:justify-end">
+              <Button variant="ghost" size="icon" onClick={prevSentence} disabled={idx === 0} aria-label={t('coach.prevSentence','Previous sentence')} className="shrink-0">
                 <ChevronLeft className="w-4 h-4" />
               </Button>
-              <Button variant="ghost" size="icon" onClick={nextSentence} disabled={idx >= sentences.length - 1} aria-label={t('coach.nextSentence','Next sentence')}>
+              <Button variant="ghost" size="icon" onClick={nextSentence} disabled={idx >= sentences.length - 1} aria-label={t('coach.nextSentence','Next sentence')} className="shrink-0">
                 <ChevronRight className="w-4 h-4" />
               </Button>
               {!isPremium && (
-                <div className="flex items-center gap-2 text-xs text-muted-foreground pl-1">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground pl-1 shrink-0">
                   <Lock className="w-3 h-3" /> {dailyUsed}/{DAILY_FREE_LIMIT} {t('coach.today','today')}
                 </div>
               )}
@@ -388,13 +388,13 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
           </div>
         </CardHeader>
         <CardContent className="space-y-3 pt-2">
-          <div className="text-center px-3 py-2">
-            <div className="font-semibold leading-snug text-xl sm:text-2xl md:text-3xl">{currentSentence}</div>
+          <div className="text-center px-2 sm:px-3 py-2">
+            <div className="font-semibold leading-snug text-lg sm:text-xl md:text-2xl lg:text-3xl break-words">{currentSentence}</div>
             <div className="text-xs text-muted-foreground mt-1">{t('coach.targetLabel','Target')}</div>
           </div>
 
         {/* Controls */}
-        <div className="flex flex-wrap items-center justify-center gap-3">
+        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
           {!isRecording ? (
             <Button size="sm" onClick={startRecording} className="gap-2" disabled={limitReached || attempts >= MAX_ATTEMPTS_PER_SENTENCE}>
               <Mic className="w-4 h-4" /> {t('coach.start','Start')}

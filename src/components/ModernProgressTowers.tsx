@@ -196,7 +196,7 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
     
     autoCollapseRef.current = setTimeout(() => {
       setIsExpanded(false);
-    }, 8000);
+    }, 12000); // Increased from 8s to 12s for better UX
   };
 
   const handleToggle = () => {

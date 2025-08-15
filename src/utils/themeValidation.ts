@@ -22,7 +22,7 @@ const BLACKLISTED_THEMES = [
   'breast', 'genitals', 'penis', 'vagina', 'orgasm', 'masturbate', 'horny', 'lust', 'arousal', 'seduce', 'flirt', 'intimate', 'passion',
   
   // General inappropriate content
-  'inappropriate', 'adult', 'mature',
+  'inappropriate', 'adult', 'mature', 'ass',
   
   // Dangerous activities
   'danger', 'dangerous', 'risky', 'unsafe', 'poison', 'toxic', 'fire', 'explosion'
