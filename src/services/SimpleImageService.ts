@@ -8,6 +8,7 @@ import { ErrorHandler, ErrorType } from '@/utils/errorHandling';
 import { AdvancedStoryAnalyzer } from './AdvancedStoryAnalyzer';
 import { DirectContentExtractor } from './DirectContentExtractor';
 import { withTimeout, TIMEOUT_CONFIGS } from '@/utils/networkTimeout';
+import { PromptLengthManager } from '@/utils/promptLengthManager';
 
 export interface ImageGenerationConfig {
   provider: 'runware' | 'dalle';
@@ -151,8 +152,9 @@ export class SimpleImageService {
     console.log(`📝 Using simple rule-based extraction for: "${storyText}"`);
     
     const pageContent = DirectContentExtractor.extractPageContent(storyText);
-    const baseStyle = DIFFICULTY_STYLE_MAPPING[difficultyLevel]?.prompt || DIFFICULTY_STYLE_MAPPING['beginner'].prompt;
-    const brandSuffix = "with natural lighting, cheerful atmosphere, contemporary children's book art style, diverse and inclusive, safe wholesome content, high quality professional artwork";
+    const styleFramework = DIFFICULTY_STYLE_MAPPING[difficultyLevel];
+    const baseStyle = styleFramework?.prompt || DIFFICULTY_STYLE_MAPPING['beginner'].prompt;
+    const brandSuffix = styleFramework?.brandSuffix || DIFFICULTY_STYLE_MAPPING['beginner'].brandSuffix;
     
     // Build scene-specific prompt with basic details
     const sceneElements = [];
@@ -167,10 +169,24 @@ export class SimpleImageService {
     if (pageContent.object) sceneElements.push(`with ${pageContent.object}`);
     if (pageContent.location) sceneElements.push(`in a ${pageContent.location}`);
     
-    const positivePrompt = [baseStyle, ...sceneElements, brandSuffix].join(' ');
+    const coreContent = `${baseStyle} ${sceneElements.join(' ')}`;
+    
+    // Use smart prompt management with length optimization
+    const segments = PromptLengthManager.createSegments(
+      coreContent,
+      '', // No additional style framework for simple mode
+      '', // No character details for simple mode  
+      brandSuffix,
+      'minimal' // Use minimal quality tier for simple mode
+    );
+    
+    const { optimizedPrompt } = PromptLengthManager.optimizePrompt(segments);
+    
+    console.log(`📝 Simple prompt generated: ${optimizedPrompt.length} chars`);
+    
     const negativePrompt = 'scary, dark, violent, inappropriate, adult content, realistic photography, photorealistic, text, words, letters, titles, names, character names, speech bubbles, captions, labels, extra limbs, multiple arms, multiple legs, three legs, extra hands, deformed anatomy, malformed body parts, incorrect anatomy, anatomical errors';
     
-    return { positivePrompt, negativePrompt };
+    return { positivePrompt: optimizedPrompt, negativePrompt };
   }
 
   static async generateStoryImage(

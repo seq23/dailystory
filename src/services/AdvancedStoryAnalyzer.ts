@@ -5,6 +5,7 @@ import type { UserInfo, DifficultyLevel } from '@/types';
 import { CharacterConsistencyCache, type SceneCharacterData } from './CharacterConsistencyCache';
 import { DIFFICULTY_STYLE_MAPPING } from '@/config/appConfig';
 import { supabase } from '@/integrations/supabase/client';
+import { PromptLengthManager } from '@/utils/promptLengthManager';
 
 export interface StoryAnalysis {
   // Core content analysis
@@ -463,16 +464,34 @@ export class AdvancedStoryAnalyzer {
     const moodDesc = this.buildMoodDescription(analysis);
     
     // Combine scene content + style framework + character consistency + rendering + brand suffix
-    const renderingStyle = styleFramework.rendering ? ` ${styleFramework.rendering}.` : '';
-    const brandSuffix = styleFramework.brandSuffix ? ` ${styleFramework.brandSuffix}` : '';
-    const mainPrompt = `${styleFramework.prompt}. ${characterDesc} ${analysis.mainAction} in ${settingDesc}. ${moodDesc}. ${analysis.composition}, ${analysis.perspective}.${renderingStyle}${brandSuffix}`;
+    const coreContent = `${analysis.mainAction} in ${settingDesc}. ${moodDesc}. ${analysis.composition}, ${analysis.perspective}`;
+    const renderingStyle = styleFramework.rendering || '';
+    const brandSuffix = styleFramework.brandSuffix || '';
+    
+    // Use smart prompt management with length optimization
+    const segments = PromptLengthManager.createSegments(
+      `${styleFramework.prompt}. ${characterDesc} ${coreContent}`,
+      renderingStyle,
+      characterDesc,
+      brandSuffix,
+      'standard' // Use standard quality tier for AI-enhanced mode
+    );
+    
+    const { optimizedPrompt, wasOptimized, originalLength, finalLength, optimizations } = 
+      PromptLengthManager.optimizePrompt(segments);
+    
+    // Log AI-enhanced prompt optimization results
+    if (wasOptimized) {
+      console.log(`🤖 AI-enhanced prompt optimized: ${originalLength} → ${finalLength} chars`);
+      console.log(`🔧 Applied optimizations: ${optimizations.join(', ')}`);
+    } else {
+      console.log(`🤖 AI-enhanced prompt generated: ${finalLength} chars (no optimization needed)`);
+    }
     
     const styleModifiers = [
-      styleFramework.prompt,
-      `${styleFramework.complexity} complexity level`,
-      `${styleFramework.detailLevel} visual details`,
-      'safe and appropriate for children',
-      'engaging and educational'
+      `Color palette: ${styleFramework.colorPalette}`,
+      `Detail level: ${styleFramework.detailLevel}`,
+      `Complexity: ${styleFramework.complexity}`
     ];
     
     const compositionHints = [
@@ -514,7 +533,7 @@ export class AdvancedStoryAnalyzer {
     ];
     
     return {
-      mainPrompt,
+      mainPrompt: optimizedPrompt,
       styleModifiers,
       compositionHints,
       colorPalette,
