@@ -7,6 +7,7 @@ import { APP_CONFIG, IMAGE_STYLES, DIFFICULTY_STYLE_MAPPING, type ImageStyle } f
 import { ErrorHandler, ErrorType } from '@/utils/errorHandling';
 import { AdvancedStoryAnalyzer } from './AdvancedStoryAnalyzer';
 import { DirectContentExtractor } from './DirectContentExtractor';
+import { withTimeout, TIMEOUT_CONFIGS } from '@/utils/networkTimeout';
 
 export interface ImageGenerationConfig {
   provider: 'runware' | 'dalle';
@@ -139,6 +140,39 @@ export class SimpleImageService {
     }
   }
 
+  /**
+   * Generate a simple prompt using only rule-based extraction (fallback)
+   */
+  private static generateSimplePrompt(
+    storyText: string,
+    userInfo: UserInfo,
+    difficultyLevel: DifficultyLevel
+  ): { positivePrompt: string; negativePrompt: string } {
+    console.log(`📝 Using simple rule-based extraction for: "${storyText}"`);
+    
+    const pageContent = DirectContentExtractor.extractPageContent(storyText);
+    const baseStyle = DIFFICULTY_STYLE_MAPPING[difficultyLevel]?.prompt || DIFFICULTY_STYLE_MAPPING['beginner'].prompt;
+    const brandSuffix = "with natural lighting, cheerful atmosphere, contemporary children's book art style, diverse and inclusive, safe wholesome content, high quality professional artwork";
+    
+    // Build scene-specific prompt with basic details
+    const sceneElements = [];
+    
+    // Add subject with descriptors
+    const subjectWithDescriptor = pageContent.descriptor 
+      ? `${pageContent.descriptor} ${pageContent.subject}`
+      : `friendly ${pageContent.subject}`;
+    sceneElements.push(`showing a ${subjectWithDescriptor}`);
+    
+    if (pageContent.action) sceneElements.push(`${pageContent.action}`);
+    if (pageContent.object) sceneElements.push(`with ${pageContent.object}`);
+    if (pageContent.location) sceneElements.push(`in a ${pageContent.location}`);
+    
+    const positivePrompt = [baseStyle, ...sceneElements, brandSuffix].join(' ');
+    const negativePrompt = 'scary, dark, violent, inappropriate, adult content, realistic photography, photorealistic, text, words, letters, titles, names, character names, speech bubbles, captions, labels, extra limbs, multiple arms, multiple legs, three legs, extra hands, deformed anatomy, malformed body parts, incorrect anatomy, anatomical errors';
+    
+    return { positivePrompt, negativePrompt };
+  }
+
   static async generateStoryImage(
     storyText: string,
     userInfo: UserInfo,
@@ -155,68 +189,85 @@ export class SimpleImageService {
     try {
       const finalConfig = await this.applyDegradationIfNeeded(userKey, mergedConfig);
 
-      console.log(`🎨 Generating fresh prompts for page ${pageNumber}/${totalPages} (${difficultyLevel})`);
+      console.log(`🎨 Generating prompts for page ${pageNumber}/${totalPages} (${difficultyLevel})`);
 
       let positivePrompt: string;
       let negativePrompt: string;
+      let aiMethodUsed = false;
 
-      if (difficultyLevel === 'beginner') {
-        // Level 0 enhanced: Use AI-enhanced DirectContentExtractor for richer visuals
-        console.log('🎨 Level 0: Using AI-enhanced content extraction');
+      // Try AI enhancement first with 3-second timeout for all difficulty levels
+      try {
+        console.log(`🤖 Attempting AI enhancement (3s timeout) for: "${storyText}"`);
         
-        const pageContent = await DirectContentExtractor.enhancePageContent(storyText);
-        const baseStyle = DIFFICULTY_STYLE_MAPPING['beginner'].prompt;
-        const brandSuffix = "with natural lighting, cheerful atmosphere, contemporary children's book art style, diverse and inclusive, safe wholesome content, high quality professional artwork";
-        
-        // Build scene-specific prompt with enhanced details
-        const sceneElements = [];
-        
-        // Add subject with descriptors
-        const subjectWithDescriptor = pageContent.descriptor 
-          ? `${pageContent.descriptor} ${pageContent.subject}`
-          : `friendly ${pageContent.subject}`;
-        sceneElements.push(`showing a ${subjectWithDescriptor}`);
-        
-        if (pageContent.action) sceneElements.push(`${pageContent.action}`);
-        if (pageContent.object) sceneElements.push(`with ${pageContent.object}`);
-        if (pageContent.location) sceneElements.push(`in a ${pageContent.location}`);
-        
-        positivePrompt = [baseStyle, ...sceneElements, brandSuffix].join(' ');
-        negativePrompt = 'scary, dark, violent, inappropriate, adult content, realistic photography, photorealistic, text, words, letters, titles, names, character names, speech bubbles, captions, labels, extra limbs, multiple arms, multiple legs, three legs, extra hands, deformed anatomy, malformed body parts, incorrect anatomy, anatomical errors';
-        
-      } else {
-        // AI-Enhanced analysis for levels 1-4
-        console.log(`🎨 Level ${difficultyLevel}: Using AI-enhanced story analysis`);
-        
-        const storyAnalysis = await AdvancedStoryAnalyzer.enhanceAnalysisWithAI(
-          storyText,
-          pageNumber,
-          totalPages,
-          difficultyLevel,
-          sessionId,
-          userInfo
-        );
+        if (difficultyLevel === 'beginner') {
+          // Level 0: Try AI-enhanced DirectContentExtractor with timeout
+          const pageContent = await withTimeout(
+            () => DirectContentExtractor.enhancePageContent(storyText),
+            TIMEOUT_CONFIGS.AI_ENHANCEMENT
+          );
+          
+          const baseStyle = DIFFICULTY_STYLE_MAPPING['beginner'].prompt;
+          const brandSuffix = "with natural lighting, cheerful atmosphere, contemporary children's book art style, diverse and inclusive, safe wholesome content, high quality professional artwork";
+          
+          const sceneElements = [];
+          const subjectWithDescriptor = pageContent.descriptor 
+            ? `${pageContent.descriptor} ${pageContent.subject}`
+            : `friendly ${pageContent.subject}`;
+          sceneElements.push(`showing a ${subjectWithDescriptor}`);
+          
+          if (pageContent.action) sceneElements.push(`${pageContent.action}`);
+          if (pageContent.object) sceneElements.push(`with ${pageContent.object}`);
+          if (pageContent.location) sceneElements.push(`in a ${pageContent.location}`);
+          
+          positivePrompt = [baseStyle, ...sceneElements, brandSuffix].join(' ');
+          negativePrompt = 'scary, dark, violent, inappropriate, adult content, realistic photography, photorealistic, text, words, letters, titles, names, character names, speech bubbles, captions, labels, extra limbs, multiple arms, multiple legs, three legs, extra hands, deformed anatomy, malformed body parts, incorrect anatomy, anatomical errors';
+          
+        } else {
+          // Levels 1-4: Try AI-enhanced story analysis with timeout
+          const storyAnalysis = await withTimeout(
+            () => AdvancedStoryAnalyzer.enhanceAnalysisWithAI(
+              storyText,
+              pageNumber,
+              totalPages,
+              difficultyLevel,
+              sessionId,
+              userInfo
+            ),
+            TIMEOUT_CONFIGS.AI_ENHANCEMENT
+          );
 
-        const enhancedPrompt = AdvancedStoryAnalyzer.generateEnhancedPrompt(
-          storyAnalysis,
-          userInfo,
-          difficultyLevel,
-          sessionId,
-          finalConfig.style
-        );
+          const enhancedPrompt = AdvancedStoryAnalyzer.generateEnhancedPrompt(
+            storyAnalysis,
+            userInfo,
+            difficultyLevel,
+            sessionId,
+            finalConfig.style
+          );
 
-        positivePrompt = [
-          enhancedPrompt.mainPrompt,
-          ...enhancedPrompt.styleModifiers,
-          ...enhancedPrompt.compositionHints,
-          ...enhancedPrompt.colorPalette
-        ].join(', ');
+          positivePrompt = [
+            enhancedPrompt.mainPrompt,
+            ...enhancedPrompt.styleModifiers,
+            ...enhancedPrompt.compositionHints,
+            ...enhancedPrompt.colorPalette
+          ].join(', ');
 
-        negativePrompt = enhancedPrompt.negativePrompt.join(', ');
+          negativePrompt = enhancedPrompt.negativePrompt.join(', ');
+        }
+        
+        aiMethodUsed = true;
+        console.log(`✅ AI enhancement successful for: "${storyText}"`);
+        
+      } catch (error) {
+        // AI enhancement failed or timed out - fallback to simple rule-based extraction
+        console.log(`⚠️ AI enhancement failed/timed out, using simple fallback:`, error instanceof Error ? error.message : error);
+        
+        const simpleResult = this.generateSimplePrompt(storyText, userInfo, difficultyLevel);
+        positivePrompt = simpleResult.positivePrompt;
+        negativePrompt = simpleResult.negativePrompt;
+        aiMethodUsed = false;
       }
 
-      
-      console.log(`🎨 Enhanced Prompt: ${positivePrompt.substring(0, 100)}...`);
+      console.log(`🎨 ${aiMethodUsed ? 'AI-Enhanced' : 'Simple'} Prompt: ${positivePrompt.substring(0, 100)}...`);
 
       // Try Runware first (primary provider)
       console.log('🎯 Attempting image generation with Runware (primary)...');
@@ -230,14 +281,14 @@ export class SimpleImageService {
 
       if (result.success) {
         this.recordUsage(userKey);
-        console.log(`✅ Image generated successfully with ${result.provider || 'unknown'} provider`);
+        console.log(`✅ Image generated successfully with ${result.provider || 'unknown'} provider (${aiMethodUsed ? 'AI-enhanced' : 'simple'} prompt)`);
       } else {
         console.error('❌ All image providers failed:', result.error);
       }
       
       return result;
     } catch (error) {
-      console.error('🎨 Enhanced Image: Generation failed:', error);
+      console.error('🎨 Image generation failed:', error);
       return {
         url: '',
         success: false,
