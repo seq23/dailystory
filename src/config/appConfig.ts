@@ -127,12 +127,12 @@ export const APP_CONFIG: AppConfig = {
 export const DIFFICULTY_STYLE_MAPPING = {
   'beginner': {
     name: 'Educational Simplicity',
-    prompt: 'Simple 2D illustration (educational children\'s book style), clean minimal composition, large clear subjects, plain backgrounds',
-    complexity: 'low',
-    colorPalette: 'primary colors, high contrast, educational clarity',
-    detailLevel: 'very simple, large subjects, minimal background detail, educational focus',
-    rendering: 'Clean flat colors, simple shapes, educational illustration style',
-    brandSuffix: 'simple educational illustration, clear, safe for young children'
+    prompt: 'simple children\'s book illustration, bold primary colors, clean lines, flat cartoon style',
+    complexity: 'minimal',
+    colorPalette: 'bright primary colors',
+    detailLevel: 'low',
+    rendering: 'flat cartoon',
+    brandSuffix: 'educational, age-appropriate, learning-focused'
   },
   'easy': {
     name: 'Playful & Colorful', 
