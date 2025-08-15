@@ -82,7 +82,7 @@ Randomness: seed={seed} (generate if null, return as meta.seed)`,
 
   medium: {
     difficulty: 'medium',
-    systemPrompt: `Generate ONE PAGE of a chapter book story for developing readers aged 7-9.
+    systemPrompt: `Generate ONE PAGE of a chapter book story for readers aged 7-9.
 
 RULES:
 - 2-3 sentences per page, Use "Page X:" markers to separate each page of content
@@ -91,7 +91,7 @@ RULES:
 - Story continues infinitely unless user requests ending
 - Include narrative hooks and mild tension
 
-VOCABULARY: Use ENHANCED_LEVEL_2_VOCABULARY preferentially, allow flexibility.
+VOCABULARY: Use ENHANCED_LEVEL_2_VOCABULARY with flexibility.
 
 USER INPUT INTEGRATION: Mix {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} with AI content throughout story.
 
@@ -99,7 +99,7 @@ USER INPUT INTEGRATION: Mix {userName}, {favoriteColor}, {favoriteAnimal}, {favo
 
 AUTHOR'S STYLE: Draw inspiration from getColorVoiceForUser(userInfo, difficulty) for stylistic direction - use as creative inspiration, not constraints.
 
-GUARDRAILS: Age-appropriate content. Simple challenges/mild conflict okay. No copyrighted content. Transform concerning themes naturally.
+GUARDRAILS: Age-appropriate content. No copyrighted content. Transform concerning themes.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
     userPromptTemplate: 'Create a never-ending story for {userName}, age 7-9. The story continues forever with natural pauses and continuation hooks unless the user requests an ending. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} throughout the story, mixing with your own creative elements. Let the story flow organically with natural progression.',
@@ -107,16 +107,16 @@ Randomness: seed={seed} (generate if null, return as meta.seed)`,
 
   hard: {
     difficulty: 'hard',
-    systemPrompt: `Generate ONE PAGE of an intermediate story for confident readers aged 9-11.
+    systemPrompt: `Generate ONE PAGE of an intermediate story for readers aged 9-11.
 
 RULES:
 - 3-4 sentences per page, Use "Page X:" markers to separate each page of content
 - 4-9 letter words, varied sentence lengths (max 20 words)
 - Multiple tenses, complex sentence structures
 - Story continues infinitely unless user requests ending
-- Include narrative tension and character development
+- Include character development
 
-VOCABULARY: Use ENHANCED_LEVEL_3_VOCABULARY preferentially, allow flexibility.
+VOCABULARY: Use ENHANCED_LEVEL_3_VOCABULARY with flexibility.
 
 USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} available if story calls for them.
 
@@ -124,7 +124,7 @@ USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor},
 
 AUTHOR'S STYLE: Draw inspiration from getColorVoiceForUser(userInfo, difficulty) for stylistic direction - use as creative inspiration, not constraints.
 
-GUARDRAILS: Age-appropriate content. Moderate challenges/conflict okay. No copyrighted content. Avoid intense themes.
+GUARDRAILS: Age-appropriate content. No copyrighted content. Avoid intense themes.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
     userPromptTemplate: 'Create a never-ending story for {userName}, age 9-12. The story continues forever with natural pauses and continuation hooks until the user requests an ending. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally incorporate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} when they enhance the narrative, mixing with your own creative elements. Let the story flow organically with sophisticated storytelling techniques.',
@@ -132,16 +132,15 @@ Randomness: seed={seed} (generate if null, return as meta.seed)`,
 
   expert: {
     difficulty: 'expert',
-    systemPrompt: `Generate ONE PAGE of an advanced story for skilled readers aged 11-13.
+    systemPrompt: `Generate ONE PAGE of an advanced story for readers aged 11-13.
 
 RULES:
 - 4-5 sentences per page, Use "Page X:" markers to separate each page of content
-- Advanced vocabulary, varied sentence complexity
-- Multiple tenses, sophisticated structures
+- Advanced vocabulary, sophisticated structures
+- Multiple tenses, complex sentence structures
 - Story continues infinitely unless user requests ending
-- Include complex themes, character development, narrative tension
 
-VOCABULARY: Use ENHANCED_LEVEL_4_VOCABULARY preferentially, allow flexibility.
+VOCABULARY: Use ENHANCED_LEVEL_4_VOCABULARY with flexibility.
 
 USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} available if story calls for them.
 
@@ -149,7 +148,7 @@ USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor},
 
 AUTHOR'S STYLE: Draw inspiration from getColorVoiceForUser(userInfo, difficulty) for stylistic direction - use as creative inspiration, not constraints.
 
-GUARDRAILS: Age-appropriate content. Complex themes okay. No copyrighted content. Avoid inappropriate material.
+GUARDRAILS: Age-appropriate content. No copyrighted content. Avoid inappropriate material.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
     userPromptTemplate: 'Create a never-ending story for {userName}, age 11-15 with sophisticated literary techniques, compelling hooks and pauses that draw readers deeper into the story until the user requests an ending. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as symbolic elements when they enhance the narrative. The story should address mature themes like personal philosophy, social justice, future aspirations, or meaningful life choices while maintaining appropriate boundaries. Focus on characters who face significant life decisions, navigate complex moral landscapes, and experience transformative growth.',
