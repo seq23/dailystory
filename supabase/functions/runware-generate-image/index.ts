@@ -93,8 +93,20 @@ serve(async (req) => {
       console.log(`Generating enhanced image ${pageIndex + 1} for ${characterName} (${genderDesc} with ${consistentSkinTone})`);
     }
 
-    // PROFESSIONAL QUALITY: Enhanced style and representation enhancers
-    enhancedPrompt += `, award-winning children's book illustration style, ultra-realistic skin tones, accurate diverse representation, beautiful vibrant colors, perfect lighting, professional artwork composition, high-quality detailed artwork, child-appropriate content, consistent character design, inclusive and diverse, completely text-free, museum-quality illustration, masterpiece children's art`;
+    // Validate and truncate prompt length if needed (Runware max: 3000 chars)
+    if (enhancedPrompt.length > 2800) {
+      console.log(`Prompt too long (${enhancedPrompt.length} chars), truncating...`);
+      
+      // Intelligent truncation: keep core content, trim style suffixes
+      const coreContent = enhancedPrompt.substring(0, 2000);
+      const qualitySuffix = ", high quality children's book illustration, vibrant colors, professional artwork, inclusive and diverse, text-free";
+      enhancedPrompt = coreContent + qualitySuffix;
+      
+      console.log(`Truncated prompt to ${enhancedPrompt.length} characters`);
+    } else {
+      // COMPRESSED QUALITY: Essential style enhancers only
+      enhancedPrompt += `, high quality children's book illustration, vibrant colors, professional artwork, inclusive and diverse, text-free`;
+    }
 
     // SMART TEXT RULES: Enhanced negative prompt allowing environmental text but preventing story overlays
     const defaultNegativePrompt = "large title text, story text overlays, sentences from the story written across the image, speech bubbles, dialogue text, narration text, large prominent text, story quotes, chapter titles, book text overlays, captions, subtitles, story sentences, blurry, low quality, distorted, scary, inappropriate, adult content, violence, weapons, dark themes, inconsistent character, different character, wrong skin tone, inaccurate skin color, whitewashed, wrong gender, pale when should be dark, light when should be dark, ugly, malformed, deformed, bad anatomy, poor composition, amateur art, copyrighted characters, trademarked content, Godzilla, Pokemon, Disney characters, brand logos, commercial characters";
@@ -110,7 +122,18 @@ serve(async (req) => {
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
         ws.close();
-        reject(new Error('Request timeout'));
+        console.log("Request timeout after 45 seconds");
+        resolve(new Response(
+          JSON.stringify({ 
+            success: false,
+            error: "Request timeout",
+            characterName: characterName || undefined,
+            pageIndex
+          }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        ));
       }, 45000); // 45 second timeout for better reliability
 
       ws.onopen = () => {
@@ -132,7 +155,19 @@ serve(async (req) => {
         if (response.error || response.errors) {
           clearTimeout(timeout);
           ws.close();
-          reject(new Error(response.errorMessage || response.errors?.[0]?.message || "Generation failed"));
+          console.error("Runware API error:", response.errorMessage || response.errors?.[0]?.message);
+          
+          resolve(new Response(
+            JSON.stringify({ 
+              success: false,
+              error: response.errorMessage || response.errors?.[0]?.message || "Generation failed",
+              characterName: characterName || undefined,
+              pageIndex
+            }),
+            { 
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          ));
           return;
         }
 
@@ -204,7 +239,6 @@ serve(async (req) => {
             pageIndex
           }),
           { 
-            status: 500, 
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           }
         ));
@@ -224,11 +258,10 @@ serve(async (req) => {
       JSON.stringify({ 
         success: false,
         error: error.message,
-        characterName: req.body?.characterName,
-        pageIndex: req.body?.pageIndex || 0
+        characterName: characterName || undefined,
+        pageIndex: pageIndex || 0
       }),
       { 
-        status: 500, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     )

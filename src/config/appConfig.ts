@@ -132,7 +132,7 @@ export const DIFFICULTY_STYLE_MAPPING = {
     colorPalette: 'primary colors, high contrast, educational clarity',
     detailLevel: 'very simple, large subjects, minimal background detail, educational focus',
     rendering: 'Clean flat colors, simple shapes, educational illustration style',
-    brandSuffix: 'educational children\'s book illustration, simple and clear, learning-focused, minimal distractions, safe wholesome content for young children'
+    brandSuffix: 'simple educational illustration, clear, safe for young children'
   },
   'easy': {
     name: 'Playful & Colorful', 
@@ -141,7 +141,7 @@ export const DIFFICULTY_STYLE_MAPPING = {
     colorPalette: 'warm wood tones; energetic joy and movement',
     detailLevel: 'moderate',
     rendering: 'Clean bright style with motion blur and energy lines',
-    brandSuffix: 'with bright natural window lighting, energetic movement and joy, contemporary children\'s book art style, diverse and inclusive, safe wholesome content, high quality professional artwork'
+    brandSuffix: 'bright children\'s book style, energetic, inclusive, safe content'
   },
   'medium': {
     name: 'Rich & Engaging',
@@ -150,7 +150,7 @@ export const DIFFICULTY_STYLE_MAPPING = {
     colorPalette: 'Warm, serene, nurturing; accents with golden lighting',
     detailLevel: 'detailed',
     rendering: 'Soft cel-shading with gentle gradients; clean line art with subtle texture',
-    brandSuffix: 'contemporary children\'s book illustration style, diverse representation, soft rounded features, warm and inviting atmosphere, safe and wholesome, high quality detailed artwork, perfect for young readers, gentle expressions and body language'
+    brandSuffix: 'detailed children\'s book art, warm atmosphere, diverse characters'
   },
   'hard': {
     name: 'Artistic & Sophisticated',
@@ -159,7 +159,7 @@ export const DIFFICULTY_STYLE_MAPPING = {
     colorPalette: 'nuanced color gradients, artistic palette',
     detailLevel: 'highly detailed',
     rendering: 'Advanced digital painting techniques with nuanced lighting, refined textures, and sophisticated color blending',
-    brandSuffix: 'high-quality artistic illustration with sophisticated composition, nuanced colors, and rich environmental details. Advanced visual storytelling techniques, professional children\'s book art, diverse representation, refined artistic quality, age-appropriate sophistication, museum-level illustration standards'
+    brandSuffix: 'artistic children\'s book illustration, refined quality, inclusive'
   },
   'expert': {
     name: 'Masterful & Complex',
@@ -168,7 +168,7 @@ export const DIFFICULTY_STYLE_MAPPING = {
     colorPalette: 'complex color theory, professional artist palette',
     detailLevel: 'intricate and complex',
     rendering: 'Complex artistic techniques with intricate details, sophisticated lighting systems, and advanced composition methods',
-    brandSuffix: 'masterful illustration with complex artistic techniques, sophisticated lighting, intricate details, and advanced composition. Museum-quality children\'s art, diverse representation, exceptional artistic craftsmanship, professional illustration excellence, sophisticated visual storytelling mastery'
+    brandSuffix: 'masterful children\'s book art, sophisticated quality, diverse representation'
   }
 } as const;
 
