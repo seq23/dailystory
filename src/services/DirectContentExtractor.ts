@@ -299,7 +299,7 @@ export class DirectContentExtractor {
       previousPages?: string[];
       characterInfo?: { name: string; traits?: any; };
     }
-  ): Promise<PageContent> {
+  ): Promise<string> {
     const { supabase } = await import('@/integrations/supabase/client');
     
     const { data, error } = await supabase.functions.invoke('extract-visual-keywords', {
@@ -311,35 +311,14 @@ export class DirectContentExtractor {
     });
 
     if (error) {
-      throw new Error(`AI enhancement failed: ${error.message}`);
+      console.error('AI enhancement error:', error);
+      return '';
     }
 
-    const { enhancedKeywords } = data;
+    const { enhancedPrompt } = data;
     
-    // Merge AI keywords with basic content
-    const enhanced = { ...basicContent };
-    
-    // Add the first descriptor if we don't have one
-    if (!enhanced.descriptor && enhancedKeywords.descriptors.length > 0) {
-      enhanced.descriptor = enhancedKeywords.descriptors[0];
-    }
-    
-    // Add the first object if we don't have one
-    if (!enhanced.object && enhancedKeywords.objects.length > 0) {
-      enhanced.object = enhancedKeywords.objects[0];
-    }
-    
-    // Add atmosphere and colors to descriptor
-    const atmosphereWords = [...enhancedKeywords.colors, ...enhancedKeywords.atmosphere].slice(0, 2);
-    if (atmosphereWords.length > 0) {
-      const additionalDescriptors = atmosphereWords.join(' ');
-      enhanced.descriptor = enhanced.descriptor 
-        ? `${enhanced.descriptor} ${additionalDescriptors}` 
-        : additionalDescriptors;
-    }
-    
-    console.log(`✨ Enhanced content: "${pageText}" →`, enhanced);
-    return enhanced;
+    console.log(`✨ AI enhanced prompt: "${pageText}" → "${enhancedPrompt}"`);
+    return enhancedPrompt || '';
   }
 
   static createSimplePrompt(pageText: string, userInfo: UserInfo): string {
@@ -359,11 +338,27 @@ export class DirectContentExtractor {
       characterInfo?: { name: string; traits?: any; };
     }
   ): Promise<string> {
-    const content = await this.enhancePageContent(pageText, storyContext);
-    const prompt = this.generateDirectPrompt(content, userInfo);
+    // Start with basic content extraction and prompt generation
+    const basicContent = this.extractPageContent(pageText);
+    const basicPrompt = this.generateDirectPrompt(basicContent, userInfo);
     
-    console.log(`🎯 Enhanced Content: "${pageText}" → "${prompt.visualPrompt}"`);
+    // Check if AI enhancement would be beneficial
+    if (this.shouldEnhanceWithAI(basicContent, pageText)) {
+      console.log('🤖 Using AI enhancement for rich content');
+      
+      // Get AI-enhanced sentence and append to basic prompt
+      const aiEnhancedSentence = await this.enhanceWithAI(pageText, basicContent, storyContext);
+      
+      if (aiEnhancedSentence) {
+        const enhancedPrompt = `${basicPrompt.visualPrompt}, ${aiEnhancedSentence}`;
+        console.log(`🎯 Enhanced Content: "${pageText}" → "${enhancedPrompt}"`);
+        return enhancedPrompt;
+      }
+    } else {
+      console.log('📝 Using direct extraction for simple content');
+    }
     
-    return prompt.visualPrompt;
+    console.log(`🎯 Basic Content: "${pageText}" → "${basicPrompt.visualPrompt}"`);
+    return basicPrompt.visualPrompt;
   }
 }

@@ -26,31 +26,19 @@ interface ExtractionRequest {
   };
 }
 
-interface EnhancedKeywords {
-  colors: string[];
-  objects: string[];
-  actions: string[];
-  locations: string[];
-  descriptors: string[];
-  atmosphere: string[];
-}
-
-// Basic keyword extraction as fallback
-function extractBasicKeywords(pageText: string, existingContent: any): EnhancedKeywords {
+// Basic sentence generation as fallback
+function generateBasicSentence(pageText: string, existingContent: any): string {
   const text = pageText.toLowerCase();
+  const colorWords = ['bright', 'colorful', 'vibrant', 'sparkly', 'shiny'];
+  const atmosphereWords = ['sunny', 'magical', 'cozy', 'warm', 'peaceful', 'cheerful'];
+  const descriptorWords = ['beautiful', 'pretty', 'cute', 'adorable'];
   
-  const colorWords = ['red', 'blue', 'green', 'yellow', 'pink', 'purple', 'orange', 'black', 'white', 'brown', 'gray', 'golden', 'silver', 'bright', 'dark', 'colorful', 'vibrant', 'sparkly', 'shiny'];
-  const atmosphereWords = ['sunny', 'cloudy', 'rainy', 'snowy', 'windy', 'magical', 'mysterious', 'cozy', 'warm', 'cold', 'peaceful', 'busy', 'quiet', 'lively', 'cheerful', 'exciting'];
-  const descriptorWords = ['big', 'small', 'tiny', 'huge', 'tall', 'short', 'long', 'wide', 'narrow', 'thick', 'thin', 'fluffy', 'soft', 'hard', 'smooth', 'rough', 'beautiful', 'pretty', 'cute', 'adorable'];
+  const foundColors = colorWords.filter(word => text.includes(word));
+  const foundAtmosphere = atmosphereWords.filter(word => text.includes(word));
+  const foundDescriptors = descriptorWords.filter(word => text.includes(word));
   
-  return {
-    colors: colorWords.filter(word => text.includes(word) && !existingContent.descriptor?.toLowerCase().includes(word)),
-    objects: [], // Keep simple for basic fallback
-    actions: [],
-    locations: [],
-    descriptors: descriptorWords.filter(word => text.includes(word) && !existingContent.descriptor?.toLowerCase().includes(word)),
-    atmosphere: atmosphereWords.filter(word => text.includes(word))
-  };
+  const elements = [...foundColors, ...foundAtmosphere, ...foundDescriptors].slice(0, 3);
+  return elements.length > 0 ? elements.join(', ') : 'warm, inviting children\'s scene';
 }
 
 serve(async (req) => {
@@ -71,34 +59,24 @@ serve(async (req) => {
       console.log(`📖 Story context:`, storyContext);
     }
 
-    const systemPrompt = `You are a visual keyword extractor for children's book illustrations. Your job is to identify visual elements that would help an artist create a picture.
-
-Given a sentence from a children's story and what has already been extracted, identify ADDITIONAL visual keywords that would enhance the illustration.
-
-IMPORTANT: You have access to story context from previous pages. Use this to understand character continuity and pronoun references:
-- "They" often refers to characters mentioned in previous pages
-- Character traits (like colors, clothing, appearance) should be consistent with what was established earlier
-- Relationships between characters should be maintained
+    const systemPrompt = `Extract visual elements from children's story text into a prompt-ready format.
 
 Focus on:
-- Colors (red, blue, sparkly, bright, etc.)
-- Objects/items not already identified  
-- Visual descriptors (big, small, fluffy, shiny, etc.)
-- Atmospheric elements (sunny, magical, cozy, etc.)
-- Setting details for better context
-- Character consistency and relationships
+- Visual descriptors (colors, sizes, textures)
+- Key objects and characters
+- Setting and atmosphere
+- Actions and emotions
 
-Return ONLY a JSON object with these arrays (empty arrays if nothing found):
-{
-  "colors": [],
-  "objects": [],
-  "actions": [],
-  "locations": [],
-  "descriptors": [],
-  "atmosphere": []
-}
+Output format: Single descriptive sentence ready for image generation.
 
-Be conservative - only include elements that would genuinely improve the visual representation.`;
+Example input: "Lucy found a sparkly blue shell on the sandy beach"
+Example output: "young girl discovering shiny blue seashell on sunny beach, warm golden sand, ocean waves in background"
+
+Keep prompts:
+- Under 200 characters when possible
+- Focused on visual elements only
+- Child-appropriate and wholesome
+- Ready to append to style suffixes`;
 
     let contextInfo = '';
     if (storyContext?.previousPages && storyContext.previousPages.length > 0) {
@@ -121,14 +99,14 @@ Already extracted:
 - Location: ${existingContent.location || 'none'}
 - Descriptor: ${existingContent.descriptor || 'none'}${contextInfo}
 
-What additional visual keywords would help create a better illustration? Consider character continuity and relationships from the story context.`;
+Transform this into a visual prompt sentence. Consider character continuity from story context.`;
 
     // Add timeout wrapper around OpenAI call
     const timeoutPromise = new Promise<never>((_, reject) => {
       setTimeout(() => reject(new Error('OpenAI API timeout after 6000ms')), 6000);
     });
 
-    let enhancedKeywords: EnhancedKeywords;
+    let enhancedPrompt: string;
     
     try {
       const response = await Promise.race([
@@ -144,7 +122,7 @@ What additional visual keywords would help create a better illustration? Conside
               { role: 'system', content: systemPrompt },
               { role: 'user', content: userPrompt }
             ],
-            max_completion_tokens: 200
+            max_completion_tokens: 150
           }),
         }),
         timeoutPromise
@@ -157,26 +135,19 @@ What additional visual keywords would help create a better illustration? Conside
       }
 
       const data = await response.json();
-      const content = data.choices[0].message.content;
+      enhancedPrompt = data.choices[0].message.content.trim();
       
-      console.log(`🤖 AI response:`, content);
-
-      try {
-        enhancedKeywords = JSON.parse(content);
-      } catch (parseError) {
-        console.error('Failed to parse AI response:', content);
-        throw new Error('AI response parsing failed');
-      }
+      console.log(`🤖 AI enhanced prompt:`, enhancedPrompt);
     } catch (aiError) {
-      console.log(`⚠️ AI enhancement failed (${aiError.message}), using basic fallback extraction`);
+      console.log(`⚠️ AI enhancement failed (${aiError.message}), using basic fallback`);
       
-      // Basic fallback keyword extraction from pageText
-      enhancedKeywords = extractBasicKeywords(pageText, existingContent);
+      // Basic fallback sentence generation
+      enhancedPrompt = generateBasicSentence(pageText, existingContent);
     }
 
-    console.log(`✨ Enhanced keywords:`, enhancedKeywords);
+    console.log(`✨ Final enhanced prompt:`, enhancedPrompt);
 
-    return new Response(JSON.stringify({ enhancedKeywords }), {
+    return new Response(JSON.stringify({ enhancedPrompt }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
@@ -184,14 +155,7 @@ What additional visual keywords would help create a better illustration? Conside
     console.error('Error in extract-visual-keywords function:', error);
     return new Response(JSON.stringify({ 
       error: error.message,
-      enhancedKeywords: {
-        colors: [],
-        objects: [],
-        actions: [],
-        locations: [],
-        descriptors: [],
-        atmosphere: []
-      }
+      enhancedPrompt: "warm, inviting children's scene"
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
