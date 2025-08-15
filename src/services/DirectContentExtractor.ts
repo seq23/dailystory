@@ -177,7 +177,8 @@ export class DirectContentExtractor {
   static generateDirectPrompt(
     content: PageContent, 
     userInfo: UserInfo,
-    style: string = 'children-book-illustration'
+    style: string = 'children-book-illustration',
+    sessionId?: string
   ): DirectImagePrompt {
     // Build character description
     const characterInfo = this.buildSimpleCharacterDescription(userInfo, content.subject);
@@ -210,7 +211,14 @@ export class DirectContentExtractor {
       visualScene += ` in ${content.location}`;
     }
     
-    const visualPrompt = `A ${style} showing ${visualScene}. Bright, cheerful, safe for children.`;
+    // Add environmental continuity from visual state
+    let environmentalContext = '';
+    if (sessionId) {
+      const { StoryVisualStateManager } = require('./storyVisualState');
+      environmentalContext = StoryVisualStateManager.getSettingForPrompt(sessionId);
+    }
+    
+    const visualPrompt = `A ${style} showing ${visualScene}${environmentalContext}. Bright, cheerful, safe for children.`;
     
     const negativePrompt = [
       'scary', 'dark', 'violent', 'inappropriate', 'adult content', 'disturbing',
@@ -246,6 +254,7 @@ export class DirectContentExtractor {
     storyContext?: {
       previousPages?: string[];
       characterInfo?: { name: string; traits?: any; };
+      sessionId?: string;
     }
   ): Promise<PageContent> {
     // First try basic extraction
@@ -318,9 +327,9 @@ export class DirectContentExtractor {
     return enhancedPrompt || '';
   }
 
-  static createSimplePrompt(pageText: string, userInfo: UserInfo): string {
+  static createSimplePrompt(pageText: string, userInfo: UserInfo, sessionId?: string): string {
     const content = this.extractPageContent(pageText);
-    const prompt = this.generateDirectPrompt(content, userInfo);
+    const prompt = this.generateDirectPrompt(content, userInfo, 'children-book-illustration', sessionId);
     
     console.log(`📝 Direct Content: "${pageText}" → "${prompt.visualPrompt}"`);
     
@@ -333,11 +342,12 @@ export class DirectContentExtractor {
     storyContext?: {
       previousPages?: string[];
       characterInfo?: { name: string; traits?: any; };
+      sessionId?: string;
     }
   ): Promise<string> {
     // Start with basic content extraction and prompt generation
     const basicContent = this.extractPageContent(pageText);
-    const basicPrompt = this.generateDirectPrompt(basicContent, userInfo);
+    const basicPrompt = this.generateDirectPrompt(basicContent, userInfo, 'children-book-illustration', storyContext?.sessionId);
     
     // Check if AI enhancement would be beneficial
     if (this.shouldEnhanceWithAI(basicContent, pageText)) {

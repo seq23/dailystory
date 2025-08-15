@@ -147,7 +147,8 @@ export class SimpleImageService {
   private static generateSimplePrompt(
     storyText: string,
     userInfo: UserInfo,
-    difficultyLevel: DifficultyLevel
+    difficultyLevel: DifficultyLevel,
+    sessionId?: string
   ): { positivePrompt: string; negativePrompt: string } {
     console.log(`📝 Using simple rule-based extraction for: "${storyText}"`);
     
@@ -155,6 +156,9 @@ export class SimpleImageService {
     const styleFramework = DIFFICULTY_STYLE_MAPPING[difficultyLevel];
     const baseStyle = styleFramework?.prompt || DIFFICULTY_STYLE_MAPPING['beginner'].prompt;
     const brandSuffix = styleFramework?.brandSuffix || DIFFICULTY_STYLE_MAPPING['beginner'].brandSuffix;
+    
+    // Import visual state manager
+    const { StoryVisualStateManager } = require('./storyVisualState');
     
     // Build scene-specific prompt with basic details
     const sceneElements = [];
@@ -169,7 +173,13 @@ export class SimpleImageService {
     if (pageContent.object) sceneElements.push(`with ${pageContent.object}`);
     if (pageContent.location) sceneElements.push(`in a ${pageContent.location}`);
     
-    const coreContent = `${baseStyle} ${sceneElements.join(' ')}`;
+    // Add environmental continuity if session exists
+    let environmentalContext = '';
+    if (sessionId) {
+      environmentalContext = StoryVisualStateManager.getSettingForPrompt(sessionId);
+    }
+    
+    const coreContent = `${baseStyle} ${sceneElements.join(' ')}${environmentalContext}`;
     
     // Use advanced prompt management with user preferences
     const userPreferences = {
@@ -232,12 +242,18 @@ export class SimpleImageService {
         if (difficultyLevel === 'beginner') {
           // Level 0: Try AI-enhanced DirectContentExtractor with timeout
           const pageContent = await withTimeout(
-            () => DirectContentExtractor.enhancePageContent(storyText),
+            () => DirectContentExtractor.enhancePageContent(storyText, { 
+              characterInfo: { name: userInfo.name },
+              sessionId 
+            }),
             TIMEOUT_CONFIGS.AI_ENHANCEMENT
           );
           
           const baseStyle = DIFFICULTY_STYLE_MAPPING['beginner'].prompt;
           const brandSuffix = "children's book art, vibrant colors";
+          
+          // Import visual state manager
+          const { StoryVisualStateManager } = await import('./storyVisualState');
           
           const sceneElements = [];
           const subjectWithDescriptor = pageContent.descriptor 
@@ -249,7 +265,10 @@ export class SimpleImageService {
           if (pageContent.object) sceneElements.push(`with ${pageContent.object}`);
           if (pageContent.location) sceneElements.push(`in a ${pageContent.location}`);
           
-          positivePrompt = [baseStyle, ...sceneElements, brandSuffix].join(' ');
+          // Add environmental continuity
+          const environmentalContext = StoryVisualStateManager.getSettingForPrompt(sessionId);
+          
+          positivePrompt = [baseStyle, ...sceneElements, environmentalContext, brandSuffix].join(' ');
           negativePrompt = 'bad anatomy, blurry, text, watermark, ugly, deformed';
           
         } else {
@@ -291,7 +310,7 @@ export class SimpleImageService {
         // AI enhancement failed or timed out - fallback to simple rule-based extraction
         console.log(`⚠️ AI enhancement failed/timed out, using simple fallback:`, error instanceof Error ? error.message : error);
         
-        const simpleResult = this.generateSimplePrompt(storyText, userInfo, difficultyLevel);
+        const simpleResult = this.generateSimplePrompt(storyText, userInfo, difficultyLevel, sessionId);
         positivePrompt = simpleResult.positivePrompt;
         negativePrompt = simpleResult.negativePrompt;
         aiMethodUsed = false;
@@ -301,7 +320,7 @@ export class SimpleImageService {
 
       // Try Runware first (primary provider)
       console.log('🎯 Attempting image generation with Runware (primary)...');
-      let result = await this.generateWithRunware(positivePrompt, finalConfig, negativePrompt, userInfo, pageNumber);
+      let result = await this.generateWithRunware(positivePrompt, finalConfig, negativePrompt, userInfo, pageNumber, sessionId);
 
       // If Runware fails, fallback to OpenAI
       if (!result.success) {
@@ -329,27 +348,52 @@ export class SimpleImageService {
     }
   }
 
-  private static async generateWithRunware(prompt: string, config: ImageGenerationConfig, negativePrompt?: string, userInfo?: UserInfo, pageNumber?: number): Promise<ImageResult> {
+  private static async generateWithRunware(prompt: string, config: ImageGenerationConfig, negativePrompt?: string, userInfo?: UserInfo, pageNumber?: number, sessionId?: string): Promise<ImageResult> {
     try {
       console.log('🎨 Calling Supabase Edge Function for Runware image generation');
 
+      // Import visual state manager for seed consistency
+      const { StoryVisualStateManager } = await import('./storyVisualState');
+      
+      // Get or create story state for consistency
+      let characterSeed: number | undefined;
+      const defaultRunware = APP_CONFIG.images.runware;
+      
+      if (sessionId && userInfo) {
+        // Get existing character seed for consistency
+        characterSeed = StoryVisualStateManager.getCharacterSeed(sessionId, userInfo.name);
+        
+        // Lock Runware parameters on first use
+        StoryVisualStateManager.lockRunwareParameters(sessionId, {
+          cfgScale: defaultRunware.CFGScale,
+          model: defaultRunware.model,
+          steps: defaultRunware.steps,
+          scheduler: "FlowMatchEulerDiscreteScheduler"
+        });
+      }
+
+      // Get locked parameters if session exists
+      const runwareParams = sessionId ? StoryVisualStateManager.getRunwareContext(sessionId) : null;
+      
       const body: any = {
         positivePrompt: prompt,
         width: config.width,
         height: config.height,
-        model: APP_CONFIG.images.runware.model,
+        model: runwareParams?.model || defaultRunware.model,
         numberResults: 1,
-        outputFormat: APP_CONFIG.images.runware.outputFormat,
-        steps: APP_CONFIG.images.runware.steps,
-        CFGScale: APP_CONFIG.images.runware.CFGScale,
-        // Character consistency parameters (only if userInfo provided)
+        outputFormat: defaultRunware.outputFormat,
+        steps: runwareParams?.steps || defaultRunware.steps,
+        CFGScale: runwareParams?.cfgScale || defaultRunware.CFGScale,
+        scheduler: runwareParams?.scheduler || "FlowMatchEulerDiscreteScheduler",
+        // Character consistency parameters with seed
         ...(userInfo && {
           characterName: userInfo.name,
           characterDescription: `${userInfo.age} year old ${userInfo.avatar.type}`,
           skinTone: userInfo.avatar.skinTone,
           avatarType: userInfo.avatar.type,
           storyTheme: userInfo.favoriteColor,
-          pageIndex: (pageNumber || 1) - 1
+          pageIndex: (pageNumber || 1) - 1,
+          ...(characterSeed && { seed: characterSeed })
         })
       };
 
@@ -367,6 +411,22 @@ export class SimpleImageService {
 
       if (!data?.success) {
         throw new Error(data?.error || 'Image generation failed');
+      }
+
+      // Store seed for character consistency on successful generation
+      if (sessionId && userInfo && data.seed && !characterSeed) {
+        StoryVisualStateManager.updateCharacterWithSeed(
+          sessionId,
+          userInfo.name,
+          `${userInfo.age} year old ${userInfo.avatar.type}`,
+          data.seed,
+          pageNumber || 1
+        );
+      }
+      
+      // Track successful prompt for future reference
+      if (sessionId && userInfo) {
+        StoryVisualStateManager.addSuccessfulPrompt(sessionId, userInfo.name, prompt);
       }
 
       return {

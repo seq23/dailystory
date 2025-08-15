@@ -94,13 +94,26 @@ export class AdvancedStoryAnalyzer {
     storyText: string, 
     pageNumber: number, 
     totalPages: number,
-    previousAnalysis?: StoryAnalysis
+    previousAnalysis?: StoryAnalysis,
+    sessionId?: string
   ): StoryAnalysis {
     const cleanText = storyText.toLowerCase().trim();
     
-    return {
-      primaryCharacters: this.extractCharacters(storyText, 'primary'),
-      secondaryCharacters: this.extractCharacters(storyText, 'secondary'),
+    // Import and use visual state manager for setting continuity
+    const { StoryVisualStateManager } = require('./storyVisualState');
+    
+    let resolvedText = storyText;
+    if (sessionId) {
+      // Resolve pronouns using character registry
+      resolvedText = StoryVisualStateManager.resolvePronouns(sessionId, storyText);
+      
+      // Update page progress
+      StoryVisualStateManager.updatePageProgress(sessionId, pageNumber);
+    }
+    
+    const analysis: StoryAnalysis = {
+      primaryCharacters: this.extractCharacters(resolvedText, 'primary'),
+      secondaryCharacters: this.extractCharacters(resolvedText, 'secondary'),
       mainAction: this.extractMainAction(cleanText),
       emotions: this.extractEmotions(cleanText),
       objects: this.extractObjects(cleanText),
@@ -120,6 +133,30 @@ export class AdvancedStoryAnalyzer {
       aiEnhanced: false,
       enhancementSource: 'static'
     };
+    
+    // Update visual state with setting information
+    if (sessionId) {
+      StoryVisualStateManager.updateSetting(sessionId, pageNumber, {
+        primaryLocation: analysis.setting.location,
+        timeOfDay: analysis.setting.timeOfDay,
+        weather: analysis.setting.weather,
+        season: analysis.setting.season,
+        mood: analysis.mood
+      });
+      
+      // Track characters for consistency
+      [...analysis.primaryCharacters, ...analysis.secondaryCharacters].forEach(charName => {
+        StoryVisualStateManager.updateCharacterWithSeed(
+          sessionId, 
+          charName, 
+          `${charName} character`,
+          undefined,
+          pageNumber
+        );
+      });
+    }
+    
+    return analysis;
   }
 
   static async enhanceAnalysisWithAI(
@@ -140,8 +177,8 @@ export class AdvancedStoryAnalyzer {
       return cached.analysis;
     }
 
-    // Get static analysis first
-    const staticAnalysis = this.analyzeStoryContent(storyText, pageNumber, totalPages, previousAnalysis);
+    // Get static analysis first with session tracking
+    const staticAnalysis = this.analyzeStoryContent(storyText, pageNumber, totalPages, previousAnalysis, sessionId);
     
     // Determine if AI enhancement is needed
     if (!this.shouldEnhanceWithAI(staticAnalysis, storyText, difficultyLevel)) {
