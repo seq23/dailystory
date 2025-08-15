@@ -52,7 +52,7 @@ STYLE: Draw inspiration from getColorVoiceForUser(userInfo, difficulty) for styl
 GUARDRAILS: G-rated content only. No external personal data. No copyrighted content. Transform any potentially concerning themes into their gentle equivalents naturally.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
-    userPromptTemplate: `Create a never-ending children's story for {userName}, age 3-5. The story continues forever with natural pauses and continuation hooks unless the user requests an ending. Use {specialRequest} as creative inspiration, or if none provided, create your own engaging themes. Naturally weave in {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} throughout the story, mixing with your own creative elements. Use 1 sentence per page with simple subject-verb or subject-verb-object structure, using 2-4 letter words in 2-4 word sentences (max 6 words). Create natural story breaks that encourage continuation.`,
+    userPromptTemplate: 'Create a never-ending children\'s story for {userName}, age 3-5. The story continues forever unless the user requests an ending. Use {specialRequest} as creative inspiration, or if none determined, create your own engaging themes. Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} throughout the story in a direct way, mixing with your own creative elements. USE ONLY 1 sentence per page with simple subject-verb or subject-verb-object structure. Use MOSTLY sight words and 2-4 letter words. Use MOSTLY 2-4 word sentences (max 6).',
   },
 
   easy: {
@@ -75,7 +75,7 @@ STYLE: Draw inspiration from getColorVoiceForUser(userInfo, difficulty) for styl
 GUARDRAILS: G-rated content only. No external personal data. No copyrighted content. Transform concerning themes to gentle equivalents.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
-    userPromptTemplate: `Create a never-ending story for {userName}, age 5-7. The story continues forever with natural pauses and continuation hooks unless the user requests an ending. Use {specialRequest} as creative inspiration, or if none provided, create your own engaging themes. Naturally incorporate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} throughout the story, mixing with your own creative elements. Use simple vocabulary with 2-3 sentences per page for developing readers. Create natural story breaks that make readers want to continue.`,
+    userPromptTemplate: 'Create a never-ending story for {userName}, age 5-7. The story continues forever with natural pauses and continuation hooks unless the user requests an ending. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} throughout the story in a direct way, mixing with your own creative elements. Use simple vocabulary with 2-3 sentences per page for developing readers. Let the story flow organically with natural progression.',
   },
 
   medium: {
@@ -98,7 +98,7 @@ STYLE: Draw inspiration from getColorVoiceForUser(userInfo, difficulty) for styl
 GUARDRAILS: Age-appropriate content. Simple challenges/mild conflict okay. No copyrighted content. Transform concerning themes naturally.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
-    userPromptTemplate: `Create a never-ending story for {userName}, age 7-9. The story continues forever with natural pauses and continuation hooks unless the user requests an ending. Use {specialRequest} as creative inspiration, or if none provided, create your own engaging themes. Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} throughout the story, mixing with your own creative elements. Let the story flow organically with natural progression and create compelling hooks that make readers eager to continue.`,
+    userPromptTemplate: 'Create a never-ending story for {userName}, age 7-9. The story continues forever with natural pauses and continuation hooks unless the user requests an ending. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} throughout the story, mixing with your own creative elements. Let the story flow organically with natural progression.',
   },
 
   hard: {
@@ -121,7 +121,7 @@ STYLE: Draw inspiration from getColorVoiceForUser(userInfo, difficulty) for styl
 GUARDRAILS: Age-appropriate content. Moderate challenges/conflict okay. No copyrighted content. Avoid intense themes.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
-    userPromptTemplate: `Create a never-ending story for {userName}, age 9-12. The story continues forever with natural pauses and continuation hooks unless the user requests an ending. Use {specialRequest} as creative inspiration, or if none provided, create your own engaging themes. Naturally incorporate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} when they enhance the narrative, mixing with your own creative elements. Let the story flow organically with sophisticated storytelling techniques and create compelling hooks that encourage continuation.`,
+    userPromptTemplate: 'Create a never-ending story for {userName}, age 9-12. The story continues forever with natural pauses and continuation hooks until the user requests an ending. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally incorporate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} when they enhance the narrative, mixing with your own creative elements. Let the story flow organically with sophisticated storytelling techniques.',
   },
 
   expert: {
@@ -144,7 +144,7 @@ STYLE: Draw inspiration from getColorVoiceForUser(userInfo, difficulty) for styl
 GUARDRAILS: Age-appropriate content. Complex themes okay. No copyrighted content. Avoid inappropriate material.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
-    userPromptTemplate: `Create a never-ending story for {userName}, age 12-15. Use {specialRequest} as creative inspiration, or create engaging themes. Weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as symbolic elements when they enhance the narrative. Develop with sophisticated literary techniques and compelling hooks that draw readers deeper into the story.`,
+    userPromptTemplate: 'Create a never-ending story for {userName}, age 11-15 with sophisticated literary techniques, compelling hooks and pauses that draw readers deeper into the story until the user requests an ending. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as symbolic elements when they enhance the narrative. The story should address mature themes like personal philosophy, social justice, future aspirations, or meaningful life choices while maintaining appropriate boundaries. Focus on characters who face significant life decisions, navigate complex moral landscapes, and experience transformative growth.',
   }
 };
 
@@ -184,7 +184,7 @@ FORMAT: Page 1: [5-6 sentences]. Each subsequent page should maintain similar le
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
-    userPromptTemplate: `Create a never-ending story for {userName} (age {age}) exploring identity, purpose, and complex relationships using 6th grade vocabulary. Use {specialRequest} as creative inspiration, or create engaging themes. Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements throughout the story. Use an internal random story seed (1-10,000) to create unique details in each continuation.`,
+    userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) using 6th grade vocabulary, complex sentence structures, and sophisticated literary devices. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. The narrative should challenge readers intellectually and emotionally while promoting critical thinking, empathy, and character development appropriate for 6th-grade maturity and academic levels. Use a random internal seed (1-10,000) for unique details.',
     maxLength: 900,
     expectedPages: 12,
     wordCount: "800-900 words"
@@ -223,7 +223,7 @@ FORMAT: Page 1: [6-7 sentences]. Each subsequent page should maintain similar le
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
-    userPromptTemplate: `Create a never-ending story for {userName} (age {age}) exploring identity, purpose, and complex relationships using 7th grade vocabulary. Use {specialRequest} as creative inspiration, or create engaging themes. Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Address themes of growing up, finding your place, and understanding yourself. Use an internal random story seed (1-10,000) to create unique details.`,
+    userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) using 7th grade vocabulary, complex sentence structures, and sophisticated literary devices. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. The narrative should challenge readers intellectually and emotionally while promoting critical thinking, empathy, and character development appropriate for 7th-grade maturity and academic levels. Use a random internal seed (1-10,000) for unique details.',
     maxLength: 1100,
     expectedPages: 13,
     wordCount: "900-1100 words"
@@ -262,7 +262,7 @@ FORMAT: Page 1: [6-8 sentences]. Each subsequent page should maintain similar le
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
-    userPromptTemplate: `Create a never-ending story for {userName} (age {age}) exploring identity, purpose, and complex relationships using 8th grade vocabulary. Use {specialRequest} as creative inspiration, or create engaging themes. Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Address themes of growing up, moral complexity, and finding one's place in the world. Use an internal random story seed (1-10,000) to create unique details.`,
+    userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) using 8th grade vocabulary, complex sentence structures, and sophisticated literary devices. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. The narrative should challenge readers intellectually and emotionally while promoting critical thinking, empathy, and character development appropriate for 8th-grade maturity and academic levels. Use a random internal seed (1-10,000) for unique details.',
     maxLength: 1200,
     expectedPages: 14,
     wordCount: "1000-1200 words"
@@ -301,7 +301,7 @@ FORMAT: Page 1: [7-8 sentences]. Each subsequent page should maintain similar le
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
-    userPromptTemplate: `Create a never-ending story for {userName} (age {age}) exploring identity, purpose, and complex relationships using 9th grade vocabulary. Use {specialRequest} as creative inspiration, or create engaging themes. Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Address themes of self-discovery, moral complexity, and understanding one's place in society with philosophical depth. Use an internal random story seed (1-10,000) to create unique details.`,
+    userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) using 9th grade vocabulary, complex sentence structures, and sophisticated literary devices. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. The narrative should challenge readers intellectually and emotionally while promoting critical thinking, empathy, and character development appropriate for 9th-grade maturity and academic levels. Use a random internal seed (1-10,000) for unique details.',
     maxLength: 1300,
     expectedPages: 15,
     wordCount: "1100-1300 words"
@@ -340,7 +340,7 @@ FORMAT: Page 1: [7-9 sentences]. Each subsequent page should maintain similar le
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
-    userPromptTemplate: `Create a never-ending story for {userName} (age {age}) exploring identity, purpose, and complex relationships using 10th grade vocabulary. Use {specialRequest} as creative inspiration, or create engaging themes. Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Address themes of self-discovery, moral complexity, social awareness, and understanding one's place in the world with philosophical and social depth. Use an internal random story seed (1-10,000) to create unique details.`,
+    userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) using advanced vocabulary, complex sentence structures, and sophisticated literary devices. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. The narrative should challenge readers intellectually and emotionally while promoting critical thinking, empathy, and character development appropriate for 10th-grade maturity and academic levels. Use a random internal seed (1-10,000) for unique details.',
     maxLength: 1400,
     expectedPages: 16,
     wordCount: "1200-1400 words"
