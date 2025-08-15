@@ -52,7 +52,7 @@ STYLE: Draw inspiration from getColorVoiceForUser(userInfo, difficulty) for styl
 GUARDRAILS: G-rated content only. No external personal data. No copyrighted content. Transform any potentially concerning themes into their gentle equivalents naturally.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
-    userPromptTemplate: `Create a children's story for {userName}, age 3-5. Continue indefinitely with narrative hooks unless user requests ending. {specialRequest} provides theme and primary direction. Mix user elements ({favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}) with AI-generated content for variety. Spread user preferences across multiple pages naturally. Use 1 sentence per page, subject-verb structure, 2-4 letter words, 2-4 word sentences (max 6 words). Apply color voice styling per profile.`,
+    userPromptTemplate: `Create a never-ending children's story for {userName}, age 3-5. The story continues forever with natural pauses and continuation hooks unless the user requests an ending. Use {specialRequest} as creative inspiration, or if none provided, create your own engaging themes. Naturally weave in {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} throughout the story, mixing with your own creative elements. Use 1 sentence per page with simple subject-verb or subject-verb-object structure, using 2-4 letter words in 2-4 word sentences (max 6 words). Create natural story breaks that encourage continuation.`,
   },
 
   easy: {
@@ -75,7 +75,7 @@ STYLE: Draw inspiration from getColorVoiceForUser(userInfo, difficulty) for styl
 GUARDRAILS: G-rated content only. No external personal data. No copyrighted content. Transform concerning themes to gentle equivalents.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
-    userPromptTemplate: `Create a continuing story for {userName}, age 5-7. The story continues indefinitely unless user requests an ending, with narrative hooks for continuation. {specialRequest} provides the primary creative direction. Mix user elements ({favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}) with AI-generated content for variety. Spread user preferences across multiple pages naturally. Use simple vocabulary with 2-3 sentences per page for developing readers. Apply color voice styling per user profile.`,
+    userPromptTemplate: `Create a never-ending story for {userName}, age 5-7. The story continues forever with natural pauses and continuation hooks unless the user requests an ending. Use {specialRequest} as creative inspiration, or if none provided, create your own engaging themes. Naturally incorporate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} throughout the story, mixing with your own creative elements. Use simple vocabulary with 2-3 sentences per page for developing readers. Create natural story breaks that make readers want to continue.`,
   },
 
   medium: {
@@ -98,7 +98,7 @@ STYLE: Draw inspiration from getColorVoiceForUser(userInfo, difficulty) for styl
 GUARDRAILS: Age-appropriate content. Simple challenges/mild conflict okay. No copyrighted content. Transform concerning themes naturally.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
-    userPromptTemplate: `Create an engaging story continuation for {userName}, age 7-9. The story continues indefinitely with natural flow unless user requests an ending. {specialRequest} provides the primary creative direction. Mix user elements ({favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}) with AI-generated content for variety. Spread user preferences across multiple pages naturally. Let the story dictate its own natural length and pacing. Apply color voice styling per user profile.`,
+    userPromptTemplate: `Create a never-ending story for {userName}, age 7-9. The story continues forever with natural pauses and continuation hooks unless the user requests an ending. Use {specialRequest} as creative inspiration, or if none provided, create your own engaging themes. Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} throughout the story, mixing with your own creative elements. Let the story flow organically with natural progression and create compelling hooks that make readers eager to continue.`,
   },
 
   hard: {
@@ -121,7 +121,7 @@ STYLE: Draw inspiration from getColorVoiceForUser(userInfo, difficulty) for styl
 GUARDRAILS: Age-appropriate content. Moderate challenges/conflict okay. No copyrighted content. Avoid intense themes.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
-    userPromptTemplate: `Create an engaging story continuation for {userName}, age 9-12. The story continues indefinitely with natural rhythm unless user requests an ending. {specialRequest} provides the primary creative direction. User preferences ({favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}) are available as optional story enhancements - use naturally if they fit the narrative flow. Let the narrative flow organically with sophisticated techniques. Apply color voice styling per user profile.`,
+    userPromptTemplate: `Create a never-ending story for {userName}, age 9-12. The story continues forever with natural pauses and continuation hooks unless the user requests an ending. Use {specialRequest} as creative inspiration, or if none provided, create your own engaging themes. Naturally incorporate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} when they enhance the narrative, mixing with your own creative elements. Let the story flow organically with sophisticated storytelling techniques and create compelling hooks that encourage continuation.`,
   },
 
   expert: {
@@ -144,7 +144,7 @@ STYLE: Draw inspiration from getColorVoiceForUser(userInfo, difficulty) for styl
 GUARDRAILS: Age-appropriate content. Complex themes okay. No copyrighted content. Avoid inappropriate material.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
-    userPromptTemplate: `Create an engaging story continuation for {userName}, age 12-15. The story continues indefinitely with natural thematic flow unless user requests an ending. {specialRequest} provides the primary creative direction. User preferences ({favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}) are available for optional symbolic transformation - use subtly if they enhance the narrative. Let the story develop at its natural pace with sophisticated literary techniques. Apply color voice styling per user profile.`,
+    userPromptTemplate: `Create a never-ending story for {userName}, age 12-15. The story continues forever with natural pauses and continuation hooks unless the user requests an ending. Use {specialRequest} as creative inspiration, or if none provided, create your own engaging themes. Subtly weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as symbolic elements when they enhance the narrative, mixing with your own creative elements. Develop the story with sophisticated literary techniques and create compelling hooks that draw readers deeper into the narrative.`,
   }
 };
 
@@ -184,7 +184,7 @@ FORMAT: Page 1: [5-6 sentences]. Each subsequent page should maintain similar le
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
-    userPromptTemplate: `Create a sophisticated 800-900 word story for {userName} (age {age}) that explores identity, purpose, and complex relationships. Weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} naturally into the story as subtle nods using 6th grade vocabulary and complex sentence structures. {specialRequest} provides the primary creative direction. Refer to color voice styling per user profile as needed. Use an internal random "story seed" (1–10,000) to vary setting, events, and details so each story is unique. Do not mention the seed.`,
+    userPromptTemplate: `Create a never-ending story for {userName} (age {age}) that explores identity, purpose, and complex relationships using 6th grade vocabulary and complex sentence structures. The story continues forever with natural pauses and continuation hooks unless the user requests an ending. Use {specialRequest} as creative inspiration, or if none provided, create your own engaging themes. Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements throughout the story, mixing with your own creative elements. Use an internal random story seed (1-10,000) to create unique details and variations in each continuation, but never mention this seed to the reader.`,
     maxLength: 900,
     expectedPages: 12,
     wordCount: "800-900 words"
@@ -223,7 +223,7 @@ FORMAT: Page 1: [6-7 sentences]. Each subsequent page should maintain similar le
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
-    userPromptTemplate: `Create a sophisticated 900-1100 word story for {userName} (age {age}) exploring identity, purpose, and complex relationships with 7th grade complexity. Weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} naturally into the story as subtle nods. {specialRequest} provides the primary creative direction. Refer to color voice styling per user profile as needed. Address themes of growing up, finding your place, and understanding yourself. Use an internal random "story seed" (1–10,000) to vary setting, events, and details so each story is unique. Do not mention the seed.`,
+    userPromptTemplate: `Create a never-ending story for {userName} (age {age}) exploring identity, purpose, and complex relationships using 7th grade vocabulary and complex sentence structures. The story continues forever with natural pauses and continuation hooks unless the user requests an ending. Use {specialRequest} as creative inspiration, or if none provided, create your own engaging themes. Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements throughout the story, mixing with your own creative elements. Address themes of growing up, finding your place, and understanding yourself. Use an internal random story seed (1-10,000) to create unique details and variations in each continuation, but never mention this seed to the reader.`,
     maxLength: 1100,
     expectedPages: 13,
     wordCount: "900-1100 words"
@@ -262,7 +262,7 @@ FORMAT: Page 1: [6-8 sentences]. Each subsequent page should maintain similar le
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
-    userPromptTemplate: `Create a sophisticated 1000-1200 word story for {userName} (age {age}) with 8th grade complexity, exploring identity, purpose, and complex relationships. Weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} naturally into the story as subtle nods. {specialRequest} provides the primary creative direction. Refer to color voice styling per user profile as needed. Address themes of growing up, moral complexity, and finding one's place in the world. Use an internal random "story seed" (1–10,000) to vary setting, events, and details so each story is unique. Do not mention the seed.`,
+    userPromptTemplate: `Create a never-ending story for {userName} (age {age}) exploring identity, purpose, and complex relationships using 8th grade vocabulary and complex sentence structures. The story continues forever with natural pauses and continuation hooks unless the user requests an ending. Use {specialRequest} as creative inspiration, or if none provided, create your own engaging themes. Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements throughout the story, mixing with your own creative elements. Address themes of growing up, moral complexity, and finding one's place in the world. Use an internal random story seed (1-10,000) to create unique details and variations in each continuation, but never mention this seed to the reader.`,
     maxLength: 1200,
     expectedPages: 14,
     wordCount: "1000-1200 words"
@@ -301,7 +301,7 @@ FORMAT: Page 1: [7-8 sentences]. Each subsequent page should maintain similar le
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
-    userPromptTemplate: `Create a sophisticated 1100-1300 word story for {userName} (age {age}) with 9th grade complexity, exploring identity, purpose, and complex relationships with philosophical depth. Weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} naturally into the story as subtle nods. {specialRequest} provides the primary creative direction. Refer to color voice styling per user profile as needed. Address themes of self-discovery, moral complexity, and understanding one's place in society. Use an internal random "story seed" (1–10,000) to vary setting, events, and details so each story is unique. Do not mention the seed.`,
+    userPromptTemplate: `Create a never-ending story for {userName} (age {age}) exploring identity, purpose, and complex relationships using 9th grade vocabulary and complex sentence structures. The story continues forever with natural pauses and continuation hooks unless the user requests an ending. Use {specialRequest} as creative inspiration, or if none provided, create your own engaging themes. Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements throughout the story, mixing with your own creative elements. Address themes of self-discovery, moral complexity, and understanding one's place in society with philosophical depth. Use an internal random story seed (1-10,000) to create unique details and variations in each continuation, but never mention this seed to the reader.`,
     maxLength: 1300,
     expectedPages: 15,
     wordCount: "1100-1300 words"
@@ -340,7 +340,7 @@ FORMAT: Page 1: [7-9 sentences]. Each subsequent page should maintain similar le
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
-    userPromptTemplate: `Create a sophisticated 1200-1400 word story for {userName} (age {age}) with 10th grade complexity, exploring identity, purpose, and complex relationships with philosophical and social depth. Weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} naturally into the story as subtle nods. {specialRequest} provides the primary creative direction. Refer to color voice styling per user profile as needed.  Address themes of self-discovery, moral complexity, social awareness, and understanding one's place in the world. Use an internal random "story seed" (1–10,000) to vary setting, events, and details so each story is unique. Do not mention the seed.`,
+    userPromptTemplate: `Create a never-ending story for {userName} (age {age}) exploring identity, purpose, and complex relationships using 10th grade vocabulary and complex sentence structures. The story continues forever with natural pauses and continuation hooks unless the user requests an ending. Use {specialRequest} as creative inspiration, or if none provided, create your own engaging themes. Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements throughout the story, mixing with your own creative elements. Address themes of self-discovery, moral complexity, social awareness, and understanding one's place in the world with philosophical and social depth. Use an internal random story seed (1-10,000) to create unique details and variations in each continuation, but never mention this seed to the reader.`,
     maxLength: 1400,
     expectedPages: 16,
     wordCount: "1200-1400 words"
