@@ -38,32 +38,8 @@ export interface StoryAnalysis {
   enhancementSource?: 'static' | 'ai' | 'hybrid';
 }
 
-export interface AIStoryElements {
-  characters: {
-    primary: string[];
-    relationships: string[];
-  };
-  scene: {
-    setting: string;
-    atmosphere: string;
-    lighting: string;
-    weather: string;
-  };
-  action: {
-    mainActivity: string;
-    emotion: string;
-    intensity: string;
-  };
-  visual: {
-    colors: string[];
-    objects: string[];
-    perspective: string;
-    composition: string;
-  };
-  context: {
-    storyProgression: string;
-    thematicElements: string[];
-  };
+export interface AIStoryResponse {
+  enhancedDescription: string;
 }
 
 export interface EnhancedImagePrompt {
@@ -187,13 +163,12 @@ export class AdvancedStoryAnalyzer {
         }
       });
 
-      if (error || !data?.success) {
+      if (error || !data?.success || !data?.enhancedDescription) {
         console.warn('🧠 AI enhancement failed, using static analysis:', error);
         return staticAnalysis;
       }
 
-      const aiElements: AIStoryElements = data.elements;
-      const enhancedAnalysis = this.mergeAIWithStatic(staticAnalysis, aiElements);
+      const enhancedAnalysis = this.parseAIDescription(staticAnalysis, data.enhancedDescription);
       
       // Cache the result
       this.aiEnhancementCache.set(cacheKey, {
@@ -223,23 +198,36 @@ export class AdvancedStoryAnalyzer {
     return lacksVisualDetails || hasComplexLanguage;
   }
 
-  private static mergeAIWithStatic(staticAnalysis: StoryAnalysis, aiElements: AIStoryElements): StoryAnalysis {
+  private static parseAIDescription(staticAnalysis: StoryAnalysis, aiDescription: string): StoryAnalysis {
+    const description = aiDescription.toLowerCase();
+    
+    // Extract colors from AI description
+    const colorWords = ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'brown', 'black', 'white', 'gray', 'gold', 'silver', 'bright', 'dark', 'colorful'];
+    const foundColors = colorWords.filter(color => description.includes(color));
+    
+    // Extract objects/props
+    const objectWords = description.match(/\b(tree|house|car|book|ball|toy|chair|table|door|window|flower|grass|sky|sun|moon|star|cloud|mountain|river|forest|garden|park|school|playground|bedroom|kitchen|living room|castle|ship|boat|airplane|train|bike|dog|cat|bird|fish|horse|rabbit|bear|lion|elephant|princess|prince|king|queen|knight|fairy|dragon|wizard|magic|wand|crown|dress|hat|shoes|backpack|pencil|crayon|paint|brush|cake|ice cream|cookie|apple|banana|orange|sandwich|pizza|milk|juice|water|cup|plate|bowl|spoon|fork|knife)\b/g) || [];
+    
+    // Extract emotions
+    const emotionWords = ['happy', 'sad', 'excited', 'scared', 'angry', 'surprised', 'curious', 'proud', 'shy', 'brave', 'worried', 'joyful', 'peaceful', 'adventurous', 'friendly', 'kind'];
+    const foundEmotions = emotionWords.filter(emotion => description.includes(emotion));
+    
+    // Extract characters (proper nouns and character descriptors)
+    const characterWords = description.match(/\b[A-Z][a-z]+\b/g) || [];
+    const characterDescriptors = description.match(/\b(boy|girl|child|kid|children|mother|father|mom|dad|parent|teacher|friend|family|brother|sister|grandma|grandpa|baby|toddler|teenager)\b/g) || [];
+    
     return {
       ...staticAnalysis,
-      primaryCharacters: [...new Set([...staticAnalysis.primaryCharacters, ...aiElements.characters.primary])],
-      mainAction: aiElements.action.mainActivity || staticAnalysis.mainAction,
-      emotions: [...new Set([...staticAnalysis.emotions, aiElements.action.emotion].filter(Boolean))],
-      objects: [...new Set([...staticAnalysis.objects, ...aiElements.visual.objects])],
+      primaryCharacters: [...new Set([...staticAnalysis.primaryCharacters, ...characterWords, ...characterDescriptors])],
+      colors: [...new Set([...staticAnalysis.colors, ...foundColors])],
+      objects: [...new Set([...staticAnalysis.objects, ...objectWords])],
+      emotions: [...new Set([...staticAnalysis.emotions, ...foundEmotions])],
+      // Use AI description for narrative elements if they seem richer
       setting: {
-        location: aiElements.scene.setting || staticAnalysis.setting.location,
-        timeOfDay: staticAnalysis.setting.timeOfDay,
-        weather: aiElements.scene.weather || staticAnalysis.setting.weather,
-        season: staticAnalysis.setting.season
+        ...staticAnalysis.setting,
+        location: aiDescription.length > 50 ? aiDescription.substring(0, 100) : staticAnalysis.setting.location
       },
-      colors: [...new Set([...staticAnalysis.colors, ...aiElements.visual.colors])],
-      mood: aiElements.scene.atmosphere || staticAnalysis.mood,
-      composition: aiElements.visual.composition || staticAnalysis.composition,
-      perspective: aiElements.visual.perspective || staticAnalysis.perspective,
+      mood: foundEmotions.length > 0 ? foundEmotions[0] : staticAnalysis.mood,
       aiEnhanced: true,
       enhancementSource: 'hybrid'
     };

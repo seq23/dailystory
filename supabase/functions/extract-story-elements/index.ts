@@ -24,32 +24,8 @@ interface StoryElementsRequest {
   };
 }
 
-interface ExtractedStoryElements {
-  characters: {
-    primary: string[];
-    relationships: string[];
-  };
-  scene: {
-    setting: string;
-    atmosphere: string;
-    lighting: string;
-    weather: string;
-  };
-  action: {
-    mainActivity: string;
-    emotion: string;
-    intensity: string;
-  };
-  visual: {
-    colors: string[];
-    objects: string[];
-    perspective: string;
-    composition: string;
-  };
-  context: {
-    storyProgression: string;
-    thematicElements: string[];
-  };
+interface StoryElementsResponse {
+  enhancedDescription: string;
 }
 
 serve(async (req) => {
@@ -71,44 +47,7 @@ serve(async (req) => {
 
     console.log(`📖 Extracting story elements for ${difficultyLevel} level, page ${pageNumber}/${totalPages}`);
 
-    const systemPrompt = `You are an expert children's story analyst who extracts visual and narrative elements for high-quality image generation. Your task is to analyze story text and identify rich, detailed elements that will create engaging, consistent, and age-appropriate illustrations.
-
-Focus on:
-- Character descriptions, emotions, and relationships
-- Setting details including atmosphere, lighting, and mood
-- Visual elements like colors, objects, and composition
-- Story context and thematic elements
-
-Return a JSON object with the following structure:
-{
-  "characters": {
-    "primary": ["main character names/descriptions"],
-    "relationships": ["character interaction descriptions"]
-  },
-  "scene": {
-    "setting": "detailed location description",
-    "atmosphere": "mood and feeling of the scene",
-    "lighting": "lighting conditions and quality",
-    "weather": "weather or environmental conditions"
-  },
-  "action": {
-    "mainActivity": "primary action or activity happening",
-    "emotion": "dominant emotional tone",
-    "intensity": "energy level of the scene"
-  },
-  "visual": {
-    "colors": ["specific colors mentioned or implied"],
-    "objects": ["important objects, items, or props"],
-    "perspective": "suggested viewing angle or perspective",
-    "composition": "how elements should be arranged"
-  },
-  "context": {
-    "storyProgression": "where this fits in the story arc",
-    "thematicElements": ["key themes or messages"]
-  }
-}
-
-Be specific and detailed, but keep content age-appropriate for children. Extract subtle visual cues that might be missed by simple keyword matching.`;
+    const systemPrompt = `Extract visual elements from children's stories for image generation. Focus on: characters, setting, colors, objects, emotions, atmosphere. Output direct descriptive text for children's book illustration prompts, not JSON. Keep age-appropriate.`;
 
     const userPrompt = `Analyze this ${difficultyLevel} level story text for page ${pageNumber} of ${totalPages}:
 
@@ -130,8 +69,7 @@ Extract rich visual and narrative elements that will help create a compelling, d
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        max_tokens: 800,
-        response_format: { type: "json_object" }
+        max_tokens: 400
       }),
     });
 
@@ -148,25 +86,13 @@ Extract rich visual and narrative elements that will help create a compelling, d
       throw new Error('No content received from OpenAI');
     }
 
-    let extractedElements: ExtractedStoryElements;
-    try {
-      const content = data.choices[0].message.content.trim();
-      extractedElements = JSON.parse(content);
-      
-      // Validate the structure
-      if (!extractedElements.characters || !extractedElements.scene || !extractedElements.visual) {
-        throw new Error('Invalid AI response structure');
-      }
-    } catch (parseError) {
-      console.error('Failed to parse OpenAI response:', data.choices[0].message.content);
-      throw new Error(`Failed to parse AI response: ${parseError.message}`);
-    }
+    const enhancedDescription = data.choices[0].message.content.trim();
 
-    console.log(`📖 Successfully extracted story elements: ${extractedElements.characters.primary.join(', ')} in ${extractedElements.scene.setting}`);
+    console.log(`📖 Successfully extracted story elements: ${enhancedDescription.substring(0, 100)}...`);
 
     return new Response(JSON.stringify({
       success: true,
-      elements: extractedElements,
+      enhancedDescription,
       sessionId,
       pageNumber
     }), {

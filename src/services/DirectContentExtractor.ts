@@ -19,7 +19,7 @@ export interface DirectImagePrompt {
 }
 
 export class DirectContentExtractor {
-  private static aiCache = new Map<string, PageContent>();
+  private static aiCache = new Map<string, string>();
   private static readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
   
   private static readonly SIMPLE_SUBJECTS = [
@@ -251,15 +251,6 @@ export class DirectContentExtractor {
     // First try basic extraction
     const basicContent = this.extractPageContent(pageText);
     
-    // Check cache first (include context in cache key)
-    const contextKey = storyContext ? JSON.stringify(storyContext) : 'no-context';
-    const cacheKey = `${pageText}-${contextKey}-enhanced`;
-    const cached = this.aiCache.get(cacheKey);
-    if (cached) {
-      console.log(`🎯 Using cached enhanced content for: "${pageText}"`);
-      return cached;
-    }
-    
     // Only call AI if basic extraction seems incomplete
     const needsEnhancement = this.shouldEnhanceWithAI(basicContent, pageText);
     
@@ -270,13 +261,19 @@ export class DirectContentExtractor {
     
     try {
       console.log(`🤖 Enhancing with AI: "${pageText}"`);
-      const enhanced = await this.enhanceWithAI(pageText, basicContent, storyContext);
+      const aiEnhancedSentence = await this.enhanceWithAI(pageText, basicContent, storyContext);
       
-      // Cache the result
-      this.aiCache.set(cacheKey, enhanced);
-      setTimeout(() => this.aiCache.delete(cacheKey), this.CACHE_DURATION);
+      // Merge AI enhancement back into PageContent structure
+      if (aiEnhancedSentence) {
+        return {
+          ...basicContent,
+          descriptor: basicContent.descriptor 
+            ? `${basicContent.descriptor}, ${aiEnhancedSentence}` 
+            : aiEnhancedSentence
+        };
+      }
       
-      return enhanced;
+      return basicContent;
     } catch (error) {
       console.warn(`⚠️ AI enhancement failed, using basic content:`, error);
       return basicContent;
