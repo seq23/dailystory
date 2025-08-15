@@ -25,7 +25,13 @@ export async function fetchElevenLabsAudioArrayBuffer(text: string, voiceId?: st
   }
   if (typeof data === 'string') {
     try {
-      // Enhanced base64 decoding with UTF-8 support
+      // Validate base64 format
+      const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
+      if (!base64Regex.test(data)) {
+        throw new Error('Invalid base64 format');
+      }
+
+      // UTF-8 compatible base64 decoding
       const binaryString = atob(data);
       const bytes = new Uint8Array(binaryString.length);
       for (let i = 0; i < binaryString.length; i++) {
@@ -34,7 +40,23 @@ export async function fetchElevenLabsAudioArrayBuffer(text: string, voiceId?: st
       return bytes.buffer;
     } catch (error) {
       console.error('Base64 decode error:', error);
-      throw new Error(`Invalid base64 audio data: ${error.message}`);
+      console.error('Base64 string preview:', data.substring(0, 50) + '...');
+      
+      // Fallback: try alternative decoding method
+      try {
+        // Use modern decoder for UTF-8 compatibility
+        const decoder = new TextDecoder('latin1');
+        const decodedText = decoder.decode(new TextEncoder().encode(data));
+        const binaryString = atob(decodedText);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        return bytes.buffer;
+      } catch (fallbackError) {
+        console.error('Fallback decode also failed:', fallbackError);
+        throw new Error(`All base64 decoding methods failed: ${error.message}`);
+      }
     }
   }
 
