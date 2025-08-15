@@ -30,11 +30,12 @@ import { LEVEL_4_TEMPLATES } from './gradeBased/level4Templates';
 import { LEVEL_4_EXTENSIONS } from './gradeBased/level4ExtensionTemplates';
 
 /**
- * ALL 182 TEMPLATES: 160 base + 15 extension + 7 enhanced fallback
- * Now consolidated in one place for ultimate reliability
+ * ALL 231+ TEMPLATES: Comprehensive fallback system with proper user placeholders
+ * Level segregation ensures appropriate content for each difficulty
+ * Never-ending story hooks create seamless continuation flow
  */
 export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallbackTemplate[]> = {
-  // BEGINNER: Level 0 templates (40) + Level 0 extensions (5) = 45 templates
+  // BEGINNER: Level 0 templates (40) + Level 0 extensions (7) + enhanced (1) = 48 templates
   beginner: [
     // Convert Level 0 templates to enhanced format
     ...LEVEL_0_TEMPLATES.map(template => ({
@@ -56,34 +57,34 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
       continuationPoints: ["What happens next?", "Where will they go?"],
       nextStorySeeds: ["Another adventure begins", "A new friend appears"]
     })),
-    // Original enhanced fallback
+    // Original enhanced fallback with proper user placeholders
     {
       setup: [
-        "{userName} sees a {animal}.",
-        "The {animal} is {color}.",
+        "{userName} sees a {favoriteAnimal}.",
+        "The {favoriteAnimal} is {favoriteColor}.",
         "{userName} can play."
       ],
       development: [
-        "{userName} and {animal} play.",
+        "{userName} and {favoriteAnimal} play.",
         "They run and jump.",
-        "The {animal} is happy."
+        "The {favoriteAnimal} is happy."
       ],
       climax: [
-        "{userName} helps the {animal}.",
+        "{userName} helps the {favoriteAnimal}.",
         "They are good friends.",
         "They have fun."
       ],
       resolution: [
         "{userName} is happy.",
-        "The {animal} is happy.",
-        "It is a good day."
+        "The {favoriteAnimal} is happy.",
+        "It is a good day. What adventure awaits next?"
       ],
-      contextualContinuations: [],
-      continuationPoints: ["What happens next?", "Where will they go?"],
-      nextStorySeeds: ["Another adventure begins", "A new friend appears"]
+      contextualContinuations: ["Together they discover new places", "New friends join their games"],
+      continuationPoints: ["What magical place will they explore?", "Who else wants to play?"],
+      nextStorySeeds: ["A mysterious door appears", "Strange sounds come from the forest"]
     }
   ],
-  // EASY: Level 1 templates (40) + Level 1 extensions (5) + enhanced fallbacks (2) = 47 templates  
+  // EASY: Level 1 templates (40) + Level 1 extensions (7) + enhanced fallbacks (2) = 49 templates  
   easy: [
     // Convert Level 1 templates to enhanced format
     ...LEVEL_1_TEMPLATES.map(template => ({
@@ -105,60 +106,60 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
       continuationPoints: ["What adventure comes next?", "Who will they meet?"],
       nextStorySeeds: ["A new challenge appears", "An exciting discovery awaits"]
     })),
-    // Original enhanced fallbacks
+    // Enhanced fallbacks with proper user placeholders and never-ending hooks
     {
       setup: [
         "{userName} goes to the park today.",
-        "{userName} sees a {animal} there.",
-        "The {animal} looks friendly and nice."
+        "{userName} sees a {favoriteAnimal} there.",
+        "The {favoriteAnimal} looks friendly and nice."
       ],
       development: [
-        "{userName} says hello to the {animal}.",
-        "The {animal} wants to play together.",
-        "They play with a {color} ball."
+        "{userName} says hello to the {favoriteAnimal}.",
+        "The {favoriteAnimal} wants to play together.",
+        "They play with a {favoriteColor} ball while thinking about {hobbies}."
       ],
       climax: [
-        "The ball rolls away fast.",
-        "{userName} and {animal} run after it.",
-        "They work together to get it."
+        "The ball rolls away fast toward the playground.",
+        "{userName} and {favoriteAnimal} run after it together.",
+        "They work as a team to retrieve it."
       ],
       resolution: [
-        "They get the ball back together.",
-        "{userName} and {animal} are happy.",
-        "They are good friends now."
+        "They get the ball back and share some {favoriteFood}.",
+        "{userName} and {favoriteAnimal} are happy friends.",
+        "They plan tomorrow's adventure. What exciting quest will they choose?"
       ],
-      contextualContinuations: [],
-      continuationPoints: ["What adventure comes next?", "Who will they meet?"],
-      nextStorySeeds: ["A new challenge appears", "An exciting discovery awaits"]
+      contextualContinuations: ["The next day brings new challenges", "Other animals want to join their friendship"],
+      continuationPoints: ["What thrilling adventure awaits tomorrow?", "Which new friend will they meet?"],
+      nextStorySeeds: ["A treasure map appears in the wind", "Strange footprints lead to mystery"]
     },
     {
       setup: [
-        "{userName} finds a {object} outside.",
-        "It is very {color} and pretty.",
-        "{userName} picks it up carefully."
+        "{userName} finds a magical {favoriteColor} stone outside.",
+        "It sparkles like the {favoriteAnimal} in their dreams.",
+        "{userName} picks it up with curiosity."
       ],
       development: [
-        "A {animal} comes over to see.",
-        "The {animal} wants to help {userName}.",
-        "They look at the {object} together."
+        "A wise {favoriteAnimal} comes to investigate the discovery.",
+        "The {favoriteAnimal} knows ancient secrets about magical stones.",
+        "Together they study the stone's mysterious patterns."
       ],
       climax: [
-        "The {object} starts to glow bright.",
-        "It makes a soft, happy sound.",
-        "{userName} and {animal} are surprised."
+        "The stone begins glowing with {favoriteColor} light.",
+        "It whispers secrets about {specialRequest} adventures.",
+        "{userName} and {favoriteAnimal} listen with wonder."
       ],
       resolution: [
-        "The {object} brings them good luck.",
-        "{userName} shares it with {animal}.",
-        "They both feel very happy."
+        "The stone grants them a wish for {hobbies} adventures.",
+        "{userName} shares the magic with their {favoriteAnimal} friend.",
+        "They both feel the magic growing stronger. What wish will they make next?"
       ],
-      contextualContinuations: [],
-      continuationPoints: ["What mystery will unfold next?", "Where will this magic lead?"],
-      nextStorySeeds: ["A deeper mystery emerges", "New magical elements appear"]
+      contextualContinuations: ["The magic stone leads to hidden realms", "Ancient guardians emerge from the shadows"],
+      continuationPoints: ["What magical realm will the stone reveal?", "Which ancient secrets await discovery?"],
+      nextStorySeeds: ["A portal opens to enchanted lands", "Mystical creatures emerge from hiding"]
     }
   ],
 
-  // MEDIUM: Level 2 templates (40) + Level 2 extensions (5) + enhanced fallbacks (2) = 47 templates
+  // MEDIUM: Level 2 templates (40) + Level 2 extensions (6) + enhanced fallbacks (2) = 48 templates
   medium: [
     // Convert Level 2 templates to enhanced format  
     ...LEVEL_2_TEMPLATES.map(template => ({
@@ -180,60 +181,60 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
       continuationPoints: ["What deeper mysteries await?", "How will this journey continue?"],
       nextStorySeeds: ["A greater challenge emerges", "Hidden secrets are revealed"]
     })),
-    // Original enhanced fallbacks
+    // Enhanced medium-level fallbacks with comprehensive user personalization
     {
       setup: [
-        "{userName} discovers a mysterious path in the forest.",
-        "The path is covered with sparkling {color} stones.",
-        "A wise {animal} appears to guide the way."
+        "{userName} discovers a mysterious path through the {favoriteColor} forest.",
+        "The path sparkles with stones that remind them of {favoriteAnimal} scales.",
+        "A wise {favoriteAnimal} appears, drawn by {userName}'s love of {hobbies}."
       ],
       development: [
-        "The {animal} leads {userName} to a hidden grove.",
-        "In the center grows a magnificent {object} tree.",
-        "The tree seems to whisper secrets of nature."
+        "The {favoriteAnimal} leads {userName} to a hidden grove of {favoriteFood} trees.",
+        "In the center grows a magnificent tree bearing {favoriteColor} fruit.",
+        "The tree whispers secrets about {specialRequest} and natural magic."
       ],
       climax: [
-        "Suddenly, the tree begins to lose its magical glow.",
-        "{userName} realizes the tree needs their help urgently.",
-        "Working with {animal}, they search for the solution."
+        "Suddenly, the tree begins losing its magical glow and strength.",
+        "{userName} realizes their {hobbies} skills might help save it.",
+        "Working with the {favoriteAnimal}, they combine wisdom and creativity."
       ],
       resolution: [
-        "{userName} learns that caring for nature heals everything.",
-        "The tree regains its beautiful, vibrant glow completely.",
-        "The forest celebrates their act of kindness and wisdom."
+        "{userName} learns that sharing {favoriteFood} and kindness heals everything.",
+        "The tree regains its vibrant {favoriteColor} glow completely.",
+        "The forest celebrates their teamwork and growing wisdom. What environmental challenge will they face next?"
       ],
-      contextualContinuations: [],
-      continuationPoints: ["What deeper mysteries await?", "How will this journey continue?"],
-      nextStorySeeds: ["A greater challenge emerges", "Hidden secrets are revealed"]
+      contextualContinuations: ["Ancient forest spirits emerge from hiding", "The tree's magic spreads to heal other wounded places"],
+      continuationPoints: ["What deeper environmental mysteries await discovery?", "How will their conservation journey continue?"],
+      nextStorySeeds: ["A dying river calls for their help", "Mysterious pollution threatens the animal kingdom"]
     },
     {
       setup: [
-        "{userName} receives an invitation to a special celebration.",
-        "The invitation is written in shimmering {color} ink.",
-        "A clever {animal} messenger delivered it personally."
+        "{userName} receives an invitation to a {favoriteColor} celebration of {specialRequest}.",
+        "The invitation features beautiful drawings of {favoriteAnimal} and {hobbies}.",
+        "A clever {favoriteAnimal} messenger delivered it while {userName} was enjoying {favoriteFood}."
       ],
       development: [
-        "At the celebration, {userName} meets many interesting friends.",
-        "Everyone shares their unique talents and special gifts.",
-        "The {animal} teaches {userName} an important traditional dance."
+        "At the celebration, {userName} meets friends who share their passion for {hobbies}.",
+        "Everyone displays talents related to {favoriteAnimal} care and {specialRequest}.",
+        "The {favoriteAnimal} teaches {userName} traditional dances from their culture."
       ],
       climax: [
-        "When it's {userName}'s turn to share something special,",
-        "they feel nervous and unsure of their abilities.",
-        "The supportive friends encourage {userName} to try anyway."
+        "When it's {userName}'s turn to share their {hobbies} expertise,",
+        "they feel nervous about presenting their {favoriteColor} project.",
+        "The supportive friends encourage {userName} to share their {specialRequest} vision anyway."
       ],
       resolution: [
-        "{userName} discovers their own unique talent for bringing joy.",
-        "Everyone appreciates {userName}'s authentic contribution to the celebration.",
-        "The experience teaches them about confidence and community belonging."
+        "{userName} discovers their unique talent for combining {hobbies} with {specialRequest}.",
+        "Everyone appreciates how {userName}'s {favoriteFood} recipes brought the community together.",
+        "The experience teaches them about leadership and cultural appreciation. Which tradition will they learn next?"
       ],
-      contextualContinuations: [],
-      continuationPoints: ["What new celebrations await?", "Which friends will they meet next?"],
-      nextStorySeeds: ["Another celebration begins", "New traditions are discovered"]
+      contextualContinuations: ["Cultural exchange programs emerge from the celebration", "New international friendships blossom from shared interests"],
+      continuationPoints: ["What cultural celebrations will they organize next?", "Which global friends will join their mission?"],
+      nextStorySeeds: ["An international pen pal writes seeking help", "A cultural festival needs their unique skills"]
     }
   ],
 
-  // HARD: Level 3 templates (40) + Level 3 extensions (5) + enhanced fallback (1) = 46 templates
+  // HARD: Level 3 templates (40) + Level 3 extensions (6) + enhanced fallback (1) = 47 templates
   hard: [
     // Convert Level 3 templates to enhanced format
     ...LEVEL_3_TEMPLATES.map(template => ({
@@ -255,31 +256,31 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
       continuationPoints: ["What moral complexities will emerge?", "How will leadership be tested?"],
       nextStorySeeds: ["Greater responsibilities await", "Complex ethical dilemmas arise"]
     })),
-    // Original enhanced fallback
+    // Enhanced hard-level fallback with deep personalization and moral complexity
     {
       setup: [
-        "{userName} lived in a peaceful village where everyone worked together harmoniously.",
-        "One morning, they noticed that the village's ancient {object} had stopped glowing mysteriously.",
-        "The wise elder {animal} explained that this meant trouble was approaching the community."
+        "{userName} lived in a peaceful village where everyone shared {favoriteFood} and pursued {hobbies} together harmoniously.",
+        "One morning, they noticed that the village's ancient {favoriteColor} crystal had stopped glowing mysteriously.",
+        "The wise elder {favoriteAnimal} explained that this loss of light meant {specialRequest} was endangered."
       ],
       development: [
-        "{userName} volunteered to journey to the distant mountains to seek the legendary solution.",
-        "Along the dangerous path, they encountered various challenges that tested their courage and determination.",
-        "A helpful {animal} companion joined the quest, bringing valuable knowledge about the ancient mysteries."
+        "{userName} volunteered to journey to distant mountains, using their {hobbies} skills for navigation.",
+        "Along the treacherous path, they encountered challenges that tested both their {specialRequest} values and determination.",
+        "A loyal {favoriteAnimal} companion joined the quest, sharing wisdom about {favoriteColor} crystal magic."
       ],
       climax: [
-        "At the mountain's peak, {userName} discovered that the solution required a significant personal sacrifice.",
-        "They had to choose between their own dreams and the welfare of their community.",
-        "With great courage, {userName} made the difficult choice to put others before themselves."
+        "At the mountain's peak, {userName} discovered the solution required sacrificing their prized {favoriteFood} collection.",
+        "They faced choosing between personal {hobbies} dreams and their community's survival needs.",
+        "With profound wisdom beyond their years, {userName} chose to embrace {specialRequest} over self-interest."
       ],
       resolution: [
-        "Their selfless decision restored the {object}'s power and saved the entire village community.",
-        "{userName} learned that true leadership means serving others with wisdom and compassion.",
-        "The village thrived, and {userName} became known for their character and moral strength."
+        "Their selfless choice restored the {favoriteColor} crystal's power and saved the entire community.",
+        "{userName} learned that true leadership means embodying {specialRequest} through service to others.",
+        "The village flourished with renewed {favoriteAnimal} populations and {favoriteFood} abundance. What greater moral challenge will test their character next?"
       ],
-      contextualContinuations: [],
-      continuationPoints: ["What moral complexities will emerge?", "How will leadership be tested?"],
-      nextStorySeeds: ["Greater responsibilities await", "Complex ethical dilemmas arise"]
+      contextualContinuations: ["Neighboring villages seek guidance from their wisdom", "Ancient prophecies reveal greater responsibilities ahead"],
+      continuationPoints: ["What complex ethical dilemmas will challenge their growing wisdom?", "How will their leadership inspire others to embrace sacrifice?"],
+      nextStorySeeds: ["A moral crisis divides two allied communities", "Ancient enemies seek reconciliation through their example"]
     }
   ],
 
@@ -307,28 +308,28 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
     })),
     {
       setup: [
-        "{userName} began questioning the fundamental principles that governed their society and personal beliefs.",
-        "These philosophical inquiries led to deep conversations with the enlightened {animal} who served as mentor.",
-        "Together they explored complex concepts of justice, truth, and the nature of human existence."
+        "{userName} began questioning fundamental principles about {specialRequest} that governed their society and beliefs.",
+        "These philosophical inquiries led to deep conversations with the enlightened {favoriteAnimal} who served as mentor.",
+        "Together they explored complex concepts of justice, truth, and how {hobbies} shapes human understanding."
       ],
       development: [
-        "Through rigorous intellectual discourse and careful observation, {userName} examined various worldviews and perspectives.",
-        "The journey of understanding revealed contradictions between idealistic theories and practical realities of life.",
-        "Each new insight brought both clarity and additional questions about the complexities of ethical living."
+        "Through rigorous intellectual discourse about {favoriteColor} symbolism, {userName} examined various worldviews and perspectives.",
+        "The journey revealed contradictions between idealistic {specialRequest} theories and practical realities of {favoriteFood} scarcity.",
+        "Each insight about {favoriteAnimal} behavior brought clarity and additional questions about ethical living."
       ],
       climax: [
-        "{userName} faced a profound moral dilemma that challenged everything they believed about right and wrong.",
-        "The decision required integrating philosophical understanding with practical wisdom and compassionate action.",
-        "No simple answer existed, forcing {userName} to synthesize multiple viewpoints into a coherent personal philosophy."
+        "{userName} faced a profound moral dilemma where {specialRequest} values conflicted with {hobbies} community needs.",
+        "The decision required integrating philosophical understanding of {favoriteColor} justice with compassionate action.",
+        "No simple answer existed about balancing {favoriteAnimal} welfare with human {favoriteFood} requirements."
       ],
       resolution: [
-        "Through thoughtful reflection and dialogue, {userName} developed a nuanced understanding of ethical complexity.",
-        "They learned that wisdom comes from embracing paradox while maintaining commitment to truth and justice.",
-        "This intellectual and spiritual growth transformed {userName} into a bridge between different ways of thinking."
+        "Through thoughtful reflection about {specialRequest}, {userName} developed nuanced understanding of ethical complexity.",
+        "They learned that wisdom means embracing paradox while maintaining commitment to {favoriteColor} truth and justice.",
+        "This growth transformed {userName} into a bridge between {hobbies} idealism and practical compassion. What profound philosophical question will challenge them next?"
       ],
-      contextualContinuations: [],
-      continuationPoints: ["What philosophical depths await exploration?", "How will wisdom manifest?"],
-      nextStorySeeds: ["Deeper philosophical questions emerge", "Abstract concepts take concrete form"]
+      contextualContinuations: ["Philosophical schools seek their synthesized wisdom", "Ancient texts reveal deeper layers of ethical complexity"],
+      continuationPoints: ["What metaphysical mysteries will expand their consciousness?", "How will their philosophical insights reshape society?"],
+      nextStorySeeds: ["A cosmic ethical dilemma transcends earthly concerns", "Time itself becomes a philosophical laboratory"]
     }
   ]
 };
