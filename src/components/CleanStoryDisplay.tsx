@@ -1750,9 +1750,9 @@ const handleRestartTimer = () => {
                   <div className="relative flex-[0.62] min-h-0 w-full rounded-2xl overflow-hidden shadow-2xl">
                     {isPremium && (Object.keys(pageImages).length < story.length) && !isBatchGenerating && (
                       <div className="absolute top-3 right-3 z-20">
-                        <Button size="sm" variant="secondary" onClick={handleBatchGenerateImages} aria-label="Generate all illustrations">
+                        <Button size="sm" variant="secondary" onClick={handleBatchGenerateImages} aria-label="Fix missing illustrations">
                           <Sparkles className="w-4 h-4 mr-1" />
-                          Generate all
+                          Fix Images
                         </Button>
                       </div>
                     )}
@@ -1848,9 +1848,9 @@ const handleRestartTimer = () => {
                       <div className="w-full h-full rounded-2xl overflow-hidden shadow-2xl">
                         {isPremium && (Object.keys(pageImages).length < story.length) && !isBatchGenerating && (
                           <div className="absolute top-3 right-3 z-20">
-                            <Button size="sm" variant="secondary" onClick={handleBatchGenerateImages} aria-label="Generate all illustrations">
+                            <Button size="sm" variant="secondary" onClick={handleBatchGenerateImages} aria-label="Fix missing illustrations">
                               <Sparkles className="w-4 h-4 mr-1" />
-                              Generate all
+                              Fix Images
                             </Button>
                           </div>
                         )}
