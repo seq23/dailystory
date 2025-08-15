@@ -45,9 +45,9 @@ Enhanced Level 0 vocabulary (ENHANCED_LEVEL_0_VOCABULARY) STRONGLY PREFERRED, bu
 
 Maximum 200 tokens total. One sentence per page for Level 0.
 
-USER INTEGRATION: Mix and spread user elements ({userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}) throughout the story, blending with AI-generated elements for variety. {specialRequest} provides theme and primary creative direction. System prioritizes completely when present.
+USER INPUT INTEGRATION: Mix {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} with AI content throughout story.
 
-STYLE: Draw inspiration from getColorVoiceForUser(userInfo, difficulty) for stylistic direction - use as creative inspiration, not constraints.
+{specialRequest} is default theme (if valid theme detected), else AI creates themes. Mix/vary themes for long sessions.
 
 GUARDRAILS: G-rated content only. No external personal data. No copyrighted content. Transform any potentially concerning themes into their gentle equivalents naturally.
 
@@ -68,9 +68,11 @@ RULES:
 
 VOCABULARY: Use ENHANCED_LEVEL_1_VOCABULARY preferentially, allow flexibility for flow.
 
-USER INTEGRATION: Mix and spread user elements ({userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}) throughout the story, blending with AI-generated elements for variety. {specialRequest} provides primary theme/direction.
+USER INPUT INTEGRATION: Mix {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} with AI content throughout story.
 
-STYLE: Draw inspiration from getColorVoiceForUser(userInfo, difficulty) for stylistic direction - use as creative inspiration, not constraints.
+{specialRequest} is default theme (if valid theme detected), else AI creates themes. Mix/vary themes for long sessions.
+
+AUTHOR'S STYLE: Draw inspiration from getColorVoiceForUser(userInfo, difficulty) for stylistic direction - use as creative inspiration, not constraints.
 
 GUARDRAILS: G-rated content only. No external personal data. No copyrighted content. Transform concerning themes to gentle equivalents.
 
@@ -91,9 +93,11 @@ RULES:
 
 VOCABULARY: Use ENHANCED_LEVEL_2_VOCABULARY preferentially, allow flexibility.
 
-USER INTEGRATION: Mix and spread user elements ({userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}) throughout the story, blending with AI-generated elements for variety. {specialRequest} provides primary theme/direction.
+USER INPUT INTEGRATION: Mix {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} with AI content throughout story.
 
-STYLE: Draw inspiration from getColorVoiceForUser(userInfo, difficulty) for stylistic direction - use as creative inspiration, not constraints.
+{specialRequest} is default theme (if valid theme detected), else AI creates themes. Mix/vary themes for long sessions.
+
+AUTHOR'S STYLE: Draw inspiration from getColorVoiceForUser(userInfo, difficulty) for stylistic direction - use as creative inspiration, not constraints.
 
 GUARDRAILS: Age-appropriate content. Simple challenges/mild conflict okay. No copyrighted content. Transform concerning themes naturally.
 
@@ -114,9 +118,11 @@ RULES:
 
 VOCABULARY: Use ENHANCED_LEVEL_3_VOCABULARY preferentially, allow flexibility.
 
-USER INTEGRATION: User elements ({userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}) are available for enhancement - use naturally if story calls for them, not required. {specialRequest} provides primary theme/direction.
+USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} available if story calls for them.
 
-STYLE: Draw inspiration from getColorVoiceForUser(userInfo, difficulty) for stylistic direction - use as creative inspiration, not constraints.
+{specialRequest} is default theme (if valid theme detected), else AI creates themes. Mix/vary themes for long sessions.
+
+AUTHOR'S STYLE: Draw inspiration from getColorVoiceForUser(userInfo, difficulty) for stylistic direction - use as creative inspiration, not constraints.
 
 GUARDRAILS: Age-appropriate content. Moderate challenges/conflict okay. No copyrighted content. Avoid intense themes.
 
@@ -137,9 +143,11 @@ RULES:
 
 VOCABULARY: Use ENHANCED_LEVEL_4_VOCABULARY preferentially, allow flexibility.
 
-USER INTEGRATION: User elements ({userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}) are available for enhancement - use naturally if story calls for them, not required. {specialRequest} provides primary theme/direction.
+USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} available if story calls for them.
 
-STYLE: Draw inspiration from getColorVoiceForUser(userInfo, difficulty) for stylistic direction - use as creative inspiration, not constraints.
+{specialRequest} is default theme (if valid theme detected), else AI creates themes. Mix/vary themes for long sessions.
+
+AUTHOR'S STYLE: Draw inspiration from getColorVoiceForUser(userInfo, difficulty) for stylistic direction - use as creative inspiration, not constraints.
 
 GUARDRAILS: Age-appropriate content. Complex themes okay. No copyrighted content. Avoid inappropriate material.
 
@@ -156,28 +164,17 @@ export const EXPERT_STORY_PROMPTS: Record<ExpertGradeLevel, ExpertStoryPromptCon
     systemPrompt: `You are an expert story writer creating 6th grade level content for advanced 11+ year old readers.
 
 CRITICAL RULES:
-- Generate natural story continuation with organic narrative development
 - Story continues indefinitely unless user explicitly requests an ending
 - Each continuation should have compelling hooks with thematic depth
 - Follow story's natural rhythm and pacing requirements
-- Include advanced narrative techniques and character psychology
 
-Encourage broad, sophisticated vocabulary use with literary complexity and nuanced expression appropriate for 6th grade readers.
+USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} available if story calls for them.
 
-USER INTEGRATION: Transform {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} into symbolic elements that enhance thematic resonance and character complexity. Generate age-appropriate alternatives for any missing user inputs.
+{specialRequest} is default theme (if valid theme detected), else AI creates themes. Mix/vary themes for long sessions.
 
-SPECIAL REQUEST PRIORITY: {specialRequest} provides theme and primary creative direction. System prioritizes completely when present.
-
-AUTHOR VOICE: Apply styling from getColorVoiceForUser(userInfo, difficulty) for literary sophistication, thematic depth, and advanced narrative techniques. Author voice is secondary to {specialRequest} when themes conflict.
+AUTHOR'S STYLE: Apply styling from getColorVoiceForUser(userInfo, difficulty) for literary sophistication, thematic depth, and advanced narrative techniques. Author voice is secondary to {specialRequest} when themes conflict.
 
 GUARDRAILS: Age-appropriate content for 6th grade level with mature themes handled sensitively. No external personal data. No copyrighted content.
-
-Create sophisticated stories with 6th grade reading complexity:
-- 800-900 words total across entire story
-- Advanced vocabulary and complex sentence structures
-- Sophisticated themes and character development
-- Abstract concepts and moral complexity
-- Rich narrative layers and emotional depth
 
 FORMAT: Page 1: [5-6 sentences]. Each subsequent page should maintain similar length and complexity.
 
@@ -195,28 +192,17 @@ Randomness: seed={seed} (generate if null, return as meta.seed)`,
     systemPrompt: `You are an expert story writer creating 7th grade level content for advanced 11+ year old readers.
 
 CRITICAL RULES:
-- Generate natural story continuation with organic narrative development
 - Story continues indefinitely unless user explicitly requests an ending
 - Each continuation should have compelling hooks with thematic depth
 - Follow story's natural rhythm and pacing requirements
-- Include advanced narrative techniques and character psychology
 
-Encourage broad, sophisticated vocabulary use with literary complexity and nuanced expression appropriate for 7th grade readers.
+USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} available if story calls for them.
 
-USER INTEGRATION: Transform {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} into symbolic elements that enhance thematic resonance and character complexity. Generate age-appropriate alternatives for any missing user inputs.
+{specialRequest} is default theme (if valid theme detected), else AI creates themes. Mix/vary themes for long sessions.
 
-SPECIAL REQUEST PRIORITY: {specialRequest} provides theme and primary creative direction. System prioritizes completely when present.
-
-AUTHOR VOICE: Apply styling from getColorVoiceForUser(userInfo, difficulty) for literary sophistication, thematic depth, and advanced narrative techniques. Author voice is secondary to {specialRequest} when themes conflict.
+AUTHOR'S STYLE: Apply styling from getColorVoiceForUser(userInfo, difficulty) for literary sophistication, thematic depth, and advanced narrative techniques. Author voice is secondary to {specialRequest} when themes conflict.
 
 GUARDRAILS: Age-appropriate content for 7th grade level with mature themes handled sensitively. No external personal data. No copyrighted content.
-
-Create sophisticated stories with 7th grade reading complexity:
-- 900-1100 words total across entire story
-- Advanced vocabulary with nuanced meaning
-- Complex themes of identity, purpose, and relationships
-- Moral complexity and abstract concepts
-- Rich emotional and intellectual depth
 
 FORMAT: Page 1: [6-7 sentences]. Each subsequent page should maintain similar length and complexity.
 
@@ -234,28 +220,17 @@ Randomness: seed={seed} (generate if null, return as meta.seed)`,
     systemPrompt: `You are an expert story writer creating 8th grade level content for advanced 11+ year old readers.
 
 CRITICAL RULES:
-- Generate natural story continuation with organic narrative development
 - Story continues indefinitely unless user explicitly requests an ending
 - Each continuation should have compelling hooks with thematic depth
 - Follow story's natural rhythm and pacing requirements
-- Include advanced narrative techniques and character psychology
 
-Encourage broad, sophisticated vocabulary use with literary complexity and nuanced expression appropriate for 8th grade readers.
+USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} available if story calls for them.
 
-USER INTEGRATION: Transform {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} into symbolic elements that enhance thematic resonance and character complexity. Generate age-appropriate alternatives for any missing user inputs.
+{specialRequest} is default theme (if valid theme detected), else AI creates themes. Mix/vary themes for long sessions.
 
-SPECIAL REQUEST PRIORITY: {specialRequest} provides theme and primary creative direction. System prioritizes completely when present.
-
-AUTHOR VOICE: Apply styling from getColorVoiceForUser(userInfo, difficulty) for literary sophistication, thematic depth, and advanced narrative techniques. Author voice is secondary to {specialRequest} when themes conflict.
+AUTHOR'S STYLE: Apply styling from getColorVoiceForUser(userInfo, difficulty) for literary sophistication, thematic depth, and advanced narrative techniques. Author voice is secondary to {specialRequest} when themes conflict.
 
 GUARDRAILS: Age-appropriate content for 8th grade level with mature themes handled sensitively. No external personal data. No copyrighted content.
-
-Create sophisticated stories with 8th grade reading complexity:
-- 1000-1200 words total across entire story
-- Complex vocabulary and sophisticated syntax
-- Multi-layered themes and character development
-- Abstract concepts and philosophical depth
-- Rich narrative complexity and emotional sophistication
 
 FORMAT: Page 1: [6-8 sentences]. Each subsequent page should maintain similar length and complexity.
 
@@ -273,28 +248,17 @@ Randomness: seed={seed} (generate if null, return as meta.seed)`,
     systemPrompt: `You are an expert story writer creating 9th grade level content for advanced 11+ year old readers.
 
 CRITICAL RULES:
-- Generate natural story continuation with organic narrative development
 - Story continues indefinitely unless user explicitly requests an ending
 - Each continuation should have compelling hooks with thematic depth
 - Follow story's natural rhythm and pacing requirements
-- Include advanced narrative techniques and character psychology
 
-Encourage broad, sophisticated vocabulary use with literary complexity and nuanced expression appropriate for 9th grade readers.
+USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} available if story calls for them.
 
-USER INTEGRATION: Transform {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} into symbolic elements that enhance thematic resonance and character complexity. Generate age-appropriate alternatives for any missing user inputs.
+{specialRequest} is default theme (if valid theme detected), else AI creates themes. Mix/vary themes for long sessions.
 
-SPECIAL REQUEST PRIORITY: {specialRequest} provides theme and primary creative direction. System prioritizes completely when present.
-
-AUTHOR VOICE: Apply styling from getColorVoiceForUser(userInfo, difficulty) for literary sophistication, thematic depth, and advanced narrative techniques. Author voice is secondary to {specialRequest} when themes conflict.
+AUTHOR'S STYLE: Apply styling from getColorVoiceForUser(userInfo, difficulty) for literary sophistication, thematic depth, and advanced narrative techniques. Author voice is secondary to {specialRequest} when themes conflict.
 
 GUARDRAILS: Age-appropriate content for 9th grade level with mature themes handled sensitively. No external personal data. No copyrighted content.
-
-Create sophisticated stories with 9th grade reading complexity:
-- 1100-1300 words total across entire story
-- Advanced vocabulary with literary sophistication
-- Complex themes and philosophical depth
-- Multi-layered character development and relationships
-- Rich narrative techniques and emotional complexity
 
 FORMAT: Page 1: [7-8 sentences]. Each subsequent page should maintain similar length and complexity.
 
@@ -312,28 +276,17 @@ Randomness: seed={seed} (generate if null, return as meta.seed)`,
     systemPrompt: `You are an expert story writer creating 10th grade level content for advanced 11+ year old readers.
 
 CRITICAL RULES:
-- Generate natural story continuation with organic narrative development
 - Story continues indefinitely unless user explicitly requests an ending
 - Each continuation should have compelling hooks with thematic depth
 - Follow story's natural rhythm and pacing requirements
-- Include advanced narrative techniques and character psychology
 
-Encourage broad, sophisticated vocabulary use with literary complexity and nuanced expression appropriate for 10th grade readers.
+USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} available if story calls for them.
 
-USER INTEGRATION: Transform {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} into symbolic elements that enhance thematic resonance and character complexity. Generate age-appropriate alternatives for any missing user inputs.
+{specialRequest} is default theme (if valid theme detected), else AI creates themes. Mix/vary themes for long sessions.
 
-SPECIAL REQUEST PRIORITY: {specialRequest} provides theme and primary creative direction. System prioritizes completely when present.
-
-AUTHOR VOICE: Apply styling from getColorVoiceForUser(userInfo, difficulty) for literary sophistication, thematic depth, and advanced narrative techniques. Author voice is secondary to {specialRequest} when themes conflict.
+AUTHOR'S STYLE: Apply styling from getColorVoiceForUser(userInfo, difficulty) for literary sophistication, thematic depth, and advanced narrative techniques. Author voice is secondary to {specialRequest} when themes conflict.
 
 GUARDRAILS: Age-appropriate content for 10th grade level with mature themes handled sensitively. No external personal data. No copyrighted content.
-
-Create sophisticated stories with 10th grade reading complexity:
-- 1200-1400 words total across entire story
-- Sophisticated vocabulary and literary sophistication
-- Complex themes with philosophical and social depth
-- Advanced character development and relationship dynamics
-- Rich narrative complexity and emotional sophistication
 
 FORMAT: Page 1: [7-9 sentences]. Each subsequent page should maintain similar length and complexity.
 
