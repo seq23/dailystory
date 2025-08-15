@@ -136,21 +136,21 @@ export const DIFFICULTY_STYLE_MAPPING = {
   },
   'easy': {
     name: 'Playful & Colorful', 
-    prompt: '2D digital illustration (dynamic action style)',
-    complexity: 'moderate',
-    colorPalette: 'warm wood tones; energetic joy and movement',
-    detailLevel: 'moderate',
-    rendering: 'Clean bright style with motion blur and energy lines',
-    brandSuffix: 'bright children\'s book style, energetic, inclusive, safe content'
+    prompt: '3D children\'s book art, bright colors, smooth rendering, cheerful',
+    complexity: 'standard',
+    colorPalette: 'bright_vibrant',
+    detailLevel: 'high',
+    rendering: '3d_smooth',
+    brandSuffix: 'children\'s book illustration, warm earth tones, diverse inclusive characters, professional artwork'
   },
   'medium': {
     name: 'Rich & Engaging',
-    prompt: '2D digital illustration (children\'s book/contemporary cartoon style)',
-    complexity: 'balanced',
-    colorPalette: 'Warm, serene, nurturing; accents with golden lighting',
-    detailLevel: 'detailed',
-    rendering: 'Soft cel-shading with gentle gradients; clean line art with subtle texture',
-    brandSuffix: 'detailed children\'s book art, warm atmosphere, diverse characters'
+    prompt: 'children\'s book illustration, soft pastels, warm lighting, digital art',
+    complexity: 'minimal',
+    colorPalette: 'warm_pastels',
+    detailLevel: 'medium',
+    rendering: 'painterly',
+    brandSuffix: 'children\'s book illustration, warm colors, safe wholesome content'
   },
   'hard': {
     name: 'Artistic & Sophisticated',
