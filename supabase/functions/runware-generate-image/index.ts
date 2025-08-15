@@ -196,7 +196,18 @@ serve(async (req) => {
         clearTimeout(timeout);
         ws.close();
         console.error("WebSocket error:", error);
-        reject(new Error("WebSocket connection failed"));
+        resolve(new Response(
+          JSON.stringify({ 
+            success: false,
+            error: "WebSocket connection failed",
+            characterName: characterName || undefined,
+            pageIndex
+          }),
+          { 
+            status: 500, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        ));
       };
 
       ws.onclose = (event) => {

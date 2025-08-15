@@ -76,7 +76,6 @@ serve(async (req) => {
         n: 1,
         size: size,
         quality: quality,
-        style: style,
         response_format: 'url'
       }),
     });
