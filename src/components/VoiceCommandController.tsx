@@ -87,7 +87,27 @@ export const VoiceCommandController = forwardRef<VoiceCommandControllerHandle, V
         return;
       }
 
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+      // Enhanced mobile/tablet microphone access
+      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const constraints = {
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+          ...(isMobileDevice && {
+            sampleRate: 48000, // Higher sample rate for mobile
+            channelCount: 1,
+            latency: 0.1 // Lower latency for mobile
+          })
+        }
+      };
+      
+      console.log('🎤 VoiceCommandController - Device detection:', {
+        isMobile: isMobileDevice,
+        constraints
+      });
+      
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
       streamRef.current = stream;
 
       // Setup analyser for live VU meter

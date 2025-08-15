@@ -138,13 +138,17 @@ export class AudioSyncService {
       try { (this.audio as any).playsInline = true; } catch {}
       try { this.audio.setAttribute?.('playsinline', 'true'); } catch {}
       
-      // Mobile-specific audio setup
+      // Mobile-specific audio setup with enhanced stability
       if (this.isMobile()) {
         this.audio.preload = 'metadata';
         this.audio.crossOrigin = 'anonymous';
         
         // Mobile audio unlock - crucial for iOS/Android
         await this.unlockMobileAudio();
+        
+        // Enhanced mobile audio stabilization - wait longer for mobile
+        console.log('📱 Mobile audio - adding extra stabilization time');
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Extra 2s for mobile
       }
       
       // Wait for metadata to load to get accurate duration
@@ -168,8 +172,11 @@ export class AudioSyncService {
         totalExpected += this.calculateWordDurationUnscaled(w, profile, speed);
       }
       const targetMs = Math.max(500, (this.audio!.duration * 1000));
-      this.durationScale = Math.min(3.0, Math.max(0.6, targetMs / Math.max(1, totalExpected)));
-      console.log(`⏱️ Highlight scaling: words=${this.words.length}, target=${Math.round(targetMs)}ms, sum=${Math.round(totalExpected)}ms, scale=${this.durationScale.toFixed(3)}`);
+      
+      // Enhanced mobile scaling - slower highlighting for better sync
+      const mobileMultiplier = this.isMobile() ? 1.15 : 1.0;
+      this.durationScale = Math.min(3.0, Math.max(0.6, (targetMs / Math.max(1, totalExpected)) * mobileMultiplier));
+      console.log(`⏱️ Highlight scaling: words=${this.words.length}, target=${Math.round(targetMs)}ms, sum=${Math.round(totalExpected)}ms, scale=${this.durationScale.toFixed(3)}, mobile=${this.isMobile()}`);
 
       // Setup playback event handlers with session guard
       this.setupAudioEventHandlers(voice, speed, onWordHighlight, onError, localSessionId, localContentHash);

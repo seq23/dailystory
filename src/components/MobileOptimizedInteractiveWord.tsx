@@ -252,6 +252,12 @@ if (props.forceModal || isMobileOrTablet) {
       <>
         <span
           onClick={handleClick}
+          onTouchStart={(e) => {
+            // Enhanced touch handling for better mobile experience
+            e.stopPropagation();
+            if (!shouldBeInteractive) return;
+            handleClick();
+          }}
           onMouseEnter={() => {
             if (!shouldBeInteractive) return;
             (window as any).__hoveredWord = cleanWord;

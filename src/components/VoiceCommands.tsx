@@ -56,10 +56,37 @@ useEffect(() => {
   const start = useCallback(async () => {
     setConnecting(true);
     try {
+      // Check for mobile/tablet device
+      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      
+      console.log('🎤 Voice Commands - Device detection:', {
+        isMobile: isMobileDevice,
+        isTouch: isTouchDevice,
+        userAgent: navigator.userAgent.substring(0, 100)
+      });
+
       // Mic permission preflight (prevents silent failures on some browsers)
       try {
-        await navigator.mediaDevices.getUserMedia({ audio: true });
+        // Enhanced mobile microphone permission request
+        const constraints = {
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+            ...(isMobileDevice && {
+              sampleRate: 48000, // Higher sample rate for mobile
+              channelCount: 1,
+              latency: 0.1 // Lower latency for mobile
+            })
+          }
+        };
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        // Test that we can actually use the stream on mobile
+        stream.getTracks().forEach(track => track.stop());
+        console.log('📱 Mobile microphone permission granted and tested');
       } catch (permErr: any) {
+        console.error('🎤 Microphone permission failed:', permErr);
         throw new Error(permErr?.message || 'Microphone permission is required to start voice');
       }
 
