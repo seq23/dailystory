@@ -468,7 +468,15 @@ export class AdvancedStoryAnalyzer {
     const renderingStyle = styleFramework.rendering || '';
     const brandSuffix = styleFramework.brandSuffix || '';
     
-    // Use smart prompt management with length optimization
+    // Use advanced prompt management with AI-enhanced preferences
+    const userPreferences = {
+      prioritizeCharacterConsistency: true, // AI mode prioritizes character consistency
+      preferDetailedStyle: difficultyLevel === 'expert' || difficultyLevel === 'hard',
+      optimizeForSpeed: false,              // AI mode allows longer generation for quality
+      allowStyleReduction: true,
+      maxPromptComplexity: 'detailed' as const
+    };
+    
     const segments = PromptLengthManager.createSegments(
       `${styleFramework.prompt}. ${characterDesc} ${coreContent}`,
       renderingStyle,
@@ -477,15 +485,15 @@ export class AdvancedStoryAnalyzer {
       'standard' // Use standard quality tier for AI-enhanced mode
     );
     
-    const { optimizedPrompt, wasOptimized, originalLength, finalLength, optimizations } = 
-      PromptLengthManager.optimizePrompt(segments);
+    const { optimizedPrompt, wasOptimized, originalLength, finalLength, optimizations, strategy } = 
+      PromptLengthManager.optimizeWithAdvancedPrioritization(segments, userInfo, difficultyLevel, userPreferences);
     
     // Log AI-enhanced prompt optimization results
     if (wasOptimized) {
-      console.log(`🤖 AI-enhanced prompt optimized: ${originalLength} → ${finalLength} chars`);
+      console.log(`🤖 AI-enhanced prompt optimized: ${originalLength} → ${finalLength} chars (${strategy} strategy)`);
       console.log(`🔧 Applied optimizations: ${optimizations.join(', ')}`);
     } else {
-      console.log(`🤖 AI-enhanced prompt generated: ${finalLength} chars (no optimization needed)`);
+      console.log(`🤖 AI-enhanced prompt generated: ${finalLength} chars (${strategy} strategy, no optimization needed)`);
     }
     
     const styleModifiers = [

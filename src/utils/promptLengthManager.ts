@@ -1,5 +1,9 @@
 // Smart Prompt Length Management System
 // Phase 2: Tiered suffix system and intelligent truncation
+// Phase 3: Advanced prioritization and user preference optimization
+
+import { AdvancedContentPrioritizer, type UserOptimizationPreference } from './advancedContentPrioritizer';
+import type { UserInfo, DifficultyLevel } from '@/types';
 
 export interface PromptTier {
   minimal: string;
@@ -42,7 +46,83 @@ export class PromptLengthManager {
   private static readonly WARN_LENGTH = 2500; // Warning threshold
   
   /**
-   * Validates and optimizes prompt length using intelligent truncation
+   * Advanced optimization using content prioritization and user preferences
+   */
+  static optimizeWithAdvancedPrioritization(
+    segments: PromptSegment[],
+    userInfo: UserInfo,
+    difficultyLevel: DifficultyLevel,
+    userPreferences?: Partial<UserOptimizationPreference>
+  ): {
+    optimizedPrompt: string;
+    wasOptimized: boolean;
+    originalLength: number;
+    finalLength: number;
+    optimizations: string[];
+    strategy: string;
+  } {
+    // Build initial prompt for analysis
+    const prompt = segments.map(s => s.content).join(' ');
+    const originalLength = prompt.length;
+    
+    // If prompt is short enough, use standard optimization
+    if (originalLength <= this.WARN_LENGTH) {
+      const standardResult = this.optimizePrompt(segments);
+      return {
+        ...standardResult,
+        strategy: 'standard'
+      };
+    }
+    
+    console.log(`🧠 Using advanced prioritization for ${originalLength}-char prompt`);
+    
+    // Analyze content priority
+    const contentAnalysis = AdvancedContentPrioritizer.analyzeContentPriority(
+      prompt, 
+      userInfo, 
+      difficultyLevel
+    );
+    
+    // Calculate content complexity (higher = more complex)
+    const contentComplexity = this.calculateContentComplexity(contentAnalysis);
+    
+    // Create optimization strategy based on user preferences
+    const strategy = AdvancedContentPrioritizer.createOptimizationStrategy(
+      userPreferences || {},
+      difficultyLevel,
+      contentComplexity
+    );
+    
+    // Apply advanced optimization
+    const { optimizedContent, reductionApplied } = AdvancedContentPrioritizer.optimizeContentWithStrategy(
+      contentAnalysis,
+      strategy,
+      originalLength
+    );
+    
+    // Rebuild prompt from optimized content
+    const optimizedPrompt = this.rebuildPromptFromAnalysis(optimizedContent);
+    const finalLength = optimizedPrompt.length;
+    
+    const wasOptimized = finalLength < originalLength;
+    
+    console.log(`🎯 Advanced optimization complete: ${originalLength} → ${finalLength} chars`);
+    if (reductionApplied.length > 0) {
+      console.log(`🔧 Advanced reductions applied: ${reductionApplied.join(', ')}`);
+    }
+    
+    return {
+      optimizedPrompt,
+      wasOptimized,
+      originalLength,
+      finalLength,
+      optimizations: reductionApplied,
+      strategy: 'advanced'
+    };
+  }
+  
+  /**
+   * Legacy optimization method (Phase 2) - maintained for compatibility
    */
   static optimizePrompt(segments: PromptSegment[]): {
     optimizedPrompt: string;
@@ -224,5 +304,31 @@ export class PromptLengthManager {
     } else {
       return { isValid: false, length, status: 'exceeded' };
     }
+  }
+  
+  // Private helper methods for advanced optimization
+  
+  private static calculateContentComplexity(analysis: any): number {
+    const totalElements = 
+      analysis.coreElements.length +
+      analysis.contextElements.length + 
+      analysis.styleElements.length +
+      analysis.characterElements.length +
+      analysis.qualityElements.length;
+    
+    // Normalize complexity between 0-1
+    return Math.min(totalElements / 50, 1.0);
+  }
+  
+  private static rebuildPromptFromAnalysis(analysis: any): string {
+    const segments = [
+      ...analysis.coreElements,
+      ...analysis.characterElements,
+      ...analysis.contextElements,
+      ...analysis.styleElements,
+      ...analysis.qualityElements
+    ];
+    
+    return segments.filter(Boolean).join(' ');
   }
 }

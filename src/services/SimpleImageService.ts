@@ -171,7 +171,13 @@ export class SimpleImageService {
     
     const coreContent = `${baseStyle} ${sceneElements.join(' ')}`;
     
-    // Use smart prompt management with length optimization
+    // Use advanced prompt management with user preferences
+    const userPreferences = {
+      optimizeForSpeed: true,       // Simple mode prioritizes speed
+      allowStyleReduction: true,    // Allow style reduction for length
+      maxPromptComplexity: 'minimal' as const
+    };
+    
     const segments = PromptLengthManager.createSegments(
       coreContent,
       '', // No additional style framework for simple mode
@@ -180,9 +186,17 @@ export class SimpleImageService {
       'minimal' // Use minimal quality tier for simple mode
     );
     
-    const { optimizedPrompt } = PromptLengthManager.optimizePrompt(segments);
+    const { optimizedPrompt, strategy, optimizations } = PromptLengthManager.optimizeWithAdvancedPrioritization(
+      segments,
+      userInfo,
+      difficultyLevel,
+      userPreferences
+    );
     
-    console.log(`📝 Simple prompt generated: ${optimizedPrompt.length} chars`);
+    console.log(`📝 Simple prompt generated: ${optimizedPrompt.length} chars (${strategy} strategy)`);
+    if (optimizations.length > 0) {
+      console.log(`🔧 Simple optimizations: ${optimizations.join(', ')}`);
+    }
     
     const negativePrompt = 'scary, dark, violent, inappropriate, adult content, realistic photography, photorealistic, text, words, letters, titles, names, character names, speech bubbles, captions, labels, extra limbs, multiple arms, multiple legs, three legs, extra hands, deformed anatomy, malformed body parts, incorrect anatomy, anatomical errors';
     
