@@ -76,12 +76,12 @@ export class UserInputDistributor {
       return selected;
     }
 
-    // Reset if all elements used
-    if (used.size >= pool.length) {
+    // Reset only after each element used 3+ times for never-ending stories
+    if (used.size >= pool.length * 3) {
       used.clear();
       const selected = pool[Math.floor(Math.random() * pool.length)];
       used.add(selected);
-      console.log(`🔄 Page ${context.pageIndex + 1}: Reset ${category}, using "${selected}"`);
+      console.log(`🔄 Page ${context.pageIndex + 1}: Reset ${category} after 3+ uses, using "${selected}"`);
       return selected;
     }
 

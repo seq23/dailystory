@@ -45,14 +45,14 @@ Enhanced Level 0 vocabulary (ENHANCED_LEVEL_0_VOCABULARY) STRONGLY PREFERRED, bu
 
 Maximum 200 tokens total. One sentence per page for Level 0.
 
-USER INTEGRATION: {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} are central to the story but weaved naturally. {specialRequest} provides theme and primary creative direction. System prioritizes completely when present.
+USER INTEGRATION: Mix and spread user elements ({userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}) throughout the story, blending with AI-generated elements for variety. {specialRequest} provides theme and primary creative direction. System prioritizes completely when present.
 
-STYLE: getColorVoiceForUser(userInfo, difficulty) provides secondary direction for stylistic guidance.
+STYLE: Draw inspiration from getColorVoiceForUser(userInfo, difficulty) for stylistic direction - use as creative inspiration, not constraints.
 
 GUARDRAILS: G-rated content only. No external personal data. No copyrighted content. Transform any potentially concerning themes into their gentle equivalents naturally.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
-    userPromptTemplate: `Create a children's story for {userName}, age 3-5. Continue indefinitely with narrative hooks unless user requests ending. {specialRequest} provides theme and primary direction. Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} naturally. Use 1 sentence per page, subject-verb structure, 2-4 letter words, 2-4 word sentences (max 6 words). Apply color voice styling per profile.`,
+    userPromptTemplate: `Create a children's story for {userName}, age 3-5. Continue indefinitely with narrative hooks unless user requests ending. {specialRequest} provides theme and primary direction. Mix user elements ({favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}) with AI-generated content for variety. Spread user preferences across multiple pages naturally. Use 1 sentence per page, subject-verb structure, 2-4 letter words, 2-4 word sentences (max 6 words). Apply color voice styling per profile.`,
   },
 
   easy: {
@@ -68,14 +68,14 @@ RULES:
 
 VOCABULARY: Use ENHANCED_LEVEL_1_VOCABULARY preferentially, allow flexibility for flow.
 
-USER INTEGRATION: {specialRequest} provides primary theme/direction. Integrate {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} naturally.
+USER INTEGRATION: Mix and spread user elements ({userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}) throughout the story, blending with AI-generated elements for variety. {specialRequest} provides primary theme/direction.
 
-STYLE: Apply getColorVoiceForUser(userInfo, difficulty) as secondary stylistic guidance.
+STYLE: Draw inspiration from getColorVoiceForUser(userInfo, difficulty) for stylistic direction - use as creative inspiration, not constraints.
 
 GUARDRAILS: G-rated content only. No external personal data. No copyrighted content. Transform concerning themes to gentle equivalents.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
-    userPromptTemplate: `Create a continuing story for {userName}, age 5-7. The story continues indefinitely unless user requests an ending, with narrative hooks for continuation. {specialRequest} provides the primary creative direction. Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} naturally. Use simple vocabulary with 2-3 sentences per page for developing readers. Apply color voice styling per user profile.`,
+    userPromptTemplate: `Create a continuing story for {userName}, age 5-7. The story continues indefinitely unless user requests an ending, with narrative hooks for continuation. {specialRequest} provides the primary creative direction. Mix user elements ({favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}) with AI-generated content for variety. Spread user preferences across multiple pages naturally. Use simple vocabulary with 2-3 sentences per page for developing readers. Apply color voice styling per user profile.`,
   },
 
   medium: {
@@ -91,14 +91,14 @@ RULES:
 
 VOCABULARY: Use ENHANCED_LEVEL_2_VOCABULARY preferentially, allow flexibility.
 
-USER INTEGRATION: {specialRequest} provides primary theme/direction. Integrate {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} naturally.
+USER INTEGRATION: Mix and spread user elements ({userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}) throughout the story, blending with AI-generated elements for variety. {specialRequest} provides primary theme/direction.
 
-STYLE: Apply getColorVoiceForUser(userInfo, difficulty) as secondary stylistic guidance.
+STYLE: Draw inspiration from getColorVoiceForUser(userInfo, difficulty) for stylistic direction - use as creative inspiration, not constraints.
 
 GUARDRAILS: Age-appropriate content. Simple challenges/mild conflict okay. No copyrighted content. Transform concerning themes naturally.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
-    userPromptTemplate: `Create an engaging story continuation for {userName}, age 7-9. The story continues indefinitely with natural flow unless user requests an ending. {specialRequest} provides the primary creative direction. Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} meaningfully into the narrative. Let the story dictate its own natural length and pacing. Apply color voice styling per user profile.`,
+    userPromptTemplate: `Create an engaging story continuation for {userName}, age 7-9. The story continues indefinitely with natural flow unless user requests an ending. {specialRequest} provides the primary creative direction. Mix user elements ({favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}) with AI-generated content for variety. Spread user preferences across multiple pages naturally. Let the story dictate its own natural length and pacing. Apply color voice styling per user profile.`,
   },
 
   hard: {
@@ -114,14 +114,14 @@ RULES:
 
 VOCABULARY: Use ENHANCED_LEVEL_3_VOCABULARY preferentially, allow flexibility.
 
-USER INTEGRATION: {specialRequest} provides primary theme/direction. Integrate {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} naturally.
+USER INTEGRATION: User elements ({userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}) are available for enhancement - use naturally if story calls for them, not required. {specialRequest} provides primary theme/direction.
 
-STYLE: Apply getColorVoiceForUser(userInfo, difficulty) as secondary stylistic guidance.
+STYLE: Draw inspiration from getColorVoiceForUser(userInfo, difficulty) for stylistic direction - use as creative inspiration, not constraints.
 
 GUARDRAILS: Age-appropriate content. Moderate challenges/conflict okay. No copyrighted content. Avoid intense themes.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
-    userPromptTemplate: `Create an engaging story continuation for {userName}, age 9-12. The story continues indefinitely with natural rhythm unless user requests an ending. {specialRequest} provides the primary creative direction. Integrate {userName}'s preferences ({favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}) as meaningful story elements. Let the narrative flow organically with sophisticated techniques. Apply color voice styling per user profile.`,
+    userPromptTemplate: `Create an engaging story continuation for {userName}, age 9-12. The story continues indefinitely with natural rhythm unless user requests an ending. {specialRequest} provides the primary creative direction. User preferences ({favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}) are available as optional story enhancements - use naturally if they fit the narrative flow. Let the narrative flow organically with sophisticated techniques. Apply color voice styling per user profile.`,
   },
 
   expert: {
@@ -137,14 +137,14 @@ RULES:
 
 VOCABULARY: Use ENHANCED_LEVEL_4_VOCABULARY preferentially, allow flexibility.
 
-USER INTEGRATION: {specialRequest} provides primary theme/direction. Integrate {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} naturally.
+USER INTEGRATION: User elements ({userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}) are available for enhancement - use naturally if story calls for them, not required. {specialRequest} provides primary theme/direction.
 
-STYLE: Apply getColorVoiceForUser(userInfo, difficulty) as secondary stylistic guidance.
+STYLE: Draw inspiration from getColorVoiceForUser(userInfo, difficulty) for stylistic direction - use as creative inspiration, not constraints.
 
 GUARDRAILS: Age-appropriate content. Complex themes okay. No copyrighted content. Avoid inappropriate material.
 
 Randomness: seed={seed} (generate if null, return as meta.seed)`,
-    userPromptTemplate: `Create an engaging story continuation for {userName}, age 12-15. The story continues indefinitely with natural thematic flow unless user requests an ending. {specialRequest} provides the primary creative direction. Transform {userName}'s preferences ({favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}) into meaningful symbolic elements. Let the story develop at its natural pace with sophisticated literary techniques. Apply color voice styling per user profile.`,
+    userPromptTemplate: `Create an engaging story continuation for {userName}, age 12-15. The story continues indefinitely with natural thematic flow unless user requests an ending. {specialRequest} provides the primary creative direction. User preferences ({favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}) are available for optional symbolic transformation - use subtly if they enhance the narrative. Let the story develop at its natural pace with sophisticated literary techniques. Apply color voice styling per user profile.`,
   }
 };
 
