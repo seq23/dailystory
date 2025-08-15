@@ -421,42 +421,5 @@ export const validateAndFixGrammar = (text: string): string => {
   return text;
 };
 
-// Quick test to verify grammar validation works
-if (typeof window !== 'undefined') {
-  // Test the specific errors we fixed
-  const testCases = [
-    'He eat pizza.',      // Should detect error
-    'He eats pizza.',     // Should pass
-    'She run fast.',      // Should detect error  
-    'She runs fast.',     // Should pass
-    'They eat pizza.',    // Should pass
-    'Alex eats pizza.',   // Should pass
-    'Scooter saw a dogs.',// Should detect plural article error
-    'Emma likes a cats.', // Should detect plural article error
-    'Sam found dogs.',    // Should pass
-    'Anna has cats.'      // Should pass
-  ];
-  
-  console.log('🧪 Grammar Validator Test Results:');
-  testCases.forEach(test => {
-    const result = GrammarValidator.validateStoryText(test);
-    console.log(`"${test}" - ${result.isValid ? '✅ PASS' : '❌ FAIL'}: ${result.errors.join(', ')}`);
-  });
-  
-  // Test the plural article fixes
-  const pluralTests = [
-    { input: 'dogs', expected: 'dogs' },
-    { input: 'cats', expected: 'cats' },
-    { input: 'dog', expected: 'a dog' },
-    { input: 'elephant', expected: 'an elephant' }
-  ];
-  
-  console.log('🧪 Article/Plural Test Results:');
-  pluralTests.forEach(test => {
-    const result = GrammarValidator.createNounPhrase('', test.input);
-    const passed = result === test.expected;
-    console.log(`"${test.input}" -> "${result}" (expected: "${test.expected}") - ${passed ? '✅ PASS' : '❌ FAIL'}`);
-  });
-}
 
 export default GrammarValidator;
