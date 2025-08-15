@@ -2,7 +2,6 @@
 // Phase 2 & 3: Upgraded with character consistency and style integration
 
 import type { UserInfo, DifficultyLevel } from '@/types';
-import { CharacterConsistencyCache, type SceneCharacterData } from './CharacterConsistencyCache';
 import { DIFFICULTY_STYLE_MAPPING } from '@/config/appConfig';
 import { supabase } from '@/integrations/supabase/client';
 import { PromptLengthManager } from '@/utils/promptLengthManager';
@@ -443,23 +442,9 @@ export class AdvancedStoryAnalyzer {
     sessionId: string,
     style: string = 'children-book-illustration'
   ): EnhancedImagePrompt {
-    // Phase 2: Get character consistency data
-    const sceneCharacterData = CharacterConsistencyCache.buildSceneCharacterData(
-      sessionId,
-      userInfo, 
-      difficultyLevel,
-      {
-        emotion: analysis.emotions[0] || 'peaceful',
-        action: analysis.mainAction,
-        setting: analysis.setting.location,
-        lighting: `${analysis.setting.timeOfDay} lighting`,
-        perspective: analysis.perspective
-      }
-    );
-
-    // Phase 3: Apply style framework based on difficulty
+    // Apply style framework based on difficulty
     const styleFramework = DIFFICULTY_STYLE_MAPPING[difficultyLevel];
-    const characterDesc = CharacterConsistencyCache.generateCharacterPrompt(sceneCharacterData);
+    const characterDesc = this.buildCharacterDescription(userInfo, difficultyLevel);
     const settingDesc = this.buildSettingDescription(analysis.setting);
     const moodDesc = this.buildMoodDescription(analysis);
     
@@ -549,11 +534,20 @@ export class AdvancedStoryAnalyzer {
     };
   }
 
-  private static buildCharacterDescription(userInfo: UserInfo): string {
+  private static buildCharacterDescription(userInfo: UserInfo, difficultyLevel?: DifficultyLevel): string {
     const age = userInfo.age;
     const ageGroup = age <= 5 ? 'young child' : age <= 8 ? 'child' : age <= 12 ? 'older child' : 'young person';
     
-    return `${ageGroup} named ${userInfo.name}, ${userInfo.avatar?.type || 'friendly'} appearance with ${userInfo.avatar?.skinTone || 'warm'} skin tone`;
+    // Generate fresh character details each time to avoid repetition
+    const appearances = ['cheerful', 'curious', 'friendly', 'adventurous', 'thoughtful'];
+    const skinTones = ['light', 'medium', 'olive', 'dark', 'warm'];
+    const hairStyles = ['short', 'curly', 'straight', 'wavy'];
+    
+    const randomAppearance = appearances[Math.floor(Math.random() * appearances.length)];
+    const randomSkinTone = skinTones[Math.floor(Math.random() * skinTones.length)];
+    const randomHair = hairStyles[Math.floor(Math.random() * hairStyles.length)];
+    
+    return `${ageGroup} with ${randomAppearance} expression, ${randomSkinTone} skin tone, ${randomHair} hair`;
   }
 
   private static buildSettingDescription(setting: any): string {
