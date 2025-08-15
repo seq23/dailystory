@@ -360,13 +360,34 @@ export function formatUserPrompt(template: string, userInfo: Partial<UserInfo>):
   // Start with basic placeholder resolution
   let prompt = resolveAllPlaceholders(template, { userInfo: userInfo as UserInfo });
   
-  // Extract theme intent for more sophisticated prompting
+  // Extract theme intent for hybrid approach
   if (userInfo as UserInfo) {
     const themeIntent = extractThemeIntent(userInfo as UserInfo);
+    const difficultyLevel = userInfo.difficultyLevel || userInfo.readingAbility;
     
-    // Add theme intent to the prompt if available
-    if (themeIntent && themeIntent.themes.length > 0) {
-      prompt += ` Theme intent: ${themeIntent.themes.join(', ')}`;
+    // For beginner/easy levels: use interests if no explicit themes
+    const isBeginnerOrEasy = difficultyLevel === 'beginner' || difficultyLevel === 'easy';
+    
+    if (themeIntent.themes.length > 0 || themeIntent.tone.length > 0) {
+      const themeGuidance = [];
+      if (themeIntent.themes.length > 0) {
+        themeGuidance.push(`Focus on themes: ${themeIntent.themes.join(', ')}`);
+      }
+      if (themeIntent.tone.length > 0) {
+        themeGuidance.push(`Use tone: ${themeIntent.tone.join(', ')}`);
+      }
+      prompt += ` ${themeGuidance.join('. ')}.`;
+    } else if (isBeginnerOrEasy) {
+      // Only for beginner/easy: append interests note when no explicit themes
+      const interests = [];
+      if (userInfo.hobbies) interests.push(userInfo.hobbies);
+      if (userInfo.favoriteAnimal) interests.push(userInfo.favoriteAnimal);
+      if (userInfo.favoriteColor) interests.push(userInfo.favoriteColor);
+      if (userInfo.favoriteFood) interests.push(userInfo.favoriteFood);
+      
+      if (interests.length > 0) {
+        prompt += ` Focus the story around the child's interests: ${interests.join(', ')}.`;
+      }
     }
   }
   

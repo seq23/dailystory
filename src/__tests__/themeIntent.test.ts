@@ -25,10 +25,10 @@ describe("themeIntent", () => {
     expect(ti.tone).toEqual(expect.arrayContaining(["playful", "gentle"]));
   });
 
-  it("falls back to interests when specialRequest absent", () => {
+  it("returns empty themes when no explicit themes in specialRequest", () => {
     const user = makeUser({ specialRequest: "", hobbies: "science club" });
     const ti = extractThemeIntent(user);
-    expect(ti.themes).toEqual(expect.arrayContaining(["discovery"]));
+    expect(ti.themes).toEqual([]);
   });
 
   it("filters inappropriate themes for safety", () => {
@@ -68,5 +68,19 @@ describe("themeIntent", () => {
     expect(ti.themes).not.toContain("romance"); // Filtered for children
     expect(ti.themes).not.toContain("monsters"); // Filtered as potentially scary
     expect(ti.tone).toContain("exciting");
+  });
+
+  it("does not add themes from hobbies/interests automatically", () => {
+    const user = makeUser({ 
+      specialRequest: "", 
+      hobbies: "art, science",
+      favoriteAnimal: "dolphin",
+      favoriteColor: "blue",
+      favoriteFood: "pizza"
+    });
+    const ti = extractThemeIntent(user);
+    
+    // Should not automatically add themes like creativity, discovery, nature, identity, family
+    expect(ti.themes).toEqual([]);
   });
 });

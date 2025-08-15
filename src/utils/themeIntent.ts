@@ -84,16 +84,7 @@ export function extractThemeIntent(userInfo: UserInfo): ThemeIntent {
     }
   }
 
-  // Add from hobbies/animal/color/food as soft signals
-  const hobby = (userInfo.hobbies || '').toLowerCase();
-  if (hobby.includes('art') || hobby.includes('draw')) themes.push('creativity');
-  if (hobby.includes('sport') || hobby.includes('team')) themes.push('teamwork');
-  if (hobby.includes('science')) themes.push('discovery');
-  if (hobby.includes('read')) themes.push('learning');
-
-  if (userInfo.favoriteAnimal) themes.push('nature');
-  if (userInfo.favoriteColor) themes.push('identity');
-  if (userInfo.favoriteFood) themes.push('family');
+  // No automatic theme injection - themes only come from explicit declarations
 
   return {
     themes: Array.from(new Set(themes)).slice(0, 5),
