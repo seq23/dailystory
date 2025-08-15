@@ -25,38 +25,35 @@ export async function fetchElevenLabsAudioArrayBuffer(text: string, voiceId?: st
   }
   if (typeof data === 'string') {
     try {
-      // Validate base64 format
-      const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
-      if (!base64Regex.test(data)) {
-        throw new Error('Invalid base64 format');
+      // UTF-8 safe base64 decoder without atob()
+      const base64Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+      const base64Map = new Map();
+      for (let i = 0; i < base64Chars.length; i++) {
+        base64Map.set(base64Chars[i], i);
       }
 
-      // UTF-8 compatible base64 decoding
-      const binaryString = atob(data);
-      const bytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
+      // Remove padding and validate
+      const cleanData = data.replace(/=/g, '');
+      const bytes = new Uint8Array(Math.floor(cleanData.length * 3 / 4));
+      
+      let byteIndex = 0;
+      for (let i = 0; i < cleanData.length; i += 4) {
+        const b1 = base64Map.get(cleanData[i]) || 0;
+        const b2 = base64Map.get(cleanData[i + 1]) || 0;
+        const b3 = base64Map.get(cleanData[i + 2]) || 0;
+        const b4 = base64Map.get(cleanData[i + 3]) || 0;
+
+        const bitmap = (b1 << 18) | (b2 << 12) | (b3 << 6) | b4;
+        
+        if (byteIndex < bytes.length) bytes[byteIndex++] = (bitmap >> 16) & 255;
+        if (byteIndex < bytes.length) bytes[byteIndex++] = (bitmap >> 8) & 255;
+        if (byteIndex < bytes.length) bytes[byteIndex++] = bitmap & 255;
       }
+      
       return bytes.buffer;
     } catch (error) {
-      console.error('Base64 decode error:', error);
-      console.error('Base64 string preview:', data.substring(0, 50) + '...');
-      
-      // Fallback: try alternative decoding method
-      try {
-        // Use modern decoder for UTF-8 compatibility
-        const decoder = new TextDecoder('latin1');
-        const decodedText = decoder.decode(new TextEncoder().encode(data));
-        const binaryString = atob(decodedText);
-        const bytes = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-          bytes[i] = binaryString.charCodeAt(i);
-        }
-        return bytes.buffer;
-      } catch (fallbackError) {
-        console.error('Fallback decode also failed:', fallbackError);
-        throw new Error(`All base64 decoding methods failed: ${error.message}`);
-      }
+      console.error('UTF-8 safe base64 decode error:', error);
+      throw new Error(`Base64 decoding failed: ${error.message}`);
     }
   }
 
