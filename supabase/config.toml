@@ -36,3 +36,6 @@ verify_jwt = false
 
 [functions.extract-story-elements]
 verify_jwt = false
+
+[functions.background-image-pregeneration]
+verify_jwt = false

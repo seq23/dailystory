@@ -179,7 +179,7 @@ export class StorySessionCache {
   /**
    * Mark session as complete
    */
-  static markSessionComplete(userId: string): void {
+  static async markSessionComplete(userId: string): Promise<void> {
     const session = this.getCachedStorySession(userId);
     if (!session) return;
 
@@ -189,6 +189,17 @@ export class StorySessionCache {
     try {
       const cacheKey = this.getCacheKey(userId);
       sessionStorage.setItem(cacheKey, JSON.stringify(session));
+      
+      // Phase 2: Post-completion caching - cache all images with story hash
+      if (session.images && session.pages) {
+        const { EnhancedImageCache } = await import('@/services/enhancedImageCache');
+        const storyHash = btoa(session.pages.join('|')).slice(0, 16);
+        session.images.forEach((img, idx) => {
+          if (img.url) {
+            EnhancedImageCache.cacheImage(img.prompt, img.url, userId, idx, storyHash);
+          }
+        });
+      }
     } catch (error) {
       console.warn('Failed to mark session as complete:', error);
     }

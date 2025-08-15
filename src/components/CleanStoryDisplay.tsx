@@ -902,10 +902,20 @@ const initializeStory = async () => {
     setIsBatchGenerating(true);
     setBatchDone(0);
     setBatchTotal(missing.length);
-    for (const idx of missing) {
-      await generateImageForIndex(idx);
-      setBatchDone((d) => d + 1);
+    
+    // Phase 1: Parallel processing with concurrency limit
+    const concurrencyLimit = 4;
+    const batches: number[][] = [];
+    for (let i = 0; i < missing.length; i += concurrencyLimit) {
+      batches.push(missing.slice(i, i + concurrencyLimit));
     }
+    
+    for (const batch of batches) {
+      const promises = batch.map(idx => generateImageForIndex(idx));
+      await Promise.allSettled(promises);
+      setBatchDone(prev => prev + batch.length);
+    }
+    
     setIsBatchGenerating(false);
     try { toast({ title: 'Illustrations ready', duration: 3000 }); } catch {}
   };

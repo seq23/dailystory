@@ -14,6 +14,7 @@ import useEmblaCarousel from 'embla-carousel-react';
 import { toast } from '@/hooks/use-toast';
 import { PremiumStoryManager, SavedStory } from '@/services/premiumStoryManager';
 import { DifficultyLevel, Story } from '@/types/index';
+import { BatchImageService } from '@/services/BatchImageService';
 
 interface PremiumStoryLibraryProps {
   onLoadStory: (story: Story) => void;
@@ -37,6 +38,7 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
   const pageSize = isMobile ? 6 : isTablet ? 8 : 12;
   const [page, setPage] = useState(1);
   const [emblaRef] = useEmblaCarousel({ align: 'start', dragFree: false, loop: false });
+  const [generatingImages, setGeneratingImages] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     loadSavedStories();
@@ -176,6 +178,70 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
         description: 'Failed to save story.',
         variant: 'destructive'
       });
+    }
+  };
+
+  // Phase 3: Library error recovery helper functions
+  const hasPartialImages = (story: SavedStory): boolean => {
+    // Check if story has content to potentially generate images for
+    const storyArray = Array.isArray(story.content) ? story.content : [];
+    return storyArray.length > 0; // Show button for all stories with content
+  };
+
+  const handleGenerateMissingImages = async (story: SavedStory) => {
+    if (generatingImages[story.id]) return;
+    
+    setGeneratingImages(prev => ({ ...prev, [story.id]: true }));
+    
+    try {
+      const userInfo = {
+        name: 'Premium User',
+        age: 8,
+        grade: '2nd' as any,
+        nativeLanguage: 'en' as any,
+        learningGoal: 'improve-english-reading' as any,
+        avatar: { type: 'boy' as any, skinTone: 'medium' as any },
+        favoriteColor: 'blue',
+        favoriteAnimal: 'dog',
+        hobbies: 'reading',
+        favoriteFood: 'cookies',
+        specialRequest: ''
+      };
+
+      const existingImages: Record<number, string> = {};
+      // For now, assume no existing images since we don't have that data structure
+      
+      const storyArray = Array.isArray(story.content) ? story.content : [];
+      if (!storyArray.length) return;
+
+      const updatedImages = await BatchImageService.generateMissingImages(
+        storyArray,
+        existingImages,
+        userInfo,
+        {
+          onProgress: (completed, total) => {
+            console.log(`Generating images: ${completed}/${total}`);
+          }
+        }
+      );
+
+      console.log('Generated images for library story:', updatedImages);
+
+      toast({
+        title: 'Success',
+        description: 'Images generated successfully!',
+      });
+
+      loadSavedStories();
+    } catch (error) {
+      console.error('Error generating missing images:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to generate images.',
+        variant: 'destructive'
+      });
+    } finally {
+      setGeneratingImages(prev => ({ ...prev, [story.id]: false }));
     }
   };
 
@@ -339,6 +405,18 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
                         <Play className="w-4 h-4 mr-2" />
                         Read Story
                       </Button>
+                      
+                      {hasPartialImages(story) && (
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleGenerateMissingImages(story)}
+                          disabled={generatingImages[story.id]}
+                          className="text-xs"
+                        >
+                          {generatingImages[story.id] ? 'Generating...' : 'Fix Images'}
+                        </Button>
+                      )}
 
                       <Dialog open={deleteDialogOpen === story.id} onOpenChange={(open) => setDeleteDialogOpen(open ? story.id : null)}>
                         <DialogTrigger asChild>
