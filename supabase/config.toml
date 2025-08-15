@@ -10,6 +10,9 @@ verify_jwt = false
 [functions.openai-tts]
 verify_jwt = false
 
+[functions.openai-image]
+verify_jwt = false
+
 [functions.runware-generate-image]
 verify_jwt = false
 

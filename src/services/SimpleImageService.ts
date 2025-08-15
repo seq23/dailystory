@@ -19,6 +19,9 @@ export interface ImageResult {
   url: string;
   success: boolean;
   error?: string;
+  provider?: string;
+  model?: string;
+  cost?: number;
 }
 
 
@@ -215,14 +218,23 @@ export class SimpleImageService {
       
       console.log(`🎨 Enhanced Prompt: ${positivePrompt.substring(0, 100)}...`);
 
-      const result = finalConfig.provider === 'runware'
-        ? await this.generateWithRunware(positivePrompt, finalConfig, negativePrompt, userInfo, pageNumber)
-        : await this.generateWithDALLE(positivePrompt, finalConfig);
+      // Try Runware first (primary provider)
+      console.log('🎯 Attempting image generation with Runware (primary)...');
+      let result = await this.generateWithRunware(positivePrompt, finalConfig, negativePrompt, userInfo, pageNumber);
+
+      // If Runware fails, fallback to OpenAI
+      if (!result.success) {
+        console.log('⚠️ Runware failed, falling back to OpenAI...');
+        result = await this.generateWithOpenAI(positivePrompt, finalConfig, negativePrompt, userInfo, pageNumber);
+      }
 
       if (result.success) {
         this.recordUsage(userKey);
+        console.log(`✅ Image generated successfully with ${result.provider || 'unknown'} provider`);
+      } else {
+        console.error('❌ All image providers failed:', result.error);
       }
-
+      
       return result;
     } catch (error) {
       console.error('🎨 Enhanced Image: Generation failed:', error);
@@ -278,7 +290,10 @@ export class SimpleImageService {
 
       return {
         url: data.imageURL,
-        success: true
+        success: true,
+        provider: 'runware',
+        model: data.model || 'runware:100@1',
+        cost: data.cost || this.ESTIMATED_COST_PER_IMAGE_USD
       };
 
     } catch (error) {
@@ -293,26 +308,61 @@ export class SimpleImageService {
     }
   }
 
-  private static async generateWithDALLE(prompt: string, config: ImageGenerationConfig): Promise<ImageResult> {
+  private static async generateWithOpenAI(
+    prompt: string, 
+    config: ImageGenerationConfig, 
+    negativePrompt?: string,
+    userInfo?: UserInfo,
+    pageNumber?: number
+  ): Promise<ImageResult> {
     try {
-      // Future DALL-E implementation would call OpenAI Edge Function
-      console.log('🎨 DALL-E integration ready for implementation');
+      console.log('🤖 Calling OpenAI image generation...');
+      
+      const { data, error } = await supabase.functions.invoke('openai-image', {
+        body: {
+          positivePrompt: prompt,
+          negativePrompt,
+          width: config.width,
+          height: config.height,
+          quality: 'high',
+          style: 'vivid',
+          userInfo,
+          pageNumber
+        }
+      });
 
-      // Would call: supabase.functions.invoke('openai-dalle', { body: { prompt, ...config } })
+      if (error) {
+        console.error('OpenAI function error:', error);
+        return {
+          url: '',
+          success: false,
+          error: `OpenAI function error: ${error.message}`
+        };
+      }
+
+      if (!data.success) {
+        console.error('OpenAI generation failed:', data.error);
+        return {
+          url: '',
+          success: false,
+          error: data.error
+        };
+      }
 
       return {
-        url: '',
-        success: false,
-        error: 'DALL-E provider not yet implemented'
+        url: data.imageURL,
+        success: true,
+        provider: 'openai',
+        model: data.model,
+        cost: data.cost
       };
 
     } catch (error) {
-      const appError = ErrorHandler.handleError(error instanceof Error ? error : new Error(String(error)), 'dalle-generation');
-
+      console.error('OpenAI generation error:', error);
       return {
         url: '',
         success: false,
-        error: ErrorHandler.getUserMessage(appError)
+        error: `OpenAI generation failed: ${error.message}`
       };
     }
   }

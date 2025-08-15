@@ -4,6 +4,7 @@
 export interface AppConfig {
   images: {
     defaultProvider: 'runware' | 'dalle';
+    fallbackProvider: 'openai' | 'dalle';
     runware: {
       model: string;
       width: number;
@@ -16,6 +17,11 @@ export interface AppConfig {
       model: string;
       size: string;
       quality: string;
+    };
+    fallbackSettings: {
+      enabled: boolean;
+      retryDelay: number;
+      providerPriority: string[];
     };
   };
   stories: {
@@ -59,6 +65,7 @@ export interface AppConfig {
 export const APP_CONFIG: AppConfig = {
   images: {
     defaultProvider: 'runware',
+    fallbackProvider: 'openai',
     runware: {
       model: 'runware:100@1',
       width: 1024,
@@ -71,6 +78,11 @@ export const APP_CONFIG: AppConfig = {
       model: 'dall-e-3',
       size: '1024x1024',
       quality: 'standard'
+    },
+    fallbackSettings: {
+      enabled: true,
+      retryDelay: 1000,
+      providerPriority: ['runware', 'openai']
     }
   },
   stories: {
