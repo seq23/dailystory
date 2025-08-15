@@ -109,7 +109,7 @@ serve(async (req) => {
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
         ws.close();
-        console.log("Request timeout after 45 seconds");
+        console.log("Request timeout after 15 seconds");
         resolve(new Response(
           JSON.stringify({ 
             success: false,
@@ -121,7 +121,7 @@ serve(async (req) => {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           }
         ));
-      }, 45000); // 45 second timeout for better reliability
+      }, 15000); // 15 second timeout for faster fallbacks
 
       ws.onopen = () => {
         console.log("WebSocket connected to Runware");
@@ -175,8 +175,8 @@ serve(async (req) => {
                 height,
                 numberResults,
                 outputFormat,
-                steps: 6, // Increased steps for better quality and accuracy
-                CFGScale: Math.max(3, CFGScale), // Higher guidance for better prompt adherence and quality
+                steps: 3, // Optimized steps for faster generation
+                CFGScale: Math.max(1.5, CFGScale), // Optimized guidance for speed
                 scheduler,
                 strength,
                 ...(seed && { seed })
