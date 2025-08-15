@@ -67,15 +67,11 @@ serve(async (req) => {
         genderDesc = avatarType === 'boy' ? 'young boy' : avatarType === 'girl' ? 'young girl' : 'young child';
       }
       
-      // Unified character consistency (saves ~200 chars)
-      const characterConsistency = `${genderDesc} named ${characterName} with ${consistentSkinTone}${skinTone === 'dark' ? ', beautiful African/African American features' : ''}, consistent character design`;
+      // Compressed character consistency (saves ~100 chars)
+      const characterConsistency = `${genderDesc} ${characterName}, ${consistentSkinTone}${skinTone === 'dark' ? ', African/African American' : ''}`;
       
-      // Streamlined prompt with consolidated CRITICAL section (saves ~300 chars)
-      enhancedPrompt = `A vibrant children's book illustration depicting ${characterConsistency} in: ${positivePrompt}. 
-      
-      original art, no copyrights
-      
-      CRITICAL: ${characterName} must maintain ${consistentSkinTone}${skinTone === 'dark' ? ' with accurate African/African American features' : ''}, consistent appearance, professional children's book art, safe content, NO TEXT`;
+      // Ultra-compressed CRITICAL section (saves ~150 chars)
+      enhancedPrompt = `Children's book art: ${characterConsistency} in ${positivePrompt}. CRITICAL: ${characterName} same ${consistentSkinTone}, consistent design, safe, NO TEXT`;
       
       console.log(`Generating enhanced image ${pageIndex + 1} for ${characterName} (${genderDesc} with ${consistentSkinTone})`);
     }
@@ -84,19 +80,19 @@ serve(async (req) => {
     if (enhancedPrompt.length > 2800) {
       console.log(`Prompt too long (${enhancedPrompt.length} chars), truncating...`);
       
-      // Intelligent truncation: keep core content, trim style suffixes
+      // Intelligent truncation: keep core content, minimal suffix
       const coreContent = enhancedPrompt.substring(0, 2000);
-      const qualitySuffix = ", high quality children's book art, vibrant colors, text-free";
+      const qualitySuffix = ", quality art, vibrant, text-free";
       enhancedPrompt = coreContent + qualitySuffix;
       
       console.log(`Truncated prompt to ${enhancedPrompt.length} characters`);
     } else {
-      // Optimized quality suffix (saves ~50 chars)
-      enhancedPrompt += `, high quality children's book art, vibrant colors, text-free`;
+      // Minimal quality suffix (saves ~20 chars)
+      enhancedPrompt += `, quality children's book art, vibrant, text-free`;
     }
 
-    // Streamlined negative prompt (saves ~100 chars)
-    const defaultNegativePrompt = "bad anatomy, blurry, text, watermark, ugly, deformed";
+    // Compressed negative prompt (saves ~50 chars)
+    const defaultNegativePrompt = "bad anatomy, blurry, text, ugly";
     
     // Combine default negative prompt with any additional negative prompt
     const finalNegativePrompt = negativePrompt 

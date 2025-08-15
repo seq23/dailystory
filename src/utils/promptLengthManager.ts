@@ -11,18 +11,18 @@ export interface PromptTier {
   detailed: string;
 }
 
-// Streamlined tiered suffix system (reduced by ~40 chars each)
+// Ultra-compressed tiered suffix system (reduced by ~60 chars each)
 export const QUALITY_SUFFIXES: PromptTier = {
-  minimal: "high quality children's book art, safe",
-  standard: "high quality children's book art, vibrant colors, text-free",
-  detailed: "award-winning children's book art, vibrant colors, perfect lighting, text-free"
+  minimal: "quality book art, safe",
+  standard: "quality book art, vibrant, text-free",
+  detailed: "award-winning book art, vibrant colors, perfect lighting, text-free"
 };
 
-// Streamlined character consistency descriptions (reduced by ~30 chars each)  
+// Ultra-compressed character consistency descriptions (reduced by ~40 chars each)  
 export const CHARACTER_SUFFIXES: PromptTier = {
-  minimal: "consistent design",
-  standard: "consistent design, same appearance",
-  detailed: "consistent design, same appearance, accurate representation"
+  minimal: "consistent",
+  standard: "consistent design",
+  detailed: "consistent design, accurate representation"
 };
 
 // Prompt priority levels for intelligent truncation
