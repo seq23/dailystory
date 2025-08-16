@@ -15,7 +15,8 @@ import {
   ChevronRight,
   Trophy,
   Sparkles,
-  X
+  X,
+  Star
 } from 'lucide-react';
 
 interface ModernProgressTowersProps {
@@ -56,6 +57,7 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
   const [animatingTowers, setAnimatingTowers] = useState<Record<string, boolean>>({});
   const [celebrationMode, setCelebrationMode] = useState(false);
   const [sparkleMode, setSparkleMode] = useState(false);
+  const [recentAchievements, setRecentAchievements] = useState<any[]>([]);
   const [enabled, setEnabled] = useState<boolean>(() => {
     try { return localStorage.getItem('progressTowersEnabled') !== '0'; } catch { return true; }
   });
@@ -184,7 +186,13 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
     if (hasNewAchievements) {
       const achievement = getNextAchievement();
       if (achievement) {
-        setActiveAchievement(achievement);
+        // Only show full popup for epic/legendary achievements
+        if (achievement.rarity === 'epic' || achievement.rarity === 'legendary') {
+          setActiveAchievement(achievement);
+        } else {
+          // Add to recent achievements for display in progress towers
+          setRecentAchievements(prev => [achievement, ...prev.slice(0, 4)]); // Keep only 5 most recent
+        }
       }
     }
   }, [hasNewAchievements, getNextAchievement]);
@@ -390,7 +398,7 @@ className={cn(
             )}
             
             {/* Achievement indicator */}
-            {!isExpanded && hasNewAchievements && (
+            {!isExpanded && (hasNewAchievements || recentAchievements.length > 0) && (
               <div className="absolute -top-2 -right-2">
                 <div className="w-4 h-4 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-full shadow-lg animate-bounce [animation-duration:1s] [animation-iteration-count:2]">
                   <div className="w-full h-full flex items-center justify-center text-xs">🏆</div>
@@ -476,6 +484,44 @@ className={cn(
                     </div>
                   </div>
                 </div>
+                
+                {/* Recent Achievements */}
+                {recentAchievements.length > 0 && (
+                  <div className="mt-4 p-4 rounded-lg bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200/50">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Trophy className="w-4 h-4 text-yellow-600" />
+                      <h4 className="text-sm font-semibold text-yellow-700">
+                        {t('progress.recentAchievements', 'Recent Achievements')}
+                      </h4>
+                    </div>
+                    <div className="space-y-2">
+                      {recentAchievements.slice(0, 3).map((achievement, index) => (
+                        <div 
+                          key={`${achievement.id}-${index}`}
+                          className="flex items-center gap-3 p-2 bg-white/80 rounded-lg border border-yellow-200/30"
+                        >
+                          <div className="text-lg">{achievement.icon}</div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-medium text-yellow-800 truncate">
+                              {achievement.title}
+                            </div>
+                            <div className="text-xs text-yellow-600 truncate">
+                              {achievement.description}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-xs font-bold text-yellow-700">+{achievement.points}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {recentAchievements.length > 3 && (
+                      <div className="text-xs text-yellow-600 mt-2 text-center">
+                        +{recentAchievements.length - 3} more achievements unlocked!
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Premium indicator */}
                 {userType === 'premium' ? (

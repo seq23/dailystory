@@ -10,6 +10,7 @@ import { VocabularyCollector } from "@/components/VocabularyCollector";
 import { MiniGames } from "@/components/MiniGames";
 import { Badge } from "@/components/ui/badge";
 import { StorySessionCache } from "@/services/storySessionCache";
+import { useGameContext } from "@/components/GameContextProvider";
 
 interface ReadingStats {
   wordsRead: number;
@@ -100,6 +101,19 @@ const location = useLocation();
   const [gamesVisible, setGamesVisible] = React.useState(false);
   const canLaunchActivities = Boolean(userIsPremium && userInfoFromState && storyText);
   const isQuizAllowed = Boolean(userIsPremium && sessionStats && sessionStats.currentDifficulty !== 'beginner');
+  
+  // Get achievements from this session
+  let sessionAchievements: any[] = [];
+  try {
+    const { userStats } = useGameContext();
+    const sessionAchievementsStr = sessionStorage.getItem('session_achievements');
+    if (sessionAchievementsStr) {
+      sessionAchievements = JSON.parse(sessionAchievementsStr);
+      sessionStorage.removeItem('session_achievements'); // Clear after reading
+    }
+  } catch {
+    // Graceful fallback if no game context
+  }
 
 
   // Handle navigation based on user type
@@ -343,6 +357,52 @@ const getDifficultyLabel = (difficulty: string) => {
               </div>
             )}
           </div>
+
+          {/* Achievements Earned This Session */}
+          {sessionAchievements.length > 0 && (
+            <div className="bg-gradient-to-br from-yellow-50 to-amber-50 border-2 border-yellow-200 rounded-lg p-6 space-y-4">
+              <div className="flex items-center justify-center gap-2">
+                <Star className="w-6 h-6 text-yellow-600" />
+                <h3 className="text-lg font-bold text-yellow-700">
+                  {t("sessionEnded.achievementsEarned", "Achievements Earned This Session!")}
+                </h3>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {sessionAchievements.slice(0, 4).map((achievement, index) => (
+                  <div 
+                    key={`${achievement.id}-${index}`}
+                    className="bg-white/80 rounded-lg p-3 border border-yellow-200/50 flex items-center gap-3"
+                  >
+                    <div className="text-2xl">{achievement.icon}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-yellow-800 text-sm truncate">
+                        {achievement.title}
+                      </div>
+                      <div className="text-xs text-yellow-600 truncate">
+                        {achievement.description}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-bold text-yellow-700">+{achievement.points}</div>
+                      <Badge 
+                        variant="outline" 
+                        className="text-xs border-yellow-300 text-yellow-700"
+                      >
+                        {achievement.rarity}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              {sessionAchievements.length > 4 && (
+                <div className="text-center text-sm text-yellow-600">
+                  + {sessionAchievements.length - 4} more achievements unlocked!
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Action Buttons */}
           <div className="space-y-3 pt-4">

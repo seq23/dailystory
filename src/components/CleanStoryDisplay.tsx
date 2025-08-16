@@ -108,6 +108,14 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   // Mark body during reading session to control global UI (e.g., hide feedback on mobile)
   useEffect(() => {
     document.body.classList.add('reading-session');
+    
+    // Clear previous session achievements when starting new session
+    try {
+      sessionStorage.removeItem('session_achievements');
+    } catch (error) {
+      console.warn('Failed to clear previous session achievements:', error);
+    }
+    
     return () => {
       document.body.classList.remove('reading-session');
     };

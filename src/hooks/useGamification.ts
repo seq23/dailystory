@@ -115,6 +115,16 @@ export const useGamification = (options: UseGamificationOptions = {}) => {
           onAchievementUnlocked?.(achievement);
           // Removed achievement toast - use modal system only
         });
+        
+        // Store session achievements for session end page
+        try {
+          const existing = sessionStorage.getItem('session_achievements') || '[]';
+          const sessionAchievements = JSON.parse(existing);
+          sessionAchievements.push(...unlockedAchievements);
+          sessionStorage.setItem('session_achievements', JSON.stringify(sessionAchievements));
+        } catch (error) {
+          console.warn('Failed to store session achievements:', error);
+        }
       }
 
       // Handle streak milestones - use modal system only
