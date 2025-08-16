@@ -77,6 +77,44 @@ function updateSetting(sessionId: string, pageNumber: number, weather?: string, 
 }
 
 
+function extractPrimaryScene(text: string): string {
+  // Intelligent scene boundary detection - extract only the primary scene
+  const sentences = text.split(/[.!?]+/).map(s => s.trim()).filter(s => s.length > 0);
+  
+  if (sentences.length <= 1) return text;
+  
+  // Look for transition words that indicate scene changes
+  const transitionPatterns = [
+    /\b(later|then|after|next|meanwhile|suddenly|soon|eventually)\b/i,
+    /\b(and then|after that|next thing|later on)\b/i,
+    /\b(in the|at the|when|while)\b.*\b(bed|bedroom|sleep|night)\b/i, // bedroom scenes
+    /\b(outside|playground|field|park|game|play|sport)\b/i // outdoor/activity scenes
+  ];
+  
+  // Find the first sentence with a transition or scene indicator
+  let primarySceneEnd = 0;
+  for (let i = 0; i < sentences.length; i++) {
+    const sentence = sentences[i];
+    const hasTransition = transitionPatterns.some(pattern => pattern.test(sentence));
+    
+    if (hasTransition && i > 0) {
+      // Found a transition - stop at previous sentence to avoid mixing scenes
+      primarySceneEnd = i;
+      break;
+    }
+  }
+  
+  // If no clear transition found, take first sentence or first half
+  if (primarySceneEnd === 0) {
+    primarySceneEnd = Math.min(2, Math.ceil(sentences.length / 2));
+  }
+  
+  const primaryScene = sentences.slice(0, primarySceneEnd).join('. ').trim();
+  console.log(`🎯 Scene extraction: "${text}" → primary scene: "${primaryScene}"`);
+  
+  return primaryScene || sentences[0] || text;
+}
+
 function getSettingForPrompt(sessionId: string): string {
   const state = sessionStates.get(sessionId);
   if (!state || !state.setting.isLocked) return '';
@@ -141,8 +179,8 @@ serve(async (req) => {
       const state = getOrCreateVisualState(sessionId);
       state.pageCount = Math.max(state.pageCount, pageNumber);
       
-      // Extract content from pageText server-side
-      const processedText = resolvePronouns(sessionId, pageText);
+      // Smart scene extraction - get primary scene only
+      const processedText = extractPrimaryScene(resolvePronouns(sessionId, pageText));
       
       // Get existing character seed for consistency
       let characterSeed = state.characters.get(userInfo.name)?.seed;
@@ -172,8 +210,8 @@ serve(async (req) => {
       // Environmental context from visual state
       const environmentalContext = getSettingForPrompt(sessionId);
       
-      // Build complete enhanced prompt server-side
-      enhancedPrompt = `Children's book art: ${characterConsistency} ${processedText}${environmentalContext}. CRITICAL: ${userInfo.name} same ${consistentSkinTone}, consistent design, safe, NO TEXT`;
+      // Build focused single-scene prompt server-side
+      enhancedPrompt = `Children's book illustration: ${characterConsistency} ${processedText}${environmentalContext}. Single scene focus, ${userInfo.name} same ${consistentSkinTone}, consistent character design, vibrant colors, safe content, NO TEXT OR WORDS`;
       
       // Use existing seed if available
       if (characterSeed) {

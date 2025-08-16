@@ -102,30 +102,13 @@ export class SimpleImageService {
   }
 
   private static shouldDegrade(userKey: string) {
-    const usage = this.loadUsage(userKey);
-    const ratio = usage.cost / this.DAILY_COST_CEILING_USD;
-    if (ratio >= 1) return 'hard';
-    if (ratio >= 0.8) return 'soft';
+    // Quality degradation disabled - always return null for consistent high quality
     return null;
   }
 
   private static async applyDegradationIfNeeded(userKey: string, config: ImageGenerationConfig) {
-    const mode = this.shouldDegrade(userKey);
-    if (!mode) return config;
-
-    const degraded: ImageGenerationConfig = { ...config };
-    if (mode === 'soft') {
-      degraded.width = Math.min(config.width, 768);
-      degraded.height = Math.min(config.height, 768);
-      await this.sleep(150); // gentle pacing
-      console.info('[Images] Soft-degrade active (cost nearing ceiling).');
-    } else if (mode === 'hard') {
-      degraded.width = Math.min(config.width, 512);
-      degraded.height = Math.min(config.height, 512);
-      await this.sleep(400); // stronger pacing
-      console.info('[Images] Hard-degrade active (daily ceiling reached).');
-    }
-    return degraded;
+    // Quality degradation disabled - always return original config for 1024x1024 images
+    return config;
   }
 
   private static recordUsage(userKey: string) {
@@ -228,7 +211,8 @@ export class SimpleImageService {
 
     const release = await this.throttleAndQueue(userKey);
     try {
-      const finalConfig = await this.applyDegradationIfNeeded(userKey, mergedConfig);
+      // Force consistent 1024x1024 output - no degradation
+      const finalConfig = { ...mergedConfig, width: 1024, height: 1024 };
 
       console.log(`🚀 Ultra-fast generation for page ${pageNumber}/${totalPages}: "${storyText}"`);
 

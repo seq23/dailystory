@@ -849,10 +849,23 @@ const initializeStory = async () => {
   const generateImageForCurrentPage = async () => {
     if (isGeneratingImage || pageImages[currentPage]) return;
     
+    // Enhanced cache validation - check EnhancedImageCache first
+    const storyText = displayedStory[currentPage];
+    const cachedImageUrl = (await import('@/services/enhancedImageCache')).EnhancedImageCache.getCachedImage(
+      storyText.slice(0, 120), 
+      characterSessionId, 
+      currentPage
+    );
+    
+    if (cachedImageUrl) {
+      console.log('📸 Using cached image for page', currentPage);
+      setPageImages(prev => ({ ...prev, [currentPage]: cachedImageUrl }));
+      return;
+    }
+    
     setIsGeneratingImage(true);
     
     try {
-      const storyText = displayedStory[currentPage];
       const result = await SimpleImageService.generateStoryImage(
         storyText, 
         userInfo, 
@@ -867,6 +880,15 @@ const initializeStory = async () => {
           ...prev,
           [currentPage]: result.url
         }));
+        
+        // Cache in both systems to prevent re-generation
+        (await import('@/services/enhancedImageCache')).EnhancedImageCache.cacheImage(
+          storyText.slice(0, 120),
+          result.url,
+          characterSessionId,
+          currentPage
+        );
+        
         try {
           const cacheId = isPremium ? ((await supabase.auth.getUser()).data.user?.id || userInfo.name || 'premium') : 'guest';
           const images = story.map((s, idx) => ({ url: idx === currentPage ? result.url : pageImages[idx], prompt: (s || '').slice(0, 120) }));
@@ -884,8 +906,22 @@ const initializeStory = async () => {
   // Generate illustration for any page index (batch-safe, no UI spinner)
   const generateImageForIndex = async (index: number) => {
     if (pageImages[index]) return;
+    
+    // Enhanced cache validation - check EnhancedImageCache first
+    const storyText = story[index];
+    const cachedImageUrl = (await import('@/services/enhancedImageCache')).EnhancedImageCache.getCachedImage(
+      storyText.slice(0, 120), 
+      characterSessionId, 
+      index
+    );
+    
+    if (cachedImageUrl) {
+      console.log('📸 Using cached image for page', index);
+      setPageImages(prev => ({ ...prev, [index]: cachedImageUrl }));
+      return;
+    }
+    
     try {
-      const storyText = story[index];
       const result = await SimpleImageService.generateStoryImage(
         storyText,
         userInfo,
@@ -897,6 +933,15 @@ const initializeStory = async () => {
       if (result.success && result.url) {
         const nextMap = { ...pageImages, [index]: result.url } as Record<number, string>;
         setPageImages(nextMap);
+        
+        // Cache in both systems to prevent re-generation
+        (await import('@/services/enhancedImageCache')).EnhancedImageCache.cacheImage(
+          storyText.slice(0, 120),
+          result.url,
+          characterSessionId,
+          index
+        );
+        
         try {
           const cacheId = isPremium ? ((await supabase.auth.getUser()).data.user?.id || userInfo.name || 'premium') : 'guest';
           const images = story.map((s, idx) => ({ url: nextMap[idx], prompt: (s || '').slice(0, 120) }));
