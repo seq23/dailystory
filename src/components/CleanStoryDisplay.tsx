@@ -2459,14 +2459,16 @@ const handleRestartTimer = () => {
         MobileOrTablet: {isMobileOrTablet ? 'Yes' : 'No'}
       </div>
 
-      {/* Debug Display - Shows device detection */}
-      <div className="fixed top-2 right-2 z-50 bg-black/80 text-white text-xs p-2 rounded font-mono">
-        W:{typeof window !== 'undefined' ? window.innerWidth : '?'}px | 
-        M:{isMobile ? 'Y' : 'N'} | 
-        T:{isTablet ? 'Y' : 'N'} | 
-        MT:{isMobileOrTablet ? 'Y' : 'N'} |
-        Dock:{isMobileOrTablet ? 'SHOW' : 'HIDE'}
-      </div>
+      {/* Debug Display - Shows device detection (remove once confirmed working) */}
+      {typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1' && (
+        <div className="fixed top-2 right-2 z-50 bg-black/80 text-white text-xs p-2 rounded font-mono">
+          W:{typeof window !== 'undefined' ? window.innerWidth : '?'}px | 
+          M:{isMobile ? 'Y' : 'N'} | 
+          T:{isTablet ? 'Y' : 'N'} | 
+          MT:{isMobileOrTablet ? 'Y' : 'N'} |
+          Dock:{isMobileOrTablet ? 'SHOW' : 'HIDE'}
+        </div>
+      )}
 
       {/* Mobile Action Dock - Mobile and Tablet devices */}
       {isMobileOrTablet && (

@@ -60,8 +60,9 @@ export const DismissibleSystemStatus: React.FC<DismissibleSystemStatusProps> = (
 
   useEffect(() => {
     refreshAnalytics();
-    const interval = setInterval(refreshAnalytics, 30000);
-    return () => clearInterval(interval);
+    // Disabled auto-refresh to prevent unwanted page refreshes
+    // const interval = setInterval(refreshAnalytics, 30000);
+    // return () => clearInterval(interval);
   }, []);
 
   const handleDismiss = () => {

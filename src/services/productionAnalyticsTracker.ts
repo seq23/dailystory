@@ -61,14 +61,14 @@ export class ProductionAnalyticsTracker {
     console.log('📊 Initializing Production Analytics Tracker...');
     
     // Set up periodic health monitoring
-    setInterval(() => {
-      this.recordSystemHealth();
-    }, 60000); // Every minute
+    // Disabled auto-refresh intervals to prevent unwanted page refreshes
+    // setInterval(() => {
+    //   this.recordSystemHealth();
+    // }, 60000); // Every minute
 
-    // Set up session cleanup
-    setInterval(() => {
-      this.cleanupOldSessions();
-    }, 300000); // Every 5 minutes
+    // setInterval(() => {
+    //   this.cleanupOldSessions();
+    // }, 300000); // Every 5 minutes
 
     this.isInitialized = true;
     console.log('✅ Production Analytics Tracker initialized');

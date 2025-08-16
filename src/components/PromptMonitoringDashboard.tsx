@@ -36,9 +36,9 @@ export const PromptMonitoringDashboard: React.FC<PromptMonitoringDashboardProps>
   useEffect(() => {
     refreshData();
     
-    // Auto-refresh every 30 seconds
-    const interval = setInterval(refreshData, 30000);
-    return () => clearInterval(interval);
+    // Disabled auto-refresh to prevent unwanted page refreshes
+    // const interval = setInterval(refreshData, 30000);
+    // return () => clearInterval(interval);
   }, []);
 
   if (!dashboardData) {

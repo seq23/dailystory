@@ -69,9 +69,10 @@ export function SystemHealthMonitor() {
     };
 
     checkSystemHealth();
-    const interval = setInterval(checkSystemHealth, 30000); // Check every 30s
+    // Disabled auto-refresh to prevent unwanted page refreshes
+    // const interval = setInterval(checkSystemHealth, 30000);
     
-    return () => clearInterval(interval);
+    // return () => clearInterval(interval);
   }, [measureLoadTime, getMemoryUsage]);
 
   const getStatusColor = (status: 'good' | 'warning' | 'critical') => {

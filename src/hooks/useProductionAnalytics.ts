@@ -31,10 +31,9 @@ export const useProductionAnalytics = () => {
     ProductionAnalyticsTracker.initialize();
     loadDashboardData();
     
-    // Set up periodic dashboard updates
-    const interval = setInterval(loadDashboardData, 30000); // Every 30 seconds
-    
-    return () => clearInterval(interval);
+    // Disabled auto-refresh to prevent unwanted page refreshes
+    // const interval = setInterval(loadDashboardData, 30000);
+    // return () => clearInterval(interval);
   }, []);
 
   const loadDashboardData = useCallback(async () => {

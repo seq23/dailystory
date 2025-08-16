@@ -33,8 +33,9 @@ export const SystemStatus: React.FC<SystemStatusProps> = ({ className = "" }) =>
 
   useEffect(() => {
     refreshAnalytics();
-    const interval = setInterval(refreshAnalytics, 30000); // Refresh every 30 seconds
-    return () => clearInterval(interval);
+    // Disabled auto-refresh to prevent unwanted page refreshes
+    // const interval = setInterval(refreshAnalytics, 30000);
+    // return () => clearInterval(interval);
   }, []);
 
   const getHealthIcon = (status: string) => {
