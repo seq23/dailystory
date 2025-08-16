@@ -89,30 +89,21 @@ export const OpenAIVoiceCommands: React.FC = () => {
 
   // Handle global voice events
   useEffect(() => {
-    const handleStart = () => {
+    const handleOpenAIStart = () => {
+      console.log('🎤 OpenAI voice commands starting...');
       if (!isConnected) connect();
     };
     
     const handleStop = () => {
       if (isConnected) disconnect();
     };
-    
-    const handleToggle = () => {
-      if (isConnected) {
-        disconnect();
-      } else {
-        connect();
-      }
-    };
 
-    window.addEventListener('voice:start', handleStart);
+    window.addEventListener('openai:start', handleOpenAIStart);
     window.addEventListener('voice:stop', handleStop);
-    window.addEventListener('voice:toggle', handleToggle);
 
     return () => {
-      window.removeEventListener('voice:start', handleStart);
+      window.removeEventListener('openai:start', handleOpenAIStart);
       window.removeEventListener('voice:stop', handleStop);
-      window.removeEventListener('voice:toggle', handleToggle);
     };
   }, [isConnected, connect, disconnect]);
 

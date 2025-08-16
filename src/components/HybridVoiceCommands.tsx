@@ -92,12 +92,11 @@ export const HybridVoiceCommands: React.FC = () => {
     }
   }, [engine, readingSpeed]);
 
-  // Try ElevenLabs first, fallback to OpenAI
-  const startVoiceCommands = async () => {
+  const startVoiceCommands = useCallback(async () => {
     if (manualOverride) {
       // Manual override - try OpenAI directly
       setCurrentSystem({ system: 'openai', status: 'connecting' });
-      window.dispatchEvent(new CustomEvent('voice:start'));
+      window.dispatchEvent(new CustomEvent('openai:start'));
       return;
     }
 
@@ -105,35 +104,44 @@ export const HybridVoiceCommands: React.FC = () => {
     setCurrentSystem({ system: 'elevenlabs', status: 'connecting' });
     
     try {
-      // Check if ElevenLabs is configured
-      const hasElevenLabsConfig = localStorage.getItem('agentId') || 
-                                  window.location.search.includes('agentId');
+      console.log('🎤 Attempting ElevenLabs connection...');
       
-      if (!hasElevenLabsConfig) {
-        throw new Error('ElevenLabs not configured');
-      }
-
-      // Attempt ElevenLabs connection
+      // Start ElevenLabs connection
       window.dispatchEvent(new CustomEvent('voice:start'));
       
-      // Wait for connection success/failure
-      setTimeout(() => {
-        if (currentSystem.status === 'connecting') {
-          console.log('🔄 ElevenLabs timeout, falling back to OpenAI');
-          fallbackToOpenAI();
-        }
-      }, 5000);
+      // Wait for connection with timeout
+      const timeout = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('ElevenLabs connection timeout')), 10000)
+      );
+      
+      const connectionPromise = new Promise((resolve, reject) => {
+        const handler = (event: any) => {
+          const { status, error } = event.detail;
+          
+          if (status === 'listening' || status === 'connected') {
+            window.removeEventListener('voice:status', handler);
+            resolve(true);
+          } else if (status === 'failed' || error) {
+            window.removeEventListener('voice:status', handler);
+            reject(new Error(error || 'ElevenLabs connection failed'));
+          }
+        };
+        window.addEventListener('voice:status', handler);
+      });
+      
+      await Promise.race([connectionPromise, timeout]);
+      console.log('✅ ElevenLabs connected successfully');
       
     } catch (error) {
       console.log('🔄 ElevenLabs failed, falling back to OpenAI:', error);
       fallbackToOpenAI();
     }
-  };
+  }, [manualOverride]);
 
-  const fallbackToOpenAI = () => {
+  const fallbackToOpenAI = useCallback(() => {
     setCurrentSystem({ system: 'openai', status: 'connecting' });
-    // OpenAI connection will be handled by OpenAIVoiceCommands component
-  };
+    window.dispatchEvent(new CustomEvent('openai:start'));
+  }, []);
 
   const stopVoiceCommands = () => {
     window.dispatchEvent(new CustomEvent('voice:stop'));
@@ -151,8 +159,13 @@ export const HybridVoiceCommands: React.FC = () => {
   // Listen for voice status updates
   useEffect(() => {
     const handleVoiceStatus = (event: CustomEvent) => {
-      const { status } = event.detail;
-      setCurrentSystem(prev => ({ ...prev, status }));
+      const { status, system, error } = event.detail;
+      setCurrentSystem(prev => ({ 
+        ...prev, 
+        status, 
+        system: system || prev.system,
+        error 
+      }));
     };
 
     window.addEventListener('voice:status', handleVoiceStatus as EventListener);

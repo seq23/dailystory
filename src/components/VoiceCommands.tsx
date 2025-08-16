@@ -178,61 +178,88 @@ useEffect(() => {
 
   const start = useCallback(async () => {
     setConnecting(true);
+    
+    // Dispatch connecting status
+    window.dispatchEvent(new CustomEvent('voice:status', { 
+      detail: { status: 'connecting', system: 'elevenlabs' } 
+    }));
+    
     try {
-      // Check for mobile/tablet device
-      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      console.log('🎤 Starting ElevenLabs conversation...');
       
-      console.log('🎤 Voice Commands - Device detection:', {
-        isMobile: isMobileDevice,
-        isTouch: isTouchDevice,
-        userAgent: navigator.userAgent.substring(0, 100)
-      });
+      // Enhanced microphone permission check
+      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const constraints = {
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+          ...(isMobileDevice && {
+            sampleRate: 48000,
+            channelCount: 1,
+            latency: 0.1
+          })
+        }
+      };
+      
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      stream.getTracks().forEach(track => track.stop());
+      console.log('✅ Microphone access granted');
 
-      // Mic permission preflight (prevents silent failures on some browsers)
-      try {
-        // Enhanced mobile microphone permission request
-        const constraints = {
-          audio: {
-            echoCancellation: true,
-            noiseSuppression: true,
-            autoGainControl: true,
-            ...(isMobileDevice && {
-              sampleRate: 48000, // Higher sample rate for mobile
-              channelCount: 1,
-              latency: 0.1 // Lower latency for mobile
-            })
-          }
-        };
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        // Test that we can actually use the stream on mobile
-        stream.getTracks().forEach(track => track.stop());
-        console.log('📱 Mobile microphone permission granted and tested');
-      } catch (permErr: any) {
-        console.error('🎤 Microphone permission failed:', permErr);
-        throw new Error(permErr?.message || 'Microphone permission is required to start voice');
-      }
-
-      // If an agentId is present, pass it; otherwise let the backend use the default from secrets
+      // Get signed URL from Supabase edge function
       const body = agentId ? { agentId } : {};
       const { data, error } = await supabase.functions.invoke('elevenlabs-agent-signed-url', { body });
-      if (error) throw new Error(error.message || 'Failed to get signed URL');
+      
+      if (error) {
+        console.error('❌ ElevenLabs API error:', error);
+        const errorMsg = error.message || 'Unknown error';
+        
+        // Check for specific API key error
+        if (errorMsg.includes('API key') || errorMsg.includes('unauthorized') || errorMsg.includes('401')) {
+          throw new Error('ElevenLabs API key not configured. Please set up your API key in project settings.');
+        }
+        
+        throw new Error(`ElevenLabs setup failed: ${errorMsg}`);
+      }
 
-      // Some edge functions return 2xx with an error payload
-      if (data && (data as any).error) throw new Error((data as any).error);
+      if (data && (data as any).error) {
+        const apiError = (data as any).error;
+        console.error('❌ ElevenLabs API returned error:', apiError);
+        throw new Error(`ElevenLabs API error: ${apiError}`);
+      }
 
       const url = (data as any)?.signed_url || (data as any)?.url || (data as any)?.signedUrl;
-      if (!url || !/^wss?:\/\//.test(url)) throw new Error('Invalid signed URL returned');
+      if (!url || !/^wss?:\/\//.test(url)) {
+        throw new Error('Invalid or missing signed URL from ElevenLabs');
+      }
 
-      try { window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: 'processing' } })); } catch {}
+      console.log('🔗 Starting ElevenLabs session...');
       const id = await (conversation as any).startSession({ url });
-      console.log('Started ElevenLabs conversation:', id);
-      toast({ title: 'Voice connected', description: 'Say: "read", "stop", "next", "back".' });
-      try { window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: 'listening' } })); } catch {}
+      console.log('✅ ElevenLabs conversation started:', id);
+      
+      // Dispatch successful connection
+      window.dispatchEvent(new CustomEvent('voice:status', { 
+        detail: { status: 'listening', system: 'elevenlabs' } 
+      }));
+      
+      toast({ 
+        title: 'Voice Assistant Connected', 
+        description: 'Say: "read", "stop", "next", "back", or "what is this word"' 
+      });
+      
     } catch (e: any) {
-      console.error('Start voice failed', e);
-      toast({ title: 'Voice error', description: e?.message || 'Could not start voice session', variant: 'destructive' });
-      try { window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: 'idle' } })); } catch {}
+      console.error('❌ ElevenLabs connection failed:', e);
+      
+      // Dispatch failure
+      window.dispatchEvent(new CustomEvent('voice:status', { 
+        detail: { status: 'failed', system: 'elevenlabs', error: e.message } 
+      }));
+      
+      toast({ 
+        title: 'Voice Assistant Error', 
+        description: e?.message || 'Could not start voice session', 
+        variant: 'destructive' 
+      });
     } finally {
       setConnecting(false);
     }
