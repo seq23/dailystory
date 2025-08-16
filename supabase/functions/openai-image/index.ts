@@ -68,7 +68,7 @@ serve(async (req) => {
         prompt: enhancedPrompt,
         n: 1,
         size: size,
-        quality: quality
+        quality: quality === 'high' ? 'hd' : quality
       }),
     });
 

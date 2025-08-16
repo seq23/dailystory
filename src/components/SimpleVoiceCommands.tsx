@@ -83,12 +83,20 @@ export const SimpleVoiceCommands: React.FC = () => {
       await endSession();
     } else {
       try {
-        // Get signed URL from Supabase
+        // Get signed URL from Supabase  
+        console.log('🎤 Requesting ElevenLabs agent signed URL...');
         const { data, error } = await supabase.functions.invoke('elevenlabs-agent-signed-url');
         
-        if (error) throw error;
-        if (!data?.signed_url) throw new Error('No signed URL received');
+        if (error) {
+          console.error('🎤 Supabase function error:', error);
+          throw error;
+        }
+        if (!data?.signed_url) {
+          console.error('🎤 No signed URL in response:', data);
+          throw new Error('No signed URL received');
+        }
         
+        console.log('🎤 Got signed URL, starting session...');
         await startSession({ signedUrl: data.signed_url });
       } catch (error) {
         console.error('🎤 Failed to start voice session:', error);
