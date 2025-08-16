@@ -150,9 +150,9 @@ export const useVoiceIntegration = () => {
       console.log('🎯 Voice command: syllables for:', word);
       
       if (word) {
-        // Enhanced syllable breakdown with counting
-        import('@/services/phoneticRulesEngine').then(({ phoneticRulesEngine }) => {
-          const syllables = phoneticRulesEngine.breakIntoSyllables(word);
+        // Enhanced syllable breakdown with counting (using async method for consistency)
+        import('@/services/phoneticRulesEngine').then(async ({ phoneticRulesEngine }) => {
+          const syllables = await phoneticRulesEngine.breakIntoSyllablesAsync(word);
           const count = syllables?.length || 1;
           const syllableText = syllables?.join(' - ') || word;
           

@@ -85,6 +85,8 @@ if (props.forceModal || isMobileOrTablet) {
   const handleClick = async () => {
     if (!shouldBeInteractive) return;
     (window as any).__lastSelectedWord = cleanWord;
+    // Set hovered word context for voice commands on mobile/tablet
+    (window as any).__hoveredWord = cleanWord;
     setHasCountedReview(false);
     // Auto-save on click
     try {
@@ -195,7 +197,7 @@ if (props.forceModal || isMobileOrTablet) {
     const handleSyllables = async () => {
       try {
         setIsPlaying(true);
-        const raw = PhoneticRulesEngine.getInstance().breakIntoSyllables(cleanWord);
+        const raw = await PhoneticRulesEngine.getInstance().breakIntoSyllablesAsync(cleanWord);
         const toAudioFriendly = (original: string, sylls: string[]) => {
           const w = (original || '').toLowerCase();
           if (w.endsWith('ies') && w.length > 4) return [w.slice(0, -3) + 'y', 's'];
@@ -204,7 +206,7 @@ if (props.forceModal || isMobileOrTablet) {
           return sylls;
         };
         const adjusted = toAudioFriendly(cleanWord, raw);
-        const syllText = adjusted.join(', ');
+        const syllText = adjusted.join(' - ');
 
         const { SimpleAudioEngine } = await import('@/services/SimpleAudioEngine');
         await SimpleAudioEngine.getInstance().playText({
@@ -268,9 +270,8 @@ if (props.forceModal || isMobileOrTablet) {
           onMouseEnter={() => {
             if (!shouldBeInteractive) return;
             (window as any).__hoveredWord = cleanWord;
-            if (isMobileOrTablet) return; // no hover on touch devices
             
-            // Dispatch hover event for VoiceHoverController
+            // Dispatch hover event for VoiceHoverController (works on all devices)
             window.dispatchEvent(new CustomEvent('voice:hover:word', {
               detail: { word: cleanWord, action: 'hear' }
             }));
