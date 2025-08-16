@@ -3,8 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Mic, MicOff } from 'lucide-react';
 import { useUnifiedVoiceCommands } from '@/hooks/useUnifiedVoiceCommands';
-import { VoiceCommands } from './VoiceCommands';
-import { OpenAIVoiceCommands } from './OpenAIVoiceCommands';
+import { ElevenLabsVoiceSystem } from './ElevenLabsVoiceSystem';
+import { OpenAIVoiceSystem } from './OpenAIVoiceSystem';
 import { VoiceActivityIndicator } from './VoiceActivityIndicator';
 
 export const UnifiedVoiceCommands: React.FC = () => {
@@ -119,11 +119,9 @@ export const UnifiedVoiceCommands: React.FC = () => {
         </div>
       )}
 
-      {/* Hidden voice system components */}
-      <div className="hidden">
-        <VoiceCommands clientTools={clientTools} />
-        <OpenAIVoiceCommands />
-      </div>
+      {/* Active voice system components - only render the active one */}
+      {state.activeSystem === 'elevenlabs' && <ElevenLabsVoiceSystem />}
+      {state.activeSystem === 'openai' && <OpenAIVoiceSystem />}
     </div>
   );
 };
