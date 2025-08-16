@@ -1,6 +1,7 @@
 import { Check, CreditCard, Crown } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { SubscriptionManager } from "@/components/SubscriptionManager";
+import { PasswordChangeForm } from "@/components/PasswordChangeForm";
 import { freeFeatures, premiumFeatures as topPremiumFeatures, additionalOfferings } from "@/constants/featureLists";
 import { Badge } from "@/components/ui/badge";
 interface MyAccountProps {
@@ -29,6 +30,9 @@ export function MyAccount({ isPremium, subscriptionTier, subscriptionEnd, devTes
           <p className="text-muted-foreground">Manage your subscription and account settings</p>
         </div>
       </div>
+
+      {/* Password Change - Only for Premium Users */}
+      {isPremium && <PasswordChangeForm />}
 
       {/* Subscription Manager */}
       <SubscriptionManager showComparison={false} />

@@ -10,6 +10,7 @@ import { PremiumSidebar } from "@/components/PremiumSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { ParentDashboard } from "@/components/ParentDashboard";
 import { PremiumStoryLibrary } from "@/components/PremiumStoryLibrary";
+import CleanStoryDisplay from "@/components/CleanStoryDisplay";
 
 import { MyAccount } from "@/components/MyAccount";
 import { DismissibleSystemStatus } from "@/components/DismissibleSystemStatus";
@@ -375,11 +376,12 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                               storyPages.length
                             );
                             
-                            // Set current story with loaded images
+                            // Set current story with loaded images - ensuring saved stories use cached content
                             setCurrentStory({
                               ...story,
                               cachedImages,
-                              storyHash
+                              storyHash,
+                              isFromSavedStory: true // Flag to prevent regeneration
                             });
                             setCurrentView("reading");
                           } catch (error) {
@@ -434,16 +436,18 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                           <p className="text-muted-foreground">Reading saved story</p>
                         </div>
                       </div>
-                      {/* CleanStoryDisplay would be integrated here in the future */}
-                      <div className="bg-white rounded-lg p-6 shadow-sm">
-                        <p className="text-gray-600 mb-4">Story reading view coming soon...</p>
-                        <button 
-                          onClick={() => setCurrentView("library")}
-                          className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
-                        >
-                          Back to Library
-                        </button>
-                      </div>
+                      <CleanStoryDisplay
+                        userInfo={userInfo}
+                        isPremium={isPremium}
+                        currentStory={currentStory}
+                        onSessionEnded={(stats) => {
+                          console.log('Story session ended:', stats);
+                          setCurrentView("library");
+                        }}
+                        onHome={() => setCurrentView("stories")}
+                        onUpgrade={() => setCurrentView("account")}
+                        onNewStory={() => setCurrentView("stories")}
+                      />
                     </div>
                   )}
                 </>

@@ -523,29 +523,29 @@ export class EnhancedFallbackManager {
     
     const basicFallbacks = {
       beginner: [
-        `${name} can play.`,
-        `${name} is happy.`,
-        `${name} has fun.`
+        `{userName} can play.`,
+        `{userName} is happy.`,
+        `{userName} has fun.`
       ],
       easy: [
-        `${name} has fun today.`,
-        `${name} plays outside.`,
-        `${name} feels happy.`
+        `{userName} has fun today.`,
+        `{userName} plays outside.`,
+        `{userName} feels happy.`
       ],
       medium: [
-        `${name} discovers something wonderful.`,
-        `${name} learns something new today.`,
-        `${name} makes a good friend.`
+        `{userName} discovers something wonderful.`,
+        `{userName} learns something new today.`,
+        `{userName} makes a good friend.`
       ],
       hard: [
-        `${name} faces a challenge with courage and determination.`,
-        `${name} learns valuable lessons about perseverance and growth.`,
-        `${name} discovers inner strength through this experience.`
+        `{userName} faces a challenge with courage and determination.`,
+        `{userName} learns valuable lessons about perseverance and growth.`,
+        `{userName} discovers inner strength through this experience.`
       ],
       expert: [
-        `${name} contemplates the deeper meaning of this experience and its implications.`,
-        `${name} synthesizes new understanding from the complex challenges they have encountered.`,
-        `${name} develops a more nuanced perspective on life's fundamental questions.`
+        `{userName} contemplates the deeper meaning of this experience and its implications.`,
+        `{userName} synthesizes new understanding from the complex challenges they have encountered.`,
+        `{userName} develops a more nuanced perspective on life's fundamental questions.`
       ]
     };
     
@@ -611,7 +611,7 @@ export class EnhancedFallbackManager {
     const plotElement = context.plotElements[pageIndex % context.plotElements.length];
     const name = NameFormatter.capitalize(userInfo.name || 'Alex');
     
-    return `${name} ${plotElement.toLowerCase()}.`;
+    return `{userName} ${plotElement.toLowerCase()}.`;
   }
 
   /**

@@ -70,6 +70,7 @@ interface CleanStoryDisplayProps {
   onUpgrade: () => void;
   onNewStory?: () => void;
   readingAsName?: string;
+  currentStory?: any; // For saved stories - contains cachedImages and isFromSavedStory
 }
 
 const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
@@ -79,7 +80,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   onHome,
   onUpgrade,
   onNewStory,
-  readingAsName
+  readingAsName,
+  currentStory
 }) => {
   const { t } = useTranslation();
   const { toast } = useToast();
@@ -121,12 +123,31 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     };
   }, []);
   
-  // SESSION PERSISTENCE & RESUME MECHANISM
+  // SESSION PERSISTENCE & RESUME MECHANISM OR SAVED STORY LOADING
   // Automatically restores user sessions across page refreshes and browser restarts
   // Maintains story progress, timer state, and generation history for seamless experience
+  // OR loads saved story content when currentStory prop is provided
   useEffect(() => {
     (async () => {
       try {
+      // Check if this is a saved story being loaded
+      if (currentStory?.isFromSavedStory && currentStory.segments) {
+        console.log('📖 Loading saved story with cached content');
+        const storyPages = currentStory.segments.map((s: any) => s.text);
+        setStory(storyPages);
+        setCurrentPage(0);
+        setIsStoryComplete(true);
+        setStoryTitle(currentStory.title || `${userInfo.name}'s Story`);
+        
+        // Load cached images if available
+        if (currentStory.cachedImages) {
+          setPageImages(currentStory.cachedImages);
+        }
+        
+        setIsLoading(false);
+        return; // Exit early - don't proceed with live generation logic
+      }
+      
       const params = new URLSearchParams(window.location.search);
       const allowOverride = APP_CONFIG.features.resumeOnRefresh.allowUrlOverride;
       const viaUrl = allowOverride && params.get('resume') === '1';
@@ -397,15 +418,15 @@ const [highlightSave, setHighlightSave] = useState(false);
     const timer = setTimeout(() => setHighlightSave(false), 8000);
     return () => clearTimeout(timer);
   }, [highlightSave]);
-  const currentStory = displayedStory[currentPage] || "";
+  const currentStoryText = displayedStory[currentPage] || "";
   const effectiveLimit = isPremium ? defaultAudioConfig.quality.maxTextLength.premium : defaultAudioConfig.quality.maxTextLength.free;
-  const effectiveAudioText = (currentStory || "").slice(0, effectiveLimit);
+  const effectiveAudioText = (currentStoryText || "").slice(0, effectiveLimit);
   const contentHash = hashText(effectiveAudioText);
 
   useEffect(() => {
     try { (window as any).__pageContentHash = contentHash; } catch {}
-    try { (window as any).__pageContentString = currentStory; } catch {}
-  }, [contentHash, currentStory]);
+    try { (window as any).__pageContentString = currentStoryText; } catch {}
+  }, [contentHash, currentStoryText]);
 
   // Reset free-tier audio flag when navigating to a new page or content changes
   useEffect(() => {
@@ -414,7 +435,7 @@ const [highlightSave, setHighlightSave] = useState(false);
   
   // Audio highlighting integration
   const { onWordHighlight, currentHighlightedWord, clearHighlighting } = useWordHighlighting(
-    currentStory, 
+    currentStoryText, 
     isAudioPlaying
   );
 

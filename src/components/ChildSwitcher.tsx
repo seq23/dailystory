@@ -16,7 +16,7 @@ export function ChildSwitcher({ className }: ChildSwitcherProps) {
 
   const onChange = async (value: string) => {
     try {
-      await setActiveChild(value || null);
+      await setActiveChild(value === "default" ? null : (value || null));
       toast({ title: t('parent.children.updated') });
     } catch (e: any) {
       toast({ title: e?.message || t('parent.manager.toasts.failedSave'), variant: "destructive" });
@@ -26,11 +26,12 @@ export function ChildSwitcher({ className }: ChildSwitcherProps) {
   return (
     <div className={className}>
       <Label className="mb-2 block text-sm font-medium">{t('parent.children.activeLabel')}</Label>
-      <Select value={activeChildId ?? ""} onValueChange={onChange}>
+      <Select value={activeChildId ?? "default"} onValueChange={onChange}>
         <SelectTrigger className="w-full">
           <SelectValue placeholder={loading ? t('parent.children.loading') : (children.length ? t('parent.children.selectChild') : t('parent.children.noChildren'))} />
         </SelectTrigger>
         <SelectContent>
+          <SelectItem value="default">Default (Account Holder)</SelectItem>
           {children.map((c) => (
             <SelectItem key={c.id} value={c.id}>{c.display_name}</SelectItem>
           ))}

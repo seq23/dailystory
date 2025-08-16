@@ -87,7 +87,7 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <User className="w-5 h-5" />
-              Basic Information
+              Account Holder Information
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -166,7 +166,7 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
             </div>
 
             <div className="pt-2 border-t">
-              <p className="text-xs text-muted-foreground mb-2">Multiple kids? Manage child profiles and set an active child for stories.</p>
+              <p className="text-xs text-muted-foreground mb-2">Account holder settings apply when no specific child is selected. Manage child profiles below.</p>
               <ChildSwitcher />
             </div>
           </CardContent>
