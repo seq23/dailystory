@@ -2,77 +2,231 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
 
-// Visual State Management (Server-side)
+// Comprehensive Visual State Management - Import from StoryVisualStateManager
 interface CharacterState {
   name: string;
   description: string;
   seed?: number;
-  lastSeenPage?: number;
+  lastUsedPage: number;
+  successfulPrompts: string[];
 }
 
-interface VisualState {
+interface RunwareContext {
+  seed?: number;
+  cfgScale: number;
+  model: string;
+  steps: number;
+  scheduler: string;
+}
+
+interface StoryVisualState {
+  sessionId: string;
   characters: Map<string, CharacterState>;
+  runwareContext: RunwareContext;
   setting: {
-    weather?: string;
-    timeOfDay?: string;
-    season?: string;
-    location?: string;
+    primaryLocation: string;
+    timeOfDay: string;
+    weather: string;
+    season: string;
+    mood: string;
     isLocked: boolean;
-    lockedAtPage?: number;
   };
-  currentLocation?: string;
   locationHistory: string[];
-  recentCharacters: string[];
-  pageCount: number;
+  allowedTransitions: Map<string, string[]>;
+  currentPage: number;
+  totalPages: number;
+  lastMentionedCharacters: string[];
+  characterPairs: Map<string, string[]>;
 }
 
-const sessionStates = new Map<string, VisualState>();
+class StoryVisualStateManager {
+  private static storyStates: Map<string, StoryVisualState> = new Map();
+  
+  private static readonly DEFAULT_RUNWARE_CONTEXT: RunwareContext = {
+    cfgScale: 1.5,
+    model: "runware:100@1",
+    steps: 3,
+    scheduler: "FlowMatchEulerDiscreteScheduler"
+  };
+  
+  private static readonly LOCATION_TRANSITIONS: Map<string, string[]> = new Map([
+    ['home', ['school', 'park', 'garden', 'yard', 'forest']],
+    ['school', ['home', 'playground', 'park']],
+    ['park', ['home', 'school', 'forest', 'beach']],
+    ['forest', ['park', 'home', 'mountain', 'river']],
+    ['beach', ['park', 'home']],
+    ['garden', ['home', 'park', 'yard']],
+    ['yard', ['home', 'garden', 'park']],
+    ['playground', ['school', 'park']]
+  ]);
 
-function getOrCreateVisualState(sessionId: string): VisualState {
-  if (!sessionStates.has(sessionId)) {
-    sessionStates.set(sessionId, {
-      characters: new Map(),
-      setting: { isLocked: false },
-      locationHistory: [],
-      recentCharacters: [],
-      pageCount: 0
-    });
+  static getOrCreateStoryState(sessionId: string, totalPages: number = 10): StoryVisualState {
+    if (!this.storyStates.has(sessionId)) {
+      const newState: StoryVisualState = {
+        sessionId,
+        characters: new Map(),
+        runwareContext: { ...this.DEFAULT_RUNWARE_CONTEXT },
+        setting: {
+          primaryLocation: '',
+          timeOfDay: '',
+          weather: '',
+          season: '',
+          mood: '',
+          isLocked: false
+        },
+        locationHistory: [],
+        allowedTransitions: new Map(this.LOCATION_TRANSITIONS),
+        currentPage: 1,
+        totalPages,
+        lastMentionedCharacters: [],
+        characterPairs: new Map()
+      };
+      
+      this.storyStates.set(sessionId, newState);
+      console.log(`📚 Created new story state for session: ${sessionId}`);
+    }
+    
+    return this.storyStates.get(sessionId)!;
   }
-  return sessionStates.get(sessionId)!;
-}
 
-function updateCharacterSeed(sessionId: string, name: string, description: string, seed: number, pageNumber: number) {
-  const state = getOrCreateVisualState(sessionId);
-  state.characters.set(name, { name, description, seed, lastSeenPage: pageNumber });
-  
-  // Track recent characters for pronoun resolution
-  if (!state.recentCharacters.includes(name)) {
-    state.recentCharacters.unshift(name);
-    if (state.recentCharacters.length > 3) state.recentCharacters.pop();
+  static updateCharacterWithSeed(
+    sessionId: string, 
+    characterName: string, 
+    description: string, 
+    seed?: number,
+    pageNumber: number = 1
+  ): void {
+    const state = this.getOrCreateStoryState(sessionId);
+    
+    const existingChar = state.characters.get(characterName);
+    const characterState: CharacterState = {
+      name: characterName,
+      description,
+      seed: seed || existingChar?.seed,
+      lastUsedPage: pageNumber,
+      successfulPrompts: existingChar?.successfulPrompts || []
+    };
+    
+    state.characters.set(characterName, characterState);
+    
+    if (seed) {
+      console.log(`🎭 Character "${characterName}" assigned seed: ${seed} for consistency`);
+    }
   }
-}
 
-function resolvePronouns(sessionId: string, text: string): string {
-  const state = sessionStates.get(sessionId);
-  if (!state || state.recentCharacters.length === 0) return text;
-  
-  // Simple pronoun resolution for "they" to most recent character
-  return text.replace(/\bthey\b/gi, state.recentCharacters[0]);
-}
-
-function updateSetting(sessionId: string, pageNumber: number, weather?: string, timeOfDay?: string, season?: string) {
-  const state = getOrCreateVisualState(sessionId);
-  
-  // Lock setting after page 2 for consistency
-  if (pageNumber > 2 && !state.setting.isLocked) {
-    state.setting.isLocked = true;
-    state.setting.lockedAtPage = pageNumber;
+  static getCharacterSeed(sessionId: string, characterName: string): number | undefined {
+    const state = this.storyStates.get(sessionId);
+    return state?.characters.get(characterName)?.seed;
   }
-  
-  if (!state.setting.isLocked) {
-    if (weather) state.setting.weather = weather;
-    if (timeOfDay) state.setting.timeOfDay = timeOfDay;
-    if (season) state.setting.season = season;
+
+  static updateSetting(
+    sessionId: string, 
+    pageNumber: number,
+    newSetting: Partial<StoryVisualState['setting']>
+  ): boolean {
+    const state = this.getOrCreateStoryState(sessionId);
+    
+    // Lock setting after page 2
+    if (pageNumber <= 2 && !state.setting.isLocked) {
+      state.setting = { ...state.setting, ...newSetting };
+      
+      if (pageNumber === 2) {
+        state.setting.isLocked = true;
+        console.log(`🔒 Setting locked after page 2:`, state.setting);
+      }
+      
+      return true;
+    }
+    
+    // Allow logical progressions even after locking
+    if (state.setting.isLocked && newSetting.timeOfDay) {
+      const isValidTimeProgression = this.isValidTimeProgression(
+        state.setting.timeOfDay, 
+        newSetting.timeOfDay
+      );
+      
+      if (isValidTimeProgression) {
+        state.setting.timeOfDay = newSetting.timeOfDay;
+        console.log(`⏰ Time progressed to: ${newSetting.timeOfDay}`);
+        return true;
+      }
+    }
+    
+    return false;
+  }
+
+  private static isValidTimeProgression(currentTime: string, newTime: string): boolean {
+    const timeOrder = ['morning', 'afternoon', 'evening', 'night'];
+    const currentIndex = timeOrder.indexOf(currentTime);
+    const newIndex = timeOrder.indexOf(newTime);
+    
+    return newIndex > currentIndex;
+  }
+
+  static resolvePronouns(sessionId: string, text: string): string {
+    const state = this.storyStates.get(sessionId);
+    if (!state) return text;
+    
+    let resolvedText = text;
+    
+    // Resolve "they" to last mentioned character pair or all characters
+    if (resolvedText.includes('they') && state.lastMentionedCharacters.length >= 2) {
+      const characterPair = state.lastMentionedCharacters.slice(-2).join(' and ');
+      resolvedText = resolvedText.replace(/\bthey\b/gi, characterPair);
+      console.log(`🔄 Resolved "they" to: ${characterPair}`);
+    } else if (resolvedText.includes('they') && state.characters.size >= 2) {
+      // If no recent mentions, use all characters
+      const allCharacters = Array.from(state.characters.keys()).join(' and ');
+      resolvedText = resolvedText.replace(/\bthey\b/gi, allCharacters);
+      console.log(`🔄 Resolved "they" to all characters: ${allCharacters}`);
+    }
+    
+    // Track character mentions for future pronoun resolution
+    const mentionedChars: string[] = [];
+    for (const [charName] of state.characters) {
+      if (text.toLowerCase().includes(charName.toLowerCase())) {
+        mentionedChars.push(charName);
+      }
+    }
+    
+    if (mentionedChars.length > 0) {
+      state.lastMentionedCharacters = mentionedChars;
+    }
+    
+    return resolvedText;
+  }
+
+  static getAllCharactersForPrompt(sessionId: string): string {
+    const state = this.storyStates.get(sessionId);
+    if (!state || state.characters.size === 0) return '';
+    
+    const characterDescriptions: string[] = [];
+    for (const [name, char] of state.characters) {
+      characterDescriptions.push(`${name} (${char.description})`);
+    }
+    
+    return characterDescriptions.join(', ');
+  }
+
+  static getSettingForPrompt(sessionId: string): string {
+    const state = this.storyStates.get(sessionId);
+    if (!state || !state.setting.isLocked) return '';
+    
+    const settingParts: string[] = [];
+    
+    if (state.setting.weather && state.setting.weather !== 'pleasant') {
+      settingParts.push(state.setting.weather);
+    }
+    
+    if (state.setting.timeOfDay && state.setting.timeOfDay !== 'daytime') {
+      settingParts.push(state.setting.timeOfDay);
+    }
+    
+    if (state.setting.season && state.setting.season !== 'any season') {
+      settingParts.push(state.setting.season);
+    }
+    
+    return settingParts.length > 0 ? `, ${settingParts.join(', ')}` : '';
   }
 }
 
@@ -115,16 +269,39 @@ function extractPrimaryScene(text: string): string {
   return primaryScene || sentences[0] || text;
 }
 
-function getSettingForPrompt(sessionId: string): string {
-  const state = sessionStates.get(sessionId);
-  if (!state || !state.setting.isLocked) return '';
+function detectSecondaryCharacters(text: string): string[] {
+  const secondaryCharacters: string[] = [];
   
-  const parts: string[] = [];
-  if (state.setting.weather && state.setting.weather !== 'pleasant') parts.push(state.setting.weather);
-  if (state.setting.timeOfDay && state.setting.timeOfDay !== 'daytime') parts.push(state.setting.timeOfDay);
-  if (state.setting.season && state.setting.season !== 'any season') parts.push(state.setting.season);
+  // Common secondary characters in children's stories
+  const characterPatterns = [
+    /\b(cat|kitten|kitty)\b/gi,
+    /\b(dog|puppy|doggy)\b/gi,
+    /\b(bird|robin|sparrow)\b/gi,
+    /\b(rabbit|bunny)\b/gi,
+    /\b(bear|teddy)\b/gi,
+    /\b(frog|toad)\b/gi,
+    /\b(fish|goldfish)\b/gi,
+    /\b(friend|buddy|pal)\b/gi,
+    /\b(mom|mother|mommy|mama)\b/gi,
+    /\b(dad|father|daddy|papa)\b/gi,
+    /\b(sister|brother|sibling)\b/gi,
+    /\b(teacher|coach)\b/gi
+  ];
   
-  return parts.length > 0 ? `, ${parts.join(', ')}` : '';
+  for (const pattern of characterPatterns) {
+    const matches = text.match(pattern);
+    if (matches) {
+      for (const match of matches) {
+        const character = match.toLowerCase();
+        if (!secondaryCharacters.includes(character)) {
+          secondaryCharacters.push(character);
+        }
+      }
+    }
+  }
+  
+  console.log(`🎭 Detected secondary characters: ${secondaryCharacters.join(', ')}`);
+  return secondaryCharacters;
 }
 
 serve(async (req) => {
@@ -175,15 +352,30 @@ serve(async (req) => {
     let currentAvatarType = avatarType;
     
     if (pageText && sessionId && userInfo) {
-      // NEW: Server-side visual state processing
-      const state = getOrCreateVisualState(sessionId);
-      state.pageCount = Math.max(state.pageCount, pageNumber);
+      // NEW: Server-side visual state processing using comprehensive manager
+      const state = StoryVisualStateManager.getOrCreateStoryState(sessionId);
       
-      // Smart scene extraction - get primary scene only
-      const processedText = extractPrimaryScene(resolvePronouns(sessionId, pageText));
+      // Detect and track secondary characters (like "cat")
+      const secondaryCharacters = detectSecondaryCharacters(pageText);
+      for (const charName of secondaryCharacters) {
+        if (!state.characters.has(charName)) {
+          StoryVisualStateManager.updateCharacterWithSeed(
+            sessionId, 
+            charName, 
+            `friendly ${charName}`, 
+            undefined, 
+            pageNumber
+          );
+        }
+      }
+      
+      // Smart scene extraction with comprehensive pronoun resolution
+      const processedText = extractPrimaryScene(
+        StoryVisualStateManager.resolvePronouns(sessionId, pageText)
+      );
       
       // Get existing character seed for consistency
-      let characterSeed = state.characters.get(userInfo.name)?.seed;
+      let characterSeed = StoryVisualStateManager.getCharacterSeed(sessionId, userInfo.name);
       
       // Enhanced skin tone mapping
       const skinToneMap = {
@@ -204,29 +396,37 @@ serve(async (req) => {
         genderDesc = userInfo.avatar.type === 'boy' ? 'young boy' : userInfo.avatar.type === 'girl' ? 'young girl' : 'young child';
       }
       
-      // Character consistency
+      // Character consistency with secondary characters
       const characterConsistency = `${genderDesc} ${userInfo.name}, ${consistentSkinTone}${userInfo.avatar.skinTone === 'dark' ? ', African/African American' : ''}`;
       
-      // Environmental context from visual state
-      const environmentalContext = getSettingForPrompt(sessionId);
+      // Include all tracked characters for consistency
+      const allCharacters = StoryVisualStateManager.getAllCharactersForPrompt(sessionId);
+      const characterContext = allCharacters ? `, with ${allCharacters}` : '';
       
-      // Build focused single-scene prompt server-side
-      enhancedPrompt = `Children's book illustration: ${characterConsistency} ${processedText}${environmentalContext}. Single scene focus, ${userInfo.name} same ${consistentSkinTone}, consistent character design, vibrant colors, safe content, NO TEXT OR WORDS`;
+      // Environmental context from comprehensive visual state
+      const environmentalContext = StoryVisualStateManager.getSettingForPrompt(sessionId);
+      
+      // Build focused single-scene prompt with all characters
+      enhancedPrompt = `Children's book illustration: ${characterConsistency}${characterContext} ${processedText}${environmentalContext}. Single scene focus, consistent character designs, vibrant colors, safe content, NO TEXT OR WORDS`;
       
       // Use existing seed if available
       if (characterSeed) {
         seed = characterSeed;
       }
       
-      // Update setting if page has environmental cues
+      // Update setting with comprehensive environmental detection
+      const settingUpdates: any = {};
       if (processedText.includes('sunny') || processedText.includes('bright')) {
-        updateSetting(sessionId, pageNumber, 'sunny');
+        settingUpdates.weather = 'sunny';
       }
       if (processedText.includes('rain') || processedText.includes('stormy')) {
-        updateSetting(sessionId, pageNumber, 'rainy');
+        settingUpdates.weather = 'rainy';
       }
       if (processedText.includes('night') || processedText.includes('dark')) {
-        updateSetting(sessionId, pageNumber, undefined, 'nighttime');
+        settingUpdates.timeOfDay = 'nighttime';
+      }
+      if (Object.keys(settingUpdates).length > 0) {
+        StoryVisualStateManager.updateSetting(sessionId, pageNumber, settingUpdates);
       }
       
       console.log(`🎨 Server-side enhanced prompt for ${userInfo.name} (page ${pageNumber}): "${processedText}" → enhanced`);
@@ -348,9 +548,9 @@ serve(async (req) => {
               clearTimeout(timeout);
               ws.close();
               
-              // Store seed for character consistency (server-side)
+              // Store seed for character consistency using comprehensive manager
               if (sessionId && userInfo && item.seed) {
-                updateCharacterSeed(
+                StoryVisualStateManager.updateCharacterWithSeed(
                   sessionId,
                   userInfo.name,
                   `${userInfo.age} year old ${userInfo.avatar.type}`,
