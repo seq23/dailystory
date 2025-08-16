@@ -1,5 +1,5 @@
 import React from 'react';
-import { UnifiedVoiceCommands } from './UnifiedVoiceCommands';
+import { SimpleVoiceCommands } from './SimpleVoiceCommands';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export const VoiceCommandsDemo: React.FC = () => {
@@ -13,7 +13,7 @@ export const VoiceCommandsDemo: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <UnifiedVoiceCommands />
+          <SimpleVoiceCommands />
         </CardContent>
       </Card>
     </div>
