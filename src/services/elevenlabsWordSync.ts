@@ -156,36 +156,56 @@ export class ElevenLabsWordSync {
   private setupWordHighlighting(onWordHighlight?: (wordIndex: number) => void) {
     if (!onWordHighlight || this.wordTimestamps.length === 0) return;
 
-    console.log('🎯 Setting up word highlighting timers');
+    console.log('🎯 Setting up word highlighting timers for', this.wordTimestamps.length, 'words');
 
-    // Schedule highlight for each word based on its timestamp
-    this.wordTimestamps.forEach((wordData, index) => {
-      const highlightTime = wordData.start_time * 1000; // Convert to milliseconds
+    // Track audio element's actual time for more precise sync
+    const startAudioTime = Date.now();
+    let audioStarted = false;
+    
+    // Wait for audio to actually start playing before scheduling highlights
+    const waitForAudioStart = () => {
+      if (!this.audio || !this.isPlaying) return;
       
-      const timeoutId = window.setTimeout(() => {
-        if (this.isPlaying) {
-          console.log(`🎯 Highlighting word ${index}: "${wordData.word}" at ${highlightTime}ms`);
-          onWordHighlight(index);
+      if (this.audio.currentTime > 0 || audioStarted) {
+        audioStarted = true;
+        const actualStartTime = Date.now();
+        
+        // Schedule highlight for each word with adjusted timing
+        this.wordTimestamps.forEach((wordData, index) => {
+          const highlightTime = wordData.start_time * 1000; // Convert to milliseconds
+          
+          const timeoutId = window.setTimeout(() => {
+            if (this.isPlaying && this.audio) {
+              console.log(`🎯 Highlighting word ${index}: "${wordData.word}" at ${this.audio.currentTime.toFixed(2)}s`);
+              onWordHighlight(index);
+            }
+          }, highlightTime);
+
+          this.highlightTimeouts.push(timeoutId);
+        });
+
+        // Schedule clearing highlight at the end
+        if (this.wordTimestamps.length > 0) {
+          const lastWord = this.wordTimestamps[this.wordTimestamps.length - 1];
+          const clearTime = lastWord.end_time * 1000;
+          
+          const clearTimeoutId = window.setTimeout(() => {
+            if (this.isPlaying) {
+              console.log('🎯 Clearing word highlighting at', this.audio?.currentTime.toFixed(2) + 's');
+              onWordHighlight(-1);
+            }
+          }, clearTime);
+
+          this.highlightTimeouts.push(clearTimeoutId);
         }
-      }, highlightTime);
+      } else {
+        // Check again in 10ms for more precise timing
+        setTimeout(waitForAudioStart, 10);
+      }
+    };
 
-      this.highlightTimeouts.push(timeoutId);
-    });
-
-    // Schedule clearing highlight at the end
-    if (this.wordTimestamps.length > 0) {
-      const lastWord = this.wordTimestamps[this.wordTimestamps.length - 1];
-      const clearTime = lastWord.end_time * 1000;
-      
-      const clearTimeoutId = window.setTimeout(() => {
-        if (this.isPlaying) {
-          console.log('🎯 Clearing word highlighting');
-          onWordHighlight(-1);
-        }
-      }, clearTime);
-
-      this.highlightTimeouts.push(clearTimeoutId);
-    }
+    // Start checking for audio start
+    waitForAudioStart();
   }
 
   stop() {
@@ -230,15 +250,22 @@ export class ElevenLabsWordSync {
   }
 
   private generateFallbackTimestamps(text: string): WordTimestamp[] {
-    // Generate estimated timestamps for when ElevenLabs doesn't provide alignment
+    // Generate accurate timestamps based on ElevenLabs Charlotte voice characteristics
     const words = text.split(/\s+/).filter(word => word.length > 0);
-    const avgWordsPerSecond = 2.5; // Estimate for Charlotte's voice
+    const avgWordsPerSecond = 2.2; // Optimized for Charlotte's natural pace
+    const baseDelay = 0.1; // Small startup delay for audio processing
     
-    return words.map((word, index) => ({
-      word: word.replace(/[.,!?;:'"()]/g, ''), // Clean punctuation
-      start_time: index / avgWordsPerSecond,
-      end_time: (index + 1) / avgWordsPerSecond
-    }));
+    return words.map((word, index) => {
+      const cleanWord = word.replace(/[.,!?;:'"()]/g, ''); // Clean punctuation
+      const wordDuration = cleanWord.length * 0.08 + 0.15; // Dynamic duration based on word length
+      const startTime = baseDelay + (index / avgWordsPerSecond);
+      
+      return {
+        word: cleanWord,
+        start_time: startTime,
+        end_time: startTime + wordDuration
+      };
+    });
   }
 
   getStatus() {

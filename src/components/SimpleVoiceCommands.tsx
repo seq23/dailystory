@@ -69,14 +69,19 @@ export const SimpleVoiceCommands: React.FC = () => {
     clientTools,
     onConnect: () => {
       console.log('🎤 Connected to Buddy');
-      toast.success('Buddy is ready to help!');
+      toast.success('Buddy is ready to help! Try saying "play story"');
     },
     onDisconnect: () => {
       console.log('🎤 Disconnected from Buddy');
+      toast.info('Buddy disconnected');
     },
-    onError: (error) => {
-      console.error('🎤 Voice error:', error);
-      toast.error('Voice connection failed');
+    onError: (error: any) => {
+      console.error('🎤 Voice error details:', error);
+      const errorMessage = typeof error === 'string' ? error : error?.message || 'Connection failed';
+      toast.error(`Voice error: ${errorMessage}`);
+    },
+    onMessage: (message) => {
+      console.log('🎤 Voice message received:', message);
     }
   });
 
@@ -89,16 +94,33 @@ export const SimpleVoiceCommands: React.FC = () => {
         console.log('🎤 Requesting ElevenLabs agent signed URL...');
         const { data, error } = await supabase.functions.invoke('elevenlabs-agent-signed-url');
         
+        console.log('🎤 Supabase function response:', { data, error });
+        
         if (error) {
           console.error('🎤 Supabase function error:', error);
-          throw error;
+          toast.error(`Voice connection failed: ${error.message}`);
+          return;
         }
+        
         if (!data?.signed_url) {
           console.error('🎤 No signed URL in response:', data);
-          throw new Error('No signed URL received');
+          toast.error('No signed URL received from ElevenLabs');
+          return;
         }
         
         console.log('🎤 Got signed URL, starting session...');
+        
+        // Test microphone permissions first
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          console.log('🎤 Microphone access granted');
+          stream.getTracks().forEach(track => track.stop()); // Clean up test stream
+        } catch (micError) {
+          console.error('🎤 Microphone access denied:', micError);
+          toast.error('Microphone access required for voice commands');
+          return;
+        }
+        
         await startSession({ signedUrl: data.signed_url });
       } catch (error) {
         console.error('🎤 Failed to start voice session:', error);
@@ -138,8 +160,8 @@ export const SimpleVoiceCommands: React.FC = () => {
       {getStatusBadge()}
       
       {status === 'connected' && (
-        <div className="text-xs text-muted-foreground">
-          Say: "play story", "stop", "next page", "previous page"
+        <div className="text-xs text-muted-foreground max-w-xs">
+          Say: "play story", "stop reading", "next page", "previous page", or "help with [word]"
         </div>
       )}
     </div>

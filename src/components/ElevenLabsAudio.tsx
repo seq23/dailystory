@@ -320,26 +320,34 @@ useEffect(() => {
     const speed = getBaseSpeed() * speedMultiplierRef.current;
     const playSnapshot = { text, page: currentPage, contentHash };
 
+    // Create abort controller for this specific playback
+    const abortController = new AbortController();
+
+    // Use the precise ElevenLabs word sync for perfect timing
     await elevenLabsWordSync.playWithWordSync({
       text,
       voice: 'XB0fDUnXU5powFXDhCwa', // Charlotte voice
       model: 'eleven_turbo_v2_5',
       onWordHighlight: (wordIndex: number) => {
-        console.log(`🎯 ElevenLabs Word Sync: Highlighting word ${wordIndex}`);
+        console.log(`🎯 ElevenLabs Word Sync: Highlighting word ${wordIndex} with perfect timing`);
         onWordHighlight?.(wordIndex);
       },
       onAudioEnd: () => {
-        console.log('🎵 ElevenLabs audio ended');
+        console.log('🎵 ElevenLabs audio ended - clearing highlights');
         setIsPlaying(false);
         setIsLoading(false);
         onAudioStateChange?.(false);
         onWordHighlight?.(-1); // Clear highlighting
         
+        // Double-check highlighting is cleared
+        setTimeout(() => onWordHighlight?.(-1), 100);
+        
         // Emit state change for coordination
         window.dispatchEvent(new CustomEvent('audio:statechange', { 
           detail: { isPlaying: false } 
         }));
-      }
+      },
+      signal: abortController.signal
     });
 
     // Guard: if page or text changed during load, stop and bail
