@@ -41,6 +41,7 @@ export const ComprehensionQuiz = ({
   const [score, setScore] = useState(0);
   const [answers, setAnswers] = useState<(number | null)[]>([]);
   const [quizComplete, setQuizComplete] = useState(false);
+  const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
 
   // Generate questions based on story and user info
   useEffect(() => {
@@ -50,6 +51,7 @@ export const ComprehensionQuiz = ({
         userAge: userInfo.age,
         userName: userInfo.name
       });
+      setIsGeneratingQuestions(true);
       generateQuestions();
     }
   }, [isVisible, storyText, userInfo]);
@@ -141,6 +143,7 @@ export const ComprehensionQuiz = ({
 
     setQuestions(generatedQuestions.slice(0, questionCount));
     setAnswers(new Array(questionCount).fill(null));
+    setIsGeneratingQuestions(false);
   };
 
   const extractCharacters = (text: string): string[] => {
@@ -272,7 +275,21 @@ export const ComprehensionQuiz = ({
     onClose();
   };
 
-  if (!isVisible || questions.length === 0) return null;
+  if (!isVisible) return null;
+
+  // Show loading state while generating questions
+  if (isGeneratingQuestions || questions.length === 0) {
+    return (
+      <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <Card className="w-full max-w-lg">
+          <CardContent className="p-8 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p className="text-gray-600">Generating quiz questions...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const currentQ = questions[currentQuestion];
   const progress = ((currentQuestion + (showResult ? 1 : 0)) / questions.length) * 100;
