@@ -105,11 +105,11 @@ export const useUnifiedVoiceCommands = () => {
       // Dispatch start to ElevenLabs
       window.dispatchEvent(new CustomEvent('voice:start'));
       
-      // Set fallback timeout
+      // Set fallback timeout - longer timeout to give ElevenLabs more time
       fallbackTimeoutRef.current = setTimeout(() => {
-        console.log('🔄 ElevenLabs timeout, trying OpenAI fallback...');
+        console.log('🔄 ElevenLabs timeout (15s), trying OpenAI fallback...');
         fallbackToOpenAI();
-      }, 8000);
+      }, 15000);
       
     } catch (error) {
       console.error('❌ ElevenLabs failed immediately:', error);
@@ -171,7 +171,18 @@ export const useUnifiedVoiceCommands = () => {
         if (prev.activeSystem === 'elevenlabs' && 
             (status === 'failed' || error) && 
             fallbackTimeoutRef.current) {
+          console.log('🔄 ElevenLabs failed, falling back to OpenAI:', error);
           setTimeout(() => fallbackToOpenAI(), 100);
+          return prev;
+        }
+        
+        // If we get an unexpected disconnection, also try fallback
+        if (prev.activeSystem === 'elevenlabs' && 
+            status === 'idle' && 
+            prev.status !== 'idle' &&
+            fallbackTimeoutRef.current) {
+          console.log('🔄 ElevenLabs disconnected unexpectedly, falling back to OpenAI');
+          setTimeout(() => fallbackToOpenAI(), 500);
           return prev;
         }
         

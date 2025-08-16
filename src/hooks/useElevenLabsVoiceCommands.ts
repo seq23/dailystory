@@ -3,6 +3,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useConversation } from '@11labs/react';
 import { supabase } from '@/integrations/supabase/client';
 import { SimpleAudioEngine } from '@/services/SimpleAudioEngine';
+import { VoiceDebugger } from '@/utils/voiceDebugger';
 
 export type ElevenLabsVoiceStatus = 'idle' | 'connecting' | 'connected' | 'listening' | 'processing' | 'speaking' | 'failed';
 
@@ -28,17 +29,18 @@ export const useElevenLabsVoiceCommands = () => {
   const animationFrameRef = useRef<number | null>(null);
 
   const engine = useMemo(() => SimpleAudioEngine.getInstance(), []);
+  const voiceDebugger = useMemo(() => VoiceDebugger.getInstance(), []);
 
   // Client tools for voice commands
   const clientTools = useMemo(() => ({
     play: async () => {
-      console.log('🎤 ELEVENLABS VOICE COMMAND: play tool called');
+      voiceDebugger.log('elevenlabs', 'play tool called');
       const text = (window as any).__lastNarrationText || (window as any).__pageContentString || '';
       const hash = (window as any).__pageContentHash || undefined;
       
       if (!text) {
-        console.log('🎤 ERROR: No text content available for reading');
-        return 'no_text';
+        voiceDebugger.log('elevenlabs', 'play failed - no text content');
+        return 'No text content available for reading';
       }
       
       try {
@@ -47,11 +49,11 @@ export const useElevenLabsVoiceCommands = () => {
           contentHash: hash,
           voiceId: 'XB0fDUnXU5powFXDhCwa'
         });
-        console.log('🎤 SUCCESS: Audio playback started');
-        return 'ok';
+        voiceDebugger.log('elevenlabs', 'play success');
+        return 'Started reading the story';
       } catch (error) {
-        console.error('🎤 ERROR: Audio playback failed:', error);
-        return 'error';
+        voiceDebugger.log('elevenlabs', 'play error', error);
+        return 'Could not start reading';
       }
     },
     
@@ -68,14 +70,14 @@ export const useElevenLabsVoiceCommands = () => {
     },
     
     next: async () => {
-      console.log('🎤 ELEVENLABS VOICE COMMAND: next tool called');
+      voiceDebugger.log('elevenlabs', 'next tool called');
       try {
         window.dispatchEvent(new CustomEvent('reader:navigate', { detail: { direction: 'next' } }));
-        console.log('🎤 SUCCESS: Next page event dispatched');
-        return 'ok';
+        voiceDebugger.log('elevenlabs', 'next navigation dispatched');
+        return 'Going to the next page';
       } catch (error) {
-        console.error('🎤 ERROR: Next navigation failed:', error);
-        return 'error';
+        voiceDebugger.log('elevenlabs', 'next error', error);
+        return 'Could not go to next page';
       }
     },
     
@@ -138,7 +140,7 @@ export const useElevenLabsVoiceCommands = () => {
         return 'error';
       }
     },
-  }), [engine]);
+  }), [engine, voiceDebugger]);
 
   // Initialize voice level monitoring
   const startVoiceLevelMonitoring = useCallback(async () => {
@@ -203,6 +205,42 @@ export const useElevenLabsVoiceCommands = () => {
     clientTools,
     overrides: {
       tts: { voiceId: 'XB0fDUnXU5powFXDhCwa' },
+      agent: {
+        prompt: {
+          prompt: `You are a friendly reading assistant named Buddy that helps children navigate interactive stories. 
+
+When you hear any of these commands, immediately call the corresponding tool:
+
+READING COMMANDS:
+- "read", "start reading", "play", "begin reading" → call play() tool
+- "stop", "pause", "stop reading" → call stop() tool
+
+SPEED CONTROL COMMANDS:
+- "read faster", "faster", "speed up" → call speedUp() tool  
+- "read slower", "slower", "slow down" → call slowDown() tool
+- "normal speed", "reset speed" → call normalSpeed() tool
+
+NAVIGATION COMMANDS:  
+- "next", "next page", "go forward", "turn the page" → call next() tool
+- "back", "previous", "go back", "previous page" → call previous() tool
+
+WORD HELP COMMANDS:
+- "what is this word", "help with word", "explain word" → call wordHelp() tool
+
+Always:
+1. Acknowledge the command enthusiastically
+2. Call the appropriate tool immediately  
+3. Be encouraging and positive
+4. Keep responses brief and child-friendly
+
+Example responses:
+- "Great! Let me start reading for you!" (then call play())
+- "Perfect! Reading faster now!" (then call speedUp())
+- "Sure thing! Going to the next page!" (then call next())
+- "Of course! Let me help you with that word!" (then call wordHelp())`
+        },
+        firstMessage: "Hi! I'm Buddy, your reading assistant. Say things like 'read', 'next page', or 'what is this word' and I'll help you!"
+      }
     },
     onConnect: () => { 
       console.log('🎤 ElevenLabs conversation connected');
@@ -214,13 +252,23 @@ export const useElevenLabsVoiceCommands = () => {
       })); 
     },
     onDisconnect: () => { 
-      console.log('🎤 ElevenLabs conversation disconnected');
+      console.log('🎤 ElevenLabs conversation disconnected - checking if intentional...');
+      const wasConnected = connected;
       setConnected(false);
       setState(prev => ({ ...prev, status: 'idle' }));
       stopVoiceLevelMonitoring();
-      window.dispatchEvent(new CustomEvent('voice:status', { 
-        detail: { status: 'idle', system: 'elevenlabs' } 
-      })); 
+      
+      // If we were connected and disconnected unexpectedly, trigger fallback
+      if (wasConnected) {
+        console.log('🔄 Unexpected disconnection, triggering fallback...');
+        window.dispatchEvent(new CustomEvent('voice:status', { 
+          detail: { status: 'failed', system: 'elevenlabs', error: 'Connection lost' } 
+        }));
+      } else {
+        window.dispatchEvent(new CustomEvent('voice:status', { 
+          detail: { status: 'idle', system: 'elevenlabs' } 
+        }));
+      }
     },
     onError: (e: any) => { 
       console.error('🎤 ElevenLabs conversation error:', e);
@@ -233,6 +281,18 @@ export const useElevenLabsVoiceCommands = () => {
     },
     onMessage: (message) => {
       console.log('🎤 ElevenLabs message:', message);
+      
+      // Track if agent is speaking or processing based on message content
+      const messageType = (message as any)?.type || message?.message || '';
+      
+      if (messageType.includes('agent') || messageType.includes('response')) {
+        setState(prev => ({ ...prev, status: 'speaking' }));
+      } else if (messageType.includes('transcript') || messageType.includes('final')) {
+        setState(prev => ({ ...prev, status: 'processing' }));
+      } else if (messageType.includes('tool') || messageType.includes('call')) {
+        console.log('🔧 Tool call detected:', message);
+        setState(prev => ({ ...prev, status: 'processing' }));
+      }
     },
   });
 
