@@ -14,20 +14,34 @@ export const SimpleVoiceCommands: React.FC = () => {
   // Define client tools for voice commands
   const clientTools = {
     play: () => {
-      console.log('🎯 Voice command: play');
+      console.log('🎯 Voice command: play - CLIENT TOOL EXECUTED');
+      console.log('🎯 Global variables check:', {
+        hasPageContentString: !!((window as any).__pageContentString),
+        hasPageContentHash: !!((window as any).__pageContentHash),
+        hasStoryTitle: !!((window as any).__storyTitle),
+        pageContentLength: ((window as any).__pageContentString || '').length
+      });
+      
       const text = (window as any).__pageContentString || '';
       const hash = (window as any).__pageContentHash || undefined;
       const storyTitle = (window as any).__storyTitle || '';
       const userName = (window as any).__userName || '';
       
       if (text) {
+        console.log('🎯 About to start audio playback with:', { textLength: text.length, hash, voiceId: 'XB0fDUnXU5powFXDhCwa' });
         engine.playText({ 
           text, 
           contentHash: hash,
           voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
-        }).catch(console.error);
+        }).then(() => {
+          console.log('🎯 Audio playback started successfully');
+        }).catch((error) => {
+          console.error('🎯 Audio playback failed:', error);
+        });
         return `Starting to read ${storyTitle ? `"${storyTitle}"` : 'the story'} with Charlotte's voice${userName ? ` for ${userName}` : ''}`;
       }
+      
+      console.warn('🎯 No story content available - text variable is empty');
       return "No story content available to read";
     },
     
