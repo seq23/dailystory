@@ -140,8 +140,8 @@ export class SimpleImageService {
     const baseStyle = styleFramework?.prompt || DIFFICULTY_STYLE_MAPPING['beginner'].prompt;
     const brandSuffix = styleFramework?.brandSuffix || DIFFICULTY_STYLE_MAPPING['beginner'].brandSuffix;
     
-    // Import visual state manager
-    const { StoryVisualStateManager } = require('./storyVisualState');
+    // Note: StoryVisualStateManager is handled server-side now
+    // const { StoryVisualStateManager } = require('./storyVisualState');
     
     // Build scene-specific prompt with basic details
     const sceneElements = [];
@@ -156,11 +156,11 @@ export class SimpleImageService {
     if (pageContent.object) sceneElements.push(`with ${pageContent.object}`);
     if (pageContent.location) sceneElements.push(`in a ${pageContent.location}`);
     
-    // Add environmental continuity if session exists
+    // Environmental continuity handled server-side now
     let environmentalContext = '';
-    if (sessionId) {
-      environmentalContext = StoryVisualStateManager.getSettingForPrompt(sessionId);
-    }
+    // if (sessionId) {
+    //   environmentalContext = StoryVisualStateManager.getSettingForPrompt(sessionId);
+    // }
     
     const coreContent = `${baseStyle} ${sceneElements.join(' ')}${environmentalContext}`;
     

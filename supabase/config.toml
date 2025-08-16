@@ -42,3 +42,9 @@ verify_jwt = false
 
 [functions.openai-realtime]
 verify_jwt = false
+
+[functions.test-runware-debug]
+verify_jwt = false
+
+[functions.runware-test-simple]
+verify_jwt = false
