@@ -113,10 +113,12 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     };
   }, []);
   
-// Handle session clearing and disable auto-resume when flagged in config
-useEffect(() => {
-  (async () => {
-    try {
+  // SESSION PERSISTENCE & RESUME MECHANISM
+  // Automatically restores user sessions across page refreshes and browser restarts
+  // Maintains story progress, timer state, and generation history for seamless experience
+  useEffect(() => {
+    (async () => {
+      try {
       const params = new URLSearchParams(window.location.search);
       const allowOverride = APP_CONFIG.features.resumeOnRefresh.allowUrlOverride;
       const viaUrl = allowOverride && params.get('resume') === '1';
@@ -194,7 +196,10 @@ const handleAudioStateChange = (playing: boolean) => {
   const [storySource, setStorySource] = useState<'ai' | 'fallback' | 'unknown' | null>(null);
   const isDebug = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1';
 
-  // Timer state
+  // TIMER ENFORCEMENT SYSTEM
+  // Free users have a 20-minute session limit (1200 seconds total)
+  // Timer becomes visible in the last 60 seconds (when sessionTimer > 1140)
+  // This enforces fair usage while encouraging premium upgrades
   const initialTimerSeconds = (() => { try { const v = Number(localStorage.getItem('readingTimerDefaultSeconds')); return v > 0 ? v : 20 * 60; } catch { return 20 * 60; } })();
   const [timeRemaining, setTimeRemaining] = useState(initialTimerSeconds); // default 20 minutes
   const [isTimerRunning, setIsTimerRunning] = useState(true); // Start timer immediately
@@ -925,6 +930,9 @@ const initializeStory = async () => {
     return matches ? matches.length : 0;
   };
 
+  // LIVE GENERATION COORDINATION
+  // This function manages real-time story generation, image creation, and state synchronization
+  // It coordinates between NetflixStyleStoryService and BatchImageService for seamless UX
   const handleNext = async () => {
     // Stop audio when navigating (ensure audio halts)
     try { audioRef.current?.stop?.(); } catch {}
