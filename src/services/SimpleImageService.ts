@@ -216,8 +216,10 @@ export class SimpleImageService {
 
       console.log(`🚀 Ultra-fast generation for page ${pageNumber}/${totalPages}: "${storyText}"`);
 
-      // NEW: Direct server-side processing with all visual logic moved to edge function
+      // NEW: Direct server-side processing with token-conscious character consistency
       let result = await this.generateWithRunware(storyText, finalConfig, undefined, userInfo, pageNumber, sessionId);
+      
+      console.log(`🎯 Token-optimized generation for ${userInfo.name} on page ${pageNumber}`);
 
       // If Runware fails, fallback to OpenAI with simplified prompt
       if (!result.success) {
@@ -228,7 +230,7 @@ export class SimpleImageService {
 
       if (result.success) {
         this.recordUsage(userKey);
-        console.log(`✅ Ultra-fast generation successful with ${result.provider} (server-side processing)`);
+        console.log(`✅ Character-consistent generation successful with ${result.provider} (${userInfo.name})`);
       } else {
         console.error('❌ All image providers failed:', result.error);
       }
@@ -248,7 +250,7 @@ export class SimpleImageService {
 
   private static async generateWithRunware(prompt: string, config: ImageGenerationConfig, negativePrompt?: string, userInfo?: UserInfo, pageNumber?: number, sessionId?: string): Promise<ImageResult> {
     try {
-      console.log('🎨 Ultra-fast Runware generation - server-side processing');
+      console.log('🎨 Token-conscious Runware generation with character consistency');
 
       const defaultRunware = APP_CONFIG.images.runware;
       

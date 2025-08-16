@@ -303,13 +303,14 @@ function extractPrimaryScene(text: string): string {
 function detectSecondaryCharacters(text: string): string[] {
   const secondaryCharacters: string[] = [];
   
-  // Common secondary characters in children's stories
+  // Common secondary characters in children's stories with size descriptors
   const characterPatterns = [
     /\b(cat|kitten|kitty)\b/gi,
     /\b(dog|puppy|doggy)\b/gi,
     /\b(bird|robin|sparrow)\b/gi,
     /\b(rabbit|bunny)\b/gi,
     /\b(bear|teddy)\b/gi,
+    /\b(tiger)\b/gi, // Add tiger detection
     /\b(frog|toad)\b/gi,
     /\b(fish|goldfish)\b/gi,
     /\b(friend|buddy|pal)\b/gi,
@@ -323,7 +324,13 @@ function detectSecondaryCharacters(text: string): string[] {
     const matches = text.match(pattern);
     if (matches) {
       for (const match of matches) {
-        const character = match.toLowerCase();
+        let character = match.toLowerCase();
+        
+        // Add size descriptors for consistency
+        if (character === 'tiger') {
+          character = 'medium-tiger'; // Keep tiger at consistent medium size
+        }
+        
         if (!secondaryCharacters.includes(character)) {
           secondaryCharacters.push(character);
         }
@@ -411,41 +418,56 @@ serve(async (req) => {
       // Get existing character seed for consistency
       let characterSeed = StoryVisualStateManager.getCharacterSeed(sessionId, userInfo.name);
       
-      // Enhanced skin tone mapping
+      // Token-conscious avatar mapping with hair colors
       const skinToneMap = {
-        'pale': 'very light skin tone, pale complexion',
-        'light': 'light skin tone, fair complexion', 
-        'medium': 'medium skin tone, warm brown complexion',
-        'olive': 'olive skin tone, Mediterranean complexion',
-        'dark': 'dark skin tone, beautiful deep brown African/African American complexion'
+        'pale': 'pale skin',
+        'light': 'light skin', 
+        'medium': 'medium skin',
+        'olive': 'olive skin',
+        'dark': 'dark skin'
       };
       
-      const consistentSkinTone = skinToneMap[userInfo.avatar.skinTone] || 'medium skin tone';
+      // Concise hair color mapping based on avatar selection
+      const hairColorMap = {
+        'light-girl': 'blonde hair',
+        'light-boy': 'light brown hair',
+        'pale-girl': 'blonde hair',
+        'pale-boy': 'blonde hair',
+        'medium-girl': 'brown hair',
+        'medium-boy': 'brown hair',
+        'olive-girl': 'dark brown hair',
+        'olive-boy': 'dark brown hair',
+        'dark-girl': 'black hair',
+        'dark-boy': 'black hair'
+      };
       
-      // Gender description based on skin tone
-      let genderDesc;
-      if (userInfo.avatar.skinTone === 'dark') {
-        genderDesc = userInfo.avatar.type === 'boy' ? 'young Black boy' : userInfo.avatar.type === 'girl' ? 'young Black girl' : 'young Black child';
-      } else {
-        genderDesc = userInfo.avatar.type === 'boy' ? 'young boy' : userInfo.avatar.type === 'girl' ? 'young girl' : 'young child';
-      }
+      const avatarKey = `${userInfo.avatar.skinTone}-${userInfo.avatar.type}`;
+      const hairColor = hairColorMap[avatarKey] || 'brown hair';
       
-      // Character consistency with secondary characters
-      const characterConsistency = `${genderDesc} ${userInfo.name}, ${consistentSkinTone}${userInfo.avatar.skinTone === 'dark' ? ', African/African American' : ''}`;
+      const skinTone = skinToneMap[userInfo.avatar.skinTone] || 'medium skin';
       
-      // Include all tracked characters for consistency
-      const allCharacters = StoryVisualStateManager.getAllCharactersForPrompt(sessionId);
-      const characterContext = allCharacters ? ` with ${allCharacters}` : '';
+      // Ultra-concise character description for token efficiency
+      const characterDesc = `${userInfo.name}: ${userInfo.avatar.type} ${hairColor} ${skinTone}`;
       
-      // Environmental context from comprehensive visual state
+      // Secondary characters for context (minimal tokens)
+      const secondaryChars = secondaryCharacters.length > 0 ? ` ${secondaryCharacters.join(' ')}` : '';
+      
+      // Environmental context (minimal)
       const environmentalContext = StoryVisualStateManager.getSettingForPrompt(sessionId);
       
-      // Build focused single-scene prompt with all characters
-      enhancedPrompt = `Children's book illustration: ${characterConsistency}${characterContext}, ${processedText}${environmentalContext}. Single scene focus, consistent character designs, vibrant colors, safe content, NO TEXT OR WORDS`;
+      // Ultra-concise prompt construction (token-optimized)
+      enhancedPrompt = `${characterDesc}${secondaryChars} ${processedText}${environmentalContext} consistent-face children-book bright-colors`;
       
-      // Use existing seed if available
+      // CRITICAL: Ensure seed persistence for main character consistency
       if (characterSeed) {
         seed = characterSeed;
+        console.log(`🎯 Using persistent seed ${characterSeed} for ${userInfo.name} consistency`);
+      } else {
+        // Generate and lock new seed for main character on first use
+        const newSeed = Math.floor(Math.random() * 2147483647);
+        StoryVisualStateManager.updateCharacterWithSeed(sessionId, userInfo.name, characterDesc, newSeed, pageNumber);
+        seed = newSeed;
+        console.log(`🔒 Locked new seed ${newSeed} for ${userInfo.name} on page ${pageNumber}`);
       }
       
       // Update setting with comprehensive environmental detection
@@ -466,30 +488,39 @@ serve(async (req) => {
       console.log(`🎨 Server-side enhanced prompt for ${userInfo.name} (page ${pageNumber}): "${processedText}" → enhanced`);
       
     } else {
-      // LEGACY: Fallback to old prompt system
-      enhancedPrompt = positivePrompt || "A beautiful children's book illustration showing a friendly character in a colorful, cheerful scene";
+      // LEGACY: Token-optimized fallback system
+      enhancedPrompt = positivePrompt || "children-book character bright-colors";
       
       if (characterName && characterDescription) {
         const skinToneMap = {
-          'pale': 'very light skin tone, pale complexion',
-          'light': 'light skin tone, fair complexion', 
-          'medium': 'medium skin tone, warm brown complexion',
-          'olive': 'olive skin tone, Mediterranean complexion',
-          'dark': 'dark skin tone, beautiful deep brown African/African American complexion'
+          'pale': 'pale skin',
+          'light': 'light skin', 
+          'medium': 'medium skin',
+          'olive': 'olive skin',
+          'dark': 'dark skin'
         };
         
-        const consistentSkinTone = skinToneMap[skinTone] || 'medium skin tone';
-        let genderDesc;
-        if (skinTone === 'dark') {
-          genderDesc = avatarType === 'boy' ? 'young Black boy' : avatarType === 'girl' ? 'young Black girl' : 'young child';
-        } else {
-          genderDesc = avatarType === 'boy' ? 'young boy' : avatarType === 'girl' ? 'young girl' : 'young child';
-        }
+        const hairColorMap = {
+          'light-girl': 'blonde hair',
+          'light-boy': 'light brown hair',
+          'pale-girl': 'blonde hair',
+          'pale-boy': 'blonde hair',
+          'medium-girl': 'brown hair',
+          'medium-boy': 'brown hair',
+          'olive-girl': 'dark brown hair',
+          'olive-boy': 'dark brown hair',
+          'dark-girl': 'black hair',
+          'dark-boy': 'black hair'
+        };
         
-        // Null safety for characterName
-        const safeName = characterName || 'the character';
-        const characterConsistency = `${genderDesc} ${safeName}, ${consistentSkinTone}${skinTone === 'dark' ? ', African/African American' : ''}`;
-        enhancedPrompt = `Children's book art: ${characterConsistency} in ${enhancedPrompt}. CRITICAL: ${safeName} same ${consistentSkinTone}, consistent design, safe, NO TEXT`;
+        const avatarKey = `${skinTone}-${avatarType}`;
+        const hairColor = hairColorMap[avatarKey] || 'brown hair';
+        const skin = skinToneMap[skinTone] || 'medium skin';
+        
+        // Token-conscious character description
+        const safeName = characterName || 'character';
+        const characterDesc = `${safeName}: ${avatarType} ${hairColor} ${skin}`;
+        enhancedPrompt = `${characterDesc} ${enhancedPrompt} consistent-face children-book`;
       }
     }
 
@@ -508,6 +539,12 @@ serve(async (req) => {
       enhancedPrompt += `, quality children's book art, vibrant, text-free`;
     }
 
+    // Safety: Prevent negative prompt inversions
+    if (enhancedPrompt.includes('NOT') || enhancedPrompt.includes('bad') || enhancedPrompt.includes('ugly')) {
+      console.log('🚨 Detected negative terms in positive prompt, cleaning...');
+      enhancedPrompt = enhancedPrompt.replace(/\b(NOT|bad|ugly|terrible|awful)\b/gi, '');
+    }
+    
     // Compressed negative prompt (saves ~50 chars)
     const defaultNegativePrompt = "bad anatomy, blurry, text, ugly";
     
@@ -582,15 +619,17 @@ serve(async (req) => {
               clearTimeout(timeout);
               ws.close();
               
-              // Store seed for character consistency using comprehensive manager
+              // CRITICAL: Update character seed for future consistency
               if (sessionId && userInfo && item.seed) {
+                const characterDesc = `${userInfo.name}: ${userInfo.avatar.type}`;
                 StoryVisualStateManager.updateCharacterWithSeed(
                   sessionId,
                   userInfo.name,
-                  `${userInfo.age} year old ${userInfo.avatar.type}`,
+                  characterDesc,
                   item.seed,
                   pageNumber
                 );
+                console.log(`🔒 Saved seed ${item.seed} for ${userInfo.name} consistency`);
               }
               
               // Log successful generation with character details
