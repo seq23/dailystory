@@ -239,14 +239,20 @@ export class SimpleImageService {
 
       console.log(`🚀 Ultra-fast generation for page ${pageNumber}/${totalPages}: "${storyText}"`);
 
-      // NEW: Direct server-side processing with token-conscious character consistency
+      // TIER 1: Enhanced Runware with AI character consistency
       let result = await this.generateWithRunware(storyText, finalConfig, undefined, userInfo, pageNumber, sessionId);
       
       console.log(`🎯 Token-optimized generation for ${userInfo.name} on page ${pageNumber}`);
 
-      // If Runware fails, fallback to OpenAI with enhanced consistency
+      // TIER 2: Simple Runware fallback (original way)
       if (!result.success) {
-        console.log('⚠️ Runware failed, falling back to OpenAI...');
+        console.log('⚠️ Enhanced Runware failed, trying simple Runware...');
+        result = await this.generateWithRunwareSimple(storyText, finalConfig, userInfo, pageNumber);
+      }
+
+      // TIER 3: OpenAI fallback
+      if (!result.success) {
+        console.log('⚠️ Simple Runware failed, falling back to OpenAI...');
         
         // Try to preserve character seed for OpenAI fallback
         const existingSeed = this.getCharacterSeedFromCache(userInfo.name, sessionId);
@@ -269,9 +275,9 @@ export class SimpleImageService {
 
       if (result.success) {
         this.recordUsage(userKey, result.cost);
-        console.log(`✅ Character-consistent generation successful with ${result.provider} (${userInfo.name})`);
+        console.log(`✅ Generation successful with ${result.provider} (${userInfo.name}) - Tier ${this.getTierUsed(result.provider)}`);
       } else {
-        console.error('❌ All image providers failed:', result.error);
+        console.error('❌ All image providers failed after 3 tiers:', result.error);
       }
       
       return result;
@@ -285,6 +291,13 @@ export class SimpleImageService {
     } finally {
       release();
     }
+  }
+
+  private static getTierUsed(provider?: string): string {
+    if (provider === 'runware-enhanced') return '1 (Enhanced)';
+    if (provider === 'runware') return '2 (Simple)';
+    if (provider === 'openai') return '3 (OpenAI)';
+    return 'Unknown';
   }
 
   private static async generateWithRunware(prompt: string, config: ImageGenerationConfig, negativePrompt?: string, userInfo?: UserInfo, pageNumber?: number, sessionId?: string): Promise<ImageResult> {
@@ -327,7 +340,7 @@ export class SimpleImageService {
       return {
         url: data.imageURL,
         success: true,
-        provider: 'runware',
+        provider: 'runware-enhanced', // Mark as enhanced tier
         model: data.model || 'runware:100@1',
         cost: data.cost || this.ESTIMATED_COST_PER_IMAGE_USD,
         seed: data.seed // Include seed for consistency
@@ -336,6 +349,58 @@ export class SimpleImageService {
     } catch (error) {
       const appError = ErrorHandler.handleError(error instanceof Error ? error : new Error(String(error)), 'runware-generation');
       console.error('🎨 Runware generation failed:', appError);
+
+      return {
+        url: '',
+        success: false,
+        error: ErrorHandler.getUserMessage(appError)
+      };
+    }
+  }
+
+  // NEW: TIER 2 - Simple Runware without AI enhancement (original way)
+  private static async generateWithRunwareSimple(
+    storyText: string, 
+    config: ImageGenerationConfig, 
+    userInfo?: UserInfo, 
+    pageNumber?: number
+  ): Promise<ImageResult> {
+    try {
+      console.log('🎨 Simple Runware generation (no AI enhancement)');
+
+      // Create basic prompt without complex visual state management
+      const characterDesc = userInfo 
+        ? `${userInfo.name} (${userInfo.avatar?.type || 'child'})`
+        : 'friendly character';
+      
+      const simplePrompt = `Children's book illustration: ${characterDesc} ${storyText}. Bright, colorful, safe for children, consistent-face children-book bright-colors`;
+
+      const { data, error } = await supabase.functions.invoke('runware-test-simple', {
+        body: {
+          pageText: simplePrompt // Send as simple prompt, not complex pageText
+        }
+      });
+
+      if (error) {
+        throw new Error(`Simple Runware API error: ${error.message}`);
+      }
+
+      if (!data?.success) {
+        throw new Error(data?.error || 'Simple Runware generation failed');
+      }
+
+      return {
+        url: data.imageURL,
+        success: true,
+        provider: 'runware', // Mark as simple runware
+        model: 'runware:100@1',
+        cost: data.cost || this.ESTIMATED_COST_PER_IMAGE_USD,
+        seed: data.seed
+      };
+
+    } catch (error) {
+      const appError = ErrorHandler.handleError(error instanceof Error ? error : new Error(String(error)), 'runware-simple-generation');
+      console.error('🎨 Simple Runware generation failed:', appError);
 
       return {
         url: '',
