@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useVoiceIntegration } from "@/hooks/useVoiceIntegration";
 
 import { Play, Square, Crown, Mic, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -57,6 +58,7 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [voiceCommandsEnabled, setVoiceCommandsEnabled] = useState(false);
+  const { handleVoiceToggle, isConnected: voiceConnected, isConnecting: voiceConnecting } = useVoiceIntegration();
   const [isStabilizing, setIsStabilizing] = useState(false);
   const vcRef = useRef<VoiceCommandControllerHandle | null>(null);
   const restoredRef = useRef(false);
@@ -656,22 +658,23 @@ useEffect(() => {
       {isPremium ? (
         <Button
           id="elevenlabs-voice-toggle"
-          onClick={toggleVoiceCommands}
+          onClick={handleVoiceToggle}
           variant="outline"
           size={isMobileOrTablet ? "default" : "sm"}
-          className={`gap-2 ${isMobileOrTablet ? 'min-h-[44px] px-4' : ''} ${voiceCommandsEnabled && vcStatus === 'listening' ? 'bg-[hsl(var(--warning))] text-white hover:bg-[hsl(var(--warning))]/90' : ''}`}
-          style={voiceCommandsEnabled && vcStatus === 'listening' ? { boxShadow: `0 0 ${4 + vcLevel * 10}px hsl(var(--primary))`, opacity: 0.9 } : undefined}
+          className={`gap-2 ${isMobileOrTablet ? 'min-h-[44px] px-4' : ''} ${voiceConnected && vcStatus === 'listening' ? 'bg-[hsl(var(--warning))] text-white hover:bg-[hsl(var(--warning))]/90' : ''}`}
+          style={voiceConnected && vcStatus === 'listening' ? { boxShadow: `0 0 ${4 + vcLevel * 10}px hsl(var(--primary))`, opacity: 0.9 } : undefined}
+          disabled={voiceConnecting}
         >
           <span className="relative inline-flex items-center">
             <Mic 
               className={`w-4 h-4 transition-transform`} 
               style={{ transform: vcStatus === 'listening' ? `scale(${1 + vcLevel * 0.05})` : undefined }}
             />
-            {vcStatus === 'processing' && (
+            {(vcStatus === 'processing' || voiceConnecting) && (
               <Loader2 className="w-3.5 h-3.5 absolute -right-3 -top-2 animate-spin text-muted-foreground" />
             )}
           </span>
-          {vcStatus === 'listening' ? 'Stop Talking' : 'Talk to Buddy'}
+          {voiceConnected ? 'Stop Talking' : voiceConnecting ? 'Connecting...' : 'Talk to Buddy'}
         </Button>
       ) : (
         <TooltipProvider>

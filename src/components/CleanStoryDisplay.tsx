@@ -428,10 +428,14 @@ const [highlightSave, setHighlightSave] = useState(false);
     try { 
       (window as any).__pageContentHash = contentHash; 
       (window as any).__pageContentString = currentStoryText;
+      (window as any).__storyTitle = storyTitle || `${userInfo?.name}'s Adventure` || 'the story';
+      (window as any).__userName = userInfo?.name || '';
       console.log('🎤 Content variables updated for voice commands:', {
         page: currentPage,
         textLength: currentStoryText.length,
         hasHash: !!contentHash,
+        storyTitle: (window as any).__storyTitle,
+        userName: (window as any).__userName,
         textPreview: currentStoryText.substring(0, 100) + '...'
       });
     } catch (error) {
@@ -2467,10 +2471,7 @@ const handleRestartTimer = () => {
       {/* Voice Command System */}
       <VoiceCommandController headless={true} onCommand={handleVoiceCommand} />
       <VoiceHoverController isPremium={isPremium} />
-      {/* Voice Commands with ElevenLabs + OpenAI fallback */}
-      <div className="fixed bottom-4 right-4 z-50 bg-background border rounded-lg p-3 shadow-lg">
-        <SimpleVoiceCommands />
-      </div>
+      {/* Voice Commands Integration - handled by main audio controls */}
       </div>
     </ErrorBoundary>
     </GameContextProvider>

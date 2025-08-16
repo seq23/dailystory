@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { Volume2, Mic, Save, Square, GraduationCap } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useVoiceIntegration } from '@/hooks/useVoiceIntegration';
 
 interface MobileActionDockProps {
   isPremium: boolean;
@@ -31,6 +32,7 @@ export const MobileActionDock: React.FC<MobileActionDockProps> = ({
   className,
 }) => {
   const { t } = useTranslation();
+  const { handleVoiceToggle, isConnected: voiceConnected, isConnecting: voiceConnecting } = useVoiceIntegration();
 
   const [vcStatus, setVcStatus] = useState<'idle'|'listening'|'processing'>('idle');
   const [vcLevel, setVcLevel] = useState(0);
@@ -97,12 +99,12 @@ export const MobileActionDock: React.FC<MobileActionDockProps> = ({
                       variant="outline"
                       className={`h-12 flex flex-col items-center justify-center gap-0.5 rounded-xl ${vcStatus === 'listening' ? 'bg-[hsl(var(--warning))] text-white hover:bg-[hsl(var(--warning))]/90' : ''}`}
                       style={vcStatus === 'listening' ? { boxShadow: `0 0 ${4 + vcLevel * 10}px hsl(var(--primary))`, opacity: 0.95 } : undefined}
-                      onClick={onVoiceCommand}
-                      disabled={!isPremium || !onVoiceCommand}
+                      onClick={handleVoiceToggle}
+                      disabled={!isPremium || voiceConnecting}
                       aria-label={t("audioReading.voiceCommands", "Buddy")}
                     >
                       <Mic className="w-5 h-5 transition-transform" style={{ transform: vcStatus === 'listening' ? `scale(${1 + vcLevel * 0.05})` : undefined }} />
-                      <span className="text-[11px] leading-none">{t("audioReading.voice", "Buddy")}</span>
+                      <span className="text-[11px] leading-none">{voiceConnected ? t("audioReading.stop", "Stop") : voiceConnecting ? "..." : t("audioReading.voice", "Buddy")}</span>
                     </Button>
                   </span>
                 </TooltipTrigger>
