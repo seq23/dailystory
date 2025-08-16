@@ -1673,7 +1673,7 @@ const handleRestartTimer = () => {
 
   const progress = story.length > 0 ? ((currentPage + 1) / story.length) * 100 : 0;
   const currentImage = pageImages[currentPage];
-  const isShortPage = countWords(currentStory) <= 8;
+  const isShortPage = countWords(currentStoryText || "") <= 8;
   const controlsBlocked = (!isPremium && timeRemaining <= 0) || (isPremium && timerEnabled && !isTimerCanceled && timeRemaining <= 0);
 
   // Aggressive prefetch: progressively preload many upcoming images without blocking UI
@@ -1821,7 +1821,7 @@ const handleRestartTimer = () => {
                 <div className="flex items-center gap-4">
                 <ElevenLabsAudio
                   ref={audioRef}
-                  text={currentStory}
+                  text={currentStoryText || ""}
                   userInfo={userInfo}
                   isPremium={isPremium}
                   onUpgrade={onUpgrade}
@@ -1844,7 +1844,7 @@ const handleRestartTimer = () => {
                         <DialogTitle>Help Me Read</DialogTitle>
                       </DialogHeader>
                       {/* @ts-ignore */}
-                      <ReadAloudCoach targetText={currentStory} isPremium={isPremium} language={userInfo?.nativeLanguage || 'en'} onUpgrade={onUpgrade} />
+                      <ReadAloudCoach targetText={currentStoryText || ""} isPremium={isPremium} language={userInfo?.nativeLanguage || 'en'} onUpgrade={onUpgrade} />
                     </DialogContent>
                   </Dialog>
                   {isPremium && (
@@ -2396,7 +2396,7 @@ const handleRestartTimer = () => {
             <DialogTitle>Help Me Read</DialogTitle>
           </DialogHeader>
           {/* @ts-ignore */}
-          <ReadAloudCoach targetText={currentStory} isPremium={isPremium} language={userInfo?.nativeLanguage || 'en'} onUpgrade={onUpgrade} />
+          <ReadAloudCoach targetText={currentStoryText || ""} isPremium={isPremium} language={userInfo?.nativeLanguage || 'en'} onUpgrade={onUpgrade} />
         </DialogContent>
       </Dialog>
 
