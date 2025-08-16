@@ -27,34 +27,18 @@ export function useIsMobile() {
       const width = window.innerWidth;
       setIsMobile(width < MOBILE_BREAKPOINT);
       setIsTablet(width >= MOBILE_BREAKPOINT && width < TABLET_BREAKPOINT);
-      
-      console.log('📱 Device detection:', {
-        width,
-        isMobile: width < MOBILE_BREAKPOINT,
-        isTablet: width >= MOBILE_BREAKPOINT && width < TABLET_BREAKPOINT,
-        isMobileOrTablet: width < TABLET_BREAKPOINT
-      });
     }
     
     mql.addEventListener("change", onChange)
     tabletMql.addEventListener("change", onChange)
     
-    // Initial check with logging
+    // Initial check
     const width = window.innerWidth;
     const initialMobile = width < MOBILE_BREAKPOINT;
     const initialTablet = width >= MOBILE_BREAKPOINT && width < TABLET_BREAKPOINT;
     
     setIsMobile(initialMobile);
     setIsTablet(initialTablet);
-    
-    // Log initial detection
-    console.log('📱 Initial device detection:', {
-      width,
-      isMobile: initialMobile,
-      isTablet: initialTablet,
-      isMobileOrTablet: width < TABLET_BREAKPOINT,
-      breakpoints: { mobile: MOBILE_BREAKPOINT, tablet: TABLET_BREAKPOINT }
-    });
     
     setIsCapacitor(checkCapacitor())
     setHasTouchCapability(checkTouchCapability())

@@ -238,18 +238,8 @@ const handleAudioStateChange = (playing: boolean) => {
 
 // Direct URL management for story sessions (more reliable than hook-based approach)
 
-// Add debugging for navigation state and direct URL updating
+// Direct URL management for story sessions
 useEffect(() => {
-  console.log('📍 Navigation State Check:', {
-    currentPath: window.location.pathname,
-    searchParams: window.location.search,
-    isInStorySession: story.length > 0,
-    currentPage: currentPage + 1,
-    totalPages: story.length,
-    storyTitle
-  });
-  
-  // Direct URL update for story sessions
   if (story.length > 0) {
     const params = new URLSearchParams();
     params.set('session', 'story');
@@ -257,14 +247,13 @@ useEffect(() => {
     params.set('total', story.length.toString());
     
     if (storyTitle) {
-      params.set('title', encodeURIComponent(storyTitle));
+      params.set('title', storyTitle);
     }
 
     const newUrl = `/?${params.toString()}`;
     const currentUrl = window.location.pathname + window.location.search;
     
     if (currentUrl !== newUrl) {
-      console.log('📍 DIRECT URL UPDATE:', { from: currentUrl, to: newUrl });
       window.history.replaceState({}, '', newUrl);
     }
   }
@@ -275,7 +264,6 @@ useEffect(() => {
   const handleStoryNavigation = (event: CustomEvent) => {
     const urlState = event.detail;
     if (urlState.isStorySession && urlState.page !== currentPage + 1) {
-      console.log('📍 Browser navigation: updating page from URL', urlState.page - 1);
       setCurrentPage(Math.max(0, Math.min(story.length - 1, urlState.page - 1)));
     }
   };
