@@ -266,6 +266,13 @@ if (props.forceModal || isMobileOrTablet) {
             if (!shouldBeInteractive) return;
             (window as any).__hoveredWord = cleanWord;
             if (isMobileOrTablet) return; // no hover on touch devices
+            
+            // Dispatch hover event for VoiceHoverController
+            window.dispatchEvent(new CustomEvent('voice:hover:word', {
+              detail: { word: cleanWord, action: 'hear' }
+            }));
+            
+            // Legacy voice command behavior (only when listening)
             const now = Date.now();
             if (vcStatus !== 'listening') return;
             if (now - lastTriggerRef.current < COOLDOWN_MS) return;
@@ -275,6 +282,7 @@ if (props.forceModal || isMobileOrTablet) {
             hoverTimerRef.current = window.setTimeout(async () => {
               if (cancelRef.current) return;
               lastTriggerRef.current = Date.now();
+              
               // Enhanced voice command sequence: word + definition
               if (isPlaying || isLoadingWordData) return;
               try {

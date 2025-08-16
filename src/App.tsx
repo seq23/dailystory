@@ -17,6 +17,8 @@ import Auth from "./pages/Auth";
 import PromptTesting from "./pages/PromptTesting";
 import VoiceHUD from "./components/VoiceHUD";
 import { AudioFallbackNotification } from "./components/AudioFallbackNotification";
+import { VoiceCommands } from "./components/VoiceCommands";
+import { VoiceHoverController } from "./components/VoiceHoverController";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -50,6 +52,8 @@ const App = () => {
               <Route path="*" element={<NotFound />} />
             </Routes>
             <VoiceHUD />
+            <VoiceCommands />
+            <VoiceHoverController />
             <FloatingFeedback />
             <AudioFallbackNotification />
           </BrowserRouter>
