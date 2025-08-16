@@ -192,20 +192,28 @@ export const VoiceCommands: React.FC<VoiceCommandsProps> = ({ agentId: initialAg
     onMessage: (message) => {
       // Enhanced debugging for tool calls
       const msgData = message as any;
+      console.log('🎤 ALL ELEVENLABS MESSAGES:', message);
+      
       if (msgData.type === 'agent.tool_call') {
-        console.log('🔧 AGENT TOOL CALL:', {
+        console.log('✅ AGENT TOOL CALL DETECTED:', {
           toolName: msgData.tool_name,
           arguments: msgData.arguments,
           callId: msgData.call_id
         });
       } else if (msgData.type === 'agent.tool_response') {
-        console.log('🔧 TOOL RESPONSE:', {
+        console.log('✅ TOOL RESPONSE DETECTED:', {
           toolName: msgData.tool_name,
           response: msgData.response,
           callId: msgData.call_id
         });
-      } else {
-        console.log('🎤 ElevenLabs Message:', message);
+      } else if (msgData.source === 'ai' || msgData.message) {
+        console.log('🤖 CHARLOTTE SPEAKING:', msgData.message);
+        
+        // Check if Charlotte is just saying "OK" without calling tools
+        if (msgData.message && msgData.message.toLowerCase().includes('ok')) {
+          console.log('⚠️ PROBLEM: Charlotte said OK but no tool was called!');
+          console.log('❌ This means tools are NOT configured in ElevenLabs dashboard');
+        }
       }
     },
   });
