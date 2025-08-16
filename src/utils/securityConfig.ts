@@ -69,7 +69,7 @@ export const RECOMMENDED_SECURITY_HEADERS = {
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'Permissions-Policy': [
     'camera=()',
-    'microphone=()',
+    'microphone=(self)',
     'geolocation=()',
     'payment=()'
   ].join(', '),
