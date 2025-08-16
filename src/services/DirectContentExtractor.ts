@@ -215,11 +215,7 @@ export class DirectContentExtractor {
     const visualPrompt = `A ${style} showing ${visualScene}. Bright, cheerful, safe for children.`;
     
     const negativePrompt = [
-      'scary', 'dark', 'violent', 'inappropriate', 'adult content', 'disturbing',
-      'blurry', 'low quality', 'distorted', 'text', 'words', 'letters',
-      'extra limbs', 'multiple arms', 'multiple legs', 'three legs', 'extra hands',
-      'deformed anatomy', 'malformed body parts', 'incorrect anatomy', 'distorted proportions',
-      'anatomical errors', 'inconsistent limb count', 'body part duplication', 'malformed characters'
+      '**NO TEXT**, **NO WORDS**, **NO LETTERS**, blurry, low quality, deformed anatomy, extra limbs, multiple arms, multiple legs, watermark, ugly, scary, inappropriate, adult content'
     ];
     
     return {

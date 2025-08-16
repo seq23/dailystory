@@ -525,29 +525,7 @@ export class AdvancedStoryAnalyzer {
       : [styleFramework.colorPalette];
     
     const negativePrompt = [
-      'scary content',
-      'inappropriate imagery', 
-      'dark themes',
-      'violence',
-      'adult content',
-      'disturbing elements',
-      'poor quality',
-      'blurry',
-      'distorted faces',
-      'inconsistent character appearance',
-      'extra limbs',
-      'multiple arms',
-      'multiple legs',
-      'three legs',
-      'extra hands',
-      'deformed anatomy',
-      'malformed body parts',
-      'incorrect anatomy',
-      'distorted proportions',
-      'anatomical errors',
-      'inconsistent limb count',
-      'body part duplication',
-      'malformed characters'
+      '**NO TEXT**, **NO WORDS**, **NO LETTERS**, blurry, low quality, deformed anatomy, extra limbs, multiple arms, multiple legs, watermark, ugly, scary, inappropriate, adult content'
     ];
     
     return {
