@@ -53,7 +53,7 @@ const App = () => {
             </Routes>
             <VoiceHUD />
             <VoiceCommands />
-            <VoiceHoverController />
+            <VoiceHoverController isPremium={false} />
             <FloatingFeedback />
             <AudioFallbackNotification />
           </BrowserRouter>

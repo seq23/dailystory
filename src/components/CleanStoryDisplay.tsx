@@ -2455,7 +2455,7 @@ const handleRestartTimer = () => {
       
       {/* Voice Command System */}
       <VoiceCommandController headless={true} onCommand={handleVoiceCommand} />
-      <VoiceHoverController />
+      <VoiceHoverController isPremium={isPremium} />
       </div>
     </ErrorBoundary>
     </GameContextProvider>

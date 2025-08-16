@@ -1,12 +1,14 @@
 /**
- * Simplified Audio Coordination - Event-driven coordination without dynamic imports
- * Prevents conflicts between audio systems using global events
+ * Enhanced Audio Coordination - Centralized coordination for all audio systems
+ * Prevents conflicts between audioSyncService and SimpleAudioEngine
+ * Provides timeout protection and better mutual exclusion
  */
 
 type AudioSystem = 'sync' | 'simple' | null;
 
 class SimpleAudioCoordinator {
   private activeSystem: AudioSystem = null;
+  private lockTimeout: number | null = null;
 
   constructor() {
     this.setupEventListeners();
@@ -19,6 +21,12 @@ class SimpleAudioCoordinator {
       if (system && this.activeSystem !== system) {
         console.log(`🔒 Audio Coordinator: ${system} requesting control, current: ${this.activeSystem}`);
         
+        // Clear any existing timeout
+        if (this.lockTimeout) {
+          clearTimeout(this.lockTimeout);
+          this.lockTimeout = null;
+        }
+        
         // Stop the other system if active
         if (this.activeSystem === 'sync') {
           window.dispatchEvent(new CustomEvent('audio:stop:sync'));
@@ -28,6 +36,14 @@ class SimpleAudioCoordinator {
         
         this.activeSystem = system;
         console.log(`🔓 Audio Coordinator: Control granted to ${system}`);
+        
+        // Set timeout to auto-release lock if system doesn't respond
+        this.lockTimeout = window.setTimeout(() => {
+          if (this.activeSystem === system) {
+            console.log(`⏰ Audio Coordinator: Auto-releasing lock for ${system} (timeout)`);
+            this.activeSystem = null;
+          }
+        }, 30000); // 30 second timeout
       }
     }) as EventListener);
 
@@ -36,6 +52,10 @@ class SimpleAudioCoordinator {
       const system = event.detail?.system as AudioSystem;
       if (system === this.activeSystem) {
         this.activeSystem = null;
+        if (this.lockTimeout) {
+          clearTimeout(this.lockTimeout);
+          this.lockTimeout = null;
+        }
         console.log(`🔓 Audio Coordinator: ${system} released control`);
       }
     }) as EventListener);
@@ -62,6 +82,18 @@ class SimpleAudioCoordinator {
 
   getActiveSystem(): AudioSystem {
     return this.activeSystem;
+  }
+
+  /**
+   * Force release all locks (emergency cleanup)
+   */
+  forceReleaseAll(): void {
+    this.activeSystem = null;
+    if (this.lockTimeout) {
+      clearTimeout(this.lockTimeout);
+      this.lockTimeout = null;
+    }
+    console.log('🔓 Audio Coordinator: All locks force released');
   }
 }
 

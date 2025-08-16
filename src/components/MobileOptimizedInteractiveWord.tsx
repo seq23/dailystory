@@ -35,13 +35,9 @@ export const MobileOptimizedInteractiveWord = (props: MobileOptimizedInteractive
   const difficulty = props.difficulty || "easy";
   const cleanWord = useMemo(() => props.word.replace(/[.,!?;:'"()]/g, ''), [props.word]);
 
-  // Voice commands status and hover sequencing (desktop only)
+  // Voice commands status (desktop only)
   const [vcStatus, setVcStatus] = useState<'idle' | 'listening' | 'processing'>('idle');
-  const hoverTimerRef = useRef<number | null>(null);
-  const lastTriggerRef = useRef<number>(0);
   const cancelRef = useRef<boolean>(false);
-  const COOLDOWN_MS = 3500;
-  const DWELL_MS = 400;
 
   useEffect(() => {
     const onStatus = (e: any) => setVcStatus(e?.detail?.status || 'idle');
@@ -271,50 +267,10 @@ if (props.forceModal || isMobileOrTablet) {
             window.dispatchEvent(new CustomEvent('voice:hover:word', {
               detail: { word: cleanWord, action: 'hear' }
             }));
-            
-            // Legacy voice command behavior (only when listening)
-            const now = Date.now();
-            if (vcStatus !== 'listening') return;
-            if (now - lastTriggerRef.current < COOLDOWN_MS) return;
-            if (isPlaying || isLoadingWordData) return;
-            cancelRef.current = false;
-            if (hoverTimerRef.current) window.clearTimeout(hoverTimerRef.current);
-            hoverTimerRef.current = window.setTimeout(async () => {
-              if (cancelRef.current) return;
-              lastTriggerRef.current = Date.now();
-              
-              // Enhanced voice command sequence: word + definition
-              if (isPlaying || isLoadingWordData) return;
-              try {
-                // 1) Pronounce word with Charlotte voice
-                await audioEngine.playText({ 
-                  text: cleanWord,
-                  voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
-                });
-                if (cancelRef.current) return;
-                
-                // 2) Speak definition with Charlotte voice
-                const userLang = props.userInfo?.nativeLanguage || 'en';
-                const { data, error } = await supabase.functions.invoke('word-dictionary', {
-                  body: { word: cleanWord, userLevel: difficulty, userLanguage: userLang }
-                });
-                const definition: string = (!error && data?.definition) ? data.definition : `${cleanWord} is a word in this story`;
-                await audioEngine.playText({ 
-                  text: definition,
-                  voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
-                });
-              } catch (e) {
-                console.warn('Voice command sequence failed', e);
-              }
-            }, DWELL_MS) as unknown as number;
           }}
           onMouseLeave={() => {
             if ((window as any).__hoveredWord === cleanWord) (window as any).__hoveredWord = '';
             cancelRef.current = true;
-            if (hoverTimerRef.current) {
-              window.clearTimeout(hoverTimerRef.current);
-              hoverTimerRef.current = null;
-            }
           }}
           className={`${props.className} inline ${shouldBeInteractive ? 'cursor-pointer underline decoration-dotted decoration-2 underline-offset-2 hover:decoration-primary' : ''}`}
           style={{ fontSize: 'inherit', lineHeight: 'inherit', display: 'inline' }}

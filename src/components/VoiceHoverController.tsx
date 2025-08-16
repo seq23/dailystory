@@ -3,21 +3,48 @@ import { SimpleAudioEngine } from '@/services/SimpleAudioEngine';
 import { supabase } from '@/integrations/supabase/client';
 import { contextualPronunciation } from '@/services/contextualPronunciation';
 import { phoneticRulesEngine } from '@/services/phoneticRulesEngine';
+import { AudioPermissions } from '@/utils/audioPermissions';
+
+interface VoiceHoverControllerProps {
+  isPremium: boolean;
+}
 
 /**
  * Voice Hover Controller for Voice Command Mode
  * Allows users to hover over words to hear pronunciation, definitions, and syllables
+ * Only works for premium users with active voice commands
  */
-export const VoiceHoverController = () => {
+export const VoiceHoverController = ({ isPremium }: VoiceHoverControllerProps) => {
   const lastProcessedWordRef = useRef<string>('');
   const processingRef = useRef<boolean>(false);
   const hoverTimeoutRef = useRef<number | null>(null);
+  const vcStatusRef = useRef<'idle' | 'listening' | 'processing'>('idle');
 
   useEffect(() => {
+    // Update permission context when premium status changes
+    AudioPermissions.updateContext({ isPremium });
+  }, [isPremium]);
+
+  useEffect(() => {
+    // Listen for voice command status changes
+    const handleVoiceStatus = (event: CustomEvent<{ status: 'idle' | 'listening' | 'processing' }>) => {
+      vcStatusRef.current = event.detail.status;
+      AudioPermissions.updateContext({ vcStatus: event.detail.status });
+    };
+
+    window.addEventListener('voice:status', handleVoiceStatus as EventListener);
+
     const handleWordHover = async (event: CustomEvent<{ word: string; action: 'hear' | 'explain' | 'syllables' }>) => {
       const { word, action } = event.detail;
       
       if (!word || processingRef.current) return;
+
+      // Check permissions before processing
+      if (!AudioPermissions.canUseVoiceHover()) {
+        const reason = AudioPermissions.getBlockReason('voice-hover');
+        console.log(`🔒 Voice hover blocked: ${reason}`);
+        return;
+      }
       
       // Debounce rapid hover events
       if (lastProcessedWordRef.current === word) return;
@@ -88,6 +115,7 @@ export const VoiceHoverController = () => {
 
     return () => {
       window.removeEventListener('voice:hover:word', handleWordHover as EventListener);
+      window.removeEventListener('voice:status', handleVoiceStatus as EventListener);
       if (hoverTimeoutRef.current) {
         clearTimeout(hoverTimeoutRef.current);
       }

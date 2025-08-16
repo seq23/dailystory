@@ -1,5 +1,6 @@
 import { fetchElevenLabsAudioArrayBuffer } from '@/services/simpleElevenLabsTTS';
 import { contextualPronunciation } from './contextualPronunciation';
+import { AudioPermissions } from '@/utils/audioPermissions';
 
 export type PlayOptions = {
   text: string;
@@ -25,18 +26,29 @@ export class SimpleAudioEngine {
   private currentHash: string | null = null;
   private inflight?: AbortController;
   private webSpeechSpeaking = false;
+  
+  // Mobile audio management
+  private mobileAudioUnlocked = false;
+  private audioContext: AudioContext | null = null;
 
   private ensureAudio() {
     if (!this.audio) {
       this.audio = new Audio();
       this.audio.preload = 'auto';
       this.audio.crossOrigin = 'anonymous';
+      
+      // Mobile-specific configurations
+      (this.audio as any).playsInline = true;
+      this.audio.setAttribute('playsinline', 'true');
+      
       this.audio.addEventListener('ended', () => { 
         this.playing = false; 
         // Emit state change event
         window.dispatchEvent(new CustomEvent('audio:statechange', { 
           detail: { isPlaying: false } 
         }));
+        // Release coordination lock
+        window.dispatchEvent(new CustomEvent('audio:stopped', { detail: { system: 'simple' } }));
       });
       this.audio.addEventListener('pause', () => { 
         this.playing = false;
@@ -50,12 +62,64 @@ export class SimpleAudioEngine {
           detail: { isPlaying: true } 
         }));
       });
+      
+      // Mobile audio unlock on first user interaction
+      this.setupMobileAudioUnlock();
     }
     return this.audio;
   }
 
+  private setupMobileAudioUnlock() {
+    if (this.mobileAudioUnlocked) return;
+    
+    const unlockAudio = async () => {
+      try {
+        // Create AudioContext if needed for mobile
+        if (!this.audioContext) {
+          this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        }
+        
+        if (this.audioContext.state === 'suspended') {
+          await this.audioContext.resume();
+        }
+        
+        // Play silent audio to unlock
+        if (this.audio) {
+          const playPromise = this.audio.play();
+          if (playPromise) {
+            await playPromise.catch(() => {}); // Ignore rejection
+            this.audio.pause();
+            this.audio.currentTime = 0;
+          }
+        }
+        
+        this.mobileAudioUnlocked = true;
+        console.log('🔊 Mobile audio unlocked');
+        
+        // Remove event listeners after unlock
+        ['touchstart', 'touchend', 'mousedown', 'keydown'].forEach(event => {
+          document.removeEventListener(event, unlockAudio);
+        });
+      } catch (error) {
+        console.warn('Mobile audio unlock failed:', error);
+      }
+    };
+
+    // Add event listeners for mobile unlock
+    ['touchstart', 'touchend', 'mousedown', 'keydown'].forEach(event => {
+      document.addEventListener(event, unlockAudio, { once: false });
+    });
+  }
+
   async playText(opts: PlayOptions) {
     const { text, voiceId, modelId, contentHash } = opts;
+    
+    // Check basic audio permissions
+    if (!AudioPermissions.canPlayAudio()) {
+      const reason = AudioPermissions.getBlockReason('any-audio');
+      console.log(`🔒 SimpleAudioEngine: Audio blocked - ${reason}`);
+      return;
+    }
     
     console.log('🎵 SimpleAudioEngine: Starting playback:', {
       textLength: text.length,
@@ -97,6 +161,13 @@ export class SimpleAudioEngine {
       const url = URL.createObjectURL(blob);
 
       const audio = this.ensureAudio();
+      
+      // Ensure mobile audio is unlocked before attempting playback
+      if (!this.mobileAudioUnlocked && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        console.log('🔊 Attempting to unlock mobile audio before playback');
+        await this.unlockMobileAudioForPlayback();
+      }
+      
       try { audio.pause(); } catch {}
       if (this.currentUrl) URL.revokeObjectURL(this.currentUrl);
       this.currentUrl = url;
@@ -212,6 +283,24 @@ export class SimpleAudioEngine {
     this.playing = false;
   }
 
+  private async unlockMobileAudioForPlayback(): Promise<void> {
+    if (this.mobileAudioUnlocked) return;
+    
+    try {
+      if (!this.audioContext) {
+        this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+      
+      if (this.audioContext.state === 'suspended') {
+        await this.audioContext.resume();
+      }
+      
+      this.mobileAudioUnlocked = true;
+      console.log('🔊 Mobile audio unlocked successfully');
+    } catch (error) {
+      console.warn('Failed to unlock mobile audio:', error);
+    }
+  }
 
   isPlaying() {
     // Check both audio element and web speech
