@@ -45,6 +45,11 @@ export const ComprehensionQuiz = ({
   // Generate questions based on story and user info
   useEffect(() => {
     if (isVisible && storyText) {
+      console.log('🧪 Generating quiz questions for story:', {
+        storyLength: storyText.length,
+        userAge: userInfo.age,
+        userName: userInfo.name
+      });
       generateQuestions();
     }
   }, [isVisible, storyText, userInfo]);
@@ -139,24 +144,59 @@ export const ComprehensionQuiz = ({
   };
 
   const extractCharacters = (text: string): string[] => {
-    // Simple character extraction - look for capitalized words
-    const words = text.split(' ');
+    // Enhanced character extraction - avoid sentence starters and common words
+    const words = text.split(/[\s,\.!?]+/);
+    const excludeWords = [
+      'The', 'This', 'That', 'Once', 'Then', 'When', 'Where', 'What', 'Who', 'Why', 'How',
+      'In', 'On', 'At', 'By', 'For', 'With', 'From', 'To', 'Of', 'And', 'But', 'Or', 'So', 'Yet',
+      'A', 'An', 'As', 'After', 'Before', 'During', 'While', 'Until', 'Since', 'Because',
+      'There', 'Here', 'Now', 'Soon', 'Today', 'Yesterday', 'Tomorrow', 'Always', 'Never',
+      'Very', 'Really', 'Quite', 'Much', 'Many', 'Some', 'All', 'Every', 'Each', 'Both'
+    ];
+    
     const possibleNames = words.filter(word => 
-      /^[A-Z][a-z]+$/.test(word) && 
-      !['The', 'This', 'That', 'Once', 'Then', 'When', 'Where'].includes(word)
+      /^[A-Z][a-z]{2,}$/.test(word) && 
+      !excludeWords.includes(word) &&
+      word.length >= 3 // Names should be at least 3 characters
     );
-    return possibleNames.length > 0 ? possibleNames : [userInfo.name];
+    
+    // Remove duplicates and return first few unique names
+    const uniqueNames = [...new Set(possibleNames)].slice(0, 3);
+    return uniqueNames.length > 0 ? uniqueNames : [userInfo.name || 'The character'];
   };
 
   const extractActions = (sentences: string[]): string[] => {
-    // Simple action extraction - look for verbs
-    const actionWords = ['went', 'walked', 'found', 'saw', 'played', 'discovered', 'met', 'helped'];
+    // Enhanced action extraction - look for meaningful verbs and actions
+    const commonActions = [
+      'went', 'walked', 'ran', 'found', 'saw', 'played', 'discovered', 'met', 'helped',
+      'explored', 'learned', 'built', 'created', 'solved', 'adventure', 'journey',
+      'rescued', 'saved', 'protected', 'shared', 'laughed', 'smiled', 'celebrated'
+    ];
+    
+    const foundActions = [];
     for (const sentence of sentences) {
-      for (const action of actionWords) {
-        if (sentence.toLowerCase().includes(action)) {
-          return [`They ${action} somewhere special`];
+      const lowerSentence = sentence.toLowerCase();
+      for (const action of commonActions) {
+        if (lowerSentence.includes(action) && !foundActions.includes(action)) {
+          foundActions.push(action);
+          if (foundActions.length >= 3) break;
         }
       }
+      if (foundActions.length >= 3) break;
+    }
+    
+    // Create meaningful action descriptions
+    if (foundActions.length > 0) {
+      return foundActions.map(action => {
+        switch(action) {
+          case 'went': case 'walked': case 'ran': return 'Traveled to new places';
+          case 'found': case 'discovered': return 'Made important discoveries';
+          case 'met': case 'helped': return 'Made new friends';
+          case 'learned': case 'solved': return 'Learned something new';
+          case 'adventure': case 'explored': return 'Went on an adventure';
+          default: return `Had a ${action} experience`;
+        }
+      });
     }
     return ['They had an adventure'];
   };

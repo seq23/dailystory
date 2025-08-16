@@ -111,6 +111,19 @@ const location = useLocation();
   const canLaunchActivities = Boolean(userIsPremium && userInfoFromState && storyText);
   const isQuizAllowed = Boolean(userIsPremium && sessionStats && sessionStats.currentDifficulty !== 'beginner');
   
+  // Debug data availability for quiz
+  React.useEffect(() => {
+    console.log('🧪 Quiz data debug:', {
+      userIsPremium,
+      hasUserInfo: !!userInfoFromState,
+      hasStoryText: !!storyText,
+      storyTextLength: storyText?.length || 0,
+      canLaunchActivities,
+      isQuizAllowed,
+      sessionStats: sessionStats ? 'present' : 'missing'
+    });
+  }, [userIsPremium, userInfoFromState, storyText, canLaunchActivities, isQuizAllowed, sessionStats]);
+  
   // Get achievements and progress data from this session
   let sessionAchievements: any[] = [];
   let gameContext: any = null;
@@ -325,11 +338,35 @@ const getDifficultyLabel = (difficulty: string) => {
                 <Card className="p-4 text-left">
                   <div className="font-semibold mb-1">{t('postSession.quizTitle', 'Comprehension Quiz')}</div>
                   <p className="text-sm text-gray-600 mb-2">{t('postSession.quizDesc', 'Quick 3–5 questions based on your story.')}</p>
-                  <Button disabled={!canLaunchActivities || !isQuizAllowed} onClick={() => setQuizVisible(true)} className="w-full">
+                  <Button 
+                    disabled={!canLaunchActivities || !isQuizAllowed} 
+                    onClick={() => {
+                      console.log('🧪 Quiz button clicked:', { canLaunchActivities, isQuizAllowed, userInfoFromState, storyText });
+                      if (canLaunchActivities && isQuizAllowed) {
+                        setQuizVisible(true);
+                      } else {
+                        console.warn('Quiz launch blocked - missing data:', { 
+                          hasUserInfo: !!userInfoFromState, 
+                          hasStoryText: !!storyText,
+                          canLaunch: canLaunchActivities,
+                          quizAllowed: isQuizAllowed
+                        });
+                      }
+                    }} 
+                    className="w-full"
+                  >
                     {t('postSession.startQuiz', 'Start Quiz')}
                   </Button>
                   {!canLaunchActivities && (
-                    <div className="text-xs text-orange-600 mt-2">{t('postSession.unavailable', 'Unavailable: missing story data')}</div>
+                    <div className="text-xs text-orange-600 mt-2">
+                      {!userInfoFromState && !storyText ? 'Missing user info and story data' : 
+                       !userInfoFromState ? 'Missing user info' :
+                       !storyText ? 'Missing story data' : 
+                       t('postSession.unavailable', 'Unavailable: missing story data')}
+                    </div>
+                  )}
+                  {!isQuizAllowed && canLaunchActivities && (
+                    <div className="text-xs text-orange-600 mt-2">Quiz not available for beginner level</div>
                   )}
                 </Card>
                 <Card className="p-4 text-left">
