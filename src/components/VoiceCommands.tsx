@@ -83,27 +83,27 @@ export const VoiceCommands: React.FC<VoiceCommandsProps> = ({ agentId: initialAg
     
     // Voice Command: "next", "next page", "go forward" -> next tool
     next: async () => {
-      console.log('🎤 VOICE COMMAND: next tool called');
+      console.log('🎤 VOICE COMMAND: next tool called - navigating to next page');
       try {
         window.dispatchEvent(new CustomEvent('reader:navigate', { detail: { direction: 'next' } }));
-        console.log('🎤 SUCCESS: Next page event dispatched');
-        return 'ok';
+        console.log('🎤 SUCCESS: Next page event dispatched successfully');
+        return 'Going to the next page now!';
       } catch (error) {
         console.error('🎤 ERROR: Next navigation failed:', error);
-        return 'error';
+        return 'Sorry, I could not go to the next page.';
       }
     },
     
     // Voice Command: "back", "previous", "go back", "previous page" -> previous tool
     previous: async () => {
-      console.log('🎤 VOICE COMMAND: previous tool called');
+      console.log('🎤 VOICE COMMAND: previous tool called - navigating to previous page');
       try {
         window.dispatchEvent(new CustomEvent('reader:navigate', { detail: { direction: 'prev' } }));
-        console.log('🎤 SUCCESS: Previous page event dispatched');
-        return 'ok';
+        console.log('🎤 SUCCESS: Previous page event dispatched successfully');
+        return 'Going back to the previous page!';
       } catch (error) {
         console.error('🎤 ERROR: Previous navigation failed:', error);
-        return 'error';
+        return 'Sorry, I could not go to the previous page.';
       }
     },
     
@@ -113,10 +113,14 @@ export const VoiceCommands: React.FC<VoiceCommandsProps> = ({ agentId: initialAg
       try {
         window.dispatchEvent(new CustomEvent('voice:wordHelp', { detail: params || null }));
         console.log('🎤 SUCCESS: Word help event dispatched');
-        return 'ok';
+        
+        if (params?.word) {
+          return `Let me help you with the word "${params.word}". I'll break it down for you: ${params.word.split('').join('-')}. This word means...`;
+        }
+        return 'I can help you with any word! Just tell me which word you need help with.';
       } catch (error) {
         console.error('🎤 ERROR: Word help failed:', error);
-        return 'error';
+        return 'Sorry, I could not help with that word right now.';
       }
     },
     

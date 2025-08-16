@@ -81,25 +81,25 @@ export const useVoiceIntegration = () => {
     },
     
     next: () => {
-      console.log('🎯 Voice command: next page');
+      console.log('🎯 Voice command: next page - navigating forward');
       // Brief delay to let Charlotte finish her acknowledgment
       setTimeout(() => {
         window.dispatchEvent(new CustomEvent('reader:navigate', { 
           detail: { direction: 'next' } 
         }));
       }, 100);
-      return "Got it!"; // Very brief response to avoid audio conflicts
+      return "Going to the next page now!";
     },
     
     previous: () => {
-      console.log('🎯 Voice command: previous page');
+      console.log('🎯 Voice command: previous page - navigating backward');
       // Brief delay to let Charlotte finish her acknowledgment
       setTimeout(() => {
         window.dispatchEvent(new CustomEvent('reader:navigate', { 
           detail: { direction: 'prev' } 
         }));
       }, 100);
-      return "Got it!"; // Very brief response to avoid audio conflicts
+      return "Going back to the previous page!";
     },
     
     // ENHANCED WORD ASSISTANCE TOOLS with Context Awareness

@@ -1156,12 +1156,18 @@ useEffect(() => {
   const onNavigate = (e: Event) => {
     try {
       const detail = (e as CustomEvent<{ direction: 'next' | 'prev' }>).detail;
+      console.log('📖 CleanStoryDisplay received navigation event:', detail);
+      
       if (detail?.direction === 'next') {
+        console.log('📖 Executing handleNext() - going to next page');
         handleNext();
       } else if (detail?.direction === 'prev') {
+        console.log('📖 Executing handlePrevious() - going to previous page');
         handlePrevious();
       }
-    } catch {}
+    } catch (error) {
+      console.error('📖 Navigation event error:', error);
+    }
   };
   window.addEventListener('reader:navigate', onNavigate as EventListener);
   return () => window.removeEventListener('reader:navigate', onNavigate as EventListener);
