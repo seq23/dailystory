@@ -87,9 +87,18 @@ serve(async (req) => {
       });
     }
 
-    // Return audio data as base64-encoded JSON for better compatibility
+    // Convert audio data to base64 safely (avoiding stack overflow)
     const audioData = await response.arrayBuffer();
-    const base64Audio = btoa(String.fromCharCode(...new Uint8Array(audioData)));
+    const uint8Array = new Uint8Array(audioData);
+    
+    // Convert to base64 in chunks to avoid stack overflow
+    let binary = '';
+    const chunkSize = 8192; // Process in 8KB chunks
+    for (let i = 0; i < uint8Array.length; i += chunkSize) {
+      const chunk = uint8Array.slice(i, i + chunkSize);
+      binary += String.fromCharCode(...chunk);
+    }
+    const base64Audio = btoa(binary);
     
     console.log('Successfully generated audio:', {
       size: audioData.byteLength,
