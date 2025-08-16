@@ -238,8 +238,6 @@ const handleAudioStateChange = (playing: boolean) => {
 };
 
 // Direct URL management for story sessions (more reliable than hook-based approach)
-
-// Direct URL management for story sessions
 const navigate = useNavigate();
 
 useEffect(() => {
