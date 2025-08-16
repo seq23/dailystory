@@ -379,8 +379,11 @@ serve(async (req) => {
     
     const runwareApiKey = Deno.env.get('RUNWARE_API_KEY')
     if (!runwareApiKey) {
-      throw new Error('Runware API key not configured')
+      console.error('❌ Runware API key not configured')
+      return createCorsErrorResponse('Runware API key not configured', 500)
     }
+    
+    console.log('🔑 Runware API key configured successfully')
 
     // Server-side prompt construction with visual state
     let enhancedPrompt: string;
@@ -565,7 +568,7 @@ serve(async (req) => {
       }, 15000); // 15 second timeout for faster fallbacks
 
       ws.onopen = () => {
-        console.log("WebSocket connected to Runware");
+        console.log("🌐 WebSocket connected to Runware, authenticating...");
         
         // Send authentication
         const authMessage = [{
@@ -574,11 +577,12 @@ serve(async (req) => {
         }];
         
         ws.send(JSON.stringify(authMessage));
+        console.log('🔐 Authentication message sent to Runware');
       };
 
       ws.onmessage = (event) => {
         const response = JSON.parse(event.data);
-        console.log("Runware response:", response);
+        console.log("📨 Runware response:", response);
         
         if (response.error || response.errors) {
           clearTimeout(timeout);
@@ -592,7 +596,7 @@ serve(async (req) => {
         if (response.data) {
           response.data.forEach((item: any) => {
             if (item.taskType === "authentication") {
-              console.log("Authenticated with Runware");
+              console.log("✅ Authenticated with Runware successfully");
               
               // Send image generation request with enhanced parameters for accurate representation
               const taskUUID = crypto.randomUUID();
@@ -613,7 +617,12 @@ serve(async (req) => {
                 ...(seed && { seed })
               }];
               
-              console.log("Sending enhanced image generation request");
+              console.log("🎨 Sending enhanced image generation request:", {
+                prompt: enhancedPrompt.substring(0, 100) + '...',
+                model,
+                seed,
+                taskUUID
+              });
               ws.send(JSON.stringify(imageMessage));
               
             } else if (item.taskType === "imageInference") {
@@ -656,14 +665,22 @@ serve(async (req) => {
       ws.onerror = (error) => {
         clearTimeout(timeout);
         ws.close();
-        console.error("WebSocket error:", error);
-        resolve(createCorsErrorResponse("WebSocket connection failed"));
+        console.error("❌ WebSocket error details:", {
+          error: error,
+          type: error.type || 'unknown',
+          message: error.message || 'unknown error'
+        });
+        resolve(createCorsErrorResponse(`WebSocket connection failed: ${error.message || 'unknown error'}`));
       };
 
       ws.onclose = (event) => {
         clearTimeout(timeout);
         if (event.code !== 1000) {
-          console.log("WebSocket closed unexpectedly:", event.code, event.reason);
+          console.log("🔌 WebSocket closed unexpectedly:", {
+            code: event.code,
+            reason: event.reason || 'no reason provided',
+            wasClean: event.wasClean
+          });
         }
       };
     });
