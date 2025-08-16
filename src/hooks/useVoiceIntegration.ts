@@ -71,6 +71,15 @@ export const useVoiceIntegration = () => {
       return "Got it!"; // Very brief response to avoid audio conflicts
     },
     
+    pause: () => {
+      console.log('🎯 Voice command: pause');
+      // Brief delay to let Charlotte finish her acknowledgment
+      setTimeout(() => {
+        engine.pause();
+      }, 100);
+      return "Got it!"; // Very brief response to avoid audio conflicts
+    },
+    
     next: () => {
       console.log('🎯 Voice command: next page');
       // Brief delay to let Charlotte finish her acknowledgment

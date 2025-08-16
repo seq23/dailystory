@@ -262,6 +262,37 @@ export class SimpleAudioEngine {
     }
   }
 
+  pause() {
+    console.log('⏸️ SimpleAudioEngine: Pausing audio');
+    
+    // Pause HTML audio element (keeps position)
+    const a = this.audio;
+    if (a && !a.paused) {
+      try { 
+        a.pause(); 
+        console.log('⏸️ Paused HTML audio element');
+      } catch {}
+    }
+    
+    // Pause browser speech synthesis
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window && this.webSpeechSpeaking) {
+      try { 
+        speechSynthesis.pause();
+        console.log('⏸️ Paused browser speech synthesis');
+      } catch {}
+    }
+    
+    // Update state synchronously
+    this.playing = false;
+    
+    // Emit state change
+    window.dispatchEvent(new CustomEvent('audio:statechange', { 
+      detail: { isPlaying: false } 
+    }));
+    
+    console.log('✅ SimpleAudioEngine: Audio paused successfully');
+  }
+
   stop() {
     console.log('🛑 SimpleAudioEngine: Stopping all audio systems');
     

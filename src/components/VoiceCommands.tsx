@@ -55,7 +55,7 @@ export const VoiceCommands: React.FC<VoiceCommandsProps> = ({ agentId: initialAg
       }
     },
     
-    // Voice Command: "stop", "pause", "stop reading" -> stop tool
+    // Voice Command: "stop", "stop reading" -> stop tool
     stop: async () => {
       console.log('🎤 VOICE COMMAND: stop tool called');
       try {
@@ -64,6 +64,19 @@ export const VoiceCommands: React.FC<VoiceCommandsProps> = ({ agentId: initialAg
         return 'ok';
       } catch (error) {
         console.error('🎤 ERROR: Stop failed:', error);
+        return 'error';
+      }
+    },
+    
+    // Voice Command: "pause", "pause reading" -> pause tool
+    pause: async () => {
+      console.log('🎤 VOICE COMMAND: pause tool called');
+      try {
+        engine.pause();
+        console.log('🎤 SUCCESS: Audio paused');
+        return 'ok';
+      } catch (error) {
+        console.error('🎤 ERROR: Pause failed:', error);
         return 'error';
       }
     },

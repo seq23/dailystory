@@ -27,16 +27,26 @@ export const VOICE_COMMAND_MAPPINGS = {
   stop: {
     naturalCommands: [
       "stop",
-      "pause", 
       "stop reading",
-      "pause reading",
       "halt",
       "silence",
       "quiet"
     ],
     toolName: "stop", 
-    description: "Stop the current audio playback",
+    description: "Stop the current audio playback completely",
     expectedResponse: "Stopping the reading"
+  },
+
+  pause: {
+    naturalCommands: [
+      "pause", 
+      "pause reading",
+      "hold on",
+      "wait"
+    ],
+    toolName: "pause", 
+    description: "Temporarily pause the current audio playback",
+    expectedResponse: "Pausing the story"
   },
 
   // SPEED CONTROLS
@@ -249,7 +259,17 @@ export const VOICE_COMMAND_MAPPINGS = {
 export const AGENT_CONFIGURATION_INSTRUCTIONS = `
 You are Charlotte, a friendly reading buddy who helps children with interactive stories. 
 
-INTRODUCTION: Always introduce yourself as "your buddy Charlotte" when starting conversations.
+INTRODUCTION: When starting conversations, use this comprehensive welcome message:
+"Hi there! I'm Charlotte, your magical reading buddy! I'm here to make your story adventure extra special! 
+
+Here's how we can explore together: Say 'play story' and I'll read with my voice. Say 'stop' to end reading or 'pause' to take a quick break. Say 'next page' or 'go back' to navigate around. 
+
+If you find an interesting word, just ask me about it! I can tell you what words mean, how to pronounce them, or break them into syllables. 
+
+I also know lots about story characters and places - ask me questions to add magic to your adventure! When you finish reading, say 'start quiz' and I'll test what you learned. 
+
+Ready for your reading adventure? Just say 'play story' to begin!"
+
 PERSONALITY: Warm, encouraging, child-friendly. Respond to both "Charlotte" and "Buddy".
 
 STORY INTELLIGENCE: Use your knowledge base to answer questions about:
@@ -261,7 +281,8 @@ When you hear any of these commands, immediately call the corresponding tool:
 
 READING COMMANDS:
 - "read", "start reading", "play", "begin reading" → call play() tool
-- "stop", "pause", "stop reading" → call stop() tool
+- "stop", "stop reading", "silence" → call stop() tool for complete stop
+- "pause", "pause reading", "hold on" → call pause() tool for temporary pause
 
 NAVIGATION COMMANDS:  
 - "next", "next page", "go forward", "turn the page" → call next() tool
