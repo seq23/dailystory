@@ -56,6 +56,9 @@ export const AuthWrapper = () => {
         return;
       }
 
+      // Check for pending discount codes first
+      await checkAndActivateDiscountCode();
+
       // Prefer calling the edge function to ensure Stripe truth, fallback to DB check
       const { data, error } = await supabase.functions.invoke("check-subscription");
       if (!error && data && typeof data.subscribed === "boolean") {
@@ -70,6 +73,36 @@ export const AuthWrapper = () => {
       setIsPremium(premium);
     } catch (e) {
       setIsPremium(false);
+    }
+  };
+
+  const checkAndActivateDiscountCode = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return;
+
+      // Check if user has pending discount code
+      const { data: subscriber } = await supabase
+        .from('subscribers')
+        .select('discount_code_pending, discount_activated')
+        .eq('user_id', session.user.id)
+        .maybeSingle();
+
+      if (subscriber?.discount_code_pending && !subscriber.discount_activated) {
+        console.log('Found pending discount code, activating...');
+        
+        const { data, error } = await supabase.functions.invoke('apply-discount-code');
+        
+        if (!error && data?.activated) {
+          console.log('Discount code activated:', data.message);
+          // Show success toast
+          setTimeout(() => {
+            (window as any).__showDiscountActivationToast?.(data.message);
+          }, 1000);
+        }
+      }
+    } catch (error) {
+      console.error('Error checking discount code:', error);
     }
   };
 

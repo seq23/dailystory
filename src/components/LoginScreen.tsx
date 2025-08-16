@@ -22,7 +22,8 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
     email: "",
     password: "",
     displayName: "",
-    selectedPlan: "monthly" as "monthly" | "annual"
+    selectedPlan: "monthly" as "monthly" | "annual",
+    discountCode: ""
   });
   
   // Pre-fill with userInfo if available
@@ -39,6 +40,54 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
     password: ""
   });
   const [loading, setLoading] = useState(false);
+  const [discountValidation, setDiscountValidation] = useState<{
+    isValid: boolean;
+    message: string;
+    isValidating: boolean;
+    showDiscountSection: boolean;
+  }>({
+    isValid: false,
+    message: "",
+    isValidating: false,
+    showDiscountSection: false
+  });
+
+  // Validate discount code
+  const validateDiscountCode = async (code: string) => {
+    if (!code.trim()) {
+      setDiscountValidation(prev => ({ 
+        ...prev, 
+        isValid: false, 
+        message: "", 
+        isValidating: false 
+      }));
+      return;
+    }
+
+    setDiscountValidation(prev => ({ ...prev, isValidating: true, message: "" }));
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('validate-discount-code', {
+        body: { code: code.trim() }
+      });
+
+      if (error) throw error;
+
+      setDiscountValidation(prev => ({
+        ...prev,
+        isValid: data.valid,
+        message: data.message,
+        isValidating: false
+      }));
+    } catch (error: any) {
+      setDiscountValidation(prev => ({
+        ...prev,
+        isValid: false,
+        message: "Error validating code",
+        isValidating: false
+      }));
+    }
+  };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,7 +99,7 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
     setLoading(true);
     try {
       const redirectUrl = `${window.location.origin}/`;
-      const { error } = await supabase.auth.signUp({
+      const { data: authData, error } = await supabase.auth.signUp({
         email: signUpData.email,
         password: signUpData.password,
         options: {
@@ -71,10 +120,31 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
 
       if (error) {
         toast.error(error.message);
-      } else {
-        toast.success(t("loginScreen.form.success.accountCreated"));
-        // Don't redirect yet - user needs to verify email first
+        return;
       }
+
+      // If valid discount code, store it for activation on first login
+      if (discountValidation.isValid && signUpData.discountCode.trim() && authData.user) {
+        const { error: subError } = await supabase
+          .from('subscribers')
+          .upsert({
+            user_id: authData.user.id,
+            email: signUpData.email,
+            discount_code_pending: signUpData.discountCode.trim().toUpperCase(),
+            discount_activated: false,
+            subscribed: false,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+
+        if (subError) {
+          console.warn('Error storing discount code:', subError);
+        }
+      }
+
+      toast.success(discountValidation.isValid 
+        ? "Check your email! Your discount code will be activated when you first log in."
+        : t("loginScreen.form.success.accountCreated"));
     } catch (error) {
       toast.error(t("loginScreen.form.errors.unexpected"));
       console.error(error);
@@ -248,8 +318,9 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
             </TabsList>
 
             <TabsContent value="signup" className="space-y-6">
-              {/* Pricing Plans */}
-              <div className="grid md:grid-cols-2 gap-4 mb-6">
+              {/* Pricing Plans - Hidden when valid discount code */}
+              {!discountValidation.isValid && (
+                <div className="grid md:grid-cols-2 gap-4 mb-6">
                 <Card 
                   className={`cursor-pointer transition-all ${
                     signUpData.selectedPlan === "monthly" 
@@ -330,7 +401,18 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
                     </ul>
                   </CardContent>
                 </Card>
-              </div>
+                </div>
+              )}
+
+              {/* Discount Success Message */}
+              {discountValidation.isValid && (
+                <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <h3 className="font-semibold text-green-800 mb-1">🎉 No Payment Required!</h3>
+                  <p className="text-sm text-green-700">
+                    Your discount code will give you 90 days of free premium access starting when you first log in.
+                  </p>
+                </div>
+              )}
 
               {/* Sign Up Form */}
               <form onSubmit={handleSignUp} className="space-y-4">
@@ -367,24 +449,92 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
                     required
                   />
                 </div>
+
+                {/* Discount Code Section */}
+                <div className="space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => setDiscountValidation(prev => ({ 
+                      ...prev, 
+                      showDiscountSection: !prev.showDiscountSection 
+                    }))}
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+                  >
+                    Have a discount code?
+                    <span className={`transition-transform ${discountValidation.showDiscountSection ? 'rotate-90' : ''}`}>
+                      ▶
+                    </span>
+                  </button>
+                  
+                  {discountValidation.showDiscountSection && (
+                    <div className="space-y-2 pt-2">
+                      <div className="relative">
+                        <Input
+                          type="text"
+                          placeholder="Enter discount code"
+                          value={signUpData.discountCode}
+                          onChange={(e) => {
+                            const code = e.target.value;
+                            setSignUpData(prev => ({ ...prev, discountCode: code }));
+                            // Debounced validation
+                            clearTimeout((window as any).discountTimeout);
+                            (window as any).discountTimeout = setTimeout(() => {
+                              validateDiscountCode(code);
+                            }, 500);
+                          }}
+                          className={`pr-8 ${
+                            discountValidation.isValid 
+                              ? 'border-green-500 focus:border-green-500' 
+                              : discountValidation.message && !discountValidation.isValidating
+                              ? 'border-red-500 focus:border-red-500'
+                              : ''
+                          }`}
+                        />
+                        {discountValidation.isValidating && (
+                          <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+                          </div>
+                        )}
+                        {discountValidation.isValid && (
+                          <div className="absolute right-2 top-1/2 -translate-y-1/2 text-green-500">
+                            ✓
+                          </div>
+                        )}
+                      </div>
+                      
+                      {discountValidation.message && (
+                        <p className={`text-xs ${
+                          discountValidation.isValid 
+                            ? 'text-green-600' 
+                            : 'text-red-600'
+                        }`}>
+                          {discountValidation.message}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? t("loginScreen.form.buttons.creating") : t("loginScreen.form.buttons.createAccount")}
                 </Button>
               </form>
 
-              {/* Payment Button */}
-              <div className="border-t pt-4">
-                <Button 
-                  onClick={handleStartPayment} 
-                  className="w-full bg-green-600 hover:bg-green-700"
-                  disabled={loading || !signUpData.email}
-                >
-                  {loading ? t("loginScreen.form.buttons.processing") : `${t("loginScreen.form.buttons.startPayment")} - ${signUpData.selectedPlan === "monthly" ? t("loginScreen.payment.monthly") : t("loginScreen.payment.annual")}`}
-                </Button>
-                <p className="text-xs text-gray-500 text-center mt-2">
-                  {t("loginScreen.payment.instruction")}
-                </p>
-              </div>
+              {/* Payment Button - Hidden when valid discount code */}
+              {!discountValidation.isValid && (
+                <div className="border-t pt-4">
+                  <Button 
+                    onClick={handleStartPayment} 
+                    className="w-full bg-green-600 hover:bg-green-700"
+                    disabled={loading || !signUpData.email}
+                  >
+                    {loading ? t("loginScreen.form.buttons.processing") : `${t("loginScreen.form.buttons.startPayment")} - ${signUpData.selectedPlan === "monthly" ? t("loginScreen.payment.monthly") : t("loginScreen.payment.annual")}`}
+                  </Button>
+                  <p className="text-xs text-gray-500 text-center mt-2">
+                    {t("loginScreen.payment.instruction")}
+                  </p>
+                </div>
+              )}
             </TabsContent>
 
             <TabsContent value="signin">

@@ -50,6 +50,45 @@ export type Database = {
         }
         Relationships: []
       }
+      discount_codes: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          created_by: string | null
+          current_uses: number
+          description: string
+          duration_days: number
+          id: string
+          max_uses: number | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          created_by?: string | null
+          current_uses?: number
+          description: string
+          duration_days?: number
+          id?: string
+          max_uses?: number | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          current_uses?: number
+          description?: string
+          duration_days?: number
+          id?: string
+          max_uses?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       feedback: {
         Row: {
           category: string
@@ -455,6 +494,9 @@ export type Database = {
       subscribers: {
         Row: {
           created_at: string
+          discount_activated: boolean | null
+          discount_activated_at: string | null
+          discount_code_pending: string | null
           email: string
           id: string
           override_end: string | null
@@ -471,6 +513,9 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          discount_activated?: boolean | null
+          discount_activated_at?: string | null
+          discount_code_pending?: string | null
           email: string
           id?: string
           override_end?: string | null
@@ -487,6 +532,9 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          discount_activated?: boolean | null
+          discount_activated_at?: string | null
+          discount_code_pending?: string | null
           email?: string
           id?: string
           override_end?: string | null
