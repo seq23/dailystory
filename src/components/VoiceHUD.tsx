@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Mic, Loader2, CheckCircle2, X, ChevronDown, ChevronUp } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 // Lightweight persistent HUD that listens for custom events:
 //  - 'voice:status' => { status: 'idle'|'listening'|'processing' }
 //  - 'voice:level'  => { level: number 0..1 }
@@ -112,70 +113,93 @@ export const VoiceHUD: React.FC = () => {
   const meterWidth = Math.round(100 * (0.1 + 0.9 * level));
 
   return (
-    <aside
-      role="status"
-      aria-live="polite"
-      className="fixed left-1/2 -translate-x-1/2 z-[350] w-[92%] max-w-lg bottom-[calc(88px+env(safe-area-inset-bottom))] sm:bottom-[calc(104px+env(safe-area-inset-bottom))] md:bottom-[calc(152px+env(safe-area-inset-bottom))] lg:bottom-[calc(172px+env(safe-area-inset-bottom))]"
-    >
-      {collapsed ? (
-        <button
-          aria-label="Expand voice HUD"
-          className="rounded-full border border-border bg-card/95 backdrop-blur shadow-lg w-11 h-11 flex items-center justify-center active:scale-[0.98]"
-          onClick={toggleCollapse}
-        >
-          <Mic className={`w-5 h-5 ${status === 'listening' ? 'text-primary' : 'text-muted-foreground'}`} aria-hidden />
-        </button>
-      ) : (
-        <div className="rounded-xl border border-border bg-card/95 backdrop-blur shadow-lg p-3 flex items-center gap-3">
-          <div className={`p-2 rounded-lg ${status === 'listening' ? 'bg-primary/10' : 'bg-muted'}`} aria-hidden>
-            <Mic className={`w-5 h-5 ${status === 'listening' ? 'text-primary' : 'text-muted-foreground'}`} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium truncate">
-              {status === 'listening' && 'Listening...'}
-              {status === 'processing' && 'Processing...'}
-              {status === 'speaking' && 'Speaking...'}
-              {status === 'connected' && 'Voice Assistant Ready'}
-              {status === 'connecting' && 'Connecting...'}
+    <TooltipProvider>
+      <aside
+        role="status"
+        aria-live="polite"
+        className="fixed left-1/2 -translate-x-1/2 z-[350] w-[92%] max-w-lg bottom-[calc(88px+env(safe-area-inset-bottom))] sm:bottom-[calc(104px+env(safe-area-inset-bottom))] md:bottom-[calc(152px+env(safe-area-inset-bottom))] lg:bottom-[calc(172px+env(safe-area-inset-bottom))]"
+      >
+        {collapsed ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                aria-label="Expand voice HUD"
+                className="rounded-full border border-border bg-card/95 backdrop-blur shadow-lg w-11 h-11 flex items-center justify-center active:scale-[0.98]"
+                onClick={toggleCollapse}
+              >
+                <Mic className={`w-5 h-5 ${status === 'listening' ? 'text-primary' : 'text-muted-foreground'}`} aria-hidden />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              <p>Expand voice assistant</p>
+            </TooltipContent>
+          </Tooltip>
+        ) : (
+          <div className="rounded-xl border border-border bg-card/95 backdrop-blur shadow-lg p-3 flex items-center gap-3">
+            <div className={`p-2 rounded-lg ${status === 'listening' ? 'bg-primary/10' : 'bg-muted'}`} aria-hidden>
+              <Mic className={`w-5 h-5 ${status === 'listening' ? 'text-primary' : 'text-muted-foreground'}`} />
             </div>
-            {status === 'listening' ? (
-              <div className="h-2 mt-1 rounded-full bg-muted overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-primary transition-[width] duration-100"
-                  style={{ width: `${meterWidth}%` }}
-                  aria-label="Microphone level"
-                />
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-medium truncate">
+                {status === 'listening' && 'Listening...'}
+                {status === 'processing' && 'Processing...'}
+                {status === 'speaking' && 'Speaking...'}
+                {status === 'connected' && 'Voice Assistant Ready'}
+                {status === 'connecting' && 'Connecting...'}
               </div>
-            ) : (
-              <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                Processing your command
-              </div>
-            )}
+              {status === 'listening' ? (
+                <div className="h-2 mt-1 rounded-full bg-muted overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-primary transition-[width] duration-100"
+                    style={{ width: `${meterWidth}%` }}
+                    aria-label="Microphone level"
+                  />
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  Processing your command
+                </div>
+              )}
+            </div>
+            <div className="flex items-center gap-1.5">
+              {status === 'processing' && (
+                <CheckCircle2 className="w-5 h-5 text-muted-foreground" aria-hidden />
+              )}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    aria-label="Collapse voice HUD"
+                    className="p-2 rounded-md hover:bg-muted text-muted-foreground"
+                    onClick={toggleCollapse}
+                  >
+                    <ChevronDown className="w-4 h-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  <p>Collapse voice assistant</p>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    aria-label="Stop listening"
+                    className="p-2 rounded-md hover:bg-muted text-muted-foreground"
+                    onClick={handleStop}
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  <p>Stop voice assistant</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
           </div>
-          <div className="flex items-center gap-1.5">
-            {status === 'processing' && (
-              <CheckCircle2 className="w-5 h-5 text-muted-foreground" aria-hidden />
-            )}
-            <button
-              aria-label="Collapse voice HUD"
-              className="p-2 rounded-md hover:bg-muted text-muted-foreground"
-              onClick={toggleCollapse}
-            >
-              <ChevronDown className="w-4 h-4" />
-            </button>
-            <button
-              aria-label="Stop listening"
-              className="p-2 rounded-md hover:bg-muted text-muted-foreground"
-              onClick={handleStop}
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      )}
+        )}
 
-    </aside>
+      </aside>
+    </TooltipProvider>
   );
 };
 
