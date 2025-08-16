@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { AuthWrapper } from "@/components/AuthWrapper";
-import { VoiceCommandsDemo } from "@/components/VoiceCommandsDemo";
+
 import { Link, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -26,10 +26,6 @@ const Index = () => {
   return (
     <div className="homepage">
       <AuthWrapper />
-      {/* Voice Commands Demo for Testing */}
-      <div className="fixed bottom-4 right-4 z-50">
-        <VoiceCommandsDemo />
-      </div>
     </div>
   );
 };
