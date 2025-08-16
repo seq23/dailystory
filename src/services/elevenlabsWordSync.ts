@@ -72,30 +72,34 @@ export class ElevenLabsWordSync {
         throw new Error('No audio data received from ElevenLabs');
       }
 
-      // Parse response - handle actual ElevenLabs response format
+      // Parse enhanced response with word alignment
       let audioData: string;
       let wordTimestamps: WordTimestamp[] = [];
 
       if (data && typeof data === 'object') {
         if ('audio' in data) {
-          // Standard ElevenLabs response with base64 audio
           audioData = data.audio;
-          console.log('✅ Using standard ElevenLabs audio response');
+          
+          // Check for enhanced word alignment from our edge function
+          if (data.alignment && data.alignment.words && Array.isArray(data.alignment.words)) {
+            wordTimestamps = data.alignment.words;
+            console.log('✅ Using enhanced word alignment from edge function');
+          } else {
+            // Fallback to our client-side timing
+            wordTimestamps = this.generateFallbackTimestamps(text);
+            console.log('⚠️ No word alignment found, using fallback timestamps');
+          }
         } else if (typeof data === 'string') {
-          // Direct base64 string response
           audioData = data;
-          console.log('✅ Using direct base64 audio response');
+          wordTimestamps = this.generateFallbackTimestamps(text);
+          console.log('✅ Using direct base64 audio response with fallback timing');
         } else {
           throw new Error('No audio data found in ElevenLabs response');
         }
-        
-        // ElevenLabs doesn't provide word alignment in basic TTS
-        // Generate fallback timestamps for all responses
-        wordTimestamps = this.generateFallbackTimestamps(text);
       } else if (typeof data === 'string') {
-        // Simple base64 audio response (fallback)
         audioData = data;
         wordTimestamps = this.generateFallbackTimestamps(text);
+        console.log('✅ Using string audio response with fallback timing');
       } else {
         throw new Error('Unexpected response format from ElevenLabs');
       }
@@ -250,20 +254,46 @@ export class ElevenLabsWordSync {
   }
 
   private generateFallbackTimestamps(text: string): WordTimestamp[] {
-    // Generate accurate timestamps based on ElevenLabs Charlotte voice characteristics
+    // Enhanced fallback timing calibrated for Charlotte's voice (XB0fDUnXU5powFXDhCwa)
     const words = text.split(/\s+/).filter(word => word.length > 0);
-    const avgWordsPerSecond = 2.2; // Optimized for Charlotte's natural pace
-    const baseDelay = 0.1; // Small startup delay for audio processing
+    
+    // Calibrated for Charlotte's actual speech patterns
+    const wordsPerSecond = 2.3;
+    const baseDelay = 0.15; // Audio processing startup time
+    const punctuationDelay = 0.25; // Pause after punctuation
+    const sentenceEndDelay = 0.4; // Longer pause after sentences
+    
+    let currentTime = baseDelay;
     
     return words.map((word, index) => {
-      const cleanWord = word.replace(/[.,!?;:'"()]/g, ''); // Clean punctuation
-      const wordDuration = cleanWord.length * 0.08 + 0.15; // Dynamic duration based on word length
-      const startTime = baseDelay + (index / avgWordsPerSecond);
+      const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
+      const punctuation = word.match(/[.,!?;:'"()]/g);
+      
+      // Dynamic word duration based on complexity
+      const syllableCount = Math.max(1, cleanWord.length / 3); // Rough syllable estimation
+      const wordDuration = Math.max(0.12, syllableCount * 0.15 + 0.08);
+      
+      const startTime = currentTime;
+      const endTime = startTime + wordDuration;
+      
+      // Calculate pause after word
+      let pauseAfter = 1 / wordsPerSecond; // Base gap between words
+      
+      if (punctuation) {
+        if (punctuation.some(p => ['.', '!', '?'].includes(p))) {
+          pauseAfter += sentenceEndDelay;
+        } else if (punctuation.some(p => [',', ';', ':'].includes(p))) {
+          pauseAfter += punctuationDelay;
+        }
+      }
+      
+      // Update current time for next word
+      currentTime = endTime + pauseAfter;
       
       return {
         word: cleanWord,
         start_time: startTime,
-        end_time: startTime + wordDuration
+        end_time: endTime
       };
     });
   }

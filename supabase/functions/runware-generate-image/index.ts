@@ -387,6 +387,105 @@ function validateUserInfo(userInfo: any): { valid: boolean; error?: string } {
   return { valid: true };
 }
 
+// Comprehensive negative prompt generation for high-quality, accurate images
+function generateComprehensiveNegativePrompt(text: string, secondaryCharacters: string[], userInfo?: any): string {
+  const negativePrompts: string[] = [];
+  
+  // Core quality control - fundamental issues to avoid
+  negativePrompts.push(
+    "bad anatomy", "malformed", "deformed", "distorted", "disfigured", "ugly", "hideous", "gross", "disgusting",
+    "blurry", "out of focus", "low quality", "low resolution", "pixelated", "jpeg artifacts", "compression artifacts",
+    "bad art", "amateur", "poorly drawn", "sketch", "unfinished", "incomplete"
+  );
+  
+  // Character accuracy and completeness - address the head-only issue
+  negativePrompts.push(
+    "partial body", "cut off body", "cropped body", "missing body parts", "incomplete character", 
+    "headshot only", "portrait only", "close-up only", "head and shoulders only",
+    "missing arms", "missing legs", "missing torso", "floating head", "disembodied",
+    "character cutoff", "character cropped", "partial figure", "incomplete person"
+  );
+  
+  // Object count accuracy - address the "two birds" issue
+  const birdMatch = text.match(/\ba\s+(bird|robin|sparrow|blue\s+bird)\b/i);
+  if (birdMatch) {
+    negativePrompts.push(
+      "multiple birds", "two birds", "many birds", "flock of birds", "several birds", 
+      "extra birds", "duplicate birds", "too many birds", "bird crowd"
+    );
+  }
+  
+  // General quantity control for singular objects
+  const singularMatches = text.match(/\ba\s+(\w+)\b/gi);
+  if (singularMatches) {
+    for (const match of singularMatches) {
+      const object = match.replace(/^a\s+/i, '').trim();
+      if (object && !['the', 'and', 'or', 'but'].includes(object.toLowerCase())) {
+        negativePrompts.push(`multiple ${object}`, `many ${object}`, `several ${object}`);
+      }
+    }
+  }
+  
+  // Text and overlay prevention
+  negativePrompts.push(
+    "text", "words", "letters", "writing", "typography", "fonts", "labels", "signs", "banners",
+    "watermark", "logo", "signature", "copyright", "username", "name overlay", "title text",
+    "speech bubbles", "dialogue", "captions", "subtitles", "annotations"
+  );
+  
+  // Style consistency and appropriateness
+  negativePrompts.push(
+    "adult content", "inappropriate", "scary", "frightening", "dark themes", "violence",
+    "realistic photography", "photorealistic", "real people", "actual humans",
+    "noir", "gothic", "horror", "mature themes", "adult oriented"
+  );
+  
+  // Technical and artistic issues
+  negativePrompts.push(
+    "wrong perspective", "impossible anatomy", "extra limbs", "missing limbs", "wrong proportions",
+    "floating objects", "impossible poses", "unnatural positions", "gravity defying",
+    "inconsistent lighting", "harsh shadows", "overexposed", "underexposed",
+    "color bleeding", "muddy colors", "oversaturated", "washed out colors"
+  );
+  
+  // Background and composition issues
+  negativePrompts.push(
+    "busy background", "cluttered", "chaotic composition", "confusing layout",
+    "too many elements", "overcrowded", "messy", "disorganized", "random objects",
+    "irrelevant details", "distracting elements", "background noise"
+  );
+  
+  // Character consistency issues (if we have character info)
+  if (userInfo) {
+    negativePrompts.push(
+      "wrong gender", "gender swap", "age change", "different character",
+      "character inconsistency", "appearance change", "identity confusion",
+      "wrong hair color", "wrong skin tone", "different facial features"
+    );
+  }
+  
+  // Frame and format issues
+  negativePrompts.push(
+    "frame", "border", "white border", "black border", "picture frame",
+    "split screen", "collage", "multiple panels", "grid layout", "comic format",
+    "before and after", "comparison", "multiple views", "different angles"
+  );
+  
+  // AI generation artifacts
+  negativePrompts.push(
+    "ai artifacts", "generation errors", "prompt bleeding", "style mixing",
+    "uncanny valley", "artificial looking", "computer generated feel",
+    "digital noise", "rendering errors", "mesh problems", "texture issues"
+  );
+  
+  // Join all negative prompts with appropriate separators
+  const finalNegativePrompt = negativePrompts.join(", ");
+  
+  console.log(`🚫 Generated comprehensive negative prompt (${negativePrompts.length} terms): ${finalNegativePrompt.substring(0, 200)}...`);
+  
+  return finalNegativePrompt;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return createCorsOptionsResponse();
@@ -430,6 +529,7 @@ serve(async (req) => {
     
     let enhancedPrompt: string;
     let finalSeed = seed;
+    let finalNegativePrompt: string;
     
     if (pageText && sessionId && userInfo) {
       // Validate userInfo
@@ -499,6 +599,14 @@ serve(async (req) => {
       
       const environmentalContext = StoryVisualStateManager.getSettingForPrompt(sessionId);
       
+      // Enhanced negative prompt system for high-quality, accurate images
+      const comprehensiveNegativePrompt = generateComprehensiveNegativePrompt(processedText, secondaryCharacters, userInfo);
+      
+      // Combine provided negative prompt with comprehensive quality controls
+      finalNegativePrompt = negativePrompt 
+        ? `${negativePrompt}, ${comprehensiveNegativePrompt}`
+        : comprehensiveNegativePrompt;
+      
       // Use centralized style mapping from appConfig
       const difficultyStyleMapping: Record<string, string> = {
         'beginner': '3D children\'s book art, bright colors, smooth rendering, cheerful',
@@ -540,6 +648,12 @@ serve(async (req) => {
       
     } else {
       enhancedPrompt = positivePrompt || "children-book character bright-colors";
+      
+      // Generate comprehensive negative prompt for non-story images too
+      const comprehensiveNegativePrompt = generateComprehensiveNegativePrompt("", [], null);
+      finalNegativePrompt = negativePrompt 
+        ? `${negativePrompt}, ${comprehensiveNegativePrompt}`
+        : comprehensiveNegativePrompt;
       
       if (characterName && characterDescription) {
         const skinToneMap = {
@@ -591,11 +705,6 @@ serve(async (req) => {
       console.log('🚨 Detected negative terms in positive prompt, cleaning...');
       enhancedPrompt = enhancedPrompt.replace(/\b(NOT|bad|ugly|terrible|awful)\b/gi, '');
     }
-    
-    const defaultNegativePrompt = "bad anatomy, blurry, text, words, letters, typography, watermarks, names, labels, signatures, ugly";
-    const finalNegativePrompt = negativePrompt 
-      ? `${defaultNegativePrompt}, ${negativePrompt}`
-      : defaultNegativePrompt;
 
     // Create WebSocket connection with proper error handling
     console.log('🌐 Attempting WebSocket connection to Runware...');

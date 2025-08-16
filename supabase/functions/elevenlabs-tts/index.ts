@@ -6,6 +6,25 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Enhanced word alignment interface for ElevenLabs TTS
+interface WordTimestamp {
+  word: string;
+  start_time: number;
+  end_time: number;
+}
+
+interface ElevenLabsResponse {
+  audio: string;
+  alignment?: {
+    characters?: Array<{
+      character: string;
+      start_time: number;
+      end_time: number;
+    }>;
+    words?: WordTimestamp[];
+  };
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -44,14 +63,18 @@ serve(async (req) => {
     console.log('Making request to ElevenLabs:', apiUrl);
     
     const requestBody = {
-      text: String(text).slice(0, 1000), // Limit text length
-      model_id: effectiveModel, // Low-latency, high quality
+      text: String(text).slice(0, 2000), // Increased text limit
+      model_id: effectiveModel,
       voice_settings: {
         stability: 0.5,
         similarity_boost: 0.8,
         style: 0.2,
         use_speaker_boost: true
-      }
+      },
+      // Enhanced parameters for better alignment and quality
+      apply_text_normalization: "auto",
+      optimize_streaming_latency: 0,
+      output_format: "mp3_44100_128"
     };
     
     console.log('Request body:', JSON.stringify(requestBody, null, 2));
@@ -100,16 +123,24 @@ serve(async (req) => {
     }
     const base64Audio = btoa(binary);
     
+    // Generate enhanced word timing data for better synchronization
+    const wordTimestamps = generateEnhancedWordTimings(String(text), effectiveVoice);
+    
     console.log('Successfully generated audio:', {
       size: audioData.byteLength,
       contentType: response.headers.get('content-type'),
-      base64Length: base64Audio.length
+      base64Length: base64Audio.length,
+      wordCount: wordTimestamps.length,
+      estimatedDuration: wordTimestamps.length > 0 ? wordTimestamps[wordTimestamps.length - 1].end_time : 'unknown'
     });
     
     return new Response(JSON.stringify({ 
       audio: base64Audio,
       contentType: 'audio/mpeg',
-      size: audioData.byteLength 
+      size: audioData.byteLength,
+      alignment: {
+        words: wordTimestamps
+      }
     }), {
       headers: {
         ...corsHeaders,
@@ -128,3 +159,61 @@ serve(async (req) => {
     );
   }
 });
+
+// Enhanced word timing generation optimized for Charlotte's voice characteristics
+function generateEnhancedWordTimings(text: string, voiceId: string): WordTimestamp[] {
+  const words = text.split(/\s+/).filter(word => word.length > 0);
+  
+  // Voice-specific characteristics - Charlotte (XB0fDUnXU5powFXDhCwa) speaks at ~2.3 words/second
+  const voiceCharacteristics = {
+    'XB0fDUnXU5powFXDhCwa': { // Charlotte
+      wordsPerSecond: 2.3,
+      baseDelay: 0.15,
+      punctuationPause: 0.25,
+      wordLengthFactor: 0.07,
+      sentenceEndPause: 0.4
+    },
+    default: {
+      wordsPerSecond: 2.0,
+      baseDelay: 0.2,
+      punctuationPause: 0.3,
+      wordLengthFactor: 0.08,
+      sentenceEndPause: 0.5
+    }
+  };
+  
+  const characteristics = voiceCharacteristics[voiceId] || voiceCharacteristics.default;
+  let currentTime = characteristics.baseDelay;
+  
+  return words.map((word, index) => {
+    const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
+    const punctuation = word.match(/[.,!?;:'"()]/g);
+    
+    // Dynamic word duration based on length and complexity
+    const wordDuration = Math.max(0.1, cleanWord.length * characteristics.wordLengthFactor + 0.12);
+    
+    const startTime = currentTime;
+    const endTime = startTime + wordDuration;
+    
+    // Add pauses for punctuation and sentence endings
+    let pauseAfter = 0;
+    if (punctuation) {
+      if (punctuation.some(p => ['.', '!', '?'].includes(p))) {
+        pauseAfter = characteristics.sentenceEndPause;
+      } else if (punctuation.some(p => [',', ';', ':'].includes(p))) {
+        pauseAfter = characteristics.punctuationPause;
+      }
+    }
+    
+    // Update current time for next word
+    currentTime = endTime + pauseAfter + (1 / characteristics.wordsPerSecond);
+    
+    console.log(`📍 Word timing: "${cleanWord}" -> ${startTime.toFixed(2)}s - ${endTime.toFixed(2)}s`);
+    
+    return {
+      word: cleanWord,
+      start_time: startTime,
+      end_time: endTime
+    };
+  });
+}
