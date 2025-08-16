@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { audioSyncService } from "@/services/audioSyncService";
+import { elevenLabsWordSync } from "@/services/elevenlabsWordSync";
 import { VoiceCommandController } from "@/components/VoiceCommandController";
 import type { VoiceCommandControllerHandle } from "@/components/VoiceCommandController";
 import type { UserInfo } from "@/types";
@@ -319,33 +320,32 @@ useEffect(() => {
     const speed = getBaseSpeed() * speedMultiplierRef.current;
     const playSnapshot = { text, page: currentPage, contentHash };
 
-    await audioSyncService.playText({
+    await elevenLabsWordSync.playWithWordSync({
       text,
       voice: 'XB0fDUnXU5powFXDhCwa', // Charlotte voice
       model: 'eleven_turbo_v2_5',
-      speed,
-      userInfo,
       onWordHighlight: (wordIndex: number) => {
-        console.log(`🎯 ElevenLabs: Highlighting word ${wordIndex}`);
-        try {
-          const { wordsOnly } = tokenizeForHighlighting(text);
-          const w = wordsOnly[wordIndex];
-          if (w) (window as any).__currentHighlightedWord = w;
-        } catch {}
+        console.log(`🎯 ElevenLabs Word Sync: Highlighting word ${wordIndex}`);
         onWordHighlight?.(wordIndex);
       },
-      onStateChange: (isPlayingNow: boolean) => {
-        // Direct state callback from audio service for immediate UI updates
-        setIsPlaying(isPlayingNow);
-        // Also notify parent component
-        onAudioStateChange?.(isPlayingNow);
+      onAudioEnd: () => {
+        console.log('🎵 ElevenLabs audio ended');
+        setIsPlaying(false);
+        setIsLoading(false);
+        onAudioStateChange?.(false);
+        onWordHighlight?.(-1); // Clear highlighting
+        
+        // Emit state change for coordination
+        window.dispatchEvent(new CustomEvent('audio:statechange', { 
+          detail: { isPlaying: false } 
+        }));
       }
     });
 
     // Guard: if page or text changed during load, stop and bail
     if (playSnapshot.page !== currentPage || playSnapshot.text !== text || playSnapshot.contentHash !== contentHash) {
       console.warn('🛑 TTS aborted due to page/text/hash change during load');
-      try { audioSyncService.stopAudio(); } catch {}
+      try { elevenLabsWordSync.stop(); } catch {}
       toast({ title: t('audioReading.pageChanged', 'Page changed'), description: t('audioReading.refreshAudio', 'Audio refreshed for the new page.'), duration: 1800 });
       return;
     }
@@ -373,11 +373,11 @@ useEffect(() => {
       detail: { isPlaying: false } 
     }));
     
-    // Stop audio sync service
+    // Stop ElevenLabs word sync service
     try {
-      audioSyncService.stopAudio();
+      elevenLabsWordSync.stop();
     } catch (error) {
-      console.warn('Error stopping audio:', error);
+      console.warn('Error stopping ElevenLabs word sync:', error);
     }
     
     // Also stop simple audio engine for complete coordination
@@ -507,7 +507,7 @@ const handleHeadlessCommand = (cmd: string) => {
     window.addEventListener('audio:statechange', handleAudioStateChange as EventListener);
     
     // Also check current status on mount
-    const status = audioSyncService.getPlaybackStatus();
+    const status = elevenLabsWordSync.getStatus();
     if (status.isPlaying !== isPlaying) {
       setIsPlaying(status.isPlaying);
       onAudioStateChange?.(status.isPlaying);
