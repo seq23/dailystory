@@ -557,136 +557,149 @@ serve(async (req) => {
       ? `${defaultNegativePrompt}, ${negativePrompt}`
       : defaultNegativePrompt;
 
-    // Create WebSocket connection to Runware
-    const ws = new WebSocket("wss://ws-api.runware.ai/v1");
+    // Create WebSocket connection to Runware with detailed logging
+    console.log('🌐 Attempting WebSocket connection to Runware...');
     
-    return new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        ws.close();
-        console.log("Request timeout after 15 seconds");
-        resolve(createCorsErrorResponse("Request timeout", 408));
-      }, 15000); // 15 second timeout for faster fallbacks
+    try {
+      console.log('🔌 Creating WebSocket connection to wss://ws-api.runware.ai/v1');
+      const ws = new WebSocket("wss://ws-api.runware.ai/v1");
+    
+      return new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          ws.close();
+          console.log("Request timeout after 15 seconds");
+          resolve(createCorsErrorResponse("Request timeout", 408));
+        }, 15000); // 15 second timeout for faster fallbacks
 
-      ws.onopen = () => {
-        console.log("🌐 WebSocket connected to Runware, authenticating...");
-        
-        // Send authentication
-        const authMessage = [{
-          taskType: "authentication",
-          apiKey: runwareApiKey
-        }];
-        
-        ws.send(JSON.stringify(authMessage));
-        console.log('🔐 Authentication message sent to Runware');
-      };
+        ws.onopen = () => {
+          console.log("🌐 WebSocket connected to Runware, authenticating...");
+          
+          // Send authentication
+          const authMessage = [{
+            taskType: "authentication",
+            apiKey: runwareApiKey
+          }];
+          
+          ws.send(JSON.stringify(authMessage));
+          console.log('🔐 Authentication message sent to Runware');
+        };
 
-      ws.onmessage = (event) => {
-        const response = JSON.parse(event.data);
-        console.log("📨 Runware response:", response);
-        
-        if (response.error || response.errors) {
+        ws.onmessage = (event) => {
+          const response = JSON.parse(event.data);
+          console.log("📨 Runware response:", response);
+          
+          if (response.error || response.errors) {
+            clearTimeout(timeout);
+            ws.close();
+            console.error("Runware API error:", response.errorMessage || response.errors?.[0]?.message);
+            
+            resolve(createCorsErrorResponse(response.errorMessage || response.errors?.[0]?.message || "Generation failed"));
+            return;
+          }
+
+          if (response.data) {
+            response.data.forEach((item: any) => {
+              if (item.taskType === "authentication") {
+                console.log("✅ Authenticated with Runware successfully");
+                
+                // Send image generation request with enhanced parameters for accurate representation
+                const taskUUID = crypto.randomUUID();
+                const imageMessage = [{
+                  taskType: "imageInference",
+                  taskUUID,
+                  positivePrompt: enhancedPrompt,
+                  negativePrompt: finalNegativePrompt,
+                  model,
+                  width,
+                  height,
+                  numberResults,
+                  outputFormat,
+                  steps: 3, // Optimized steps for faster generation
+                  CFGScale: Math.max(1.5, CFGScale), // Optimized guidance for speed
+                  scheduler,
+                  strength,
+                  ...(seed && { seed })
+                }];
+                
+                console.log("🎨 Sending enhanced image generation request:", {
+                  prompt: enhancedPrompt.substring(0, 100) + '...',
+                  model,
+                  seed,
+                  taskUUID
+                });
+                ws.send(JSON.stringify(imageMessage));
+                
+              } else if (item.taskType === "imageInference") {
+                clearTimeout(timeout);
+                ws.close();
+                
+                // CRITICAL: Update character seed for future consistency
+                if (sessionId && userInfo && item.seed) {
+                  const characterDesc = `${userInfo.name}: ${userInfo.avatar.type}`;
+                  StoryVisualStateManager.updateCharacterWithSeed(
+                    sessionId,
+                    userInfo.name,
+                    characterDesc,
+                    item.seed,
+                    pageNumber
+                  );
+                  console.log(`🔒 Saved seed ${item.seed} for ${userInfo.name} consistency`);
+                }
+                
+                // Log successful generation with character details
+                if (userInfo) {
+                  console.log(`✅ Generated consistent image for ${userInfo.name} (page ${pageNumber})`);
+                }
+                
+                resolve(createCorsResponse({
+                  success: true,
+                  imageURL: item.imageURL,
+                  seed: item.seed,
+                  cost: item.cost,
+                  NSFWContent: item.NSFWContent,
+                  characterName: userInfo?.name || characterName || undefined,
+                  pageIndex: pageNumber - 1,
+                  prompt: enhancedPrompt
+                }));
+              }
+            });
+          }
+        };
+
+        ws.onerror = (error) => {
           clearTimeout(timeout);
           ws.close();
-          console.error("Runware API error:", response.errorMessage || response.errors?.[0]?.message);
-          
-          resolve(createCorsErrorResponse(response.errorMessage || response.errors?.[0]?.message || "Generation failed"));
-          return;
-        }
-
-        if (response.data) {
-          response.data.forEach((item: any) => {
-            if (item.taskType === "authentication") {
-              console.log("✅ Authenticated with Runware successfully");
-              
-              // Send image generation request with enhanced parameters for accurate representation
-              const taskUUID = crypto.randomUUID();
-              const imageMessage = [{
-                taskType: "imageInference",
-                taskUUID,
-                positivePrompt: enhancedPrompt,
-                negativePrompt: finalNegativePrompt,
-                model,
-                width,
-                height,
-                numberResults,
-                outputFormat,
-                steps: 3, // Optimized steps for faster generation
-                CFGScale: Math.max(1.5, CFGScale), // Optimized guidance for speed
-                scheduler,
-                strength,
-                ...(seed && { seed })
-              }];
-              
-              console.log("🎨 Sending enhanced image generation request:", {
-                prompt: enhancedPrompt.substring(0, 100) + '...',
-                model,
-                seed,
-                taskUUID
-              });
-              ws.send(JSON.stringify(imageMessage));
-              
-            } else if (item.taskType === "imageInference") {
-              clearTimeout(timeout);
-              ws.close();
-              
-              // CRITICAL: Update character seed for future consistency
-              if (sessionId && userInfo && item.seed) {
-                const characterDesc = `${userInfo.name}: ${userInfo.avatar.type}`;
-                StoryVisualStateManager.updateCharacterWithSeed(
-                  sessionId,
-                  userInfo.name,
-                  characterDesc,
-                  item.seed,
-                  pageNumber
-                );
-                console.log(`🔒 Saved seed ${item.seed} for ${userInfo.name} consistency`);
-              }
-              
-              // Log successful generation with character details
-              if (userInfo) {
-                console.log(`✅ Generated consistent image for ${userInfo.name} (page ${pageNumber})`);
-              }
-              
-              resolve(createCorsResponse({
-                success: true,
-                imageURL: item.imageURL,
-                seed: item.seed,
-                cost: item.cost,
-                NSFWContent: item.NSFWContent,
-                characterName: userInfo?.name || characterName || undefined,
-                pageIndex: pageNumber - 1,
-                prompt: enhancedPrompt
-              }));
-            }
+          console.error("❌ WebSocket error details:", {
+            error: error,
+            type: error.type || 'unknown',
+            message: error.message || 'unknown error'
           });
-        }
-      };
+          resolve(createCorsErrorResponse(`WebSocket connection failed: ${error.message || 'unknown error'}`));
+        };
 
-      ws.onerror = (error) => {
-        clearTimeout(timeout);
-        ws.close();
-        console.error("❌ WebSocket error details:", {
-          error: error,
-          type: error.type || 'unknown',
-          message: error.message || 'unknown error'
-        });
-        resolve(createCorsErrorResponse(`WebSocket connection failed: ${error.message || 'unknown error'}`));
-      };
-
-      ws.onclose = (event) => {
-        clearTimeout(timeout);
-        if (event.code !== 1000) {
-          console.log("🔌 WebSocket closed unexpectedly:", {
-            code: event.code,
-            reason: event.reason || 'no reason provided',
-            wasClean: event.wasClean
-          });
-        }
-      };
-    });
+        ws.onclose = (event) => {
+          clearTimeout(timeout);
+          if (event.code !== 1000) {
+            console.log("🔌 WebSocket closed unexpectedly:", {
+              code: event.code,
+              reason: event.reason || 'no reason provided',
+              wasClean: event.wasClean
+            });
+          }
+        };
+      });
+    } catch (wsError) {
+      console.error('❌ WebSocket creation failed:', wsError);
+      return createCorsErrorResponse(`WebSocket creation failed: ${wsError.message}`);
+    }
 
   } catch (error) {
-    console.error('Image generation error:', error)
+    console.error('❌ Image generation error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+      cause: error.cause
+    });
     return createCorsErrorResponse(`Runware error: ${error.message}`);
   }
 })
