@@ -164,15 +164,17 @@ export class AudioSyncService {
       
       // Mobile-specific audio setup with enhanced stability
       if (this.isMobile()) {
+        console.log('📱 Mobile audio setup starting...');
         this.audio.preload = 'metadata';
         this.audio.crossOrigin = 'anonymous';
         
         // Mobile audio unlock - crucial for iOS/Android
+        console.log('📱 Attempting mobile audio unlock...');
         await this.unlockMobileAudio();
         
         // Enhanced mobile audio stabilization - wait longer for mobile
         console.log('📱 Mobile audio - adding extra stabilization time');
-        await new Promise(resolve => setTimeout(resolve, 2000)); // Extra 2s for mobile
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Reduced from 2s to 1s
       }
       
       // Wait for metadata to load to get accurate duration
@@ -205,8 +207,31 @@ export class AudioSyncService {
       // Setup playback event handlers with session guard
       this.setupAudioEventHandlers(voice, speed, onWordHighlight, onError, localSessionId, localContentHash);
       
-      // Start playback (guard on start)
-      await this.audio.play();
+      // Enhanced mobile playback with better error handling
+      try {
+        console.log('🎵 Starting audio playback...');
+        await this.audio.play();
+        console.log('🎵 Audio playback started successfully');
+      } catch (playError) {
+        console.error('🎵 Audio playback failed:', playError);
+        
+        // Mobile-specific playback retry
+        if (this.isMobile()) {
+          console.log('📱 Retrying mobile audio playback...');
+          try {
+            // Try user gesture-based unlock
+            await this.unlockMobileAudio();
+            await this.audio.play();
+            console.log('📱 Mobile audio retry successful');
+          } catch (retryError) {
+            console.error('📱 Mobile audio retry failed:', retryError);
+            throw retryError;
+          }
+        } else {
+          throw playError;
+        }
+      }
+      
       if (this.activeSessionId !== localSessionId || this.activeContentHash !== localContentHash) {
         // Stop immediately if stale
         this.audio.pause();
@@ -463,7 +488,30 @@ export class AudioSyncService {
     if (!this.audio) return;
     
     try {
-      // Create a short silent audio to unlock mobile audio context
+      console.log('🔓 Starting mobile audio unlock process...');
+      
+      // Enhanced mobile audio unlock strategy
+      // Strategy 1: Try to play the actual audio first (most direct)
+      this.audio.volume = 0.01; // Very low volume
+      this.audio.muted = true; // Start muted
+      
+      try {
+        console.log('🔓 Attempting direct audio unlock...');
+        const directPlayPromise = this.audio.play();
+        if (directPlayPromise) {
+          await directPlayPromise;
+          console.log('🔓 Direct audio unlock successful');
+          this.audio.pause();
+          this.audio.currentTime = 0;
+          this.audio.muted = false; // Unmute for actual playback
+          this.audio.volume = 1.0; // Restore volume
+          return;
+        }
+      } catch (directError) {
+        console.log('🔓 Direct audio unlock failed, trying silent audio...', directError);
+      }
+      
+      // Strategy 2: Create a short silent audio to unlock mobile audio context
       const silentAudio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMeBS113+TQeCkELI7L7tmNQAgMW7Dn7adTEw1GnN/y');
       silentAudio.volume = 0.01;
       
@@ -473,9 +521,22 @@ export class AudioSyncService {
       }
       silentAudio.pause();
       
-      console.log('🔓 Mobile audio unlocked');
+      // Restore original audio settings
+      this.audio.muted = false;
+      this.audio.volume = 1.0;
+      
+      console.log('🔓 Mobile audio unlocked via silent audio');
     } catch (error) {
-      console.warn('Mobile audio unlock failed:', error);
+      console.warn('🔓 Mobile audio unlock failed:', error);
+      // Try to at least unmute and restore volume
+      try {
+        if (this.audio) {
+          this.audio.muted = false;
+          this.audio.volume = 1.0;
+        }
+      } catch (e) {
+        console.warn('Failed to restore audio settings:', e);
+      }
     }
   }
 

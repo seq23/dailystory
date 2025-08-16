@@ -274,6 +274,7 @@ useEffect(() => {
           console.warn('Failed to clear page content hash:', e);
         }
         
+        // Only show toast ONCE on final attempt
         toast({
           title: "Audio synchronized",
           description: "Audio has been synchronized with current content.",
@@ -284,12 +285,14 @@ useEffect(() => {
         return playWithHashValidation(0);
       }
       
-      // Show user feedback with retry counter
-      toast({
-        title: "Syncing audio...",
-        description: retryCount === 0 ? "Ensuring audio matches current page" : `Retry attempt ${retryCount + 1}`,
-        duration: 1500,
-      });
+      // Show user feedback ONLY on first attempt to reduce spam
+      if (retryCount === 0) {
+        toast({
+          title: "Syncing audio...",
+          description: "Ensuring audio matches current page",
+          duration: 1500,
+        });
+      }
       
       // Wait 500ms for stability, then retry
       await new Promise(r => setTimeout(r, 500));
