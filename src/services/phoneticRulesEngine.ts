@@ -18,6 +18,7 @@ interface SyllableBreakRule {
 export class PhoneticRulesEngine {
   private static instance: PhoneticRulesEngine;
   private dictCache = new Map<string, string[]>();
+  private conversationMode: boolean = false;
   
   // Phonetic transformation rules (high to low priority)
   private phoneticRules: PhoneticRule[] = [
@@ -185,6 +186,28 @@ export class PhoneticRulesEngine {
     const fallback = this.breakIntoSyllables(word);
     this.dictCache.set(key, fallback);
     return fallback;
+  }
+
+  /**
+   * Set conversation mode - when true, use natural pronunciation
+   * When false, use phonetic learning pronunciation
+   */
+  public setConversationMode(isConversation: boolean): void {
+    this.conversationMode = isConversation;
+    console.log(`🗣️ Phonetic engine mode: ${isConversation ? 'CONVERSATION' : 'LEARNING'}`);
+  }
+
+  /**
+   * Get speech-friendly pronunciation with context awareness
+   */
+  public getSpeechFriendlyPronunciationWithContext(syllable: string, forLearning: boolean = false): string {
+    // If in conversation mode and not specifically for learning, use natural pronunciation
+    if (this.conversationMode && !forLearning) {
+      return syllable; // Return original word for natural speech
+    }
+    
+    // Otherwise use phonetic pronunciation for learning
+    return this.getSpeechFriendlyPronunciation(syllable);
   }
 
   private arpabetToChunks(phones: string[], clean: string): string[] {

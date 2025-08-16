@@ -3,6 +3,7 @@ import { SimpleAudioEngine } from '@/services/SimpleAudioEngine';
 import { useConversation } from '@11labs/react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { phoneticRulesEngine } from '@/services/phoneticRulesEngine';
 
 /**
  * Hook to integrate the main UI voice buttons with the SimpleVoiceCommands system
@@ -271,10 +272,15 @@ export const useVoiceIntegration = () => {
   const handleVoiceToggle = useCallback(async () => {
     if (status === 'connected') {
       console.log('🎤 Voice session already connected, ending...');
+      // Restore natural pronunciation when ending voice session
+      phoneticRulesEngine.setConversationMode(false);
       await endSession();
     } else {
       try {
         console.log('🎤 Starting voice command session via integration hook...');
+        
+        // Set conversation mode for natural Charlotte speech
+        phoneticRulesEngine.setConversationMode(true);
         
         // Update UI to show connecting state
         window.dispatchEvent(new CustomEvent('voice:status', { 
@@ -289,6 +295,7 @@ export const useVoiceIntegration = () => {
         } catch (micError) {
           console.error('🎤 Microphone access denied:', micError);
           toast.error('Microphone access required for voice commands');
+          phoneticRulesEngine.setConversationMode(false);
           window.dispatchEvent(new CustomEvent('voice:status', { 
             detail: { status: 'idle', system: 'elevenlabs' } 
           }));
@@ -302,6 +309,7 @@ export const useVoiceIntegration = () => {
         if (error) {
           console.error('🎤 Supabase function error:', error);
           toast.error(`Voice connection failed: ${error.message}`);
+          phoneticRulesEngine.setConversationMode(false);
           window.dispatchEvent(new CustomEvent('voice:status', { 
             detail: { status: 'idle', system: 'elevenlabs' } 
           }));
@@ -311,6 +319,7 @@ export const useVoiceIntegration = () => {
         if (!data?.signed_url) {
           console.error('🎤 No signed URL in response:', data);
           toast.error('No signed URL received from ElevenLabs');
+          phoneticRulesEngine.setConversationMode(false);
           window.dispatchEvent(new CustomEvent('voice:status', { 
             detail: { status: 'idle', system: 'elevenlabs' } 
           }));
@@ -323,6 +332,7 @@ export const useVoiceIntegration = () => {
       } catch (error: any) {
         console.error('🎤 Failed to start voice session:', error);
         toast.error(`Could not connect to Buddy: ${error.message || 'Unknown error'}`);
+        phoneticRulesEngine.setConversationMode(false);
         window.dispatchEvent(new CustomEvent('voice:status', { 
           detail: { status: 'idle', system: 'elevenlabs' } 
         }));
