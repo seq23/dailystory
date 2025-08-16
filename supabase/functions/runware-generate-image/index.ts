@@ -252,22 +252,38 @@ function extractPrimaryScene(text: string): string {
   
   if (sentences.length <= 1) return text;
   
-  // Look for transition words that indicate scene changes
-  const transitionPatterns = [
-    /\b(later|then|after|next|meanwhile|suddenly|soon|eventually)\b/i,
-    /\b(and then|after that|next thing|later on)\b/i,
-    /\b(in the|at the|when|while)\b.*\b(bed|bedroom|sleep|night)\b/i, // bedroom scenes
-    /\b(outside|playground|field|park|game|play|sport)\b/i // outdoor/activity scenes
+  // Look for future tense activities that should NOT trigger scene changes
+  const futureActivityPatterns = [
+    /\b(later|will|going to|plans to|wants to|hopes to)\b.*\b(game|play|sport|soccer|football|basketball)\b/i,
+    /\b(after|when|then)\b.*\b(game|play|sport|activity)\b/i,
+    /\b(excited|ready|preparing)\s+(for|about)\b.*\b(game|play|sport)\b/i
   ];
   
-  // Find the first sentence with a transition or scene indicator
+  // Look for present-tense scene transitions only
+  const presentScenePatterns = [
+    /\b(now|currently|right now)\b.*\b(outside|playground|field|park)\b/i,
+    /\b(ran|runs|running|walked|walks|walking)\b.*\b(to|towards|into)\b.*\b(outside|playground|field|park)\b/i,
+    /\b(arrived|enters|entered)\b.*\b(outside|playground|field|park)\b/i
+  ];
+  
+  // Find the first sentence with a PRESENT scene transition, excluding future activities
   let primarySceneEnd = 0;
-  for (let i = 0; i < sentences.length; i++) {
+  for (let i = 1; i < sentences.length; i++) { // Start from index 1, keep first sentence
     const sentence = sentences[i];
-    const hasTransition = transitionPatterns.some(pattern => pattern.test(sentence));
     
-    if (hasTransition && i > 0) {
-      // Found a transition - stop at previous sentence to avoid mixing scenes
+    // Skip if this mentions future activities
+    const isFutureActivity = futureActivityPatterns.some(pattern => pattern.test(sentence));
+    if (isFutureActivity) {
+      console.log(`[Scene Extract] Skipping future activity: "${sentence}"`);
+      continue;
+    }
+    
+    // Check for present scene transitions
+    const hasSceneTransition = presentScenePatterns.some(pattern => pattern.test(sentence));
+    
+    if (hasSceneTransition) {
+      // Found a present scene transition - stop here
+      console.log(`[Scene Extract] Found scene transition at sentence ${i}: "${sentence}"`);
       primarySceneEnd = i;
       break;
     }
