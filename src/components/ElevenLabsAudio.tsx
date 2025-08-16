@@ -375,12 +375,6 @@ useEffect(() => {
     // Notify parent component immediately
     onAudioStateChange?.(false);
     
-    // Emit events for coordination
-    window.dispatchEvent(new CustomEvent('audio:stop'));
-    window.dispatchEvent(new CustomEvent('audio:statechange', { 
-      detail: { isPlaying: false } 
-    }));
-    
     // Stop ElevenLabs word sync service
     try {
       elevenLabsWordSync.stop();
@@ -388,11 +382,10 @@ useEffect(() => {
       console.warn('Error stopping ElevenLabs word sync:', error);
     }
     
-    // Also stop simple audio engine for complete coordination
-    try {
-      const engine = (window as any).__SimpleAudioEngine;
-      if (engine) engine.stop();
-    } catch {}
+    // Emit state change for UI updates (but not stop events to prevent loops)
+    window.dispatchEvent(new CustomEvent('audio:statechange', { 
+      detail: { isPlaying: false } 
+    }));
     
     console.log('✅ ElevenLabsAudio: Stop completed');
   };

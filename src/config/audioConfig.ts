@@ -132,8 +132,8 @@ export const voiceCommands = {
     'keep reading': () => window.dispatchEvent(new CustomEvent('audio:resume')),
     'continue reading': () => window.dispatchEvent(new CustomEvent('audio:resume')),
 
-    'stop': () => window.dispatchEvent(new CustomEvent('audio:stop')),
-    'stop reading': () => window.dispatchEvent(new CustomEvent('audio:stop')),
+    'stop': () => window.dispatchEvent(new CustomEvent('audio:pause')),
+    'stop reading': () => window.dispatchEvent(new CustomEvent('audio:pause')),
 
     'repeat that': () => window.dispatchEvent(new CustomEvent('audio:repeat')),
     'repeat': () => window.dispatchEvent(new CustomEvent('audio:repeat')),

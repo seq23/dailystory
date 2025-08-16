@@ -453,12 +453,12 @@ const [highlightSave, setHighlightSave] = useState(false);
 // Voice command -> audio control bridge (now using ElevenLabsAudio)
 useEffect(() => {
   const onPlay = () => { try { audioRef.current?.play?.(); } catch (e) { console.warn('audio:play failed', e); } };
-  const onStop = () => { try { audioRef.current?.stop?.(); } catch (e) { console.warn('audio:stop failed', e); } };
+  const onPause = () => { try { audioRef.current?.stop?.(); } catch (e) { console.warn('audio:pause failed', e); } };
   window.addEventListener('audio:play', onPlay as EventListener);
-  window.addEventListener('audio:stop', onStop as EventListener);
+  window.addEventListener('audio:pause', onPause as EventListener);
   return () => {
     window.removeEventListener('audio:play', onPlay as EventListener);
-    window.removeEventListener('audio:stop', onStop as EventListener);
+    window.removeEventListener('audio:pause', onPause as EventListener);
   };
 }, [currentStory, contentHash]);
 

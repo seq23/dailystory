@@ -265,9 +265,6 @@ export class SimpleAudioEngine {
   stop() {
     console.log('🛑 SimpleAudioEngine: Stopping all audio systems');
     
-    // Signal stop to coordination system first
-    window.dispatchEvent(new CustomEvent('audio:stopped', { detail: { system: 'simple' } }));
-    
     // Abort any inflight requests immediately
     if (this.inflight) {
       try { 
