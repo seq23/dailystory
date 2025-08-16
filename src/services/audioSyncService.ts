@@ -88,7 +88,25 @@ export class AudioSyncService {
       console.warn('Failed to stop other audio systems:', e);
     }
     
-    // New session guards
+    // Stop any existing playback and in-flight requests BEFORE setting new session
+    this.isPlaying = false;
+    this.currentWordIndex = -1;
+    
+    // Clear any pending timeouts
+    this.syncTimeouts.forEach(timeout => clearTimeout(timeout));
+    this.syncTimeouts = [];
+    
+    if (this.progressInterval) {
+      clearInterval(this.progressInterval);
+      this.progressInterval = null;
+    }
+    
+    if (this.fetchAbortController) {
+      try { this.fetchAbortController.abort(); } catch {}
+    }
+    this.fetchAbortController = new AbortController();
+    
+    // New session guards (AFTER cleanup to avoid session mismatch)
     this.activeSessionId = ++this.sessionIdCounter;
     const localSessionId = this.activeSessionId;
     this.activeContentHash = hashText(text);
@@ -99,13 +117,6 @@ export class AudioSyncService {
     this.lastVoice = voice;
     this.lastSpeed = speed;
     this.lastOnWordHighlight = onWordHighlight;
-    
-    // Stop any existing playback and in-flight requests
-    this.stopAudio();
-    if (this.fetchAbortController) {
-      try { this.fetchAbortController.abort(); } catch {}
-    }
-    this.fetchAbortController = new AbortController();
     
     // Prepare words for highlighting using unified tokenizer
     const tokenization = tokenizeForHighlighting(text);
