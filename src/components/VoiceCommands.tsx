@@ -242,9 +242,12 @@ useEffect(() => {
         detail: { status: 'listening', system: 'elevenlabs' } 
       }));
       
+      // Enhanced mobile-friendly toast notification
+      const storyTitle = (window as any).__storyTitle || '';
+      const contextMessage = storyTitle ? `Your buddy Charlotte is ready to help with "${storyTitle}"!` : "Your buddy Charlotte is ready to help!";
       toast({ 
-        title: 'Voice Assistant Connected', 
-        description: 'Say: "read", "stop", "next", "back", or "what is this word"' 
+        title: contextMessage, 
+        description: 'Try saying "play story" or "help with this word"' 
       });
       
     } catch (e: any) {

@@ -11,6 +11,20 @@ export const useVoiceIntegration = () => {
   const engine = SimpleAudioEngine.getInstance();
   const voiceSystemRef = useRef<any>(null);
 
+  // Enhanced word context resolution function
+  const getContextualWord = (providedWord?: string): string => {
+    if (providedWord && providedWord.trim()) return providedWord.trim();
+    
+    // Check global word context (set by InteractiveWord system)
+    const hoveredWord = (window as any).__hoveredWord;
+    const lastSelectedWord = (window as any).__lastSelectedWord;
+    
+    if (hoveredWord?.trim()) return hoveredWord.trim();
+    if (lastSelectedWord?.trim()) return lastSelectedWord.trim();
+    
+    return ''; // Will trigger clarification request
+  };
+
   // Define client tools for voice commands - Enhanced Charlotte/Buddy capabilities
   const clientTools = {
     play: () => {
@@ -21,12 +35,15 @@ export const useVoiceIntegration = () => {
       const userName = (window as any).__userName || '';
       
       if (text) {
-        engine.playText({ 
-          text, 
-          contentHash: hash,
-          voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
-        }).catch(console.error);
-        return `Starting to read ${storyTitle ? `"${storyTitle}"` : 'the story'} with Charlotte's voice${userName ? ` for ${userName}` : ''}`;
+        // Brief delay to let Charlotte finish her acknowledgment
+        setTimeout(() => {
+          engine.playText({ 
+            text, 
+            contentHash: hash,
+            voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
+          }).catch(console.error);
+        }, 200);
+        return "Got it!"; // Very brief response to avoid audio conflicts
       }
       return "No story content available to read";
     },
@@ -53,21 +70,23 @@ export const useVoiceIntegration = () => {
       return "Going to previous page";
     },
     
-    // ENHANCED WORD ASSISTANCE TOOLS
+    // ENHANCED WORD ASSISTANCE TOOLS with Context Awareness
     wordHelp: (args: any) => {
-      const word = args?.word || 'the highlighted word';
+      const word = getContextualWord(args?.word || args?.text);
       console.log('🎯 Voice command: general word help for:', word);
       
-      // Trigger comprehensive word help modal or voice explanation
-      window.dispatchEvent(new CustomEvent('voice:wordHelp', { 
-        detail: { word, action: 'general' }
-      }));
-      
-      return `Let me help you with "${word}". I can pronounce it, explain what it means, or break it into syllables!`;
+      if (word) {
+        // Trigger comprehensive word help modal or voice explanation
+        window.dispatchEvent(new CustomEvent('voice:wordHelp', { 
+          detail: { word, action: 'general' }
+        }));
+        return `Let me help you with "${word}". I can pronounce it, explain what it means, or break it into syllables!`;
+      }
+      return "Please tell me which word you'd like help with, or hover over a word and ask again!";
     },
 
     hearWord: (args: any) => {
-      const word = args?.word || args?.text || '';
+      const word = getContextualWord(args?.word || args?.text);
       console.log('🎯 Voice command: hear word:', word);
       
       if (word) {
@@ -77,11 +96,11 @@ export const useVoiceIntegration = () => {
         }));
         return `Here's how "${word}" sounds!`;
       }
-      return "Which word would you like to hear?";
+      return "Please tell me which word you'd like to hear, or hover over a word and ask again!";
     },
 
     explainWord: (args: any) => {
-      const word = args?.word || args?.text || '';
+      const word = getContextualWord(args?.word || args?.text);
       console.log('🎯 Voice command: explain word:', word);
       
       if (word) {
@@ -91,11 +110,11 @@ export const useVoiceIntegration = () => {
         }));
         return `Let me explain what "${word}" means!`;
       }
-      return "Which word would you like me to explain?";
+      return "Please tell me which word you'd like me to explain, or hover over a word and ask again!";
     },
 
     syllableWord: (args: any) => {
-      const word = args?.word || args?.text || '';
+      const word = getContextualWord(args?.word || args?.text);
       console.log('🎯 Voice command: syllables for:', word);
       
       if (word) {
@@ -117,7 +136,7 @@ export const useVoiceIntegration = () => {
         
         return `Breaking down "${word}" into syllables for you!`;
       }
-      return "Which word would you like me to break into syllables?";
+      return "Please tell me which word you'd like me to break into syllables, or hover over a word and ask again!";
     },
 
     // Quiz commands
@@ -190,9 +209,7 @@ export const useVoiceIntegration = () => {
         detail: { status: 'listening', system: 'elevenlabs' } 
       }));
       
-      const storyTitle = (window as any).__storyTitle || '';
-      const contextMessage = storyTitle ? `Your buddy Charlotte is ready to help with "${storyTitle}"!` : "Your buddy Charlotte is ready to help!";
-      toast.success(`${contextMessage} Try saying "play story" or "help with word"`);
+      // No toast here - let ElevenLabs handle connection feedback to avoid duplicates
     },
     onDisconnect: () => {
       console.log('🎤 Disconnected from Charlotte (Buddy) via integration hook');

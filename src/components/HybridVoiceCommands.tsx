@@ -30,11 +30,14 @@ export const HybridVoiceCommands: React.FC = () => {
         const hash = (window as any).__pageContentHash || undefined;
         
         if (text) {
-          engine.playText({ 
-            text, 
-            contentHash: hash,
-            voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
-          }).catch(console.error);
+          // Brief delay to let any Charlotte acknowledgment finish
+          setTimeout(() => {
+            engine.playText({ 
+              text, 
+              contentHash: hash,
+              voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
+            }).catch(console.error);
+          }, 200);
         }
         break;
 
