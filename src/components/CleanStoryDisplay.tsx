@@ -1952,7 +1952,7 @@ const handleRestartTimer = () => {
                         data-difficulty={currentDifficulty}
                       >
                         {processTextWithConsistentFlow({
-                          text: currentStory,
+                          text: currentStoryText,
                           className: "interactive-word",
                           difficulty: currentDifficulty,
                           userInfo,
@@ -2045,7 +2045,7 @@ const handleRestartTimer = () => {
                           data-difficulty={currentDifficulty}
                         >
                           {processTextWithConsistentFlow({
-                            text: currentStory,
+                            text: currentStoryText,
                             className: "interactive-word",
                             difficulty: currentDifficulty,
                             userInfo,
