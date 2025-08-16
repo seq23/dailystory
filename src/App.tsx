@@ -52,8 +52,6 @@ const App = () => {
               <Route path="*" element={<NotFound />} />
             </Routes>
             <VoiceHUD />
-            <VoiceCommands />
-            <VoiceHoverController isPremium={false} />
             <FloatingFeedback />
             <AudioFallbackNotification />
           </BrowserRouter>
