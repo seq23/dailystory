@@ -21,21 +21,90 @@ export const VoiceCommands: React.FC<VoiceCommandsProps> = ({ agentId: initialAg
   // Map agent tools -> app actions
   const engine = useMemo(() => SimpleAudioEngine.getInstance(), []);
   const clientTools = useMemo(() => ({
+    // Voice Command: "read", "start reading", "play" -> play tool
     play: async () => {
+      console.log('🎤 VOICE COMMAND: play tool called');
       const text = (window as any).__lastNarrationText || (window as any).__pageContentString || '';
       const hash = (window as any).__pageContentHash || undefined;
-      if (!text) return 'no_text';
-      await engine.playText({ 
-        text, 
-        contentHash: hash,
-        voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
+      
+      console.log('🎤 Content check:', {
+        hasLastNarrationText: !!(window as any).__lastNarrationText,
+        hasPageContentString: !!(window as any).__pageContentString,
+        hasContentHash: !!(window as any).__pageContentHash,
+        textLength: text.length,
+        textPreview: text.substring(0, 50) + '...'
       });
-      return 'ok';
+      
+      if (!text) {
+        console.log('🎤 ERROR: No text content available for reading');
+        return 'no_text';
+      }
+      
+      try {
+        await engine.playText({ 
+          text, 
+          contentHash: hash,
+          voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
+        });
+        console.log('🎤 SUCCESS: Audio playback started');
+        return 'ok';
+      } catch (error) {
+        console.error('🎤 ERROR: Audio playback failed:', error);
+        return 'error';
+      }
     },
-    stop: async () => { engine.stop(); return 'ok'; },
-    next: async () => { window.dispatchEvent(new CustomEvent('reader:navigate', { detail: { direction: 'next' } })); return 'ok'; },
-    previous: async () => { window.dispatchEvent(new CustomEvent('reader:navigate', { detail: { direction: 'prev' } })); return 'ok'; },
-    wordHelp: async (params?: any) => { window.dispatchEvent(new CustomEvent('voice:wordHelp', { detail: params || null })); return 'ok'; },
+    
+    // Voice Command: "stop", "pause", "stop reading" -> stop tool
+    stop: async () => {
+      console.log('🎤 VOICE COMMAND: stop tool called');
+      try {
+        engine.stop();
+        console.log('🎤 SUCCESS: Audio stopped');
+        return 'ok';
+      } catch (error) {
+        console.error('🎤 ERROR: Stop failed:', error);
+        return 'error';
+      }
+    },
+    
+    // Voice Command: "next", "next page", "go forward" -> next tool
+    next: async () => {
+      console.log('🎤 VOICE COMMAND: next tool called');
+      try {
+        window.dispatchEvent(new CustomEvent('reader:navigate', { detail: { direction: 'next' } }));
+        console.log('🎤 SUCCESS: Next page event dispatched');
+        return 'ok';
+      } catch (error) {
+        console.error('🎤 ERROR: Next navigation failed:', error);
+        return 'error';
+      }
+    },
+    
+    // Voice Command: "back", "previous", "go back", "previous page" -> previous tool
+    previous: async () => {
+      console.log('🎤 VOICE COMMAND: previous tool called');
+      try {
+        window.dispatchEvent(new CustomEvent('reader:navigate', { detail: { direction: 'prev' } }));
+        console.log('🎤 SUCCESS: Previous page event dispatched');
+        return 'ok';
+      } catch (error) {
+        console.error('🎤 ERROR: Previous navigation failed:', error);
+        return 'error';
+      }
+    },
+    
+    // Voice Command: "what is this word", "help with word", "explain word" -> wordHelp tool
+    wordHelp: async (params?: any) => {
+      console.log('🎤 VOICE COMMAND: wordHelp tool called with params:', params);
+      try {
+        window.dispatchEvent(new CustomEvent('voice:wordHelp', { detail: params || null }));
+        console.log('🎤 SUCCESS: Word help event dispatched');
+        return 'ok';
+      } catch (error) {
+        console.error('🎤 ERROR: Word help failed:', error);
+        return 'error';
+      }
+    },
   }), [engine]);
 
   const conversation = useConversation({
@@ -43,9 +112,23 @@ export const VoiceCommands: React.FC<VoiceCommandsProps> = ({ agentId: initialAg
     overrides: {
       tts: { voiceId: CHARLOTTE },
     },
-onConnect: () => { setConnected(true); try { window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: 'listening' } })); } catch {} },
-    onDisconnect: () => { setConnected(false); try { window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: 'idle' } })); } catch {} },
-    onError: (e) => { console.error('VoiceCommands error', e); try { window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: 'idle' } })); } catch {} },
+    onConnect: () => { 
+      console.log('🎤 ElevenLabs conversation connected');
+      setConnected(true); 
+      try { window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: 'listening' } })); } catch {} 
+    },
+    onDisconnect: () => { 
+      console.log('🎤 ElevenLabs conversation disconnected');
+      setConnected(false); 
+      try { window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: 'idle' } })); } catch {} 
+    },
+    onError: (e) => { 
+      console.error('🎤 ElevenLabs conversation error:', e); 
+      try { window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: 'idle' } })); } catch {} 
+    },
+    onMessage: (message) => {
+      console.log('🎤 ElevenLabs message:', message);
+    },
   });
 
   // Persist any explicitly set agentId (still supported for advanced override)

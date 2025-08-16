@@ -425,9 +425,19 @@ const [highlightSave, setHighlightSave] = useState(false);
   const contentHash = hashText(effectiveAudioText);
 
   useEffect(() => {
-    try { (window as any).__pageContentHash = contentHash; } catch {}
-    try { (window as any).__pageContentString = currentStoryText; } catch {}
-  }, [contentHash, currentStoryText]);
+    try { 
+      (window as any).__pageContentHash = contentHash; 
+      (window as any).__pageContentString = currentStoryText;
+      console.log('🎤 Content variables updated for voice commands:', {
+        page: currentPage,
+        textLength: currentStoryText.length,
+        hasHash: !!contentHash,
+        textPreview: currentStoryText.substring(0, 100) + '...'
+      });
+    } catch (error) {
+      console.error('🎤 Failed to set content variables:', error);
+    }
+  }, [contentHash, currentStoryText, currentPage]);
 
   // Reset free-tier audio flag when navigating to a new page or content changes
   useEffect(() => {

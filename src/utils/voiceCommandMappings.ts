@@ -1,0 +1,136 @@
+/**
+ * Voice Command Mappings for ElevenLabs Agent Configuration
+ * 
+ * This file documents the exact voice commands that should be configured
+ * in the ElevenLabs agent dashboard for proper recognition.
+ */
+
+export const VOICE_COMMAND_MAPPINGS = {
+  // READING CONTROLS
+  play: {
+    naturalCommands: [
+      "read",
+      "start reading", 
+      "begin reading",
+      "play",
+      "read this",
+      "read the story",
+      "start"
+    ],
+    toolName: "play",
+    description: "Start reading the current page content aloud",
+    expectedResponse: "Starting to read the story"
+  },
+
+  stop: {
+    naturalCommands: [
+      "stop",
+      "pause", 
+      "stop reading",
+      "pause reading",
+      "halt",
+      "silence"
+    ],
+    toolName: "stop", 
+    description: "Stop the current audio playback",
+    expectedResponse: "Stopping the reading"
+  },
+
+  // NAVIGATION CONTROLS  
+  next: {
+    naturalCommands: [
+      "next",
+      "next page",
+      "go forward", 
+      "turn the page",
+      "continue",
+      "go to next page",
+      "forward"
+    ],
+    toolName: "next",
+    description: "Navigate to the next page of the story", 
+    expectedResponse: "Going to the next page"
+  },
+
+  previous: {
+    naturalCommands: [
+      "back",
+      "previous",
+      "go back",
+      "previous page", 
+      "last page",
+      "go to previous page",
+      "backward"
+    ],
+    toolName: "previous",
+    description: "Navigate to the previous page of the story",
+    expectedResponse: "Going back to the previous page"
+  },
+
+  // WORD ASSISTANCE
+  wordHelp: {
+    naturalCommands: [
+      "what is this word",
+      "help with word",
+      "explain word",
+      "what does this mean",
+      "define this word",
+      "help me with this word",
+      "pronunciation help"
+    ],
+    toolName: "wordHelp",
+    description: "Get help with understanding or pronouncing a word",
+    expectedResponse: "Let me help you with that word"
+  }
+};
+
+/**
+ * Instructions for ElevenLabs Agent Configuration:
+ * 
+ * 1. Create an agent in ElevenLabs dashboard
+ * 2. Add each of the 5 client tools: play, stop, next, previous, wordHelp
+ * 3. Configure the agent with these instructions:
+ * 
+ * "You are a reading assistant that helps children navigate stories. 
+ * Listen for these commands and call the appropriate tool:
+ * 
+ * - Reading: 'read', 'start reading', 'play' → call play()
+ * - Stopping: 'stop', 'pause', 'stop reading' → call stop()  
+ * - Navigation: 'next', 'next page', 'go forward' → call next()
+ * - Going back: 'back', 'previous', 'go back' → call previous()
+ * - Word help: 'what is this word', 'help with word' → call wordHelp()
+ * 
+ * Always acknowledge the command and call the appropriate tool immediately.
+ * Be encouraging and positive with children."
+ * 
+ * 4. Set each tool as 'blocking' so the agent waits for the response
+ * 5. Test each command to ensure proper recognition
+ */
+
+export const AGENT_CONFIGURATION_INSTRUCTIONS = `
+You are a friendly reading assistant named Buddy that helps children navigate interactive stories. 
+
+When you hear any of these commands, immediately call the corresponding tool:
+
+READING COMMANDS:
+- "read", "start reading", "play", "begin reading" → call play() tool
+- "stop", "pause", "stop reading" → call stop() tool
+
+NAVIGATION COMMANDS:  
+- "next", "next page", "go forward", "turn the page" → call next() tool
+- "back", "previous", "go back", "previous page" → call previous() tool
+
+WORD HELP COMMANDS:
+- "what is this word", "help with word", "explain word" → call wordHelp() tool
+
+Always:
+1. Acknowledge the command enthusiastically
+2. Call the appropriate tool immediately  
+3. Be encouraging and positive
+4. Keep responses brief and child-friendly
+
+Example responses:
+- "Great! Let me start reading for you!" (then call play())
+- "Sure thing! Going to the next page!" (then call next())
+- "Of course! Let me help you with that word!" (then call wordHelp())
+`;
