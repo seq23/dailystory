@@ -2,10 +2,26 @@
 // This replaces all previous vocabulary systems with a unified grade-based approach
 
 import { 
-  LEVEL_0_VOCABULARY, 
-  isLevel0Word, 
-  validateLevel0Sentence 
-} from './level0Vocabulary';
+  FREE_LEVEL_0_VOCABULARY as LEVEL_0_VOCABULARY, 
+  validateLevel0SentenceByUserType 
+} from '../dolchPrePrimer';
+
+// Legacy wrapper for backward compatibility
+function isLevel0Word(word: string): boolean {
+  return LEVEL_0_VOCABULARY.has(word.toLowerCase());
+}
+
+// Legacy wrapper for backward compatibility
+function validateLevel0Sentence(sentence: string, userName?: string): { 
+  isValid: boolean; 
+  invalidWords: string[];
+} {
+  const result = validateLevel0SentenceByUserType(sentence, 'free', userName);
+  return {
+    isValid: result.isValid,
+    invalidWords: result.invalidWords
+  };
+}
 
 import { 
   LEVEL_1_VOCABULARY, 

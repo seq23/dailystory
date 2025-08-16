@@ -3,7 +3,7 @@
  * This tool helps identify any remaining vocabulary violations in Level 0 content
  */
 
-import { LEVEL_0_VOCABULARY } from '@/constants/gradeBased/level0Vocabulary';
+import { FREE_LEVEL_0_VOCABULARY as LEVEL_0_VOCABULARY } from '@/constants/dolchPrePrimer';
 import { validateLevel0SentenceByUserType } from '../constants/dolchPrePrimer';
 
 export interface VocabularyAuditResult {

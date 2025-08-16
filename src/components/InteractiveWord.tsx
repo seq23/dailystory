@@ -972,17 +972,6 @@ export const InteractiveWord = ({
               )}
             </div>
 
-            {/* Etymology button for advanced native speakers */}
-            {isNativeEnglishSpeaker && userInfo?.age && userInfo.age > 12 && (
-              <button
-                onClick={() => {/* TODO: Implement etymology lookup */}}
-                className="flex items-center gap-1 text-xs bg-indigo-50 hover:bg-indigo-100 active:bg-indigo-200 border border-indigo-200 px-2.5 py-2 rounded-md transition-colors touch-manipulation min-h-[36px] font-medium text-indigo-700 shadow-sm"
-              >
-                <Lightbulb className="w-3 h-3" />
-                <span className="hidden xs:inline">{userLanguageT("interactiveWord.etymology", "Etymology")}</span>
-                <span className="xs:hidden">Info</span>
-              </button>
-             )}
              
              {/* Universal Phonetic Breakdown Button - Available for ALL users */}
               <button

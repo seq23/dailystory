@@ -143,11 +143,8 @@ export class MobileOptimizationManager {
   }
 
   private static isBatteryOptimizationEnabled(): boolean {
-    if ('navigator' in globalThis && 'getBattery' in navigator) {
-      // This is deprecated but still useful for battery optimization
-      return true; // Enable battery optimization if battery API is available
-    }
-    return false;
+    // Battery API was deprecated, use performance-based detection instead
+    return 'connection' in navigator && (navigator as any).connection?.saveData === true;
   }
 }
 

@@ -10,7 +10,6 @@ import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { audioSyncService } from "@/services/audioSyncService";
-import { elevenLabsWordSync } from "@/services/elevenlabsWordSync";
 import { VoiceCommandController } from "@/components/VoiceCommandController";
 import type { VoiceCommandControllerHandle } from "@/components/VoiceCommandController";
 import type { UserInfo } from "@/types";
@@ -325,37 +324,38 @@ useEffect(() => {
     // Create abort controller for this specific playback
     const abortController = new AbortController();
 
-    // Use the precise ElevenLabs word sync for perfect timing
-    await elevenLabsWordSync.playWithWordSync({
+    // Use the audioSyncService for synchronized playback
+    await audioSyncService.playText({
       text,
       voice: 'XB0fDUnXU5powFXDhCwa', // Charlotte voice
       model: 'eleven_turbo_v2_5',
       onWordHighlight: (wordIndex: number) => {
-        console.log(`🎯 ElevenLabs Word Sync: Highlighting word ${wordIndex} with perfect timing`);
+        console.log(`🎯 Audio Sync: Highlighting word ${wordIndex}`);
         onWordHighlight?.(wordIndex);
       },
-      onAudioEnd: () => {
-        console.log('🎵 ElevenLabs audio ended - clearing highlights');
-        setIsPlaying(false);
+      onStateChange: (isPlaying: boolean) => {
+        setIsPlaying(isPlaying);
         setIsLoading(false);
-        onAudioStateChange?.(false);
-        onWordHighlight?.(-1); // Clear highlighting
+        onAudioStateChange?.(isPlaying);
         
-        // Double-check highlighting is cleared
-        setTimeout(() => onWordHighlight?.(-1), 100);
-        
-        // Emit state change for coordination
-        window.dispatchEvent(new CustomEvent('audio:statechange', { 
-          detail: { isPlaying: false } 
-        }));
-      },
-      signal: abortController.signal
+        if (!isPlaying) {
+          onWordHighlight?.(-1); // Clear highlighting
+          
+          // Double-check highlighting is cleared
+          setTimeout(() => onWordHighlight?.(-1), 100);
+          
+          // Emit state change for coordination
+          window.dispatchEvent(new CustomEvent('audio:statechange', { 
+            detail: { isPlaying: false } 
+          }));
+        }
+      }
     });
 
     // Guard: if page or text changed during load, stop and bail
     if (playSnapshot.page !== currentPage || playSnapshot.text !== text || playSnapshot.contentHash !== contentHash) {
       console.warn('🛑 TTS aborted due to page/text/hash change during load');
-      try { elevenLabsWordSync.stop(); } catch {}
+      try { audioSyncService.stopAudio(); } catch {}
       toast({ title: t('audioReading.pageChanged', 'Page changed'), description: t('audioReading.refreshAudio', 'Audio refreshed for the new page.'), duration: 1800 });
       return;
     }
@@ -377,11 +377,11 @@ useEffect(() => {
     // Notify parent component immediately
     onAudioStateChange?.(false);
     
-    // Stop ElevenLabs word sync service
+    // Stop audio sync service
     try {
-      elevenLabsWordSync.stop();
+      audioSyncService.stopAudio();
     } catch (error) {
-      console.warn('Error stopping ElevenLabs word sync:', error);
+      console.warn('Error stopping audio sync service:', error);
     }
     
     // Emit state change for UI updates (but not stop events to prevent loops)
@@ -510,7 +510,7 @@ const handleHeadlessCommand = (cmd: string) => {
     window.addEventListener('audio:statechange', handleAudioStateChange as EventListener);
     
     // Also check current status on mount
-    const status = elevenLabsWordSync.getStatus();
+    const status = audioSyncService.getPlaybackStatus();
     if (status.isPlaying !== isPlaying) {
       setIsPlaying(status.isPlaying);
       onAudioStateChange?.(status.isPlaying);

@@ -1,4 +1,4 @@
-import { fetchElevenLabsAudioArrayBuffer } from '@/services/simpleElevenLabsTTS';
+import { SmartElevenLabsTTS } from '@/services/smartElevenLabsTTS';
 import { contextualPronunciation } from './contextualPronunciation';
 import { AudioPermissions } from '@/utils/audioPermissions';
 
@@ -153,8 +153,8 @@ export class SimpleAudioEngine {
       this.inflight = new AbortController();
       const signal = this.inflight.signal;
 
-      console.log('🎵 SimpleAudioEngine: Requesting ElevenLabs TTS...');
-      const arrayBuffer = await fetchElevenLabsAudioArrayBuffer(text, voiceId, modelId);
+      console.log('🎵 SimpleAudioEngine: Requesting Smart ElevenLabs TTS...');
+      const arrayBuffer = await SmartElevenLabsTTS.generateSpeech(text, 'conversation', voiceId);
       
       if (signal.aborted) {
         console.log('🎵 SimpleAudioEngine: Request was aborted');

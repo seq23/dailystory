@@ -108,8 +108,8 @@ const handleBackToWelcome = () => {
   };
 
   const handleSubscribe = (planId: string) => {
-    // TODO: Implement Stripe payment integration
-    console.log("Subscribe to plan:", planId);
+    // Redirect to pricing page for subscription
+    window.location.href = '/pricing';
   };
 
   const handleBackToReading = () => {

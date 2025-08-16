@@ -1,6 +1,6 @@
 import type { UserInfo } from '@/types';
 import { tokenizeForHighlighting, hashText } from '@/utils/tokenize';
-import { fetchElevenLabsAudioArrayBuffer } from '@/services/simpleElevenLabsTTS';
+import { SmartElevenLabsTTS } from '@/services/smartElevenLabsTTS';
 import { contextualPronunciation } from './contextualPronunciation';
 
 interface AudioSyncOptions {
@@ -148,11 +148,11 @@ export class AudioSyncService {
     }
     
     try {
-      // Generate audio with ElevenLabs
-      const arrayBuffer = await fetchElevenLabsAudioArrayBuffer(
+      // Generate audio with Smart ElevenLabs
+      const arrayBuffer = await SmartElevenLabsTTS.generateSpeech(
         text.slice(0, 3000),
-        voice,
-        model
+        'learning',
+        voice
       );
 
       // If session changed during fetch, abort silently

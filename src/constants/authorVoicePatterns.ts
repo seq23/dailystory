@@ -696,25 +696,6 @@ export const COLOR_VOICES: Record<string, ColorVoice> = {
   }
 };
 
-// DEPRECATED: Age-based color mapping (kept for reference/analytics)
-// All colors are now available for all ages with age-contextual application via system prompts
-export const AGE_COLOR_MAPPING: Record<string, string[]> = {
-  "3-5": ["red", "yellow"],
-  "5-7": ["green", "purple"],
-  "7-9": ["orange", "pink"],
-  "9-11": ["navy-blue", "copper"],
-  "11-15": ["slate-gray", "teal"]
-};
-
-// DEPRECATED: Difficulty-based color mapping (kept for reference/analytics)
-// All colors are now available for all difficulty levels with content-appropriate application
-export const DIFFICULTY_COLOR_MAPPING: Record<DifficultyLevel, string[]> = {
-  beginner: ["red", "yellow"],
-  easy: ["green", "purple"],
-  medium: ["orange", "pink"],
-  hard: ["navy-blue", "copper"],
-  expert: ["slate-gray", "teal"]
-};
 
 // All available color voice keys for random selection
 const ALL_COLOR_KEYS = Object.keys(COLOR_VOICES) as (keyof typeof COLOR_VOICES)[];
