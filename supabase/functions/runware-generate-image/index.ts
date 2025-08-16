@@ -80,38 +80,6 @@ function updateSetting(sessionId: string, pageNumber: number, weather?: string, 
   }
 }
 
-function analyzeContentForModel(pageText: string): string {
-  if (!pageText) return "runware:100@1"; // Default fallback
-  
-  const text = pageText.toLowerCase();
-  
-  // Action/adventure scenes - use default high-quality model
-  if (text.includes('adventure') || text.includes('running') || text.includes('jumping') || 
-      text.includes('flying') || text.includes('chase') || text.includes('exploring')) {
-    return "runware:100@1";
-  }
-  
-  // Fantasy/magical scenes - might benefit from specialized models if available
-  if (text.includes('magic') || text.includes('fairy') || text.includes('dragon') || 
-      text.includes('castle') || text.includes('wizard') || text.includes('enchanted')) {
-    return "runware:100@1"; // Keep default for now, can be enhanced with fantasy models
-  }
-  
-  // Nature/outdoor scenes - default works well
-  if (text.includes('forest') || text.includes('garden') || text.includes('mountain') || 
-      text.includes('ocean') || text.includes('park') || text.includes('tree')) {
-    return "runware:100@1";
-  }
-  
-  // Indoor/home scenes - default is optimal
-  if (text.includes('home') || text.includes('bedroom') || text.includes('kitchen') || 
-      text.includes('living room') || text.includes('house') || text.includes('room')) {
-    return "runware:100@1";
-  }
-  
-  // Default to the proven high-quality model
-  return "runware:100@1";
-}
 
 function getSettingForPrompt(sessionId: string): string {
   const state = sessionStates.get(sessionId);
@@ -127,7 +95,7 @@ function getSettingForPrompt(sessionId: string): string {
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response(null, { headers: corsHeaders })
   }
 
   try {
@@ -140,7 +108,6 @@ serve(async (req) => {
       // Legacy parameters (for compatibility)
       positivePrompt,
       negativePrompt,
-      model = "runware:100@1",
       width = 1024,
       height = 1024,
       numberResults = 1,
@@ -157,6 +124,9 @@ serve(async (req) => {
       storyTheme,
       pageIndex = 0
     } = await req.json()
+    
+    // Use static model - reliable and proven
+    const model = "runware:100@1"
     
     const runwareApiKey = Deno.env.get('RUNWARE_API_KEY')
     if (!runwareApiKey) {
@@ -206,12 +176,6 @@ serve(async (req) => {
       // Environmental context from visual state
       const environmentalContext = getSettingForPrompt(sessionId);
       
-      // Dynamic model selection based on content
-      const selectedModel = analyzeContentForModel(processedText);
-      if (selectedModel !== model) {
-        console.log(`🎯 Model selection: "${processedText}" → ${selectedModel}`);
-      }
-      
       // Build complete enhanced prompt server-side
       enhancedPrompt = `Children's book art: ${characterConsistency} ${processedText}${environmentalContext}. CRITICAL: ${userInfo.name} same ${consistentSkinTone}, consistent design, safe, NO TEXT`;
       
@@ -219,9 +183,6 @@ serve(async (req) => {
       if (characterSeed) {
         seed = characterSeed;
       }
-      
-      // Apply selected model
-      model = selectedModel;
       
       // Update setting if page has environmental cues
       if (processedText.includes('sunny') || processedText.includes('bright')) {

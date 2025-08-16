@@ -75,8 +75,7 @@ serve(async (req) => {
         prompt: enhancedPrompt,
         n: 1,
         size: size,
-        quality: quality,
-        response_format: 'url'
+        quality: quality
       }),
     });
 
