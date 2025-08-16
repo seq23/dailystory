@@ -11,7 +11,7 @@ export const useVoiceIntegration = () => {
   const engine = SimpleAudioEngine.getInstance();
   const voiceSystemRef = useRef<any>(null);
 
-  // Define client tools for voice commands (same as SimpleVoiceCommands)
+  // Define client tools for voice commands - Enhanced Charlotte/Buddy capabilities
   const clientTools = {
     play: () => {
       console.log('🎯 Voice command: play');
@@ -53,12 +53,71 @@ export const useVoiceIntegration = () => {
       return "Going to previous page";
     },
     
+    // ENHANCED WORD ASSISTANCE TOOLS
     wordHelp: (args: any) => {
-      console.log('🎯 Voice command: word help', args);
+      const word = args?.word || 'the highlighted word';
+      console.log('🎯 Voice command: general word help for:', word);
+      
+      // Trigger comprehensive word help modal or voice explanation
       window.dispatchEvent(new CustomEvent('voice:wordHelp', { 
-        detail: args || null 
+        detail: { word, action: 'general' }
       }));
-      return "Getting word help";
+      
+      return `Let me help you with "${word}". I can pronounce it, explain what it means, or break it into syllables!`;
+    },
+
+    hearWord: (args: any) => {
+      const word = args?.word || args?.text || '';
+      console.log('🎯 Voice command: hear word:', word);
+      
+      if (word) {
+        // Use existing VoiceHoverController functionality
+        window.dispatchEvent(new CustomEvent('voice:hover:word', {
+          detail: { word, action: 'hear' }
+        }));
+        return `Here's how "${word}" sounds!`;
+      }
+      return "Which word would you like to hear?";
+    },
+
+    explainWord: (args: any) => {
+      const word = args?.word || args?.text || '';
+      console.log('🎯 Voice command: explain word:', word);
+      
+      if (word) {
+        // Use existing VoiceHoverController functionality  
+        window.dispatchEvent(new CustomEvent('voice:hover:word', {
+          detail: { word, action: 'explain' }
+        }));
+        return `Let me explain what "${word}" means!`;
+      }
+      return "Which word would you like me to explain?";
+    },
+
+    syllableWord: (args: any) => {
+      const word = args?.word || args?.text || '';
+      console.log('🎯 Voice command: syllables for:', word);
+      
+      if (word) {
+        // Enhanced syllable breakdown with counting
+        import('@/services/phoneticRulesEngine').then(({ phoneticRulesEngine }) => {
+          const syllables = phoneticRulesEngine.breakIntoSyllables(word);
+          const count = syllables?.length || 1;
+          const syllableText = syllables?.join(' - ') || word;
+          
+          // Play enhanced syllable response
+          const response = `"${word}" has ${count} syllable${count !== 1 ? 's' : ''}: ${syllableText}`;
+          
+          engine.playText({
+            text: response,
+            voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
+            contentHash: response.substring(0, 20)
+          });
+        });
+        
+        return `Breaking down "${word}" into syllables for you!`;
+      }
+      return "Which word would you like me to break into syllables?";
     },
 
     // Quiz commands
@@ -124,7 +183,7 @@ export const useVoiceIntegration = () => {
   } = useConversation({ 
     clientTools,
     onConnect: () => {
-      console.log('🎤 Connected to Buddy via integration hook');
+      console.log('🎤 Connected to Charlotte (Buddy) via integration hook');
       
       // Dispatch voice status event for UI updates
       window.dispatchEvent(new CustomEvent('voice:status', { 
@@ -132,18 +191,18 @@ export const useVoiceIntegration = () => {
       }));
       
       const storyTitle = (window as any).__storyTitle || '';
-      const contextMessage = storyTitle ? `I'm ready to help with "${storyTitle}"!` : "I'm ready to help!";
-      toast.success(`${contextMessage} Try saying "play story"`);
+      const contextMessage = storyTitle ? `Your buddy Charlotte is ready to help with "${storyTitle}"!` : "Your buddy Charlotte is ready to help!";
+      toast.success(`${contextMessage} Try saying "play story" or "help with word"`);
     },
     onDisconnect: () => {
-      console.log('🎤 Disconnected from Buddy via integration hook');
+      console.log('🎤 Disconnected from Charlotte (Buddy) via integration hook');
       
       // Dispatch voice status event for UI updates
       window.dispatchEvent(new CustomEvent('voice:status', { 
         detail: { status: 'idle', system: 'elevenlabs' } 
       }));
       
-      toast.info('Buddy disconnected');
+      toast.info('Charlotte disconnected');
     },
     onError: (error: any) => {
       console.error('🎤 Voice error in integration hook:', error);

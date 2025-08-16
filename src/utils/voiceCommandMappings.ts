@@ -112,22 +112,49 @@ export const VOICE_COMMAND_MAPPINGS = {
     expectedResponse: "Going back to the previous page"
   },
 
-  // WORD ASSISTANCE
+  // ENHANCED WORD ASSISTANCE
   wordHelp: {
     naturalCommands: [
-      "what is this word",
-      "help with word",
-      "explain word",
-      "what does this mean",
-      "define this word",
-      "help me with this word",
-      "pronunciation help",
-      "what's this word",
-      "define this"
+      "what is this word", "help with word", "explain word", 
+      "what does this mean", "define this word", "help me with this word",
+      "what's this word", "word help", "I don't know this word"
     ],
     toolName: "wordHelp",
-    description: "Get help with understanding or pronouncing a word",
-    expectedResponse: "Let me help you with that word"
+    description: "Get comprehensive help with understanding a word",
+    expectedResponse: "Let me help you with that word!"
+  },
+
+  hearWord: {
+    naturalCommands: [
+      "hear this word", "pronounce this", "say this word",
+      "how do you say", "pronunciation", "read this word",
+      "sound it out", "hear it"
+    ],
+    toolName: "hearWord", 
+    description: "Hear the pronunciation of a specific word",
+    expectedResponse: "Here's how that word sounds!"
+  },
+
+  explainWord: {
+    naturalCommands: [
+      "what does this mean", "explain this word", "define this",
+      "what is this", "meaning please", "tell me about this word",
+      "what does it mean"
+    ],
+    toolName: "explainWord",
+    description: "Get the definition and meaning of a word", 
+    expectedResponse: "Let me explain what that word means!"
+  },
+
+  syllableWord: {
+    naturalCommands: [
+      "break it down", "syllables please", "how many syllables",
+      "split this word", "syllable breakdown", "break into syllables",
+      "count syllables"
+    ],
+    toolName: "syllableWord",
+    description: "Break a word into syllables with counting",
+    expectedResponse: "Here are the syllables in that word!"
   },
 
   // QUIZ CONTROLS
@@ -220,7 +247,15 @@ export const VOICE_COMMAND_MAPPINGS = {
  */
 
 export const AGENT_CONFIGURATION_INSTRUCTIONS = `
-You are a friendly reading assistant named Buddy that helps children navigate interactive stories. 
+You are Charlotte, a friendly reading buddy who helps children with interactive stories. 
+
+INTRODUCTION: Always introduce yourself as "your buddy Charlotte" when starting conversations.
+PERSONALITY: Warm, encouraging, child-friendly. Respond to both "Charlotte" and "Buddy".
+
+STORY INTELLIGENCE: Use your knowledge base to answer questions about:
+- Story characters, settings, themes
+- Real-world context for fictional places (e.g., "Where would Willow Creek be?")  
+- Educational content related to the story
 
 When you hear any of these commands, immediately call the corresponding tool:
 
@@ -228,17 +263,15 @@ READING COMMANDS:
 - "read", "start reading", "play", "begin reading" → call play() tool
 - "stop", "pause", "stop reading" → call stop() tool
 
-SPEED CONTROL COMMANDS:
-- "read faster", "faster", "speed up" → call speedUp() tool  
-- "read slower", "slower", "slow down" → call slowDown() tool
-- "normal speed", "reset speed" → call normalSpeed() tool
-
 NAVIGATION COMMANDS:  
 - "next", "next page", "go forward", "turn the page" → call next() tool
 - "back", "previous", "go back", "previous page" → call previous() tool
 
-WORD HELP COMMANDS:
-- "what is this word", "help with word", "explain word" → call wordHelp() tool
+ENHANCED WORD ASSISTANCE:
+- "what's this word", "help with word" → call wordHelp() for comprehensive help
+- "hear this word", "pronounce this" → call hearWord() to hear pronunciation
+- "what does this mean", "explain this" → call explainWord() for definitions  
+- "break it down", "syllables please" → call syllableWord() for syllable breakdown
 
 QUIZ COMMANDS:
 - "start quiz", "take quiz", "quiz me" → call startQuiz() tool
@@ -250,12 +283,14 @@ Always:
 2. Call the appropriate tool immediately  
 3. Be encouraging and positive
 4. Keep responses brief and child-friendly
+5. Use your knowledge base to enrich the learning experience
 
 Example responses:
-- "Great! Let me start reading for you!" (then call play())
-- "Perfect! Reading faster now!" (then call speedUp())
+- "Hi! I'm your buddy Charlotte! Let me start reading for you!" (then call play())
 - "Sure thing! Going to the next page!" (then call next())
-- "Of course! Let me help you with that word!" (then call wordHelp())
+- "Let me help you with that word!" (then call wordHelp())
+- "Here's how that word sounds!" (then call hearWord())
+- "Let me explain what that means!" (then call explainWord())
+- "Here are the syllables!" (then call syllableWord())
 - "Awesome! Let's start the quiz!" (then call startQuiz())
-- "Got your answer!" (then call processAnswer())
 `;
