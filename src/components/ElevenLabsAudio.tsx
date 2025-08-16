@@ -253,6 +253,14 @@ useEffect(() => {
     if (contentHash && currentUIHash && currentUIHash !== contentHash) {
       console.log(`🔄 Hash mismatch detected (attempt ${retryCount + 1}): UI=${currentUIHash?.slice(0,10)}, Audio=${contentHash?.slice(0,10)}`);
       
+      // Track hash mismatch for diagnostics
+      try {
+        const { mobileAudioDiagnostics } = await import('@/utils/mobileAudioDiagnostics');
+        mobileAudioDiagnostics.trackHashMismatch(contentHash, currentUIHash, retryCount);
+      } catch (e) {
+        console.warn('Failed to track hash mismatch:', e);
+      }
+      
       // Show user feedback with retry counter
       toast({
         title: "Syncing audio...",
