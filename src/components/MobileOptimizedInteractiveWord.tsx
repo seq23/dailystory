@@ -108,6 +108,13 @@ if (props.forceModal || isMobileOrTablet) {
       addVocabularyWord && addVocabularyWord();
     } catch {}
     setShowMobileModal(true);
+    
+    // Play Charlotte's voice for the word when modal opens (mobile only)
+    if (isMobileOrTablet) {
+      setTimeout(() => {
+        handleHearIt();
+      }, 300);
+    }
   };
 
     const handleHearIt = async () => {

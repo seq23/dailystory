@@ -6,7 +6,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 //  - 'voice:level'  => { level: number 0..1 }
 // Beeps on transitions for clear feedback.
 
-type VoiceStatus = 'idle' | 'listening' | 'processing';
+type VoiceStatus = 'idle' | 'listening' | 'processing' | 'speaking' | 'connected' | 'connecting' | 'failed';
 
 export const VoiceHUD: React.FC = () => {
   const { isMobileOrTablet } = useIsMobile();
@@ -132,8 +132,11 @@ export const VoiceHUD: React.FC = () => {
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-sm font-medium truncate">
-              {status === 'listening' && 'Listening…'}
-              {status === 'processing' && 'Transcribing…'}
+              {status === 'listening' && 'Listening...'}
+              {status === 'processing' && 'Processing...'}
+              {status === 'speaking' && 'Speaking...'}
+              {status === 'connected' && 'Voice Assistant Ready'}
+              {status === 'connecting' && 'Connecting...'}
             </div>
             {status === 'listening' ? (
               <div className="h-2 mt-1 rounded-full bg-muted overflow-hidden">

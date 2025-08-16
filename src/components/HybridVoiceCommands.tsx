@@ -204,10 +204,10 @@ export const HybridVoiceCommands: React.FC = () => {
         <div className="flex items-center gap-2">
           <div className={`w-3 h-3 rounded-full ${getStatusColor()}`} />
           <div className="flex flex-col text-xs">
-            <Badge variant="outline" className="text-xs">
-              {currentSystem.system === 'idle' ? 'Ready' : 
-               currentSystem.system === 'elevenlabs' ? 'ElevenLabs' : 'OpenAI'}
-            </Badge>
+              <Badge variant="outline" className="text-xs">
+                {currentSystem.system === 'idle' ? 'Ready' : 
+                 currentSystem.system === 'elevenlabs' ? 'Voice Assistant' : 'Backup Voice'}
+              </Badge>
             {readingSpeed !== 1.0 && (
               <Badge variant="secondary" className="text-xs mt-1">
                 Speed: {readingSpeed.toFixed(1)}x
@@ -240,15 +240,15 @@ export const HybridVoiceCommands: React.FC = () => {
       </div>
 
       <div className="flex items-center gap-2 text-xs">
-        <label className="flex items-center gap-1">
-          <input 
-            type="checkbox" 
-            checked={manualOverride}
-            onChange={(e) => setManualOverride(e.target.checked)}
-            className="w-3 h-3"
-          />
-          Force OpenAI
-        </label>
+            <label className="flex items-center gap-1">
+              <input 
+                type="checkbox" 
+                checked={manualOverride}
+                onChange={(e) => setManualOverride(e.target.checked)}
+                className="w-3 h-3"
+              />
+              Use backup voice system
+            </label>
       </div>
 
       {/* Hidden components for actual voice processing */}

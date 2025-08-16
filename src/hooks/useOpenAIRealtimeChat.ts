@@ -52,7 +52,7 @@ export const useOpenAIRealtimeChat = ({ onFunctionCall }: UseOpenAIRealtimeChatP
 
   const connect = useCallback(async () => {
     try {
-      console.log('🔌 Connecting to OpenAI Realtime API...');
+      console.log('🔌 Connecting to Voice Assistant...');
       
       // Initialize audio context first
       await initAudioContext();
@@ -62,10 +62,16 @@ export const useOpenAIRealtimeChat = ({ onFunctionCall }: UseOpenAIRealtimeChatP
       wsRef.current = new WebSocket(wsUrl);
 
       wsRef.current.onopen = () => {
-        console.log('✅ Connected to OpenAI Realtime API');
+        console.log('✅ Connected to Voice Assistant');
         setIsConnected(true);
+        
+        // Dispatch global voice status event
+        window.dispatchEvent(new CustomEvent('voice:status', { 
+          detail: { status: 'connected', system: 'openai' } 
+        }));
+        
         toast({
-          title: 'Voice Connected',
+          title: 'Voice Assistant Ready',
           description: 'Say: "read", "stop", "next", "back", or "what is this word"'
         });
       };
@@ -84,6 +90,11 @@ export const useOpenAIRealtimeChat = ({ onFunctionCall }: UseOpenAIRealtimeChatP
                 bytes[i] = binaryString.charCodeAt(i);
               }
               await playAudioData(audioContextRef.current, bytes);
+              
+              // Dispatch speaking status
+              window.dispatchEvent(new CustomEvent('voice:status', { 
+                detail: { status: 'speaking', system: 'openai' } 
+              }));
             }
             break;
 
@@ -116,11 +127,21 @@ export const useOpenAIRealtimeChat = ({ onFunctionCall }: UseOpenAIRealtimeChatP
             console.log('🎤 Speech started');
             setIsProcessing(true);
             clearAudioQueue(); // Stop any ongoing audio
+            
+            // Dispatch processing status
+            window.dispatchEvent(new CustomEvent('voice:status', { 
+              detail: { status: 'processing', system: 'openai' } 
+            }));
             break;
 
           case 'input_audio_buffer.speech_stopped':
             console.log('🎤 Speech stopped');
             setIsProcessing(false);
+            
+            // Dispatch listening status
+            window.dispatchEvent(new CustomEvent('voice:status', { 
+              detail: { status: 'listening', system: 'openai' } 
+            }));
             break;
 
           case 'error':
@@ -141,8 +162,14 @@ export const useOpenAIRealtimeChat = ({ onFunctionCall }: UseOpenAIRealtimeChatP
 
       wsRef.current.onerror = (error) => {
         console.error('❌ WebSocket error:', error);
+        
+        // Dispatch error status
+        window.dispatchEvent(new CustomEvent('voice:status', { 
+          detail: { status: 'failed', system: 'openai', error: 'Connection failed' } 
+        }));
+        
         toast({
-          title: 'Connection Error',
+          title: 'Voice Assistant Error',
           description: 'Failed to connect to voice service',
           variant: 'destructive'
         });
@@ -152,6 +179,11 @@ export const useOpenAIRealtimeChat = ({ onFunctionCall }: UseOpenAIRealtimeChatP
         console.log('🔌 Connection closed');
         setIsConnected(false);
         setIsRecording(false);
+        
+        // Dispatch disconnected status
+        window.dispatchEvent(new CustomEvent('voice:status', { 
+          detail: { status: 'idle', system: 'openai' } 
+        }));
       };
 
     } catch (error) {
@@ -169,15 +201,32 @@ export const useOpenAIRealtimeChat = ({ onFunctionCall }: UseOpenAIRealtimeChatP
       console.log('🎤 Starting recording...');
       
       if (!audioRecorderRef.current) {
-        audioRecorderRef.current = new AudioRecorder(handleAudioData);
+        audioRecorderRef.current = new AudioRecorder((audioData) => {
+          handleAudioData(audioData);
+          
+          // Calculate and dispatch voice level for visualization
+          const level = audioData.reduce((max, sample) => Math.max(max, Math.abs(sample)), 0);
+          window.dispatchEvent(new CustomEvent('voice:level', { detail: { level } }));
+        });
       }
       
       await audioRecorderRef.current.start();
       setIsRecording(true);
       
+      // Dispatch listening status
+      window.dispatchEvent(new CustomEvent('voice:status', { 
+        detail: { status: 'listening', system: 'openai' } 
+      }));
+      
       console.log('✅ Recording started');
     } catch (error) {
       console.error('❌ Recording failed:', error);
+      
+      // Dispatch error status
+      window.dispatchEvent(new CustomEvent('voice:status', { 
+        detail: { status: 'failed', system: 'openai', error: 'Microphone access denied' } 
+      }));
+      
       toast({
         title: 'Microphone Error',
         description: 'Could not access microphone',
@@ -195,6 +244,12 @@ export const useOpenAIRealtimeChat = ({ onFunctionCall }: UseOpenAIRealtimeChatP
     }
     
     setIsRecording(false);
+    
+    // Dispatch connected status (no longer listening)
+    window.dispatchEvent(new CustomEvent('voice:status', { 
+      detail: { status: 'connected', system: 'openai' } 
+    }));
+    
     console.log('✅ Recording stopped');
   }, []);
 
