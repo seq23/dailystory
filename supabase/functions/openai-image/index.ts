@@ -11,6 +11,8 @@ interface OpenAIImageRequest {
   style?: 'vivid' | 'natural';
   userInfo?: any;
   pageNumber?: number;
+  seed?: number; // For consistency tracking
+  sessionId?: string;
 }
 
 serve(async (req) => {
@@ -32,10 +34,12 @@ serve(async (req) => {
       negativePrompt, 
       width = 1024, 
       height = 1024,
-      quality = 'hd',
+      quality = 'high',
       style = 'vivid',
       userInfo,
-      pageNumber 
+      pageNumber,
+      seed,
+      sessionId
     } = requestData;
 
     console.log(`🖼️ OpenAI Image Generation - Page ${pageNumber || 'unknown'}`);
@@ -57,6 +61,9 @@ serve(async (req) => {
     if (width === 1536 && height === 1024) size = '1792x1024';
     else if (width === 1024 && height === 1536) size = '1024x1792';
 
+    // Fix quality parameter mapping
+    const dalleQuality = quality === 'high' ? 'hd' : 'standard';
+
     const response = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
@@ -68,7 +75,8 @@ serve(async (req) => {
         prompt: enhancedPrompt,
         n: 1,
         size: size,
-        quality: quality === 'high' ? 'hd' : quality
+        quality: dalleQuality,
+        style: style
       }),
     });
 
@@ -87,15 +95,22 @@ serve(async (req) => {
 
     const imageUrl = data.data[0].url;
     
+    // Generate a consistent seed for OpenAI (for tracking purposes)
+    const generatedSeed = seed || Math.floor(Math.random() * 2147483647);
+    
     console.log(`✅ OpenAI Image Generated Successfully - URL: ${imageUrl.substring(0, 50)}...`);
+    console.log(`🎯 Assigned seed ${generatedSeed} for consistency tracking`);
 
     return createCorsResponse({
       success: true,
       imageURL: imageUrl,
       provider: 'openai',
       model: 'dall-e-3',
-      cost: data.data[0].cost || 0,
-      pageNumber: pageNumber
+      cost: dalleQuality === 'hd' ? 0.08 : 0.04, // Actual OpenAI pricing
+      pageNumber: pageNumber,
+      seed: generatedSeed,
+      quality: dalleQuality,
+      size: size
     });
 
   } catch (error) {

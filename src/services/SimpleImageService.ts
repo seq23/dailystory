@@ -24,6 +24,7 @@ export interface ImageResult {
   provider?: string;
   model?: string;
   cost?: number;
+  seed?: number; // For consistency tracking across providers
 }
 
 
@@ -70,7 +71,29 @@ export class SimpleImageService {
   }
 
   private static saveUsage(userKey: string, usage: { count: number; cost: number; last: number }) {
-    try { localStorage.setItem(this.getUsageKey(userKey), JSON.stringify(usage)); } catch {}
+    try { 
+      localStorage.setItem(this.getUsageKey(userKey), JSON.stringify(usage)); 
+      console.log(`💰 Updated usage: ${usage.count} images, $${usage.cost.toFixed(4)} estimated cost`);
+    } catch {}
+  }
+
+  // Character seed persistence for cross-provider consistency
+  private static getCharacterSeedFromCache(characterName: string, sessionId: string): number | undefined {
+    try {
+      const key = `char_seed_${sessionId}_${characterName}`;
+      const cached = localStorage.getItem(key);
+      return cached ? parseInt(cached) : undefined;
+    } catch {
+      return undefined;
+    }
+  }
+
+  private static saveCharacterSeedToCache(characterName: string, sessionId: string, seed: number): void {
+    try {
+      const key = `char_seed_${sessionId}_${characterName}`;
+      localStorage.setItem(key, seed.toString());
+      console.log(`🔒 Cached seed ${seed} for ${characterName} in session ${sessionId}`);
+    } catch {}
   }
 
 
@@ -111,10 +134,10 @@ export class SimpleImageService {
     return config;
   }
 
-  private static recordUsage(userKey: string) {
+  private static recordUsage(userKey: string, actualCost?: number) {
     const usage = this.loadUsage(userKey);
     usage.count += 1;
-    usage.cost += this.ESTIMATED_COST_PER_IMAGE_USD;
+    usage.cost += actualCost || this.ESTIMATED_COST_PER_IMAGE_USD;
     usage.last = Date.now();
     this.saveUsage(userKey, usage);
 
@@ -221,15 +244,31 @@ export class SimpleImageService {
       
       console.log(`🎯 Token-optimized generation for ${userInfo.name} on page ${pageNumber}`);
 
-      // If Runware fails, fallback to OpenAI with simplified prompt
+      // If Runware fails, fallback to OpenAI with enhanced consistency
       if (!result.success) {
         console.log('⚠️ Runware failed, falling back to OpenAI...');
-        const simplePrompt = `Children's book illustration: ${userInfo.name} ${storyText}. Bright, cheerful, safe for children.`;
-        result = await this.generateWithOpenAI(simplePrompt, finalConfig, undefined, userInfo, pageNumber);
+        
+        // Try to preserve character seed for OpenAI fallback
+        const existingSeed = this.getCharacterSeedFromCache(userInfo.name, sessionId);
+        
+        result = await this.generateWithOpenAI(
+          storyText, 
+          finalConfig, 
+          undefined, 
+          userInfo, 
+          pageNumber, 
+          sessionId,
+          existingSeed
+        );
+        
+        // If OpenAI succeeds, save seed for future consistency
+        if (result.success && result.seed) {
+          this.saveCharacterSeedToCache(userInfo.name, sessionId, result.seed);
+        }
       }
 
       if (result.success) {
-        this.recordUsage(userKey);
+        this.recordUsage(userKey, result.cost);
         console.log(`✅ Character-consistent generation successful with ${result.provider} (${userInfo.name})`);
       } else {
         console.error('❌ All image providers failed:', result.error);
@@ -290,7 +329,8 @@ export class SimpleImageService {
         success: true,
         provider: 'runware',
         model: data.model || 'runware:100@1',
-        cost: data.cost || this.ESTIMATED_COST_PER_IMAGE_USD
+        cost: data.cost || this.ESTIMATED_COST_PER_IMAGE_USD,
+        seed: data.seed // Include seed for consistency
       };
 
     } catch (error) {
@@ -306,25 +346,34 @@ export class SimpleImageService {
   }
 
   private static async generateWithOpenAI(
-    prompt: string, 
+    storyText: string, 
     config: ImageGenerationConfig, 
     negativePrompt?: string,
     userInfo?: UserInfo,
-    pageNumber?: number
+    pageNumber?: number,
+    sessionId?: string,
+    seed?: number
   ): Promise<ImageResult> {
     try {
       console.log('🤖 Calling OpenAI image generation...');
       
+      // Create enhanced prompt for OpenAI similar to Runware
+      const enhancedPrompt = userInfo 
+        ? `Children's book illustration: ${userInfo.name} (${userInfo.avatar?.type || 'child'}) ${storyText}. Bright, cheerful, safe for children.`
+        : `Children's book illustration: ${storyText}. Bright, cheerful, safe for children.`;
+      
       const { data, error } = await supabase.functions.invoke('openai-image', {
         body: {
-          positivePrompt: prompt,
+          positivePrompt: enhancedPrompt,
           negativePrompt,
           width: config.width,
           height: config.height,
           quality: 'high',
           style: 'vivid',
           userInfo,
-          pageNumber
+          pageNumber,
+          seed,
+          sessionId
         }
       });
 
@@ -351,7 +400,8 @@ export class SimpleImageService {
         success: true,
         provider: 'openai',
         model: data.model,
-        cost: data.cost
+        cost: data.cost || 0.08, // Use actual OpenAI pricing
+        seed: data.seed // Include seed for consistency
       };
 
     } catch (error) {
