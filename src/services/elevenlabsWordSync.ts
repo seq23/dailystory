@@ -72,15 +72,26 @@ export class ElevenLabsWordSync {
         throw new Error('No audio data received from ElevenLabs');
       }
 
-      // Parse response - handle both aligned and non-aligned responses
+      // Parse response - handle actual ElevenLabs response format
       let audioData: string;
       let wordTimestamps: WordTimestamp[] = [];
 
-      if (data && typeof data === 'object' && 'audio' in data && 'alignment' in data) {
-        // ElevenLabs response with alignment
-        const response = data as ElevenLabsSyncResponse;
-        audioData = response.audio;
-        wordTimestamps = response.alignment?.words || [];
+      if (data && typeof data === 'object') {
+        if ('audio' in data) {
+          // Standard ElevenLabs response with base64 audio
+          audioData = data.audio;
+          console.log('✅ Using standard ElevenLabs audio response');
+        } else if (typeof data === 'string') {
+          // Direct base64 string response
+          audioData = data;
+          console.log('✅ Using direct base64 audio response');
+        } else {
+          throw new Error('No audio data found in ElevenLabs response');
+        }
+        
+        // ElevenLabs doesn't provide word alignment in basic TTS
+        // Generate fallback timestamps for all responses
+        wordTimestamps = this.generateFallbackTimestamps(text);
       } else if (typeof data === 'string') {
         // Simple base64 audio response (fallback)
         audioData = data;

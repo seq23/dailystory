@@ -32,7 +32,7 @@ serve(async (req) => {
       negativePrompt, 
       width = 1024, 
       height = 1024,
-      quality = 'high',
+      quality = 'hd',
       style = 'vivid',
       userInfo,
       pageNumber 

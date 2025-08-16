@@ -384,10 +384,11 @@ serve(async (req) => {
 
     // Server-side prompt construction with visual state
     let enhancedPrompt: string;
-    let currentUserInfo = userInfo;
-    let currentCharacterName = characterName;
-    let currentSkinTone = skinTone;
-    let currentAvatarType = avatarType;
+    // Avoid reassigning const variables - use different variable names
+    let effectiveUserInfo = userInfo;
+    let effectiveCharacterName = characterName;
+    let effectiveSkinTone = skinTone;
+    let effectiveAvatarType = avatarType;
     
     if (pageText && sessionId && userInfo) {
       // NEW: Server-side visual state processing using comprehensive manager
