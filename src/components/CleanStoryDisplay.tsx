@@ -2467,7 +2467,8 @@ const handleRestartTimer = () => {
       {/* Voice Command System */}
       <VoiceCommandController headless={true} onCommand={handleVoiceCommand} />
       <VoiceHoverController isPremium={isPremium} />
-      <VoiceCommands />
+      {/* Use OpenAI Realtime instead of ElevenLabs */}
+      {/* <VoiceCommands /> */}
       </div>
     </ErrorBoundary>
     </GameContextProvider>

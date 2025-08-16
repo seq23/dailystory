@@ -39,3 +39,6 @@ verify_jwt = false
 
 [functions.background-image-pregeneration]
 verify_jwt = false
+
+[functions.openai-realtime]
+verify_jwt = false
