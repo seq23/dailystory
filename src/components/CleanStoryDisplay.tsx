@@ -88,6 +88,19 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const { t } = useTranslation();
   const { toast } = useToast();
   const { isMobile, isTablet, isMobileOrTablet, hasTouchCapability } = useIsMobile();
+  
+  // Debug device detection
+  useEffect(() => {
+    console.log('📱 CleanStoryDisplay Device Detection:', {
+      windowWidth: typeof window !== 'undefined' ? window.innerWidth : 'unknown',
+      isMobile,
+      isTablet,
+      isMobileOrTablet,
+      hasTouchCapability,
+      shouldShowDock: isMobileOrTablet
+    });
+  }, [isMobile, isTablet, isMobileOrTablet, hasTouchCapability]);
+  
   const runtimeTouch = typeof window !== 'undefined' && (('ontouchstart' in window) || (navigator.maxTouchPoints > 0));
   const forceDesktopModal = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('desktopModal') === '1';
   const preferMobileModal = forceDesktopModal || isMobile || (isTablet && (hasTouchCapability || runtimeTouch));
@@ -2437,6 +2450,23 @@ const handleRestartTimer = () => {
         />
       )}
 
+
+      {/* Debug Display - Shows device detection in top corner */}
+      <div className="fixed top-2 right-2 z-50 bg-black/80 text-white text-xs p-2 rounded">
+        Width: {typeof window !== 'undefined' ? window.innerWidth : 'unknown'}px | 
+        Mobile: {isMobile ? 'Yes' : 'No'} | 
+        Tablet: {isTablet ? 'Yes' : 'No'} |
+        MobileOrTablet: {isMobileOrTablet ? 'Yes' : 'No'}
+      </div>
+
+      {/* Debug Display - Shows device detection */}
+      <div className="fixed top-2 right-2 z-50 bg-black/80 text-white text-xs p-2 rounded font-mono">
+        W:{typeof window !== 'undefined' ? window.innerWidth : '?'}px | 
+        M:{isMobile ? 'Y' : 'N'} | 
+        T:{isTablet ? 'Y' : 'N'} | 
+        MT:{isMobileOrTablet ? 'Y' : 'N'} |
+        Dock:{isMobileOrTablet ? 'SHOW' : 'HIDE'}
+      </div>
 
       {/* Mobile Action Dock - Mobile and Tablet devices */}
       {isMobileOrTablet && (
