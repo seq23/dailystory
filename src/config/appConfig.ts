@@ -126,13 +126,13 @@ export const APP_CONFIG: AppConfig = {
 // Style framework by difficulty level - Phase 1 Implementation
 export const DIFFICULTY_STYLE_MAPPING = {
   'beginner': {
-    name: 'Educational Simplicity',
-    prompt: 'simple children\'s book illustration, bold primary colors, clean lines, flat cartoon style',
-    complexity: 'minimal',
-    colorPalette: 'bright primary colors',
-    detailLevel: 'low',
-    rendering: 'flat cartoon',
-    brandSuffix: 'educational, age-appropriate, learning-focused'
+    name: 'Playful & Colorful',
+    prompt: '3D children\'s book art, bright colors, smooth rendering, cheerful',
+    complexity: 'standard',
+    colorPalette: 'bright_vibrant',
+    detailLevel: 'high',
+    rendering: '3d_smooth',
+    brandSuffix: 'children\'s book illustration, warm earth tones, diverse inclusive characters, professional artwork'
   },
   'easy': {
     name: 'Playful & Colorful', 

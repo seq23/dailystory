@@ -499,9 +499,9 @@ serve(async (req) => {
       
       const environmentalContext = StoryVisualStateManager.getSettingForPrompt(sessionId);
       
-      // Apply difficulty-appropriate art style
+      // Use centralized style mapping from appConfig
       const difficultyStyleMapping: Record<string, string> = {
-        'beginner': 'simple children\'s book illustration, bold primary colors, clean lines, flat cartoon style',
+        'beginner': '3D children\'s book art, bright colors, smooth rendering, cheerful',
         'easy': '3D children\'s book art, bright colors, smooth rendering, cheerful',
         'medium': 'children\'s book illustration, soft pastels, warm lighting, digital art',
         'hard': '2D digital illustration (sophisticated artistic style), nuanced color gradients, artistic palette, highly detailed',
@@ -509,7 +509,8 @@ serve(async (req) => {
       };
       
       const artStyle = difficultyStyleMapping[difficultyLevel] || difficultyStyleMapping['medium'];
-      enhancedPrompt = `${characterDesc}${secondaryChars} ${processedText}${environmentalContext} consistent-face ${artStyle}`;
+      // Restructure prompt to prevent character name text overlays
+      enhancedPrompt = `Visual appearance: ${characterDesc.split(':')[1]?.trim() || characterDesc}${secondaryChars}. Scene: ${processedText}${environmentalContext}. Style: consistent-face ${artStyle}`;
       
       if (characterSeed) {
         finalSeed = characterSeed;
@@ -591,7 +592,7 @@ serve(async (req) => {
       enhancedPrompt = enhancedPrompt.replace(/\b(NOT|bad|ugly|terrible|awful)\b/gi, '');
     }
     
-    const defaultNegativePrompt = "bad anatomy, blurry, text, ugly";
+    const defaultNegativePrompt = "bad anatomy, blurry, text, words, letters, typography, watermarks, names, labels, signatures, ugly";
     const finalNegativePrompt = negativePrompt 
       ? `${defaultNegativePrompt}, ${negativePrompt}`
       : defaultNegativePrompt;
