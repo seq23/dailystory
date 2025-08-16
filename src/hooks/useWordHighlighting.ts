@@ -1,66 +1,42 @@
-import { useEffect, useRef } from 'react';
-import { useAudioHighlighting } from '@/hooks/useAudioHighlighting';
+import { useEffect } from 'react';
+import { useSimpleAudioHighlighting } from '@/hooks/useSimpleAudioHighlighting';
 
 /**
- * Hook to provide synchronized word highlighting during audio playback
- * Integrates with the enhanced audio sync service for precise timing
+ * Simplified word highlighting hook for audio playback
+ * Clean architecture without circular dependencies
  */
 export const useWordHighlighting = (text: string, isAudioPlaying: boolean) => {
   const { 
     highlightWord, 
     clearHighlighting, 
-    startAudioHighlighting, 
-    stopAudioHighlighting,
+    startHighlighting, 
+    stopHighlighting,
     currentHighlightedWord,
-    getHighlightingState
-  } = useAudioHighlighting();
-  
-  const cleanupRef = useRef<(() => void) | null>(null);
+    setCleanupFunction
+  } = useSimpleAudioHighlighting();
 
   // Handle audio state changes
   useEffect(() => {
     if (isAudioPlaying) {
-      startAudioHighlighting();
+      startHighlighting();
     } else {
-      stopAudioHighlighting();
+      stopHighlighting();
     }
-  }, [isAudioPlaying]); // Remove function dependencies to prevent circular updates
+  }, [isAudioPlaying, startHighlighting, stopHighlighting]);
 
-  // Enhanced cleanup on text change (new page/story)
+  // Clear highlighting on text change (new page/story)
   useEffect(() => {
-    // Clear highlighting immediately when text changes
     console.log('🧹 Word highlighting: Text changed, clearing highlights');
     clearHighlighting();
-    
-    return () => {
-      if (cleanupRef.current) {
-        cleanupRef.current();
-      }
-      clearHighlighting();
-    };
-  }, [text]); // Remove clearHighlighting from dependencies to prevent circular updates
+  }, [text, clearHighlighting]);
 
-  // Enhanced highlight callback with sync monitoring
+  // Simple highlight callback
   const onWordHighlight = (wordIndex: number) => {
     if (wordIndex === -1) {
-      // Clear highlighting
       clearHighlighting();
-      return;
+    } else {
+      highlightWord(wordIndex);
     }
-
-    // Apply highlighting with enhanced visual feedback
-    highlightWord(wordIndex);
-    
-    // Log for debugging and monitoring
-    const state = getHighlightingState();
-    if (state.syncOffset !== 0) {
-      console.log(`🔄 Highlight sync offset: ${state.syncOffset}`);
-    }
-  };
-
-  // Register cleanup function
-  const setCleanupFunction = (cleanup: () => void) => {
-    cleanupRef.current = cleanup;
   };
 
   return {

@@ -51,7 +51,7 @@ USER INPUT INTEGRATION: Mix {userName}, {favoriteColor}, {favoriteAnimal}, {favo
 
 GUARDRAILS: G-rated content only. No external personal data. No copyrighted content. Transform any potentially concerning themes into their gentle equivalents naturally.
 
-Randomness: seed={seed} (generate if null, return as meta.seed)`,
+Use seed={seed} to vary story elements: settings (home/park/forest/city), activities (exploring/helping/playing), moods (cheerful/curious/adventurous), and time periods (morning/afternoon/evening). Higher seeds favor active/adventurous themes, lower seeds favor calm/reflective themes.`,
     userPromptTemplate: 'Create a never-ending children\'s story for {userName}, age 3-5. The story continues forever unless the user requests an ending. Use {specialRequest} as creative inspiration, or if none determined, create your own engaging themes. Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} throughout the story in a direct way, mixing with your own creative elements. USE ONLY 1 sentence per page with simple subject-verb or subject-verb-object structure. Use MOSTLY sight words and 2-4 letter words. Use MOSTLY 2-4 word sentences (max 6).',
   },
 
@@ -76,7 +76,7 @@ AUTHOR'S STYLE: Draw inspiration from getColorVoiceForUser(userInfo, difficulty)
 
 GUARDRAILS: G-rated content only. No external personal data. No copyrighted content. Transform concerning themes to gentle equivalents.
 
-Randomness: seed={seed} (generate if null, return as meta.seed)`,
+Use seed={seed} to vary story elements: settings (home/park/forest/city), activities (exploring/helping/playing), moods (cheerful/curious/adventurous), and time periods (morning/afternoon/evening). Higher seeds favor active/adventurous themes, lower seeds favor calm/reflective themes.`,
     userPromptTemplate: 'Create a never-ending story for {userName}, age 5-7. The story continues forever with natural pauses and continuation hooks unless the user requests an ending. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} throughout the story in a direct way, mixing with your own creative elements. Use simple vocabulary with 2-3 sentences per page for developing readers. Let the story flow organically with natural progression.',
   },
 
@@ -101,7 +101,7 @@ AUTHOR'S STYLE: Draw inspiration from getColorVoiceForUser(userInfo, difficulty)
 
 GUARDRAILS: Age-appropriate content. No copyrighted content. Transform concerning themes.
 
-Randomness: seed={seed} (generate if null, return as meta.seed)`,
+Use seed={seed} to vary story elements: settings (home/park/forest/city), activities (exploring/helping/playing), moods (cheerful/curious/adventurous), and time periods (morning/afternoon/evening). Higher seeds favor active/adventurous themes, lower seeds favor calm/reflective themes.`,
     userPromptTemplate: 'Create a never-ending story for {userName}, age 7-9. The story continues forever with natural pauses and continuation hooks unless the user requests an ending. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} throughout the story, mixing with your own creative elements. Let the story flow organically with natural progression.',
   },
 
@@ -126,7 +126,7 @@ AUTHOR'S STYLE: Draw inspiration from getColorVoiceForUser(userInfo, difficulty)
 
 GUARDRAILS: Age-appropriate content. No copyrighted content. Avoid intense themes.
 
-Randomness: seed={seed} (generate if null, return as meta.seed)`,
+Use seed={seed} to vary story elements: settings (home/park/forest/city), activities (exploring/helping/playing), moods (cheerful/curious/adventurous), and time periods (morning/afternoon/evening). Higher seeds favor active/adventurous themes, lower seeds favor calm/reflective themes.`,
     userPromptTemplate: 'Create a never-ending story for {userName}, age 9-12. The story continues forever with natural pauses and continuation hooks until the user requests an ending. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally incorporate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} when they enhance the narrative, mixing with your own creative elements. Let the story flow organically with sophisticated storytelling techniques.',
   },
 
@@ -150,7 +150,7 @@ AUTHOR'S STYLE: Draw inspiration from getColorVoiceForUser(userInfo, difficulty)
 
 GUARDRAILS: Age-appropriate content. No copyrighted content. Avoid inappropriate material.
 
-Randomness: seed={seed} (generate if null, return as meta.seed)`,
+Use seed={seed} to vary story elements: settings (home/park/forest/city), activities (exploring/helping/playing), moods (cheerful/curious/adventurous), and time periods (morning/afternoon/evening). Higher seeds favor active/adventurous themes, lower seeds favor calm/reflective themes.`,
     userPromptTemplate: 'Create a never-ending story for {userName}, age 11-15 until the user requests an ending. Challenge readers intellectually with mature themes and transformative character growth. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally incorporate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} when they enhance the narrative.',
   }
 };
@@ -179,7 +179,7 @@ FORMAT: Page 1: [5-6 sentences]. Each subsequent page should maintain similar le
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
-Randomness: seed={seed} (generate if null, return as meta.seed)`,
+Use seed={seed} to vary story elements: settings (home/park/forest/city), activities (exploring/helping/playing), moods (cheerful/curious/adventurous), and time periods (morning/afternoon/evening). Higher seeds favor active/adventurous themes, lower seeds favor calm/reflective themes.`,
     userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) using 6th grade vocabulary that challenges readers intellectually and emotionally. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Use a random internal seed (1-10,000) for unique details.',
     maxLength: 900,
     expectedPages: 12,
@@ -207,7 +207,7 @@ FORMAT: Page 1: [6-7 sentences]. Each subsequent page should maintain similar le
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
-Randomness: seed={seed} (generate if null, return as meta.seed)`,
+Use seed={seed} to vary story elements: settings (home/park/forest/city), activities (exploring/helping/playing), moods (cheerful/curious/adventurous), and time periods (morning/afternoon/evening). Higher seeds favor active/adventurous themes, lower seeds favor calm/reflective themes.`,
     userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) using 7th grade vocabulary that challenges readers intellectually and emotionally. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Use a random internal seed (1-10,000) for unique details.',
     maxLength: 1100,
     expectedPages: 13,
@@ -235,7 +235,7 @@ FORMAT: Page 1: [6-8 sentences]. Each subsequent page should maintain similar le
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
-Randomness: seed={seed} (generate if null, return as meta.seed)`,
+Use seed={seed} to vary story elements: settings (home/park/forest/city), activities (exploring/helping/playing), moods (cheerful/curious/adventurous), and time periods (morning/afternoon/evening). Higher seeds favor active/adventurous themes, lower seeds favor calm/reflective themes.`,
     userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) using 8th grade vocabulary that challenges readers intellectually and emotionally. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Use a random internal seed (1-10,000) for unique details.',
     maxLength: 1200,
     expectedPages: 14,
@@ -263,7 +263,7 @@ FORMAT: Page 1: [7-8 sentences]. Each subsequent page should maintain similar le
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
-Randomness: seed={seed} (generate if null, return as meta.seed)`,
+Use seed={seed} to vary story elements: settings (home/park/forest/city), activities (exploring/helping/playing), moods (cheerful/curious/adventurous), and time periods (morning/afternoon/evening). Higher seeds favor active/adventurous themes, lower seeds favor calm/reflective themes.`,
     userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) using 9th grade vocabulary that challenges readers intellectually and emotionally. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Use a random internal seed (1-10,000) for unique details.',
     maxLength: 1300,
     expectedPages: 15,
@@ -291,7 +291,7 @@ FORMAT: Page 1: [7-9 sentences]. Each subsequent page should maintain similar le
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
-Randomness: seed={seed} (generate if null, return as meta.seed)`,
+Use seed={seed} to vary story elements: settings (home/park/forest/city), activities (exploring/helping/playing), moods (cheerful/curious/adventurous), and time periods (morning/afternoon/evening). Higher seeds favor active/adventurous themes, lower seeds favor calm/reflective themes.`,
     userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) using 10th grade vocabulary that challenges readers intellectually and emotionally. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Use a random internal seed (1-10,000) for unique details.',
     maxLength: 1400,
     expectedPages: 16,
