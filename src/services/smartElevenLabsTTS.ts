@@ -18,6 +18,11 @@ export class SmartElevenLabsTTS {
   ): Promise<ArrayBuffer> {
     console.log(`🔊 Smart TTS: "${text}" [Context: ${context}]`);
 
+    // Request audio coordinator permission for Charlotte speech
+    if (context === 'conversation') {
+      window.dispatchEvent(new CustomEvent('audio:request', { detail: { system: 'charlotte' } }));
+    }
+
     const { data, error } = await supabase.functions.invoke('elevenlabs-tts-smart', {
       body: {
         text,
@@ -43,6 +48,12 @@ export class SmartElevenLabsTTS {
     }
 
     console.log(`✅ Smart TTS Success: ${bytes.byteLength} bytes [Applied Lexicon: ${data.appliedLexicon}]`);
+    
+    // Release audio coordinator lock for Charlotte speech
+    if (context === 'conversation') {
+      window.dispatchEvent(new CustomEvent('audio:stopped', { detail: { system: 'charlotte' } }));
+    }
+    
     return bytes.buffer;
   }
 

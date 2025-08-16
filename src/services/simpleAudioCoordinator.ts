@@ -4,7 +4,7 @@
  * Provides timeout protection and better mutual exclusion
  */
 
-type AudioSystem = 'sync' | 'simple' | 'voice' | null;
+type AudioSystem = 'sync' | 'simple' | 'voice' | 'charlotte' | null;
 
 class SimpleAudioCoordinator {
   private activeSystem: AudioSystem = null;
@@ -34,6 +34,8 @@ class SimpleAudioCoordinator {
           window.dispatchEvent(new CustomEvent('audio:stop:simple'));
         } else if (this.activeSystem === 'voice') {
           window.dispatchEvent(new CustomEvent('audio:stop:voice'));
+        } else if (this.activeSystem === 'charlotte') {
+          window.dispatchEvent(new CustomEvent('audio:stop:charlotte'));
         }
         
         this.activeSystem = system;
@@ -87,6 +89,16 @@ class SimpleAudioCoordinator {
         window.dispatchEvent(new CustomEvent('voice:stop'));
       } catch (e) {
         console.warn('Failed to stop voice audio:', e);
+      }
+    });
+
+    window.addEventListener('audio:stop:charlotte', () => {
+      try {
+        // Stop Charlotte's conversation system
+        window.dispatchEvent(new CustomEvent('charlotte:stop'));
+        console.log('🤖 Audio Coordinator: Requested Charlotte to stop speaking');
+      } catch (e) {
+        console.warn('Failed to stop Charlotte audio:', e);
       }
     });
   }

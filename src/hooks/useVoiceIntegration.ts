@@ -4,6 +4,7 @@ import { useConversation } from '@11labs/react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { phoneticRulesEngine } from '@/services/phoneticRulesEngine';
+import { useCharlotteAudioCoordination } from './useCharlotteAudioCoordination';
 
 /**
  * Hook to integrate the main UI voice buttons with the SimpleVoiceCommands system
@@ -11,6 +12,7 @@ import { phoneticRulesEngine } from '@/services/phoneticRulesEngine';
 export const useVoiceIntegration = () => {
   const engine = SimpleAudioEngine.getInstance();
   const voiceSystemRef = useRef<any>(null);
+  const { canCharlotteSpeak, requestCharlotteSpeech, releaseCharlotteSpeech } = useCharlotteAudioCoordination();
 
   // Enhanced word context resolution function
   const getContextualWord = (providedWord?: string): string => {
@@ -44,6 +46,13 @@ export const useVoiceIntegration = () => {
   const clientTools = {
     play: () => {
       console.log('🎯 Voice command: play');
+      
+      // Check if Charlotte can speak before responding
+      if (!canCharlotteSpeak()) {
+        console.log('🤖 Charlotte deferring play command due to audio conflict');
+        return "I'll wait until the current audio finishes";
+      }
+      
       const text = (window as any).__pageContentString || '';
       const hash = (window as any).__pageContentHash || undefined;
       const storyTitle = (window as any).__storyTitle || '';
@@ -237,6 +246,9 @@ export const useVoiceIntegration = () => {
     onConnect: () => {
       console.log('🎤 Connected to Charlotte (Buddy) via integration hook');
       
+      // Register Charlotte as active voice system
+      window.dispatchEvent(new CustomEvent('audio:request', { detail: { system: 'charlotte' } }));
+      
       // Dispatch voice status event for UI updates
       window.dispatchEvent(new CustomEvent('voice:status', { 
         detail: { status: 'listening', system: 'elevenlabs' } 
@@ -246,6 +258,9 @@ export const useVoiceIntegration = () => {
     },
     onDisconnect: () => {
       console.log('🎤 Disconnected from Charlotte (Buddy) via integration hook');
+      
+      // Release Charlotte's audio control
+      window.dispatchEvent(new CustomEvent('audio:stopped', { detail: { system: 'charlotte' } }));
       
       // Dispatch voice status event for UI updates
       window.dispatchEvent(new CustomEvent('voice:status', { 
