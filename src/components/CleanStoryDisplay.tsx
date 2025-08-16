@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { MobileOptimizedButton } from "@/components/MobileOptimizedButton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -239,6 +240,8 @@ const handleAudioStateChange = (playing: boolean) => {
 // Direct URL management for story sessions (more reliable than hook-based approach)
 
 // Direct URL management for story sessions
+const navigate = useNavigate();
+
 useEffect(() => {
   if (story.length > 0) {
     const params = new URLSearchParams();
@@ -251,13 +254,9 @@ useEffect(() => {
     }
 
     const newUrl = `/?${params.toString()}`;
-    const currentUrl = window.location.pathname + window.location.search;
-    
-    if (currentUrl !== newUrl) {
-      window.history.replaceState({}, '', newUrl);
-    }
+    navigate(newUrl, { replace: true });
   }
-}, [story.length, currentPage, storyTitle]);
+}, [story.length, currentPage, storyTitle, navigate]);
 
 // Handle browser back/forward navigation
 useEffect(() => {
