@@ -1,4 +1,5 @@
 import React from 'react';
+import { HybridVoiceCommands } from './HybridVoiceCommands';
 import { OpenAIVoiceCommands } from './OpenAIVoiceCommands';
 import { VoiceCommands } from './VoiceCommands';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,33 +12,34 @@ export const VoiceCommandsDemo: React.FC = () => {
         <CardHeader>
           <CardTitle>Voice Commands</CardTitle>
           <CardDescription>
-            Choose between OpenAI Realtime API or ElevenLabs for voice commands
+            Intelligent voice control with automatic ElevenLabs/OpenAI fallback
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="openai" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="openai">OpenAI Realtime</TabsTrigger>
+          <Tabs defaultValue="hybrid" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="hybrid">Smart Mode</TabsTrigger>
               <TabsTrigger value="elevenlabs">ElevenLabs</TabsTrigger>
+              <TabsTrigger value="openai">OpenAI</TabsTrigger>
             </TabsList>
             
-            <TabsContent value="openai" className="space-y-4">
+            <TabsContent value="hybrid" className="space-y-4">
               <div className="space-y-2">
-                <h3 className="text-lg font-semibold">OpenAI Realtime API</h3>
+                <h3 className="text-lg font-semibold">Hybrid Voice Commands</h3>
                 <p className="text-sm text-muted-foreground">
-                  Direct WebSocket connection with better command recognition and reliability.
+                  Automatically tries ElevenLabs first, falls back to OpenAI if needed. 
+                  Includes all voice commands plus speed controls.
                 </p>
                 <div className="space-y-2">
-                  <h4 className="font-medium">Commands:</h4>
+                  <h4 className="font-medium">Enhanced Commands:</h4>
                   <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• "read" or "start reading" - Start audio</li>
-                    <li>• "stop" or "pause" - Stop audio</li>
-                    <li>• "next" or "next page" - Go forward</li>
-                    <li>• "back" or "previous" - Go back</li>
-                    <li>• "what is this word" - Get word help</li>
+                    <li>• <strong>Reading:</strong> "read", "stop", "pause"</li>
+                    <li>• <strong>Speed:</strong> "read faster", "read slower", "normal speed"</li>
+                    <li>• <strong>Navigation:</strong> "next page", "previous", "turn page"</li>
+                    <li>• <strong>Help:</strong> "what is this word", "define this"</li>
                   </ul>
                 </div>
-                <OpenAIVoiceCommands />
+                <HybridVoiceCommands />
               </div>
             </TabsContent>
             
@@ -45,9 +47,19 @@ export const VoiceCommandsDemo: React.FC = () => {
               <div className="space-y-2">
                 <h3 className="text-lg font-semibold">ElevenLabs Agent</h3>
                 <p className="text-sm text-muted-foreground">
-                  Requires agent configuration in ElevenLabs dashboard.
+                  Requires agent configuration in ElevenLabs dashboard with speed control tools.
                 </p>
                 <VoiceCommands />
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="openai" className="space-y-4">
+              <div className="space-y-2">
+                <h3 className="text-lg font-semibold">OpenAI Realtime API</h3>
+                <p className="text-sm text-muted-foreground">
+                  Direct WebSocket connection with reliable command recognition.
+                </p>
+                <OpenAIVoiceCommands />
               </div>
             </TabsContent>
           </Tabs>

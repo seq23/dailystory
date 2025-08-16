@@ -8,11 +8,12 @@ import { SimpleAudioEngine } from '@/services/SimpleAudioEngine';
 
 interface VoiceCommandsProps {
   agentId?: string; // If provided, will override the backend default
+  clientTools?: Record<string, (...args: any[]) => string>;
 }
 
 const CHARLOTTE = 'XB0fDUnXU5powFXDhCwa';
 
-export const VoiceCommands: React.FC<VoiceCommandsProps> = ({ agentId: initialAgentId }) => {
+export const VoiceCommands: React.FC<VoiceCommandsProps> = ({ agentId: initialAgentId, clientTools: providedClientTools }) => {
   const { toast } = useToast();
   const [agentId, setAgentId] = useState<string>(() => initialAgentId || (localStorage.getItem('eleven_agent_id') || ''));
   const [connecting, setConnecting] = useState(false);
@@ -20,7 +21,7 @@ export const VoiceCommands: React.FC<VoiceCommandsProps> = ({ agentId: initialAg
 
   // Map agent tools -> app actions
   const engine = useMemo(() => SimpleAudioEngine.getInstance(), []);
-  const clientTools = useMemo(() => ({
+  const clientTools = useMemo(() => providedClientTools || ({
     // Voice Command: "read", "start reading", "play" -> play tool
     play: async () => {
       console.log('🎤 VOICE COMMAND: play tool called');
@@ -102,6 +103,45 @@ export const VoiceCommands: React.FC<VoiceCommandsProps> = ({ agentId: initialAg
         return 'ok';
       } catch (error) {
         console.error('🎤 ERROR: Word help failed:', error);
+        return 'error';
+      }
+    },
+    
+    // Voice Command: "read faster", "faster", "speed up" -> speedUp tool
+    speedUp: async () => {
+      console.log('🎤 VOICE COMMAND: speedUp tool called');
+      try {
+        window.dispatchEvent(new CustomEvent('voice:speedChange', { detail: { action: 'faster' } }));
+        console.log('🎤 SUCCESS: Speed up event dispatched');
+        return 'ok';
+      } catch (error) {
+        console.error('🎤 ERROR: Speed up failed:', error);
+        return 'error';
+      }
+    },
+    
+    // Voice Command: "read slower", "slower", "slow down" -> slowDown tool
+    slowDown: async () => {
+      console.log('🎤 VOICE COMMAND: slowDown tool called');
+      try {
+        window.dispatchEvent(new CustomEvent('voice:speedChange', { detail: { action: 'slower' } }));
+        console.log('🎤 SUCCESS: Slow down event dispatched');
+        return 'ok';
+      } catch (error) {
+        console.error('🎤 ERROR: Slow down failed:', error);
+        return 'error';
+      }
+    },
+    
+    // Voice Command: "normal speed", "reset speed" -> normalSpeed tool
+    normalSpeed: async () => {
+      console.log('🎤 VOICE COMMAND: normalSpeed tool called');
+      try {
+        window.dispatchEvent(new CustomEvent('voice:speedChange', { detail: { action: 'normal' } }));
+        console.log('🎤 SUCCESS: Normal speed event dispatched');
+        return 'ok';
+      } catch (error) {
+        console.error('🎤 ERROR: Normal speed failed:', error);
         return 'error';
       }
     },

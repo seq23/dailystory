@@ -15,7 +15,9 @@ export const VOICE_COMMAND_MAPPINGS = {
       "play",
       "read this",
       "read the story",
-      "start"
+      "start",
+      "play the story",
+      "begin"
     ],
     toolName: "play",
     description: "Start reading the current page content aloud",
@@ -29,11 +31,52 @@ export const VOICE_COMMAND_MAPPINGS = {
       "stop reading",
       "pause reading",
       "halt",
-      "silence"
+      "silence",
+      "quiet"
     ],
     toolName: "stop", 
     description: "Stop the current audio playback",
     expectedResponse: "Stopping the reading"
+  },
+
+  // SPEED CONTROLS
+  speedUp: {
+    naturalCommands: [
+      "read faster",
+      "faster",
+      "speed up",
+      "go faster",
+      "read quicker",
+      "quicker"
+    ],
+    toolName: "speedUp",
+    description: "Increase the reading speed",
+    expectedResponse: "Reading faster now"
+  },
+
+  slowDown: {
+    naturalCommands: [
+      "read slower",
+      "slower",
+      "slow down",
+      "go slower",
+      "read more slowly"
+    ],
+    toolName: "slowDown", 
+    description: "Decrease the reading speed",
+    expectedResponse: "Reading more slowly now"
+  },
+
+  normalSpeed: {
+    naturalCommands: [
+      "normal speed",
+      "reset speed",
+      "regular speed",
+      "default speed"
+    ],
+    toolName: "normalSpeed",
+    description: "Reset reading speed to normal",
+    expectedResponse: "Back to normal speed"
   },
 
   // NAVIGATION CONTROLS  
@@ -45,7 +88,8 @@ export const VOICE_COMMAND_MAPPINGS = {
       "turn the page",
       "continue",
       "go to next page",
-      "forward"
+      "forward",
+      "flip page"
     ],
     toolName: "next",
     description: "Navigate to the next page of the story", 
@@ -60,7 +104,8 @@ export const VOICE_COMMAND_MAPPINGS = {
       "previous page", 
       "last page",
       "go to previous page",
-      "backward"
+      "backward",
+      "go to last page"
     ],
     toolName: "previous",
     description: "Navigate to the previous page of the story",
@@ -76,7 +121,9 @@ export const VOICE_COMMAND_MAPPINGS = {
       "what does this mean",
       "define this word",
       "help me with this word",
-      "pronunciation help"
+      "pronunciation help",
+      "what's this word",
+      "define this"
     ],
     toolName: "wordHelp",
     description: "Get help with understanding or pronouncing a word",
@@ -116,6 +163,11 @@ READING COMMANDS:
 - "read", "start reading", "play", "begin reading" → call play() tool
 - "stop", "pause", "stop reading" → call stop() tool
 
+SPEED CONTROL COMMANDS:
+- "read faster", "faster", "speed up" → call speedUp() tool  
+- "read slower", "slower", "slow down" → call slowDown() tool
+- "normal speed", "reset speed" → call normalSpeed() tool
+
 NAVIGATION COMMANDS:  
 - "next", "next page", "go forward", "turn the page" → call next() tool
 - "back", "previous", "go back", "previous page" → call previous() tool
@@ -131,6 +183,7 @@ Always:
 
 Example responses:
 - "Great! Let me start reading for you!" (then call play())
+- "Perfect! Reading faster now!" (then call speedUp())
 - "Sure thing! Going to the next page!" (then call next())
 - "Of course! Let me help you with that word!" (then call wordHelp())
 `;
