@@ -331,7 +331,9 @@ Example responses:
       // This hook assumes permissions are already granted
       
       // Get signed URL from Supabase edge function
+      console.log('🔍 Calling ElevenLabs edge function with agentId:', state.agentId);
       const body = state.agentId ? { agentId: state.agentId } : {};
+      console.log('📤 Request body:', body);
       const { data, error } = await supabase.functions.invoke('elevenlabs-agent-signed-url', { body });
       
       if (error) {
