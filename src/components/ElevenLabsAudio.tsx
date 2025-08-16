@@ -107,7 +107,7 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
     (window as any).__currentUserName = userInfo?.name || 'guest';
   }, [userInfo?.name]);
 
-// Stop audio on text or page change to avoid stale playback and apply stabilization
+// Stop audio on text or page change to avoid stale playback and apply reduced stabilization
 useEffect(() => {
   // Immediate state update
   setIsPlaying(false);
@@ -121,11 +121,11 @@ useEffect(() => {
   }
   
   setIsStabilizing(true);
-  // Enhanced stabilization: longer for mobile/tablet
-  const delay = isMobileOrTablet ? 4000 : 3000; // 4s mobile, 3s desktop
+  // Reduced stabilization timing: 500ms for optimal performance
+  const delay = 500;
   const to = window.setTimeout(() => setIsStabilizing(false), delay);
   return () => clearTimeout(to);
-}, [text, currentPage, isMobileOrTablet]);
+}, [text, currentPage]);
 
   // Listen to voice status/level for mic button live indicators
   useEffect(() => {
@@ -211,7 +211,7 @@ useEffect(() => {
     };
   }, [voiceCommandsEnabled]);
 
-  // Enhanced audio playback using new service
+  // Enhanced audio playback with unlimited hash mismatch recovery
   const playAudio = async () => {
     if (!isPremium && hasPlayedThisPage) {
       return;
@@ -219,66 +219,13 @@ useEffect(() => {
 
     setIsLoading(true);
 
-    // Debounce rapid taps and reset retry flag
+    // Debounce rapid taps
     const now = Date.now();
     if (now - (lastTapRef.current || 0) < 350) { setIsLoading(false); return; }
     lastTapRef.current = now;
-    audioRetryRef.current = false;
 
     try {
-      // Enhanced 3-second stabilization with visual feedback
-      if (isStabilizing) {
-        console.log('🕐 Audio playback waiting for 3-second stabilization...');
-        toast({
-          title: t("audioReading.stabilizing", "Preparing audio..."),
-          description: t("audioReading.stabilizingDesc", "Please wait while we prepare the best reading experience."),
-          duration: 2000,
-        });
-        
-        // Wait for stabilization to complete
-        while (isStabilizing) {
-          await new Promise(r => setTimeout(r, 100));
-        }
-        
-        // Additional small delay to ensure everything is ready
-        await new Promise(r => setTimeout(r, 200));
-      }
-
-      const speed = getBaseSpeed() * speedMultiplierRef.current;
-      const playSnapshot = { text, page: currentPage, contentHash };
-
-      await audioSyncService.playText({
-        text,
-        voice: 'XB0fDUnXU5powFXDhCwa', // Charlotte voice
-        model: 'eleven_turbo_v2_5',
-        speed,
-        userInfo,
-        onWordHighlight: (wordIndex: number) => {
-          console.log(`🎯 ElevenLabs: Highlighting word ${wordIndex}`);
-          try {
-            const { wordsOnly } = tokenizeForHighlighting(text);
-            const w = wordsOnly[wordIndex];
-            if (w) (window as any).__currentHighlightedWord = w;
-          } catch {}
-          onWordHighlight?.(wordIndex);
-        },
-        onStateChange: (isPlayingNow: boolean) => {
-          // Direct state callback from audio service for immediate UI updates
-          setIsPlaying(isPlayingNow);
-          // Also notify parent component
-          onAudioStateChange?.(isPlayingNow);
-        }
-      });
-
-      // Guard: if page or text changed during load, stop and bail
-      if (playSnapshot.page !== currentPage || playSnapshot.text !== text || playSnapshot.contentHash !== contentHash) {
-        console.warn('🛑 TTS aborted due to page/text/hash change during load');
-        try { audioSyncService.stopAudio(); } catch {}
-        toast({ title: t('audioReading.pageChanged', 'Page changed'), description: t('audioReading.refreshAudio', 'Audio refreshed for the new page.'), duration: 1800 });
-        return;
-      }
-
-      setIsPlaying(true);
+      await playWithHashValidation();
 
       if (!isPremium) {
         setHasPlayedThisPage(true);
@@ -296,6 +243,80 @@ useEffect(() => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Unlimited hash mismatch recovery for all users
+  const playWithHashValidation = async (retryCount = 0): Promise<void> => {
+    // Validate hash before attempting playback
+    const currentUIHash = (window as any).__pageContentHash;
+    
+    if (contentHash && currentUIHash && currentUIHash !== contentHash) {
+      console.log(`🔄 Hash mismatch detected (attempt ${retryCount + 1}): UI=${currentUIHash?.slice(0,10)}, Audio=${contentHash?.slice(0,10)}`);
+      
+      // Show user feedback with retry counter
+      toast({
+        title: "Syncing audio...",
+        description: retryCount === 0 ? "Ensuring audio matches current page" : `Retry attempt ${retryCount + 1}`,
+        duration: 1500,
+      });
+      
+      // Wait 500ms for stability, then retry
+      await new Promise(r => setTimeout(r, 500));
+      return playWithHashValidation(retryCount + 1);
+    }
+
+    // Enhanced stabilization with reduced timing (500ms instead of 3-4 seconds)
+    if (isStabilizing) {
+      console.log('🕐 Audio playback waiting for stabilization...');
+      if (retryCount === 0) {
+        toast({
+          title: t("audioReading.stabilizing", "Preparing audio..."),
+          description: t("audioReading.stabilizingDesc", "Please wait while we prepare the best reading experience."),
+          duration: 2000,
+        });
+      }
+      
+      // Wait for stabilization to complete
+      while (isStabilizing) {
+        await new Promise(r => setTimeout(r, 100));
+      }
+    }
+
+    const speed = getBaseSpeed() * speedMultiplierRef.current;
+    const playSnapshot = { text, page: currentPage, contentHash };
+
+    await audioSyncService.playText({
+      text,
+      voice: 'XB0fDUnXU5powFXDhCwa', // Charlotte voice
+      model: 'eleven_turbo_v2_5',
+      speed,
+      userInfo,
+      onWordHighlight: (wordIndex: number) => {
+        console.log(`🎯 ElevenLabs: Highlighting word ${wordIndex}`);
+        try {
+          const { wordsOnly } = tokenizeForHighlighting(text);
+          const w = wordsOnly[wordIndex];
+          if (w) (window as any).__currentHighlightedWord = w;
+        } catch {}
+        onWordHighlight?.(wordIndex);
+      },
+      onStateChange: (isPlayingNow: boolean) => {
+        // Direct state callback from audio service for immediate UI updates
+        setIsPlaying(isPlayingNow);
+        // Also notify parent component
+        onAudioStateChange?.(isPlayingNow);
+      }
+    });
+
+    // Guard: if page or text changed during load, stop and bail
+    if (playSnapshot.page !== currentPage || playSnapshot.text !== text || playSnapshot.contentHash !== contentHash) {
+      console.warn('🛑 TTS aborted due to page/text/hash change during load');
+      try { audioSyncService.stopAudio(); } catch {}
+      toast({ title: t('audioReading.pageChanged', 'Page changed'), description: t('audioReading.refreshAudio', 'Audio refreshed for the new page.'), duration: 1800 });
+      return;
+    }
+
+    setIsPlaying(true);
   };
 
 

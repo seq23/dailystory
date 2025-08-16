@@ -75,12 +75,17 @@ export class AudioSyncService {
   async playText(options: AudioSyncOptions & { onStateChange?: (isPlaying: boolean) => void }): Promise<void> {
     const { text, voice = 'XB0fDUnXU5powFXDhCwa', model = 'eleven_turbo_v2_5', speed = 1.0, onWordHighlight, onError, onStateChange } = options;
     
-    // Stop any active voice commands first (mutual exclusion)
+    // Request exclusive audio access
+    const { audioCoordinator } = await import('@/services/audioCoordinator');
+    await audioCoordinator.requestLock('sync');
+    
+    // Stop any active voice commands or simple audio (mutual exclusion)
     try {
       window.dispatchEvent(new CustomEvent('voice:stop'));
-      await new Promise(r => setTimeout(r, 200)); // Brief pause for voice cleanup
+      window.dispatchEvent(new CustomEvent('audio:stop:simple'));
+      await new Promise(r => setTimeout(r, 200)); // Brief pause for cleanup
     } catch (e) {
-      console.warn('Failed to stop voice commands:', e);
+      console.warn('Failed to stop other audio systems:', e);
     }
     
     // New session guards
@@ -513,6 +518,14 @@ export class AudioSyncService {
    * Stop audio and clear all highlighting
    */
   stopAudio(): void {
+    // Release audio coordinator lock
+    try {
+      const { audioCoordinator } = require('@/services/audioCoordinator');
+      audioCoordinator.releaseLock('sync');
+    } catch (e) {
+      console.warn('Failed to release audio coordinator lock:', e);
+    }
+    
     // CRITICAL: Synchronously update playing state FIRST for immediate UI feedback
     const wasPlaying = this.isPlaying;
     this.isPlaying = false;
@@ -569,6 +582,15 @@ export class AudioSyncService {
     // Clear words array and session state
     this.words = [];
     this.activeContentHash = '';
+    
+    // Emit global event for state synchronization
+    try {
+      window.dispatchEvent(new CustomEvent('audio:statechange', { 
+        detail: { isPlaying: false } 
+      }));
+    } catch (error) {
+      console.warn('Error dispatching audio state change event:', error);
+    }
     
     console.log('🧹 Audio sync service completely cleaned up');
   }
