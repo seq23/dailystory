@@ -28,6 +28,12 @@ export const processTextWithConsistentFlow = ({
   highlightedWordIndex,
   isMobile = false
 }: TextProcessorOptions): React.ReactNode[] => {
+  // Handle undefined/null text
+  if (!text || typeof text !== 'string') {
+    console.warn('processTextWithConsistentFlow: text is undefined or not a string', { text });
+    return [];
+  }
+  
   // Strip page markers as safety net before processing
   const cleanText = text.replace(/^Page\s*\d+\s*:\s*/i, '').replace(/^Page\s*\d+\s*/i, '').trim();
   
