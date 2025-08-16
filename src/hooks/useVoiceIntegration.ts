@@ -13,15 +13,29 @@ export const useVoiceIntegration = () => {
 
   // Enhanced word context resolution function
   const getContextualWord = (providedWord?: string): string => {
-    if (providedWord && providedWord.trim()) return providedWord.trim();
+    console.log('🔍 Getting contextual word:', { providedWord });
+    
+    if (providedWord && providedWord.trim()) {
+      console.log('✅ Using provided word:', providedWord.trim());
+      return providedWord.trim();
+    }
     
     // Check global word context (set by InteractiveWord system)
     const hoveredWord = (window as any).__hoveredWord;
     const lastSelectedWord = (window as any).__lastSelectedWord;
     
-    if (hoveredWord?.trim()) return hoveredWord.trim();
-    if (lastSelectedWord?.trim()) return lastSelectedWord.trim();
+    console.log('🌐 Global word context:', { hoveredWord, lastSelectedWord });
     
+    if (hoveredWord?.trim()) {
+      console.log('✅ Using hovered word:', hoveredWord.trim());
+      return hoveredWord.trim();
+    }
+    if (lastSelectedWord?.trim()) {
+      console.log('✅ Using last selected word:', lastSelectedWord.trim());
+      return lastSelectedWord.trim();
+    }
+    
+    console.log('❌ No word context found');
     return ''; // Will trigger clarification request
   };
 

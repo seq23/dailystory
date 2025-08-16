@@ -28,8 +28,11 @@ export class AudioPermissions {
    * Check if voice hover actions are allowed
    */
   static canUseVoiceHover(): boolean {
-    const { isPremium, vcStatus } = this.currentContext;
-    return isPremium && vcStatus === 'listening';
+    const { isPremium, vcStatus, isNetworkAvailable } = this.currentContext;
+    console.log('🔍 Voice hover check:', { isPremium, vcStatus, isNetworkAvailable });
+    
+    // Allow voice hover for all users when voice commands are active
+    return isNetworkAvailable && vcStatus === 'listening';
   }
 
   /**
@@ -63,7 +66,6 @@ export class AudioPermissions {
     
     switch (action) {
       case 'voice-hover':
-        if (!isPremium) return 'Premium subscription required';
         if (vcStatus !== 'listening') return 'Voice commands not active';
         return null;
       case 'premium-audio':

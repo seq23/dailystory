@@ -156,6 +156,11 @@ export const InteractiveWord = ({
       clearTimeout(hideTimeoutRef.current);
       hideTimeoutRef.current = null;
     }
+
+    // Dispatch voice hover event for Charlotte/voice commands
+    window.dispatchEvent(new CustomEvent('voice:hover:word', {
+      detail: { word: cleanWord, action: 'hear' }
+    }));
     
     // Calculate optimal position for tooltip with viewport awareness
     if (wordRef.current) {
