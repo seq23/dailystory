@@ -94,8 +94,17 @@ export class MobileSessionManager {
    * Handle app backgrounding/foregrounding events
    */
   static setupLifecycleHandlers(): void {
+    let lastVisibilityChange = Date.now();
+    
     // Save critical data when app goes to background
     document.addEventListener('visibilitychange', () => {
+      const now = Date.now();
+      // Debounce rapid visibility changes (e.g., tab switching)
+      if (now - lastVisibilityChange < 500) {
+        return;
+      }
+      lastVisibilityChange = now;
+      
       if (document.hidden) {
         console.log('📱 MobileSessionManager: App backgrounded, preserving session state');
         // Session data is already saved in memory, no additional action needed

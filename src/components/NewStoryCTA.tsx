@@ -117,8 +117,13 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
     activityEvents.forEach((e) => window.addEventListener(e, onActivity, { passive: true }));
 
     const onVisibility = () => {
+      // Debounce visibility changes to prevent excessive processing
       if (document.visibilityState === "visible") {
-        reset();
+        // Only reset if we've been hidden for more than 1 second
+        const timeSinceLastActivity = Date.now() - lastActivityRef.current;
+        if (timeSinceLastActivity > 1000) {
+          reset();
+        }
       } else {
         if (idleTimersRef.current.idle) {
           clearTimeout(idleTimersRef.current.idle);

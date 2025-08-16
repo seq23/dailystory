@@ -16,7 +16,16 @@ import Terms from "./pages/Terms";
 import Auth from "./pages/Auth";
 import PromptTesting from "./pages/PromptTesting";
 import VoiceHUD from "./components/VoiceHUD";
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes
+    },
+  },
+});
 
 const App = () => {
   return (
