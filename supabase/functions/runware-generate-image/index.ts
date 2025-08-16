@@ -1,10 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
 
 // Visual State Management (Server-side)
 interface CharacterState {
@@ -95,7 +91,7 @@ function getSettingForPrompt(sessionId: string): string {
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return createCorsOptionsResponse();
   }
 
   try {
@@ -218,8 +214,10 @@ serve(async (req) => {
           genderDesc = avatarType === 'boy' ? 'young boy' : avatarType === 'girl' ? 'young girl' : 'young child';
         }
         
-        const characterConsistency = `${genderDesc} ${characterName}, ${consistentSkinTone}${skinTone === 'dark' ? ', African/African American' : ''}`;
-        enhancedPrompt = `Children's book art: ${characterConsistency} in ${enhancedPrompt}. CRITICAL: ${characterName} same ${consistentSkinTone}, consistent design, safe, NO TEXT`;
+        // Null safety for characterName
+        const safeName = characterName || 'the character';
+        const characterConsistency = `${genderDesc} ${safeName}, ${consistentSkinTone}${skinTone === 'dark' ? ', African/African American' : ''}`;
+        enhancedPrompt = `Children's book art: ${characterConsistency} in ${enhancedPrompt}. CRITICAL: ${safeName} same ${consistentSkinTone}, consistent design, safe, NO TEXT`;
       }
     }
 
@@ -253,17 +251,7 @@ serve(async (req) => {
       const timeout = setTimeout(() => {
         ws.close();
         console.log("Request timeout after 15 seconds");
-        resolve(new Response(
-          JSON.stringify({ 
-            success: false,
-            error: "Request timeout",
-            characterName: characterName || undefined,
-            pageIndex
-          }),
-          { 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          }
-        ));
+        resolve(createCorsErrorResponse("Request timeout", 408));
       }, 15000); // 15 second timeout for faster fallbacks
 
       ws.onopen = () => {
@@ -287,17 +275,7 @@ serve(async (req) => {
           ws.close();
           console.error("Runware API error:", response.errorMessage || response.errors?.[0]?.message);
           
-          resolve(new Response(
-            JSON.stringify({ 
-              success: false,
-              error: response.errorMessage || response.errors?.[0]?.message || "Generation failed",
-              characterName: characterName || undefined,
-              pageIndex
-            }),
-            { 
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-            }
-          ));
+          resolve(createCorsErrorResponse(response.errorMessage || response.errors?.[0]?.message || "Generation failed"));
           return;
         }
 
@@ -348,21 +326,16 @@ serve(async (req) => {
                 console.log(`✅ Generated consistent image for ${userInfo.name} (page ${pageNumber})`);
               }
               
-              resolve(new Response(
-                JSON.stringify({
-                  success: true,
-                  imageURL: item.imageURL,
-                  seed: item.seed,
-                  cost: item.cost,
-                  NSFWContent: item.NSFWContent,
-                  characterName: userInfo?.name || characterName || undefined,
-                  pageIndex: pageNumber - 1,
-                  prompt: enhancedPrompt
-                }),
-                { 
-                  headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-                }
-              ));
+              resolve(createCorsResponse({
+                success: true,
+                imageURL: item.imageURL,
+                seed: item.seed,
+                cost: item.cost,
+                NSFWContent: item.NSFWContent,
+                characterName: userInfo?.name || characterName || undefined,
+                pageIndex: pageNumber - 1,
+                prompt: enhancedPrompt
+              }));
             }
           });
         }
@@ -372,17 +345,7 @@ serve(async (req) => {
         clearTimeout(timeout);
         ws.close();
         console.error("WebSocket error:", error);
-        resolve(new Response(
-          JSON.stringify({ 
-            success: false,
-            error: "WebSocket connection failed",
-            characterName: characterName || undefined,
-            pageIndex
-          }),
-          { 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          }
-        ));
+        resolve(createCorsErrorResponse("WebSocket connection failed"));
       };
 
       ws.onclose = (event) => {
@@ -395,16 +358,6 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Image generation error:', error)
-    return new Response(
-      JSON.stringify({ 
-        success: false,
-        error: error.message,
-        characterName: characterName || undefined,
-        pageIndex: pageIndex || 0
-      }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
-    )
+    return createCorsErrorResponse(`Runware error: ${error.message}`);
   }
 })

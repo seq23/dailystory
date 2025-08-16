@@ -1,10 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
 
 interface OpenAIImageRequest {
   positivePrompt: string;
@@ -20,17 +16,14 @@ interface OpenAIImageRequest {
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return createCorsOptionsResponse();
   }
 
   try {
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAIApiKey) {
       console.error('OpenAI API key not configured');
-      return new Response(
-        JSON.stringify({ error: 'OpenAI API key not configured' }), 
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return createCorsErrorResponse('OpenAI API key not configured', 500);
     }
 
     const requestData: OpenAIImageRequest = await req.json();
@@ -71,7 +64,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-image-1',
+        model: 'dall-e-3',
         prompt: enhancedPrompt,
         n: 1,
         size: size,
@@ -96,26 +89,17 @@ serve(async (req) => {
     
     console.log(`✅ OpenAI Image Generated Successfully - URL: ${imageUrl.substring(0, 50)}...`);
 
-    return new Response(JSON.stringify({
+    return createCorsResponse({
       success: true,
       imageURL: imageUrl,
       provider: 'openai',
-      model: 'gpt-image-1',
+      model: 'dall-e-3',
       cost: data.data[0].cost || 0,
       pageNumber: pageNumber
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
     console.error('Error in openai-image function:', error);
-    return new Response(JSON.stringify({ 
-      success: false,
-      error: error.message,
-      provider: 'openai'
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return createCorsErrorResponse(`OpenAI error: ${error.message}`);
   }
 });
