@@ -84,12 +84,15 @@ export const VoiceCommands: React.FC<VoiceCommandsProps> = ({ agentId: initialAg
     // Voice Command: "next", "next page", "go forward" -> next tool
     next: async () => {
       console.log('🎤 VOICE COMMAND: next tool called - navigating to next page');
+      console.log('🔧 Tool execution started: next');
       try {
         window.dispatchEvent(new CustomEvent('reader:navigate', { detail: { direction: 'next' } }));
         console.log('🎤 SUCCESS: Next page event dispatched successfully');
+        console.log('🔧 Tool execution completed: next');
         return 'Going to the next page now!';
       } catch (error) {
         console.error('🎤 ERROR: Next navigation failed:', error);
+        console.error('🔧 Tool execution failed: next -', error);
         return 'Sorry, I could not go to the next page.';
       }
     },
@@ -97,12 +100,15 @@ export const VoiceCommands: React.FC<VoiceCommandsProps> = ({ agentId: initialAg
     // Voice Command: "back", "previous", "go back", "previous page" -> previous tool
     previous: async () => {
       console.log('🎤 VOICE COMMAND: previous tool called - navigating to previous page');
+      console.log('🔧 Tool execution started: previous');
       try {
         window.dispatchEvent(new CustomEvent('reader:navigate', { detail: { direction: 'prev' } }));
         console.log('🎤 SUCCESS: Previous page event dispatched successfully');
+        console.log('🔧 Tool execution completed: previous');
         return 'Going back to the previous page!';
       } catch (error) {
         console.error('🎤 ERROR: Previous navigation failed:', error);
+        console.error('🔧 Tool execution failed: previous -', error);
         return 'Sorry, I could not go to the previous page.';
       }
     },
@@ -184,7 +190,23 @@ export const VoiceCommands: React.FC<VoiceCommandsProps> = ({ agentId: initialAg
       try { window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: 'idle' } })); } catch {} 
     },
     onMessage: (message) => {
-      console.log('🎤 ElevenLabs message:', message);
+      // Enhanced debugging for tool calls
+      const msgData = message as any;
+      if (msgData.type === 'agent.tool_call') {
+        console.log('🔧 AGENT TOOL CALL:', {
+          toolName: msgData.tool_name,
+          arguments: msgData.arguments,
+          callId: msgData.call_id
+        });
+      } else if (msgData.type === 'agent.tool_response') {
+        console.log('🔧 TOOL RESPONSE:', {
+          toolName: msgData.tool_name,
+          response: msgData.response,
+          callId: msgData.call_id
+        });
+      } else {
+        console.log('🎤 ElevenLabs Message:', message);
+      }
     },
   });
 
