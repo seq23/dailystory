@@ -85,9 +85,10 @@ export class EnhancedImageCache {
   /**
    * Generate cache key for image
    */
-  private static generateCacheKey(prompt: string, sessionId: string, pageNumber?: number): string {
+  private static generateCacheKey(prompt: string, sessionId: string, pageNumber?: number, storyId?: string): string {
     const baseKey = `${prompt}-${sessionId}`;
-    return pageNumber !== undefined ? `${baseKey}-p${pageNumber}` : baseKey;
+    const storyKey = storyId ? `${baseKey}-${storyId}` : baseKey;
+    return pageNumber !== undefined ? `${storyKey}-p${pageNumber}` : storyKey;
   }
 
   /**
@@ -98,11 +99,12 @@ export class EnhancedImageCache {
     imageUrl: string, 
     sessionId: string, 
     pageNumber?: number,
-    storyHash?: string
+    storyHash?: string,
+    storyId?: string
   ): void {
     try {
       const map = this.getCacheMap();
-      const key = this.generateCacheKey(prompt, sessionId, pageNumber);
+      const key = this.generateCacheKey(prompt, sessionId, pageNumber, storyId);
       
       // Check session image limit
       const sessionImages = Array.from(map.values()).filter(img => img.sessionId === sessionId);
@@ -137,10 +139,10 @@ export class EnhancedImageCache {
   /**
    * Get cached image
    */
-  static getCachedImage(prompt: string, sessionId: string, pageNumber?: number): string | null {
+  static getCachedImage(prompt: string, sessionId: string, pageNumber?: number, storyId?: string): string | null {
     try {
       const map = this.getCacheMap();
-      const key = this.generateCacheKey(prompt, sessionId, pageNumber);
+      const key = this.generateCacheKey(prompt, sessionId, pageNumber, storyId);
       const cached = map.get(key);
       
       if (cached) {
@@ -311,9 +313,10 @@ export class EnhancedImageCache {
     imageUrl: string,
     storyHash: string,
     pageNumber: number,
-    sessionId: string = 'story-cache'
+    sessionId: string = 'story-cache',
+    storyId?: string
   ): void {
-    this.cacheImage(prompt, imageUrl, sessionId, pageNumber, storyHash);
+    this.cacheImage(prompt, imageUrl, sessionId, pageNumber, storyHash, storyId);
   }
 
   /**

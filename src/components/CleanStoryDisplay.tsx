@@ -182,6 +182,9 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   // Character consistency session ID
   const [characterSessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substring(2)}`);;
   
+  // Story-specific identifier for cache isolation
+  const [storyId, setStoryId] = useState(() => `story_${Date.now()}_${Math.random().toString(36).substring(2)}`);
+  
   // Audio and Interactive Features state
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [showVocabularyCollector, setShowVocabularyCollector] = useState(false);
@@ -854,7 +857,8 @@ const initializeStory = async () => {
     const cachedImageUrl = (await import('@/services/enhancedImageCache')).EnhancedImageCache.getCachedImage(
       storyText.slice(0, 120), 
       characterSessionId, 
-      currentPage
+      currentPage,
+      storyId
     );
     
     if (cachedImageUrl) {
@@ -886,7 +890,9 @@ const initializeStory = async () => {
           storyText.slice(0, 120),
           result.url,
           characterSessionId,
-          currentPage
+          currentPage,
+          undefined,
+          storyId
         );
         
         try {
@@ -912,7 +918,8 @@ const initializeStory = async () => {
     const cachedImageUrl = (await import('@/services/enhancedImageCache')).EnhancedImageCache.getCachedImage(
       storyText.slice(0, 120), 
       characterSessionId, 
-      index
+      index,
+      storyId
     );
     
     if (cachedImageUrl) {
@@ -939,7 +946,9 @@ const initializeStory = async () => {
           storyText.slice(0, 120),
           result.url,
           characterSessionId,
-          index
+          index,
+          undefined,
+          storyId
         );
         
         try {
@@ -1351,6 +1360,21 @@ const handleRestartTimer = () => {
     setIsGeneratingNewStory(true);
     try {
       console.log('🪄 Generating new story...');
+      
+      // Generate new story ID for cache isolation
+      const newStoryId = `story_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+      setStoryId(newStoryId);
+      
+      // Clear previous story cache for free users to prevent cache growth
+      if (!isPremium) {
+        try {
+          (await import('@/services/enhancedImageCache')).EnhancedImageCache.clearSession(characterSessionId);
+          setPageImages({});
+          console.log('📸 Cleared previous story cache for free user');
+        } catch (error) {
+          console.warn('Failed to clear previous story cache:', error);
+        }
+      }
       if (isPremium) {
         // Merge per-story request with persistent teacher word list (premium only)
         let combinedSpecial = (specialRequestOverride ?? userInfo.specialRequest ?? '') as string;
