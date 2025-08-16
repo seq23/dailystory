@@ -69,6 +69,7 @@ export const SimpleVoiceCommands: React.FC = () => {
     clientTools,
     onConnect: () => {
       console.log('🎤 Connected to Buddy');
+      console.log('🎤 Voice session established successfully');
       toast.success('Buddy is ready to help! Try saying "play story"');
     },
     onDisconnect: () => {
@@ -87,9 +88,14 @@ export const SimpleVoiceCommands: React.FC = () => {
 
   const handleToggle = useCallback(async () => {
     if (status === 'connected') {
+      console.log('🎤 Voice session already connected, ending...');
       await endSession();
     } else {
       try {
+        console.log('🎤 Starting voice command session...');
+        console.log('🎤 Current status:', status);
+        console.log('🎤 useConversation hook available:', !!useConversation);
+        
         // Get signed URL from Supabase  
         console.log('🎤 Requesting ElevenLabs agent signed URL...');
         const { data, error } = await supabase.functions.invoke('elevenlabs-agent-signed-url');
@@ -121,10 +127,13 @@ export const SimpleVoiceCommands: React.FC = () => {
           return;
         }
         
-        await startSession({ signedUrl: data.signed_url });
-      } catch (error) {
+        console.log('🎤 About to call startSession with signed URL...');
+        const sessionResult = await startSession({ signedUrl: data.signed_url });
+        console.log('🎤 Session started successfully:', sessionResult);
+      } catch (error: any) {
         console.error('🎤 Failed to start voice session:', error);
-        toast.error('Could not connect to Buddy');
+        console.error('🎤 Error stack:', error.stack);
+        toast.error(`Could not connect to Buddy: ${error.message || 'Unknown error'}`);
       }
     }
   }, [status, startSession, endSession]);

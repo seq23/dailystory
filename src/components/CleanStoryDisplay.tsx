@@ -2468,7 +2468,9 @@ const handleRestartTimer = () => {
       <VoiceCommandController headless={true} onCommand={handleVoiceCommand} />
       <VoiceHoverController isPremium={isPremium} />
       {/* Voice Commands with ElevenLabs + OpenAI fallback */}
-      <SimpleVoiceCommands />
+      <div className="fixed bottom-4 right-4 z-50 bg-background border rounded-lg p-3 shadow-lg">
+        <SimpleVoiceCommands />
+      </div>
       </div>
     </ErrorBoundary>
     </GameContextProvider>
