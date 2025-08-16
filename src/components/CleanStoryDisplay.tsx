@@ -37,7 +37,6 @@ import { VoiceCommandController } from '@/components/VoiceCommandController';
 import { VoiceHoverController } from '@/components/VoiceHoverController';
 import { SimpleVoiceCommands } from '@/components/SimpleVoiceCommands';
 import { useGamification } from "@/hooks/useGamification";
-import { useStoryNavigation } from "@/hooks/useStoryNavigation";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getMobileTextConfig, getMobileStoryContainer } from "@/utils/mobileTextOptimizations";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -237,17 +236,11 @@ const handleAudioStateChange = (playing: boolean) => {
   setIsAudioPlaying(playing);
 };
 
-// Story navigation hook for proper URL management  
-const { getStoryStateFromUrl } = useStoryNavigation({
-  isInStorySession: story.length > 0,
-  currentPage: currentPage + 1, // Convert to 1-based for URL
-  totalPages: story.length,
-  storyTitle: storyTitle
-});
+// Direct URL management for story sessions (more reliable than hook-based approach)
 
-// Add debugging for navigation state and handle browser navigation
+// Add debugging for navigation state and direct URL updating
 useEffect(() => {
-  console.log('📍 Navigation State:', {
+  console.log('📍 Navigation State Check:', {
     currentPath: window.location.pathname,
     searchParams: window.location.search,
     isInStorySession: story.length > 0,
@@ -255,6 +248,26 @@ useEffect(() => {
     totalPages: story.length,
     storyTitle
   });
+  
+  // Direct URL update for story sessions
+  if (story.length > 0) {
+    const params = new URLSearchParams();
+    params.set('session', 'story');
+    params.set('page', (currentPage + 1).toString());
+    params.set('total', story.length.toString());
+    
+    if (storyTitle) {
+      params.set('title', encodeURIComponent(storyTitle));
+    }
+
+    const newUrl = `/?${params.toString()}`;
+    const currentUrl = window.location.pathname + window.location.search;
+    
+    if (currentUrl !== newUrl) {
+      console.log('📍 DIRECT URL UPDATE:', { from: currentUrl, to: newUrl });
+      window.history.replaceState({}, '', newUrl);
+    }
+  }
 }, [story.length, currentPage, storyTitle]);
 
 // Handle browser back/forward navigation
