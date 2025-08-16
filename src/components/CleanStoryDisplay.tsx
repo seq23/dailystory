@@ -37,6 +37,7 @@ import { VoiceCommandController } from '@/components/VoiceCommandController';
 import { VoiceHoverController } from '@/components/VoiceHoverController';
 import { SimpleVoiceCommands } from '@/components/SimpleVoiceCommands';
 import { useGamification } from "@/hooks/useGamification";
+import { useStoryNavigation } from "@/hooks/useStoryNavigation";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getMobileTextConfig, getMobileStoryContainer } from "@/utils/mobileTextOptimizations";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -222,6 +223,26 @@ const audioRef = useRef<ElevenLabsAudioHandle | null>(null);
 const handleAudioStateChange = (playing: boolean) => {
   setIsAudioPlaying(playing);
 };
+
+// Story navigation hook for proper URL management  
+const { getStoryStateFromUrl } = useStoryNavigation({
+  isInStorySession: story.length > 0,
+  currentPage: currentPage + 1, // Convert to 1-based for URL
+  totalPages: story.length,
+  storyTitle: storyTitle
+});
+
+// Add debugging for navigation state
+useEffect(() => {
+  console.log('📍 Navigation State:', {
+    currentPath: window.location.pathname,
+    searchParams: window.location.search,
+    isInStorySession: story.length > 0,
+    currentPage: currentPage + 1,
+    totalPages: story.length,
+    storyTitle
+  });
+}, [story.length, currentPage, storyTitle]);
 
 // Voice command bridge moved below after currentStory/contentHash are defined
 
@@ -567,9 +588,18 @@ useEffect(() => {
     initializeStory();
   }, [userInfo, isPremium]);
 
-  // Generate image for current page (skip on classic fallback)
+  // Generate image for current page with better diagnostics
   useEffect(() => {
+    console.log('🖼️ Image generation check:', {
+      layout,
+      storyLength: story.length,
+      currentPage,
+      hasCurrentImage: !!pageImages[currentPage],
+      allImages: Object.keys(pageImages)
+    });
+    
     if (layout !== "classic" && story.length > 0 && currentPage < story.length && !pageImages[currentPage]) {
+      console.log('🖼️ Triggering image generation for page', currentPage);
       generateImageForCurrentPage();
     }
   }, [currentPage, story, pageImages, layout]);
@@ -2394,8 +2424,8 @@ const handleRestartTimer = () => {
       )}
 
 
-      {/* Mobile Action Dock - Mobile/Tablet */}
-{ (isMobileOrTablet || hasTouchCapability) && (
+      {/* Mobile Action Dock - Only for actual mobile/tablet devices */}
+      {(isMobileOrTablet && !window.matchMedia('(min-width: 1024px)').matches) && (
         <>
           <MobileActionDock
             isPremium={isPremium}
