@@ -8,6 +8,7 @@ import type { UserInfo } from "@/types";
 import { ComprehensionQuiz } from "@/components/ComprehensionQuiz";
 import { VocabularyCollector } from "@/components/VocabularyCollector";
 import { MiniGames } from "@/components/MiniGames";
+import { VoiceQuiz } from "@/components/VoiceQuiz";
 import { Badge } from "@/components/ui/badge";
 import { StorySessionCache } from "@/services/storySessionCache";
 import { useGameContext } from "@/components/GameContextProvider";
@@ -97,8 +98,16 @@ const location = useLocation();
   } catch {}
 
   const [quizVisible, setQuizVisible] = React.useState(false);
+  const [voiceQuizVisible, setVoiceQuizVisible] = React.useState(false);
   const [vocabVisible, setVocabVisible] = React.useState(false);
   const [gamesVisible, setGamesVisible] = React.useState(false);
+
+  // Check if we should start voice quiz immediately
+  React.useEffect(() => {
+    if (sessionStats?.startVoiceQuiz && userIsPremium) {
+      setVoiceQuizVisible(true);
+    }
+  }, [sessionStats, userIsPremium]);
   const canLaunchActivities = Boolean(userIsPremium && userInfoFromState && storyText);
   const isQuizAllowed = Boolean(userIsPremium && sessionStats && sessionStats.currentDifficulty !== 'beginner');
   
@@ -571,6 +580,16 @@ const getDifficultyLabel = (difficulty: string) => {
             isVisible={vocabVisible}
             onClose={() => setVocabVisible(false)}
             enablePersistence={userIsPremium}
+          />
+        )}
+        {voiceQuizVisible && userInfoFromState && storyText && (
+          <VoiceQuiz
+            userInfo={userInfoFromState}
+            storyText={storyText}
+            isVisible={voiceQuizVisible}
+            storyTitle={(window as any).__storyTitle || ''}
+            onComplete={() => setVoiceQuizVisible(false)}
+            onClose={() => setVoiceQuizVisible(false)}
           />
         )}
 

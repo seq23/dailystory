@@ -59,6 +59,60 @@ export const useVoiceIntegration = () => {
         detail: args || null 
       }));
       return "Getting word help";
+    },
+
+    // Quiz commands
+    startQuiz: () => {
+      console.log('🎯 Voice command: start quiz');
+      window.dispatchEvent(new CustomEvent('voice:quiz', {
+        detail: { action: 'start' }
+      }));
+      const storyTitle = (window as any).__storyTitle || '';
+      return `Great! Let's start a quiz about ${storyTitle ? `"${storyTitle}"` : 'your story'}!`;
+    },
+
+    askQuestion: (args: any) => {
+      console.log('🎯 Voice command: ask question', args);
+      const { question, options } = args || {};
+      
+      if (question && options) {
+        let response = `Here's your question: ${question.question || question}. `;
+        if (options && Array.isArray(options)) {
+          response += 'Your options are: ';
+          options.forEach((option: string, index: number) => {
+            response += `${String.fromCharCode(65 + index)}: ${option}. `;
+          });
+        }
+        response += 'What is your answer?';
+        return response;
+      }
+      
+      return "Here's your quiz question!";
+    },
+
+    processAnswer: (args: any) => {
+      console.log('🎯 Voice command: process answer', args);
+      const answer = args?.answer || args?.text || args;
+      
+      window.dispatchEvent(new CustomEvent('voice:quiz', {
+        detail: { 
+          action: 'answer', 
+          data: { 
+            answerText: answer,
+            answerIndex: args?.index 
+          } 
+        }
+      }));
+      
+      return "Got your answer! Let me check that...";
+    },
+
+    endQuiz: () => {
+      console.log('🎯 Voice command: end quiz');
+      window.dispatchEvent(new CustomEvent('voice:quiz', {
+        detail: { action: 'end' }
+      }));
+      return "Great job completing the quiz!";
     }
   };
 

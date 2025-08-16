@@ -128,6 +128,71 @@ export const VOICE_COMMAND_MAPPINGS = {
     toolName: "wordHelp",
     description: "Get help with understanding or pronouncing a word",
     expectedResponse: "Let me help you with that word"
+  },
+
+  // QUIZ CONTROLS
+  startQuiz: {
+    naturalCommands: [
+      "start quiz",
+      "take quiz", 
+      "quiz me",
+      "test me",
+      "ask me questions",
+      "quiz time",
+      "begin quiz",
+      "start the quiz"
+    ],
+    toolName: "startQuiz",
+    description: "Start a comprehension quiz about the story",
+    expectedResponse: "Let's start the quiz!"
+  },
+
+  askQuestion: {
+    naturalCommands: [],
+    toolName: "askQuestion", 
+    description: "Present a quiz question to the user",
+    expectedResponse: "Here's your question"
+  },
+
+  processAnswer: {
+    naturalCommands: [
+      "my answer is",
+      "I choose",
+      "the answer is",
+      "option a",
+      "option b", 
+      "option c",
+      "option d",
+      "a",
+      "b", 
+      "c",
+      "d",
+      "true",
+      "false",
+      "yes",
+      "no",
+      "first option",
+      "second option",
+      "third option", 
+      "fourth option"
+    ],
+    toolName: "processAnswer",
+    description: "Submit an answer to the current quiz question",
+    expectedResponse: "Got your answer"
+  },
+
+  endQuiz: {
+    naturalCommands: [
+      "end quiz",
+      "finish quiz",
+      "stop quiz", 
+      "quit quiz",
+      "I'm done",
+      "finish up"
+    ],
+    toolName: "endQuiz",
+    description: "Complete the quiz and show results",
+    expectedResponse: "Great job on the quiz!"
   }
 };
 
@@ -175,6 +240,11 @@ NAVIGATION COMMANDS:
 WORD HELP COMMANDS:
 - "what is this word", "help with word", "explain word" → call wordHelp() tool
 
+QUIZ COMMANDS:
+- "start quiz", "take quiz", "quiz me" → call startQuiz() tool
+- "my answer is", "option a", "a", "true", "false" → call processAnswer() tool  
+- "end quiz", "finish quiz", "I'm done" → call endQuiz() tool
+
 Always:
 1. Acknowledge the command enthusiastically
 2. Call the appropriate tool immediately  
@@ -186,4 +256,6 @@ Example responses:
 - "Perfect! Reading faster now!" (then call speedUp())
 - "Sure thing! Going to the next page!" (then call next())
 - "Of course! Let me help you with that word!" (then call wordHelp())
+- "Awesome! Let's start the quiz!" (then call startQuiz())
+- "Got your answer!" (then call processAnswer())
 `;

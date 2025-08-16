@@ -399,9 +399,22 @@ useEffect(() => {
     <div className="relative z-[106] bg-background/95 backdrop-blur-md border border-border rounded-2xl shadow-2xl p-4 sm:p-6 w-[90vw] max-w-md animate-scale-in">
       <h3 id="timer-choice-title" className="text-lg font-bold mb-2 text-center">{t('timer.expired.title', "Time's up!")}</h3>
       <p className="text-sm text-muted-foreground text-center mb-4">
-        {t('timer.expired.subtitle', 'Would you like to keep reading without a timer, save & end the session, or end without saving?')}
+        {t('timer.expired.subtitle', 'Choose what you\'d like to do next:')}
       </p>
       <div className="grid grid-cols-1 gap-2">
+        {isPremium && (
+          <Button
+            onClick={() => {
+              // Start voice quiz
+              setShowChoice(false);
+              setExpiredAcknowledged(true);
+              onSessionEnded({ ...sessionStats, startVoiceQuiz: true });
+            }}
+            className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+          >
+            🎤 {t('timer.expired.quizWithBuddy', 'Quiz with Buddy')}
+          </Button>
+        )}
         {isPremium && (
           <Button
             onClick={() => {
