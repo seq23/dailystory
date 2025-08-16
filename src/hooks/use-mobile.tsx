@@ -24,14 +24,25 @@ export function useIsMobile() {
     const tabletMql = window.matchMedia(`(max-width: ${TABLET_BREAKPOINT - 1}px)`)
     
     const onChange = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-      setIsTablet(window.innerWidth < TABLET_BREAKPOINT && window.innerWidth >= MOBILE_BREAKPOINT)
+      const width = window.innerWidth;
+      setIsMobile(width < MOBILE_BREAKPOINT);
+      setIsTablet(width >= MOBILE_BREAKPOINT && width < TABLET_BREAKPOINT);
+      
+      console.log('📱 Device detection:', {
+        width,
+        isMobile: width < MOBILE_BREAKPOINT,
+        isTablet: width >= MOBILE_BREAKPOINT && width < TABLET_BREAKPOINT,
+        isMobileOrTablet: width < TABLET_BREAKPOINT
+      });
     }
     
     mql.addEventListener("change", onChange)
     tabletMql.addEventListener("change", onChange)
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    setIsTablet(window.innerWidth < TABLET_BREAKPOINT && window.innerWidth >= MOBILE_BREAKPOINT)
+    
+    // Initial check
+    const width = window.innerWidth;
+    setIsMobile(width < MOBILE_BREAKPOINT)
+    setIsTablet(width >= MOBILE_BREAKPOINT && width < TABLET_BREAKPOINT)
     setIsCapacitor(checkCapacitor())
     setHasTouchCapability(checkTouchCapability())
     

@@ -47,6 +47,20 @@ export const useStoryNavigation = ({
     }
   }, [isInStorySession, currentPage, totalPages, storyTitle, navigate, location]);
 
+  // Handle browser back/forward buttons
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      console.log('📍 Browser navigation detected:', event.state);
+      // Let the parent component handle the navigation based on URL params
+      window.dispatchEvent(new CustomEvent('story:navigation:change', {
+        detail: getStoryStateFromUrl()
+      }));
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   // Return current story state from URL for persistence
   const getStoryStateFromUrl = () => {
     const params = new URLSearchParams(location.search);

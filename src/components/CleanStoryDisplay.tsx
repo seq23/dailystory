@@ -232,7 +232,7 @@ const { getStoryStateFromUrl } = useStoryNavigation({
   storyTitle: storyTitle
 });
 
-// Add debugging for navigation state
+// Add debugging for navigation state and handle browser navigation
 useEffect(() => {
   console.log('📍 Navigation State:', {
     currentPath: window.location.pathname,
@@ -243,6 +243,20 @@ useEffect(() => {
     storyTitle
   });
 }, [story.length, currentPage, storyTitle]);
+
+// Handle browser back/forward navigation
+useEffect(() => {
+  const handleStoryNavigation = (event: CustomEvent) => {
+    const urlState = event.detail;
+    if (urlState.isStorySession && urlState.page !== currentPage + 1) {
+      console.log('📍 Browser navigation: updating page from URL', urlState.page - 1);
+      setCurrentPage(Math.max(0, Math.min(story.length - 1, urlState.page - 1)));
+    }
+  };
+
+  window.addEventListener('story:navigation:change', handleStoryNavigation as EventListener);
+  return () => window.removeEventListener('story:navigation:change', handleStoryNavigation as EventListener);
+}, [currentPage, story.length]);
 
 // Voice command bridge moved below after currentStory/contentHash are defined
 
@@ -2424,8 +2438,8 @@ const handleRestartTimer = () => {
       )}
 
 
-      {/* Mobile Action Dock - Only for actual mobile/tablet devices */}
-      {(isMobileOrTablet && !window.matchMedia('(min-width: 1024px)').matches) && (
+      {/* Mobile Action Dock - Mobile and Tablet devices */}
+      {isMobileOrTablet && (
         <>
           <MobileActionDock
             isPremium={isPremium}
