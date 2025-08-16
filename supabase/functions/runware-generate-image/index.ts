@@ -239,45 +239,92 @@ function extractPrimaryScene(text: string): string {
   
   if (sentences.length <= 1) return text;
   
-  const futureActivityPatterns = [
-    /\b(later|will|going to|plans to|wants to|hopes to)\b.*\b(game|play|sport|soccer|football|basketball)\b/i,
-    /\b(after|when|then)\b.*\b(game|play|sport|activity)\b/i,
-    /\b(excited|ready|preparing)\s+(for|about)\b.*\b(game|play|sport)\b/i
-  ];
+  // Enhanced scoring system for action-oriented, visually compelling scenes
+  function scoreScene(sentence: string): number {
+    let score = 0;
+    
+    // High-value action verbs (primary activities)
+    const primaryActionPatterns = [
+      /\b(race|racing|zoom|zooming|run|running|jump|jumping|climb|climbing|swing|swinging|chase|chasing|play|playing)\b/i,
+      /\b(slide|sliding|roll|rolling|bounce|bouncing|spin|spinning|dance|dancing|laugh|laughing)\b/i
+    ];
+    
+    // Location-action combinations (very visual)
+    const locationActionPatterns = [
+      /\b(park|playground|hill|field|garden|yard|beach|forest)\b.*\b(race|play|run|jump|climb|swing|slide)\b/i,
+      /\b(race|play|run|jump|climb|swing|slide)\b.*\b(park|playground|hill|field|garden|yard|beach|forest)\b/i
+    ];
+    
+    // Emotional engagement with action
+    const emotionalActionPatterns = [
+      /\b(loved|enjoyed|excited|favorite|happy|delighted)\b.*\b(to|ing)\b.*\b(race|play|run|jump|climb|swing|slide)\b/i,
+      /\b(loved|enjoyed|excited|favorite|happy|delighted)\b.*\b(race|play|run|jump|climb|swing|slide)\b/i
+    ];
+    
+    // Visual elements
+    const visualElementPatterns = [
+      /\b(toy cars|cars|toys|ball|bike|bicycle|kite|bubbles|flowers|colorful|bright)\b/i,
+      /\b(steep|tall|big|small|red|blue|green|yellow|purple|orange)\b/i
+    ];
+    
+    // Character-focused actions
+    const characterActionPatterns = [
+      /\b[A-Z][a-z]+\b.*\b(loved|liked|enjoyed|wanted|decided|began|started)\b.*\b(to|ing)\b/i,
+      /\b[A-Z][a-z]+\b.*\b(race|play|run|jump|climb|swing|slide|laugh|smile|clap)\b/i
+    ];
+    
+    // Score based on patterns
+    if (primaryActionPatterns.some(p => p.test(sentence))) score += 20;
+    if (locationActionPatterns.some(p => p.test(sentence))) score += 25; // Highest priority
+    if (emotionalActionPatterns.some(p => p.test(sentence))) score += 22;
+    if (visualElementPatterns.some(p => p.test(sentence))) score += 15;
+    if (characterActionPatterns.some(p => p.test(sentence))) score += 18;
+    
+    // Bonus for specific high-visual combinations
+    if (/\b(toy cars|cars)\b.*\b(hill|steep|down|race|racing)\b/i.test(sentence)) score += 30;
+    if (/\b(magic|magical|imagining|world|adventure)\b/i.test(sentence)) score += 12;
+    
+    // Penalty for purely descriptive introductions
+    if (/\b(in the|there was|there were|once upon|it was|the town|the city|the village)\b/i.test(sentence)) score -= 10;
+    if (/\b(lived|was|were)\b.*\b(a|an|the)\b.*\b(town|city|village|place|time)\b/i.test(sentence)) score -= 15;
+    
+    return Math.max(0, score);
+  }
   
-  const presentScenePatterns = [
-    /\b(now|currently|right now)\b.*\b(outside|playground|field|park)\b/i,
-    /\b(ran|runs|running|walked|walks|walking)\b.*\b(to|towards|into)\b.*\b(outside|playground|field|park)\b/i,
-    /\b(arrived|enters|entered)\b.*\b(outside|playground|field|park)\b/i
-  ];
+  // Score all sentences and find the most action-oriented one
+  let bestScore = 0;
+  let bestSentenceIndex = 0;
   
-  let primarySceneEnd = 0;
-  for (let i = 1; i < sentences.length; i++) {
-    const sentence = sentences[i];
+  for (let i = 0; i < sentences.length; i++) {
+    const score = scoreScene(sentences[i]);
+    console.log(`[Scene Score] Sentence ${i}: "${sentences[i]}" → Score: ${score}`);
     
-    const isFutureActivity = futureActivityPatterns.some(pattern => pattern.test(sentence));
-    if (isFutureActivity) {
-      console.log(`[Scene Extract] Skipping future activity: "${sentence}"`);
-      continue;
-    }
-    
-    const hasSceneTransition = presentScenePatterns.some(pattern => pattern.test(sentence));
-    
-    if (hasSceneTransition) {
-      console.log(`[Scene Extract] Found scene transition at sentence ${i}: "${sentence}"`);
-      primarySceneEnd = i;
-      break;
+    if (score > bestScore) {
+      bestScore = score;
+      bestSentenceIndex = i;
     }
   }
   
-  if (primarySceneEnd === 0) {
-    primarySceneEnd = Math.min(2, Math.ceil(sentences.length / 2));
+  // If we found a high-scoring action scene, use it
+  if (bestScore >= 15) {
+    const primaryScene = sentences[bestSentenceIndex];
+    console.log(`🎯 Scene extraction: "${text}" → action scene (score ${bestScore}): "${primaryScene}"`);
+    return primaryScene;
   }
   
-  const primaryScene = sentences.slice(0, primarySceneEnd).join('. ').trim();
-  console.log(`🎯 Scene extraction: "${text}" → primary scene: "${primaryScene}"`);
+  // Fallback: look for character descriptions over setting descriptions
+  for (const sentence of sentences) {
+    if (/\b[A-Z][a-z]+\b.*\b(loved|liked|enjoyed|was|had|could)\b/i.test(sentence) && 
+        !/\b(town|city|village|place|lived|there)\b/i.test(sentence)) {
+      console.log(`🎯 Scene extraction: "${text}" → character fallback: "${sentence}"`);
+      return sentence;
+    }
+  }
   
-  return primaryScene || sentences[0] || text;
+  // Last resort: use first sentence
+  const fallback = sentences[0];
+  console.log(`🎯 Scene extraction: "${text}" → default fallback: "${fallback}"`);
+  return fallback || text;
 }
 
 function detectSecondaryCharacters(text: string): string[] {
