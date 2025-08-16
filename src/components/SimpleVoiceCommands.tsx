@@ -5,9 +5,11 @@ import { useConversation } from '@11labs/react';
 import { SimpleAudioEngine } from '@/services/SimpleAudioEngine';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export const SimpleVoiceCommands: React.FC = () => {
   const engine = SimpleAudioEngine.getInstance();
+  const { isMobileOrTablet } = useIsMobile();
 
   // Define client tools for voice commands
   const clientTools = {
@@ -66,11 +68,11 @@ export const SimpleVoiceCommands: React.FC = () => {
   } = useConversation({ 
     clientTools,
     onConnect: () => {
-      console.log('🎤 Connected to Charlotte');
-      toast.success('Charlotte is ready to help!');
+      console.log('🎤 Connected to Buddy');
+      toast.success('Buddy is ready to help!');
     },
     onDisconnect: () => {
-      console.log('🎤 Disconnected from Charlotte');
+      console.log('🎤 Disconnected from Buddy');
     },
     onError: (error) => {
       console.error('🎤 Voice error:', error);
@@ -100,7 +102,7 @@ export const SimpleVoiceCommands: React.FC = () => {
         await startSession({ signedUrl: data.signed_url });
       } catch (error) {
         console.error('🎤 Failed to start voice session:', error);
-        toast.error('Could not connect to Charlotte');
+        toast.error('Could not connect to Buddy');
       }
     }
   }, [status, startSession, endSession]);
@@ -108,7 +110,7 @@ export const SimpleVoiceCommands: React.FC = () => {
   const getButtonText = () => {
     if (status === 'connected') return 'Stop Voice Commands';
     if (status === 'connecting') return 'Connecting...';
-    return 'Talk to Charlotte';
+    return isMobileOrTablet ? 'Buddy' : 'Talk to Buddy';
   };
 
   const getStatusBadge = () => {
