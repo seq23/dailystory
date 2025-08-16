@@ -132,12 +132,7 @@ export class SimpleAudioEngine {
 
   stop() {
     // Release audio coordinator lock
-    try {
-      const { audioCoordinator } = require('@/services/audioCoordinator');
-      audioCoordinator.releaseLock('simple');
-    } catch (e) {
-      console.warn('Failed to release audio coordinator lock:', e);
-    }
+    this.releaseCoordinatorLock();
     
     if (this.inflight) {
       try { this.inflight.abort(); } catch {}
@@ -160,7 +155,20 @@ export class SimpleAudioEngine {
     this.playing = false;
   }
 
-  isPlaying() { 
+  
+  /**
+   * Release audio coordinator lock safely
+   */
+  private async releaseCoordinatorLock(): Promise<void> {
+    try {
+      const { audioCoordinator } = await import('@/services/audioCoordinator');
+      audioCoordinator.releaseLock('simple');
+    } catch (e) {
+      console.warn('Failed to release audio coordinator lock:', e);
+    }
+  }
+
+  isPlaying() {
     // Check both audio element and web speech
     return this.playing || this.webSpeechSpeaking; 
   }

@@ -80,18 +80,18 @@ export const audioCoordinator = AudioCoordinator.getInstance();
 
 // Setup global event listeners for coordination
 if (typeof window !== 'undefined') {
-  window.addEventListener('audio:stop:sync', () => {
+  window.addEventListener('audio:stop:sync', async () => {
     try {
-      const { audioSyncService } = require('@/services/audioSyncService');
+      const { audioSyncService } = await import('@/services/audioSyncService');
       audioSyncService.stopAudio();
     } catch (e) {
       console.warn('Failed to stop sync audio:', e);
     }
   });
 
-  window.addEventListener('audio:stop:simple', () => {
+  window.addEventListener('audio:stop:simple', async () => {
     try {
-      const { SimpleAudioEngine } = require('@/services/SimpleAudioEngine');
+      const { SimpleAudioEngine } = await import('@/services/SimpleAudioEngine');
       SimpleAudioEngine.getInstance().stop();
     } catch (e) {
       console.warn('Failed to stop simple audio:', e);

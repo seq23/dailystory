@@ -519,12 +519,7 @@ export class AudioSyncService {
    */
   stopAudio(): void {
     // Release audio coordinator lock
-    try {
-      const { audioCoordinator } = require('@/services/audioCoordinator');
-      audioCoordinator.releaseLock('sync');
-    } catch (e) {
-      console.warn('Failed to release audio coordinator lock:', e);
-    }
+    this.releaseCoordinatorLock();
     
     // CRITICAL: Synchronously update playing state FIRST for immediate UI feedback
     const wasPlaying = this.isPlaying;
@@ -593,6 +588,19 @@ export class AudioSyncService {
     }
     
     console.log('🧹 Audio sync service completely cleaned up');
+  }
+
+  
+  /**
+   * Release audio coordinator lock safely
+   */
+  private async releaseCoordinatorLock(): Promise<void> {
+    try {
+      const { audioCoordinator } = await import('@/services/audioCoordinator');
+      audioCoordinator.releaseLock('sync');
+    } catch (e) {
+      console.warn('Failed to release audio coordinator lock:', e);
+    }
   }
 
   /**
