@@ -355,19 +355,38 @@ useEffect(() => {
 
 
   const stopAudio = () => {
+    console.log('🛑 ElevenLabsAudio: Stop initiated');
+    
     // Immediate state update for responsive UI
     setIsPlaying(false);
     setIsLoading(false);
     
+    // Clear highlighting immediately
+    onWordHighlight?.(-1);
+    
     // Notify parent component immediately
     onAudioStateChange?.(false);
     
-    // Then cleanup audio service
+    // Emit events for coordination
+    window.dispatchEvent(new CustomEvent('audio:stop'));
+    window.dispatchEvent(new CustomEvent('audio:statechange', { 
+      detail: { isPlaying: false } 
+    }));
+    
+    // Stop audio sync service
     try {
       audioSyncService.stopAudio();
     } catch (error) {
       console.warn('Error stopping audio:', error);
     }
+    
+    // Also stop simple audio engine for complete coordination
+    try {
+      const engine = (window as any).__SimpleAudioEngine;
+      if (engine) engine.stop();
+    } catch {}
+    
+    console.log('✅ ElevenLabsAudio: Stop completed');
   };
 
 // Premium voice commands toggle

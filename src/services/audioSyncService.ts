@@ -82,6 +82,9 @@ export class AudioSyncService {
       speed: speed
     });
 
+    // Make service globally accessible for stop coordination
+    (window as any).__audioSyncService = this;
+
     // Request exclusive audio access - event-based coordination
     window.dispatchEvent(new CustomEvent('audio:request', { detail: { system: 'sync' } }));
     window.dispatchEvent(new CustomEvent('audio:stop:simple'));

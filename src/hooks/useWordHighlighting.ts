@@ -29,6 +29,7 @@ export const useWordHighlighting = (text: string, isAudioPlaying: boolean) => {
   // Enhanced cleanup on text change (new page/story)
   useEffect(() => {
     // Clear highlighting immediately when text changes
+    console.log('🧹 Word highlighting: Text changed, clearing highlights');
     clearHighlighting();
     
     return () => {

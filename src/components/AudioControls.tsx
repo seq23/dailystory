@@ -52,7 +52,7 @@ export const AudioControls: React.FC<AudioControlsProps> = ({ text, contentHash,
     try {
       // Enhanced mobile delay for better content synchronization
       if (isMobileOrTablet) {
-        await new Promise((r) => setTimeout(r, 600)); // Increased to 600ms for better sync
+        await new Promise((r) => setTimeout(r, 800)); // Increased to 800ms for better mobile sync
       }
       
       await engine.playText({ 
@@ -107,8 +107,19 @@ export const AudioControls: React.FC<AudioControlsProps> = ({ text, contentHash,
     }, delay);
   };
   const onStop = () => {
+    console.log('🛑 AudioControls: Stop button pressed');
+    
     const engine = SimpleAudioEngine.getInstance();
     engine.stop();
+    
+    // Also stop any ElevenLabs audio that might be playing
+    try {
+      const audioSyncService = (window as any).__audioSyncService;
+      if (audioSyncService) {
+        audioSyncService.stopAudio();
+        console.log('🛑 Also stopped AudioSyncService');
+      }
+    } catch {}
     
     // Clear loading and retry states
     setIsLoading(false);

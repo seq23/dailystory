@@ -16,7 +16,11 @@ export type PlayOptions = {
 export class SimpleAudioEngine {
   private static instance: SimpleAudioEngine | null = null;
   static getInstance() {
-    if (!this.instance) this.instance = new SimpleAudioEngine();
+    if (!this.instance) {
+      this.instance = new SimpleAudioEngine();
+      // Make globally accessible for coordination
+      (window as any).__SimpleAudioEngine = this.instance;
+    }
     return this.instance;
   }
 
@@ -299,6 +303,15 @@ export class SimpleAudioEngine {
         console.log('🛑 Cancelled browser speech synthesis');
       } catch {}
     }
+    
+    // CRITICAL: Also stop the audio sync service
+    try {
+      const audioSyncService = (window as any).__audioSyncService;
+      if (audioSyncService) {
+        audioSyncService.stopAudio();
+        console.log('🛑 Stopped AudioSyncService');
+      }
+    } catch {}
     
     // Update state synchronously
     this.webSpeechSpeaking = false;
