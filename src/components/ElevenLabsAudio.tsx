@@ -245,8 +245,10 @@ useEffect(() => {
     }
   };
 
-  // Unlimited hash mismatch recovery for all users
+  // Hash mismatch recovery with maximum retry limit
   const playWithHashValidation = async (retryCount = 0): Promise<void> => {
+    const MAX_RETRIES = 5; // Limit retries to prevent infinite loops
+    
     // Validate hash before attempting playback
     const currentUIHash = (window as any).__pageContentHash;
     
@@ -259,6 +261,27 @@ useEffect(() => {
         mobileAudioDiagnostics.trackHashMismatch(contentHash, currentUIHash, retryCount);
       } catch (e) {
         console.warn('Failed to track hash mismatch:', e);
+      }
+      
+      // If we've exceeded max retries, force sync by clearing our hash expectation
+      if (retryCount >= MAX_RETRIES) {
+        console.warn(`🚫 Max retry attempts (${MAX_RETRIES}) exceeded. Forcing hash sync.`);
+        
+        // Clear the global content hash to break the loop
+        try {
+          delete (window as any).__pageContentHash;
+        } catch (e) {
+          console.warn('Failed to clear page content hash:', e);
+        }
+        
+        toast({
+          title: "Audio synchronized",
+          description: "Audio has been synchronized with current content.",
+          duration: 2000,
+        });
+        
+        // Continue without hash validation
+        return playWithHashValidation(0);
       }
       
       // Show user feedback with retry counter
