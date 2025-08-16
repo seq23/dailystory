@@ -1951,16 +1951,25 @@ const handleRestartTimer = () => {
                         className={cn("story-content storybook-frame w-full", justAdvanced && "animate-enter")}
                         data-difficulty={currentDifficulty}
                       >
-                        {processTextWithConsistentFlow({
-                          text: currentStoryText,
-                          className: "interactive-word",
-                          difficulty: currentDifficulty,
-                          userInfo,
-                          isPremium,
-                          userId: userInfo.name,
-                          highlightedWordIndex: currentHighlightedWord,
+                        {story.length > 0 && currentStoryText && currentStoryText.trim().length > 0 ? (
+                          processTextWithConsistentFlow({
+                            text: currentStoryText,
+                            className: "interactive-word",
+                            difficulty: currentDifficulty,
+                            userInfo,
+                            isPremium,
+                            userId: userInfo.name,
+                            highlightedWordIndex: currentHighlightedWord,
                             isMobile: preferMobileModal
-                        })}
+                          })
+                        ) : (
+                          <div className="flex items-center justify-center h-32">
+                            <div className="text-center">
+                              <Loader2 className="w-6 h-6 animate-spin text-primary mx-auto mb-2" />
+                              <p className="text-sm text-muted-foreground">Loading story content...</p>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -2044,16 +2053,25 @@ const handleRestartTimer = () => {
                           className={cn("story-content story-content--compact w-full", isPremium && isShortPage && "text-center", justAdvanced && "animate-enter")}
                           data-difficulty={currentDifficulty}
                         >
-                          {processTextWithConsistentFlow({
-                            text: currentStoryText,
-                            className: "interactive-word",
-                            difficulty: currentDifficulty,
-                            userInfo,
-                            isPremium,
-                            userId: userInfo.name,
-                            highlightedWordIndex: currentHighlightedWord,
-                            isMobile: preferMobileModal
-                          })}
+                          {story.length > 0 && currentStoryText && currentStoryText.trim().length > 0 ? (
+                            processTextWithConsistentFlow({
+                              text: currentStoryText,
+                              className: "interactive-word",
+                              difficulty: currentDifficulty,
+                              userInfo,
+                              isPremium,
+                              userId: userInfo.name,
+                              highlightedWordIndex: currentHighlightedWord,
+                              isMobile: preferMobileModal
+                            })
+                          ) : (
+                            <div className="flex items-center justify-center h-32">
+                              <div className="text-center">
+                                <Loader2 className="w-6 h-6 animate-spin text-primary mx-auto mb-2" />
+                                <p className="text-sm text-muted-foreground">Loading story content...</p>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>

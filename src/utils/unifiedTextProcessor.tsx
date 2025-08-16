@@ -28,9 +28,9 @@ export const processTextWithConsistentFlow = ({
   highlightedWordIndex,
   isMobile = false
 }: TextProcessorOptions): React.ReactNode[] => {
-  // Handle undefined/null text
-  if (!text || typeof text !== 'string') {
-    console.warn('processTextWithConsistentFlow: text is undefined or not a string', { text });
+  // Handle undefined/null/empty text
+  if (!text || typeof text !== 'string' || text.trim().length === 0) {
+    console.warn('processTextWithConsistentFlow: text is undefined, not a string, or empty', { text });
     return [];
   }
   
