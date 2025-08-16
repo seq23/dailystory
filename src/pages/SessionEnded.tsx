@@ -1,7 +1,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Home, BookOpen, Clock, TrendingUp, Target, BookText, Crown, Sparkles, Star, Volume2 } from "lucide-react";
+import { Home, BookOpen, Clock, TrendingUp, Target, BookText, Crown, Sparkles, Star, Volume2, FileText, Lightbulb, Trophy } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import type { UserInfo } from "@/types";
@@ -102,14 +102,24 @@ const location = useLocation();
   const canLaunchActivities = Boolean(userIsPremium && userInfoFromState && storyText);
   const isQuizAllowed = Boolean(userIsPremium && sessionStats && sessionStats.currentDifficulty !== 'beginner');
   
-  // Get achievements from this session
+  // Get achievements and progress data from this session
   let sessionAchievements: any[] = [];
+  let gameContext: any = null;
+  let sessionStartStats: any = null;
+  
   try {
-    const { userStats } = useGameContext();
+    gameContext = useGameContext();
     const sessionAchievementsStr = sessionStorage.getItem('session_achievements');
     if (sessionAchievementsStr) {
       sessionAchievements = JSON.parse(sessionAchievementsStr);
       sessionStorage.removeItem('session_achievements'); // Clear after reading
+    }
+    
+    // Get session start stats for before/after comparison
+    const sessionStartStatsStr = sessionStorage.getItem('session_start_stats');
+    if (sessionStartStatsStr) {
+      sessionStartStats = JSON.parse(sessionStartStatsStr);
+      sessionStorage.removeItem('session_start_stats'); // Clear after reading
     }
   } catch {
     // Graceful fallback if no game context
@@ -357,6 +367,127 @@ const getDifficultyLabel = (difficulty: string) => {
               </div>
             )}
           </div>
+
+          {/* Progress Made This Session */}
+          {gameContext && sessionStartStats && sessionStats && (
+            <div className="space-y-4">
+              <div className="text-center">
+                <h3 className="text-lg font-bold text-gray-800 flex items-center justify-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-green-600" />
+                  {t("sessionEnded.progressMilestones", "Progress Made This Session")}
+                </h3>
+              </div>
+              
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                {/* Words Progress */}
+                <div className="bg-blue-50 rounded-lg p-4 text-center">
+                  <BookText className="w-6 h-6 text-blue-600 mx-auto mb-2" />
+                  <div className="text-sm text-blue-600 mb-1">{t("progress.words", "Words Read")}</div>
+                  <div className="flex items-center justify-center gap-1 text-xs text-blue-500">
+                    <span>{sessionStartStats.totalWordsRead || 0}</span>
+                    <span>→</span>
+                    <span className="font-bold">{(sessionStartStats.totalWordsRead || 0) + sessionStats.wordsRead}</span>
+                  </div>
+                  <div className="text-lg font-bold text-blue-700">+{sessionStats.wordsRead}</div>
+                </div>
+                
+                {/* Pages Progress */}
+                <div className="bg-green-50 rounded-lg p-4 text-center">
+                  <FileText className="w-6 h-6 text-green-600 mx-auto mb-2" />
+                  <div className="text-sm text-green-600 mb-1">{t("progress.pages", "Pages Read")}</div>
+                  <div className="flex items-center justify-center gap-1 text-xs text-green-500">
+                    <span>{Math.floor((sessionStartStats.totalWordsRead || 0) / 200)}</span>
+                    <span>→</span>
+                    <span className="font-bold">{Math.floor(((sessionStartStats.totalWordsRead || 0) + sessionStats.wordsRead) / 200)}</span>
+                  </div>
+                  <div className="text-lg font-bold text-green-700">+{sessionStats.pagesRead}</div>
+                </div>
+                
+                {/* Vocabulary Progress */}
+                <div className="bg-amber-50 rounded-lg p-4 text-center">
+                  <Lightbulb className="w-6 h-6 text-amber-600 mx-auto mb-2" />
+                  <div className="text-sm text-amber-600 mb-1">{t("progress.vocabulary", "Vocabulary")}</div>
+                  <div className="flex items-center justify-center gap-1 text-xs text-amber-500">
+                    <span>{sessionStartStats.vocabularyWordsLearned || 0}</span>
+                    <span>→</span>
+                    <span className="font-bold">{(sessionStartStats.vocabularyWordsLearned || 0) + (gameContext.userStats.vocabularyWordsLearned - (sessionStartStats.vocabularyWordsLearned || 0))}</span>
+                  </div>
+                  <div className="text-lg font-bold text-amber-700">+{Math.max(0, gameContext.userStats.vocabularyWordsLearned - (sessionStartStats.vocabularyWordsLearned || 0))}</div>
+                </div>
+                
+                {/* Time Progress */}
+                <div className="bg-purple-50 rounded-lg p-4 text-center">
+                  <Clock className="w-6 h-6 text-purple-600 mx-auto mb-2" />
+                  <div className="text-sm text-purple-600 mb-1">{t("progress.time", "Minutes")}</div>
+                  <div className="flex items-center justify-center gap-1 text-xs text-purple-500">
+                    <span>{Math.floor((sessionStartStats.totalTimeReading || 0) / 60)}</span>
+                    <span>→</span>
+                    <span className="font-bold">{Math.floor((sessionStartStats.totalTimeReading || 0) / 60) + Math.floor(sessionStats.timeSpent / 60)}</span>
+                  </div>
+                  <div className="text-lg font-bold text-purple-700">+{Math.floor(sessionStats.timeSpent / 60)}</div>
+                </div>
+              </div>
+              
+              {/* Level Progress */}
+              {gameContext.userStats.currentLevel > (sessionStartStats.currentLevel || 1) && (
+                <div className="bg-gradient-to-r from-yellow-50 to-amber-50 border-2 border-yellow-200 rounded-lg p-4 text-center">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <Star className="w-6 h-6 text-yellow-600" />
+                    <h4 className="text-lg font-bold text-yellow-700">
+                      {t("sessionEnded.levelUp", "Level Up!")}
+                    </h4>
+                  </div>
+                  <p className="text-sm text-yellow-600">
+                    {t("sessionEnded.levelProgress", "You advanced from level {{from}} to level {{to}}!", {
+                      from: sessionStartStats.currentLevel || 1,
+                      to: gameContext.userStats.currentLevel
+                    })}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Badge Collection Display */}
+          {gameContext && gameContext.userStats.badges && gameContext.userStats.badges.length > 0 && (
+            <div className="space-y-4 mt-6">
+              <div className="text-center">
+                <h3 className="text-lg font-bold text-gray-800 flex items-center justify-center gap-2">
+                  <Trophy className="w-5 h-5 text-amber-600" />
+                  {t("sessionEnded.badgeCollection", "Badge Collection")}
+                </h3>
+                <p className="text-sm text-gray-600">
+                  {t("sessionEnded.badgesEarned", "{{count}} badges earned", { count: gameContext.userStats.badges.length })}
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
+                {gameContext.userStats.badges.slice(-16).map((badge: any, index: number) => (
+                  <div
+                    key={badge.id}
+                    className="bg-white rounded-lg p-2 sm:p-3 text-center shadow-md border border-gray-200 hover:shadow-lg transition-shadow duration-200"
+                  >
+                    <div className="text-xl sm:text-2xl mb-1">{badge.icon}</div>
+                    <div className="text-xs font-medium text-gray-700 truncate" title={badge.name}>
+                      {badge.name.split(' ')[0]}
+                    </div>
+                    <div 
+                      className="w-3 h-3 rounded-full mx-auto mt-1" 
+                      style={{ backgroundColor: badge.color }}
+                    />
+                  </div>
+                ))}
+              </div>
+              
+              {gameContext.userStats.badges.length > 16 && (
+                <div className="text-center text-sm text-gray-500">
+                  {t("sessionEnded.moreRankBadges", "...and {{count}} more badges!", { 
+                    count: gameContext.userStats.badges.length - 16 
+                  })}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Achievements Earned This Session */}
           {sessionAchievements.length > 0 && (

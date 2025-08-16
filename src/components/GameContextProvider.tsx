@@ -2,6 +2,7 @@ import React, { createContext, useContext, ReactNode, useEffect } from 'react';
 import { useGamification } from '@/hooks/useGamification';
 import type { UserInfo } from '@/types';
 import { setupGamificationGlobals, cleanupGamificationGlobals } from '@/utils/gamificationGlobals';
+import { SessionStatsTracker } from '@/utils/sessionStatsTracker';
 
 interface GameContextValue {
   userStats: any;
@@ -40,6 +41,13 @@ export const GameContextProvider: React.FC<GameContextProviderProps> = ({
     setupGamificationGlobals(gamificationHook.addVocabularyWord, userType === 'premium');
     return () => cleanupGamificationGlobals();
   }, [gamificationHook.addVocabularyWord, userType]);
+
+  // Store session start stats when component mounts
+  useEffect(() => {
+    if (!SessionStatsTracker.hasSessionStartStats()) {
+      SessionStatsTracker.storeSessionStartStats(gamificationHook.userStats);
+    }
+  }, [gamificationHook.userStats]);
 
   // Expose user name globally for consistent per-user storage keys
   useEffect(() => {

@@ -111,6 +111,15 @@ export const useGamification = (options: UseGamificationOptions = {}) => {
       // Handle new achievements - use modal system only
       if (unlockedAchievements.length > 0) {
         setNewAchievements(prev => [...prev, ...unlockedAchievements]);
+        
+        // Generate badges for newly unlocked achievements
+        const newBadges = unlockedAchievements.map(achievement => 
+          GamificationService.generateBadge(achievement)
+        );
+        
+        // Add badges to updated stats
+        updatedStats.badges = [...updatedStats.badges, ...newBadges];
+        
         unlockedAchievements.forEach(achievement => {
           onAchievementUnlocked?.(achievement);
           // Removed achievement toast - use modal system only

@@ -523,6 +523,39 @@ className={cn(
                   </div>
                 )}
 
+                {/* Badge Collection Display */}
+                {userStats.badges && userStats.badges.length > 0 && (
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-semibold text-foreground flex items-center gap-1">
+                      <Trophy className="w-4 h-4 text-amber-500" />
+                      {t('progress.badges', 'Badge Collection')} ({userStats.badges.length})
+                    </h4>
+                    <div className="grid grid-cols-3 gap-2">
+                      {userStats.badges.slice(-6).map((badge: any, index: number) => (
+                        <div
+                          key={badge.id}
+                          className="bg-white/80 rounded-lg p-2 text-center shadow-sm border border-gray-200/50 hover:shadow-md transition-shadow duration-200"
+                          title={`${badge.name}: ${badge.description}`}
+                        >
+                          <div className="text-sm mb-1">{badge.icon}</div>
+                          <div className="text-xs font-medium text-gray-700 truncate">
+                            {badge.name.split(' ')[0]}
+                          </div>
+                          <div 
+                            className="w-2 h-2 rounded-full mx-auto mt-1" 
+                            style={{ backgroundColor: badge.color }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    {userStats.badges.length > 6 && (
+                      <div className="text-center text-xs text-muted-foreground">
+                        +{userStats.badges.length - 6} more badges
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Premium indicator */}
                 {userType === 'premium' ? (
                   <div className="mt-4 text-center">
