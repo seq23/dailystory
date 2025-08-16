@@ -75,9 +75,9 @@ export class AudioSyncService {
   async playText(options: AudioSyncOptions & { onStateChange?: (isPlaying: boolean) => void }): Promise<void> {
     const { text, voice = 'XB0fDUnXU5powFXDhCwa', model = 'eleven_turbo_v2_5', speed = 1.0, onWordHighlight, onError, onStateChange } = options;
     
-    // Request exclusive audio access
-    const { audioCoordinator } = await import('@/services/audioCoordinator');
-    await audioCoordinator.requestLock('sync');
+    // Request exclusive audio access - event-based coordination
+    window.dispatchEvent(new CustomEvent('audio:request', { detail: { system: 'sync' } }));
+    window.dispatchEvent(new CustomEvent('audio:stop:simple'));
     
     // Stop any active voice commands or simple audio (mutual exclusion)
     try {
@@ -590,8 +590,8 @@ export class AudioSyncService {
    * Stop audio and clear all highlighting
    */
   stopAudio(): void {
-    // Release audio coordinator lock
-    this.releaseCoordinatorLock();
+    // Signal stop to coordination system
+    window.dispatchEvent(new CustomEvent('audio:stopped', { detail: { system: 'sync' } }));
     
     // CRITICAL: Synchronously update playing state FIRST for immediate UI feedback
     const wasPlaying = this.isPlaying;
@@ -662,18 +662,6 @@ export class AudioSyncService {
     console.log('🧹 Audio sync service completely cleaned up');
   }
 
-  
-  /**
-   * Release audio coordinator lock safely
-   */
-  private async releaseCoordinatorLock(): Promise<void> {
-    try {
-      const { audioCoordinator } = await import('@/services/audioCoordinator');
-      audioCoordinator.releaseLock('sync');
-    } catch (e) {
-      console.warn('Failed to release audio coordinator lock:', e);
-    }
-  }
 
   /**
    * Get current playback status

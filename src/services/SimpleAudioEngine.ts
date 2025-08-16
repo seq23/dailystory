@@ -57,9 +57,9 @@ export class SimpleAudioEngine {
   async playText(opts: PlayOptions) {
     const { text, voiceId, modelId, contentHash } = opts;
     
-    // Request exclusive audio access
-    const { audioCoordinator } = await import('@/services/audioCoordinator');
-    await audioCoordinator.requestLock('simple');
+    // Request exclusive audio access - event-based coordination
+    window.dispatchEvent(new CustomEvent('audio:request', { detail: { system: 'simple' } }));
+    window.dispatchEvent(new CustomEvent('audio:stop:sync'));
     
     // Abort any inflight request and stop current audio
     this.stop();
@@ -131,8 +131,8 @@ export class SimpleAudioEngine {
   }
 
   stop() {
-    // Release audio coordinator lock
-    this.releaseCoordinatorLock();
+    // Signal stop to coordination system
+    window.dispatchEvent(new CustomEvent('audio:stopped', { detail: { system: 'simple' } }));
     
     if (this.inflight) {
       try { this.inflight.abort(); } catch {}
@@ -155,18 +155,6 @@ export class SimpleAudioEngine {
     this.playing = false;
   }
 
-  
-  /**
-   * Release audio coordinator lock safely
-   */
-  private async releaseCoordinatorLock(): Promise<void> {
-    try {
-      const { audioCoordinator } = await import('@/services/audioCoordinator');
-      audioCoordinator.releaseLock('simple');
-    } catch (e) {
-      console.warn('Failed to release audio coordinator lock:', e);
-    }
-  }
 
   isPlaying() {
     // Check both audio element and web speech
