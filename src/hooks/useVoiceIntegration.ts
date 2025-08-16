@@ -64,24 +64,33 @@ export const useVoiceIntegration = () => {
     
     stop: () => {
       console.log('🎯 Voice command: stop');
-      engine.stop();
-      return "Stopped reading";
+      // Brief delay to let Charlotte finish her acknowledgment
+      setTimeout(() => {
+        engine.stop();
+      }, 100);
+      return "Got it!"; // Very brief response to avoid audio conflicts
     },
     
     next: () => {
       console.log('🎯 Voice command: next page');
-      window.dispatchEvent(new CustomEvent('reader:navigate', { 
-        detail: { direction: 'next' } 
-      }));
-      return "Going to next page";
+      // Brief delay to let Charlotte finish her acknowledgment
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('reader:navigate', { 
+          detail: { direction: 'next' } 
+        }));
+      }, 100);
+      return "Got it!"; // Very brief response to avoid audio conflicts
     },
     
     previous: () => {
       console.log('🎯 Voice command: previous page');
-      window.dispatchEvent(new CustomEvent('reader:navigate', { 
-        detail: { direction: 'prev' } 
-      }));
-      return "Going to previous page";
+      // Brief delay to let Charlotte finish her acknowledgment
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('reader:navigate', { 
+          detail: { direction: 'prev' } 
+        }));
+      }, 100);
+      return "Got it!"; // Very brief response to avoid audio conflicts
     },
     
     // ENHANCED WORD ASSISTANCE TOOLS with Context Awareness
