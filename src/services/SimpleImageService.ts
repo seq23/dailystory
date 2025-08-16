@@ -240,7 +240,7 @@ export class SimpleImageService {
       console.log(`🚀 Ultra-fast generation for page ${pageNumber}/${totalPages}: "${storyText}"`);
 
       // TIER 1: Enhanced Runware with AI character consistency
-      let result = await this.generateWithRunware(storyText, finalConfig, undefined, userInfo, pageNumber, sessionId);
+      let result = await this.generateWithRunware(storyText, finalConfig, undefined, userInfo, pageNumber, sessionId, difficultyLevel);
       
       console.log(`🎯 Token-optimized generation for ${userInfo.name} on page ${pageNumber}`);
 
@@ -300,7 +300,7 @@ export class SimpleImageService {
     return 'Unknown';
   }
 
-  private static async generateWithRunware(prompt: string, config: ImageGenerationConfig, negativePrompt?: string, userInfo?: UserInfo, pageNumber?: number, sessionId?: string): Promise<ImageResult> {
+  private static async generateWithRunware(prompt: string, config: ImageGenerationConfig, negativePrompt?: string, userInfo?: UserInfo, pageNumber?: number, sessionId?: string, difficultyLevel?: DifficultyLevel): Promise<ImageResult> {
     try {
       console.log('🎨 Token-conscious Runware generation with character consistency');
 
@@ -312,6 +312,7 @@ export class SimpleImageService {
         sessionId,
         userInfo,
         pageNumber,
+        difficultyLevel, // Pass difficulty level for appropriate art style
         width: config.width,
         height: config.height,
         model: defaultRunware.model,

@@ -360,6 +360,7 @@ serve(async (req) => {
       sessionId,
       userInfo,
       pageNumber = 1,
+      difficultyLevel = 'medium',
       positivePrompt,
       negativePrompt,
       width = 1024,
@@ -451,7 +452,17 @@ serve(async (req) => {
       
       const environmentalContext = StoryVisualStateManager.getSettingForPrompt(sessionId);
       
-      enhancedPrompt = `${characterDesc}${secondaryChars} ${processedText}${environmentalContext} consistent-face children-book bright-colors`;
+      // Apply difficulty-appropriate art style
+      const difficultyStyleMapping: Record<string, string> = {
+        'beginner': 'simple children\'s book illustration, bold primary colors, clean lines, flat cartoon style',
+        'easy': '3D children\'s book art, bright colors, smooth rendering, cheerful',
+        'medium': 'children\'s book illustration, soft pastels, warm lighting, digital art',
+        'hard': '2D digital illustration (sophisticated artistic style), nuanced color gradients, artistic palette, highly detailed',
+        'expert': '2D digital illustration (masterful artistic technique), complex color theory, professional artist palette, intricate and complex details'
+      };
+      
+      const artStyle = difficultyStyleMapping[difficultyLevel] || difficultyStyleMapping['medium'];
+      enhancedPrompt = `${characterDesc}${secondaryChars} ${processedText}${environmentalContext} consistent-face ${artStyle}`;
       
       if (characterSeed) {
         finalSeed = characterSeed;
