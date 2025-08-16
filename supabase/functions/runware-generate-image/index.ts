@@ -445,10 +445,10 @@ serve(async (req) => {
       const avatarKey = `${userInfo.avatar.skinTone}-${userInfo.avatar.type}`;
       const hairColor = hairColorMap[avatarKey] || 'brown hair';
       
-      const skinTone = skinToneMap[userInfo.avatar.skinTone] || 'medium skin';
+      const effectiveSkinToneForPrompt = skinToneMap[userInfo.avatar.skinTone] || 'medium skin';
       
       // Ultra-concise character description for token efficiency
-      const characterDesc = `${userInfo.name}: ${userInfo.avatar.type} ${hairColor} ${skinTone}`;
+      const characterDesc = `${userInfo.name}: ${userInfo.avatar.type} ${hairColor} ${effectiveSkinToneForPrompt}`;
       
       // Secondary characters for context (minimal tokens)
       const secondaryChars = secondaryCharacters.length > 0 ? ` ${secondaryCharacters.join(' ')}` : '';
