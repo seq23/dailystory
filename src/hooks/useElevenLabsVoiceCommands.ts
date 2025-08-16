@@ -327,19 +327,9 @@ Example responses:
       // Unlock mobile audio before starting voice commands
       await unlockMobileAudioForVoice();
       
-      // Check microphone permissions and request access
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        audio: { 
-          sampleRate: 24000, 
-          channelCount: 1,
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true 
-        } 
-      });
-      stream.getTracks().forEach(track => track.stop());
-      console.log('✅ Microphone access granted');
-
+      // Note: Microphone permission check is now handled by the unified system
+      // This hook assumes permissions are already granted
+      
       // Get signed URL from Supabase edge function
       const body = state.agentId ? { agentId: state.agentId } : {};
       const { data, error } = await supabase.functions.invoke('elevenlabs-agent-signed-url', { body });
@@ -349,7 +339,11 @@ Example responses:
         const errorMsg = error.message || 'Unknown error';
         
         if (errorMsg.includes('API key') || errorMsg.includes('unauthorized') || errorMsg.includes('401')) {
-          throw new Error('ElevenLabs API key not configured. Please set up your API key in project settings.');
+          throw new Error('ElevenLabs API key is not configured properly.');
+        }
+        
+        if (errorMsg.includes('agent_id') || errorMsg.includes('agentId')) {
+          throw new Error('ElevenLabs Agent ID is not configured properly.');
         }
         
         throw new Error(`ElevenLabs setup failed: ${errorMsg}`);
@@ -358,22 +352,24 @@ Example responses:
       if (data && (data as any).error) {
         const apiError = (data as any).error;
         console.error('❌ ElevenLabs API returned error:', apiError);
+        
+        if (apiError.includes('agent_id')) {
+          throw new Error('Invalid Agent ID. Please check your ElevenLabs agent configuration.');
+        }
+        
         throw new Error(`ElevenLabs API error: ${apiError}`);
       }
 
       const url = (data as any)?.signed_url || (data as any)?.url || (data as any)?.signedUrl;
       if (!url || !/^wss?:\/\//.test(url)) {
-        throw new Error('Invalid or missing signed URL from ElevenLabs');
+        throw new Error('Could not get valid connection URL from ElevenLabs.');
       }
 
       console.log('🔗 Starting ElevenLabs session...');
       const id = await (conversation as any).startSession({ url });
       console.log('✅ ElevenLabs conversation started:', id);
       
-      toast({ 
-        title: 'Voice Assistant Connected', 
-        description: 'Say: "read", "stop", "next", "back", or "what is this word"' 
-      });
+      // Don't show toast here - let the unified system handle user feedback
       
     } catch (e: any) {
       console.error('❌ ElevenLabs connection failed:', e);
@@ -383,15 +379,11 @@ Example responses:
         detail: { status: 'failed', system: 'elevenlabs', error: e.message } 
       }));
       
-      toast({ 
-        title: 'Voice Assistant Error', 
-        description: e?.message || 'Could not start voice session', 
-        variant: 'destructive' 
-      });
+      // Don't show toast here - let the unified system handle the fallback
     } finally {
       setConnecting(false);
     }
-  }, [state.agentId, conversation, toast, startVoiceLevelMonitoring]);
+  }, [state.agentId, conversation, unlockMobileAudioForVoice]);
 
   const stop = useCallback(async () => {
     try { 

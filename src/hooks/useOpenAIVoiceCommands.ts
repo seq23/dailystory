@@ -111,6 +111,10 @@ export const useOpenAIVoiceCommands = () => {
 
   const start = useCallback(() => {
     console.log('🎤 Starting OpenAI voice commands...');
+    // Dispatch connecting status
+    window.dispatchEvent(new CustomEvent('voice:status', { 
+      detail: { status: 'connecting', system: 'openai' } 
+    }));
     if (!isConnected) connect();
   }, [isConnected, connect]);
 
