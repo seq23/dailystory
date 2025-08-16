@@ -282,6 +282,41 @@ export class EnhancedImageCache {
   }
 
   /**
+   * Get cached images for a specific story hash
+   */
+  static getStoryCachedImages(storyHash: string): Record<number, string> {
+    try {
+      const map = this.getCacheMap();
+      const storyImages: Record<number, string> = {};
+
+      for (const [key, cachedImage] of map.entries()) {
+        if (cachedImage.storyHash === storyHash && cachedImage.pageNumber !== undefined) {
+          storyImages[cachedImage.pageNumber] = cachedImage.url;
+        }
+      }
+
+      console.log('📸 Story cache retrieved:', { storyHash, imageCount: Object.keys(storyImages).length });
+      return storyImages;
+    } catch (error) {
+      console.error('Failed to get story cached images:', error);
+      return {};
+    }
+  }
+
+  /**
+   * Cache image with story hash
+   */
+  static cacheImageWithStoryHash(
+    prompt: string,
+    imageUrl: string,
+    storyHash: string,
+    pageNumber: number,
+    sessionId: string = 'story-cache'
+  ): void {
+    this.cacheImage(prompt, imageUrl, sessionId, pageNumber, storyHash);
+  }
+
+  /**
    * Check if cache is approaching storage limits
    */
   static isStorageNearLimit(): boolean {

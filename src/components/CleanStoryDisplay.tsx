@@ -1254,7 +1254,20 @@ const handleSaveStoryNow = async () => {
     if (!isPremium || story.length === 0 || isSaving) return;
     setIsSaving(true);
     try {
-      // Build Story object
+      // Import StoryCacheIntegration service
+      const { StoryCacheIntegration } = await import('@/services/StoryCacheIntegration');
+      
+      // Generate story hash for consistent image caching
+      const storyHash = StoryCacheIntegration.generateStoryHash(story);
+      
+      // Cache all session images with story hash
+      const imageMetadata = await StoryCacheIntegration.cacheStoryImages(
+        storyHash, 
+        pageImages, 
+        'story-save-session'
+      );
+      
+      // Build Story object with image cache metadata
       const segments = story.map((text, idx) => ({ text, illustration: pageImages[idx] }));
       const wordCount = story.reduce((sum, s) => sum + countWords(s), 0);
       const estimatedReadingTime = Math.max(1, Math.round(wordCount / 150));
@@ -1266,7 +1279,14 @@ const handleSaveStoryNow = async () => {
         estimatedReadingTime,
         wordCount,
       };
-      await PremiumStoryManager.saveStory(storyObj as any, userInfo, isStoryComplete ? ['ended'] : ['in-progress'], false);
+      
+      await PremiumStoryManager.saveStory(
+        storyObj as any, 
+        userInfo, 
+        isStoryComplete ? ['ended'] : ['in-progress'], 
+        false,
+        imageMetadata
+      );
       setHighlightSave(false);
       toast({ title: t('save.toastSaved', 'Saved to your Story Library'), duration: 3000 });
     } catch (e) {

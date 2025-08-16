@@ -53,7 +53,8 @@ export class PremiumStoryManager {
     story: Story,
     userInfo: UserInfo,
     tags: string[] = [],
-    isFavorite: boolean = false
+    isFavorite: boolean = false,
+    imageCacheMetadata?: any
   ): Promise<SavedStory> {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
@@ -76,7 +77,8 @@ export class PremiumStoryManager {
         favoriteFood: userInfo.favoriteFood
       } as any, // JSON serializable
       tags,
-      is_favorite: isFavorite
+      is_favorite: isFavorite,
+      image_cache_metadata: imageCacheMetadata || {}
     };
 
     const { data, error } = await supabase

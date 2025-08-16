@@ -15,6 +15,7 @@ import { MyAccount } from "@/components/MyAccount";
 import { DismissibleSystemStatus } from "@/components/DismissibleSystemStatus";
 import { useSecurityMonitoring } from "@/hooks/useSecurityMonitoring";
 import { BookOpen } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import type { UserInfo, Grade, LanguageCode, LearningGoal, SessionStats } from "@/types";
 import { AdaptiveEnhancedLoading } from "@/components/AdaptiveEnhancedLoading";
 
@@ -22,7 +23,7 @@ interface AuthenticatedAppProps {
   user: User;
 }
 
-type AppView = "stories" | "library" | "profile" | "parent" | "account";
+type AppView = "stories" | "library" | "profile" | "parent" | "account" | "reading";
 
 export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
   const [currentView, setCurrentView] = useState<AppView>("stories");
@@ -34,6 +35,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
   const [devTestMode, setDevTestMode] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [currentStory, setCurrentStory] = useState<any>(null);
   
   useEffect(() => {
     console.log('👤 AuthenticatedApp loading state:', loading);
@@ -358,11 +360,36 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                         </div>
                       </div>
                       <PremiumStoryLibrary
-                        onLoadStory={(story) => {
-                          // Handle story loading
-                          console.log("Loading story:", story);
+                        onLoadStory={async (story) => {
+                          try {
+                            // Import StoryCacheIntegration service
+                            const { StoryCacheIntegration } = await import('@/services/StoryCacheIntegration');
+                            
+                            // Extract story segments
+                            const storyPages = story.segments?.map(s => s.text) || [];
+                            const storyHash = StoryCacheIntegration.generateStoryHash(storyPages);
+                            
+                            // Load cached images for the story
+                            const cachedImages = await StoryCacheIntegration.loadStoryImages(
+                              storyHash,
+                              storyPages.length
+                            );
+                            
+                            // Set current story with loaded images
+                            setCurrentStory({
+                              ...story,
+                              cachedImages,
+                              storyHash
+                            });
+                            setCurrentView("reading");
+                          } catch (error) {
+                            console.error('Failed to load story:', error);
+                            setCurrentStory(story);
+                            setCurrentView("reading");
+                          }
                         }}
                         onStartNewStory={() => setCurrentView("stories")}
+                        currentStory={currentStory}
                       />
                     </div>
                   )}
@@ -394,6 +421,30 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                       subscriptionEnd={subscriptionEnd || undefined}
                       devTestMode={devTestMode}
                     />
+                  )}
+
+                  {currentView === "reading" && currentStory && (
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-gradient-primary/20 rounded-full">
+                          <BookOpen className="w-6 h-6 text-primary" />
+                        </div>
+                        <div>
+                          <h1 className="text-2xl font-bold text-foreground">{currentStory.title}</h1>
+                          <p className="text-muted-foreground">Reading saved story</p>
+                        </div>
+                      </div>
+                      {/* CleanStoryDisplay would be integrated here in the future */}
+                      <div className="bg-white rounded-lg p-6 shadow-sm">
+                        <p className="text-gray-600 mb-4">Story reading view coming soon...</p>
+                        <button 
+                          onClick={() => setCurrentView("library")}
+                          className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
+                        >
+                          Back to Library
+                        </button>
+                      </div>
+                    </div>
                   )}
                 </>
               )}
