@@ -259,28 +259,57 @@ export class SimpleAudioEngine {
   }
 
   stop() {
-    // Signal stop to coordination system
+    console.log('🛑 SimpleAudioEngine: Stopping all audio systems');
+    
+    // Signal stop to coordination system first
     window.dispatchEvent(new CustomEvent('audio:stopped', { detail: { system: 'simple' } }));
     
+    // Abort any inflight requests immediately
     if (this.inflight) {
-      try { this.inflight.abort(); } catch {}
+      try { 
+        this.inflight.abort(); 
+        console.log('🛑 Aborted inflight audio request');
+      } catch {}
       this.inflight = undefined;
     }
+    
+    // Stop HTML audio element
     const a = this.audio;
     if (a) {
-      try { a.pause(); a.currentTime = 0; } catch {}
+      try { 
+        a.pause(); 
+        a.currentTime = 0;
+        console.log('🛑 Stopped HTML audio element');
+      } catch {}
     }
+    
+    // Clean up object URLs
     if (this.currentUrl) {
-      try { URL.revokeObjectURL(this.currentUrl); } catch {}
+      try { 
+        URL.revokeObjectURL(this.currentUrl); 
+        console.log('🛑 Revoked audio object URL');
+      } catch {}
       this.currentUrl = null;
     }
     
-    // Stop browser speech
+    // Stop browser speech synthesis immediately
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      try { speechSynthesis.cancel(); } catch {}
+      try { 
+        speechSynthesis.cancel();
+        console.log('🛑 Cancelled browser speech synthesis');
+      } catch {}
     }
+    
+    // Update state synchronously
     this.webSpeechSpeaking = false;
     this.playing = false;
+    
+    // Emit final state change
+    window.dispatchEvent(new CustomEvent('audio:statechange', { 
+      detail: { isPlaying: false } 
+    }));
+    
+    console.log('✅ SimpleAudioEngine: All audio stopped successfully');
   }
 
   private async unlockMobileAudioForPlayback(): Promise<void> {

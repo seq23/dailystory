@@ -4,6 +4,7 @@ import { useConversation } from '@11labs/react';
 import { supabase } from '@/integrations/supabase/client';
 import { SimpleAudioEngine } from '@/services/SimpleAudioEngine';
 import { VoiceDebugger } from '@/utils/voiceDebugger';
+import { MobileAudioManager } from '@/services/mobileAudioManager';
 
 export type ElevenLabsVoiceStatus = 'idle' | 'connecting' | 'connected' | 'listening' | 'processing' | 'speaking' | 'failed';
 
@@ -296,6 +297,22 @@ Example responses:
     },
   });
 
+  // Mobile audio unlock function for voice commands
+  const unlockMobileAudioForVoice = useCallback(async () => {
+    try {
+      // Initialize mobile audio manager
+      const mobileAudio = MobileAudioManager.getInstance();
+      if (!mobileAudio.isAudioReady()) {
+        await mobileAudio.initializeMobileAudio();
+      }
+      
+      voiceDebugger.log('elevenlabs', 'Mobile audio unlocked for voice commands');
+    } catch (error) {
+      voiceDebugger.log('elevenlabs', 'Failed to unlock mobile audio', { error });
+      console.warn('Failed to unlock mobile audio for voice:', error);
+    }
+  }, [voiceDebugger]);
+
   const start = useCallback(async () => {
     setConnecting(true);
     setState(prev => ({ ...prev, status: 'connecting', error: undefined }));
@@ -307,8 +324,19 @@ Example responses:
     try {
       console.log('🎤 Starting ElevenLabs conversation...');
       
-      // Check microphone permissions
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // Unlock mobile audio before starting voice commands
+      await unlockMobileAudioForVoice();
+      
+      // Check microphone permissions and request access
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: { 
+          sampleRate: 24000, 
+          channelCount: 1,
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true 
+        } 
+      });
       stream.getTracks().forEach(track => track.stop());
       console.log('✅ Microphone access granted');
 

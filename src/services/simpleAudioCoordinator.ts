@@ -1,10 +1,10 @@
 /**
  * Enhanced Audio Coordination - Centralized coordination for all audio systems
- * Prevents conflicts between audioSyncService and SimpleAudioEngine
+ * Prevents conflicts between audioSyncService, SimpleAudioEngine, and voice commands
  * Provides timeout protection and better mutual exclusion
  */
 
-type AudioSystem = 'sync' | 'simple' | null;
+type AudioSystem = 'sync' | 'simple' | 'voice' | null;
 
 class SimpleAudioCoordinator {
   private activeSystem: AudioSystem = null;
@@ -32,6 +32,8 @@ class SimpleAudioCoordinator {
           window.dispatchEvent(new CustomEvent('audio:stop:sync'));
         } else if (this.activeSystem === 'simple') {
           window.dispatchEvent(new CustomEvent('audio:stop:simple'));
+        } else if (this.activeSystem === 'voice') {
+          window.dispatchEvent(new CustomEvent('audio:stop:voice'));
         }
         
         this.activeSystem = system;
@@ -76,6 +78,15 @@ class SimpleAudioCoordinator {
         SimpleAudioEngine.getInstance().stop();
       } catch (e) {
         console.warn('Failed to stop simple audio:', e);
+      }
+    });
+
+    window.addEventListener('audio:stop:voice', () => {
+      try {
+        // Stop voice command audio systems
+        window.dispatchEvent(new CustomEvent('voice:stop'));
+      } catch (e) {
+        console.warn('Failed to stop voice audio:', e);
       }
     });
   }
