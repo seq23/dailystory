@@ -202,10 +202,25 @@ class StoryVisualStateManager {
     
     const characterDescriptions: string[] = [];
     for (const [name, char] of state.characters) {
-      characterDescriptions.push(`${name} (${char.description})`);
+      // Skip the main user character to avoid duplication
+      if (name !== state.sessionId) {
+        characterDescriptions.push(`${name}`);
+      }
     }
     
-    return characterDescriptions.join(', ');
+    return characterDescriptions.length > 0 ? characterDescriptions.join(' and ') : '';
+  }
+
+  static trackCharacterMention(sessionId: string, characterName: string): void {
+    const state = this.getOrCreateStoryState(sessionId);
+    
+    // Add to recent mentions for pronoun resolution
+    if (!state.lastMentionedCharacters.includes(characterName)) {
+      state.lastMentionedCharacters.unshift(characterName);
+      if (state.lastMentionedCharacters.length > 3) {
+        state.lastMentionedCharacters.pop();
+      }
+    }
   }
 
   static getSettingForPrompt(sessionId: string): string {
@@ -358,16 +373,19 @@ serve(async (req) => {
       // Detect and track secondary characters (like "cat")
       const secondaryCharacters = detectSecondaryCharacters(pageText);
       for (const charName of secondaryCharacters) {
-        if (!state.characters.has(charName)) {
-          StoryVisualStateManager.updateCharacterWithSeed(
-            sessionId, 
-            charName, 
-            `friendly ${charName}`, 
-            undefined, 
-            pageNumber
-          );
-        }
+        StoryVisualStateManager.updateCharacterWithSeed(
+          sessionId, 
+          charName, 
+          `friendly ${charName}`, 
+          undefined, 
+          pageNumber
+        );
+        // Track for pronoun resolution
+        StoryVisualStateManager.trackCharacterMention(sessionId, charName);
       }
+      
+      // Also track main character mention
+      StoryVisualStateManager.trackCharacterMention(sessionId, userInfo.name);
       
       // Smart scene extraction with comprehensive pronoun resolution
       const processedText = extractPrimaryScene(
@@ -401,13 +419,13 @@ serve(async (req) => {
       
       // Include all tracked characters for consistency
       const allCharacters = StoryVisualStateManager.getAllCharactersForPrompt(sessionId);
-      const characterContext = allCharacters ? `, with ${allCharacters}` : '';
+      const characterContext = allCharacters ? ` with ${allCharacters}` : '';
       
       // Environmental context from comprehensive visual state
       const environmentalContext = StoryVisualStateManager.getSettingForPrompt(sessionId);
       
       // Build focused single-scene prompt with all characters
-      enhancedPrompt = `Children's book illustration: ${characterConsistency}${characterContext} ${processedText}${environmentalContext}. Single scene focus, consistent character designs, vibrant colors, safe content, NO TEXT OR WORDS`;
+      enhancedPrompt = `Children's book illustration: ${characterConsistency}${characterContext}, ${processedText}${environmentalContext}. Single scene focus, consistent character designs, vibrant colors, safe content, NO TEXT OR WORDS`;
       
       // Use existing seed if available
       if (characterSeed) {
