@@ -75,6 +75,13 @@ export class AudioSyncService {
   async playText(options: AudioSyncOptions & { onStateChange?: (isPlaying: boolean) => void }): Promise<void> {
     const { text, voice = 'XB0fDUnXU5powFXDhCwa', model = 'eleven_turbo_v2_5', speed = 1.0, onWordHighlight, onError, onStateChange } = options;
     
+    console.log('🎯 AudioSyncService: Starting synchronized playback:', {
+      textLength: text.length,
+      voice: voice,
+      model: model,
+      speed: speed
+    });
+
     // Request exclusive audio access - event-based coordination
     window.dispatchEvent(new CustomEvent('audio:request', { detail: { system: 'sync' } }));
     window.dispatchEvent(new CustomEvent('audio:stop:simple'));
@@ -676,55 +683,133 @@ export class AudioSyncService {
   }
 
   /**
-   * Browser speech fallback with basic word highlighting
+   * Enhanced browser speech fallback with faster, more accurate highlighting
    */
   private fallbackToWebSpeech(text: string, onWordHighlight?: (wordIndex: number) => void, speed: number = 0.85): void {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = Math.max(0.1, Math.min(2.0, speed));
-      utterance.pitch = 1.1; // Child-friendly higher pitch
+      console.log('🔊 AudioSyncService: Using enhanced browser speech fallback');
       
-      // Try to find a child-friendly voice
+      // Process text for better pronunciation
+      const processedText = contextualPronunciation.processTextForPronunciation(text, true);
+      const utterance = new SpeechSynthesisUtterance(processedText);
+      
+      // Optimized settings for better mobile experience
+      utterance.rate = Math.max(0.3, Math.min(1.5, speed * 1.1)); // Slightly faster than input speed
+      utterance.pitch = 1.1; // Child-friendly higher pitch
+      utterance.volume = 1.0;
+      
+      // Enhanced voice selection for better quality
       const voices = speechSynthesis.getVoices();
-      const preferredVoice = voices.find(voice => 
-        voice.name.toLowerCase().includes('child') ||
-        voice.name.toLowerCase().includes('kid') ||
-        voice.name.toLowerCase().includes('young') ||
-        voice.name.toLowerCase().includes('female')
-      );
+      const preferredVoice = voices.find(voice => {
+        const name = voice.name.toLowerCase();
+        const lang = voice.lang.toLowerCase();
+        
+        // Prefer high-quality voices first
+        return (name.includes('premium') || name.includes('enhanced') || 
+                name.includes('neural') || name.includes('natural')) &&
+               (lang.startsWith('en-') || lang === 'en');
+      }) || voices.find(voice => {
+        const name = voice.name.toLowerCase();
+        // Fallback to child-friendly voices
+        return name.includes('child') || name.includes('kid') || 
+               name.includes('young') || name.includes('female');
+      }) || voices.find(voice => voice.lang.startsWith('en'));
       
       if (preferredVoice) {
         utterance.voice = preferredVoice;
+        console.log('🔊 Using enhanced voice:', preferredVoice.name);
       }
 
-      // Set up basic word highlighting for browser speech
+      // Enhanced word highlighting with faster timing for mobile
       if (onWordHighlight && this.words.length > 0) {
-        const wordDuration = 60000 / (120 * speed); // Approximate 120 WPM baseline
+        const isMobile = this.isMobile();
+        
+        // Calculate timing based on actual speech rate and word count
+        const baseWPM = isMobile ? 140 : 120; // Faster baseline for mobile
+        const adjustedWPM = baseWPM * utterance.rate;
+        const wordDuration = Math.max(200, 60000 / adjustedWPM); // Minimum 200ms per word
+        
+        console.log(`🔊 Fallback highlighting: ${this.words.length} words, ${adjustedWPM} WPM, ${wordDuration}ms per word`);
         
         let wordIndex = 0;
-        const highlightInterval = setInterval(() => {
-          if (wordIndex < this.words.length && this.isPlaying) {
-            onWordHighlight(wordIndex);
-            this.currentWordIndex = wordIndex;
-            wordIndex++;
-          } else {
-            clearInterval(highlightInterval);
-          }
-        }, wordDuration);
+        let highlightInterval: NodeJS.Timeout;
+        
+        const startHighlighting = () => {
+          highlightInterval = setInterval(() => {
+            if (wordIndex < this.words.length && this.isPlaying) {
+              onWordHighlight(wordIndex);
+              this.currentWordIndex = wordIndex;
+              console.log(`🎯 Fallback: Highlighting word ${wordIndex}: "${this.words[wordIndex]}"`);
+              wordIndex++;
+            } else {
+              clearInterval(highlightInterval);
+              if (wordIndex >= this.words.length) {
+                // Clear highlighting when done
+                onWordHighlight(-1);
+                console.log('🎯 Fallback: Highlighting completed');
+              }
+            }
+          }, wordDuration);
+        };
+        
+        // Start highlighting immediately or after a short delay
+        setTimeout(startHighlighting, isMobile ? 100 : 50);
+        
+        utterance.onstart = () => {
+          console.log('🔊 Browser speech started');
+          this.isPlaying = true;
+          this.onStateChange?.(true);
+          // Emit global event
+          window.dispatchEvent(new CustomEvent('audio:statechange', { 
+            detail: { isPlaying: true } 
+          }));
+        };
         
         utterance.onend = () => {
+          console.log('🔊 Browser speech ended');
           clearInterval(highlightInterval);
           this.isPlaying = false;
+          this.onStateChange?.(false);
+          onWordHighlight(-1); // Clear highlighting
+          // Emit global event
+          window.dispatchEvent(new CustomEvent('audio:statechange', { 
+            detail: { isPlaying: false } 
+          }));
+        };
+        
+        utterance.onerror = (event) => {
+          console.error('🔊 Browser speech error:', event.error);
+          clearInterval(highlightInterval);
+          this.isPlaying = false;
+          this.onStateChange?.(false);
+          onWordHighlight(-1); // Clear highlighting
+          // Emit global event
+          window.dispatchEvent(new CustomEvent('audio:statechange', { 
+            detail: { isPlaying: false } 
+          }));
+        };
+      } else {
+        // Simple state management without highlighting
+        utterance.onstart = () => {
+          this.isPlaying = true;
+          this.onStateChange?.(true);
+        };
+        
+        utterance.onend = () => {
+          this.isPlaying = false;
+          this.onStateChange?.(false);
         };
         
         utterance.onerror = () => {
-          clearInterval(highlightInterval);
           this.isPlaying = false;
+          this.onStateChange?.(false);
         };
       }
       
-      this.isPlaying = true;
+      console.log('🔊 Starting browser speech synthesis');
       speechSynthesis.speak(utterance);
+    } else {
+      console.error('🔊 Browser speech synthesis not available');
     }
   }
 

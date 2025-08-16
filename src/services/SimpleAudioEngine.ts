@@ -57,6 +57,12 @@ export class SimpleAudioEngine {
   async playText(opts: PlayOptions) {
     const { text, voiceId, modelId, contentHash } = opts;
     
+    console.log('🎵 SimpleAudioEngine: Starting playback:', {
+      textLength: text.length,
+      voice: voiceId || 'default',
+      contentHash: contentHash || 'none'
+    });
+    
     // Request exclusive audio access - event-based coordination
     window.dispatchEvent(new CustomEvent('audio:request', { detail: { system: 'simple' } }));
     window.dispatchEvent(new CustomEvent('audio:stop:sync'));
@@ -68,12 +74,24 @@ export class SimpleAudioEngine {
     this.currentHash = contentHash || null;
 
     try {
+      // Check network connectivity before attempting TTS
+      if (!navigator.onLine) {
+        console.warn('🎵 SimpleAudioEngine: No network connection, using fallback immediately');
+        this.fallbackToWebSpeech(text);
+        return;
+      }
+
       // Generate audio with ElevenLabs
       this.inflight = new AbortController();
       const signal = this.inflight.signal;
 
+      console.log('🎵 SimpleAudioEngine: Requesting ElevenLabs TTS...');
       const arrayBuffer = await fetchElevenLabsAudioArrayBuffer(text, voiceId, modelId);
-      if (signal.aborted) return; // canceled by a newer call
+      
+      if (signal.aborted) {
+        console.log('🎵 SimpleAudioEngine: Request was aborted');
+        return; // canceled by a newer call
+      }
 
       const blob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
       const url = URL.createObjectURL(blob);
@@ -84,49 +102,88 @@ export class SimpleAudioEngine {
       this.currentUrl = url;
       audio.src = url;
 
+      console.log('✅ SimpleAudioEngine: ElevenLabs audio loaded, starting playback');
       await audio.play();
       this.playing = true;
     } catch (error) {
-      console.error('ElevenLabs failed, falling back to browser speech:', error);
-      // Fallback to browser speech
-      this.fallbackToWebSpeech(text);
+      console.error('🎵 SimpleAudioEngine: ElevenLabs failed, falling back to browser speech:', error);
+      // Enhanced fallback with user notification
+      this.fallbackToWebSpeech(text, true);
     }
   }
 
-  private fallbackToWebSpeech(text: string): void {
+  private fallbackToWebSpeech(text: string, showNotification = false): void {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      console.log('🔊 SimpleAudioEngine: Using browser speech fallback');
+      
+      if (showNotification) {
+        // Dispatch event to show user notification about fallback
+        window.dispatchEvent(new CustomEvent('audio:fallback', {
+          detail: { message: 'Using device voice due to network issues' }
+        }));
+      }
+
       const processedText = contextualPronunciation.processTextForPronunciation(text, true);
       const utterance = new SpeechSynthesisUtterance(processedText);
-      utterance.rate = 0.8;
-      utterance.pitch = 1.1; // Child-friendly higher pitch
       
-      // Try to find a child-friendly voice
+      // Optimized settings for better mobile experience
+      utterance.rate = 0.9; // Slightly faster for mobile
+      utterance.pitch = 1.1; // Child-friendly higher pitch
+      utterance.volume = 1.0;
+      
+      // Enhanced voice selection for better quality
       const voices = speechSynthesis.getVoices();
-      const preferredVoice = voices.find(voice => 
-        voice.name.toLowerCase().includes('child') ||
-        voice.name.toLowerCase().includes('kid') ||
-        voice.name.toLowerCase().includes('young') ||
-        voice.name.toLowerCase().includes('female')
-      );
+      const preferredVoice = voices.find(voice => {
+        const name = voice.name.toLowerCase();
+        const lang = voice.lang.toLowerCase();
+        
+        // Prefer high-quality voices
+        return (name.includes('premium') || name.includes('enhanced') || 
+                name.includes('neural') || name.includes('natural')) &&
+               (lang.startsWith('en-') || lang === 'en');
+      }) || voices.find(voice => {
+        const name = voice.name.toLowerCase();
+        // Fallback to child-friendly voices
+        return name.includes('child') || name.includes('kid') || 
+               name.includes('young') || name.includes('female');
+      }) || voices.find(voice => voice.lang.startsWith('en'));
       
       if (preferredVoice) {
         utterance.voice = preferredVoice;
+        console.log('🔊 Using voice:', preferredVoice.name);
       }
 
       this.webSpeechSpeaking = true;
       this.playing = true;
       
-      utterance.onend = () => {
-        this.webSpeechSpeaking = false;
-        this.playing = false;
+      utterance.onstart = () => {
+        console.log('🔊 Browser speech started');
+        window.dispatchEvent(new CustomEvent('audio:statechange', { 
+          detail: { isPlaying: true } 
+        }));
       };
       
-      utterance.onerror = () => {
+      utterance.onend = () => {
+        console.log('🔊 Browser speech ended');
         this.webSpeechSpeaking = false;
         this.playing = false;
+        window.dispatchEvent(new CustomEvent('audio:statechange', { 
+          detail: { isPlaying: false } 
+        }));
+      };
+      
+      utterance.onerror = (event) => {
+        console.error('🔊 Browser speech error:', event.error);
+        this.webSpeechSpeaking = false;
+        this.playing = false;
+        window.dispatchEvent(new CustomEvent('audio:statechange', { 
+          detail: { isPlaying: false } 
+        }));
       };
       
       speechSynthesis.speak(utterance);
+    } else {
+      console.error('🔊 Browser speech not available');
     }
   }
 

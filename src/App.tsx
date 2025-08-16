@@ -16,6 +16,7 @@ import Terms from "./pages/Terms";
 import Auth from "./pages/Auth";
 import PromptTesting from "./pages/PromptTesting";
 import VoiceHUD from "./components/VoiceHUD";
+import { AudioFallbackNotification } from "./components/AudioFallbackNotification";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -50,6 +51,7 @@ const App = () => {
             </Routes>
             <VoiceHUD />
             <FloatingFeedback />
+            <AudioFallbackNotification />
           </BrowserRouter>
         </MobileWrapper>
       </TooltipProvider>

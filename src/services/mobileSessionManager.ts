@@ -91,31 +91,48 @@ export class MobileSessionManager {
   }
 
   /**
-   * Handle app backgrounding/foregrounding events
+   * Handle app backgrounding/foregrounding events with audio-aware debouncing
    */
   static setupLifecycleHandlers(): void {
     let lastVisibilityChange = Date.now();
+    let isAudioPlaying = false;
+    
+    // Listen for audio state changes to prevent interference during playback
+    window.addEventListener('audio:statechange', (event: any) => {
+      isAudioPlaying = event.detail?.isPlaying || false;
+    });
     
     // Save critical data when app goes to background
     document.addEventListener('visibilitychange', () => {
       const now = Date.now();
-      // Debounce rapid visibility changes (e.g., tab switching)
-      if (now - lastVisibilityChange < 500) {
+      
+      // Extended debounce during audio playback to prevent interference
+      const debounceTime = isAudioPlaying ? 2000 : 500;
+      if (now - lastVisibilityChange < debounceTime) {
         return;
       }
       lastVisibilityChange = now;
       
       if (document.hidden) {
-        console.log('📱 MobileSessionManager: App backgrounded, preserving session state');
+        // Only log if not during audio playback to reduce console noise
+        if (!isAudioPlaying) {
+          console.log('📱 MobileSessionManager: App backgrounded, preserving session state');
+        }
         // Session data is already saved in memory, no additional action needed
       } else {
-        console.log('📱 MobileSessionManager: App foregrounded, session state preserved');
+        // Only log if not during audio playback to reduce console noise
+        if (!isAudioPlaying) {
+          console.log('📱 MobileSessionManager: App foregrounded, session state preserved');
+        }
       }
     });
 
     // Handle page unload
     window.addEventListener('beforeunload', () => {
-      console.log('📱 MobileSessionManager: Page unloading, session state preserved in memory');
+      // Only save if we have critical data to preserve
+      if (this.memoryStorage.size > 0) {
+        console.log('📱 MobileSessionManager: Page unloading, session state preserved in memory');
+      }
     });
   }
 
