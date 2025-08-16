@@ -190,9 +190,9 @@ export const UnifiedVoiceCommands: React.FC = () => {
         </div>
       )}
 
-      {/* Active voice system components - only render the active one */}
-      {state.activeSystem === 'elevenlabs' && <ElevenLabsVoiceSystem />}
-      {state.activeSystem === 'openai' && <OpenAIVoiceSystem />}
+      {/* Active voice system components - always render both for event handling */}
+      <ElevenLabsVoiceSystem />
+      <OpenAIVoiceSystem />
     </div>
   );
 };

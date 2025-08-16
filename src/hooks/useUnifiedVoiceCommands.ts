@@ -293,7 +293,9 @@ export const useUnifiedVoiceCommands = () => {
     
     try {
       // Dispatch start to ElevenLabs
+      console.log('🎤 Dispatching voice:start event to ElevenLabs...');
       window.dispatchEvent(new CustomEvent('voice:start'));
+      console.log('🎤 voice:start event dispatched successfully');
       
       // Set fallback timeout - reduced to 5 seconds for faster fallback
       fallbackTimeoutRef.current = setTimeout(() => {

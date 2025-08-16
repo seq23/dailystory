@@ -7,7 +7,13 @@ export const ElevenLabsVoiceSystem: React.FC = () => {
   // Handle global voice events
   useEffect(() => {
     const handleStart = () => { 
-      if (!connected && !connecting) start(); 
+      console.log('🎤 ElevenLabs received voice:start event', { connected, connecting });
+      if (!connected && !connecting) {
+        console.log('🎤 ElevenLabs starting...');
+        start(); 
+      } else {
+        console.log('🎤 ElevenLabs already connected or connecting, skipping');
+      }
     };
     
     const handleStop = () => { 
