@@ -12,9 +12,12 @@ interface AudioControlsProps {
 
 export const AudioControls: React.FC<AudioControlsProps> = ({ text, contentHash, onPlayingChange }) => {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const [error, setError] = useState<string | null>(null);
   const { isMobileOrTablet } = useIsMobile();
   const lastTapRef = useRef<number>(0);
-  const retriedRef = useRef<boolean>(false);
+  const retryTimeoutRef = useRef<number>(0);
 
   // Event-driven state updates instead of polling
   useEffect(() => {
@@ -35,6 +38,10 @@ export const AudioControls: React.FC<AudioControlsProps> = ({ text, contentHash,
     if (now - (lastTapRef.current || 0) < 350) return; // debounce rapid taps
     lastTapRef.current = now;
 
+    // Clear any previous errors
+    setError(null);
+    setIsLoading(true);
+
     // Lock content hash during audio preparation
     const uiHash = (typeof window !== 'undefined' && (window as any).__pageContentHash) || contentHash;
     if (typeof window !== 'undefined') {
@@ -43,9 +50,9 @@ export const AudioControls: React.FC<AudioControlsProps> = ({ text, contentHash,
 
     const engine = SimpleAudioEngine.getInstance();
     try {
-      // Reduced mobile delay - remove the problematic 1200ms wait
+      // Enhanced mobile delay for better content synchronization
       if (isMobileOrTablet) {
-        await new Promise((r) => setTimeout(r, 300)); // Minimal 300ms delay
+        await new Promise((r) => setTimeout(r, 600)); // Increased to 600ms for better sync
       }
       
       await engine.playText({ 
@@ -54,7 +61,9 @@ export const AudioControls: React.FC<AudioControlsProps> = ({ text, contentHash,
         voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
       });
       
-      // Immediate state update without polling
+      // Reset retry count on success
+      setRetryCount(0);
+      setIsLoading(false);
       setIsPlaying(true);
       onPlayingChange?.(true);
       
@@ -65,7 +74,9 @@ export const AudioControls: React.FC<AudioControlsProps> = ({ text, contentHash,
       
     } catch (e) {
       console.error('Play failed', e);
+      setIsLoading(false);
       setIsPlaying(false);
+      setError(e instanceof Error ? e.message : 'Audio playback failed');
       onPlayingChange?.(false);
       window.dispatchEvent(new CustomEvent('audio:statechange', { 
         detail: { isPlaying: false } 
@@ -77,9 +88,35 @@ export const AudioControls: React.FC<AudioControlsProps> = ({ text, contentHash,
       }
     }
   };
+
+  const onRetry = async () => {
+    if (retryCount >= 3) return; // Max 3 retries
+    
+    const newRetryCount = retryCount + 1;
+    setRetryCount(newRetryCount);
+    
+    // Exponential backoff: 1s, 2s, 4s
+    const delay = Math.pow(2, newRetryCount - 1) * 1000;
+    
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current);
+    }
+    
+    retryTimeoutRef.current = window.setTimeout(() => {
+      onPlay();
+    }, delay);
+  };
   const onStop = () => {
     const engine = SimpleAudioEngine.getInstance();
     engine.stop();
+    
+    // Clear loading and retry states
+    setIsLoading(false);
+    setError(null);
+    setRetryCount(0);
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current);
+    }
     
     // Immediate state update
     setIsPlaying(false);
@@ -93,7 +130,22 @@ export const AudioControls: React.FC<AudioControlsProps> = ({ text, contentHash,
 
   return (
     <div className="flex items-center gap-3">
-      {!isPlaying ? (
+      {isLoading ? (
+        <Button size="lg" variant="outline" disabled aria-label="Loading audio">
+          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary mr-2"></div>
+          Loading Audio...
+        </Button>
+      ) : error && !isPlaying ? (
+        <div className="flex items-center gap-2">
+          <Button size="lg" variant="outline" onClick={onRetry} disabled={retryCount >= 3} aria-label="Retry audio">
+            <Play className="w-5 h-5 mr-2" />
+            Try Again {retryCount > 0 && `(${retryCount}/3)`}
+          </Button>
+          {retryCount >= 3 && (
+            <span className="text-sm text-muted-foreground">Max retries reached</span>
+          )}
+        </div>
+      ) : !isPlaying ? (
         <Button size="lg" variant="default" onClick={onPlay} aria-label="Read to me">
           <Play className="w-5 h-5 mr-2" />
           Read to Me

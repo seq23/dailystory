@@ -38,11 +38,46 @@ export async function fetchElevenLabsAudioArrayBuffer(text: string, voiceId?: st
         throw new Error('No audio data received from TTS service');
       }
 
-      // Normalize possible response types (ArrayBuffer | Uint8Array | base64 string)
+      console.log(`🎤 ElevenLabs response received (attempt ${attempt}):`, {
+        dataType: typeof data,
+        hasAudio: !!data?.audio,
+        hasError: !!data?.error,
+        audioLength: data?.audio?.length,
+        size: data?.size
+      });
+
+      // Check for error response from edge function
+      if (data?.error) {
+        console.error(`🎤 ElevenLabs edge function error (attempt ${attempt}):`, data.error);
+        throw new Error(data.error);
+      }
+
+      // Handle JSON response with base64 audio (new format)
+      if (data?.audio) {
+        try {
+          const binaryString = atob(data.audio);
+          const bytes = new Uint8Array(binaryString.length);
+          for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+          }
+          const audioBuffer = bytes.buffer;
+          console.log(`✅ ElevenLabs TTS success (attempt ${attempt}):`, {
+            audioSize: audioBuffer.byteLength,
+            format: 'JSON base64',
+            expectedSize: data.size
+          });
+          return audioBuffer;
+        } catch (error) {
+          console.error(`🎤 Base64 decode error from JSON (attempt ${attempt}):`, error);
+          throw new Error(`Base64 decoding failed: ${error instanceof Error ? error.message : String(error)}`);
+        }
+      }
+
+      // Legacy fallback for direct ArrayBuffer responses
       if (data instanceof ArrayBuffer) {
         console.log(`✅ ElevenLabs TTS success (attempt ${attempt}):`, {
           audioSize: data.byteLength,
-          format: 'ArrayBuffer'
+          format: 'ArrayBuffer (legacy)'
         });
         return data;
       }
@@ -50,7 +85,7 @@ export async function fetchElevenLabsAudioArrayBuffer(text: string, voiceId?: st
       if (data instanceof Uint8Array) {
         console.log(`✅ ElevenLabs TTS success (attempt ${attempt}):`, {
           audioSize: data.byteLength,
-          format: 'Uint8Array'
+          format: 'Uint8Array (legacy)'
         });
         return data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
       }
@@ -60,30 +95,16 @@ export async function fetchElevenLabsAudioArrayBuffer(text: string, voiceId?: st
           const audioBuffer = safeBase64Decode(data);
           console.log(`✅ ElevenLabs TTS success (attempt ${attempt}):`, {
             audioSize: audioBuffer.byteLength,
-            format: 'base64 decoded'
+            format: 'base64 string (legacy)'
           });
           return audioBuffer;
         } catch (error) {
           console.error(`🎤 Base64 decode error (attempt ${attempt}):`, error);
-          throw new Error(`Base64 decoding failed: ${error.message}`);
+          throw new Error(`Base64 decoding failed: ${error instanceof Error ? error.message : String(error)}`);
         }
       }
 
-      // As a last resort, try to extract from Response-like object
-      try {
-        if (typeof (data as any).arrayBuffer === 'function') {
-          const audioBuffer = await (data as any).arrayBuffer();
-          console.log(`✅ ElevenLabs TTS success (attempt ${attempt}):`, {
-            audioSize: audioBuffer.byteLength,
-            format: 'Response object'
-          });
-          return audioBuffer;
-        }
-      } catch (responseError) {
-        console.error(`🎤 Response extraction error (attempt ${attempt}):`, responseError);
-      }
-
-      throw new Error('Unexpected audio data format from edge function');
+      throw new Error(`Unexpected audio data format from edge function: ${typeof data}`);
 
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));

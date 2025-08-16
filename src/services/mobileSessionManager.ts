@@ -106,9 +106,13 @@ export class MobileSessionManager {
     document.addEventListener('visibilitychange', () => {
       const now = Date.now();
       
-      // Extended debounce during audio playback to prevent interference
-      const debounceTime = isAudioPlaying ? 2000 : 500;
-      if (now - lastVisibilityChange < debounceTime) {
+      // Enhanced debounce for audio playback awareness
+      const timeSinceLastChange = now - lastVisibilityChange;
+      
+      // Longer debounce during audio playback to prevent interference
+      const debounceTime = isAudioPlaying ? 3000 : 1000;
+      if (timeSinceLastChange < debounceTime) {
+        console.log('🔄 Debouncing visibility change (audio-aware)');
         return;
       }
       lastVisibilityChange = now;

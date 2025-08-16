@@ -71,23 +71,40 @@ serve(async (req) => {
       console.error('ElevenLabs API error details:', {
         status: response.status,
         statusText: response.statusText,
-        errorText: errorText
+        errorText: errorText,
+        requestBody: JSON.stringify(requestBody),
+        url: apiUrl
       });
-      throw new Error(`ElevenLabs API error: ${response.status} - ${errorText}`);
+      
+      // Return detailed error in JSON format
+      return new Response(JSON.stringify({ 
+        error: `ElevenLabs API error: ${response.status} - ${errorText}`,
+        status: response.status,
+        details: errorText
+      }), {
+        status: response.status,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
-    // Return audio data
+    // Return audio data as base64-encoded JSON for better compatibility
     const audioData = await response.arrayBuffer();
+    const base64Audio = btoa(String.fromCharCode(...new Uint8Array(audioData)));
+    
     console.log('Successfully generated audio:', {
       size: audioData.byteLength,
-      contentType: response.headers.get('content-type')
+      contentType: response.headers.get('content-type'),
+      base64Length: base64Audio.length
     });
     
-    return new Response(audioData, {
+    return new Response(JSON.stringify({ 
+      audio: base64Audio,
+      contentType: 'audio/mpeg',
+      size: audioData.byteLength 
+    }), {
       headers: {
         ...corsHeaders,
-        'Content-Type': 'audio/mpeg',
-        'Content-Length': audioData.byteLength.toString(),
+        'Content-Type': 'application/json',
       },
     });
 

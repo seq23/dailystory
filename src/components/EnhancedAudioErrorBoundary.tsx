@@ -67,8 +67,8 @@ export class EnhancedAudioErrorBoundary extends Component<Props, State> {
       onError(audioError);
     }
 
-    // Show appropriate toast message
-    this.showErrorToast(audioError);
+    // Log error (no toast notifications)
+    console.log('🔊 Audio Error:', audioError);
 
     // Attempt automatic recovery for certain error types
     this.attemptAutoRecovery(audioError);
@@ -123,42 +123,8 @@ export class EnhancedAudioErrorBoundary extends Component<Props, State> {
   }
 
   private showErrorToast(audioError: AudioError) {
-    const toastMessages = {
-      'NETWORK_TIMEOUT': {
-        title: 'Connection Issue',
-        description: 'Audio took too long to load. We\'ll try a different approach.',
-        duration: 4000
-      },
-      'AUDIO_INIT_FAILED': {
-        title: 'Audio Setup Needed',
-        description: 'Tap the audio button to enable sound features.',
-        duration: 6000
-      },
-      'TTS_SERVICE_ERROR': {
-        title: 'Audio Service Unavailable',
-        description: 'Text-to-speech is temporarily down. You can still read silently.',
-        duration: 5000
-      },
-      'MOBILE_AUDIO_ERROR': {
-        title: 'Mobile Audio Setup',
-        description: 'Please tap the play button to activate audio on your device.',
-        duration: 7000
-      },
-      'UNKNOWN': {
-        title: 'Audio Error',
-        description: 'Audio features are temporarily unavailable.',
-        duration: 4000
-      }
-    };
-
-    const message = toastMessages[audioError.type];
-    
-    toast({
-      title: message.title,
-      description: message.description,
-      duration: message.duration,
-      variant: 'destructive'
-    });
+    // Toast notifications removed - errors are now handled inline in components
+    console.log('🔊 Audio Error (no toast):', audioError.type, audioError.message);
   }
 
   private attemptAutoRecovery(audioError: AudioError) {
@@ -216,11 +182,7 @@ export class EnhancedAudioErrorBoundary extends Component<Props, State> {
       lastErrorTime: timeSinceLastError > 60000 ? 0 : this.state.lastErrorTime
     });
 
-    toast({
-      title: 'Retrying Audio',
-      description: 'Attempting to restore audio functionality...',
-      duration: 2000
-    });
+    // No toast notification - recovery is silent
   };
 
   private handleManualRetry = () => {
