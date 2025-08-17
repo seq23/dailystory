@@ -2738,7 +2738,6 @@ const handleRestartTimer = () => {
         onSubmit={handleSpecialRequestSubmit}
         isGenerating={isGeneratingNewStory}
       />
-      {/* Progress tracking for gamification */}
       <ModernProgressTowers
         userId={userInfo?.name}
         userType={isPremium ? 'premium' : 'free'}
@@ -2750,10 +2749,8 @@ const handleRestartTimer = () => {
         className="fixed"
       />
       
-      {/* Audio Fallback Notification */}
       <AudioFallbackNotification />
       
-      {/* Universal Voice Command System - works for all users */}
       <VoiceCommandController headless={true} onCommand={handleVoiceCommand} />
       <VoiceHoverController isPremium={isPremium} />
       <PremiumHoverController isPremium={isPremium} />
