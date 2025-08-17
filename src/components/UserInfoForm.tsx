@@ -32,6 +32,15 @@ interface UserInfoFormProps {
 }
 
 export const UserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFormProps) => {
+  // Redirect to new multi-step form
+  return <MultiStepUserForm onSubmit={onSubmit} onBack={onBack} isPremium={isPremium} />;
+};
+
+// Import the new multi-step form
+import { MultiStepUserForm } from "./forms/MultiStepUserForm";
+
+// Legacy component for backward compatibility
+export const LegacyUserInfoForm = ({ onSubmit, onBack, isPremium = false }: UserInfoFormProps) => {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const { isMobileOrTablet } = useIsMobile();
