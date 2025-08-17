@@ -109,7 +109,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   // Story state
   const [story, setStory] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
-  
+
   // For free users, limit displayed pages to 6 maximum
   const displayedStory = !isPremium ? story.slice(0, 6) : story;
   const [isLoading, setIsLoading] = useState(true);
@@ -117,6 +117,12 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [justAdvanced, setJustAdvanced] = useState(false);
   const [storyTitle, setStoryTitle] = useState('');
   const [error, setError] = useState<string | null>(null);
+
+  // Generation protection to prevent double story generation
+  const isGeneratingRef = useRef(false);
+  const storyGeneratedRef = useRef(false);
+  const generationIdRef = useRef('');
+  const lastUserInfoRef = useRef<string>('');
 
   useEffect(() => {
     console.log('📥 CleanStoryDisplay isLoading changed:', isLoading);
@@ -608,8 +614,30 @@ useEffect(() => {
     }
   });
 
-  // Initialize story based on tier
+  // Initialize story based on tier - with generation protection
   useEffect(() => {
+    const userInfoKey = JSON.stringify({ name: userInfo.name, age: userInfo.age, isPremium });
+    
+    // Check if this is a meaningful change that requires regeneration
+    if (lastUserInfoRef.current === userInfoKey && storyGeneratedRef.current) {
+      console.log('🔒 Skipping story regeneration - same user info and story already generated');
+      return;
+    }
+    
+    // Prevent multiple simultaneous generations
+    if (isGeneratingRef.current) {
+      console.log('🔒 Skipping story generation - already in progress');
+      return;
+    }
+
+    console.log('🎯 Story generation triggered by useEffect change:', {
+      newUserInfoKey: userInfoKey,
+      lastUserInfoKey: lastUserInfoRef.current,
+      storyGenerated: storyGeneratedRef.current,
+      isGenerating: isGeneratingRef.current
+    });
+    
+    lastUserInfoRef.current = userInfoKey;
     initializeStory();
   }, [userInfo, isPremium]);
 
@@ -740,7 +768,23 @@ useEffect(() => {
 
 
 const initializeStory = async () => {
-  console.log('🚀 initializeStory start', { isPremium, userName: userInfo?.name });
+  // Generation protection - prevent double execution
+  if (isGeneratingRef.current) {
+    console.log('🔒 initializeStory blocked - already generating');
+    return;
+  }
+  
+  const generationId = `gen_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  generationIdRef.current = generationId;
+  isGeneratingRef.current = true;
+  
+  console.log('🚀 initializeStory start', { 
+    isPremium, 
+    userName: userInfo?.name, 
+    generationId,
+    storyAlreadyGenerated: storyGeneratedRef.current 
+  });
+  
   setIsLoading(true);
   loaderStartRef.current = Date.now();
   setError(null);
@@ -912,7 +956,18 @@ const initializeStory = async () => {
   } finally {
     const elapsed = Date.now() - loaderStartRef.current;
     const remaining = Math.max(0, LOADER_MIN_MS - elapsed);
-    console.log('✅ initializeStory finished', { elapsed, remaining, LOADER_MIN_MS });
+    console.log('✅ initializeStory finished', { 
+      elapsed, 
+      remaining, 
+      LOADER_MIN_MS, 
+      generationId: generationIdRef.current,
+      storyPagesGenerated: story.length 
+    });
+    
+    // Mark story as successfully generated
+    storyGeneratedRef.current = true;
+    isGeneratingRef.current = false;
+    
     if (remaining > 0) {
       setTimeout(() => setIsLoading(false), remaining);
     } else {
@@ -1455,6 +1510,12 @@ const handleRestartTimer = () => {
   const handleGenerateNewStory = async (specialRequestOverride?: string) => {
     if (isGeneratingNewStory) return;
     setIsGeneratingNewStory(true);
+    
+    // Reset generation protection flags for new story
+    storyGeneratedRef.current = false;
+    isGeneratingRef.current = false;
+    lastUserInfoRef.current = '';
+    
     try {
       console.log('🪄 Generating new story...');
       
