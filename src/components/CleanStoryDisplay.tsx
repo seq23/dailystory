@@ -2001,8 +2001,13 @@ const handleRestartTimer = () => {
     );
   }
 
+  // Extract progress update handler to avoid TypeScript parsing issues
+  const handleProgressUpdate = (type: string, value: number) => {
+    console.log('Progress updated:', type, value);
+  };
+
   return (
-    <GameContextProvider 
+    <GameContextProvider
       userId={userInfo.name}
       userType={isPremium ? 'premium' : 'free'}
       userInfo={userInfo}
@@ -2733,6 +2738,7 @@ const handleRestartTimer = () => {
         onSubmit={handleSpecialRequestSubmit}
         isGenerating={isGeneratingNewStory}
       />
+      {/* Progress tracking for gamification */}
       <ModernProgressTowers
         userId={userInfo?.name}
         userType={isPremium ? 'premium' : 'free'}
@@ -2740,9 +2746,7 @@ const handleRestartTimer = () => {
         currentPagesRead={pagesCompleted.size}
         vocabularyLearned={userStats.vocabularyWordsLearned || 0}
         timeSpent={Date.now() - sessionStartTime}
-        onProgressUpdate={(type: string, value: number) => {
-          console.log('Progress updated:', type, value);
-        }}
+        onProgressUpdate={handleProgressUpdate}
         className="fixed"
       />
       
