@@ -49,10 +49,14 @@ export function extractThemeIntent(userInfo: UserInfo): ThemeIntent {
 
   const sr = (userInfo.specialRequest || '').toLowerCase();
   if (sr) {
-    // Parse lines like: theme: courage and kindness; themes: friendship, discovery; tone: playful, gentle
+    // Parse structured format: themes: courage and kindness; tone: playful, gentle
     const themeMatch = sr.match(/themes?\s*:\s*([^\n;]+)/);
     if (themeMatch) {
-      const rawThemes = themeMatch[1].split(/[,/]|and|&/).map(s => s.trim()).filter(Boolean);
+      // Handle both "AND" and comma separation within structured themes
+      const rawThemes = themeMatch[1]
+        .split(/\s+and\s+|[,/]|&/)
+        .map(s => s.trim())
+        .filter(Boolean);
       
       // Sanitize and validate each theme individually
       for (const rawTheme of rawThemes) {
@@ -69,10 +73,41 @@ export function extractThemeIntent(userInfo: UserInfo): ThemeIntent {
     
     const toneMatch = sr.match(/tone\s*:\s*([^\n;]+)/);
     if (toneMatch) {
-      const rawTones = toneMatch[1].split(/[,/]|and|&/).map(s => s.trim()).filter(Boolean);
+      const rawTones = toneMatch[1]
+        .split(/\s+and\s+|[,/]|&/)
+        .map(s => s.trim())
+        .filter(Boolean);
       for (const rawTone of rawTones) {
         const sanitized = InputSanitizer.sanitizeThemeInput(rawTone);
         if (sanitized && !tone.includes(sanitized)) tone.push(sanitized);
+      }
+    }
+    
+    // If no structured themes found, try keyword detection
+    if (themes.length === 0) {
+      const potentialKeywords = sr.split(/[^a-z]+/).filter(word => 
+        word.length > 2 && 
+        !['the', 'and', 'for', 'are', 'but', 'not', 'you', 'all', 'can', 'had', 'her', 'was', 'one', 'our', 'out', 'day', 'get', 'has', 'him', 'his', 'how', 'its', 'may', 'new', 'now', 'old', 'see', 'two', 'who', 'boy', 'did', 'has', 'let', 'put', 'say', 'she', 'too', 'use'].includes(word)
+      );
+      
+      for (const keyword of potentialKeywords) {
+        const sanitized = InputSanitizer.sanitizeThemeInput(keyword);
+        if (sanitized) {
+          const validation = validateTheme(sanitized);
+          if (validation.valid) {
+            // Map single keywords to fuller themes
+            let themeKeyword = sanitized;
+            if (sanitized === 'space') themeKeyword = 'space exploration';
+            if (sanitized === 'ocean' || sanitized === 'underwater') themeKeyword = 'underwater adventure';
+            if (sanitized === 'dragons') themeKeyword = 'dragons and magic';
+            if (sanitized === 'princess') themeKeyword = 'brave princess';
+            if (sanitized === 'winter') themeKeyword = 'winter adventure';
+            if (sanitized === 'forest') themeKeyword = 'forest adventure';
+            
+            const normalized = normalizeTheme(themeKeyword) || themeKeyword;
+            if (!themes.includes(normalized)) themes.push(normalized);
+          }
+        }
       }
     }
     
@@ -84,7 +119,25 @@ export function extractThemeIntent(userInfo: UserInfo): ThemeIntent {
     }
   }
 
-  // No automatic theme injection - themes only come from explicit declarations
+  // If still no themes, check inputEnhancementEngine as fallback
+  if (themes.length === 0) {
+    try {
+      // Import and use inputEnhancementEngine
+      const { InputEnhancementEngine } = require('@/services/inputEnhancementEngine');
+      const enhanced = InputEnhancementEngine.enhanceUserInputs(userInfo);
+      if (enhanced.storyElements?.length > 0) {
+        // Extract theme-like elements from story elements
+        const storyThemes = enhanced.storyElements
+          .filter(el => el.category === 'theme' || el.category === 'setting')
+          .map(el => el.value)
+          .slice(0, 3);
+        themes.push(...storyThemes);
+      }
+    } catch (error) {
+      // Fallback gracefully if inputEnhancementEngine is not available
+      console.warn('InputEnhancementEngine not available for theme fallback');
+    }
+  }
 
   return {
     themes: Array.from(new Set(themes)).slice(0, 5),

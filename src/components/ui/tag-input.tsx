@@ -18,9 +18,9 @@ export const TagInput = ({ value, onChange, placeholder, className, onBlur, disa
   // Parse existing items - support both structured and simple formats
   const items = value ? value.split(',').map(h => h.trim()).filter(h => h.length > 0) : [];
   
-  // Check if an item is in structured format (e.g., "Themes: 'value'")
+  // Check if an item is in structured format (e.g., "Themes: value" or "Themes: 'value'")
   const isStructuredItem = (item: string) => {
-    return supportStructured && /^[A-Za-z\s]+:\s*['"].*['"]$/.test(item.trim());
+    return supportStructured && /^[A-Za-z\s]+:\s*.+$/.test(item.trim());
   };
 
   const addItem = (item: string) => {
@@ -48,9 +48,9 @@ export const TagInput = ({ value, onChange, placeholder, className, onBlur, disa
     if (e.key === 'Enter') {
       // For structured format, allow Enter without creating tags unless it's a complete line
       if (supportStructured) {
-        // Only create tag if the line appears complete (ends with quote or has no quotes)
+        // Create tag if structured format is detected or if it's a simple input
         const trimmed = currentInput.trim();
-        if (trimmed && (!trimmed.includes(':') || trimmed.match(/['"].*['"]$/))) {
+        if (trimmed && (!trimmed.includes(':') || /^[A-Za-z\s]+:\s*.+$/.test(trimmed))) {
           e.preventDefault();
           addItem(currentInput);
         }

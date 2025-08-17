@@ -312,7 +312,7 @@ export function formatUserPrompt(template: string, userInfo: Partial<UserInfo>):
   // Start with basic placeholder resolution
   let prompt = resolveAllPlaceholders(template, { userInfo: userInfo as UserInfo });
   
-  // Extract theme intent for hybrid approach
+  // Extract theme intent with enhanced fallback system
   if (userInfo as UserInfo) {
     const themeIntent = extractThemeIntent(userInfo as UserInfo);
     const difficultyLevel = userInfo.difficultyLevel || userInfo.readingAbility;
@@ -320,6 +320,7 @@ export function formatUserPrompt(template: string, userInfo: Partial<UserInfo>):
     // For beginner/easy levels: use interests if no explicit themes
     const isBeginnerOrEasy = difficultyLevel === 'beginner' || difficultyLevel === 'easy';
     
+    // Priority 1: Structured themes or detected keywords from themeIntent
     if (themeIntent.themes.length > 0 || themeIntent.tone.length > 0) {
       const themeGuidance = [];
       if (themeIntent.themes.length > 0) {
@@ -329,17 +330,37 @@ export function formatUserPrompt(template: string, userInfo: Partial<UserInfo>):
         themeGuidance.push(`Use tone: ${themeIntent.tone.join(', ')}`);
       }
       prompt += ` ${themeGuidance.join('. ')}.`;
-    } else if (isBeginnerOrEasy) {
-      // Only for beginner/easy: append interests note when no explicit themes
-      const interests = [];
-      if (userInfo.hobbies) interests.push(userInfo.hobbies);
-      if (userInfo.favoriteAnimal) interests.push(userInfo.favoriteAnimal);
-      if (userInfo.favoriteColor) interests.push(userInfo.favoriteColor);
-      if (userInfo.favoriteFood) interests.push(userInfo.favoriteFood);
-      
-      if (interests.length > 0) {
-        prompt += ` Focus the story around the child's interests: ${interests.join(', ')}.`;
+    } else {
+      // Priority 2: Try inputEnhancementEngine for theme extraction
+      let enhancedThemes: string[] = [];
+      try {
+        const { InputEnhancementEngine } = require('@/services/inputEnhancementEngine');
+        const enhanced = InputEnhancementEngine.enhanceUserInputs(userInfo as UserInfo);
+        if (enhanced.storyElements?.length > 0) {
+          enhancedThemes = enhanced.storyElements
+            .filter(el => el.category === 'theme' || el.category === 'setting')
+            .map(el => el.value)
+            .slice(0, 3);
+        }
+      } catch (error) {
+        console.warn('InputEnhancementEngine not available for theme extraction');
       }
+      
+      if (enhancedThemes.length > 0) {
+        prompt += ` Focus on themes derived from user inputs: ${enhancedThemes.join(', ')}.`;
+      } else if (isBeginnerOrEasy) {
+        // Priority 3: Only for beginner/easy - fall back to interests
+        const interests = [];
+        if (userInfo.hobbies) interests.push(userInfo.hobbies);
+        if (userInfo.favoriteAnimal) interests.push(userInfo.favoriteAnimal);
+        if (userInfo.favoriteColor) interests.push(userInfo.favoriteColor);
+        if (userInfo.favoriteFood) interests.push(userInfo.favoriteFood);
+        
+        if (interests.length > 0) {
+          prompt += ` Focus the story around the child's interests: ${interests.join(', ')}.`;
+        }
+      }
+      // Priority 4: Generic fallback (default AI creativity) - no explicit guidance needed
     }
   }
   
