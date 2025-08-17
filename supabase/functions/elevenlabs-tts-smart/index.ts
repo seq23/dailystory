@@ -31,7 +31,7 @@ serve(async (req) => {
 
     console.log(`🔊 Smart TTS Request: "${text.substring(0, 100)}${text.length > 100 ? '...' : ''}" [Context: ${context}] [Length: ${text.length}]`);
 
-    // Prepare request body - only include lexicon for learning contexts
+    // Prepare request body - removed lexicon entirely to improve reliability
     const requestBody: any = {
       text,
       model_id: "eleven_turbo_v2_5",
@@ -43,129 +43,74 @@ serve(async (req) => {
       }
     };
 
-    // CRITICAL: Only apply lexicon for learning content, NOT for Charlotte's conversation
-    if (context === 'learning') {
-      console.log('📚 Learning context: Applying phonetic lexicon');
-      requestBody.pronunciation_dictionary_locators = [{
-        pronunciation_dictionary_id: "charlotte-learning-lexicon.txt",
-        version_id: "latest"
-      }];
-    } else {
-      console.log('💬 Conversation context: Using natural pronunciation');
-      // No lexicon applied - Charlotte speaks naturally
-    }
+    // Skip lexicon entirely to improve reliability
+    console.log(`💬 ${context === 'learning' ? 'Learning' : 'Conversation'} context: Using natural pronunciation`);
+    // Note: Removed pronunciation_dictionary_locators to fix recurring failures
 
-    const response = await fetch(
-      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
-      {
-        method: 'POST',
-        headers: {
-          'Accept': 'audio/mpeg',
-          'Content-Type': 'application/json',
-          'xi-api-key': apiKey,
-        },
-        body: JSON.stringify(requestBody),
-      }
-    );
+    let response;
+    let retryCount = 0;
+    const maxRetries = 3;
+    
+    while (retryCount < maxRetries) {
+      try {
+        response = await fetch('https://api.elevenlabs.io/v1/text-to-speech/' + voiceId, {
+          method: 'POST',
+          headers: {
+            'Accept': 'audio/mpeg',
+            'Content-Type': 'application/json',
+            'xi-api-key': apiKey
+          },
+          body: JSON.stringify(requestBody)
+        });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ ElevenLabs API Error:', errorText);
-      
-      // Check for dictionary-specific errors
-      const isDictionaryError = errorText.includes('pronunciation_dictionary') || 
-                                errorText.includes('dictionary not found') ||
-                                errorText.includes('charlotte-learning-lexicon');
-      
-      if (isDictionaryError && context === 'learning') {
-        console.log('📚 Dictionary error detected, retrying without lexicon...');
+        if (response.ok) {
+          break; // Success, exit retry loop
+        }
         
-        // Retry without dictionary
-        const fallbackRequestBody = {
-          text,
-          model_id: "eleven_turbo_v2_5",
-          voice_settings: {
-            stability: 0.5,
-            similarity_boost: 0.8,
-            style: 0.2,
-            use_speaker_boost: true
-          }
-          // No pronunciation_dictionary_locators
-        };
+        const errorText = await response.text();
+        console.error(`❌ ElevenLabs API Error (attempt ${retryCount + 1}):`, errorText);
         
-        const fallbackResponse = await fetch(
-          `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
-          {
-            method: 'POST',
-            headers: {
-              'Accept': 'audio/mpeg',
-              'Content-Type': 'application/json',
-              'xi-api-key': apiKey,
-            },
-            body: JSON.stringify(fallbackRequestBody),
-          }
-        );
-        
-        if (fallbackResponse.ok) {
-          console.log('✅ Fallback without dictionary succeeded');
-          const audioArrayBuffer = await fallbackResponse.arrayBuffer();
-          const base64Audio = btoa(
-            String.fromCharCode(...new Uint8Array(audioArrayBuffer))
-          );
-          
-          return new Response(
-            JSON.stringify({ 
-              audioContent: base64Audio,
-              context,
-              appliedLexicon: false,
-              fallbackReason: 'Dictionary not available'
-            }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        } else {
-          // If fallback also fails, return error response instead of throwing
-          console.error(`❌ Fallback also failed: ${fallbackResponse.status}`);
-          return new Response(
-            JSON.stringify({ 
-              error: `Both primary and fallback TTS failed: ${fallbackResponse.status}`,
-              errorType: 'fallback_failed',
-              details: 'Dictionary and fallback TTS both unavailable'
-            }),
-            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
+        retryCount++;
+        if (retryCount < maxRetries) {
+          const delay = Math.pow(2, retryCount) * 1000; // Exponential backoff: 2s, 4s, 8s
+          console.log(`⏳ Retrying in ${delay}ms...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+      } catch (networkError) {
+        console.error(`❌ Network error (attempt ${retryCount + 1}):`, networkError);
+        retryCount++;
+        if (retryCount < maxRetries) {
+          const delay = Math.pow(2, retryCount) * 1000;
+          console.log(`⏳ Retrying in ${delay}ms...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
         }
       }
-      
+    }
+
+    if (!response || !response.ok) {
       return new Response(
-        JSON.stringify({ 
-          error: `ElevenLabs API error: ${response.status}`,
-          errorType: isDictionaryError ? 'dictionary' : 'api',
-          details: errorText 
-        }),
-        { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'ElevenLabs API failed after retries', retries: retryCount }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const audioArrayBuffer = await response.arrayBuffer();
-    const base64Audio = btoa(
-      String.fromCharCode(...new Uint8Array(audioArrayBuffer))
-    );
-
-    console.log(`✅ Smart TTS Success: ${audioArrayBuffer.byteLength} bytes [Context: ${context}]`);
-
-    return new Response(
-      JSON.stringify({ 
-        audioContent: base64Audio,
-        context,
-        appliedLexicon: context === 'learning'
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    const audioBuffer = await response.arrayBuffer();
+    const base64Audio = btoa(String.fromCharCode(...new Uint8Array(audioBuffer)));
+    
+    console.log(`✅ Smart TTS Success: ${audioBuffer.byteLength} bytes [Context: ${context}]`);
+    
+    return new Response(JSON.stringify({ 
+      audioContent: base64Audio,
+      context,
+      voiceId
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
 
   } catch (error) {
     console.error('❌ Smart TTS Error:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: 'Internal server error', details: error.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

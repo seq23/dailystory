@@ -86,7 +86,8 @@ let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, userInfo);
             userPrompt,
             pageNumber: 1,
             isFirstPage: true,
-            expertGrade: expertGradeLevel
+            expertGrade: expertGradeLevel,
+            userInfo: userInfo // Pass complete userInfo including avatar
           }
         }
       });
@@ -199,7 +200,8 @@ let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.u
             pageNumber: nextPageNumber,
             isLastPage: shouldConclude,
             storyContext: context.storyContext,
-            expertGrade: context.expertGradeLevel
+            expertGrade: context.expertGradeLevel,
+            userInfo: context.userInfo // Pass complete userInfo including avatar
           }
         }
       });
@@ -305,7 +307,8 @@ let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.u
             pageNumber: nextPageNumber,
             isLastPage: true,
             storyContext: context.storyContext,
-            expertGrade: context.expertGradeLevel
+            expertGrade: context.expertGradeLevel,
+            userInfo: context.userInfo // Pass complete userInfo including avatar
           }
         }
       });

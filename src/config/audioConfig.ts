@@ -62,7 +62,7 @@ export const defaultAudioConfig: AudioSettings = {
   },
   
   highlighting: {
-    enabledForLevels: ['easy', 'medium'], // Only Levels 1-2 get word highlighting
+    enabledForLevels: ['beginner', 'easy', 'medium', 'hard', 'expert'], // All levels get highlighting
     highlightDuration: 500, // 500ms per word
     highlightClass: 'bg-yellow-200 animate-pulse',
   },

@@ -67,9 +67,10 @@ export class PhoneticRulesEngine {
     { pattern: /wr/i, replacement: 'r', priority: 55 },
     { pattern: /mb$/i, replacement: 'm', priority: 55 },
     
-    // Common endings
+    // Common endings - fix -ed pronunciation
     { pattern: /ing$/i, replacement: 'ing', priority: 50 },
-    { pattern: /ed$/i, replacement: 'd', priority: 50 },
+    { pattern: /([td])ed$/i, replacement: '$1-ed', priority: 52 }, // wanted, started -> want-ed, start-ed
+    { pattern: /([^td])ed$/i, replacement: '$1d', priority: 51 }, // played, exclaimed -> playd, exclaim-d
     { pattern: /er$/i, replacement: 'er', priority: 45 },
     { pattern: /ly$/i, replacement: 'lee', priority: 45 },
     { pattern: /y$/i, replacement: 'ee', priority: 40 },
@@ -87,7 +88,21 @@ export class PhoneticRulesEngine {
   ];
 
   // Enhanced known syllables for common words (loaded from data file)
-  private knownSyllables: Record<string, string[]> = miniDict;
+  private knownSyllables: Record<string, string[]> = {
+    ...miniDict,
+    // Add better -ed handling
+    'exclaimed': ['ex', 'claimed'],
+    'reached': ['reached'],
+    'wanted': ['want', 'ed'],
+    'started': ['start', 'ed'],
+    'needed': ['need', 'ed'],
+    'landed': ['land', 'ed'],
+    'painted': ['paint', 'ed'],
+    'planted': ['plant', 'ed'],
+    'counted': ['count', 'ed'],
+    'visited': ['vis', 'it', 'ed'],
+    'decided': ['de', 'cid', 'ed']
+  };
 
 
   // Speech-friendly pronunciation mapping

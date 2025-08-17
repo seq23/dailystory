@@ -242,34 +242,35 @@ export class SimpleAudioEngine {
       const processedText = contextualPronunciation.processTextForPronunciation(text, true);
       const utterance = new SpeechSynthesisUtterance(processedText);
       
-      // Optimized settings for better mobile experience
-      utterance.rate = 0.9; // Slightly faster for mobile
+      // Optimized settings for better mobile experience - slower fallback
+      utterance.rate = 0.7; // Slower rate for fallback recognition
       utterance.pitch = 1.1; // Child-friendly higher pitch
       utterance.volume = 1.0;
       
-      // Enhanced voice selection for better quality - prefer Charlotte-like voices
+      // Enhanced voice selection - prefer US English voices (indicating fallback)
       const voices = speechSynthesis.getVoices();
       const preferredVoice = voices.find(voice => {
         const name = voice.name.toLowerCase();
         const lang = voice.lang.toLowerCase();
         
-        // Try to find Charlotte-like voices first
-        return (name.includes('charlotte') || name.includes('female') || 
-                name.includes('woman') || name.includes('british') ||
-                name.includes('uk english')) &&
-               (lang.startsWith('en-') || lang === 'en');
+        // Prefer US English voices first (clear fallback indicator)
+        return (name.includes('us english') || name.includes('american') || 
+                name.includes('united states') || lang === 'en-us') &&
+               (name.includes('female') || name.includes('woman'));
       }) || voices.find(voice => {
         const name = voice.name.toLowerCase();
         const lang = voice.lang.toLowerCase();
         
-        // Fallback to high-quality voices
+        // Fallback to any US English voice
+        return lang === 'en-us';
+      }) || voices.find(voice => {
+        const name = voice.name.toLowerCase();
+        const lang = voice.lang.toLowerCase();
+        
+        // Further fallback to high-quality English voices
         return (name.includes('premium') || name.includes('enhanced') || 
                 name.includes('neural') || name.includes('natural')) &&
                (lang.startsWith('en-') || lang === 'en');
-      }) || voices.find(voice => {
-        const name = voice.name.toLowerCase();
-        // Final fallback to any female English voice
-        return (name.includes('female') || name.includes('woman')) && voice.lang.startsWith('en');
       }) || voices.find(voice => voice.lang.startsWith('en'));
       
       if (preferredVoice) {

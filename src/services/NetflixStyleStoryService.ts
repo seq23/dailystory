@@ -115,7 +115,8 @@ let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, {
             expectedPages: 10, // Request 8-10 pages to ensure enough content for 6-page cutoff
             systemPrompt: systemPrompt,
             userPrompt: userPrompt,
-            expertGrade: expertGradeLevel
+            expertGrade: expertGradeLevel,
+            userInfo: userInfo // Pass complete userInfo including avatar
           }
         }
       });
