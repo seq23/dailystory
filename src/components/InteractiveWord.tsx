@@ -792,7 +792,7 @@ export const InteractiveWord = ({
         WebkitTapHighlightColor: 'transparent'
       }}
     >
-      <span className={`underline decoration-dotted hover:decoration-solid transition-all ${getWordIndicatorColor()}`}>
+      <span className={`underline decoration-dotted hover:decoration-solid transition-all ${getWordIndicatorColor()} ${isPremium ? 'interactive-word-premium-hover' : ''}`}>
         {word}
       </span>
       
