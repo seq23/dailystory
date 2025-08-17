@@ -207,14 +207,13 @@ serve(async (req) => {
           lastError = new Error(`ElevenLabs API error: ${response.status} - ${errorText}`);
           console.error(`Attempt ${attempt + 1} failed:`, lastError.message);
           
-          // If dictionary-related error in learning context, try without dictionary
+          // If dictionary-related error in learning context, clear cache for next attempt
           if (context === 'learning' && 
               (errorText.includes('dictionary') || errorText.includes('pronunciation')) &&
               circuitBreakerState.dictionaries?.charlotteDictionaryId) {
-            console.log('Dictionary error detected, clearing dictionary cache and retrying');
+            console.log('Dictionary error detected, clearing dictionary cache for next attempt');
             circuitBreakerState.dictionaries = null;
             circuitBreakerState.lastDictionaryCheck = 0;
-            continue;
           }
           
           // Don't retry on client errors (4xx)
