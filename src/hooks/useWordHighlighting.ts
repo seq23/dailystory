@@ -1,9 +1,10 @@
+
 import { useEffect, useRef } from 'react';
 import { useSimpleAudioHighlighting } from '@/hooks/useSimpleAudioHighlighting';
 
 /**
  * Simplified word highlighting hook for audio playback
- * Clean architecture without circular dependencies
+ * Fixed circular dependency by removing cleanup function pattern
  */
 export const useWordHighlighting = (text: string, isAudioPlaying: boolean) => {
   const { 
@@ -11,8 +12,7 @@ export const useWordHighlighting = (text: string, isAudioPlaying: boolean) => {
     clearHighlighting, 
     startHighlighting, 
     stopHighlighting,
-    currentHighlightedWord,
-    setCleanupFunction
+    currentHighlightedWord
   } = useSimpleAudioHighlighting();
 
   // Handle audio state changes with 300ms debouncing
@@ -47,7 +47,7 @@ export const useWordHighlighting = (text: string, isAudioPlaying: boolean) => {
     clearHighlighting();
   }, [text, clearHighlighting]);
 
-  // Simple highlight callback
+  // Simple highlight callback without circular dependency
   const onWordHighlight = (wordIndex: number) => {
     if (wordIndex === -1) {
       clearHighlighting();
@@ -59,7 +59,6 @@ export const useWordHighlighting = (text: string, isAudioPlaying: boolean) => {
   return {
     onWordHighlight,
     currentHighlightedWord,
-    setCleanupFunction,
     clearHighlighting
   };
 };
