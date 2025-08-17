@@ -389,7 +389,7 @@ Setting: 'enchanted forest', 'space station'"
               />
               
               <p className="text-xs text-muted-foreground">
-                Tell us what kind of story you'd love! (Do not enter personal data. See <a href="/privacy" className="text-primary hover:underline">privacy policy</a>.)
+                Format your input like the examples above for best AI understanding. (Do not enter personal data. See <a href="/privacy" className="text-primary hover:underline">privacy policy</a>.)
               </p>
               
               {spellcheckSuggestions.specialRequest && (
