@@ -380,12 +380,16 @@ export const FormStep3Personalization = ({
               <TagInput
                 value={formData.specialRequest || ""}
                 onChange={(value) => handleInputChange('specialRequest', value)}
-                placeholder={t("formStep3.specialRequest.placeholder", "e.g., theme: magic school, characters: wizard, tone: funny")}
+                placeholder="theme: adventure, mystery
+tone: funny, exciting
+characters: brave knight, dragon
+setting: magical forest
+vocabulary: color, numbers"
                 className="transition-colors focus-within:border-primary"
               />
               
               <p className="text-xs text-muted-foreground">
-                {t("formStep3.specialRequest.help", "Any specific themes, characters, or adventures you would like to see? (Do not enter personal data. See")} <a href="/privacy" className="text-primary hover:underline">{t("formStep3.specialRequest.privacyLink", "privacy policy")}</a>.)
+                Format your input like the examples above for best AI understanding. (Do not enter personal data. See <a href="/privacy" className="text-primary hover:underline">privacy policy</a>.)
               </p>
               
               {spellcheckSuggestions.specialRequest && (

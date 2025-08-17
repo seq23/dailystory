@@ -2,10 +2,11 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { MobileOptimizedButton } from "@/components/MobileOptimizedButton";
 import { MobileTooltip } from "@/components/MobileTooltip";
 import { FormProgressIndicator } from "../shared/FormProgressIndicator";
-import { ChevronLeft, ArrowRight, BookOpen, Info } from "lucide-react";
+import { ChevronLeft, ArrowRight, BookOpen, Info, ChevronDown } from "lucide-react";
 import type { UserInfo, DifficultyLevel, LearningGoal } from "@/types";
 
 interface FormStep2ReadingPrefsProps {
@@ -187,17 +188,26 @@ export const FormStep2ReadingPrefs = ({
         </div>
       </div>
 
-      {/* Trust indicators */}
-      <div className="bg-muted/30 rounded-lg p-4 space-y-2">
-        <h3 className="text-sm font-medium text-foreground">
-          {t("formStep2.trustIndicators.title", "Why This Matters")}
-        </h3>
-        <ul className="space-y-1 text-xs text-muted-foreground">
-          <li>✓ {t("formStep2.trustIndicators.commonCore", "Aligned with Common Core State Standards")}</li>
-          <li>✓ {t("formStep2.trustIndicators.specialists", "Reviewed by certified reading specialists")}</li>
-          <li>✓ {t("formStep2.trustIndicators.research", "Research shows matching content to reading level accelerates learning")}</li>
-        </ul>
-      </div>
+      {/* Trust indicators - collapsible */}
+      <Collapsible>
+        <CollapsibleTrigger className="w-full">
+          <div className="bg-muted/20 rounded-lg p-3 flex items-center justify-center gap-2 hover:bg-muted/30 transition-colors">
+            <p className="text-xs text-muted-foreground font-medium">
+              {t("formStep2.trustIndicators.title", "Why This Matters")}
+            </p>
+            <ChevronDown className="h-3 w-3 text-muted-foreground" />
+          </div>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="pt-2">
+          <div className="bg-muted/10 rounded-lg p-3">
+            <ul className="space-y-1 text-xs text-muted-foreground">
+              <li>✓ {t("formStep2.trustIndicators.commonCore", "Aligned with Common Core State Standards")}</li>
+              <li>✓ {t("formStep2.trustIndicators.specialists", "Reviewed by certified reading specialists")}</li>
+              <li>✓ {t("formStep2.trustIndicators.research", "Research shows matching content to reading level accelerates learning")}</li>
+            </ul>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
 
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-4 pt-6">

@@ -96,11 +96,6 @@ export const TagInput = ({ value, onChange, placeholder, className, onBlur, disa
           }}
         />
         
-        {items.length === 0 && placeholder && (
-          <div className="text-sm text-muted-foreground/80 leading-relaxed break-words italic">
-            {placeholder}
-          </div>
-        )}
       </div>
     </div>
   );
