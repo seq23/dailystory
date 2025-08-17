@@ -377,19 +377,20 @@ export const FormStep3Personalization = ({
                 {t("formStep3.specialRequest.label", "Special Story Request")}
               </Label>
               
-              <Textarea
+              <TagInput
                 value={formData.specialRequest || ""}
-                onChange={(e) => handleInputChange('specialRequest', e.target.value)}
+                onChange={(value) => handleInputChange('specialRequest', value)}
                 placeholder="Themes: 'underwater adventure', 'winter holiday'
 Tone: 'funny', 'educational'
 Elements: 'friendly robot', 'magical garden'
 Characters: 'brave knight', 'talking animal'
 Setting: 'enchanted forest', 'space station'"
-                className="min-h-[120px] transition-colors focus:border-primary"
+                className="transition-colors focus-within:border-primary"
+                supportStructured={true}
               />
               
               <p className="text-xs text-muted-foreground">
-                Format your input like the examples above for best AI understanding. (Do not enter personal data. See <a href="/privacy" className="text-primary hover:underline">privacy policy</a>.)
+                ✨ Press Enter after each complete line to create tags. Mix structured format (Category: 'value') with simple tags. (Do not enter personal data. See <a href="/privacy" className="text-primary hover:underline">privacy policy</a>.)
               </p>
               
               {spellcheckSuggestions.specialRequest && (
