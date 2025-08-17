@@ -47,11 +47,9 @@ export const SpecialRequestDialog: React.FC<SpecialRequestDialogProps> = ({
           </label>
           <Textarea
             id="special-requests"
-            placeholder="Themes: 'underwater adventure', 'winter holiday'
-Tone: 'funny', 'educational'
-Elements: 'friendly robot', 'magical garden'
-Characters: 'brave knight', 'talking animal'
-Setting: 'enchanted forest', 'space station'"
+            placeholder="Themes: underwater adventure AND friendship
+Characters: brave princess AND talking dragon
+Setting: magical forest AND cozy cottage"
             value={value}
             onChange={(e) => setValue(e.target.value)}
             className="min-h-[120px]"

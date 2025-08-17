@@ -380,17 +380,15 @@ export const FormStep3Personalization = ({
               <TagInput
                 value={formData.specialRequest || ""}
                 onChange={(value) => handleInputChange('specialRequest', value)}
-                placeholder="Themes: 'underwater adventure', 'winter holiday'
-Tone: 'funny', 'educational'
-Elements: 'friendly robot', 'magical garden'
-Characters: 'brave knight', 'talking animal'
-Setting: 'enchanted forest', 'space station'"
+                placeholder="Themes: underwater adventure AND friendship
+Characters: brave princess AND talking dragon
+Setting: magical forest AND cozy cottage"
                 className="transition-colors focus-within:border-primary"
                 supportStructured={true}
               />
               
               <p className="text-xs text-muted-foreground">
-                ✨ Press Enter after each complete line to create tags. Mix structured format (Category: 'value') with simple tags. (Do not enter personal data. See <a href="/privacy" className="text-primary hover:underline">privacy policy</a>.)
+                ✨ Press Enter after each line to create tags. Use structured format (Category: value AND value). No personal data - see <a href="/privacy" className="text-primary hover:underline">privacy policy</a>.
               </p>
               
               {spellcheckSuggestions.specialRequest && (
