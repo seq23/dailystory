@@ -141,6 +141,11 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     
     return () => {
       document.body.classList.remove('reading-session');
+      // Cleanup generation protection refs on unmount
+      isGeneratingRef.current = false;
+      storyGeneratedRef.current = false;
+      lastUserInfoRef.current = '';
+      generationIdRef.current = '';
     };
   }, []);
   
@@ -164,6 +169,10 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         if (currentStory.cachedImages) {
           setPageImages(currentStory.cachedImages);
         }
+        
+        // Mark story as generated to prevent double generation
+        storyGeneratedRef.current = true;
+        lastUserInfoRef.current = JSON.stringify({ name: userInfo.name, age: userInfo.age, isPremium });
         
         setIsLoading(false);
         return; // Exit early - don't proceed with live generation logic
